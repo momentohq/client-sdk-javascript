@@ -1,13 +1,13 @@
 import {Status} from "@grpc/grpc-js/build/src/constants";
 import {ServiceError} from "@grpc/grpc-js";
 import {
-    ClientSdkError,
+    CacheServiceError,
     InternalServerError,
     InvalidArgumentError,
     PermissionDeniedError
 } from './Errors';
 
-export function errorMapper(err: ServiceError): ClientSdkError {
+export function cacheServiceErrorMapper(err: ServiceError): CacheServiceError {
     if (err.code === Status.PERMISSION_DENIED) {
         return new PermissionDeniedError(err.message);
     }

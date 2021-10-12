@@ -1,10 +1,15 @@
 import {control} from '@momento/wire-types-typescript';
 import jwtDecode from "jwt-decode";
 import {MomentoCache} from "./MomentoCache";
-import {authInterceptor} from "./grpc/AuthInterceptor";
-import {InvalidArgumentError, ClientSdkError, CacheAlreadyExistsError, CacheNotFoundError} from "./Errors";
+import {addHeadersInterceptor} from "./grpc/AddHeadersInterceptor";
+import {
+    InvalidArgumentError,
+    CacheAlreadyExistsError,
+    CacheNotFoundError,
+    InvalidJwtError
+} from "./Errors";
 import {Status} from "@grpc/grpc-js/build/src/constants";
-import {errorMapper} from "./GrpcErrorMapper";
+import {cacheServiceErrorMapper} from "./CacheServiceErrorMapper";
 import {ChannelCredentials, Interceptor} from "@grpc/grpc-js";
 
 interface Claims {
@@ -34,7 +39,11 @@ export class Momento {
     constructor(authToken: string, endpointOverride?: string) {
         const claims = this.decodeJwt(authToken);
         this.authToken = authToken;
-        this.interceptors = [authInterceptor(authToken)]
+        const headers = [{
+            name: 'Authorization',
+            value: authToken
+        }]
+        this.interceptors = [addHeadersInterceptor(headers)]
         const controlEndpoint = endpointOverride ? `control.${endpointOverride}` : claims.cp;
         this.cacheEndpoint = endpointOverride ? `cache.${endpointOverride}` : claims.c;
         this.client = new control.control_client.ScsControlClient(controlEndpoint, ChannelCredentials.createSsl())
@@ -47,7 +56,7 @@ export class Momento {
         try {
             return jwtDecode<Claims>(jwt)
         } catch (e) {
-            throw new ClientSdkError("failed to parse jwt")
+            throw new InvalidJwtError('failed to parse jwt')
         }
     }
 
@@ -75,7 +84,7 @@ export class Momento {
                     if (err.code === Status.ALREADY_EXISTS) {
                         reject(new CacheAlreadyExistsError(`cache with name: ${name} already exists`))
                     } else {
-                        reject(errorMapper(err))
+                        reject(cacheServiceErrorMapper(err))
                     }
                 } else {
                     resolve({})
@@ -97,7 +106,7 @@ export class Momento {
                     if (err.code === Status.NOT_FOUND) {
                         reject(new CacheNotFoundError(`cache with name: ${name} does not exist`))
                     } else {
-                        reject(errorMapper(err))
+                        reject(cacheServiceErrorMapper(err))
                     }
                 } else {
                     resolve({})

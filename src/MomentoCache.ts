@@ -1,9 +1,8 @@
 import {cache} from '@momento/wire-types-typescript';
-import {authInterceptor} from "./grpc/AuthInterceptor";
-import {cacheNameInterceptor} from "./grpc/CacheNameInterceptor";
+import {addHeadersInterceptor} from "./grpc/AddHeadersInterceptor";
 import {momentoResultConverter} from "./messages/Result";
-import {InvalidArgumentError, ClientSdkError} from "./Errors";
-import {errorMapper} from "./GrpcErrorMapper";
+import {InvalidArgumentError, CacheServiceError} from "./Errors";
+import {cacheServiceErrorMapper} from "./CacheServiceErrorMapper";
 import {ChannelCredentials, Interceptor} from "@grpc/grpc-js";
 import {GetResponse} from "./messages/GetResponse";
 import {SetResponse} from "./messages/SetResponse";
@@ -26,7 +25,14 @@ export class MomentoCache {
         this.client = new cache.cache_client.ScsClient(endpoint, ChannelCredentials.createSsl());
         this.textEncoder = new TextEncoder();
         this.cacheName = cacheName;
-        this.interceptors = [authInterceptor(authToken), cacheNameInterceptor(cacheName)]
+        const headers = [{
+            name: 'Authorization',
+            value: authToken
+        }, {
+            name: 'cache',
+            value: cacheName
+        }]
+        this.interceptors = [addHeadersInterceptor(headers)]
     }
 
     /**
@@ -63,11 +69,11 @@ export class MomentoCache {
         return new Promise((resolve, reject) => {
             this.client.Set(request, { interceptors: this.interceptors }, (err, resp) => {
                 if (err) {
-                    reject(errorMapper(err))
+                    reject(cacheServiceErrorMapper(err))
                 } else if (resp) {
                     resolve(this.parseSetResponse(resp))
                 } else {
-                    reject(new ClientSdkError("unable to perform set"))
+                    reject(new CacheServiceError("unable to perform set"))
                 }
             })
         })
@@ -99,11 +105,11 @@ export class MomentoCache {
         return new Promise((resolve, reject) => {
             this.client.Get(request, {interceptors: this.interceptors}, (err, resp) => {
                 if (err) {
-                    reject(errorMapper(err))
+                    reject(cacheServiceErrorMapper(err))
                 } else if (resp) {
                     resolve(this.parseGetResponse(resp))
                 } else {
-                    reject(new ClientSdkError("unable to get from cache"))
+                    reject(new CacheServiceError("unable to get from cache"))
                 }
             })
         })
