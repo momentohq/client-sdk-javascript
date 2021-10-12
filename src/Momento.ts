@@ -21,7 +21,7 @@ export class Momento {
     private readonly cacheEndpoint: string;
     private readonly authToken: string;
     constructor(authToken: string, endpointOverride?: string) {
-        const claims = Momento.decodeJwt(authToken);
+        const claims = this.decodeJwt(authToken);
         this.authToken = authToken;
         this.interceptors = [authInterceptor(authToken)]
         this.controlEndpoint = endpointOverride ? `control.${endpointOverride}` : claims.cp;
@@ -29,7 +29,7 @@ export class Momento {
         this.client = new control.control_client.ScsControlClient(this.controlEndpoint, ChannelCredentials.createSsl())
     }
 
-    private static decodeJwt(jwt?: string): Claims {
+    private decodeJwt = (jwt?: string): Claims => {
         if(!jwt) {
             throw new IllegalArgumentError("malformed auth token")
         }
@@ -65,7 +65,7 @@ export class Momento {
         })
     }
 
-    private validateCachename(name: string) {
+    private validateCachename = (name: string) => {
         if (!name) {
             throw new IllegalArgumentError("cache name must not be null")
         }

@@ -74,7 +74,7 @@ export class Cache {
         })
     }
 
-    private parseGetResponse(resp: cache.cache_client.GetResponse): GetResponse {
+    private parseGetResponse = (resp: cache.cache_client.GetResponse): GetResponse => {
         return {
             result: momentoResultConverter(resp.result),
             message: resp.message,
@@ -82,14 +82,14 @@ export class Cache {
         }
     }
 
-    private parseSetResponse(resp: cache.cache_client.SetResponse): SetResponse {
+    private parseSetResponse = (resp: cache.cache_client.SetResponse): SetResponse => {
         return {
             result: momentoResultConverter(resp.result),
             message: resp.message
         }
     }
 
-    private ensureValidKey(key: any) {
+    private ensureValidKey = (key: any) => {
         if (!key) {
             throw new IllegalArgumentError("key must not be empty")
         }
