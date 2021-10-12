@@ -7,6 +7,12 @@ import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
 
+const delay = (millis: number): Promise<void> => {
+  return new Promise<void>(resolve => {
+    setTimeout(() => resolve(), millis);
+  });
+};
+
 const DEFAULT_TTL = 100;
 
 export class MomentoCache {
@@ -16,12 +22,15 @@ export class MomentoCache {
   private readonly cacheName: string;
 
   /**
-   *
    * @param {string} authToken
    * @param {string} cacheName
    * @param {string} endpoint
    */
-  constructor(authToken: string, cacheName: string, endpoint: string) {
+  protected constructor(
+    authToken: string,
+    cacheName: string,
+    endpoint: string
+  ) {
     this.client = new cache.cache_client.ScsClient(
       endpoint,
       ChannelCredentials.createSsl()
@@ -39,6 +48,42 @@ export class MomentoCache {
       },
     ];
     this.interceptors = [addHeadersInterceptor(headers)];
+  }
+
+  /**
+   * This method should not be called directly. Instead, it should be called by the Momento class when calling Momento.getCache
+   * @param {string} authToken
+   * @param {string} cacheName
+   * @param {string} endpoint
+   * @returns Promise<MomentoCache>
+   */
+  static async init(
+    authToken: string,
+    cacheName: string,
+    endpoint: string
+  ): Promise<MomentoCache> {
+    const cache = new MomentoCache(authToken, cacheName, endpoint);
+    await cache.waitForCacheReady();
+    return cache;
+  }
+
+  private async waitForCacheReady(): Promise<void> {
+    const key = '00000';
+    const maxWaitDuration = 5000;
+    const start = Date.now();
+    const backoffMillis = 50;
+    let lastError = null;
+
+    while (Date.now() - start < maxWaitDuration) {
+      try {
+        await this.get(key);
+        return;
+      } catch (e) {
+        lastError = e;
+      }
+      await delay(backoffMillis);
+    }
+    throw lastError;
   }
 
   /**

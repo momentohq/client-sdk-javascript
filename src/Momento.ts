@@ -69,11 +69,11 @@ export class Momento {
   /**
    * gets a MomentoCache to perform gets and sets on
    * @param {string} name - name of cache
-   * @returns MomentoCache
+   * @returns Promise<MomentoCache>
    */
-  public getCache(name: string): MomentoCache {
+  public async getCache(name: string): Promise<MomentoCache> {
     this.validateCacheName(name);
-    return new MomentoCache(this.authToken, name, this.cacheEndpoint);
+    return MomentoCache.init(this.authToken, name, this.cacheEndpoint);
   }
 
   /**
