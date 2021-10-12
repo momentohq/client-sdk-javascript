@@ -7,13 +7,13 @@ import {ClientSdkError} from "./errors/ClientSdkError";
 import {errorMapper} from "./errors/GrpcErrorMapper";
 import {ChannelCredentials, Interceptor} from "@grpc/grpc-js";
 
-type GetResponse = {
+export type GetResponse = {
     body: string;
     message: string;
     result: MomentoCacheResult;
 }
 
-type SetResponse = {
+export type SetResponse = {
     message: string;
     result: MomentoCacheResult;
 }
@@ -32,6 +32,13 @@ export class Cache {
         this.interceptors = [authInterceptor(authToken), cacheNameInterceptor(cacheName)]
     }
 
+    /**
+     *
+     * @param {string} key - the cache key
+     * @param {string} value - the value stored in the cache
+     * @param {number} [ttl=1000] - time to live in cache, in milliseconds
+     * @returns Promise<SetResponse>
+     */
     public async set(key: string, value: string, ttl: number = 1000): Promise<SetResponse> {
         this.ensureValidSetRequest(key, value, ttl)
         const encodedKey = this.textEncoder.encode(key)
@@ -55,6 +62,11 @@ export class Cache {
         })
     }
 
+    /**
+     *
+     * @param {string} key - cache key
+     * @returns Promise<GetResponse>
+     */
     public async get(key: string): Promise<GetResponse> {
         this.ensureValidKey(key);
         const request = new cache.cache_client.GetRequest({
@@ -107,3 +119,5 @@ export class Cache {
         }
     }
 }
+
+export type MomentoCache = typeof Cache;

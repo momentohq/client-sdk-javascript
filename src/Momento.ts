@@ -14,12 +14,21 @@ type Claims = {
     c: string
 }
 
+export type CreateCacheResponse = {}
+export type DeleteCacheResponse = {}
+
 export class Momento {
     private readonly client: control.control_client.ScsControlClient;
     private readonly interceptors: Interceptor[];
     private readonly controlEndpoint: string;
     private readonly cacheEndpoint: string;
     private readonly authToken: string;
+
+    /**
+     * creates an instance of Momento
+     * @param {string} authToken - Momento jwt
+     * @param {string=} endpointOverride - optional endpoint override to be used when given an explicit endpoint by the Momento team
+     */
     constructor(authToken: string, endpointOverride?: string) {
         const claims = this.decodeJwt(authToken);
         this.authToken = authToken;
@@ -41,12 +50,22 @@ export class Momento {
 
     }
 
+    /**
+     * gets a MomentoCache to perform gets and sets on
+     * @param {string} name - name of cache
+     * @returns Cache
+     */
     public getCache(name: string): Cache {
         this.validateCachename(name);
         return new Cache(this.authToken, name, this.cacheEndpoint);
     }
 
-    public createCache(name: string): Promise<control.control_client.CreateCacheResponse> {
+    /**
+     * creates a new cache in your Momento account
+     * @param {string} name - cache name to create
+     * @returns Promise<CreateCacheResponse>
+     */
+    public createCache(name: string): Promise<CreateCacheResponse> {
         this.validateCachename(name);
         const request = new control.control_client.CreateCacheRequest({ cache_name: name })
         return new Promise((resolve, reject) => {
@@ -57,10 +76,24 @@ export class Momento {
                     }
                     reject(errorMapper(err))
                 }
-                if(resp) {
-                    resolve(resp)
+                resolve({})
+            })
+        })
+    }
+
+    /**
+     * deletes a cache and all of the items within it
+     * @param {string} name - name of cache to delete
+     * @returns Promise<DeleteCacheResponse>
+     */
+    public deleteCache(name: string): Promise<DeleteCacheResponse> {
+        const request = new control.control_client.DeleteCacheRequest({ cache_name: name })
+        return new Promise<DeleteCacheResponse>((resolve, reject) => {
+            this.client.DeleteCache(request, { interceptors: this.interceptors }, (err, resp) => {
+                if (err) {
+                    reject(errorMapper(err))
                 }
-                reject(new ClientSdkError("unable to create cache"))
+                resolve({})
             })
         })
     }
