@@ -1,12 +1,12 @@
-import {grpc} from '@momento/wire-types-typescript';
 import {ClientSdkError} from "./ClientSdkError";
 import {Status} from "@grpc/grpc-js/build/src/constants";
 import {PermissionDeniedError} from "./PermissionDeniedError";
 import {CacheNotFoundError} from "./CacheNotFoundError";
 import {IllegalArgumentError} from "./IllegalArgumentError";
 import {InternalServerError} from "./InternalServerError";
+import {ServiceError} from "@grpc/grpc-js";
 
-export function errorMapper(err: grpc.ServiceError): ClientSdkError {
+export function errorMapper(err: ServiceError): ClientSdkError {
     if (err.code === Status.PERMISSION_DENIED) {
         return new PermissionDeniedError(err.message)
     }

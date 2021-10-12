@@ -1,10 +1,11 @@
-import {cache, grpc} from '@momento/wire-types-typescript';
+import {cache} from '@momento/wire-types-typescript';
 import {authInterceptor} from "./grpc/AuthInterceptor";
 import {cacheNameInterceptor} from "./grpc/CacheNameInterceptor";
 import {MomentoCacheResult, momentoResultConverter} from "./messages/Result";
 import {IllegalArgumentError} from "./errors/IllegalArgumentError";
 import {ClientSdkError} from "./errors/ClientSdkError";
 import {errorMapper} from "./errors/GrpcErrorMapper";
+import {ChannelCredentials, Interceptor} from "@grpc/grpc-js";
 
 type GetResponse = {
     body: string;
@@ -21,10 +22,10 @@ export class Cache {
     private readonly client: cache.cache_client.ScsClient;
     private readonly textEncoder: TextEncoder;
     private readonly textDecoder: TextDecoder;
-    private readonly interceptors: grpc.Interceptor[];
+    private readonly interceptors: Interceptor[];
     private readonly cacheName: string;
     constructor(authToken: string, cacheName: string, endpoint: string) {
-        this.client = new cache.cache_client.ScsClient(endpoint, grpc.ChannelCredentials.createSsl())
+        this.client = new cache.cache_client.ScsClient(endpoint, ChannelCredentials.createSsl());
         this.textEncoder = new TextEncoder();
         this.textDecoder = new TextDecoder();
         this.cacheName = cacheName;

@@ -1,4 +1,4 @@
-import {control, grpc} from '@momento/wire-types-typescript';
+import {control} from '@momento/wire-types-typescript';
 import jwtDecode from "jwt-decode";
 import {Cache} from "./Cache";
 import {authInterceptor} from "./grpc/AuthInterceptor";
@@ -7,6 +7,7 @@ import {ClientSdkError} from "./errors/ClientSdkError";
 import {Status} from "@grpc/grpc-js/build/src/constants";
 import {CacheAlreadyExistsError} from "./errors/CacheAlreadyExistsError";
 import {errorMapper} from "./errors/GrpcErrorMapper";
+import {ChannelCredentials, Interceptor} from "@grpc/grpc-js";
 
 type Claims = {
     cp: string,
@@ -15,7 +16,7 @@ type Claims = {
 
 export class Momento {
     private readonly client: control.control_client.ScsControlClient;
-    private readonly interceptors: grpc.Interceptor[];
+    private readonly interceptors: Interceptor[];
     private readonly controlEndpoint: string;
     private readonly cacheEndpoint: string;
     private readonly authToken: string;
@@ -25,7 +26,7 @@ export class Momento {
         this.interceptors = [authInterceptor(authToken)]
         this.controlEndpoint = endpointOverride ? `control.${endpointOverride}` : claims.cp;
         this.cacheEndpoint = endpointOverride ? `cache.${endpointOverride}` : claims.c;
-        this.client = new control.control_client.ScsControlClient(this.controlEndpoint, grpc.ChannelCredentials.createSsl())
+        this.client = new control.control_client.ScsControlClient(this.controlEndpoint, ChannelCredentials.createSsl())
     }
 
     private static decodeJwt(jwt?: string): Claims {
