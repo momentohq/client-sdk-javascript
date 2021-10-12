@@ -2,50 +2,50 @@
  * Base class for all errors thrown by the sdk
  */
 abstract class SdkError extends Error {
-    protected constructor(message: string) {
-        super(message);
-    }
+  protected constructor(message: string) {
+    super(message);
+  }
 }
 
 export class ClientSdkError extends SdkError {
-    constructor(message: string) {
-        super(message);
-    }
+  constructor(message: string) {
+    super(message);
+  }
 }
 
 /**
  * Represents errors thrown when invalid parameters are passed to the Momento Cache
  */
 export class InvalidArgumentError extends ClientSdkError {
-    constructor(message: string) {
-        super(message);
-        this.name = "InvalidArgumentError"
-    }
+  constructor(message: string) {
+    super(message);
+    this.name = 'InvalidArgumentError';
+  }
 }
 
 /**
  * Gets thrown when the jwt passed to the Momento client cannot have the claims parsed
  */
 export class InvalidJwtError extends ClientSdkError {
-    constructor(message: string) {
-        super(message);
-        this.name = "InvalidJwtError"
-    }
+  constructor(message: string) {
+    super(message);
+    this.name = 'InvalidJwtError';
+  }
 }
 
 abstract class MomentoServiceError extends SdkError {
-    protected constructor(message: string) {
-        super(message);
-    }
+  protected constructor(message: string) {
+    super(message);
+  }
 }
 
 /**
  * Base class for all exceptions resulting from Cache Service interactions
  */
 export class CacheServiceError extends MomentoServiceError {
-    constructor(message: string) {
-        super(message);
-    }
+  constructor(message: string) {
+    super(message);
+  }
 }
 
 /**
@@ -54,10 +54,10 @@ export class CacheServiceError extends MomentoServiceError {
  * one that doesn't already exist
  */
 export class CacheAlreadyExistsError extends CacheServiceError {
-    constructor(message: string) {
-        super(message);
-        this.name = "CacheAlreadyExistsError"
-    }
+  constructor(message: string) {
+    super(message);
+    this.name = 'CacheAlreadyExistsError';
+  }
 }
 
 /**
@@ -65,28 +65,28 @@ export class CacheAlreadyExistsError extends CacheServiceError {
  * to get exists. If it doesn't create it first and then try again
  */
 export class CacheNotFoundError extends CacheServiceError {
-    constructor(message: string) {
-        super(message);
-        this.name = "CacheNotFoundError";
-    }
+  constructor(message: string) {
+    super(message);
+    this.name = 'CacheNotFoundError';
+  }
 }
 
 /**
  * Cache Service encountered an unexpected exception while trying to fulfill the request
  */
 export class InternalServerError extends CacheServiceError {
-    constructor(message: string) {
-        super(message);
-        this.name = "InternalServerError"
-    }
+  constructor(message: string) {
+    super(message);
+    this.name = 'InternalServerError';
+  }
 }
 
 /**
  * Service rejected the request as the authentication credentials presented are invalid
  */
 export class PermissionDeniedError extends CacheServiceError {
-    constructor(message: string) {
-        super(message);
-        this.name = "PermissionDeniedError"
-    }
+  constructor(message: string) {
+    super(message);
+    this.name = 'PermissionDeniedError';
+  }
 }

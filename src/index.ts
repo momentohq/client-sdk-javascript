@@ -1,10 +1,6 @@
-import {Momento, CreateCacheResponse, DeleteCacheResponse} from "./Momento";
-import { MomentoCache } from "./MomentoCache";
-import { GetResponse } from './messages/GetResponse';
-import { SetResponse } from './messages/SetResponse';
+import {Momento} from './Momento';
+import {MomentoCache} from './MomentoCache';
+import {GetResponse} from './messages/GetResponse';
+import {SetResponse} from './messages/SetResponse';
 
-export { Momento, GetResponse, SetResponse, MomentoCache };
-export type {
-    CreateCacheResponse,
-    DeleteCacheResponse,
-}
+export {Momento, GetResponse, SetResponse, MomentoCache};
