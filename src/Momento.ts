@@ -11,6 +11,8 @@ import {
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
+import {DeleteCacheResponse} from './messages/DeleteCacheResponse';
+import {CreateCacheResponse} from './messages/CreateCacheResponse';
 
 interface Claims {
   /**
@@ -96,14 +98,14 @@ export class Momento {
   /**
    * creates a new cache in your Momento account
    * @param {string} name - cache name to create
-   * @returns Promise<void>
+   * @returns Promise<CreateCacheResponse>
    */
-  public createCache(name: string): Promise<void> {
+  public createCache(name: string): Promise<CreateCacheResponse> {
     this.validateCacheName(name);
     const request = new control.control_client.CreateCacheRequest({
       cache_name: name,
     });
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<CreateCacheResponse>((resolve, reject) => {
       this.client.CreateCache(
         request,
         {interceptors: this.interceptors},
@@ -119,7 +121,7 @@ export class Momento {
               reject(cacheServiceErrorMapper(err));
             }
           } else {
-            resolve();
+            resolve(new CreateCacheResponse());
           }
         }
       );
@@ -129,13 +131,13 @@ export class Momento {
   /**
    * deletes a cache and all of the items within it
    * @param {string} name - name of cache to delete
-   * @returns Promise<void>
+   * @returns Promise<DeleteCacheResponse>
    */
-  public deleteCache(name: string): Promise<void> {
+  public deleteCache(name: string): Promise<DeleteCacheResponse> {
     const request = new control.control_client.DeleteCacheRequest({
       cache_name: name,
     });
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<DeleteCacheResponse>((resolve, reject) => {
       this.client.DeleteCache(
         request,
         {interceptors: this.interceptors},
@@ -151,7 +153,7 @@ export class Momento {
               reject(cacheServiceErrorMapper(err));
             }
           } else {
-            resolve();
+            resolve(new DeleteCacheResponse());
           }
         }
       );

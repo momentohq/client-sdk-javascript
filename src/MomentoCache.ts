@@ -67,6 +67,10 @@ export class MomentoCache {
     return cache;
   }
 
+  /**
+   * temporary work around to allow for users to create a cache, and then immediately call get/set on it
+   * @private
+   */
   private async waitForCacheReady(): Promise<void> {
     const key = '00000';
     const maxWaitDuration = 5000;
