@@ -77,6 +77,23 @@ export class Momento {
   }
 
   /**
+   * if the cache doesn't exist, creates it first, and then returns an instance of the cache. If cache already exists,
+   * just returns an instance of the already existing cache
+   * @param {string} name
+   * @returns Promise<MomentoCache>
+   */
+  public async createOrGetCache(name: string): Promise<MomentoCache> {
+    try {
+      await this.createCache(name);
+    } catch (e) {
+      if (!(e instanceof CacheAlreadyExistsError)) {
+        throw e;
+      }
+    }
+    return this.getCache(name);
+  }
+
+  /**
    * creates a new cache in your Momento account
    * @param {string} name - cache name to create
    * @returns Promise<void>

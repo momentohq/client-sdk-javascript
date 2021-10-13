@@ -13,9 +13,12 @@ export class GetResponse {
 
   /**
    * decodes the body into a utf-8 string
-   * @returns string
+   * @returns string|null
    */
-  public text(): string {
+  public text(): string | null {
+    if (this.result === MomentoCacheResult.Miss) {
+      return null;
+    }
     return this.textDecoder.decode(this.body);
   }
 }
