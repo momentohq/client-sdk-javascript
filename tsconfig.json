@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",                                     /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+    "module": "commonjs",                                /* Specify what module code is generated. */
+    "declaration": true,                              /* Generate .d.ts files from TypeScript and JavaScript files in your project. */
+    "outDir": "./dist",                                   /* Specify an output folder for all emitted files. */
+    "inlineSources": true,                            /* Include source code in the sourcemaps inside the emitted JavaScript. */
+    "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */
+    "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
+    "sourceMap": true,
+    "strict": true,                                      /* Enable all strict type-checking options. */
+    "noImplicitAny": true,                            /* Enable error reporting for expressions and declarations with an implied `any` type.. */
+    "alwaysStrict": true,                             /* Ensure 'use strict' is always emitted. */
+    "noImplicitReturns": true,                        /* Enable error reporting for codepaths that do not explicitly return in a function. */
+    "skipLibCheck": true,                                 /* Skip type checking all .d.ts files. */
+    "types": ["jest"],
+    "baseUrl": "./src"
+  },
+  "include": [
+    "src/",
+    "test/"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
