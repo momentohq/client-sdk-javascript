@@ -13,7 +13,7 @@
     "alwaysStrict": true,                             /* Ensure 'use strict' is always emitted. */
     "noImplicitReturns": true,                        /* Enable error reporting for codepaths that do not explicitly return in a function. */
     "skipLibCheck": true,                                 /* Skip type checking all .d.ts files. */
-    "types": [],
+    "types": ["jest"],
     "baseUrl": "./src"
   },
   "include": [
