@@ -1,7 +1,7 @@
 import {cache} from '@momento/wire-types-typescript';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
 import {momentoResultConverter} from './messages/Result';
-import {InvalidArgumentError, CacheServiceError} from './Errors';
+import {InvalidArgumentError} from './Errors';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {GetResponse} from './messages/GetResponse';
@@ -134,12 +134,10 @@ export class MomentoCache {
         request,
         {interceptors: this.interceptors},
         (err, resp) => {
-          if (err) {
-            reject(cacheServiceErrorMapper(err));
-          } else if (resp) {
+          if (resp) {
             resolve(this.parseSetResponse(resp));
           } else {
-            reject(new CacheServiceError('unable to perform set'));
+            reject(cacheServiceErrorMapper(err));
           }
         }
       );
@@ -174,12 +172,10 @@ export class MomentoCache {
         request,
         {interceptors: this.interceptors},
         (err, resp) => {
-          if (err) {
-            reject(cacheServiceErrorMapper(err));
-          } else if (resp) {
+          if (resp) {
             resolve(this.parseGetResponse(resp));
           } else {
-            reject(new CacheServiceError('unable to get from cache'));
+            reject(cacheServiceErrorMapper(err));
           }
         }
       );

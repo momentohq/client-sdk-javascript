@@ -3,16 +3,18 @@ import {ServiceError} from '@grpc/grpc-js';
 import {
   CacheServiceError,
   InternalServerError,
-  InvalidArgumentError,
   PermissionDeniedError,
+  ServiceValidationError,
 } from './Errors';
 
-export function cacheServiceErrorMapper(err: ServiceError): CacheServiceError {
-  if (err.code === Status.PERMISSION_DENIED) {
+export function cacheServiceErrorMapper(
+  err: ServiceError | null
+): CacheServiceError {
+  if (err?.code === Status.PERMISSION_DENIED) {
     return new PermissionDeniedError(err.message);
   }
-  if (err.code === Status.INVALID_ARGUMENT) {
-    return new InvalidArgumentError(err.message);
+  if (err?.code === Status.INVALID_ARGUMENT) {
+    return new ServiceValidationError(err.message);
   }
   return new InternalServerError('unable to process request');
 }

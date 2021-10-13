@@ -90,3 +90,10 @@ export class PermissionDeniedError extends CacheServiceError {
     this.name = 'PermissionDeniedError';
   }
 }
+
+export class ServiceValidationError extends CacheServiceError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ServiceValidationError';
+  }
+}
