@@ -24,6 +24,14 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 14
+          
+      - name: Configure Artifactory credentials
+        run: |
+          # lel this is how jfrog wants you to come up with your scoped npm configuration
+          curl -udeploy-user:${{ secrets.PUBLIC_ARTIFACTORY_DEPLOY_USER_MAGIC_PASSTOKEN }} https://momento.jfrog.io/artifactory/api/npm/npm-local/auth/momento >> ~/.npmrc
+          
+      - name: Install Dependencies
+        run: npm install
 
       - name: Build
         run: npm run build
