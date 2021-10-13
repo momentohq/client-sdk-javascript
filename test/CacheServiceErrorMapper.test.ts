@@ -2,8 +2,6 @@ import {Status} from "@grpc/grpc-js/build/src/constants";
 import {cacheServiceErrorMapper} from "../dist/CacheServiceErrorMapper";
 import {Metadata, ServiceError} from "@grpc/grpc-js";
 import {
-    CacheNotFoundError,
-    CacheServiceError,
     InternalServerError,
     InvalidArgumentError,
     PermissionDeniedError
