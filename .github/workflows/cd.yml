@@ -21,7 +21,7 @@ jobs:
           # lel this is how jfrog wants you to come up with your scoped npm configuration
           echo @momento:registry=https://momento.jfrog.io/artifactory/api/npm/npm-public/ >> ~/.npmrc
           # this sets up credentials to publish to artifactory
-          curl -udeploy-user:${{ secrets.PUBLIC_ARTIFACTORY_DEPLOY_USER_MAGIC_PASSTOKEN }} https://momento.jfrog.io/artifactory/api/npm/npm-public/auth/momento >> ~/.npmrc
+          curl -udeploy-user:${{ secrets.PUBLIC_ARTIFACTORY_DEPLOY_USER_MAGIC_PASSTOKEN }} https://momento.jfrog.io/artifactory/api/npm/npm-local/auth/momento >> ~/.npmrc
 
       - name: Install Node
         uses: actions/setup-node@v1
