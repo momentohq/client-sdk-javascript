@@ -2,11 +2,11 @@
   "name": "@momento/client-sdk-typescript",
   "version": "0.0.1",
   "description": "Client SDK for Momento services",
-  "main": "dist/index.js",
+  "main": "index.js",
   "files": [
-    "/dist"
+    "dist"
   ],
-  "types": "dist/index.d.ts",
+  "types": "index.d.ts",
   "scripts": {
     "test": "jest",
     "lint": "eslint . --ext .ts",
