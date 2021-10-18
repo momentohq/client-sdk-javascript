@@ -6,6 +6,7 @@ import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
+import {Status} from '@grpc/grpc-js/build/src/constants';
 
 const delay = (millis: number): Promise<void> => {
   return new Promise<void>(resolve => {
@@ -13,38 +14,45 @@ const delay = (millis: number): Promise<void> => {
   });
 };
 
-const DEFAULT_TTL = 100;
+/**
+ * @property {string} authToken
+ * @property {string} cacheName
+ * @property {string} endpoint
+ * @property {number} defaultTtl - the default time to live of object inside of cache
+ */
+type MomentoCacheProps = {
+  authToken: string;
+  cacheName: string;
+  endpoint: string;
+  defaultTtl: number;
+};
 
 export class MomentoCache {
   private readonly client: cache.cache_client.ScsClient;
   private readonly textEncoder: TextEncoder;
   private readonly interceptors: Interceptor[];
   private readonly cacheName: string;
+  private readonly defaultTtl: number;
 
   /**
-   * @param {string} authToken
-   * @param {string} cacheName
-   * @param {string} endpoint
+   * @param {MomentoCacheProps} props
    */
-  protected constructor(
-    authToken: string,
-    cacheName: string,
-    endpoint: string
-  ) {
+  protected constructor(props: MomentoCacheProps) {
     this.client = new cache.cache_client.ScsClient(
-      endpoint,
+      props.endpoint,
       ChannelCredentials.createSsl()
     );
     this.textEncoder = new TextEncoder();
-    this.cacheName = cacheName;
+    this.cacheName = props.cacheName;
+    this.defaultTtl = props.defaultTtl;
     const headers = [
       {
         name: 'Authorization',
-        value: authToken,
+        value: props.authToken,
       },
       {
         name: 'cache',
-        value: cacheName,
+        value: props.cacheName,
       },
     ];
     this.interceptors = [addHeadersInterceptor(headers)];
@@ -52,17 +60,11 @@ export class MomentoCache {
 
   /**
    * This method should not be called directly. Instead, it should be called by the Momento class when calling Momento.getCache
-   * @param {string} authToken
-   * @param {string} cacheName
-   * @param {string} endpoint
+   * @param {MomentoCacheProps} props
    * @returns Promise<MomentoCache>
    */
-  static async init(
-    authToken: string,
-    cacheName: string,
-    endpoint: string
-  ): Promise<MomentoCache> {
-    const cache = new MomentoCache(authToken, cacheName, endpoint);
+  static async init(props: MomentoCacheProps): Promise<MomentoCache> {
+    const cache = new MomentoCache(props);
     await cache.waitForCacheReady();
     return cache;
   }
@@ -82,10 +84,16 @@ export class MomentoCache {
       try {
         await this.get(key);
         return;
-      } catch (e) {
-        lastError = e;
+      } catch (e: any) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        if (e?.code === Status.UNAVAILABLE || e?.code === Status.UNKNOWN) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          lastError = e;
+          await delay(backoffMillis);
+        } else {
+          throw e;
+        }
       }
-      await delay(backoffMillis);
     }
     throw lastError;
   }
@@ -93,34 +101,30 @@ export class MomentoCache {
   /**
    * @param {string} key - utf-8 string key
    * @param {string} value - utf-8 string to store in the cache
-   * @param {number} [ttl=100] - time to live in cache, in seconds
+   * @param {number=} ttl - time to live in cache, in seconds
    * @returns Promise<SetResponse>
    */
-  public set(
-    key: string,
-    value: string,
-    ttl: number = DEFAULT_TTL
-  ): Promise<SetResponse> {
-    this.ensureValidSetRequest(key, value, ttl);
+  public set(key: string, value: string, ttl?: number): Promise<SetResponse> {
+    this.ensureValidSetRequest(key, value, ttl || this.defaultTtl);
     const encodedKey = this.textEncoder.encode(key);
     const encodedValue = this.textEncoder.encode(value);
 
-    return this.sendSet(encodedKey, encodedValue, ttl);
+    return this.sendSet(encodedKey, encodedValue, ttl || this.defaultTtl);
   }
 
   /**
    * @param {Uint8Array} key - the cache key
    * @param {Uint8Array} value - the value to store in the cache
-   * @param {number} [ttl=100] - time to live in cache, in seconds
+   * @param {number=} ttl - time to live in cache, in seconds
    * @returns Promise<SetResponse>
    */
   public setBytes(
     key: Uint8Array,
     value: Uint8Array,
-    ttl: number = DEFAULT_TTL
+    ttl?: number
   ): Promise<SetResponse> {
-    this.ensureValidSetRequest(key, value, ttl);
-    return this.sendSet(key, value, ttl);
+    this.ensureValidSetRequest(key, value, ttl || this.defaultTtl);
+    return this.sendSet(key, value, ttl || this.defaultTtl);
   }
 
   private sendSet(

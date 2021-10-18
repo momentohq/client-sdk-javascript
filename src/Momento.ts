@@ -1,28 +1,23 @@
 import {control} from '@momento/wire-types-typescript';
-import jwtDecode from 'jwt-decode';
 import {MomentoCache} from './MomentoCache';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
 import {
   InvalidArgumentError,
   CacheAlreadyExistsError,
   CacheNotFoundError,
-  InvalidJwtError,
 } from './Errors';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {DeleteCacheResponse} from './messages/DeleteCacheResponse';
 import {CreateCacheResponse} from './messages/CreateCacheResponse';
+import {decodeJwt} from './utils/jwt';
 
-interface Claims {
+export interface CacheProps {
   /**
-   * control plane endpoint
+   * the default time to live of object inside of cache
    */
-  cp: string;
-  /**
-   * cache endpoint
-   */
-  c: string;
+  defaultTtl: number;
 }
 
 export class Momento {
@@ -36,7 +31,7 @@ export class Momento {
    * @param {string} [endpointOverride] - optional endpoint override to be used when given an explicit endpoint by the Momento team
    */
   constructor(authToken: string, endpointOverride?: string) {
-    const claims = this.decodeJwt(authToken);
+    const claims = decodeJwt(authToken);
     this.authToken = authToken;
     const headers = [
       {
@@ -57,34 +52,36 @@ export class Momento {
     );
   }
 
-  private decodeJwt = (jwt?: string): Claims => {
-    if (!jwt) {
-      throw new InvalidArgumentError('malformed auth token');
-    }
-    try {
-      return jwtDecode<Claims>(jwt);
-    } catch (e) {
-      throw new InvalidJwtError('failed to parse jwt');
-    }
-  };
-
   /**
    * gets a MomentoCache to perform gets and sets on
    * @param {string} name - name of cache
+   * @param {CacheProps} props
    * @returns Promise<MomentoCache>
    */
-  public async getCache(name: string): Promise<MomentoCache> {
+  public async getCache(
+    name: string,
+    props: CacheProps
+  ): Promise<MomentoCache> {
     this.validateCacheName(name);
-    return MomentoCache.init(this.authToken, name, this.cacheEndpoint);
+    return MomentoCache.init({
+      authToken: this.authToken,
+      cacheName: name,
+      endpoint: this.cacheEndpoint,
+      defaultTtl: props.defaultTtl,
+    });
   }
 
   /**
    * if the cache doesn't exist, creates it first, and then returns an instance of the cache. If cache already exists,
    * just returns an instance of the already existing cache
    * @param {string} name
+   * @param {CacheProps} props
    * @returns Promise<MomentoCache>
    */
-  public async createOrGetCache(name: string): Promise<MomentoCache> {
+  public async createOrGetCache(
+    name: string,
+    props: CacheProps
+  ): Promise<MomentoCache> {
     try {
       await this.createCache(name);
     } catch (e) {
@@ -92,7 +89,7 @@ export class Momento {
         throw e;
       }
     }
-    return this.getCache(name);
+    return this.getCache(name, props);
   }
 
   /**
@@ -161,8 +158,8 @@ export class Momento {
   }
 
   private validateCacheName = (name: string) => {
-    if (!name) {
-      throw new InvalidArgumentError('cache name must not be null');
+    if (!name.trim()) {
+      throw new InvalidArgumentError('cache name must not be empty');
     }
   };
 }

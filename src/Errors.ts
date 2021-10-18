@@ -7,8 +7,8 @@ abstract class SdkError extends Error {
   }
 }
 
-export class ClientSdkError extends SdkError {
-  constructor(message: string) {
+abstract class ClientSdkError extends SdkError {
+  protected constructor(message: string) {
     super(message);
   }
 }
