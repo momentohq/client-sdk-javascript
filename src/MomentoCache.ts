@@ -1,12 +1,11 @@
 import {cache} from '@momento/wire-types-typescript';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
 import {momentoResultConverter} from './messages/Result';
-import {InvalidArgumentError} from './Errors';
+import {InternalServerError, InvalidArgumentError} from './Errors';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
-import {Status} from '@grpc/grpc-js/build/src/constants';
 
 const delay = (millis: number): Promise<void> => {
   return new Promise<void>(resolve => {
@@ -85,14 +84,13 @@ export class MomentoCache {
         await this.get(key);
         return;
       } catch (e: any) {
-        // // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        // if (e?.code === Status.UNAVAILABLE || e?.code === Status.UNKNOWN) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        lastError = e;
-        await delay(backoffMillis);
-        // } else {
-        // throw e;
-        // }
+        if (e instanceof InternalServerError) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          lastError = e;
+          await delay(backoffMillis);
+        } else {
+          throw e;
+        }
       }
     }
     throw lastError;

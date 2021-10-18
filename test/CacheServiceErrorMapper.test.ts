@@ -1,7 +1,11 @@
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from '../src/CacheServiceErrorMapper';
 import {Metadata, ServiceError} from '@grpc/grpc-js';
-import {InternalServerError, PermissionDeniedError} from '../src/Errors';
+import {
+  CacheNotFoundError,
+  InternalServerError,
+  PermissionDeniedError,
+} from '../src/Errors';
 import {ServiceValidationError} from '../src/Errors';
 
 const generateServiceError = (status: Status): ServiceError => {
@@ -25,8 +29,13 @@ describe('CacheServiceErrorMapper', () => {
     const res = cacheServiceErrorMapper(serviceError);
     expect(res).toBeInstanceOf(ServiceValidationError);
   });
-  it('should return internal server error when Status is not INVALID_ARGUMENT or PERMISSION_DENIED', () => {
+  it('should return cache not found error when Status.NOT_FOUND', () => {
     const serviceError = generateServiceError(Status.NOT_FOUND);
+    const res = cacheServiceErrorMapper(serviceError);
+    expect(res).toBeInstanceOf(CacheNotFoundError);
+  });
+  it('should return internal server error when Status is not INVALID_ARGUMENT, PERMISSION_DENIED or NOT_FOUND', () => {
+    const serviceError = generateServiceError(Status.UNKNOWN);
     const res = cacheServiceErrorMapper(serviceError);
     expect(res).toBeInstanceOf(InternalServerError);
   });
