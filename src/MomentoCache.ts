@@ -85,14 +85,14 @@ export class MomentoCache {
         await this.get(key);
         return;
       } catch (e: any) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (e?.code === Status.UNAVAILABLE || e?.code === Status.UNKNOWN) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          lastError = e;
-          await delay(backoffMillis);
-        } else {
-          throw e;
-        }
+        // // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        // if (e?.code === Status.UNAVAILABLE || e?.code === Status.UNKNOWN) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        lastError = e;
+        await delay(backoffMillis);
+        // } else {
+        // throw e;
+        // }
       }
     }
     throw lastError;
