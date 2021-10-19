@@ -14,16 +14,16 @@ const delay = (millis: number): Promise<void> => {
 };
 
 /**
- * @property {string} authToken
- * @property {string} cacheName
- * @property {string} endpoint
- * @property {number} defaultTtl - the default time to live of object inside of cache
+ * @property {string} authToken - momento jwt token
+ * @property {string} cacheName - name of the cache to perform gets and sets against
+ * @property {string} endpoint - endpoint to reach momento cache
+ * @property {number} defaultTtlSeconds - the default time to live of object inside of cache, in seconds
  */
 type MomentoCacheProps = {
   authToken: string;
   cacheName: string;
   endpoint: string;
-  defaultTtl: number;
+  defaultTtlSeconds: number;
 };
 
 export class MomentoCache {
@@ -31,7 +31,7 @@ export class MomentoCache {
   private readonly textEncoder: TextEncoder;
   private readonly interceptors: Interceptor[];
   private readonly cacheName: string;
-  private readonly defaultTtl: number;
+  private readonly defaultTtlSeconds: number;
 
   /**
    * @param {MomentoCacheProps} props
@@ -43,7 +43,7 @@ export class MomentoCache {
     );
     this.textEncoder = new TextEncoder();
     this.cacheName = props.cacheName;
-    this.defaultTtl = props.defaultTtl;
+    this.defaultTtlSeconds = props.defaultTtlSeconds;
     const headers = [
       {
         name: 'Authorization',
@@ -103,11 +103,15 @@ export class MomentoCache {
    * @returns Promise<SetResponse>
    */
   public set(key: string, value: string, ttl?: number): Promise<SetResponse> {
-    this.ensureValidSetRequest(key, value, ttl || this.defaultTtl);
+    this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
     const encodedKey = this.textEncoder.encode(key);
     const encodedValue = this.textEncoder.encode(value);
 
-    return this.sendSet(encodedKey, encodedValue, ttl || this.defaultTtl);
+    return this.sendSet(
+      encodedKey,
+      encodedValue,
+      ttl || this.defaultTtlSeconds
+    );
   }
 
   /**
@@ -121,8 +125,8 @@ export class MomentoCache {
     value: Uint8Array,
     ttl?: number
   ): Promise<SetResponse> {
-    this.ensureValidSetRequest(key, value, ttl || this.defaultTtl);
-    return this.sendSet(key, value, ttl || this.defaultTtl);
+    this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
+    return this.sendSet(key, value, ttl || this.defaultTtlSeconds);
   }
 
   private sendSet(

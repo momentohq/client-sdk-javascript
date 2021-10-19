@@ -67,7 +67,7 @@ export class Momento {
       authToken: this.authToken,
       cacheName: name,
       endpoint: this.cacheEndpoint,
-      defaultTtl: props.defaultTtlSeconds,
+      defaultTtlSeconds: props.defaultTtlSeconds,
     });
   }
 
