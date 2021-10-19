@@ -15,9 +15,9 @@ import {decodeJwt} from './utils/jwt';
 
 export interface CacheProps {
   /**
-   * the default time to live of object inside of cache
+   * the default time to live of object inside of cache, in seconds
    */
-  defaultTtl: number;
+  defaultTtlSeconds: number;
 }
 
 export class Momento {
@@ -67,7 +67,7 @@ export class Momento {
       authToken: this.authToken,
       cacheName: name,
       endpoint: this.cacheEndpoint,
-      defaultTtl: props.defaultTtl,
+      defaultTtl: props.defaultTtlSeconds,
     });
   }
 

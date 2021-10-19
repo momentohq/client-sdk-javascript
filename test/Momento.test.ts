@@ -11,11 +11,11 @@ describe('Momento.ts', () => {
     for (const name of invalidCacheNames) {
       await expect(
         momento.createOrGetCache(name, {
-          defaultTtl: 10,
+          defaultTtlSeconds: 10,
         })
       ).rejects.toThrow(InvalidArgumentError);
       expect(() => momento.createCache(name)).toThrow(InvalidArgumentError);
-      await expect(momento.getCache(name, {defaultTtl: 10})).rejects.toThrow(
+      await expect(momento.getCache(name, {defaultTtlSeconds: 10})).rejects.toThrow(
         InvalidArgumentError
       );
     }
