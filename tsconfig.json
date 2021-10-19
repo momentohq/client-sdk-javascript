@@ -18,7 +18,8 @@
   },
   "include": [
     "src/",
-    "test/"
+    "test/",
+    "integration/"
   ],
   "exclude": [
     "node_modules",

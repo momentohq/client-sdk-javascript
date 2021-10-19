@@ -7,6 +7,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      TEST_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+      TEST_CACHE_NAME: dummy
 
     steps:
       - name: Setup repo
@@ -33,3 +36,6 @@ jobs:
         
       - name: Test
         run: npm run test
+
+      - name: Integration Test
+        run: npm run integration
