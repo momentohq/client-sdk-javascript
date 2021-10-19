@@ -15,9 +15,9 @@ describe('Momento.ts', () => {
         })
       ).rejects.toThrow(InvalidArgumentError);
       expect(() => momento.createCache(name)).toThrow(InvalidArgumentError);
-      await expect(momento.getCache(name, {defaultTtlSeconds: 10})).rejects.toThrow(
-        InvalidArgumentError
-      );
+      await expect(
+        momento.getCache(name, {defaultTtlSeconds: 10})
+      ).rejects.toThrow(InvalidArgumentError);
     }
   });
 });
