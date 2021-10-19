@@ -13,8 +13,8 @@ interface Claims {
 }
 
 /**
- *
  * @param {string=} jwt
+ * @returns Claims
  */
 export const decodeJwt = (jwt?: string): Claims => {
   if (!jwt) {
