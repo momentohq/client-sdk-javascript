@@ -1,4 +1,5 @@
 import {MomentoCacheResult} from './Result';
+import {TextDecoder} from 'util';
 
 export class GetResponse {
   public readonly result: MomentoCacheResult;

@@ -62,7 +62,11 @@ export class Momento {
     name: string,
     props: CacheProps
   ): Promise<MomentoCache> {
-    this.validateCacheName(name);
+    try {
+      this.validateCacheName(name);
+    } catch (e) {
+      return Promise.reject(e);
+    }
     return MomentoCache.init({
       authToken: this.authToken,
       cacheName: name,
@@ -86,7 +90,7 @@ export class Momento {
       await this.createCache(name);
     } catch (e) {
       if (!(e instanceof CacheAlreadyExistsError)) {
-        throw e;
+        return Promise.reject(e);
       }
     }
     return this.getCache(name, props);
@@ -98,7 +102,11 @@ export class Momento {
    * @returns Promise<CreateCacheResponse>
    */
   public createCache(name: string): Promise<CreateCacheResponse> {
-    this.validateCacheName(name);
+    try {
+      this.validateCacheName(name);
+    } catch (e) {
+      return Promise.reject(e);
+    }
     const request = new control.control_client.CreateCacheRequest({
       cache_name: name,
     });

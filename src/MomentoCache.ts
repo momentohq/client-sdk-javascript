@@ -1,7 +1,12 @@
 import {cache} from '@momento/wire-types-typescript';
+import {TextEncoder} from 'util';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
 import {MomentoCacheResult, momentoResultConverter} from './messages/Result';
-import {InternalServerError, InvalidArgumentError, MomentoServiceError} from './Errors';
+import {
+  InternalServerError,
+  InvalidArgumentError,
+  MomentoServiceError,
+} from './Errors';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {GetResponse} from './messages/GetResponse';
@@ -125,7 +130,11 @@ export class MomentoCache {
     value: Uint8Array,
     ttl?: number
   ): Promise<SetResponse> {
-    this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
+    try {
+      this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
+    } catch (e) {
+      return Promise.reject(e);
+    }
     return this.sendSet(key, value, ttl || this.defaultTtlSeconds);
   }
 
@@ -145,6 +154,10 @@ export class MomentoCache {
         {interceptors: this.interceptors},
         (err, resp) => {
           if (resp) {
+            const momentoResult = momentoResultConverter(resp.result);
+            if (momentoResult !== MomentoCacheResult.Ok) {
+              reject(new MomentoServiceError(resp.message));
+            }
             resolve(this.parseSetResponse(resp));
           } else {
             reject(cacheServiceErrorMapper(err));
@@ -159,7 +172,11 @@ export class MomentoCache {
    * @returns Promise<GetResponse>
    */
   public get(key: string): Promise<GetResponse> {
-    this.ensureValidKey(key);
+    try {
+      this.ensureValidKey(key);
+    } catch (e) {
+      return Promise.reject(e);
+    }
     return this.sendGet(this.textEncoder.encode(key));
   }
 
@@ -168,7 +185,12 @@ export class MomentoCache {
    * @returns Promise<GetResponse>
    */
   public getBytes(key: Uint8Array): Promise<GetResponse> {
-    this.ensureValidKey(key);
+    try {
+      this.ensureValidKey(key);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+
     return this.sendGet(key);
   }
 
@@ -183,6 +205,13 @@ export class MomentoCache {
         {interceptors: this.interceptors},
         (err, resp) => {
           if (resp) {
+            const momentoResult = momentoResultConverter(resp.result);
+            if (
+              momentoResult !== MomentoCacheResult.Miss &&
+              momentoResult !== MomentoCacheResult.Hit
+            ) {
+              reject(new MomentoServiceError(resp.message));
+            }
             resolve(this.parseGetResponse(resp));
           } else {
             reject(cacheServiceErrorMapper(err));
@@ -196,9 +225,6 @@ export class MomentoCache {
     resp: cache.cache_client.GetResponse
   ): GetResponse => {
     const momentoResult = momentoResultConverter(resp.result);
-    if (momentoResult !== MomentoCacheResult.Miss && momentoResult !== MomentoCacheResult.Hit) {
-      throw new MomentoServiceError(resp.message)
-    }
     return new GetResponse(momentoResult, resp.message, resp.cache_body);
   };
 
@@ -206,9 +232,6 @@ export class MomentoCache {
     resp: cache.cache_client.SetResponse
   ): SetResponse => {
     const momentoResult = momentoResultConverter(resp.result);
-    if (momentoResult !== MomentoCacheResult.Ok) {
-      throw new MomentoServiceError(resp.message)
-    }
     return new SetResponse(momentoResult, resp.message);
   };
 
