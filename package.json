@@ -6,6 +6,7 @@
   "files": [
     "dist/src"
   ],
+  "type": "commonjs",
   "types": "dist/src/index.d.ts",
   "scripts": {
     "test": "jest",
