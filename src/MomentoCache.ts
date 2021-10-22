@@ -210,7 +210,6 @@ export class MomentoCache {
               momentoResult !== MomentoCacheResult.Miss &&
               momentoResult !== MomentoCacheResult.Hit
             ) {
-              console.log('momento result', resp);
               reject(new MomentoServiceError(resp.message));
             }
             resolve(this.parseGetResponse(resp));
