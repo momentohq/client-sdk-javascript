@@ -138,7 +138,7 @@ export class MomentoCache {
     return this.sendSet(key, value, ttl || this.defaultTtlSeconds);
   }
 
-  private sendSet(
+  private async sendSet(
     key: Uint8Array,
     value: Uint8Array,
     ttl: number
@@ -185,7 +185,7 @@ export class MomentoCache {
     return this.sendGet(key);
   }
 
-  private sendGet(key: Uint8Array): Promise<GetResponse> {
+  private async sendGet(key: Uint8Array): Promise<GetResponse> {
     const request = new cache.cache_client.GetRequest({
       cache_key: key,
     });
