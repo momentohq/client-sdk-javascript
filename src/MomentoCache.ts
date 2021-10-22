@@ -107,7 +107,11 @@ export class MomentoCache {
    * @param {number=} ttl - time to live in cache, in seconds
    * @returns Promise<SetResponse>
    */
-  public set(key: string, value: string, ttl?: number): Promise<SetResponse> {
+  public async set(
+    key: string,
+    value: string,
+    ttl?: number
+  ): Promise<SetResponse> {
     this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
     const encodedKey = this.textEncoder.encode(key);
     const encodedValue = this.textEncoder.encode(value);
@@ -125,16 +129,12 @@ export class MomentoCache {
    * @param {number=} ttl - time to live in cache, in seconds
    * @returns Promise<SetResponse>
    */
-  public setBytes(
+  public async setBytes(
     key: Uint8Array,
     value: Uint8Array,
     ttl?: number
   ): Promise<SetResponse> {
-    try {
-      this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
-    } catch (e) {
-      return Promise.reject(e);
-    }
+    this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
     return this.sendSet(key, value, ttl || this.defaultTtlSeconds);
   }
 
@@ -171,12 +171,8 @@ export class MomentoCache {
    * @param {string} key - utf-8 string key
    * @returns Promise<GetResponse>
    */
-  public get(key: string): Promise<GetResponse> {
-    try {
-      this.ensureValidKey(key);
-    } catch (e) {
-      return Promise.reject(e);
-    }
+  public async get(key: string): Promise<GetResponse> {
+    this.ensureValidKey(key);
     return this.sendGet(this.textEncoder.encode(key));
   }
 
@@ -184,13 +180,8 @@ export class MomentoCache {
    * @param {Uint8Array} key
    * @returns Promise<GetResponse>
    */
-  public getBytes(key: Uint8Array): Promise<GetResponse> {
-    try {
-      this.ensureValidKey(key);
-    } catch (e) {
-      return Promise.reject(e);
-    }
-
+  public async getBytes(key: Uint8Array): Promise<GetResponse> {
+    this.ensureValidKey(key);
     return this.sendGet(key);
   }
 

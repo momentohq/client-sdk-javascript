@@ -90,7 +90,7 @@ export class Momento {
       await this.createCache(name);
     } catch (e) {
       if (!(e instanceof CacheAlreadyExistsError)) {
-        return Promise.reject(e);
+        throw e;
       }
     }
     return this.getCache(name, props);
@@ -101,12 +101,8 @@ export class Momento {
    * @param {string} name - cache name to create
    * @returns Promise<CreateCacheResponse>
    */
-  public createCache(name: string): Promise<CreateCacheResponse> {
-    try {
-      this.validateCacheName(name);
-    } catch (e) {
-      return Promise.reject(e);
-    }
+  public async createCache(name: string): Promise<CreateCacheResponse> {
+    this.validateCacheName(name);
     const request = new control.control_client.CreateCacheRequest({
       cache_name: name,
     });
@@ -138,7 +134,7 @@ export class Momento {
    * @param {string} name - name of cache to delete
    * @returns Promise<DeleteCacheResponse>
    */
-  public deleteCache(name: string): Promise<DeleteCacheResponse> {
+  public async deleteCache(name: string): Promise<DeleteCacheResponse> {
     const request = new control.control_client.DeleteCacheRequest({
       cache_name: name,
     });
