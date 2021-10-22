@@ -33,8 +33,11 @@ export class InvalidJwtError extends ClientSdkError {
   }
 }
 
-abstract class MomentoServiceError extends SdkError {
-  protected constructor(message: string) {
+/**
+ * Base class for all exceptions thrown by the Cache Service
+ */
+export class MomentoServiceError extends SdkError {
+  constructor(message: string) {
     super(message);
   }
 }

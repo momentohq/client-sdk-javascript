@@ -1,7 +1,7 @@
 import {cache} from '@momento/wire-types-typescript';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
-import {momentoResultConverter} from './messages/Result';
-import {InternalServerError, InvalidArgumentError} from './Errors';
+import {MomentoCacheResult, momentoResultConverter} from './messages/Result';
+import {InternalServerError, InvalidArgumentError, MomentoServiceError} from './Errors';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {GetResponse} from './messages/GetResponse';
@@ -196,6 +196,9 @@ export class MomentoCache {
     resp: cache.cache_client.GetResponse
   ): GetResponse => {
     const momentoResult = momentoResultConverter(resp.result);
+    if (momentoResult !== MomentoCacheResult.Miss && momentoResult !== MomentoCacheResult.Hit) {
+      throw new MomentoServiceError(resp.message)
+    }
     return new GetResponse(momentoResult, resp.message, resp.cache_body);
   };
 
@@ -203,6 +206,9 @@ export class MomentoCache {
     resp: cache.cache_client.SetResponse
   ): SetResponse => {
     const momentoResult = momentoResultConverter(resp.result);
+    if (momentoResult !== MomentoCacheResult.Ok) {
+      throw new MomentoServiceError(resp.message)
+    }
     return new SetResponse(momentoResult, resp.message);
   };
 
