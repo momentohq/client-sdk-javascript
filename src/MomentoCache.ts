@@ -1,4 +1,5 @@
 import {cache} from '@momento/wire-types-typescript';
+// older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextEncoder} from 'util';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
 import {MomentoCacheResult, momentoResultConverter} from './messages/Result';
@@ -116,7 +117,7 @@ export class MomentoCache {
     const encodedKey = this.textEncoder.encode(key);
     const encodedValue = this.textEncoder.encode(value);
 
-    return this.sendSet(
+    return await this.sendSet(
       encodedKey,
       encodedValue,
       ttl || this.defaultTtlSeconds
@@ -135,7 +136,7 @@ export class MomentoCache {
     ttl?: number
   ): Promise<SetResponse> {
     this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
-    return this.sendSet(key, value, ttl || this.defaultTtlSeconds);
+    return await this.sendSet(key, value, ttl || this.defaultTtlSeconds);
   }
 
   private async sendSet(
@@ -148,7 +149,7 @@ export class MomentoCache {
       cache_key: key,
       ttl_milliseconds: ttl * 1000,
     });
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.client.Set(
         request,
         {interceptors: this.interceptors},
@@ -173,7 +174,7 @@ export class MomentoCache {
    */
   public async get(key: string): Promise<GetResponse> {
     this.ensureValidKey(key);
-    return this.sendGet(this.textEncoder.encode(key));
+    return await this.sendGet(this.textEncoder.encode(key));
   }
 
   /**
@@ -182,7 +183,7 @@ export class MomentoCache {
    */
   public async getBytes(key: Uint8Array): Promise<GetResponse> {
     this.ensureValidKey(key);
-    return this.sendGet(key);
+    return await this.sendGet(key);
   }
 
   private async sendGet(key: Uint8Array): Promise<GetResponse> {
@@ -190,7 +191,7 @@ export class MomentoCache {
       cache_key: key,
     });
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.client.Get(
         request,
         {interceptors: this.interceptors},

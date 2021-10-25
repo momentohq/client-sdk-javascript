@@ -63,7 +63,7 @@ export class Momento {
     props: CacheProps
   ): Promise<MomentoCache> {
     this.validateCacheName(name);
-    return MomentoCache.init({
+    return await MomentoCache.init({
       authToken: this.authToken,
       cacheName: name,
       endpoint: this.cacheEndpoint,
@@ -102,7 +102,7 @@ export class Momento {
     const request = new control.control_client.CreateCacheRequest({
       cache_name: name,
     });
-    return new Promise<CreateCacheResponse>((resolve, reject) => {
+    return await new Promise<CreateCacheResponse>((resolve, reject) => {
       this.client.CreateCache(
         request,
         {interceptors: this.interceptors},
@@ -134,7 +134,7 @@ export class Momento {
     const request = new control.control_client.DeleteCacheRequest({
       cache_name: name,
     });
-    return new Promise<DeleteCacheResponse>((resolve, reject) => {
+    return await new Promise<DeleteCacheResponse>((resolve, reject) => {
       this.client.DeleteCache(
         request,
         {interceptors: this.interceptors},
