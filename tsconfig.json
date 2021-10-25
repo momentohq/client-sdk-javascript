@@ -21,6 +21,7 @@
     "inlineSources": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
+    "forceConsistentCasingInFileNames": true,
     "outDir": "dist",
     "typeRoots": [
       "./node_modules/@types"
