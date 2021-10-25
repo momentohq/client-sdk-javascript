@@ -5,7 +5,7 @@ import {MomentoCacheResult, momentoResultConverter} from './messages/Result';
 import {
   InternalServerError,
   InvalidArgumentError,
-  MomentoServiceError,
+  UnknownServiceError,
 } from './Errors';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
@@ -156,7 +156,7 @@ export class MomentoCache {
           if (resp) {
             const momentoResult = momentoResultConverter(resp.result);
             if (momentoResult !== MomentoCacheResult.Ok) {
-              reject(new MomentoServiceError(resp.message));
+              reject(new UnknownServiceError(resp.message));
             }
             resolve(this.parseSetResponse(resp));
           } else {
@@ -201,7 +201,7 @@ export class MomentoCache {
               momentoResult !== MomentoCacheResult.Miss &&
               momentoResult !== MomentoCacheResult.Hit
             ) {
-              reject(new MomentoServiceError(resp.message));
+              reject(new UnknownServiceError(resp.message));
             }
             resolve(this.parseGetResponse(resp));
           } else {
