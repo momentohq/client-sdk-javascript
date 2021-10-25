@@ -62,11 +62,7 @@ export class Momento {
     name: string,
     props: CacheProps
   ): Promise<MomentoCache> {
-    try {
-      this.validateCacheName(name);
-    } catch (e) {
-      return Promise.reject(e);
-    }
+    this.validateCacheName(name);
     return MomentoCache.init({
       authToken: this.authToken,
       cacheName: name,
