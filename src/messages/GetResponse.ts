@@ -1,3 +1,5 @@
+// older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
+import {TextDecoder} from 'util';
 import {MomentoCacheResult} from './Result';
 
 export class GetResponse {

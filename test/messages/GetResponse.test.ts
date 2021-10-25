@@ -1,3 +1,4 @@
+import {TextEncoder} from 'util';
 import {GetResponse, MomentoCacheResult} from '../../src';
 
 describe('GetResponse.ts', () => {

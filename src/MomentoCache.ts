@@ -1,7 +1,13 @@
 import {cache} from '@momento/wire-types-typescript';
+// older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
+import {TextEncoder} from 'util';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
-import {momentoResultConverter} from './messages/Result';
-import {InternalServerError, InvalidArgumentError} from './Errors';
+import {MomentoCacheResult, momentoResultConverter} from './messages/Result';
+import {
+  InternalServerError,
+  InvalidArgumentError,
+  UnknownServiceError,
+} from './Errors';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {GetResponse} from './messages/GetResponse';
@@ -102,12 +108,16 @@ export class MomentoCache {
    * @param {number=} ttl - time to live in cache, in seconds
    * @returns Promise<SetResponse>
    */
-  public set(key: string, value: string, ttl?: number): Promise<SetResponse> {
+  public async set(
+    key: string,
+    value: string,
+    ttl?: number
+  ): Promise<SetResponse> {
     this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
     const encodedKey = this.textEncoder.encode(key);
     const encodedValue = this.textEncoder.encode(value);
 
-    return this.sendSet(
+    return await this.sendSet(
       encodedKey,
       encodedValue,
       ttl || this.defaultTtlSeconds
@@ -120,16 +130,16 @@ export class MomentoCache {
    * @param {number=} ttl - time to live in cache, in seconds
    * @returns Promise<SetResponse>
    */
-  public setBytes(
+  public async setBytes(
     key: Uint8Array,
     value: Uint8Array,
     ttl?: number
   ): Promise<SetResponse> {
     this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
-    return this.sendSet(key, value, ttl || this.defaultTtlSeconds);
+    return await this.sendSet(key, value, ttl || this.defaultTtlSeconds);
   }
 
-  private sendSet(
+  private async sendSet(
     key: Uint8Array,
     value: Uint8Array,
     ttl: number
@@ -139,12 +149,16 @@ export class MomentoCache {
       cache_key: key,
       ttl_milliseconds: ttl * 1000,
     });
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.client.Set(
         request,
         {interceptors: this.interceptors},
         (err, resp) => {
           if (resp) {
+            const momentoResult = momentoResultConverter(resp.result);
+            if (momentoResult !== MomentoCacheResult.Ok) {
+              reject(new UnknownServiceError(resp.message));
+            }
             resolve(this.parseSetResponse(resp));
           } else {
             reject(cacheServiceErrorMapper(err));
@@ -158,31 +172,38 @@ export class MomentoCache {
    * @param {string} key - utf-8 string key
    * @returns Promise<GetResponse>
    */
-  public get(key: string): Promise<GetResponse> {
+  public async get(key: string): Promise<GetResponse> {
     this.ensureValidKey(key);
-    return this.sendGet(this.textEncoder.encode(key));
+    return await this.sendGet(this.textEncoder.encode(key));
   }
 
   /**
    * @param {Uint8Array} key
    * @returns Promise<GetResponse>
    */
-  public getBytes(key: Uint8Array): Promise<GetResponse> {
+  public async getBytes(key: Uint8Array): Promise<GetResponse> {
     this.ensureValidKey(key);
-    return this.sendGet(key);
+    return await this.sendGet(key);
   }
 
-  private sendGet(key: Uint8Array): Promise<GetResponse> {
+  private async sendGet(key: Uint8Array): Promise<GetResponse> {
     const request = new cache.cache_client.GetRequest({
       cache_key: key,
     });
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.client.Get(
         request,
         {interceptors: this.interceptors},
         (err, resp) => {
           if (resp) {
+            const momentoResult = momentoResultConverter(resp.result);
+            if (
+              momentoResult !== MomentoCacheResult.Miss &&
+              momentoResult !== MomentoCacheResult.Hit
+            ) {
+              reject(new UnknownServiceError(resp.message));
+            }
             resolve(this.parseGetResponse(resp));
           } else {
             reject(cacheServiceErrorMapper(err));

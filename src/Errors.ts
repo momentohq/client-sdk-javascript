@@ -33,9 +33,22 @@ export class InvalidJwtError extends ClientSdkError {
   }
 }
 
+/**
+ * Base class for all exceptions thrown by the Cache Service
+ */
 abstract class MomentoServiceError extends SdkError {
   protected constructor(message: string) {
     super(message);
+  }
+}
+
+/**
+ * Error occurs when an unexpected exception gets thrown from Cache Service
+ */
+export class UnknownServiceError extends MomentoServiceError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'UnknownServiceError';
   }
 }
 

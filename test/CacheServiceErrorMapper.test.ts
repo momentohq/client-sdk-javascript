@@ -5,8 +5,8 @@ import {
   CacheNotFoundError,
   InternalServerError,
   PermissionDeniedError,
+  ServiceValidationError,
 } from '../src/Errors';
-import {ServiceValidationError} from '../src/Errors';
 
 const generateServiceError = (status: Status): ServiceError => {
   return {
