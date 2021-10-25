@@ -41,5 +41,8 @@
   "dependencies": {
     "@momento/wire-types-typescript": "0.1.4",
     "jwt-decode": "3.1.2"
+  },
+  "engines": {
+    "node": ">= 10.13.0"
   }
 }
