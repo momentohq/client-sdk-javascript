@@ -1,14 +1,14 @@
 import {cache} from '@momento/wire-types-typescript';
 
 export enum MomentoCacheResult {
-  Internal_Server_Error = cache.cache_client.ECacheResult.Internal_Server_Error,
-  Ok = cache.cache_client.ECacheResult.Ok,
-  Hit = cache.cache_client.ECacheResult.Hit,
-  Miss = cache.cache_client.ECacheResult.Miss,
-  Bad_Request = cache.cache_client.ECacheResult.Bad_Request,
-  Unauthorized = cache.cache_client.ECacheResult.Unauthorized,
-  Service_Unavailable = cache.cache_client.ECacheResult.Service_Unavailable,
-  Unknown = 65535,
+  Internal_Server_Error = "INTERNAL_SERVER_ERROR",
+  Ok = "OK",
+  Hit = "HIT",
+  Miss = "MISS",
+  Bad_Request = "BAD_REQUEST",
+  Unauthorized = "UNAUTHORIZED",
+  Service_Unavailable = "SERVICE_UNAVAILABLE",
+  Unknown = "UNKNOWN",
 }
 
 export function momentoResultConverter(
