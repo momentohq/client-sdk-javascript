@@ -211,7 +211,7 @@ export class MomentoCache {
 
   private convert(v: string | Uint8Array): Uint8Array {
     if (typeof v === 'string') {
-        return this.textEncoder.encode(v);
+      return this.textEncoder.encode(v);
     }
     return v;
   }
