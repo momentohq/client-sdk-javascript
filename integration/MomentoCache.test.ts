@@ -44,6 +44,6 @@ describe('MomentoCache.ts Integration Tests', () => {
     const cacheKey = new TextEncoder().encode(v4());
     await cache.set(cacheKey, cacheValue);
     const res = await cache.get(cacheKey);
-    expect(res.bytes()).toEqual(cacheValue);
+    expect(res.text()).toEqual(cacheValue);
   });
 });
