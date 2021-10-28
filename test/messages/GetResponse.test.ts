@@ -6,9 +6,8 @@ describe('GetResponse.ts', () => {
     const message = 'this is a message';
     const byteArray = new Uint8Array(12);
     const resp = new GetResponse(MomentoCacheResult.Hit, message, byteArray);
-    expect(resp.body).toBe(byteArray);
+    expect(resp.bytes()).toBe(byteArray);
     expect(resp.result).toEqual(MomentoCacheResult.Hit);
-    expect(resp.message).toBe(message);
   });
   it('text should be null on cache miss', () => {
     const resp = new GetResponse(MomentoCacheResult.Miss, '', new Uint8Array());
