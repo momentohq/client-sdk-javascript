@@ -4,8 +4,8 @@ import {MomentoCacheResult} from './Result';
 
 export class GetResponse {
   public readonly result: MomentoCacheResult;
-  public readonly message: string;
-  public readonly body: Uint8Array;
+  private readonly message: string;
+  private readonly body: Uint8Array;
   private textDecoder = new TextDecoder();
   constructor(result: MomentoCacheResult, message: string, body: Uint8Array) {
     this.result = result;
@@ -22,5 +22,9 @@ export class GetResponse {
       return null;
     }
     return this.textDecoder.decode(this.body);
+  }
+
+  public bytes(): Uint8Array {
+    return this.body;
   }
 }

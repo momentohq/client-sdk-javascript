@@ -103,40 +103,25 @@ export class MomentoCache {
   }
 
   /**
-   * @param {string} key - utf-8 string key
-   * @param {string} value - utf-8 string to store in the cache
+   * @param {string | Uint8Array} key
+   * @param {string | Uint8Array} value
    * @param {number=} ttl - time to live in cache, in seconds
    * @returns Promise<SetResponse>
    */
   public async set(
-    key: string,
-    value: string,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
     ttl?: number
   ): Promise<SetResponse> {
     this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
-    const encodedKey = this.textEncoder.encode(key);
-    const encodedValue = this.textEncoder.encode(value);
+    const encodedKey = this.convert(key);
+    const encodedValue = this.convert(value);
 
     return await this.sendSet(
       encodedKey,
       encodedValue,
       ttl || this.defaultTtlSeconds
     );
-  }
-
-  /**
-   * @param {Uint8Array} key - the cache key
-   * @param {Uint8Array} value - the value to store in the cache
-   * @param {number=} ttl - time to live in cache, in seconds
-   * @returns Promise<SetResponse>
-   */
-  public async setBytes(
-    key: Uint8Array,
-    value: Uint8Array,
-    ttl?: number
-  ): Promise<SetResponse> {
-    this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
-    return await this.sendSet(key, value, ttl || this.defaultTtlSeconds);
   }
 
   private async sendSet(
@@ -169,21 +154,12 @@ export class MomentoCache {
   }
 
   /**
-   * @param {string} key - utf-8 string key
+   * @param {string | Uint8Array} key
    * @returns Promise<GetResponse>
    */
-  public async get(key: string): Promise<GetResponse> {
+  public async get(key: string | Uint8Array): Promise<GetResponse> {
     this.ensureValidKey(key);
-    return await this.sendGet(this.textEncoder.encode(key));
-  }
-
-  /**
-   * @param {Uint8Array} key
-   * @returns Promise<GetResponse>
-   */
-  public async getBytes(key: Uint8Array): Promise<GetResponse> {
-    this.ensureValidKey(key);
-    return await this.sendGet(key);
+    return await this.sendGet(this.convert(key));
   }
 
   private async sendGet(key: Uint8Array): Promise<GetResponse> {
@@ -232,6 +208,13 @@ export class MomentoCache {
       throw new InvalidArgumentError('key must not be empty');
     }
   };
+
+  private convert(v: string | Uint8Array): Uint8Array {
+    if (typeof v === 'string') {
+      return this.textEncoder.encode(v);
+    }
+    return v;
+  }
 
   private ensureValidSetRequest(key: any, value: any, ttl: number) {
     this.ensureValidKey(key);
