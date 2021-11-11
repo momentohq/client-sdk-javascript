@@ -12,7 +12,7 @@ describe('Momento.ts Integration Tests', () => {
     const cacheName = v4();
     const momento = new Momento(AUTH_TOKEN);
     await momento.createCache(cacheName);
-    await momento.getCache(cacheName, {defaultTtlSeconds: 10});
+    momento.getCache(cacheName, {defaultTtlSeconds: 10});
     await momento.deleteCache(cacheName);
   });
   it('should throw CacheNotFoundError if deleting a non-existent cache', async () => {
