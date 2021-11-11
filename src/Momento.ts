@@ -58,10 +58,7 @@ export class Momento {
    * @param {CacheProps} props
    * @returns MomentoCache
    */
-  public getCache(
-    name: string,
-    props: CacheProps
-  ): MomentoCache {
+  public getCache(name: string, props: CacheProps): MomentoCache {
     this.validateCacheName(name);
     return new MomentoCache({
       authToken: this.authToken,

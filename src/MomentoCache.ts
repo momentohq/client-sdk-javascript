@@ -3,10 +3,7 @@ import {cache} from '@momento/wire-types-typescript';
 import {TextEncoder} from 'util';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
 import {MomentoCacheResult, momentoResultConverter} from './messages/Result';
-import {
-  InvalidArgumentError,
-  UnknownServiceError,
-} from './Errors';
+import {InvalidArgumentError, UnknownServiceError} from './Errors';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {GetResponse} from './messages/GetResponse';
