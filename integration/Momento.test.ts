@@ -13,9 +13,9 @@ describe('Momento.ts Integration Tests', () => {
     const momento = new Momento(AUTH_TOKEN);
     await momento.createCache(cacheName);
     const cache = momento.getCache(cacheName, {defaultTtlSeconds: 10});
-    await cache.set("key", "value")
-    const res = await cache.get("key");
-    expect(res.text()).toEqual("value");
+    await cache.set('key', 'value');
+    const res = await cache.get('key');
+    expect(res.text()).toEqual('value');
     // FIXME https://github.com/momentohq/cacheadmin-v2/issues/107
     // await momento.deleteCache(cacheName);
   });
