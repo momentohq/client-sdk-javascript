@@ -3,21 +3,11 @@ import {cache} from '@momento/wire-types-typescript';
 import {TextEncoder} from 'util';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
 import {MomentoCacheResult, momentoResultConverter} from './messages/Result';
-import {
-  InternalServerError,
-  InvalidArgumentError,
-  UnknownServiceError,
-} from './Errors';
+import {InvalidArgumentError, UnknownServiceError} from './Errors';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
-
-const delay = (millis: number): Promise<void> => {
-  return new Promise<void>(resolve => {
-    setTimeout(() => resolve(), millis);
-  });
-};
 
 /**
  * @property {string} authToken - momento jwt token
@@ -42,7 +32,7 @@ export class MomentoCache {
   /**
    * @param {MomentoCacheProps} props
    */
-  protected constructor(props: MomentoCacheProps) {
+  constructor(props: MomentoCacheProps) {
     this.client = new cache.cache_client.ScsClient(
       props.endpoint,
       ChannelCredentials.createSsl()
@@ -64,42 +54,12 @@ export class MomentoCache {
   }
 
   /**
-   * This method should not be called directly. Instead, it should be called by the Momento class when calling Momento.getCache
-   * @param {MomentoCacheProps} props
-   * @returns Promise<MomentoCache>
+   * connects the cache to the backend
    */
-  static async init(props: MomentoCacheProps): Promise<MomentoCache> {
-    const cache = new MomentoCache(props);
-    await cache.waitForCacheReady();
-    return cache;
-  }
-
-  /**
-   * temporary work around to allow for users to create a cache, and then immediately call get/set on it
-   * @private
-   */
-  private async waitForCacheReady(): Promise<void> {
-    const key = '00000';
-    const maxWaitDuration = 5000;
-    const start = Date.now();
-    const backoffMillis = 50;
-    let lastError = null;
-
-    while (Date.now() - start < maxWaitDuration) {
-      try {
-        await this.get(key);
-        return;
-      } catch (e: any) {
-        if (e instanceof InternalServerError) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          lastError = e;
-          await delay(backoffMillis);
-        } else {
-          throw e;
-        }
-      }
-    }
-    throw lastError;
+  public async connect() {
+    // don't care what the response is, just want to make sure we can
+    // connect successfully
+    await this.get('000000');
   }
 
   /**

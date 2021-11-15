@@ -56,19 +56,21 @@ export class Momento {
    * gets a MomentoCache to perform gets and sets on
    * @param {string} name - name of cache
    * @param {CacheProps} props
-   * @returns Promise<MomentoCache>
+   * @returns MomentoCache
    */
   public async getCache(
     name: string,
     props: CacheProps
   ): Promise<MomentoCache> {
     this.validateCacheName(name);
-    return await MomentoCache.init({
+    const cache = new MomentoCache({
       authToken: this.authToken,
       cacheName: name,
       endpoint: this.cacheEndpoint,
       defaultTtlSeconds: props.defaultTtlSeconds,
     });
+    await cache.connect();
+    return cache;
   }
 
   /**
