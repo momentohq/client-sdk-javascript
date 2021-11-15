@@ -9,12 +9,6 @@ import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
 
-const delay = (millis: number): Promise<void> => {
-  return new Promise<void>(resolve => {
-    setTimeout(() => resolve(), millis);
-  });
-};
-
 /**
  * @property {string} authToken - momento jwt token
  * @property {string} cacheName - name of the cache to perform gets and sets against
@@ -57,6 +51,15 @@ export class MomentoCache {
       },
     ];
     this.interceptors = [addHeadersInterceptor(headers)];
+  }
+
+  /**
+   * connects the cache to the backend
+   */
+  public async connect() {
+    // don't care what the response is, just want to make sure we can
+    // connect successfully
+    await this.get('000000');
   }
 
   /**

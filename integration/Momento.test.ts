@@ -12,21 +12,19 @@ describe('Momento.ts Integration Tests', () => {
     const cacheName = v4();
     const momento = new Momento(AUTH_TOKEN);
     await momento.createCache(cacheName);
-    const cache = momento.getCache(cacheName, {defaultTtlSeconds: 10});
+    const cache = await momento.getCache(cacheName, {defaultTtlSeconds: 10});
     await cache.set('key', 'value');
     const res = await cache.get('key');
     expect(res.text()).toEqual('value');
-    // FIXME https://github.com/momentohq/cacheadmin-v2/issues/107
-    // await momento.deleteCache(cacheName);
+    await momento.deleteCache(cacheName);
   });
-  // FIXME https://github.com/momentohq/cacheadmin-v2/issues/107
-  // it('should throw CacheNotFoundError if deleting a non-existent cache', async () => {
-  //   const cacheName = v4();
-  //   const momento = new Momento(AUTH_TOKEN);
-  //   // await expect(momento.deleteCache(cacheName)).rejects.toThrow(
-  //   //   CacheNotFoundError
-  //   // );
-  // });
+  it('should throw CacheNotFoundError if deleting a non-existent cache', async () => {
+    const cacheName = v4();
+    const momento = new Momento(AUTH_TOKEN);
+    await expect(momento.deleteCache(cacheName)).rejects.toThrow(
+      CacheNotFoundError
+    );
+  });
   it('should throw CacheAlreadyExistsError if trying to create a cache that already exists', async () => {
     const cacheName = v4();
     const momento = new Momento(AUTH_TOKEN);
@@ -34,7 +32,6 @@ describe('Momento.ts Integration Tests', () => {
     await expect(momento.createCache(cacheName)).rejects.toThrow(
       CacheAlreadyExistsError
     );
-    // FIXME https://github.com/momentohq/cacheadmin-v2/issues/107
-    // await momento.deleteCache(cacheName);
+    await momento.deleteCache(cacheName);
   });
 });
