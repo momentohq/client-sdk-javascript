@@ -22,7 +22,7 @@ const createSystemCredentials = (profile?: string) => {
   fs.writeFileSync(
     credsFilePath,
     `[profile.${profileName}]
-token = ${AUTH_TOKEN}`
+token = \"${AUTH_TOKEN}\"`
   );
 };
 
