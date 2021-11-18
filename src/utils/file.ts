@@ -19,8 +19,14 @@ export const getCredentials = (): Credential => {
   const homeDir = homedir();
   const credsFilePath = `${homeDir}/.momento/credentials.toml`;
 
-  // checking to make sure file exists
-  accessSync(credsFilePath);
+  try {
+    // checking to make sure file exists
+    accessSync(credsFilePath);
+  } catch (e) {
+    throw new Error(
+      'pass a momento authentication token or configure momento creds using the momento-cli https://github.com/momentohq/momento-cli'
+    );
+  }
 
   const credsFileString = readFileSync(credsFilePath).toString();
   const credsFileToml = parse(credsFileString) as Credentials;
@@ -28,6 +34,6 @@ export const getCredentials = (): Credential => {
     return credsFileToml.profile[profileToUse];
   }
   throw new Error(
-    'pass a momento authentication token or configure momento creds using the cli https://github.com/momentohq/momento-cli'
+    `profile "${profileToUse}" does not exist in your momento config. You can add it using the cli "momento configure"`
   );
 };
