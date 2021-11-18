@@ -32,8 +32,8 @@ export class Momento {
    * @param {string} [endpointOverride] - optional endpoint override to be used when given an explicit endpoint by the Momento team
    */
   constructor(authToken?: string, endpointOverride?: string) {
-    const claims = decodeJwt(authToken);
     this.authToken = authToken ?? getCredentials().token;
+    const claims = decodeJwt(this.authToken);
     const headers = [
       {
         name: 'Authorization',

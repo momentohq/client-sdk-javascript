@@ -17,8 +17,9 @@ const createSystemCredentials = (profile?: string) => {
   if (profile) {
     process.env.MOMENTO_PROFILE = profileName;
   }
-
-  fs.mkdirSync(momentoDirName);
+  if (!fs.existsSync(momentoDirName)) {
+    fs.mkdirSync(momentoDirName);
+  }
   fs.writeFileSync(
     credsFilePath,
     `[profile.${profileName}]
