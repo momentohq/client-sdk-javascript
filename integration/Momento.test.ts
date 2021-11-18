@@ -28,7 +28,10 @@ token = "${AUTH_TOKEN}"`
 };
 
 const removeSystemCredentials = () => {
-  fs.rmdirSync(momentoDirName);
+  fs.rmSync(momentoDirName, {
+    force: true,
+    recursive: true,
+  });
 };
 
 describe('Momento.ts Integration Tests', () => {
