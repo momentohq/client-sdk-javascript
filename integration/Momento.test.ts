@@ -1,5 +1,6 @@
 import {v4} from 'uuid';
 import * as fs from 'fs';
+import * as os from 'os';
 import {Momento} from '../src';
 import {CacheAlreadyExistsError, CacheNotFoundError} from '../src/Errors';
 
@@ -8,7 +9,7 @@ if (!AUTH_TOKEN) {
   throw new Error('Missing required env var TEST_AUTH_TOKEN');
 }
 
-const momentoDirName = '~/.momento';
+const momentoDirName = `${os.homedir()}/.momento`;
 const credsFilePath = `${momentoDirName}/credentials.toml`;
 
 const createSystemCredentials = (profile?: string) => {
