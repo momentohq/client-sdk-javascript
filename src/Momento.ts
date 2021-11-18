@@ -12,6 +12,7 @@ import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {DeleteCacheResponse} from './messages/DeleteCacheResponse';
 import {CreateCacheResponse} from './messages/CreateCacheResponse';
 import {decodeJwt} from './utils/jwt';
+import {getCredentials} from './utils/file';
 
 export interface CacheProps {
   /**
@@ -30,13 +31,13 @@ export class Momento {
    * @param {string} authToken - Momento jwt
    * @param {string} [endpointOverride] - optional endpoint override to be used when given an explicit endpoint by the Momento team
    */
-  constructor(authToken: string, endpointOverride?: string) {
+  constructor(authToken?: string, endpointOverride?: string) {
     const claims = decodeJwt(authToken);
-    this.authToken = authToken;
+    this.authToken = authToken ?? getCredentials().token;
     const headers = [
       {
         name: 'Authorization',
-        value: authToken,
+        value: this.authToken,
       },
     ];
     this.interceptors = [addHeadersInterceptor(headers)];
