@@ -5,6 +5,7 @@ import {
   InvalidArgumentError,
   CacheAlreadyExistsError,
   CacheNotFoundError,
+  InternalServerError,
 } from './Errors';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
@@ -13,6 +14,7 @@ import {DeleteCacheResponse} from './messages/DeleteCacheResponse';
 import {CreateCacheResponse} from './messages/CreateCacheResponse';
 import {decodeJwt} from './utils/jwt';
 import {getCredentials} from './utils/file';
+import {ListCacheResponse} from './messages/ListCacheResponse';
 
 export interface CacheProps {
   /**
@@ -154,6 +156,30 @@ export class Momento {
             }
           } else {
             resolve(new DeleteCacheResponse());
+          }
+        }
+      );
+    });
+  }
+
+  /**
+   * list all caches
+   * nextToken is used to handle large pagenated lists
+   * @param {string} nextToken - token to continue paginating through the list
+   * @returns Promise<ListCacheResponse>
+   */
+  public async listCache(nextToken = ''): Promise<ListCacheResponse> {
+    const request = new control.control_client.ListCachesRequest();
+    request.next_token = nextToken !== '' ? nextToken : '';
+    return await new Promise<ListCacheResponse>((resolve, reject) => {
+      this.client.ListCaches(
+        request,
+        {interceptors: this.interceptors},
+        (err, resp) => {
+          if (err) {
+            reject(cacheServiceErrorMapper(err));
+          } else {
+            resolve(new ListCacheResponse(resp!));
           }
         }
       );

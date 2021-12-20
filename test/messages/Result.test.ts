@@ -7,14 +7,12 @@ import {cache} from '@momento/wire-types-typescript';
 describe('Result.ts', () => {
   it('should map ECacheResult.Service_Unavailable to MomentoResult.Unknown', () => {
     expect(
-      momentoResultConverter(
-        cache.cache_client.ECacheResult.Service_Unavailable
-      )
+      momentoResultConverter(cache.cache_client.ECacheResult.Invalid)
     ).toEqual(MomentoCacheResult.Unknown);
   });
   it('should map ECacheResult.Bad_Request to MomentoResult.Unknown', () => {
     expect(
-      momentoResultConverter(cache.cache_client.ECacheResult.Bad_Request)
+      momentoResultConverter(cache.cache_client.ECacheResult.Invalid)
     ).toEqual(MomentoCacheResult.Unknown);
   });
   it('should map ECacheResult.Miss to MomentoResult.Miss', () => {
@@ -34,14 +32,12 @@ describe('Result.ts', () => {
   });
   it('should map ECacheResult.Unauthorized to MomentoResult.Unknown', () => {
     expect(
-      momentoResultConverter(cache.cache_client.ECacheResult.Unauthorized)
+      momentoResultConverter(cache.cache_client.ECacheResult.Invalid)
     ).toEqual(MomentoCacheResult.Unknown);
   });
   it('should map ECacheResult.Internal_Server_Error to MomentoResult.Unknown', () => {
     expect(
-      momentoResultConverter(
-        cache.cache_client.ECacheResult.Internal_Server_Error
-      )
+      momentoResultConverter(cache.cache_client.ECacheResult.Invalid)
     ).toEqual(MomentoCacheResult.Unknown);
   });
 });
