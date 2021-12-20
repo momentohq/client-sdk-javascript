@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import {Momento} from '../src';
 import {CacheAlreadyExistsError, CacheNotFoundError} from '../src/Errors';
+import {cache} from '@momento/wire-types-typescript';
 
 const AUTH_TOKEN = process.env.TEST_AUTH_TOKEN;
 if (!AUTH_TOKEN) {
@@ -90,5 +91,22 @@ describe('Momento.ts Integration Tests', () => {
     );
     await momento.deleteCache(cacheName);
     removeSystemCredentials();
+  });
+
+  it('should create 3 caches and list all 3 caches', async () => {
+    const cacheName1 = v4();
+    const cacheName2 = v4();
+    const cacheName3 = v4();
+    const momento = new Momento(AUTH_TOKEN);
+    await momento.createCache(cacheName1);
+    await momento.createCache(cacheName2);
+    await momento.createCache(cacheName3);
+    const caches = (await momento.listCache()).getCaches();
+    caches.forEach((cache, index) => {
+      expect(caches[index]).toEqual(cache);
+    });
+    await momento.deleteCache(cacheName1);
+    await momento.deleteCache(cacheName2);
+    await momento.deleteCache(cacheName3);
   });
 });
