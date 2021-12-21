@@ -5,16 +5,6 @@ import {
 import {cache} from '@momento/wire-types-typescript';
 
 describe('Result.ts', () => {
-  it('should map ECacheResult.Service_Unavailable to MomentoResult.Unknown', () => {
-    expect(
-      momentoResultConverter(cache.cache_client.ECacheResult.Invalid)
-    ).toEqual(MomentoCacheResult.Unknown);
-  });
-  it('should map ECacheResult.Bad_Request to MomentoResult.Unknown', () => {
-    expect(
-      momentoResultConverter(cache.cache_client.ECacheResult.Invalid)
-    ).toEqual(MomentoCacheResult.Unknown);
-  });
   it('should map ECacheResult.Miss to MomentoResult.Miss', () => {
     expect(
       momentoResultConverter(cache.cache_client.ECacheResult.Miss)
@@ -30,12 +20,7 @@ describe('Result.ts', () => {
       MomentoCacheResult.Ok
     );
   });
-  it('should map ECacheResult.Unauthorized to MomentoResult.Unknown', () => {
-    expect(
-      momentoResultConverter(cache.cache_client.ECacheResult.Invalid)
-    ).toEqual(MomentoCacheResult.Unknown);
-  });
-  it('should map ECacheResult.Internal_Server_Error to MomentoResult.Unknown', () => {
+  it('should map ECacheResult.Invalid to MomentoResult.Unknown', () => {
     expect(
       momentoResultConverter(cache.cache_client.ECacheResult.Invalid)
     ).toEqual(MomentoCacheResult.Unknown);
