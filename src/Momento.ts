@@ -5,7 +5,6 @@ import {
   InvalidArgumentError,
   CacheAlreadyExistsError,
   CacheNotFoundError,
-  InternalServerError,
 } from './Errors';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';

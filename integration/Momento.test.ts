@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as os from 'os';
 import {Momento} from '../src';
 import {CacheAlreadyExistsError, CacheNotFoundError} from '../src/Errors';
-import {cache} from '@momento/wire-types-typescript';
 
 const AUTH_TOKEN = process.env.TEST_AUTH_TOKEN;
 if (!AUTH_TOKEN) {
