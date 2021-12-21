@@ -169,7 +169,7 @@ export class Momento {
    */
   public async listCache(nextToken = ''): Promise<ListCacheResponse> {
     const request = new control.control_client.ListCachesRequest();
-    request.next_token = nextToken !== '' ? nextToken : '';
+    request.next_token = nextToken;
     return await new Promise<ListCacheResponse>((resolve, reject) => {
       this.client.ListCaches(
         request,
@@ -178,7 +178,15 @@ export class Momento {
           if (err) {
             reject(cacheServiceErrorMapper(err));
           } else {
-            resolve(new ListCacheResponse(resp!));
+            if (resp) {
+              resolve(new ListCacheResponse(resp));
+            } else {
+              resolve(
+                new ListCacheResponse(
+                  new control.control_client.ListCachesResponse()
+                )
+              );
+            }
           }
         }
       );
