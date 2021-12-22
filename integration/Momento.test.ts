@@ -97,7 +97,8 @@ describe('Momento.ts Integration Tests', () => {
     const momento = new Momento(AUTH_TOKEN);
     await momento.createCache(cacheName1);
     const caches = (await momento.listCaches()).getCaches();
-    expect(caches.includes(cacheName1)).toBeTruthy();
+    const names = caches.map(c => c.getName());
+    expect(names.includes(cacheName1)).toBeTruthy();
     await momento.deleteCache(cacheName1);
   });
 });
