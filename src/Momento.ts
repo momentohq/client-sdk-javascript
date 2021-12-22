@@ -13,7 +13,7 @@ import {DeleteCacheResponse} from './messages/DeleteCacheResponse';
 import {CreateCacheResponse} from './messages/CreateCacheResponse';
 import {decodeJwt} from './utils/jwt';
 import {getCredentials} from './utils/file';
-import {ListCacheResponse} from './messages/ListCacheResponse';
+import {ListCacheResponse} from './messages/ListCachesResponse';
 
 export interface CacheProps {
   /**
@@ -167,7 +167,7 @@ export class Momento {
    * @param {string} nextToken - token to continue paginating through the list
    * @returns Promise<ListCacheResponse>
    */
-  public async listCache(nextToken = ''): Promise<ListCacheResponse> {
+  public async listCaches(nextToken = ''): Promise<ListCacheResponse> {
     const request = new control.control_client.ListCachesRequest();
     request.next_token = nextToken;
     return await new Promise<ListCacheResponse>((resolve, reject) => {
