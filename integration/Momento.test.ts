@@ -91,4 +91,14 @@ describe('Momento.ts Integration Tests', () => {
     await momento.deleteCache(cacheName);
     removeSystemCredentials();
   });
+
+  it('should create 1 cache and list the created cache', async () => {
+    const cacheName1 = v4();
+    const momento = new Momento(AUTH_TOKEN);
+    await momento.createCache(cacheName1);
+    const caches = (await momento.listCaches()).getCaches();
+    const names = caches.map(c => c.getName());
+    expect(names.includes(cacheName1)).toBeTruthy();
+    await momento.deleteCache(cacheName1);
+  });
 });
