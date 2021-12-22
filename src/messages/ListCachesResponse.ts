@@ -1,7 +1,6 @@
 import {control} from '@momento/wire-types-typescript';
 
 export class ListCacheResponse {
-  private readonly result: control.control_client.ListCachesResponse;
   private readonly nextToken: string | null;
   private readonly caches: string[];
 
