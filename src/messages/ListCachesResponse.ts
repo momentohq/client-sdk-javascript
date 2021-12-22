@@ -1,13 +1,13 @@
 import {control} from '@momento/wire-types-typescript';
 
-export class ListCacheResponse {
+export class ListCachesResponse {
   private readonly nextToken: string | null;
   private readonly caches: string[];
 
-  constructor(result: control.control_client.ListCachesResponse) {
-    this.nextToken = result.next_token || null;
+  constructor(result?: control.control_client.ListCachesResponse) {
+    this.nextToken = result?.next_token || null;
     this.caches = [];
-    result.cache.forEach(cache => this.caches.push(cache.cache_name));
+    result?.cache.forEach(cache => this.caches.push(cache.cache_name));
   }
 
   public getNextToken() {
