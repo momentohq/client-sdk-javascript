@@ -164,12 +164,12 @@ export class Momento {
   /**
    * list all caches
    * nextToken is used to handle large pagenated lists
-   * @param {string} nextToken - token to continue paginating through the list
+   * @param {null} nextToken - token to continue paginating through the list
    * @returns Promise<ListCacheResponse>
    */
-  public async listCaches(nextToken = ''): Promise<ListCacheResponse> {
+  public async listCaches(nextToken = null): Promise<ListCacheResponse> {
     const request = new control.control_client.ListCachesRequest();
-    request.next_token = nextToken;
+    request.next_token = nextToken === null ? '' : nextToken;
     return await new Promise<ListCacheResponse>((resolve, reject) => {
       this.client.ListCaches(
         request,
