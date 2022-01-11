@@ -14,12 +14,9 @@ export class SetResponse {
 
   /**
    * returs value that is set in cache
-   * @returns string|null
+   * @returns string
    */
-  public text(): string | null {
-    if (this.result === MomentoCacheResult.Miss) {
-      return null;
-    }
+  public text(): string {
     return this.textDecoder.decode(this.value);
   }
 
