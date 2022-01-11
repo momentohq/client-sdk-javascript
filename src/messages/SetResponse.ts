@@ -13,7 +13,7 @@ export class SetResponse {
   }
 
   /**
-   * returs string value that is set in cache
+   * returns string value that is set in cache
    * @returns string
    */
   public text(): string {
@@ -21,7 +21,7 @@ export class SetResponse {
   }
 
   /**
-   * returs byte value that is set in cache
+   * returns byte value that is set in cache
    * @returns Uint8Array
    */
   public bytes(): Uint8Array {
