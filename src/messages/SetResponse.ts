@@ -13,13 +13,17 @@ export class SetResponse {
   }
 
   /**
-   * returs value that is set in cache
+   * returs string value that is set in cache
    * @returns string
    */
   public text(): string {
     return this.textDecoder.decode(this.value);
   }
 
+  /**
+   * returs byte value that is set in cache
+   * @returns Uint8Array
+   */
   public bytes(): Uint8Array {
     return this.value;
   }
