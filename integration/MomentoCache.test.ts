@@ -46,4 +46,10 @@ describe('MomentoCache.ts Integration Tests', () => {
     const res = await cache.get(cacheKey);
     expect(res.text()).toEqual(cacheValue);
   });
+  it('should set and get string from cache and returned set value matches cacheValue', async () => {
+    const cacheKey = v4();
+    const cacheValue = v4();
+    const setResult = await cache.set(cacheKey, cacheValue);
+    expect(setResult.text()).toEqual(cacheValue);
+  });
 });
