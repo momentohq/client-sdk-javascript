@@ -1,6 +1,6 @@
 import {cache} from '@momento/wire-types-typescript';
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
-import {TextEncoder, TextDecoder} from 'util';
+import {TextEncoder} from 'util';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
 import {MomentoCacheResult, momentoResultConverter} from './messages/Result';
 import {InvalidArgumentError, UnknownServiceError} from './Errors';
@@ -94,7 +94,6 @@ export class MomentoCache {
       cache_key: key,
       ttl_milliseconds: ttl * 1000,
     });
-    const textDecoder = new TextDecoder();
     return await new Promise((resolve, reject) => {
       this.client.Set(
         request,
@@ -105,7 +104,7 @@ export class MomentoCache {
             if (momentoResult !== MomentoCacheResult.Ok) {
               reject(new UnknownServiceError(resp.message));
             }
-            resolve(this.parseSetResponse(resp, textDecoder.decode(value)));
+            resolve(this.parseSetResponse(resp, value));
           } else {
             reject(cacheServiceErrorMapper(err));
           }
@@ -159,7 +158,7 @@ export class MomentoCache {
 
   private parseSetResponse = (
     resp: cache.cache_client.SetResponse,
-    value: string
+    value: Uint8Array
   ): SetResponse => {
     const momentoResult = momentoResultConverter(resp.result);
     return new SetResponse(momentoResult, resp.message, value);
