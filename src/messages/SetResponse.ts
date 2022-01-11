@@ -11,7 +11,7 @@ export class SetResponse {
   }
 
   /**
-   * decodes the body into a utf-8 string
+   * returs value that is set in cache
    * @returns string|null
    */
   public text(): string | null {
