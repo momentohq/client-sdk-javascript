@@ -46,4 +46,16 @@ describe('MomentoCache.ts Integration Tests', () => {
     const res = await cache.get(cacheKey);
     expect(res.text()).toEqual(cacheValue);
   });
+  it('should set and get string from cache and returned set value matches string cacheValue', async () => {
+    const cacheKey = v4();
+    const cacheValue = v4();
+    const setResult = await cache.set(cacheKey, cacheValue);
+    expect(setResult.text()).toEqual(cacheValue);
+  });
+  it('should set string key with bytes value and returned set value matches byte cacheValue', async () => {
+    const cacheKey = v4();
+    const cacheValue = new TextEncoder().encode(v4());
+    const setResult = await cache.set(cacheKey, cacheValue);
+    expect(setResult.bytes()).toEqual(cacheValue);
+  });
 });

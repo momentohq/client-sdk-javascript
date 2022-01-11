@@ -104,7 +104,7 @@ export class MomentoCache {
             if (momentoResult !== MomentoCacheResult.Ok) {
               reject(new UnknownServiceError(resp.message));
             }
-            resolve(this.parseSetResponse(resp));
+            resolve(this.parseSetResponse(resp, value));
           } else {
             reject(cacheServiceErrorMapper(err));
           }
@@ -157,10 +157,11 @@ export class MomentoCache {
   };
 
   private parseSetResponse = (
-    resp: cache.cache_client.SetResponse
+    resp: cache.cache_client.SetResponse,
+    value: Uint8Array
   ): SetResponse => {
     const momentoResult = momentoResultConverter(resp.result);
-    return new SetResponse(momentoResult, resp.message);
+    return new SetResponse(momentoResult, resp.message, value);
   };
 
   private ensureValidKey = (key: any) => {
