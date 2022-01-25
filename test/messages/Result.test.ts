@@ -15,11 +15,6 @@ describe('Result.ts', () => {
       MomentoCacheResult.Hit
     );
   });
-  it('should map ECacheResult.Ok to MomentoResult.Ok', () => {
-    expect(momentoResultConverter(cache.cache_client.ECacheResult.Ok)).toEqual(
-      MomentoCacheResult.Ok
-    );
-  });
   it('should map ECacheResult.Invalid to MomentoResult.Unknown', () => {
     expect(
       momentoResultConverter(cache.cache_client.ECacheResult.Invalid)

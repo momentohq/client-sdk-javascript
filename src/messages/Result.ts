@@ -1,10 +1,9 @@
 import {cache} from '@momento/wire-types-typescript';
 
 export enum MomentoCacheResult {
-  Ok = 'Ok',
-  Hit = 'Hit',
-  Miss = 'Miss',
-  Unknown = 'Unknown',
+  Hit = 'HIT',
+  Miss = 'MISS',
+  Unknown = 'UNKNOWN',
 }
 
 export function momentoResultConverter(
@@ -15,8 +14,6 @@ export function momentoResultConverter(
       return MomentoCacheResult.Miss;
     case cache.cache_client.ECacheResult.Hit:
       return MomentoCacheResult.Hit;
-    case cache.cache_client.ECacheResult.Ok:
-      return MomentoCacheResult.Ok;
     default:
       return MomentoCacheResult.Unknown;
   }

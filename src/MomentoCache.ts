@@ -100,10 +100,6 @@ export class MomentoCache {
         {interceptors: this.interceptors},
         (err, resp) => {
           if (resp) {
-            const momentoResult = momentoResultConverter(resp.result);
-            if (momentoResult !== MomentoCacheResult.Ok) {
-              reject(new UnknownServiceError(resp.message));
-            }
             resolve(this.parseSetResponse(resp, value));
           } else {
             reject(cacheServiceErrorMapper(err));
@@ -160,8 +156,7 @@ export class MomentoCache {
     resp: cache.cache_client.SetResponse,
     value: Uint8Array
   ): SetResponse => {
-    const momentoResult = momentoResultConverter(resp.result);
-    return new SetResponse(momentoResult, resp.message, value);
+    return new SetResponse(resp.message, value);
   };
 
   private ensureValidKey = (key: any) => {

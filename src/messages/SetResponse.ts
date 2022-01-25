@@ -1,13 +1,10 @@
-import {MomentoCacheResult} from './Result';
 import {TextDecoder} from 'util';
 
 export class SetResponse {
-  public readonly result: MomentoCacheResult;
   public readonly message: string;
   public readonly value: Uint8Array;
   private textDecoder = new TextDecoder();
-  constructor(result: MomentoCacheResult, message: string, value: Uint8Array) {
-    this.result = result;
+  constructor(message: string, value: Uint8Array) {
     this.message = message;
     this.value = value;
   }
