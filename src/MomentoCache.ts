@@ -2,7 +2,7 @@ import {cache} from '@momento/wire-types-typescript';
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextEncoder} from 'util';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
-import {MomentoCacheResult} from './messages/Result';
+import {MomentoCacheResult, momentoResultConverter} from './messages/Result';
 import {InvalidArgumentError, UnknownServiceError} from './Errors';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
@@ -129,7 +129,7 @@ export class MomentoCache {
         {interceptors: this.interceptors},
         (err, resp) => {
           if (resp) {
-            const momentoResult = this.momentoResultConverter(resp.result);
+            const momentoResult = momentoResultConverter(resp.result);
             if (
               momentoResult !== MomentoCacheResult.Miss &&
               momentoResult !== MomentoCacheResult.Hit
@@ -148,7 +148,7 @@ export class MomentoCache {
   private parseGetResponse = (
     resp: cache.cache_client.GetResponse
   ): GetResponse => {
-    const momentoResult = this.momentoResultConverter(resp.result);
+    const momentoResult = momentoResultConverter(resp.result);
     return new GetResponse(momentoResult, resp.message, resp.cache_body);
   };
 
@@ -181,19 +181,6 @@ export class MomentoCache {
 
     if (ttl && ttl < 0) {
       throw new InvalidArgumentError('ttl must be a positive integer');
-    }
-  }
-
-  private momentoResultConverter(
-    result: cache.cache_client.ECacheResult
-  ): MomentoCacheResult {
-    switch (result) {
-      case cache.cache_client.ECacheResult.Miss:
-        return MomentoCacheResult.Miss;
-      case cache.cache_client.ECacheResult.Hit:
-        return MomentoCacheResult.Hit;
-      default:
-        return MomentoCacheResult.Unknown;
     }
   }
 }
