@@ -1,4 +1,4 @@
-import {control} from '@momento/wire-types-typescript';
+import {control} from '@momento/wire-types-javascript';
 import {CacheInfo} from './CacheInfo';
 
 export class ListCachesResponse {

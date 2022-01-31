@@ -1,2 +1,2 @@
-# Momento Typescript SDK
-Wraps `@momento/wire-types-typescript` with higher-level functions.
+# Momento Javascript SDK
+Wraps `@momento/wire-types-javascript` with higher-level functions.

@@ -1,4 +1,4 @@
-import {control} from '@momento/wire-types-typescript';
+import {control} from '@momento/wire-types-javascript';
 import {MomentoCache} from './MomentoCache';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
 import {
