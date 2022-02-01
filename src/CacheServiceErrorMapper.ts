@@ -1,24 +1,47 @@
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {ServiceError} from '@grpc/grpc-js';
 import {
-  CacheNotFoundError,
+  NotFoundError,
   CacheServiceError,
   InternalServerError,
-  PermissionDeniedError,
-  ServiceValidationError,
+  PermissionError,
+  BadRequestError,
+  CancelledError,
+  TimeoutError,
+  AuthenticationError,
+  LimitExceededError,
+  AlreadyExistsError,
 } from './Errors';
 
 export function cacheServiceErrorMapper(
   err: ServiceError | null
 ): CacheServiceError {
-  if (err?.code === Status.PERMISSION_DENIED) {
-    return new PermissionDeniedError(err.message);
-  }
-  if (err?.code === Status.INVALID_ARGUMENT) {
-    return new ServiceValidationError(err.message);
-  }
-  if (err?.code === Status.NOT_FOUND) {
-    return new CacheNotFoundError(err.message);
+  switch (err?.code) {
+    case Status.PERMISSION_DENIED:
+      return new PermissionError(err?.message);
+    case Status.DATA_LOSS:
+    case Status.INTERNAL:
+    case Status.UNKNOWN:
+    case Status.ABORTED:
+    case Status.UNAVAILABLE:
+      return new InternalServerError(err?.message);
+    case Status.NOT_FOUND:
+      return new NotFoundError(err?.message);
+    case Status.OUT_OF_RANGE:
+    case Status.UNIMPLEMENTED:
+    case Status.FAILED_PRECONDITION:
+    case Status.INVALID_ARGUMENT:
+      return new BadRequestError(err?.message);
+    case Status.CANCELLED:
+      return new CancelledError(err?.message);
+    case Status.DEADLINE_EXCEEDED:
+      return new TimeoutError(err?.message);
+    case Status.UNAUTHENTICATED:
+      return new AuthenticationError(err?.message);
+    case Status.RESOURCE_EXHAUSTED:
+      return new LimitExceededError(err?.message);
+    case Status.ALREADY_EXISTS:
+      return new AlreadyExistsError(err?.message);
   }
   return new InternalServerError('unable to process request');
 }

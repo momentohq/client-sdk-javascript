@@ -3,8 +3,8 @@ import {MomentoCache} from './MomentoCache';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
 import {
   InvalidArgumentError,
-  CacheAlreadyExistsError,
-  CacheNotFoundError,
+  AlreadyExistsError,
+  NotFoundError,
 } from './Errors';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
@@ -89,7 +89,7 @@ export class Momento {
     try {
       await this.createCache(name);
     } catch (e) {
-      if (!(e instanceof CacheAlreadyExistsError)) {
+      if (!(e instanceof AlreadyExistsError)) {
         throw e;
       }
     }
@@ -114,7 +114,7 @@ export class Momento {
           if (err) {
             if (err.code === Status.ALREADY_EXISTS) {
               reject(
-                new CacheAlreadyExistsError(
+                new AlreadyExistsError(
                   `cache with name: ${name} already exists`
                 )
               );
@@ -146,9 +146,7 @@ export class Momento {
           if (err) {
             if (err.code === Status.NOT_FOUND) {
               reject(
-                new CacheNotFoundError(
-                  `cache with name: ${name} does not exist`
-                )
+                new NotFoundError(`cache with name: ${name} does not exist`)
               );
             } else {
               reject(cacheServiceErrorMapper(err));

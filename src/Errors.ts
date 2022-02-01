@@ -66,10 +66,10 @@ export class CacheServiceError extends MomentoServiceError {
  * either delete the existing cache and make a new one, or change the name of the cache you are trying to create to
  * one that doesn't already exist
  */
-export class CacheAlreadyExistsError extends CacheServiceError {
+export class AlreadyExistsError extends CacheServiceError {
   constructor(message: string) {
     super(message);
-    this.name = 'CacheAlreadyExistsError';
+    this.name = 'AlreadyExistsError';
   }
 }
 
@@ -77,10 +77,10 @@ export class CacheAlreadyExistsError extends CacheServiceError {
  * Error that occurs when trying to get a cache that doesn't exist. To resolve, make sure that the cache you are trying
  * to get exists. If it doesn't create it first and then try again
  */
-export class CacheNotFoundError extends CacheServiceError {
+export class NotFoundError extends CacheServiceError {
   constructor(message: string) {
     super(message);
-    this.name = 'CacheNotFoundError';
+    this.name = 'NotFoundError';
   }
 }
 
@@ -95,12 +95,62 @@ export class InternalServerError extends CacheServiceError {
 }
 
 /**
- * Service rejected the request as the authentication credentials presented are invalid
+ * Insufficient permissions to perform an operation on Cache Service
  */
-export class PermissionDeniedError extends CacheServiceError {
+export class PermissionError extends CacheServiceError {
   constructor(message: string) {
     super(message);
-    this.name = 'PermissionDeniedError';
+    this.name = 'PermissionError';
+  }
+}
+
+/**
+ * Error when authentication with Cache Service fails
+ */
+export class AuthenticationError extends CacheServiceError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AuthenticationError';
+  }
+}
+
+/**
+ * Error when an operation with Cache Service was cancelled
+ */
+export class CancelledError extends CacheServiceError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CancelledError';
+  }
+}
+
+/**
+ * Error when calls are throttled due to request limit rate
+ */
+export class LimitExceededError extends CacheServiceError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'LimitExceededError';
+  }
+}
+
+/**
+ * Error raised when service validation fails for provided values
+ */
+export class BadRequestError extends CacheServiceError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'BadRequestError';
+  }
+}
+
+/**
+ * Error when an operation did not complete in time
+ */
+export class TimeoutError extends CacheServiceError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'TimeoutError';
   }
 }
 

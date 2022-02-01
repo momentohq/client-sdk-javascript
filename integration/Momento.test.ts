@@ -2,7 +2,7 @@ import {v4} from 'uuid';
 import * as fs from 'fs';
 import * as os from 'os';
 import {Momento} from '../src';
-import {CacheAlreadyExistsError, CacheNotFoundError} from '../src/Errors';
+import {AlreadyExistsError, NotFoundError} from '../src/Errors';
 
 const AUTH_TOKEN = process.env.TEST_AUTH_TOKEN;
 if (!AUTH_TOKEN) {
@@ -54,16 +54,14 @@ describe('Momento.ts Integration Tests', () => {
   it('should throw CacheNotFoundError if deleting a non-existent cache', async () => {
     const cacheName = v4();
     const momento = new Momento(AUTH_TOKEN);
-    await expect(momento.deleteCache(cacheName)).rejects.toThrow(
-      CacheNotFoundError
-    );
+    await expect(momento.deleteCache(cacheName)).rejects.toThrow(NotFoundError);
   });
   it('should throw CacheAlreadyExistsError if trying to create a cache that already exists', async () => {
     const cacheName = v4();
     const momento = new Momento(AUTH_TOKEN);
     await momento.createCache(cacheName);
     await expect(momento.createCache(cacheName)).rejects.toThrow(
-      CacheAlreadyExistsError
+      AlreadyExistsError
     );
     await momento.deleteCache(cacheName);
   });
@@ -73,7 +71,7 @@ describe('Momento.ts Integration Tests', () => {
     const momento = new Momento();
     await momento.createCache(cacheName);
     await expect(momento.createCache(cacheName)).rejects.toThrow(
-      CacheAlreadyExistsError
+      AlreadyExistsError
     );
     await momento.deleteCache(cacheName);
 
@@ -86,7 +84,7 @@ describe('Momento.ts Integration Tests', () => {
     const momento = new Momento();
     await momento.createCache(cacheName);
     await expect(momento.createCache(cacheName)).rejects.toThrow(
-      CacheAlreadyExistsError
+      AlreadyExistsError
     );
     await momento.deleteCache(cacheName);
     removeSystemCredentials();
