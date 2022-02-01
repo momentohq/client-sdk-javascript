@@ -2,10 +2,16 @@ import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from '../src/CacheServiceErrorMapper';
 import {Metadata, ServiceError} from '@grpc/grpc-js';
 import {
-  CacheNotFoundError,
+  NotFoundError,
   InternalServerError,
-  PermissionDeniedError,
+  PermissionError,
   ServiceValidationError,
+  BadRequestError,
+  CancelledError,
+  TimeoutError,
+  AuthenticationError,
+  LimitExceededError,
+  AlreadyExistsError,
 } from '../src/Errors';
 
 const generateServiceError = (status: Status): ServiceError => {
@@ -22,21 +28,61 @@ describe('CacheServiceErrorMapper', () => {
   it('should return permission denied error when Status.PERMISSION_DENIED', () => {
     const serviceError = generateServiceError(Status.PERMISSION_DENIED);
     const res = cacheServiceErrorMapper(serviceError);
-    expect(res).toBeInstanceOf(PermissionDeniedError);
+    expect(res).toBeInstanceOf(PermissionError);
   });
-  it('should return invalid argument error when Status.INVALID_ARGUMENT', () => {
-    const serviceError = generateServiceError(Status.INVALID_ARGUMENT);
-    const res = cacheServiceErrorMapper(serviceError);
-    expect(res).toBeInstanceOf(ServiceValidationError);
+  it('should return bad request error when grpc status is INVALID_ARGUMENT, OUT_OF_RANGE, UNIMPLEMENTED, FAILED_PRECONDITION', () => {
+    const serviceErrors = [
+      generateServiceError(Status.INVALID_ARGUMENT),
+      generateServiceError(Status.OUT_OF_RANGE),
+      generateServiceError(Status.UNIMPLEMENTED),
+      generateServiceError(Status.FAILED_PRECONDITION),
+    ];
+    serviceErrors.forEach(e => {
+      const res = cacheServiceErrorMapper(e);
+      expect(res).toBeInstanceOf(BadRequestError);
+    });
   });
-  it('should return cache not found error when Status.NOT_FOUND', () => {
+  it('should return cache not found error when grpc status is NOT_FOUND', () => {
     const serviceError = generateServiceError(Status.NOT_FOUND);
     const res = cacheServiceErrorMapper(serviceError);
-    expect(res).toBeInstanceOf(CacheNotFoundError);
+    expect(res).toBeInstanceOf(NotFoundError);
   });
-  it('should return internal server error when Status is not INVALID_ARGUMENT, PERMISSION_DENIED or NOT_FOUND', () => {
-    const serviceError = generateServiceError(Status.UNKNOWN);
+  it('should return internal server error when grpc status is DATA_LOSS, INTERNAL, UNKNOWN, ABORTED, UNAVAILABLE', () => {
+    const serviceErrors = [
+      generateServiceError(Status.DATA_LOSS),
+      generateServiceError(Status.INTERNAL),
+      generateServiceError(Status.UNKNOWN),
+      generateServiceError(Status.ABORTED),
+      generateServiceError(Status.UNAVAILABLE),
+    ];
+    serviceErrors.forEach(e => {
+      const res = cacheServiceErrorMapper(e);
+      expect(res).toBeInstanceOf(InternalServerError);
+    });
+  });
+  it('should return cache not found error when grpc status is CANCELLED', () => {
+    const serviceError = generateServiceError(Status.CANCELLED);
     const res = cacheServiceErrorMapper(serviceError);
-    expect(res).toBeInstanceOf(InternalServerError);
+    expect(res).toBeInstanceOf(CancelledError);
+  });
+  it('should return cache not found error when grpc status is DEADLINE_EXCEEDED', () => {
+    const serviceError = generateServiceError(Status.DEADLINE_EXCEEDED);
+    const res = cacheServiceErrorMapper(serviceError);
+    expect(res).toBeInstanceOf(TimeoutError);
+  });
+  it('should return cache not found error when grpc status is UNAUTHENTICATED', () => {
+    const serviceError = generateServiceError(Status.UNAUTHENTICATED);
+    const res = cacheServiceErrorMapper(serviceError);
+    expect(res).toBeInstanceOf(AuthenticationError);
+  });
+  it('should return cache not found error when grpc status is RESOURCE_EXHAUSTED', () => {
+    const serviceError = generateServiceError(Status.RESOURCE_EXHAUSTED);
+    const res = cacheServiceErrorMapper(serviceError);
+    expect(res).toBeInstanceOf(LimitExceededError);
+  });
+  it('should return cache not found error when grpc status is ALREADY_EXISTS', () => {
+    const serviceError = generateServiceError(Status.ALREADY_EXISTS);
+    const res = cacheServiceErrorMapper(serviceError);
+    expect(res).toBeInstanceOf(AlreadyExistsError);
   });
 });
