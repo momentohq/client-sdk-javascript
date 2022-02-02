@@ -11,13 +11,11 @@ import {SetResponse} from './messages/SetResponse';
 
 /**
  * @property {string} authToken - momento jwt token
- * @property {string} cacheName - name of the cache to perform gets and sets against
  * @property {string} endpoint - endpoint to reach momento cache
  * @property {number} defaultTtlSeconds - the default time to live of object inside of cache, in seconds
  */
 type MomentoCacheProps = {
   authToken: string;
-  cacheName: string;
   endpoint: string;
   defaultTtlSeconds: number;
 };
@@ -25,9 +23,8 @@ type MomentoCacheProps = {
 export class MomentoCache {
   private readonly client: cache.cache_client.ScsClient;
   private readonly textEncoder: TextEncoder;
-  private readonly interceptors: Interceptor[];
-  private readonly cacheName: string;
   private readonly defaultTtlSeconds: number;
+  private readonly authToken: string;
 
   /**
    * @param {MomentoCacheProps} props
@@ -38,37 +35,12 @@ export class MomentoCache {
       ChannelCredentials.createSsl()
     );
     this.textEncoder = new TextEncoder();
-    this.cacheName = props.cacheName;
     this.defaultTtlSeconds = props.defaultTtlSeconds;
-    const headers = [
-      {
-        name: 'Authorization',
-        value: props.authToken,
-      },
-      {
-        name: 'cache',
-        value: props.cacheName,
-      },
-    ];
-    this.interceptors = [addHeadersInterceptor(headers)];
+    this.authToken = props.authToken;
   }
 
-  /**
-   * connects the cache to the backend
-   */
-  public async connect() {
-    // don't care what the response is, just want to make sure we can
-    // connect successfully
-    await this.get('000000');
-  }
-
-  /**
-   * @param {string | Uint8Array} key
-   * @param {string | Uint8Array} value
-   * @param {number=} ttl - time to live in cache, in seconds
-   * @returns Promise<SetResponse>
-   */
   public async set(
+    cacheName: string,
     key: string | Uint8Array,
     value: string | Uint8Array,
     ttl?: number
@@ -78,6 +50,7 @@ export class MomentoCache {
     const encodedValue = this.convert(value);
 
     return await this.sendSet(
+      cacheName,
       encodedKey,
       encodedValue,
       ttl || this.defaultTtlSeconds
@@ -85,6 +58,7 @@ export class MomentoCache {
   }
 
   private async sendSet(
+    cacheName: string,
     key: Uint8Array,
     value: Uint8Array,
     ttl: number
@@ -97,7 +71,7 @@ export class MomentoCache {
     return await new Promise((resolve, reject) => {
       this.client.Set(
         request,
-        {interceptors: this.interceptors},
+        {interceptors: this.getInterceptors(cacheName)},
         (err, resp) => {
           if (resp) {
             resolve(this.parseSetResponse(resp, value));
@@ -109,16 +83,18 @@ export class MomentoCache {
     });
   }
 
-  /**
-   * @param {string | Uint8Array} key
-   * @returns Promise<GetResponse>
-   */
-  public async get(key: string | Uint8Array): Promise<GetResponse> {
+  public async get(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<GetResponse> {
     this.ensureValidKey(key);
-    return await this.sendGet(this.convert(key));
+    return await this.sendGet(cacheName, this.convert(key));
   }
 
-  private async sendGet(key: Uint8Array): Promise<GetResponse> {
+  private async sendGet(
+    cacheName: string,
+    key: Uint8Array
+  ): Promise<GetResponse> {
     const request = new cache.cache_client.GetRequest({
       cache_key: key,
     });
@@ -126,7 +102,7 @@ export class MomentoCache {
     return await new Promise((resolve, reject) => {
       this.client.Get(
         request,
-        {interceptors: this.interceptors},
+        {interceptors: this.getInterceptors(cacheName)},
         (err, resp) => {
           if (resp) {
             const momentoResult = momentoResultConverter(resp.result);
@@ -164,6 +140,20 @@ export class MomentoCache {
       throw new InvalidArgumentError('key must not be empty');
     }
   };
+
+  private getInterceptors(cacheName: string): Interceptor[] {
+    const headers = [
+      {
+        name: 'Authorization',
+        value: this.authToken,
+      },
+      {
+        name: 'cache',
+        value: cacheName,
+      },
+    ];
+    return [addHeadersInterceptor(headers)];
+  }
 
   private convert(v: string | Uint8Array): Uint8Array {
     if (typeof v === 'string') {
