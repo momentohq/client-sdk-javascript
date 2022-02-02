@@ -79,7 +79,7 @@ export class SimpleCacheClient {
 
   /**
    * list all caches
-   * nextToken is used to handle large pagenated lists
+   * nextToken is used to handle large paginated lists
    * @param {string | undefined} nextToken - token to continue paginating through the list
    * @returns Promise<ListCacheResponse>
    */

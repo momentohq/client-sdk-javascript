@@ -1,14 +1,14 @@
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextDecoder} from 'util';
-import {MomentoCacheResult} from './Result';
+import {CacheGetStatus} from './Result';
 
 export class GetResponse {
-  public readonly result: MomentoCacheResult;
+  public readonly status: CacheGetStatus;
   private readonly message: string;
   private readonly body: Uint8Array;
   private textDecoder = new TextDecoder();
-  constructor(result: MomentoCacheResult, message: string, body: Uint8Array) {
-    this.result = result;
+  constructor(result: CacheGetStatus, message: string, body: Uint8Array) {
+    this.status = result;
     this.message = message;
     this.body = body;
   }
@@ -18,7 +18,7 @@ export class GetResponse {
    * @returns string|null
    */
   public text(): string | null {
-    if (this.result === MomentoCacheResult.Miss) {
+    if (this.status === CacheGetStatus.Miss) {
       return null;
     }
     return this.textDecoder.decode(this.body);

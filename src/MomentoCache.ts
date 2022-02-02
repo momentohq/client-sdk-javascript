@@ -2,7 +2,7 @@ import {cache} from '@momento/wire-types-javascript';
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextEncoder} from 'util';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
-import {MomentoCacheResult, momentoResultConverter} from './messages/Result';
+import {CacheGetStatus, momentoResultConverter} from './messages/Result';
 import {InvalidArgumentError, UnknownServiceError} from './Errors';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
@@ -107,8 +107,8 @@ export class MomentoCache {
           if (resp) {
             const momentoResult = momentoResultConverter(resp.result);
             if (
-              momentoResult !== MomentoCacheResult.Miss &&
-              momentoResult !== MomentoCacheResult.Hit
+              momentoResult !== CacheGetStatus.Miss &&
+              momentoResult !== CacheGetStatus.Hit
             ) {
               reject(new UnknownServiceError(resp.message));
             }
