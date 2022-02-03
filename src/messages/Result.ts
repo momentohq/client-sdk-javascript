@@ -1,6 +1,6 @@
 import {cache} from '@momento/wire-types-javascript';
 
-export enum MomentoCacheResult {
+export enum CacheGetStatus {
   Hit = 'HIT',
   Miss = 'MISS',
   Unknown = 'UNKNOWN',
@@ -8,13 +8,13 @@ export enum MomentoCacheResult {
 
 export function momentoResultConverter(
   result: cache.cache_client.ECacheResult
-): MomentoCacheResult {
+): CacheGetStatus {
   switch (result) {
     case cache.cache_client.ECacheResult.Miss:
-      return MomentoCacheResult.Miss;
+      return CacheGetStatus.Miss;
     case cache.cache_client.ECacheResult.Hit:
-      return MomentoCacheResult.Hit;
+      return CacheGetStatus.Hit;
     default:
-      return MomentoCacheResult.Unknown;
+      return CacheGetStatus.Unknown;
   }
 }

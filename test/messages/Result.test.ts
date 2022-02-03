@@ -1,5 +1,5 @@
 import {
-  MomentoCacheResult,
+  CacheGetStatus,
   momentoResultConverter,
 } from '../../src/messages/Result';
 import {cache} from '@momento/wire-types-javascript';
@@ -8,16 +8,16 @@ describe('Result.ts', () => {
   it('should map ECacheResult.Miss to MomentoResult.Miss', () => {
     expect(
       momentoResultConverter(cache.cache_client.ECacheResult.Miss)
-    ).toEqual(MomentoCacheResult.Miss);
+    ).toEqual(CacheGetStatus.Miss);
   });
   it('should map ECacheResult.Hit to MomentoResult.Hit', () => {
     expect(momentoResultConverter(cache.cache_client.ECacheResult.Hit)).toEqual(
-      MomentoCacheResult.Hit
+      CacheGetStatus.Hit
     );
   });
   it('should map ECacheResult.Invalid to MomentoResult.Unknown', () => {
     expect(
       momentoResultConverter(cache.cache_client.ECacheResult.Invalid)
-    ).toEqual(MomentoCacheResult.Unknown);
+    ).toEqual(CacheGetStatus.Unknown);
   });
 });
