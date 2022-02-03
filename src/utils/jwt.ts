@@ -1,4 +1,4 @@
-import {InvalidArgumentError, InvalidJwtError} from '../Errors';
+import {InvalidArgumentError} from '../Errors';
 import jwtDecode from 'jwt-decode';
 
 interface Claims {
@@ -23,6 +23,6 @@ export const decodeJwt = (jwt?: string): Claims => {
   try {
     return jwtDecode<Claims>(jwt);
   } catch (e) {
-    throw new InvalidJwtError('failed to parse jwt');
+    throw new InvalidArgumentError('failed to parse jwt');
   }
 };

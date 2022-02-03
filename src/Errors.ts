@@ -24,16 +24,6 @@ export class InvalidArgumentError extends ClientSdkError {
 }
 
 /**
- * Gets thrown when the jwt passed to the Momento client cannot have the claims parsed
- */
-export class InvalidJwtError extends ClientSdkError {
-  constructor(message: string) {
-    super(message);
-    this.name = 'InvalidJwtError';
-  }
-}
-
-/**
  * Base class for all exceptions thrown by the Cache Service
  */
 abstract class MomentoServiceError extends SdkError {

@@ -1,5 +1,5 @@
 import {decodeJwt} from '../../src/utils/jwt';
-import {InvalidArgumentError, InvalidJwtError} from '../../src/Errors';
+import {InvalidArgumentError} from '../../src/Errors';
 
 const TEST_AUTH_TOKEN_NO_ENDPOINT =
   'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJpbnRlZ3JhdGlvbiJ9.ZOgkTs';
@@ -23,6 +23,6 @@ describe('jwt.ts', () => {
   });
 
   it('should throw InvalidJwtError when jwt is malformed', () => {
-    expect(() => decodeJwt(MALFORMED_TOKEN)).toThrow(InvalidJwtError);
+    expect(() => decodeJwt(MALFORMED_TOKEN)).toThrow(InvalidArgumentError);
   });
 });
