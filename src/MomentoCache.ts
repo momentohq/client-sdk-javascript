@@ -2,6 +2,7 @@ import {cache} from '@momento/wire-types-javascript';
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextEncoder} from 'util';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
+import {ClientTimeoutInterceptor} from './grpc/ClientTimeoutInterceptor';
 import {CacheGetStatus, momentoResultConverter} from './messages/Result';
 import {InvalidArgumentError, UnknownServiceError} from './Errors';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
@@ -13,30 +14,45 @@ import {SetResponse} from './messages/SetResponse';
  * @property {string} authToken - momento jwt token
  * @property {string} endpoint - endpoint to reach momento cache
  * @property {number} defaultTtlSeconds - the default time to live of object inside of cache, in seconds
+ * @property {number} requestTimeoutMs - the amount of time for a request to complete before timing out, in milliseconds
  */
 type MomentoCacheProps = {
   authToken: string;
   endpoint: string;
   defaultTtlSeconds: number;
+  requestTimeoutMs?: number;
 };
 
 export class MomentoCache {
   private readonly client: cache.cache_client.ScsClient;
   private readonly textEncoder: TextEncoder;
   private readonly defaultTtlSeconds: number;
+  private readonly requestTimeoutMs: number;
   private readonly authToken: string;
+  private static readonly DEFAULT_REQUEST_TIMEOUT_SECONDS: number = 5 * 1000;
 
   /**
    * @param {MomentoCacheProps} props
    */
   constructor(props: MomentoCacheProps) {
+    MomentoCache.validateRequestTimeout(props.requestTimeoutMs);
     this.client = new cache.cache_client.ScsClient(
       props.endpoint,
       ChannelCredentials.createSsl()
     );
     this.textEncoder = new TextEncoder();
     this.defaultTtlSeconds = props.defaultTtlSeconds;
+    this.requestTimeoutMs =
+      props.requestTimeoutMs || MomentoCache.DEFAULT_REQUEST_TIMEOUT_SECONDS;
     this.authToken = props.authToken;
+  }
+
+  private static validateRequestTimeout(timeout?: number) {
+    if (timeout && timeout <= 0) {
+      throw new InvalidArgumentError(
+        'request timeout must be greater than zero.'
+      );
+    }
   }
 
   public async set(
@@ -71,7 +87,9 @@ export class MomentoCache {
     return await new Promise((resolve, reject) => {
       this.client.Set(
         request,
-        {interceptors: this.getInterceptors(cacheName)},
+        {
+          interceptors: this.getInterceptors(cacheName, this.requestTimeoutMs),
+        },
         (err, resp) => {
           if (resp) {
             resolve(this.parseSetResponse(resp, value));
@@ -102,7 +120,9 @@ export class MomentoCache {
     return await new Promise((resolve, reject) => {
       this.client.Get(
         request,
-        {interceptors: this.getInterceptors(cacheName)},
+        {
+          interceptors: this.getInterceptors(cacheName, this.requestTimeoutMs),
+        },
         (err, resp) => {
           if (resp) {
             const momentoResult = momentoResultConverter(resp.result);
@@ -141,7 +161,10 @@ export class MomentoCache {
     }
   };
 
-  private getInterceptors(cacheName: string): Interceptor[] {
+  private getInterceptors(
+    cacheName: string,
+    requestTimeoutMs: number
+  ): Interceptor[] {
     const headers = [
       {
         name: 'Authorization',
@@ -152,7 +175,10 @@ export class MomentoCache {
         value: cacheName,
       },
     ];
-    return [addHeadersInterceptor(headers)];
+    return [
+      addHeadersInterceptor(headers),
+      ClientTimeoutInterceptor(requestTimeoutMs),
+    ];
   }
 
   private convert(v: string | Uint8Array): Uint8Array {

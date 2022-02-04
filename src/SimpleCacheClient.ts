@@ -14,8 +14,13 @@ export class SimpleCacheClient {
   /**
    * @param {string} authToken
    * @param {number} defaultTtlSeconds
+   * @param {number} requestTimeoutMs
    */
-  constructor(authToken: string, defaultTtlSeconds: number) {
+  constructor(
+    authToken: string,
+    defaultTtlSeconds: number,
+    requestTimeoutMs?: number
+  ) {
     const claims = decodeJwt(authToken);
     const controlEndpoint = claims.cp;
     const dataEndpoint = claims.c;
@@ -23,6 +28,7 @@ export class SimpleCacheClient {
       authToken,
       defaultTtlSeconds,
       endpoint: dataEndpoint,
+      requestTimeoutMs: requestTimeoutMs,
     });
 
     this.controlClient = new Momento({
@@ -69,7 +75,7 @@ export class SimpleCacheClient {
   }
 
   /**
-   * deletes a cache and all of the items within it
+   * deletes a cache and all the items within it
    * @param {string} cacheName - name of cache to delete
    * @returns Promise<DeleteCacheResponse>
    */

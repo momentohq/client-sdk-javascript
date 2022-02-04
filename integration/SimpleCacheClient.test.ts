@@ -1,7 +1,7 @@
 import {v4} from 'uuid';
 import * as fs from 'fs';
 import * as os from 'os';
-import {SimpleCacheClient} from '../src';
+import {SimpleCacheClient, TimeoutError} from '../src';
 import {AlreadyExistsError, NotFoundError} from '../src/Errors';
 import {TextEncoder} from 'util';
 
@@ -155,5 +155,14 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       cacheValue
     );
     expect(setResult.bytes()).toEqual(cacheValue);
+  });
+  it('should terminate connection for a short deadline', async () => {
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111, 1);
+    const cacheKey = v4();
+    // Create a longer cache value that should take longer than 1ms to send
+    const cacheValue = new TextEncoder().encode(v4().repeat(10));
+    await expect(
+      momento.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue)
+    ).rejects.toThrow(TimeoutError);
   });
 });
