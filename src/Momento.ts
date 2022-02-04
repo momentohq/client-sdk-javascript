@@ -45,7 +45,7 @@ export class Momento {
 
   public async createCache(name: string): Promise<CreateCacheResponse> {
     this.validateCacheName(name);
-    const request = new control.control_client.CreateCacheRequest({
+    const request = new control.control_client._CreateCacheRequest({
       cache_name: name,
     });
     return await new Promise<CreateCacheResponse>((resolve, reject) => {
@@ -73,7 +73,7 @@ export class Momento {
   }
 
   public async deleteCache(name: string): Promise<DeleteCacheResponse> {
-    const request = new control.control_client.DeleteCacheRequest({
+    const request = new control.control_client._DeleteCacheRequest({
       cache_name: name,
     });
     return await new Promise<DeleteCacheResponse>((resolve, reject) => {
@@ -99,7 +99,7 @@ export class Momento {
   }
 
   public async listCaches(nextToken?: string): Promise<ListCachesResponse> {
-    const request = new control.control_client.ListCachesRequest();
+    const request = new control.control_client._ListCachesRequest();
     request.next_token = nextToken ?? '';
     return await new Promise<ListCachesResponse>((resolve, reject) => {
       this.client.ListCaches(
