@@ -18,8 +18,10 @@ describe('SimpleCacheClient.ts', () => {
     try {
       new SimpleCacheClient(AUTH_TOKEN, 100, -1);
       fail(new Error('Expected InvalidArgumentError to be thrown!'));
-    } catch (InvalidArgumentError) {
-      // Expected
+    } catch (e) {
+      if (!(e instanceof InvalidArgumentError)) {
+        fail(new Error('Expected InvalidArgumentError to be thrown!'));
+      }
     }
   });
 });
