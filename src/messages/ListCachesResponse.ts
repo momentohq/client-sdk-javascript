@@ -5,7 +5,7 @@ export class ListCachesResponse {
   private readonly nextToken: string | null;
   private readonly caches: CacheInfo[];
 
-  constructor(result?: control.control_client.ListCachesResponse) {
+  constructor(result?: control.control_client._ListCachesResponse) {
     this.nextToken = result?.next_token || null;
     this.caches = [];
     result?.cache.forEach(cache =>

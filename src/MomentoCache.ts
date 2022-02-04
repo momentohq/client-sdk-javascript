@@ -79,7 +79,7 @@ export class MomentoCache {
     value: Uint8Array,
     ttl: number
   ): Promise<SetResponse> {
-    const request = new cache.cache_client.SetRequest({
+    const request = new cache.cache_client._SetRequest({
       cache_body: value,
       cache_key: key,
       ttl_milliseconds: ttl * 1000,
@@ -113,7 +113,7 @@ export class MomentoCache {
     cacheName: string,
     key: Uint8Array
   ): Promise<GetResponse> {
-    const request = new cache.cache_client.GetRequest({
+    const request = new cache.cache_client._GetRequest({
       cache_key: key,
     });
 
@@ -142,14 +142,14 @@ export class MomentoCache {
   }
 
   private parseGetResponse = (
-    resp: cache.cache_client.GetResponse
+    resp: cache.cache_client._GetResponse
   ): GetResponse => {
     const momentoResult = momentoResultConverter(resp.result);
     return new GetResponse(momentoResult, resp.message, resp.cache_body);
   };
 
   private parseSetResponse = (
-    resp: cache.cache_client.SetResponse,
+    resp: cache.cache_client._SetResponse,
     value: Uint8Array
   ): SetResponse => {
     return new SetResponse(resp.message, value);
