@@ -29,7 +29,7 @@ export class MomentoCache {
   private readonly defaultTtlSeconds: number;
   private readonly requestTimeoutMs: number;
   private readonly authToken: string;
-  private static readonly DEFAULT_REQUEST_TIMEOUT_SECONDS: number = 5 * 1000;
+  private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
 
   /**
    * @param {MomentoCacheProps} props
@@ -43,7 +43,7 @@ export class MomentoCache {
     this.textEncoder = new TextEncoder();
     this.defaultTtlSeconds = props.defaultTtlSeconds;
     this.requestTimeoutMs =
-      props.requestTimeoutMs || MomentoCache.DEFAULT_REQUEST_TIMEOUT_SECONDS;
+      props.requestTimeoutMs || MomentoCache.DEFAULT_REQUEST_TIMEOUT_MS;
     this.authToken = props.authToken;
   }
 
