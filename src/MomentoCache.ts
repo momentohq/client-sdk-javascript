@@ -88,7 +88,7 @@ export class MomentoCache {
       this.client.Set(
         request,
         {
-          interceptors: this.getInterceptors(cacheName, this.requestTimeoutMs),
+          interceptors: this.getInterceptors(cacheName),
         },
         (err, resp) => {
           if (resp) {
@@ -121,7 +121,7 @@ export class MomentoCache {
       this.client.Get(
         request,
         {
-          interceptors: this.getInterceptors(cacheName, this.requestTimeoutMs),
+          interceptors: this.getInterceptors(cacheName),
         },
         (err, resp) => {
           if (resp) {
@@ -161,10 +161,7 @@ export class MomentoCache {
     }
   };
 
-  private getInterceptors(
-    cacheName: string,
-    requestTimeoutMs: number
-  ): Interceptor[] {
+  private getInterceptors(cacheName: string): Interceptor[] {
     const headers = [
       {
         name: 'Authorization',
@@ -177,7 +174,7 @@ export class MomentoCache {
     ];
     return [
       addHeadersInterceptor(headers),
-      ClientTimeoutInterceptor(requestTimeoutMs),
+      ClientTimeoutInterceptor(this.requestTimeoutMs),
     ];
   }
 
