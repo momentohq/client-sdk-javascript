@@ -14,4 +14,14 @@ describe('SimpleCacheClient.ts', () => {
       );
     }
   });
+  it('cannot create a client with an invalid request timeout', () => {
+    try {
+      new SimpleCacheClient(AUTH_TOKEN, 100, -1);
+      fail(new Error('Expected InvalidArgumentError to be thrown!'));
+    } catch (e) {
+      if (!(e instanceof InvalidArgumentError)) {
+        fail(new Error('Expected InvalidArgumentError to be thrown!'));
+      }
+    }
+  });
 });

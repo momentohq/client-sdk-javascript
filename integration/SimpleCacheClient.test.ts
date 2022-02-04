@@ -1,7 +1,8 @@
 import {v4} from 'uuid';
-import * as fs from 'fs';
-import * as os from 'os';
-import {SimpleCacheClient} from '../src';
+// TODO: deprecating credentials file for now
+// import * as fs from 'fs';
+// import * as os from 'os';
+import {SimpleCacheClient, TimeoutError} from '../src';
 import {AlreadyExistsError, NotFoundError} from '../src/Errors';
 import {TextEncoder} from 'util';
 
@@ -11,36 +12,36 @@ if (!AUTH_TOKEN) {
 }
 const INTEGRATION_TEST_CACHE_NAME = process.env.TEST_CACHE_NAME || 'dummy';
 
-const momentoDirName = `${os.homedir()}/.momento`;
-const credsFilePath = `${momentoDirName}/credentials.toml`;
-
-const createSystemCredentials = (profile?: string) => {
-  const profileName = profile ?? 'default';
-  if (profile) {
-    process.env.MOMENTO_PROFILE = profileName;
-  }
-  if (!fs.existsSync(momentoDirName)) {
-    fs.mkdirSync(momentoDirName);
-  } else {
-    throw new Error(`${momentoDirName} directory exists.
-These integration tests test reading profiles from disk, and create a ~/.momento directory to test this.
-To avoid overriding existing profiles, this error has been thrown.
-If you a want to run these tests, run "mv ~/.momento ~/.momento.bac" to save the current profiles.
-After these tests complete run "mv ~/.momento.bac ~/.momento" to restore the profiles`);
-  }
-  fs.writeFileSync(
-    credsFilePath,
-    `[profile.${profileName}]
-token = "${AUTH_TOKEN}"`
-  );
-};
-
-const removeSystemCredentials = () => {
-  fs.rmSync(momentoDirName, {
-    force: true,
-    recursive: true,
-  });
-};
+// TODO: deprecating credentials file for now
+// const momentoDirName = `${os.homedir()}/.momento`;
+// const credsFilePath = `${momentoDirName}/credentials.toml`;
+// const createSystemCredentials = (profile?: string) => {
+//   const profileName = profile ?? 'default';
+//   if (profile) {
+//     process.env.MOMENTO_PROFILE = profileName;
+//   }
+//   if (!fs.existsSync(momentoDirName)) {
+//     fs.mkdirSync(momentoDirName);
+//   } else {
+//     throw new Error(`${momentoDirName} directory exists.
+// These integration tests test reading profiles from disk, and create a ~/.momento directory to test this.
+// To avoid overriding existing profiles, this error has been thrown.
+// If you a want to run these tests, run "mv ~/.momento ~/.momento.bac" to save the current profiles.
+// After these tests complete run "mv ~/.momento.bac ~/.momento" to restore the profiles`);
+//   }
+//   fs.writeFileSync(
+//     credsFilePath,
+//     `[profile.${profileName}]
+// token = "${AUTH_TOKEN}"`
+//   );
+// };
+//
+// const removeSystemCredentials = () => {
+//   fs.rmSync(momentoDirName, {
+//     force: true,
+//     recursive: true,
+//   });
+// };
 
 describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should create and delete a cache', async () => {
@@ -155,5 +156,14 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       cacheValue
     );
     expect(setResult.bytes()).toEqual(cacheValue);
+  });
+  it('should terminate connection for a short deadline', async () => {
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111, 1);
+    const cacheKey = v4();
+    // Create a longer cache value that should take longer than 1ms to send
+    const cacheValue = new TextEncoder().encode(v4().repeat(10));
+    await expect(
+      momento.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue)
+    ).rejects.toThrow(TimeoutError);
   });
 });

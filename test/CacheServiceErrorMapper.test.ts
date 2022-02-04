@@ -5,7 +5,6 @@ import {
   NotFoundError,
   InternalServerError,
   PermissionError,
-  ServiceValidationError,
   BadRequestError,
   CancelledError,
   TimeoutError,

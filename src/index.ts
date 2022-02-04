@@ -1,4 +1,3 @@
-import {CacheProps} from './Momento';
 import {SimpleCacheClient} from './SimpleCacheClient';
 import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
@@ -38,4 +37,3 @@ export {
   PermissionError,
   NotFoundError,
 };
-export type {CacheProps};

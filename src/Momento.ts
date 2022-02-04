@@ -1,5 +1,6 @@
 import {control} from '@momento/wire-types-javascript';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
+import {ClientTimeoutInterceptor} from './grpc/ClientTimeoutInterceptor';
 import {
   InvalidArgumentError,
   AlreadyExistsError,
@@ -12,13 +13,6 @@ import {DeleteCacheResponse} from './messages/DeleteCacheResponse';
 import {CreateCacheResponse} from './messages/CreateCacheResponse';
 import {ListCachesResponse} from './messages/ListCachesResponse';
 
-export interface CacheProps {
-  /**
-   * the default time to live of object inside of cache, in seconds
-   */
-  defaultTtlSeconds: number;
-}
-
 export interface MomentoProps {
   authToken: string;
   endpoint: string;
@@ -27,6 +21,7 @@ export interface MomentoProps {
 export class Momento {
   private readonly client: control.control_client.ScsControlClient;
   private readonly interceptors: Interceptor[];
+  private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
 
   /**
    * @param {MomentoProps} props
@@ -38,7 +33,10 @@ export class Momento {
         value: props.authToken,
       },
     ];
-    this.interceptors = [addHeadersInterceptor(headers)];
+    this.interceptors = [
+      addHeadersInterceptor(headers),
+      ClientTimeoutInterceptor(Momento.REQUEST_TIMEOUT_MS),
+    ];
     this.client = new control.control_client.ScsControlClient(
       props.endpoint,
       ChannelCredentials.createSsl()
@@ -54,6 +52,7 @@ export class Momento {
       this.client.CreateCache(
         request,
         {interceptors: this.interceptors},
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
             if (err.code === Status.ALREADY_EXISTS) {
@@ -81,6 +80,7 @@ export class Momento {
       this.client.DeleteCache(
         request,
         {interceptors: this.interceptors},
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
             if (err.code === Status.NOT_FOUND) {
