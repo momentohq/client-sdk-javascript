@@ -155,6 +155,7 @@ export class MomentoCache {
     return new SetResponse(resp.message, value);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private ensureValidKey = (key: any) => {
     if (!key) {
       throw new InvalidArgumentError('key must not be empty');
@@ -185,6 +186,7 @@ export class MomentoCache {
     return v;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private ensureValidSetRequest(key: any, value: any, ttl: number) {
     this.ensureValidKey(key);
 

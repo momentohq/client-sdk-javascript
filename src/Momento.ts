@@ -52,6 +52,7 @@ export class Momento {
       this.client.CreateCache(
         request,
         {interceptors: this.interceptors},
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
             if (err.code === Status.ALREADY_EXISTS) {
@@ -79,6 +80,7 @@ export class Momento {
       this.client.DeleteCache(
         request,
         {interceptors: this.interceptors},
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
             if (err.code === Status.NOT_FOUND) {
