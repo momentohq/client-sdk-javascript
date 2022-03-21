@@ -1,7 +1,6 @@
 import {v4} from 'uuid';
-// TODO: deprecating credentials file for now
-// import * as fs from 'fs';
-// import * as os from 'os';
+import * as fs from 'fs';
+import * as os from 'os';
 import {SimpleCacheClient, TimeoutError} from '../src';
 import {AlreadyExistsError, NotFoundError} from '../src/Errors';
 import {TextEncoder} from 'util';
@@ -12,36 +11,35 @@ if (!AUTH_TOKEN) {
 }
 const INTEGRATION_TEST_CACHE_NAME = process.env.TEST_CACHE_NAME || 'dummy';
 
-// TODO: deprecating credentials file for now
-// const momentoDirName = `${os.homedir()}/.momento`;
-// const credsFilePath = `${momentoDirName}/credentials.toml`;
-// const createSystemCredentials = (profile?: string) => {
-//   const profileName = profile ?? 'default';
-//   if (profile) {
-//     process.env.MOMENTO_PROFILE = profileName;
-//   }
-//   if (!fs.existsSync(momentoDirName)) {
-//     fs.mkdirSync(momentoDirName);
-//   } else {
-//     throw new Error(`${momentoDirName} directory exists.
-// These integration tests test reading profiles from disk, and create a ~/.momento directory to test this.
-// To avoid overriding existing profiles, this error has been thrown.
-// If you a want to run these tests, run "mv ~/.momento ~/.momento.bac" to save the current profiles.
-// After these tests complete run "mv ~/.momento.bac ~/.momento" to restore the profiles`);
-//   }
-//   fs.writeFileSync(
-//     credsFilePath,
-//     `[profile.${profileName}]
-// token = "${AUTH_TOKEN}"`
-//   );
-// };
-//
-// const removeSystemCredentials = () => {
-//   fs.rmSync(momentoDirName, {
-//     force: true,
-//     recursive: true,
-//   });
-// };
+const momentoDirName = `${os.homedir()}/.momento`;
+const credsFilePath = `${momentoDirName}/credentials`;
+const createSystemCredentials = (profile?: string) => {
+  const profileName = profile ?? 'default';
+  if (profile) {
+    process.env.MOMENTO_PROFILE = profileName;
+  }
+  if (!fs.existsSync(momentoDirName)) {
+    fs.mkdirSync(momentoDirName);
+  } else {
+    throw new Error(`${momentoDirName} directory exists.
+These integration tests test reading profiles from disk, and create a ~/.momento directory to test this.
+To avoid overriding existing profiles, this error has been thrown.
+If you a want to run these tests, run "mv ~/.momento ~/.momento.bac" to save the current profiles.
+After these tests complete run "mv ~/.momento.bac ~/.momento" to restore the profiles`);
+  }
+  fs.writeFileSync(
+    credsFilePath,
+    `[${profileName}]
+token = "${AUTH_TOKEN}"`
+  );
+};
+
+const removeSystemCredentials = () => {
+  fs.rmSync(momentoDirName, {
+    force: true,
+    recursive: true,
+  });
+};
 
 describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should create and delete a cache', async () => {
@@ -68,30 +66,30 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     await momento.deleteCache(cacheName);
   });
   // TODO: deprecating credentials file for now
-  // it('should use the default auth token from ~/.momento/credentials.toml', async () => {
-  //   createSystemCredentials();
-  //   const cacheName = v4();
-  //   const momento = new Momento();
-  //   await momento.createCache(cacheName);
-  //   await expect(momento.createCache(cacheName)).rejects.toThrow(
-  //     AlreadyExistsError
-  //   );
-  //   await momento.deleteCache(cacheName);
-  //
-  //   removeSystemCredentials();
-  // });
-  //
-  // it('should use the MOMENTO_PROFILE auth token from ~/.momento/credentials.toml', async () => {
-  //   createSystemCredentials('profile2');
-  //   const cacheName = v4();
-  //   const momento = new Momento();
-  //   await momento.createCache(cacheName);
-  //   await expect(momento.createCache(cacheName)).rejects.toThrow(
-  //     AlreadyExistsError
-  //   );
-  //   await momento.deleteCache(cacheName);
-  //   removeSystemCredentials();
-  // });
+  it('should use the default auth token from ~/.momento/credentials', async () => {
+    createSystemCredentials();
+    const cacheName = v4();
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    await momento.createCache(cacheName);
+    await expect(momento.createCache(cacheName)).rejects.toThrow(
+      AlreadyExistsError
+    );
+    await momento.deleteCache(cacheName);
+
+    removeSystemCredentials();
+  });
+
+  it('should use the MOMENTO_PROFILE auth token from ~/.momento/credentials', async () => {
+    createSystemCredentials('profile2');
+    const cacheName = v4();
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    await momento.createCache(cacheName);
+    await expect(momento.createCache(cacheName)).rejects.toThrow(
+      AlreadyExistsError
+    );
+    await momento.deleteCache(cacheName);
+    removeSystemCredentials();
+  });
 
   it('should create 1 cache and list the created cache', async () => {
     const cacheName1 = v4();
