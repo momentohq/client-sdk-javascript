@@ -6,4 +6,5 @@ module.exports = {
     '^.+\\.tsx?$': 'ts-jest',
   },
   testRunner: 'jest-jasmine2',
+  testTimeout: 40000,
 };

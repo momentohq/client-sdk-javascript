@@ -1,6 +1,5 @@
 import {v4} from 'uuid';
 import {SimpleCacheClient} from '../src';
-import {TextEncoder} from 'util';
 
 const AUTH_TOKEN = process.env.TEST_AUTH_TOKEN;
 if (!AUTH_TOKEN) {
@@ -10,7 +9,7 @@ const INTEGRATION_TEST_CACHE_NAME =
   process.env.TEST_CACHE_NAME || 'data-ops-cache';
 
 describe('SimpleCacheClient.ts Integration Tests - various sets and gets', () => {
-  it('should set and get string from cache', async () => {
+  test('should set and get string from cache', async () => {
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     await momento.createCache(INTEGRATION_TEST_CACHE_NAME);
     const cacheKey = v4();
