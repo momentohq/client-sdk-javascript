@@ -38,7 +38,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
 
       - name: Create .npmrc with npm auth github-token
         run: echo //registry.npmjs.org/:_authToken=$NPM_TOKEN > ~/.npmrc
