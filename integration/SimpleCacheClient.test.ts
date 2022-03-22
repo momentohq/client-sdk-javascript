@@ -11,7 +11,7 @@ if (!AUTH_TOKEN) {
 }
 const INTEGRATION_TEST_CACHE_NAME = process.env.TEST_CACHE_NAME || 'dummy';
 
-const momentoDirName = `${os.homedir()}/.momento`;
+const momentoDirName = `${os.homedir()}/.momento-test`;
 const credsFilePath = `${momentoDirName}/credentials`;
 const createSystemCredentials = (profile?: string) => {
   const profileName = profile ?? 'default';
@@ -41,7 +41,7 @@ const removeSystemCredentials = () => {
   });
 };
 
-describe('SimpleCacheClient.ts Integration Tests', () => {
+describe('SimpleCacheClient.ts Integration Tests - create, list, and delete cache', () => {
   it('should create and delete a cache', async () => {
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
@@ -52,6 +52,18 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     await momento.deleteCache(cacheName);
   });
 
+  it('should create 1 cache and list the created cache', async () => {
+    const cacheName1 = v4();
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    await momento.createCache(cacheName1);
+    const caches = (await momento.listCaches()).getCaches();
+    const names = caches.map(c => c.getName());
+    expect(names.includes(cacheName1)).toBeTruthy();
+    await momento.deleteCache(cacheName1);
+  });
+});
+
+describe('SimpleCacheClient.ts Integration Tests - verify thrown errors', () => {
   it('should throw CacheNotFoundError if deleting a non-existent cache', async () => {
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
@@ -67,8 +79,10 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     );
     await momento.deleteCache(cacheName);
   });
+});
 
-  it('should use the default auth token from ~/.momento/credentials', async () => {
+describe('SimpleCacheClient.ts Integration Tests - verify auth token usage from ~/.momento/credentials', () => {
+  it('should use the default auth token from ~/.momento-test/credentials', async () => {
     createSystemCredentials();
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
@@ -81,7 +95,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     removeSystemCredentials();
   });
 
-  it('should use the MOMENTO_PROFILE auth token from ~/.momento/credentials', async () => {
+  it('should use the MOMENTO_PROFILE auth token from ~/.momento-test/credentials', async () => {
     createSystemCredentials('profile2');
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
@@ -92,19 +106,18 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     await momento.deleteCache(cacheName);
     removeSystemCredentials();
   });
+});
 
-  it('should create 1 cache and list the created cache', async () => {
-    const cacheName1 = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-    await momento.createCache(cacheName1);
-    const caches = (await momento.listCaches()).getCaches();
-    const names = caches.map(c => c.getName());
-    expect(names.includes(cacheName1)).toBeTruthy();
-    await momento.deleteCache(cacheName1);
+describe('SimpleCacheClient.ts Integration Tests - various sets and gets', () => {
+  let momento: SimpleCacheClient;
+  beforeAll(async () => {
+    momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    await momento.createCache(INTEGRATION_TEST_CACHE_NAME);
   });
-
+  afterAll(async () => {
+    await momento.deleteCache(INTEGRATION_TEST_CACHE_NAME);
+  });
   it('should set and get string from cache', async () => {
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     const cacheKey = v4();
     const cacheValue = v4();
     await momento.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
@@ -112,7 +125,6 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     expect(res.text()).toEqual(cacheValue);
   });
   it('should set and get bytes from cache', async () => {
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     const cacheKey = new TextEncoder().encode(v4());
     const cacheValue = new TextEncoder().encode(v4());
     await momento.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
@@ -120,7 +132,6 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     expect(res.bytes()).toEqual(cacheValue);
   });
   it('should set string key with bytes value', async () => {
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     const cacheKey = v4();
     const cacheValue = new TextEncoder().encode(v4());
     await momento.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
@@ -128,7 +139,6 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     expect(res.bytes()).toEqual(cacheValue);
   });
   it('should set byte key with string value', async () => {
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     const cacheValue = v4();
     const cacheKey = new TextEncoder().encode(v4());
     await momento.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
@@ -136,7 +146,6 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     expect(res.text()).toEqual(cacheValue);
   });
   it('should set and get string from cache and returned set value matches string cacheValue', async () => {
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     const cacheKey = v4();
     const cacheValue = v4();
     const setResult = await momento.set(
@@ -147,7 +156,6 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     expect(setResult.text()).toEqual(cacheValue);
   });
   it('should set string key with bytes value and returned set value matches byte cacheValue', async () => {
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     const cacheKey = v4();
     const cacheValue = new TextEncoder().encode(v4());
     const setResult = await momento.set(
