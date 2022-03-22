@@ -13,7 +13,7 @@
   },
   "scripts": {
     "test": "jest",
-    "integration": "jest --config jest-integration.config.js --runInBand",
+    "integration": "jest --config jest-integration.config.js --runInBand --detectOpenHandles",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
