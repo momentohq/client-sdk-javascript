@@ -1,5 +1,5 @@
 {
-  "name": "@momento/sdk",
+  "name": "client-sdk-javascript",
   "version": "0.0.1",
   "description": "Client SDK for Momento services",
   "main": "dist/src/index.js",
@@ -7,6 +7,10 @@
     "dist/src"
   ],
   "types": "dist/src/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/momentohq/client-sdk-javascript"
+  },
   "scripts": {
     "test": "jest",
     "integration": "jest --config jest-integration.config.js",
