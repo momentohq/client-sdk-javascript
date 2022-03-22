@@ -1,4 +1,4 @@
-import {cache} from '@momento/wire-types-javascript';
+import {cache} from 'wire-types-javascript';
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextEncoder} from 'util';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';

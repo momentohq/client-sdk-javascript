@@ -2,7 +2,7 @@ import {
   CacheGetStatus,
   momentoResultConverter,
 } from '../../src/messages/Result';
-import {cache} from '@momento/wire-types-javascript';
+import {cache} from 'wire-types-javascript';
 
 describe('Result.ts', () => {
   it('should map ECacheResult.Miss to MomentoResult.Miss', () => {

@@ -10,6 +10,7 @@ jobs:
     env:
       TEST_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
       TEST_CACHE_NAME: dummy
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
       - name: Setup repo
@@ -20,10 +21,8 @@ jobs:
         with:
           node-version: 14
 
-      - name: Configure Artifactory credentials
-        run: |
-          # lel this is how jfrog wants you to come up with your scoped npm configuration
-          echo @momento:registry=https://momento.jfrog.io/artifactory/api/npm/npm-public/ >> ~/.npmrc
+      - name: Create .npmrc with npm auth github-token
+        run: echo //registry.npmjs.org/:_authToken=$NPM_TOKEN > ~/.npmrc
 
       - name: Install Dependencies
         run: npm ci

@@ -1,4 +1,4 @@
-import {cache} from '@momento/wire-types-javascript';
+import {cache} from 'wire-types-javascript';
 
 export enum CacheGetStatus {
   Hit = 'HIT',

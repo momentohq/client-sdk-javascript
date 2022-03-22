@@ -1,4 +1,4 @@
-import {control} from '@momento/wire-types-javascript';
+import {control} from 'wire-types-javascript';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
 import {ClientTimeoutInterceptor} from './grpc/ClientTimeoutInterceptor';
 import {
