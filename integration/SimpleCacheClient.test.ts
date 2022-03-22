@@ -10,7 +10,6 @@ if (!AUTH_TOKEN) {
   throw new Error('Missing required env var TEST_AUTH_TOKEN');
 }
 const INTEGRATION_TEST_CACHE_NAME = process.env.TEST_CACHE_NAME || 'dummy';
-const IS_LOCAL_TESTING = process.env.IS_LOCAL_TESTING || true;
 
 const momentoDirName = `${os.homedir()}/.momento-test`;
 const credsFilePath = `${momentoDirName}/credentials`;
@@ -23,10 +22,7 @@ const createSystemCredentials = (profile?: string) => {
     fs.mkdirSync(momentoDirName);
   } else {
     throw new Error(`${momentoDirName} directory exists.
-These integration tests test reading profiles from disk, and create a ~/.momento directory to test this.
-To avoid overriding existing profiles, this error has been thrown.
-If you a want to run these tests, run "mv ~/.momento ~/.momento.bac" to save the current profiles.
-After these tests complete run "mv ~/.momento.bac ~/.momento" to restore the profiles`);
+These integration tests test reading profiles from disk, and create a ~/.momento-test directory to test this.`);
   }
   fs.writeFileSync(
     credsFilePath,
@@ -43,37 +39,45 @@ const removeSystemCredentials = () => {
 };
 
 describe('SimpleCacheClient.ts Integration Tests - create, list, and delete cache', () => {
-  it('should create and delete a cache', async () => {
-    const cacheName = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+  let momento: SimpleCacheClient;
+  let cacheName: string;
+  let cacheName1: string;
+  beforeAll(async () => {
+    cacheName = v4();
+    cacheName1 = v4();
+    momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     await momento.createCache(cacheName);
+    await momento.createCache(cacheName1);
+  });
+  afterAll(async () => {
+    await momento.deleteCache(cacheName);
+    await momento.deleteCache(cacheName1);
+  });
+  it('should create and delete a cache', async () => {
     await momento.set(cacheName, 'key', 'value');
     const res = await momento.get(cacheName, 'key');
     expect(res.text()).toEqual('value');
-    await momento.deleteCache(cacheName);
   });
 
   it('should create 1 cache and list the created cache', async () => {
-    const cacheName1 = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-    await momento.createCache(cacheName1);
     const caches = (await momento.listCaches()).getCaches();
     const names = caches.map(c => c.getName());
     expect(names.includes(cacheName1)).toBeTruthy();
-    await momento.deleteCache(cacheName1);
   });
 });
 
 describe('SimpleCacheClient.ts Integration Tests - verify thrown errors', () => {
+  let momento: SimpleCacheClient;
+  beforeAll(() => {
+    momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+  });
   it('should throw CacheNotFoundError if deleting a non-existent cache', async () => {
     const cacheName = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     await expect(momento.deleteCache(cacheName)).rejects.toThrow(NotFoundError);
   });
 
   it('should throw CacheAlreadyExistsError if trying to create a cache that already exists', async () => {
     const cacheName = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     await momento.createCache(cacheName);
     await expect(momento.createCache(cacheName)).rejects.toThrow(
       AlreadyExistsError
@@ -83,10 +87,11 @@ describe('SimpleCacheClient.ts Integration Tests - verify thrown errors', () => 
 });
 
 describe('SimpleCacheClient.ts Integration Tests - verify auth token usage from ~/.momento/credentials', () => {
+  beforeEach(() => {
+    removeSystemCredentials();
+  });
   it('should use the default auth token from ~/.momento-test/credentials', async () => {
-    if (IS_LOCAL_TESTING) {
-      createSystemCredentials();
-    }
+    createSystemCredentials();
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     await momento.createCache(cacheName);
@@ -94,15 +99,10 @@ describe('SimpleCacheClient.ts Integration Tests - verify auth token usage from 
       AlreadyExistsError
     );
     await momento.deleteCache(cacheName);
-    if (IS_LOCAL_TESTING) {
-      removeSystemCredentials();
-    }
   });
 
   it('should use the MOMENTO_PROFILE auth token from ~/.momento-test/credentials', async () => {
-    if (IS_LOCAL_TESTING) {
-      createSystemCredentials('profile2');
-    }
+    createSystemCredentials('profile2');
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     await momento.createCache(cacheName);
@@ -110,9 +110,6 @@ describe('SimpleCacheClient.ts Integration Tests - verify auth token usage from 
       AlreadyExistsError
     );
     await momento.deleteCache(cacheName);
-    if (IS_LOCAL_TESTING) {
-      removeSystemCredentials();
-    }
   });
 });
 
@@ -172,6 +169,17 @@ describe('SimpleCacheClient.ts Integration Tests - various sets and gets', () =>
       cacheValue
     );
     expect(setResult.bytes()).toEqual(cacheValue);
+  });
+});
+
+describe('SimpleCacheClient.ts Integration Tests - short deadline for connection', () => {
+  let momento: SimpleCacheClient;
+  beforeAll(async () => {
+    momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    await momento.createCache(INTEGRATION_TEST_CACHE_NAME);
+  });
+  afterAll(async () => {
+    await momento.deleteCache(INTEGRATION_TEST_CACHE_NAME);
   });
   it('should terminate connection for a short deadline', async () => {
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111, 1);

@@ -10,7 +10,6 @@ jobs:
     env:
       TEST_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
       TEST_CACHE_NAME: dummy
-      IS_LOCAL_TESTING: false
 
     steps:
       - name: Setup repo
@@ -37,13 +36,6 @@ jobs:
 
       - name: Test
         run: npm run test
-
-      - name: Create .momento-test directory and write credentials in credentials file
-        run: |
-          mkdir ~/.momento-test
-          cat <<EOF > ~/.momento-test/credentials 
-          [default]
-          token=$TEST_AUTH_TOKEN_DEFAULT
 
       - name: Integration Test
         run: npm run integration
