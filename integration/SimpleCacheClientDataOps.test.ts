@@ -9,15 +9,16 @@ if (!AUTH_TOKEN) {
 const INTEGRATION_TEST_CACHE_NAME =
   process.env.TEST_CACHE_NAME || 'data-ops-cache';
 
+let momento: SimpleCacheClient;
+beforeAll(async () => {
+  momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+  await momento.createCache(INTEGRATION_TEST_CACHE_NAME);
+});
+afterAll(async () => {
+  await momento.deleteCache(INTEGRATION_TEST_CACHE_NAME);
+});
+
 describe('SimpleCacheClient.ts Integration Tests - various sets and gets', () => {
-  let momento: SimpleCacheClient;
-  beforeAll(async () => {
-    momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-    await momento.createCache(INTEGRATION_TEST_CACHE_NAME);
-  });
-  afterAll(async () => {
-    await momento.deleteCache(INTEGRATION_TEST_CACHE_NAME);
-  });
   it('should set and get string from cache', async () => {
     const cacheKey = v4();
     const cacheValue = v4();
