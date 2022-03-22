@@ -7,4 +7,3 @@ module.exports = {
   },
   testRunner: 'jest-jasmine2',
 };
-gi;
