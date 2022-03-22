@@ -175,14 +175,13 @@ describe('SimpleCacheClient.ts Integration Tests - various sets and gets', () =>
 describe('SimpleCacheClient.ts Integration Tests - short deadline for connection', () => {
   let momento: SimpleCacheClient;
   beforeAll(async () => {
-    momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    momento = new SimpleCacheClient(AUTH_TOKEN, 1111, 1);
     await momento.createCache(INTEGRATION_TEST_CACHE_NAME);
   });
   afterAll(async () => {
     await momento.deleteCache(INTEGRATION_TEST_CACHE_NAME);
   });
   it('should terminate connection for a short deadline', async () => {
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111, 1);
     const cacheKey = v4();
     // Create a longer cache value that should take longer than 1ms to send
     const cacheValue = new TextEncoder().encode(v4().repeat(10));
