@@ -41,17 +41,13 @@ const removeSystemCredentials = () => {
 describe('SimpleCacheClient.ts Integration Tests - create, list, and delete cache', () => {
   let momento: SimpleCacheClient;
   let cacheName: string;
-  let cacheName1: string;
   beforeAll(async () => {
     cacheName = v4();
-    cacheName1 = v4();
     momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     await momento.createCache(cacheName);
-    await momento.createCache(cacheName1);
   });
   afterAll(async () => {
     await momento.deleteCache(cacheName);
-    await momento.deleteCache(cacheName1);
   });
   it('should create and delete a cache', async () => {
     await momento.set(cacheName, 'key', 'value');
@@ -59,10 +55,10 @@ describe('SimpleCacheClient.ts Integration Tests - create, list, and delete cach
     expect(res.text()).toEqual('value');
   });
 
-  it('should create 1 cache and list the created cache', async () => {
+  it('should list the created cache', async () => {
     const caches = (await momento.listCaches()).getCaches();
     const names = caches.map(c => c.getName());
-    expect(names.includes(cacheName1)).toBeTruthy();
+    expect(names.includes(cacheName)).toBeTruthy();
   });
 });
 
