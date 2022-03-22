@@ -10,6 +10,7 @@ if (!AUTH_TOKEN) {
   throw new Error('Missing required env var TEST_AUTH_TOKEN');
 }
 const INTEGRATION_TEST_CACHE_NAME = process.env.TEST_CACHE_NAME || 'dummy';
+const IS_LOCAL_TESTING = process.env.IS_LOCAL_TESTING || true;
 
 const momentoDirName = `${os.homedir()}/.momento-test`;
 const credsFilePath = `${momentoDirName}/credentials`;
@@ -83,7 +84,9 @@ describe('SimpleCacheClient.ts Integration Tests - verify thrown errors', () => 
 
 describe('SimpleCacheClient.ts Integration Tests - verify auth token usage from ~/.momento/credentials', () => {
   it('should use the default auth token from ~/.momento-test/credentials', async () => {
-    createSystemCredentials();
+    if (IS_LOCAL_TESTING) {
+      createSystemCredentials();
+    }
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     await momento.createCache(cacheName);
@@ -91,12 +94,15 @@ describe('SimpleCacheClient.ts Integration Tests - verify auth token usage from 
       AlreadyExistsError
     );
     await momento.deleteCache(cacheName);
-
-    removeSystemCredentials();
+    if (IS_LOCAL_TESTING) {
+      removeSystemCredentials();
+    }
   });
 
   it('should use the MOMENTO_PROFILE auth token from ~/.momento-test/credentials', async () => {
-    createSystemCredentials('profile2');
+    if (IS_LOCAL_TESTING) {
+      createSystemCredentials('profile2');
+    }
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     await momento.createCache(cacheName);
@@ -104,7 +110,9 @@ describe('SimpleCacheClient.ts Integration Tests - verify auth token usage from 
       AlreadyExistsError
     );
     await momento.deleteCache(cacheName);
-    removeSystemCredentials();
+    if (IS_LOCAL_TESTING) {
+      removeSystemCredentials();
+    }
   });
 });
 
