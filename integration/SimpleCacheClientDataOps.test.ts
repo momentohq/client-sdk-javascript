@@ -5,8 +5,7 @@ const AUTH_TOKEN = process.env.TEST_AUTH_TOKEN;
 if (!AUTH_TOKEN) {
   throw new Error('Missing required env var TEST_AUTH_TOKEN');
 }
-const INTEGRATION_TEST_CACHE_NAME =
-  process.env.TEST_CACHE_NAME || 'data-ops-cache';
+const INTEGRATION_TEST_CACHE_NAME = process.env.TEST_CACHE_NAME || v4();
 
 describe('SimpleCacheClient.ts Integration Tests - various sets and gets', () => {
   test('should set and get string from cache', async () => {
