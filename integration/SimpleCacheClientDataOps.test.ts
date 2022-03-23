@@ -1,3 +1,4 @@
+/* eslint @typescript-eslint/no-floating-promises: 0 */
 import {v4} from 'uuid';
 import {SimpleCacheClient} from '../src';
 
@@ -12,29 +13,28 @@ describe('SimpleCacheClient.ts Integration Tests - various sets and gets', () =>
     console.log('1');
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     console.log('2');
-    momento
-      .createCache(INTEGRATION_TEST_CACHE_NAME)
-      .then(() => {
-        console.log('3');
-        const cacheKey = v4();
-        const cacheValue = v4();
-        console.log('4');
-        momento
-          .set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue)
-          .then(() => {
-            console.log('5');
-            momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey).then(res => {
-              console.log('6');
-              expect(res.text()).toEqual(cacheValue);
-              console.log('7');
-
+    momento.createCache(INTEGRATION_TEST_CACHE_NAME).then(() => {
+      console.log('3');
+      const cacheKey = v4();
+      const cacheValue = v4();
+      console.log('4');
+      momento
+        .set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue)
+        .then(() => {
+          console.log('5');
+          momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey).then(res => {
+            console.log('6');
+            expect(res.text()).toEqual(cacheValue);
+            console.log('7');
           });
-      })
-      .finally(() => {
-        momento.deleteCache(INTEGRATION_TEST_CACHE_NAME);
-        console.log('8');
-        done();
-      });
+        })
+        .finally(() => {
+          momento.deleteCache(INTEGRATION_TEST_CACHE_NAME).then(() => {
+            console.log('8');
+            done();
+          });
+        });
+    });
   });
   //   it('should set and get bytes from cache', async () => {
   //     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
