@@ -24,7 +24,7 @@ export function cacheServiceErrorMapper(
     case Status.UNKNOWN:
     case Status.ABORTED:
     case Status.UNAVAILABLE:
-      return new InternalServerError(`${err?.message}\n${err?.stack || ''}`);
+      return new InternalServerError(err?.message, err?.stack || '');
     case Status.NOT_FOUND:
       return new NotFoundError(err?.message);
     case Status.OUT_OF_RANGE:
@@ -44,6 +44,7 @@ export function cacheServiceErrorMapper(
       return new AlreadyExistsError(err?.message);
   }
   return new InternalServerError(
-    `unable to process request\n${err?.stack || ''}`
+    err?.message || 'unable to process request',
+    err?.stack || ''
   );
 }

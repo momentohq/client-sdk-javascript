@@ -78,9 +78,10 @@ export class NotFoundError extends CacheServiceError {
  * Cache Service encountered an unexpected exception while trying to fulfill the request
  */
 export class InternalServerError extends CacheServiceError {
-  constructor(message: string) {
+  constructor(message: string, stack: string) {
     super(message);
     this.name = 'InternalServerError';
+    this.stack = stack;
   }
 }
 
