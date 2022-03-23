@@ -1,3 +1,4 @@
+/* eslint @typescript-eslint/no-floating-promises: 0 */
 import {v4} from 'uuid';
 // TODO: deprecating credentials file for now
 // import * as fs from 'fs';
@@ -44,15 +45,46 @@ const INTEGRATION_TEST_CACHE_NAME = process.env.TEST_CACHE_NAME || 'dummy';
 // };
 
 describe('SimpleCacheClient.ts Integration Tests', () => {
-  it('should create and delete a cache', async () => {
-    const cacheName = v4();
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  it('should set and get string from cache', done => {
+    console.log('1');
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-    await momento.createCache(cacheName);
-    await momento.set(cacheName, 'key', 'value');
-    const res = await momento.get(cacheName, 'key');
-    expect(res.text()).toEqual('value');
-    await momento.deleteCache(cacheName);
+    console.log('2');
+    momento
+      .createCache(INTEGRATION_TEST_CACHE_NAME)
+      .then(() => {
+        console.log('3');
+        const cacheKey = v4();
+        const cacheValue = v4();
+        console.log('4');
+        momento
+          .set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue)
+          .then(() => {
+            console.log('5');
+            momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey).then(res => {
+              console.log('6');
+              expect(res.text()).toEqual(cacheValue);
+              console.log('7');
+            });
+          });
+      })
+      .finally(() => {
+        momento.deleteCache(INTEGRATION_TEST_CACHE_NAME).then(() => {
+          console.log('8');
+          done();
+        });
+      });
   });
+  // it('should create and delete a cache', async () => {
+  //   const cacheName = v4();
+  //   const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+  //   await momento.createCache(cacheName);
+  //   await momento.set(cacheName, 'key', 'value');
+  //   const res = await momento.get(cacheName, 'key');
+  //   expect(res.text()).toEqual('value');
+  //   await momento.deleteCache(cacheName);
+  // });
   //   it('should throw CacheNotFoundError if deleting a non-existent cache', async () => {
   //     const cacheName = v4();
   //     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
@@ -92,7 +124,6 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   //   await momento.deleteCache(cacheName);
   //   removeSystemCredentials();
   // });
-
   //   it('should create 1 cache and list the created cache', async () => {
   //     const cacheName1 = v4();
   //     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
@@ -102,7 +133,6 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   //     expect(names.includes(cacheName1)).toBeTruthy();
   //     await momento.deleteCache(cacheName1);
   //   });
-
   //   it('should set and get string from cache', async () => {
   //     const cacheName = v4();
   //     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
