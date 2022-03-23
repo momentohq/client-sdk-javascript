@@ -52,7 +52,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     const res = await momento.get(cacheName, 'key');
     expect(res.text()).toEqual('value');
     await momento.deleteCache(cacheName);
-  });
+  }, 7000);
   it('should throw CacheNotFoundError if deleting a non-existent cache', async () => {
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
