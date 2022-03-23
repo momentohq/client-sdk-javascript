@@ -11,7 +11,7 @@ const AUTH_TOKEN = process.env.TEST_AUTH_TOKEN;
 if (!AUTH_TOKEN) {
   throw new Error('Missing required env var TEST_AUTH_TOKEN');
 }
-const INTEGRATION_TEST_CACHE_NAME = process.env.TEST_CACHE_NAME || 'dummy';
+const INTEGRATION_TEST_CACHE_NAME = 'itegrationtests_alternate_config';
 
 // TODO: deprecating credentials file for now
 // const momentoDirName = `${os.homedir()}/.momento`;
@@ -47,34 +47,22 @@ const INTEGRATION_TEST_CACHE_NAME = process.env.TEST_CACHE_NAME || 'dummy';
 describe('SimpleCacheClient.ts Integration Tests', () => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  it('should set and get string from cache', done => {
+  it('should set and get string from cache', async () => {
     console.log('1');
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     console.log('2');
-    momento
-      .createCache(INTEGRATION_TEST_CACHE_NAME)
-      .then(() => {
-        console.log('3');
-        const cacheKey = v4();
-        const cacheValue = v4();
-        console.log('4');
-        momento
-          .set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue)
-          .then(() => {
-            console.log('5');
-            momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey).then(res => {
-              console.log('6');
-              expect(res.text()).toEqual(cacheValue);
-              console.log('7');
-            });
-          });
-      })
-      .finally(() => {
-        momento.deleteCache(INTEGRATION_TEST_CACHE_NAME).then(() => {
-          console.log('8');
-          done();
-        });
-      });
+    await momento.createCache(INTEGRATION_TEST_CACHE_NAME);
+    console.log('3');
+    const cacheKey = v4();
+    const cacheValue = v4();
+    console.log('4');
+    await momento.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
+    console.log('5');
+    const res = await momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
+    console.log('6');
+    expect(res.text()).toEqual(cacheValue);
+    await momento.deleteCache(INTEGRATION_TEST_CACHE_NAME);
+    console.log('8');
   }, 100000);
   // it('should create and delete a cache', async () => {
   //   const cacheName = v4();
