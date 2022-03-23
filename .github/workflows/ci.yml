@@ -38,4 +38,4 @@ jobs:
         run: npm run test
 
       - name: Integration Test
-        run: GRPC_VERBOSITY=DEBUG GRPC_TRACE=all npm run integration
+        run: NODE_DEBUG=http2 npm run integration
