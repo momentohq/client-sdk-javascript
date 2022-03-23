@@ -21,10 +21,10 @@ jobs:
         with:
           node-version: 16
           
-      - name: Configure Artifactory credentials
-        run: |
-          # lel this is how jfrog wants you to come up with your scoped npm configuration
-          echo @momento:registry=https://momento.jfrog.io/artifactory/api/npm/npm-public/ >> ~/.npmrc
+            #      - name: Configure Artifactory credentials
+            #        run: |
+            #          # lel this is how jfrog wants you to come up with your scoped npm configuration
+            #          echo @momento:registry=https://momento.jfrog.io/artifactory/api/npm/npm-public/ >> ~/.npmrc
           
       - name: Install Dependencies
         run: npm install
