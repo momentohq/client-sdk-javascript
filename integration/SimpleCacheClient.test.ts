@@ -75,7 +75,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
           done();
         });
       });
-  });
+  }, 100000);
   // it('should create and delete a cache', async () => {
   //   const cacheName = v4();
   //   const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
