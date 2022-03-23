@@ -44,17 +44,17 @@ const INTEGRATION_TEST_CACHE_NAME = process.env.TEST_CACHE_NAME || 'dummy';
 // };
 
 describe('SimpleCacheClient.ts Integration Tests', () => {
-  describe('happy path - cache creation/deletion', () => {
-    it('should create and delete a cache', async () => {
-      const cacheName = v4();
-      const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-      await momento.createCache(cacheName);
-      await momento.set(cacheName, 'key', 'value');
-      const res = await momento.get(cacheName, 'key');
-      expect(res.text()).toEqual('value');
-      await momento.deleteCache(cacheName);
-    });
-  });
+  // describe('happy path - cache creation/deletion', () => {
+  //   it('should create and delete a cache', async () => {
+  //     const cacheName = v4();
+  //     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+  //     await momento.createCache(cacheName);
+  //     await momento.set(cacheName, 'key', 'value');
+  //     const res = await momento.get(cacheName, 'key');
+  //     expect(res.text()).toEqual('value');
+  //     await momento.deleteCache(cacheName);
+  //   });
+  // });
 
   describe('error check', () => {
     it('should throw CacheNotFoundError if deleting a non-existent cache', async () => {
