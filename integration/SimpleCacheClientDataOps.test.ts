@@ -1,6 +1,7 @@
-/* eslint @typescript-eslint/no-floating-promises: 0 */
+/* eslint @typescript-eslint/no-misused-promises: 0 */
 import {v4} from 'uuid';
 import {SimpleCacheClient} from '../src';
+import DoneCallback = jest.DoneCallback;
 
 const AUTH_TOKEN = process.env.TEST_AUTH_TOKEN;
 if (!AUTH_TOKEN) {
@@ -9,32 +10,26 @@ if (!AUTH_TOKEN) {
 const INTEGRATION_TEST_CACHE_NAME = process.env.TEST_CACHE_NAME || v4();
 
 describe('SimpleCacheClient.ts Integration Tests - various sets and gets', () => {
-  test('should set and get string from cache', done => {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  test('should set and get string from cache', async (done: DoneCallback) => {
     console.log('1');
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     console.log('2');
-    momento.createCache(INTEGRATION_TEST_CACHE_NAME).then(() => {
-      console.log('3');
-      const cacheKey = v4();
-      const cacheValue = v4();
-      console.log('4');
-      momento
-        .set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue)
-        .then(() => {
-          console.log('5');
-          momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey).then(res => {
-            console.log('6');
-            expect(res.text()).toEqual(cacheValue);
-            console.log('7');
-          });
-        })
-        .finally(() => {
-          momento.deleteCache(INTEGRATION_TEST_CACHE_NAME).then(() => {
-            console.log('8');
-            done();
-          });
-        });
-    });
+    await momento.createCache(INTEGRATION_TEST_CACHE_NAME);
+    console.log('3');
+    const cacheKey = v4();
+    const cacheValue = v4();
+    console.log('4');
+    await momento.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
+    console.log('5');
+    const res = await momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
+    console.log('6');
+    expect(res.text()).toEqual(cacheValue);
+    console.log('7');
+    await momento.deleteCache(INTEGRATION_TEST_CACHE_NAME);
+    console.log('8');
+    done();
   });
   //   it('should set and get bytes from cache', async () => {
   //     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
