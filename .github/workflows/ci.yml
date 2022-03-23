@@ -27,7 +27,7 @@ jobs:
           echo @momento:registry=https://momento.jfrog.io/artifactory/api/npm/npm-public/ >> ~/.npmrc
           
       - name: Install Dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build
         run: npm run build
