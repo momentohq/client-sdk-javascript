@@ -1,4 +1,4 @@
-import {cache} from 'wire-types-javascript';
+import {cache} from '@momentohq/generated-types';
 
 export enum CacheGetStatus {
   Hit = 'HIT',
