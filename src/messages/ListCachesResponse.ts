@@ -1,4 +1,4 @@
-import {control} from '@momento/wire-types-javascript';
+import {control} from '@momentohq/generated-types';
 import {CacheInfo} from './CacheInfo';
 
 export class ListCachesResponse {
