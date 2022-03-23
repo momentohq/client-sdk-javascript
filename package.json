@@ -13,7 +13,7 @@
   },
   "scripts": {
     "test": "jest",
-    "integration": "jest --config jest-integration.config.js --runInBand",
+    "integration": "jest --config jest-integration.config.js --runInBand --detectOpenHandles",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
@@ -35,7 +35,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^5.1.0",
-    "jest": "^27.2.5",
+    "jest": "27.5.1",
     "prettier": "^2.4.1",
     "ts-jest": "^27.0.5",
     "ts-node": "^10.3.0",
