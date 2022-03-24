@@ -39,4 +39,4 @@ jobs:
         run: npm run test
 
       - name: Integration Test
-        run: NODE_DEBUG=http2 npm run integration -- --detectOpenHandles
+        run: GRPC_VERBOSITY=DEBUG GRPC_TRACE=all NODE_DEBUG=http2 npm run integration -- --detectOpenHandles
