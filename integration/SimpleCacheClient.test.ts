@@ -9,6 +9,8 @@ const AUTH_TOKEN = process.env.TEST_AUTH_TOKEN;
 if (!AUTH_TOKEN) {
   throw new Error('Missing required env var TEST_AUTH_TOKEN');
 }
+const INTEGRATION_TEST_CACHE_NAME =
+  process.env.TEST_CACHE_NAME || 'integration-test';
 
 const momentoDirName = `${os.homedir()}/.momento-test`;
 const credsFilePath = `${momentoDirName}/credentials`;
@@ -36,6 +38,17 @@ const removeSystemCredentials = () => {
     recursive: true,
   });
 };
+
+let momento2: SimpleCacheClient;
+
+beforeAll(async () => {
+  momento2 = new SimpleCacheClient(AUTH_TOKEN, 1111);
+  await momento2.createCache(INTEGRATION_TEST_CACHE_NAME);
+});
+
+afterAll(async () => {
+  await momento2.deleteCache(INTEGRATION_TEST_CACHE_NAME);
+});
 
 describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should create and delete a cache', async () => {
@@ -98,68 +111,52 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   });
 
   it('should set and get string from cache', async () => {
-    const cacheName = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-    await momento.createCache(cacheName);
     const cacheKey = v4();
     const cacheValue = v4();
-    await momento.set(cacheName, cacheKey, cacheValue);
-    const res = await momento.get(cacheName, cacheKey);
+    await momento2.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
+    const res = await momento2.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
     expect(res.text()).toEqual(cacheValue);
-    await momento.deleteCache(cacheName);
   });
   it('should set and get bytes from cache', async () => {
-    const cacheName = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-    await momento.createCache(cacheName);
     const cacheKey = new TextEncoder().encode(v4());
     const cacheValue = new TextEncoder().encode(v4());
-    await momento.set(cacheName, cacheKey, cacheValue);
-    const res = await momento.get(cacheName, cacheKey);
+    await momento2.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
+    const res = await momento2.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
     expect(res.bytes()).toEqual(cacheValue);
-    await momento.deleteCache(cacheName);
   });
   it('should set string key with bytes value', async () => {
-    const cacheName = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-    await momento.createCache(cacheName);
     const cacheKey = v4();
     const cacheValue = new TextEncoder().encode(v4());
-    await momento.set(cacheName, cacheKey, cacheValue);
-    const res = await momento.get(cacheName, cacheKey);
+    await momento2.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
+    const res = await momento2.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
     expect(res.bytes()).toEqual(cacheValue);
-    await momento.deleteCache(cacheName);
   });
   it('should set byte key with string value', async () => {
-    const cacheName = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-    await momento.createCache(cacheName);
     const cacheValue = v4();
     const cacheKey = new TextEncoder().encode(v4());
-    await momento.set(cacheName, cacheKey, cacheValue);
-    const res = await momento.get(cacheName, cacheKey);
+    await momento2.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
+    const res = await momento2.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
     expect(res.text()).toEqual(cacheValue);
-    await momento.deleteCache(cacheName);
   });
   it('should set and get string from cache and returned set value matches string cacheValue', async () => {
-    const cacheName = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-    await momento.createCache(cacheName);
     const cacheKey = v4();
     const cacheValue = v4();
-    const setResult = await momento.set(cacheName, cacheKey, cacheValue);
+    const setResult = await momento2.set(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey,
+      cacheValue
+    );
     expect(setResult.text()).toEqual(cacheValue);
-    await momento.deleteCache(cacheName);
   });
   it('should set string key with bytes value and returned set value matches byte cacheValue', async () => {
-    const cacheName = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-    await momento.createCache(cacheName);
     const cacheKey = v4();
     const cacheValue = new TextEncoder().encode(v4());
-    const setResult = await momento.set(cacheName, cacheKey, cacheValue);
+    const setResult = await momento2.set(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey,
+      cacheValue
+    );
     expect(setResult.bytes()).toEqual(cacheValue);
-    await momento.deleteCache(cacheName);
   });
   it('should terminate connection for a short deadline', async () => {
     const cacheName = v4();
