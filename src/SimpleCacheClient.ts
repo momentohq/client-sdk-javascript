@@ -24,7 +24,6 @@ export class SimpleCacheClient {
     const claims = decodeJwt(authToken);
     const controlEndpoint = claims.cp;
     const dataEndpoint = claims.c;
-    console.log(`endpoints: ${controlEndpoint} ${dataEndpoint}`);
     this.dataClient = new MomentoCache({
       authToken,
       defaultTtlSeconds,
