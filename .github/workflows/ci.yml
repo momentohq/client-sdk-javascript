@@ -6,10 +6,10 @@ on:
 
 jobs:
   test:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     env:
       TEST_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
-      TEST_CACHE_NAME: integration-test
+      TEST_CACHE_NAME: js-integration-test-ci
 
     steps:
       - name: Setup repo
