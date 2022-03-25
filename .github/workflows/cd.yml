@@ -27,6 +27,7 @@ jobs:
   publish_javascript:
     # The type of runner that the job will run on
     runs-on: macos-latest
+    needs: release
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -50,7 +51,7 @@ jobs:
       - name: Test
         run: npm run test
 
-      - name: Publish npm package
+      - name: Publish package to npm
         run: |
           export VERSION="${{ needs.release.outputs.version }}"
           echo "Publishing package with version $VERSION"
