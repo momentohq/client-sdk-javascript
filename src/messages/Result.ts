@@ -1,4 +1,4 @@
-import {cache} from '@momentohq/generated-types';
+import {cache} from '@gomomento/generated-types';
 
 export enum CacheGetStatus {
   Hit = 'HIT',
