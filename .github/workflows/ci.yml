@@ -9,7 +9,6 @@ jobs:
     runs-on: macos-latest
     env:
       TEST_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
-      TEST_CACHE_NAME: integration_tests_ruth_debugging
 
     steps:
       - name: Setup repo
@@ -20,10 +19,10 @@ jobs:
         with:
           node-version: 16
 
-#      - name: Configure Artifactory credentials
-#        run: |
-#          # lel this is how jfrog wants you to come up with your scoped npm configuration
-##          echo @momento:registry=https://momento.jfrog.io/artifactory/api/npm/npm-public/ >> ~/.npmrc
+      #      - name: Configure Artifactory credentials
+      #        run: |
+      #          # lel this is how jfrog wants you to come up with your scoped npm configuration
+      ##          echo @momento:registry=https://momento.jfrog.io/artifactory/api/npm/npm-public/ >> ~/.npmrc
 
       - name: Install Dependencies
         run: npm ci
