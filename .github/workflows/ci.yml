@@ -6,10 +6,10 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     env:
       TEST_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
-      TEST_CACHE_NAME: dummy
+      TEST_CACHE_NAME: js-integration-test-ci
 
     steps:
       - name: Setup repo
@@ -18,8 +18,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v1
         with:
-          node-version: '16.5.0'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: 16
 
       - name: Install Dependencies
         run: |
@@ -29,11 +28,11 @@ jobs:
       - name: Build
         run: npm run build
 
-#      - name: Lint
-#        run: npm run lint
-#
-#      - name: Test
-#        run: npm run test
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test
 
       - name: Integration Test
         run: npm run integration

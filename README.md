@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Momento client-sdk-javascript
 
 :warning: Experimental SDK :warning:
@@ -68,3 +69,8 @@ provide it.
 export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
 npm run integration
 ```
+=======
+# Momento Javascript SDK
+
+Wraps `@momento/generated-types` with higher-level functions.
+>>>>>>> main
