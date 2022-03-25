@@ -1,7 +1,6 @@
 import {v4} from 'uuid';
-// TODO: deprecating credentials file for now
-// import * as fs from 'fs';
-// import * as os from 'os';
+import * as fs from 'fs';
+import * as os from 'os';
 import {SimpleCacheClient, TimeoutError} from '../src';
 import {AlreadyExistsError, NotFoundError} from '../src/Errors';
 import {TextEncoder} from 'util';
@@ -11,36 +10,32 @@ if (!AUTH_TOKEN) {
   throw new Error('Missing required env var TEST_AUTH_TOKEN');
 }
 
-// TODO: deprecating credentials file for now
-// const momentoDirName = `${os.homedir()}/.momento`;
-// const credsFilePath = `${momentoDirName}/credentials.toml`;
-// const createSystemCredentials = (profile?: string) => {
-//   const profileName = profile ?? 'default';
-//   if (profile) {
-//     process.env.MOMENTO_PROFILE = profileName;
-//   }
-//   if (!fs.existsSync(momentoDirName)) {
-//     fs.mkdirSync(momentoDirName);
-//   } else {
-//     throw new Error(`${momentoDirName} directory exists.
-// These integration tests test reading profiles from disk, and create a ~/.momento directory to test this.
-// To avoid overriding existing profiles, this error has been thrown.
-// If you a want to run these tests, run "mv ~/.momento ~/.momento.bac" to save the current profiles.
-// After these tests complete run "mv ~/.momento.bac ~/.momento" to restore the profiles`);
-//   }
-//   fs.writeFileSync(
-//     credsFilePath,
-//     `[profile.${profileName}]
-// token = "${AUTH_TOKEN}"`
-//   );
-// };
-//
-// const removeSystemCredentials = () => {
-//   fs.rmSync(momentoDirName, {
-//     force: true,
-//     recursive: true,
-//   });
-// };
+const momentoDirName = `${os.homedir()}/.momento-test`;
+const credsFilePath = `${momentoDirName}/credentials`;
+const createSystemCredentials = (profile?: string) => {
+  const profileName = profile ?? 'default';
+  if (profile) {
+    process.env.MOMENTO_PROFILE = profileName;
+  }
+  if (!fs.existsSync(momentoDirName)) {
+    fs.mkdirSync(momentoDirName);
+  } else {
+    throw new Error(`${momentoDirName} directory exists.
+These integration tests test reading profiles from disk, and create a ~/.momento-test directory to test this.`);
+  }
+  fs.writeFileSync(
+    credsFilePath,
+    `[profile.${profileName}]
+token = "${AUTH_TOKEN}"`
+  );
+};
+
+const removeSystemCredentials = () => {
+  fs.rmSync(momentoDirName, {
+    force: true,
+    recursive: true,
+  });
+};
 
 describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should create and delete a cache', async () => {
@@ -66,31 +61,31 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     );
     await momento.deleteCache(cacheName);
   });
-  // TODO: deprecating credentials file for now
-  // it('should use the default auth token from ~/.momento/credentials.toml', async () => {
-  //   createSystemCredentials();
-  //   const cacheName = v4();
-  //   const momento = new Momento();
-  //   await momento.createCache(cacheName);
-  //   await expect(momento.createCache(cacheName)).rejects.toThrow(
-  //     AlreadyExistsError
-  //   );
-  //   await momento.deleteCache(cacheName);
-  //
-  //   removeSystemCredentials();
-  // });
-  //
-  // it('should use the MOMENTO_PROFILE auth token from ~/.momento/credentials.toml', async () => {
-  //   createSystemCredentials('profile2');
-  //   const cacheName = v4();
-  //   const momento = new Momento();
-  //   await momento.createCache(cacheName);
-  //   await expect(momento.createCache(cacheName)).rejects.toThrow(
-  //     AlreadyExistsError
-  //   );
-  //   await momento.deleteCache(cacheName);
-  //   removeSystemCredentials();
-  // });
+
+  it('should use the default auth token from ~/.momento-test/credentials', async () => {
+    createSystemCredentials();
+    const cacheName = v4();
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    await momento.createCache(cacheName);
+    await expect(momento.createCache(cacheName)).rejects.toThrow(
+      AlreadyExistsError
+    );
+    await momento.deleteCache(cacheName);
+
+    removeSystemCredentials();
+  });
+
+  it('should use the MOMENTO_PROFILE auth token from ~/.momento-test/credentials', async () => {
+    createSystemCredentials('profile2');
+    const cacheName = v4();
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    await momento.createCache(cacheName);
+    await expect(momento.createCache(cacheName)).rejects.toThrow(
+      AlreadyExistsError
+    );
+    await momento.deleteCache(cacheName);
+    removeSystemCredentials();
+  });
 
   it('should create 1 cache and list the created cache', async () => {
     const cacheName = v4();
@@ -113,59 +108,69 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     expect(res.text()).toEqual(cacheValue);
     await momento.deleteCache(cacheName);
   });
-  // it('should set and get bytes from cache', async () => {
-  //   const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-  //   const cacheKey = new TextEncoder().encode(v4());
-  //   const cacheValue = new TextEncoder().encode(v4());
-  //   await momento.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
-  //   const res = await momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
-  //   expect(res.bytes()).toEqual(cacheValue);
-  // });
-  // it('should set string key with bytes value', async () => {
-  //   const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-  //   const cacheKey = v4();
-  //   const cacheValue = new TextEncoder().encode(v4());
-  //   await momento.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
-  //   const res = await momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
-  //   expect(res.bytes()).toEqual(cacheValue);
-  // });
-  // it('should set byte key with string value', async () => {
-  //   const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-  //   const cacheValue = v4();
-  //   const cacheKey = new TextEncoder().encode(v4());
-  //   await momento.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
-  //   const res = await momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
-  //   expect(res.text()).toEqual(cacheValue);
-  // });
-  // it('should set and get string from cache and returned set value matches string cacheValue', async () => {
-  //   const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-  //   const cacheKey = v4();
-  //   const cacheValue = v4();
-  //   const setResult = await momento.set(
-  //     INTEGRATION_TEST_CACHE_NAME,
-  //     cacheKey,
-  //     cacheValue
-  //   );
-  //   expect(setResult.text()).toEqual(cacheValue);
-  // });
-  // it('should set string key with bytes value and returned set value matches byte cacheValue', async () => {
-  //   const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-  //   const cacheKey = v4();
-  //   const cacheValue = new TextEncoder().encode(v4());
-  //   const setResult = await momento.set(
-  //     INTEGRATION_TEST_CACHE_NAME,
-  //     cacheKey,
-  //     cacheValue
-  //   );
-  //   expect(setResult.bytes()).toEqual(cacheValue);
-  // });
-  // it('should terminate connection for a short deadline', async () => {
-  //   const momento = new SimpleCacheClient(AUTH_TOKEN, 1111, 1);
-  //   const cacheKey = v4();
-  //   // Create a longer cache value that should take longer than 1ms to send
-  //   const cacheValue = new TextEncoder().encode(v4().repeat(10));
-  //   await expect(
-  //     momento.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue)
-  //   ).rejects.toThrow(TimeoutError);
-  // });
+  it('should set and get bytes from cache', async () => {
+    const cacheName = v4();
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    await momento.createCache(cacheName);
+    const cacheKey = new TextEncoder().encode(v4());
+    const cacheValue = new TextEncoder().encode(v4());
+    await momento.set(cacheName, cacheKey, cacheValue);
+    const res = await momento.get(cacheName, cacheKey);
+    expect(res.bytes()).toEqual(cacheValue);
+    await momento.deleteCache(cacheName);
+  });
+  it('should set string key with bytes value', async () => {
+    const cacheName = v4();
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    await momento.createCache(cacheName);
+    const cacheKey = v4();
+    const cacheValue = new TextEncoder().encode(v4());
+    await momento.set(cacheName, cacheKey, cacheValue);
+    const res = await momento.get(cacheName, cacheKey);
+    expect(res.bytes()).toEqual(cacheValue);
+    await momento.deleteCache(cacheName);
+  });
+  it('should set byte key with string value', async () => {
+    const cacheName = v4();
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    await momento.createCache(cacheName);
+    const cacheValue = v4();
+    const cacheKey = new TextEncoder().encode(v4());
+    await momento.set(cacheName, cacheKey, cacheValue);
+    const res = await momento.get(cacheName, cacheKey);
+    expect(res.text()).toEqual(cacheValue);
+    await momento.deleteCache(cacheName);
+  });
+  it('should set and get string from cache and returned set value matches string cacheValue', async () => {
+    const cacheName = v4();
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    await momento.createCache(cacheName);
+    const cacheKey = v4();
+    const cacheValue = v4();
+    const setResult = await momento.set(cacheName, cacheKey, cacheValue);
+    expect(setResult.text()).toEqual(cacheValue);
+    await momento.deleteCache(cacheName);
+  });
+  it('should set string key with bytes value and returned set value matches byte cacheValue', async () => {
+    const cacheName = v4();
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    await momento.createCache(cacheName);
+    const cacheKey = v4();
+    const cacheValue = new TextEncoder().encode(v4());
+    const setResult = await momento.set(cacheName, cacheKey, cacheValue);
+    expect(setResult.bytes()).toEqual(cacheValue);
+    await momento.deleteCache(cacheName);
+  });
+  it('should terminate connection for a short deadline', async () => {
+    const cacheName = v4();
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111, 1);
+    await momento.createCache(cacheName);
+    const cacheKey = v4();
+    // Create a longer cache value that should take longer than 1ms to send
+    const cacheValue = new TextEncoder().encode(v4().repeat(10));
+    await expect(momento.set(cacheName, cacheKey, cacheValue)).rejects.toThrow(
+      TimeoutError
+    );
+    await momento.deleteCache(cacheName);
+  });
 });
