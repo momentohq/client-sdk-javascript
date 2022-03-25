@@ -1,4 +1,4 @@
-import {control} from '@momentohq/generated-types';
+import {control} from '@gomomento/generated-types';
 import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
 import {ClientTimeoutInterceptor} from './grpc/ClientTimeoutInterceptor';
 import {

@@ -1,6 +1,6 @@
 {
-  "name": "@momentohq/sdk",
-  "version": "0.7.3",
+  "name": "@gomomento/sdk",
+  "version": "0.0.1",
   "description": "Client SDK for Momento services",
   "main": "dist/src/index.js",
   "files": [
@@ -46,7 +46,7 @@
     "@grpc/grpc-js": "1.5.10",
     "jwt-decode": "3.1.2",
     "toml": "^3.0.0",
-    "@momentohq/generated-types": "0.9.2"
+    "@gomomento/generated-types": "0.10.1"
   },
   "engines": {
     "node": ">= 10.13.0"

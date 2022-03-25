@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Momento client-sdk-javascript
 
 :warning: Experimental SDK :warning:
@@ -33,7 +32,7 @@ Check out our [JavaScript SDK example repo](https://github.com/momentohq/client-
 ### Using Momento
 
 ```typescript
-import {SimpleCacheClient, CacheGetStatus} from '@momento/sdk';
+import {SimpleCacheClient, CacheGetStatus} from '@gomomento/sdk';
 
 // your authentication token for momento
 const authToken = process.env.MOMENTO_AUTH_TOKEN;
@@ -69,8 +68,3 @@ provide it.
 export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
 npm run integration
 ```
-=======
-# Momento Javascript SDK
-
-Wraps `@momento/generated-types` with higher-level functions.
->>>>>>> main
