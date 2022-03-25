@@ -53,20 +53,20 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     expect(res.text()).toEqual('value');
     await momento.deleteCache(cacheName);
   });
-  it('should throw CacheNotFoundError if deleting a non-existent cache', async () => {
-    const cacheName = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-    await expect(momento.deleteCache(cacheName)).rejects.toThrow(NotFoundError);
-  });
-  it('should throw CacheAlreadyExistsError if trying to create a cache that already exists', async () => {
-    const cacheName = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-    await momento.createCache(cacheName);
-    await expect(momento.createCache(cacheName)).rejects.toThrow(
-      AlreadyExistsError
-    );
-    await momento.deleteCache(cacheName);
-  });
+  // it('should throw CacheNotFoundError if deleting a non-existent cache', async () => {
+  //   const cacheName = v4();
+  //   const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+  //   await expect(momento.deleteCache(cacheName)).rejects.toThrow(NotFoundError);
+  // });
+  // it('should throw CacheAlreadyExistsError if trying to create a cache that already exists', async () => {
+  //   const cacheName = v4();
+  //   const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+  //   await momento.createCache(cacheName);
+  //   await expect(momento.createCache(cacheName)).rejects.toThrow(
+  //     AlreadyExistsError
+  //   );
+  //   await momento.deleteCache(cacheName);
+  // });
   // TODO: deprecating credentials file for now
   // it('should use the default auth token from ~/.momento/credentials.toml', async () => {
   //   createSystemCredentials();
