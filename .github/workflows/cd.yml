@@ -76,23 +76,8 @@ jobs:
         run: |
           export VERSION="${{ needs.release.outputs.version }}"
           echo "Publishing lambda layer with version $VERSION"
-          mkdir -p nodejs/node_modules
-          pushd nodejs/node_modules
-            npm i @gomomento/sdk@${VERSION}
+          pushd build-scripts
+            ./build-lambda-layer.sh
+            ./publish-lambda-layer.sh ${VERSION}
           popd
-          zip -r layer.zip nodejs
-          LAYER_NAME="momento-sdk-javascript"
-          LAYER_VERSION=$(aws lambda publish-layer-version \
-            --layer-name ${LAYER_NAME} \
-            --description "Lambda layer using Momento sdk version ${VERSION}" \
-            --license-info "Apache License 2.0" \
-            --zip-file layer.zip \
-            --compatible-runtimes nodejs14.x nodejs12.x | jq '.Version')
-          
-          aws lambda add-layer-version-permission \
-            --layer-name ${LAYER_NAME} \
-            --version-number ${LAYER_VERSION} \
-            --statement-id "Allow all aws accounts access to momento-sdk-javascript lambda layer, version: ${VERSION}" \
-            --principal * \
-            --action lambda:GetLayerVersion
         shell: bash
