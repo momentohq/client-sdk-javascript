@@ -31,6 +31,7 @@ export class MomentoCache {
   private readonly requestTimeoutMs: number;
   private readonly authToken: string;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
+  private static isUserAgentSent = false;
 
   /**
    * @param {MomentoCacheProps} props
@@ -173,11 +174,14 @@ export class MomentoCache {
         name: 'cache',
         value: cacheName,
       },
-      {
+    ];
+    if (!MomentoCache.isUserAgentSent) {
+      headers.push({
         name: 'Agent',
         value: `javascript:${version}`,
-      },
-    ];
+      });
+      MomentoCache.isUserAgentSent = true;
+    }
     return [
       addHeadersInterceptor(headers),
       ClientTimeoutInterceptor(this.requestTimeoutMs),
