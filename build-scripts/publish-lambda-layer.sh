@@ -31,6 +31,6 @@ pushd ..
   --layer-name "${LAYER_NAME}" \
   --version-number "${LAYER_VERSION}" \
   --statement-id "Allow all aws accounts access to momento-sdk-javascript lambda layer, version: ${1}" \
-  --principal * \
+  --principal \* \
   --action lambda:GetLayerVersion
 popd
