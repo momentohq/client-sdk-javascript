@@ -71,6 +71,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.PUBLIC_CICD_DEPLOYER_SECRET_ACCESS_KEY }}
           role-duration-seconds: 1200
           role-session-name: javascript-sdk-lambda-layer-deployer
+          role-skip-session-tagging: true
 
       - name: Publish lambda layer
         run: |
