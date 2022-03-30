@@ -61,3 +61,38 @@ jobs:
         shell: bash
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+
+      - name: Configure AWS credentials for public artifacts account
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::537451838446:role/public-cicd-remote-deployer
+          aws-region: us-west-2
+          aws-access-key-id: ${{ secrets.PUBLIC_CICD_DEPLOYER_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.PUBLIC_CICD_DEPLOYER_SECRET_ACCESS_KEY }}
+          role-duration-seconds: 1200
+          role-session-name: javascript-sdk-lambda-layer-deployer
+
+      - name: Publish lambda layer
+        run: |
+          export VERSION="${{ needs.release.outputs.version }}"
+          echo "Publishing lambda layer with version $VERSION"
+          mkdir -p nodejs/node_modules
+          pushd nodejs/node_modules
+            npm i @gomomento/sdk@${VERSION}
+          popd
+          zip -r layer.zip nodejs
+          LAYER_NAME="momento-sdk-javascript"
+          LAYER_VERSION=$(aws lambda publish-layer-version \
+            --layer-name ${LAYER_NAME} \
+            --description "Lambda layer using Momento sdk version ${VERSION}" \
+            --license-info "Apache License 2.0" \
+            --zip-file layer.zip \
+            --compatible-runtimes nodejs14.x nodejs12.x | jq '.Version')
+          
+          aws lambda add-layer-version-permission \
+            --layer-name ${LAYER_NAME} \
+            --version-number ${LAYER_VERSION} \
+            --statement-id "Allow all aws accounts access to momento-sdk-javascript lambda layer, version: ${VERSION}" \
+            --principal * \
+            --action lambda:GetLayerVersion
+        shell: bash
