@@ -43,10 +43,10 @@ const deleteExistingCache = async (
   momento: SimpleCacheClient,
   cacheName: string
 ) => {
-  const listCacheResp = await momento.listCaches();
-  const cacheList = listCacheResp.getCaches().map(c => c.getName());
-  if (cacheList.includes(cacheName)) {
+  try {
     await momento.deleteCache(cacheName);
+  } catch (e) {
+    console.log(e);
   }
 };
 
