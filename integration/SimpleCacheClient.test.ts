@@ -39,10 +39,22 @@ const removeSystemCredentials = () => {
   });
 };
 
+const deleteExistingCache = async (
+  momento: SimpleCacheClient,
+  cacheName: string
+) => {
+  try {
+    await momento.deleteCache(cacheName);
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 let momento: SimpleCacheClient;
 
 beforeAll(async () => {
   momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+  await deleteExistingCache(momento, INTEGRATION_TEST_CACHE_NAME);
   await momento.createCache(INTEGRATION_TEST_CACHE_NAME);
 });
 
@@ -54,6 +66,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should create and delete a cache', async () => {
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    await deleteExistingCache(momento, cacheName);
     await momento.createCache(cacheName);
     await momento.set(cacheName, 'key', 'value');
     const res = await momento.get(cacheName, 'key');
@@ -68,6 +81,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should throw CacheAlreadyExistsError if trying to create a cache that already exists', async () => {
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    await deleteExistingCache(momento, cacheName);
     await momento.createCache(cacheName);
     await expect(momento.createCache(cacheName)).rejects.toThrow(
       AlreadyExistsError
@@ -80,6 +94,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     try {
+      await deleteExistingCache(momento, cacheName);
       await momento.createCache(cacheName);
       await expect(momento.createCache(cacheName)).rejects.toThrow(
         AlreadyExistsError
@@ -95,6 +110,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     try {
+      await deleteExistingCache(momento, cacheName);
       await momento.createCache(cacheName);
       await expect(momento.createCache(cacheName)).rejects.toThrow(
         AlreadyExistsError
@@ -108,6 +124,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should create 1 cache and list the created cache', async () => {
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    await deleteExistingCache(momento, cacheName);
     await momento.createCache(cacheName);
     const caches = (await momento.listCaches()).getCaches();
     const names = caches.map(c => c.getName());
@@ -166,6 +183,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should terminate connection for a short deadline', async () => {
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111, 1);
+    await deleteExistingCache(momento, cacheName);
     await momento.createCache(cacheName);
     const cacheKey = v4();
     // Create a longer cache value that should take longer than 1ms to send
