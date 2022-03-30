@@ -24,7 +24,7 @@ pushd ..
   --layer-name "${LAYER_NAME}" \
   --description "Lambda layer using Momento sdk version ${1}" \
   --license-info "Apache License 2.0" \
-  --zip-file "${FILENAME}" \
+  --zip-file fileb://${FILENAME} \
   --compatible-runtimes nodejs14.x nodejs12.x | jq '.Version')
 
   aws lambda add-layer-version-permission \
