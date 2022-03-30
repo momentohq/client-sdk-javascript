@@ -12,6 +12,7 @@ import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {DeleteCacheResponse} from './messages/DeleteCacheResponse';
 import {CreateCacheResponse} from './messages/CreateCacheResponse';
 import {ListCachesResponse} from './messages/ListCachesResponse';
+import {version} from '../package.json';
 
 export interface MomentoProps {
   authToken: string;
@@ -31,6 +32,10 @@ export class Momento {
       {
         name: 'Authorization',
         value: props.authToken,
+      },
+      {
+        name: 'Agent',
+        value: `javascript:${version}`,
       },
     ];
     this.interceptors = [

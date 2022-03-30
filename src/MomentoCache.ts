@@ -9,6 +9,7 @@ import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
+import {version} from '../package.json';
 
 /**
  * @property {string} authToken - momento jwt token
@@ -171,6 +172,10 @@ export class MomentoCache {
       {
         name: 'cache',
         value: cacheName,
+      },
+      {
+        name: 'Agent',
+        value: `javascript:${version}`,
       },
     ];
     return [
