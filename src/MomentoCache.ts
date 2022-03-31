@@ -9,6 +9,7 @@ import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
+import {version} from '../package.json';
 
 /**
  * @property {string} authToken - momento jwt token
@@ -30,6 +31,7 @@ export class MomentoCache {
   private readonly requestTimeoutMs: number;
   private readonly authToken: string;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
+  private static isUserAgentSent = false;
 
   /**
    * @param {MomentoCacheProps} props
@@ -173,6 +175,13 @@ export class MomentoCache {
         value: cacheName,
       },
     ];
+    if (!MomentoCache.isUserAgentSent) {
+      headers.push({
+        name: 'Agent',
+        value: `javascript:${version}`,
+      });
+      MomentoCache.isUserAgentSent = true;
+    }
     return [
       addHeadersInterceptor(headers),
       ClientTimeoutInterceptor(this.requestTimeoutMs),
