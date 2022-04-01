@@ -1,7 +1,7 @@
 import {cache} from '@gomomento/generated-types';
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextEncoder} from 'util';
-import {HeaderInterceptor} from './grpc/HeadersInterceptor';
+import {Header, HeaderInterceptor} from './grpc/HeadersInterceptor';
 import {ClientTimeoutInterceptor} from './grpc/ClientTimeoutInterceptor';
 import {CacheGetStatus, momentoResultConverter} from './messages/Result';
 import {InvalidArgumentError, UnknownServiceError} from './Errors';
@@ -166,18 +166,9 @@ export class MomentoCache {
 
   private getInterceptors(cacheName: string): Interceptor[] {
     const headers = [
-      {
-        name: 'Authorization',
-        value: this.authToken,
-      },
-      {
-        name: 'cache',
-        value: cacheName,
-      },
-      {
-        name: 'Agent',
-        value: `javascript:${version}`,
-      },
+      new Header('Authorization', this.authToken),
+      new Header('cache', cacheName),
+      new Header('Agent', `javascript:${version}`),
     ];
     return [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
