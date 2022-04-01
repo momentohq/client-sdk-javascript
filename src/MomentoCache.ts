@@ -1,7 +1,7 @@
 import {cache} from '@gomomento/generated-types';
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextEncoder} from 'util';
-import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
+import {HeaderInterceptor} from './grpc/HeadersInterceptor';
 import {ClientTimeoutInterceptor} from './grpc/ClientTimeoutInterceptor';
 import {CacheGetStatus, momentoResultConverter} from './messages/Result';
 import {InvalidArgumentError, UnknownServiceError} from './Errors';
@@ -174,16 +174,13 @@ export class MomentoCache {
         name: 'cache',
         value: cacheName,
       },
-    ];
-    if (!MomentoCache.isUserAgentSent) {
-      headers.push({
+      {
         name: 'Agent',
         value: `javascript:${version}`,
-      });
-      MomentoCache.isUserAgentSent = true;
-    }
+      },
+    ];
     return [
-      addHeadersInterceptor(headers),
+      new HeaderInterceptor(headers).addHeadersInterceptor(),
       ClientTimeoutInterceptor(this.requestTimeoutMs),
     ];
   }

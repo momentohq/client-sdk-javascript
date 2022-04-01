@@ -1,5 +1,5 @@
 import {control} from '@gomomento/generated-types';
-import {addHeadersInterceptor} from './grpc/AddHeadersInterceptor';
+import {HeaderInterceptor} from './grpc/HeadersInterceptor';
 import {ClientTimeoutInterceptor} from './grpc/ClientTimeoutInterceptor';
 import {
   InvalidArgumentError,
@@ -23,7 +23,6 @@ export class Momento {
   private readonly client: control.control_client.ScsControlClient;
   private readonly interceptors: Interceptor[];
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
-  private static isUserAgentSent = false;
 
   /**
    * @param {MomentoProps} props
@@ -34,16 +33,13 @@ export class Momento {
         name: 'Authorization',
         value: props.authToken,
       },
-    ];
-    if (!Momento.isUserAgentSent) {
-      headers.push({
+      {
         name: 'Agent',
         value: `javascript:${version}`,
-      });
-      Momento.isUserAgentSent = true;
-    }
+      },
+    ];
     this.interceptors = [
-      addHeadersInterceptor(headers),
+      new HeaderInterceptor(headers).addHeadersInterceptor(),
       ClientTimeoutInterceptor(Momento.REQUEST_TIMEOUT_MS),
     ];
     this.client = new control.control_client.ScsControlClient(
