@@ -1,5 +1,5 @@
 import {control} from '@gomomento/generated-types';
-import {HeaderInterceptor} from './grpc/HeadersInterceptor';
+import {Header, HeaderInterceptor} from './grpc/HeadersInterceptor';
 import {ClientTimeoutInterceptor} from './grpc/ClientTimeoutInterceptor';
 import {
   InvalidArgumentError,
@@ -29,14 +29,8 @@ export class Momento {
    */
   constructor(props: MomentoProps) {
     const headers = [
-      {
-        name: 'Authorization',
-        value: props.authToken,
-      },
-      {
-        name: 'Agent',
-        value: `javascript:${version}`,
-      },
+      new Header('Authorization', props.authToken),
+      new Header('Agent', `javascript:${version}`),
     ];
     this.interceptors = [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
