@@ -6,6 +6,9 @@ import {GetResponse} from './messages/GetResponse';
 import {CreateCacheResponse} from './messages/CreateCacheResponse';
 import {DeleteCacheResponse} from './messages/DeleteCacheResponse';
 import {ListCachesResponse} from './messages/ListCachesResponse';
+import {CreateSigningKeyResponse} from './messages/CreateSigningKeyResponse';
+import {RevokeSigningKeyResponse} from './messages/RevokeSigningKeyResponse';
+import {ListSigningKeysResponse} from './messages/ListSigningKeysResponse';
 
 export class SimpleCacheClient {
   private readonly dataClient: MomentoCache;
@@ -91,5 +94,44 @@ export class SimpleCacheClient {
    */
   public async listCaches(nextToken?: string): Promise<ListCachesResponse> {
     return await this.controlClient.listCaches(nextToken);
+  }
+
+  /**
+   * creates a Momento signing key
+   * @param ttlMinutes - the time to live in minutes until the Momento signing key expires
+   * @returns Promise<CreateSigningKeyResponse>
+   */
+  public async createSigningKey(
+    ttlMinutes: number
+  ): Promise<CreateSigningKeyResponse> {
+    return await this.controlClient.createSigningKey(
+      ttlMinutes,
+      this.dataClient.getEndpoint()
+    );
+  }
+
+  /**
+   * revokes a Momento signing key, all tokens signed by which will be invalid
+   * @param keyId  - the id of the Momento signing key to revoke
+   * @returns Promise<RevokeSigningKeyResponse>
+   */
+  public async revokeSigningKey(
+    keyId: string
+  ): Promise<RevokeSigningKeyResponse> {
+    return await this.controlClient.revokeSigningKey(keyId);
+  }
+
+  /**
+   * lists all Momento signing keys for the provided auth token
+   * @param nextToken - token to continue paginating through the list. It's used to handle large paginated lists.
+   * @returns Promise<ListSigningKeysResponse>
+   */
+  public async listSigningKeys(
+    nextToken?: string
+  ): Promise<ListSigningKeysResponse> {
+    return await this.controlClient.listSigningKeys(
+      this.dataClient.getEndpoint(),
+      nextToken
+    );
   }
 }

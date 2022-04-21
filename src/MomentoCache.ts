@@ -30,6 +30,7 @@ export class MomentoCache {
   private readonly defaultTtlSeconds: number;
   private readonly requestTimeoutMs: number;
   private readonly authToken: string;
+  private readonly endpoint: string;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   private static isUserAgentSent = false;
 
@@ -47,6 +48,11 @@ export class MomentoCache {
     this.requestTimeoutMs =
       props.requestTimeoutMs || MomentoCache.DEFAULT_REQUEST_TIMEOUT_MS;
     this.authToken = props.authToken;
+    this.endpoint = props.endpoint;
+  }
+
+  public getEndpoint(): string {
+    return this.endpoint;
   }
 
   private static validateRequestTimeout(timeout?: number) {
