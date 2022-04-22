@@ -4,7 +4,6 @@ import * as os from 'os';
 import {SimpleCacheClient, TimeoutError} from '../src';
 import {AlreadyExistsError, NotFoundError} from '../src/Errors';
 import {TextEncoder} from 'util';
-import {ListSigningKeysResponse} from '../src/messages/ListSigningKeysResponse';
 
 const AUTH_TOKEN = process.env.TEST_AUTH_TOKEN;
 if (!AUTH_TOKEN) {
@@ -196,25 +195,22 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   });
   it('should create, list, and revoke a signing key', async () => {
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-    let listSigningKeysResponse: ListSigningKeysResponse;
-    try {
-      const createSigningKeyResponse = await momento.createSigningKey(30);
-      listSigningKeysResponse = await momento.listSigningKeys();
-      const signingKeys = listSigningKeysResponse.getSigningKeys();
-      expect(signingKeys.length).toEqual(1);
-      expect(signingKeys[0].getKeyId()).toEqual(
-        createSigningKeyResponse.getKeyId()
-      );
-      expect(signingKeys[0].getEndpoint()).toEqual(
-        createSigningKeyResponse.getEndpoint()
-      );
-    } finally {
-      listSigningKeysResponse = await momento.listSigningKeys();
-      for (const signingKey of listSigningKeysResponse.getSigningKeys()) {
-        await momento.revokeSigningKey(signingKey.getKeyId());
-      }
-    }
+    const createSigningKeyResponse = await momento.createSigningKey(30);
+    let listSigningKeysResponse = await momento.listSigningKeys();
+    let signingKeys = listSigningKeysResponse.getSigningKeys();
+    expect(signingKeys.length).toBeGreaterThan(0);
+    expect(
+      signingKeys
+        .map(k => k.getKeyId())
+        .some(k => k === createSigningKeyResponse.getKeyId())
+    ).toEqual(true);
+    await momento.revokeSigningKey(createSigningKeyResponse.getKeyId());
     listSigningKeysResponse = await momento.listSigningKeys();
-    expect(listSigningKeysResponse.getSigningKeys().length).toEqual(0);
+    signingKeys = listSigningKeysResponse.getSigningKeys();
+    expect(
+      signingKeys
+        .map(k => k.getKeyId())
+        .some(k => k === createSigningKeyResponse.getKeyId())
+    ).toEqual(false);
   });
 });
