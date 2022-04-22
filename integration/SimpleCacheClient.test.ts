@@ -4,7 +4,7 @@ import * as os from 'os';
 import {SimpleCacheClient, TimeoutError} from '../src';
 import {AlreadyExistsError, NotFoundError} from '../src/Errors';
 import {TextEncoder} from 'util';
-import { ListSigningKeysResponse } from '../src/messages/ListSigningKeysResponse';
+import {ListSigningKeysResponse} from '../src/messages/ListSigningKeysResponse';
 
 const AUTH_TOKEN = process.env.TEST_AUTH_TOKEN;
 if (!AUTH_TOKEN) {
