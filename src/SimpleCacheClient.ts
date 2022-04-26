@@ -6,6 +6,7 @@ import {GetResponse} from './messages/GetResponse';
 import {CreateCacheResponse} from './messages/CreateCacheResponse';
 import {DeleteCacheResponse} from './messages/DeleteCacheResponse';
 import {ListCachesResponse} from './messages/ListCachesResponse';
+import {DeleteResponse} from './messages/DeleteResponse';
 
 export class SimpleCacheClient {
   private readonly dataClient: MomentoCache;
@@ -63,6 +64,18 @@ export class SimpleCacheClient {
     ttl?: number
   ): Promise<SetResponse> {
     return await this.dataClient.set(cacheName, key, value, ttl);
+  }
+
+  /**
+   * @param {string} cacheName
+   * @param {string | Uint8Array} key
+   * @returns Promise<DeleteResponse>
+   */
+  public async delete(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<DeleteResponse> {
+    return await this.dataClient.delete(cacheName, key);
   }
 
   /**
