@@ -181,15 +181,15 @@ export class Momento {
     });
   }
 
-  private validateCacheName = (name: string) => {
+  private validateCacheName(name: string) {
     if (!name.trim()) {
       throw new InvalidArgumentError('cache name must not be empty');
     }
-  };
+  }
 
-  private validateTtlMinutes = (ttlMinutes: number) => {
-    if (ttlMinutes && ttlMinutes < 0) {
+  private validateTtlMinutes(ttlMinutes: number) {
+    if (ttlMinutes < 0) {
       throw new InvalidArgumentError('ttlMinutes must be positive');
     }
-  };
+  }
 }
