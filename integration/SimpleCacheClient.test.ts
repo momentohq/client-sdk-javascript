@@ -193,4 +193,24 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     );
     await momento.deleteCache(cacheName);
   });
+  it('should create, list, and revoke a signing key', async () => {
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const createSigningKeyResponse = await momento.createSigningKey(30);
+    let listSigningKeysResponse = await momento.listSigningKeys();
+    let signingKeys = listSigningKeysResponse.getSigningKeys();
+    expect(signingKeys.length).toBeGreaterThan(0);
+    expect(
+      signingKeys
+        .map(k => k.getKeyId())
+        .some(k => k === createSigningKeyResponse.getKeyId())
+    ).toEqual(true);
+    await momento.revokeSigningKey(createSigningKeyResponse.getKeyId());
+    listSigningKeysResponse = await momento.listSigningKeys();
+    signingKeys = listSigningKeysResponse.getSigningKeys();
+    expect(
+      signingKeys
+        .map(k => k.getKeyId())
+        .some(k => k === createSigningKeyResponse.getKeyId())
+    ).toEqual(false);
+  });
 });

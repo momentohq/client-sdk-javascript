@@ -13,6 +13,9 @@ import {DeleteCacheResponse} from './messages/DeleteCacheResponse';
 import {CreateCacheResponse} from './messages/CreateCacheResponse';
 import {ListCachesResponse} from './messages/ListCachesResponse';
 import {version} from '../package.json';
+import {CreateSigningKeyResponse} from './messages/CreateSigningKeyResponse';
+import {RevokeSigningKeyResponse} from './messages/RevokeSigningKeyResponse';
+import {ListSigningKeysResponse} from './messages/ListSigningKeysResponse';
 
 export interface MomentoProps {
   authToken: string;
@@ -115,9 +118,78 @@ export class Momento {
     });
   }
 
-  private validateCacheName = (name: string) => {
+  public async createSigningKey(
+    ttlMinutes: number,
+    endpoint: string
+  ): Promise<CreateSigningKeyResponse> {
+    this.validateTtlMinutes(ttlMinutes);
+    const request = new control.control_client._CreateSigningKeyRequest();
+    request.ttl_minutes = ttlMinutes;
+    return await new Promise<CreateSigningKeyResponse>((resolve, reject) => {
+      this.client.CreateSigningKey(
+        request,
+        {interceptors: this.interceptors},
+        (err, resp) => {
+          if (err) {
+            reject(cacheServiceErrorMapper(err));
+          } else {
+            resolve(new CreateSigningKeyResponse(endpoint, resp));
+          }
+        }
+      );
+    });
+  }
+
+  public async revokeSigningKey(
+    keyId: string
+  ): Promise<RevokeSigningKeyResponse> {
+    const request = new control.control_client._RevokeSigningKeyRequest();
+    request.key_id = keyId;
+    return await new Promise<RevokeSigningKeyResponse>((resolve, reject) => {
+      this.client.RevokeSigningKey(
+        request,
+        {interceptors: this.interceptors},
+        err => {
+          if (err) {
+            reject(cacheServiceErrorMapper(err));
+          } else {
+            resolve(new RevokeSigningKeyResponse());
+          }
+        }
+      );
+    });
+  }
+
+  public async listSigningKeys(
+    endpoint: string,
+    nextToken?: string
+  ): Promise<ListSigningKeysResponse> {
+    const request = new control.control_client._ListSigningKeysRequest();
+    request.next_token = nextToken ?? '';
+    return await new Promise<ListSigningKeysResponse>((resolve, reject) => {
+      this.client.ListSigningKeys(
+        request,
+        {interceptors: this.interceptors},
+        (err, resp) => {
+          if (err) {
+            reject(cacheServiceErrorMapper(err));
+          } else {
+            resolve(new ListSigningKeysResponse(endpoint, resp));
+          }
+        }
+      );
+    });
+  }
+
+  private validateCacheName(name: string) {
     if (!name.trim()) {
       throw new InvalidArgumentError('cache name must not be empty');
     }
-  };
+  }
+
+  private validateTtlMinutes(ttlMinutes: number) {
+    if (ttlMinutes < 0) {
+      throw new InvalidArgumentError('ttlMinutes must be positive');
+    }
+  }
 }
