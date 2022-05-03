@@ -1,7 +1,7 @@
 import {v4} from 'uuid';
 import * as fs from 'fs';
 import * as os from 'os';
-import {SimpleCacheClient, TimeoutError} from '../src';
+import {CacheGetStatus, SimpleCacheClient, TimeoutError} from '../src';
 import {AlreadyExistsError, NotFoundError} from '../src/Errors';
 import {TextEncoder} from 'util';
 
@@ -192,6 +192,18 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       TimeoutError
     );
     await momento.deleteCache(cacheName);
+  });
+  it('should set and then delete a value in cache', async () => {
+    const cacheKey = v4();
+    const cacheValue = new TextEncoder().encode(v4());
+    await momento.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
+    const getSuccess = await momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
+    // validate set worked correctly
+    expect(getSuccess.bytes()).toEqual(cacheValue);
+
+    await momento.delete(INTEGRATION_TEST_CACHE_NAME, cacheKey);
+    const getMiss = await momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
+    expect(getMiss.status).toEqual(CacheGetStatus.Miss);
   });
   it('should create, list, and revoke a signing key', async () => {
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);

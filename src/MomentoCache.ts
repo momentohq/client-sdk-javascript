@@ -10,6 +10,7 @@ import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
 import {version} from '../package.json';
+import {DeleteResponse} from './messages/DeleteResponse';
 
 /**
  * @property {string} authToken - momento jwt token
@@ -101,6 +102,38 @@ export class MomentoCache {
         (err, resp) => {
           if (resp) {
             resolve(this.parseSetResponse(resp, value));
+          } else {
+            reject(cacheServiceErrorMapper(err));
+          }
+        }
+      );
+    });
+  }
+
+  public async delete(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<DeleteResponse> {
+    this.ensureValidKey(key);
+    return await this.sendDelete(cacheName, this.convert(key));
+  }
+
+  private async sendDelete(
+    cacheName: string,
+    key: Uint8Array
+  ): Promise<DeleteResponse> {
+    const request = new cache.cache_client._DeleteRequest({
+      cache_key: key,
+    });
+    return await new Promise((resolve, reject) => {
+      this.client.Delete(
+        request,
+        {
+          interceptors: this.getInterceptors(cacheName),
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new DeleteResponse());
           } else {
             reject(cacheServiceErrorMapper(err));
           }
