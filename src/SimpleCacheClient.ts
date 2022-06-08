@@ -11,18 +11,29 @@ import {CreateSigningKeyResponse} from './messages/CreateSigningKeyResponse';
 import {RevokeSigningKeyResponse} from './messages/RevokeSigningKeyResponse';
 import {ListSigningKeysResponse} from './messages/ListSigningKeysResponse';
 
+/**
+ * Momento Simple Cache Client.
+ *
+ * Features include:
+ * - Get, set, and delete data
+ * - Create, delete, and list caches
+ * - Create, revoke, and list signing keys
+ * @export
+ * @class SimpleCacheClient
+ */
 export class SimpleCacheClient {
   private readonly dataClient: MomentoCache;
   private readonly controlClient: Momento;
 
   /**
-   * Create a SimpleCacheClient.
+   * Creates an instance of SimpleCacheClient.
    * @param {string} authToken - Momento token to authenticate requests with Simple Cache Service.
    * @param {number} defaultTtlSeconds - A default time to live, in seconds, for cache objects
    * created by this client.
-   * @param {number} requestTimeoutMs - An optional timeout in milliseconds for get and set operations
+   * @param {number} [requestTimeoutMs] - A timeout in milliseconds for get and set operations
    * to complete. Defaults to 5 seconds. If the request takes longer than this value, it
    * will be terminated and throw a TimeoutError.
+   * @memberof SimpleCacheClient
    */
   constructor(
     authToken: string,
@@ -48,9 +59,10 @@ export class SimpleCacheClient {
   /**
    * Get the cache value stored for the given key.
    * @param {string} cacheName - Name of the cache to perform the lookup in.
-   * @param {string | Uint8Array} key - The key to lookup.
-   * @returns Promise<GetResponse> - Promise containing the status
+   * @param {(string | Uint8Array)} key - The key to lookup.
+   * @returns {Promise<GetResponse>} - Promise containing the status
    * of the get operation (hit or miss) and the associated value.
+   * @memberof SimpleCacheClient
    */
   public async get(
     cacheName: string,
@@ -63,11 +75,12 @@ export class SimpleCacheClient {
    * Sets the value in cache with a given time to live (TTL) seconds.
    * If a value for this key is already present it will be replaced by the new value.
    * @param {string} cacheName - Name of the cache to store the item in.
-   * @param {string | Uint8Array} key - The key to set.
-   * @param {string | Uint8Array} value - The value to be stored.
-   * @param {number=} ttl - Time to live (TTL) for the item in Cache.
+   * @param {(string | Uint8Array)} key - The key to set.
+   * @param {(string | Uint8Array)} value - The value to be stored.
+   * @param {number} [ttl] - Time to live (TTL) for the item in Cache.
    * This TTL takes precedence over the TTL used when initializing a cache client.
-   * @returns Promise<SetResponse> - Result of the set operation.
+   * @returns {Promise<SetResponse>} - Result of the set operation.
+   * @memberof SimpleCacheClient
    */
   public async set(
     cacheName: string,
@@ -81,9 +94,10 @@ export class SimpleCacheClient {
   /**
    * Remove the key from the cache.
    * @param {string} cacheName - Name of the cache to delete the key from.
-   * @param {string | Uint8Array} key - The key to delete.
-   * @returns Promise<DeleteResponse> - Promise containing the result of the
+   * @param {(string | Uint8Array)} key - The key to delete.
+   * @returns {Promise<DeleteResponse>} - Promise containing the result of the
    * delete operation.
+   * @memberof SimpleCacheClient
    */
   public async delete(
     cacheName: string,
@@ -95,7 +109,8 @@ export class SimpleCacheClient {
   /**
    * Create a cache if it does not exist.
    * @param {string} cacheName - Name of the cache to be created.
-   * @returns Promise<CreateCacheResponse> - Promise of the create cache result.
+   * @returns {Promise<CreateCacheResponse>} - Promise of the create cache result.
+   * @memberof SimpleCacheClient
    */
   public async createCache(cacheName: string): Promise<CreateCacheResponse> {
     return await this.controlClient.createCache(cacheName);
@@ -104,7 +119,8 @@ export class SimpleCacheClient {
   /**
    * Delete a cache and all items stored in it.
    * @param {string} cacheName - Name of the cache to delete.
-   * @returns Promise<DeleteCacheResponse> - Promise of the delete cache result.
+   * @returns {Promise<DeleteCacheResponse>} - Promise of the delete cache result.
+   * @memberof SimpleCacheClient
    */
   public async deleteCache(cacheName: string): Promise<DeleteCacheResponse> {
     return await this.controlClient.deleteCache(cacheName);
@@ -112,10 +128,11 @@ export class SimpleCacheClient {
 
   /**
    * List all caches.
-   * @param {string | undefined} nextToken - A token to specify where to start paginating.
+   * @param {string} [nextToken] - A token to specify where to start paginating.
    * This is the NextToken from a previous response.
-   * @returns Promise<ListCacheResponse> - Promise of the list cache response.
+   * @returns {Promise<ListCacheResponse>} - Promise of the list cache response.
    * Contains the listed caches and a next token to continue listing.
+   * @memberof SimpleCacheClient
    */
   public async listCaches(nextToken?: string): Promise<ListCachesResponse> {
     return await this.controlClient.listCaches(nextToken);
@@ -123,9 +140,10 @@ export class SimpleCacheClient {
 
   /**
    * Create a Momento signing key.
-   * @param ttlMinutes - The time to live in minutes until the Momento signing key expires.
-   * @returns Promise<CreateSigningKeyResponse> - Promise of create signing key
+   * @param {number} ttlMinutes - The time to live in minutes until the Momento signing key expires.
+   * @returns {Promise<CreateSigningKeyResponse>} - Promise of create signing key
    * response. Contains endpoint and expiration.
+   * @memberof SimpleCacheClient
    */
   public async createSigningKey(
     ttlMinutes: number
@@ -140,8 +158,9 @@ export class SimpleCacheClient {
    * Revokes a Momento signing key.
    *
    * All tokens signed by this key will be invalid.
-   * @param keyId  - The ID of the Momento signing key to revoke.
-   * @returns Promise<RevokeSigningKeyResponse> - Revocation response (empty)
+   * @param {string} keyId  - The ID of the Momento signing key to revoke.
+   * @returns {Promise<RevokeSigningKeyResponse>} - Revocation response (empty)
+   * @memberof SimpleCacheClient
    */
   public async revokeSigningKey(
     keyId: string
@@ -151,9 +170,10 @@ export class SimpleCacheClient {
 
   /**
    * Lists all Momento signing keys for the provided auth token.
-   * @param nextToken - Token to continue paginating through the list.
-   * @returns Promise<ListSigningKeysResponse> - Promise of the list signing keys response.
+   * @param {string} [nextToken] - Token to continue paginating through the list.
+   * @returns {Promise<ListSigningKeysResponse>} - Promise of the list signing keys response.
    * Contains the retrieved signing keys and a next token to continue listing.
+   * @memberof SimpleCacheClient
    */
   public async listSigningKeys(
     nextToken?: string
