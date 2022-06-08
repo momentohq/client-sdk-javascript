@@ -16,9 +16,13 @@ export class SimpleCacheClient {
   private readonly controlClient: Momento;
 
   /**
-   * @param {string} authToken
-   * @param {number} defaultTtlSeconds
-   * @param {number} requestTimeoutMs
+   * Create a SimpleCacheClient.
+   * @param {string} authToken - Momento token to authenticate requests with Simple Cache Service.
+   * @param {number} defaultTtlSeconds - A default time to live, in seconds, for cache objects
+   * created by this client.
+   * @param {number} requestTimeoutMs - An optional timeout in milliseconds for get and set operations
+   * to complete. Defaults to 5 seconds. If the request takes longer than this value, it
+   * will be terminated and throw a TimeoutError.
    */
   constructor(
     authToken: string,
@@ -42,9 +46,11 @@ export class SimpleCacheClient {
   }
 
   /**
-   * @param {string} cacheName
-   * @param {string | Uint8Array} key
-   * @returns Promise<GetResponse>
+   * Get the cache value stored for the given key.
+   * @param {string} cacheName - Name of the cache to perform the lookup in.
+   * @param {string | Uint8Array} key - The key to lookup.
+   * @returns Promise<GetResponse> - Promise containing the status
+   * of the get operation (hit or miss) and the associated value.
    */
   public async get(
     cacheName: string,
@@ -54,11 +60,14 @@ export class SimpleCacheClient {
   }
 
   /**
-   * @param {string} cacheName
-   * @param {string | Uint8Array} key
-   * @param {string | Uint8Array} value
-   * @param {number=} ttl - time to live in cache, in seconds
-   * @returns Promise<SetResponse>
+   * Sets the value in cache with a given time to live (TTL) seconds.
+   * If a value for this key is already present it will be replaced by the new value.
+   * @param {string} cacheName - Name of the cache to store the item in.
+   * @param {string | Uint8Array} key - The key to set.
+   * @param {string | Uint8Array} value - The value to be stored.
+   * @param {number=} ttl - Time to live (TTL) for the item in Cache.
+   * This TTL takes precedence over the TTL used when initializing a cache client.
+   * @returns Promise<SetResponse> - Result of the set operation.
    */
   public async set(
     cacheName: string,
@@ -70,9 +79,11 @@ export class SimpleCacheClient {
   }
 
   /**
-   * @param {string} cacheName
-   * @param {string | Uint8Array} key
-   * @returns Promise<DeleteResponse>
+   * Remove the key from the cache.
+   * @param {string} cacheName - Name of the cache to delete the key from.
+   * @param {string | Uint8Array} key - The key to delete.
+   * @returns Promise<DeleteResponse> - Promise containing the result of the
+   * delete operation.
    */
   public async delete(
     cacheName: string,
@@ -82,37 +93,39 @@ export class SimpleCacheClient {
   }
 
   /**
-   * creates a new cache in your Momento account
-   * @param {string} cacheName - cache name to create
-   * @returns Promise<CreateCacheResponse>
+   * Create a cache if it does not exist.
+   * @param {string} cacheName - Name of the cache to be created.
+   * @returns Promise<CreateCacheResponse> - Promise of the create cache result.
    */
   public async createCache(cacheName: string): Promise<CreateCacheResponse> {
     return await this.controlClient.createCache(cacheName);
   }
 
   /**
-   * deletes a cache and all the items within it
-   * @param {string} cacheName - name of cache to delete
-   * @returns Promise<DeleteCacheResponse>
+   * Delete a cache and all items stored in it.
+   * @param {string} cacheName - Name of the cache to delete.
+   * @returns Promise<DeleteCacheResponse> - Promise of the delete cache result.
    */
   public async deleteCache(cacheName: string): Promise<DeleteCacheResponse> {
     return await this.controlClient.deleteCache(cacheName);
   }
 
   /**
-   * list all caches
-   * nextToken is used to handle large paginated lists
-   * @param {string | undefined} nextToken - token to continue paginating through the list
-   * @returns Promise<ListCacheResponse>
+   * List all caches.
+   * @param {string | undefined} nextToken - A token to specify where to start paginating.
+   * This is the NextToken from a previous response.
+   * @returns Promise<ListCacheResponse> - Promise of the list cache response.
+   * Contains the listed caches and a next token to continue listing.
    */
   public async listCaches(nextToken?: string): Promise<ListCachesResponse> {
     return await this.controlClient.listCaches(nextToken);
   }
 
   /**
-   * creates a Momento signing key
-   * @param ttlMinutes - the time to live in minutes until the Momento signing key expires
-   * @returns Promise<CreateSigningKeyResponse>
+   * Create a Momento signing key.
+   * @param ttlMinutes - The time to live in minutes until the Momento signing key expires.
+   * @returns Promise<CreateSigningKeyResponse> - Promise of create signing key
+   * response. Contains endpoint and expiration.
    */
   public async createSigningKey(
     ttlMinutes: number
@@ -124,9 +137,11 @@ export class SimpleCacheClient {
   }
 
   /**
-   * revokes a Momento signing key, all tokens signed by which will be invalid
-   * @param keyId  - the id of the Momento signing key to revoke
-   * @returns Promise<RevokeSigningKeyResponse>
+   * Revokes a Momento signing key.
+   *
+   * All tokens signed by this key will be invalid.
+   * @param keyId  - The ID of the Momento signing key to revoke.
+   * @returns Promise<RevokeSigningKeyResponse> - Revocation response (empty)
    */
   public async revokeSigningKey(
     keyId: string
@@ -135,9 +150,10 @@ export class SimpleCacheClient {
   }
 
   /**
-   * lists all Momento signing keys for the provided auth token
-   * @param nextToken - token to continue paginating through the list. It's used to handle large paginated lists.
-   * @returns Promise<ListSigningKeysResponse>
+   * Lists all Momento signing keys for the provided auth token.
+   * @param nextToken - Token to continue paginating through the list.
+   * @returns Promise<ListSigningKeysResponse> - Promise of the list signing keys response.
+   * Contains the retrieved signing keys and a next token to continue listing.
    */
   public async listSigningKeys(
     nextToken?: string
