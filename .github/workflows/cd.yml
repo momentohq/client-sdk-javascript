@@ -57,6 +57,7 @@ jobs:
           echo "Publishing package with version $VERSION"
           mv package.json package.json.ORIG
           cat package.json.ORIG|jq ". += {\"version\": \"$VERSION\"}" > package.json
+          cp package.json dist/package.json
           npm publish
         shell: bash
         env:
