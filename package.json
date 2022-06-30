@@ -4,7 +4,8 @@
   "description": "Client SDK for Momento services",
   "main": "dist/src/index.js",
   "files": [
-    "dist/src"
+    "dist/src",
+    "dist/package.json"
   ],
   "types": "dist/src/index.d.ts",
   "repository": {
