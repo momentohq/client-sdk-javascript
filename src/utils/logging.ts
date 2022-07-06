@@ -1,4 +1,9 @@
 import * as pino from 'pino';
+import {
+  TransportMultiOptions,
+  TransportPipelineOptions,
+  TransportSingleOptions,
+} from 'pino';
 
 export interface Logger {
   info(msg: string): void;
@@ -10,8 +15,14 @@ export enum LogLevel {
   INFO = 'info',
 }
 
+export enum LogFormat {
+  CONSOLE = 'console',
+  JSON = 'json',
+}
+
 export interface LoggerOptions {
   level?: LogLevel;
+  format?: LogFormat;
 }
 
 export function getLogger(name: string, options?: LoggerOptions): Logger {
@@ -26,7 +37,16 @@ class PinoLogger implements Logger {
     const pinoLevel: pino.LevelWithSilent = pinoLogLevelFromLogLevel(
       options.level ?? LogLevel.INFO
     );
-    this._logger = pino.pino({name: name, level: pinoLevel});
+
+    const transport = pinoTransportFromLogFormat(
+      options.format ?? LogFormat.CONSOLE
+    );
+
+    this._logger = pino.pino({
+      name: name,
+      level: pinoLevel,
+      transport: transport,
+    });
   }
 
   info(msg: string): void {
@@ -52,5 +72,27 @@ function pinoLogLevelFromLogLevel(level: LogLevel): pino.LevelWithSilent {
       return 'info';
     default:
       throw new Error(`Unsupported log level: ${String(level)}`);
+  }
+}
+
+function pinoTransportFromLogFormat(
+  format: LogFormat
+):
+  | undefined
+  | TransportSingleOptions
+  | TransportMultiOptions
+  | TransportPipelineOptions {
+  switch (format) {
+    case LogFormat.CONSOLE:
+      return {
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+        },
+      };
+    case LogFormat.JSON:
+      return undefined;
+    default:
+      throw new Error(`Unsupported log format: ${String(format)}`);
   }
 }
