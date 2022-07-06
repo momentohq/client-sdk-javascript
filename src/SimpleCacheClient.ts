@@ -10,6 +10,21 @@ import {DeleteResponse} from './messages/DeleteResponse';
 import {CreateSigningKeyResponse} from './messages/CreateSigningKeyResponse';
 import {RevokeSigningKeyResponse} from './messages/RevokeSigningKeyResponse';
 import {ListSigningKeysResponse} from './messages/ListSigningKeysResponse';
+import {getLogger, Logger, LoggerOptions} from "./utils/logging";
+
+export interface SimpleCacheClientOptions {
+  /**
+   * @param {number} [requestTimeoutMs] - A timeout in milliseconds for get and set operations
+   * to complete. Defaults to 5 seconds. If the request takes longer than this value, it
+   * will be terminated and throw a TimeoutError.
+   */
+  requestTimeoutMs?: number,
+  /**
+   * @param {LoggerOptions} [loggerOptions] - optional configuration settings to control logging
+   * output.
+   */
+  loggerOptions?: LoggerOptions
+}
 
 /**
  * Momento Simple Cache Client.
@@ -24,22 +39,22 @@ import {ListSigningKeysResponse} from './messages/ListSigningKeysResponse';
 export class SimpleCacheClient {
   private readonly dataClient: MomentoCache;
   private readonly controlClient: Momento;
+  private readonly logger: Logger;
 
   /**
    * Creates an instance of SimpleCacheClient.
    * @param {string} authToken - Momento token to authenticate requests with Simple Cache Service.
    * @param {number} defaultTtlSeconds - A default time to live, in seconds, for cache objects
    * created by this client.
-   * @param {number} [requestTimeoutMs] - A timeout in milliseconds for get and set operations
-   * to complete. Defaults to 5 seconds. If the request takes longer than this value, it
-   * will be terminated and throw a TimeoutError.
+   * @param {SimpleCacheClientOptions} options - additional configuration options for the cache client.
    * @memberof SimpleCacheClient
    */
   constructor(
     authToken: string,
     defaultTtlSeconds: number,
-    requestTimeoutMs?: number
+    options?: SimpleCacheClientOptions,
   ) {
+    this.logger = getLogger(this.constructor.name, options?.loggerOptions)
     const claims = decodeJwt(authToken);
     const controlEndpoint = claims.cp;
     const dataEndpoint = claims.c;
@@ -47,12 +62,14 @@ export class SimpleCacheClient {
       authToken,
       defaultTtlSeconds,
       endpoint: dataEndpoint,
-      requestTimeoutMs: requestTimeoutMs,
+      requestTimeoutMs: options?.requestTimeoutMs,
+      loggerOptions: options?.loggerOptions,
     });
 
     this.controlClient = new Momento({
       endpoint: controlEndpoint,
       authToken,
+      loggerOptions: options?.loggerOptions,
     });
   }
 
