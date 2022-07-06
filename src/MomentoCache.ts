@@ -11,6 +11,7 @@ import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
 import {version} from '../package.json';
 import {DeleteResponse} from './messages/DeleteResponse';
+import {RetryInterceptor} from './grpc/RetryInterceptor';
 
 /**
  * @property {string} authToken - momento jwt token
@@ -212,6 +213,7 @@ export class MomentoCache {
     return [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
       ClientTimeoutInterceptor(this.requestTimeoutMs),
+      new RetryInterceptor().addRetryInterceptor(),
     ];
   }
 
