@@ -1,7 +1,11 @@
 import {control} from '@gomomento/generated-types';
 import {Header, HeaderInterceptor} from './grpc/HeadersInterceptor';
 import {ClientTimeoutInterceptor} from './grpc/ClientTimeoutInterceptor';
-import {AlreadyExistsError, InvalidArgumentError, NotFoundError,} from './Errors';
+import {
+  AlreadyExistsError,
+  InvalidArgumentError,
+  NotFoundError,
+} from './Errors';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
@@ -12,7 +16,7 @@ import {version} from '../package.json';
 import {CreateSigningKeyResponse} from './messages/CreateSigningKeyResponse';
 import {RevokeSigningKeyResponse} from './messages/RevokeSigningKeyResponse';
 import {ListSigningKeysResponse} from './messages/ListSigningKeysResponse';
-import {getLogger, Logger, LoggerOptions, LogLevel} from "./utils/logging";
+import {getLogger, Logger, LoggerOptions} from './utils/logging';
 
 export interface MomentoProps {
   authToken: string;
@@ -30,7 +34,7 @@ export class Momento {
    * @param {MomentoProps} props
    */
   constructor(props: MomentoProps) {
-    this.logger = getLogger(this.constructor.name, props.loggerOptions)
+    this.logger = getLogger(this.constructor.name, props.loggerOptions);
     const headers = [
       new Header('Authorization', props.authToken),
       new Header('Agent', `javascript:${version}`),
@@ -43,7 +47,6 @@ export class Momento {
       props.endpoint,
       ChannelCredentials.createSsl()
     );
-
   }
 
   public async createCache(name: string): Promise<CreateCacheResponse> {
@@ -106,7 +109,7 @@ export class Momento {
   public async listCaches(nextToken?: string): Promise<ListCachesResponse> {
     const request = new control.control_client._ListCachesRequest();
     request.next_token = nextToken ?? '';
-    this.logger.debug("Issuing 'listCaches' request")
+    this.logger.debug("Issuing 'listCaches' request");
     return await new Promise<ListCachesResponse>((resolve, reject) => {
       this.client.ListCaches(
         request,

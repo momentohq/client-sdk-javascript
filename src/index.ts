@@ -18,9 +18,7 @@ import {
   NotFoundError,
 } from './Errors';
 
-export {
-  LogLevel
-} from './utils/logging'
+export {LogLevel} from './utils/logging';
 
 export {
   SimpleCacheClient,

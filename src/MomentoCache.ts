@@ -11,7 +11,7 @@ import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
 import {version} from '../package.json';
 import {DeleteResponse} from './messages/DeleteResponse';
-import {getLogger, Logger, LoggerOptions} from "./utils/logging";
+import {getLogger, Logger, LoggerOptions} from './utils/logging';
 
 /**
  * @property {string} authToken - momento jwt token
@@ -77,7 +77,11 @@ export class MomentoCache {
     ttl?: number
   ): Promise<SetResponse> {
     this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
-    this.logger.debug(`Issuing 'set' request; key: ${key}, value: ${value}, ttl: ${ttl}`);
+    this.logger.debug(
+      `Issuing 'set' request; key: ${key.toString()}, value: ${value.toString()}, ttl: ${
+        ttl?.toString() ?? 'null'
+      }`
+    );
     const encodedKey = this.convert(key);
     const encodedValue = this.convert(value);
 
@@ -122,7 +126,7 @@ export class MomentoCache {
     key: string | Uint8Array
   ): Promise<DeleteResponse> {
     this.ensureValidKey(key);
-    this.logger.debug(`Issuing 'delete' request; key: ${key}`);
+    this.logger.debug(`Issuing 'delete' request; key: ${key.toString()}`);
     return await this.sendDelete(cacheName, this.convert(key));
   }
 
@@ -155,10 +159,10 @@ export class MomentoCache {
     key: string | Uint8Array
   ): Promise<GetResponse> {
     this.ensureValidKey(key);
-    this.logger.debug(`Issuing 'get' request; key: ${key}`);
+    this.logger.debug(`Issuing 'get' request; key: ${key.toString()}`);
     const result = await this.sendGet(cacheName, this.convert(key));
-    this.logger.debug(`'get' request result: ${result}`);
-    return result
+    this.logger.debug(`'get' request result: ${JSON.stringify(result)}`);
+    return result;
   }
 
   private async sendGet(

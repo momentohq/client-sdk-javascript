@@ -10,7 +10,7 @@ import {DeleteResponse} from './messages/DeleteResponse';
 import {CreateSigningKeyResponse} from './messages/CreateSigningKeyResponse';
 import {RevokeSigningKeyResponse} from './messages/RevokeSigningKeyResponse';
 import {ListSigningKeysResponse} from './messages/ListSigningKeysResponse';
-import {getLogger, Logger, LoggerOptions} from "./utils/logging";
+import {getLogger, Logger, LoggerOptions} from './utils/logging';
 
 export interface SimpleCacheClientOptions {
   /**
@@ -18,12 +18,12 @@ export interface SimpleCacheClientOptions {
    * to complete. Defaults to 5 seconds. If the request takes longer than this value, it
    * will be terminated and throw a TimeoutError.
    */
-  requestTimeoutMs?: number,
+  requestTimeoutMs?: number;
   /**
    * @param {LoggerOptions} [loggerOptions] - optional configuration settings to control logging
    * output.
    */
-  loggerOptions?: LoggerOptions
+  loggerOptions?: LoggerOptions;
 }
 
 /**
@@ -52,9 +52,9 @@ export class SimpleCacheClient {
   constructor(
     authToken: string,
     defaultTtlSeconds: number,
-    options?: SimpleCacheClientOptions,
+    options?: SimpleCacheClientOptions
   ) {
-    this.logger = getLogger(this.constructor.name, options?.loggerOptions)
+    this.logger = getLogger(this.constructor.name, options?.loggerOptions);
     const claims = decodeJwt(authToken);
     const controlEndpoint = claims.cp;
     const dataEndpoint = claims.c;
