@@ -182,7 +182,9 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   });
   it('should terminate connection for a short deadline', async () => {
     const cacheName = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111, 1);
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111, {
+      requestTimeoutMs: 1,
+    });
     await deleteExistingCache(momento, cacheName);
     await momento.createCache(cacheName);
     const cacheKey = v4();

@@ -12,6 +12,7 @@ import {SetResponse} from './messages/SetResponse';
 import {version} from '../package.json';
 import {DeleteResponse} from './messages/DeleteResponse';
 import {RetryInterceptor} from './grpc/RetryInterceptor';
+import {getLogger, Logger, LoggerOptions} from './utils/logging';
 
 /**
  * @property {string} authToken - momento jwt token
@@ -24,6 +25,7 @@ type MomentoCacheProps = {
   endpoint: string;
   defaultTtlSeconds: number;
   requestTimeoutMs?: number;
+  loggerOptions?: LoggerOptions;
 };
 
 export class MomentoCache {
@@ -35,12 +37,14 @@ export class MomentoCache {
   private readonly endpoint: string;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   private static isUserAgentSent = false;
+  private readonly logger: Logger;
 
   /**
    * @param {MomentoCacheProps} props
    */
   constructor(props: MomentoCacheProps) {
-    MomentoCache.validateRequestTimeout(props.requestTimeoutMs);
+    this.logger = getLogger(this.constructor.name, props.loggerOptions);
+    this.validateRequestTimeout(props.requestTimeoutMs);
     this.client = new cache.cache_client.ScsClient(
       props.endpoint,
       ChannelCredentials.createSsl()
@@ -54,10 +58,12 @@ export class MomentoCache {
   }
 
   public getEndpoint(): string {
+    this.logger.debug(`Using cache endpoint: ${this.endpoint}`);
     return this.endpoint;
   }
 
-  private static validateRequestTimeout(timeout?: number) {
+  private validateRequestTimeout(timeout?: number) {
+    this.logger.debug(`Request timeout: ${this.endpoint}`);
     if (timeout && timeout <= 0) {
       throw new InvalidArgumentError(
         'request timeout must be greater than zero.'
@@ -72,6 +78,11 @@ export class MomentoCache {
     ttl?: number
   ): Promise<SetResponse> {
     this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
+    this.logger.debug(
+      `Issuing 'set' request; key: ${key.toString()}, value: ${value.toString()}, ttl: ${
+        ttl?.toString() ?? 'null'
+      }`
+    );
     const encodedKey = this.convert(key);
     const encodedValue = this.convert(value);
 
@@ -116,6 +127,7 @@ export class MomentoCache {
     key: string | Uint8Array
   ): Promise<DeleteResponse> {
     this.ensureValidKey(key);
+    this.logger.debug(`Issuing 'delete' request; key: ${key.toString()}`);
     return await this.sendDelete(cacheName, this.convert(key));
   }
 
@@ -148,7 +160,10 @@ export class MomentoCache {
     key: string | Uint8Array
   ): Promise<GetResponse> {
     this.ensureValidKey(key);
-    return await this.sendGet(cacheName, this.convert(key));
+    this.logger.debug(`Issuing 'get' request; key: ${key.toString()}`);
+    const result = await this.sendGet(cacheName, this.convert(key));
+    this.logger.debug(`'get' request result: ${JSON.stringify(result)}`);
+    return result;
   }
 
   private async sendGet(
