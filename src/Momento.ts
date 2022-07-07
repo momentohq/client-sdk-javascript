@@ -16,6 +16,7 @@ import {version} from '../package.json';
 import {CreateSigningKeyResponse} from './messages/CreateSigningKeyResponse';
 import {RevokeSigningKeyResponse} from './messages/RevokeSigningKeyResponse';
 import {ListSigningKeysResponse} from './messages/ListSigningKeysResponse';
+import {RetryInterceptor} from './grpc/RetryInterceptor';
 import {getLogger, Logger, LoggerOptions} from './utils/logging';
 
 export interface MomentoProps {
@@ -42,7 +43,13 @@ export class Momento {
     this.interceptors = [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
       ClientTimeoutInterceptor(Momento.REQUEST_TIMEOUT_MS),
+      new RetryInterceptor({
+        loggerOptions: props.loggerOptions,
+      }).addRetryInterceptor(),
     ];
+    this.logger.debug(
+      `Creating control client using endpoint: '${props.endpoint}`
+    );
     this.client = new control.control_client.ScsControlClient(
       props.endpoint,
       ChannelCredentials.createSsl()

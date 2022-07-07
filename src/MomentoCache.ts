@@ -11,6 +11,7 @@ import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
 import {version} from '../package.json';
 import {DeleteResponse} from './messages/DeleteResponse';
+import {RetryInterceptor} from './grpc/RetryInterceptor';
 import {getLogger, Logger, LoggerOptions} from './utils/logging';
 
 /**
@@ -37,13 +38,18 @@ export class MomentoCache {
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   private static isUserAgentSent = false;
   private readonly logger: Logger;
+  private readonly loggerOptions: LoggerOptions | undefined;
 
   /**
    * @param {MomentoCacheProps} props
    */
   constructor(props: MomentoCacheProps) {
+    this.loggerOptions = props.loggerOptions;
     this.logger = getLogger(this.constructor.name, props.loggerOptions);
     this.validateRequestTimeout(props.requestTimeoutMs);
+    this.logger.debug(
+      `Creating cache client using endpoint: '${props.endpoint}`
+    );
     this.client = new cache.cache_client.ScsClient(
       props.endpoint,
       ChannelCredentials.createSsl()
@@ -227,6 +233,9 @@ export class MomentoCache {
     return [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
       ClientTimeoutInterceptor(this.requestTimeoutMs),
+      new RetryInterceptor({
+        loggerOptions: this.loggerOptions,
+      }).addRetryInterceptor(),
     ];
   }
 
