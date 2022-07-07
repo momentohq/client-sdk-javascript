@@ -16,9 +16,28 @@ import {Status} from '@grpc/grpc-js/build/src/constants';
 import {getLogger, Logger, LoggerOptions} from '../utils/logging';
 
 const maxRetry = 3;
+
 const retryableGrpcStatusCodes: Array<Status> = [
+  // including all the status codes for reference, but
+  // commenting out the ones we don't want to retry on for now.
+
+  // Status.OK,
+  // Status.CANCELLED,
+  // Status.UNKNOWN,
+  // Status.INVALID_ARGUMENT,
+  // Status.DEADLINE_EXCEEDED,
+  // Status.NOT_FOUND,
+  // Status.ALREADY_EXISTS,
+  // Status.PERMISSION_DENIED,
+  // Status.RESOURCE_EXHAUSTED,
+  // Status.FAILED_PRECONDITION,
+  // Status.ABORTED,
+  // Status.OUT_OF_RANGE,
+  // Status.UNIMPLEMENTED,
   Status.INTERNAL,
   Status.UNAVAILABLE,
+  // Status.DATA_LOSS,
+  // Status.UNAUTHENTICATED
 ];
 
 export interface RetryInterceptorOptions {
