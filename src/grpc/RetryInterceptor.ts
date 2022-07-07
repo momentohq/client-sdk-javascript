@@ -8,10 +8,12 @@
 import {
   InterceptingCall,
   Interceptor,
+  Listener,
   Metadata,
   StatusObject,
 } from '@grpc/grpc-js';
 import {Status} from '@grpc/grpc-js/build/src/constants';
+import {getLogger, Logger, LoggerOptions} from '../utils/logging';
 
 const maxRetry = 3;
 const retryableGrpcStatusCodes: Array<Status> = [
@@ -19,8 +21,20 @@ const retryableGrpcStatusCodes: Array<Status> = [
   Status.UNAVAILABLE,
 ];
 
+export interface RetryInterceptorOptions {
+  loggerOptions?: LoggerOptions;
+}
+
 export class RetryInterceptor {
+  private readonly logger: Logger;
+
+  constructor(options?: RetryInterceptorOptions) {
+    this.logger = getLogger(this.constructor.name, options?.loggerOptions);
+  }
+
   public addRetryInterceptor(): Interceptor {
+    const logger = this.logger;
+
     return (options, nextCall) => {
       let savedMetadata: Metadata;
       let savedSendMessage: any;
@@ -29,7 +43,7 @@ export class RetryInterceptor {
       return new InterceptingCall(nextCall(options), {
         start: function (metadata, listener, next) {
           savedMetadata = metadata;
-          const newListener = {
+          const newListener: Listener = {
             onReceiveMessage: function (
               message: any,
               next: (arg0: any) => void
@@ -55,8 +69,14 @@ export class RetryInterceptor {
                   onReceiveStatus: function (status) {
                     if (retryableGrpcStatusCodes.includes(status.code)) {
                       if (retries <= maxRetry) {
+                        logger.debug(
+                          `Retryable status code: ${status.code}; number of retries (${retries}) is less than max (${maxRetry}), retrying.`
+                        );
                         retry(message, metadata);
                       } else {
+                        logger.debug(
+                          `Retryable status code: ${status.code}; number of retries (${retries}) has exceeded max (${maxRetry}), not retrying.`
+                        );
                         savedMessageNext(savedReceiveMessage);
                         next(status);
                       }
@@ -68,8 +88,14 @@ export class RetryInterceptor {
                 });
               };
               if (retryableGrpcStatusCodes.includes(status.code)) {
+                logger.debug(
+                  `Response status code: ${status.code}; eligible for retry.`
+                );
                 retry(savedSendMessage, savedMetadata);
               } else {
+                logger.debug(
+                  `Response status code: ${status.code}; not eligible for retry.`
+                );
                 savedMessageNext(savedReceiveMessage);
                 next(status);
               }

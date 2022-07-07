@@ -38,11 +38,13 @@ export class MomentoCache {
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   private static isUserAgentSent = false;
   private readonly logger: Logger;
+  private readonly loggerOptions: LoggerOptions | undefined;
 
   /**
    * @param {MomentoCacheProps} props
    */
   constructor(props: MomentoCacheProps) {
+    this.loggerOptions = props.loggerOptions;
     this.logger = getLogger(this.constructor.name, props.loggerOptions);
     this.validateRequestTimeout(props.requestTimeoutMs);
     this.client = new cache.cache_client.ScsClient(
@@ -228,7 +230,9 @@ export class MomentoCache {
     return [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
       ClientTimeoutInterceptor(this.requestTimeoutMs),
-      new RetryInterceptor().addRetryInterceptor(),
+      new RetryInterceptor({
+        loggerOptions: this.loggerOptions,
+      }).addRetryInterceptor(),
     ];
   }
 

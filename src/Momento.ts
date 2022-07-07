@@ -43,7 +43,9 @@ export class Momento {
     this.interceptors = [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
       ClientTimeoutInterceptor(Momento.REQUEST_TIMEOUT_MS),
-      new RetryInterceptor().addRetryInterceptor(),
+      new RetryInterceptor({
+        loggerOptions: props.loggerOptions,
+      }).addRetryInterceptor(),
     ];
     this.client = new control.control_client.ScsControlClient(
       props.endpoint,
