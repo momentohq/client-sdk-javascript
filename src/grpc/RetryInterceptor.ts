@@ -96,12 +96,12 @@ export class RetryInterceptor {
                     if (retryableGrpcStatusCodes.includes(status.code)) {
                       if (retries <= maxRetry) {
                         logger.debug(
-                          `Retryable status code: ${status.code}; number of retries (${retries}) is less than max (${maxRetry}), retrying.`
+                          `Request path: ${options.method_definition.path}; retryable status code: ${status.code}; number of retries (${retries}) is less than max (${maxRetry}), retrying.`
                         );
                         retry(message, metadata);
                       } else {
                         logger.debug(
-                          `Retryable status code: ${status.code}; number of retries (${retries}) has exceeded max (${maxRetry}), not retrying.`
+                          `Request path: ${options.method_definition.path}; retryable status code: ${status.code}; number of retries (${retries}) has exceeded max (${maxRetry}), not retrying.`
                         );
                         savedMessageNext(savedReceiveMessage);
                         next(status);
@@ -115,12 +115,12 @@ export class RetryInterceptor {
               };
               if (retryableGrpcStatusCodes.includes(status.code)) {
                 logger.debug(
-                  `Response status code: ${status.code}; eligible for retry.`
+                  `Request path: ${options.method_definition.path}; response status code: ${status.code}; eligible for retry.`
                 );
                 retry(savedSendMessage, savedMetadata);
               } else {
                 logger.debug(
-                  `Response status code: ${status.code}; not eligible for retry.`
+                  `Request path: ${options.method_definition.path}; response status code: ${status.code}; not eligible for retry.`
                 );
                 savedMessageNext(savedReceiveMessage);
                 next(status);
