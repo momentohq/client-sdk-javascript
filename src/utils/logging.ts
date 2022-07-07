@@ -18,7 +18,7 @@ export enum LogLevel {
   DEBUG = 'debug',
   INFO = 'info',
   WARN = 'warn',
-  ERROR = 'error'
+  ERROR = 'error',
 }
 
 export enum LogFormat {
@@ -31,11 +31,17 @@ export interface LoggerOptions {
   format?: LogFormat;
 }
 
-export function getLogger(caller: string | any, options?: LoggerOptions): Logger {
+export function getLogger(
+  caller: string | any,
+  options?: LoggerOptions
+): Logger {
   const loggerOptions = options ?? defaultLoggerOptions();
-  const loggerName = ((typeof caller === 'string') || (caller instanceof String))
-    ? caller
-    : caller.constructor.name;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const loggerName: string =
+    typeof caller === 'string' || caller instanceof String
+      ? caller
+      : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        caller.constructor.name;
   return new PinoLogger(loggerName, loggerOptions);
 }
 

@@ -19,7 +19,13 @@ import {
   NotFoundError,
 } from './Errors';
 
-export {Logger, LoggerOptions, LogLevel, LogFormat, getLogger} from './utils/logging';
+export {
+  Logger,
+  LoggerOptions,
+  LogLevel,
+  LogFormat,
+  getLogger,
+} from './utils/logging';
 
 export {
   SimpleCacheClient,

@@ -73,9 +73,8 @@ export class MomentoCache {
       ClientTimeoutInterceptor(this.requestTimeoutMs),
       ...createRetryInterceptorIfEnabled({
         loggerOptions: this.loggerOptions,
-      })
+      }),
     ];
-
   }
 
   public getEndpoint(): string {
@@ -100,9 +99,9 @@ export class MomentoCache {
   ): Promise<SetResponse> {
     this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
     this.logger.trace(
-      `Issuing 'set' request; key: ${key.toString()}, value length: ${value.length}, ttl: ${
-        ttl?.toString() ?? 'null'
-      }`
+      `Issuing 'set' request; key: ${key.toString()}, value length: ${
+        value.length
+      }, ttl: ${ttl?.toString() ?? 'null'}`
     );
     const encodedKey = this.convert(key);
     const encodedValue = this.convert(value);
@@ -248,7 +247,7 @@ export class MomentoCache {
     ];
     return [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
-      ...this.allInterceptorsExceptHeaderInterceptor
+      ...this.allInterceptorsExceptHeaderInterceptor,
     ];
   }
 

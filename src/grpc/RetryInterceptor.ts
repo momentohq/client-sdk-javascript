@@ -50,7 +50,9 @@ export interface RetryInterceptorOptions {
 // variable to enable/disable it.
 const RETRIES_ENABLED = true;
 
-export function createRetryInterceptorIfEnabled(options: RetryInterceptorOptions): Array<Interceptor> {
+export function createRetryInterceptorIfEnabled(
+  options: RetryInterceptorOptions
+): Array<Interceptor> {
   if (RETRIES_ENABLED) {
     return [new RetryInterceptor(options).createRetryInterceptor()];
   } else {
