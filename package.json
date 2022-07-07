@@ -13,6 +13,7 @@
     "url": "https://github.com/momentohq/client-sdk-javascript"
   },
   "scripts": {
+    "prebuild": "eslint . --ext .ts",
     "test": "jest",
     "integration": "jest --config jest-integration.config.js",
     "lint": "eslint . --ext .ts",

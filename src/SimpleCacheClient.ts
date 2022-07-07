@@ -54,7 +54,7 @@ export class SimpleCacheClient {
     defaultTtlSeconds: number,
     options?: SimpleCacheClientOptions
   ) {
-    this.logger = getLogger(this.constructor.name, options?.loggerOptions);
+    this.logger = getLogger(this, options?.loggerOptions);
     const claims = decodeJwt(authToken);
     const controlEndpoint = claims.cp;
     const dataEndpoint = claims.c;
