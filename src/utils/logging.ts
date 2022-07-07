@@ -6,13 +6,19 @@ import {
 } from 'pino';
 
 export interface Logger {
+  error(msg: string): void;
+  warn(msg: string): void;
   info(msg: string): void;
   debug(msg: string): void;
+  trace(msg: string): void;
 }
 
 export enum LogLevel {
+  TRACE = 'trace',
   DEBUG = 'debug',
   INFO = 'info',
+  WARN = 'warn',
+  ERROR = 'error'
 }
 
 export enum LogFormat {
@@ -25,9 +31,12 @@ export interface LoggerOptions {
   format?: LogFormat;
 }
 
-export function getLogger(name: string, options?: LoggerOptions): Logger {
+export function getLogger(caller: string | any, options?: LoggerOptions): Logger {
   const loggerOptions = options ?? defaultLoggerOptions();
-  return new PinoLogger(name, loggerOptions);
+  const loggerName = ((typeof caller === 'string') || (caller instanceof String))
+    ? caller
+    : caller.constructor.name;
+  return new PinoLogger(loggerName, loggerOptions);
 }
 
 class PinoLogger implements Logger {
@@ -49,12 +58,24 @@ class PinoLogger implements Logger {
     });
   }
 
+  error(msg: string): void {
+    this._logger.error(msg);
+  }
+
+  warn(msg: string): void {
+    this._logger.warn(msg);
+  }
+
   info(msg: string): void {
     this._logger.info(msg);
   }
 
   debug(msg: string): void {
     this._logger.debug(msg);
+  }
+
+  trace(msg: string): void {
+    this._logger.trace(msg);
   }
 }
 
@@ -66,10 +87,17 @@ function defaultLoggerOptions(): LoggerOptions {
 
 function pinoLogLevelFromLogLevel(level: LogLevel): pino.LevelWithSilent {
   switch (level) {
+    case LogLevel.TRACE:
+      return 'trace';
     case LogLevel.DEBUG:
       return 'debug';
     case LogLevel.INFO:
       return 'info';
+    case LogLevel.WARN:
+      return 'warn';
+    case LogLevel.ERROR:
+      return 'error';
+
     default:
       throw new Error(`Unsupported log level: ${String(level)}`);
   }

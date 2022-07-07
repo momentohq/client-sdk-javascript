@@ -44,21 +44,33 @@ export interface RetryInterceptorOptions {
   loggerOptions?: LoggerOptions;
 }
 
+// TODO: Retry interceptor behavior should be configurable, but we need to
+// align on basic API design first: https://github.com/momentohq/client-sdk-javascript/issues/79 .
+// For now, for convenience during development, you can toggle this hard-coded
+// variable to enable/disable it.
+const RETRIES_ENABLED = true;
+
+export function createRetryInterceptorIfEnabled(options: RetryInterceptorOptions): Array<Interceptor> {
+  if (RETRIES_ENABLED) {
+    return [new RetryInterceptor(options).createRetryInterceptor()];
+  } else {
+    return [];
+  }
+}
+
 export class RetryInterceptor {
   private readonly logger: Logger;
 
   constructor(options?: RetryInterceptorOptions) {
-    this.logger = getLogger(this.constructor.name, options?.loggerOptions);
+    this.logger = getLogger(this, options?.loggerOptions);
   }
 
-  // TODO: Retry interceptor behavior should be configurable, but we need to
-  // align on basic API design first: https://github.com/momentohq/client-sdk-javascript/issues/79
   // TODO: We need to send retry count information to the server so that we
   // will have some visibility into how often this is happening to customers:
   // https://github.com/momentohq/client-sdk-javascript/issues/80
   // TODO: we need to add backoff/jitter for the retries:
   // https://github.com/momentohq/client-sdk-javascript/issues/81
-  public addRetryInterceptor(): Interceptor {
+  public createRetryInterceptor(): Interceptor {
     const logger = this.logger;
 
     return (options, nextCall) => {
@@ -115,11 +127,11 @@ export class RetryInterceptor {
               };
               if (retryableGrpcStatusCodes.includes(status.code)) {
                 logger.debug(
-                  `Request path: ${options.method_definition.path}; response status code: ${status.code}; eligible for retry.`
+                  `Request path: ${options.method_definition.path}; response status code: ${status.code}; number of retries (${retries}) is less than max (${maxRetry}), retrying.`
                 );
                 retry(savedSendMessage, savedMetadata);
               } else {
-                logger.debug(
+                logger.trace(
                   `Request path: ${options.method_definition.path}; response status code: ${status.code}; not eligible for retry.`
                 );
                 savedMessageNext(savedReceiveMessage);

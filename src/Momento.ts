@@ -16,7 +16,7 @@ import {version} from '../package.json';
 import {CreateSigningKeyResponse} from './messages/CreateSigningKeyResponse';
 import {RevokeSigningKeyResponse} from './messages/RevokeSigningKeyResponse';
 import {ListSigningKeysResponse} from './messages/ListSigningKeysResponse';
-import {RetryInterceptor} from './grpc/RetryInterceptor';
+import {createRetryInterceptorIfEnabled, RetryInterceptor} from './grpc/RetryInterceptor';
 import {getLogger, Logger, LoggerOptions} from './utils/logging';
 
 export interface MomentoProps {
@@ -35,7 +35,7 @@ export class Momento {
    * @param {MomentoProps} props
    */
   constructor(props: MomentoProps) {
-    this.logger = getLogger(this.constructor.name, props.loggerOptions);
+    this.logger = getLogger(this, props.loggerOptions);
     const headers = [
       new Header('Authorization', props.authToken),
       new Header('Agent', `javascript:${version}`),
@@ -43,9 +43,9 @@ export class Momento {
     this.interceptors = [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
       ClientTimeoutInterceptor(Momento.REQUEST_TIMEOUT_MS),
-      new RetryInterceptor({
+      ...createRetryInterceptorIfEnabled({
         loggerOptions: props.loggerOptions,
-      }).addRetryInterceptor(),
+      })
     ];
     this.logger.debug(
       `Creating control client using endpoint: '${props.endpoint}`

@@ -11,7 +11,7 @@ import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
 import {version} from '../package.json';
 import {DeleteResponse} from './messages/DeleteResponse';
-import {RetryInterceptor} from './grpc/RetryInterceptor';
+import {createRetryInterceptorIfEnabled} from './grpc/RetryInterceptor';
 import {getLogger, Logger, LoggerOptions} from './utils/logging';
 
 /**
@@ -36,16 +36,16 @@ export class MomentoCache {
   private readonly authToken: string;
   private readonly endpoint: string;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
-  private static isUserAgentSent = false;
   private readonly logger: Logger;
   private readonly loggerOptions: LoggerOptions | undefined;
+  private readonly allInterceptorsExceptHeaderInterceptor: Interceptor[];
 
   /**
    * @param {MomentoCacheProps} props
    */
   constructor(props: MomentoCacheProps) {
     this.loggerOptions = props.loggerOptions;
-    this.logger = getLogger(this.constructor.name, props.loggerOptions);
+    this.logger = getLogger(this, props.loggerOptions);
     this.validateRequestTimeout(props.requestTimeoutMs);
     this.logger.debug(
       `Creating cache client using endpoint: '${props.endpoint}`
@@ -60,6 +60,22 @@ export class MomentoCache {
       props.requestTimeoutMs || MomentoCache.DEFAULT_REQUEST_TIMEOUT_MS;
     this.authToken = props.authToken;
     this.endpoint = props.endpoint;
+
+    // The first interceptor in our list is a Header interceptor, which
+    // includes a header for the cache name.  The cache name is part of the
+    // get/set API calls, so we cannot construct that interceptor here in the
+    // constructor; we have to construct it for each request.  Here, we construct
+    // all of the other interceptors, which do not vary per request.  It is crucial
+    // that we only construct these once and re-use them, because some of them are
+    // very heavy-weight (in terms of memory usage, EventEmitter registrations on the
+    // `process` object, etc.).
+    this.allInterceptorsExceptHeaderInterceptor = [
+      ClientTimeoutInterceptor(this.requestTimeoutMs),
+      ...createRetryInterceptorIfEnabled({
+        loggerOptions: this.loggerOptions,
+      })
+    ];
+
   }
 
   public getEndpoint(): string {
@@ -83,8 +99,8 @@ export class MomentoCache {
     ttl?: number
   ): Promise<SetResponse> {
     this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
-    this.logger.debug(
-      `Issuing 'set' request; key: ${key.toString()}, value: ${value.toString()}, ttl: ${
+    this.logger.trace(
+      `Issuing 'set' request; key: ${key.toString()}, value length: ${value.length}, ttl: ${
         ttl?.toString() ?? 'null'
       }`
     );
@@ -132,7 +148,7 @@ export class MomentoCache {
     key: string | Uint8Array
   ): Promise<DeleteResponse> {
     this.ensureValidKey(key);
-    this.logger.debug(`Issuing 'delete' request; key: ${key.toString()}`);
+    this.logger.trace(`Issuing 'delete' request; key: ${key.toString()}`);
     return await this.sendDelete(cacheName, this.convert(key));
   }
 
@@ -165,9 +181,9 @@ export class MomentoCache {
     key: string | Uint8Array
   ): Promise<GetResponse> {
     this.ensureValidKey(key);
-    this.logger.debug(`Issuing 'get' request; key: ${key.toString()}`);
+    this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
     const result = await this.sendGet(cacheName, this.convert(key));
-    this.logger.debug(`'get' request result: ${JSON.stringify(result)}`);
+    this.logger.trace(`'get' request result: ${result.status}`);
     return result;
   }
 
@@ -232,10 +248,7 @@ export class MomentoCache {
     ];
     return [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
-      ClientTimeoutInterceptor(this.requestTimeoutMs),
-      new RetryInterceptor({
-        loggerOptions: this.loggerOptions,
-      }).addRetryInterceptor(),
+      ...this.allInterceptorsExceptHeaderInterceptor
     ];
   }
 
