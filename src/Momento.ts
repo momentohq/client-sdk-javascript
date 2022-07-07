@@ -47,6 +47,9 @@ export class Momento {
         loggerOptions: props.loggerOptions,
       }).addRetryInterceptor(),
     ];
+    this.logger.debug(
+      `Creating control client using endpoint: '${props.endpoint}`
+    );
     this.client = new control.control_client.ScsControlClient(
       props.endpoint,
       ChannelCredentials.createSsl()

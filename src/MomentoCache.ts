@@ -47,6 +47,9 @@ export class MomentoCache {
     this.loggerOptions = props.loggerOptions;
     this.logger = getLogger(this.constructor.name, props.loggerOptions);
     this.validateRequestTimeout(props.requestTimeoutMs);
+    this.logger.debug(
+      `Creating cache client using endpoint: '${props.endpoint}`
+    );
     this.client = new cache.cache_client.ScsClient(
       props.endpoint,
       ChannelCredentials.createSsl()
