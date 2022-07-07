@@ -51,6 +51,13 @@ export class RetryInterceptor {
     this.logger = getLogger(this.constructor.name, options?.loggerOptions);
   }
 
+  // TODO: Retry interceptor behavior should be configurable, but we need to
+  // align on basic API design first: https://github.com/momentohq/client-sdk-javascript/issues/79
+  // TODO: We need to send retry count information to the server so that we
+  // will have some visibility into how often this is happening to customers:
+  // https://github.com/momentohq/client-sdk-javascript/issues/80
+  // TODO: we need to add backoff/jitter for the retries:
+  // https://github.com/momentohq/client-sdk-javascript/issues/81
   public addRetryInterceptor(): Interceptor {
     const logger = this.logger;
 
