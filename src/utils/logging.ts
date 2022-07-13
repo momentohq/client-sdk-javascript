@@ -38,7 +38,7 @@ interface InitializedLoggerOptions {
 
 const _MOMENTO_LOGGING_OPTIONS: InitializedLoggerOptions = {
   level: LogLevel.WARN,
-  format: LogFormat.CONSOLE,
+  format: LogFormat.JSON,
 };
 
 export function initializeMomentoLogging(options?: LoggerOptions) {

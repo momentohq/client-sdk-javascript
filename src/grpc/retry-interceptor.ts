@@ -101,19 +101,15 @@ export class RetryInterceptor {
                     savedReceiveMessage = message;
                   },
                   onReceiveStatus: function (status) {
-                    const requestId: string = JSON.stringify(
-                      metadata.get('request-id')
-                    );
-
                     if (retryableGrpcStatusCodes.includes(status.code)) {
                       if (retries <= maxRetry) {
                         logger.debug(
-                          `Request path: ${options.method_definition.path} (id: ${requestId}); retryable status code: ${status.code}; number of retries (${retries}) is less than max (${maxRetry}), retrying.`
+                          `Request path: ${options.method_definition.path}; retryable status code: ${status.code}; number of retries (${retries}) is less than max (${maxRetry}), retrying.`
                         );
                         retry(message, metadata);
                       } else {
                         logger.debug(
-                          `Request path: ${options.method_definition.path} (id: ${requestId}); retryable status code: ${status.code}; number of retries (${retries}) has exceeded max (${maxRetry}), not retrying.`
+                          `Request path: ${options.method_definition.path}; retryable status code: ${status.code}; number of retries (${retries}) has exceeded max (${maxRetry}), not retrying.`
                         );
                         savedMessageNext(savedReceiveMessage);
                         next(status);
@@ -126,11 +122,8 @@ export class RetryInterceptor {
                 });
               };
               if (retryableGrpcStatusCodes.includes(status.code)) {
-                const requestId: string = JSON.stringify(
-                  metadata.get('request-id')
-                );
                 logger.debug(
-                  `Request path: ${options.method_definition.path} (id: ${requestId}); response status code: ${status.code}; number of retries (${retries}) is less than max (${maxRetry}), retrying.`
+                  `Request path: ${options.method_definition.path}; response status code: ${status.code}; number of retries (${retries}) is less than max (${maxRetry}), retrying.`
                 );
                 retry(savedSendMessage, savedMetadata);
               } else {
