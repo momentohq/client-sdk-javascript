@@ -74,7 +74,7 @@ export class SimpleCacheClient {
     // The choice of 6 as the initial value is a rough guess at a reasonable default for the short-term,
     // based on load testing results captured in:
     // https://github.com/momentohq/oncall-tracker/issues/186
-    const numClients = 6;
+    const numClients = 1;
     this.dataClients = range(numClients).map(
       () =>
         new MomentoCache({

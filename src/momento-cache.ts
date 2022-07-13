@@ -28,8 +28,6 @@ type MomentoCacheProps = {
 };
 
 export class MomentoCache {
-  private static _allInterceptorsExceptHeaderInterceptor: Interceptor[];
-
   private readonly client: cache.cache_client.ScsClient;
   private readonly textEncoder: TextEncoder;
   private readonly defaultTtlSeconds: number;
@@ -38,6 +36,7 @@ export class MomentoCache {
   private readonly endpoint: string;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   private readonly logger: Logger;
+  private readonly allInterceptorsExceptHeaderInterceptor: Interceptor[];
 
   /**
    * @param {MomentoCacheProps} props
@@ -55,12 +54,12 @@ export class MomentoCache {
         // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
         // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
         // This needs to be tunable: https://github.com/momentohq/dev-eco-issue-tracker/issues/85
-        'grpc-node.max_session_memory': 256,
+        // 'grpc-node.max_session_memory': 256,
         // This flag controls whether channels use a shared global pool of subchannels, or whether
         // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
         // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
         // than one grpc client.
-        'grpc.use_local_subchannel_pool': 1,
+        // 'grpc.use_local_subchannel_pool': 1,
       }
     );
     this.textEncoder = new TextEncoder();
@@ -77,12 +76,10 @@ export class MomentoCache {
     // that we only construct these once and re-use them, because some of them are
     // very heavy-weight (in terms of memory usage, EventEmitter registrations on the
     // `process` object, etc.).
-    if (MomentoCache._allInterceptorsExceptHeaderInterceptor === undefined) {
-      MomentoCache._allInterceptorsExceptHeaderInterceptor = [
-        ClientTimeoutInterceptor(this.requestTimeoutMs),
-        ...createRetryInterceptorIfEnabled(),
-      ];
-    }
+    this.allInterceptorsExceptHeaderInterceptor = [
+      ClientTimeoutInterceptor(this.requestTimeoutMs),
+      ...createRetryInterceptorIfEnabled(),
+    ];
   }
 
   public getEndpoint(): string {
@@ -254,7 +251,7 @@ export class MomentoCache {
     ];
     return [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
-      ...MomentoCache._allInterceptorsExceptHeaderInterceptor,
+      ...this.allInterceptorsExceptHeaderInterceptor,
     ];
   }
 
