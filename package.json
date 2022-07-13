@@ -50,8 +50,7 @@
     "@grpc/grpc-js": "1.5.10",
     "jwt-decode": "3.1.2",
     "pino": "8.1.0",
-    "pino-pretty": "8.1.0",
-    "toml": "^3.0.0"
+    "pino-pretty": "8.1.0"
   },
   "engines": {
     "node": ">= 10.13.0"

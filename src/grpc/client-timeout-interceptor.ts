@@ -8,6 +8,7 @@ export const ClientTimeoutInterceptor = (
       const deadline = new Date(Date.now());
       deadline.setMilliseconds(deadline.getMilliseconds() + requestTimeoutMs);
       options.deadline = deadline;
+      console.log(`SET DEADLINE TO ${deadline.getMilliseconds().toString()}`);
     }
     return new InterceptingCall(nextCall(options));
   };

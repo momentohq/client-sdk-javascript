@@ -25,6 +25,7 @@ export {
   LogLevel,
   LogFormat,
   getLogger,
+  initializeMomentoLogging,
 } from './utils/logging';
 
 export {
