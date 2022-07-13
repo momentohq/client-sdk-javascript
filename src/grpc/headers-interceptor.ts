@@ -1,4 +1,5 @@
 import {InterceptingCall, Interceptor} from '@grpc/grpc-js';
+import {randomUUID} from 'crypto';
 
 export class Header {
   public readonly onceOnlyHeaders: string[] = ['Agent'];
@@ -36,10 +37,12 @@ export class HeaderInterceptor {
     return (options, nextCall) => {
       return new InterceptingCall(nextCall(options), {
         start: (metadata, listener, next) => {
+          metadata.add('request-id', randomUUID());
           this.headersToAddEveryTime.forEach(h =>
             metadata.add(h.name, h.value)
           );
           if (!HeaderInterceptor.areOnlyOnceHeadersSent) {
+            HeaderInterceptor.areOnlyOnceHeadersSent = true;
             this.headersToAddOnce.forEach(h => metadata.add(h.name, h.value));
           }
           next(metadata, {});

@@ -1,18 +1,18 @@
 import {cache} from '@gomomento/generated-types';
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextEncoder} from 'util';
-import {Header, HeaderInterceptor} from './grpc/HeadersInterceptor';
-import {ClientTimeoutInterceptor} from './grpc/ClientTimeoutInterceptor';
+import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
+import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
+import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
 import {CacheGetStatus, momentoResultConverter} from './messages/Result';
-import {InvalidArgumentError, UnknownServiceError} from './Errors';
-import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
+import {InvalidArgumentError, UnknownServiceError} from './errors';
+import {cacheServiceErrorMapper} from './cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
 import {version} from '../package.json';
 import {DeleteResponse} from './messages/DeleteResponse';
-import {createRetryInterceptorIfEnabled} from './grpc/RetryInterceptor';
-import {getLogger, Logger, LoggerOptions} from './utils/logging';
+import {getLogger, Logger} from './utils/logging';
 
 /**
  * @property {string} authToken - momento jwt token
@@ -25,10 +25,11 @@ type MomentoCacheProps = {
   endpoint: string;
   defaultTtlSeconds: number;
   requestTimeoutMs?: number;
-  loggerOptions?: LoggerOptions;
 };
 
 export class MomentoCache {
+  private static _allInterceptorsExceptHeaderInterceptor: Interceptor[];
+
   private readonly client: cache.cache_client.ScsClient;
   private readonly textEncoder: TextEncoder;
   private readonly defaultTtlSeconds: number;
@@ -37,22 +38,30 @@ export class MomentoCache {
   private readonly endpoint: string;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   private readonly logger: Logger;
-  private readonly loggerOptions: LoggerOptions | undefined;
-  private readonly allInterceptorsExceptHeaderInterceptor: Interceptor[];
 
   /**
    * @param {MomentoCacheProps} props
    */
   constructor(props: MomentoCacheProps) {
-    this.loggerOptions = props.loggerOptions;
-    this.logger = getLogger(this, props.loggerOptions);
+    this.logger = getLogger(this);
     this.validateRequestTimeout(props.requestTimeoutMs);
     this.logger.debug(
-      `Creating cache client using endpoint: '${props.endpoint}`
+      `Creating cache client using endpoint: '${props.endpoint}'`
     );
     this.client = new cache.cache_client.ScsClient(
       props.endpoint,
-      ChannelCredentials.createSsl()
+      ChannelCredentials.createSsl(),
+      {
+        // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
+        // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
+        // This needs to be tunable: https://github.com/momentohq/dev-eco-issue-tracker/issues/85
+        'grpc-node.max_session_memory': 256,
+        // This flag controls whether channels use a shared global pool of subchannels, or whether
+        // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
+        // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
+        // than one grpc client.
+        'grpc.use_local_subchannel_pool': 1,
+      }
     );
     this.textEncoder = new TextEncoder();
     this.defaultTtlSeconds = props.defaultTtlSeconds;
@@ -60,7 +69,6 @@ export class MomentoCache {
       props.requestTimeoutMs || MomentoCache.DEFAULT_REQUEST_TIMEOUT_MS;
     this.authToken = props.authToken;
     this.endpoint = props.endpoint;
-
     // The first interceptor in our list is a Header interceptor, which
     // includes a header for the cache name.  The cache name is part of the
     // get/set API calls, so we cannot construct that interceptor here in the
@@ -69,12 +77,12 @@ export class MomentoCache {
     // that we only construct these once and re-use them, because some of them are
     // very heavy-weight (in terms of memory usage, EventEmitter registrations on the
     // `process` object, etc.).
-    this.allInterceptorsExceptHeaderInterceptor = [
-      ClientTimeoutInterceptor(this.requestTimeoutMs),
-      ...createRetryInterceptorIfEnabled({
-        loggerOptions: this.loggerOptions,
-      }),
-    ];
+    if (MomentoCache._allInterceptorsExceptHeaderInterceptor === undefined) {
+      MomentoCache._allInterceptorsExceptHeaderInterceptor = [
+        ClientTimeoutInterceptor(this.requestTimeoutMs),
+        ...createRetryInterceptorIfEnabled(),
+      ];
+    }
   }
 
   public getEndpoint(): string {
@@ -232,8 +240,7 @@ export class MomentoCache {
     return new SetResponse(resp.message, value);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private ensureValidKey = (key: any) => {
+  private ensureValidKey = (key: unknown) => {
     if (!key) {
       throw new InvalidArgumentError('key must not be empty');
     }
@@ -247,7 +254,7 @@ export class MomentoCache {
     ];
     return [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
-      ...this.allInterceptorsExceptHeaderInterceptor,
+      ...MomentoCache._allInterceptorsExceptHeaderInterceptor,
     ];
   }
 
@@ -258,8 +265,7 @@ export class MomentoCache {
     return v;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private ensureValidSetRequest(key: any, value: any, ttl: number) {
+  private ensureValidSetRequest(key: unknown, value: unknown, ttl: number) {
     this.ensureValidKey(key);
 
     if (!value) {

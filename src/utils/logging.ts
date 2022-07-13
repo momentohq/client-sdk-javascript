@@ -31,37 +31,57 @@ export interface LoggerOptions {
   format?: LogFormat;
 }
 
-export function getLogger(
-  caller: string | any,
-  options?: LoggerOptions
-): Logger {
-  const loggerOptions = options ?? defaultLoggerOptions();
+interface InitializedLoggerOptions {
+  level: LogLevel;
+  format: LogFormat;
+}
+
+const _MOMENTO_LOGGING_OPTIONS: InitializedLoggerOptions = {
+  level: LogLevel.WARN,
+  format: LogFormat.CONSOLE,
+};
+
+export function initializeMomentoLogging(options?: LoggerOptions) {
+  if (options?.level !== undefined) {
+    _MOMENTO_LOGGING_OPTIONS.level = options.level;
+  }
+  if (options?.format !== undefined) {
+    _MOMENTO_LOGGING_OPTIONS.format = options.format;
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getLogger(caller: string | any): Logger {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const loggerName: string =
     typeof caller === 'string' || caller instanceof String
       ? caller
       : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         caller.constructor.name;
-  return new PinoLogger(loggerName, loggerOptions);
+  return new PinoLogger(loggerName);
 }
 
 class PinoLogger implements Logger {
+  private static _root_logger: pino.Logger;
   private readonly _logger: pino.Logger;
 
-  constructor(name: string, options: LoggerOptions) {
-    const pinoLevel: pino.LevelWithSilent = pinoLogLevelFromLogLevel(
-      options.level ?? LogLevel.INFO
-    );
+  constructor(name: string) {
+    if (PinoLogger._root_logger === undefined) {
+      const pinoLevel: pino.LevelWithSilent = pinoLogLevelFromLogLevel(
+        _MOMENTO_LOGGING_OPTIONS.level
+      );
 
-    const transport = pinoTransportFromLogFormat(
-      options.format ?? LogFormat.CONSOLE
-    );
+      const transport = pinoTransportFromLogFormat(
+        _MOMENTO_LOGGING_OPTIONS.format
+      );
 
-    this._logger = pino.pino({
-      name: name,
-      level: pinoLevel,
-      transport: transport,
-    });
+      PinoLogger._root_logger = pino.pino({
+        level: pinoLevel,
+        transport: transport,
+      });
+    }
+
+    this._logger = PinoLogger._root_logger.child({name: name});
   }
 
   error(msg: string): void {
@@ -83,12 +103,6 @@ class PinoLogger implements Logger {
   trace(msg: string): void {
     this._logger.trace(msg);
   }
-}
-
-function defaultLoggerOptions(): LoggerOptions {
-  return {
-    level: LogLevel.INFO,
-  };
 }
 
 function pinoLogLevelFromLogLevel(level: LogLevel): pino.LevelWithSilent {

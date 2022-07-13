@@ -1,8 +1,13 @@
 import {v4} from 'uuid';
 import * as fs from 'fs';
 import * as os from 'os';
-import {CacheGetStatus, SimpleCacheClient, TimeoutError} from '../src';
-import {AlreadyExistsError, NotFoundError} from '../src/Errors';
+import {
+  CacheGetStatus,
+  SimpleCacheClient,
+  TimeoutError,
+  AlreadyExistsError,
+  NotFoundError,
+} from '../src';
 import {TextEncoder} from 'util';
 
 const AUTH_TOKEN = process.env.TEST_AUTH_TOKEN;

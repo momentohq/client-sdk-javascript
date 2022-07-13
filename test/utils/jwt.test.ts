@@ -1,5 +1,5 @@
 import {decodeJwt} from '../../src/utils/jwt';
-import {InvalidArgumentError} from '../../src/Errors';
+import {InvalidArgumentError} from '../../src';
 
 const TEST_AUTH_TOKEN_NO_ENDPOINT =
   'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJpbnRlZ3JhdGlvbiJ9.ZOgkTs';

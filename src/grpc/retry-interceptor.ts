@@ -13,9 +13,7 @@ import {
   StatusObject,
 } from '@grpc/grpc-js';
 import {Status} from '@grpc/grpc-js/build/src/constants';
-import {getLogger, Logger, LoggerOptions} from '../utils/logging';
-
-const maxRetry = 3;
+import {getLogger, Logger} from '../utils/logging';
 
 const retryableGrpcStatusCodes: Array<Status> = [
   // including all the status codes for reference, but
@@ -40,21 +38,18 @@ const retryableGrpcStatusCodes: Array<Status> = [
   // Status.UNAUTHENTICATED
 ];
 
-export interface RetryInterceptorOptions {
-  loggerOptions?: LoggerOptions;
-}
-
 // TODO: Retry interceptor behavior should be configurable, but we need to
-// align on basic API design first: https://github.com/momentohq/client-sdk-javascript/issues/79 .
+// align on basic API design first:
+// https://github.com/momentohq/client-sdk-javascript/issues/79
+// https://github.com/momentohq/dev-eco-issue-tracker/issues/85
 // For now, for convenience during development, you can toggle this hard-coded
 // variable to enable/disable it.
 const RETRIES_ENABLED = true;
+const maxRetry = 3;
 
-export function createRetryInterceptorIfEnabled(
-  options: RetryInterceptorOptions
-): Array<Interceptor> {
+export function createRetryInterceptorIfEnabled(): Array<Interceptor> {
   if (RETRIES_ENABLED) {
-    return [new RetryInterceptor(options).createRetryInterceptor()];
+    return [new RetryInterceptor().createRetryInterceptor()];
   } else {
     return [];
   }
@@ -63,8 +58,8 @@ export function createRetryInterceptorIfEnabled(
 export class RetryInterceptor {
   private readonly logger: Logger;
 
-  constructor(options?: RetryInterceptorOptions) {
-    this.logger = getLogger(this, options?.loggerOptions);
+  constructor() {
+    this.logger = getLogger(this);
   }
 
   // TODO: We need to send retry count information to the server so that we
@@ -77,45 +72,48 @@ export class RetryInterceptor {
 
     return (options, nextCall) => {
       let savedMetadata: Metadata;
-      let savedSendMessage: any;
-      let savedReceiveMessage: any;
-      let savedMessageNext: (arg0: any) => void;
+      let savedSendMessage: unknown;
+      let savedReceiveMessage: unknown;
+      let savedMessageNext: (arg0: unknown) => void;
       return new InterceptingCall(nextCall(options), {
         start: function (metadata, listener, next) {
           savedMetadata = metadata;
           const newListener: Listener = {
             onReceiveMessage: function (
-              message: any,
-              next: (arg0: any) => void
+              message: unknown,
+              next: (arg0: unknown) => void
             ) {
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               savedReceiveMessage = message;
               savedMessageNext = next;
             },
             onReceiveStatus: function (
               status: StatusObject,
+              // NOTE: we have to use `any` here because that is what is used in the grpc-js type definitions
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               next: (arg0: any) => void
             ) {
               let retries = 0;
-              const retry = function (message: any, metadata: Metadata) {
+              const retry = function (message: unknown, metadata: Metadata) {
                 retries++;
                 const newCall = nextCall(options);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 newCall.start(metadata, {
                   onReceiveMessage: function (message) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     savedReceiveMessage = message;
                   },
                   onReceiveStatus: function (status) {
+                    const requestId: string = JSON.stringify(
+                      metadata.get('request-id')
+                    );
+
                     if (retryableGrpcStatusCodes.includes(status.code)) {
                       if (retries <= maxRetry) {
                         logger.debug(
-                          `Request path: ${options.method_definition.path}; retryable status code: ${status.code}; number of retries (${retries}) is less than max (${maxRetry}), retrying.`
+                          `Request path: ${options.method_definition.path} (id: ${requestId}); retryable status code: ${status.code}; number of retries (${retries}) is less than max (${maxRetry}), retrying.`
                         );
                         retry(message, metadata);
                       } else {
                         logger.debug(
-                          `Request path: ${options.method_definition.path}; retryable status code: ${status.code}; number of retries (${retries}) has exceeded max (${maxRetry}), not retrying.`
+                          `Request path: ${options.method_definition.path} (id: ${requestId}); retryable status code: ${status.code}; number of retries (${retries}) has exceeded max (${maxRetry}), not retrying.`
                         );
                         savedMessageNext(savedReceiveMessage);
                         next(status);
@@ -128,8 +126,11 @@ export class RetryInterceptor {
                 });
               };
               if (retryableGrpcStatusCodes.includes(status.code)) {
+                const requestId: string = JSON.stringify(
+                  metadata.get('request-id')
+                );
                 logger.debug(
-                  `Request path: ${options.method_definition.path}; response status code: ${status.code}; number of retries (${retries}) is less than max (${maxRetry}), retrying.`
+                  `Request path: ${options.method_definition.path} (id: ${requestId}); response status code: ${status.code}; number of retries (${retries}) is less than max (${maxRetry}), retrying.`
                 );
                 retry(savedSendMessage, savedMetadata);
               } else {

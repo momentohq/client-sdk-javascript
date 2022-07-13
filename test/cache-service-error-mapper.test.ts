@@ -1,5 +1,5 @@
 import {Status} from '@grpc/grpc-js/build/src/constants';
-import {cacheServiceErrorMapper} from '../src/CacheServiceErrorMapper';
+import {cacheServiceErrorMapper} from '../src/cache-service-error-mapper';
 import {Metadata, ServiceError} from '@grpc/grpc-js';
 import {
   NotFoundError,
@@ -11,7 +11,7 @@ import {
   AuthenticationError,
   LimitExceededError,
   AlreadyExistsError,
-} from '../src/Errors';
+} from '../src';
 
 const generateServiceError = (status: Status): ServiceError => {
   return {
