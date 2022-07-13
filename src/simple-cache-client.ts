@@ -229,7 +229,8 @@ export class SimpleCacheClient {
 
   private getNextDataClient(): MomentoCache {
     const client = this.dataClients[this.nextDataClientIndex];
-    this.nextDataClientIndex = (this.nextDataClientIndex + 1) % this.dataClients.length;
+    this.nextDataClientIndex =
+      (this.nextDataClientIndex + 1) % this.dataClients.length;
     return client;
   }
 }
