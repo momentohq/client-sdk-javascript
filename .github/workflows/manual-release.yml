@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  sync-branch:
+  merge-to-release-branch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
