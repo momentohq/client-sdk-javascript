@@ -17,4 +17,4 @@ jobs:
           type: now
           from_branch: main
           target_branch: release
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.MOMENTO_MACHINE_USER_GITHUB_TOKEN }}
