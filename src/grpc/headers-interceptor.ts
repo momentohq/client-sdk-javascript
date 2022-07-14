@@ -40,6 +40,7 @@ export class HeaderInterceptor {
             metadata.add(h.name, h.value)
           );
           if (!HeaderInterceptor.areOnlyOnceHeadersSent) {
+            HeaderInterceptor.areOnlyOnceHeadersSent = true;
             this.headersToAddOnce.forEach(h => metadata.add(h.name, h.value));
           }
           next(metadata, {});
