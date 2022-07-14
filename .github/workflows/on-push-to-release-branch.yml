@@ -1,4 +1,4 @@
-name: Push to Release Branch
+name: On push to release branch
 
 on:
   push:
@@ -20,6 +20,12 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           allow-initial-development-versions: true
           force-bump-patch-version: true
+          # For whatever reason, this silly tool won't let you do releases from branches
+          #  other than the default branch unless you pass this flag, which doesn't seem
+          #  to actually have anything to do with CI:
+          # https://github.com/go-semantic-release/semantic-release/blob/master/cmd/semantic-release/main.go#L173-L194
+          # https://github.com/go-semantic-release/condition-github/blob/4c8af3fc516151423fff2f77eb08bf7082570676/pkg/condition/github.go#L42-L44
+          custom-arguments: '--no-ci'
 
       - name: Output release
         id: release
