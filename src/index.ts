@@ -1,4 +1,4 @@
-import {SimpleCacheClient} from './SimpleCacheClient';
+import {SimpleCacheClient} from './simple-cache-client';
 import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
 import {CacheGetStatus} from './messages/Result';
@@ -17,7 +17,7 @@ import {
   BadRequestError,
   PermissionError,
   NotFoundError,
-} from './Errors';
+} from './errors';
 
 export {
   Logger,
@@ -25,6 +25,7 @@ export {
   LogLevel,
   LogFormat,
   getLogger,
+  initializeMomentoLogging,
 } from './utils/logging';
 
 export {

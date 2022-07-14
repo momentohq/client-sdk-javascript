@@ -11,7 +11,7 @@ import {
   AuthenticationError,
   LimitExceededError,
   AlreadyExistsError,
-} from './Errors';
+} from './errors';
 
 export function cacheServiceErrorMapper(
   err: ServiceError | null

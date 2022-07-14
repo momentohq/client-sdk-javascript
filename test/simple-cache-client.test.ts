@@ -1,5 +1,4 @@
-import {SimpleCacheClient} from '../src';
-import {InvalidArgumentError} from '../src/Errors';
+import {InvalidArgumentError, SimpleCacheClient} from '../src';
 
 const AUTH_TOKEN =
   'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzcXVpcnJlbCIsImNwIjoiY29udHJvbCBwbGFuZSBlbmRwb2ludCIsImMiOiJkYXRhIHBsYW5lIGVuZHBvaW50In0.zsTsEXFawetTCZI';

@@ -1,13 +1,14 @@
 import {control} from '@gomomento/generated-types';
-import {Header, HeaderInterceptor} from './grpc/HeadersInterceptor';
-import {ClientTimeoutInterceptor} from './grpc/ClientTimeoutInterceptor';
+import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
+import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
+import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
 import {
   AlreadyExistsError,
   InvalidArgumentError,
   NotFoundError,
-} from './Errors';
+} from './errors';
 import {Status} from '@grpc/grpc-js/build/src/constants';
-import {cacheServiceErrorMapper} from './CacheServiceErrorMapper';
+import {cacheServiceErrorMapper} from './cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {DeleteCacheResponse} from './messages/DeleteCacheResponse';
 import {CreateCacheResponse} from './messages/CreateCacheResponse';
@@ -16,16 +17,11 @@ import {version} from '../package.json';
 import {CreateSigningKeyResponse} from './messages/CreateSigningKeyResponse';
 import {RevokeSigningKeyResponse} from './messages/RevokeSigningKeyResponse';
 import {ListSigningKeysResponse} from './messages/ListSigningKeysResponse';
-import {
-  createRetryInterceptorIfEnabled,
-  RetryInterceptor,
-} from './grpc/RetryInterceptor';
-import {getLogger, Logger, LoggerOptions} from './utils/logging';
+import {getLogger, Logger} from './utils/logging';
 
 export interface MomentoProps {
   authToken: string;
   endpoint: string;
-  loggerOptions?: LoggerOptions;
 }
 
 export class Momento {
@@ -38,7 +34,7 @@ export class Momento {
    * @param {MomentoProps} props
    */
   constructor(props: MomentoProps) {
-    this.logger = getLogger(this, props.loggerOptions);
+    this.logger = getLogger(this);
     const headers = [
       new Header('Authorization', props.authToken),
       new Header('Agent', `javascript:${version}`),
@@ -46,9 +42,7 @@ export class Momento {
     this.interceptors = [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
       ClientTimeoutInterceptor(Momento.REQUEST_TIMEOUT_MS),
-      ...createRetryInterceptorIfEnabled({
-        loggerOptions: props.loggerOptions,
-      }),
+      ...createRetryInterceptorIfEnabled(),
     ];
     this.logger.debug(
       `Creating control client using endpoint: '${props.endpoint}`

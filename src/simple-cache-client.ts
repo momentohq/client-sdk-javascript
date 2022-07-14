@@ -1,5 +1,5 @@
-import {Momento} from './Momento';
-import {MomentoCache} from './MomentoCache';
+import {Momento} from './momento';
+import {MomentoCache} from './momento-cache';
 import {decodeJwt} from './utils/jwt';
 import {SetResponse} from './messages/SetResponse';
 import {GetResponse} from './messages/GetResponse';
@@ -10,7 +10,13 @@ import {DeleteResponse} from './messages/DeleteResponse';
 import {CreateSigningKeyResponse} from './messages/CreateSigningKeyResponse';
 import {RevokeSigningKeyResponse} from './messages/RevokeSigningKeyResponse';
 import {ListSigningKeysResponse} from './messages/ListSigningKeysResponse';
-import {getLogger, Logger, LoggerOptions} from './utils/logging';
+import {
+  getLogger,
+  initializeMomentoLogging,
+  Logger,
+  LoggerOptions,
+} from './utils/logging';
+import {range} from './utils/collections';
 
 export interface SimpleCacheClientOptions {
   /**
@@ -37,7 +43,8 @@ export interface SimpleCacheClientOptions {
  * @class SimpleCacheClient
  */
 export class SimpleCacheClient {
-  private readonly dataClient: MomentoCache;
+  private readonly dataClients: Array<MomentoCache>;
+  private nextDataClientIndex: number;
   private readonly controlClient: Momento;
   private readonly logger: Logger;
 
@@ -54,22 +61,36 @@ export class SimpleCacheClient {
     defaultTtlSeconds: number,
     options?: SimpleCacheClientOptions
   ) {
-    this.logger = getLogger(this, options?.loggerOptions);
+    initializeMomentoLogging(options?.loggerOptions);
+    this.logger = getLogger(this);
     const claims = decodeJwt(authToken);
     const controlEndpoint = claims.cp;
     const dataEndpoint = claims.c;
-    this.dataClient = new MomentoCache({
-      authToken,
-      defaultTtlSeconds,
-      endpoint: dataEndpoint,
-      requestTimeoutMs: options?.requestTimeoutMs,
-      loggerOptions: options?.loggerOptions,
-    });
+
+    // For high load, we get better performance with multiple clients.  Here we are setting a default,
+    // hard-coded value for the number of clients to use, because we haven't yet designed the API for
+    // users to use to configure tunables:
+    // https://github.com/momentohq/dev-eco-issue-tracker/issues/85
+    // The choice of 6 as the initial value is a rough guess at a reasonable default for the short-term,
+    // based on load testing results captured in:
+    // https://github.com/momentohq/oncall-tracker/issues/186
+    const numClients = 1;
+    this.dataClients = range(numClients).map(
+      () =>
+        new MomentoCache({
+          authToken,
+          defaultTtlSeconds,
+          endpoint: dataEndpoint,
+          requestTimeoutMs: options?.requestTimeoutMs,
+        })
+    );
+    // we will round-robin the requests through all of our clients.  Since javascript is single-threaded,
+    // we don't have to worry about thread safety on this index variable.
+    this.nextDataClientIndex = 0;
 
     this.controlClient = new Momento({
       endpoint: controlEndpoint,
       authToken,
-      loggerOptions: options?.loggerOptions,
     });
   }
 
@@ -85,7 +106,8 @@ export class SimpleCacheClient {
     cacheName: string,
     key: string | Uint8Array
   ): Promise<GetResponse> {
-    return await this.dataClient.get(cacheName, key);
+    const client = this.getNextDataClient();
+    return await client.get(cacheName, key);
   }
 
   /**
@@ -105,7 +127,8 @@ export class SimpleCacheClient {
     value: string | Uint8Array,
     ttl?: number
   ): Promise<SetResponse> {
-    return await this.dataClient.set(cacheName, key, value, ttl);
+    const client = this.getNextDataClient();
+    return await client.set(cacheName, key, value, ttl);
   }
 
   /**
@@ -120,7 +143,8 @@ export class SimpleCacheClient {
     cacheName: string,
     key: string | Uint8Array
   ): Promise<DeleteResponse> {
-    return await this.dataClient.delete(cacheName, key);
+    const client = this.getNextDataClient();
+    return await client.delete(cacheName, key);
   }
 
   /**
@@ -165,9 +189,10 @@ export class SimpleCacheClient {
   public async createSigningKey(
     ttlMinutes: number
   ): Promise<CreateSigningKeyResponse> {
+    const client = this.getNextDataClient();
     return await this.controlClient.createSigningKey(
       ttlMinutes,
-      this.dataClient.getEndpoint()
+      client.getEndpoint()
     );
   }
 
@@ -195,9 +220,17 @@ export class SimpleCacheClient {
   public async listSigningKeys(
     nextToken?: string
   ): Promise<ListSigningKeysResponse> {
+    const client = this.getNextDataClient();
     return await this.controlClient.listSigningKeys(
-      this.dataClient.getEndpoint(),
+      client.getEndpoint(),
       nextToken
     );
+  }
+
+  private getNextDataClient(): MomentoCache {
+    const client = this.dataClients[this.nextDataClientIndex];
+    this.nextDataClientIndex =
+      (this.nextDataClientIndex + 1) % this.dataClients.length;
+    return client;
   }
 }
