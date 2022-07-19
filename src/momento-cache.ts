@@ -7,7 +7,7 @@ import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
 import {CacheGetStatus, momentoResultConverter} from './messages/Result';
 import {InvalidArgumentError, UnknownServiceError} from './errors';
 import {cacheServiceErrorMapper} from './cache-service-error-mapper';
-import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
+import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
 import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
 import {version} from '../package.json';
@@ -36,7 +36,7 @@ export class MomentoCache {
   private readonly endpoint: string;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   private readonly logger: Logger;
-  private readonly allInterceptorsExceptHeaderInterceptor: Interceptor[];
+  private readonly interceptors: Interceptor[];
 
   /**
    * @param {MomentoCacheProps} props
@@ -68,18 +68,7 @@ export class MomentoCache {
       props.requestTimeoutMs || MomentoCache.DEFAULT_REQUEST_TIMEOUT_MS;
     this.authToken = props.authToken;
     this.endpoint = props.endpoint;
-    // The first interceptor in our list is a Header interceptor, which
-    // includes a header for the cache name.  The cache name is part of the
-    // get/set API calls, so we cannot construct that interceptor here in the
-    // constructor; we have to construct it for each request.  Here, we construct
-    // all of the other interceptors, which do not vary per request.  It is crucial
-    // that we only construct these once and re-use them, because some of them are
-    // very heavy-weight (in terms of memory usage, EventEmitter registrations on the
-    // `process` object, etc.).
-    this.allInterceptorsExceptHeaderInterceptor = [
-      ClientTimeoutInterceptor(this.requestTimeoutMs),
-      ...createRetryInterceptorIfEnabled(),
-    ];
+    this.interceptors = this.initializeInterceptors();
   }
 
   public getEndpoint(): string {
@@ -130,11 +119,13 @@ export class MomentoCache {
       cache_key: key,
       ttl_milliseconds: ttl * 1000,
     });
+    const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
       this.client.Set(
         request,
+        metadata,
         {
-          interceptors: this.getInterceptors(cacheName),
+          interceptors: this.interceptors,
         },
         (err, resp) => {
           if (resp) {
@@ -163,11 +154,13 @@ export class MomentoCache {
     const request = new cache.cache_client._DeleteRequest({
       cache_key: key,
     });
+    const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
       this.client.Delete(
         request,
+        metadata,
         {
-          interceptors: this.getInterceptors(cacheName),
+          interceptors: this.interceptors,
         },
         (err, resp) => {
           if (resp) {
@@ -198,12 +191,14 @@ export class MomentoCache {
     const request = new cache.cache_client._GetRequest({
       cache_key: key,
     });
+    const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
       this.client.Get(
         request,
+        metadata,
         {
-          interceptors: this.getInterceptors(cacheName),
+          interceptors: this.interceptors,
         },
         (err, resp) => {
           if (resp) {
@@ -243,15 +238,15 @@ export class MomentoCache {
     }
   };
 
-  private getInterceptors(cacheName: string): Interceptor[] {
+  private initializeInterceptors(): Interceptor[] {
     const headers = [
       new Header('Authorization', this.authToken),
-      new Header('cache', cacheName),
       new Header('Agent', `javascript:${version}`),
     ];
     return [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
-      ...this.allInterceptorsExceptHeaderInterceptor,
+      ClientTimeoutInterceptor(this.requestTimeoutMs),
+      ...createRetryInterceptorIfEnabled(),
     ];
   }
 
@@ -272,5 +267,11 @@ export class MomentoCache {
     if (ttl && ttl < 0) {
       throw new InvalidArgumentError('ttl must be a positive integer');
     }
+  }
+
+  private createMetadata(cacheName: string): Metadata {
+    const metadata = new Metadata();
+    metadata.set('cache', cacheName);
+    return metadata;
   }
 }
