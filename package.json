@@ -22,7 +22,7 @@
     "build": "rm -rf dist && tsc"
   },
   "author": "",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@types/google-protobuf": "^3.15.5",
     "@types/jest": "^27.0.2",
