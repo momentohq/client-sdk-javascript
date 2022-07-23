@@ -1,3 +1,5 @@
+{{ ossHeader }}
+
 # Momento client-sdk-javascript
 
 :warning: Experimental SDK :warning:
@@ -8,11 +10,7 @@ Please be aware that you may need to update your source code with the current ve
 
 ---
 
-<br/>
-
 JavaScript SDK for Momento, a serverless cache that automatically scales without any of the operational overhead required by traditional caching solutions.
-
-<br/>
 
 ## Getting Started :running:
 
@@ -21,13 +19,9 @@ JavaScript SDK for Momento, a serverless cache that automatically scales without
 - Node version [10.13 or higher](https://nodejs.org/en/download/) is required
 - A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
 
-<br/>
-
 ### Installing Momento and Running the Example
 
 Check out our [JavaScript SDK example repo](https://github.com/momentohq/client-sdk-examples/tree/main/javascript)!
-
-<br/>
 
 ### Using Momento
 
@@ -57,14 +51,12 @@ await momento.set(CACHE_NAME, 'key2', 'value2', 5);
 await momento.deleteCache(CACHE_NAME);
 ```
 
-<br/>
-
 ## Running Tests :zap:
 
 Integration tests require an auth token for testing. Set the env var `TEST_AUTH_TOKEN` to
 provide it.
 
-```
+```shell
 export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
 npm run integration
 ```

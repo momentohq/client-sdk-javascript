@@ -1,4 +1,4 @@
-name: CI
+name: Build
 
 on:
   pull_request:
@@ -14,6 +14,12 @@ jobs:
     steps:
       - name: Setup repo
         uses: actions/checkout@v2
+
+      - name: Verify README generation
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v1
+        with:
+          project_status: official
+          project_stability: alpha
 
       - name: Install Node
         uses: actions/setup-node@v1
@@ -36,3 +42,5 @@ jobs:
 
       - name: Integration Test
         run: npm run integration
+
+
