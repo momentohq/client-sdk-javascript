@@ -1,3 +1,5 @@
+{{ ossHeader }}
+
 # Momento client-sdk-javascript
 
 :warning: Experimental SDK :warning:
