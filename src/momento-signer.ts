@@ -7,16 +7,50 @@ export enum CacheOperation {
 }
 
 export interface signingRequest {
+  /**
+   * @param {string} cacheName - Name of the cache the signed token should be allowed to operate on.
+   */
   cacheName: string;
+  /**
+   * @param {number} expiryEpochSeconds - Timestamp in epoch seconds for
+   * when the signed token should expire.
+   */
   expiryEpochSeconds: number;
-  cacheOperation?: CacheOperation;
+  /**
+   * @param {string} [cacheKey] - The cache key the signed token is allowed to
+   * access. If not present, auth token is allowed to be used for any key.
+   */
   cacheKey?: string;
+  /**
+   * @param {CacheOperation} [cacheOperation] - The operation the signed token
+   * should be valid for. If not present the signed token is allowed to be used
+   * for any operation.
+   */
+  cacheOperation?: CacheOperation;
+  /**
+   * @param {number} [ttlSeconds] - The time to live for cache items that this
+   * signed token can set. If not present the signed token is allowed to be
+   * used for set operations with any ttl.
+   */
   ttlSeconds?: number;
 }
 
 export interface presignedUrlRequest extends signingRequest {
-  cacheOperation: CacheOperation;
+  /**
+   * @param {string} cacheKey - The cache key the presigned
+   * URL should access.
+   */
   cacheKey: string;
+  /**
+   * @param {CacheOperation} cacheOperation - The operation the presigned
+   * URL should perform on the item in the cache.
+   */
+  cacheOperation: CacheOperation;
+  /**
+   * @param {number} [ttlSeconds] - The time to live for cache items when
+   * performing a SET. Required when operation is CacheOperation.Set.
+   */
+  ttlSeconds?: number;
 }
 
 interface headers extends JWTHeaderParameters {
@@ -25,10 +59,21 @@ interface headers extends JWTHeaderParameters {
   kid: string;
 }
 
-// the jose.ImportJWK returns Promise<KeyLike | Uint8Array>. It doesn't really
+// `jose.importJWK` returns Promise<KeyLike | Uint8Array>. It doesn't really
 // matter to us which, so this is just an alias for convenience purposes.
 type joseKey = KeyLike | Uint8Array;
 
+/**
+ * Momento Signer
+ *
+ * Features include:
+ * - Create signed jwts for use with HTTP requests to the Momento Simple Cache
+ * Service
+ * - Create presigned URLs to use for HTTP requests to the Momento Simple
+ * Cache Service
+ * @export
+ * @class MomentoSigner
+ */
 export class MomentoSigner {
   private readonly key: joseKey;
   private readonly headers: headers;
@@ -38,6 +83,15 @@ export class MomentoSigner {
     this.headers = headers;
   }
 
+  /**
+   * Creates a new MomentoSigner instance with the specified private key
+   *
+   * @param {string} jwkJsonString - the JSON string of the JWK key. Can be
+   * optained from `createSigningKey` response.
+   * @returns {Promise<MomentoSigner>} - Promise containing the MomentoSigner
+   * instance
+   * @memberof MomentoSigner
+   */
   static async init(jwkJsonString: string): Promise<MomentoSigner> {
     let jwk: JWK;
     try {
@@ -59,6 +113,16 @@ export class MomentoSigner {
     return new MomentoSigner(key, headers);
   }
 
+  /**
+   * Creates a new presigned URL
+   *
+   * @param {string} hostname - hostname of Simple Cache Service. Can be
+   * optained from `createSigningKey` response.
+   * @param {presignedUrlRequest} presignedUrlRequest - Contains parameters
+   * for the generated URL.
+   * @returns {Promise<string>} - Promise containing the presigned URL
+   * @memberof MomentoSigner
+   */
   public async createPresignedUrl(
     hostname: string,
     presignedUrlRequest: presignedUrlRequest
@@ -83,6 +147,14 @@ export class MomentoSigner {
     }
   }
 
+  /**
+   * Creates a new signed JWT for use with the Momento Simple Cache Service
+   *
+   * @param {signingRequest} signingRequest - Contains parameters
+   * for building the JWT.
+   * @returns {Promise<string>} - Promise containing the signed JWT
+   * @memberof MomentoSigner
+   */
   public signAccessToken(signingRequest: signingRequest): Promise<string> {
     let methodClaim: {method?: string[]};
     switch (signingRequest.cacheOperation) {
