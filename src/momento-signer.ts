@@ -130,20 +130,22 @@ export class MomentoSigner {
     const jwtToken = await this.signAccessToken(presignedUrlRequest);
     const cacheName = presignedUrlRequest.cacheName;
     const cacheKey = presignedUrlRequest.cacheKey;
-    if (presignedUrlRequest.cacheOperation === CacheOperation.Get) {
-      return `https://rest.${hostname}/cache/get/${cacheName}/${cacheKey}?token=${jwtToken}`;
-    } else if (presignedUrlRequest.cacheOperation === CacheOperation.Set) {
-      const ttlSeconds = presignedUrlRequest.ttlSeconds;
-      if (ttlSeconds === undefined) {
-        throw new InvalidArgumentError(
-          'ttlSeconds is required for SET operation'
-        );
+    switch (presignedUrlRequest.cacheOperation) {
+      case CacheOperation.Get:
+        return `https://rest.${hostname}/cache/get/${cacheName}/${cacheKey}?token=${jwtToken}`;
+      case CacheOperation.Set: {
+        const ttlSeconds = presignedUrlRequest.ttlSeconds;
+        if (ttlSeconds === undefined) {
+          throw new InvalidArgumentError(
+            'ttlSeconds is required for SET operation'
+          );
+        }
+        return `https://rest.${hostname}/cache/set/${cacheName}/${cacheKey}?token=${jwtToken}&ttl_milliseconds=${
+          ttlSeconds * 1000
+        }`;
       }
-      return `https://rest.${hostname}/cache/set/${cacheName}/${cacheKey}?token=${jwtToken}&ttl_milliseconds=${
-        ttlSeconds * 1000
-      }`;
-    } else {
-      throw new Error('Unhandled operation');
+      default:
+        throw new Error('Unhandled operation');
     }
   }
 
