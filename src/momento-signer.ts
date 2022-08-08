@@ -117,7 +117,7 @@ export class MomentoSigner {
    * Creates a new presigned URL
    *
    * @param {string} hostname - hostname of Simple Cache Service. Can be
-   * optained from `createSigningKey` response.
+   * obtained from `createSigningKey` response.
    * @param {presignedUrlRequest} presignedUrlRequest - Contains parameters
    * for the generated URL.
    * @returns {Promise<string>} - Promise containing the presigned URL
