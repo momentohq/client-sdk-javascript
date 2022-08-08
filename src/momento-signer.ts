@@ -6,7 +6,7 @@ export enum CacheOperation {
   Set = 'SET',
 }
 
-export interface signingRequest {
+export interface SigningRequest {
   /**
    * @param {string} cacheName - Name of the cache the signed token should be allowed to operate on.
    */
@@ -35,7 +35,7 @@ export interface signingRequest {
   ttlSeconds?: number;
 }
 
-export interface presignedUrlRequest extends signingRequest {
+export interface PresignedUrlRequest extends SigningRequest {
   /**
    * @param {string} cacheKey - The cache key the presigned
    * URL should access.
@@ -118,14 +118,14 @@ export class MomentoSigner {
    *
    * @param {string} hostname - hostname of Simple Cache Service. Can be
    * obtained from `createSigningKey` response.
-   * @param {presignedUrlRequest} presignedUrlRequest - Contains parameters
+   * @param {PresignedUrlRequest} presignedUrlRequest - Contains parameters
    * for the generated URL.
    * @returns {Promise<string>} - Promise containing the presigned URL
    * @memberof MomentoSigner
    */
   public async createPresignedUrl(
     hostname: string,
-    presignedUrlRequest: presignedUrlRequest
+    presignedUrlRequest: PresignedUrlRequest
   ): Promise<string> {
     const jwtToken = await this.signAccessToken(presignedUrlRequest);
     const cacheName = presignedUrlRequest.cacheName;
@@ -150,12 +150,12 @@ export class MomentoSigner {
   /**
    * Creates a new signed JWT for use with the Momento Simple Cache Service
    *
-   * @param {signingRequest} signingRequest - Contains parameters
+   * @param {SigningRequest} signingRequest - Contains parameters
    * for building the JWT.
    * @returns {Promise<string>} - Promise containing the signed JWT
    * @memberof MomentoSigner
    */
-  public signAccessToken(signingRequest: signingRequest): Promise<string> {
+  public signAccessToken(signingRequest: SigningRequest): Promise<string> {
     let methodClaim: {method?: string[]};
     switch (signingRequest.cacheOperation) {
       case CacheOperation.Get:
