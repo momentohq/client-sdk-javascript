@@ -71,6 +71,24 @@ type joseKey = KeyLike | Uint8Array;
  * Service
  * - Create presigned URLs to use for HTTP requests to the Momento Simple
  * Cache Service
+ *
+ * Example usage:
+ *   const signingKeyResponse = await momentoClient.createSigningKey(60 * 24)
+ *   const keyString = signingKeyResponse.getKey();
+ *   const endpoint = signingKeyResponse.getEndpoint();
+ *   const signer = await MomentoSigner.init(keyString)
+ *   const getUrl = await signer.createPresignedUrl(endpoint, {
+ *     cacheName: 'mycache',
+ *     cacheKey: 'mykey',
+ *     cacheOperation: CacheOperation.GET,
+ *     expiryEpochSeconds: Math.floor(Date.now() / 1000) + 10 * 60;
+ *   });
+ *   fetch(getUrl)
+ *
+ * See
+ * https://github.com/momentohq/client-sdk-examples/blob/main/javascript/presigned-url-example.ts
+ * for a more extensive example.
+ *
  * @export
  * @class MomentoSigner
  */
