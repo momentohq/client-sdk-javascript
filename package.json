@@ -48,6 +48,7 @@
   "dependencies": {
     "@gomomento/generated-types": "0.13.0",
     "@grpc/grpc-js": "1.5.10",
+    "jose": "4.8.3",
     "jwt-decode": "3.1.2",
     "pino": "8.1.0",
     "pino-pretty": "8.1.0"

@@ -1,4 +1,5 @@
 import {SimpleCacheClient} from './simple-cache-client';
+import {CacheOperation, MomentoSigner} from './momento-signer';
 import {GetResponse} from './messages/GetResponse';
 import {SetResponse} from './messages/SetResponse';
 import {CacheGetStatus} from './messages/Result';
@@ -29,6 +30,8 @@ export {
 } from './utils/logging';
 
 export {
+  MomentoSigner,
+  CacheOperation,
   SimpleCacheClient,
   GetResponse,
   SetResponse,
