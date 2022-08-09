@@ -73,7 +73,7 @@ type joseKey = KeyLike | Uint8Array;
  * Cache Service
  *
  * Example usage:
- *   const signingKeyResponse = await momentoClient.createSigningKey(60 * 24)
+ *   ```const signingKeyResponse = await momentoClient.createSigningKey(60 * 24)
  *   const keyString = signingKeyResponse.getKey();
  *   const endpoint = signingKeyResponse.getEndpoint();
  *   const signer = await MomentoSigner.init(keyString)
@@ -83,11 +83,9 @@ type joseKey = KeyLike | Uint8Array;
  *     cacheOperation: CacheOperation.GET,
  *     expiryEpochSeconds: Math.floor(Date.now() / 1000) + 10 * 60;
  *   });
- *   fetch(getUrl)
+ *   fetch(getUrl)```
  *
- * See
- * https://github.com/momentohq/client-sdk-examples/blob/main/javascript/presigned-url-example.ts
- * for a more extensive example.
+ * @see {@link https://github.com/momentohq/client-sdk-examples/blob/main/javascript/presigned-url-example.ts|The exampes repo} has a more extensive example.
  *
  * @export
  * @class MomentoSigner
