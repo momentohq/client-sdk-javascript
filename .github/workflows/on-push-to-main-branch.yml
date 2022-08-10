@@ -1,0 +1,46 @@
+name: On push to main branch
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: macos-latest
+    env:
+      TEST_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+      TEST_CACHE_NAME: js-integration-test-ci
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.MOMENTO_MACHINE_USER_GITHUB_TOKEN }}
+
+      - name: Install Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      - name: Install Dependencies
+        run: |
+          npm ci
+          node -v
+
+      - name: Build
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test
+
+      - name: Integration Test
+        run: npm run integration
+
+      - name: Generate README
+        uses: momentohq/standards-and-practices/github-actions/generate-and-commit-oss-readme@gh-actions-v1
+        with:
+          project_status: official
+          project_stability: alpha
