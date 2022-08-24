@@ -21,6 +21,11 @@ jobs:
           project_status: official
           project_stability: alpha
 
+      - name: Commitlint and Other Shared Build Steps
+        uses: momentohq/standards-and-practices/github-actions/shared-build@gh-actions-v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install Node
         uses: actions/setup-node@v1
         with:
@@ -42,5 +47,3 @@ jobs:
 
       - name: Integration Test
         run: npm run integration
-
-
