@@ -50,7 +50,7 @@ jobs:
       - name: Integration Test
         run: npm run integration
 
-  build-examples:
+  test-examples:
     runs-on: ubuntu-latest
     env:
       # TODO: remove token stored as secret in favor of using a
