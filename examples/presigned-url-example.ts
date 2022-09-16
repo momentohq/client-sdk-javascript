@@ -35,7 +35,7 @@ const main = async () => {
     }
   }
 
-  console.log(`Checking for signing key in $MOMENTO_SIGNING_KEY`);
+  console.log('Checking for signing key in $MOMENTO_SIGNING_KEY');
   let signingKey = process.env.MOMENTO_SIGNING_KEY;
   if (!signingKey) {
     // There is a limit of 5 signing keys per user, so it's best practice to
