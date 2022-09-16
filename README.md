@@ -25,7 +25,7 @@ JavaScript SDK for Momento, a serverless cache that automatically scales without
 
 ### Installing Momento and Running the Example
 
-Check out our [JavaScript SDK example repo](https://github.com/momentohq/client-sdk-examples/tree/main/javascript)!
+Check out our [JavaScript SDK example](/examples/README.md)!
 
 ### Using Momento
 
