@@ -44,3 +44,5 @@ jobs:
         with:
           project_status: official
           project_stability: alpha
+          project_type: sdk
+          sdk_language: javascript
