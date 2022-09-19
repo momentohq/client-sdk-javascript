@@ -26,7 +26,7 @@ any of the operational overhead required by traditional caching solutions!
 
 ### Installing Momento and Running the Example
 
-Check out our [JavaScript SDK example repo](https://github.com/momentohq/client-sdk-examples/tree/main/javascript)!
+Check out our [JavaScript SDK example](/examples/README.md)!
 
 ### Using Momento
 
