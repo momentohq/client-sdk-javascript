@@ -3,18 +3,19 @@
 [![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 [![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-alpha.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md) 
 
+# Momento JavaScript Client Library
 
-# Momento client-sdk-javascript
 
-:warning: Experimental SDK :warning:
+:warning: Alpha SDK :warning:
 
-JavaScript SDK for Momento is experimental and under active development.
-There could be non-backward compatible changes or removal in the future.
-Please be aware that you may need to update your source code with the current version of the SDK when its version gets upgraded.
+This is an official Momento SDK, but the API is in an alpha stage and may be subject to backward-incompatible
+changes.  For more info, click on the alpha badge above.
 
----
 
-JavaScript SDK for Momento, a serverless cache that automatically scales without any of the operational overhead required by traditional caching solutions.
+JavaScript client SDK for Momento Serverless Cache: a fast, simple, pay-as-you-go caching solution without
+any of the operational overhead required by traditional caching solutions!
+
+
 
 ## Getting Started :running:
 
@@ -55,12 +56,5 @@ await momento.set(CACHE_NAME, 'key2', 'value2', 5);
 await momento.deleteCache(CACHE_NAME);
 ```
 
-## Running Tests :zap:
-
-Integration tests require an auth token for testing. Set the env var `TEST_AUTH_TOKEN` to
-provide it.
-
-```shell
-export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
-npm run integration
-```
+----------------------------------------------------------------------------------------
+For more info, visit our website at [https://gomomento.com](https://gomomento.com)!
