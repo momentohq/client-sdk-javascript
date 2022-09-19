@@ -17,8 +17,8 @@ if (!authToken) {
 const defaultTtl = 60;
 const momento = new SimpleCacheClient(authToken, defaultTtl, {
   loggerOptions: {
-    level: LogLevel.DEBUG,
-    format: LogFormat.CONSOLE,
+    level: LogLevel.INFO,
+    format: LogFormat.JSON,
   },
 });
 
