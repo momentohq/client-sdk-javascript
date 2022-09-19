@@ -1,17 +1,5 @@
 {{ ossHeader }}
 
-# Momento client-sdk-javascript
-
-:warning: Experimental SDK :warning:
-
-JavaScript SDK for Momento is experimental and under active development.
-There could be non-backward compatible changes or removal in the future.
-Please be aware that you may need to update your source code with the current version of the SDK when its version gets upgraded.
-
----
-
-JavaScript SDK for Momento, a serverless cache that automatically scales without any of the operational overhead required by traditional caching solutions.
-
 ## Getting Started :running:
 
 ### Requirements
@@ -51,12 +39,4 @@ await momento.set(CACHE_NAME, 'key2', 'value2', 5);
 await momento.deleteCache(CACHE_NAME);
 ```
 
-## Running Tests :zap:
-
-Integration tests require an auth token for testing. Set the env var `TEST_AUTH_TOKEN` to
-provide it.
-
-```shell
-export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
-npm run integration
-```
+{{ ossFooter }}
