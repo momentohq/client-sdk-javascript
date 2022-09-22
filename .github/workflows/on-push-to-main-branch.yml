@@ -46,3 +46,4 @@ jobs:
           project_stability: alpha
           project_type: sdk
           sdk_language: JavaScript
+          usage_example_path: ./examples/index.ts
