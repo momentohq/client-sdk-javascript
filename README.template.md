@@ -10,11 +10,13 @@
 ### Installation
 
 Use `npm` to install Momento:
+
 ```bash
 npm install @gomomento/sdk
 ```
 
 ### Usage
+
 Checkout our [examples](./examples/README.md) directory for complete examples of how to use the SDK.
 
 Here is a quickstart you can use in your own project:
