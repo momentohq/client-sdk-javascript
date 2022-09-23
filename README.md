@@ -24,36 +24,88 @@ any of the operational overhead required by traditional caching solutions!
 - Node version [10.13 or higher](https://nodejs.org/en/download/) is required
 - A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
 
-### Installing Momento and Running the Example
+### Installation
 
-Check out our [JavaScript SDK example repo](https://github.com/momentohq/client-sdk-examples/tree/main/javascript)!
+Use `npm` to install Momento:
 
-### Using Momento
+```bash
+npm install @gomomento/sdk
+```
+
+### Usage
+
+Checkout our [examples](./examples/README.md) directory for complete examples of how to use the SDK.
+
+Here is a quickstart you can use in your own project:
 
 ```typescript
-import {SimpleCacheClient, CacheGetStatus} from '@gomomento/sdk';
+import {
+  AlreadyExistsError,
+  CacheGetStatus,
+  LogLevel,
+  LogFormat,
+  SimpleCacheClient,
+} from '@gomomento/sdk';
 
-// your authentication token for momento
+const cacheName = 'cache';
+const cacheKey = 'key';
+const cacheValue = 'value';
 const authToken = process.env.MOMENTO_AUTH_TOKEN;
+if (!authToken) {
+  throw new Error('Missing required environment variable MOMENTO_AUTH_TOKEN');
+}
 
-// initializing momento
-const DEFAULT_TTL = 60; // 60 seconds for default ttl
-const momento = new SimpleCacheClient(authToken, DEFAULT_TTL);
+const defaultTtl = 60;
+const momento = new SimpleCacheClient(authToken, defaultTtl, {
+  loggerOptions: {
+    level: LogLevel.INFO,
+    format: LogFormat.JSON,
+  },
+});
 
-// creating a cache named "myCache"
-const CACHE_NAME = 'myCache';
-await momento.createCache(CACHE_NAME);
+const main = async () => {
+  try {
+    await momento.createCache(cacheName);
+  } catch (e) {
+    if (e instanceof AlreadyExistsError) {
+      console.log('cache already exists');
+    } else {
+      throw e;
+    }
+  }
 
-// sets key with default ttl
-await momento.set(CACHE_NAME, 'key', 'value');
-const res = await momento.get(CACHE_NAME, 'key');
-console.log('result: ', res.text());
+  console.log('Listing caches:');
+  let token;
+  do {
+    const listResp = await momento.listCaches();
+    listResp.getCaches().forEach(cacheInfo => {
+      console.log(`${cacheInfo.getName()}`);
+    });
+    token = listResp.getNextToken();
+  } while (token !== null);
 
-// sets key with ttl of 5 seconds
-await momento.set(CACHE_NAME, 'key2', 'value2', 5);
+  const exampleTtlSeconds = 10;
+  console.log(
+    `Storing key=${cacheKey}, value=${cacheValue}, ttl=${exampleTtlSeconds}`
+  );
+  await momento.set(cacheName, cacheKey, cacheValue, exampleTtlSeconds);
+  const getResp = await momento.get(cacheName, cacheKey);
 
-// permanently deletes cache
-await momento.deleteCache(CACHE_NAME);
+  if (getResp.status === CacheGetStatus.Hit) {
+    console.log(`cache hit: ${String(getResp.text())}`);
+  } else {
+    console.log('cache miss');
+  }
+};
+
+main()
+  .then(() => {
+    console.log('success!!');
+  })
+  .catch(e => {
+    console.error('failed to get from cache', e);
+  });
+
 ```
 
 ----------------------------------------------------------------------------------------
