@@ -24,6 +24,11 @@ any of the operational overhead required by traditional caching solutions!
 - Node version [10.13 or higher](https://nodejs.org/en/download/) is required
 - A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
 
+### Examples
+
+Ready to dive right in? Just check out the [examples](./examples/README.md) directory for complete, working examples of
+how to use the SDK.
+
 ### Installation
 
 Use `npm` to install Momento:
