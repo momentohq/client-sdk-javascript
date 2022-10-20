@@ -1,20 +1,24 @@
+<head>
+  <meta name="Momento JavaScript Client Library Documentation" content="JavaScript client software development kit for Momento Serverless Cache">
+</head>
 <img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
 
 [![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 [![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-alpha.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md) 
 
+# Momento JavaScript Client Library
 
-# Momento client-sdk-javascript
 
-:warning: Experimental SDK :warning:
+:warning: Alpha SDK :warning:
 
-JavaScript SDK for Momento is experimental and under active development.
-There could be non-backward compatible changes or removal in the future.
-Please be aware that you may need to update your source code with the current version of the SDK when its version gets upgraded.
+This is an official Momento SDK, but the API is in an alpha stage and may be subject to backward-incompatible
+changes.  For more info, click on the alpha badge above.
 
----
 
-JavaScript SDK for Momento, a serverless cache that automatically scales without any of the operational overhead required by traditional caching solutions.
+JavaScript client SDK for Momento Serverless Cache: a fast, simple, pay-as-you-go caching solution without
+any of the operational overhead required by traditional caching solutions!
+
+
 
 ## Getting Started :running:
 
@@ -23,44 +27,102 @@ JavaScript SDK for Momento, a serverless cache that automatically scales without
 - Node version [10.13 or higher](https://nodejs.org/en/download/) is required
 - A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
 
-### Installing Momento and Running the Example
+### Examples
 
-Check out our [JavaScript SDK example repo](https://github.com/momentohq/client-sdk-examples/tree/main/javascript)!
+Ready to dive right in? Just check out the [examples](./examples/README.md) directory for complete, working examples of
+how to use the SDK.
 
-### Using Momento
+### Installation
+
+Use `npm` to install Momento:
+
+```bash
+npm install @gomomento/sdk
+```
+
+### Usage
+
+Checkout our [examples](./examples/README.md) directory for complete examples of how to use the SDK.
+
+Here is a quickstart you can use in your own project:
 
 ```typescript
-import {SimpleCacheClient, CacheGetStatus} from '@gomomento/sdk';
+import {
+  AlreadyExistsError,
+  CacheGetStatus,
+  LogLevel,
+  LogFormat,
+  SimpleCacheClient,
+} from '@gomomento/sdk';
 
-// your authentication token for momento
+const cacheName = 'cache';
+const cacheKey = 'key';
+const cacheValue = 'value';
 const authToken = process.env.MOMENTO_AUTH_TOKEN;
+if (!authToken) {
+  throw new Error('Missing required environment variable MOMENTO_AUTH_TOKEN');
+}
 
-// initializing momento
-const DEFAULT_TTL = 60; // 60 seconds for default ttl
-const momento = new SimpleCacheClient(authToken, DEFAULT_TTL);
+const defaultTtl = 60;
+const momento = new SimpleCacheClient(authToken, defaultTtl, {
+  loggerOptions: {
+    level: LogLevel.INFO,
+    format: LogFormat.JSON,
+  },
+});
 
-// creating a cache named "myCache"
-const CACHE_NAME = 'myCache';
-await momento.createCache(CACHE_NAME);
+const main = async () => {
+  try {
+    await momento.createCache(cacheName);
+  } catch (e) {
+    if (e instanceof AlreadyExistsError) {
+      console.log('cache already exists');
+    } else {
+      throw e;
+    }
+  }
 
-// sets key with default ttl
-await momento.set(CACHE_NAME, 'key', 'value');
-const res = await momento.get(CACHE_NAME, 'key');
-console.log('result: ', res.text());
+  console.log('Listing caches:');
+  let token;
+  do {
+    const listResp = await momento.listCaches();
+    listResp.getCaches().forEach(cacheInfo => {
+      console.log(`${cacheInfo.getName()}`);
+    });
+    token = listResp.getNextToken();
+  } while (token !== null);
 
-// sets key with ttl of 5 seconds
-await momento.set(CACHE_NAME, 'key2', 'value2', 5);
+  const exampleTtlSeconds = 10;
+  console.log(
+    `Storing key=${cacheKey}, value=${cacheValue}, ttl=${exampleTtlSeconds}`
+  );
+  await momento.set(cacheName, cacheKey, cacheValue, exampleTtlSeconds);
+  const getResp = await momento.get(cacheName, cacheKey);
 
-// permanently deletes cache
-await momento.deleteCache(CACHE_NAME);
+  if (getResp.status === CacheGetStatus.Hit) {
+    console.log(`cache hit: ${String(getResp.text())}`);
+  } else {
+    console.log('cache miss');
+  }
+};
+
+main()
+  .then(() => {
+    console.log('success!!');
+  })
+  .catch(e => {
+    console.error('failed to get from cache', e);
+  });
+
 ```
 
-## Running Tests :zap:
+### Error Handling
 
-Integration tests require an auth token for testing. Set the env var `TEST_AUTH_TOKEN` to
-provide it.
+TODO: Coming Soon
 
-```shell
-export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
-npm run integration
-```
+### Tuning
+
+TODO: Coming Soon
+
+----------------------------------------------------------------------------------------
+For more info, visit our website at [https://gomomento.com](https://gomomento.com)!
