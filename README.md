@@ -108,5 +108,11 @@ main()
 
 ```
 
+### Error Handling
+TODO: Coming Soon
+
+### Tuning
+TODO: Coming Soon
+
 ----------------------------------------------------------------------------------------
 For more info, visit our website at [https://gomomento.com](https://gomomento.com)!
