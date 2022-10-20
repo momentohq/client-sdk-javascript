@@ -1,3 +1,6 @@
+<head>
+  <meta name="Momento JavaScript Client Library Documentation" content="JavaScript client software development kit for Momento Serverless Cache">
+</head>
 <img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
 
 [![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
@@ -23,6 +26,11 @@ any of the operational overhead required by traditional caching solutions!
 
 - Node version [10.13 or higher](https://nodejs.org/en/download/) is required
 - A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
+
+### Examples
+
+Ready to dive right in? Just check out the [examples](./examples/README.md) directory for complete, working examples of
+how to use the SDK.
 
 ### Installation
 
@@ -107,6 +115,14 @@ main()
   });
 
 ```
+
+### Error Handling
+
+TODO: Coming Soon
+
+### Tuning
+
+TODO: Coming Soon
 
 ----------------------------------------------------------------------------------------
 For more info, visit our website at [https://gomomento.com](https://gomomento.com)!
