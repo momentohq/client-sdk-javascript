@@ -398,7 +398,7 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
    * Configures the Momento client to timeout if a request exceeds this limit.
    * Momento client default is 5 seconds.
    */
-  requestTimeoutMs: 5 * 1000,
+  requestTimeoutMs: 15 * 1000,
   /**
    * Controls the size of the payload that will be used for the cache items in
    * the load test.  Smaller payloads will generally provide lower latencies than
@@ -412,7 +412,7 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
    * is more contention between the concurrent function calls, client-side latencies
    * may increase.
    */
-  numberOfConcurrentRequests: 50,
+  numberOfConcurrentRequests: 10,
   /**
    * Controls how long the load test will run.  We will execute this many operations
    * (1 cache 'set' followed immediately by 1 'get') across all of our concurrent
