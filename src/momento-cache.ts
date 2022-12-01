@@ -13,6 +13,8 @@ import {SetResponse} from './messages/SetResponse';
 import {version} from '../package.json';
 import {DeleteResponse} from './messages/DeleteResponse';
 import {getLogger, Logger} from './utils/logging';
+import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
+import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 
 /**
  * @property {string} authToken - momento jwt token
@@ -28,7 +30,7 @@ type MomentoCacheProps = {
 };
 
 export class MomentoCache {
-  private readonly client: cache.cache_client.ScsClient;
+  private readonly clientWrapper: GrpcClientWrapper<cache.cache_client.ScsClient>;
   private readonly textEncoder: TextEncoder;
   private readonly defaultTtlSeconds: number;
   private readonly requestTimeoutMs: number;
@@ -47,21 +49,25 @@ export class MomentoCache {
     this.logger.debug(
       `Creating cache client using endpoint: '${props.endpoint}'`
     );
-    this.client = new cache.cache_client.ScsClient(
-      props.endpoint,
-      ChannelCredentials.createSsl(),
-      {
-        // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
-        // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
-        // This needs to be tunable: https://github.com/momentohq/dev-eco-issue-tracker/issues/85
-        'grpc-node.max_session_memory': 256,
-        // This flag controls whether channels use a shared global pool of subchannels, or whether
-        // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
-        // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
-        // than one grpc client.
-        'grpc.use_local_subchannel_pool': 1,
-      }
-    );
+    this.clientWrapper = new IdleGrpcClientWrapper({
+      clientFactoryFn: () =>
+        new cache.cache_client.ScsClient(
+          props.endpoint,
+          ChannelCredentials.createSsl(),
+          {
+            // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
+            // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
+            // This needs to be tunable: https://github.com/momentohq/dev-eco-issue-tracker/issues/85
+            'grpc-node.max_session_memory': 256,
+            // This flag controls whether channels use a shared global pool of subchannels, or whether
+            // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
+            // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
+            // than one grpc client.
+            'grpc.use_local_subchannel_pool': 1,
+          }
+        ),
+    });
+
     this.textEncoder = new TextEncoder();
     this.defaultTtlSeconds = props.defaultTtlSeconds;
     this.requestTimeoutMs =
@@ -77,7 +83,7 @@ export class MomentoCache {
   }
 
   private validateRequestTimeout(timeout?: number) {
-    this.logger.debug(`Request timeout: ${this.endpoint}`);
+    this.logger.debug(`Request timeout ms: ${String(timeout)}`);
     if (timeout && timeout <= 0) {
       throw new InvalidArgumentError(
         'request timeout must be greater than zero.'
@@ -121,7 +127,7 @@ export class MomentoCache {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.client.Set(
+      this.clientWrapper.getClient().Set(
         request,
         metadata,
         {
@@ -156,7 +162,7 @@ export class MomentoCache {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.client.Delete(
+      this.clientWrapper.getClient().Delete(
         request,
         metadata,
         {
@@ -194,7 +200,7 @@ export class MomentoCache {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.client.Get(
+      this.clientWrapper.getClient().Get(
         request,
         metadata,
         {
