@@ -18,6 +18,8 @@ import {CreateSigningKeyResponse} from './messages/CreateSigningKeyResponse';
 import {RevokeSigningKeyResponse} from './messages/RevokeSigningKeyResponse';
 import {ListSigningKeysResponse} from './messages/ListSigningKeysResponse';
 import {getLogger, Logger} from './utils/logging';
+import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
+import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 
 export interface MomentoProps {
   authToken: string;
@@ -25,7 +27,7 @@ export interface MomentoProps {
 }
 
 export class Momento {
-  private readonly client: control.control_client.ScsControlClient;
+  private readonly clientWrapper: GrpcClientWrapper<control.control_client.ScsControlClient>;
   private readonly interceptors: Interceptor[];
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
   private readonly logger: Logger;
@@ -47,10 +49,13 @@ export class Momento {
     this.logger.debug(
       `Creating control client using endpoint: '${props.endpoint}`
     );
-    this.client = new control.control_client.ScsControlClient(
-      props.endpoint,
-      ChannelCredentials.createSsl()
-    );
+    this.clientWrapper = new IdleGrpcClientWrapper({
+      clientFactoryFn: () =>
+        new control.control_client.ScsControlClient(
+          props.endpoint,
+          ChannelCredentials.createSsl()
+        ),
+    });
   }
 
   public async createCache(name: string): Promise<CreateCacheResponse> {
@@ -60,7 +65,7 @@ export class Momento {
       cache_name: name,
     });
     return await new Promise<CreateCacheResponse>((resolve, reject) => {
-      this.client.CreateCache(
+      this.clientWrapper.getClient().CreateCache(
         request,
         {interceptors: this.interceptors},
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -89,7 +94,7 @@ export class Momento {
     });
     this.logger.info(`Deleting cache: ${name}`);
     return await new Promise<DeleteCacheResponse>((resolve, reject) => {
-      this.client.DeleteCache(
+      this.clientWrapper.getClient().DeleteCache(
         request,
         {interceptors: this.interceptors},
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -115,17 +120,15 @@ export class Momento {
     request.next_token = nextToken ?? '';
     this.logger.debug("Issuing 'listCaches' request");
     return await new Promise<ListCachesResponse>((resolve, reject) => {
-      this.client.ListCaches(
-        request,
-        {interceptors: this.interceptors},
-        (err, resp) => {
+      this.clientWrapper
+        .getClient()
+        .ListCaches(request, {interceptors: this.interceptors}, (err, resp) => {
           if (err) {
             reject(cacheServiceErrorMapper(err));
           } else {
             resolve(new ListCachesResponse(resp));
           }
-        }
-      );
+        });
     });
   }
 
@@ -138,17 +141,19 @@ export class Momento {
     const request = new control.control_client._CreateSigningKeyRequest();
     request.ttl_minutes = ttlMinutes;
     return await new Promise<CreateSigningKeyResponse>((resolve, reject) => {
-      this.client.CreateSigningKey(
-        request,
-        {interceptors: this.interceptors},
-        (err, resp) => {
-          if (err) {
-            reject(cacheServiceErrorMapper(err));
-          } else {
-            resolve(new CreateSigningKeyResponse(endpoint, resp));
+      this.clientWrapper
+        .getClient()
+        .CreateSigningKey(
+          request,
+          {interceptors: this.interceptors},
+          (err, resp) => {
+            if (err) {
+              reject(cacheServiceErrorMapper(err));
+            } else {
+              resolve(new CreateSigningKeyResponse(endpoint, resp));
+            }
           }
-        }
-      );
+        );
     });
   }
 
@@ -159,17 +164,15 @@ export class Momento {
     request.key_id = keyId;
     this.logger.debug("Issuing 'revokeSigningKey' request");
     return await new Promise<RevokeSigningKeyResponse>((resolve, reject) => {
-      this.client.RevokeSigningKey(
-        request,
-        {interceptors: this.interceptors},
-        err => {
+      this.clientWrapper
+        .getClient()
+        .RevokeSigningKey(request, {interceptors: this.interceptors}, err => {
           if (err) {
             reject(cacheServiceErrorMapper(err));
           } else {
             resolve(new RevokeSigningKeyResponse());
           }
-        }
-      );
+        });
     });
   }
 
@@ -181,17 +184,19 @@ export class Momento {
     request.next_token = nextToken ?? '';
     this.logger.debug("Issuing 'listSigningKeys' request");
     return await new Promise<ListSigningKeysResponse>((resolve, reject) => {
-      this.client.ListSigningKeys(
-        request,
-        {interceptors: this.interceptors},
-        (err, resp) => {
-          if (err) {
-            reject(cacheServiceErrorMapper(err));
-          } else {
-            resolve(new ListSigningKeysResponse(endpoint, resp));
+      this.clientWrapper
+        .getClient()
+        .ListSigningKeys(
+          request,
+          {interceptors: this.interceptors},
+          (err, resp) => {
+            if (err) {
+              reject(cacheServiceErrorMapper(err));
+            } else {
+              resolve(new ListSigningKeysResponse(endpoint, resp));
+            }
           }
-        }
-      );
+        );
     });
   }
 
