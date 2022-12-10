@@ -1,32 +1,32 @@
 import {control} from '@gomomento/generated-types';
-import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
-import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
-import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
+import {Header, HeaderInterceptor} from '../grpc/headers-interceptor';
+import {ClientTimeoutInterceptor} from '../grpc/client-timeout-interceptor';
+import {createRetryInterceptorIfEnabled} from '../grpc/retry-interceptor';
 import {
   AlreadyExistsError,
   InvalidArgumentError,
   NotFoundError,
-} from './errors';
+} from '../errors/errors';
 import {Status} from '@grpc/grpc-js/build/src/constants';
-import {cacheServiceErrorMapper} from './cache-service-error-mapper';
+import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
-import {DeleteCacheResponse} from './messages/DeleteCacheResponse';
-import {CreateCacheResponse} from './messages/CreateCacheResponse';
-import {ListCachesResponse} from './messages/ListCachesResponse';
-import {version} from '../package.json';
-import {CreateSigningKeyResponse} from './messages/CreateSigningKeyResponse';
-import {RevokeSigningKeyResponse} from './messages/RevokeSigningKeyResponse';
-import {ListSigningKeysResponse} from './messages/ListSigningKeysResponse';
-import {getLogger, Logger} from './utils/logging';
-import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
-import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
+import {DeleteCacheResponse} from '../messages/delete-cache-response';
+import {CreateCacheResponse} from '../messages/create-cache-response';
+import {ListCachesResponse} from '../messages/list-caches-response';
+import {version} from '../../package.json';
+import {CreateSigningKeyResponse} from '../messages/create-signing-key-response';
+import {RevokeSigningKeyResponse} from '../messages/revoke-signing-key-response';
+import {ListSigningKeysResponse} from '../messages/list-signing-keys-response';
+import {getLogger, Logger} from '../utils/logging';
+import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
+import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
 
 export interface MomentoProps {
   authToken: string;
   endpoint: string;
 }
 
-export class Momento {
+export class ControlClient {
   private readonly clientWrapper: GrpcClientWrapper<control.control_client.ScsControlClient>;
   private readonly interceptors: Interceptor[];
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
@@ -43,7 +43,7 @@ export class Momento {
     ];
     this.interceptors = [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
-      ClientTimeoutInterceptor(Momento.REQUEST_TIMEOUT_MS),
+      ClientTimeoutInterceptor(ControlClient.REQUEST_TIMEOUT_MS),
       ...createRetryInterceptorIfEnabled(),
     ];
     this.logger.debug(

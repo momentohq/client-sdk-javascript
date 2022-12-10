@@ -1,5 +1,5 @@
 import {control} from '@gomomento/generated-types';
-import {SigningKey} from './SigningKey';
+import {SigningKey} from './signing-key';
 
 export class ListSigningKeysResponse {
   private readonly nextToken: string | null;

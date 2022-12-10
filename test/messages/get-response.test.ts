@@ -1,7 +1,7 @@
 import {TextEncoder} from 'util';
 import {GetResponse, CacheGetStatus} from '../../src';
 
-describe('GetResponse.ts', () => {
+describe('get-response.ts', () => {
   it('should correctly instantiate a GetResponse object', () => {
     const message = 'this is a message';
     const byteArray = new Uint8Array(12);

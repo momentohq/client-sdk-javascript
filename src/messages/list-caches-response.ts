@@ -1,5 +1,5 @@
 import {control} from '@gomomento/generated-types';
-import {CacheInfo} from './CacheInfo';
+import {CacheInfo} from './cache-info';
 
 export class ListCachesResponse {
   private readonly nextToken: string | null;

@@ -1,10 +1,10 @@
 import {
   CacheGetStatus,
   momentoResultConverter,
-} from '../../src/messages/Result';
+} from '../../src/messages/result';
 import {cache} from '@gomomento/generated-types';
 
-describe('Result.ts', () => {
+describe('result.ts', () => {
   it('should map ECacheResult.Miss to MomentoResult.Miss', () => {
     expect(
       momentoResultConverter(cache.cache_client.ECacheResult.Miss)

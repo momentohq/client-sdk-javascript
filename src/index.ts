@@ -1,9 +1,9 @@
 import {SimpleCacheClient} from './simple-cache-client';
-import {CacheOperation, MomentoSigner} from './momento-signer';
-import {GetResponse} from './messages/GetResponse';
-import {SetResponse} from './messages/SetResponse';
-import {CacheGetStatus} from './messages/Result';
-import {CacheInfo} from './messages/CacheInfo';
+import {CacheOperation, MomentoSigner} from './internal/momento-signer';
+import {GetResponse} from './messages/get-response';
+import {SetResponse} from './messages/set-response';
+import {CacheGetStatus} from './messages/result';
+import {CacheInfo} from './messages/cache-info';
 import {
   AlreadyExistsError,
   AuthenticationError,
@@ -18,7 +18,7 @@ import {
   BadRequestError,
   PermissionError,
   NotFoundError,
-} from './errors';
+} from './errors/errors';
 
 export {
   Logger,
