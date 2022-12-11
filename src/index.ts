@@ -1,8 +1,9 @@
 import {SimpleCacheClient} from './simple-cache-client';
 import {CacheOperation, MomentoSigner} from './momento-signer';
-import {GetResponse} from './messages/GetResponse';
+import {CacheGetResponse} from './messages/responses/get/cache-get-response';
+import * as CacheGet from './messages/responses/get/cache-get';
 import {SetResponse} from './messages/SetResponse';
-import {CacheGetStatus} from './messages/Result';
+// import {CacheGetStatus} from './messages/Result';
 import {CacheInfo} from './messages/CacheInfo';
 import {
   AlreadyExistsError,
@@ -33,9 +34,10 @@ export {
   MomentoSigner,
   CacheOperation,
   SimpleCacheClient,
-  GetResponse,
+  CacheGetResponse,
+  CacheGet,
   SetResponse,
-  CacheGetStatus,
+  // CacheGetStatus,
   CacheInfo,
   AlreadyExistsError,
   AuthenticationError,

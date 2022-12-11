@@ -2,7 +2,7 @@ import {Momento} from './momento';
 import {MomentoCache} from './momento-cache';
 import {decodeJwt} from './utils/jwt';
 import {SetResponse} from './messages/SetResponse';
-import {GetResponse} from './messages/GetResponse';
+import {CacheGetResponse} from './messages/responses/get/cache-get-response';
 import {CreateCacheResponse} from './messages/CreateCacheResponse';
 import {DeleteCacheResponse} from './messages/DeleteCacheResponse';
 import {ListCachesResponse} from './messages/ListCachesResponse';
@@ -98,14 +98,14 @@ export class SimpleCacheClient {
    * Get the cache value stored for the given key.
    * @param {string} cacheName - Name of the cache to perform the lookup in.
    * @param {(string | Uint8Array)} key - The key to lookup.
-   * @returns {Promise<GetResponse>} - Promise containing the status
+   * @returns {Promise<CacheGetResponse>} - Promise containing the status
    * of the get operation (hit or miss) and the associated value.
    * @memberof SimpleCacheClient
    */
   public async get(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<GetResponse> {
+  ): Promise<CacheGetResponse> {
     const client = this.getNextDataClient();
     return await client.get(cacheName, key);
   }

@@ -1,6 +1,6 @@
 import {
   AlreadyExistsError,
-  CacheGetStatus,
+  CacheGet,
   getLogger,
   InternalServerError,
   LimitExceededError,
@@ -219,16 +219,17 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
       const getDuration = BasicJavaScriptLoadGen.getElapsedMillis(getStartTime);
       loadGenContext.getLatencies.recordValue(getDuration);
       let valueString: string;
-      if (getResult.status === CacheGetStatus.Hit) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const value: string = getResult.text()!;
+      if (getResult instanceof CacheGet.Hit) {
+        const value = getResult.valueString();
         valueString = `${value.substring(0, 10)}... (len: ${value.length})`;
       } else {
         valueString = 'n/a';
       }
       if (loadGenContext.globalRequestCount % 1000 === 0) {
         this.logger.info(
-          `worker: ${workerId}, worker request: ${operationId}, global request: ${loadGenContext.globalRequestCount}, status: ${getResult.status}, val: ${valueString}`
+          `worker: ${workerId}, worker request: ${operationId}, global request: ${
+            loadGenContext.globalRequestCount
+          }, status: ${getResult.toString()}, val: ${valueString}`
         );
       }
     }

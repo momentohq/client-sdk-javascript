@@ -4,17 +4,19 @@ import {TextEncoder} from 'util';
 import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
-import {CacheGetStatus, momentoResultConverter} from './messages/Result';
+// import {CacheGetStatus, momentoResultConverter} from './messages/Result';
 import {InvalidArgumentError, UnknownServiceError} from './errors';
 import {cacheServiceErrorMapper} from './cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
-import {GetResponse} from './messages/GetResponse';
+import * as CacheGet from './messages/responses/get/cache-get';
 import {SetResponse} from './messages/SetResponse';
 import {version} from '../package.json';
 import {DeleteResponse} from './messages/DeleteResponse';
 import {getLogger, Logger} from './utils/logging';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
+import {createCacheGetResponse} from './messages/responses/get/cache-get-response-converter';
+import {CacheGetResponse} from './messages/responses/get/cache-get-response';
 
 /**
  * @property {string} authToken - momento jwt token
@@ -182,18 +184,18 @@ export class MomentoCache {
   public async get(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<GetResponse> {
+  ): Promise<CacheGetResponse> {
     this.ensureValidKey(key);
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
     const result = await this.sendGet(cacheName, this.convert(key));
-    this.logger.trace(`'get' request result: ${result.status}`);
+    this.logger.trace(`'get' request result: ${result.toString()}`);
     return result;
   }
 
   private async sendGet(
     cacheName: string,
     key: Uint8Array
-  ): Promise<GetResponse> {
+  ): Promise<CacheGetResponse> {
     const request = new cache.cache_client._GetRequest({
       cache_key: key,
     });
@@ -208,28 +210,30 @@ export class MomentoCache {
         },
         (err, resp) => {
           if (resp) {
-            const momentoResult = momentoResultConverter(resp.result);
-            if (
-              momentoResult !== CacheGetStatus.Miss &&
-              momentoResult !== CacheGetStatus.Hit
-            ) {
-              reject(new UnknownServiceError(resp.message));
-            }
-            resolve(this.parseGetResponse(resp));
+            resolve(createCacheGetResponse(resp));
+            // const momentoResult = momentoResultConverter(resp.result);
+            // if (
+            //   momentoResult !== CacheGetStatus.Miss &&
+            //   momentoResult !== CacheGetStatus.Hit
+            // ) {
+            //   reject(new UnknownServiceError(resp.message));
+            // }
+            // resolve(this.parseGetResponse(resp));
           } else {
-            reject(cacheServiceErrorMapper(err));
+            // reject(cacheServiceErrorMapper(err));
+            resolve(new CacheGet.Error(cacheServiceErrorMapper(err).message));
           }
         }
       );
     });
   }
-
-  private parseGetResponse = (
-    resp: cache.cache_client._GetResponse
-  ): GetResponse => {
-    const momentoResult = momentoResultConverter(resp.result);
-    return new GetResponse(momentoResult, resp.message, resp.cache_body);
-  };
+  //
+  // private parseGetResponse = (
+  //   resp: cache.cache_client._GetResponse
+  // ): CacheGetResponse => {
+  //   const momentoResult = momentoResultConverter(resp.result);
+  //   return new CacheGetResponse(momentoResult, resp.message, resp.cache_body);
+  // };
 
   private parseSetResponse = (
     resp: cache.cache_client._SetResponse,

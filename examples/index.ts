@@ -1,9 +1,10 @@
 import {
   AlreadyExistsError,
-  CacheGetStatus,
+  // CacheGetStatus,
   LogLevel,
   LogFormat,
   SimpleCacheClient,
+  CacheGet,
 } from '@gomomento/sdk';
 
 const cacheName = 'cache';
@@ -50,11 +51,20 @@ const main = async () => {
   await momento.set(cacheName, cacheKey, cacheValue, exampleTtlSeconds);
   const getResp = await momento.get(cacheName, cacheKey);
 
-  if (getResp.status === CacheGetStatus.Hit) {
-    console.log(`cache hit: ${String(getResp.text())}`);
-  } else {
-    console.log('cache miss');
+  if (getResp instanceof CacheGet.Hit) {
+    console.log(`cache hit: ${getResp.valueString()}`);
+  } else if (getResp instanceof CacheGet.Miss) {
+    console.log('cache miss!');
+  } else if (getResp instanceof CacheGet.Error) {
+    console.log(`Error!  ${getResp.toString()}`);
   }
+
+  //
+  // if (getResp.status === CacheGetStatus.Hit) {
+  //   console.log(`cache hit: ${getResp.text()}`);
+  // } else {
+  //   console.log('cache miss');
+  // }
 };
 
 main()
