@@ -1,20 +1,20 @@
 import {cache} from '@gomomento/generated-types';
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextEncoder} from 'util';
-import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
-import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
-import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
-import {CacheGetStatus, momentoResultConverter} from './messages/Result';
-import {InvalidArgumentError, UnknownServiceError} from './errors';
-import {cacheServiceErrorMapper} from './cache-service-error-mapper';
+import {Header, HeaderInterceptor} from '../grpc/headers-interceptor';
+import {ClientTimeoutInterceptor} from '../grpc/client-timeout-interceptor';
+import {createRetryInterceptorIfEnabled} from '../grpc/retry-interceptor';
+import {CacheGetStatus, momentoResultConverter} from '../messages/result';
+import {InvalidArgumentError, UnknownServiceError} from '../errors/errors';
+import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
-import {GetResponse} from './messages/GetResponse';
-import {SetResponse} from './messages/SetResponse';
-import {version} from '../package.json';
-import {DeleteResponse} from './messages/DeleteResponse';
-import {getLogger, Logger} from './utils/logging';
-import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
-import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
+import {GetResponse} from '../messages/get-response';
+import {SetResponse} from '../messages/set-response';
+import {version} from '../../package.json';
+import {DeleteResponse} from '../messages/delete-response';
+import {getLogger, Logger} from '../utils/logging';
+import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
+import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
 
 /**
  * @property {string} authToken - momento jwt token
@@ -29,7 +29,7 @@ type MomentoCacheProps = {
   requestTimeoutMs?: number;
 };
 
-export class MomentoCache {
+export class CacheClient {
   private readonly clientWrapper: GrpcClientWrapper<cache.cache_client.ScsClient>;
   private readonly textEncoder: TextEncoder;
   private readonly defaultTtlSeconds: number;
@@ -71,7 +71,7 @@ export class MomentoCache {
     this.textEncoder = new TextEncoder();
     this.defaultTtlSeconds = props.defaultTtlSeconds;
     this.requestTimeoutMs =
-      props.requestTimeoutMs || MomentoCache.DEFAULT_REQUEST_TIMEOUT_MS;
+      props.requestTimeoutMs || CacheClient.DEFAULT_REQUEST_TIMEOUT_MS;
     this.authToken = props.authToken;
     this.endpoint = props.endpoint;
     this.interceptors = this.initializeInterceptors();

@@ -1,15 +1,15 @@
-import {Momento} from './momento';
-import {MomentoCache} from './momento-cache';
+import {ControlClient} from './internal/control-client';
+import {CacheClient} from './internal/cache-client';
 import {decodeJwt} from './utils/jwt';
-import {SetResponse} from './messages/SetResponse';
-import {GetResponse} from './messages/GetResponse';
-import {CreateCacheResponse} from './messages/CreateCacheResponse';
-import {DeleteCacheResponse} from './messages/DeleteCacheResponse';
-import {ListCachesResponse} from './messages/ListCachesResponse';
-import {DeleteResponse} from './messages/DeleteResponse';
-import {CreateSigningKeyResponse} from './messages/CreateSigningKeyResponse';
-import {RevokeSigningKeyResponse} from './messages/RevokeSigningKeyResponse';
-import {ListSigningKeysResponse} from './messages/ListSigningKeysResponse';
+import {SetResponse} from './messages/set-response';
+import {GetResponse} from './messages/get-response';
+import {CreateCacheResponse} from './messages/create-cache-response';
+import {DeleteCacheResponse} from './messages/delete-cache-response';
+import {ListCachesResponse} from './messages/list-caches-response';
+import {DeleteResponse} from './messages/delete-response';
+import {CreateSigningKeyResponse} from './messages/create-signing-key-response';
+import {RevokeSigningKeyResponse} from './messages/revoke-signing-key-response';
+import {ListSigningKeysResponse} from './messages/list-signing-keys-response';
 import {
   getLogger,
   initializeMomentoLogging,
@@ -43,9 +43,9 @@ export interface SimpleCacheClientOptions {
  * @class SimpleCacheClient
  */
 export class SimpleCacheClient {
-  private readonly dataClients: Array<MomentoCache>;
+  private readonly dataClients: Array<CacheClient>;
   private nextDataClientIndex: number;
-  private readonly controlClient: Momento;
+  private readonly controlClient: ControlClient;
   private readonly logger: Logger;
 
   /**
@@ -77,7 +77,7 @@ export class SimpleCacheClient {
     const numClients = 6;
     this.dataClients = range(numClients).map(
       () =>
-        new MomentoCache({
+        new CacheClient({
           authToken,
           defaultTtlSeconds,
           endpoint: dataEndpoint,
@@ -88,7 +88,7 @@ export class SimpleCacheClient {
     // we don't have to worry about thread safety on this index variable.
     this.nextDataClientIndex = 0;
 
-    this.controlClient = new Momento({
+    this.controlClient = new ControlClient({
       endpoint: controlEndpoint,
       authToken,
     });
@@ -227,7 +227,7 @@ export class SimpleCacheClient {
     );
   }
 
-  private getNextDataClient(): MomentoCache {
+  private getNextDataClient(): CacheClient {
     const client = this.dataClients[this.nextDataClientIndex];
     this.nextDataClientIndex =
       (this.nextDataClientIndex + 1) % this.dataClients.length;

@@ -1,4 +1,4 @@
-import {InvalidArgumentError} from '.';
+import {InvalidArgumentError} from '../index';
 import {importJWK, JWK, JWTHeaderParameters, KeyLike, SignJWT} from 'jose';
 
 export enum CacheOperation {

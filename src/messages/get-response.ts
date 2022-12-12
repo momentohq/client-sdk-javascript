@@ -1,6 +1,6 @@
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextDecoder} from 'util';
-import {CacheGetStatus} from './Result';
+import {CacheGetStatus} from './result';
 
 export class GetResponse {
   public readonly status: CacheGetStatus;
