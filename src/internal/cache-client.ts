@@ -8,7 +8,6 @@ import {InvalidArgumentError, UnknownServiceError} from '../errors/errors';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
 import * as CacheGet from '../messages/responses/get/cache-get';
-import {createCacheGetResponse} from '../messages/responses/get/cache-get-response-converter';
 import {CacheGetResponse} from '../messages/responses/get/cache-get-response';
 import {version} from '../../package.json';
 import {getLogger, Logger} from '../utils/logging';
@@ -18,7 +17,6 @@ import * as CacheSet from '../messages/responses/set/cache-set';
 import {CacheSetResponse} from '../messages/responses/set/cache-set-response';
 import * as CacheDelete from '../messages/responses/delete/cache-delete';
 import {CacheDeleteResponse} from '../messages/responses/delete/cache-delete-response';
-import {createCacheDeleteResponse} from '../messages/responses/delete/cache-delete-response-converter';
 
 /**
  * @property {string} authToken - momento jwt token
@@ -141,6 +139,7 @@ export class CacheClient {
           if (resp) {
             resolve(new CacheSet.Success(value));
           } else {
+            // TODO: construct Error class with the entire mapped exception
             resolve(new CacheSet.Error(cacheServiceErrorMapper(err).message));
           }
         }
@@ -174,9 +173,10 @@ export class CacheClient {
         },
         (err, resp) => {
           if (resp) {
-            resolve(createCacheDeleteResponse(resp));
+            resolve(new CacheDelete.Success());
           } else {
             resolve(
+              // TODO: construct Error class with the entire mapped exception
               new CacheDelete.Error(cacheServiceErrorMapper(err).message)
             );
           }
@@ -214,8 +214,29 @@ export class CacheClient {
         },
         (err, resp) => {
           if (resp) {
-            resolve(createCacheGetResponse(resp));
+            switch (resp.result) {
+              case cache.cache_client.ECacheResult.Miss:
+                resolve(new CacheGet.Miss());
+                break;
+              case cache.cache_client.ECacheResult.Hit:
+                resolve(new CacheGet.Hit(resp.cache_body));
+                break;
+              case cache.cache_client.ECacheResult.Invalid:
+                resolve(new CacheGet.Error(resp.message));
+                break;
+              case cache.cache_client.ECacheResult.Ok:
+                resolve(new CacheGet.Error(resp.message));
+                break;
+              default:
+                resolve(
+                  new CacheGet.Error(
+                    'An unknown error occurred: ' + resp.message
+                  )
+                );
+                break;
+            }
           } else {
+            // TODO: construct Error class with the entire mapped exception
             resolve(new CacheGet.Error(cacheServiceErrorMapper(err).message));
           }
         }
