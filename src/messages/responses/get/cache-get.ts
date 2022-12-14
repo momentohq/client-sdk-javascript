@@ -1,6 +1,7 @@
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextDecoder} from 'util';
 import {CacheGetResponse} from './cache-get-response';
+import {MomentoErrorCode, SdkError} from '../../../errors/errors';
 
 const TEXT_DECODER = new TextDecoder();
 
@@ -21,19 +22,36 @@ export class Hit extends CacheGetResponse {
   public bytes(): Uint8Array {
     return this.body;
   }
+
+  public toString(): string {
+    // TODO: Truncate output
+    return this.valueString();
+  }
 }
 
 export class Miss extends CacheGetResponse {}
 
 export class Error extends CacheGetResponse {
-  private readonly errorMessage: string;
-  // TODO MOAR FIELDS
-  constructor(message: string) {
+  private readonly _innerException: SdkError;
+  constructor(err: SdkError) {
     super();
-    this.errorMessage = message;
+    this._innerException = err;
   }
 
   public message(): string {
-    return this.errorMessage;
+    // TODO: Add messageWrapper to the error classes
+    return this._innerException.message;
+  }
+
+  public innerException(): object {
+    return this._innerException;
+  }
+
+  public errorCode(): MomentoErrorCode {
+    return this._innerException.errorCode;
+  }
+
+  public toString(): string {
+    return this.message();
   }
 }

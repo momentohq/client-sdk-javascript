@@ -4,7 +4,11 @@ import {TextEncoder} from 'util';
 import {Header, HeaderInterceptor} from '../grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from '../grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from '../grpc/retry-interceptor';
-import {InvalidArgumentError, UnknownServiceError} from '../errors/errors';
+import {
+  InvalidArgumentError,
+  UnknownError,
+  UnknownServiceError,
+} from '../errors/errors';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
 import * as CacheGet from '../messages/responses/get/cache-get';
@@ -140,7 +144,7 @@ export class CacheClient {
             resolve(new CacheSet.Success(value));
           } else {
             // TODO: construct Error class with the entire mapped exception
-            resolve(new CacheSet.Error(cacheServiceErrorMapper(err).message));
+            resolve(new CacheSet.Error(cacheServiceErrorMapper(err)));
           }
         }
       );
@@ -175,10 +179,7 @@ export class CacheClient {
           if (resp) {
             resolve(new CacheDelete.Success());
           } else {
-            resolve(
-              // TODO: construct Error class with the entire mapped exception
-              new CacheDelete.Error(cacheServiceErrorMapper(err).message)
-            );
+            resolve(new CacheDelete.Error(cacheServiceErrorMapper(err)));
           }
         }
       );
@@ -222,22 +223,24 @@ export class CacheClient {
                 resolve(new CacheGet.Hit(resp.cache_body));
                 break;
               case cache.cache_client.ECacheResult.Invalid:
-                resolve(new CacheGet.Error(resp.message));
+                resolve(new CacheGet.Error(new UnknownError(resp.message)));
                 break;
               case cache.cache_client.ECacheResult.Ok:
-                resolve(new CacheGet.Error(resp.message));
+                resolve(new CacheGet.Error(new UnknownError(resp.message)));
                 break;
               default:
                 resolve(
                   new CacheGet.Error(
-                    'An unknown error occurred: ' + resp.message
+                    new UnknownError(
+                      'An unknown error occurred: ' + resp.message
+                    )
                   )
                 );
                 break;
             }
           } else {
             // TODO: construct Error class with the entire mapped exception
-            resolve(new CacheGet.Error(cacheServiceErrorMapper(err).message));
+            resolve(new CacheGet.Error(cacheServiceErrorMapper(err)));
           }
         }
       );

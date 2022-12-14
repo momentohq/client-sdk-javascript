@@ -1,16 +1,16 @@
 import {
   AlreadyExistsError,
+  CacheDelete,
   CacheGet,
   CacheSet,
-  CacheDelete,
-  LogLevel,
   LogFormat,
+  LogLevel,
   SimpleCacheClient,
 } from '@gomomento/sdk';
 
-const cacheName = 'cachefoo';
-const cacheKey = 'key!!';
-const cacheValue = 'value!!';
+const cacheName = 'cache';
+const cacheKey = 'key';
+const cacheValue = 'value';
 const authToken = process.env.MOMENTO_AUTH_TOKEN;
 if (!authToken) {
   throw new Error('Missing required environment variable MOMENTO_AUTH_TOKEN');
@@ -63,17 +63,16 @@ const main = async () => {
 
   const delResp = await momento.delete('___', cacheKey);
   if (delResp instanceof CacheDelete.Error) {
-    console.log('Error deleting cache key: ' + delResp.message());
+    console.log(`Error deleting cache key: ${delResp}`);
   }
 
   const getResp = await momento.get(cacheName, cacheKey);
-
   if (getResp instanceof CacheGet.Hit) {
     console.log(`cache hit: ${getResp.valueString()}`);
   } else if (getResp instanceof CacheGet.Miss) {
     console.log('cache miss');
   } else if (getResp instanceof CacheGet.Error) {
-    console.log('Error: ' + getResp.toString());
+    console.log(`Error: ${getResp}`);
   }
 };
 

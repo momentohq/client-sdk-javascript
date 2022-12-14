@@ -2,8 +2,8 @@ import {Status} from '@grpc/grpc-js/build/src/constants';
 import {ServiceError} from '@grpc/grpc-js';
 import {
   NotFoundError,
-  CacheServiceError,
   InternalServerError,
+  InvalidArgumentError,
   PermissionError,
   BadRequestError,
   CancelledError,
@@ -11,40 +11,108 @@ import {
   AuthenticationError,
   LimitExceededError,
   AlreadyExistsError,
+  SdkError,
+  UnknownServiceError,
+  ServerUnavailableError,
+  UnknownError,
 } from './errors';
 
-export function cacheServiceErrorMapper(
-  err: ServiceError | null
-): CacheServiceError {
+export function cacheServiceErrorMapper(err: ServiceError | null): SdkError {
   switch (err?.code) {
     case Status.PERMISSION_DENIED:
-      return new PermissionError(err?.message);
+      return new PermissionError(
+        err?.message,
+        err?.code,
+        err?.metadata,
+        err?.stack
+      );
     case Status.DATA_LOSS:
     case Status.INTERNAL:
-    case Status.UNKNOWN:
     case Status.ABORTED:
+      return new InternalServerError(
+        err?.message,
+        err?.code,
+        err?.metadata,
+        err?.stack
+      );
+    case Status.UNKNOWN:
+      return new UnknownServiceError(
+        err?.message,
+        err?.code,
+        err?.metadata,
+        err?.stack
+      );
     case Status.UNAVAILABLE:
-      return new InternalServerError(err?.message, err?.stack || '');
+      return new ServerUnavailableError(
+        err?.message,
+        err?.code,
+        err?.metadata,
+        err?.stack
+      );
     case Status.NOT_FOUND:
-      return new NotFoundError(err?.message);
+      return new NotFoundError(
+        err?.message,
+        err?.code,
+        err?.metadata,
+        err?.stack
+      );
     case Status.OUT_OF_RANGE:
     case Status.UNIMPLEMENTED:
+      return new BadRequestError(
+        err?.message,
+        err?.code,
+        err?.metadata,
+        err?.stack
+      );
     case Status.FAILED_PRECONDITION:
     case Status.INVALID_ARGUMENT:
-      return new BadRequestError(err?.message);
+      return new InvalidArgumentError(
+        err?.message,
+        err?.code,
+        err?.metadata,
+        err?.stack
+      );
     case Status.CANCELLED:
-      return new CancelledError(err?.message);
+      return new CancelledError(
+        err?.message,
+        err?.code,
+        err?.metadata,
+        err?.stack
+      );
     case Status.DEADLINE_EXCEEDED:
-      return new TimeoutError(err?.message);
+      return new TimeoutError(
+        err?.message,
+        err?.code,
+        err?.metadata,
+        err?.stack
+      );
     case Status.UNAUTHENTICATED:
-      return new AuthenticationError(err?.message);
+      return new AuthenticationError(
+        err?.message,
+        err?.code,
+        err?.metadata,
+        err?.stack
+      );
     case Status.RESOURCE_EXHAUSTED:
-      return new LimitExceededError(err?.message);
+      return new LimitExceededError(
+        err?.message,
+        err?.code,
+        err?.metadata,
+        err?.stack
+      );
     case Status.ALREADY_EXISTS:
-      return new AlreadyExistsError(err?.message);
+      return new AlreadyExistsError(
+        err?.message,
+        err?.code,
+        err?.metadata,
+        err?.stack
+      );
+    default:
+      return new UnknownError(
+        err?.message || 'unable to process request',
+        err?.code,
+        err?.metadata,
+        err?.stack
+      );
   }
-  return new InternalServerError(
-    err?.message || 'unable to process request',
-    err?.stack || ''
-  );
 }
