@@ -4,17 +4,21 @@ import {TextEncoder} from 'util';
 import {Header, HeaderInterceptor} from '../grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from '../grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from '../grpc/retry-interceptor';
-import {CacheGetStatus, momentoResultConverter} from '../messages/result';
 import {InvalidArgumentError, UnknownServiceError} from '../errors/errors';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
-import {GetResponse} from '../messages/get-response';
-import {SetResponse} from '../messages/set-response';
+import * as CacheGet from '../messages/responses/get/cache-get';
+import {createCacheGetResponse} from '../messages/responses/get/cache-get-response-converter';
+import {CacheGetResponse} from '../messages/responses/get/cache-get-response';
 import {version} from '../../package.json';
-import {DeleteResponse} from '../messages/delete-response';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
+import * as CacheSet from '../messages/responses/set/cache-set';
+import {CacheSetResponse} from '../messages/responses/set/cache-set-response';
+import * as CacheDelete from '../messages/responses/delete/cache-delete';
+import {CacheDeleteResponse} from '../messages/responses/delete/cache-delete-response';
+import {createCacheDeleteResponse} from '../messages/responses/delete/cache-delete-response-converter';
 
 /**
  * @property {string} authToken - momento jwt token
@@ -96,7 +100,7 @@ export class CacheClient {
     key: string | Uint8Array,
     value: string | Uint8Array,
     ttl?: number
-  ): Promise<SetResponse> {
+  ): Promise<CacheSetResponse> {
     this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
     this.logger.trace(
       `Issuing 'set' request; key: ${key.toString()}, value length: ${
@@ -119,7 +123,7 @@ export class CacheClient {
     key: Uint8Array,
     value: Uint8Array,
     ttl: number
-  ): Promise<SetResponse> {
+  ): Promise<CacheSetResponse> {
     const request = new cache.cache_client._SetRequest({
       cache_body: value,
       cache_key: key,
@@ -135,9 +139,9 @@ export class CacheClient {
         },
         (err, resp) => {
           if (resp) {
-            resolve(this.parseSetResponse(resp, value));
+            resolve(new CacheSet.Success(value));
           } else {
-            reject(cacheServiceErrorMapper(err));
+            resolve(new CacheSet.Error(cacheServiceErrorMapper(err).message));
           }
         }
       );
@@ -147,7 +151,7 @@ export class CacheClient {
   public async delete(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<DeleteResponse> {
+  ): Promise<CacheDeleteResponse> {
     this.ensureValidKey(key);
     this.logger.trace(`Issuing 'delete' request; key: ${key.toString()}`);
     return await this.sendDelete(cacheName, this.convert(key));
@@ -156,7 +160,7 @@ export class CacheClient {
   private async sendDelete(
     cacheName: string,
     key: Uint8Array
-  ): Promise<DeleteResponse> {
+  ): Promise<CacheDeleteResponse> {
     const request = new cache.cache_client._DeleteRequest({
       cache_key: key,
     });
@@ -170,9 +174,11 @@ export class CacheClient {
         },
         (err, resp) => {
           if (resp) {
-            resolve(new DeleteResponse());
+            resolve(createCacheDeleteResponse(resp));
           } else {
-            reject(cacheServiceErrorMapper(err));
+            resolve(
+              new CacheDelete.Error(cacheServiceErrorMapper(err).message)
+            );
           }
         }
       );
@@ -182,18 +188,18 @@ export class CacheClient {
   public async get(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<GetResponse> {
+  ): Promise<CacheGetResponse> {
     this.ensureValidKey(key);
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
     const result = await this.sendGet(cacheName, this.convert(key));
-    this.logger.trace(`'get' request result: ${result.status}`);
+    this.logger.trace(`'get' request result: ${result.toString()}`);
     return result;
   }
 
   private async sendGet(
     cacheName: string,
     key: Uint8Array
-  ): Promise<GetResponse> {
+  ): Promise<CacheGetResponse> {
     const request = new cache.cache_client._GetRequest({
       cache_key: key,
     });
@@ -208,35 +214,14 @@ export class CacheClient {
         },
         (err, resp) => {
           if (resp) {
-            const momentoResult = momentoResultConverter(resp.result);
-            if (
-              momentoResult !== CacheGetStatus.Miss &&
-              momentoResult !== CacheGetStatus.Hit
-            ) {
-              reject(new UnknownServiceError(resp.message));
-            }
-            resolve(this.parseGetResponse(resp));
+            resolve(createCacheGetResponse(resp));
           } else {
-            reject(cacheServiceErrorMapper(err));
+            resolve(new CacheGet.Error(cacheServiceErrorMapper(err).message));
           }
         }
       );
     });
   }
-
-  private parseGetResponse = (
-    resp: cache.cache_client._GetResponse
-  ): GetResponse => {
-    const momentoResult = momentoResultConverter(resp.result);
-    return new GetResponse(momentoResult, resp.message, resp.cache_body);
-  };
-
-  private parseSetResponse = (
-    resp: cache.cache_client._SetResponse,
-    value: Uint8Array
-  ): SetResponse => {
-    return new SetResponse(resp.message, value);
-  };
 
   private ensureValidKey = (key: unknown) => {
     if (!key) {

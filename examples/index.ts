@@ -1,14 +1,16 @@
 import {
   AlreadyExistsError,
-  CacheGetStatus,
+  CacheGet,
+  CacheSet,
+  CacheDelete,
   LogLevel,
   LogFormat,
   SimpleCacheClient,
 } from '@gomomento/sdk';
 
-const cacheName = 'cache';
-const cacheKey = 'key';
-const cacheValue = 'value';
+const cacheName = 'cachefoo';
+const cacheKey = 'key!!';
+const cacheValue = 'value!!';
 const authToken = process.env.MOMENTO_AUTH_TOKEN;
 if (!authToken) {
   throw new Error('Missing required environment variable MOMENTO_AUTH_TOKEN');
@@ -47,13 +49,31 @@ const main = async () => {
   console.log(
     `Storing key=${cacheKey}, value=${cacheValue}, ttl=${exampleTtlSeconds}`
   );
-  await momento.set(cacheName, cacheKey, cacheValue, exampleTtlSeconds);
+  const setResp = await momento.set(
+    cacheName,
+    cacheKey,
+    cacheValue,
+    exampleTtlSeconds
+  );
+  if (setResp instanceof CacheSet.Success) {
+    console.log('Key stored successfully with value ' + setResp.valueString());
+  } else {
+    console.log('Error setting key: ' + setResp.toString());
+  }
+
+  const delResp = await momento.delete('___', cacheKey);
+  if (delResp instanceof CacheDelete.Error) {
+    console.log('Error deleting cache key: ' + delResp.message());
+  }
+
   const getResp = await momento.get(cacheName, cacheKey);
 
-  if (getResp.status === CacheGetStatus.Hit) {
-    console.log(`cache hit: ${String(getResp.text())}`);
-  } else {
+  if (getResp instanceof CacheGet.Hit) {
+    console.log(`cache hit: ${getResp.valueString()}`);
+  } else if (getResp instanceof CacheGet.Miss) {
     console.log('cache miss');
+  } else if (getResp instanceof CacheGet.Error) {
+    console.log('Error: ' + getResp.toString());
   }
 };
 

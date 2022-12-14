@@ -1,12 +1,12 @@
 import {ControlClient} from './internal/control-client';
 import {CacheClient} from './internal/cache-client';
 import {decodeJwt} from './utils/jwt';
-import {SetResponse} from './messages/set-response';
-import {GetResponse} from './messages/get-response';
+import {CacheGetResponse} from './messages/responses/get/cache-get-response';
+import {CacheSetResponse} from './messages/responses/set/cache-set-response';
+import {CacheDeleteResponse} from './messages/responses/delete/cache-delete-response';
 import {CreateCacheResponse} from './messages/create-cache-response';
 import {DeleteCacheResponse} from './messages/delete-cache-response';
 import {ListCachesResponse} from './messages/list-caches-response';
-import {DeleteResponse} from './messages/delete-response';
 import {CreateSigningKeyResponse} from './messages/create-signing-key-response';
 import {RevokeSigningKeyResponse} from './messages/revoke-signing-key-response';
 import {ListSigningKeysResponse} from './messages/list-signing-keys-response';
@@ -98,14 +98,14 @@ export class SimpleCacheClient {
    * Get the cache value stored for the given key.
    * @param {string} cacheName - Name of the cache to perform the lookup in.
    * @param {(string | Uint8Array)} key - The key to lookup.
-   * @returns {Promise<GetResponse>} - Promise containing the status
+   * @returns {Promise<CacheGetResponse>} - Promise containing the status
    * of the get operation (hit or miss) and the associated value.
    * @memberof SimpleCacheClient
    */
   public async get(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<GetResponse> {
+  ): Promise<CacheGetResponse> {
     const client = this.getNextDataClient();
     return await client.get(cacheName, key);
   }
@@ -126,7 +126,7 @@ export class SimpleCacheClient {
     key: string | Uint8Array,
     value: string | Uint8Array,
     ttl?: number
-  ): Promise<SetResponse> {
+  ): Promise<CacheSetResponse> {
     const client = this.getNextDataClient();
     return await client.set(cacheName, key, value, ttl);
   }
@@ -142,7 +142,7 @@ export class SimpleCacheClient {
   public async delete(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<DeleteResponse> {
+  ): Promise<CacheDeleteResponse> {
     const client = this.getNextDataClient();
     return await client.delete(cacheName, key);
   }
@@ -171,7 +171,7 @@ export class SimpleCacheClient {
    * List all caches.
    * @param {string} [nextToken] - A token to specify where to start paginating.
    * This is the NextToken from a previous response.
-   * @returns {Promise<ListCacheResponse>} - Promise of the list cache response.
+   * @returns {Promise<ListCachesResponse>} - Promise of the list cache response.
    * Contains the listed caches and a next token to continue listing.
    * @memberof SimpleCacheClient
    */
