@@ -1,6 +1,5 @@
 import {
   AlreadyExistsError,
-  CacheGetStatus,
   getLogger,
   InternalServerError,
   LimitExceededError,
