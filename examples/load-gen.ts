@@ -24,6 +24,7 @@ interface BasicJavaScriptLoadGenOptions {
   totalNumberOfOperationsToExecute: number;
   printStatsEveryNRequests: number;
   maxRequestsPerSecond: number;
+  totalMsToRun: number;
 }
 
 enum AsyncSetGetResult {
@@ -59,6 +60,7 @@ class BasicJavaScriptLoadGen {
   private readonly printStatsEveryNRequests: number;
   private readonly maxRequestsPerSecond: number;
   private readonly totalNumberOfOperationsToExecute: number;
+  private readonly totalMsToRun: number;
   private readonly cacheValue: string;
 
   private readonly cacheName: string = 'js-loadgen';
@@ -80,6 +82,7 @@ class BasicJavaScriptLoadGen {
     this.maxRequestsPerSecond = options.maxRequestsPerSecond;
     this.totalNumberOfOperationsToExecute =
       options.totalNumberOfOperationsToExecute;
+    this.totalMsToRun = options.totalMsToRun;
 
     this.cacheValue = 'x'.repeat(options.cacheItemPayloadBytes);
   }
@@ -149,6 +152,10 @@ class BasicJavaScriptLoadGen {
     numOperations: number,
     delayMillisBetweenRequests: number
   ): Promise<void> {
+    let finished = false;
+    let finish = () => finished = true;
+    setTimeout(finish, this.totalMsToRun);
+
     for (let i = 1; i <= numOperations; i++) {
       await this.issueAsyncSetGet(
         client,
@@ -158,10 +165,11 @@ class BasicJavaScriptLoadGen {
         delayMillisBetweenRequests
       );
 
-      if (
-        loadGenContext.globalRequestCount % this.printStatsEveryNRequests ===
-        0
-      ) {
+      const printStats =
+        (loadGenContext.globalRequestCount % this.printStatsEveryNRequests === 0) ||
+        finished;
+
+      if (printStats) {
         this.logger.info(`
 cumulative stats:
    total requests: ${
@@ -210,6 +218,10 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.setLatencies)}
 cumulative get latencies:
 ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
 `);
+      }
+
+      if(finished) {
+        return
       }
     }
   }
@@ -467,6 +479,12 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
    * workers before exiting.  Statistics will be logged every 1000 operations.
    */
   totalNumberOfOperationsToExecute: 50_000,
+
+  /**
+   * Controls how long the load test will run, in milliseconds. We will execute operations
+   * for this long and the exit. The default is 60 seconds.
+   */
+  totalMsToRun: 60 * 1000,
 };
 
 main(loadGeneratorOptions)
