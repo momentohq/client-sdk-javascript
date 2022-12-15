@@ -22,6 +22,7 @@ interface BasicJavaScriptLoadGenOptions {
   cacheItemPayloadBytes: number;
   numberOfConcurrentRequests: number;
   totalNumberOfOperationsToExecute: number;
+  printStatsEveryNRequests: number;
 }
 
 enum AsyncSetGetResult {
@@ -54,6 +55,7 @@ class BasicJavaScriptLoadGen {
   private readonly loggerOptions: LoggerOptions;
   private readonly requestTimeoutMs: number;
   private readonly numberOfConcurrentRequests: number;
+  private readonly printStatsEveryNRequests: number;
   private readonly totalNumberOfOperationsToExecute: number;
   private readonly cacheValue: string;
 
@@ -72,6 +74,7 @@ class BasicJavaScriptLoadGen {
     this.authToken = authToken;
     this.requestTimeoutMs = options.requestTimeoutMs;
     this.numberOfConcurrentRequests = options.numberOfConcurrentRequests;
+    this.printStatsEveryNRequests = options.printStatsEveryNRequests;
     this.totalNumberOfOperationsToExecute =
       options.totalNumberOfOperationsToExecute;
 
@@ -138,7 +141,7 @@ class BasicJavaScriptLoadGen {
     for (let i = 1; i <= numOperations; i++) {
       await this.issueAsyncSetGet(client, loadGenContext, workerId, i);
 
-      if (loadGenContext.globalRequestCount % 1000 === 0) {
+      if (loadGenContext.globalRequestCount % this.printStatsEveryNRequests === 0) {
         this.logger.info(`
 cumulative stats:
    total requests: ${
@@ -226,7 +229,7 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
       } else {
         valueString = 'n/a';
       }
-      if (loadGenContext.globalRequestCount % 1000 === 0) {
+      if (loadGenContext.globalRequestCount % this.printStatsEveryNRequests === 0) {
         this.logger.info(
           `worker: ${workerId}, worker request: ${operationId}, global request: ${loadGenContext.globalRequestCount}, status: ${getResult.status}, val: ${valueString}`
         );
@@ -394,6 +397,10 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
      */
     format: LogFormat.CONSOLE,
   },
+  /** Each time the load generator has executed this many requests, it will
+   *  print out some statistics about throughput and latency.
+   */
+  printStatsEveryNRequests: 1000,
   /**
    * Configures the Momento client to timeout if a request exceeds this limit.
    * Momento client default is 5 seconds.
