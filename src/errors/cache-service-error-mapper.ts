@@ -18,101 +18,47 @@ import {
 } from './errors';
 
 export function cacheServiceErrorMapper(err: ServiceError | null): SdkError {
+  const errParams: [
+    string,
+    number | undefined,
+    object | undefined,
+    string | undefined
+  ] = [
+    err?.message || 'Unable to process request',
+    err?.code,
+    err?.metadata,
+    err?.stack,
+  ];
   switch (err?.code) {
     case Status.PERMISSION_DENIED:
-      return new PermissionError(
-        err?.message,
-        err?.code,
-        err?.metadata,
-        err?.stack
-      );
+      return new PermissionError(...errParams);
     case Status.DATA_LOSS:
     case Status.INTERNAL:
     case Status.ABORTED:
-      return new InternalServerError(
-        err?.message,
-        err?.code,
-        err?.metadata,
-        err?.stack
-      );
+      return new InternalServerError(...errParams);
     case Status.UNKNOWN:
-      return new UnknownServiceError(
-        err?.message,
-        err?.code,
-        err?.metadata,
-        err?.stack
-      );
+      return new UnknownServiceError(...errParams);
     case Status.UNAVAILABLE:
-      return new ServerUnavailableError(
-        err?.message,
-        err?.code,
-        err?.metadata,
-        err?.stack
-      );
+      return new ServerUnavailableError(...errParams);
     case Status.NOT_FOUND:
-      return new NotFoundError(
-        err?.message,
-        err?.code,
-        err?.metadata,
-        err?.stack
-      );
+      return new NotFoundError(...errParams);
     case Status.OUT_OF_RANGE:
     case Status.UNIMPLEMENTED:
-      return new BadRequestError(
-        err?.message,
-        err?.code,
-        err?.metadata,
-        err?.stack
-      );
+      return new BadRequestError(...errParams);
     case Status.FAILED_PRECONDITION:
     case Status.INVALID_ARGUMENT:
-      return new InvalidArgumentError(
-        err?.message,
-        err?.code,
-        err?.metadata,
-        err?.stack
-      );
+      return new InvalidArgumentError(...errParams);
     case Status.CANCELLED:
-      return new CancelledError(
-        err?.message,
-        err?.code,
-        err?.metadata,
-        err?.stack
-      );
+      return new CancelledError(...errParams);
     case Status.DEADLINE_EXCEEDED:
-      return new TimeoutError(
-        err?.message,
-        err?.code,
-        err?.metadata,
-        err?.stack
-      );
+      return new TimeoutError(...errParams);
     case Status.UNAUTHENTICATED:
-      return new AuthenticationError(
-        err?.message,
-        err?.code,
-        err?.metadata,
-        err?.stack
-      );
+      return new AuthenticationError(...errParams);
     case Status.RESOURCE_EXHAUSTED:
-      return new LimitExceededError(
-        err?.message,
-        err?.code,
-        err?.metadata,
-        err?.stack
-      );
+      return new LimitExceededError(...errParams);
     case Status.ALREADY_EXISTS:
-      return new AlreadyExistsError(
-        err?.message,
-        err?.code,
-        err?.metadata,
-        err?.stack
-      );
+      return new AlreadyExistsError(...errParams);
     default:
-      return new UnknownError(
-        err?.message || 'unable to process request',
-        err?.code,
-        err?.metadata,
-        err?.stack
-      );
+      return new UnknownError(...errParams);
   }
 }

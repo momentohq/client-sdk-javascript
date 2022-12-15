@@ -32,8 +32,7 @@ export class Error extends ListCachesResponse {
   }
 
   public message(): string {
-    // TODO: Add messageWrapper to the error classes
-    return this._innerException.message;
+    return this._innerException.wrappedErrorMessage();
   }
 
   public innerException(): object {

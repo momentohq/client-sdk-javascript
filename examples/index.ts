@@ -3,7 +3,6 @@ import {
   CacheGet,
   CacheSet,
   CreateCache,
-  DeleteCache,
   ListCaches,
   LogFormat,
   LogLevel,
@@ -31,7 +30,7 @@ const main = async () => {
   if (createCacheResp instanceof CreateCache.AlreadyExists) {
     console.log('cache already exists');
   } else if (createCacheResp instanceof CreateCache.Error) {
-    console.log(`Error creating cache: ${createCacheResp}`);
+    console.log(`Error creating cache: ${createCacheResp.message()}`);
     throw createCacheResp.innerException();
   }
 
@@ -45,7 +44,8 @@ const main = async () => {
       });
       token = listResp.getNextToken();
     } else if (listResp instanceof ListCaches.Error) {
-      console.log(`Error listing caches: ${listResp}`);
+      console.log(`Error listing caches: ${listResp.message()}`);
+      break;
     }
   } while (token !== null);
 
@@ -61,8 +61,8 @@ const main = async () => {
   );
   if (setResp instanceof CacheSet.Success) {
     console.log('Key stored successfully with value ' + setResp.valueString());
-  } else {
-    console.log('Error setting key: ' + setResp.toString());
+  } else if (setResp instanceof CacheSet.Error) {
+    console.log('Error setting key: ' + setResp.message());
   }
 
   const getResp = await momento.get(cacheName, cacheKey);
@@ -71,12 +71,12 @@ const main = async () => {
   } else if (getResp instanceof CacheGet.Miss) {
     console.log('cache miss');
   } else if (getResp instanceof CacheGet.Error) {
-    console.log(`Error: ${getResp}`);
+    console.log(`Error: ${getResp.message()}`);
   }
 
   const delResp = await momento.delete(cacheName, cacheKey);
   if (delResp instanceof CacheDelete.Error) {
-    console.log(`Error deleting cache key: ${delResp}`);
+    console.log(`Error deleting cache key: ${delResp.message()}`);
   } else {
     console.log('Deleted key from cache');
   }

@@ -4,10 +4,7 @@ import {TextEncoder} from 'util';
 import {Header, HeaderInterceptor} from '../grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from '../grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from '../grpc/retry-interceptor';
-import {
-  InvalidArgumentError,
-  UnknownError,
-} from '../errors/errors';
+import {InvalidArgumentError, UnknownError} from '../errors/errors';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
 import * as CacheGet from '../messages/responses/get/cache-get';
@@ -142,7 +139,6 @@ export class CacheClient {
           if (resp) {
             resolve(new CacheSet.Success(value));
           } else {
-            // TODO: construct Error class with the entire mapped exception
             resolve(new CacheSet.Error(cacheServiceErrorMapper(err)));
           }
         }
@@ -238,7 +234,6 @@ export class CacheClient {
                 break;
             }
           } else {
-            // TODO: construct Error class with the entire mapped exception
             resolve(new CacheGet.Error(cacheServiceErrorMapper(err)));
           }
         }

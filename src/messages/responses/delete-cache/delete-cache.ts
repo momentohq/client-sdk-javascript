@@ -4,15 +4,13 @@ import {MomentoErrorCode, SdkError} from '../../../errors/errors';
 export class Success extends DeleteCacheResponse {}
 
 export class Error extends DeleteCacheResponse {
-  private readonly _innerException: SdkError;
+  public readonly _innerException: SdkError;
   constructor(err: SdkError) {
     super();
     this._innerException = err;
   }
-
   public message(): string {
-    // TODO: Add messageWrapper to the error classes
-    return this._innerException.message;
+    return this._innerException.wrappedErrorMessage();
   }
 
   public innerException(): object {

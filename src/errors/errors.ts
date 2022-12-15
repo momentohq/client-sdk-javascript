@@ -53,7 +53,7 @@ export class MomentoErrorTransportDetails {
  */
 export abstract class SdkError extends Error {
   public readonly errorCode: MomentoErrorCode;
-  public readonly message: string;
+  public readonly messageWrapper: string;
   public readonly transportDetails: MomentoErrorTransportDetails;
   public readonly stack: string | undefined;
   constructor(
@@ -67,6 +67,10 @@ export abstract class SdkError extends Error {
     this.transportDetails = new MomentoErrorTransportDetails(grpcDetails);
     this.stack = stack ?? undefined;
   }
+
+  public wrappedErrorMessage(): string {
+    return `${this.messageWrapper}: ${this.message}`;
+  }
 }
 
 /**
@@ -76,6 +80,8 @@ export abstract class SdkError extends Error {
  */
 export class AlreadyExistsError extends SdkError {
   errorCode = MomentoErrorCode.ALREADY_EXISTS_ERROR;
+  messageWrapper =
+    'A cache with the specified name already exists.  To resolve this error, either delete the existing cache and make a new one, or use a different name';
 }
 
 /**
@@ -83,6 +89,8 @@ export class AlreadyExistsError extends SdkError {
  */
 export class AuthenticationError extends SdkError {
   errorCode = MomentoErrorCode.AUTHENTICATION_ERROR;
+  messageWrapper =
+    'Invalid authentication credentials to connect to cache service';
 }
 
 /**
@@ -90,6 +98,8 @@ export class AuthenticationError extends SdkError {
  */
 export class BadRequestError extends SdkError {
   errorCode = MomentoErrorCode.BAD_REQUEST_ERROR;
+  messageWrapper =
+    'The request was invalid; please contact us at support@momentohq.com';
 }
 
 /**
@@ -97,6 +107,8 @@ export class BadRequestError extends SdkError {
  */
 export class CancelledError extends SdkError {
   errorCode = MomentoErrorCode.CANCELLED_ERROR;
+  messageWrapper =
+    'The request was cancelled by the server; please contact us at support@momentohq.com';
 }
 
 /**
@@ -104,6 +116,8 @@ export class CancelledError extends SdkError {
  */
 export class FailedPreconditionError extends SdkError {
   errorCode = MomentoErrorCode.FAILED_PRECONDITION_ERROR;
+  messageWrapper =
+    "System is not in a state required for the operation's execution";
 }
 
 /**
@@ -111,6 +125,8 @@ export class FailedPreconditionError extends SdkError {
  */
 export class InternalServerError extends SdkError {
   errorCode = MomentoErrorCode.INTERNAL_SERVER_ERROR;
+  messageWrapper =
+    'An unexpected error occurred while trying to fulfill the request; please contact us at support@momentohq.com';
 }
 
 /**
@@ -118,6 +134,7 @@ export class InternalServerError extends SdkError {
  */
 export class InvalidArgumentError extends SdkError {
   errorCode = MomentoErrorCode.INVALID_ARGUMENT_ERROR;
+  messageWrapper = 'Invalid argument passed to Momento client';
 }
 
 /**
@@ -125,6 +142,8 @@ export class InvalidArgumentError extends SdkError {
  */
 export class LimitExceededError extends SdkError {
   errorCode = MomentoErrorCode.LIMIT_EXCEEDED_ERROR;
+  messageWrapper =
+    'Request rate exceeded the limits for this account.  To resolve this error, reduce your request rate, or contact us at support@momentohq.com to request a limit increase';
 }
 
 /**
@@ -133,6 +152,8 @@ export class LimitExceededError extends SdkError {
  */
 export class NotFoundError extends SdkError {
   errorCode = MomentoErrorCode.NOT_FOUND_ERROR;
+  messageWrapper =
+    'A cache with the specified name does not exist.  To resolve this error, make sure you have created the cache before attempting to use it';
 }
 
 /**
@@ -140,6 +161,8 @@ export class NotFoundError extends SdkError {
  */
 export class PermissionError extends SdkError {
   errorCode = MomentoErrorCode.PERMISSION_ERROR;
+  messageWrapper =
+    'Insufficient permissions to perform an operation on a cache';
 }
 
 /**
@@ -147,6 +170,8 @@ export class PermissionError extends SdkError {
  */
 export class ServerUnavailableError extends SdkError {
   errorCode = MomentoErrorCode.SERVER_UNAVAILABLE;
+  messageWrapper =
+    'The server was unable to handle the request; consider retrying.  If the error persists, please contact us at support@momentohq.com';
 }
 
 /**
@@ -154,6 +179,8 @@ export class ServerUnavailableError extends SdkError {
  */
 export class TimeoutError extends SdkError {
   errorCode = MomentoErrorCode.TIMEOUT_ERROR;
+  messageWrapper =
+    "The client's configured timeout was exceeded; you may need to use a Configuration with more lenient timeouts";
 }
 
 /**
@@ -161,6 +188,7 @@ export class TimeoutError extends SdkError {
  */
 export class UnknownError extends SdkError {
   errorCode = MomentoErrorCode.UNKNOWN_ERROR;
+  messageWrapper = 'Unknown error has occurred';
 }
 
 /**
@@ -168,4 +196,6 @@ export class UnknownError extends SdkError {
  */
 export class UnknownServiceError extends SdkError {
   errorCode = MomentoErrorCode.UNKNOWN_SERVICE_ERROR;
+  messageWrapper =
+    'Service returned an unknown response; please contact us at support@momentohq.com';
 }

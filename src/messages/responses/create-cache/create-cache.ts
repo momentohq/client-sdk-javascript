@@ -13,8 +13,7 @@ export class Error extends CreateCacheResponse {
   }
 
   public message(): string {
-    // TODO: Add messageWrapper to the error classes
-    return this._innerException.message;
+    return this._innerException.wrappedErrorMessage();
   }
 
   public innerException(): object {
@@ -25,7 +24,7 @@ export class Error extends CreateCacheResponse {
     return this._innerException.errorCode;
   }
 
-  public toString(): string {
+  public override toString(): string {
     return this.message();
   }
 }
