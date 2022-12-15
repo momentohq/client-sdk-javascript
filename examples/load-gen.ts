@@ -23,6 +23,7 @@ interface BasicJavaScriptLoadGenOptions {
   numberOfConcurrentRequests: number;
   totalNumberOfOperationsToExecute: number;
   printStatsEveryNRequests: number;
+  maxRequestsPerSecond: number;
 }
 
 enum AsyncSetGetResult {
@@ -56,6 +57,7 @@ class BasicJavaScriptLoadGen {
   private readonly requestTimeoutMs: number;
   private readonly numberOfConcurrentRequests: number;
   private readonly printStatsEveryNRequests: number;
+  private readonly maxRequestsPerSecond: number;
   private readonly totalNumberOfOperationsToExecute: number;
   private readonly cacheValue: string;
 
@@ -75,6 +77,7 @@ class BasicJavaScriptLoadGen {
     this.requestTimeoutMs = options.requestTimeoutMs;
     this.numberOfConcurrentRequests = options.numberOfConcurrentRequests;
     this.printStatsEveryNRequests = options.printStatsEveryNRequests;
+    this.maxRequestsPerSecond = options.maxRequestsPerSecond;
     this.totalNumberOfOperationsToExecute =
       options.totalNumberOfOperationsToExecute;
 
@@ -103,6 +106,10 @@ class BasicJavaScriptLoadGen {
 
     const numOperationsPerWorker =
       this.totalNumberOfOperationsToExecute / this.numberOfConcurrentRequests;
+    const delayMillisBetweenRequests =
+      1000.0 * this.numberOfConcurrentRequests / this.maxRequestsPerSecond;
+    this.logger.info(`Limiting to ${this.maxRequestsPerSecond} tps`);
+    this.logger.debug(`delayMillisBetweenRequests: ${delayMillisBetweenRequests}`);
 
     const loadGenContext: BasicJavasScriptLoadGenContext = {
       startTime: process.hrtime(),
@@ -122,7 +129,8 @@ class BasicJavaScriptLoadGen {
           momento,
           loadGenContext,
           workerId + 1,
-          numOperationsPerWorker
+          numOperationsPerWorker,
+          delayMillisBetweenRequests
         )
     );
     const allResultPromises = Promise.all(asyncGetSetResults);
@@ -136,10 +144,11 @@ class BasicJavaScriptLoadGen {
     client: SimpleCacheClient,
     loadGenContext: BasicJavasScriptLoadGenContext,
     workerId: number,
-    numOperations: number
+    numOperations: number,
+    delayMillisBetweenRequests: number
   ): Promise<void> {
     for (let i = 1; i <= numOperations; i++) {
-      await this.issueAsyncSetGet(client, loadGenContext, workerId, i);
+      await this.issueAsyncSetGet(client, loadGenContext, workerId, i, delayMillisBetweenRequests);
 
       if (loadGenContext.globalRequestCount % this.printStatsEveryNRequests === 0) {
         this.logger.info(`
@@ -149,7 +158,7 @@ cumulative stats:
    } (${BasicJavaScriptLoadGen.tps(
           loadGenContext,
           loadGenContext.globalRequestCount
-        )} tps)
+      )} tps, limited to ${this.maxRequestsPerSecond} tps)
            success: ${
              loadGenContext.globalSuccessCount
            } (${BasicJavaScriptLoadGen.percentRequests(
@@ -198,7 +207,8 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
     client: SimpleCacheClient,
     loadGenContext: BasicJavasScriptLoadGenContext,
     workerId: number,
-    operationId: number
+    operationId: number,
+    delayMillisBetweenRequests: number
   ): Promise<void> {
     const cacheKey = `worker${workerId}operation${operationId}`;
 
@@ -210,6 +220,12 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
     if (result !== undefined) {
       const setDuration = BasicJavaScriptLoadGen.getElapsedMillis(setStartTime);
       loadGenContext.setLatencies.recordValue(setDuration);
+      if (setDuration < delayMillisBetweenRequests)
+      {
+          const delayMs = delayMillisBetweenRequests - setDuration;
+          this.logger.debug(`delaying: ${delayMs}`);
+          await delay(delayMs);
+      }
     }
 
     const getStartTime = process.hrtime();
@@ -233,6 +249,12 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
         this.logger.info(
           `worker: ${workerId}, worker request: ${operationId}, global request: ${loadGenContext.globalRequestCount}, status: ${getResult.status}, val: ${valueString}`
         );
+      }
+      if (getDuration < delayMillisBetweenRequests)
+      {
+          const delayMs = delayMillisBetweenRequests - getDuration;
+          this.logger.debug(`delaying: ${delayMs}`);
+          await delay(delayMs);
       }
     }
   }
@@ -412,6 +434,13 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
    * larger payloads.
    */
   cacheItemPayloadBytes: 100,
+  /**
+   * Sets an upper bound on how many requests per second will be sent to the server.
+   * Momento caches have a default throttling limit of 100 requests per second,
+   * so if you raise this, you may observe throttled requests.  Contact
+   * support@momentohq.com to inquire about raising your limits.
+   */
+  maxRequestsPerSecond: 100,
   /**
    * Controls the number of concurrent requests that will be made (via asynchronous
    * function calls) by the load test.  Increasing this number may improve throughput,
