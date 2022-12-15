@@ -20,11 +20,16 @@ export class Hit extends CacheGetResponse {
   }
 
   public bytes(): Uint8Array {
+    if (this.body.byteLength > 32) {
+      return this.body.subarray(0, 32);
+    }
     return this.body;
   }
 
   public toString(): string {
-    // TODO: Truncate output
+    if (this.valueString().length > 32) {
+      return this.valueString().substring(0, 32) + '...';
+    }
     return this.valueString();
   }
 }

@@ -2,17 +2,16 @@ import {control} from '@gomomento/generated-types';
 import {Header, HeaderInterceptor} from '../grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from '../grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from '../grpc/retry-interceptor';
-import {
-  AlreadyExistsError,
-  InvalidArgumentError,
-  NotFoundError,
-} from '../errors/errors';
+import {InvalidArgumentError, SdkError, UnknownError} from '../errors/errors';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
-import {DeleteCacheResponse} from '../messages/delete-cache-response';
-import {CreateCacheResponse} from '../messages/create-cache-response';
-import {ListCachesResponse} from '../messages/list-caches-response';
+import {DeleteCacheResponse} from '../messages/responses/delete-cache/delete-cache-response';
+import {CreateCacheResponse} from '../messages/responses/create-cache/create-cache-response';
+import {ListCachesResponse} from '../messages/responses/list-caches/list-caches-response';
+import * as CreateCache from '../messages/responses/create-cache/create-cache';
+import * as DeleteCache from '../messages/responses/delete-cache/delete-cache';
+import * as ListCaches from '../messages/responses/list-caches/list-caches';
 import {version} from '../../package.json';
 import {CreateSigningKeyResponse} from '../messages/create-signing-key-response';
 import {RevokeSigningKeyResponse} from '../messages/revoke-signing-key-response';
@@ -59,7 +58,15 @@ export class ControlClient {
   }
 
   public async createCache(name: string): Promise<CreateCacheResponse> {
-    this.validateCacheName(name);
+    try {
+      this.validateCacheName(name);
+    } catch (err) {
+      if (err instanceof SdkError) {
+        return new CreateCache.Error(err);
+      } else if (err instanceof Error) {
+        return new CreateCache.Error(new UnknownError(err.message));
+      }
+    }
     this.logger.info(`Creating cache: ${name}`);
     const request = new control.control_client._CreateCacheRequest({
       cache_name: name,
@@ -72,16 +79,12 @@ export class ControlClient {
         (err, resp) => {
           if (err) {
             if (err.code === Status.ALREADY_EXISTS) {
-              reject(
-                new AlreadyExistsError(
-                  `cache with name: ${name} already exists`
-                )
-              );
+              resolve(new CreateCache.AlreadyExists());
             } else {
-              reject(cacheServiceErrorMapper(err));
+              resolve(new CreateCache.Error(cacheServiceErrorMapper(err)));
             }
           } else {
-            resolve(new CreateCacheResponse());
+            resolve(new CreateCache.Success());
           }
         }
       );
@@ -89,6 +92,15 @@ export class ControlClient {
   }
 
   public async deleteCache(name: string): Promise<DeleteCacheResponse> {
+    try {
+      this.validateCacheName(name);
+    } catch (err) {
+      if (err instanceof SdkError) {
+        return new DeleteCache.Error(err);
+      } else if (err instanceof Error) {
+        return new DeleteCache.Error(new UnknownError(err.message));
+      }
+    }
     const request = new control.control_client._DeleteCacheRequest({
       cache_name: name,
     });
@@ -100,15 +112,9 @@ export class ControlClient {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
-            if (err.code === Status.NOT_FOUND) {
-              reject(
-                new NotFoundError(`cache with name: ${name} does not exist`)
-              );
-            } else {
-              reject(cacheServiceErrorMapper(err));
-            }
+            resolve(new DeleteCache.Error(cacheServiceErrorMapper(err)));
           } else {
-            resolve(new DeleteCacheResponse());
+            resolve(new DeleteCache.Success());
           }
         }
       );
@@ -124,9 +130,9 @@ export class ControlClient {
         .getClient()
         .ListCaches(request, {interceptors: this.interceptors}, (err, resp) => {
           if (err) {
-            reject(cacheServiceErrorMapper(err));
+            resolve(new ListCaches.Error(cacheServiceErrorMapper(err)));
           } else {
-            resolve(new ListCachesResponse(resp));
+            resolve(new ListCaches.Success(resp));
           }
         });
     });

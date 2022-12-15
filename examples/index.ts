@@ -1,8 +1,10 @@
 import {
-  AlreadyExistsError,
   CacheDelete,
   CacheGet,
   CacheSet,
+  CreateCache,
+  DeleteCache,
+  ListCaches,
   LogFormat,
   LogLevel,
   SimpleCacheClient,
@@ -25,24 +27,26 @@ const momento = new SimpleCacheClient(authToken, defaultTtl, {
 });
 
 const main = async () => {
-  try {
-    await momento.createCache(cacheName);
-  } catch (e) {
-    if (e instanceof AlreadyExistsError) {
-      console.log('cache already exists');
-    } else {
-      throw e;
-    }
+  const createCacheResp = await momento.createCache(cacheName);
+  if (createCacheResp instanceof CreateCache.AlreadyExists) {
+    console.log('cache already exists');
+  } else if (createCacheResp instanceof CreateCache.Error) {
+    console.log(`Error creating cache: ${createCacheResp}`);
+    throw createCacheResp.innerException();
   }
 
   console.log('Listing caches:');
   let token;
   do {
     const listResp = await momento.listCaches();
-    listResp.getCaches().forEach(cacheInfo => {
-      console.log(`${cacheInfo.getName()}`);
-    });
-    token = listResp.getNextToken();
+    if (listResp instanceof ListCaches.Success) {
+      listResp.getCaches().forEach(cacheInfo => {
+        console.log(`${cacheInfo.getName()}`);
+      });
+      token = listResp.getNextToken();
+    } else if (listResp instanceof ListCaches.Error) {
+      console.log(`Error listing caches: ${listResp}`);
+    }
   } while (token !== null);
 
   const exampleTtlSeconds = 10;
@@ -61,11 +65,6 @@ const main = async () => {
     console.log('Error setting key: ' + setResp.toString());
   }
 
-  const delResp = await momento.delete('___', cacheKey);
-  if (delResp instanceof CacheDelete.Error) {
-    console.log(`Error deleting cache key: ${delResp}`);
-  }
-
   const getResp = await momento.get(cacheName, cacheKey);
   if (getResp instanceof CacheGet.Hit) {
     console.log(`cache hit: ${getResp.valueString()}`);
@@ -73,6 +72,13 @@ const main = async () => {
     console.log('cache miss');
   } else if (getResp instanceof CacheGet.Error) {
     console.log(`Error: ${getResp}`);
+  }
+
+  const delResp = await momento.delete(cacheName, cacheKey);
+  if (delResp instanceof CacheDelete.Error) {
+    console.log(`Error deleting cache key: ${delResp}`);
+  } else {
+    console.log('Deleted key from cache');
   }
 };
 

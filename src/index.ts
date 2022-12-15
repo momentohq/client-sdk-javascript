@@ -3,9 +3,15 @@ import {CacheOperation, MomentoSigner} from './internal/momento-signer';
 import {CacheGetResponse} from './messages/responses/get/cache-get-response';
 import {CacheSetResponse} from './messages/responses/set/cache-set-response';
 import {CacheDeleteResponse} from './messages/responses/delete/cache-delete-response';
+import {CreateCacheResponse} from './messages/responses/create-cache/create-cache-response';
+import {DeleteCacheResponse} from './messages/responses/delete-cache/delete-cache-response';
+import {ListCachesResponse} from './messages/responses/list-caches/list-caches-response';
 import * as CacheGet from './messages/responses/get/cache-get';
 import * as CacheSet from './messages/responses/set/cache-set';
 import * as CacheDelete from './messages/responses/delete/cache-delete';
+import * as CreateCache from './messages/responses/create-cache/create-cache';
+import * as DeleteCache from './messages/responses/delete-cache/delete-cache';
+import * as ListCaches from './messages/responses/list-caches/list-caches';
 import {CacheInfo} from './messages/cache-info';
 import {
   MomentoErrorCode,
@@ -40,9 +46,15 @@ export {
   CacheGetResponse,
   CacheSetResponse,
   CacheDeleteResponse,
+  CreateCacheResponse,
+  DeleteCacheResponse,
+  ListCachesResponse,
   CacheGet,
   CacheSet,
   CacheDelete,
+  CreateCache,
+  DeleteCache,
+  ListCaches,
   CacheInfo,
   MomentoErrorCode,
   AlreadyExistsError,

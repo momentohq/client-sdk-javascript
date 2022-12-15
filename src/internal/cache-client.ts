@@ -7,7 +7,6 @@ import {createRetryInterceptorIfEnabled} from '../grpc/retry-interceptor';
 import {
   InvalidArgumentError,
   UnknownError,
-  UnknownServiceError,
 } from '../errors/errors';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
