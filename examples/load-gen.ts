@@ -147,14 +147,13 @@ class BasicJavaScriptLoadGen {
     delayMillisBetweenRequests: number
   ): Promise<void> {
     let finished = false;
-    let finish = () => finished = true;
+    const finish = () => (finished = true);
     setTimeout(finish, totalMsToRun);
-    const intervalId = setInterval(
-      () => { this.logStats(loadGenContext) },
-      this.printStatsEveryNMs
-    );
+    const intervalId = setInterval(() => {
+      this.logStats(loadGenContext);
+    }, this.printStatsEveryNMs);
 
-    for(let i = 1; true; i++) {
+    for (let i = 1; true; i++) {
       await this.issueAsyncSetGet(
         client,
         loadGenContext,
@@ -163,22 +162,20 @@ class BasicJavaScriptLoadGen {
         delayMillisBetweenRequests
       );
 
-      if(finished) {
+      if (finished) {
         clearInterval(intervalId);
-        this.logStats(loadGenContext)
-        return
+        this.logStats(loadGenContext);
+        return;
       }
     }
   }
 
-  private logStats(
-    loadGenContext: BasicJavasScriptLoadGenContext
-  ): void {
+  private logStats(loadGenContext: BasicJavasScriptLoadGenContext): void {
     this.logger.info(`
 cumulative stats:
 total requests: ${
- loadGenContext.globalRequestCount
-} (${BasicJavaScriptLoadGen.tps(
+      loadGenContext.globalRequestCount
+    } (${BasicJavaScriptLoadGen.tps(
       loadGenContext,
       loadGenContext.globalRequestCount
     )} tps, limited to ${this.maxRequestsPerSecond} tps)
@@ -198,8 +195,8 @@ total requests: ${
       loadGenContext.globalUnavailableCount
     )}%)
 deadline exceeded: ${
-loadGenContext.globalDeadlineExceededCount
-} (${BasicJavaScriptLoadGen.percentRequests(
+      loadGenContext.globalDeadlineExceededCount
+    } (${BasicJavaScriptLoadGen.percentRequests(
       loadGenContext,
       loadGenContext.globalDeadlineExceededCount
     )}%)
