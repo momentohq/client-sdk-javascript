@@ -386,10 +386,10 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
    */
   loggerOptions: {
     /**
-     * Available log levels are TRACE, DEBUG, INFO, WARN, and ERROR.  DEBUG
+     * Available log levels are TRACE, DEBUG, INFO, WARN, and ERROR.  INFO
      * is a reasonable choice for this load generator program.
      */
-    level: LogLevel.DEBUG,
+    level: LogLevel.INFO,
     /**
      * Allows you to choose between formatting your log output as JSON (a good
      * choice for production environments) or CONSOLE (a better choice for
