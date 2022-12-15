@@ -152,7 +152,8 @@ class BasicJavaScriptLoadGen {
       this.logStats(loadGenContext);
     }, this.printStatsEveryNMs);
 
-    for (let i = 1; true; i++) {
+    let i = 1;
+    for (;;) {
       await this.issueAsyncSetGet(
         client,
         loadGenContext,
@@ -166,6 +167,8 @@ class BasicJavaScriptLoadGen {
         this.logStats(loadGenContext);
         return;
       }
+
+      i++;
     }
   }
 
