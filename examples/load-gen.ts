@@ -181,7 +181,7 @@ resource exhausted: ${
           loadGenContext.globalRstStreamCount
         )}%)
 
-cumulative set latencies:      
+cumulative set latencies:
 ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.setLatencies)}
 
 cumulative get latencies:
@@ -329,7 +329,7 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
 
   private static outputHistogramSummary(histogram: hdr.Histogram): string {
     return `
-  count: ${histogram.totalCount} 
+  count: ${histogram.totalCount}
     min: ${histogram.minNonZeroValue}
     p50: ${histogram.getValueAtPercentile(50)}
     p90: ${histogram.getValueAtPercentile(90)}
