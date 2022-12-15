@@ -21,7 +21,6 @@ interface BasicJavaScriptLoadGenOptions {
   requestTimeoutMs: number;
   cacheItemPayloadBytes: number;
   numberOfConcurrentRequests: number;
-  totalNumberOfOperationsToExecute: number;
   printStatsEveryNRequests: number;
   maxRequestsPerSecond: number;
   totalMsToRun: number;
@@ -59,7 +58,6 @@ class BasicJavaScriptLoadGen {
   private readonly numberOfConcurrentRequests: number;
   private readonly printStatsEveryNRequests: number;
   private readonly maxRequestsPerSecond: number;
-  private readonly totalNumberOfOperationsToExecute: number;
   private readonly totalMsToRun: number;
   private readonly cacheValue: string;
 
@@ -80,8 +78,6 @@ class BasicJavaScriptLoadGen {
     this.numberOfConcurrentRequests = options.numberOfConcurrentRequests;
     this.printStatsEveryNRequests = options.printStatsEveryNRequests;
     this.maxRequestsPerSecond = options.maxRequestsPerSecond;
-    this.totalNumberOfOperationsToExecute =
-      options.totalNumberOfOperationsToExecute;
     this.totalMsToRun = options.totalMsToRun;
 
     this.cacheValue = 'x'.repeat(options.cacheItemPayloadBytes);
@@ -107,8 +103,6 @@ class BasicJavaScriptLoadGen {
       }
     }
 
-    const numOperationsPerWorker =
-      this.totalNumberOfOperationsToExecute / this.numberOfConcurrentRequests;
     const delayMillisBetweenRequests =
       (1000.0 * this.numberOfConcurrentRequests) / this.maxRequestsPerSecond;
     this.logger.info(`Limiting to ${this.maxRequestsPerSecond} tps`);
@@ -134,7 +128,7 @@ class BasicJavaScriptLoadGen {
           momento,
           loadGenContext,
           workerId + 1,
-          numOperationsPerWorker,
+          this.totalMsToRun,
           delayMillisBetweenRequests
         )
     );
@@ -149,14 +143,14 @@ class BasicJavaScriptLoadGen {
     client: SimpleCacheClient,
     loadGenContext: BasicJavasScriptLoadGenContext,
     workerId: number,
-    numOperations: number,
+    totalMsToRun: number,
     delayMillisBetweenRequests: number
   ): Promise<void> {
     let finished = false;
     let finish = () => finished = true;
-    setTimeout(finish, this.totalMsToRun);
+    setTimeout(finish, totalMsToRun);
 
-    for (let i = 1; i <= numOperations; i++) {
+    for(let i = 1; true; i++) {
       await this.issueAsyncSetGet(
         client,
         loadGenContext,
@@ -473,13 +467,6 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
    * may increase.
    */
   numberOfConcurrentRequests: 10,
-  /**
-   * Controls how long the load test will run.  We will execute this many operations
-   * (1 cache 'set' followed immediately by 1 'get') across all of our concurrent
-   * workers before exiting.  Statistics will be logged every 1000 operations.
-   */
-  totalNumberOfOperationsToExecute: 50_000,
-
   /**
    * Controls how long the load test will run, in milliseconds. We will execute operations
    * for this long and the exit. The default is 60 seconds.
