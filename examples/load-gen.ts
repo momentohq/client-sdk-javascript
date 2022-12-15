@@ -107,9 +107,11 @@ class BasicJavaScriptLoadGen {
     const numOperationsPerWorker =
       this.totalNumberOfOperationsToExecute / this.numberOfConcurrentRequests;
     const delayMillisBetweenRequests =
-      1000.0 * this.numberOfConcurrentRequests / this.maxRequestsPerSecond;
+      (1000.0 * this.numberOfConcurrentRequests) / this.maxRequestsPerSecond;
     this.logger.info(`Limiting to ${this.maxRequestsPerSecond} tps`);
-    this.logger.debug(`delayMillisBetweenRequests: ${delayMillisBetweenRequests}`);
+    this.logger.debug(
+      `delayMillisBetweenRequests: ${delayMillisBetweenRequests}`
+    );
 
     const loadGenContext: BasicJavasScriptLoadGenContext = {
       startTime: process.hrtime(),
@@ -148,9 +150,18 @@ class BasicJavaScriptLoadGen {
     delayMillisBetweenRequests: number
   ): Promise<void> {
     for (let i = 1; i <= numOperations; i++) {
-      await this.issueAsyncSetGet(client, loadGenContext, workerId, i, delayMillisBetweenRequests);
+      await this.issueAsyncSetGet(
+        client,
+        loadGenContext,
+        workerId,
+        i,
+        delayMillisBetweenRequests
+      );
 
-      if (loadGenContext.globalRequestCount % this.printStatsEveryNRequests === 0) {
+      if (
+        loadGenContext.globalRequestCount % this.printStatsEveryNRequests ===
+        0
+      ) {
         this.logger.info(`
 cumulative stats:
    total requests: ${
@@ -158,7 +169,7 @@ cumulative stats:
    } (${BasicJavaScriptLoadGen.tps(
           loadGenContext,
           loadGenContext.globalRequestCount
-      )} tps, limited to ${this.maxRequestsPerSecond} tps)
+        )} tps, limited to ${this.maxRequestsPerSecond} tps)
            success: ${
              loadGenContext.globalSuccessCount
            } (${BasicJavaScriptLoadGen.percentRequests(
@@ -220,11 +231,10 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
     if (result !== undefined) {
       const setDuration = BasicJavaScriptLoadGen.getElapsedMillis(setStartTime);
       loadGenContext.setLatencies.recordValue(setDuration);
-      if (setDuration < delayMillisBetweenRequests)
-      {
-          const delayMs = delayMillisBetweenRequests - setDuration;
-          this.logger.debug(`delaying: ${delayMs}`);
-          await delay(delayMs);
+      if (setDuration < delayMillisBetweenRequests) {
+        const delayMs = delayMillisBetweenRequests - setDuration;
+        this.logger.debug(`delaying: ${delayMs}`);
+        await delay(delayMs);
       }
     }
 
@@ -245,16 +255,18 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
       } else {
         valueString = 'n/a';
       }
-      if (loadGenContext.globalRequestCount % this.printStatsEveryNRequests === 0) {
+      if (
+        loadGenContext.globalRequestCount % this.printStatsEveryNRequests ===
+        0
+      ) {
         this.logger.info(
           `worker: ${workerId}, worker request: ${operationId}, global request: ${loadGenContext.globalRequestCount}, status: ${getResult.status}, val: ${valueString}`
         );
       }
-      if (getDuration < delayMillisBetweenRequests)
-      {
-          const delayMs = delayMillisBetweenRequests - getDuration;
-          this.logger.debug(`delaying: ${delayMs}`);
-          await delay(delayMs);
+      if (getDuration < delayMillisBetweenRequests) {
+        const delayMs = delayMillisBetweenRequests - getDuration;
+        this.logger.debug(`delaying: ${delayMs}`);
+        await delay(delayMs);
       }
     }
   }
