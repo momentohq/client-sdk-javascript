@@ -7,9 +7,9 @@ import {CacheDeleteResponse} from './messages/responses/delete/cache-delete-resp
 import {CreateCacheResponse} from './messages/responses/create-cache/create-cache-response';
 import {DeleteCacheResponse} from './messages/responses/delete-cache/delete-cache-response';
 import {ListCachesResponse} from './messages/responses/list-caches/list-caches-response';
-import {CreateSigningKeyResponse} from './messages/create-signing-key-response';
-import {RevokeSigningKeyResponse} from './messages/revoke-signing-key-response';
-import {ListSigningKeysResponse} from './messages/list-signing-keys-response';
+import {CreateSigningKeyResponse} from './messages/responses/create-signing-key/create-signing-key-response';
+import {RevokeSigningKeyResponse} from './messages/responses/revoke-signing-key/revoke-signing-key-response';
+import {ListSigningKeysResponse} from './messages/responses/list-signing-keys/list-signing-keys-response';
 import {
   getLogger,
   initializeMomentoLogging,

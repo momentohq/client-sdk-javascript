@@ -9,13 +9,16 @@ import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {DeleteCacheResponse} from '../messages/responses/delete-cache/delete-cache-response';
 import {CreateCacheResponse} from '../messages/responses/create-cache/create-cache-response';
 import {ListCachesResponse} from '../messages/responses/list-caches/list-caches-response';
+import {CreateSigningKeyResponse} from '../messages/responses/create-signing-key/create-signing-key-response';
+import {RevokeSigningKeyResponse} from '../messages/responses/revoke-signing-key/revoke-signing-key-response';
+import {ListSigningKeysResponse} from '../messages/responses/list-signing-keys/list-signing-keys-response';
 import * as CreateCache from '../messages/responses/create-cache/create-cache';
 import * as DeleteCache from '../messages/responses/delete-cache/delete-cache';
 import * as ListCaches from '../messages/responses/list-caches/list-caches';
+import * as CreateSigningKey from '../messages/responses/create-signing-key/create-signing-key';
+import * as ListSigningKeys from '../messages/responses/list-signing-keys/list-signing-keys';
+import * as RevokeSigningKey from '../messages/responses/revoke-signing-key/revoke-signing-key';
 import {version} from '../../package.json';
-import {CreateSigningKeyResponse} from '../messages/create-signing-key-response';
-import {RevokeSigningKeyResponse} from '../messages/revoke-signing-key-response';
-import {ListSigningKeysResponse} from '../messages/list-signing-keys-response';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
@@ -157,9 +160,9 @@ export class ControlClient {
           {interceptors: this.interceptors},
           (err, resp) => {
             if (err) {
-              reject(cacheServiceErrorMapper(err));
+              resolve(new CreateSigningKey.Error(cacheServiceErrorMapper(err)));
             } else {
-              resolve(new CreateSigningKeyResponse(endpoint, resp));
+              resolve(new CreateSigningKey.Success(endpoint, resp));
             }
           }
         );
@@ -177,9 +180,9 @@ export class ControlClient {
         .getClient()
         .RevokeSigningKey(request, {interceptors: this.interceptors}, err => {
           if (err) {
-            reject(cacheServiceErrorMapper(err));
+            resolve(new RevokeSigningKey.Error(cacheServiceErrorMapper(err)));
           } else {
-            resolve(new RevokeSigningKeyResponse());
+            resolve(new RevokeSigningKey.Success());
           }
         });
     });
@@ -200,9 +203,9 @@ export class ControlClient {
           {interceptors: this.interceptors},
           (err, resp) => {
             if (err) {
-              reject(cacheServiceErrorMapper(err));
+              resolve(new ListSigningKeys.Error(cacheServiceErrorMapper(err)));
             } else {
-              resolve(new ListSigningKeysResponse(endpoint, resp));
+              resolve(new ListSigningKeys.Success(endpoint, resp));
             }
           }
         );

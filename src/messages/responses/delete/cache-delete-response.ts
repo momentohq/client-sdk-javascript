@@ -1,3 +1,3 @@
 import {ResponseBase} from '../response-base';
 
-export class CacheDeleteResponse extends ResponseBase {}
+export abstract class CacheDeleteResponse extends ResponseBase {}

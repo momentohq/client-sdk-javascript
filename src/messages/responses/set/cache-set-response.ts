@@ -1,3 +1,3 @@
 import {ResponseBase} from '../response-base';
 
-export class CacheSetResponse extends ResponseBase {}
+export abstract class CacheSetResponse extends ResponseBase {}
