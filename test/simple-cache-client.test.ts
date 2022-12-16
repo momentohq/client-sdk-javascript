@@ -1,4 +1,4 @@
-import {InvalidArgumentError, SimpleCacheClient} from '../src';
+import {CreateCache, InvalidArgumentError, SimpleCacheClient} from '../src';
 
 const AUTH_TOKEN =
   'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzcXVpcnJlbCIsImNwIjoiY29udHJvbCBwbGFuZSBlbmRwb2ludCIsImMiOiJkYXRhIHBsYW5lIGVuZHBvaW50In0.zsTsEXFawetTCZI';
@@ -8,9 +8,13 @@ describe('SimpleCacheClient.ts', () => {
     const invalidCacheNames = ['', '    '];
     const momento = new SimpleCacheClient(AUTH_TOKEN, 100);
     for (const name of invalidCacheNames) {
-      await expect(momento.createCache(name)).rejects.toThrow(
-        InvalidArgumentError
-      );
+      const createResponse = await momento.createCache(name);
+      expect(createResponse instanceof CreateCache.Error).toEqual(true);
+      if (createResponse instanceof CreateCache.Error) {
+        expect(
+          createResponse.innerException() instanceof InvalidArgumentError
+        ).toEqual(true);
+      }
     }
   });
   it('cannot create a client with an invalid request timeout', () => {

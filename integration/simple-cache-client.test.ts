@@ -1,8 +1,6 @@
 import {v4} from 'uuid';
 import {
   SimpleCacheClient,
-  TimeoutError,
-  AlreadyExistsError,
   NotFoundError,
   CacheGet,
   CacheDelete,
@@ -68,7 +66,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       const res = await momento.get(cacheName, 'key');
       expect(res instanceof CacheGet.Error).toEqual(false);
       if (res instanceof CacheGet.Hit) {
-        expect(res.toString()).toEqual('value');
+        expect(res.valueString()).toEqual('value');
       }
     });
   });
@@ -255,6 +253,20 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     expect(deleteResponse instanceof CacheDelete.Success).toEqual(true);
     const getMiss = await momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
     expect(getMiss instanceof CacheGet.Miss).toEqual(true);
+  });
+  it('should return a miss response for a nonexistent cache key', async () => {
+    const cacheKey = v4();
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const deleteResponse = await momento.delete(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey
+    );
+    expect(deleteResponse instanceof CacheDelete.Error).toEqual(false);
+    const missResponse = await momento.get(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey
+    );
+    expect(missResponse instanceof CacheGet.Miss).toEqual(true);
   });
   it('should create, list, and revoke a signing key', async () => {
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
