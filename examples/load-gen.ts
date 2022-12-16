@@ -22,7 +22,7 @@ interface BasicJavaScriptLoadGenOptions {
   numberOfConcurrentRequests: number;
   showStatsIntervalSeconds: number;
   maxRequestsPerSecond: number;
-  totalMsToRun: number;
+  totalSecondsToRun: number;
 }
 
 enum AsyncSetGetResult {
@@ -57,7 +57,7 @@ class BasicJavaScriptLoadGen {
   private readonly numberOfConcurrentRequests: number;
   private readonly showStatsIntervalSeconds: number;
   private readonly maxRequestsPerSecond: number;
-  private readonly totalMsToRun: number;
+  private readonly totalSecondsToRun: number;
   private readonly cacheValue: string;
 
   private readonly cacheName: string = 'js-loadgen';
@@ -77,7 +77,7 @@ class BasicJavaScriptLoadGen {
     this.numberOfConcurrentRequests = options.numberOfConcurrentRequests;
     this.showStatsIntervalSeconds = options.showStatsIntervalSeconds;
     this.maxRequestsPerSecond = options.maxRequestsPerSecond;
-    this.totalMsToRun = options.totalMsToRun;
+    this.totalSecondsToRun = options.totalSecondsToRun;
 
     this.cacheValue = 'x'.repeat(options.cacheItemPayloadBytes);
   }
@@ -127,7 +127,7 @@ class BasicJavaScriptLoadGen {
           momento,
           loadGenContext,
           workerId + 1,
-          this.totalMsToRun,
+          this.totalSecondsToRun,
           delayMillisBetweenRequests
         )
     );
@@ -142,12 +142,12 @@ class BasicJavaScriptLoadGen {
     client: SimpleCacheClient,
     loadGenContext: BasicJavasScriptLoadGenContext,
     workerId: number,
-    totalMsToRun: number,
+    totalSecondsToRun: number,
     delayMillisBetweenRequests: number
   ): Promise<void> {
     let finished = false;
     const finish = () => (finished = true);
-    setTimeout(finish, totalMsToRun);
+    setTimeout(finish, totalSecondsToRun * 1000);
     const intervalId = setInterval(() => {
       this.logStats(loadGenContext);
     }, this.showStatsIntervalSeconds * 1000);
@@ -458,7 +458,7 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
    * Controls how long the load test will run, in milliseconds. We will execute operations
    * for this long and the exit. The default is 60 seconds.
    */
-  totalMsToRun: 60 * 1000,
+  totalSecondsToRun: 10,
 };
 
 main(loadGeneratorOptions)
