@@ -23,11 +23,11 @@ export class Hit extends CacheGetResponse {
     return this.body;
   }
 
-  public toString(): string {
+  public override toString(): string {
     if (this.valueString().length > 32) {
       return this.valueString().substring(0, 32) + '...';
     }
-    return this.valueString();
+    return super.toString() + ': ' + this.valueString();
   }
 }
 
@@ -52,7 +52,7 @@ export class Error extends CacheGetResponse {
     return this._innerException.errorCode;
   }
 
-  public toString(): string {
-    return this.message();
+  public override toString(): string {
+    return super.toString() + ': ' + this.message();
   }
 }

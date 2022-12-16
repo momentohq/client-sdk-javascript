@@ -15,6 +15,7 @@ import {
   UnknownServiceError,
   ServerUnavailableError,
   UnknownError,
+  FailedPreconditionError,
 } from './errors';
 
 export function cacheServiceErrorMapper(err: ServiceError | null): SdkError {
@@ -46,6 +47,7 @@ export function cacheServiceErrorMapper(err: ServiceError | null): SdkError {
     case Status.UNIMPLEMENTED:
       return new BadRequestError(...errParams);
     case Status.FAILED_PRECONDITION:
+      return new FailedPreconditionError(...errParams);
     case Status.INVALID_ARGUMENT:
       return new InvalidArgumentError(...errParams);
     case Status.CANCELLED:

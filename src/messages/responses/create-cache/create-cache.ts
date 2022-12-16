@@ -25,6 +25,6 @@ export class Error extends CreateCacheResponse {
   }
 
   public override toString(): string {
-    return this.message();
+    return super.toString() + ': ' + this.message();
   }
 }

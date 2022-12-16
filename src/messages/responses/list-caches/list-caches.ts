@@ -22,6 +22,11 @@ export class Success extends ListCachesResponse {
   public getCaches() {
     return this.caches;
   }
+
+  public override toString() {
+    const caches = this.caches.map(cacheInfo => cacheInfo.getName());
+    return super.toString() + ': ' + caches.join(', ');
+  }
 }
 
 export class Error extends ListCachesResponse {
@@ -43,7 +48,7 @@ export class Error extends ListCachesResponse {
     return this._innerException.errorCode;
   }
 
-  public toString(): string {
-    return this.message();
+  public override toString(): string {
+    return super.toString() + ': ' + this.message();
   }
 }

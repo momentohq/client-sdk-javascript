@@ -71,6 +71,7 @@ export class ControlClient {
     const request = new control.control_client._CreateCacheRequest({
       cache_name: name,
     });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise<CreateCacheResponse>((resolve, reject) => {
       this.clientWrapper.getClient().CreateCache(
         request,
@@ -105,6 +106,7 @@ export class ControlClient {
       cache_name: name,
     });
     this.logger.info(`Deleting cache: ${name}`);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise<DeleteCacheResponse>((resolve, reject) => {
       this.clientWrapper.getClient().DeleteCache(
         request,
@@ -125,6 +127,7 @@ export class ControlClient {
     const request = new control.control_client._ListCachesRequest();
     request.next_token = nextToken ?? '';
     this.logger.debug("Issuing 'listCaches' request");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise<ListCachesResponse>((resolve, reject) => {
       this.clientWrapper
         .getClient()

@@ -21,7 +21,7 @@ export class Error extends DeleteCacheResponse {
     return this._innerException.errorCode;
   }
 
-  public toString(): string {
-    return this.message();
+  public override toString(): string {
+    return super.toString() + ': ' + this.message();
   }
 }

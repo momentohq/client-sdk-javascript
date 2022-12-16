@@ -128,6 +128,7 @@ export class CacheClient {
       ttl_milliseconds: ttl * 1000,
     });
     const metadata = this.createMetadata(cacheName);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise((resolve, reject) => {
       this.clientWrapper.getClient().Set(
         request,
@@ -163,6 +164,7 @@ export class CacheClient {
       cache_key: key,
     });
     const metadata = this.createMetadata(cacheName);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise((resolve, reject) => {
       this.clientWrapper.getClient().Delete(
         request,
@@ -201,6 +203,7 @@ export class CacheClient {
     });
     const metadata = this.createMetadata(cacheName);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise((resolve, reject) => {
       this.clientWrapper.getClient().Get(
         request,

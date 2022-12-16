@@ -1,1 +1,3 @@
-export class ListCachesResponse {}
+import {ResponseBase} from '../response-base';
+
+export class ListCachesResponse extends ResponseBase {}

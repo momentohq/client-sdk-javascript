@@ -69,7 +69,7 @@ const main = async () => {
   if (getResp instanceof CacheGet.Hit) {
     console.log(`cache hit: ${getResp.valueString()}`);
   } else if (getResp instanceof CacheGet.Miss) {
-    console.log('cache miss');
+    console.log(`cache miss: ${getResp.toString()}`);
   } else if (getResp instanceof CacheGet.Error) {
     console.log(`Error: ${getResp.message()}`);
   }

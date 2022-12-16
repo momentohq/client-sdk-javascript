@@ -1,1 +1,3 @@
-export class CreateCacheResponse {}
+import {ResponseBase} from '../response-base';
+
+export class CreateCacheResponse extends ResponseBase {}
