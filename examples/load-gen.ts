@@ -104,10 +104,13 @@ class BasicJavaScriptLoadGen {
 
     const delayMillisBetweenRequests =
       (1000.0 * this.numberOfConcurrentRequests) / this.maxRequestsPerSecond;
-    this.logger.info(`Limiting to ${this.maxRequestsPerSecond} tps`);
     this.logger.trace(
       `delayMillisBetweenRequests: ${delayMillisBetweenRequests}`
     );
+
+    this.logger.info(`Limiting to ${this.maxRequestsPerSecond} tps`);
+    this.logger.info(`Running ${this.numberOfConcurrentRequests} concurrent requests`)
+    this.logger.info(`Running for ${this.totalSecondsToRun} seconds`);
 
     const loadGenContext: BasicJavasScriptLoadGenContext = {
       startTime: process.hrtime(),
