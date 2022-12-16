@@ -20,7 +20,7 @@ interface BasicJavaScriptLoadGenOptions {
   requestTimeoutMs: number;
   cacheItemPayloadBytes: number;
   numberOfConcurrentRequests: number;
-  printStatsEveryNMs: number;
+  showStatsIntervalSeconds: number;
   maxRequestsPerSecond: number;
   totalMsToRun: number;
 }
@@ -55,7 +55,7 @@ class BasicJavaScriptLoadGen {
   private readonly loggerOptions: LoggerOptions;
   private readonly requestTimeoutMs: number;
   private readonly numberOfConcurrentRequests: number;
-  private readonly printStatsEveryNMs: number;
+  private readonly showStatsIntervalSeconds: number;
   private readonly maxRequestsPerSecond: number;
   private readonly totalMsToRun: number;
   private readonly cacheValue: string;
@@ -75,7 +75,7 @@ class BasicJavaScriptLoadGen {
     this.authToken = authToken;
     this.requestTimeoutMs = options.requestTimeoutMs;
     this.numberOfConcurrentRequests = options.numberOfConcurrentRequests;
-    this.printStatsEveryNMs = options.printStatsEveryNMs;
+    this.showStatsIntervalSeconds = options.showStatsIntervalSeconds;
     this.maxRequestsPerSecond = options.maxRequestsPerSecond;
     this.totalMsToRun = options.totalMsToRun;
 
@@ -150,7 +150,7 @@ class BasicJavaScriptLoadGen {
     setTimeout(finish, totalMsToRun);
     const intervalId = setInterval(() => {
       this.logStats(loadGenContext);
-    }, this.printStatsEveryNMs);
+    }, this.showStatsIntervalSeconds * 1000);
 
     let i = 1;
     for (;;) {
@@ -425,9 +425,9 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
     format: LogFormat.CONSOLE,
   },
   /** Print some statistics about throughput and latency every time this many
-   *  milliseconds have passed. Default is 5 seconds.
+   *  seconds have passed. Default is 5 seconds.
    */
-  printStatsEveryNMs: 5 * 1000,
+  showStatsIntervalSeconds: 5,
   /**
    * Configures the Momento client to timeout if a request exceeds this limit.
    * Momento client default is 5 seconds.
