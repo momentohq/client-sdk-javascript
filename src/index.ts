@@ -12,6 +12,9 @@ import * as CacheDelete from './messages/responses/delete/cache-delete';
 import * as CreateCache from './messages/responses/create-cache/create-cache';
 import * as DeleteCache from './messages/responses/delete-cache/delete-cache';
 import * as ListCaches from './messages/responses/list-caches/list-caches';
+import * as CreateSigningKey from './messages/responses/create-signing-key/create-signing-key';
+import * as ListSigningKeys from './messages/responses/list-signing-keys/list-signing-keys';
+import * as RevokeSigningKey from './messages/responses/revoke-signing-key/revoke-signing-key';
 import {CacheInfo} from './messages/cache-info';
 import {
   MomentoErrorCode,
@@ -55,6 +58,9 @@ export {
   CreateCache,
   DeleteCache,
   ListCaches,
+  CreateSigningKey,
+  ListSigningKeys,
+  RevokeSigningKey,
   CacheInfo,
   MomentoErrorCode,
   AlreadyExistsError,

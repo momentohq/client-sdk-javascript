@@ -9,6 +9,9 @@ import {
   CreateCache,
   ListCaches,
   CacheSet,
+  CreateSigningKey,
+  ListSigningKeys,
+  RevokeSigningKey,
 } from '../src';
 import {TextEncoder} from 'util';
 
@@ -271,21 +274,46 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should create, list, and revoke a signing key', async () => {
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     const createSigningKeyResponse = await momento.createSigningKey(30);
+    expect(createSigningKeyResponse instanceof CreateSigningKey.Error).toEqual(
+      false
+    );
     let listSigningKeysResponse = await momento.listSigningKeys();
-    let signingKeys = listSigningKeysResponse.getSigningKeys();
+    expect(listSigningKeysResponse instanceof ListSigningKeys.Error).toEqual(
+      false
+    );
+    let signingKeys = (
+      listSigningKeysResponse as ListSigningKeys.Success
+    ).getSigningKeys();
     expect(signingKeys.length).toBeGreaterThan(0);
     expect(
       signingKeys
         .map(k => k.getKeyId())
-        .some(k => k === createSigningKeyResponse.getKeyId())
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        .some(
+          k =>
+            k ===
+            (createSigningKeyResponse as CreateSigningKey.Success).getKeyId()
+        )
     ).toEqual(true);
-    await momento.revokeSigningKey(createSigningKeyResponse.getKeyId());
+    const revokeResponse = await momento.revokeSigningKey(
+      (createSigningKeyResponse as CreateSigningKey.Success).getKeyId()
+    );
+    expect(revokeResponse instanceof RevokeSigningKey.Error).toEqual(false);
     listSigningKeysResponse = await momento.listSigningKeys();
-    signingKeys = listSigningKeysResponse.getSigningKeys();
+    expect(listSigningKeysResponse instanceof ListSigningKeys.Error).toEqual(
+      false
+    );
+    signingKeys = (
+      listSigningKeysResponse as ListSigningKeys.Success
+    ).getSigningKeys();
     expect(
       signingKeys
         .map(k => k.getKeyId())
-        .some(k => k === createSigningKeyResponse.getKeyId())
+        .some(
+          k =>
+            k ===
+            (createSigningKeyResponse as CreateSigningKey.Success).getKeyId()
+        )
     ).toEqual(false);
   });
 });
