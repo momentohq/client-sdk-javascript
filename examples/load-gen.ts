@@ -105,7 +105,7 @@ class BasicJavaScriptLoadGen {
     const delayMillisBetweenRequests =
       (1000.0 * this.numberOfConcurrentRequests) / this.maxRequestsPerSecond;
     this.logger.info(`Limiting to ${this.maxRequestsPerSecond} tps`);
-    this.logger.debug(
+    this.logger.trace(
       `delayMillisBetweenRequests: ${delayMillisBetweenRequests}`
     );
 
@@ -242,7 +242,7 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
       loadGenContext.setLatencies.recordValue(setDuration);
       if (setDuration < delayMillisBetweenRequests) {
         const delayMs = delayMillisBetweenRequests - setDuration;
-        this.logger.debug(`delaying: ${delayMs}`);
+        this.logger.trace(`delaying: ${delayMs}`);
         await delay(delayMs);
       }
     }
@@ -258,7 +258,7 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
       loadGenContext.getLatencies.recordValue(getDuration);
       if (getDuration < delayMillisBetweenRequests) {
         const delayMs = delayMillisBetweenRequests - getDuration;
-        this.logger.debug(`delaying: ${delayMs}`);
+        this.logger.trace(`delaying: ${delayMs}`);
         await delay(delayMs);
       }
     }
@@ -416,7 +416,7 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
      * Available log levels are TRACE, DEBUG, INFO, WARN, and ERROR.  INFO
      * is a reasonable choice for this load generator program.
      */
-    level: LogLevel.INFO,
+    level: LogLevel.DEBUG,
     /**
      * Allows you to choose between formatting your log output as JSON (a good
      * choice for production environments) or CONSOLE (a better choice for
