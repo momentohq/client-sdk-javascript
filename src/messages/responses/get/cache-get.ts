@@ -19,10 +19,7 @@ export class Hit extends CacheGetResponse {
     return TEXT_DECODER.decode(this.body);
   }
 
-  public bytes(): Uint8Array {
-    if (this.body.byteLength > 32) {
-      return this.body.subarray(0, 32);
-    }
+  public valueBytes(): Uint8Array {
     return this.body;
   }
 

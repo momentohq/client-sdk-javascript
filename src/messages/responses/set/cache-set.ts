@@ -6,7 +6,7 @@ import {MomentoErrorCode, SdkError} from '../../../errors/errors';
 const TEXT_DECODER = new TextDecoder();
 
 export class Success extends CacheSetResponse {
-  public readonly value: Uint8Array;
+  private readonly value: Uint8Array;
   constructor(value: Uint8Array) {
     super();
     this.value = value;
