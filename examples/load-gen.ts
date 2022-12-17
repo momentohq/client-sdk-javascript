@@ -109,7 +109,9 @@ class BasicJavaScriptLoadGen {
     );
 
     this.logger.info(`Limiting to ${this.maxRequestsPerSecond} tps`);
-    this.logger.info(`Running ${this.numberOfConcurrentRequests} concurrent requests`)
+    this.logger.info(
+      `Running ${this.numberOfConcurrentRequests} concurrent requests`
+    );
     this.logger.info(`Running for ${this.totalSecondsToRun} seconds`);
 
     const loadGenContext: BasicJavasScriptLoadGenContext = {
