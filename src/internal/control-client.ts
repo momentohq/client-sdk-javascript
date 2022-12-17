@@ -152,6 +152,7 @@ export class ControlClient {
     this.logger.debug("Issuing 'createSigningKey' request");
     const request = new control.control_client._CreateSigningKeyRequest();
     request.ttl_minutes = ttlMinutes;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise<CreateSigningKeyResponse>((resolve, reject) => {
       this.clientWrapper
         .getClient()
@@ -175,6 +176,7 @@ export class ControlClient {
     const request = new control.control_client._RevokeSigningKeyRequest();
     request.key_id = keyId;
     this.logger.debug("Issuing 'revokeSigningKey' request");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise<RevokeSigningKeyResponse>((resolve, reject) => {
       this.clientWrapper
         .getClient()
@@ -195,6 +197,7 @@ export class ControlClient {
     const request = new control.control_client._ListSigningKeysRequest();
     request.next_token = nextToken ?? '';
     this.logger.debug("Issuing 'listSigningKeys' request");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise<ListSigningKeysResponse>((resolve, reject) => {
       this.clientWrapper
         .getClient()
