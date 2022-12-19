@@ -61,13 +61,13 @@ async function withCache(
 }
 
 describe('SimpleCacheClient.ts Integration Tests', () => {
-  it('should create and delete a cache', async () => {
+  it('should create and delete a cache, set and get a value', async () => {
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     await withCache(momento, cacheName, async () => {
       await momento.set(cacheName, 'key', 'value');
       const res = await momento.get(cacheName, 'key');
-      expect(res instanceof CacheGet.Error).toEqual(false);
+      expect(res instanceof CacheGet.Hit).toEqual(true);
       if (res instanceof CacheGet.Hit) {
         expect(res.valueString()).toEqual('value');
       }
@@ -256,20 +256,6 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     expect(deleteResponse instanceof CacheDelete.Success).toEqual(true);
     const getMiss = await momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
     expect(getMiss instanceof CacheGet.Miss).toEqual(true);
-  });
-  it('should return a miss response for a nonexistent cache key', async () => {
-    const cacheKey = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-    const deleteResponse = await momento.delete(
-      INTEGRATION_TEST_CACHE_NAME,
-      cacheKey
-    );
-    expect(deleteResponse instanceof CacheDelete.Error).toEqual(false);
-    const missResponse = await momento.get(
-      INTEGRATION_TEST_CACHE_NAME,
-      cacheKey
-    );
-    expect(missResponse instanceof CacheGet.Miss).toEqual(true);
   });
   it('should create, list, and revoke a signing key', async () => {
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);

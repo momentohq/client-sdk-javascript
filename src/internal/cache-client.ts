@@ -221,8 +221,6 @@ export class CacheClient {
                 resolve(new CacheGet.Hit(resp.cache_body));
                 break;
               case cache.cache_client.ECacheResult.Invalid:
-                resolve(new CacheGet.Error(new UnknownError(resp.message)));
-                break;
               case cache.cache_client.ECacheResult.Ok:
                 resolve(new CacheGet.Error(new UnknownError(resp.message)));
                 break;
