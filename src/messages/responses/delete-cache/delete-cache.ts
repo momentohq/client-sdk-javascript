@@ -18,7 +18,7 @@ export class Error extends DeleteCacheResponse {
   }
 
   public errorCode(): MomentoErrorCode {
-    return this._innerException.errorCode;
+    return this._innerException.errorCode();
   }
 
   public override toString(): string {

@@ -37,7 +37,7 @@ export class Error extends CacheSetResponse {
   }
 
   public errorCode(): MomentoErrorCode {
-    return this._innerException.errorCode;
+    return this._innerException.errorCode();
   }
 
   public toString(): string {

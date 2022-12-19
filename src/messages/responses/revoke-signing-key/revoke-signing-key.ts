@@ -19,7 +19,7 @@ export class Error extends RevokeSigningKeyResponse {
   }
 
   public errorCode(): MomentoErrorCode {
-    return this._innerException.errorCode;
+    return this._innerException.errorCode();
   }
 
   public override toString(): string {
