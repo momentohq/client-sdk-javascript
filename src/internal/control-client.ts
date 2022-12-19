@@ -148,7 +148,15 @@ export class ControlClient {
     ttlMinutes: number,
     endpoint: string
   ): Promise<CreateSigningKeyResponse> {
-    this.validateTtlMinutes(ttlMinutes);
+    try {
+      this.validateTtlMinutes(ttlMinutes);
+    } catch (err) {
+      if (err instanceof SdkError) {
+        return new CreateSigningKey.Error(err);
+      } else if (err instanceof Error) {
+        return new CreateSigningKey.Error(new UnknownError(err.message));
+      }
+    }
     this.logger.debug("Issuing 'createSigningKey' request");
     const request = new control.control_client._CreateSigningKeyRequest();
     request.ttl_minutes = ttlMinutes;
