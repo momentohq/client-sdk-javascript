@@ -33,28 +33,9 @@ const main = async () => {
     throw createResponse.innerException();
   }
 
-  console.log('Checking for signing key in $MOMENTO_SIGNING_KEY');
-  let signingKey = process.env.MOMENTO_SIGNING_KEY;
-  if (!signingKey) {
-    // There is a limit of 5 signing keys per user, so it's best practice to
-    // create a signing key and store it somewhere secure. For convenience,
-    // this example creates a new signing key if one is not set in the
-    // environment variable `MOMENTO_SIGNING_KEY`. Signing keys can also be
-    // created and revoked via the Momento CLI.
-    console.log(
-      'Did not find signing key in environment, creating new signing key'
-    );
-    const signingKeyResponse = await momento.createSigningKey(60 * 24); // valid for 24 hours
-    if (signingKeyResponse instanceof CreateSigningKey.Success) {
-      signingKey = signingKeyResponse.getKey();
-      process.env.MOMENTO_ENDPOINT = signingKeyResponse.getEndpoint();
-    } else if (signingKeyResponse instanceof CreateSigningKey.Error) {
-      throw signingKeyResponse.innerException();
-    }
-  }
+  const signingKey = await getSigningKey();
   const endpoint = requireEnvVar('MOMENTO_ENDPOINT');
-
-  const signer = await MomentoSigner.init(signingKey as string);
+  const signer = await MomentoSigner.init(signingKey);
 
   console.log('\n*** Running presigned url example ***');
   await runPresignedUrlExample(signer, endpoint);
@@ -62,6 +43,29 @@ const main = async () => {
   console.log('\n*** Running signed token example ***');
   await runSignedTokenExample(signer, endpoint);
 };
+
+async function getSigningKey(): Promise<string> {
+  console.log('Checking for signing key in $MOMENTO_SIGNING_KEY');
+  if (process.env.MOMENTO_SIGNING_KEY) {
+    return process.env.MOMENTO_SIGNING_KEY;
+  }
+  // There is a limit of 5 signing keys per user, so it's best practice to
+  // create a signing key and store it somewhere secure. For convenience,
+  // this example creates a new signing key if one is not set in the
+  // environment variable `MOMENTO_SIGNING_KEY`. Signing keys can also be
+  // created and revoked via the Momento CLI.
+  console.log(
+    'Did not find signing key in environment, creating new signing key'
+  );
+  const signingKeyResponse = await momento.createSigningKey(60 * 24); // valid for 24 hours
+  if (signingKeyResponse instanceof CreateSigningKey.Error) {
+    throw signingKeyResponse.innerException();
+  }
+  process.env.MOMENTO_ENDPOINT = (
+    signingKeyResponse as CreateSigningKey.Success
+  ).getEndpoint();
+  return (signingKeyResponse as CreateSigningKey.Success).getKey();
+}
 
 // Create signed urls for setting and getting values via http for specified cache and
 // key
