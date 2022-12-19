@@ -97,7 +97,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     await withCache(momento, cacheName, async () => {
       const listResponse = await momento.listCaches();
-      expect(listResponse instanceof ListCaches.Error).toEqual(false);
+      expect(listResponse instanceof ListCaches.Success).toEqual(true);
       if (listResponse instanceof ListCaches.Success) {
         const caches = listResponse.getCaches();
         const names = caches.map(c => c.getName());
@@ -114,13 +114,12 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       cacheKey,
       cacheValue
     );
-    expect(setResponse instanceof CacheSet.Error).toEqual(false);
+    expect(setResponse instanceof CacheSet.Success).toEqual(true);
     const getResponse = await momento.get(
       INTEGRATION_TEST_CACHE_NAME,
       cacheKey
     );
-    expect(getResponse instanceof CacheGet.Error).toEqual(false);
-    expect(getResponse instanceof CacheGet.Miss).toEqual(false);
+    expect(getResponse instanceof CacheGet.Hit).toEqual(true);
     if (getResponse instanceof CacheGet.Hit) {
       expect(getResponse.valueString()).toEqual(cacheValue);
     }
@@ -134,13 +133,12 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       cacheKey,
       cacheValue
     );
-    expect(setResponse instanceof CacheSet.Error).toEqual(false);
+    expect(setResponse instanceof CacheSet.Success).toEqual(true);
     const getResponse = await momento.get(
       INTEGRATION_TEST_CACHE_NAME,
       cacheKey
     );
-    expect(getResponse instanceof CacheGet.Error).toEqual(false);
-    expect(getResponse instanceof CacheGet.Miss).toEqual(false);
+    expect(getResponse instanceof CacheGet.Hit).toEqual(true);
     if (getResponse instanceof CacheGet.Hit) {
       expect(getResponse.valueBytes()).toEqual(cacheValue);
     }
@@ -154,13 +152,12 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       cacheKey,
       cacheValue
     );
-    expect(setResponse instanceof CacheSet.Error).toEqual(false);
+    expect(setResponse instanceof CacheSet.Success).toEqual(true);
     const getResponse = await momento.get(
       INTEGRATION_TEST_CACHE_NAME,
       cacheKey
     );
-    expect(getResponse instanceof CacheGet.Error).toEqual(false);
-    expect(getResponse instanceof CacheGet.Miss).toEqual(false);
+    expect(getResponse instanceof CacheGet.Hit).toEqual(true);
     if (getResponse instanceof CacheGet.Hit) {
       expect(getResponse.valueBytes()).toEqual(cacheValue);
     }
@@ -174,13 +171,12 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       cacheKey,
       cacheValue
     );
-    expect(setResponse instanceof CacheSet.Error).toEqual(false);
+    expect(setResponse instanceof CacheSet.Success).toEqual(true);
     const getResponse = await momento.get(
       INTEGRATION_TEST_CACHE_NAME,
       cacheKey
     );
-    expect(getResponse instanceof CacheGet.Error).toEqual(false);
-    expect(getResponse instanceof CacheGet.Miss).toEqual(false);
+    expect(getResponse instanceof CacheGet.Hit).toEqual(true);
     if (getResponse instanceof CacheGet.Hit) {
       expect(getResponse.valueString()).toEqual(cacheValue);
     }
@@ -194,7 +190,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       cacheKey,
       cacheValue
     );
-    expect(setResponse instanceof CacheSet.Error).toEqual(false);
+    expect(setResponse instanceof CacheSet.Success).toEqual(true);
     if (setResponse instanceof CacheSet.Success) {
       expect(setResponse.valueString()).toEqual(cacheValue);
     }
@@ -208,7 +204,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       cacheKey,
       cacheValue
     );
-    expect(setResponse instanceof CacheSet.Error).toEqual(false);
+    expect(setResponse instanceof CacheSet.Success).toEqual(true);
     if (setResponse instanceof CacheSet.Success) {
       expect(setResponse.valueBytes()).toEqual(cacheValue);
     }
@@ -243,8 +239,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       INTEGRATION_TEST_CACHE_NAME,
       cacheKey
     );
-    expect(getResponse instanceof CacheGet.Error).toEqual(false);
-    expect(getResponse instanceof CacheGet.Miss).toEqual(false);
+    expect(getResponse instanceof CacheGet.Hit).toEqual(true);
     if (getResponse instanceof CacheGet.Hit) {
       expect(getResponse.valueBytes()).toEqual(cacheValue);
     }
@@ -260,12 +255,12 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should create, list, and revoke a signing key', async () => {
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     const createSigningKeyResponse = await momento.createSigningKey(30);
-    expect(createSigningKeyResponse instanceof CreateSigningKey.Error).toEqual(
-      false
-    );
+    expect(
+      createSigningKeyResponse instanceof CreateSigningKey.Success
+    ).toEqual(true);
     let listSigningKeysResponse = await momento.listSigningKeys();
-    expect(listSigningKeysResponse instanceof ListSigningKeys.Error).toEqual(
-      false
+    expect(listSigningKeysResponse instanceof ListSigningKeys.Success).toEqual(
+      true
     );
     let signingKeys = (
       listSigningKeysResponse as ListSigningKeys.Success
@@ -284,10 +279,10 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     const revokeResponse = await momento.revokeSigningKey(
       (createSigningKeyResponse as CreateSigningKey.Success).getKeyId()
     );
-    expect(revokeResponse instanceof RevokeSigningKey.Error).toEqual(false);
+    expect(revokeResponse instanceof RevokeSigningKey.Success).toEqual(true);
     listSigningKeysResponse = await momento.listSigningKeys();
-    expect(listSigningKeysResponse instanceof ListSigningKeys.Error).toEqual(
-      false
+    expect(listSigningKeysResponse instanceof ListSigningKeys.Success).toEqual(
+      true
     );
     signingKeys = (
       listSigningKeysResponse as ListSigningKeys.Success
