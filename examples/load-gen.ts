@@ -1,6 +1,5 @@
 import {
   AlreadyExistsError,
-  CacheGetStatus,
   getLogger,
   InternalServerError,
   LimitExceededError,
@@ -21,7 +20,9 @@ interface BasicJavaScriptLoadGenOptions {
   requestTimeoutMs: number;
   cacheItemPayloadBytes: number;
   numberOfConcurrentRequests: number;
-  totalNumberOfOperationsToExecute: number;
+  showStatsIntervalSeconds: number;
+  maxRequestsPerSecond: number;
+  totalSecondsToRun: number;
 }
 
 enum AsyncSetGetResult {
@@ -54,7 +55,9 @@ class BasicJavaScriptLoadGen {
   private readonly loggerOptions: LoggerOptions;
   private readonly requestTimeoutMs: number;
   private readonly numberOfConcurrentRequests: number;
-  private readonly totalNumberOfOperationsToExecute: number;
+  private readonly showStatsIntervalSeconds: number;
+  private readonly maxRequestsPerSecond: number;
+  private readonly totalSecondsToRun: number;
   private readonly cacheValue: string;
 
   private readonly cacheName: string = 'js-loadgen';
@@ -72,8 +75,9 @@ class BasicJavaScriptLoadGen {
     this.authToken = authToken;
     this.requestTimeoutMs = options.requestTimeoutMs;
     this.numberOfConcurrentRequests = options.numberOfConcurrentRequests;
-    this.totalNumberOfOperationsToExecute =
-      options.totalNumberOfOperationsToExecute;
+    this.showStatsIntervalSeconds = options.showStatsIntervalSeconds;
+    this.maxRequestsPerSecond = options.maxRequestsPerSecond;
+    this.totalSecondsToRun = options.totalSecondsToRun;
 
     this.cacheValue = 'x'.repeat(options.cacheItemPayloadBytes);
   }
@@ -98,8 +102,17 @@ class BasicJavaScriptLoadGen {
       }
     }
 
-    const numOperationsPerWorker =
-      this.totalNumberOfOperationsToExecute / this.numberOfConcurrentRequests;
+    const delayMillisBetweenRequests =
+      (1000.0 * this.numberOfConcurrentRequests) / this.maxRequestsPerSecond;
+    this.logger.trace(
+      `delayMillisBetweenRequests: ${delayMillisBetweenRequests}`
+    );
+
+    this.logger.info(`Limiting to ${this.maxRequestsPerSecond} tps`);
+    this.logger.info(
+      `Running ${this.numberOfConcurrentRequests} concurrent requests`
+    );
+    this.logger.info(`Running for ${this.totalSecondsToRun} seconds`);
 
     const loadGenContext: BasicJavasScriptLoadGenContext = {
       startTime: process.hrtime(),
@@ -119,7 +132,8 @@ class BasicJavaScriptLoadGen {
           momento,
           loadGenContext,
           workerId + 1,
-          numOperationsPerWorker
+          this.totalSecondsToRun,
+          delayMillisBetweenRequests
         )
     );
     const allResultPromises = Promise.all(asyncGetSetResults);
@@ -133,53 +147,78 @@ class BasicJavaScriptLoadGen {
     client: SimpleCacheClient,
     loadGenContext: BasicJavasScriptLoadGenContext,
     workerId: number,
-    numOperations: number
+    totalSecondsToRun: number,
+    delayMillisBetweenRequests: number
   ): Promise<void> {
-    for (let i = 1; i <= numOperations; i++) {
-      await this.issueAsyncSetGet(client, loadGenContext, workerId, i);
+    let finished = false;
+    const finish = () => (finished = true);
+    setTimeout(finish, totalSecondsToRun * 1000);
+    const intervalId = setInterval(() => {
+      this.logStats(loadGenContext);
+    }, this.showStatsIntervalSeconds * 1000);
 
-      if (loadGenContext.globalRequestCount % 1000 === 0) {
-        this.logger.info(`
+    let i = 1;
+    for (;;) {
+      await this.issueAsyncSetGet(
+        client,
+        loadGenContext,
+        workerId,
+        i,
+        delayMillisBetweenRequests
+      );
+
+      if (finished) {
+        clearInterval(intervalId);
+        this.logStats(loadGenContext);
+        return;
+      }
+
+      i++;
+    }
+  }
+
+  private logStats(loadGenContext: BasicJavasScriptLoadGenContext): void {
+    this.logger.info(`
 cumulative stats:
-   total requests: ${
-     loadGenContext.globalRequestCount
-   } (${BasicJavaScriptLoadGen.tps(
-          loadGenContext,
-          loadGenContext.globalRequestCount
-        )} tps)
-           success: ${
-             loadGenContext.globalSuccessCount
-           } (${BasicJavaScriptLoadGen.percentRequests(
-          loadGenContext,
-          loadGenContext.globalSuccessCount
-        )}%) (${BasicJavaScriptLoadGen.tps(
-          loadGenContext,
-          loadGenContext.globalSuccessCount
-        )} tps)
-       unavailable: ${
-         loadGenContext.globalUnavailableCount
+total requests: ${
+      loadGenContext.globalRequestCount
+    } (${BasicJavaScriptLoadGen.tps(
+      loadGenContext,
+      loadGenContext.globalRequestCount
+    )} tps, limited to ${this.maxRequestsPerSecond} tps)
+       success: ${
+         loadGenContext.globalSuccessCount
        } (${BasicJavaScriptLoadGen.percentRequests(
-          loadGenContext,
-          loadGenContext.globalUnavailableCount
-        )}%)
- deadline exceeded: ${
-   loadGenContext.globalDeadlineExceededCount
- } (${BasicJavaScriptLoadGen.percentRequests(
-          loadGenContext,
-          loadGenContext.globalDeadlineExceededCount
-        )}%)
+      loadGenContext,
+      loadGenContext.globalSuccessCount
+    )}%) (${BasicJavaScriptLoadGen.tps(
+      loadGenContext,
+      loadGenContext.globalSuccessCount
+    )} tps)
+   unavailable: ${
+     loadGenContext.globalUnavailableCount
+   } (${BasicJavaScriptLoadGen.percentRequests(
+      loadGenContext,
+      loadGenContext.globalUnavailableCount
+    )}%)
+deadline exceeded: ${
+      loadGenContext.globalDeadlineExceededCount
+    } (${BasicJavaScriptLoadGen.percentRequests(
+      loadGenContext,
+      loadGenContext.globalDeadlineExceededCount
+    )}%)
 resource exhausted: ${
-          loadGenContext.globalResourceExhaustedCount
-        } (${BasicJavaScriptLoadGen.percentRequests(
-          loadGenContext,
-          loadGenContext.globalResourceExhaustedCount
-        )}%)
-        rst stream: ${
-          loadGenContext.globalRstStreamCount
-        } (${BasicJavaScriptLoadGen.percentRequests(
-          loadGenContext,
-          loadGenContext.globalRstStreamCount
-        )}%)
+      loadGenContext.globalResourceExhaustedCount
+    } (${BasicJavaScriptLoadGen.percentRequests(
+      loadGenContext,
+      loadGenContext.globalResourceExhaustedCount
+    )}%)
+    rst stream: ${
+      loadGenContext.globalRstStreamCount
+    } (${BasicJavaScriptLoadGen.percentRequests(
+      loadGenContext,
+      loadGenContext.globalRstStreamCount
+    )}%)
 
 cumulative set latencies:
 ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.setLatencies)}
@@ -187,15 +226,14 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.setLatencies)}
 cumulative get latencies:
 ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
 `);
-      }
-    }
   }
 
   private async issueAsyncSetGet(
     client: SimpleCacheClient,
     loadGenContext: BasicJavasScriptLoadGenContext,
     workerId: number,
-    operationId: number
+    operationId: number,
+    delayMillisBetweenRequests: number
   ): Promise<void> {
     const cacheKey = `worker${workerId}operation${operationId}`;
 
@@ -207,6 +245,11 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
     if (result !== undefined) {
       const setDuration = BasicJavaScriptLoadGen.getElapsedMillis(setStartTime);
       loadGenContext.setLatencies.recordValue(setDuration);
+      if (setDuration < delayMillisBetweenRequests) {
+        const delayMs = delayMillisBetweenRequests - setDuration;
+        this.logger.trace(`delaying: ${delayMs}`);
+        await delay(delayMs);
+      }
     }
 
     const getStartTime = process.hrtime();
@@ -218,18 +261,10 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
     if (getResult !== undefined) {
       const getDuration = BasicJavaScriptLoadGen.getElapsedMillis(getStartTime);
       loadGenContext.getLatencies.recordValue(getDuration);
-      let valueString: string;
-      if (getResult.status === CacheGetStatus.Hit) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const value: string = getResult.text()!;
-        valueString = `${value.substring(0, 10)}... (len: ${value.length})`;
-      } else {
-        valueString = 'n/a';
-      }
-      if (loadGenContext.globalRequestCount % 1000 === 0) {
-        this.logger.info(
-          `worker: ${workerId}, worker request: ${operationId}, global request: ${loadGenContext.globalRequestCount}, status: ${getResult.status}, val: ${valueString}`
-        );
+      if (getDuration < delayMillisBetweenRequests) {
+        const delayMs = delayMillisBetweenRequests - getDuration;
+        this.logger.trace(`delaying: ${delayMs}`);
+        await delay(delayMs);
       }
     }
   }
@@ -383,7 +418,7 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
    */
   loggerOptions: {
     /**
-     * Available log levels are TRACE, DEBUG, INFO, WARN, and ERROR.  DEBUG
+     * Available log levels are TRACE, DEBUG, INFO, WARN, and ERROR.  INFO
      * is a reasonable choice for this load generator program.
      */
     level: LogLevel.DEBUG,
@@ -394,6 +429,10 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
      */
     format: LogFormat.CONSOLE,
   },
+  /** Print some statistics about throughput and latency every time this many
+   *  seconds have passed. Default is 5 seconds.
+   */
+  showStatsIntervalSeconds: 5,
   /**
    * Configures the Momento client to timeout if a request exceeds this limit.
    * Momento client default is 5 seconds.
@@ -406,6 +445,13 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
    */
   cacheItemPayloadBytes: 100,
   /**
+   * Sets an upper bound on how many requests per second will be sent to the server.
+   * Momento caches have a default throttling limit of 100 requests per second,
+   * so if you raise this, you may observe throttled requests.  Contact
+   * support@momentohq.com to inquire about raising your limits.
+   */
+  maxRequestsPerSecond: 100,
+  /**
    * Controls the number of concurrent requests that will be made (via asynchronous
    * function calls) by the load test.  Increasing this number may improve throughput,
    * but it will also increase CPU consumption.  As CPU usage increases and there
@@ -414,11 +460,10 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
    */
   numberOfConcurrentRequests: 10,
   /**
-   * Controls how long the load test will run.  We will execute this many operations
-   * (1 cache 'set' followed immediately by 1 'get') across all of our concurrent
-   * workers before exiting.  Statistics will be logged every 1000 operations.
+   * Controls how long the load test will run, in milliseconds. We will execute operations
+   * for this long and the exit. The default is 60 seconds.
    */
-  totalNumberOfOperationsToExecute: 50_000,
+  totalSecondsToRun: 10,
 };
 
 main(loadGeneratorOptions)
