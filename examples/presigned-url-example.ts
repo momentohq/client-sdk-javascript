@@ -4,7 +4,8 @@ import {
   SimpleCacheClient,
   LogLevel,
   LogFormat,
-  AlreadyExistsError,
+  CreateSigningKey,
+  CreateCache,
 } from '@gomomento/sdk';
 import fetch, {Response} from 'node-fetch';
 
@@ -25,14 +26,11 @@ const momento = new SimpleCacheClient(authToken, defaultTtl, {
 
 const main = async () => {
   console.log(`Creating cache '${cacheName}'`);
-  try {
-    await momento.createCache(cacheName);
-  } catch (e) {
-    if (e instanceof AlreadyExistsError) {
-      console.log(`Cache '${cacheName}' already exists`);
-    } else {
-      throw e;
-    }
+  const createResponse = await momento.createCache(cacheName);
+  if (createResponse instanceof CreateCache.AlreadyExists) {
+    console.log(`Cache '${cacheName}' already exists`);
+  } else if (createResponse instanceof CreateCache.Error) {
+    throw createResponse.innerException();
   }
 
   console.log('Checking for signing key in $MOMENTO_SIGNING_KEY');
@@ -47,12 +45,16 @@ const main = async () => {
       'Did not find signing key in environment, creating new signing key'
     );
     const signingKeyResponse = await momento.createSigningKey(60 * 24); // valid for 24 hours
-    signingKey = signingKeyResponse.getKey();
-    process.env.MOMENTO_ENDPOINT = signingKeyResponse.getEndpoint();
+    if (signingKeyResponse instanceof CreateSigningKey.Success) {
+      signingKey = signingKeyResponse.getKey();
+      process.env.MOMENTO_ENDPOINT = signingKeyResponse.getEndpoint();
+    } else if (signingKeyResponse instanceof CreateSigningKey.Error) {
+      throw signingKeyResponse.innerException();
+    }
   }
   const endpoint = requireEnvVar('MOMENTO_ENDPOINT');
 
-  const signer = await MomentoSigner.init(signingKey);
+  const signer = await MomentoSigner.init(signingKey as string);
 
   console.log('\n*** Running presigned url example ***');
   await runPresignedUrlExample(signer, endpoint);

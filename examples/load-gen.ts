@@ -1,6 +1,6 @@
 import {
   AlreadyExistsError,
-  CacheGetStatus,
+  CacheGet,
   getLogger,
   InternalServerError,
   LimitExceededError,
@@ -181,7 +181,7 @@ resource exhausted: ${
           loadGenContext.globalRstStreamCount
         )}%)
 
-cumulative set latencies:
+cumulative set latencies:      
 ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.setLatencies)}
 
 cumulative get latencies:
@@ -219,16 +219,18 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
       const getDuration = BasicJavaScriptLoadGen.getElapsedMillis(getStartTime);
       loadGenContext.getLatencies.recordValue(getDuration);
       let valueString: string;
-      if (getResult.status === CacheGetStatus.Hit) {
+      if (getResult instanceof CacheGet.Hit) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const value: string = getResult.text()!;
+        const value: string = getResult.valueString();
         valueString = `${value.substring(0, 10)}... (len: ${value.length})`;
       } else {
         valueString = 'n/a';
       }
       if (loadGenContext.globalRequestCount % 1000 === 0) {
         this.logger.info(
-          `worker: ${workerId}, worker request: ${operationId}, global request: ${loadGenContext.globalRequestCount}, status: ${getResult.status}, val: ${valueString}`
+          `worker: ${workerId}, worker request: ${operationId}, global request: ${
+            loadGenContext.globalRequestCount
+          }, status: ${getResult.toString()}, val: ${valueString}`
         );
       }
     }
@@ -329,7 +331,7 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
 
   private static outputHistogramSummary(histogram: hdr.Histogram): string {
     return `
-  count: ${histogram.totalCount}
+  count: ${histogram.totalCount} 
     min: ${histogram.minNonZeroValue}
     p50: ${histogram.getValueAtPercentile(50)}
     p90: ${histogram.getValueAtPercentile(90)}
