@@ -38,12 +38,12 @@ describe('CacheServiceErrorMapper', () => {
     const res = cacheServiceErrorMapper(serviceError);
     expect(res).toBeInstanceOf(InvalidArgumentError);
   });
-  it('should return failed precondition error when grpc status is INVALID_ARGUMENT', () => {
+  it('should return failed precondition error when grpc status is FAILED_PRECONDITION', () => {
     const serviceError = generateServiceError(Status.FAILED_PRECONDITION);
     const res = cacheServiceErrorMapper(serviceError);
     expect(res).toBeInstanceOf(FailedPreconditionError);
   });
-  it('should return bad request error when grpc status is INVALID_ARGUMENT, OUT_OF_RANGE, UNIMPLEMENTED, FAILED_PRECONDITION', () => {
+  it('should return bad request error when grpc status is OUT_OF_RANGE or UNIMPLEMENTED', () => {
     const serviceErrors = [
       generateServiceError(Status.OUT_OF_RANGE),
       generateServiceError(Status.UNIMPLEMENTED),

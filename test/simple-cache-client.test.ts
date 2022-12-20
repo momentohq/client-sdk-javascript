@@ -9,11 +9,11 @@ describe('SimpleCacheClient.ts', () => {
     const momento = new SimpleCacheClient(AUTH_TOKEN, 100);
     for (const name of invalidCacheNames) {
       const createResponse = await momento.createCache(name);
-      expect(createResponse instanceof CreateCache.Error).toEqual(true);
+      expect(createResponse).toBeInstanceOf(CreateCache.Error);
       if (createResponse instanceof CreateCache.Error) {
-        expect(
-          createResponse.innerException() instanceof InvalidArgumentError
-        ).toEqual(true);
+        expect(createResponse.innerException()).toBeInstanceOf(
+          InvalidArgumentError
+        );
       }
     }
   });
