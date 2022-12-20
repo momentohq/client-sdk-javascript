@@ -6,7 +6,7 @@ export abstract class Response extends ResponseBase {}
 export class Success extends Response {}
 
 export class Error extends Response {
-  public readonly _innerException: SdkError;
+  private readonly _innerException: SdkError;
   constructor(err: SdkError) {
     super();
     this._innerException = err;

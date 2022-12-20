@@ -27,7 +27,10 @@ const deleteCacheIfExists = async (
 ) => {
   const deleteResponse = await momento.deleteCache(cacheName);
   if (deleteResponse instanceof DeleteCache.Error) {
+    deleteResponse.toString();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     if (deleteResponse.errorCode() !== MomentoErrorCode.NOT_FOUND_ERROR) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       throw deleteResponse.innerException();
     }
   }
@@ -36,12 +39,18 @@ const deleteCacheIfExists = async (
 beforeAll(async () => {
   const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
   await deleteCacheIfExists(momento, INTEGRATION_TEST_CACHE_NAME);
-  await momento.createCache(INTEGRATION_TEST_CACHE_NAME);
+  const createResponse = await momento.createCache(INTEGRATION_TEST_CACHE_NAME);
+  if (createResponse instanceof CreateCache.Error) {
+    throw createResponse.innerException();
+  }
 });
 
 afterAll(async () => {
   const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
-  await momento.deleteCache(INTEGRATION_TEST_CACHE_NAME);
+  const deleteResponse = await momento.deleteCache(INTEGRATION_TEST_CACHE_NAME);
+  if (deleteResponse instanceof DeleteCache.Error) {
+    throw deleteResponse.innerException();
+  }
 });
 
 async function withCache(
@@ -63,7 +72,8 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     await withCache(momento, cacheName, async () => {
-      await momento.set(cacheName, 'key', 'value');
+      const setResponse = await momento.set(cacheName, 'key', 'value');
+      expect(setResponse).toBeInstanceOf(CacheSet.Success);
       const res = await momento.get(cacheName, 'key');
       expect(res).toBeInstanceOf(CacheGet.Hit);
       if (res instanceof CacheGet.Hit) {
@@ -77,6 +87,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     const deleteResponse = await momento.deleteCache(cacheName);
     expect(deleteResponse).toBeInstanceOf(DeleteCache.Error);
     if (deleteResponse instanceof DeleteCache.Error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       expect(deleteResponse.errorCode()).toEqual(
         MomentoErrorCode.NOT_FOUND_ERROR
       );
