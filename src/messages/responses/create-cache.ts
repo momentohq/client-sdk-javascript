@@ -1,14 +1,19 @@
-import {DeleteCacheResponse} from './delete-cache-response';
-import {MomentoErrorCode, SdkError} from '../../../errors/errors';
+import {MomentoErrorCode, SdkError} from '../../errors/errors';
+import {ResponseBase} from './response-base';
 
-export class Success extends DeleteCacheResponse {}
+export abstract class Response extends ResponseBase {}
 
-export class Error extends DeleteCacheResponse {
-  public readonly _innerException: SdkError;
+export class Success extends Response {}
+
+export class AlreadyExists extends Response {}
+
+export class Error extends Response {
+  private readonly _innerException: SdkError;
   constructor(err: SdkError) {
     super();
     this._innerException = err;
   }
+
   public message(): string {
     return this._innerException.wrappedErrorMessage();
   }

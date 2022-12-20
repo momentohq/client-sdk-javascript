@@ -1,8 +1,11 @@
-import {CacheDeleteResponse} from './cache-delete-response';
-import {MomentoErrorCode, SdkError} from '../../../errors/errors';
-export class Success extends CacheDeleteResponse {}
+import {MomentoErrorCode, SdkError} from '../../errors/errors';
+import {ResponseBase} from './response-base';
 
-export class Error extends CacheDeleteResponse {
+export abstract class Response extends ResponseBase {}
+
+export class Success extends Response {}
+
+export class Error extends Response {
   private readonly _innerException: SdkError;
   constructor(err: SdkError) {
     super();

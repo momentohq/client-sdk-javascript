@@ -6,18 +6,12 @@ import {InvalidArgumentError, SdkError, UnknownError} from '../errors/errors';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
-import {DeleteCacheResponse} from '../messages/responses/delete-cache/delete-cache-response';
-import {CreateCacheResponse} from '../messages/responses/create-cache/create-cache-response';
-import {ListCachesResponse} from '../messages/responses/list-caches/list-caches-response';
-import {CreateSigningKeyResponse} from '../messages/responses/create-signing-key/create-signing-key-response';
-import {RevokeSigningKeyResponse} from '../messages/responses/revoke-signing-key/revoke-signing-key-response';
-import {ListSigningKeysResponse} from '../messages/responses/list-signing-keys/list-signing-keys-response';
-import * as CreateCache from '../messages/responses/create-cache/create-cache';
-import * as DeleteCache from '../messages/responses/delete-cache/delete-cache';
-import * as ListCaches from '../messages/responses/list-caches/list-caches';
-import * as CreateSigningKey from '../messages/responses/create-signing-key/create-signing-key';
-import * as ListSigningKeys from '../messages/responses/list-signing-keys/list-signing-keys';
-import * as RevokeSigningKey from '../messages/responses/revoke-signing-key/revoke-signing-key';
+import * as CreateCache from '../messages/responses/create-cache';
+import * as DeleteCache from '../messages/responses/delete-cache';
+import * as ListCaches from '../messages/responses/list-caches';
+import * as CreateSigningKey from '../messages/responses/create-signing-key';
+import * as ListSigningKeys from '../messages/responses/list-signing-keys';
+import * as RevokeSigningKey from '../messages/responses/revoke-signing-key';
 import {version} from '../../package.json';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
@@ -60,7 +54,7 @@ export class ControlClient {
     });
   }
 
-  public async createCache(name: string): Promise<CreateCacheResponse> {
+  public async createCache(name: string): Promise<CreateCache.Response> {
     try {
       this.validateCacheName(name);
     } catch (err) {
@@ -75,7 +69,7 @@ export class ControlClient {
       cache_name: name,
     });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return await new Promise<CreateCacheResponse>((resolve, reject) => {
+    return await new Promise<CreateCache.Response>((resolve, reject) => {
       this.clientWrapper.getClient().CreateCache(
         request,
         {interceptors: this.interceptors},
@@ -95,7 +89,7 @@ export class ControlClient {
     });
   }
 
-  public async deleteCache(name: string): Promise<DeleteCacheResponse> {
+  public async deleteCache(name: string): Promise<DeleteCache.Response> {
     try {
       this.validateCacheName(name);
     } catch (err) {
@@ -110,7 +104,7 @@ export class ControlClient {
     });
     this.logger.info(`Deleting cache: ${name}`);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return await new Promise<DeleteCacheResponse>((resolve, reject) => {
+    return await new Promise<DeleteCache.Response>((resolve, reject) => {
       this.clientWrapper.getClient().DeleteCache(
         request,
         {interceptors: this.interceptors},
@@ -126,12 +120,12 @@ export class ControlClient {
     });
   }
 
-  public async listCaches(nextToken?: string): Promise<ListCachesResponse> {
+  public async listCaches(nextToken?: string): Promise<ListCaches.Response> {
     const request = new control.control_client._ListCachesRequest();
     request.next_token = nextToken ?? '';
     this.logger.debug("Issuing 'listCaches' request");
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return await new Promise<ListCachesResponse>((resolve, reject) => {
+    return await new Promise<ListCaches.Response>((resolve, reject) => {
       this.clientWrapper
         .getClient()
         .ListCaches(request, {interceptors: this.interceptors}, (err, resp) => {
@@ -147,7 +141,7 @@ export class ControlClient {
   public async createSigningKey(
     ttlMinutes: number,
     endpoint: string
-  ): Promise<CreateSigningKeyResponse> {
+  ): Promise<CreateSigningKey.Response> {
     try {
       this.validateTtlMinutes(ttlMinutes);
     } catch (err) {
@@ -161,7 +155,7 @@ export class ControlClient {
     const request = new control.control_client._CreateSigningKeyRequest();
     request.ttl_minutes = ttlMinutes;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return await new Promise<CreateSigningKeyResponse>((resolve, reject) => {
+    return await new Promise<CreateSigningKey.Response>((resolve, reject) => {
       this.clientWrapper
         .getClient()
         .CreateSigningKey(
@@ -180,12 +174,12 @@ export class ControlClient {
 
   public async revokeSigningKey(
     keyId: string
-  ): Promise<RevokeSigningKeyResponse> {
+  ): Promise<RevokeSigningKey.Response> {
     const request = new control.control_client._RevokeSigningKeyRequest();
     request.key_id = keyId;
     this.logger.debug("Issuing 'revokeSigningKey' request");
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return await new Promise<RevokeSigningKeyResponse>((resolve, reject) => {
+    return await new Promise<RevokeSigningKey.Response>((resolve, reject) => {
       this.clientWrapper
         .getClient()
         .RevokeSigningKey(request, {interceptors: this.interceptors}, err => {
@@ -201,12 +195,12 @@ export class ControlClient {
   public async listSigningKeys(
     endpoint: string,
     nextToken?: string
-  ): Promise<ListSigningKeysResponse> {
+  ): Promise<ListSigningKeys.Response> {
     const request = new control.control_client._ListSigningKeysRequest();
     request.next_token = nextToken ?? '';
     this.logger.debug("Issuing 'listSigningKeys' request");
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return await new Promise<ListSigningKeysResponse>((resolve, reject) => {
+    return await new Promise<ListSigningKeys.Response>((resolve, reject) => {
       this.clientWrapper
         .getClient()
         .ListSigningKeys(

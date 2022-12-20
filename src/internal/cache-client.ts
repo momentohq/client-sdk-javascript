@@ -7,16 +7,13 @@ import {createRetryInterceptorIfEnabled} from '../grpc/retry-interceptor';
 import {InvalidArgumentError, UnknownError} from '../errors/errors';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
-import * as CacheGet from '../messages/responses/get/cache-get';
-import {CacheGetResponse} from '../messages/responses/get/cache-get-response';
+import * as CacheGet from '../messages/responses/cache-get';
+import * as CacheSet from '../messages/responses/cache-set';
+import * as CacheDelete from '../messages/responses/cache-delete';
 import {version} from '../../package.json';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
-import * as CacheSet from '../messages/responses/set/cache-set';
-import {CacheSetResponse} from '../messages/responses/set/cache-set-response';
-import * as CacheDelete from '../messages/responses/delete/cache-delete';
-import {CacheDeleteResponse} from '../messages/responses/delete/cache-delete-response';
 
 /**
  * @property {string} authToken - momento jwt token
@@ -98,7 +95,7 @@ export class CacheClient {
     key: string | Uint8Array,
     value: string | Uint8Array,
     ttl?: number
-  ): Promise<CacheSetResponse> {
+  ): Promise<CacheSet.Response> {
     this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
     this.logger.trace(
       `Issuing 'set' request; key: ${key.toString()}, value length: ${
@@ -121,7 +118,7 @@ export class CacheClient {
     key: Uint8Array,
     value: Uint8Array,
     ttl: number
-  ): Promise<CacheSetResponse> {
+  ): Promise<CacheSet.Response> {
     const request = new cache.cache_client._SetRequest({
       cache_body: value,
       cache_key: key,
@@ -150,7 +147,7 @@ export class CacheClient {
   public async delete(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<CacheDeleteResponse> {
+  ): Promise<CacheDelete.Response> {
     this.ensureValidKey(key);
     this.logger.trace(`Issuing 'delete' request; key: ${key.toString()}`);
     return await this.sendDelete(cacheName, this.convert(key));
@@ -159,7 +156,7 @@ export class CacheClient {
   private async sendDelete(
     cacheName: string,
     key: Uint8Array
-  ): Promise<CacheDeleteResponse> {
+  ): Promise<CacheDelete.Response> {
     const request = new cache.cache_client._DeleteRequest({
       cache_key: key,
     });
@@ -186,7 +183,7 @@ export class CacheClient {
   public async get(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<CacheGetResponse> {
+  ): Promise<CacheGet.Response> {
     this.ensureValidKey(key);
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
     const result = await this.sendGet(cacheName, this.convert(key));
@@ -197,7 +194,7 @@ export class CacheClient {
   private async sendGet(
     cacheName: string,
     key: Uint8Array
-  ): Promise<CacheGetResponse> {
+  ): Promise<CacheGet.Response> {
     const request = new cache.cache_client._GetRequest({
       cache_key: key,
     });

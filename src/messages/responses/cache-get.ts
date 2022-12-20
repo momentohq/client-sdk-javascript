@@ -1,11 +1,13 @@
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextDecoder} from 'util';
-import {CacheGetResponse} from './cache-get-response';
-import {MomentoErrorCode, SdkError} from '../../../errors/errors';
+import {MomentoErrorCode, SdkError} from '../../errors/errors';
+import {ResponseBase} from './response-base';
 
 const TEXT_DECODER = new TextDecoder();
 
-export class Hit extends CacheGetResponse {
+export abstract class Response extends ResponseBase {}
+
+export class Hit extends Response {
   private readonly body: Uint8Array;
   constructor(body: Uint8Array) {
     super();
@@ -31,9 +33,9 @@ export class Hit extends CacheGetResponse {
   }
 }
 
-export class Miss extends CacheGetResponse {}
+export class Miss extends Response {}
 
-export class Error extends CacheGetResponse {
+export class Error extends Response {
   private readonly _innerException: SdkError;
   constructor(err: SdkError) {
     super();
