@@ -2,11 +2,7 @@
 import {TextDecoder} from 'util';
 import {SdkError} from '../../errors/errors';
 import {ResponseBase} from './response-base';
-import {
-  applyMixins,
-  ErrorBody,
-  ErrorConstructor,
-} from '../../errors/error-utils';
+import {applyMixins, ErrorBody} from '../../errors/error-utils';
 
 const TEXT_DECODER = new TextDecoder();
 
@@ -28,9 +24,12 @@ export class Success extends Response {
   }
 }
 
-export class Error extends ErrorConstructor {
+export class Error extends Response {
   protected _innerException: SdkError;
-}
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+  constructor(err: SdkError) {
+    super();
+    this._innerException = err;
+  }
+} // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface Error extends ErrorBody {}
 applyMixins(Error, [ErrorBody]);

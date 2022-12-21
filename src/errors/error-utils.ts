@@ -1,13 +1,6 @@
 import {MomentoErrorCode, SdkError} from './errors';
 
-export class ErrorConstructor {
-  protected _innerException: SdkError;
-  constructor(err: SdkError) {
-    this._innerException = err;
-  }
-}
-
-export class ErrorBody {
+export abstract class ErrorBody {
   protected _innerException: SdkError;
   public message(): string {
     return this._innerException.wrappedErrorMessage();

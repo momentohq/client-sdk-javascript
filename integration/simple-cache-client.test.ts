@@ -85,9 +85,9 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     const cacheName = v4();
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
     const deleteResponse = await momento.deleteCache(cacheName);
+    expect(deleteResponse).toBeInstanceOf(DeleteCache.Response);
     expect(deleteResponse).toBeInstanceOf(DeleteCache.Error);
     if (deleteResponse instanceof DeleteCache.Error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       expect(deleteResponse.errorCode()).toEqual(
         MomentoErrorCode.NOT_FOUND_ERROR
       );
