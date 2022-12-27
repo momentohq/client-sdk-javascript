@@ -17,10 +17,12 @@ import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
 import {validateCacheName, validateTtlMinutes} from '../utils/validators';
+import {ICredentialProvider} from '../auth/credential-provider';
+import {IConfiguration} from '../config/configuration';
 
 export interface MomentoProps {
-  authToken: string;
-  endpoint: string;
+  authProvider: ICredentialProvider;
+  configuration: IConfiguration;
 }
 
 export class ControlClient {
@@ -35,7 +37,7 @@ export class ControlClient {
   constructor(props: MomentoProps) {
     this.logger = getLogger(this);
     const headers = [
-      new Header('Authorization', props.authToken),
+      new Header('Authorization', props.authProvider.getAuthToken()),
       new Header('Agent', `javascript:${version}`),
     ];
     this.interceptors = [
@@ -44,14 +46,15 @@ export class ControlClient {
       ...createRetryInterceptorIfEnabled(),
     ];
     this.logger.debug(
-      `Creating control client using endpoint: '${props.endpoint}`
+      `Creating control client using endpoint: '${props.authProvider.getControlEndpoint()}`
     );
     this.clientWrapper = new IdleGrpcClientWrapper({
       clientFactoryFn: () =>
         new control.control_client.ScsControlClient(
-          props.endpoint,
+          props.authProvider.getControlEndpoint(),
           ChannelCredentials.createSsl()
         ),
+      configuration: props.configuration,
     });
   }
 

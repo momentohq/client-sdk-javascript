@@ -1,6 +1,5 @@
 import {ControlClient} from './internal/control-client';
 import {CacheClient} from './internal/cache-client';
-import {decodeJwt} from './utils/jwt';
 import * as CreateCache from './messages/responses/create-cache';
 import * as ListCaches from './messages/responses/list-caches';
 import * as DeleteCache from './messages/responses/delete-cache';
@@ -10,27 +9,10 @@ import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
 import * as CacheGet from './messages/responses/cache-get';
 import * as CacheDelete from './messages/responses/cache-delete';
 import * as CacheSet from './messages/responses/cache-set';
-import {
-  getLogger,
-  initializeMomentoLogging,
-  Logger,
-  LoggerOptions,
-} from './utils/logging';
+import {getLogger, Logger} from './utils/logging';
 import {range} from './utils/collections';
-
-export interface SimpleCacheClientOptions {
-  /**
-   * @param {number} [requestTimeoutMs] - A timeout in milliseconds for get and set operations
-   * to complete. Defaults to 5 seconds. If the request takes longer than this value, it
-   * will be terminated and throw a TimeoutError.
-   */
-  requestTimeoutMs?: number;
-  /**
-   * @param {LoggerOptions} [loggerOptions] - optional configuration settings to control logging
-   * output.
-   */
-  loggerOptions?: LoggerOptions;
-}
+import {IConfiguration} from './config/configuration';
+import {ICredentialProvider} from './auth/credential-provider';
 
 /**
  * Momento Simple Cache Client.
@@ -43,6 +25,8 @@ export interface SimpleCacheClientOptions {
  * @class SimpleCacheClient
  */
 export class SimpleCacheClient {
+  private readonly configuration: IConfiguration;
+  private readonly authProvider: ICredentialProvider;
   private readonly dataClients: Array<CacheClient>;
   private nextDataClientIndex: number;
   private readonly controlClient: ControlClient;
@@ -50,22 +34,22 @@ export class SimpleCacheClient {
 
   /**
    * Creates an instance of SimpleCacheClient.
-   * @param {string} authToken - Momento token to authenticate requests with Simple Cache Service.
+   * @param {IConfiguration} configuration - configuration options for the cache client, including transport
+   * strategy and gRPC options.
+   * @param {ICredentialProvider} authProvider - authentication credential provider, supplying auth token
+   * and endpoint hostnames for control and data operations.
    * @param {number} defaultTtlSeconds - A default time to live, in seconds, for cache objects
    * created by this client.
-   * @param {SimpleCacheClientOptions} options - additional configuration options for the cache client.
    * @memberof SimpleCacheClient
    */
   constructor(
-    authToken: string,
-    defaultTtlSeconds: number,
-    options?: SimpleCacheClientOptions
+    configuration: IConfiguration,
+    authProvider: ICredentialProvider,
+    defaultTtlSeconds: number
   ) {
-    initializeMomentoLogging(options?.loggerOptions);
     this.logger = getLogger(this);
-    const claims = decodeJwt(authToken);
-    const controlEndpoint = claims.cp;
-    const dataEndpoint = claims.c;
+    this.configuration = configuration;
+    this.authProvider = authProvider;
 
     // For high load, we get better performance with multiple clients.  Here we are setting a default,
     // hard-coded value for the number of clients to use, because we haven't yet designed the API for
@@ -78,10 +62,9 @@ export class SimpleCacheClient {
     this.dataClients = range(numClients).map(
       () =>
         new CacheClient({
-          authToken,
+          authProvider,
+          configuration,
           defaultTtlSeconds,
-          endpoint: dataEndpoint,
-          requestTimeoutMs: options?.requestTimeoutMs,
         })
     );
     // we will round-robin the requests through all of our clients.  Since javascript is single-threaded,
@@ -89,8 +72,8 @@ export class SimpleCacheClient {
     this.nextDataClientIndex = 0;
 
     this.controlClient = new ControlClient({
-      endpoint: controlEndpoint,
-      authToken,
+      authProvider,
+      configuration,
     });
   }
 

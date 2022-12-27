@@ -1,8 +1,10 @@
 import {v4} from 'uuid';
 import {
+  EnvMomentoTokenProvider,
   CacheDelete,
   CacheGet,
   CacheSet,
+  Configurations,
   CreateCache,
   CreateSigningKey,
   DeleteCache,
@@ -14,10 +16,8 @@ import {
 } from '../src';
 import {TextEncoder} from 'util';
 
-const AUTH_TOKEN = process.env.TEST_AUTH_TOKEN;
-if (!AUTH_TOKEN) {
-  throw new Error('Missing required env var TEST_AUTH_TOKEN');
-}
+const authProvider = new EnvMomentoTokenProvider('TEST_AUTH_TOKEN');
+const configuration = Configurations.Laptop.latest();
 const INTEGRATION_TEST_CACHE_NAME =
   process.env.TEST_CACHE_NAME || 'js-integration-test-default';
 
@@ -34,7 +34,7 @@ const deleteCacheIfExists = async (
 };
 
 beforeAll(async () => {
-  const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+  const momento = new SimpleCacheClient(configuration, authProvider, 1111);
   await deleteCacheIfExists(momento, INTEGRATION_TEST_CACHE_NAME);
   const createResponse = await momento.createCache(INTEGRATION_TEST_CACHE_NAME);
   if (createResponse instanceof CreateCache.Error) {
@@ -43,7 +43,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+  const momento = new SimpleCacheClient(configuration, authProvider, 1111);
   const deleteResponse = await momento.deleteCache(INTEGRATION_TEST_CACHE_NAME);
   if (deleteResponse instanceof DeleteCache.Error) {
     throw deleteResponse.innerException();
@@ -67,7 +67,7 @@ async function withCache(
 describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should create and delete a cache, set and get a value', async () => {
     const cacheName = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const momento = new SimpleCacheClient(configuration, authProvider, 1111);
     await withCache(momento, cacheName, async () => {
       const setResponse = await momento.set(cacheName, 'key', 'value');
       expect(setResponse).toBeInstanceOf(CacheSet.Success);
@@ -80,7 +80,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   });
   it('should return NotFoundError if deleting a non-existent cache', async () => {
     const cacheName = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const momento = new SimpleCacheClient(configuration, authProvider, 1111);
     const deleteResponse = await momento.deleteCache(cacheName);
     expect(deleteResponse).toBeInstanceOf(DeleteCache.Response);
     expect(deleteResponse).toBeInstanceOf(DeleteCache.Error);
@@ -92,7 +92,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   });
   it('should return AlreadyExists response if trying to create a cache that already exists', async () => {
     const cacheName = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const momento = new SimpleCacheClient(configuration, authProvider, 1111);
     await withCache(momento, cacheName, async () => {
       const createResponse = await momento.createCache(cacheName);
       expect(createResponse).toBeInstanceOf(CreateCache.AlreadyExists);
@@ -100,7 +100,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   });
   it('should create 1 cache and list the created cache', async () => {
     const cacheName = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const momento = new SimpleCacheClient(configuration, authProvider, 1111);
     await withCache(momento, cacheName, async () => {
       const listResponse = await momento.listCaches();
       expect(listResponse).toBeInstanceOf(ListCaches.Success);
@@ -114,7 +114,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should set and get string from cache', async () => {
     const cacheKey = v4();
     const cacheValue = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const momento = new SimpleCacheClient(configuration, authProvider, 1111);
     const setResponse = await momento.set(
       INTEGRATION_TEST_CACHE_NAME,
       cacheKey,
@@ -133,7 +133,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should set and get bytes from cache', async () => {
     const cacheKey = new TextEncoder().encode(v4());
     const cacheValue = new TextEncoder().encode(v4());
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const momento = new SimpleCacheClient(configuration, authProvider, 1111);
     const setResponse = await momento.set(
       INTEGRATION_TEST_CACHE_NAME,
       cacheKey,
@@ -152,7 +152,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should set string key with bytes value', async () => {
     const cacheKey = v4();
     const cacheValue = new TextEncoder().encode(v4());
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const momento = new SimpleCacheClient(configuration, authProvider, 1111);
     const setResponse = await momento.set(
       INTEGRATION_TEST_CACHE_NAME,
       cacheKey,
@@ -171,7 +171,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should set byte key with string value', async () => {
     const cacheValue = v4();
     const cacheKey = new TextEncoder().encode(v4());
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const momento = new SimpleCacheClient(configuration, authProvider, 1111);
     const setResponse = await momento.set(
       INTEGRATION_TEST_CACHE_NAME,
       cacheKey,
@@ -190,7 +190,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should set and get string from cache and returned set value matches string cacheValue', async () => {
     const cacheKey = v4();
     const cacheValue = v4();
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const momento = new SimpleCacheClient(configuration, authProvider, 1111);
     const setResponse = await momento.set(
       INTEGRATION_TEST_CACHE_NAME,
       cacheKey,
@@ -204,7 +204,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should set string key with bytes value and returned set value matches byte cacheValue', async () => {
     const cacheKey = v4();
     const cacheValue = new TextEncoder().encode(v4());
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const momento = new SimpleCacheClient(configuration, authProvider, 1111);
     const setResponse = await momento.set(
       INTEGRATION_TEST_CACHE_NAME,
       cacheKey,
@@ -217,10 +217,22 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   });
   it('should timeout on a request that exceeds specified timeout', async () => {
     const cacheName = v4();
-    const defaultTimeoutClient = new SimpleCacheClient(AUTH_TOKEN, 1111);
-    const shortTimeoutClient = new SimpleCacheClient(AUTH_TOKEN, 1111, {
-      requestTimeoutMs: 1,
-    });
+    const defaultTimeoutClient = new SimpleCacheClient(
+      configuration,
+      authProvider,
+      1111
+    );
+    const shortTimeoutTransportStrategy = configuration
+      .getTransportStrategy()
+      .withClientTimeout(1);
+    const shortTimeoutConfiguration = configuration.withTransportStrategy(
+      shortTimeoutTransportStrategy
+    );
+    const shortTimeoutClient = new SimpleCacheClient(
+      shortTimeoutConfiguration,
+      authProvider,
+      1111
+    );
     await withCache(defaultTimeoutClient, cacheName, async () => {
       const cacheKey = v4();
       // Create a longer cache value that should take longer than 1ms to send
@@ -239,7 +251,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
   it('should set and then delete a value in cache', async () => {
     const cacheKey = v4();
     const cacheValue = new TextEncoder().encode(v4());
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const momento = new SimpleCacheClient(configuration, authProvider, 1111);
     await momento.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
     const getResponse = await momento.get(
       INTEGRATION_TEST_CACHE_NAME,
@@ -259,7 +271,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     expect(getMiss).toBeInstanceOf(CacheGet.Miss);
   });
   it('should return InvalidArgument response for set, get, and delete with empty key', async () => {
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const momento = new SimpleCacheClient(configuration, authProvider, 1111);
     const setResponse = await momento.set(
       INTEGRATION_TEST_CACHE_NAME,
       '',
@@ -284,7 +296,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     );
   });
   it('should return InvalidArgument response for set, get, and delete with invalid cache name', async () => {
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const momento = new SimpleCacheClient(configuration, authProvider, 1111);
     const setResponse = await momento.set('', 'bar', 'foo');
     expect(setResponse).toBeInstanceOf(CacheSet.Error);
     expect((setResponse as CacheSet.Error).errorCode()).toEqual(
@@ -302,7 +314,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     );
   });
   it('should return InvalidArgument response for set request with empty key or value', async () => {
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const momento = new SimpleCacheClient(configuration, authProvider, 1111);
     const noKeySetResponse = await momento.set(
       INTEGRATION_TEST_CACHE_NAME,
       '',
@@ -323,7 +335,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     );
   });
   it('should return InvalidArgument response for get request with empty key', async () => {
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const momento = new SimpleCacheClient(configuration, authProvider, 1111);
     const noKeyGetResponse = await momento.get(INTEGRATION_TEST_CACHE_NAME, '');
     expect(noKeyGetResponse).toBeInstanceOf(CacheGet.Error);
     expect((noKeyGetResponse as CacheGet.Error).errorCode()).toEqual(
@@ -331,7 +343,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     );
   });
   it('should create, list, and revoke a signing key', async () => {
-    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const momento = new SimpleCacheClient(configuration, authProvider, 1111);
     const createSigningKeyResponse = await momento.createSigningKey(30);
     expect(createSigningKeyResponse).toBeInstanceOf(CreateSigningKey.Success);
     let listSigningKeysResponse = await momento.listSigningKeys();
