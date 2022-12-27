@@ -27,7 +27,6 @@ const deleteCacheIfExists = async (
 ) => {
   const deleteResponse = await momento.deleteCache(cacheName);
   if (deleteResponse instanceof DeleteCache.Error) {
-    deleteResponse.toString();
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     if (deleteResponse.errorCode() !== MomentoErrorCode.NOT_FOUND_ERROR) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call

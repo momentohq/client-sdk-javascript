@@ -12,10 +12,9 @@ export class Success extends Response {
   constructor(result?: control.control_client._ListCachesResponse) {
     super();
     this.nextToken = result?.next_token || null;
-    this.caches = [];
-    result?.cache.forEach(cache =>
-      this.caches.push(new CacheInfo(cache.cache_name))
-    );
+    if (result) {
+      this.caches = result.cache.map(cache => new CacheInfo(cache.cache_name));
+    }
   }
 
   public getNextToken() {
