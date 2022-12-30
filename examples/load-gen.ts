@@ -430,7 +430,7 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
     format: LogFormat.CONSOLE,
   },
   /** Print some statistics about throughput and latency every time this many
-   *  seconds have passed. Default is 5 seconds.
+   *  seconds have passed.
    */
   showStatsIntervalSeconds: 5,
   /**
@@ -461,9 +461,9 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
   numberOfConcurrentRequests: 10,
   /**
    * Controls how long the load test will run, in milliseconds. We will execute operations
-   * for this long and the exit. The default is 60 seconds.
+   * for this long and the exit.
    */
-  totalSecondsToRun: 10,
+  totalSecondsToRun: 60,
 };
 
 main(loadGeneratorOptions)
