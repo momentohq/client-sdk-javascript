@@ -1,7 +1,12 @@
+import {SigningKey} from '../signing-key';
 import {control} from '@gomomento/generated-types';
-import {SigningKey} from './SigningKey';
+import {SdkError} from '../../errors/errors';
+import {ResponseBase} from './response-base';
+import {applyMixins, ErrorBody} from '../../errors/error-utils';
 
-export class ListSigningKeysResponse {
+export abstract class Response extends ResponseBase {}
+
+export class Success extends Response {
   private readonly nextToken: string | null;
   private readonly signingKeys: SigningKey[];
 
@@ -9,6 +14,7 @@ export class ListSigningKeysResponse {
     endpoint: string,
     result?: control.control_client._ListSigningKeysResponse
   ) {
+    super();
     this.nextToken = result?.next_token || null;
     this.signingKeys =
       result?.signing_key.map(
@@ -29,3 +35,12 @@ export class ListSigningKeysResponse {
     return this.signingKeys;
   }
 }
+
+export class Error extends Response {
+  constructor(protected _innerException: SdkError) {
+    super();
+  }
+}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface Error extends ErrorBody {}
+applyMixins(Error, [ErrorBody]);

@@ -1,15 +1,15 @@
-import {Momento} from './momento';
-import {MomentoCache} from './momento-cache';
+import {ControlClient} from './internal/control-client';
+import {CacheClient} from './internal/cache-client';
 import {decodeJwt} from './utils/jwt';
-import {SetResponse} from './messages/SetResponse';
-import {GetResponse} from './messages/GetResponse';
-import {CreateCacheResponse} from './messages/CreateCacheResponse';
-import {DeleteCacheResponse} from './messages/DeleteCacheResponse';
-import {ListCachesResponse} from './messages/ListCachesResponse';
-import {DeleteResponse} from './messages/DeleteResponse';
-import {CreateSigningKeyResponse} from './messages/CreateSigningKeyResponse';
-import {RevokeSigningKeyResponse} from './messages/RevokeSigningKeyResponse';
-import {ListSigningKeysResponse} from './messages/ListSigningKeysResponse';
+import * as CreateCache from './messages/responses/create-cache';
+import * as ListCaches from './messages/responses/list-caches';
+import * as DeleteCache from './messages/responses/delete-cache';
+import * as CreateSigningKey from './messages/responses/create-signing-key';
+import * as ListSigningKeys from './messages/responses/list-signing-keys';
+import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
+import * as CacheGet from './messages/responses/cache-get';
+import * as CacheDelete from './messages/responses/cache-delete';
+import * as CacheSet from './messages/responses/cache-set';
 import {
   getLogger,
   initializeMomentoLogging,
@@ -43,9 +43,9 @@ export interface SimpleCacheClientOptions {
  * @class SimpleCacheClient
  */
 export class SimpleCacheClient {
-  private readonly dataClients: Array<MomentoCache>;
+  private readonly dataClients: Array<CacheClient>;
   private nextDataClientIndex: number;
-  private readonly controlClient: Momento;
+  private readonly controlClient: ControlClient;
   private readonly logger: Logger;
 
   /**
@@ -77,7 +77,7 @@ export class SimpleCacheClient {
     const numClients = 6;
     this.dataClients = range(numClients).map(
       () =>
-        new MomentoCache({
+        new CacheClient({
           authToken,
           defaultTtlSeconds,
           endpoint: dataEndpoint,
@@ -88,7 +88,7 @@ export class SimpleCacheClient {
     // we don't have to worry about thread safety on this index variable.
     this.nextDataClientIndex = 0;
 
-    this.controlClient = new Momento({
+    this.controlClient = new ControlClient({
       endpoint: controlEndpoint,
       authToken,
     });
@@ -98,14 +98,14 @@ export class SimpleCacheClient {
    * Get the cache value stored for the given key.
    * @param {string} cacheName - Name of the cache to perform the lookup in.
    * @param {(string | Uint8Array)} key - The key to lookup.
-   * @returns {Promise<GetResponse>} - Promise containing the status
+   * @returns {Promise<CacheGet.Response>} - Promise containing the status
    * of the get operation (hit or miss) and the associated value.
    * @memberof SimpleCacheClient
    */
   public async get(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<GetResponse> {
+  ): Promise<CacheGet.Response> {
     const client = this.getNextDataClient();
     return await client.get(cacheName, key);
   }
@@ -118,7 +118,7 @@ export class SimpleCacheClient {
    * @param {(string | Uint8Array)} value - The value to be stored.
    * @param {number} [ttl] - Time to live (TTL) for the item in Cache.
    * This TTL takes precedence over the TTL used when initializing a cache client.
-   * @returns {Promise<SetResponse>} - Result of the set operation.
+   * @returns {Promise<CacheSet.Response>} - Result of the set operation.
    * @memberof SimpleCacheClient
    */
   public async set(
@@ -126,7 +126,7 @@ export class SimpleCacheClient {
     key: string | Uint8Array,
     value: string | Uint8Array,
     ttl?: number
-  ): Promise<SetResponse> {
+  ): Promise<CacheSet.Response> {
     const client = this.getNextDataClient();
     return await client.set(cacheName, key, value, ttl);
   }
@@ -135,14 +135,14 @@ export class SimpleCacheClient {
    * Remove the key from the cache.
    * @param {string} cacheName - Name of the cache to delete the key from.
    * @param {(string | Uint8Array)} key - The key to delete.
-   * @returns {Promise<DeleteResponse>} - Promise containing the result of the
+   * @returns {Promise<CacheDelete.Response>} - Promise containing the result of the
    * delete operation.
    * @memberof SimpleCacheClient
    */
   public async delete(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<DeleteResponse> {
+  ): Promise<CacheDelete.Response> {
     const client = this.getNextDataClient();
     return await client.delete(cacheName, key);
   }
@@ -150,20 +150,20 @@ export class SimpleCacheClient {
   /**
    * Create a cache if it does not exist.
    * @param {string} cacheName - Name of the cache to be created.
-   * @returns {Promise<CreateCacheResponse>} - Promise of the create cache result.
+   * @returns {Promise<CreateCache.Response>} - Promise of the create cache result.
    * @memberof SimpleCacheClient
    */
-  public async createCache(cacheName: string): Promise<CreateCacheResponse> {
+  public async createCache(cacheName: string): Promise<CreateCache.Response> {
     return await this.controlClient.createCache(cacheName);
   }
 
   /**
    * Delete a cache and all items stored in it.
    * @param {string} cacheName - Name of the cache to delete.
-   * @returns {Promise<DeleteCacheResponse>} - Promise of the delete cache result.
+   * @returns {Promise<DeleteCache.Response>} - Promise of the delete cache result.
    * @memberof SimpleCacheClient
    */
-  public async deleteCache(cacheName: string): Promise<DeleteCacheResponse> {
+  public async deleteCache(cacheName: string): Promise<DeleteCache.Response> {
     return await this.controlClient.deleteCache(cacheName);
   }
 
@@ -171,24 +171,24 @@ export class SimpleCacheClient {
    * List all caches.
    * @param {string} [nextToken] - A token to specify where to start paginating.
    * This is the NextToken from a previous response.
-   * @returns {Promise<ListCacheResponse>} - Promise of the list cache response.
+   * @returns {Promise<ListCaches.Response>} - Promise of the list cache response.
    * Contains the listed caches and a next token to continue listing.
    * @memberof SimpleCacheClient
    */
-  public async listCaches(nextToken?: string): Promise<ListCachesResponse> {
+  public async listCaches(nextToken?: string): Promise<ListCaches.Response> {
     return await this.controlClient.listCaches(nextToken);
   }
 
   /**
    * Create a Momento signing key.
    * @param {number} ttlMinutes - The time to live in minutes until the Momento signing key expires.
-   * @returns {Promise<CreateSigningKeyResponse>} - Promise of create signing key
+   * @returns {Promise<CreateSigningKey.Response>} - Promise of create signing key
    * response. Contains endpoint and expiration.
    * @memberof SimpleCacheClient
    */
   public async createSigningKey(
     ttlMinutes: number
-  ): Promise<CreateSigningKeyResponse> {
+  ): Promise<CreateSigningKey.Response> {
     const client = this.getNextDataClient();
     return await this.controlClient.createSigningKey(
       ttlMinutes,
@@ -201,25 +201,25 @@ export class SimpleCacheClient {
    *
    * All tokens signed by this key will be invalid.
    * @param {string} keyId  - The ID of the Momento signing key to revoke.
-   * @returns {Promise<RevokeSigningKeyResponse>} - Revocation response (empty)
+   * @returns {Promise<RevokeSigningKey.Response>} - Revocation response (empty)
    * @memberof SimpleCacheClient
    */
   public async revokeSigningKey(
     keyId: string
-  ): Promise<RevokeSigningKeyResponse> {
+  ): Promise<RevokeSigningKey.Response> {
     return await this.controlClient.revokeSigningKey(keyId);
   }
 
   /**
    * Lists all Momento signing keys for the provided auth token.
    * @param {string} [nextToken] - Token to continue paginating through the list.
-   * @returns {Promise<ListSigningKeysResponse>} - Promise of the list signing keys response.
+   * @returns {Promise<ListSigningKeys.Response>} - Promise of the list signing keys response.
    * Contains the retrieved signing keys and a next token to continue listing.
    * @memberof SimpleCacheClient
    */
   public async listSigningKeys(
     nextToken?: string
-  ): Promise<ListSigningKeysResponse> {
+  ): Promise<ListSigningKeys.Response> {
     const client = this.getNextDataClient();
     return await this.controlClient.listSigningKeys(
       client.getEndpoint(),
@@ -227,7 +227,7 @@ export class SimpleCacheClient {
     );
   }
 
-  private getNextDataClient(): MomentoCache {
+  private getNextDataClient(): CacheClient {
     const client = this.dataClients[this.nextDataClientIndex];
     this.nextDataClientIndex =
       (this.nextDataClientIndex + 1) % this.dataClients.length;
