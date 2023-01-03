@@ -1,6 +1,11 @@
 import {control} from '@gomomento/generated-types';
+import {SdkError} from '../../errors/errors';
+import {ResponseBase} from './response-base';
+import {applyMixins, ErrorBody} from '../../errors/error-utils';
 
-export class CreateSigningKeyResponse {
+export abstract class Response extends ResponseBase {}
+
+export class Success extends Response {
   private readonly keyId: string;
   private readonly endpoint: string;
   private readonly key: string;
@@ -10,6 +15,7 @@ export class CreateSigningKeyResponse {
     endpoint: string,
     result?: control.control_client._CreateSigningKeyResponse
   ) {
+    super();
     const key = result?.key ?? '';
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     this.keyId = JSON.parse(key)['kid'];
@@ -34,3 +40,12 @@ export class CreateSigningKeyResponse {
     return this.expiresAt;
   }
 }
+
+export class Error extends Response {
+  constructor(protected _innerException: SdkError) {
+    super();
+  }
+}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface Error extends ErrorBody {}
+applyMixins(Error, [ErrorBody]);

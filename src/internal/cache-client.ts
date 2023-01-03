@@ -4,14 +4,13 @@ import {TextEncoder} from 'util';
 import {Header, HeaderInterceptor} from '../grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from '../grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from '../grpc/retry-interceptor';
-import {CacheGetStatus, momentoResultConverter} from '../messages/result';
-import {InvalidArgumentError, UnknownServiceError} from '../errors/errors';
+import {InvalidArgumentError, UnknownError} from '../errors/errors';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
-import {GetResponse} from '../messages/get-response';
-import {SetResponse} from '../messages/set-response';
+import * as CacheGet from '../messages/responses/cache-get';
+import * as CacheSet from '../messages/responses/cache-set';
+import * as CacheDelete from '../messages/responses/cache-delete';
 import {version} from '../../package.json';
-import {DeleteResponse} from '../messages/delete-response';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
@@ -96,7 +95,7 @@ export class CacheClient {
     key: string | Uint8Array,
     value: string | Uint8Array,
     ttl?: number
-  ): Promise<SetResponse> {
+  ): Promise<CacheSet.Response> {
     this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
     this.logger.trace(
       `Issuing 'set' request; key: ${key.toString()}, value length: ${
@@ -119,13 +118,14 @@ export class CacheClient {
     key: Uint8Array,
     value: Uint8Array,
     ttl: number
-  ): Promise<SetResponse> {
+  ): Promise<CacheSet.Response> {
     const request = new cache.cache_client._SetRequest({
       cache_body: value,
       cache_key: key,
       ttl_milliseconds: ttl * 1000,
     });
     const metadata = this.createMetadata(cacheName);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise((resolve, reject) => {
       this.clientWrapper.getClient().Set(
         request,
@@ -135,9 +135,9 @@ export class CacheClient {
         },
         (err, resp) => {
           if (resp) {
-            resolve(this.parseSetResponse(resp, value));
+            resolve(new CacheSet.Success(value));
           } else {
-            reject(cacheServiceErrorMapper(err));
+            resolve(new CacheSet.Error(cacheServiceErrorMapper(err)));
           }
         }
       );
@@ -147,7 +147,7 @@ export class CacheClient {
   public async delete(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<DeleteResponse> {
+  ): Promise<CacheDelete.Response> {
     this.ensureValidKey(key);
     this.logger.trace(`Issuing 'delete' request; key: ${key.toString()}`);
     return await this.sendDelete(cacheName, this.convert(key));
@@ -156,11 +156,12 @@ export class CacheClient {
   private async sendDelete(
     cacheName: string,
     key: Uint8Array
-  ): Promise<DeleteResponse> {
+  ): Promise<CacheDelete.Response> {
     const request = new cache.cache_client._DeleteRequest({
       cache_key: key,
     });
     const metadata = this.createMetadata(cacheName);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise((resolve, reject) => {
       this.clientWrapper.getClient().Delete(
         request,
@@ -170,9 +171,9 @@ export class CacheClient {
         },
         (err, resp) => {
           if (resp) {
-            resolve(new DeleteResponse());
+            resolve(new CacheDelete.Success());
           } else {
-            reject(cacheServiceErrorMapper(err));
+            resolve(new CacheDelete.Error(cacheServiceErrorMapper(err)));
           }
         }
       );
@@ -182,23 +183,24 @@ export class CacheClient {
   public async get(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<GetResponse> {
+  ): Promise<CacheGet.Response> {
     this.ensureValidKey(key);
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
     const result = await this.sendGet(cacheName, this.convert(key));
-    this.logger.trace(`'get' request result: ${result.status}`);
+    this.logger.trace(`'get' request result: ${result.toString()}`);
     return result;
   }
 
   private async sendGet(
     cacheName: string,
     key: Uint8Array
-  ): Promise<GetResponse> {
+  ): Promise<CacheGet.Response> {
     const request = new cache.cache_client._GetRequest({
       cache_key: key,
     });
     const metadata = this.createMetadata(cacheName);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise((resolve, reject) => {
       this.clientWrapper.getClient().Get(
         request,
@@ -208,35 +210,34 @@ export class CacheClient {
         },
         (err, resp) => {
           if (resp) {
-            const momentoResult = momentoResultConverter(resp.result);
-            if (
-              momentoResult !== CacheGetStatus.Miss &&
-              momentoResult !== CacheGetStatus.Hit
-            ) {
-              reject(new UnknownServiceError(resp.message));
+            switch (resp.result) {
+              case cache.cache_client.ECacheResult.Miss:
+                resolve(new CacheGet.Miss());
+                break;
+              case cache.cache_client.ECacheResult.Hit:
+                resolve(new CacheGet.Hit(resp.cache_body));
+                break;
+              case cache.cache_client.ECacheResult.Invalid:
+              case cache.cache_client.ECacheResult.Ok:
+                resolve(new CacheGet.Error(new UnknownError(resp.message)));
+                break;
+              default:
+                resolve(
+                  new CacheGet.Error(
+                    new UnknownError(
+                      'An unknown error occurred: ' + resp.message
+                    )
+                  )
+                );
+                break;
             }
-            resolve(this.parseGetResponse(resp));
           } else {
-            reject(cacheServiceErrorMapper(err));
+            resolve(new CacheGet.Error(cacheServiceErrorMapper(err)));
           }
         }
       );
     });
   }
-
-  private parseGetResponse = (
-    resp: cache.cache_client._GetResponse
-  ): GetResponse => {
-    const momentoResult = momentoResultConverter(resp.result);
-    return new GetResponse(momentoResult, resp.message, resp.cache_body);
-  };
-
-  private parseSetResponse = (
-    resp: cache.cache_client._SetResponse,
-    value: Uint8Array
-  ): SetResponse => {
-    return new SetResponse(resp.message, value);
-  };
 
   private ensureValidKey = (key: unknown) => {
     if (!key) {

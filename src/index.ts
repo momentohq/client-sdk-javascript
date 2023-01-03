@@ -1,19 +1,26 @@
 import {SimpleCacheClient} from './simple-cache-client';
 import {CacheOperation, MomentoSigner} from './internal/momento-signer';
-import {GetResponse} from './messages/get-response';
-import {SetResponse} from './messages/set-response';
-import {CacheGetStatus} from './messages/result';
+import * as CacheGet from './messages/responses/cache-get';
+import * as CacheSet from './messages/responses/cache-set';
+import * as CacheDelete from './messages/responses/cache-delete';
+import * as CreateCache from './messages/responses/create-cache';
+import * as DeleteCache from './messages/responses/delete-cache';
+import * as ListCaches from './messages/responses/list-caches';
+import * as CreateSigningKey from './messages/responses/create-signing-key';
+import * as ListSigningKeys from './messages/responses/list-signing-keys';
+import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
 import {CacheInfo} from './messages/cache-info';
 import {
+  MomentoErrorCode,
   AlreadyExistsError,
   AuthenticationError,
   CancelledError,
-  CacheServiceError,
+  FailedPreconditionError,
   LimitExceededError,
-  ServiceValidationError,
   InternalServerError,
   InvalidArgumentError,
   UnknownServiceError,
+  ServerUnavailableError,
   TimeoutError,
   BadRequestError,
   PermissionError,
@@ -33,19 +40,26 @@ export {
   MomentoSigner,
   CacheOperation,
   SimpleCacheClient,
-  GetResponse,
-  SetResponse,
-  CacheGetStatus,
+  CacheGet,
+  CacheSet,
+  CacheDelete,
+  CreateCache,
+  DeleteCache,
+  ListCaches,
+  CreateSigningKey,
+  ListSigningKeys,
+  RevokeSigningKey,
   CacheInfo,
+  MomentoErrorCode,
   AlreadyExistsError,
   AuthenticationError,
   CancelledError,
-  CacheServiceError,
+  FailedPreconditionError,
   LimitExceededError,
-  ServiceValidationError,
   InternalServerError,
   InvalidArgumentError,
   UnknownServiceError,
+  ServerUnavailableError,
   TimeoutError,
   BadRequestError,
   PermissionError,

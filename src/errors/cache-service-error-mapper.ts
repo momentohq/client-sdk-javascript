@@ -2,8 +2,8 @@ import {Status} from '@grpc/grpc-js/build/src/constants';
 import {ServiceError} from '@grpc/grpc-js';
 import {
   NotFoundError,
-  CacheServiceError,
   InternalServerError,
+  InvalidArgumentError,
   PermissionError,
   BadRequestError,
   CancelledError,
@@ -11,40 +11,56 @@ import {
   AuthenticationError,
   LimitExceededError,
   AlreadyExistsError,
+  SdkError,
+  UnknownServiceError,
+  ServerUnavailableError,
+  UnknownError,
+  FailedPreconditionError,
 } from './errors';
 
-export function cacheServiceErrorMapper(
-  err: ServiceError | null
-): CacheServiceError {
+export function cacheServiceErrorMapper(err: ServiceError | null): SdkError {
+  const errParams: [
+    string,
+    number | undefined,
+    object | undefined,
+    string | undefined
+  ] = [
+    err?.message || 'Unable to process request',
+    err?.code,
+    err?.metadata,
+    err?.stack,
+  ];
   switch (err?.code) {
     case Status.PERMISSION_DENIED:
-      return new PermissionError(err?.message);
+      return new PermissionError(...errParams);
     case Status.DATA_LOSS:
     case Status.INTERNAL:
-    case Status.UNKNOWN:
     case Status.ABORTED:
+      return new InternalServerError(...errParams);
+    case Status.UNKNOWN:
+      return new UnknownServiceError(...errParams);
     case Status.UNAVAILABLE:
-      return new InternalServerError(err?.message, err?.stack || '');
+      return new ServerUnavailableError(...errParams);
     case Status.NOT_FOUND:
-      return new NotFoundError(err?.message);
+      return new NotFoundError(...errParams);
     case Status.OUT_OF_RANGE:
     case Status.UNIMPLEMENTED:
+      return new BadRequestError(...errParams);
     case Status.FAILED_PRECONDITION:
+      return new FailedPreconditionError(...errParams);
     case Status.INVALID_ARGUMENT:
-      return new BadRequestError(err?.message);
+      return new InvalidArgumentError(...errParams);
     case Status.CANCELLED:
-      return new CancelledError(err?.message);
+      return new CancelledError(...errParams);
     case Status.DEADLINE_EXCEEDED:
-      return new TimeoutError(err?.message);
+      return new TimeoutError(...errParams);
     case Status.UNAUTHENTICATED:
-      return new AuthenticationError(err?.message);
+      return new AuthenticationError(...errParams);
     case Status.RESOURCE_EXHAUSTED:
-      return new LimitExceededError(err?.message);
+      return new LimitExceededError(...errParams);
     case Status.ALREADY_EXISTS:
-      return new AlreadyExistsError(err?.message);
+      return new AlreadyExistsError(...errParams);
+    default:
+      return new UnknownError(...errParams);
   }
-  return new InternalServerError(
-    err?.message || 'unable to process request',
-    err?.stack || ''
-  );
 }
