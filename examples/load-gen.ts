@@ -1,5 +1,4 @@
 import {
-  AlreadyExistsError,
   getLogger,
   InternalServerError,
   LimitExceededError,
@@ -10,6 +9,9 @@ import {
   initializeMomentoLogging,
   SimpleCacheClient,
   TimeoutError,
+  CreateCache,
+  CacheGet,
+  CacheSet,
 } from '@gomomento/sdk';
 import * as hdr from 'hdr-histogram-js';
 import {range} from './utils/collections';
@@ -92,14 +94,11 @@ class BasicJavaScriptLoadGen {
       }
     );
 
-    try {
-      await momento.createCache(this.cacheName);
-    } catch (e) {
-      if (e instanceof AlreadyExistsError) {
-        this.logger.info(`cache '${this.cacheName}' already exists`);
-      } else {
-        throw e;
-      }
+    const createResponse = await momento.createCache(this.cacheName);
+    if (createResponse instanceof CreateCache.AlreadyExists) {
+      this.logger.info(`cache '${this.cacheName}' already exists`);
+    } else if (createResponse instanceof CreateCache.Error) {
+      throw createResponse.innerException();
     }
 
     const delayMillisBetweenRequests =
@@ -290,6 +289,12 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
   ): Promise<[AsyncSetGetResult, T | undefined]> {
     try {
       const result = await block();
+      if (
+        result instanceof CacheSet.Error ||
+        result instanceof CacheGet.Error
+      ) {
+        throw result.innerException();
+      }
       return [AsyncSetGetResult.SUCCESS, result];
     } catch (e) {
       if (e instanceof InternalServerError) {
