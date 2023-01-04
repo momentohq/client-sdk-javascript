@@ -58,14 +58,14 @@ async function getSigningKey(): Promise<string> {
     'Did not find signing key in environment, creating new signing key'
   );
   const signingKeyResponse = await momento.createSigningKey(60 * 24); // valid for 24 hours
-  let returnVal = '';
-  if (signingKeyResponse instanceof CreateSigningKey.Error) {
-    throw signingKeyResponse.innerException();
-  } else if (signingKeyResponse instanceof CreateSigningKey.Success) {
+  if (signingKeyResponse instanceof CreateSigningKey.Success) {
     process.env.MOMENTO_ENDPOINT = signingKeyResponse.getEndpoint();
-    returnVal = signingKeyResponse.getKey();
+    return signingKeyResponse.getKey();
+  } else if (signingKeyResponse instanceof CreateSigningKey.Error) {
+    throw signingKeyResponse.innerException();
+  } else {
+    throw new Error('An unexpected response type was returned.');
   }
-  return returnVal;
 }
 
 // Create signed urls for setting and getting values via http for specified cache and
