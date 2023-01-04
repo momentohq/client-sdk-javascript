@@ -14,6 +14,12 @@ import {version} from '../../package.json';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
+import {normalizeSdkError} from '../errors/error-utils';
+import {
+  ensureValidKey,
+  ensureValidSetRequest,
+  validateCacheName,
+} from '../utils/validators';
 
 /**
  * @property {string} authToken - momento jwt token
@@ -96,7 +102,12 @@ export class CacheClient {
     value: string | Uint8Array,
     ttl?: number
   ): Promise<CacheSet.Response> {
-    this.ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
+    try {
+      validateCacheName(cacheName);
+      ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
+    } catch (err) {
+      return new CacheSet.Error(normalizeSdkError(err as Error));
+    }
     this.logger.trace(
       `Issuing 'set' request; key: ${key.toString()}, value length: ${
         value.length
@@ -126,7 +137,7 @@ export class CacheClient {
     });
     const metadata = this.createMetadata(cacheName);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return await new Promise((resolve, reject) => {
+    return await new Promise(resolve => {
       this.clientWrapper.getClient().Set(
         request,
         metadata,
@@ -148,7 +159,12 @@ export class CacheClient {
     cacheName: string,
     key: string | Uint8Array
   ): Promise<CacheDelete.Response> {
-    this.ensureValidKey(key);
+    try {
+      validateCacheName(cacheName);
+      ensureValidKey(key);
+    } catch (err) {
+      return new CacheDelete.Error(normalizeSdkError(err as Error));
+    }
     this.logger.trace(`Issuing 'delete' request; key: ${key.toString()}`);
     return await this.sendDelete(cacheName, this.convert(key));
   }
@@ -161,8 +177,7 @@ export class CacheClient {
       cache_key: key,
     });
     const metadata = this.createMetadata(cacheName);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return await new Promise((resolve, reject) => {
+    return await new Promise(resolve => {
       this.clientWrapper.getClient().Delete(
         request,
         metadata,
@@ -184,7 +199,12 @@ export class CacheClient {
     cacheName: string,
     key: string | Uint8Array
   ): Promise<CacheGet.Response> {
-    this.ensureValidKey(key);
+    try {
+      validateCacheName(cacheName);
+      ensureValidKey(key);
+    } catch (err) {
+      return new CacheGet.Error(normalizeSdkError(err as Error));
+    }
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
     const result = await this.sendGet(cacheName, this.convert(key));
     this.logger.trace(`'get' request result: ${result.toString()}`);
@@ -200,8 +220,7 @@ export class CacheClient {
     });
     const metadata = this.createMetadata(cacheName);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return await new Promise((resolve, reject) => {
+    return await new Promise(resolve => {
       this.clientWrapper.getClient().Get(
         request,
         metadata,
@@ -239,12 +258,6 @@ export class CacheClient {
     });
   }
 
-  private ensureValidKey = (key: unknown) => {
-    if (!key) {
-      throw new InvalidArgumentError('key must not be empty');
-    }
-  };
-
   private initializeInterceptors(): Interceptor[] {
     const headers = [
       new Header('Authorization', this.authToken),
@@ -262,18 +275,6 @@ export class CacheClient {
       return this.textEncoder.encode(v);
     }
     return v;
-  }
-
-  private ensureValidSetRequest(key: unknown, value: unknown, ttl: number) {
-    this.ensureValidKey(key);
-
-    if (!value) {
-      throw new InvalidArgumentError('value must not be empty');
-    }
-
-    if (ttl && ttl < 0) {
-      throw new InvalidArgumentError('ttl must be a positive integer');
-    }
   }
 
   private createMetadata(cacheName: string): Metadata {

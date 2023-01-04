@@ -15,7 +15,7 @@ export enum MomentoErrorCode {
   AUTHENTICATION_ERROR = 'AUTHENTICATION_ERROR',
   // Request was cancelled by the server
   CANCELLED_ERROR = 'CANCELLED_ERROR',
-  // Request rate exceeded the limits for the account
+  // Request rate, bandwidth, or object size exceeded the limits for the account
   LIMIT_EXCEEDED_ERROR = 'LIMIT_EXCEEDED_ERROR',
   // Request was invalid
   BAD_REQUEST_ERROR = 'BAD_REQUEST_ERROR',
@@ -151,7 +151,7 @@ export class InvalidArgumentError extends SdkError {
 export class LimitExceededError extends SdkError {
   _errorCode = MomentoErrorCode.LIMIT_EXCEEDED_ERROR;
   _messageWrapper =
-    'Request rate exceeded the limits for this account.  To resolve this error, reduce your request rate, or contact us at support@momentohq.com to request a limit increase';
+    'Request rate, bandwidth, or object size exceeded the limits for this account.  To resolve this error, reduce your usage as appropriate or contact us at support@momentohq.com to request a limit increase';
 }
 
 /**
