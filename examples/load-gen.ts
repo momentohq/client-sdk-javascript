@@ -136,8 +136,20 @@ class BasicJavaScriptLoadGen {
           delayMillisBetweenRequests
         )
     );
-    const allResultPromises = Promise.all(asyncGetSetResults);
-    await allResultPromises;
+
+    // Show stats periodically.
+    const logStatsIntervalId = setInterval(() => {
+      this.logStats(loadGenContext);
+    }, this.showStatsIntervalSeconds * 1000);
+
+    await Promise.all(asyncGetSetResults);
+
+    // We're done, stop showing stats.
+    clearInterval(logStatsIntervalId);
+
+    // Show the stats one last time at the end.
+    this.logStats(loadGenContext);
+
     this.logger.info('DONE!');
     // wait a few millis to allow the logger to finish flushing
     await delay(500);
@@ -153,9 +165,6 @@ class BasicJavaScriptLoadGen {
     let finished = false;
     const finish = () => (finished = true);
     setTimeout(finish, totalSecondsToRun * 1000);
-    const intervalId = setInterval(() => {
-      this.logStats(loadGenContext);
-    }, this.showStatsIntervalSeconds * 1000);
 
     let i = 1;
     for (;;) {
@@ -168,8 +177,6 @@ class BasicJavaScriptLoadGen {
       );
 
       if (finished) {
-        clearInterval(intervalId);
-        this.logStats(loadGenContext);
         return;
       }
 
