@@ -55,11 +55,7 @@ class BasicJavaScriptLoadGen {
   private readonly cacheItemTtlSeconds = 60;
   private readonly authToken: string;
   private readonly loggerOptions: LoggerOptions;
-  private readonly requestTimeoutMs: number;
-  private readonly numberOfConcurrentRequests: number;
-  private readonly showStatsIntervalSeconds: number;
-  private readonly maxRequestsPerSecond: number;
-  private readonly totalSecondsToRun: number;
+  private readonly options: BasicJavaScriptLoadGenOptions;
   private readonly cacheValue: string;
 
   private readonly cacheName: string = 'js-loadgen';
@@ -75,12 +71,7 @@ class BasicJavaScriptLoadGen {
     }
     this.loggerOptions = options.loggerOptions;
     this.authToken = authToken;
-    this.requestTimeoutMs = options.requestTimeoutMs;
-    this.numberOfConcurrentRequests = options.numberOfConcurrentRequests;
-    this.showStatsIntervalSeconds = options.showStatsIntervalSeconds;
-    this.maxRequestsPerSecond = options.maxRequestsPerSecond;
-    this.totalSecondsToRun = options.totalSecondsToRun;
-
+    this.options = options;
     this.cacheValue = 'x'.repeat(options.cacheItemPayloadBytes);
   }
 
@@ -89,7 +80,7 @@ class BasicJavaScriptLoadGen {
       this.authToken,
       this.cacheItemTtlSeconds,
       {
-        requestTimeoutMs: this.requestTimeoutMs,
+        requestTimeoutMs: this.options.requestTimeoutMs,
         loggerOptions: this.loggerOptions,
       }
     );
@@ -102,16 +93,16 @@ class BasicJavaScriptLoadGen {
     }
 
     const delayMillisBetweenRequests =
-      (1000.0 * this.numberOfConcurrentRequests) / this.maxRequestsPerSecond;
+      (1000.0 * this.options.numberOfConcurrentRequests) / this.options.maxRequestsPerSecond;
     this.logger.trace(
       `delayMillisBetweenRequests: ${delayMillisBetweenRequests}`
     );
 
-    this.logger.info(`Limiting to ${this.maxRequestsPerSecond} tps`);
+    this.logger.info(`Limiting to ${this.options.maxRequestsPerSecond} tps`);
     this.logger.info(
-      `Running ${this.numberOfConcurrentRequests} concurrent requests`
+      `Running ${this.options.numberOfConcurrentRequests} concurrent requests`
     );
-    this.logger.info(`Running for ${this.totalSecondsToRun} seconds`);
+    this.logger.info(`Running for ${this.options.totalSecondsToRun} seconds`);
 
     const loadGenContext: BasicJavasScriptLoadGenContext = {
       startTime: process.hrtime(),
@@ -125,13 +116,13 @@ class BasicJavaScriptLoadGen {
       globalRstStreamCount: 0,
     };
 
-    const asyncGetSetResults = range(this.numberOfConcurrentRequests).map(
+    const asyncGetSetResults = range(this.options.numberOfConcurrentRequests).map(
       workerId =>
         this.launchAndRunWorkers(
           momento,
           loadGenContext,
           workerId + 1,
-          this.totalSecondsToRun,
+          this.options.totalSecondsToRun,
           delayMillisBetweenRequests
         )
     );
@@ -139,7 +130,7 @@ class BasicJavaScriptLoadGen {
     // Show stats periodically.
     const logStatsIntervalId = setInterval(() => {
       this.logStats(loadGenContext);
-    }, this.showStatsIntervalSeconds * 1000);
+    }, this.options.showStatsIntervalSeconds * 1000);
 
     await Promise.all(asyncGetSetResults);
 
@@ -191,7 +182,7 @@ total requests: ${
     } (${BasicJavaScriptLoadGen.tps(
       loadGenContext,
       loadGenContext.globalRequestCount
-    )} tps, limited to ${this.maxRequestsPerSecond} tps)
+    )} tps, limited to ${this.options.maxRequestsPerSecond} tps)
        success: ${
          loadGenContext.globalSuccessCount
        } (${BasicJavaScriptLoadGen.percentRequests(
