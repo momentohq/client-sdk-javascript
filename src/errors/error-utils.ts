@@ -1,4 +1,11 @@
-import {MomentoErrorCode, SdkError} from './errors';
+import {MomentoErrorCode, SdkError, UnknownError} from './errors';
+
+export function normalizeSdkError(error: Error): SdkError {
+  if (error instanceof SdkError) {
+    return error;
+  }
+  return new UnknownError(error.message);
+}
 
 export abstract class ErrorBody {
   protected _innerException: SdkError;
@@ -19,6 +26,19 @@ export abstract class ErrorBody {
   }
 }
 
+/**
+ * This function is used by the classes in `messages.responses` to copy the
+ * implementation of ErrorBody above into the identical error subtypes
+ * defined in each response type.
+ *
+ * Because those classes *must* subclass a specific response base class, for example
+ * `CacheDelete.Response`, we're using the
+ * [mixin pattern](https://www.typescriptlang.org/docs/handbook/mixins.html)
+ * described in the TypeScript documentation to DRY out their implementations.
+ *
+ * @param derivedCtor The class receiving the mixin implementations
+ * @param constructors A list of classes providing the implementations
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function applyMixins(derivedCtor: any, constructors: any[]) {
   constructors.forEach(baseCtor => {

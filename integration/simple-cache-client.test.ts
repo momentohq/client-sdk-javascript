@@ -27,9 +27,7 @@ const deleteCacheIfExists = async (
 ) => {
   const deleteResponse = await momento.deleteCache(cacheName);
   if (deleteResponse instanceof DeleteCache.Error) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     if (deleteResponse.errorCode() !== MomentoErrorCode.NOT_FOUND_ERROR) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       throw deleteResponse.innerException();
     }
   }
@@ -259,6 +257,78 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
     const getMiss = await momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
     expect(getMiss).toBeInstanceOf(CacheGet.Miss);
+  });
+  it('should return InvalidArgument response for set, get, and delete with empty key', async () => {
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const setResponse = await momento.set(
+      INTEGRATION_TEST_CACHE_NAME,
+      '',
+      'foo'
+    );
+    expect(setResponse).toBeInstanceOf(CacheSet.Error);
+    expect((setResponse as CacheSet.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    const getResponse = await momento.get(INTEGRATION_TEST_CACHE_NAME, '');
+    expect(getResponse).toBeInstanceOf(CacheGet.Error);
+    expect((getResponse as CacheGet.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    const deleteResponse = await momento.delete(
+      INTEGRATION_TEST_CACHE_NAME,
+      ''
+    );
+    expect(deleteResponse).toBeInstanceOf(CacheDelete.Error);
+    expect((deleteResponse as CacheDelete.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+  });
+  it('should return InvalidArgument response for set, get, and delete with invalid cache name', async () => {
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const setResponse = await momento.set('', 'bar', 'foo');
+    expect(setResponse).toBeInstanceOf(CacheSet.Error);
+    expect((setResponse as CacheSet.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    const getResponse = await momento.get('', 'bar');
+    expect(getResponse).toBeInstanceOf(CacheGet.Error);
+    expect((getResponse as CacheDelete.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    const deleteResponse = await momento.delete('', 'bar');
+    expect(deleteResponse).toBeInstanceOf(CacheDelete.Error);
+    expect((deleteResponse as CacheDelete.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+  });
+  it('should return InvalidArgument response for set request with empty key or value', async () => {
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const noKeySetResponse = await momento.set(
+      INTEGRATION_TEST_CACHE_NAME,
+      '',
+      'value'
+    );
+    expect(noKeySetResponse).toBeInstanceOf(CacheSet.Error);
+    expect((noKeySetResponse as CacheSet.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    const noValueSetResponse = await momento.set(
+      INTEGRATION_TEST_CACHE_NAME,
+      'key',
+      ''
+    );
+    expect(noValueSetResponse).toBeInstanceOf(CacheSet.Error);
+    expect((noValueSetResponse as CacheSet.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+  });
+  it('should return InvalidArgument response for get request with empty key', async () => {
+    const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);
+    const noKeyGetResponse = await momento.get(INTEGRATION_TEST_CACHE_NAME, '');
+    expect(noKeyGetResponse).toBeInstanceOf(CacheGet.Error);
+    expect((noKeyGetResponse as CacheGet.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
   });
   it('should create, list, and revoke a signing key', async () => {
     const momento = new SimpleCacheClient(AUTH_TOKEN, 1111);

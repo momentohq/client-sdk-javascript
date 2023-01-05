@@ -2,7 +2,6 @@ import {control} from '@gomomento/generated-types';
 import {Header, HeaderInterceptor} from '../grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from '../grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from '../grpc/retry-interceptor';
-import {InvalidArgumentError, SdkError, UnknownError} from '../errors/errors';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
@@ -16,6 +15,8 @@ import {version} from '../../package.json';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
+import {normalizeSdkError} from '../errors/error-utils';
+import {validateCacheName, validateTtlMinutes} from '../utils/validators';
 
 export interface MomentoProps {
   authToken: string;
@@ -56,20 +57,15 @@ export class ControlClient {
 
   public async createCache(name: string): Promise<CreateCache.Response> {
     try {
-      this.validateCacheName(name);
+      validateCacheName(name);
     } catch (err) {
-      if (err instanceof SdkError) {
-        return new CreateCache.Error(err);
-      } else if (err instanceof Error) {
-        return new CreateCache.Error(new UnknownError(err.message));
-      }
+      return new CreateCache.Error(normalizeSdkError(err as Error));
     }
     this.logger.info(`Creating cache: ${name}`);
     const request = new control.control_client._CreateCacheRequest({
       cache_name: name,
     });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return await new Promise<CreateCache.Response>((resolve, reject) => {
+    return await new Promise<CreateCache.Response>(resolve => {
       this.clientWrapper.getClient().CreateCache(
         request,
         {interceptors: this.interceptors},
@@ -91,20 +87,15 @@ export class ControlClient {
 
   public async deleteCache(name: string): Promise<DeleteCache.Response> {
     try {
-      this.validateCacheName(name);
+      validateCacheName(name);
     } catch (err) {
-      if (err instanceof SdkError) {
-        return new DeleteCache.Error(err);
-      } else if (err instanceof Error) {
-        return new DeleteCache.Error(new UnknownError(err.message));
-      }
+      return new DeleteCache.Error(normalizeSdkError(err as Error));
     }
     const request = new control.control_client._DeleteCacheRequest({
       cache_name: name,
     });
     this.logger.info(`Deleting cache: ${name}`);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return await new Promise<DeleteCache.Response>((resolve, reject) => {
+    return await new Promise<DeleteCache.Response>(resolve => {
       this.clientWrapper.getClient().DeleteCache(
         request,
         {interceptors: this.interceptors},
@@ -124,8 +115,7 @@ export class ControlClient {
     const request = new control.control_client._ListCachesRequest();
     request.next_token = nextToken ?? '';
     this.logger.debug("Issuing 'listCaches' request");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return await new Promise<ListCaches.Response>((resolve, reject) => {
+    return await new Promise<ListCaches.Response>(resolve => {
       this.clientWrapper
         .getClient()
         .ListCaches(request, {interceptors: this.interceptors}, (err, resp) => {
@@ -143,19 +133,14 @@ export class ControlClient {
     endpoint: string
   ): Promise<CreateSigningKey.Response> {
     try {
-      this.validateTtlMinutes(ttlMinutes);
+      validateTtlMinutes(ttlMinutes);
     } catch (err) {
-      if (err instanceof SdkError) {
-        return new CreateSigningKey.Error(err);
-      } else if (err instanceof Error) {
-        return new CreateSigningKey.Error(new UnknownError(err.message));
-      }
+      return new CreateSigningKey.Error(normalizeSdkError(err as Error));
     }
     this.logger.debug("Issuing 'createSigningKey' request");
     const request = new control.control_client._CreateSigningKeyRequest();
     request.ttl_minutes = ttlMinutes;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return await new Promise<CreateSigningKey.Response>((resolve, reject) => {
+    return await new Promise<CreateSigningKey.Response>(resolve => {
       this.clientWrapper
         .getClient()
         .CreateSigningKey(
@@ -178,8 +163,7 @@ export class ControlClient {
     const request = new control.control_client._RevokeSigningKeyRequest();
     request.key_id = keyId;
     this.logger.debug("Issuing 'revokeSigningKey' request");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return await new Promise<RevokeSigningKey.Response>((resolve, reject) => {
+    return await new Promise<RevokeSigningKey.Response>(resolve => {
       this.clientWrapper
         .getClient()
         .RevokeSigningKey(request, {interceptors: this.interceptors}, err => {
@@ -199,8 +183,7 @@ export class ControlClient {
     const request = new control.control_client._ListSigningKeysRequest();
     request.next_token = nextToken ?? '';
     this.logger.debug("Issuing 'listSigningKeys' request");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return await new Promise<ListSigningKeys.Response>((resolve, reject) => {
+    return await new Promise<ListSigningKeys.Response>(resolve => {
       this.clientWrapper
         .getClient()
         .ListSigningKeys(
@@ -215,17 +198,5 @@ export class ControlClient {
           }
         );
     });
-  }
-
-  private validateCacheName(name: string) {
-    if (!name.trim()) {
-      throw new InvalidArgumentError('cache name must not be empty');
-    }
-  }
-
-  private validateTtlMinutes(ttlMinutes: number) {
-    if (ttlMinutes < 0) {
-      throw new InvalidArgumentError('ttlMinutes must be positive');
-    }
   }
 }
