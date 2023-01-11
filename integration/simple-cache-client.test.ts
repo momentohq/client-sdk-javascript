@@ -12,6 +12,7 @@ import {
   ListSigningKeys,
   MomentoErrorCode,
   RevokeSigningKey,
+  SetFetch,
   SimpleCacheClient,
 } from '../src';
 import {TextEncoder} from 'util';
@@ -373,5 +374,12 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
             (createSigningKeyResponse as CreateSigningKey.Success).getKeyId()
         )
     ).toEqual(false);
+  });
+  it('should return MISSING if set does not exist', async () => {
+    const noKeyGetResponse = await momento.setFetch(
+      INTEGRATION_TEST_CACHE_NAME,
+      'this-set-doesnt-exist'
+    );
+    expect(noKeyGetResponse).toBeInstanceOf(SetFetch.Missing);
   });
 });
