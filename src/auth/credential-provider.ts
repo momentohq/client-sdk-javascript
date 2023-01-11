@@ -1,6 +1,6 @@
 import {decodeJwt} from '../utils/jwt';
 
-export interface ICredentialProvider {
+export interface CredentialProvider {
   getAuthToken(): string;
 
   getControlEndpoint(): string;
@@ -12,7 +12,7 @@ export interface ICredentialProvider {
   getTrustedCacheEndpointCertificateName(): string | null;
 }
 
-export class EnvMomentoTokenProvider implements ICredentialProvider {
+export class EnvMomentoTokenProvider implements CredentialProvider {
   private readonly authToken: string;
   private readonly controlEndpoint: string;
   private readonly cacheEndpoint: string;

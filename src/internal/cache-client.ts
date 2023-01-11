@@ -20,26 +20,15 @@ import {
   ensureValidSetRequest,
   validateCacheName,
 } from '../utils/validators';
-import {ICredentialProvider} from '../auth/credential-provider';
-import {IConfiguration} from '../config/configuration';
-
-/**
- * @property {string} authToken - momento jwt token
- * @property {string} endpoint - endpoint to reach momento cache
- * @property {number} defaultTtlSeconds - the default time to live of object inside of cache, in seconds
- * @property {number} requestTimeoutMs - the amount of time for a request to complete before timing out, in milliseconds
- */
-type MomentoCacheProps = {
-  authProvider: ICredentialProvider;
-  configuration: IConfiguration;
-  defaultTtlSeconds: number;
-};
+import {CredentialProvider} from '../auth/credential-provider';
+import {SimpleCacheConfiguration} from '../config/configuration';
+import {SimpleCacheClientProps} from '../simple-cache-client-props';
 
 export class CacheClient {
   private readonly clientWrapper: GrpcClientWrapper<cache.cache_client.ScsClient>;
   private readonly textEncoder: TextEncoder;
-  private readonly configuration: IConfiguration;
-  private readonly authProvider: ICredentialProvider;
+  private readonly configuration: SimpleCacheConfiguration;
+  private readonly authProvider: CredentialProvider;
   private readonly defaultTtlSeconds: number;
   private readonly requestTimeoutMs: number;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
@@ -49,9 +38,9 @@ export class CacheClient {
   /**
    * @param {MomentoCacheProps} props
    */
-  constructor(props: MomentoCacheProps) {
+  constructor(props: SimpleCacheClientProps) {
     this.configuration = props.configuration;
-    this.authProvider = props.authProvider;
+    this.authProvider = props.credentialProvider;
     this.logger = getLogger(this);
     const grpcConfig = this.configuration
       .getTransportStrategy()

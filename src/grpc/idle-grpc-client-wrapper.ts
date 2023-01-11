@@ -1,10 +1,10 @@
 import {getLogger, Logger} from '../utils/logging';
 import {CloseableGrpcClient, GrpcClientWrapper} from './grpc-client-wrapper';
-import {IConfiguration} from '../config/configuration';
+import {SimpleCacheConfiguration} from '../config/configuration';
 
 export interface IdleGrpcClientWrapperProps<T extends CloseableGrpcClient> {
   clientFactoryFn: () => T;
-  configuration: IConfiguration;
+  configuration: SimpleCacheConfiguration;
 }
 
 /**

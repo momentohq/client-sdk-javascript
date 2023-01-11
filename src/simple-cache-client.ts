@@ -11,8 +11,9 @@ import * as CacheDelete from './messages/responses/cache-delete';
 import * as CacheSet from './messages/responses/cache-set';
 import {getLogger, Logger} from './utils/logging';
 import {range} from './utils/collections';
-import {IConfiguration} from './config/configuration';
-import {ICredentialProvider} from './auth/credential-provider';
+import {SimpleCacheConfiguration} from './config/configuration';
+import {CredentialProvider} from './auth/credential-provider';
+import {SimpleCacheClientProps} from './simple-cache-client-props';
 
 /**
  * Momento Simple Cache Client.
@@ -25,8 +26,8 @@ import {ICredentialProvider} from './auth/credential-provider';
  * @class SimpleCacheClient
  */
 export class SimpleCacheClient {
-  private readonly configuration: IConfiguration;
-  private readonly authProvider: ICredentialProvider;
+  private readonly configuration: SimpleCacheConfiguration;
+  private readonly credentialProvider: CredentialProvider;
   private readonly dataClients: Array<CacheClient>;
   private nextDataClientIndex: number;
   private readonly controlClient: ControlClient;
@@ -34,22 +35,11 @@ export class SimpleCacheClient {
 
   /**
    * Creates an instance of SimpleCacheClient.
-   * @param {IConfiguration} configuration - configuration options for the cache client, including transport
-   * strategy and gRPC options.
-   * @param {ICredentialProvider} authProvider - authentication credential provider, supplying auth token
-   * and endpoint hostnames for control and data operations.
-   * @param {number} defaultTtlSeconds - A default time to live, in seconds, for cache objects
-   * created by this client.
-   * @memberof SimpleCacheClient
    */
-  constructor(
-    configuration: IConfiguration,
-    authProvider: ICredentialProvider,
-    defaultTtlSeconds: number
-  ) {
+  constructor(props: SimpleCacheClientProps) {
     this.logger = getLogger(this);
-    this.configuration = configuration;
-    this.authProvider = authProvider;
+    this.configuration = props.configuration;
+    this.credentialProvider = props.credentialProvider;
 
     // For high load, we get better performance with multiple clients.  Here we are setting a default,
     // hard-coded value for the number of clients to use, because we haven't yet designed the API for
@@ -59,21 +49,14 @@ export class SimpleCacheClient {
     // based on load testing results captured in:
     // https://github.com/momentohq/oncall-tracker/issues/186
     const numClients = 6;
-    this.dataClients = range(numClients).map(
-      () =>
-        new CacheClient({
-          authProvider,
-          configuration,
-          defaultTtlSeconds,
-        })
-    );
+    this.dataClients = range(numClients).map(() => new CacheClient(props));
     // we will round-robin the requests through all of our clients.  Since javascript is single-threaded,
     // we don't have to worry about thread safety on this index variable.
     this.nextDataClientIndex = 0;
 
     this.controlClient = new ControlClient({
-      authProvider,
-      configuration,
+      configuration: this.configuration,
+      credentialProvider: this.credentialProvider,
     });
   }
 

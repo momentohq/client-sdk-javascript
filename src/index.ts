@@ -12,10 +12,10 @@ import * as ListSigningKeys from './messages/responses/list-signing-keys';
 import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
 import {CacheInfo} from './messages/cache-info';
 import {
-  ICredentialProvider,
+  CredentialProvider,
   EnvMomentoTokenProvider,
 } from './auth/credential-provider';
-import {IConfiguration} from './config/configuration';
+import {SimpleCacheConfiguration} from './config/configuration';
 
 import {
   MomentoErrorCode,
@@ -45,8 +45,8 @@ export {
 
 export {
   Configurations,
-  IConfiguration,
-  ICredentialProvider,
+  SimpleCacheConfiguration,
+  CredentialProvider,
   EnvMomentoTokenProvider,
   MomentoSigner,
   CacheOperation,
