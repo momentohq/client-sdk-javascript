@@ -1,19 +1,19 @@
-import {IGrpcConfiguration} from './grpc-configuration';
+import {GrpcConfiguration} from './grpc-configuration';
 
 export interface TransportStrategy {
   getMaxConcurrentRequests(): number | null;
 
-  getGrpcConfig(): IGrpcConfiguration;
+  getGrpcConfig(): GrpcConfiguration;
 
   // TODO: for use in middleware
   withMaxConcurrentRequests(maxConcurrentRequests: number): TransportStrategy;
 
-  withGrpcConfig(grpcConfig: IGrpcConfiguration): TransportStrategy;
+  withGrpcConfig(grpcConfig: GrpcConfiguration): TransportStrategy;
 
   withClientTimeout(clientTimeout: number): TransportStrategy;
 }
 
-export class StaticGrpcConfiguration implements IGrpcConfiguration {
+export class StaticGrpcConfiguration implements GrpcConfiguration {
   private readonly deadlineMilliseconds: number;
   private readonly maxSessionMemory: number;
   constructor(deadlineMilliseconds: number, maxSessionMemory: number) {
@@ -48,11 +48,11 @@ export class StaticGrpcConfiguration implements IGrpcConfiguration {
 
 export class StaticTransportStrategy implements TransportStrategy {
   private readonly maxConcurrentRequests: number | null;
-  private readonly grpcConfig: IGrpcConfiguration;
+  private readonly grpcConfig: GrpcConfiguration;
 
   constructor(
     maxConcurrentRequests: number | null,
-    grpcConfiguration: IGrpcConfiguration
+    grpcConfiguration: GrpcConfiguration
   ) {
     this.maxConcurrentRequests = maxConcurrentRequests;
     this.grpcConfig = grpcConfiguration;
@@ -62,7 +62,7 @@ export class StaticTransportStrategy implements TransportStrategy {
     return this.maxConcurrentRequests;
   }
 
-  getGrpcConfig(): IGrpcConfiguration {
+  getGrpcConfig(): GrpcConfiguration {
     return this.grpcConfig;
   }
 
@@ -72,7 +72,7 @@ export class StaticTransportStrategy implements TransportStrategy {
     return new StaticTransportStrategy(maxConcurrentRequests, this.grpcConfig);
   }
 
-  withGrpcConfig(grpcConfig: IGrpcConfiguration): StaticTransportStrategy {
+  withGrpcConfig(grpcConfig: GrpcConfiguration): StaticTransportStrategy {
     return new StaticTransportStrategy(this.maxConcurrentRequests, grpcConfig);
   }
 

@@ -1,6 +1,6 @@
-export interface IGrpcConfiguration {
+export interface GrpcConfiguration {
   getDeadlineMilliseconds(): number;
-  withDeadlineMilliseconds(deadlineMilliseconds: number): IGrpcConfiguration;
+  withDeadlineMilliseconds(deadlineMilliseconds: number): GrpcConfiguration;
   getMaxSessionMemory(): number;
-  withMaxSessionMemory(maxSessionMemory: number): IGrpcConfiguration;
+  withMaxSessionMemory(maxSessionMemory: number): GrpcConfiguration;
 }
