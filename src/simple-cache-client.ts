@@ -9,8 +9,8 @@ import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
 import * as CacheGet from './messages/responses/cache-get';
 import * as CacheDelete from './messages/responses/cache-delete';
 import * as CacheSet from './messages/responses/cache-set';
+import {getLogger, initializeMomentoLogging, Logger} from './utils/logging';
 import * as CacheSetFetch from './messages/responses/cache-set-fetch';
-import {getLogger, Logger} from './utils/logging';
 import {range} from './utils/collections';
 import {Configuration} from './config/configuration';
 import {CredentialProvider} from './auth/credential-provider';
@@ -38,6 +38,7 @@ export class SimpleCacheClient {
    * Creates an instance of SimpleCacheClient.
    */
   constructor(props: SimpleCacheClientProps) {
+    initializeMomentoLogging(props.configuration.getLoggerOptions());
     this.logger = getLogger(this);
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
