@@ -29,7 +29,7 @@ describe('SimpleCacheClient.ts', () => {
   it('cannot create a client with an invalid request timeout', () => {
     try {
       const invalidTimeoutConfig = configuration.withTransportStrategy(
-        configuration.getTransportStrategy().withClientTimeout(-1)
+        configuration.getTransportStrategy().withClientTimeoutMillis(-1)
       );
       new SimpleCacheClient({
         configuration: invalidTimeoutConfig,

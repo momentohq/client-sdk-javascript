@@ -1,16 +1,31 @@
 import {GrpcConfiguration} from './grpc-configuration';
 
+/**
+ * Configures the network options for communicating with the Momento service.
+ * @export
+ * @interface TransportStrategy
+ */
 export interface TransportStrategy {
-  getMaxConcurrentRequests(): number | null;
-
+  /**
+   * Configures the low-level gRPC settings for the Momento client's communication
+   * with the Momento server.
+   * @returns {GrpcConfiguration}
+   */
   getGrpcConfig(): GrpcConfiguration;
 
-  // TODO: for use in middleware
-  withMaxConcurrentRequests(maxConcurrentRequests: number): TransportStrategy;
-
+  /**
+   * Copy constructor for overriding the gRPC configuration
+   * @param {GrpcConfiguration} grpcConfig
+   * @returns {TransportStrategy} a new TransportStrategy with the specified gRPC config.
+   */
   withGrpcConfig(grpcConfig: GrpcConfiguration): TransportStrategy;
 
-  withClientTimeout(clientTimeout: number): TransportStrategy;
+  /**
+   * Copy constructor to update the client-side timeout
+   * @param {number} clientTimeoutMillis
+   * @returns {TransportStrategy} a new TransportStrategy with the specified client timeout
+   */
+  withClientTimeoutMillis(clientTimeoutMillis: number): TransportStrategy;
 }
 
 export class StaticGrpcConfiguration implements GrpcConfiguration {
@@ -25,7 +40,7 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
     return this.deadlineMilliseconds;
   }
 
-  getMaxSessionMemory(): number {
+  getMaxSessionMemoryMb(): number {
     return this.maxSessionMemory;
   }
 
@@ -38,7 +53,7 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
     );
   }
 
-  withMaxSessionMemory(maxSessionMemory: number): StaticGrpcConfiguration {
+  withMaxSessionMemoryMb(maxSessionMemory: number): StaticGrpcConfiguration {
     return new StaticGrpcConfiguration(
       this.deadlineMilliseconds,
       maxSessionMemory
@@ -47,38 +62,22 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
 }
 
 export class StaticTransportStrategy implements TransportStrategy {
-  private readonly maxConcurrentRequests: number | null;
   private readonly grpcConfig: GrpcConfiguration;
 
-  constructor(
-    maxConcurrentRequests: number | null,
-    grpcConfiguration: GrpcConfiguration
-  ) {
-    this.maxConcurrentRequests = maxConcurrentRequests;
+  constructor(grpcConfiguration: GrpcConfiguration) {
     this.grpcConfig = grpcConfiguration;
-  }
-
-  getMaxConcurrentRequests(): number | null {
-    return this.maxConcurrentRequests;
   }
 
   getGrpcConfig(): GrpcConfiguration {
     return this.grpcConfig;
   }
 
-  withMaxConcurrentRequests(
-    maxConcurrentRequests: number
-  ): StaticTransportStrategy {
-    return new StaticTransportStrategy(maxConcurrentRequests, this.grpcConfig);
-  }
-
   withGrpcConfig(grpcConfig: GrpcConfiguration): StaticTransportStrategy {
-    return new StaticTransportStrategy(this.maxConcurrentRequests, grpcConfig);
+    return new StaticTransportStrategy(grpcConfig);
   }
 
-  withClientTimeout(clientTimeout: number): StaticTransportStrategy {
+  withClientTimeoutMillis(clientTimeout: number): StaticTransportStrategy {
     return new StaticTransportStrategy(
-      this.maxConcurrentRequests,
       this.grpcConfig.withDeadlineMilliseconds(clientTimeout)
     );
   }
