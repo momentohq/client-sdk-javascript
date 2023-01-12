@@ -11,10 +11,6 @@ const defaultMaxIdleMillis = 4 * 60 * 1_000;
 const defaultMaxSessionMemoryMb = 256;
 
 export class Laptop extends SimpleCacheConfiguration {
-  constructor(transportStrategy: TransportStrategy, maxIdleMillis: number) {
-    super(transportStrategy, maxIdleMillis);
-  }
-
   static latest() {
     const maxIdleMillis = defaultMaxIdleMillis;
     const deadlineMilliseconds = 5000;
@@ -31,9 +27,6 @@ export class Laptop extends SimpleCacheConfiguration {
 }
 
 class InRegionDefault extends SimpleCacheConfiguration {
-  constructor(transportStrategy: TransportStrategy, maxIdleMillis: number) {
-    super(transportStrategy, maxIdleMillis);
-  }
   static latest() {
     const maxIdleMillis = defaultMaxIdleMillis;
     const deadlineMilliseconds = 1100;
@@ -50,9 +43,6 @@ class InRegionDefault extends SimpleCacheConfiguration {
 }
 
 class InRegionLowLatency extends SimpleCacheConfiguration {
-  constructor(transportStrategy: TransportStrategy, maxIdleMillis: number) {
-    super(transportStrategy, maxIdleMillis);
-  }
   static latest() {
     const maxIdleMillis = defaultMaxIdleMillis;
     const deadlineMilliseconds = 500;
