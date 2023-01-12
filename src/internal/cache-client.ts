@@ -179,16 +179,12 @@ export class CacheClient {
           interceptors: this.interceptors,
         },
         (err, resp) => {
-          if (resp) {
-            if (resp.missing) {
-              resolve(new SetFetch.Missing());
-            } else if (resp.found) {
-              resolve(new SetFetch.Found(resp.found.elements));
-            } else {
-              resolve(new SetFetch.Error(cacheServiceErrorMapper(err)));
-            }
+          if (resp?.missing) {
+            resolve(new CacheListFetch.Miss());
+          } else if (resp?.found) {
+            resolve(new CacheListFetch.Hit(resp.found.values));
           } else {
-            resolve(new SetFetch.Error(cacheServiceErrorMapper(err)));
+            resolve(new CacheListFetch.Error(cacheServiceErrorMapper(err)));
           }
         }
       );
