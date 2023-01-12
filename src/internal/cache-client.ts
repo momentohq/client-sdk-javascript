@@ -20,6 +20,7 @@ import {
   ensureValidKey,
   ensureValidSetRequest,
   validateCacheName,
+  validateSetName,
 } from '../utils/validators';
 import {CredentialProvider} from '../auth/credential-provider';
 import {SimpleCacheConfiguration} from '../config/configuration';
@@ -158,6 +159,7 @@ export class CacheClient {
     setName: string
   ): Promise<SetFetch.Response> {
     validateCacheName(cacheName);
+    validateSetName(setName);
     return await this.sendSetFetch(cacheName, this.convert(setName));
   }
 
@@ -183,7 +185,7 @@ export class CacheClient {
             } else if (resp.found) {
               resolve(new SetFetch.Found(resp.found.elements));
             } else {
-              throw Error('TODO vir says what is going on?');
+              resolve(new SetFetch.Error(cacheServiceErrorMapper(err)));
             }
             resolve(new SetFetch.Success());
           } else {
