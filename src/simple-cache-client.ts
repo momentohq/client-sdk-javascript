@@ -9,6 +9,7 @@ import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
 import * as CacheGet from './messages/responses/cache-get';
 import * as CacheDelete from './messages/responses/cache-delete';
 import * as CacheSet from './messages/responses/cache-set';
+import * as CacheSetFetch from './messages/responses/cache-set-fetch';
 import {getLogger, Logger} from './utils/logging';
 import {range} from './utils/collections';
 import {Configuration} from './config/configuration';
@@ -111,6 +112,21 @@ export class SimpleCacheClient {
   ): Promise<CacheDelete.Response> {
     const client = this.getNextDataClient();
     return await client.delete(cacheName, key);
+  }
+
+  /**
+   * Fetch the entire set from the cache.
+   * @param {string} cacheName - Name of the cache to perform the lookup in.
+   * @param {string} setName - The set to fetch.
+   * @returns Promise<SetFetch.Response> - Promise containing the result of the fetch operation and the associated set.
+   * @memberof SimpleCacheClient
+   */
+  public async setFetch(
+    cacheName: string,
+    setName: string
+  ): Promise<CacheSetFetch.Response> {
+    const client = this.getNextDataClient();
+    return await client.setFetch(cacheName, setName);
   }
 
   /**

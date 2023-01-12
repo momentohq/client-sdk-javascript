@@ -10,6 +10,7 @@ import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
 import * as CacheGet from '../messages/responses/cache-get';
 import * as CacheSet from '../messages/responses/cache-set';
 import * as CacheDelete from '../messages/responses/cache-delete';
+import * as CacheSetFetch from '../messages/responses/cache-set-fetch';
 import {version} from '../../package.json';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
@@ -19,6 +20,7 @@ import {
   ensureValidKey,
   ensureValidSetRequest,
   validateCacheName,
+  validateSetName,
 } from '../utils/validators';
 import {CredentialProvider} from '../auth/credential-provider';
 import {Configuration} from '../config/configuration';
@@ -146,6 +148,43 @@ export class CacheClient {
             resolve(new CacheSet.Success(value));
           } else {
             resolve(new CacheSet.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async setFetch(
+    cacheName: string,
+    setName: string
+  ): Promise<CacheSetFetch.Response> {
+    validateCacheName(cacheName);
+    validateSetName(setName);
+    return await this.sendSetFetch(cacheName, this.convert(setName));
+  }
+
+  private async sendSetFetch(
+    cacheName: string,
+    setName: Uint8Array
+  ): Promise<CacheSetFetch.Response> {
+    const request = new cache.cache_client._SetFetchRequest({
+      set_name: setName,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SetFetch(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheSetFetch.Miss());
+          } else if (resp?.found) {
+            resolve(new CacheSetFetch.Hit(resp.found.elements));
+          } else {
+            resolve(new CacheSetFetch.Error(cacheServiceErrorMapper(err)));
           }
         }
       );

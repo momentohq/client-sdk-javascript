@@ -6,6 +6,12 @@ export function validateCacheName(name: string) {
   }
 }
 
+export function validateSetName(name: string) {
+  if (!name.trim()) {
+    throw new InvalidArgumentError('set name must not be empty');
+  }
+}
+
 export function validateTtlMinutes(ttlMinutes: number) {
   if (ttlMinutes < 0) {
     throw new InvalidArgumentError('ttlMinutes must be positive');
