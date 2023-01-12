@@ -10,7 +10,7 @@ import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
 import * as CacheGet from '../messages/responses/cache-get';
 import * as CacheSet from '../messages/responses/cache-set';
 import * as CacheDelete from '../messages/responses/cache-delete';
-import * as SetFetch from '../messages/responses/set-fetch';
+import * as CacheSetFetch from '../messages/responses/cache-set-fetch';
 import {version} from '../../package.json';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
@@ -157,7 +157,7 @@ export class CacheClient {
   public async setFetch(
     cacheName: string,
     setName: string
-  ): Promise<SetFetch.Response> {
+  ): Promise<CacheSetFetch.Response> {
     validateCacheName(cacheName);
     validateSetName(setName);
     return await this.sendSetFetch(cacheName, this.convert(setName));
@@ -166,7 +166,7 @@ export class CacheClient {
   private async sendSetFetch(
     cacheName: string,
     setName: Uint8Array
-  ): Promise<SetFetch.Response> {
+  ): Promise<CacheSetFetch.Response> {
     const request = new cache.cache_client._SetFetchRequest({
       set_name: setName,
     });
@@ -180,11 +180,11 @@ export class CacheClient {
         },
         (err, resp) => {
           if (resp?.missing) {
-            resolve(new SetFetch.Miss());
+            resolve(new CacheSetFetch.Miss());
           } else if (resp?.found) {
-            resolve(new SetFetch.Hit(resp.found.elements));
+            resolve(new CacheSetFetch.Hit(resp.found.elements));
           } else {
-            resolve(new SetFetch.Error(cacheServiceErrorMapper(err)));
+            resolve(new CacheSetFetch.Error(cacheServiceErrorMapper(err)));
           }
         }
       );

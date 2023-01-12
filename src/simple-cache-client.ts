@@ -9,7 +9,7 @@ import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
 import * as CacheGet from './messages/responses/cache-get';
 import * as CacheDelete from './messages/responses/cache-delete';
 import * as CacheSet from './messages/responses/cache-set';
-import * as SetFetch from './messages/responses/set-fetch';
+import * as CacheSetFetch from './messages/responses/cache-set-fetch';
 import {getLogger, Logger} from './utils/logging';
 import {range} from './utils/collections';
 import {SimpleCacheConfiguration} from './config/configuration';
@@ -124,7 +124,7 @@ export class SimpleCacheClient {
   public async setFetch(
     cacheName: string,
     setName: string
-  ): Promise<SetFetch.Response> {
+  ): Promise<CacheSetFetch.Response> {
     const client = this.getNextDataClient();
     return await client.setFetch(cacheName, setName);
   }

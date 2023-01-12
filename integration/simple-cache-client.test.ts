@@ -12,7 +12,7 @@ import {
   ListSigningKeys,
   MomentoErrorCode,
   RevokeSigningKey,
-  SetFetch,
+  CacheSetFetch,
   SimpleCacheClient,
 } from '../src';
 import {TextEncoder} from 'util';
@@ -383,6 +383,6 @@ describe('Integration Tests for operations on sets datastructure', () => {
       INTEGRATION_TEST_CACHE_NAME,
       'this-set-doesnt-exist'
     );
-    expect(noKeyGetResponse).toBeInstanceOf(SetFetch.Miss);
+    expect(noKeyGetResponse).toBeInstanceOf(CacheSetFetch.Miss);
   });
 });
