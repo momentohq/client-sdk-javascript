@@ -180,11 +180,11 @@ export class CacheClient {
         },
         (err, resp) => {
           if (resp?.missing) {
-            resolve(new CacheListFetch.Miss());
+            resolve(new SetFetch.Miss());
           } else if (resp?.found) {
-            resolve(new CacheListFetch.Hit(resp.found.values));
+            resolve(new SetFetch.Hit(resp.found.elements));
           } else {
-            resolve(new CacheListFetch.Error(cacheServiceErrorMapper(err)));
+            resolve(new SetFetch.Error(cacheServiceErrorMapper(err)));
           }
         }
       );

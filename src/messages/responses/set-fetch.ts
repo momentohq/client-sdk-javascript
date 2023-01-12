@@ -7,9 +7,9 @@ const TEXT_DECODER = new TextDecoder();
 
 export abstract class Response extends ResponseBase {}
 
-export class Missing extends Response {}
+export class Miss extends Response {}
 
-export class Found extends Response {
+export class Hit extends Response {
   private readonly elements: Uint8Array[];
 
   constructor(elements: Uint8Array[]) {

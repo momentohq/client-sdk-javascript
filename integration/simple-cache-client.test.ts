@@ -378,11 +378,11 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
 });
 
 describe('Integration Tests for operations on sets datastructure', () => {
-  it('should return MISSING if set does not exist', async () => {
+  it('should return MISS if set does not exist', async () => {
     const noKeyGetResponse = await momento.setFetch(
       INTEGRATION_TEST_CACHE_NAME,
       'this-set-doesnt-exist'
     );
-    expect(noKeyGetResponse).toBeInstanceOf(SetFetch.Missing);
+    expect(noKeyGetResponse).toBeInstanceOf(SetFetch.Miss);
   });
 });
