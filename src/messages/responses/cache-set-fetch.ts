@@ -7,8 +7,6 @@ const TEXT_DECODER = new TextDecoder();
 
 export abstract class Response extends ResponseBase {}
 
-export class Miss extends Response {}
-
 export class Hit extends Response {
   private readonly elements: Uint8Array[];
 
@@ -25,6 +23,8 @@ export class Hit extends Response {
     return new Set(this.elements);
   }
 }
+
+export class Miss extends Response {}
 
 export class Error extends Response {
   constructor(protected _innerException: SdkError) {
