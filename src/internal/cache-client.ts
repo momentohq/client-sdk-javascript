@@ -187,7 +187,6 @@ export class CacheClient {
             } else {
               resolve(new SetFetch.Error(cacheServiceErrorMapper(err)));
             }
-            resolve(new SetFetch.Success());
           } else {
             resolve(new SetFetch.Error(cacheServiceErrorMapper(err)));
           }

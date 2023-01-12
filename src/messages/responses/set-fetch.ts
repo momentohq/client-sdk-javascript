@@ -26,8 +26,6 @@ export class Found extends Response {
   }
 }
 
-export class Success extends Response {}
-
 export class Error extends Response {
   constructor(protected _innerException: SdkError) {
     super();
