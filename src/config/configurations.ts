@@ -1,13 +1,13 @@
 import {Configuration} from './configuration';
 import {
-  ITransportStrategy,
+  TransportStrategy,
   StaticGrpcConfiguration,
   StaticTransportStrategy,
 } from './transport/transport-strategy';
 import {IGrpcConfiguration} from './transport/grpc-configuration';
 
 export class Laptop extends Configuration {
-  constructor(transportStrategy: ITransportStrategy, maxIdleMillis: number) {
+  constructor(transportStrategy: TransportStrategy, maxIdleMillis: number) {
     super(transportStrategy, maxIdleMillis);
   }
 
@@ -20,7 +20,7 @@ export class Laptop extends Configuration {
       deadlineMilliseconds,
       maxSessionMemory
     );
-    const transportStrategy: ITransportStrategy = new StaticTransportStrategy(
+    const transportStrategy: TransportStrategy = new StaticTransportStrategy(
       null,
       grpcConfig
     );

@@ -1,16 +1,16 @@
 import {IGrpcConfiguration} from './grpc-configuration';
 
-export interface ITransportStrategy {
+export interface TransportStrategy {
   getMaxConcurrentRequests(): number | null;
 
   getGrpcConfig(): IGrpcConfiguration;
 
   // TODO: for use in middleware
-  withMaxConcurrentRequests(maxConcurrentRequests: number): ITransportStrategy;
+  withMaxConcurrentRequests(maxConcurrentRequests: number): TransportStrategy;
 
-  withGrpcConfig(grpcConfig: IGrpcConfiguration): ITransportStrategy;
+  withGrpcConfig(grpcConfig: IGrpcConfiguration): TransportStrategy;
 
-  withClientTimeout(clientTimeout: number): ITransportStrategy;
+  withClientTimeout(clientTimeout: number): TransportStrategy;
 }
 
 export class StaticGrpcConfiguration implements IGrpcConfiguration {
@@ -46,7 +46,7 @@ export class StaticGrpcConfiguration implements IGrpcConfiguration {
   }
 }
 
-export class StaticTransportStrategy implements ITransportStrategy {
+export class StaticTransportStrategy implements TransportStrategy {
   private readonly maxConcurrentRequests: number | null;
   private readonly grpcConfig: IGrpcConfiguration;
 

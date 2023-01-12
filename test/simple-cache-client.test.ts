@@ -5,13 +5,17 @@ import {
   EnvMomentoTokenProvider,
 } from '../src';
 import * as CreateCache from '../src/messages/responses/create-cache';
-const authProvider = new EnvMomentoTokenProvider('TEST_AUTH_TOKEN');
+const credentialProvider = new EnvMomentoTokenProvider('TEST_AUTH_TOKEN');
 const configuration = Configurations.Laptop.latest();
 
 describe('SimpleCacheClient.ts', () => {
   it('cannot create/get cache with invalid name', async () => {
     const invalidCacheNames = ['', '    '];
-    const momento = new SimpleCacheClient(configuration, authProvider, 100);
+    const momento = new SimpleCacheClient({
+      configuration: configuration,
+      credentialProvider: credentialProvider,
+      defaultTtlSeconds: 100,
+    });
     for (const name of invalidCacheNames) {
       const createResponse = await momento.createCache(name);
       expect(createResponse).toBeInstanceOf(CreateCache.Error);
@@ -27,7 +31,11 @@ describe('SimpleCacheClient.ts', () => {
       const invalidTimeoutConfig = configuration.withTransportStrategy(
         configuration.getTransportStrategy().withClientTimeout(-1)
       );
-      new SimpleCacheClient(invalidTimeoutConfig, authProvider, 100);
+      new SimpleCacheClient({
+        configuration: invalidTimeoutConfig,
+        credentialProvider: credentialProvider,
+        defaultTtlSeconds: 100,
+      });
       fail(new Error('Expected InvalidArgumentError to be thrown!'));
     } catch (e) {
       if (!(e instanceof InvalidArgumentError)) {

@@ -1,25 +1,27 @@
-import {ITransportStrategy} from './transport/transport-strategy';
+import {TransportStrategy} from './transport/transport-strategy';
 
-export interface IConfiguration {
+export interface SimpleCacheConfiguration {
   // TODO: add RetryStrategy
   // TODO: add Middlewares
-  getTransportStrategy(): ITransportStrategy;
-  withTransportStrategy(transportStrategy: ITransportStrategy): IConfiguration;
+  getTransportStrategy(): TransportStrategy;
+  withTransportStrategy(
+    transportStrategy: TransportStrategy
+  ): SimpleCacheConfiguration;
   getMaxIdleMillis(): number;
-  withMaxIdleMillis(maxIdleMillis: number): IConfiguration;
-  withClientTimeout(clientTimeout: number): IConfiguration;
+  withMaxIdleMillis(maxIdleMillis: number): SimpleCacheConfiguration;
+  withClientTimeout(clientTimeout: number): SimpleCacheConfiguration;
 }
 
-export class Configuration implements IConfiguration {
-  private readonly transportStrategy: ITransportStrategy;
+export class Configuration implements SimpleCacheConfiguration {
+  private readonly transportStrategy: TransportStrategy;
   private readonly maxIdleMillis: number;
 
-  constructor(transportStrategy: ITransportStrategy, maxIdleMillis: number) {
+  constructor(transportStrategy: TransportStrategy, maxIdleMillis: number) {
     this.transportStrategy = transportStrategy;
     this.maxIdleMillis = maxIdleMillis;
   }
 
-  getTransportStrategy(): ITransportStrategy {
+  getTransportStrategy(): TransportStrategy {
     return this.transportStrategy;
   }
 
@@ -27,7 +29,9 @@ export class Configuration implements IConfiguration {
     return this.maxIdleMillis;
   }
 
-  withTransportStrategy(transportStrategy: ITransportStrategy): IConfiguration {
+  withTransportStrategy(
+    transportStrategy: TransportStrategy
+  ): SimpleCacheConfiguration {
     return new Configuration(transportStrategy, this.maxIdleMillis);
   }
 
@@ -35,7 +39,7 @@ export class Configuration implements IConfiguration {
     return new Configuration(this.transportStrategy, maxIdleMillis);
   }
 
-  withClientTimeout(clientTimeout: number): IConfiguration {
+  withClientTimeout(clientTimeout: number): SimpleCacheConfiguration {
     return new Configuration(
       this.transportStrategy.withClientTimeout(clientTimeout),
       this.maxIdleMillis

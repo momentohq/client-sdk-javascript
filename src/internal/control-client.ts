@@ -17,12 +17,12 @@ import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
 import {validateCacheName, validateTtlMinutes} from '../utils/validators';
-import {ICredentialProvider} from '../auth/credential-provider';
-import {IConfiguration} from '../config/configuration';
+import {CredentialProvider} from '../auth/credential-provider';
+import {SimpleCacheConfiguration} from '../config/configuration';
 
-export interface MomentoProps {
-  authProvider: ICredentialProvider;
-  configuration: IConfiguration;
+export interface ControlClientProps {
+  configuration: SimpleCacheConfiguration;
+  credentialProvider: CredentialProvider;
 }
 
 export class ControlClient {
@@ -32,12 +32,12 @@ export class ControlClient {
   private readonly logger: Logger;
 
   /**
-   * @param {MomentoProps} props
+   * @param {ControlClientProps} props
    */
-  constructor(props: MomentoProps) {
+  constructor(props: ControlClientProps) {
     this.logger = getLogger(this);
     const headers = [
-      new Header('Authorization', props.authProvider.getAuthToken()),
+      new Header('Authorization', props.credentialProvider.getAuthToken()),
       new Header('Agent', `javascript:${version}`),
     ];
     this.interceptors = [
@@ -46,12 +46,12 @@ export class ControlClient {
       ...createRetryInterceptorIfEnabled(),
     ];
     this.logger.debug(
-      `Creating control client using endpoint: '${props.authProvider.getControlEndpoint()}`
+      `Creating control client using endpoint: '${props.credentialProvider.getControlEndpoint()}`
     );
     this.clientWrapper = new IdleGrpcClientWrapper({
       clientFactoryFn: () =>
         new control.control_client.ScsControlClient(
-          props.authProvider.getControlEndpoint(),
+          props.credentialProvider.getControlEndpoint(),
           ChannelCredentials.createSsl()
         ),
       configuration: props.configuration,
