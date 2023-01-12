@@ -21,13 +21,13 @@ import {
   validateCacheName,
 } from '../utils/validators';
 import {CredentialProvider} from '../auth/credential-provider';
-import {SimpleCacheConfiguration} from '../config/configuration';
+import {Configuration} from '../config/configuration';
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
 
 export class CacheClient {
   private readonly clientWrapper: GrpcClientWrapper<cache.cache_client.ScsClient>;
   private readonly textEncoder: TextEncoder;
-  private readonly configuration: SimpleCacheConfiguration;
+  private readonly configuration: Configuration;
   private readonly authProvider: CredentialProvider;
   private readonly defaultTtlSeconds: number;
   private readonly requestTimeoutMs: number;
