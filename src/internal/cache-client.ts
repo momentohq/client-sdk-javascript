@@ -20,6 +20,8 @@ import {
   ensureValidSetRequest,
   validateCacheName,
 } from '../utils/validators';
+import {ICredentialProvider} from '../auth/credential-provider';
+import {IConfiguration} from '../config/configuration';
 
 /**
  * @property {string} authToken - momento jwt token
@@ -28,19 +30,18 @@ import {
  * @property {number} requestTimeoutMs - the amount of time for a request to complete before timing out, in milliseconds
  */
 type MomentoCacheProps = {
-  authToken: string;
-  endpoint: string;
+  authProvider: ICredentialProvider;
+  configuration: IConfiguration;
   defaultTtlSeconds: number;
-  requestTimeoutMs?: number;
 };
 
 export class CacheClient {
   private readonly clientWrapper: GrpcClientWrapper<cache.cache_client.ScsClient>;
   private readonly textEncoder: TextEncoder;
+  private readonly configuration: IConfiguration;
+  private readonly authProvider: ICredentialProvider;
   private readonly defaultTtlSeconds: number;
   private readonly requestTimeoutMs: number;
-  private readonly authToken: string;
-  private readonly endpoint: string;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   private readonly logger: Logger;
   private readonly interceptors: Interceptor[];
@@ -49,21 +50,30 @@ export class CacheClient {
    * @param {MomentoCacheProps} props
    */
   constructor(props: MomentoCacheProps) {
+    this.configuration = props.configuration;
+    this.authProvider = props.authProvider;
     this.logger = getLogger(this);
-    this.validateRequestTimeout(props.requestTimeoutMs);
+    const grpcConfig = this.configuration
+      .getTransportStrategy()
+      .getGrpcConfig();
+
+    this.requestTimeoutMs =
+      grpcConfig.getDeadlineMilliseconds() ||
+      CacheClient.DEFAULT_REQUEST_TIMEOUT_MS;
+    this.validateRequestTimeout(this.requestTimeoutMs);
     this.logger.debug(
-      `Creating cache client using endpoint: '${props.endpoint}'`
+      `Creating cache client using endpoint: '${this.authProvider.getCacheEndpoint()}'`
     );
+
     this.clientWrapper = new IdleGrpcClientWrapper({
       clientFactoryFn: () =>
         new cache.cache_client.ScsClient(
-          props.endpoint,
+          this.authProvider.getCacheEndpoint(),
           ChannelCredentials.createSsl(),
           {
             // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
             // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
-            // This needs to be tunable: https://github.com/momentohq/dev-eco-issue-tracker/issues/85
-            'grpc-node.max_session_memory': 256,
+            'grpc-node.max_session_memory': grpcConfig.getMaxSessionMemory(),
             // This flag controls whether channels use a shared global pool of subchannels, or whether
             // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
             // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
@@ -71,20 +81,18 @@ export class CacheClient {
             'grpc.use_local_subchannel_pool': 1,
           }
         ),
+      configuration: this.configuration,
     });
 
     this.textEncoder = new TextEncoder();
     this.defaultTtlSeconds = props.defaultTtlSeconds;
-    this.requestTimeoutMs =
-      props.requestTimeoutMs || CacheClient.DEFAULT_REQUEST_TIMEOUT_MS;
-    this.authToken = props.authToken;
-    this.endpoint = props.endpoint;
     this.interceptors = this.initializeInterceptors();
   }
 
   public getEndpoint(): string {
-    this.logger.debug(`Using cache endpoint: ${this.endpoint}`);
-    return this.endpoint;
+    const endpoint = this.authProvider.getCacheEndpoint();
+    this.logger.debug(`Using cache endpoint: ${endpoint}`);
+    return endpoint;
   }
 
   private validateRequestTimeout(timeout?: number) {
@@ -260,7 +268,7 @@ export class CacheClient {
 
   private initializeInterceptors(): Interceptor[] {
     const headers = [
-      new Header('Authorization', this.authToken),
+      new Header('Authorization', this.authProvider.getAuthToken()),
       new Header('Agent', `javascript:${version}`),
     ];
     return [

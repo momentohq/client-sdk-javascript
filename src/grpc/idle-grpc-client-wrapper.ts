@@ -1,12 +1,10 @@
 import {getLogger, Logger} from '../utils/logging';
 import {CloseableGrpcClient, GrpcClientWrapper} from './grpc-client-wrapper';
-
-// TODO: This should not be defined here, it should be part of the Configuration object when we
-// introduce that.
-const MAX_IDLE_MILLIS = 4 * 60 * 1_000; // 4 minutes.  We want to remain comfortably underneath the idle timeout for AWS NLB, which is 350s.
+import {IConfiguration} from '../config/configuration';
 
 export interface IdleGrpcClientWrapperProps<T extends CloseableGrpcClient> {
   clientFactoryFn: () => T;
+  configuration: IConfiguration;
 }
 
 /**
@@ -40,7 +38,7 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
     this.logger = getLogger(this);
     this.clientFactoryFn = props.clientFactoryFn;
     this.client = this.clientFactoryFn();
-    this.maxIdleMillis = MAX_IDLE_MILLIS;
+    this.maxIdleMillis = props.configuration.getMaxIdleMillis();
     this.lastAccessTime = Date.now();
   }
 
