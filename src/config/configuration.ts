@@ -1,18 +1,16 @@
 import {TransportStrategy} from './transport/transport-strategy';
 
-export interface SimpleCacheConfiguration {
+export interface Configuration {
   // TODO: add RetryStrategy
   // TODO: add Middlewares
   getTransportStrategy(): TransportStrategy;
-  withTransportStrategy(
-    transportStrategy: TransportStrategy
-  ): SimpleCacheConfiguration;
+  withTransportStrategy(transportStrategy: TransportStrategy): Configuration;
   getMaxIdleMillis(): number;
-  withMaxIdleMillis(maxIdleMillis: number): SimpleCacheConfiguration;
-  withClientTimeout(clientTimeout: number): SimpleCacheConfiguration;
+  withMaxIdleMillis(maxIdleMillis: number): Configuration;
+  withClientTimeout(clientTimeout: number): Configuration;
 }
 
-export class Configuration implements SimpleCacheConfiguration {
+export class SimpleCacheConfiguration implements Configuration {
   private readonly transportStrategy: TransportStrategy;
   private readonly maxIdleMillis: number;
 
@@ -29,18 +27,16 @@ export class Configuration implements SimpleCacheConfiguration {
     return this.maxIdleMillis;
   }
 
-  withTransportStrategy(
-    transportStrategy: TransportStrategy
-  ): SimpleCacheConfiguration {
-    return new Configuration(transportStrategy, this.maxIdleMillis);
+  withTransportStrategy(transportStrategy: TransportStrategy): Configuration {
+    return new SimpleCacheConfiguration(transportStrategy, this.maxIdleMillis);
   }
 
   withMaxIdleMillis(maxIdleMillis: number) {
-    return new Configuration(this.transportStrategy, maxIdleMillis);
+    return new SimpleCacheConfiguration(this.transportStrategy, maxIdleMillis);
   }
 
-  withClientTimeout(clientTimeout: number): SimpleCacheConfiguration {
-    return new Configuration(
+  withClientTimeout(clientTimeout: number): Configuration {
+    return new SimpleCacheConfiguration(
       this.transportStrategy.withClientTimeout(clientTimeout),
       this.maxIdleMillis
     );

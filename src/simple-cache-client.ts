@@ -11,7 +11,7 @@ import * as CacheDelete from './messages/responses/cache-delete';
 import * as CacheSet from './messages/responses/cache-set';
 import {getLogger, Logger} from './utils/logging';
 import {range} from './utils/collections';
-import {SimpleCacheConfiguration} from './config/configuration';
+import {Configuration} from './config/configuration';
 import {CredentialProvider} from './auth/credential-provider';
 import {SimpleCacheClientProps} from './simple-cache-client-props';
 
@@ -26,7 +26,7 @@ import {SimpleCacheClientProps} from './simple-cache-client-props';
  * @class SimpleCacheClient
  */
 export class SimpleCacheClient {
-  private readonly configuration: SimpleCacheConfiguration;
+  private readonly configuration: Configuration;
   private readonly credentialProvider: CredentialProvider;
   private readonly dataClients: Array<CacheClient>;
   private nextDataClientIndex: number;

@@ -15,7 +15,7 @@ import {
   CredentialProvider,
   EnvMomentoTokenProvider,
 } from './auth/credential-provider';
-import {SimpleCacheConfiguration} from './config/configuration';
+import {Configuration} from './config/configuration';
 
 import {
   MomentoErrorCode,
@@ -45,7 +45,7 @@ export {
 
 export {
   Configurations,
-  SimpleCacheConfiguration,
+  Configuration,
   CredentialProvider,
   EnvMomentoTokenProvider,
   MomentoSigner,

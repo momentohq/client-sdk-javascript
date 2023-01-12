@@ -1,4 +1,4 @@
-import {Configuration} from './configuration';
+import {SimpleCacheConfiguration} from './configuration';
 import {
   TransportStrategy,
   StaticGrpcConfiguration,
@@ -10,7 +10,7 @@ import {GrpcConfiguration} from './transport/grpc-configuration';
 const defaultMaxIdleMillis = 4 * 60 * 1_000;
 const defaultMaxSessionMemoryMb = 256;
 
-export class Laptop extends Configuration {
+export class Laptop extends SimpleCacheConfiguration {
   constructor(transportStrategy: TransportStrategy, maxIdleMillis: number) {
     super(transportStrategy, maxIdleMillis);
   }
@@ -30,7 +30,7 @@ export class Laptop extends Configuration {
   }
 }
 
-class InRegionDefault extends Configuration {
+class InRegionDefault extends SimpleCacheConfiguration {
   constructor(transportStrategy: TransportStrategy, maxIdleMillis: number) {
     super(transportStrategy, maxIdleMillis);
   }
@@ -49,7 +49,7 @@ class InRegionDefault extends Configuration {
   }
 }
 
-class InRegionLowLatency extends Configuration {
+class InRegionLowLatency extends SimpleCacheConfiguration {
   constructor(transportStrategy: TransportStrategy, maxIdleMillis: number) {
     super(transportStrategy, maxIdleMillis);
   }

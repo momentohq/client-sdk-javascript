@@ -18,10 +18,10 @@ import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
 import {validateCacheName, validateTtlMinutes} from '../utils/validators';
 import {CredentialProvider} from '../auth/credential-provider';
-import {SimpleCacheConfiguration} from '../config/configuration';
+import {Configuration} from '../config/configuration';
 
 export interface ControlClientProps {
-  configuration: SimpleCacheConfiguration;
+  configuration: Configuration;
   credentialProvider: CredentialProvider;
 }
 

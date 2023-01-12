@@ -1,5 +1,5 @@
 import {CredentialProvider} from './auth/credential-provider';
-import {SimpleCacheConfiguration} from './config/configuration';
+import {Configuration} from './config/configuration';
 
 /**
  * @property {string} authToken - momento jwt token
@@ -8,7 +8,7 @@ import {SimpleCacheConfiguration} from './config/configuration';
  * @property {number} requestTimeoutMs - the amount of time for a request to complete before timing out, in milliseconds
  */
 export interface SimpleCacheClientProps {
-  configuration: SimpleCacheConfiguration;
+  configuration: Configuration;
   credentialProvider: CredentialProvider;
   defaultTtlSeconds: number;
 }
