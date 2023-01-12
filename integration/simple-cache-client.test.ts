@@ -39,8 +39,8 @@ const deleteCacheIfExists = async (
   }
 };
 
-let momento:SimpleCacheClient;
-beforeAll(function() {
+let momento: SimpleCacheClient;
+beforeAll(() => {
   momento = new SimpleCacheClient(cacheClientProps);
 });
 
