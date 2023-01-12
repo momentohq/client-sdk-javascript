@@ -17,7 +17,7 @@ export class Found extends Response {
     this.elements = elements;
   }
 
-  public valueSetString() {
+  public valueSetString(): Set<string> {
     return new Set(this.elements.map(e => TEXT_DECODER.decode(e)));
   }
 
