@@ -16,8 +16,7 @@ const defaultLoggerOptions: LoggerOptions = {
 };
 
 export class Laptop extends SimpleCacheConfiguration {
-  static latest(loggerOptions: LoggerOptions | undefined = undefined) {
-    const finalLoggerOptions = loggerOptions ?? defaultLoggerOptions;
+  static latest(loggerOptions: LoggerOptions = defaultLoggerOptions) {
     const maxIdleMillis = defaultMaxIdleMillis;
     const deadlineMilliseconds = 5000;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration(
@@ -28,13 +27,12 @@ export class Laptop extends SimpleCacheConfiguration {
       null,
       grpcConfig
     );
-    return new Laptop(finalLoggerOptions, transportStrategy, maxIdleMillis);
+    return new Laptop(loggerOptions, transportStrategy, maxIdleMillis);
   }
 }
 
 class InRegionDefault extends SimpleCacheConfiguration {
-  static latest(loggerOptions: LoggerOptions | undefined = undefined) {
-    const finalLoggerOptions = loggerOptions ?? defaultLoggerOptions;
+  static latest(loggerOptions: LoggerOptions = defaultLoggerOptions) {
     const maxIdleMillis = defaultMaxIdleMillis;
     const deadlineMilliseconds = 1100;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration(
@@ -45,17 +43,12 @@ class InRegionDefault extends SimpleCacheConfiguration {
       null,
       grpcConfig
     );
-    return new InRegionDefault(
-      finalLoggerOptions,
-      transportStrategy,
-      maxIdleMillis
-    );
+    return new InRegionDefault(loggerOptions, transportStrategy, maxIdleMillis);
   }
 }
 
 class InRegionLowLatency extends SimpleCacheConfiguration {
-  static latest(loggerOptions: LoggerOptions | undefined = undefined) {
-    const finalLoggerOptions = loggerOptions ?? defaultLoggerOptions;
+  static latest(loggerOptions: LoggerOptions = defaultLoggerOptions) {
     const maxIdleMillis = defaultMaxIdleMillis;
     const deadlineMilliseconds = 500;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration(
@@ -66,11 +59,7 @@ class InRegionLowLatency extends SimpleCacheConfiguration {
       null,
       grpcConfig
     );
-    return new InRegionDefault(
-      finalLoggerOptions,
-      transportStrategy,
-      maxIdleMillis
-    );
+    return new InRegionDefault(loggerOptions, transportStrategy, maxIdleMillis);
   }
 }
 

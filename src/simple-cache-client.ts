@@ -11,7 +11,6 @@ import * as CacheDelete from './messages/responses/cache-delete';
 import * as CacheSet from './messages/responses/cache-set';
 import {getLogger, initializeMomentoLogging, Logger} from './utils/logging';
 import * as CacheSetFetch from './messages/responses/cache-set-fetch';
-import {getLogger, Logger} from './utils/logging';
 import {range} from './utils/collections';
 import {Configuration} from './config/configuration';
 import {CredentialProvider} from './auth/credential-provider';
