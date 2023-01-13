@@ -7,7 +7,7 @@ import {applyMixins, ErrorBody} from '../../errors/error-utils';
 export abstract class Response extends ResponseBase {}
 
 export class Success extends Response {
-  private readonly nextToken: string | null;
+  private readonly nextToken?: string;
   private readonly signingKeys: SigningKey[];
 
   constructor(
@@ -15,7 +15,7 @@ export class Success extends Response {
     result?: control.control_client._ListSigningKeysResponse
   ) {
     super();
-    this.nextToken = result?.next_token || null;
+    this.nextToken = result?.next_token;
     this.signingKeys =
       result?.signing_key.map(
         signingKey =>

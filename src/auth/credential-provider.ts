@@ -1,29 +1,47 @@
 import {decodeJwt} from '../utils/jwt';
 
+/**
+ * Provides information that the SimpleCacheClient needs in order to establish a connection to and authenticate with
+ * the Momento service.
+ * @export
+ * @interface CredentialProvider
+ */
 export interface CredentialProvider {
+  /**
+   * @returns {string} Auth token provided by user, required to authenticate with the service
+   */
   getAuthToken(): string;
 
+  /**
+   * @returns {string} The host which the Momento client will connect to for Momento control plane operations
+   */
   getControlEndpoint(): string;
 
+  /**
+   * @returns {string} The host which the Momento client will connect to for Momento data plane operations
+   */
   getCacheEndpoint(): string;
-
-  getTrustedControlEndpointCertificateName(): string | null;
-
-  getTrustedCacheEndpointCertificateName(): string | null;
 }
 
+/**
+ * Reads and parses a momento auth token stored as an environment variable.
+ * @export
+ * @class EnvMomentoTokenProvider
+ */
 export class EnvMomentoTokenProvider implements CredentialProvider {
   private readonly authToken: string;
   private readonly controlEndpoint: string;
   private readonly cacheEndpoint: string;
-  private readonly trustedControlEndpointCertificateName: string | null;
-  private readonly trustedCacheEndpointCertificateName: string | null;
+
+  /**
+   * @param {string} envVariableName the name of the environment variable from which the auth token will be read
+   * @param {string} [controlEndpoint] optionally overrides the default controlEndpoint
+   * @param {string} [cacheEndpoint] optionally overrides the default cacheEndpoint
+   */
   constructor(
     envVariableName: string,
-    controlEndpoint?: string | null,
-    cacheEndpoint?: string | null,
-    trustedControlEndpointCertificateName?: string | null,
-    trustedCacheEndpointCertificateName?: string | null
+    controlEndpoint?: string,
+    cacheEndpoint?: string
   ) {
     const authToken = process.env[envVariableName];
     if (!authToken) {
@@ -35,10 +53,6 @@ export class EnvMomentoTokenProvider implements CredentialProvider {
     const claims = decodeJwt(authToken);
     this.controlEndpoint = controlEndpoint ?? claims.cp;
     this.cacheEndpoint = cacheEndpoint ?? claims.c;
-    this.trustedCacheEndpointCertificateName =
-      trustedCacheEndpointCertificateName || null;
-    this.trustedControlEndpointCertificateName =
-      trustedControlEndpointCertificateName || null;
   }
 
   getAuthToken(): string {
@@ -51,13 +65,5 @@ export class EnvMomentoTokenProvider implements CredentialProvider {
 
   getControlEndpoint(): string {
     return this.controlEndpoint;
-  }
-
-  getTrustedControlEndpointCertificateName(): string | null {
-    return this.trustedControlEndpointCertificateName;
-  }
-
-  getTrustedCacheEndpointCertificateName(): string | null {
-    return this.trustedCacheEndpointCertificateName;
   }
 }

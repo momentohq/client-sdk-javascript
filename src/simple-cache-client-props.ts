@@ -1,14 +1,17 @@
 import {CredentialProvider} from './auth/credential-provider';
 import {Configuration} from './config/configuration';
 
-/**
- * @property {string} authToken - momento jwt token
- * @property {string} endpoint - endpoint to reach momento cache
- * @property {number} defaultTtlSeconds - the default time to live of object inside of cache, in seconds
- * @property {number} requestTimeoutMs - the amount of time for a request to complete before timing out, in milliseconds
- */
 export interface SimpleCacheClientProps {
+  /**
+   * Configuration settings for the cache client
+   */
   configuration: Configuration;
+  /**
+   * controls how the client will get authentication information for connecting to the Momento service
+   */
   credentialProvider: CredentialProvider;
+  /**
+   * the default time to live of object inside of cache, in seconds
+   */
   defaultTtlSeconds: number;
 }
