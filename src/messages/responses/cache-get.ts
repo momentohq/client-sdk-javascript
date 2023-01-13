@@ -22,7 +22,7 @@ export class Hit extends Response {
     return TEXT_DECODER.decode(this.body);
   }
 
-  public valueBytes(): Uint8Array {
+  public valueUint8Array(): Uint8Array {
     return this.body;
   }
 
