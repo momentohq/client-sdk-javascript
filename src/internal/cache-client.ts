@@ -1,4 +1,5 @@
 import {cache} from '@gomomento/generated-types';
+import grpcCache = cache.cache_client;
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextEncoder} from 'util';
 import {Header, HeaderInterceptor} from '../grpc/headers-interceptor';
@@ -27,7 +28,7 @@ import {Configuration} from '../config/configuration';
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
 
 export class CacheClient {
-  private readonly clientWrapper: GrpcClientWrapper<cache.cache_client.ScsClient>;
+  private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
   private readonly textEncoder: TextEncoder;
   private readonly configuration: Configuration;
   private readonly credentialProvider: CredentialProvider;
@@ -58,7 +59,7 @@ export class CacheClient {
 
     this.clientWrapper = new IdleGrpcClientWrapper({
       clientFactoryFn: () =>
-        new cache.cache_client.ScsClient(
+        new grpcCache.ScsClient(
           this.credentialProvider.getCacheEndpoint(),
           ChannelCredentials.createSsl(),
           {
@@ -129,7 +130,7 @@ export class CacheClient {
     value: Uint8Array,
     ttl: number
   ): Promise<CacheSet.Response> {
-    const request = new cache.cache_client._SetRequest({
+    const request = new grpcCache._SetRequest({
       cache_body: value,
       cache_key: key,
       ttl_milliseconds: ttl * 1000,
@@ -167,7 +168,7 @@ export class CacheClient {
     cacheName: string,
     setName: Uint8Array
   ): Promise<CacheSetFetch.Response> {
-    const request = new cache.cache_client._SetFetchRequest({
+    const request = new grpcCache._SetFetchRequest({
       set_name: setName,
     });
     const metadata = this.createMetadata(cacheName);
@@ -209,7 +210,7 @@ export class CacheClient {
     cacheName: string,
     key: Uint8Array
   ): Promise<CacheDelete.Response> {
-    const request = new cache.cache_client._DeleteRequest({
+    const request = new grpcCache._DeleteRequest({
       cache_key: key,
     });
     const metadata = this.createMetadata(cacheName);
@@ -251,7 +252,7 @@ export class CacheClient {
     cacheName: string,
     key: Uint8Array
   ): Promise<CacheGet.Response> {
-    const request = new cache.cache_client._GetRequest({
+    const request = new grpcCache._GetRequest({
       cache_key: key,
     });
     const metadata = this.createMetadata(cacheName);
@@ -266,14 +267,14 @@ export class CacheClient {
         (err, resp) => {
           if (resp) {
             switch (resp.result) {
-              case cache.cache_client.ECacheResult.Miss:
+              case grpcCache.ECacheResult.Miss:
                 resolve(new CacheGet.Miss());
                 break;
-              case cache.cache_client.ECacheResult.Hit:
+              case grpcCache.ECacheResult.Hit:
                 resolve(new CacheGet.Hit(resp.cache_body));
                 break;
-              case cache.cache_client.ECacheResult.Invalid:
-              case cache.cache_client.ECacheResult.Ok:
+              case grpcCache.ECacheResult.Invalid:
+              case grpcCache.ECacheResult.Ok:
                 resolve(new CacheGet.Error(new UnknownError(resp.message)));
                 break;
               default:
