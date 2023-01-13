@@ -8,21 +8,7 @@ const TEXT_DECODER = new TextDecoder();
 
 export abstract class Response extends ResponseBase {}
 
-export class Success extends Response {
-  private readonly value: Uint8Array;
-  constructor(value: Uint8Array) {
-    super();
-    this.value = value;
-  }
-
-  public valueString(): string {
-    return TEXT_DECODER.decode(this.value);
-  }
-
-  public valueBytes(): Uint8Array {
-    return this.value;
-  }
-}
+export class Success extends Response {}
 
 export class Error extends Response {
   constructor(protected _innerException: SdkError) {

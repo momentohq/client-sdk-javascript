@@ -194,32 +194,6 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       expect(getResponse.valueString()).toEqual(cacheValue);
     }
   });
-  it('should set and get string from cache and returned set value matches string cacheValue', async () => {
-    const cacheKey = v4();
-    const cacheValue = v4();
-    const setResponse = await momento.set(
-      INTEGRATION_TEST_CACHE_NAME,
-      cacheKey,
-      cacheValue
-    );
-    expect(setResponse).toBeInstanceOf(CacheSet.Success);
-    if (setResponse instanceof CacheSet.Success) {
-      expect(setResponse.valueString()).toEqual(cacheValue);
-    }
-  });
-  it('should set string key with bytes value and returned set value matches byte cacheValue', async () => {
-    const cacheKey = v4();
-    const cacheValue = new TextEncoder().encode(v4());
-    const setResponse = await momento.set(
-      INTEGRATION_TEST_CACHE_NAME,
-      cacheKey,
-      cacheValue
-    );
-    expect(setResponse).toBeInstanceOf(CacheSet.Success);
-    if (setResponse instanceof CacheSet.Success) {
-      expect(setResponse.valueBytes()).toEqual(cacheValue);
-    }
-  });
   it('should timeout on a request that exceeds specified timeout', async () => {
     const cacheName = v4();
     const defaultTimeoutClient = momento;
