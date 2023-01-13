@@ -14,6 +14,7 @@ import {
   RevokeSigningKey,
   CacheSetFetch,
   SimpleCacheClient,
+  CacheDictionaryFetch,
 } from '../src';
 import {TextEncoder} from 'util';
 import {SimpleCacheClientProps} from '../src/simple-cache-client-props';
@@ -384,5 +385,28 @@ describe('Integration Tests for operations on sets datastructure', () => {
       'this-set-doesnt-exist'
     );
     expect(noKeyGetResponse).toBeInstanceOf(CacheSetFetch.Miss);
+  });
+});
+
+describe('Integration tests for dictionary operations', () => {
+  it('should return InvalidArgument response for dictionary fetch with invalid cache/dictionary name', async () => {
+    const fetchResponse1 = await momento.dictionaryFetch('', 'myDictionary');
+    expect(fetchResponse1).toBeInstanceOf(CacheDictionaryFetch.Error);
+    expect((fetchResponse1 as CacheDictionaryFetch.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    const fetchResponse2 = await momento.dictionaryFetch('cache', '');
+    expect(fetchResponse2).toBeInstanceOf(CacheDictionaryFetch.Error);
+    expect((fetchResponse2 as CacheDictionaryFetch.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+  });
+
+  it('should return MISS if dictionary does not exist', async () => {
+    const fetchResponse = await momento.dictionaryFetch(
+      INTEGRATION_TEST_CACHE_NAME,
+      'nonExistingDictionary'
+    );
+    expect(fetchResponse).toBeInstanceOf(CacheDictionaryFetch.Miss);
   });
 });

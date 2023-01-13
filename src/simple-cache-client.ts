@@ -9,6 +9,7 @@ import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
 import * as CacheGet from './messages/responses/cache-get';
 import * as CacheDelete from './messages/responses/cache-delete';
 import * as CacheSet from './messages/responses/cache-set';
+import * as CacheDictionaryFetch from './messages/responses/cache-dictionary-fetch';
 import {getLogger, initializeMomentoLogging, Logger} from './utils/logging';
 import * as CacheSetFetch from './messages/responses/cache-set-fetch';
 import {range} from './utils/collections';
@@ -172,7 +173,7 @@ export class SimpleCacheClient {
   public async dictionaryFetch(
     cacheName: string,
     dictionaryName: string
-  ): Promise<CacheSetFetch.Response> {
+  ): Promise<CacheDictionaryFetch.Response> {
     const client = this.getNextDataClient();
     return await client.dictionaryFetch(cacheName, dictionaryName);
   }

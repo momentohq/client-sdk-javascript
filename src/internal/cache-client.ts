@@ -300,8 +300,12 @@ export class CacheClient {
     cacheName: string,
     dictionaryName: string
   ): Promise<CacheDictionaryFetch.Response> {
-    validateCacheName(cacheName);
-    validateDictionaryName(dictionaryName);
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+    } catch (err) {
+      return new CacheDictionaryFetch.Error(normalizeSdkError(err as Error));
+    }
     return await this.sendDictionaryFetch(
       cacheName,
       this.convert(dictionaryName)
