@@ -12,6 +12,7 @@ import * as CacheSet from '../messages/responses/cache-set';
 import * as CacheDelete from '../messages/responses/cache-delete';
 import * as CacheSetFetch from '../messages/responses/cache-set-fetch';
 import * as CacheDictionaryFetch from '../messages/responses/cache-dictionary-fetch';
+import * as CacheDictionarySetField from '../messages/responses/cache-dictionary-set-field';
 import {version} from '../../package.json';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
@@ -27,9 +28,11 @@ import {
 import {CredentialProvider} from '../auth/credential-provider';
 import {Configuration} from '../config/configuration';
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
+import {CollectionTtl} from '../utils/collection-ttl';
+import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 
 export class CacheClient {
-  private readonly clientWrapper: GrpcClientWrapper<cache.cache_client.ScsClient>;
+  private readonly clientWrapper: GrpcClientWrapper<cache_client.ScsClient>;
   private readonly textEncoder: TextEncoder;
   private readonly configuration: Configuration;
   private readonly credentialProvider: CredentialProvider;
@@ -60,7 +63,7 @@ export class CacheClient {
 
     this.clientWrapper = new IdleGrpcClientWrapper({
       clientFactoryFn: () =>
-        new cache.cache_client.ScsClient(
+        new cache_client.ScsClient(
           this.credentialProvider.getCacheEndpoint(),
           ChannelCredentials.createSsl(),
           {
@@ -131,7 +134,7 @@ export class CacheClient {
     value: Uint8Array,
     ttl: number
   ): Promise<CacheSet.Response> {
-    const request = new cache.cache_client._SetRequest({
+    const request = new cache_client._SetRequest({
       cache_body: value,
       cache_key: key,
       ttl_milliseconds: ttl * 1000,
@@ -169,7 +172,7 @@ export class CacheClient {
     cacheName: string,
     setName: Uint8Array
   ): Promise<CacheSetFetch.Response> {
-    const request = new cache.cache_client._SetFetchRequest({
+    const request = new cache_client._SetFetchRequest({
       set_name: setName,
     });
     const metadata = this.createMetadata(cacheName);
@@ -211,7 +214,7 @@ export class CacheClient {
     cacheName: string,
     key: Uint8Array
   ): Promise<CacheDelete.Response> {
-    const request = new cache.cache_client._DeleteRequest({
+    const request = new cache_client._DeleteRequest({
       cache_key: key,
     });
     const metadata = this.createMetadata(cacheName);
@@ -253,7 +256,7 @@ export class CacheClient {
     cacheName: string,
     key: Uint8Array
   ): Promise<CacheGet.Response> {
-    const request = new cache.cache_client._GetRequest({
+    const request = new cache_client._GetRequest({
       cache_key: key,
     });
     const metadata = this.createMetadata(cacheName);
@@ -268,14 +271,14 @@ export class CacheClient {
         (err, resp) => {
           if (resp) {
             switch (resp.result) {
-              case cache.cache_client.ECacheResult.Miss:
+              case cache_client.ECacheResult.Miss:
                 resolve(new CacheGet.Miss());
                 break;
-              case cache.cache_client.ECacheResult.Hit:
+              case cache_client.ECacheResult.Hit:
                 resolve(new CacheGet.Hit(resp.cache_body));
                 break;
-              case cache.cache_client.ECacheResult.Invalid:
-              case cache.cache_client.ECacheResult.Ok:
+              case cache_client.ECacheResult.Invalid:
+              case cache_client.ECacheResult.Ok:
                 resolve(new CacheGet.Error(new UnknownError(resp.message)));
                 break;
               default:
@@ -316,8 +319,48 @@ export class CacheClient {
     cacheName: string,
     dictionaryName: Uint8Array
   ): Promise<CacheDictionaryFetch.Response> {
-    const request = new cache.cache_client._DictionaryFetchRequest({
+    const request = new cache_client._DictionaryFetchRequest({
       dictionary_name: dictionaryName,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().DictionaryFetch(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.found) {
+            resolve(new CacheDictionaryFetch.Hit(resp.found.items));
+          } else if (resp?.missing) {
+            resolve(new CacheDictionaryFetch.Miss());
+          } else {
+            resolve(
+              new CacheDictionaryFetch.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  private async sendDictionarySetField(
+    cacheName: string,
+    dictionaryName: Uint8Array,
+    field: string | Uint8Array,
+    value: string | Uint8Array,
+    ttl?: CollectionTtl
+  ): Promise<CacheDictionarySetField.Response> {
+    const encodedField =
+      typeof field === 'string' ? this.textEncoder.encode(field) : field;
+    const encodedValue =
+      typeof value === 'string' ? this.textEncoder.encode(value) : value;
+    const request = new cache_client._DictionarySetRequest({
+      dictionary_name: dictionaryName,
+      items: this.toSingletonFieldValuePair(encodedField, encodedValue),
+      ttl_milliseconds: this.ttlMilliseconds(ttl?.ttlSeconds()),
+      refresh_ttl: ttl?.refreshTtl(),
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise(resolve => {
@@ -365,5 +408,24 @@ export class CacheClient {
     const metadata = new Metadata();
     metadata.set('cache', cacheName);
     return metadata;
+  }
+
+  private toSingletonFieldValuePair(
+    field: Uint8Array,
+    value: Uint8Array
+  ): cache_client._DictionaryFieldValuePair[] {
+    return [
+      new cache_client._DictionaryFieldValuePair({
+        field: field,
+        value: value,
+      }),
+    ];
+  }
+
+  /** Time-to-live, in milliseconds.
+   * @returns {number}
+   */
+  protected ttlMilliseconds(ttl: number | undefined): number {
+    return ttl === undefined ? this.defaultTtlSeconds * 1000 : ttl * 1000;
   }
 }

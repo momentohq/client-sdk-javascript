@@ -12,36 +12,29 @@
  *  collection) each time it is written.  This behavior can be modified
  *  by calling CollectionTtl.withNoRefreshTtlOnUpdates().
  *
- *  A null TTL means to use the client's TTL.
+ *  A undefined TTL means to use the client's TTL.
  */
 export class CollectionTtl {
-  private readonly _ttlSeconds: number | null;
+  private readonly _ttlSeconds: number | undefined;
   private readonly _refreshTtl: boolean;
 
   /**
    * If refreshTtl is true, the client must update the collection's TTL
    * when it modifies a collection.
-   * A null ttl means to use the client's TTL.
-   * @param {number | null} [ttlSeconds=null]
+   * A undefined ttl means to use the client's TTL.
+   * @param {number | undefined} [ttlSeconds=undefined]
    * @param {boolean} [refreshTtl=true]
    */
-  constructor(ttlSeconds: number | null = null, refreshTtl = true) {
+  constructor(ttlSeconds: number | undefined = undefined, refreshTtl = true) {
     this._refreshTtl = refreshTtl;
     this._ttlSeconds = ttlSeconds;
   }
 
   /** Time-to-live, in seconds.
-   * @returns {number | null}
+   * @returns {number | undefined}
    */
-  public ttlSeconds(): number | null {
+  public ttlSeconds(): number | undefined {
     return this._ttlSeconds;
-  }
-
-  /** Time-to-live, in milliseconds.
-   * @returns {number | null}
-   */
-  public ttlMilliseconds(): number | null {
-    return this._ttlSeconds === null ? null : this._ttlSeconds * 1000;
   }
 
   /** Whether or not to refresh a collection's TTL when it's modified.
@@ -58,7 +51,7 @@ export class CollectionTtl {
    * @returns {CollectionTtl}
    */
   public static fromCacheTtl(): CollectionTtl {
-    return new CollectionTtl(null, true);
+    return new CollectionTtl(undefined, true);
   }
 
   /** Constructs a CollectionTtl with the specified TTL. The TTL
@@ -75,13 +68,13 @@ export class CollectionTtl {
   /** Constructs a CollectionTtl with the specified TTL.
    *  Will only refresh if the TTL is provided.
    * @constructor
-   * @param {number | null} [ttlSeconds=null]
+   * @param {number | undefined} [ttlSeconds=undefined]
    * @returns {CollectionTtl}
    */
   public static refreshTtlIfProvided(
-    ttlSeconds: number | null = null
+    ttlSeconds: number | undefined = undefined
   ): CollectionTtl {
-    return new CollectionTtl(ttlSeconds, ttlSeconds !== null);
+    return new CollectionTtl(ttlSeconds, ttlSeconds !== undefined);
   }
 
   /** Copies the CollectionTtl, but it will refresh the TTL when
@@ -106,7 +99,7 @@ export class CollectionTtl {
    * @return {CollectionTtl}
    */
   public toString(): string {
-    return `ttl: ${this._ttlSeconds || 'null'}, refreshTtl: ${
+    return `ttl: ${this._ttlSeconds || 'undefined'}, refreshTtl: ${
       this._refreshTtl ? 'true' : 'false'
     }`;
   }
