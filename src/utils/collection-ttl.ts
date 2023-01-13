@@ -10,48 +10,71 @@
  *
  *  The default behavior is to refresh the TTL (to prolong the life of the
  *  collection) each time it is written.  This behavior can be modified
- *  by calling the CollectionTtl.WithNoRefreshTtlOnUpdates
+ *  by calling CollectionTtl.withNoRefreshTtlOnUpdates().
+ *
+ *  A null TTL means to use the client's TTL.
  */
 export class CollectionTtl {
   private readonly _ttlSeconds: number | null;
   private readonly _refreshTtl: boolean;
 
+  /**
+   * If refreshTtl is true, the client must update the collection's TTL
+   * when it modifies a collection.
+   * A null ttl means to use the client's TTL.
+   * @param {number | null} [ttlSeconds=null]
+   * @param {boolean} [refreshTtl=true]
+   */
   constructor(ttlSeconds: number | null = null, refreshTtl = true) {
     this._refreshTtl = refreshTtl;
     this._ttlSeconds = ttlSeconds;
   }
 
+  /** Time-to-live, in seconds.
+   * @returns {number | null}
+   */
   public ttlSeconds(): number | null {
     return this._ttlSeconds;
   }
 
+  /** Time-to-live, in milliseconds.
+   * @returns {number | null}
+   */
   public ttlMilliseconds(): number | null {
     return this._ttlSeconds === null ? null : this._ttlSeconds * 1000;
   }
 
+  /** Whether or not to refresh a collection's TTL when it's modified.
+   * @returns {boolean}
+   */
   public refreshTtl(): boolean {
     return this._refreshTtl;
   }
 
-  /** The default way to handle TTLs for collections.  The default TTL
-   *  <see cref="TimeSpan"/> that was specified when constructing the <see cref="SimpleCacheClient"/>
+  /** The default way to handle TTLs for collections. The client's default TTL
    *  will be used, and the TTL for the collection will be refreshed any
    *  time the collection is modified.
+   * @constructor
+   * @returns {CollectionTtl}
    */
   public static fromCacheTtl(): CollectionTtl {
     return new CollectionTtl(null, true);
   }
 
-  /** Constructs a CollectionTtl with the specified <see cref="TimeSpan"/>.  The TTL
+  /** Constructs a CollectionTtl with the specified TTL. The TTL
    *  for the collection will be refreshed any time the collection is
    *  modified.
+   * @constructor
+   * @returns {CollectionTtl}
    */
   public static of(ttlSeconds: number): CollectionTtl {
     return new CollectionTtl(ttlSeconds, true);
   }
 
-  /** Constructs a <see cref="CollectionTtl"/> with the specified <see cref="TimeSpan"/>.
-   *  Will only refresh if the TTL is provided (ie not <see langword="null" />).
+  /** Constructs a CollectionTtl with the specified TTL.
+   *  Will only refresh if the TTL is provided.
+   * @constructor
+   * @returns {CollectionTtl}
    */
   public static refreshTtlIfProvided(
     ttlSeconds: number | null = null
@@ -59,22 +82,27 @@ export class CollectionTtl {
     return new CollectionTtl(ttlSeconds, ttlSeconds !== null);
   }
 
-  /** Specifies that the TTL for the collection should be refreshed when
-   *  the collection is modified.  (This is the default behavior.)
+  /** Copies the CollectionTtl, but it will refresh the TTL when
+   *  the collection is modified.
+   * @returns {CollectionTtl}
    */
   public withRefreshTtlOnUpdates(): CollectionTtl {
     return new CollectionTtl(this._ttlSeconds, true);
   }
 
-  /** Specifies that the TTL for the collection should not be refreshed
-   *  when the collection is modified.  Use this if you want to ensure
+  /** Copies the CollectionTTL, but the TTL will not be refreshed
+   *  when the collection is modified. Use this if you want to ensure
    *  that your collection expires at the originally specified time, even
    *  if you make modifications to the value of the collection.
+   * @returns {CollectionTtl}
    */
   public withNoRefreshTtlOnUpdates(): CollectionTtl {
     return new CollectionTtl(this._ttlSeconds, false);
   }
 
+  /** A string represenation of the CollectionTtl for debugging purposes.
+   * @return {CollectionTtl}
+   */
   public toString(): string {
     return `ttl: ${this._ttlSeconds || 'null'}, refreshTtl: ${
       this._refreshTtl ? 'true' : 'false'
