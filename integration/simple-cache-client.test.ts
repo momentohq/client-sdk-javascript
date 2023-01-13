@@ -154,7 +154,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     );
     expect(getResponse).toBeInstanceOf(CacheGet.Hit);
     if (getResponse instanceof CacheGet.Hit) {
-      expect(getResponse.valueBytes()).toEqual(cacheValue);
+      expect(getResponse.valueUint8Array()).toEqual(cacheValue);
     }
   });
   it('should set string key with bytes value', async () => {
@@ -172,7 +172,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     );
     expect(getResponse).toBeInstanceOf(CacheGet.Hit);
     if (getResponse instanceof CacheGet.Hit) {
-      expect(getResponse.valueBytes()).toEqual(cacheValue);
+      expect(getResponse.valueUint8Array()).toEqual(cacheValue);
     }
   });
   it('should set byte key with string value', async () => {
@@ -216,7 +216,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     );
     expect(setResponse).toBeInstanceOf(CacheSet.Success);
     if (setResponse instanceof CacheSet.Success) {
-      expect(setResponse.valueBytes()).toEqual(cacheValue);
+      expect(setResponse.valueUint8Array()).toEqual(cacheValue);
     }
   });
   it('should timeout on a request that exceeds specified timeout', async () => {
@@ -258,7 +258,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     );
     expect(getResponse).toBeInstanceOf(CacheGet.Hit);
     if (getResponse instanceof CacheGet.Hit) {
-      expect(getResponse.valueBytes()).toEqual(cacheValue);
+      expect(getResponse.valueUint8Array()).toEqual(cacheValue);
     }
 
     const deleteResponse = await momento.delete(

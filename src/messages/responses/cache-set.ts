@@ -19,7 +19,7 @@ export class Success extends Response {
     return TEXT_DECODER.decode(this.value);
   }
 
-  public valueBytes(): Uint8Array {
+  public valueUint8Array(): Uint8Array {
     return this.value;
   }
 }
