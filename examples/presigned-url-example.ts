@@ -6,6 +6,9 @@ import {
   LogFormat,
   CreateSigningKey,
   CreateCache,
+  Configurations,
+  LoggerOptions,
+  EnvMomentoTokenProvider,
 } from '@gomomento/sdk';
 import fetch, {Response} from 'node-fetch';
 
@@ -15,13 +18,16 @@ const cacheValue = 'MyCacheValue';
 const expiryEpochSeconds = Math.floor(Date.now() / 1000) + 10 * 60; // 10 minutes from now
 const objectTtlSeconds = 180;
 
-const authToken = requireEnvVar('MOMENTO_AUTH_TOKEN');
+const loggerOptions: LoggerOptions = {
+  level: LogLevel.INFO,
+  format: LogFormat.CONSOLE,
+};
+
 const defaultTtl = 60;
-const momento = new SimpleCacheClient(authToken, defaultTtl, {
-  loggerOptions: {
-    level: LogLevel.INFO,
-    format: LogFormat.CONSOLE,
-  },
+const momento = new SimpleCacheClient({
+  configuration: Configurations.Laptop.latest(loggerOptions),
+  credentialProvider: new EnvMomentoTokenProvider('MOMENTO_AUTH_TOKEN'),
+  defaultTtlSeconds: defaultTtl,
 });
 
 const main = async () => {

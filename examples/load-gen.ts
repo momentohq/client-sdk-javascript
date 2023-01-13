@@ -12,6 +12,8 @@ import {
   CreateCache,
   CacheGet,
   CacheSet,
+  Configurations,
+  EnvMomentoTokenProvider,
 } from '@gomomento/sdk';
 import * as hdr from 'hdr-histogram-js';
 import {range} from './utils/collections';
@@ -53,7 +55,6 @@ interface BasicJavasScriptLoadGenContext {
 class BasicJavaScriptLoadGen {
   private readonly logger: Logger;
   private readonly cacheItemTtlSeconds = 60;
-  private readonly authToken: string;
   private readonly loggerOptions: LoggerOptions;
   private readonly options: BasicJavaScriptLoadGenOptions;
   private readonly delayMillisBetweenRequests: number;
@@ -64,14 +65,7 @@ class BasicJavaScriptLoadGen {
   constructor(options: BasicJavaScriptLoadGenOptions) {
     initializeMomentoLogging(options.loggerOptions);
     this.logger = getLogger('load-gen');
-    const authToken = process.env.MOMENTO_AUTH_TOKEN;
-    if (!authToken) {
-      throw new Error(
-        'Missing required environment variable MOMENTO_AUTH_TOKEN'
-      );
-    }
     this.loggerOptions = options.loggerOptions;
-    this.authToken = authToken;
     this.options = options;
     this.cacheValue = 'x'.repeat(options.cacheItemPayloadBytes);
     this.delayMillisBetweenRequests =
@@ -80,14 +74,13 @@ class BasicJavaScriptLoadGen {
   }
 
   async run(): Promise<void> {
-    const momento = new SimpleCacheClient(
-      this.authToken,
-      this.cacheItemTtlSeconds,
-      {
-        requestTimeoutMs: this.options.requestTimeoutMs,
-        loggerOptions: this.loggerOptions,
-      }
-    );
+    const momento = new SimpleCacheClient({
+      configuration: Configurations.Laptop.latest(
+        this.loggerOptions
+      ).withClientTimeoutMillis(this.options.requestTimeoutMs),
+      credentialProvider: new EnvMomentoTokenProvider('MOMENTO_AUTH_TOKEN'),
+      defaultTtlSeconds: this.cacheItemTtlSeconds,
+    });
 
     const createResponse = await momento.createCache(this.cacheName);
     if (createResponse instanceof CreateCache.AlreadyExists) {
