@@ -19,7 +19,7 @@ export class Hit extends Response {
     return new Set(this.elements.map(e => TEXT_DECODER.decode(e)));
   }
 
-  public valueSetByteArray(): Set<Uint8Array> {
+  public valueSetUint8Array(): Set<Uint8Array> {
     return new Set(this.elements);
   }
 }
