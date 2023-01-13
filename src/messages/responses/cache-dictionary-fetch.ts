@@ -16,7 +16,7 @@ export class Hit extends Response {
     this.items = items;
   }
 
-  public valueDictionaryArrayBufferArrayBuffer(): Map<Uint8Array, Uint8Array> {
+  public valueDictionaryUint8ArrayUint8Array(): Map<Uint8Array, Uint8Array> {
     const valueDictionaryUint8ArrayUint8ArrayMap = new Map<
       Uint8Array,
       Uint8Array
@@ -38,7 +38,7 @@ export class Hit extends Response {
     return valueDictionaryStringStringMap;
   }
 
-  public valueDictionaryStringArrayBuffer(): Map<string, Uint8Array> {
+  public valueDictionaryStringUint8Array(): Map<string, Uint8Array> {
     const valueDictionaryStringArrayBufferMap = new Map<string, Uint8Array>();
     for (const item of this.items) {
       valueDictionaryStringArrayBufferMap.set(
