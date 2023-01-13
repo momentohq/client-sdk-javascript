@@ -15,7 +15,7 @@ export enum MomentoErrorCode {
   AUTHENTICATION_ERROR = 'AUTHENTICATION_ERROR',
   // Request was cancelled by the server
   CANCELLED_ERROR = 'CANCELLED_ERROR',
-  // Request rate exceeded the limits for the account
+  // Request rate, bandwidth, or object size exceeded the limits for the account
   LIMIT_EXCEEDED_ERROR = 'LIMIT_EXCEEDED_ERROR',
   // Request was invalid
   BAD_REQUEST_ERROR = 'BAD_REQUEST_ERROR',
@@ -34,8 +34,8 @@ export enum MomentoErrorCode {
 export class MomentoGrpcErrorDetails {
   public readonly code: number;
   public readonly details: string;
-  public readonly metadata: object | null;
-  constructor(code: number, details: string, metadata: object | null) {
+  public readonly metadata?: object;
+  constructor(code: number, details: string, metadata?: object) {
     this.code = code;
     this.details = details;
     this.metadata = metadata;
@@ -59,8 +59,8 @@ export abstract class SdkError extends Error {
   constructor(
     message: string,
     code = 0,
-    metadata: object | null = null,
-    stack: string | null = null
+    metadata: object | undefined = undefined,
+    stack: string | undefined = undefined
   ) {
     super(message);
     const grpcDetails = new MomentoGrpcErrorDetails(code, message, metadata);
@@ -151,7 +151,7 @@ export class InvalidArgumentError extends SdkError {
 export class LimitExceededError extends SdkError {
   _errorCode = MomentoErrorCode.LIMIT_EXCEEDED_ERROR;
   _messageWrapper =
-    'Request rate exceeded the limits for this account.  To resolve this error, reduce your request rate, or contact us at support@momentohq.com to request a limit increase';
+    'Request rate, bandwidth, or object size exceeded the limits for this account.  To resolve this error, reduce your usage as appropriate or contact us at support@momentohq.com to request a limit increase';
 }
 
 /**

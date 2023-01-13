@@ -7,11 +7,11 @@ import {applyMixins, ErrorBody} from '../../errors/error-utils';
 export abstract class Response extends ResponseBase {}
 
 export class Success extends Response {
-  private readonly nextToken: string | null;
+  private readonly nextToken?: string;
   private readonly caches: CacheInfo[];
   constructor(result?: control.control_client._ListCachesResponse) {
     super();
-    this.nextToken = result?.next_token || null;
+    this.nextToken = result?.next_token;
     if (result) {
       this.caches = result.cache.map(cache => new CacheInfo(cache.cache_name));
     }

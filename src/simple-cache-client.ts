@@ -1,6 +1,5 @@
 import {ControlClient} from './internal/control-client';
 import {CacheClient} from './internal/cache-client';
-import {decodeJwt} from './utils/jwt';
 import * as CreateCache from './messages/responses/create-cache';
 import * as ListCaches from './messages/responses/list-caches';
 import * as DeleteCache from './messages/responses/delete-cache';
@@ -10,27 +9,12 @@ import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
 import * as CacheGet from './messages/responses/cache-get';
 import * as CacheDelete from './messages/responses/cache-delete';
 import * as CacheSet from './messages/responses/cache-set';
-import {
-  getLogger,
-  initializeMomentoLogging,
-  Logger,
-  LoggerOptions,
-} from './utils/logging';
+import {getLogger, initializeMomentoLogging, Logger} from './utils/logging';
+import * as CacheSetFetch from './messages/responses/cache-set-fetch';
 import {range} from './utils/collections';
-
-export interface SimpleCacheClientOptions {
-  /**
-   * @param {number} [requestTimeoutMs] - A timeout in milliseconds for get and set operations
-   * to complete. Defaults to 5 seconds. If the request takes longer than this value, it
-   * will be terminated and throw a TimeoutError.
-   */
-  requestTimeoutMs?: number;
-  /**
-   * @param {LoggerOptions} [loggerOptions] - optional configuration settings to control logging
-   * output.
-   */
-  loggerOptions?: LoggerOptions;
-}
+import {Configuration} from './config/configuration';
+import {CredentialProvider} from './auth/credential-provider';
+import {SimpleCacheClientProps} from './simple-cache-client-props';
 
 /**
  * Momento Simple Cache Client.
@@ -43,6 +27,8 @@ export interface SimpleCacheClientOptions {
  * @class SimpleCacheClient
  */
 export class SimpleCacheClient {
+  private readonly configuration: Configuration;
+  private readonly credentialProvider: CredentialProvider;
   private readonly dataClients: Array<CacheClient>;
   private nextDataClientIndex: number;
   private readonly controlClient: ControlClient;
@@ -50,22 +36,12 @@ export class SimpleCacheClient {
 
   /**
    * Creates an instance of SimpleCacheClient.
-   * @param {string} authToken - Momento token to authenticate requests with Simple Cache Service.
-   * @param {number} defaultTtlSeconds - A default time to live, in seconds, for cache objects
-   * created by this client.
-   * @param {SimpleCacheClientOptions} options - additional configuration options for the cache client.
-   * @memberof SimpleCacheClient
    */
-  constructor(
-    authToken: string,
-    defaultTtlSeconds: number,
-    options?: SimpleCacheClientOptions
-  ) {
-    initializeMomentoLogging(options?.loggerOptions);
+  constructor(props: SimpleCacheClientProps) {
+    initializeMomentoLogging(props.configuration.getLoggerOptions());
     this.logger = getLogger(this);
-    const claims = decodeJwt(authToken);
-    const controlEndpoint = claims.cp;
-    const dataEndpoint = claims.c;
+    this.configuration = props.configuration;
+    this.credentialProvider = props.credentialProvider;
 
     // For high load, we get better performance with multiple clients.  Here we are setting a default,
     // hard-coded value for the number of clients to use, because we haven't yet designed the API for
@@ -75,22 +51,14 @@ export class SimpleCacheClient {
     // based on load testing results captured in:
     // https://github.com/momentohq/oncall-tracker/issues/186
     const numClients = 6;
-    this.dataClients = range(numClients).map(
-      () =>
-        new CacheClient({
-          authToken,
-          defaultTtlSeconds,
-          endpoint: dataEndpoint,
-          requestTimeoutMs: options?.requestTimeoutMs,
-        })
-    );
+    this.dataClients = range(numClients).map(() => new CacheClient(props));
     // we will round-robin the requests through all of our clients.  Since javascript is single-threaded,
     // we don't have to worry about thread safety on this index variable.
     this.nextDataClientIndex = 0;
 
     this.controlClient = new ControlClient({
-      endpoint: controlEndpoint,
-      authToken,
+      configuration: this.configuration,
+      credentialProvider: this.credentialProvider,
     });
   }
 
@@ -145,6 +113,21 @@ export class SimpleCacheClient {
   ): Promise<CacheDelete.Response> {
     const client = this.getNextDataClient();
     return await client.delete(cacheName, key);
+  }
+
+  /**
+   * Fetch the entire set from the cache.
+   * @param {string} cacheName - Name of the cache to perform the lookup in.
+   * @param {string} setName - The set to fetch.
+   * @returns Promise<SetFetch.Response> - Promise containing the result of the fetch operation and the associated set.
+   * @memberof SimpleCacheClient
+   */
+  public async setFetch(
+    cacheName: string,
+    setName: string
+  ): Promise<CacheSetFetch.Response> {
+    const client = this.getNextDataClient();
+    return await client.setFetch(cacheName, setName);
   }
 
   /**

@@ -1,5 +1,4 @@
 import {
-  AlreadyExistsError,
   getLogger,
   InternalServerError,
   LimitExceededError,
@@ -10,6 +9,9 @@ import {
   initializeMomentoLogging,
   SimpleCacheClient,
   TimeoutError,
+  CreateCache,
+  CacheGet,
+  CacheSet,
 } from '@gomomento/sdk';
 import * as hdr from 'hdr-histogram-js';
 import {range} from './utils/collections';
@@ -53,11 +55,8 @@ class BasicJavaScriptLoadGen {
   private readonly cacheItemTtlSeconds = 60;
   private readonly authToken: string;
   private readonly loggerOptions: LoggerOptions;
-  private readonly requestTimeoutMs: number;
-  private readonly numberOfConcurrentRequests: number;
-  private readonly showStatsIntervalSeconds: number;
-  private readonly maxRequestsPerSecond: number;
-  private readonly totalSecondsToRun: number;
+  private readonly options: BasicJavaScriptLoadGenOptions;
+  private readonly delayMillisBetweenRequests: number;
   private readonly cacheValue: string;
 
   private readonly cacheName: string = 'js-loadgen';
@@ -73,13 +72,11 @@ class BasicJavaScriptLoadGen {
     }
     this.loggerOptions = options.loggerOptions;
     this.authToken = authToken;
-    this.requestTimeoutMs = options.requestTimeoutMs;
-    this.numberOfConcurrentRequests = options.numberOfConcurrentRequests;
-    this.showStatsIntervalSeconds = options.showStatsIntervalSeconds;
-    this.maxRequestsPerSecond = options.maxRequestsPerSecond;
-    this.totalSecondsToRun = options.totalSecondsToRun;
-
+    this.options = options;
     this.cacheValue = 'x'.repeat(options.cacheItemPayloadBytes);
+    this.delayMillisBetweenRequests =
+      (1000.0 * this.options.numberOfConcurrentRequests) /
+      this.options.maxRequestsPerSecond;
   }
 
   async run(): Promise<void> {
@@ -87,32 +84,27 @@ class BasicJavaScriptLoadGen {
       this.authToken,
       this.cacheItemTtlSeconds,
       {
-        requestTimeoutMs: this.requestTimeoutMs,
+        requestTimeoutMs: this.options.requestTimeoutMs,
         loggerOptions: this.loggerOptions,
       }
     );
 
-    try {
-      await momento.createCache(this.cacheName);
-    } catch (e) {
-      if (e instanceof AlreadyExistsError) {
-        this.logger.info(`cache '${this.cacheName}' already exists`);
-      } else {
-        throw e;
-      }
+    const createResponse = await momento.createCache(this.cacheName);
+    if (createResponse instanceof CreateCache.AlreadyExists) {
+      this.logger.info(`cache '${this.cacheName}' already exists`);
+    } else if (createResponse instanceof CreateCache.Error) {
+      throw createResponse.innerException();
     }
 
-    const delayMillisBetweenRequests =
-      (1000.0 * this.numberOfConcurrentRequests) / this.maxRequestsPerSecond;
     this.logger.trace(
-      `delayMillisBetweenRequests: ${delayMillisBetweenRequests}`
+      `delayMillisBetweenRequests: ${this.delayMillisBetweenRequests}`
     );
 
-    this.logger.info(`Limiting to ${this.maxRequestsPerSecond} tps`);
+    this.logger.info(`Limiting to ${this.options.maxRequestsPerSecond} tps`);
     this.logger.info(
-      `Running ${this.numberOfConcurrentRequests} concurrent requests`
+      `Running ${this.options.numberOfConcurrentRequests} concurrent requests`
     );
-    this.logger.info(`Running for ${this.totalSecondsToRun} seconds`);
+    this.logger.info(`Running for ${this.options.totalSecondsToRun} seconds`);
 
     const loadGenContext: BasicJavasScriptLoadGenContext = {
       startTime: process.hrtime(),
@@ -126,18 +118,25 @@ class BasicJavaScriptLoadGen {
       globalRstStreamCount: 0,
     };
 
-    const asyncGetSetResults = range(this.numberOfConcurrentRequests).map(
-      workerId =>
-        this.launchAndRunWorkers(
-          momento,
-          loadGenContext,
-          workerId + 1,
-          this.totalSecondsToRun,
-          delayMillisBetweenRequests
-        )
+    const asyncGetSetResults = range(
+      this.options.numberOfConcurrentRequests
+    ).map(workerId =>
+      this.launchAndRunWorkers(momento, loadGenContext, workerId + 1)
     );
-    const allResultPromises = Promise.all(asyncGetSetResults);
-    await allResultPromises;
+
+    // Show stats periodically.
+    const logStatsIntervalId = setInterval(() => {
+      this.logStats(loadGenContext);
+    }, this.options.showStatsIntervalSeconds * 1000);
+
+    await Promise.all(asyncGetSetResults);
+
+    // We're done, stop showing stats.
+    clearInterval(logStatsIntervalId);
+
+    // Show the stats one last time at the end.
+    this.logStats(loadGenContext);
+
     this.logger.info('DONE!');
     // wait a few millis to allow the logger to finish flushing
     await delay(500);
@@ -146,30 +145,17 @@ class BasicJavaScriptLoadGen {
   private async launchAndRunWorkers(
     client: SimpleCacheClient,
     loadGenContext: BasicJavasScriptLoadGenContext,
-    workerId: number,
-    totalSecondsToRun: number,
-    delayMillisBetweenRequests: number
+    workerId: number
   ): Promise<void> {
     let finished = false;
     const finish = () => (finished = true);
-    setTimeout(finish, totalSecondsToRun * 1000);
-    const intervalId = setInterval(() => {
-      this.logStats(loadGenContext);
-    }, this.showStatsIntervalSeconds * 1000);
+    setTimeout(finish, this.options.totalSecondsToRun * 1000);
 
     let i = 1;
     for (;;) {
-      await this.issueAsyncSetGet(
-        client,
-        loadGenContext,
-        workerId,
-        i,
-        delayMillisBetweenRequests
-      );
+      await this.issueAsyncSetGet(client, loadGenContext, workerId, i);
 
       if (finished) {
-        clearInterval(intervalId);
-        this.logStats(loadGenContext);
         return;
       }
 
@@ -185,7 +171,7 @@ total requests: ${
     } (${BasicJavaScriptLoadGen.tps(
       loadGenContext,
       loadGenContext.globalRequestCount
-    )} tps, limited to ${this.maxRequestsPerSecond} tps)
+    )} tps, limited to ${this.options.maxRequestsPerSecond} tps)
        success: ${
          loadGenContext.globalSuccessCount
        } (${BasicJavaScriptLoadGen.percentRequests(
@@ -232,8 +218,7 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
     client: SimpleCacheClient,
     loadGenContext: BasicJavasScriptLoadGenContext,
     workerId: number,
-    operationId: number,
-    delayMillisBetweenRequests: number
+    operationId: number
   ): Promise<void> {
     const cacheKey = `worker${workerId}operation${operationId}`;
 
@@ -245,8 +230,8 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
     if (result !== undefined) {
       const setDuration = BasicJavaScriptLoadGen.getElapsedMillis(setStartTime);
       loadGenContext.setLatencies.recordValue(setDuration);
-      if (setDuration < delayMillisBetweenRequests) {
-        const delayMs = delayMillisBetweenRequests - setDuration;
+      if (setDuration < this.delayMillisBetweenRequests) {
+        const delayMs = this.delayMillisBetweenRequests - setDuration;
         this.logger.trace(`delaying: ${delayMs}`);
         await delay(delayMs);
       }
@@ -261,8 +246,8 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
     if (getResult !== undefined) {
       const getDuration = BasicJavaScriptLoadGen.getElapsedMillis(getStartTime);
       loadGenContext.getLatencies.recordValue(getDuration);
-      if (getDuration < delayMillisBetweenRequests) {
-        const delayMs = delayMillisBetweenRequests - getDuration;
+      if (getDuration < this.delayMillisBetweenRequests) {
+        const delayMs = this.delayMillisBetweenRequests - getDuration;
         this.logger.trace(`delaying: ${delayMs}`);
         await delay(delayMs);
       }
@@ -283,6 +268,12 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
   ): Promise<[AsyncSetGetResult, T | undefined]> {
     try {
       const result = await block();
+      if (
+        result instanceof CacheSet.Error ||
+        result instanceof CacheGet.Error
+      ) {
+        throw result.innerException();
+      }
       return [AsyncSetGetResult.SUCCESS, result];
     } catch (e) {
       if (e instanceof InternalServerError) {

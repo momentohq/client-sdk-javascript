@@ -45,29 +45,59 @@ npm install @gomomento/sdk
 ### Usage
 
 ```typescript
-import {SimpleCacheClient, CacheGetStatus} from '@gomomento/sdk';
+import {
+  SimpleCacheClient,
+  CacheGet,
+  CacheSet,
+  CreateCache,
+} from '@gomomento/sdk';
 
-// your authentication token for momento
-const authToken = process.env.MOMENTO_AUTH_TOKEN;
+const main = async () => {
+  // your authentication token for momento
+  const authToken = process.env.MOMENTO_AUTH_TOKEN;
+  if (!authToken) {
+    throw new Error('Missing required environment variable MOMENTO_AUTH_TOKEN');
+  }
 
-// initializing momento
-const DEFAULT_TTL = 60; // 60 seconds for default ttl
-const momento = new SimpleCacheClient(authToken, DEFAULT_TTL);
+  // initializing momento
+  const DEFAULT_TTL = 60; // 60 seconds for default ttl
+  const momento = new SimpleCacheClient(authToken, DEFAULT_TTL);
 
-// creating a cache named "myCache"
-const CACHE_NAME = 'myCache';
-await momento.createCache(CACHE_NAME);
+  // creating a cache named "myCache"
+  const CACHE_NAME = 'myCache';
+  const createResponse = await momento.createCache(CACHE_NAME);
+  if (createResponse instanceof CreateCache.Error) {
+    console.log('Error creating cache');
+    throw createResponse.innerException();
+  }
+  // sets key with default ttl
+  const setResponse = await momento.set(CACHE_NAME, 'key', 'value');
+  if (setResponse instanceof CacheSet.Error) {
+    console.log('Error setting cache key');
+  }
 
-// sets key with default ttl
-await momento.set(CACHE_NAME, 'key', 'value');
-const res = await momento.get(CACHE_NAME, 'key');
-console.log('result: ', res.text());
+  const getResponse = await momento.get(CACHE_NAME, 'key');
+  if (getResponse instanceof CacheGet.Hit) {
+    console.log('result: ', getResponse.valueString());
+  } else if (getResponse instanceof CacheGet.Miss) {
+    console.log('Got a cache miss');
+  } else if (getResponse instanceof CacheGet.Error) {
+    console.log(`Got an error: ${getResponse.message()}`);
+  }
+  // sets key with ttl of 5 seconds
+  const ttlSetResponse = await momento.set(CACHE_NAME, 'key2', 'value2', 5);
 
-// sets key with ttl of 5 seconds
-await momento.set(CACHE_NAME, 'key2', 'value2', 5);
+  // permanently deletes cache
+  const deleteResponse = await momento.deleteCache(CACHE_NAME);
+};
 
-// permanently deletes cache
-await momento.deleteCache(CACHE_NAME);
+main()
+  .then(() => {
+    console.log('success!!');
+  })
+  .catch(e => {
+    console.error('failed to get from cache', e);
+  });
 ```
 
 Momento also supports storing pure bytes,
@@ -78,15 +108,15 @@ const value = new Uint8Array([
   109, 111, 109, 101, 110, 116, 111, 32, 105, 115, 32, 97, 119, 101, 115, 111,
   109, 101, 33, 33, 33,
 ]);
-await momento.set('cache', key, value, 50);
-await momento.get('cache', key);
+const setResponse = await momento.set('cache', key, value, 50);
+const getResponse = await momento.get('cache', key);
 ```
 
 Handling cache misses
 
 ```typescript
-const res = await cache.get('cache', 'non-existent key');
-if (res.status === CacheGetStatus.Miss) {
+const getResponse = await cache.get('cache', 'non-existent key');
+if (getResponse instanceof CacheGet.Miss) {
   console.log('cache miss');
 }
 ```
@@ -100,13 +130,15 @@ const cacheKey = 'key';
 const cacheName = 'my example cache';
 
 // store file in cache
-await momento.set(cacheName, cacheKey, filebytes);
+const setResponse = await momento.set(cacheName, cacheKey, filebytes);
 
 // retrieve file from cache
-const getResp = await momento.get(cacheName, cacheKey);
+const getResponse = await momento.get(cacheName, cacheKey);
 
 // write file to disk
-fs.writeFileSync('./file-from-cache.txt', Buffer.from(getResp.bytes()));
+if (getResponse instanceof CacheGet.Hit) {
+  fs.writeFileSync('./file-from-cache.txt', Buffer.from(getResponse.valueBytes()));
+}
 ```
 
 ## Running the load generator example
