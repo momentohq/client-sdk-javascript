@@ -1,4 +1,5 @@
 import {control} from '@gomomento/generated-types';
+import grpcControl = control.control_client;
 import {Header, HeaderInterceptor} from '../grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from '../grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from '../grpc/retry-interceptor';
@@ -26,7 +27,7 @@ export interface ControlClientProps {
 }
 
 export class ControlClient {
-  private readonly clientWrapper: GrpcClientWrapper<control.control_client.ScsControlClient>;
+  private readonly clientWrapper: GrpcClientWrapper<grpcControl.ScsControlClient>;
   private readonly interceptors: Interceptor[];
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
   private readonly logger: Logger;
@@ -50,7 +51,7 @@ export class ControlClient {
     );
     this.clientWrapper = new IdleGrpcClientWrapper({
       clientFactoryFn: () =>
-        new control.control_client.ScsControlClient(
+        new grpcControl.ScsControlClient(
           props.credentialProvider.getControlEndpoint(),
           ChannelCredentials.createSsl()
         ),
@@ -65,7 +66,7 @@ export class ControlClient {
       return new CreateCache.Error(normalizeSdkError(err as Error));
     }
     this.logger.info(`Creating cache: ${name}`);
-    const request = new control.control_client._CreateCacheRequest({
+    const request = new grpcControl._CreateCacheRequest({
       cache_name: name,
     });
     return await new Promise<CreateCache.Response>(resolve => {
@@ -94,7 +95,7 @@ export class ControlClient {
     } catch (err) {
       return new DeleteCache.Error(normalizeSdkError(err as Error));
     }
-    const request = new control.control_client._DeleteCacheRequest({
+    const request = new grpcControl._DeleteCacheRequest({
       cache_name: name,
     });
     this.logger.info(`Deleting cache: ${name}`);
@@ -115,7 +116,7 @@ export class ControlClient {
   }
 
   public async listCaches(nextToken?: string): Promise<ListCaches.Response> {
-    const request = new control.control_client._ListCachesRequest();
+    const request = new grpcControl._ListCachesRequest();
     request.next_token = nextToken ?? '';
     this.logger.debug("Issuing 'listCaches' request");
     return await new Promise<ListCaches.Response>(resolve => {
@@ -141,7 +142,7 @@ export class ControlClient {
       return new CreateSigningKey.Error(normalizeSdkError(err as Error));
     }
     this.logger.debug("Issuing 'createSigningKey' request");
-    const request = new control.control_client._CreateSigningKeyRequest();
+    const request = new grpcControl._CreateSigningKeyRequest();
     request.ttl_minutes = ttlMinutes;
     return await new Promise<CreateSigningKey.Response>(resolve => {
       this.clientWrapper
@@ -163,7 +164,7 @@ export class ControlClient {
   public async revokeSigningKey(
     keyId: string
   ): Promise<RevokeSigningKey.Response> {
-    const request = new control.control_client._RevokeSigningKeyRequest();
+    const request = new grpcControl._RevokeSigningKeyRequest();
     request.key_id = keyId;
     this.logger.debug("Issuing 'revokeSigningKey' request");
     return await new Promise<RevokeSigningKey.Response>(resolve => {
@@ -183,7 +184,7 @@ export class ControlClient {
     endpoint: string,
     nextToken?: string
   ): Promise<ListSigningKeys.Response> {
-    const request = new control.control_client._ListSigningKeysRequest();
+    const request = new grpcControl._ListSigningKeysRequest();
     request.next_token = nextToken ?? '';
     this.logger.debug("Issuing 'listSigningKeys' request");
     return await new Promise<ListSigningKeys.Response>(resolve => {

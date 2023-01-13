@@ -137,7 +137,7 @@ const getResponse = await momento.get(cacheName, cacheKey);
 
 // write file to disk
 if (getResponse instanceof CacheGet.Hit) {
-  fs.writeFileSync('./file-from-cache.txt', Buffer.from(getResponse.valueBytes()));
+  fs.writeFileSync('./file-from-cache.txt', Buffer.from(getResponse.valueUint8Array()));
 }
 ```
 

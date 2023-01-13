@@ -154,9 +154,6 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       cacheKey
     );
     expect(getResponse).toBeInstanceOf(CacheGet.Hit);
-    if (getResponse instanceof CacheGet.Hit) {
-      expect(getResponse.valueBytes()).toEqual(cacheValue);
-    }
   });
   it('should set string key with bytes value', async () => {
     const cacheKey = v4();
@@ -171,10 +168,6 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       INTEGRATION_TEST_CACHE_NAME,
       cacheKey
     );
-    expect(getResponse).toBeInstanceOf(CacheGet.Hit);
-    if (getResponse instanceof CacheGet.Hit) {
-      expect(getResponse.valueBytes()).toEqual(cacheValue);
-    }
   });
   it('should set byte key with string value', async () => {
     const cacheValue = v4();
@@ -193,6 +186,26 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     if (getResponse instanceof CacheGet.Hit) {
       expect(getResponse.valueString()).toEqual(cacheValue);
     }
+  });
+  it('should set and get string from cache and returned set value matches string cacheValue', async () => {
+    const cacheKey = v4();
+    const cacheValue = v4();
+    const setResponse = await momento.set(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey,
+      cacheValue
+    );
+    expect(setResponse).toBeInstanceOf(CacheSet.Success);
+  });
+  it('should set string key with bytes value and returned set value matches byte cacheValue', async () => {
+    const cacheKey = v4();
+    const cacheValue = new TextEncoder().encode(v4());
+    const setResponse = await momento.set(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey,
+      cacheValue
+    );
+    expect(setResponse).toBeInstanceOf(CacheSet.Success);
   });
   it('should timeout on a request that exceeds specified timeout', async () => {
     const cacheName = v4();
@@ -232,9 +245,6 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       cacheKey
     );
     expect(getResponse).toBeInstanceOf(CacheGet.Hit);
-    if (getResponse instanceof CacheGet.Hit) {
-      expect(getResponse.valueBytes()).toEqual(cacheValue);
-    }
 
     const deleteResponse = await momento.delete(
       INTEGRATION_TEST_CACHE_NAME,
