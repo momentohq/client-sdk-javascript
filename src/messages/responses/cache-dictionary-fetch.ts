@@ -2,16 +2,16 @@ import {ResponseBase} from './response-base';
 import {SdkError} from '../../errors/errors';
 import {applyMixins, ErrorBody} from '../../errors/error-utils';
 import {TextDecoder} from 'util';
-import {cache} from '@gomomento/generated-types';
+import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 
 const TEXT_DECODER = new TextDecoder();
 
 export abstract class Response extends ResponseBase {}
 
 export class Hit extends Response {
-  private readonly items: cache.cache_client._DictionaryFieldValuePair[];
+  private readonly items: cache_client._DictionaryFieldValuePair[];
 
-  constructor(items: cache.cache_client._DictionaryFieldValuePair[]) {
+  constructor(items: cache_client._DictionaryFieldValuePair[]) {
     super();
     this.items = items;
   }
