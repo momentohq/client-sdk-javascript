@@ -163,6 +163,21 @@ export class SimpleCacheClient {
   }
 
   /**
+   * Fetch the entire dictionary from the cache.
+   * @param {string} cacheName - Name of the cache to perform the lookup in.
+   * @param {string} dictionaryName - The dictionary to fetch.
+   * @returns Promise<DictionaryFetch.Response> - Promise containing the result of the fetch operation and the associated dictionary.
+   * @memberof SimpleCacheClient
+   */
+  public async dictionaryFetch(
+    cacheName: string,
+    dictionaryName: string
+  ): Promise<CacheSetFetch.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryFetch(cacheName, dictionaryName);
+  }
+
+  /**
    * Create a Momento signing key.
    * @param {number} ttlMinutes - The time to live in minutes until the Momento signing key expires.
    * @returns {Promise<CreateSigningKey.Response>} - Promise of create signing key

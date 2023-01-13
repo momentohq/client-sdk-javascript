@@ -11,6 +11,7 @@ import * as CacheGet from '../messages/responses/cache-get';
 import * as CacheSet from '../messages/responses/cache-set';
 import * as CacheDelete from '../messages/responses/cache-delete';
 import * as CacheSetFetch from '../messages/responses/cache-set-fetch';
+import * as CacheDictionaryFetch from '../messages/responses/cache-dictionary-fetch';
 import {version} from '../../package.json';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
@@ -20,6 +21,7 @@ import {
   ensureValidKey,
   ensureValidSetRequest,
   validateCacheName,
+  validateDictionaryName,
   validateSetName,
 } from '../utils/validators';
 import {CredentialProvider} from '../auth/credential-provider';
@@ -288,6 +290,48 @@ export class CacheClient {
             }
           } else {
             resolve(new CacheGet.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async dictionaryFetch(
+    cacheName: string,
+    dictionaryName: string
+  ): Promise<CacheDictionaryFetch.Response> {
+    validateCacheName(cacheName);
+    validateDictionaryName(dictionaryName);
+    return await this.sendDictionaryFetch(
+      cacheName,
+      this.convert(dictionaryName)
+    );
+  }
+
+  private async sendDictionaryFetch(
+    cacheName: string,
+    dictionaryName: Uint8Array
+  ): Promise<CacheDictionaryFetch.Response> {
+    const request = new cache.cache_client._DictionaryFetchRequest({
+      dictionary_name: dictionaryName,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().DictionaryFetch(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.found) {
+            resolve(new CacheDictionaryFetch.Hit(resp.found.items));
+          } else if (resp?.missing) {
+            resolve(new CacheDictionaryFetch.Miss());
+          } else {
+            resolve(
+              new CacheDictionaryFetch.Error(cacheServiceErrorMapper(err))
+            );
           }
         }
       );

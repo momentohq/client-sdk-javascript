@@ -12,6 +12,12 @@ export function validateSetName(name: string) {
   }
 }
 
+export function validateDictionaryName(name: string) {
+  if (!name.trim()) {
+    throw new InvalidArgumentError('dictionary name must not be empty');
+  }
+}
+
 export function validateTtlMinutes(ttlMinutes: number) {
   if (ttlMinutes < 0) {
     throw new InvalidArgumentError('ttlMinutes must be positive');
