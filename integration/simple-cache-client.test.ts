@@ -224,7 +224,7 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
     const defaultTimeoutClient = momento;
     const shortTimeoutTransportStrategy = configuration
       .getTransportStrategy()
-      .withClientTimeout(1);
+      .withClientTimeoutMillis(1);
     const shortTimeoutConfiguration = configuration.withTransportStrategy(
       shortTimeoutTransportStrategy
     );

@@ -20,6 +20,15 @@ any of the operational overhead required by traditional caching solutions!
 
 
 
+## Preview Features
+
+This SDK contains APIs for interacting with collection data structures: Lists, Sets, and Dictionaries.  These APIs
+are currently in preview.  If you would like to request early access to the data structure APIs, please contact us
+at `support@momentohq.com`.
+
+**Note that if you call the List, Set, or Dictionary APIs without first signing up for our early access preview, you
+the calls will result in an `Unsupported operation` error.**
+
 ## Getting Started :running:
 
 ### Requirements
@@ -56,22 +65,27 @@ import {
   LogLevel,
   LogFormat,
   SimpleCacheClient,
+  EnvMomentoTokenProvider,
+  Configurations,
+  LoggerOptions,
 } from '@gomomento/sdk';
 
 const cacheName = 'cache';
 const cacheKey = 'key';
 const cacheValue = 'value';
-const authToken = process.env.MOMENTO_AUTH_TOKEN;
-if (!authToken) {
-  throw new Error('Missing required environment variable MOMENTO_AUTH_TOKEN');
-}
+
+const credentialsProvider = new EnvMomentoTokenProvider('MOMENTO_AUTH_TOKEN');
+
+const loggerOptions: LoggerOptions = {
+  level: LogLevel.INFO,
+  format: LogFormat.JSON,
+};
 
 const defaultTtl = 60;
-const momento = new SimpleCacheClient(authToken, defaultTtl, {
-  loggerOptions: {
-    level: LogLevel.INFO,
-    format: LogFormat.JSON,
-  },
+const momento = new SimpleCacheClient({
+  configuration: Configurations.Laptop.latest(loggerOptions),
+  credentialProvider: credentialsProvider,
+  defaultTtlSeconds: defaultTtl,
 });
 
 const main = async () => {

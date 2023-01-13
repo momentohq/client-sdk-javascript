@@ -34,8 +34,8 @@ export enum MomentoErrorCode {
 export class MomentoGrpcErrorDetails {
   public readonly code: number;
   public readonly details: string;
-  public readonly metadata: object | null;
-  constructor(code: number, details: string, metadata: object | null) {
+  public readonly metadata?: object;
+  constructor(code: number, details: string, metadata?: object) {
     this.code = code;
     this.details = details;
     this.metadata = metadata;
@@ -59,8 +59,8 @@ export abstract class SdkError extends Error {
   constructor(
     message: string,
     code = 0,
-    metadata: object | null = null,
-    stack: string | null = null
+    metadata: object | undefined = undefined,
+    stack: string | undefined = undefined
   ) {
     super(message);
     const grpcDetails = new MomentoGrpcErrorDetails(code, message, metadata);

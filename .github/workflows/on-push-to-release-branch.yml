@@ -33,6 +33,9 @@ jobs:
   publish_javascript:
     # The type of runner that the job will run on
     runs-on: macos-latest
+    env:
+      TEST_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+      TEST_CACHE_NAME: js-integration-test-ci
     needs: release
 
     # Steps represent a sequence of tasks that will be executed as part of the job
