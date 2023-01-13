@@ -147,7 +147,7 @@ export class CacheClient {
         },
         (err, resp) => {
           if (resp) {
-            resolve(new CacheSet.Success(value));
+            resolve(new CacheSet.Success());
           } else {
             resolve(new CacheSet.Error(cacheServiceErrorMapper(err)));
           }
