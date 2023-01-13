@@ -65,6 +65,7 @@ export class CollectionTtl {
    *  for the collection will be refreshed any time the collection is
    *  modified.
    * @constructor
+   * @param {number} [ttlSeconds]
    * @returns {CollectionTtl}
    */
   public static of(ttlSeconds: number): CollectionTtl {
@@ -74,6 +75,7 @@ export class CollectionTtl {
   /** Constructs a CollectionTtl with the specified TTL.
    *  Will only refresh if the TTL is provided.
    * @constructor
+   * @param {number | null} [ttlSeconds=null]
    * @returns {CollectionTtl}
    */
   public static refreshTtlIfProvided(
