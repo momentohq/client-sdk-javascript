@@ -11,6 +11,7 @@ import * as CacheDelete from './messages/responses/cache-delete';
 import * as CacheSet from './messages/responses/cache-set';
 import * as CacheDictionaryFetch from './messages/responses/cache-dictionary-fetch';
 import * as CacheDictionarySetField from './messages/responses/cache-dictionary-set-field';
+import * as CacheDictionarySetFields from './messages/responses/cache-dictionary-set-fields';
 import {getLogger, initializeMomentoLogging, Logger} from './utils/logging';
 import * as CacheSetFetch from './messages/responses/cache-set-fetch';
 import {range} from './utils/collections';
@@ -193,6 +194,21 @@ export class SimpleCacheClient {
       dictionaryName,
       field,
       value,
+      ttl
+    );
+  }
+
+  public async dictionarySetFields(
+    cacheName: string,
+    dictionaryName: string,
+    items: {field: string | Uint8Array; value: string | Uint8Array}[],
+    ttl?: CollectionTtl
+  ): Promise<CacheDictionarySetFields.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionarySendFields(
+      cacheName,
+      dictionaryName,
+      items,
       ttl
     );
   }

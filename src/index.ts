@@ -13,6 +13,7 @@ import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
 import * as CacheSetFetch from './messages/responses/cache-set-fetch';
 import * as CacheDictionaryFetch from './messages/responses/cache-dictionary-fetch';
 import * as CacheDictionarySetField from './messages/responses/cache-dictionary-set-field';
+import * as CacheDictionarySetFields from './messages/responses/cache-dictionary-set-fields';
 import {CacheInfo} from './messages/cache-info';
 import {
   CredentialProvider,
@@ -67,6 +68,7 @@ export {
   CacheSetFetch,
   CacheDictionaryFetch,
   CacheDictionarySetField,
+  CacheDictionarySetFields,
   MomentoErrorCode,
   AlreadyExistsError,
   AuthenticationError,

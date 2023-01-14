@@ -14,6 +14,7 @@ import * as CacheDelete from '../messages/responses/cache-delete';
 import * as CacheSetFetch from '../messages/responses/cache-set-fetch';
 import * as CacheDictionaryFetch from '../messages/responses/cache-dictionary-fetch';
 import * as CacheDictionarySetField from '../messages/responses/cache-dictionary-set-field';
+import * as CacheDictionarySetFields from '../messages/responses/cache-dictionary-set-fields';
 import {version} from '../../package.json';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
@@ -416,6 +417,84 @@ export class CacheClient {
           } else {
             resolve(
               new CacheDictionarySetField.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async dictionarySendFields(
+    cacheName: string,
+    dictionaryName: string,
+    items: {field: string | Uint8Array; value: string | Uint8Array}[],
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheDictionarySetFields.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+      items.forEach(item => {
+        ensureValidField(item.field);
+        ensureValidValue(item.value);
+      });
+    } catch (err) {
+      return new CacheDictionarySetFields.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'dictionarySetFields' request; items: ${items.toString()}, ttl: ${
+        ttl.ttlSeconds.toString() ?? 'null'
+      }`
+    );
+
+    const dictionaryFieldValuePairs = items.map(
+      item =>
+        new grpcCache._DictionaryFieldValuePair({
+          field: this.convert(item.field),
+          value: this.convert(item.value),
+        })
+    );
+    const result = await this.sendDictionarySetFields(
+      cacheName,
+      this.convert(dictionaryName),
+      dictionaryFieldValuePairs,
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+    this.logger.trace(
+      `'dictionarySetFields' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendDictionarySetFields(
+    cacheName: string,
+    dictionaryName: Uint8Array,
+    items: grpcCache._DictionaryFieldValuePair[],
+    ttlMilliseconds: number,
+    refreshTtl: boolean
+  ): Promise<CacheDictionarySetFields.Response> {
+    const request = new grpcCache._DictionarySetRequest({
+      dictionary_name: dictionaryName,
+      items: items,
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().DictionarySet(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheDictionarySetFields.Success());
+          } else {
+            resolve(
+              new CacheDictionarySetFields.Error(cacheServiceErrorMapper(err))
             );
           }
         }
