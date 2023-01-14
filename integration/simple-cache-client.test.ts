@@ -522,7 +522,98 @@ describe('Integration tests for dictionary operations', () => {
     );
     expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
     expect((response as CacheDictionaryGetField.Hit).valueUint8Array()).toEqual(
+      value
+    );
+  });
+
+  it('should return MISS when field does not present for dictionaryGetField with Uint8Array field/value', async () => {
+    const dictionaryName = v4();
+    const field = new TextEncoder().encode(v4());
+    const value = new TextEncoder().encode(v4());
+    const otherField = new TextEncoder().encode(v4());
+    const response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+    const getResponse = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      otherField
+    );
+    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
+  });
+
+  it('should dictionarySet/GetField with Uint8Array field/value with no refresh ttl', async () => {
+    const dictionaryName = v4();
+    const field = new TextEncoder().encode(v4());
+    const value = new TextEncoder().encode(v4());
+    let response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value,
+      CollectionTtl.of(5).withNoRefreshTtlOnUpdates()
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+    await new Promise(r => setTimeout(r, 100));
+
+    response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value,
+      CollectionTtl.of(10).withNoRefreshTtlOnUpdates()
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+    await new Promise(r => setTimeout(r, 4900));
+
+    response = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
       field
+    );
+    const getResponse = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
+  });
+
+  it('should dictionarySet/GetField with Uint8Array field/value with refresh ttl', async () => {
+    const dictionaryName = v4();
+    const field = new TextEncoder().encode(v4());
+    const value = new TextEncoder().encode(v4());
+    let response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value,
+      CollectionTtl.of(2)
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+
+    response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value,
+      CollectionTtl.of(10)
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+    await new Promise(r => setTimeout(r, 2000));
+
+    const getResponse = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+    expect((response as CacheDictionaryGetField.Hit).valueUint8Array()).toEqual(
+      value
     );
   });
 
@@ -538,6 +629,236 @@ describe('Integration tests for dictionary operations', () => {
     expect(
       (response as CacheDictionaryGetField.Miss).fieldUint8Array()
     ).toEqual(field);
+  });
+
+  it('should set/get a dictionary with string field/value', async () => {
+    const dictionaryName = v4();
+    const field = v4();
+    const value = v4();
+    const response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+    const getResponse = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+    expect((response as CacheDictionaryGetField.Hit).valueString()).toEqual(
+      value
+    );
+  });
+
+  it('should set/get a dictionary with string field/value and return expected toString value', async () => {
+    const dictionaryName = v4();
+    const field = v4();
+    const value = v4();
+    const response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+    const getResponse = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+    expect((response as CacheDictionaryGetField.Hit).toString()).toEqual(
+      `CacheDictionaryGetField.Hit: ${(
+        response as CacheDictionaryGetField.Hit
+      ).valueString()}`
+    );
+  });
+
+  it('should return MISS when field does not present for dictionaryGetField with string field/value', async () => {
+    const dictionaryName = v4();
+    const field = v4();
+    const value = v4();
+    const otherField = v4();
+    const response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+    const getResponse = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      otherField
+    );
+    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
+  });
+
+  it('should dictionarySet/GetField with string field/value with no refresh ttl', async () => {
+    const dictionaryName = v4();
+    const field = v4();
+    const value = v4();
+    let response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value,
+      CollectionTtl.of(5).withNoRefreshTtlOnUpdates()
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+    await new Promise(r => setTimeout(r, 100));
+
+    response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value,
+      CollectionTtl.of(10).withNoRefreshTtlOnUpdates()
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+    await new Promise(r => setTimeout(r, 4900));
+
+    response = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    const getResponse = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
+  });
+
+  it('should dictionarySet/GetField with string field/value with refresh ttl', async () => {
+    const dictionaryName = v4();
+    const field = v4();
+    const value = v4();
+    let response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value,
+      CollectionTtl.of(2)
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+
+    response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value,
+      CollectionTtl.of(10)
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+    await new Promise(r => setTimeout(r, 2000));
+
+    const getResponse = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+    expect((response as CacheDictionaryGetField.Hit).valueString()).toEqual(
+      value
+    );
+  });
+
+  it('should set/get a dictionary with string field and Uint8Array value', async () => {
+    const dictionaryName = v4();
+    const field = v4();
+    const value = new TextEncoder().encode(v4());
+    const response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+    const getResponse = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+    expect((response as CacheDictionaryGetField.Hit).valueUint8Array()).toEqual(
+      value
+    );
+  });
+
+  it('should dictionarySet/GetField with string field, Uint8Array value with no refresh ttl', async () => {
+    const dictionaryName = v4();
+    const field = v4();
+    const value = new TextEncoder().encode(v4());
+    let response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value,
+      CollectionTtl.of(5).withNoRefreshTtlOnUpdates()
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+    await new Promise(r => setTimeout(r, 100));
+
+    response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value,
+      CollectionTtl.of(10).withNoRefreshTtlOnUpdates()
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+    await new Promise(r => setTimeout(r, 4900));
+
+    response = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    const getResponse = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
+  });
+
+  it('should dictionarySet/GetField with string field, Uint8Array value with refresh ttl', async () => {
+    const dictionaryName = v4();
+    const field = v4();
+    const value = new TextEncoder().encode(v4());
+    let response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value,
+      CollectionTtl.of(2)
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+
+    response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value,
+      CollectionTtl.of(10)
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+    await new Promise(r => setTimeout(r, 2000));
+
+    const getResponse = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+    expect((response as CacheDictionaryGetField.Hit).valueUint8Array()).toEqual(
+      value
+    );
   });
 
   it('should return InvalidArgument response for dictionary fetch with invalid cache/dictionary name', async () => {
