@@ -18,6 +18,7 @@ import {
   CacheDictionarySetField,
   CacheDictionarySetFields,
   CacheDictionaryGetField,
+  CacheDictionaryGetFields,
 } from '../src';
 import {TextEncoder} from 'util';
 import {SimpleCacheClientProps} from '../src/simple-cache-client-props';
@@ -409,6 +410,50 @@ describe('Integration tests for dictionary operations', () => {
     ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
   });
 
+  it('should return InvalidArgument response for dictionaryGetFields with invalid cache/dictionary names and fields', async () => {
+    const fields = ['field1'];
+    const invalidItems = [''];
+    const dictionaryGetFieldsResponse1 = await momento.dictionaryGetFields(
+      '',
+      'myDictionary',
+      fields
+    );
+    expect(dictionaryGetFieldsResponse1).toBeInstanceOf(
+      CacheDictionaryGetFields.Error
+    );
+    expect(
+      (
+        dictionaryGetFieldsResponse1 as CacheDictionaryGetFields.Error
+      ).errorCode()
+    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
+    const dictionaryGetFieldsResponse2 = await momento.dictionaryGetFields(
+      'cache',
+      '',
+      fields
+    );
+    expect(dictionaryGetFieldsResponse2).toBeInstanceOf(
+      CacheDictionaryGetFields.Error
+    );
+    expect(
+      (
+        dictionaryGetFieldsResponse2 as CacheDictionaryGetFields.Error
+      ).errorCode()
+    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
+    const dictionaryGetFieldsResponse3 = await momento.dictionaryGetFields(
+      'cache',
+      'myDictionary',
+      invalidItems
+    );
+    expect(dictionaryGetFieldsResponse3).toBeInstanceOf(
+      CacheDictionaryGetFields.Error
+    );
+    expect(
+      (
+        dictionaryGetFieldsResponse3 as CacheDictionaryGetFields.Error
+      ).errorCode()
+    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
+  });
+
   it('should return InvalidArgument response for dictionarySetField with invalid cache/dictionary/field/value name', async () => {
     const dictionarySetFieldResponse1 = await momento.dictionarySetField(
       '',
@@ -521,9 +566,9 @@ describe('Integration tests for dictionary operations', () => {
       field
     );
     expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    expect((response as CacheDictionaryGetField.Hit).valueUint8Array()).toEqual(
-      value
-    );
+    if (getResponse instanceof CacheDictionaryGetField.Hit) {
+      expect(getResponse.valueUint8Array()).toEqual(value);
+    }
   });
 
   it('should return MISS when field does not present for dictionaryGetField with Uint8Array field/value', async () => {
