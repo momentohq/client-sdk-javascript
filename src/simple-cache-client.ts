@@ -12,6 +12,7 @@ import * as CacheSet from './messages/responses/cache-set';
 import * as CacheDictionaryFetch from './messages/responses/cache-dictionary-fetch';
 import * as CacheDictionarySetField from './messages/responses/cache-dictionary-set-field';
 import * as CacheDictionarySetFields from './messages/responses/cache-dictionary-set-fields';
+import * as CacheDictionaryGetField from './messages/responses/cache-dictionary-get-field';
 import {getLogger, initializeMomentoLogging, Logger} from './utils/logging';
 import * as CacheSetFetch from './messages/responses/cache-set-fetch';
 import {range} from './utils/collections';
@@ -19,6 +20,7 @@ import {Configuration} from './config/configuration';
 import {CredentialProvider} from './auth/credential-provider';
 import {SimpleCacheClientProps} from './simple-cache-client-props';
 import {CollectionTtl} from './utils/collection-ttl';
+import {CacheDictionaryGetFields} from '.';
 
 /**
  * Momento Simple Cache Client.
@@ -211,6 +213,24 @@ export class SimpleCacheClient {
       items,
       ttl
     );
+  }
+
+  public async dictionaryGetField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array
+  ): Promise<CacheDictionaryGetField.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryGetField(cacheName, dictionaryName, field);
+  }
+
+  public async dictionaryGetFields(
+    cacheName: string,
+    dictionaryName: string,
+    fields: string[] | Uint8Array[]
+  ): Promise<CacheDictionaryGetFields.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryGetFields(cacheName, dictionaryName, fields);
   }
 
   /**

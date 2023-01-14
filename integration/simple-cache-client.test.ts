@@ -17,6 +17,7 @@ import {
   CacheDictionaryFetch,
   CacheDictionarySetField,
   CacheDictionarySetFields,
+  CacheDictionaryGetField,
 } from '../src';
 import {TextEncoder} from 'util';
 import {SimpleCacheClientProps} from '../src/simple-cache-client-props';
@@ -372,6 +373,42 @@ describe('Integration Tests for operations on sets datastructure', () => {
 });
 
 describe('Integration tests for dictionary operations', () => {
+  it('should return InvalidArgument response for dictionaryGetField with invalid cache/dictionary/field/value name', async () => {
+    const dictionaryGetFieldResponse1 = await momento.dictionaryGetField(
+      '',
+      'myDictionary',
+      'myField'
+    );
+    expect(dictionaryGetFieldResponse1).toBeInstanceOf(
+      CacheDictionaryGetField.Error
+    );
+    expect(
+      (dictionaryGetFieldResponse1 as CacheDictionaryGetField.Error).errorCode()
+    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
+    const dictionaryGetFieldResponse2 = await momento.dictionaryGetField(
+      'cache',
+      '',
+      'myField'
+    );
+    expect(dictionaryGetFieldResponse2).toBeInstanceOf(
+      CacheDictionaryGetField.Error
+    );
+    expect(
+      (dictionaryGetFieldResponse2 as CacheDictionaryGetField.Error).errorCode()
+    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
+    const dictionaryGetFieldResponse3 = await momento.dictionaryGetField(
+      'cache',
+      'myDictionary',
+      ''
+    );
+    expect(dictionaryGetFieldResponse3).toBeInstanceOf(
+      CacheDictionaryGetField.Error
+    );
+    expect(
+      (dictionaryGetFieldResponse3 as CacheDictionaryGetField.Error).errorCode()
+    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
+  });
+
   it('should return InvalidArgument response for dictionarySetField with invalid cache/dictionary/field/value name', async () => {
     const dictionarySetFieldResponse1 = await momento.dictionarySetField(
       '',

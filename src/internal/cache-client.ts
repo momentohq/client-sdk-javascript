@@ -15,6 +15,8 @@ import * as CacheSetFetch from '../messages/responses/cache-set-fetch';
 import * as CacheDictionaryFetch from '../messages/responses/cache-dictionary-fetch';
 import * as CacheDictionarySetField from '../messages/responses/cache-dictionary-set-field';
 import * as CacheDictionarySetFields from '../messages/responses/cache-dictionary-set-fields';
+import * as CacheDictionaryGetField from '../messages/responses/cache-dictionary-get-field';
+import * as CacheDictionaryGetFields from '../messages/responses/cache-dictionary-get-fields';
 import {version} from '../../package.json';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
@@ -33,7 +35,6 @@ import {CredentialProvider} from '../auth/credential-provider';
 import {Configuration} from '../config/configuration';
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
 import {CollectionTtl} from '../utils/collection-ttl';
-import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 
 export class CacheClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -328,7 +329,7 @@ export class CacheClient {
     cacheName: string,
     dictionaryName: Uint8Array
   ): Promise<CacheDictionaryFetch.Response> {
-    const request = new cache_client._DictionaryFetchRequest({
+    const request = new grpcCache._DictionaryFetchRequest({
       dictionary_name: dictionaryName,
     });
     const metadata = this.createMetadata(cacheName);
@@ -502,6 +503,153 @@ export class CacheClient {
     });
   }
 
+  public async dictionaryGetField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array
+  ): Promise<CacheDictionaryGetField.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+      ensureValidField(field);
+    } catch (err) {
+      return new CacheDictionaryGetField.Error(
+        normalizeSdkError(err as Error),
+        this.convert(field)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'dictionaryGetField' request; field: ${field.toString()}`
+    );
+    const result = await this.sendDictionaryGetField(
+      cacheName,
+      this.convert(dictionaryName),
+      this.convert(field)
+    );
+    this.logger.trace(
+      `'dictionaryGetField' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendDictionaryGetField(
+    cacheName: string,
+    dictionaryName: Uint8Array,
+    field: Uint8Array
+  ): Promise<CacheDictionaryGetField.Response> {
+    const request = new grpcCache._DictionaryGetRequest({
+      dictionary_name: dictionaryName,
+      fields: [field],
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().DictionaryGet(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.dictionary === 'missing') {
+            resolve(new CacheDictionaryGetField.Miss(field));
+          } else if (resp?.dictionary === 'found') {
+            if (resp?.found.items.length === 0) {
+              resolve(
+                new CacheDictionaryGetField.Error(
+                  new UnknownError(
+                    '_DictionaryGetResponseResponse contained no data but was found'
+                  ),
+                  field
+                )
+              );
+            } else if (
+              resp?.found.items[0].result === grpcCache.ECacheResult.Miss
+            ) {
+              resolve(new CacheDictionaryGetField.Miss(field));
+            } else {
+              resolve(
+                new CacheDictionaryGetField.Hit(
+                  resp?.found.items[0].cache_body,
+                  field
+                )
+              );
+            }
+          } else {
+            resolve(
+              new CacheDictionaryGetField.Error(
+                cacheServiceErrorMapper(err),
+                field
+              )
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async dictionaryGetFields(
+    cacheName: string,
+    dictionaryName: string,
+    fields: string[] | Uint8Array[]
+  ): Promise<CacheDictionaryGetFields.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+      fields.forEach(field => ensureValidField(field));
+    } catch (err) {
+      return new CacheDictionaryGetFields.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'dictionaryGetFields' request; fields: ${fields.toString()}`
+    );
+    const encodedFields = fields.map(field => this.convert(field));
+    const result = await this.sendDictionaryGetFields(
+      cacheName,
+      this.convert(dictionaryName),
+      encodedFields
+    );
+    this.logger.trace(
+      `'dictionaryGetFields' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendDictionaryGetFields(
+    cacheName: string,
+    dictionaryName: Uint8Array,
+    fields: Uint8Array[]
+  ): Promise<CacheDictionaryGetFields.Response> {
+    const request = new grpcCache._DictionaryGetRequest({
+      dictionary_name: dictionaryName,
+      fields: fields,
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().DictionaryGet(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.dictionary === 'found') {
+            resolve(new CacheDictionaryGetFields.Hit(resp.found.items, fields));
+          } else if (resp?.dictionary === 'missing') {
+            resolve(new CacheDictionaryGetFields.Miss());
+          } else {
+            resolve(
+              new CacheDictionaryGetFields.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
   private initializeInterceptors(): Interceptor[] {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
@@ -530,9 +678,9 @@ export class CacheClient {
   private toSingletonFieldValuePair(
     field: Uint8Array,
     value: Uint8Array
-  ): cache_client._DictionaryFieldValuePair[] {
+  ): grpcCache._DictionaryFieldValuePair[] {
     return [
-      new cache_client._DictionaryFieldValuePair({
+      new grpcCache._DictionaryFieldValuePair({
         field: field,
         value: value,
       }),

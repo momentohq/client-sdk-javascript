@@ -14,6 +14,8 @@ import * as CacheSetFetch from './messages/responses/cache-set-fetch';
 import * as CacheDictionaryFetch from './messages/responses/cache-dictionary-fetch';
 import * as CacheDictionarySetField from './messages/responses/cache-dictionary-set-field';
 import * as CacheDictionarySetFields from './messages/responses/cache-dictionary-set-fields';
+import * as CacheDictionaryGetField from './messages/responses/cache-dictionary-get-field';
+import * as CacheDictionaryGetFields from './messages/responses/cache-dictionary-get-fields';
 import {CacheInfo} from './messages/cache-info';
 import {
   CredentialProvider,
@@ -69,6 +71,8 @@ export {
   CacheDictionaryFetch,
   CacheDictionarySetField,
   CacheDictionarySetFields,
+  CacheDictionaryGetField,
+  CacheDictionaryGetFields,
   MomentoErrorCode,
   AlreadyExistsError,
   AuthenticationError,

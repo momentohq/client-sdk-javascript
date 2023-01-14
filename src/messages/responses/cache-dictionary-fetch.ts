@@ -10,15 +10,9 @@ export abstract class Response extends ResponseBase {}
 
 export class Hit extends Response {
   private readonly items: cache_client._DictionaryFieldValuePair[];
-  private readonly valueDictionaryUint8ArrayUint8ArrayMap = new Map<
-    Uint8Array,
-    Uint8Array
-  >();
-  private readonly valueDictionaryStringStringMap = new Map<string, string>();
-  private readonly valueDictionaryStringArrayBufferMap = new Map<
-    string,
-    Uint8Array
-  >();
+  private readonly dictionaryUint8ArrayUint8Array: Map<Uint8Array, Uint8Array>;
+  private readonly dictionaryStringString: Map<string, string>;
+  private readonly dictionaryStringArrayBuffer: Map<string, Uint8Array>;
 
   constructor(items: cache_client._DictionaryFieldValuePair[]) {
     super();
@@ -27,40 +21,35 @@ export class Hit extends Response {
 
   public valueDictionaryUint8ArrayUint8Array(): Map<Uint8Array, Uint8Array> {
     for (const item of this.items) {
-      this.valueDictionaryUint8ArrayUint8ArrayMap.set(item.field, item.value);
+      this.dictionaryUint8ArrayUint8Array.set(item.field, item.value);
     }
-    return this.valueDictionaryUint8ArrayUint8ArrayMap;
+    return this.dictionaryUint8ArrayUint8Array;
   }
 
   public valueDictionaryStringString(): Map<string, string> {
     for (const item of this.items) {
-      this.valueDictionaryStringStringMap.set(
+      this.dictionaryStringString.set(
         TEXT_DECODER.decode(item.field),
         TEXT_DECODER.decode(item.value)
       );
     }
-    return this.valueDictionaryStringStringMap;
+    return this.dictionaryStringString;
   }
 
   public valueDictionaryStringUint8Array(): Map<string, Uint8Array> {
     for (const item of this.items) {
-      this.valueDictionaryStringArrayBufferMap.set(
+      this.dictionaryStringArrayBuffer.set(
         TEXT_DECODER.decode(item.field),
         item.value
       );
     }
-    return this.valueDictionaryStringArrayBufferMap;
+    return this.dictionaryStringArrayBuffer;
   }
 
   public override toString(): string {
-    const stringRepresentation = Object.keys(
-      this.valueDictionaryStringStringMap
-    )
+    const stringRepresentation = Object.keys(this.dictionaryStringString)
       .map(
-        key =>
-          `${key}: ${
-            this.valueDictionaryStringStringMap.get(key) || 'undefined'
-          }`
+        key => `${key}: ${this.dictionaryStringString.get(key) || 'undefined'}`
       )
       .join(', ');
     return `${super.toString()}: valueDictionaryStringString: ${stringRepresentation}`;
