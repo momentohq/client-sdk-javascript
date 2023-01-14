@@ -83,7 +83,7 @@ async function withCache(
   }
 }
 
-describe('create/delete cache, get/set/delete.ts Integration Tests', () => {
+describe('create/delete cache, get/set/delete', () => {
   it('should create and delete a cache, set and get a value', async () => {
     const cacheName = v4();
     await withCache(momento, cacheName, async () => {
