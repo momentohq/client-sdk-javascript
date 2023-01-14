@@ -2,12 +2,14 @@ import {SdkError} from '../../errors/errors';
 import {ResponseBase} from './response-base';
 import {applyMixins, ErrorBody} from '../../errors/error-utils';
 import {TextDecoder} from 'util';
+import {truncateString} from '../../utils/display';
 
 const TEXT_DECODER = new TextDecoder();
 
 export abstract class Response extends ResponseBase {}
 
 export class Hit extends Response {
+  private readonly _displayListSizeLimit = 5;
   private readonly _values: Uint8Array[];
   constructor(values: Uint8Array[]) {
     super();
@@ -22,8 +24,21 @@ export class Hit extends Response {
     return this._values.map(v => TEXT_DECODER.decode(v));
   }
 
+  private truncateValueStrings(): string[] {
+    const values = this.valueListString();
+    if (values.length <= this._displayListSizeLimit) {
+      return values;
+    } else {
+      return values.slice(0, this._displayListSizeLimit).concat(['...']);
+    }
+  }
+
   public override toString(): string {
-    return `${super.toString()}: ${this._values.length} items`;
+    const displayList = this.truncateValueStrings();
+    const asStrings = displayList.map(v => {
+      return truncateString(v);
+    });
+    return `${super.toString()}: [${asStrings.toString()}]`;
   }
 }
 

@@ -1,5 +1,5 @@
 import * as CacheGet from '../src/messages/responses/cache-get';
-import { Buffer } from 'node:buffer';
+import {Buffer} from 'node:buffer';
 
 describe('CacheGet', () => {
   describe('#toString()', () => {
