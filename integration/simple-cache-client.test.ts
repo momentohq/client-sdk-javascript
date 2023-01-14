@@ -165,10 +165,6 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       cacheValue
     );
     expect(setResponse).toBeInstanceOf(CacheSet.Success);
-    const getResponse = await momento.get(
-      INTEGRATION_TEST_CACHE_NAME,
-      cacheKey
-    );
   });
   it('should set byte key with string value', async () => {
     const cacheValue = v4();

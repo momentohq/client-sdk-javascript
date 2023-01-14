@@ -1,10 +1,7 @@
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
-import {TextDecoder} from 'util';
 import {SdkError} from '../../errors/errors';
 import {ResponseBase} from './response-base';
 import {applyMixins, ErrorBody} from '../../errors/error-utils';
-
-const TEXT_DECODER = new TextDecoder();
 
 export abstract class Response extends ResponseBase {}
 

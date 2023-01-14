@@ -1,10 +1,11 @@
 import {ResponseBase} from './response-base';
 import {SdkError} from '../../errors/errors';
 import {applyMixins, ErrorBody} from '../../errors/error-utils';
-import {TextDecoder} from 'util';
+import {TextDecoder, TextEncoder} from 'util';
 import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 
 const TEXT_DECODER = new TextDecoder();
+const TEXT_ENCODER = new TextEncoder();
 
 export abstract class Response extends ResponseBase {}
 
@@ -56,12 +57,24 @@ export class Hit extends Response {
     const stringRepresentation = Object.keys(
       this.valueDictionaryStringStringMap
     )
-      .map(key => `${key}: ${this.valueDictionaryStringStringMap[key]}`)
+      .map(
+        key =>
+          `${key}: ${
+            this.valueDictionaryStringStringMap.get(key) || 'undefined'
+          }`
+      )
       .join(', ');
     const uInt8ArrayRepresentation = Object.keys(
       this.valueDictionaryUint8ArrayUint8ArrayMap
     )
-      .map(key => `${key}: ${this.valueDictionaryUint8ArrayUint8ArrayMap[key]}`)
+      .map(
+        key =>
+          `${key}: ${
+            this.valueDictionaryUint8ArrayUint8ArrayMap
+              .get(TEXT_ENCODER.encode(key))
+              ?.toString() || 'undefined'
+          }`
+      )
       .join(', ');
     return `${super.toString()}: valueDictionaryStringString: ${stringRepresentation} valueDictionaryUint8ArrayUint8Array: ${uInt8ArrayRepresentation}`;
   }
