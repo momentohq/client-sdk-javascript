@@ -3,6 +3,7 @@ import {TextDecoder} from 'util';
 import {SdkError} from '../../errors/errors';
 import {ResponseBase} from './response-base';
 import {applyMixins, ErrorBody} from '../../errors/error-utils';
+import {truncateString} from '../../utils/display';
 
 const TEXT_DECODER = new TextDecoder();
 
@@ -27,10 +28,8 @@ export class Hit extends Response {
   }
 
   public override toString(): string {
-    if (this.valueString().length > 32) {
-      return this.valueString().substring(0, 32) + '...';
-    }
-    return super.toString() + ': ' + this.valueString();
+    const display = truncateString(this.valueString());
+    return `${super.toString()}: ${display}`;
   }
 }
 
