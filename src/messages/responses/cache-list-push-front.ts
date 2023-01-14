@@ -11,8 +11,12 @@ export class Success extends Response {
     this._list_length = list_length;
   }
 
-  public list_length(): number {
+  public listLength(): number {
     return this._list_length;
+  }
+
+  public override toString(): string {
+    return `${super.toString()}: listLength: ${this._list_length}`;
   }
 }
 
