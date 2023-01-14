@@ -83,294 +83,294 @@ async function withCache(
   }
 }
 
-// describe('SimpleCacheClient.ts Integration Tests', () => {
-//   it('should create and delete a cache, set and get a value', async () => {
-//     const cacheName = v4();
-//     await withCache(momento, cacheName, async () => {
-//       const setResponse = await momento.set(cacheName, 'key', 'value');
-//       expect(setResponse).toBeInstanceOf(CacheSet.Success);
-//       const res = await momento.get(cacheName, 'key');
-//       expect(res).toBeInstanceOf(CacheGet.Hit);
-//       if (res instanceof CacheGet.Hit) {
-//         expect(res.valueString()).toEqual('value');
-//       }
-//     });
-//   });
-//   it('should return NotFoundError if deleting a non-existent cache', async () => {
-//     const cacheName = v4();
-//     const deleteResponse = await momento.deleteCache(cacheName);
-//     expect(deleteResponse).toBeInstanceOf(DeleteCache.Response);
-//     expect(deleteResponse).toBeInstanceOf(DeleteCache.Error);
-//     if (deleteResponse instanceof DeleteCache.Error) {
-//       expect(deleteResponse.errorCode()).toEqual(
-//         MomentoErrorCode.NOT_FOUND_ERROR
-//       );
-//     }
-//   });
-//   it('should return AlreadyExists response if trying to create a cache that already exists', async () => {
-//     const cacheName = v4();
-//     await withCache(momento, cacheName, async () => {
-//       const createResponse = await momento.createCache(cacheName);
-//       expect(createResponse).toBeInstanceOf(CreateCache.AlreadyExists);
-//     });
-//   });
-//   it('should create 1 cache and list the created cache', async () => {
-//     const cacheName = v4();
-//     await withCache(momento, cacheName, async () => {
-//       const listResponse = await momento.listCaches();
-//       expect(listResponse).toBeInstanceOf(ListCaches.Success);
-//       if (listResponse instanceof ListCaches.Success) {
-//         const caches = listResponse.getCaches();
-//         const names = caches.map(c => c.getName());
-//         expect(names.includes(cacheName)).toBeTruthy();
-//       }
-//     });
-//   });
-//   it('should set and get string from cache', async () => {
-//     const cacheKey = v4();
-//     const cacheValue = v4();
-//     const setResponse = await momento.set(
-//       INTEGRATION_TEST_CACHE_NAME,
-//       cacheKey,
-//       cacheValue
-//     );
-//     expect(setResponse).toBeInstanceOf(CacheSet.Success);
-//     const getResponse = await momento.get(
-//       INTEGRATION_TEST_CACHE_NAME,
-//       cacheKey
-//     );
-//     expect(getResponse).toBeInstanceOf(CacheGet.Hit);
-//     if (getResponse instanceof CacheGet.Hit) {
-//       expect(getResponse.valueString()).toEqual(cacheValue);
-//     }
-//   });
-//   it('should set and get bytes from cache', async () => {
-//     const cacheKey = new TextEncoder().encode(v4());
-//     const cacheValue = new TextEncoder().encode(v4());
-//     const setResponse = await momento.set(
-//       INTEGRATION_TEST_CACHE_NAME,
-//       cacheKey,
-//       cacheValue
-//     );
-//     expect(setResponse).toBeInstanceOf(CacheSet.Success);
-//     const getResponse = await momento.get(
-//       INTEGRATION_TEST_CACHE_NAME,
-//       cacheKey
-//     );
-//     expect(getResponse).toBeInstanceOf(CacheGet.Hit);
-//   });
-//   it('should set string key with bytes value', async () => {
-//     const cacheKey = v4();
-//     const cacheValue = new TextEncoder().encode(v4());
-//     const setResponse = await momento.set(
-//       INTEGRATION_TEST_CACHE_NAME,
-//       cacheKey,
-//       cacheValue
-//     );
-//     expect(setResponse).toBeInstanceOf(CacheSet.Success);
-//   });
-//   it('should set byte key with string value', async () => {
-//     const cacheValue = v4();
-//     const cacheKey = new TextEncoder().encode(v4());
-//     const setResponse = await momento.set(
-//       INTEGRATION_TEST_CACHE_NAME,
-//       cacheKey,
-//       cacheValue
-//     );
-//     expect(setResponse).toBeInstanceOf(CacheSet.Success);
-//     const getResponse = await momento.get(
-//       INTEGRATION_TEST_CACHE_NAME,
-//       cacheKey
-//     );
-//     expect(getResponse).toBeInstanceOf(CacheGet.Hit);
-//     if (getResponse instanceof CacheGet.Hit) {
-//       expect(getResponse.valueString()).toEqual(cacheValue);
-//     }
-//   });
-//   it('should set and get string from cache and returned set value matches string cacheValue', async () => {
-//     const cacheKey = v4();
-//     const cacheValue = v4();
-//     const setResponse = await momento.set(
-//       INTEGRATION_TEST_CACHE_NAME,
-//       cacheKey,
-//       cacheValue
-//     );
-//     expect(setResponse).toBeInstanceOf(CacheSet.Success);
-//   });
-//   it('should set string key with bytes value and returned set value matches byte cacheValue', async () => {
-//     const cacheKey = v4();
-//     const cacheValue = new TextEncoder().encode(v4());
-//     const setResponse = await momento.set(
-//       INTEGRATION_TEST_CACHE_NAME,
-//       cacheKey,
-//       cacheValue
-//     );
-//     expect(setResponse).toBeInstanceOf(CacheSet.Success);
-//   });
-//   it('should timeout on a request that exceeds specified timeout', async () => {
-//     const cacheName = v4();
-//     const defaultTimeoutClient = momento;
-//     const shortTimeoutTransportStrategy = configuration
-//       .getTransportStrategy()
-//       .withClientTimeoutMillis(1);
-//     const shortTimeoutConfiguration = configuration.withTransportStrategy(
-//       shortTimeoutTransportStrategy
-//     );
-//     const shortTimeoutClient = new SimpleCacheClient({
-//       configuration: shortTimeoutConfiguration,
-//       credentialProvider: credentialProvider,
-//       defaultTtlSeconds: 1111,
-//     });
-//     await withCache(defaultTimeoutClient, cacheName, async () => {
-//       const cacheKey = v4();
-//       // Create a longer cache value that should take longer than 1ms to send
-//       const cacheValue = new TextEncoder().encode(v4().repeat(1000));
-//       const setResponse = await shortTimeoutClient.set(
-//         cacheName,
-//         cacheKey,
-//         cacheValue
-//       );
-//       expect(setResponse).toBeInstanceOf(CacheSet.Error);
-//       if (setResponse instanceof CacheSet.Error) {
-//         expect(setResponse.errorCode()).toEqual(MomentoErrorCode.TIMEOUT_ERROR);
-//       }
-//     });
-//   });
-//   it('should set and then delete a value in cache', async () => {
-//     const cacheKey = v4();
-//     const cacheValue = new TextEncoder().encode(v4());
-//     await momento.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
-//     const getResponse = await momento.get(
-//       INTEGRATION_TEST_CACHE_NAME,
-//       cacheKey
-//     );
-//     expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+describe('SimpleCacheClient.ts Integration Tests', () => {
+  it('should create and delete a cache, set and get a value', async () => {
+    const cacheName = v4();
+    await withCache(momento, cacheName, async () => {
+      const setResponse = await momento.set(cacheName, 'key', 'value');
+      expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      const res = await momento.get(cacheName, 'key');
+      expect(res).toBeInstanceOf(CacheGet.Hit);
+      if (res instanceof CacheGet.Hit) {
+        expect(res.valueString()).toEqual('value');
+      }
+    });
+  });
+  it('should return NotFoundError if deleting a non-existent cache', async () => {
+    const cacheName = v4();
+    const deleteResponse = await momento.deleteCache(cacheName);
+    expect(deleteResponse).toBeInstanceOf(DeleteCache.Response);
+    expect(deleteResponse).toBeInstanceOf(DeleteCache.Error);
+    if (deleteResponse instanceof DeleteCache.Error) {
+      expect(deleteResponse.errorCode()).toEqual(
+        MomentoErrorCode.NOT_FOUND_ERROR
+      );
+    }
+  });
+  it('should return AlreadyExists response if trying to create a cache that already exists', async () => {
+    const cacheName = v4();
+    await withCache(momento, cacheName, async () => {
+      const createResponse = await momento.createCache(cacheName);
+      expect(createResponse).toBeInstanceOf(CreateCache.AlreadyExists);
+    });
+  });
+  it('should create 1 cache and list the created cache', async () => {
+    const cacheName = v4();
+    await withCache(momento, cacheName, async () => {
+      const listResponse = await momento.listCaches();
+      expect(listResponse).toBeInstanceOf(ListCaches.Success);
+      if (listResponse instanceof ListCaches.Success) {
+        const caches = listResponse.getCaches();
+        const names = caches.map(c => c.getName());
+        expect(names.includes(cacheName)).toBeTruthy();
+      }
+    });
+  });
+  it('should set and get string from cache', async () => {
+    const cacheKey = v4();
+    const cacheValue = v4();
+    const setResponse = await momento.set(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey,
+      cacheValue
+    );
+    expect(setResponse).toBeInstanceOf(CacheSet.Success);
+    const getResponse = await momento.get(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey
+    );
+    expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+    if (getResponse instanceof CacheGet.Hit) {
+      expect(getResponse.valueString()).toEqual(cacheValue);
+    }
+  });
+  it('should set and get bytes from cache', async () => {
+    const cacheKey = new TextEncoder().encode(v4());
+    const cacheValue = new TextEncoder().encode(v4());
+    const setResponse = await momento.set(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey,
+      cacheValue
+    );
+    expect(setResponse).toBeInstanceOf(CacheSet.Success);
+    const getResponse = await momento.get(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey
+    );
+    expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+  });
+  it('should set string key with bytes value', async () => {
+    const cacheKey = v4();
+    const cacheValue = new TextEncoder().encode(v4());
+    const setResponse = await momento.set(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey,
+      cacheValue
+    );
+    expect(setResponse).toBeInstanceOf(CacheSet.Success);
+  });
+  it('should set byte key with string value', async () => {
+    const cacheValue = v4();
+    const cacheKey = new TextEncoder().encode(v4());
+    const setResponse = await momento.set(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey,
+      cacheValue
+    );
+    expect(setResponse).toBeInstanceOf(CacheSet.Success);
+    const getResponse = await momento.get(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey
+    );
+    expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+    if (getResponse instanceof CacheGet.Hit) {
+      expect(getResponse.valueString()).toEqual(cacheValue);
+    }
+  });
+  it('should set and get string from cache and returned set value matches string cacheValue', async () => {
+    const cacheKey = v4();
+    const cacheValue = v4();
+    const setResponse = await momento.set(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey,
+      cacheValue
+    );
+    expect(setResponse).toBeInstanceOf(CacheSet.Success);
+  });
+  it('should set string key with bytes value and returned set value matches byte cacheValue', async () => {
+    const cacheKey = v4();
+    const cacheValue = new TextEncoder().encode(v4());
+    const setResponse = await momento.set(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey,
+      cacheValue
+    );
+    expect(setResponse).toBeInstanceOf(CacheSet.Success);
+  });
+  it('should timeout on a request that exceeds specified timeout', async () => {
+    const cacheName = v4();
+    const defaultTimeoutClient = momento;
+    const shortTimeoutTransportStrategy = configuration
+      .getTransportStrategy()
+      .withClientTimeoutMillis(1);
+    const shortTimeoutConfiguration = configuration.withTransportStrategy(
+      shortTimeoutTransportStrategy
+    );
+    const shortTimeoutClient = new SimpleCacheClient({
+      configuration: shortTimeoutConfiguration,
+      credentialProvider: credentialProvider,
+      defaultTtlSeconds: 1111,
+    });
+    await withCache(defaultTimeoutClient, cacheName, async () => {
+      const cacheKey = v4();
+      // Create a longer cache value that should take longer than 1ms to send
+      const cacheValue = new TextEncoder().encode(v4().repeat(1000));
+      const setResponse = await shortTimeoutClient.set(
+        cacheName,
+        cacheKey,
+        cacheValue
+      );
+      expect(setResponse).toBeInstanceOf(CacheSet.Error);
+      if (setResponse instanceof CacheSet.Error) {
+        expect(setResponse.errorCode()).toEqual(MomentoErrorCode.TIMEOUT_ERROR);
+      }
+    });
+  });
+  it('should set and then delete a value in cache', async () => {
+    const cacheKey = v4();
+    const cacheValue = new TextEncoder().encode(v4());
+    await momento.set(INTEGRATION_TEST_CACHE_NAME, cacheKey, cacheValue);
+    const getResponse = await momento.get(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey
+    );
+    expect(getResponse).toBeInstanceOf(CacheGet.Hit);
 
-//     const deleteResponse = await momento.delete(
-//       INTEGRATION_TEST_CACHE_NAME,
-//       cacheKey
-//     );
-//     expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
-//     const getMiss = await momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
-//     expect(getMiss).toBeInstanceOf(CacheGet.Miss);
-//   });
-//   it('should return InvalidArgument response for set, get, and delete with empty key', async () => {
-//     const setResponse = await momento.set(
-//       INTEGRATION_TEST_CACHE_NAME,
-//       '',
-//       'foo'
-//     );
-//     expect(setResponse).toBeInstanceOf(CacheSet.Error);
-//     expect((setResponse as CacheSet.Error).errorCode()).toEqual(
-//       MomentoErrorCode.INVALID_ARGUMENT_ERROR
-//     );
-//     const getResponse = await momento.get(INTEGRATION_TEST_CACHE_NAME, '');
-//     expect(getResponse).toBeInstanceOf(CacheGet.Error);
-//     expect((getResponse as CacheGet.Error).errorCode()).toEqual(
-//       MomentoErrorCode.INVALID_ARGUMENT_ERROR
-//     );
-//     const deleteResponse = await momento.delete(
-//       INTEGRATION_TEST_CACHE_NAME,
-//       ''
-//     );
-//     expect(deleteResponse).toBeInstanceOf(CacheDelete.Error);
-//     expect((deleteResponse as CacheDelete.Error).errorCode()).toEqual(
-//       MomentoErrorCode.INVALID_ARGUMENT_ERROR
-//     );
-//   });
-//   it('should return InvalidArgument response for set, get, and delete with invalid cache name', async () => {
-//     const setResponse = await momento.set('', 'bar', 'foo');
-//     expect(setResponse).toBeInstanceOf(CacheSet.Error);
-//     expect((setResponse as CacheSet.Error).errorCode()).toEqual(
-//       MomentoErrorCode.INVALID_ARGUMENT_ERROR
-//     );
-//     const getResponse = await momento.get('', 'bar');
-//     expect(getResponse).toBeInstanceOf(CacheGet.Error);
-//     expect((getResponse as CacheDelete.Error).errorCode()).toEqual(
-//       MomentoErrorCode.INVALID_ARGUMENT_ERROR
-//     );
-//     const deleteResponse = await momento.delete('', 'bar');
-//     expect(deleteResponse).toBeInstanceOf(CacheDelete.Error);
-//     expect((deleteResponse as CacheDelete.Error).errorCode()).toEqual(
-//       MomentoErrorCode.INVALID_ARGUMENT_ERROR
-//     );
-//   });
-//   it('should return InvalidArgument response for set request with empty key or value', async () => {
-//     const noKeySetResponse = await momento.set(
-//       INTEGRATION_TEST_CACHE_NAME,
-//       '',
-//       'value'
-//     );
-//     expect(noKeySetResponse).toBeInstanceOf(CacheSet.Error);
-//     expect((noKeySetResponse as CacheSet.Error).errorCode()).toEqual(
-//       MomentoErrorCode.INVALID_ARGUMENT_ERROR
-//     );
-//     const noValueSetResponse = await momento.set(
-//       INTEGRATION_TEST_CACHE_NAME,
-//       'key',
-//       ''
-//     );
-//     expect(noValueSetResponse).toBeInstanceOf(CacheSet.Error);
-//     expect((noValueSetResponse as CacheSet.Error).errorCode()).toEqual(
-//       MomentoErrorCode.INVALID_ARGUMENT_ERROR
-//     );
-//   });
-//   it('should return InvalidArgument response for get request with empty key', async () => {
-//     const noKeyGetResponse = await momento.get(INTEGRATION_TEST_CACHE_NAME, '');
-//     expect(noKeyGetResponse).toBeInstanceOf(CacheGet.Error);
-//     expect((noKeyGetResponse as CacheGet.Error).errorCode()).toEqual(
-//       MomentoErrorCode.INVALID_ARGUMENT_ERROR
-//     );
-//   });
-//   it('should create, list, and revoke a signing key', async () => {
-//     const createSigningKeyResponse = await momento.createSigningKey(30);
-//     expect(createSigningKeyResponse).toBeInstanceOf(CreateSigningKey.Success);
-//     let listSigningKeysResponse = await momento.listSigningKeys();
-//     expect(listSigningKeysResponse).toBeInstanceOf(ListSigningKeys.Success);
-//     let signingKeys = (
-//       listSigningKeysResponse as ListSigningKeys.Success
-//     ).getSigningKeys();
-//     expect(signingKeys.length).toBeGreaterThan(0);
-//     expect(
-//       signingKeys
-//         .map(k => k.getKeyId())
-//         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-//         .some(
-//           k =>
-//             k ===
-//             (createSigningKeyResponse as CreateSigningKey.Success).getKeyId()
-//         )
-//     ).toEqual(true);
-//     const revokeResponse = await momento.revokeSigningKey(
-//       (createSigningKeyResponse as CreateSigningKey.Success).getKeyId()
-//     );
-//     expect(revokeResponse).toBeInstanceOf(RevokeSigningKey.Success);
-//     listSigningKeysResponse = await momento.listSigningKeys();
-//     expect(listSigningKeysResponse).toBeInstanceOf(ListSigningKeys.Success);
-//     signingKeys = (
-//       listSigningKeysResponse as ListSigningKeys.Success
-//     ).getSigningKeys();
-//     expect(
-//       signingKeys
-//         .map(k => k.getKeyId())
-//         .some(
-//           k =>
-//             k ===
-//             (createSigningKeyResponse as CreateSigningKey.Success).getKeyId()
-//         )
-//     ).toEqual(false);
-//   });
-// });
+    const deleteResponse = await momento.delete(
+      INTEGRATION_TEST_CACHE_NAME,
+      cacheKey
+    );
+    expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
+    const getMiss = await momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
+    expect(getMiss).toBeInstanceOf(CacheGet.Miss);
+  });
+  it('should return InvalidArgument response for set, get, and delete with empty key', async () => {
+    const setResponse = await momento.set(
+      INTEGRATION_TEST_CACHE_NAME,
+      '',
+      'foo'
+    );
+    expect(setResponse).toBeInstanceOf(CacheSet.Error);
+    expect((setResponse as CacheSet.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    const getResponse = await momento.get(INTEGRATION_TEST_CACHE_NAME, '');
+    expect(getResponse).toBeInstanceOf(CacheGet.Error);
+    expect((getResponse as CacheGet.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    const deleteResponse = await momento.delete(
+      INTEGRATION_TEST_CACHE_NAME,
+      ''
+    );
+    expect(deleteResponse).toBeInstanceOf(CacheDelete.Error);
+    expect((deleteResponse as CacheDelete.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+  });
+  it('should return InvalidArgument response for set, get, and delete with invalid cache name', async () => {
+    const setResponse = await momento.set('', 'bar', 'foo');
+    expect(setResponse).toBeInstanceOf(CacheSet.Error);
+    expect((setResponse as CacheSet.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    const getResponse = await momento.get('', 'bar');
+    expect(getResponse).toBeInstanceOf(CacheGet.Error);
+    expect((getResponse as CacheDelete.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    const deleteResponse = await momento.delete('', 'bar');
+    expect(deleteResponse).toBeInstanceOf(CacheDelete.Error);
+    expect((deleteResponse as CacheDelete.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+  });
+  it('should return InvalidArgument response for set request with empty key or value', async () => {
+    const noKeySetResponse = await momento.set(
+      INTEGRATION_TEST_CACHE_NAME,
+      '',
+      'value'
+    );
+    expect(noKeySetResponse).toBeInstanceOf(CacheSet.Error);
+    expect((noKeySetResponse as CacheSet.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    const noValueSetResponse = await momento.set(
+      INTEGRATION_TEST_CACHE_NAME,
+      'key',
+      ''
+    );
+    expect(noValueSetResponse).toBeInstanceOf(CacheSet.Error);
+    expect((noValueSetResponse as CacheSet.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+  });
+  it('should return InvalidArgument response for get request with empty key', async () => {
+    const noKeyGetResponse = await momento.get(INTEGRATION_TEST_CACHE_NAME, '');
+    expect(noKeyGetResponse).toBeInstanceOf(CacheGet.Error);
+    expect((noKeyGetResponse as CacheGet.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+  });
+  it('should create, list, and revoke a signing key', async () => {
+    const createSigningKeyResponse = await momento.createSigningKey(30);
+    expect(createSigningKeyResponse).toBeInstanceOf(CreateSigningKey.Success);
+    let listSigningKeysResponse = await momento.listSigningKeys();
+    expect(listSigningKeysResponse).toBeInstanceOf(ListSigningKeys.Success);
+    let signingKeys = (
+      listSigningKeysResponse as ListSigningKeys.Success
+    ).getSigningKeys();
+    expect(signingKeys.length).toBeGreaterThan(0);
+    expect(
+      signingKeys
+        .map(k => k.getKeyId())
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        .some(
+          k =>
+            k ===
+            (createSigningKeyResponse as CreateSigningKey.Success).getKeyId()
+        )
+    ).toEqual(true);
+    const revokeResponse = await momento.revokeSigningKey(
+      (createSigningKeyResponse as CreateSigningKey.Success).getKeyId()
+    );
+    expect(revokeResponse).toBeInstanceOf(RevokeSigningKey.Success);
+    listSigningKeysResponse = await momento.listSigningKeys();
+    expect(listSigningKeysResponse).toBeInstanceOf(ListSigningKeys.Success);
+    signingKeys = (
+      listSigningKeysResponse as ListSigningKeys.Success
+    ).getSigningKeys();
+    expect(
+      signingKeys
+        .map(k => k.getKeyId())
+        .some(
+          k =>
+            k ===
+            (createSigningKeyResponse as CreateSigningKey.Success).getKeyId()
+        )
+    ).toEqual(false);
+  });
+});
 
-// describe('Integration Tests for operations on sets datastructure', () => {
-//   it('should return MISS if set does not exist', async () => {
-//     const noKeyGetResponse = await momento.setFetch(
-//       INTEGRATION_TEST_CACHE_NAME,
-//       'this-set-doesnt-exist'
-//     );
-//     expect(noKeyGetResponse).toBeInstanceOf(CacheSetFetch.Miss);
-//   });
-// });
+describe('Integration Tests for operations on sets datastructure', () => {
+  it('should return MISS if set does not exist', async () => {
+    const noKeyGetResponse = await momento.setFetch(
+      INTEGRATION_TEST_CACHE_NAME,
+      'this-set-doesnt-exist'
+    );
+    expect(noKeyGetResponse).toBeInstanceOf(CacheSetFetch.Miss);
+  });
+});
 
 describe('Integration tests for dictionary operations', () => {
   it('should return InvalidArgument response for dictionaryGetField with invalid cache/dictionary/field/value name', async () => {
@@ -502,6 +502,28 @@ describe('Integration tests for dictionary operations', () => {
         dictionarySetFieldsResponse3 as CacheDictionarySetFields.Error
       ).errorCode()
     ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
+  });
+
+  it('should set/get a dictionary with Uint8Array field/value', async () => {
+    const dictionaryName = v4();
+    const field = new TextEncoder().encode(v4());
+    const value = new TextEncoder().encode(v4());
+    const response = await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      value
+    );
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+    const getResponse = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+    expect((response as CacheDictionaryGetField.Hit).valueUint8Array()).toEqual(
+      field
+    );
   });
 
   it('should return MISS if dictionary does not exist for dictionaryGetField', async () => {
