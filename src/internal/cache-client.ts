@@ -20,8 +20,10 @@ import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
 import {
+  ensureValidField,
   ensureValidKey,
   ensureValidSetRequest,
+  ensureValidValue,
   validateCacheName,
   validateDictionaryName,
   validateSetName,
@@ -310,10 +312,15 @@ export class CacheClient {
     } catch (err) {
       return new CacheDictionaryFetch.Error(normalizeSdkError(err as Error));
     }
-    return await this.sendDictionaryFetch(
+    this.logger.trace(
+      `Issuing 'dictionaryFetch' request; dictionaryName: ${dictionaryName}`
+    );
+    const result = await this.sendDictionaryFetch(
       cacheName,
       this.convert(dictionaryName)
     );
+    this.logger.trace(`'dictionaryFetch' request result: ${result.toString()}`);
+    return result;
   }
 
   private async sendDictionaryFetch(
@@ -346,39 +353,69 @@ export class CacheClient {
     });
   }
 
+  public async dictionarySendField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array,
+    value: string | Uint8Array,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheDictionarySetField.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+      ensureValidField(field);
+      ensureValidValue(value);
+    } catch (err) {
+      return new CacheDictionarySetField.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.trace(
+      `Issuing 'dictionarySetField' request; field: ${field.toString()}, value length: ${
+        value.length
+      }, ttl: ${ttl.ttlSeconds.toString() ?? 'null'}`
+    );
+
+    const result = await this.sendDictionarySetField(
+      cacheName,
+      this.convert(dictionaryName),
+      this.convert(field),
+      this.convert(value),
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+    this.logger.trace(
+      `'dictionarySetField' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
   private async sendDictionarySetField(
     cacheName: string,
     dictionaryName: Uint8Array,
-    field: string | Uint8Array,
-    value: string | Uint8Array,
-    ttl?: CollectionTtl
+    field: Uint8Array,
+    value: Uint8Array,
+    ttlMilliseconds: number,
+    refreshTtl: boolean
   ): Promise<CacheDictionarySetField.Response> {
-    const encodedField =
-      typeof field === 'string' ? this.textEncoder.encode(field) : field;
-    const encodedValue =
-      typeof value === 'string' ? this.textEncoder.encode(value) : value;
-    const request = new cache_client._DictionarySetRequest({
+    const request = new grpcCache._DictionarySetRequest({
       dictionary_name: dictionaryName,
-      items: this.toSingletonFieldValuePair(encodedField, encodedValue),
-      ttl_milliseconds: this.ttlMilliseconds(ttl?.ttlSeconds()),
-      refresh_ttl: ttl?.refreshTtl(),
+      items: this.toSingletonFieldValuePair(field, value),
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise(resolve => {
-      this.clientWrapper.getClient().DictionaryFetch(
+      this.clientWrapper.getClient().DictionarySet(
         request,
         metadata,
         {
           interceptors: this.interceptors,
         },
         (err, resp) => {
-          if (resp?.found) {
-            resolve(new CacheDictionaryFetch.Hit(resp.found.items));
-          } else if (resp?.missing) {
-            resolve(new CacheDictionaryFetch.Miss());
+          if (resp) {
+            resolve(new CacheDictionarySetField.Success());
           } else {
             resolve(
-              new CacheDictionaryFetch.Error(cacheServiceErrorMapper(err))
+              new CacheDictionarySetField.Error(cacheServiceErrorMapper(err))
             );
           }
         }
@@ -421,12 +458,5 @@ export class CacheClient {
         value: value,
       }),
     ];
-  }
-
-  /** Time-to-live, in milliseconds.
-   * @returns {number}
-   */
-  protected ttlMilliseconds(ttl: number | undefined): number {
-    return ttl === undefined ? this.defaultTtlSeconds * 1000 : ttl * 1000;
   }
 }

@@ -30,11 +30,7 @@ export function ensureValidSetRequest(
   ttl: number
 ) {
   ensureValidKey(key);
-
-  if (!value) {
-    throw new InvalidArgumentError('value must not be empty');
-  }
-
+  ensureValidValue(value);
   if (ttl && ttl < 0) {
     throw new InvalidArgumentError('ttl must be a positive integer');
   }
@@ -43,5 +39,17 @@ export function ensureValidSetRequest(
 export function ensureValidKey(key: unknown) {
   if (!key) {
     throw new InvalidArgumentError('key must not be empty');
+  }
+}
+
+export function ensureValidField(field: unknown) {
+  if (!field) {
+    throw new InvalidArgumentError('field must not be empty');
+  }
+}
+
+export function ensureValidValue(value: unknown) {
+  if (!value) {
+    throw new InvalidArgumentError('value must not be empty');
   }
 }

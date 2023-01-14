@@ -15,6 +15,7 @@ import {
   CacheSetFetch,
   SimpleCacheClient,
   CacheDictionaryFetch,
+  CacheDictionarySetField,
 } from '../src';
 import {TextEncoder} from 'util';
 import {SimpleCacheClientProps} from '../src/simple-cache-client-props';
@@ -373,6 +374,57 @@ describe('Integration Tests for operations on sets datastructure', () => {
 });
 
 describe('Integration tests for dictionary operations', () => {
+  it('should return InvalidArgument response for dictionarySetField with invalid cache/dictionary/field/value name', async () => {
+    const dictionarySetResponse1 = await momento.dictionarySetField(
+      '',
+      'myDictionary',
+      'myField',
+      'myValue'
+    );
+    expect(dictionarySetResponse1).toBeInstanceOf(
+      CacheDictionarySetField.Error
+    );
+    expect(
+      (dictionarySetResponse1 as CacheDictionarySetField.Error).errorCode()
+    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
+    const dictionarySetResponse2 = await momento.dictionarySetField(
+      'cache',
+      '',
+      'myField',
+      'myValue'
+    );
+    expect(dictionarySetResponse2).toBeInstanceOf(
+      CacheDictionarySetField.Error
+    );
+    expect(
+      (dictionarySetResponse2 as CacheDictionarySetField.Error).errorCode()
+    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
+    const dictionarySetResponse3 = await momento.dictionarySetField(
+      'cache',
+      'myDictionary',
+      '',
+      'myValue'
+    );
+    expect(dictionarySetResponse3).toBeInstanceOf(
+      CacheDictionarySetField.Error
+    );
+    expect(
+      (dictionarySetResponse3 as CacheDictionarySetField.Error).errorCode()
+    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
+    const dictionarySetResponse4 = await momento.dictionarySetField(
+      'cache',
+      'myDictionary',
+      'myField',
+      ''
+    );
+    expect(dictionarySetResponse4).toBeInstanceOf(
+      CacheDictionarySetField.Error
+    );
+    expect(
+      (dictionarySetResponse4 as CacheDictionarySetField.Error).errorCode()
+    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
+  });
+
   it('should return InvalidArgument response for dictionary fetch with invalid cache/dictionary name', async () => {
     const fetchResponse1 = await momento.dictionaryFetch('', 'myDictionary');
     expect(fetchResponse1).toBeInstanceOf(CacheDictionaryFetch.Error);

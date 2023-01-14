@@ -10,6 +10,15 @@ export abstract class Response extends ResponseBase {}
 
 export class Hit extends Response {
   private readonly items: cache_client._DictionaryFieldValuePair[];
+  private readonly valueDictionaryUint8ArrayUint8ArrayMap = new Map<
+    Uint8Array,
+    Uint8Array
+  >();
+  private readonly valueDictionaryStringStringMap = new Map<string, string>();
+  private readonly valueDictionaryStringArrayBufferMap = new Map<
+    string,
+    Uint8Array
+  >();
 
   constructor(items: cache_client._DictionaryFieldValuePair[]) {
     super();
@@ -17,36 +26,44 @@ export class Hit extends Response {
   }
 
   public valueDictionaryUint8ArrayUint8Array(): Map<Uint8Array, Uint8Array> {
-    const valueDictionaryUint8ArrayUint8ArrayMap = new Map<
-      Uint8Array,
-      Uint8Array
-    >();
     for (const item of this.items) {
-      valueDictionaryUint8ArrayUint8ArrayMap.set(item.field, item.value);
+      this.valueDictionaryUint8ArrayUint8ArrayMap.set(item.field, item.value);
     }
-    return valueDictionaryUint8ArrayUint8ArrayMap;
+    return this.valueDictionaryUint8ArrayUint8ArrayMap;
   }
 
   public valueDictionaryStringString(): Map<string, string> {
-    const valueDictionaryStringStringMap = new Map<string, string>();
     for (const item of this.items) {
-      valueDictionaryStringStringMap.set(
+      this.valueDictionaryStringStringMap.set(
         TEXT_DECODER.decode(item.field),
         TEXT_DECODER.decode(item.value)
       );
     }
-    return valueDictionaryStringStringMap;
+    return this.valueDictionaryStringStringMap;
   }
 
   public valueDictionaryStringUint8Array(): Map<string, Uint8Array> {
-    const valueDictionaryStringArrayBufferMap = new Map<string, Uint8Array>();
     for (const item of this.items) {
-      valueDictionaryStringArrayBufferMap.set(
+      this.valueDictionaryStringArrayBufferMap.set(
         TEXT_DECODER.decode(item.field),
         item.value
       );
     }
-    return valueDictionaryStringArrayBufferMap;
+    return this.valueDictionaryStringArrayBufferMap;
+  }
+
+  public override toString(): string {
+    const stringRepresentation = Object.keys(
+      this.valueDictionaryStringStringMap
+    )
+      .map(key => `${key}: ${this.valueDictionaryStringStringMap[key]}`)
+      .join(', ');
+    const uInt8ArrayRepresentation = Object.keys(
+      this.valueDictionaryUint8ArrayUint8ArrayMap
+    )
+      .map(key => `${key}: ${this.valueDictionaryUint8ArrayUint8ArrayMap[key]}`)
+      .join(', ');
+    return `${super.toString()}: valueDictionaryStringString: ${stringRepresentation} valueDictionaryUint8ArrayUint8Array: ${uInt8ArrayRepresentation}`;
   }
 }
 
