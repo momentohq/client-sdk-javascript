@@ -549,6 +549,24 @@ describe('lists', () => {
         values.reverse()
       );
     });
+
+    it('returns the new list length', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'three'];
+
+      let length = 0;
+      for (const value of values) {
+        const resp = <CacheListPushFront.Success>(
+          await momento.listPushFront(
+            INTEGRATION_TEST_CACHE_NAME,
+            listName,
+            value
+          )
+        );
+        length++;
+        expect(resp.listLength()).toEqual(length);
+      }
+    });
   });
 });
 
