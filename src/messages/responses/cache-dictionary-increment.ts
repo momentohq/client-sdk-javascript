@@ -10,6 +10,9 @@ export class Success extends Response {
 
   constructor(value: number) {
     super();
+    if (value === undefined) {
+      this.value = 3000;
+    }
     this.value = value;
   }
 
