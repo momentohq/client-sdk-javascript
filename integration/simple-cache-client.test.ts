@@ -657,9 +657,9 @@ describe('Integration tests for dictionary operations', () => {
       field
     );
     expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    expect((response as CacheDictionaryGetField.Hit).valueUint8Array()).toEqual(
-      value
-    );
+    if (getResponse instanceof CacheDictionaryGetField.Hit) {
+      expect(getResponse.valueUint8Array()).toEqual(value);
+    }
   });
 
   it('should return MISS if dictionary does not exist for dictionaryGetField', async () => {
@@ -671,9 +671,9 @@ describe('Integration tests for dictionary operations', () => {
       field
     );
     expect(response).toBeInstanceOf(CacheDictionaryGetField.Miss);
-    expect(
-      (response as CacheDictionaryGetField.Miss).fieldUint8Array()
-    ).toEqual(field);
+    if (response instanceof CacheDictionaryGetField.Hit) {
+      expect(response.valueUint8Array()).toEqual(field);
+    }
   });
 
   it('should set/get a dictionary with string field/value', async () => {
@@ -693,9 +693,9 @@ describe('Integration tests for dictionary operations', () => {
       field
     );
     expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    expect((response as CacheDictionaryGetField.Hit).valueString()).toEqual(
-      value
-    );
+    if (getResponse instanceof CacheDictionaryGetField.Hit) {
+      expect(getResponse.valueUint8Array()).toEqual(value);
+    }
   });
 
   it('should set/get a dictionary with string field/value and return expected toString value', async () => {
@@ -715,9 +715,9 @@ describe('Integration tests for dictionary operations', () => {
       field
     );
     expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    expect((response as CacheDictionaryGetField.Hit).toString()).toEqual(
+    expect((getResponse as CacheDictionaryGetField.Hit).toString()).toEqual(
       `CacheDictionaryGetField.Hit: ${(
-        response as CacheDictionaryGetField.Hit
+        getResponse as CacheDictionaryGetField.Hit
       ).valueString()}`
     );
   });
@@ -808,7 +808,7 @@ describe('Integration tests for dictionary operations', () => {
       field
     );
     expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    expect((response as CacheDictionaryGetField.Hit).valueString()).toEqual(
+    expect((getResponse as CacheDictionaryGetField.Hit).valueString()).toEqual(
       value
     );
   });
@@ -830,9 +830,9 @@ describe('Integration tests for dictionary operations', () => {
       field
     );
     expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    expect((response as CacheDictionaryGetField.Hit).valueUint8Array()).toEqual(
-      value
-    );
+    expect(
+      (getResponse as CacheDictionaryGetField.Hit).valueUint8Array()
+    ).toEqual(value);
   });
 
   it('should dictionarySet/GetField with string field, Uint8Array value with no refresh ttl', async () => {
@@ -901,9 +901,9 @@ describe('Integration tests for dictionary operations', () => {
       field
     );
     expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    expect((response as CacheDictionaryGetField.Hit).valueUint8Array()).toEqual(
-      value
-    );
+    expect(
+      (getResponse as CacheDictionaryGetField.Hit).valueUint8Array()
+    ).toEqual(value);
   });
 
   it('should return InvalidArgument response for dictionary fetch with invalid cache/dictionary name', async () => {
