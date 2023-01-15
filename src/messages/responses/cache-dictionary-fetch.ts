@@ -47,7 +47,7 @@ export class Hit extends Response {
   }
 
   public override toString(): string {
-    const stringRepresentation = Object.keys(this.dictionaryStringString)
+    const stringRepresentation = Object.keys(this.valueDictionaryStringString())
       .map(
         key => `${key}: ${this.dictionaryStringString.get(key) || 'undefined'}`
       )

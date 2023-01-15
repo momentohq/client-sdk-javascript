@@ -1247,7 +1247,7 @@ describe('Integration tests for dictionary operations', () => {
     );
     expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
     const hitResponse = getResponse as CacheDictionaryGetFields.Hit;
-    expect(hitResponse.responsesList.length).toEqual(3);
+    expect(hitResponse.responsesList.length).toHaveLength(3);
     expect(hitResponse.responsesList[0]).toBeInstanceOf(
       CacheDictionaryGetField.Hit
     );
@@ -1319,7 +1319,7 @@ describe('Integration tests for dictionary operations', () => {
     );
     expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
     const hitResponse = getResponse as CacheDictionaryGetFields.Hit;
-    expect(hitResponse.responsesList.length).toEqual(3);
+    expect(hitResponse.responsesList.length).toHaveLength(3);
     expect(hitResponse.responsesList[0]).toBeInstanceOf(
       CacheDictionaryGetField.Hit
     );
@@ -1348,7 +1348,7 @@ describe('Integration tests for dictionary operations', () => {
     expect(expectedMap).toEqual(hitResponse.valueDictionaryStringString());
 
     const otherDictionary = hitResponse.valueDictionaryStringUint8Array();
-    expect(otherDictionary.size).toEqual(2);
+    expect(otherDictionary.size).toHaveLength(2);
     expect(otherDictionary.get(field1)).toEqual(
       new TextEncoder().encode(value1)
     );
@@ -1379,6 +1379,39 @@ describe('Integration tests for dictionary operations', () => {
     expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
     expect((getResponse as CacheDictionaryGetFields.Hit).toString()).toEqual(
       `: valueDictionaryStringString: a: b, c: d`
+    );
+  });
+
+  it('should return a map of string field and string value with dictionaryFetch', async () => {
+    const dictionaryName = v4();
+    const field1 = v4();
+    const value1 = v4();
+    const field2 = v4();
+    const value2 = v4();
+    const contentDictionary = new Map<string, string>([
+      [field1, value2],
+      [field2, value2],
+    ]);
+    await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field1,
+      value1
+    );
+    await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field2,
+      value2
+    );
+    const response = await momento.dictionaryFetch(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
+    const hitResponse = response as CacheDictionaryFetch.Hit;
+    expect(hitResponse.valueDictionaryStringString()).toEqual(
+      contentDictionary
     );
   });
 

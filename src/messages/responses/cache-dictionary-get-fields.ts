@@ -18,9 +18,11 @@ export abstract class Response extends ResponseBase {}
 export class Hit extends Response {
   private readonly items: grpcCache._DictionaryGetResponse._DictionaryGetResponsePart[];
   private readonly fields: Uint8Array[];
-  private readonly dictionaryUint8ArrayUint8Array: Map<Uint8Array, Uint8Array>;
-  private readonly dictionaryStringString: Map<string, string>;
-  private readonly dictionaryStringUint8Array: Map<string, Uint8Array>;
+  private readonly dictionaryUint8ArrayUint8Array: Map<Uint8Array, Uint8Array> =
+    new Map();
+  private readonly dictionaryStringString: Map<string, string> = new Map();
+  private readonly dictionaryStringUint8Array: Map<string, Uint8Array> =
+    new Map();
   public responsesList: CacheDictionaryGetFieldResponseType[] = [];
 
   constructor(
