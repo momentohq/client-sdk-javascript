@@ -92,16 +92,12 @@ export class Hit extends Response {
   }
 
   public override toString(): string {
-    const stringRepresentation = Object.values(
-      this.valueDictionaryStringString()
-    )
-      .map(
-        (value: string, index) =>
-          `${TEXT_DECODER.decode(
-            this.fields[index]
-          )}: ${value}} || 'undefined'}`
-      )
-      .join(', ');
+    let stringRepresentation = '';
+    this.valueDictionaryStringString().forEach((value, key) => {
+      const keyValue = `${key}: ${value}, `;
+      stringRepresentation = stringRepresentation + keyValue;
+    });
+    stringRepresentation.slice(0, -2);
     return `${super.toString()}: valueDictionaryStringString: ${stringRepresentation}`;
   }
 }

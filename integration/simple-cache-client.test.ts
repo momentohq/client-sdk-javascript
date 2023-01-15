@@ -1263,7 +1263,7 @@ describe('Integration tests for dictionary operations', () => {
     expect(hitResponse2.fieldUint8Array()).toEqual(field2);
 
     expect(hitResponse.responsesList[2]).toBeInstanceOf(
-      CacheDictionaryGetField.Hit
+      CacheDictionaryGetField.Miss
     );
     const missResponse = hitResponse
       .responsesList[2] as CacheDictionaryGetField.Miss;
@@ -1335,7 +1335,7 @@ describe('Integration tests for dictionary operations', () => {
     expect(hitResponse2.fieldString()).toEqual(field2);
 
     expect(hitResponse.responsesList[2]).toBeInstanceOf(
-      CacheDictionaryGetField.Hit
+      CacheDictionaryGetField.Miss
     );
     const missResponse = hitResponse
       .responsesList[2] as CacheDictionaryGetField.Miss;
@@ -1389,7 +1389,7 @@ describe('Integration tests for dictionary operations', () => {
     const field2 = v4();
     const value2 = v4();
     const contentDictionary = new Map<string, string>([
-      [field1, value2],
+      [field1, value1],
       [field2, value2],
     ]);
     await momento.dictionarySetField(
@@ -1440,7 +1440,7 @@ describe('Integration tests for dictionary operations', () => {
     const field2 = new TextEncoder().encode(v4());
     const value2 = new TextEncoder().encode(v4());
     const contentDictionary = new Map<Uint8Array, Uint8Array>([
-      [field1, value2],
+      [field1, value1],
       [field2, value2],
     ]);
     await momento.dictionarySetField(
@@ -1473,7 +1473,7 @@ describe('Integration tests for dictionary operations', () => {
     const field2 = v4();
     const value2 = new TextEncoder().encode(v4());
     const contentDictionary = new Map<string, Uint8Array>([
-      [field1, value2],
+      [field1, value1],
       [field2, value2],
     ]);
     await momento.dictionarySetField(
