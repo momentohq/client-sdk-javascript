@@ -750,7 +750,7 @@ export class CacheClient {
       dictionary_name: dictionaryName,
       some: new grpcCache._DictionaryDeleteRequest.Some(),
     });
-    request.some.fields.concat(fields);
+    fields.forEach(field => request.some.fields.push(field));
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise(resolve => {
