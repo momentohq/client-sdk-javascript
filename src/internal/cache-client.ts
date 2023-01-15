@@ -19,6 +19,7 @@ import * as CacheDictionaryGetField from '../messages/responses/cache-dictionary
 import * as CacheDictionaryGetFields from '../messages/responses/cache-dictionary-get-fields';
 import * as CacheDictionaryRemoveField from '../messages/responses/cache-dictionary-remove-field';
 import * as CacheDictionaryRemoveFields from '../messages/responses/cache-dictionary-remove-fields';
+import * as CacheDictionaryIncrement from '../messages/responses/cache-dictionary-increment';
 import {version} from '../../package.json';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
@@ -768,6 +769,78 @@ export class CacheClient {
               new CacheDictionaryRemoveFields.Error(
                 cacheServiceErrorMapper(err)
               )
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async dictionaryIncrement(
+    cacheName: string,
+    dictionaryName: string,
+    field: string,
+    amount: number,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheDictionaryIncrement.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+      ensureValidField(field);
+    } catch (err) {
+      return new CacheDictionaryIncrement.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'dictionaryIncrement' request; field: ${field}, amount : ${amount}, ttl: ${
+        ttl.ttlSeconds.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendDictionaryIncrement(
+      cacheName,
+      this.convert(dictionaryName),
+      this.convert(field),
+      amount,
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+    this.logger.trace(
+      `'dictionaryIncrement' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendDictionaryIncrement(
+    cacheName: string,
+    dictionaryName: Uint8Array,
+    field: Uint8Array,
+    amount: number,
+    ttlMilliseconds: number,
+    refreshTtl: boolean
+  ): Promise<CacheDictionaryIncrement.Response> {
+    const request = new grpcCache._DictionaryIncrementRequest({
+      dictionary_name: dictionaryName,
+      field,
+      amount,
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().DictionaryIncrement(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheDictionaryIncrement.Success(resp.value));
+          } else {
+            resolve(
+              new CacheDictionaryIncrement.Error(cacheServiceErrorMapper(err))
             );
           }
         }

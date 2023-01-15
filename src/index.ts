@@ -18,6 +18,7 @@ import * as CacheDictionaryGetField from './messages/responses/cache-dictionary-
 import * as CacheDictionaryGetFields from './messages/responses/cache-dictionary-get-fields';
 import * as CacheDictionaryRemoveField from './messages/responses/cache-dictionary-remove-field';
 import * as CacheDictionaryRemoveFields from './messages/responses/cache-dictionary-remove-fields';
+import * as CacheDictionaryIncrement from './messages/responses/cache-dictionary-increment';
 import {CacheInfo} from './messages/cache-info';
 import {
   CredentialProvider,
@@ -77,6 +78,7 @@ export {
   CacheDictionaryGetFields,
   CacheDictionaryRemoveField,
   CacheDictionaryRemoveFields,
+  CacheDictionaryIncrement,
   MomentoErrorCode,
   AlreadyExistsError,
   AuthenticationError,

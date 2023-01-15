@@ -20,7 +20,7 @@ import {Configuration} from './config/configuration';
 import {CredentialProvider} from './auth/credential-provider';
 import {SimpleCacheClientProps} from './simple-cache-client-props';
 import {CollectionTtl} from './utils/collection-ttl';
-import {CacheDictionaryGetFields} from '.';
+import {CacheDictionaryGetFields, CacheDictionaryIncrement} from '.';
 
 /**
  * Momento Simple Cache Client.
@@ -252,6 +252,23 @@ export class SimpleCacheClient {
       cacheName,
       dictionaryName,
       fields
+    );
+  }
+
+  public async dictionaryIncrement(
+    cacheName: string,
+    dictionaryName: string,
+    field: string,
+    amount = 1,
+    ttl: CollectionTtl
+  ): Promise<CacheDictionaryIncrement.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryIncrement(
+      cacheName,
+      dictionaryName,
+      field,
+      amount,
+      ttl
     );
   }
 
