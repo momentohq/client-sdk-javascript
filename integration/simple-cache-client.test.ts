@@ -1776,11 +1776,6 @@ describe('Integration tests for dictionary operations', () => {
       dictionaryName,
       fields
     );
-    await momento.dictionaryGetFields(
-      INTEGRATION_TEST_CACHE_NAME,
-      dictionaryName,
-      fields
-    );
     expect(
       await momento.dictionaryGetField(
         INTEGRATION_TEST_CACHE_NAME,
