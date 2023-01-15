@@ -1771,6 +1771,11 @@ describe('Integration tests for dictionary operations', () => {
       v4()
     );
 
+    await momento.dictionaryRemoveFields(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      fields
+    );
     await momento.dictionaryGetFields(
       INTEGRATION_TEST_CACHE_NAME,
       dictionaryName,
