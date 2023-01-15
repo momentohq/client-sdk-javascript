@@ -17,6 +17,8 @@ import * as CacheDictionarySetField from '../messages/responses/cache-dictionary
 import * as CacheDictionarySetFields from '../messages/responses/cache-dictionary-set-fields';
 import * as CacheDictionaryGetField from '../messages/responses/cache-dictionary-get-field';
 import * as CacheDictionaryGetFields from '../messages/responses/cache-dictionary-get-fields';
+import * as CacheDictionaryRemoveField from '../messages/responses/cache-dictionary-remove-field';
+import * as CacheDictionaryRemoveFields from '../messages/responses/cache-dictionary-remove-fields';
 import {version} from '../../package.json';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
@@ -643,6 +645,129 @@ export class CacheClient {
           } else {
             resolve(
               new CacheDictionaryGetFields.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async dictionaryRemoveField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array
+  ): Promise<CacheDictionaryRemoveField.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+      ensureValidField(field);
+    } catch (err) {
+      return new CacheDictionaryRemoveField.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'dictionaryRemoveField' request; field: ${field.toString()}`
+    );
+    const result = await this.sendDictionaryRemoveField(
+      cacheName,
+      this.convert(dictionaryName),
+      this.convert(field)
+    );
+    this.logger.trace(
+      `'dictionaryRemoveField' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendDictionaryRemoveField(
+    cacheName: string,
+    dictionaryName: Uint8Array,
+    field: Uint8Array
+  ): Promise<CacheDictionaryRemoveField.Response> {
+    const request = new grpcCache._DictionaryDeleteRequest({
+      dictionary_name: dictionaryName,
+      some: new grpcCache._DictionaryDeleteRequest.Some(),
+    });
+    request.some.fields.push(field);
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().DictionaryDelete(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheDictionaryRemoveField.Success());
+          } else {
+            resolve(
+              new CacheDictionaryRemoveField.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async dictionaryRemoveFields(
+    cacheName: string,
+    dictionaryName: string,
+    fields: string[] | Uint8Array[]
+  ): Promise<CacheDictionaryRemoveFields.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+      fields.forEach(field => ensureValidField(field));
+    } catch (err) {
+      return new CacheDictionaryRemoveFields.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'dictionaryRemoveFields' request; fields: ${fields.toString()}`
+    );
+    const encodedFields = fields.map(field => this.convert(field));
+    const result = await this.sendDictionaryRemoveFields(
+      cacheName,
+      this.convert(dictionaryName),
+      encodedFields
+    );
+    this.logger.trace(
+      `'dictionaryRemoveFields' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendDictionaryRemoveFields(
+    cacheName: string,
+    dictionaryName: Uint8Array,
+    fields: Uint8Array[]
+  ): Promise<CacheDictionaryRemoveFields.Response> {
+    const request = new grpcCache._DictionaryDeleteRequest({
+      dictionary_name: dictionaryName,
+      some: new grpcCache._DictionaryDeleteRequest.Some(),
+    });
+    request.some.fields.concat(fields);
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().DictionaryDelete(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheDictionaryRemoveFields.Success());
+          } else {
+            resolve(
+              new CacheDictionaryRemoveFields.Error(
+                cacheServiceErrorMapper(err)
+              )
             );
           }
         }

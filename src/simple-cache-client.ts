@@ -233,6 +233,28 @@ export class SimpleCacheClient {
     return await client.dictionaryGetFields(cacheName, dictionaryName, fields);
   }
 
+  public async dictionaryRemoveField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array
+  ): Promise<CacheDictionaryGetField.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryRemoveField(cacheName, dictionaryName, field);
+  }
+
+  public async dictionaryRemoveFields(
+    cacheName: string,
+    dictionaryName: string,
+    fields: string[] | Uint8Array[]
+  ): Promise<CacheDictionaryGetFields.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryRemoveFields(
+      cacheName,
+      dictionaryName,
+      fields
+    );
+  }
+
   /**
    * Create a Momento signing key.
    * @param {number} ttlMinutes - The time to live in minutes until the Momento signing key expires.
