@@ -1970,7 +1970,7 @@ describe('Integration tests for dictionary operations', () => {
       INTEGRATION_TEST_CACHE_NAME,
       dictionaryName,
       field,
-      '10'
+      '0'
     );
     response = await momento.dictionaryIncrement(
       INTEGRATION_TEST_CACHE_NAME,
