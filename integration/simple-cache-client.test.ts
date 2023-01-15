@@ -716,7 +716,7 @@ describe('Integration tests for dictionary operations', () => {
     );
     expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
     expect((getResponse as CacheDictionaryGetField.Hit).toString()).toEqual(
-      `${value}...`
+      `${value.substring(0, 32)}...`
     );
   });
 
