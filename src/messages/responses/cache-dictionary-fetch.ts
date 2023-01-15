@@ -10,9 +10,11 @@ export abstract class Response extends ResponseBase {}
 
 export class Hit extends Response {
   private readonly items: cache_client._DictionaryFieldValuePair[];
-  private readonly dictionaryUint8ArrayUint8Array: Map<Uint8Array, Uint8Array>;
-  private readonly dictionaryStringString: Map<string, string>;
-  private readonly dictionaryStringArrayBuffer: Map<string, Uint8Array>;
+  private readonly dictionaryUint8ArrayUint8Array: Map<Uint8Array, Uint8Array> =
+    new Map();
+  private readonly dictionaryStringString: Map<string, string> = new Map();
+  private readonly dictionaryStringArrayBuffer: Map<string, Uint8Array> =
+    new Map();
 
   constructor(items: cache_client._DictionaryFieldValuePair[]) {
     super();
