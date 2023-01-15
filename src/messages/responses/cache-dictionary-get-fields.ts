@@ -97,8 +97,10 @@ export class Hit extends Response {
       const keyValue = `${key}: ${value}, `;
       stringRepresentation = stringRepresentation + keyValue;
     });
-    stringRepresentation.slice(0, -2);
-    return `${super.toString()}: valueDictionaryStringString: ${stringRepresentation}`;
+    return `${super.toString()}: valueDictionaryStringString: ${stringRepresentation.slice(
+      0,
+      -2
+    )}`;
   }
 }
 
