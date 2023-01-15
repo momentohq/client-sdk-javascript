@@ -694,7 +694,7 @@ describe('Integration tests for dictionary operations', () => {
     );
     expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
     if (getResponse instanceof CacheDictionaryGetField.Hit) {
-      expect(getResponse.valueUint8Array()).toEqual(value);
+      expect(getResponse.valueString()).toEqual(value);
     }
   });
 
@@ -716,9 +716,7 @@ describe('Integration tests for dictionary operations', () => {
     );
     expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
     expect((getResponse as CacheDictionaryGetField.Hit).toString()).toEqual(
-      `CacheDictionaryGetField.Hit: ${(
-        getResponse as CacheDictionaryGetField.Hit
-      ).valueString()}`
+      `${value}...`
     );
   });
 
