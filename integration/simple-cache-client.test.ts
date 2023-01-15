@@ -1980,6 +1980,6 @@ describe('Integration tests for dictionary operations', () => {
     );
     expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
     successResponse = response as CacheDictionaryIncrement.Success;
-    expect(successResponse.valueNumber()).toEqual(0);
+    expect(successResponse.toString()).toEqual('0');
   });
 });
