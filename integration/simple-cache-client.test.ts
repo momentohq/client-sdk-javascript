@@ -1970,7 +1970,7 @@ describe('Integration tests for dictionary operations', () => {
       INTEGRATION_TEST_CACHE_NAME,
       dictionaryName,
       field,
-      '0'
+      '10'
     );
     response = await momento.dictionaryIncrement(
       INTEGRATION_TEST_CACHE_NAME,
@@ -1980,6 +1980,6 @@ describe('Integration tests for dictionary operations', () => {
     );
     expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
     successResponse = response as CacheDictionaryIncrement.Success;
-    expect(successResponse.valueNumber()).toEqual(0);
+    expect(successResponse.valueNumber()).toEqual(10);
   });
 });
