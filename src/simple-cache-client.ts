@@ -259,7 +259,7 @@ export class SimpleCacheClient {
     cacheName: string,
     dictionaryName: string,
     field: string,
-    amount?: number,
+    amount = 1,
     ttl?: CollectionTtl
   ): Promise<CacheDictionaryIncrement.Response> {
     const client = this.getNextDataClient();
