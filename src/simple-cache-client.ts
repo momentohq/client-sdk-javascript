@@ -259,8 +259,8 @@ export class SimpleCacheClient {
     cacheName: string,
     dictionaryName: string,
     field: string,
-    amount = 1,
-    ttl: CollectionTtl
+    amount?: number,
+    ttl?: CollectionTtl
   ): Promise<CacheDictionaryIncrement.Response> {
     const client = this.getNextDataClient();
     return await client.dictionaryIncrement(

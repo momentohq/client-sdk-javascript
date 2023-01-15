@@ -21,6 +21,7 @@ import {
   CacheDictionaryGetFields,
   CacheDictionaryRemoveField,
   CacheDictionaryRemoveFields,
+  CacheDictionaryIncrement,
 } from '../src';
 import {TextEncoder} from 'util';
 import {SimpleCacheClientProps} from '../src/simple-cache-client-props';
@@ -1797,5 +1798,188 @@ describe('Integration tests for dictionary operations', () => {
         otherField
       )
     ).toBeInstanceOf(CacheDictionaryGetField.Hit);
+  });
+
+  it('should return InvalidArgument response for dictionaryIncrement with invalid cache/dictionary/field name', async () => {
+    let response = await momento.dictionaryIncrement(
+      '',
+      'myDictionary',
+      'myField'
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Error);
+    expect((response as CacheDictionaryIncrement.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    response = await momento.dictionaryIncrement('cache', '', 'myField');
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Error);
+    expect((response as CacheDictionaryIncrement.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    response = await momento.dictionaryIncrement('cache', 'myDictionary', '');
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Error);
+    expect((response as CacheDictionaryIncrement.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+  });
+
+  it('should increment from 0 to expected amount with dictionaryIncrement', async () => {
+    const dictionaryName = v4();
+    const field = v4();
+    let response = await momento.dictionaryIncrement(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      1
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+    let successResponse = response as CacheDictionaryIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(1);
+
+    response = await momento.dictionaryIncrement(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      41
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+    successResponse = response as CacheDictionaryIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(42);
+    expect(successResponse.toString()).toEqual('Success: value: 42');
+
+    response = await momento.dictionaryIncrement(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      -1042
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+    successResponse = response as CacheDictionaryIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(-1000);
+
+    response = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryGetField.Hit);
+    const hitResponse = response as CacheDictionaryGetField.Hit;
+    expect(hitResponse.valueString()).toEqual('-1000');
+  });
+
+  it('should dictionaryIncrement with no refresh ttl', async () => {
+    const dictionaryName = v4();
+    const field = v4();
+    let response = await momento.dictionaryIncrement(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      undefined,
+      CollectionTtl.of(5).withNoRefreshTtlOnUpdates()
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+    await new Promise(r => setTimeout(r, 100));
+
+    response = await momento.dictionaryIncrement(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      undefined,
+      CollectionTtl.of(10).withNoRefreshTtlOnUpdates()
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+    await new Promise(r => setTimeout(r, 4900));
+
+    response = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    const getResponse = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
+  });
+
+  it('should dictionaryIncrement with refresh ttl', async () => {
+    const dictionaryName = v4();
+    const field = v4();
+    let response = await momento.dictionaryIncrement(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      undefined,
+      CollectionTtl.of(2)
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+
+    response = await momento.dictionaryIncrement(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      undefined,
+      CollectionTtl.of(10)
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+    await new Promise(r => setTimeout(r, 2000));
+
+    const getResponse = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+    if (getResponse instanceof CacheDictionaryGetField.Hit) {
+      expect(getResponse.valueString()).toEqual('2');
+    }
+  });
+
+  it('should dictionaryIncrement successfully with setting and resetting field', async () => {
+    const dictionaryName = v4();
+    const field = v4();
+
+    await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      '10'
+    );
+    let response = await momento.dictionaryIncrement(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      0
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+    let successResponse = response as CacheDictionaryIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(10);
+
+    response = await momento.dictionaryIncrement(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      90
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+    successResponse = response as CacheDictionaryIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(100);
+
+    // Reset field
+    await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      '0'
+    );
+    response = await momento.dictionaryIncrement(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      0
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+    successResponse = response as CacheDictionaryIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(0);
   });
 });

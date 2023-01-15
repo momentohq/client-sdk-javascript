@@ -780,7 +780,7 @@ export class CacheClient {
     cacheName: string,
     dictionaryName: string,
     field: string,
-    amount: number,
+    amount = 1,
     ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheDictionaryIncrement.Response> {
     try {
