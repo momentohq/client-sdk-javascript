@@ -19,6 +19,8 @@ import {
   CacheDictionarySetFields,
   CacheDictionaryGetField,
   CacheDictionaryGetFields,
+  CacheDictionaryRemoveField,
+  CacheDictionaryRemoveFields,
 } from '../src';
 import {TextEncoder} from 'util';
 import {SimpleCacheClientProps} from '../src/simple-cache-client-props';
@@ -1429,7 +1431,7 @@ describe('Integration tests for dictionary operations', () => {
     );
     expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
     expect((response as CacheDictionaryFetch.Hit).toString()).toEqual(
-      `: valueDictionaryStringString: a: b`
+      `Hit: valueDictionaryStringString: a: b`
     );
   });
 
@@ -1518,5 +1520,282 @@ describe('Integration tests for dictionary operations', () => {
       'nonExistingDictionary'
     );
     expect(fetchResponse).toBeInstanceOf(CacheDictionaryFetch.Miss);
+  });
+
+  it('should do nothing with dictionaryFetch if dictionary does not exist', async () => {
+    const dictionaryName = v4();
+    let response = await momento.dictionaryFetch(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryFetch.Miss);
+    response = await momento.delete(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName
+    );
+    expect(response).toBeInstanceOf(CacheDelete.Success);
+    response = await momento.dictionaryFetch(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryFetch.Miss);
+  });
+
+  it('should delete with dictionaryFetch if dictionary exists', async () => {
+    const dictionaryName = v4();
+    await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      v4(),
+      v4()
+    );
+    await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      v4(),
+      v4()
+    );
+    await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      v4(),
+      v4()
+    );
+
+    let response = await momento.dictionaryFetch(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
+    response = await momento.delete(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName
+    );
+    expect(response).toBeInstanceOf(CacheDelete.Success);
+    response = await momento.dictionaryFetch(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryFetch.Miss);
+  });
+
+  it('should return InvalidArgument response for dictionaryRemoveField with invalid cache/dictionary/field name', async () => {
+    let response = await momento.dictionaryRemoveField(
+      '',
+      'myDictionary',
+      'myField'
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryRemoveField.Error);
+    expect((response as CacheDictionaryRemoveField.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    response = await momento.dictionaryRemoveField('cache', '', 'myField');
+    expect(response).toBeInstanceOf(CacheDictionaryRemoveField.Error);
+    expect((response as CacheDictionaryRemoveField.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    response = await momento.dictionaryRemoveField('cache', 'myDictionary', '');
+    expect(response).toBeInstanceOf(CacheDictionaryRemoveField.Error);
+    expect((response as CacheDictionaryRemoveField.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+  });
+
+  it('should remove a dictionary with dictionaryRemoveField with Uint8Array field', async () => {
+    const dictionaryName = v4();
+    const field1 = new TextEncoder().encode(v4());
+    const value1 = new TextEncoder().encode(v4());
+    const field2 = new TextEncoder().encode(v4());
+
+    expect(
+      await momento.dictionaryGetField(
+        INTEGRATION_TEST_CACHE_NAME,
+        dictionaryName,
+        field1
+      )
+    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+    await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field1,
+      value1
+    );
+    expect(
+      await momento.dictionaryGetField(
+        INTEGRATION_TEST_CACHE_NAME,
+        dictionaryName,
+        field1
+      )
+    ).toBeInstanceOf(CacheDictionaryGetField.Hit);
+
+    await momento.dictionaryRemoveField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field1
+    );
+    expect(
+      await momento.dictionaryGetField(
+        INTEGRATION_TEST_CACHE_NAME,
+        dictionaryName,
+        field1
+      )
+    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+
+    // Test no-op
+    expect(
+      await momento.dictionaryGetField(
+        INTEGRATION_TEST_CACHE_NAME,
+        dictionaryName,
+        field2
+      )
+    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+    await momento.dictionaryRemoveField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field2
+    );
+    expect(
+      await momento.dictionaryGetField(
+        INTEGRATION_TEST_CACHE_NAME,
+        dictionaryName,
+        field2
+      )
+    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+  });
+
+  it('should remove a dictionary with dictionaryRemoveField with string field', async () => {
+    const dictionaryName = v4();
+    const field1 = v4();
+    const value1 = v4();
+    const field2 = v4();
+
+    expect(
+      await momento.dictionaryGetField(
+        INTEGRATION_TEST_CACHE_NAME,
+        dictionaryName,
+        field1
+      )
+    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+    await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field1,
+      value1
+    );
+    expect(
+      await momento.dictionaryGetField(
+        INTEGRATION_TEST_CACHE_NAME,
+        dictionaryName,
+        field1
+      )
+    ).toBeInstanceOf(CacheDictionaryGetField.Hit);
+
+    await momento.dictionaryRemoveField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field1
+    );
+    expect(
+      await momento.dictionaryGetField(
+        INTEGRATION_TEST_CACHE_NAME,
+        dictionaryName,
+        field1
+      )
+    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+
+    // Test no-op
+    expect(
+      await momento.dictionaryGetField(
+        INTEGRATION_TEST_CACHE_NAME,
+        dictionaryName,
+        field2
+      )
+    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+    await momento.dictionaryRemoveField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field2
+    );
+    expect(
+      await momento.dictionaryGetField(
+        INTEGRATION_TEST_CACHE_NAME,
+        dictionaryName,
+        field2
+      )
+    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+  });
+
+  it('should return InvalidArgument response for dictionaryRemoveFields with invalid cache/dictionary/field name', async () => {
+    let response = await momento.dictionaryRemoveFields('', 'myDictionary', [
+      'myField',
+    ]);
+    expect(response).toBeInstanceOf(CacheDictionaryRemoveFields.Error);
+    expect((response as CacheDictionaryRemoveFields.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    response = await momento.dictionaryRemoveFields('cache', '', ['myField']);
+    expect(response).toBeInstanceOf(CacheDictionaryRemoveFields.Error);
+    expect((response as CacheDictionaryRemoveFields.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    response = await momento.dictionaryRemoveFields('cache', 'myDictionary', [
+      '',
+    ]);
+    expect(response).toBeInstanceOf(CacheDictionaryRemoveFields.Error);
+    expect((response as CacheDictionaryRemoveFields.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+  });
+
+  it('should remove a dictionary with dictionaryRemoveFields with string field', async () => {
+    const dictionaryName = v4();
+    const fields = [v4(), v4()];
+    const otherField = v4();
+
+    await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      fields[0],
+      v4()
+    );
+    await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      fields[1],
+      v4()
+    );
+    await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      otherField,
+      v4()
+    );
+
+    await momento.dictionaryGetFields(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      fields
+    );
+    expect(
+      await momento.dictionaryGetField(
+        INTEGRATION_TEST_CACHE_NAME,
+        dictionaryName,
+        fields[0]
+      )
+    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+    expect(
+      await momento.dictionaryGetField(
+        INTEGRATION_TEST_CACHE_NAME,
+        dictionaryName,
+        fields[1]
+      )
+    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+    expect(
+      await momento.dictionaryGetField(
+        INTEGRATION_TEST_CACHE_NAME,
+        dictionaryName,
+        otherField
+      )
+    ).toBeInstanceOf(CacheDictionaryGetField.Hit);
   });
 });
