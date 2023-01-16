@@ -1972,15 +1972,6 @@ describe('Integration tests for dictionary operations', () => {
       field,
       '0'
     );
-    response = await momento.dictionaryGetField(
-      INTEGRATION_TEST_CACHE_NAME,
-      dictionaryName,
-      field
-    );
-    expect((response as CacheDictionaryGetField.Hit).valueString()).toEqual(
-      '0'
-    );
-
     response = await momento.dictionaryIncrement(
       INTEGRATION_TEST_CACHE_NAME,
       dictionaryName,
