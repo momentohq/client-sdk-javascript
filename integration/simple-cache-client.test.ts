@@ -1972,6 +1972,15 @@ describe('Integration tests for dictionary operations', () => {
       field,
       '0'
     );
+    response = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    expect((response as CacheDictionaryGetField.Hit).valueString()).toEqual(
+      '0'
+    );
+
     response = await momento.dictionaryIncrement(
       INTEGRATION_TEST_CACHE_NAME,
       dictionaryName,
@@ -1980,6 +1989,28 @@ describe('Integration tests for dictionary operations', () => {
     );
     expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
     successResponse = response as CacheDictionaryIncrement.Success;
-    expect(successResponse.toString()).toEqual('0');
+    expect(successResponse.valueNumber()).toEqual(0);
+  });
+
+  it('should fail with precondition with dictionaryIncrement', async () => {
+    const dictionaryName = v4();
+    const field = v4();
+
+    await momento.dictionarySetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      'abcxyz'
+    );
+    const response = await momento.dictionaryIncrement(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Error);
+    const errorResponse = response as CacheDictionaryIncrement.Error;
+    expect(errorResponse.errorCode()).toEqual(
+      MomentoErrorCode.FAILED_PRECONDITION_ERROR
+    );
   });
 });
