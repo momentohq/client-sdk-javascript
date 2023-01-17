@@ -14,6 +14,8 @@ import * as CacheDelete from '../messages/responses/cache-delete';
 import * as CacheSetFetch from '../messages/responses/cache-set-fetch';
 import * as CacheSetAddElements from '../messages/responses/cache-set-add-elements';
 import * as CacheSetRemoveElements from '../messages/responses/cache-set-remove-elements';
+import * as CacheListFetch from '../messages/responses/cache-list-fetch';
+import * as CacheListPushFront from '../messages/responses/cache-list-push-front';
 import {version} from '../../package.json';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
@@ -23,6 +25,7 @@ import {
   ensureValidKey,
   ensureValidSetRequest,
   validateCacheName,
+  validateListName,
   validateSetName,
 } from '../utils/validators';
 import {CredentialProvider} from '../auth/credential-provider';
@@ -393,6 +396,120 @@ export class CacheClient {
             }
           } else {
             resolve(new CacheGet.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async listFetch(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListFetch.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateListName(listName);
+    } catch (err) {
+      return new CacheListFetch.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.trace(`Issuing 'listFetch' request; listName: ${listName}`);
+    const result = await this.sendListFetch(cacheName, this.convert(listName));
+    this.logger.trace(`'listFetch' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendListFetch(
+    cacheName: string,
+    listName: Uint8Array
+  ): Promise<CacheListFetch.Response> {
+    const request = new grpcCache._ListFetchRequest({
+      list_name: listName,
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ListFetch(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheListFetch.Miss());
+          } else if (resp?.found) {
+            resolve(new CacheListFetch.Hit(resp.found.values));
+          } else {
+            resolve(new CacheListFetch.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async listPushFront(
+    cacheName: string,
+    listName: string,
+    value: string | Uint8Array,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    truncateBackToSize?: number
+  ): Promise<CacheListFetch.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateListName(listName);
+    } catch (err) {
+      return new CacheListFetch.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      `Issuing 'listPushFront' request; listName: ${listName}, value length: ${
+        value.length
+      }, ${ttl.toString()}, truncateBackToSize: ${
+        truncateBackToSize?.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendListPushFront(
+      cacheName,
+      this.convert(listName),
+      this.convert(value),
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl(),
+      truncateBackToSize
+    );
+    this.logger.trace(`'listPushFront' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendListPushFront(
+    cacheName: string,
+    listName: Uint8Array,
+    value: Uint8Array,
+    ttlMilliseconds: number,
+    refreshTtl: boolean,
+    truncateBackToSize?: number
+  ): Promise<CacheListPushFront.Response> {
+    const request = new grpcCache._ListPushFrontRequest({
+      list_name: listName,
+      value: value,
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
+      truncate_back_to_size: truncateBackToSize,
+    });
+    const metadata = this.createMetadata(cacheName);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ListPushFront(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheListPushFront.Success(resp.list_length));
+          } else {
+            resolve(new CacheListPushFront.Error(cacheServiceErrorMapper(err)));
           }
         }
       );
