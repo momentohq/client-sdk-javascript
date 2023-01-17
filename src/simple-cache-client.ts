@@ -8,13 +8,15 @@ import * as ListSigningKeys from './messages/responses/list-signing-keys';
 import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
 import * as CacheGet from './messages/responses/cache-get';
 import * as CacheDelete from './messages/responses/cache-delete';
+import * as CacheListFetch from './messages/responses/cache-list-fetch';
 import * as CacheSet from './messages/responses/cache-set';
-import {getLogger, initializeMomentoLogging, Logger} from './utils/logging';
 import * as CacheSetFetch from './messages/responses/cache-set-fetch';
+import {getLogger, initializeMomentoLogging, Logger} from './utils/logging';
 import {range} from './utils/collections';
 import {Configuration} from './config/configuration';
 import {CredentialProvider} from './auth/credential-provider';
 import {SimpleCacheClientProps} from './simple-cache-client-props';
+import {CollectionTtl} from './utils/collection-ttl';
 
 /**
  * Momento Simple Cache Client.
@@ -113,6 +115,31 @@ export class SimpleCacheClient {
   ): Promise<CacheDelete.Response> {
     const client = this.getNextDataClient();
     return await client.delete(cacheName, key);
+  }
+
+  public async listFetch(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListFetch.Response> {
+    const client = this.getNextDataClient();
+    return await client.listFetch(cacheName, listName);
+  }
+
+  public async listPushFront(
+    cacheName: string,
+    listName: string,
+    value: string | Uint8Array,
+    ttl?: CollectionTtl,
+    truncateBackToSize?: number
+  ): Promise<CacheListFetch.Response> {
+    const client = this.getNextDataClient();
+    return await client.listPushFront(
+      cacheName,
+      listName,
+      value,
+      ttl,
+      truncateBackToSize
+    );
   }
 
   /**
