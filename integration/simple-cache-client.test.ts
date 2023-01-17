@@ -1,5 +1,6 @@
 import {v4} from 'uuid';
 import {
+  CollectionTtl,
   EnvMomentoTokenProvider,
   CacheDelete,
   CacheGet,
@@ -27,7 +28,6 @@ import {
 } from '../src';
 import {TextEncoder} from 'util';
 import {SimpleCacheClientProps} from '../src/simple-cache-client-props';
-import {CollectionTtl} from '../src/utils/collection-ttl';
 
 const credentialProvider = new EnvMomentoTokenProvider('TEST_AUTH_TOKEN');
 const configuration = Configurations.Laptop.latest();
