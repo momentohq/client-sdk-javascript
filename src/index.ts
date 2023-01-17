@@ -11,6 +11,8 @@ import * as CreateSigningKey from './messages/responses/create-signing-key';
 import * as ListSigningKeys from './messages/responses/list-signing-keys';
 import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
 import * as CacheSetFetch from './messages/responses/cache-set-fetch';
+import * as CacheSetAddElements from './messages/responses/cache-set-add-elements';
+import * as CacheSetRemoveElements from './messages/responses/cache-set-remove-elements';
 import {CacheInfo} from './messages/cache-info';
 import {
   CredentialProvider,
@@ -63,6 +65,8 @@ export {
   RevokeSigningKey,
   CacheInfo,
   CacheSetFetch,
+  CacheSetAddElements,
+  CacheSetRemoveElements,
   MomentoErrorCode,
   AlreadyExistsError,
   AuthenticationError,

@@ -11,10 +11,13 @@ import * as CacheDelete from './messages/responses/cache-delete';
 import * as CacheSet from './messages/responses/cache-set';
 import {getLogger, initializeMomentoLogging, Logger} from './utils/logging';
 import * as CacheSetFetch from './messages/responses/cache-set-fetch';
+import * as CacheSetAddElements from './messages/responses/cache-set-add-elements';
+import * as CacheSetRemoveElements from './messages/responses/cache-set-remove-elements';
 import {range} from './utils/collections';
 import {Configuration} from './config/configuration';
 import {CredentialProvider} from './auth/credential-provider';
 import {SimpleCacheClientProps} from './simple-cache-client-props';
+import {CollectionTtl} from './utils/collection-ttl';
 
 /**
  * Momento Simple Cache Client.
@@ -129,6 +132,45 @@ export class SimpleCacheClient {
     const client = this.getNextDataClient();
     return await client.setFetch(cacheName, setName);
   }
+
+  /**
+   * Add several elements to a set in the cache.
+   *
+   * After this operation, the set will contain the union
+   * of the elements passed in and the elements of the set.
+   * @param {string} cacheName - Name of the cache to store the set in.
+   * @param {string} setName - The set to add elements to.
+   * @param {(string[] | Uint8Array[])} elements - The data to add to the set.
+   * @param {CollectionTtl} [ttl] - TTL for the set in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+   */
+  public async setAddElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[],
+    ttl?: CollectionTtl
+  ): Promise<CacheSetAddElements.Response> {
+    const client = this.getNextDataClient();
+    return await client.setAddElements(cacheName, setName, elements, ttl);
+  }
+
+  /**
+   * Remove an element from a set.
+   *
+   * @param {string} cacheName - Name of the cache to store the set in.
+   * @param {string} setName - The set to remove the element from.
+   * @param {(string[] | Uint8Array[])} elements - The data to remove from the set.
+   */
+  public async setRemoveElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[]
+  ): Promise<CacheSetRemoveElements.Response> {
+    const client = this.getNextDataClient();
+    return await client.setRemoveElements(cacheName, setName, elements);
+  }
+
+  // TODO add support for adding/removing a single element to/from a set.
+  // https://github.com/momentohq/client-sdk-javascript/issues/170
 
   /**
    * Create a cache if it does not exist.
