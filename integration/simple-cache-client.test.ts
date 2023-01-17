@@ -1,8 +1,11 @@
 import {v4} from 'uuid';
 import {
+  CollectionTtl,
   EnvMomentoTokenProvider,
   CacheDelete,
   CacheGet,
+  CacheListFetch,
+  CacheListPushFront,
   CacheSet,
   Configurations,
   CreateCache,
@@ -49,6 +52,8 @@ const deleteCacheIfExists = async (
   }
 };
 
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+
 let momento: SimpleCacheClient;
 beforeAll(() => {
   momento = new SimpleCacheClient(cacheClientProps);
@@ -87,7 +92,7 @@ async function withCache(
   }
 }
 
-describe('SimpleCacheClient.ts Integration Tests', () => {
+describe('create/delete cache, get/set/delete', () => {
   it('should create and delete a cache, set and get a value', async () => {
     const cacheName = v4();
     await withCache(momento, cacheName, async () => {
@@ -326,6 +331,9 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
       MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
   });
+});
+
+describe('Signing keys', () => {
   it('should create, list, and revoke a signing key', async () => {
     const createSigningKeyResponse = await momento.createSigningKey(30);
     expect(createSigningKeyResponse).toBeInstanceOf(CreateSigningKey.Success);
@@ -363,6 +371,191 @@ describe('SimpleCacheClient.ts Integration Tests', () => {
             (createSigningKeyResponse as CreateSigningKey.Success).getKeyId()
         )
     ).toEqual(false);
+  });
+});
+
+describe('lists', () => {
+  describe('#listFetch', () => {
+    it('errors if the cache name is blank', async () => {
+      const respFetch = await momento.listFetch('  ', 'does-not-exist');
+      expect((respFetch as CacheListFetch.Error).errorCode()).toEqual(
+        MomentoErrorCode.INVALID_ARGUMENT_ERROR
+      );
+    });
+
+    it('errors if the list name is bad', async () => {
+      const respFetch = await momento.listFetch(
+        INTEGRATION_TEST_CACHE_NAME,
+        '  '
+      );
+      expect((respFetch as CacheListFetch.Error).errorCode()).toEqual(
+        MomentoErrorCode.INVALID_ARGUMENT_ERROR
+      );
+    });
+
+    it('returns a miss if the list does not exist', async () => {
+      const respFetch = await momento.listFetch(
+        INTEGRATION_TEST_CACHE_NAME,
+        'does-not-exist'
+      );
+      expect(respFetch).toBeInstanceOf(CacheListFetch.Miss);
+    });
+
+    it('returns a hit if the list exists', async () => {
+      const listName = v4();
+      const valueString = 'abc123';
+      const valueBytes = new Uint8Array([97, 98, 99, 49, 50, 51]);
+
+      await momento.listPushFront(
+        INTEGRATION_TEST_CACHE_NAME,
+        listName,
+        valueString
+      );
+
+      const respFetch = <CacheListFetch.Hit>(
+        await momento.listFetch(INTEGRATION_TEST_CACHE_NAME, listName)
+      );
+      expect(respFetch.valueListString()).toEqual([valueString]);
+      expect(respFetch.valueListUint8Array()).toEqual([valueBytes]);
+    });
+  });
+
+  describe('#listPushFront', () => {
+    const valueString = 'abc123';
+
+    it('errors if the cache name is blank', async () => {
+      const respPush = await momento.listPushFront(
+        '  ',
+        'does-not-exist',
+        valueString
+      );
+      expect((respPush as CacheListPushFront.Error).errorCode()).toEqual(
+        MomentoErrorCode.INVALID_ARGUMENT_ERROR
+      );
+    });
+
+    it('errors if the list name is bad', async () => {
+      const respPush = await momento.listPushFront(
+        INTEGRATION_TEST_CACHE_NAME,
+        '  ',
+        valueString
+      );
+      expect((respPush as CacheListPushFront.Error).errorCode()).toEqual(
+        MomentoErrorCode.INVALID_ARGUMENT_ERROR
+      );
+    });
+
+    it('pushes to to the front', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'three'];
+
+      for (const value of values) {
+        await momento.listPushFront(
+          INTEGRATION_TEST_CACHE_NAME,
+          listName,
+          value
+        );
+      }
+
+      const respFetch = await momento.listFetch(
+        INTEGRATION_TEST_CACHE_NAME,
+        listName
+      );
+      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
+        values.reverse()
+      );
+    });
+
+    it('truncates', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'three'];
+
+      for (const value of values) {
+        await momento.listPushFront(
+          INTEGRATION_TEST_CACHE_NAME,
+          listName,
+          value,
+          undefined,
+          2
+        );
+      }
+
+      const respFetch = await momento.listFetch(
+        INTEGRATION_TEST_CACHE_NAME,
+        listName
+      );
+      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual([
+        'three',
+        'two',
+      ]);
+    });
+
+    it('sets ttl', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'three'];
+      const ttl = new CollectionTtl(0.5, false);
+
+      for (const value of values) {
+        await momento.listPushFront(
+          INTEGRATION_TEST_CACHE_NAME,
+          listName,
+          value,
+          ttl
+        );
+      }
+      await sleep(1000);
+
+      const respFetch = await momento.listFetch(
+        INTEGRATION_TEST_CACHE_NAME,
+        listName
+      );
+      expect(respFetch).toBeInstanceOf(CacheListFetch.Miss);
+    });
+
+    it('refreshes ttl', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'three'];
+      const timeout = 1;
+      const ttl = new CollectionTtl(timeout, true);
+
+      for (const value of values) {
+        await momento.listPushFront(
+          INTEGRATION_TEST_CACHE_NAME,
+          listName,
+          value,
+          ttl
+        );
+        // Sleep for half the ttl each loop. If we don't refresh they
+        // won't all live.
+        await sleep((timeout / 2) * 1000);
+      }
+
+      const respFetch = await momento.listFetch(
+        INTEGRATION_TEST_CACHE_NAME,
+        listName
+      );
+      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
+        values.reverse()
+      );
+    });
+
+    it('returns the new list length', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'three'];
+
+      let length = 0;
+      for (const value of values) {
+        const resp = <CacheListPushFront.Success>(
+          await momento.listPushFront(
+            INTEGRATION_TEST_CACHE_NAME,
+            listName,
+            value
+          )
+        );
+        length++;
+        expect(resp.listLength()).toEqual(length);
+      }
+    });
   });
 });
 

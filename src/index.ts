@@ -2,6 +2,8 @@ import {SimpleCacheClient} from './simple-cache-client';
 import * as Configurations from './config/configurations';
 import {CacheOperation, MomentoSigner} from './internal/momento-signer';
 import * as CacheGet from './messages/responses/cache-get';
+import * as CacheListFetch from './messages/responses/cache-list-fetch';
+import * as CacheListPushFront from './messages/responses/cache-list-push-front';
 import * as CacheSet from './messages/responses/cache-set';
 import * as CacheDelete from './messages/responses/cache-delete';
 import * as CreateCache from './messages/responses/create-cache';
@@ -20,6 +22,7 @@ import * as CacheDictionaryRemoveField from './messages/responses/cache-dictiona
 import * as CacheDictionaryRemoveFields from './messages/responses/cache-dictionary-remove-fields';
 import * as CacheDictionaryIncrement from './messages/responses/cache-dictionary-increment';
 import {CacheInfo} from './messages/cache-info';
+import {CollectionTtl} from './utils/collection-ttl';
 import {
   CredentialProvider,
   EnvMomentoTokenProvider,
@@ -53,6 +56,7 @@ export {
 } from './utils/logging';
 
 export {
+  CollectionTtl,
   Configurations,
   Configuration,
   CredentialProvider,
@@ -61,6 +65,8 @@ export {
   CacheOperation,
   SimpleCacheClient,
   CacheGet,
+  CacheListFetch,
+  CacheListPushFront,
   CacheSet,
   CacheDelete,
   CreateCache,
