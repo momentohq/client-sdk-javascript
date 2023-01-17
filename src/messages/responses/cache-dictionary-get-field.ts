@@ -67,7 +67,7 @@ export class Error extends Response {
 
   constructor(protected _innerException: SdkError, field: Uint8Array) {
     super();
-    this.field;
+    this.field = field;
   }
 
   public fieldString(): string {

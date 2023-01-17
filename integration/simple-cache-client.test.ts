@@ -1381,7 +1381,7 @@ describe('Integration tests for dictionary operations', () => {
     );
     expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
     expect((getResponse as CacheDictionaryGetFields.Hit).toString()).toEqual(
-      `Hit: valueDictionaryStringString: a: b, c: d`
+      'Hit: valueDictionaryStringString: a: b, c: d'
     );
   });
 
@@ -1432,7 +1432,7 @@ describe('Integration tests for dictionary operations', () => {
     );
     expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
     expect((response as CacheDictionaryFetch.Hit).toString()).toEqual(
-      `Hit: valueDictionaryStringString: a: b`
+      'Hit: valueDictionaryStringString: a: b'
     );
   });
 
