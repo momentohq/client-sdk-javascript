@@ -14,6 +14,8 @@ import * as CacheDictionaryFetch from './messages/responses/cache-dictionary-fet
 import * as CacheDictionarySetField from './messages/responses/cache-dictionary-set-field';
 import * as CacheDictionarySetFields from './messages/responses/cache-dictionary-set-fields';
 import * as CacheDictionaryGetField from './messages/responses/cache-dictionary-get-field';
+import * as CacheDictionaryGetFields from './messages/responses/cache-dictionary-get-fields';
+import * as CacheDictionaryIncrement from './messages/responses/cache-dictionary-increment';
 import * as CacheSetFetch from './messages/responses/cache-set-fetch';
 import {getLogger, initializeMomentoLogging, Logger} from './utils/logging';
 import {range} from './utils/collections';
