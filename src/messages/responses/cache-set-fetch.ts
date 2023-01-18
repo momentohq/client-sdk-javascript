@@ -1,13 +1,17 @@
-import {ResponseBase} from './response-base';
+import {
+  ResponseBase,
+  ResponseError,
+  ResponseMiss,
+  ResponseHit,
+} from './response-base';
 import {SdkError} from '../../errors/errors';
-import {applyMixins, ErrorBody} from '../../errors/error-utils';
 import {TextDecoder} from 'util';
 
 const TEXT_DECODER = new TextDecoder();
 
 export abstract class Response extends ResponseBase {}
 
-export class Hit extends Response {
+class _Hit extends Response {
   private readonly elements: Uint8Array[];
 
   constructor(elements: Uint8Array[]) {
@@ -25,15 +29,14 @@ export class Hit extends Response {
 
   // TODO override toString() https://github.com/momentohq/client-sdk-javascript/issues/169
 }
+export class Hit extends ResponseHit(_Hit) {}
 
-export class Miss extends Response {}
+class _Miss extends Response {}
+export class Miss extends ResponseMiss(_Miss) {}
 
-export class Error extends Response {
-  constructor(protected _innerException: SdkError) {
+class _Error extends Response {
+  constructor(public _innerException: SdkError) {
     super();
   }
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Error extends ErrorBody {}
-applyMixins(Error, [ErrorBody]);
+export class Error extends ResponseError(_Error) {}

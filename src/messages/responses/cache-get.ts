@@ -1,15 +1,19 @@
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextDecoder} from 'util';
 import {SdkError} from '../../errors/errors';
-import {ResponseBase} from './response-base';
-import {applyMixins, ErrorBody} from '../../errors/error-utils';
+import {
+  ResponseBase,
+  ResponseError,
+  ResponseHit,
+  ResponseMiss,
+} from './response-base';
 import {truncateString} from '../../utils/display';
 
 const TEXT_DECODER = new TextDecoder();
 
 export abstract class Response extends ResponseBase {}
 
-export class Hit extends Response {
+class _Hit extends Response {
   private readonly body: Uint8Array;
   constructor(body: Uint8Array) {
     super();
@@ -32,14 +36,14 @@ export class Hit extends Response {
     return `${super.toString()}: ${display}`;
   }
 }
+export class Hit extends ResponseHit(_Hit) {}
 
-export class Miss extends Response {}
+class _Miss extends Response {}
+export class Miss extends ResponseMiss(_Miss) {}
 
-export class Error extends Response {
+class _Error extends Response {
   constructor(protected _innerException: SdkError) {
     super();
   }
 }
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Error extends ErrorBody {}
-applyMixins(Error, [ErrorBody]);
+export class Error extends ResponseError(_Error) {}
