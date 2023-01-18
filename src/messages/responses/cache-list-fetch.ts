@@ -13,7 +13,6 @@ const TEXT_DECODER = new TextDecoder();
 export abstract class Response extends ResponseBase {}
 
 class _Hit extends Response {
-  private readonly _displayListSizeLimit = 5;
   private readonly _values: Uint8Array[];
   constructor(values: Uint8Array[]) {
     super();
