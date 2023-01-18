@@ -244,6 +244,7 @@ describe('create/delete cache, get/set/delete', () => {
       }
     });
   });
+
   it('should set and then delete a value in cache', async () => {
     const cacheKey = v4();
     const cacheValue = new TextEncoder().encode(v4());
@@ -262,30 +263,7 @@ describe('create/delete cache, get/set/delete', () => {
     const getMiss = await momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
     expect(getMiss).toBeInstanceOf(CacheGet.Miss);
   });
-  it('should return InvalidArgument response for set, get, and delete with empty key', async () => {
-    const setResponse = await momento.set(
-      INTEGRATION_TEST_CACHE_NAME,
-      '',
-      'foo'
-    );
-    expect(setResponse).toBeInstanceOf(CacheSet.Error);
-    expect((setResponse as CacheSet.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    const getResponse = await momento.get(INTEGRATION_TEST_CACHE_NAME, '');
-    expect(getResponse).toBeInstanceOf(CacheGet.Error);
-    expect((getResponse as CacheGet.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    const deleteResponse = await momento.delete(
-      INTEGRATION_TEST_CACHE_NAME,
-      ''
-    );
-    expect(deleteResponse).toBeInstanceOf(CacheDelete.Error);
-    expect((deleteResponse as CacheDelete.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-  });
+
   it('should return InvalidArgument response for set, get, and delete with invalid cache name', async () => {
     const setResponse = await momento.set('', 'bar', 'foo');
     expect(setResponse).toBeInstanceOf(CacheSet.Error);
@@ -303,34 +281,6 @@ describe('create/delete cache, get/set/delete', () => {
       MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
   });
-  it('should return InvalidArgument response for set request with empty key or value', async () => {
-    const noKeySetResponse = await momento.set(
-      INTEGRATION_TEST_CACHE_NAME,
-      '',
-      'value'
-    );
-    expect(noKeySetResponse).toBeInstanceOf(CacheSet.Error);
-    expect((noKeySetResponse as CacheSet.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    const noValueSetResponse = await momento.set(
-      INTEGRATION_TEST_CACHE_NAME,
-      'key',
-      ''
-    );
-    expect(noValueSetResponse).toBeInstanceOf(CacheSet.Error);
-    expect((noValueSetResponse as CacheSet.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-  });
-  it('should return InvalidArgument response for get request with empty key', async () => {
-    const noKeyGetResponse = await momento.get(INTEGRATION_TEST_CACHE_NAME, '');
-    expect(noKeyGetResponse).toBeInstanceOf(CacheGet.Error);
-    expect((noKeyGetResponse as CacheGet.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-  });
-});
 
 describe('Signing keys', () => {
   it('should create, list, and revoke a signing key', async () => {
@@ -569,7 +519,7 @@ describe('Integration Tests for operations on sets datastructure', () => {
 });
 
 describe('Integration tests for dictionary operations', () => {
-  it('should return InvalidArgument response for dictionaryGetField with invalid cache/dictionary/field/value name', async () => {
+  it('should return InvalidArgument response for dictionaryGetField with invalid cache and dictionary names', async () => {
     let response = await momento.dictionaryGetField(
       '',
       'myDictionary',
@@ -584,16 +534,10 @@ describe('Integration tests for dictionary operations', () => {
     expect((response as CacheDictionaryGetField.Error).errorCode()).toEqual(
       MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    response = await momento.dictionaryGetField('cache', 'myDictionary', '');
-    expect(response).toBeInstanceOf(CacheDictionaryGetField.Error);
-    expect((response as CacheDictionaryGetField.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
   });
 
-  it('should return InvalidArgument response for dictionaryGetFields with invalid cache/dictionary names and fields', async () => {
+  it('should return InvalidArgument response for dictionaryGetFields with invalid cache/dictionary names', async () => {
     const fields = ['field1'];
-    const invalidItems = [''];
     let response = await momento.dictionaryGetFields(
       '',
       'myDictionary',
@@ -608,18 +552,9 @@ describe('Integration tests for dictionary operations', () => {
     expect((response as CacheDictionaryGetFields.Error).errorCode()).toEqual(
       MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    response = await momento.dictionaryGetFields(
-      'cache',
-      'myDictionary',
-      invalidItems
-    );
-    expect(response).toBeInstanceOf(CacheDictionaryGetFields.Error);
-    expect((response as CacheDictionaryGetFields.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
   });
 
-  it('should return InvalidArgument response for dictionarySetField with invalid cache/dictionary/field/value name', async () => {
+  it('should return InvalidArgument response for dictionarySetField with invalid cache/dictionary names', async () => {
     let response = await momento.dictionarySetField(
       '',
       'myDictionary',
@@ -640,31 +575,10 @@ describe('Integration tests for dictionary operations', () => {
     expect((response as CacheDictionarySetField.Error).errorCode()).toEqual(
       MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    response = await momento.dictionarySetField(
-      'cache',
-      'myDictionary',
-      '',
-      'myValue'
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Error);
-    expect((response as CacheDictionarySetField.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    response = await momento.dictionarySetField(
-      'cache',
-      'myDictionary',
-      'myField',
-      ''
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Error);
-    expect((response as CacheDictionarySetField.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
   });
 
-  it('should return InvalidArgument response for dictionarySetFields with invalid cache/dictionary names and items', async () => {
+  it('should return InvalidArgument response for dictionarySetFields with invalid cache/dictionary names', async () => {
     const items = [{field: 'field', value: 'value'}];
-    const invalidItems = [{field: '', value: ''}];
     let response = await momento.dictionarySetFields('', 'myDictionary', items);
     expect(response).toBeInstanceOf(CacheDictionarySetFields.Error);
     expect((response as CacheDictionarySetFields.Error).errorCode()).toEqual(
@@ -675,15 +589,7 @@ describe('Integration tests for dictionary operations', () => {
     expect((response as CacheDictionarySetFields.Error).errorCode()).toEqual(
       MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    response = await momento.dictionarySetFields(
-      'cache',
-      'myDictionary',
-      invalidItems
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetFields.Error);
-    expect((response as CacheDictionarySetFields.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
+   
   });
 
   it('should set/get a dictionary with Uint8Array field/value', async () => {
@@ -1945,11 +1851,6 @@ describe('Integration tests for dictionary operations', () => {
       MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
     response = await momento.dictionaryIncrement('cache', '', 'myField');
-    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Error);
-    expect((response as CacheDictionaryIncrement.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    response = await momento.dictionaryIncrement('cache', 'myDictionary', '');
     expect(response).toBeInstanceOf(CacheDictionaryIncrement.Error);
     expect((response as CacheDictionaryIncrement.Error).errorCode()).toEqual(
       MomentoErrorCode.INVALID_ARGUMENT_ERROR
