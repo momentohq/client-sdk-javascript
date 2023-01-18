@@ -884,7 +884,7 @@ export class CacheClient {
   public async dictionaryIncrement(
     cacheName: string,
     dictionaryName: string,
-    field: string,
+    field: string | Uint8Array,
     amount = 1,
     ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheDictionaryIncrement.Response> {
@@ -897,7 +897,7 @@ export class CacheClient {
       );
     }
     this.logger.trace(
-      `Issuing 'dictionaryIncrement' request; field: ${field}, amount : ${amount}, ttl: ${
+      `Issuing 'dictionaryIncrement' request; field: ${field.toString()}, amount : ${amount}, ttl: ${
         ttl.ttlSeconds.toString() ?? 'null'
       }`
     );

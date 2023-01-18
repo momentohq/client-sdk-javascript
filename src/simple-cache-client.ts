@@ -347,7 +347,7 @@ export class SimpleCacheClient {
   public async dictionaryIncrement(
     cacheName: string,
     dictionaryName: string,
-    field: string,
+    field: string | Uint8Array,
     amount = 1,
     ttl?: CollectionTtl
   ): Promise<CacheDictionaryIncrement.Response> {

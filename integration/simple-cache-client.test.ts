@@ -1845,9 +1845,53 @@ describe('Integration tests for dictionary operations', () => {
     );
   });
 
-  it('should increment from 0 to expected amount with dictionaryIncrement', async () => {
+  it('should increment from 0 to expected amount with dictionaryIncrement with string field', async () => {
     const dictionaryName = v4();
     const field = v4();
+    let response = await momento.dictionaryIncrement(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      1
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+    let successResponse = response as CacheDictionaryIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(1);
+
+    response = await momento.dictionaryIncrement(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      41
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+    successResponse = response as CacheDictionaryIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(42);
+    expect(successResponse.toString()).toEqual('Success: value: 42');
+
+    response = await momento.dictionaryIncrement(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field,
+      -1042
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+    successResponse = response as CacheDictionaryIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(-1000);
+
+    response = await momento.dictionaryGetField(
+      INTEGRATION_TEST_CACHE_NAME,
+      dictionaryName,
+      field
+    );
+    expect(response).toBeInstanceOf(CacheDictionaryGetField.Hit);
+    const hitResponse = response as CacheDictionaryGetField.Hit;
+    expect(hitResponse.valueString()).toEqual('-1000');
+  });
+
+  it('should increment from 0 to expected amount with dictionaryIncrement with Uint8Array field', async () => {
+    const dictionaryName = v4();
+    const field = new TextEncoder().encode(v4());
     let response = await momento.dictionaryIncrement(
       INTEGRATION_TEST_CACHE_NAME,
       dictionaryName,
