@@ -10,20 +10,23 @@ export function truncateString(value: string, maxLength = 32) {
 
 const DISPLAY_SIZE_LIMIT = 5;
 
-function truncateStringArrayToSize(xs: string[], length: number): string[] {
-  if (xs.length <= length) {
-    return xs;
+function truncateStringArrayToSize(
+  stringArray: string[],
+  length: number
+): string[] {
+  if (stringArray.length <= length) {
+    return stringArray;
   } else {
-    return xs.slice(0, length).concat(['...']);
+    return stringArray.slice(0, length).concat(['...']);
   }
 }
 
 export function truncateStringArray(
-  xs: string[],
+  stringArray: string[],
   length: number = DISPLAY_SIZE_LIMIT
 ): string[] {
-  const xss = truncateStringArrayToSize(xs, length);
-  return xss.map(v => {
-    return truncateString(v);
+  const truncatedStringArray = truncateStringArrayToSize(stringArray, length);
+  return truncatedStringArray.map(s => {
+    return truncateString(s);
   });
 }

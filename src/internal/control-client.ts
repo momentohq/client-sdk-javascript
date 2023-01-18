@@ -6,20 +6,22 @@ import {createRetryInterceptorIfEnabled} from '../grpc/retry-interceptor';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
-import * as CreateCache from '../messages/responses/create-cache';
-import * as DeleteCache from '../messages/responses/delete-cache';
-import * as ListCaches from '../messages/responses/list-caches';
-import * as CreateSigningKey from '../messages/responses/create-signing-key';
-import * as ListSigningKeys from '../messages/responses/list-signing-keys';
-import * as RevokeSigningKey from '../messages/responses/revoke-signing-key';
+import {
+  Configuration,
+  CreateCache,
+  CredentialProvider,
+  DeleteCache,
+  ListCaches,
+  CreateSigningKey,
+  ListSigningKeys,
+  RevokeSigningKey,
+} from '..';
 import {version} from '../../package.json';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
 import {validateCacheName, validateTtlMinutes} from '../utils/validators';
-import {CredentialProvider} from '../auth/credential-provider';
-import {Configuration} from '../config/configuration';
 
 export interface ControlClientProps {
   configuration: Configuration;
