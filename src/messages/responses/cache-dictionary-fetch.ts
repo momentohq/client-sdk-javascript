@@ -15,6 +15,7 @@ export class Hit extends Response {
   private readonly dictionaryStringString: Map<string, string> = new Map();
   private readonly dictionaryStringArrayBuffer: Map<string, Uint8Array> =
     new Map();
+  private readonly _displayListSizeLimit = 5;
 
   constructor(items: cache_client._DictionaryFieldValuePair[]) {
     super();
@@ -48,16 +49,27 @@ export class Hit extends Response {
     return this.dictionaryStringArrayBuffer;
   }
 
+  private truncateValueStrings(): string {
+    const keyValueIterable = this.valueDictionaryStringString().entries();
+    const keyValueArray = Array.from(keyValueIterable);
+    if (keyValueArray.length <= this._displayListSizeLimit) {
+      const pairs: string[] = [];
+      keyValueArray.forEach(pair => {
+        pairs.push(`${pair[0]}: ${pair[1]}`);
+      });
+      return pairs.join(',');
+    } else {
+      const slicedArray = keyValueArray.slice(0, this._displayListSizeLimit);
+      const pairs: string[] = [];
+      slicedArray.forEach(pair => {
+        pairs.push(`${pair[0]}: ${pair[1]}`);
+      });
+      return pairs.join(',');
+    }
+  }
+
   public override toString(): string {
-    let stringRepresentation = '';
-    this.valueDictionaryStringString().forEach((value, key) => {
-      const keyValue = `${key}: ${value}, `;
-      stringRepresentation = stringRepresentation + keyValue;
-    });
-    return `${super.toString()}: valueDictionaryStringString: ${stringRepresentation.slice(
-      0,
-      -2
-    )}`;
+    return `${super.toString()}: valueDictionaryStringString: ${this.truncateValueStrings()}`;
   }
 }
 

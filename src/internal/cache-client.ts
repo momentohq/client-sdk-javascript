@@ -28,10 +28,6 @@ import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
 import {
-  ensureValidField,
-  ensureValidKey,
-  ensureValidSetRequest,
-  ensureValidValue,
   validateCacheName,
   validateDictionaryName,
   validateListName,
@@ -119,7 +115,11 @@ export class CacheClient {
   ): Promise<CacheSet.Response> {
     try {
       validateCacheName(cacheName);
-      ensureValidSetRequest(key, value, ttl || this.defaultTtlSeconds);
+      if (ttl && ttl < 0) {
+        throw new InvalidArgumentError('ttl must be a positive integer');
+      } else {
+        ttl || this.defaultTtlSeconds;
+      }
     } catch (err) {
       return new CacheSet.Error(normalizeSdkError(err as Error));
     }
@@ -213,7 +213,6 @@ export class CacheClient {
   ): Promise<CacheDelete.Response> {
     try {
       validateCacheName(cacheName);
-      ensureValidKey(key);
     } catch (err) {
       return new CacheDelete.Error(normalizeSdkError(err as Error));
     }
@@ -253,7 +252,6 @@ export class CacheClient {
   ): Promise<CacheGet.Response> {
     try {
       validateCacheName(cacheName);
-      ensureValidKey(key);
     } catch (err) {
       return new CacheGet.Error(normalizeSdkError(err as Error));
     }
@@ -485,8 +483,6 @@ export class CacheClient {
     try {
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
-      ensureValidField(field);
-      ensureValidValue(value);
     } catch (err) {
       return new CacheDictionarySetField.Error(normalizeSdkError(err as Error));
     }
@@ -554,10 +550,6 @@ export class CacheClient {
     try {
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
-      items.forEach(item => {
-        ensureValidField(item.field);
-        ensureValidValue(item.value);
-      });
     } catch (err) {
       return new CacheDictionarySetFields.Error(
         normalizeSdkError(err as Error)
@@ -631,7 +623,6 @@ export class CacheClient {
     try {
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
-      ensureValidField(field);
     } catch (err) {
       return new CacheDictionaryGetField.Error(
         normalizeSdkError(err as Error),
@@ -716,7 +707,6 @@ export class CacheClient {
     try {
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
-      fields.forEach(field => ensureValidField(field));
     } catch (err) {
       return new CacheDictionaryGetFields.Error(
         normalizeSdkError(err as Error)
@@ -778,7 +768,6 @@ export class CacheClient {
     try {
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
-      ensureValidField(field);
     } catch (err) {
       return new CacheDictionaryRemoveField.Error(
         normalizeSdkError(err as Error)
@@ -838,7 +827,6 @@ export class CacheClient {
     try {
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
-      fields.forEach(field => ensureValidField(field));
     } catch (err) {
       return new CacheDictionaryRemoveFields.Error(
         normalizeSdkError(err as Error)
@@ -903,7 +891,6 @@ export class CacheClient {
     try {
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
-      ensureValidField(field);
     } catch (err) {
       return new CacheDictionaryIncrement.Error(
         normalizeSdkError(err as Error)

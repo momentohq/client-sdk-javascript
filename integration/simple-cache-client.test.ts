@@ -570,178 +570,120 @@ describe('Integration Tests for operations on sets datastructure', () => {
 
 describe('Integration tests for dictionary operations', () => {
   it('should return InvalidArgument response for dictionaryGetField with invalid cache/dictionary/field/value name', async () => {
-    const dictionaryGetFieldResponse1 = await momento.dictionaryGetField(
+    let response = await momento.dictionaryGetField(
       '',
       'myDictionary',
       'myField'
     );
-    expect(dictionaryGetFieldResponse1).toBeInstanceOf(
-      CacheDictionaryGetField.Error
+    expect(response).toBeInstanceOf(CacheDictionaryGetField.Error);
+    expect((response as CacheDictionaryGetField.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    expect(
-      (dictionaryGetFieldResponse1 as CacheDictionaryGetField.Error).errorCode()
-    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
-    const dictionaryGetFieldResponse2 = await momento.dictionaryGetField(
-      'cache',
-      '',
-      'myField'
+    response = await momento.dictionaryGetField('cache', '', 'myField');
+    expect(response).toBeInstanceOf(CacheDictionaryGetField.Error);
+    expect((response as CacheDictionaryGetField.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    expect(dictionaryGetFieldResponse2).toBeInstanceOf(
-      CacheDictionaryGetField.Error
+    response = await momento.dictionaryGetField('cache', 'myDictionary', '');
+    expect(response).toBeInstanceOf(CacheDictionaryGetField.Error);
+    expect((response as CacheDictionaryGetField.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    expect(
-      (dictionaryGetFieldResponse2 as CacheDictionaryGetField.Error).errorCode()
-    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
-    const dictionaryGetFieldResponse3 = await momento.dictionaryGetField(
-      'cache',
-      'myDictionary',
-      ''
-    );
-    expect(dictionaryGetFieldResponse3).toBeInstanceOf(
-      CacheDictionaryGetField.Error
-    );
-    expect(
-      (dictionaryGetFieldResponse3 as CacheDictionaryGetField.Error).errorCode()
-    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
   });
 
   it('should return InvalidArgument response for dictionaryGetFields with invalid cache/dictionary names and fields', async () => {
     const fields = ['field1'];
     const invalidItems = [''];
-    const dictionaryGetFieldsResponse1 = await momento.dictionaryGetFields(
+    let response = await momento.dictionaryGetFields(
       '',
       'myDictionary',
       fields
     );
-    expect(dictionaryGetFieldsResponse1).toBeInstanceOf(
-      CacheDictionaryGetFields.Error
+    expect(response).toBeInstanceOf(CacheDictionaryGetFields.Error);
+    expect((response as CacheDictionaryGetFields.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    expect(
-      (
-        dictionaryGetFieldsResponse1 as CacheDictionaryGetFields.Error
-      ).errorCode()
-    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
-    const dictionaryGetFieldsResponse2 = await momento.dictionaryGetFields(
-      'cache',
-      '',
-      fields
+    response = await momento.dictionaryGetFields('cache', '', fields);
+    expect(response).toBeInstanceOf(CacheDictionaryGetFields.Error);
+    expect((response as CacheDictionaryGetFields.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    expect(dictionaryGetFieldsResponse2).toBeInstanceOf(
-      CacheDictionaryGetFields.Error
-    );
-    expect(
-      (
-        dictionaryGetFieldsResponse2 as CacheDictionaryGetFields.Error
-      ).errorCode()
-    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
-    const dictionaryGetFieldsResponse3 = await momento.dictionaryGetFields(
+    response = await momento.dictionaryGetFields(
       'cache',
       'myDictionary',
       invalidItems
     );
-    expect(dictionaryGetFieldsResponse3).toBeInstanceOf(
-      CacheDictionaryGetFields.Error
+    expect(response).toBeInstanceOf(CacheDictionaryGetFields.Error);
+    expect((response as CacheDictionaryGetFields.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    expect(
-      (
-        dictionaryGetFieldsResponse3 as CacheDictionaryGetFields.Error
-      ).errorCode()
-    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
   });
 
   it('should return InvalidArgument response for dictionarySetField with invalid cache/dictionary/field/value name', async () => {
-    const dictionarySetFieldResponse1 = await momento.dictionarySetField(
+    let response = await momento.dictionarySetField(
       '',
       'myDictionary',
       'myField',
       'myValue'
     );
-    expect(dictionarySetFieldResponse1).toBeInstanceOf(
-      CacheDictionarySetField.Error
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Error);
+    expect((response as CacheDictionarySetField.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    expect(
-      (dictionarySetFieldResponse1 as CacheDictionarySetField.Error).errorCode()
-    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
-    const dictionarySetFieldResponse2 = await momento.dictionarySetField(
+    response = await momento.dictionarySetField(
       'cache',
       '',
       'myField',
       'myValue'
     );
-    expect(dictionarySetFieldResponse2).toBeInstanceOf(
-      CacheDictionarySetField.Error
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Error);
+    expect((response as CacheDictionarySetField.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    expect(
-      (dictionarySetFieldResponse2 as CacheDictionarySetField.Error).errorCode()
-    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
-    const dictionarySetFieldResponse3 = await momento.dictionarySetField(
+    response = await momento.dictionarySetField(
       'cache',
       'myDictionary',
       '',
       'myValue'
     );
-    expect(dictionarySetFieldResponse3).toBeInstanceOf(
-      CacheDictionarySetField.Error
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Error);
+    expect((response as CacheDictionarySetField.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    expect(
-      (dictionarySetFieldResponse3 as CacheDictionarySetField.Error).errorCode()
-    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
-    const dictionarySetFieldResponse4 = await momento.dictionarySetField(
+    response = await momento.dictionarySetField(
       'cache',
       'myDictionary',
       'myField',
       ''
     );
-    expect(dictionarySetFieldResponse4).toBeInstanceOf(
-      CacheDictionarySetField.Error
+    expect(response).toBeInstanceOf(CacheDictionarySetField.Error);
+    expect((response as CacheDictionarySetField.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    expect(
-      (dictionarySetFieldResponse4 as CacheDictionarySetField.Error).errorCode()
-    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
   });
 
   it('should return InvalidArgument response for dictionarySetFields with invalid cache/dictionary names and items', async () => {
     const items = [{field: 'field', value: 'value'}];
     const invalidItems = [{field: '', value: ''}];
-    const dictionarySetFieldsResponse1 = await momento.dictionarySetFields(
-      '',
-      'myDictionary',
-      items
+    let response = await momento.dictionarySetFields('', 'myDictionary', items);
+    expect(response).toBeInstanceOf(CacheDictionarySetFields.Error);
+    expect((response as CacheDictionarySetFields.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    expect(dictionarySetFieldsResponse1).toBeInstanceOf(
-      CacheDictionarySetFields.Error
+    response = await momento.dictionarySetFields('cache', '', items);
+    expect(response).toBeInstanceOf(CacheDictionarySetFields.Error);
+    expect((response as CacheDictionarySetFields.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    expect(
-      (
-        dictionarySetFieldsResponse1 as CacheDictionarySetFields.Error
-      ).errorCode()
-    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
-    const dictionarySetFieldsResponse2 = await momento.dictionarySetFields(
-      'cache',
-      '',
-      items
-    );
-    expect(dictionarySetFieldsResponse2).toBeInstanceOf(
-      CacheDictionarySetFields.Error
-    );
-    expect(
-      (
-        dictionarySetFieldsResponse2 as CacheDictionarySetFields.Error
-      ).errorCode()
-    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
-    const dictionarySetFieldsResponse3 = await momento.dictionarySetFields(
+    response = await momento.dictionarySetFields(
       'cache',
       'myDictionary',
       invalidItems
     );
-    expect(dictionarySetFieldsResponse3).toBeInstanceOf(
-      CacheDictionarySetFields.Error
+    expect(response).toBeInstanceOf(CacheDictionarySetFields.Error);
+    expect((response as CacheDictionarySetFields.Error).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    expect(
-      (
-        dictionarySetFieldsResponse3 as CacheDictionarySetFields.Error
-      ).errorCode()
-    ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
   });
 
   it('should set/get a dictionary with Uint8Array field/value', async () => {

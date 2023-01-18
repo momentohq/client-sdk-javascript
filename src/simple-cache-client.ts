@@ -23,7 +23,6 @@ import {Configuration} from './config/configuration';
 import {CredentialProvider} from './auth/credential-provider';
 import {SimpleCacheClientProps} from './simple-cache-client-props';
 import {CollectionTtl} from './utils/collection-ttl';
-import {CacheDictionaryRemoveField} from '.';
 
 /**
  * Momento Simple Cache Client.
