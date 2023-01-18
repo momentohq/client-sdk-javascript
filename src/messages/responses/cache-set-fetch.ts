@@ -6,6 +6,7 @@ import {
 } from './response-base';
 import {SdkError} from '../../errors/errors';
 import {TextDecoder} from 'util';
+import {truncateStringArray} from '../../utils/display';
 
 const TEXT_DECODER = new TextDecoder();
 
@@ -27,7 +28,12 @@ class _Hit extends Response {
     return new Set(this.elements);
   }
 
-  // TODO override toString() https://github.com/momentohq/client-sdk-javascript/issues/169
+  public override toString(): string {
+    const truncatedStringArray = truncateStringArray(
+      Array.from(this.valueSetString())
+    );
+    return `${super.toString()}: [${truncatedStringArray.toString()}]`;
+  }
 }
 export class Hit extends ResponseHit(_Hit) {}
 
