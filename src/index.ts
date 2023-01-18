@@ -13,6 +13,14 @@ import * as CreateSigningKey from './messages/responses/create-signing-key';
 import * as ListSigningKeys from './messages/responses/list-signing-keys';
 import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
 import * as CacheSetFetch from './messages/responses/cache-set-fetch';
+import * as CacheDictionaryFetch from './messages/responses/cache-dictionary-fetch';
+import * as CacheDictionarySetField from './messages/responses/cache-dictionary-set-field';
+import * as CacheDictionarySetFields from './messages/responses/cache-dictionary-set-fields';
+import * as CacheDictionaryGetField from './messages/responses/cache-dictionary-get-field';
+import * as CacheDictionaryGetFields from './messages/responses/cache-dictionary-get-fields';
+import * as CacheDictionaryRemoveField from './messages/responses/cache-dictionary-remove-field';
+import * as CacheDictionaryRemoveFields from './messages/responses/cache-dictionary-remove-fields';
+import * as CacheDictionaryIncrement from './messages/responses/cache-dictionary-increment';
 import * as CacheSetAddElements from './messages/responses/cache-set-add-elements';
 import * as CacheSetRemoveElements from './messages/responses/cache-set-remove-elements';
 import {CacheInfo} from './messages/cache-info';
@@ -71,6 +79,14 @@ export {
   RevokeSigningKey,
   CacheInfo,
   CacheSetFetch,
+  CacheDictionaryFetch,
+  CacheDictionarySetField,
+  CacheDictionarySetFields,
+  CacheDictionaryGetField,
+  CacheDictionaryGetFields,
+  CacheDictionaryRemoveField,
+  CacheDictionaryRemoveFields,
+  CacheDictionaryIncrement,
   CacheSetAddElements,
   CacheSetRemoveElements,
   MomentoErrorCode,

@@ -10,6 +10,12 @@ import * as CacheGet from './messages/responses/cache-get';
 import * as CacheDelete from './messages/responses/cache-delete';
 import * as CacheListFetch from './messages/responses/cache-list-fetch';
 import * as CacheSet from './messages/responses/cache-set';
+import * as CacheDictionaryFetch from './messages/responses/cache-dictionary-fetch';
+import * as CacheDictionarySetField from './messages/responses/cache-dictionary-set-field';
+import * as CacheDictionarySetFields from './messages/responses/cache-dictionary-set-fields';
+import * as CacheDictionaryGetField from './messages/responses/cache-dictionary-get-field';
+import * as CacheDictionaryGetFields from './messages/responses/cache-dictionary-get-fields';
+import * as CacheDictionaryIncrement from './messages/responses/cache-dictionary-increment';
 import * as CacheSetFetch from './messages/responses/cache-set-fetch';
 import * as CacheSetAddElements from './messages/responses/cache-set-add-elements';
 import * as CacheSetRemoveElements from './messages/responses/cache-set-remove-elements';
@@ -228,6 +234,172 @@ export class SimpleCacheClient {
    */
   public async listCaches(nextToken?: string): Promise<ListCaches.Response> {
     return await this.controlClient.listCaches(nextToken);
+  }
+
+  /**
+   * Fetch the entire dictionary from the cache.
+   * @param {string} cacheName - Name of the cache to perform the lookup in.
+   * @param {string} dictionaryName - The dictionary to fetch.
+   * @returns {Promise<DictionaryFetch.Response>}- Promise containing the result of the fetch operation and the associated dictionary.
+   * @memberof SimpleCacheClient
+   */
+  public async dictionaryFetch(
+    cacheName: string,
+    dictionaryName: string
+  ): Promise<CacheDictionaryFetch.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryFetch(cacheName, dictionaryName);
+  }
+
+  /**
+   * Add an element to a set in the cache.
+   * After this operation, the set will contain the union of the element passed in and the elements of the set.
+   * @param {string} cacheName - Name of the cache to store the dictionary in.
+   * @param {string} dictionaryName - The dictionary to set.
+   * @param {string | Uint8Array} items - The field in the dictionary to set.
+   * @param {string | Uint8Array} value - The value to be stored.
+   * @param {CollectionTtl} ttl -  TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+   * @returns {Promise<CacheDictionarySetField.Response>}- Promise containing the result of the cache operation.
+   * @memberof SimpleCacheClient
+   */
+  public async dictionarySetField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array,
+    value: string | Uint8Array,
+    ttl?: CollectionTtl
+  ): Promise<CacheDictionarySetField.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionarySendField(
+      cacheName,
+      dictionaryName,
+      field,
+      value,
+      ttl
+    );
+  }
+
+  /**
+   * Set several dictionary field-value pairs in the cache.
+   * @param {string} cacheName - Name of the cache to store the dictionary in.
+   * @param {string} dictionaryName - The dictionary to set.
+   * @param {{field: string | Uint8Array; value: string | Uint8Array}[]} items - The field-value pairs in the dictionary to set.
+   * @param {CollectionTtl} ttl -  TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+   * @returns {Promise<CacheDictionarySetFieldsResponse>}- Promise containing the result of the cache operation.
+   * @memberof SimpleCacheClient
+   */
+  public async dictionarySetFields(
+    cacheName: string,
+    dictionaryName: string,
+    items: {field: string | Uint8Array; value: string | Uint8Array}[],
+    ttl?: CollectionTtl
+  ): Promise<CacheDictionarySetFields.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionarySendFields(
+      cacheName,
+      dictionaryName,
+      items,
+      ttl
+    );
+  }
+
+  /**
+   * Get the cache value stored for the given dictionary and field.
+   * @param {string} cacheName - Name of the cache to perform the lookup in.
+   * @param {string} dictionaryName - The dictionary to look up.
+   * @param {string | Uint8Array} field - The field in the dictionary to lookup.
+   * @returns {Promise<CacheDictionaryGetField>}- Promise containing the status of the get operation and the associated value.
+   */
+  public async dictionaryGetField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array
+  ): Promise<CacheDictionaryGetField.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryGetField(cacheName, dictionaryName, field);
+  }
+
+  /**
+   * Get several values from a dictionary.
+   * @param {string} cacheName - Name of the cache to perform the lookup in.
+   * @param {string} dictionaryName - The dictionary to look up.
+   * @param {string[] | Uint8Array[]} fields - The field in the dictionary to lookup.
+   * @returns {Promise<CacheDictionaryGetField>}- Promise containing the status and associated value for each field.
+   */
+  public async dictionaryGetFields(
+    cacheName: string,
+    dictionaryName: string,
+    fields: string[] | Uint8Array[]
+  ): Promise<CacheDictionaryGetFields.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryGetFields(cacheName, dictionaryName, fields);
+  }
+
+  /**
+   * Remove a field from a dictionary.
+   * Performs a no-op if dictionaryName or field does not exist.
+   * @param {string} cacheName - Name of the cache to perform the lookup in.
+   * @param {string} dictionaryName - Name of the dictionary to remove the field from.
+   * @param {string | Uint8Array} field - Name of the field to remove from the dictionary.
+   * @returns {Promise<CacheDictionaryRemoveField>}- Promise containing the result of the cache operation.
+   */
+  public async dictionaryRemoveField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array
+  ): Promise<CacheDictionaryGetField.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryRemoveField(cacheName, dictionaryName, field);
+  }
+
+  /**
+   * Remove fields from a dictionary.
+   * Performs a no-op if dictionaryName or field does not exist.
+   * @param {string} cacheName - Name of the cache to perform the lookup in.
+   * @param {string} dictionaryName - Name of the dictionary to remove the field from.
+   * @param {string[] | Uint8Array[]} fields - Name of the fields to remove from the dictionary.
+   * @returns {Promise<CacheDictionaryRemoveFields>}- Promise containing the result of the cache operation.
+   */
+  public async dictionaryRemoveFields(
+    cacheName: string,
+    dictionaryName: string,
+    fields: string[] | Uint8Array[]
+  ): Promise<CacheDictionaryGetFields.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryRemoveFields(
+      cacheName,
+      dictionaryName,
+      fields
+    );
+  }
+
+  /**
+   * Add an integer quantity to a dictionary value.
+   * Incrementing the value of a missing field sets the value to amount.
+   * Incrementing a value that was not set using this method or not the string representation of an integer
+   * results in an error with FailedPreconditionException.
+   * @param {string} cacheName - Name of the cache to perform the lookup in.
+   * @param {string} dictionaryName - The dictionary to set.
+   * @param {string | Uint8Array} field - Name of the field to increment from the dictionary.
+   * @param {number} amount - The quantity to add to the value. May be positive, negative, or zero. Defaults to 1.
+   * @param {CollectionTtl} ttl - TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+   * @returns {Promise<CacheDictionaryIncrement>}- Promise containing the result of the cache operation.
+   */
+  public async dictionaryIncrement(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array,
+    amount = 1,
+    ttl?: CollectionTtl
+  ): Promise<CacheDictionaryIncrement.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryIncrement(
+      cacheName,
+      dictionaryName,
+      field,
+      amount,
+      ttl
+    );
   }
 
   /**
