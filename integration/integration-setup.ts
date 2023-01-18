@@ -1,3 +1,4 @@
+import {v4} from 'uuid';
 import {SimpleCacheClientProps} from '../src/simple-cache-client-props';
 import {
   CreateCache,
@@ -8,8 +9,10 @@ import {
   SimpleCacheClient,
 } from '../src';
 
-export const INTEGRATION_TEST_CACHE_NAME =
-  process.env.TEST_CACHE_NAME || 'js-integration-test-default';
+function testCacheName(): string {
+  const name = process.env.TEST_CACHE_NAME || 'js-integration-test-default';
+  return name + v4();
+}
 
 const deleteCacheIfExists = async (
   momento: SimpleCacheClient,
@@ -47,14 +50,17 @@ function momentoClientForTesting() {
   return new SimpleCacheClient(CacheClientProps);
 }
 
-export function SetupIntegrationTest(): SimpleCacheClient {
+export function SetupIntegrationTest(): {
+  Momento: SimpleCacheClient;
+  IntegrationTestCacheName: string;
+} {
+  const cacheName = testCacheName();
+
   beforeAll(async () => {
     // Use a fresh client to avoid test interference with setup.
     const momento = momentoClientForTesting();
-    await deleteCacheIfExists(momento, INTEGRATION_TEST_CACHE_NAME);
-    const createResponse = await momento.createCache(
-      INTEGRATION_TEST_CACHE_NAME
-    );
+    await deleteCacheIfExists(momento, cacheName);
+    const createResponse = await momento.createCache(cacheName);
     if (createResponse instanceof CreateCache.Error) {
       throw createResponse.innerException();
     }
@@ -63,13 +69,12 @@ export function SetupIntegrationTest(): SimpleCacheClient {
   afterAll(async () => {
     // Use a fresh client to avoid test interference with teardown.
     const momento = momentoClientForTesting();
-    const deleteResponse = await momento.deleteCache(
-      INTEGRATION_TEST_CACHE_NAME
-    );
+    const deleteResponse = await momento.deleteCache(cacheName);
     if (deleteResponse instanceof DeleteCache.Error) {
       throw deleteResponse.innerException();
     }
   });
 
-  return momentoClientForTesting();
+  const client = momentoClientForTesting();
+  return {Momento: client, IntegrationTestCacheName: cacheName};
 }
