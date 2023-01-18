@@ -23,6 +23,7 @@ import {
   CacheDictionaryIncrement,
   CacheSetFetch,
   CacheSetAddElements,
+  CacheSetAddElement,
   CacheSetRemoveElements,
 } from '.';
 import {getLogger, initializeMomentoLogging, Logger} from './utils/logging';
@@ -166,6 +167,32 @@ export class SimpleCacheClient {
   ): Promise<CacheSetFetch.Response> {
     const client = this.getNextDataClient();
     return await client.setFetch(cacheName, setName);
+  }
+
+  /**
+   * Add an element to a set in the cache.
+   *
+   * After this operation, the set will contain the union
+   * of the element passed in and the elements of the set.
+   * @param {string} cacheName - Name of the cache to store the set in.
+   * @param {string} setName - The set to add elements to.
+   * @param {(string | Uint8Array)} element - The data to add to the set.
+   * @param {CollectionTtl} [ttl] - TTL for the set in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+   */
+  public async setAddElement(
+    cacheName: string,
+    setName: string,
+    element: string | Uint8Array,
+    ttl?: CollectionTtl
+  ): Promise<CacheSetAddElement.Response> {
+    return (
+      await this.setAddElements(
+        cacheName,
+        setName,
+        [element] as string[] | Uint8Array[],
+        ttl
+      )
+    ).toSingularResponse();
   }
 
   /**

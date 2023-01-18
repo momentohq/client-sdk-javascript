@@ -2,6 +2,7 @@ import {v4} from 'uuid';
 import {sleep} from '../src/utils/sleep';
 import {
   CacheSetAddElements,
+  CacheSetAddElement,
   CacheSetFetch,
   CacheSetRemoveElements,
   CollectionTtl,
@@ -10,9 +11,49 @@ import {SetupIntegrationTest} from './integration-setup';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
+const LOL_BYTE_ARRAY = Uint8Array.of(108, 111, 108);
+const FOO_BYTE_ARRAY = Uint8Array.of(102, 111, 111);
+
+describe('Integration tests for convenience operations on sets datastructure', () => {
+  it('should succeed for addElement with a byte array happy path', async () => {
+    const setName = v4();
+    const addResponse = await Momento.setAddElement(
+      IntegrationTestCacheName,
+      setName,
+      LOL_BYTE_ARRAY
+    );
+    expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
+
+    const fetchResponse = await Momento.setFetch(
+      IntegrationTestCacheName,
+      setName
+    );
+    expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+    expect((fetchResponse as CacheSetFetch.Hit).valueSetUint8Array()).toEqual(
+      new Set([LOL_BYTE_ARRAY])
+    );
+  });
+  it('should succeed for addElement with a string happy path', async () => {
+    const setName = v4();
+    const addResponse = await Momento.setAddElement(
+      IntegrationTestCacheName,
+      setName,
+      'lol'
+    );
+    expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
+
+    const fetchResponse = await Momento.setFetch(
+      IntegrationTestCacheName,
+      setName
+    );
+    expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+    expect((fetchResponse as CacheSetFetch.Hit).valueSetUint8Array()).toEqual(
+      new Set([LOL_BYTE_ARRAY])
+    );
+  });
+});
+
 describe('Integration Tests for operations on sets datastructure', () => {
-  const LOL_BYTE_ARRAY = Uint8Array.of(108, 111, 108);
-  const FOO_BYTE_ARRAY = Uint8Array.of(102, 111, 111);
   it('should succeed for addElements with byte arrays happy path', async () => {
     const setName = v4();
     const addResponse = await Momento.setAddElements(
