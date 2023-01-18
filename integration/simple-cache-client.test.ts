@@ -1,13 +1,12 @@
 import {v4} from 'uuid';
+import {sleep} from '../src/utils/sleep';
 import {
   CollectionTtl,
-  EnvMomentoTokenProvider,
   CacheDelete,
   CacheGet,
   CacheListFetch,
   CacheListPushFront,
   CacheSet,
-  Configurations,
   CreateCache,
   CreateSigningKey,
   DeleteCache,
@@ -33,69 +32,14 @@ import {
   IResponseError,
 } from '../src/messages/responses/response-base';
 import {TextEncoder} from 'util';
-import {SimpleCacheClientProps} from '../src/simple-cache-client-props';
+import {
+  SetupIntegrationTest,
+  INTEGRATION_TEST_CACHE_NAME,
+  CacheClientProps,
+  WithCache,
+} from './integration-setup';
 
-const credentialProvider = new EnvMomentoTokenProvider('TEST_AUTH_TOKEN');
-const configuration = Configurations.Laptop.latest();
-const cacheClientProps: SimpleCacheClientProps = {
-  configuration: configuration,
-  credentialProvider: credentialProvider,
-  defaultTtlSeconds: 1111,
-};
-const INTEGRATION_TEST_CACHE_NAME =
-  process.env.TEST_CACHE_NAME || 'js-integration-test-default';
-
-const deleteCacheIfExists = async (
-  momento: SimpleCacheClient,
-  cacheName: string
-) => {
-  const deleteResponse = await momento.deleteCache(cacheName);
-  if (deleteResponse instanceof DeleteCache.Error) {
-    if (deleteResponse.errorCode() !== MomentoErrorCode.NOT_FOUND_ERROR) {
-      throw deleteResponse.innerException();
-    }
-  }
-};
-
-const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
-
-let momento: SimpleCacheClient;
-beforeAll(() => {
-  momento = new SimpleCacheClient(cacheClientProps);
-});
-
-beforeAll(async () => {
-  // Use a fresh client to avoid test interference with setup.
-  const momento = new SimpleCacheClient(cacheClientProps);
-  await deleteCacheIfExists(momento, INTEGRATION_TEST_CACHE_NAME);
-  const createResponse = await momento.createCache(INTEGRATION_TEST_CACHE_NAME);
-  if (createResponse instanceof CreateCache.Error) {
-    throw createResponse.innerException();
-  }
-});
-
-afterAll(async () => {
-  // Use a fresh client to avoid test interference with teardown.
-  const momento = new SimpleCacheClient(cacheClientProps);
-  const deleteResponse = await momento.deleteCache(INTEGRATION_TEST_CACHE_NAME);
-  if (deleteResponse instanceof DeleteCache.Error) {
-    throw deleteResponse.innerException();
-  }
-});
-
-async function withCache(
-  client: SimpleCacheClient,
-  cacheName: string,
-  block: () => Promise<void>
-) {
-  await deleteCacheIfExists(client, cacheName);
-  await client.createCache(cacheName);
-  try {
-    await block();
-  } finally {
-    await deleteCacheIfExists(client, cacheName);
-  }
-}
+const momento = SetupIntegrationTest();
 
 describe('create/delete cache', () => {
   const sharedValidationSpecs = (
@@ -132,7 +76,7 @@ describe('create/delete cache', () => {
 
   it('should return AlreadyExists response if trying to create a cache that already exists', async () => {
     const cacheName = v4();
-    await withCache(momento, cacheName, async () => {
+    await WithCache(momento, cacheName, async () => {
       const createResponse = await momento.createCache(cacheName);
       expect(createResponse).toBeInstanceOf(CreateCache.AlreadyExists);
     });
@@ -140,7 +84,7 @@ describe('create/delete cache', () => {
 
   it('should create 1 cache and list the created cache', async () => {
     const cacheName = v4();
-    await withCache(momento, cacheName, async () => {
+    await WithCache(momento, cacheName, async () => {
       const listResponse = await momento.listCaches();
       expect(listResponse).toBeInstanceOf(ListCaches.Success);
       if (listResponse instanceof ListCaches.Success) {
@@ -265,18 +209,19 @@ describe('get/set/delete', () => {
   it('should timeout on a request that exceeds specified timeout', async () => {
     const cacheName = v4();
     const defaultTimeoutClient = momento;
-    const shortTimeoutTransportStrategy = configuration
+    const shortTimeoutTransportStrategy = CacheClientProps.configuration
       .getTransportStrategy()
       .withClientTimeoutMillis(1);
-    const shortTimeoutConfiguration = configuration.withTransportStrategy(
-      shortTimeoutTransportStrategy
-    );
+    const shortTimeoutConfiguration =
+      CacheClientProps.configuration.withTransportStrategy(
+        shortTimeoutTransportStrategy
+      );
     const shortTimeoutClient = new SimpleCacheClient({
       configuration: shortTimeoutConfiguration,
-      credentialProvider: credentialProvider,
+      credentialProvider: CacheClientProps.credentialProvider,
       defaultTtlSeconds: 1111,
     });
-    await withCache(defaultTimeoutClient, cacheName, async () => {
+    await WithCache(defaultTimeoutClient, cacheName, async () => {
       const cacheKey = v4();
       // Create a longer cache value that should take longer than 1ms to send
       const cacheValue = new TextEncoder().encode(v4().repeat(1000));
