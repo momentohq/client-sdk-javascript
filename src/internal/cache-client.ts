@@ -954,7 +954,11 @@ export class CacheClient {
         },
         (err, resp) => {
           if (resp) {
-            resolve(new CacheDictionaryIncrement.Success(resp.value));
+            if (resp.value) {
+              resolve(new CacheDictionaryIncrement.Success(resp.value));
+            } else {
+              resolve(new CacheDictionaryIncrement.Success(0));
+            }
           } else {
             resolve(
               new CacheDictionaryIncrement.Error(cacheServiceErrorMapper(err))
