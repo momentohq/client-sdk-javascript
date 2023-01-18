@@ -6,7 +6,7 @@ import {
   ResponseMiss,
 } from './response-base';
 import {TextDecoder} from 'util';
-import {truncateString} from '../../utils/display';
+import {truncateStringArray} from '../../utils/display';
 
 const TEXT_DECODER = new TextDecoder();
 
@@ -28,21 +28,9 @@ class _Hit extends Response {
     return this._values.map(v => TEXT_DECODER.decode(v));
   }
 
-  private truncateValueStrings(): string[] {
-    const values = this.valueListString();
-    if (values.length <= this._displayListSizeLimit) {
-      return values;
-    } else {
-      return values.slice(0, this._displayListSizeLimit).concat(['...']);
-    }
-  }
-
   public override toString(): string {
-    const displayList = this.truncateValueStrings();
-    const asStrings = displayList.map(v => {
-      return truncateString(v);
-    });
-    return `${super.toString()}: [${asStrings.toString()}]`;
+    const truncatedStringArray = truncateStringArray(this.valueListString());
+    return `${super.toString()}: [${truncatedStringArray.toString()}]`;
   }
 }
 export class Hit extends ResponseHit(_Hit) {}
