@@ -182,12 +182,14 @@ export class SimpleCacheClient {
     element: string | Uint8Array,
     ttl?: CollectionTtl
   ): Promise<CacheSetAddElement.Response> {
-    return await this.setAddElements(
-      cacheName,
-      setName,
-      [element] as string[] | Uint8Array[],
-      ttl
-    );
+    return (
+      await this.setAddElements(
+        cacheName,
+        setName,
+        [element] as string[] | Uint8Array[],
+        ttl
+      )
+    ).toSingularResponse();
   }
 
   /**

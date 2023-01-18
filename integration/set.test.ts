@@ -2,6 +2,7 @@ import {v4} from 'uuid';
 import {sleep} from '../src/utils/sleep';
 import {
   CacheSetAddElements,
+  CacheSetAddElement,
   CacheSetFetch,
   CacheSetRemoveElements,
   CollectionTtl,
@@ -21,7 +22,7 @@ describe('Integration tests for convenience operations on sets datastructure', (
       setName,
       LOL_BYTE_ARRAY
     );
-    expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+    expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
 
     const fetchResponse = await Momento.setFetch(
       IntegrationTestCacheName,
@@ -39,7 +40,7 @@ describe('Integration tests for convenience operations on sets datastructure', (
       setName,
       'lol'
     );
-    expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+    expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
 
     const fetchResponse = await Momento.setFetch(
       IntegrationTestCacheName,
