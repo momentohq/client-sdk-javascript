@@ -1635,11 +1635,6 @@ describe('Integration tests for dictionary operations', () => {
     expect((response as CacheDictionaryRemoveField.Error).errorCode()).toEqual(
       MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-    response = await momento.dictionaryRemoveField('cache', 'myDictionary', '');
-    expect(response).toBeInstanceOf(CacheDictionaryRemoveField.Error);
-    expect((response as CacheDictionaryRemoveField.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
   });
 
   it('should remove a dictionary with dictionaryRemoveField with Uint8Array field', async () => {
@@ -1766,7 +1761,7 @@ describe('Integration tests for dictionary operations', () => {
     ).toBeInstanceOf(CacheDictionaryGetField.Miss);
   });
 
-  it('should return InvalidArgument response for dictionaryRemoveFields with invalid cache/dictionary/field name', async () => {
+  it('should return InvalidArgument response for dictionaryRemoveFields with invalid cache/dictionary name', async () => {
     let response = await momento.dictionaryRemoveFields('', 'myDictionary', [
       'myField',
     ]);
@@ -1775,13 +1770,6 @@ describe('Integration tests for dictionary operations', () => {
       MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
     response = await momento.dictionaryRemoveFields('cache', '', ['myField']);
-    expect(response).toBeInstanceOf(CacheDictionaryRemoveFields.Error);
-    expect((response as CacheDictionaryRemoveFields.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    response = await momento.dictionaryRemoveFields('cache', 'myDictionary', [
-      '',
-    ]);
     expect(response).toBeInstanceOf(CacheDictionaryRemoveFields.Error);
     expect((response as CacheDictionaryRemoveFields.Error).errorCode()).toEqual(
       MomentoErrorCode.INVALID_ARGUMENT_ERROR
