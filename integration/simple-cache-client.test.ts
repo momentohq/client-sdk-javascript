@@ -33,9 +33,6 @@ const cacheClientProps: SimpleCacheClientProps = {
 const INTEGRATION_TEST_CACHE_NAME =
   process.env.TEST_CACHE_NAME || 'js-integration-test-default';
 
-const LOL_BYTE_ARRAY = Uint8Array.of(108, 111, 108);
-const FOO_BYTE_ARRAY = Uint8Array.of(102, 111, 111);
-
 const deleteCacheIfExists = async (
   momento: SimpleCacheClient,
   cacheName: string
@@ -576,6 +573,8 @@ describe('lists', () => {
 });
 
 describe('Integration Tests for operations on sets datastructure', () => {
+  const LOL_BYTE_ARRAY = Uint8Array.of(108, 111, 108);
+  const FOO_BYTE_ARRAY = Uint8Array.of(102, 111, 111);
   it('should succeed for addElements with byte arrays happy path', async () => {
     const setName = v4();
     const addResponse = await momento.setAddElements(
