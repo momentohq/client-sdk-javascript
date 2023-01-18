@@ -28,16 +28,16 @@ export class Laptop extends SimpleCacheConfiguration {
    * @returns {Laptop}
    */
   static latest(loggerOptions: LoggerOptions = defaultLoggerOptions) {
-    const maxIdleMillis = defaultMaxIdleMillis;
     const deadlineMilliseconds = 5000;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration(
       deadlineMilliseconds,
       defaultMaxSessionMemoryMb
     );
     const transportStrategy: TransportStrategy = new StaticTransportStrategy(
-      grpcConfig
+      grpcConfig,
+      defaultMaxIdleMillis
     );
-    return new Laptop(loggerOptions, transportStrategy, maxIdleMillis);
+    return new Laptop(loggerOptions, transportStrategy);
   }
 }
 
@@ -50,16 +50,16 @@ class InRegionDefault extends SimpleCacheConfiguration {
    * @returns {InRegionDefault}
    */
   static latest(loggerOptions: LoggerOptions = defaultLoggerOptions) {
-    const maxIdleMillis = defaultMaxIdleMillis;
     const deadlineMilliseconds = 1100;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration(
       deadlineMilliseconds,
       defaultMaxSessionMemoryMb
     );
     const transportStrategy: TransportStrategy = new StaticTransportStrategy(
-      grpcConfig
+      grpcConfig,
+      defaultMaxIdleMillis
     );
-    return new InRegionDefault(loggerOptions, transportStrategy, maxIdleMillis);
+    return new InRegionDefault(loggerOptions, transportStrategy);
   }
 }
 
@@ -70,16 +70,16 @@ class InRegionLowLatency extends SimpleCacheConfiguration {
    * @returns {InRegionLowLatency}
    */
   static latest(loggerOptions: LoggerOptions = defaultLoggerOptions) {
-    const maxIdleMillis = defaultMaxIdleMillis;
     const deadlineMilliseconds = 500;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration(
       deadlineMilliseconds,
       defaultMaxSessionMemoryMb
     );
     const transportStrategy: TransportStrategy = new StaticTransportStrategy(
-      grpcConfig
+      grpcConfig,
+      defaultMaxIdleMillis
     );
-    return new InRegionDefault(loggerOptions, transportStrategy, maxIdleMillis);
+    return new InRegionDefault(loggerOptions, transportStrategy);
   }
 }
 

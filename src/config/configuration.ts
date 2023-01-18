@@ -33,10 +33,6 @@ export interface Configuration {
    * @returns {Configuration} a new Configuration object with the specified TransportStrategy
    */
   withTransportStrategy(transportStrategy: TransportStrategy): Configuration;
-  // TODO: move idle millis into transport strategy
-  getMaxIdleMillis(): number;
-  // TODO: move idle millis into transport strategy
-  withMaxIdleMillis(maxIdleMillis: number): Configuration;
 
   /**
    * Convenience copy constructor that updates the client-side timeout setting in the TransportStrategy
@@ -49,16 +45,13 @@ export interface Configuration {
 export class SimpleCacheConfiguration implements Configuration {
   private readonly loggerOptions: LoggerOptions;
   private readonly transportStrategy: TransportStrategy;
-  private readonly maxIdleMillis: number;
 
   constructor(
     loggerOptions: LoggerOptions,
-    transportStrategy: TransportStrategy,
-    maxIdleMillis: number
+    transportStrategy: TransportStrategy
   ) {
     this.loggerOptions = loggerOptions;
     this.transportStrategy = transportStrategy;
-    this.maxIdleMillis = maxIdleMillis;
   }
 
   getLoggerOptions(): LoggerOptions {
@@ -69,39 +62,18 @@ export class SimpleCacheConfiguration implements Configuration {
     return this.transportStrategy;
   }
 
-  getMaxIdleMillis(): number {
-    return this.maxIdleMillis;
-  }
-
   withLoggerOptions(loggerOptions: LoggerOptions): Configuration {
-    return new SimpleCacheConfiguration(
-      loggerOptions,
-      this.transportStrategy,
-      this.maxIdleMillis
-    );
+    return new SimpleCacheConfiguration(loggerOptions, this.transportStrategy);
   }
 
   withTransportStrategy(transportStrategy: TransportStrategy): Configuration {
-    return new SimpleCacheConfiguration(
-      this.loggerOptions,
-      transportStrategy,
-      this.maxIdleMillis
-    );
-  }
-
-  withMaxIdleMillis(maxIdleMillis: number) {
-    return new SimpleCacheConfiguration(
-      this.loggerOptions,
-      this.transportStrategy,
-      maxIdleMillis
-    );
+    return new SimpleCacheConfiguration(this.loggerOptions, transportStrategy);
   }
 
   withClientTimeoutMillis(clientTimeout: number): Configuration {
     return new SimpleCacheConfiguration(
       this.loggerOptions,
-      this.transportStrategy.withClientTimeoutMillis(clientTimeout),
-      this.maxIdleMillis
+      this.transportStrategy.withClientTimeoutMillis(clientTimeout)
     );
   }
 }

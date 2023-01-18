@@ -26,6 +26,24 @@ export interface TransportStrategy {
    * @returns {TransportStrategy} a new TransportStrategy with the specified client timeout
    */
   withClientTimeoutMillis(clientTimeoutMillis: number): TransportStrategy;
+
+  /**
+   * The maximum duration for which a connection may remain idle before being replaced.  This
+   * setting can be used to force re-connection of a client if it has been idle for too long.
+   * In environments such as AWS lambda, if the lambda is suspended for too long the connection
+   * may be closed by the load balancer, resulting in an error on the subsequent request.  If
+   * this setting is set to a duration less than the load balancer timeout, we can ensure that
+   * the connection will be refreshed to avoid errors.
+   * @returns {number}
+   */
+  getMaxIdleMillis(): number;
+
+  /**
+   * Copy constructor to update the max idle connection timeout.  (See {getMaxIdleMillis}.)
+   * @param {number} maxIdleMillis
+   * @returns {TransportStrategy} a new TransportStrategy with the specified max idle connection timeout.
+   */
+  withMaxIdleMillis(maxIdleMillis: number): TransportStrategy;
 }
 
 export class StaticGrpcConfiguration implements GrpcConfiguration {
@@ -63,9 +81,11 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
 
 export class StaticTransportStrategy implements TransportStrategy {
   private readonly grpcConfig: GrpcConfiguration;
+  private readonly maxIdleMillis: number;
 
-  constructor(grpcConfiguration: GrpcConfiguration) {
+  constructor(grpcConfiguration: GrpcConfiguration, maxIdleMillis: number) {
     this.grpcConfig = grpcConfiguration;
+    this.maxIdleMillis = maxIdleMillis;
   }
 
   getGrpcConfig(): GrpcConfiguration {
@@ -73,12 +93,21 @@ export class StaticTransportStrategy implements TransportStrategy {
   }
 
   withGrpcConfig(grpcConfig: GrpcConfiguration): StaticTransportStrategy {
-    return new StaticTransportStrategy(grpcConfig);
+    return new StaticTransportStrategy(grpcConfig, this.maxIdleMillis);
+  }
+
+  getMaxIdleMillis(): number {
+    return this.maxIdleMillis;
+  }
+
+  withMaxIdleMillis(maxIdleMillis: number): TransportStrategy {
+    return new StaticTransportStrategy(this.grpcConfig, maxIdleMillis);
   }
 
   withClientTimeoutMillis(clientTimeout: number): StaticTransportStrategy {
     return new StaticTransportStrategy(
-      this.grpcConfig.withDeadlineMilliseconds(clientTimeout)
+      this.grpcConfig.withDeadlineMilliseconds(clientTimeout),
+      this.maxIdleMillis
     );
   }
 }
