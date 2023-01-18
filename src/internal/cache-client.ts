@@ -818,11 +818,10 @@ export class CacheClient {
     this.logger.trace(
       `Issuing 'dictionaryGetFields' request; fields: ${fields.toString()}`
     );
-    const encodedFields = fields.map(field => this.convert(field));
     const result = await this.sendDictionaryGetFields(
       cacheName,
       this.convert(dictionaryName),
-      encodedFields
+      this.convertArray(fields)
     );
     this.logger.trace(
       `'dictionaryGetFields' request result: ${result.toString()}`
@@ -938,11 +937,10 @@ export class CacheClient {
     this.logger.trace(
       `Issuing 'dictionaryRemoveFields' request; fields: ${fields.toString()}`
     );
-    const encodedFields = fields.map(field => this.convert(field));
     const result = await this.sendDictionaryRemoveFields(
       cacheName,
       this.convert(dictionaryName),
-      encodedFields
+      this.convertArray(fields)
     );
     this.logger.trace(
       `'dictionaryRemoveFields' request result: ${result.toString()}`
