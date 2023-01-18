@@ -46,6 +46,7 @@ import {
   BadRequestError,
   PermissionError,
   NotFoundError,
+  UnknownError,
 } from './errors/errors';
 
 export {
@@ -103,4 +104,5 @@ export {
   BadRequestError,
   PermissionError,
   NotFoundError,
+  UnknownError,
 };
