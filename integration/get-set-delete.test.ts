@@ -5,6 +5,7 @@ import {
   CacheSet,
   MomentoErrorCode,
   SimpleCacheClient,
+  CacheSetAddElement,
 } from '../src';
 import {
   ResponseBase,
@@ -167,7 +168,7 @@ describe('get/set/delete', () => {
       IntegrationTestCacheName,
       cacheKey
     );
-    expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
+    expect(deleteResponse).toBeInstanceOf(CacheSetAddElement.Success);
     const getMiss = await Momento.get(IntegrationTestCacheName, cacheKey);
     expect(getMiss).toBeInstanceOf(CacheGet.Miss);
   });
