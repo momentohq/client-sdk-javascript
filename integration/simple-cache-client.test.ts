@@ -281,6 +281,7 @@ describe('create/delete cache, get/set/delete', () => {
       MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
   });
+});
 
 describe('Signing keys', () => {
   it('should create, list, and revoke a signing key', async () => {
@@ -589,7 +590,6 @@ describe('Integration tests for dictionary operations', () => {
     expect((response as CacheDictionarySetFields.Error).errorCode()).toEqual(
       MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
-   
   });
 
   it('should set/get a dictionary with Uint8Array field/value', async () => {
