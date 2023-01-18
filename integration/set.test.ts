@@ -22,7 +22,7 @@ describe('Integration tests for convenience operations on sets datastructure', (
       setName,
       LOL_BYTE_ARRAY
     );
-    expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
+    expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
 
     const fetchResponse = await Momento.setFetch(
       IntegrationTestCacheName,
