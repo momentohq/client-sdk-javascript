@@ -28,6 +28,10 @@ import {
   CacheSetAddElements,
   CacheSetRemoveElements,
 } from '../src';
+import {
+  ResponseBase,
+  IResponseError,
+} from '../src/messages/responses/response-base';
 import {TextEncoder} from 'util';
 import {SimpleCacheClientProps} from '../src/simple-cache-client-props';
 
@@ -327,22 +331,29 @@ describe('Signing keys', () => {
 });
 
 describe('lists', () => {
-  describe('#listFetch', () => {
-    it('errors if the cache name is blank', async () => {
-      const respFetch = await momento.listFetch('  ', 'does-not-exist');
-      expect((respFetch as CacheListFetch.Error).errorCode()).toEqual(
+  const sharedListValidationSpecs = (
+    getResponse: (cacheName: string, listName: string) => Promise<ResponseBase>
+  ) => {
+    it('validates its cache name', async () => {
+      const response = await getResponse('   ', v4());
+
+      expect((response as IResponseError).errorCode()).toEqual(
         MomentoErrorCode.INVALID_ARGUMENT_ERROR
       );
     });
 
-    it('errors if the list name is bad', async () => {
-      const respFetch = await momento.listFetch(
-        INTEGRATION_TEST_CACHE_NAME,
-        '  '
-      );
-      expect((respFetch as CacheListFetch.Error).errorCode()).toEqual(
+    it('validates its list name', async () => {
+      const response = await getResponse(INTEGRATION_TEST_CACHE_NAME, '  ');
+
+      expect((response as IResponseError).errorCode()).toEqual(
         MomentoErrorCode.INVALID_ARGUMENT_ERROR
       );
+    });
+  };
+
+  describe('#listFetch', () => {
+    sharedListValidationSpecs((cacheName: string, listName: string) => {
+      return momento.listFetch(cacheName, listName);
     });
 
     it('returns a miss if the list does not exist', async () => {
@@ -373,28 +384,8 @@ describe('lists', () => {
   });
 
   describe('#listPushFront', () => {
-    const valueString = 'abc123';
-
-    it('errors if the cache name is blank', async () => {
-      const respPush = await momento.listPushFront(
-        '  ',
-        'does-not-exist',
-        valueString
-      );
-      expect((respPush as CacheListPushFront.Error).errorCode()).toEqual(
-        MomentoErrorCode.INVALID_ARGUMENT_ERROR
-      );
-    });
-
-    it('errors if the list name is bad', async () => {
-      const respPush = await momento.listPushFront(
-        INTEGRATION_TEST_CACHE_NAME,
-        '  ',
-        valueString
-      );
-      expect((respPush as CacheListPushFront.Error).errorCode()).toEqual(
-        MomentoErrorCode.INVALID_ARGUMENT_ERROR
-      );
+    sharedListValidationSpecs((cacheName: string, listName: string) => {
+      return momento.listPushFront(cacheName, listName, v4());
     });
 
     it('pushes to to the front', async () => {
