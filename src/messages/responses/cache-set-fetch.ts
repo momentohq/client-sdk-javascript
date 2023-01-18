@@ -22,6 +22,8 @@ export class Hit extends Response {
   public valueSetUint8Array(): Set<Uint8Array> {
     return new Set(this.elements);
   }
+
+  // TODO override toString() https://github.com/momentohq/client-sdk-javascript/issues/169
 }
 
 export class Miss extends Response {}

@@ -20,6 +20,8 @@ import * as CacheDictionaryGetFields from '../messages/responses/cache-dictionar
 import * as CacheDictionaryRemoveField from '../messages/responses/cache-dictionary-remove-field';
 import * as CacheDictionaryRemoveFields from '../messages/responses/cache-dictionary-remove-fields';
 import * as CacheDictionaryIncrement from '../messages/responses/cache-dictionary-increment';
+import * as CacheSetAddElements from '../messages/responses/cache-set-add-elements';
+import * as CacheSetRemoveElements from '../messages/responses/cache-set-remove-elements';
 import * as CacheListFetch from '../messages/responses/cache-list-fetch';
 import * as CacheListPushFront from '../messages/responses/cache-list-push-front';
 import {version} from '../../package.json';
@@ -201,6 +203,107 @@ export class CacheClient {
             resolve(new CacheSetFetch.Hit(resp.found.elements));
           } else {
             resolve(new CacheSetFetch.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async setAddElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[],
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheSetAddElements.Response> {
+    validateCacheName(cacheName);
+    validateSetName(setName);
+    return await this.sendSetAddElements(
+      cacheName,
+      this.convert(setName),
+      this.convertArray(elements),
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+  }
+
+  private async sendSetAddElements(
+    cacheName: string,
+    setName: Uint8Array,
+    elements: Uint8Array[],
+    ttlMilliseconds: number,
+    refreshTtl: boolean
+  ): Promise<CacheSetAddElements.Response> {
+    const request = new grpcCache._SetUnionRequest({
+      set_name: setName,
+      elements: elements,
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SetUnion(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (err) {
+            resolve(
+              new CacheSetAddElements.Error(cacheServiceErrorMapper(err))
+            );
+          } else {
+            resolve(new CacheSetAddElements.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async setRemoveElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[]
+  ): Promise<CacheSetRemoveElements.Response> {
+    validateCacheName(cacheName);
+    validateSetName(setName);
+    return await this.sendSetRemoveElements(
+      cacheName,
+      this.convert(setName),
+      this.convertArray(elements)
+    );
+  }
+
+  private async sendSetRemoveElements(
+    cacheName: string,
+    setName: Uint8Array,
+    elements: Uint8Array[]
+  ): Promise<CacheSetRemoveElements.Response> {
+    const subtrahend = new grpcCache._SetDifferenceRequest._Subtrahend({
+      set: new grpcCache._SetDifferenceRequest._Subtrahend._Set({
+        elements: elements,
+      }),
+    });
+    const request = new grpcCache._SetDifferenceRequest({
+      set_name: setName,
+      subtrahend: subtrahend,
+    });
+
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SetDifference(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (err) {
+            resolve(
+              new CacheSetRemoveElements.Error(cacheServiceErrorMapper(err))
+            );
+          } else {
+            resolve(new CacheSetRemoveElements.Success());
           }
         }
       );
@@ -973,6 +1076,10 @@ export class CacheClient {
       return this.textEncoder.encode(v);
     }
     return v;
+  }
+
+  private convertArray(v: string[] | Uint8Array[]): Uint8Array[] {
+    return v.map(i => this.convert(i));
   }
 
   private createMetadata(cacheName: string): Metadata {

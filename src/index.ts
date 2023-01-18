@@ -21,6 +21,8 @@ import * as CacheDictionaryGetFields from './messages/responses/cache-dictionary
 import * as CacheDictionaryRemoveField from './messages/responses/cache-dictionary-remove-field';
 import * as CacheDictionaryRemoveFields from './messages/responses/cache-dictionary-remove-fields';
 import * as CacheDictionaryIncrement from './messages/responses/cache-dictionary-increment';
+import * as CacheSetAddElements from './messages/responses/cache-set-add-elements';
+import * as CacheSetRemoveElements from './messages/responses/cache-set-remove-elements';
 import {CacheInfo} from './messages/cache-info';
 import {CollectionTtl} from './utils/collection-ttl';
 import {
@@ -85,6 +87,8 @@ export {
   CacheDictionaryRemoveField,
   CacheDictionaryRemoveFields,
   CacheDictionaryIncrement,
+  CacheSetAddElements,
+  CacheSetRemoveElements,
   MomentoErrorCode,
   AlreadyExistsError,
   AuthenticationError,
