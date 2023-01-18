@@ -5,25 +5,31 @@ import {TextEncoder} from 'util';
 import {Header, HeaderInterceptor} from '../grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from '../grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from '../grpc/retry-interceptor';
-import {InvalidArgumentError, UnknownError} from '../errors/errors';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
-import * as CacheGet from '../messages/responses/cache-get';
-import * as CacheSet from '../messages/responses/cache-set';
-import * as CacheDelete from '../messages/responses/cache-delete';
-import * as CacheSetFetch from '../messages/responses/cache-set-fetch';
-import * as CacheDictionaryFetch from '../messages/responses/cache-dictionary-fetch';
-import * as CacheDictionarySetField from '../messages/responses/cache-dictionary-set-field';
-import * as CacheDictionarySetFields from '../messages/responses/cache-dictionary-set-fields';
-import * as CacheDictionaryGetField from '../messages/responses/cache-dictionary-get-field';
-import * as CacheDictionaryGetFields from '../messages/responses/cache-dictionary-get-fields';
-import * as CacheDictionaryRemoveField from '../messages/responses/cache-dictionary-remove-field';
-import * as CacheDictionaryRemoveFields from '../messages/responses/cache-dictionary-remove-fields';
-import * as CacheDictionaryIncrement from '../messages/responses/cache-dictionary-increment';
-import * as CacheSetAddElements from '../messages/responses/cache-set-add-elements';
-import * as CacheSetRemoveElements from '../messages/responses/cache-set-remove-elements';
-import * as CacheListFetch from '../messages/responses/cache-list-fetch';
-import * as CacheListPushFront from '../messages/responses/cache-list-push-front';
+import {
+  CacheGet,
+  CacheSet,
+  CacheDelete,
+  CacheSetFetch,
+  CacheDictionaryFetch,
+  CacheDictionarySetField,
+  CacheDictionarySetFields,
+  CacheDictionaryGetField,
+  CacheDictionaryGetFields,
+  CacheDictionaryRemoveField,
+  CacheDictionaryRemoveFields,
+  CacheDictionaryIncrement,
+  CacheSetAddElements,
+  CacheSetRemoveElements,
+  CacheListFetch,
+  CacheListPushFront,
+  CollectionTtl,
+  Configuration,
+  CredentialProvider,
+  InvalidArgumentError,
+  UnknownError,
+} from '..';
 import {version} from '../../package.json';
 import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
@@ -35,10 +41,7 @@ import {
   validateListName,
   validateSetName,
 } from '../utils/validators';
-import {CredentialProvider} from '../auth/credential-provider';
-import {Configuration} from '../config/configuration';
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
-import {CollectionTtl} from '../utils/collection-ttl';
 
 export class CacheClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -462,12 +465,12 @@ export class CacheClient {
     value: string | Uint8Array,
     ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
     truncateBackToSize?: number
-  ): Promise<CacheListFetch.Response> {
+  ): Promise<CacheListPushFront.Response> {
     try {
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListFetch.Error(normalizeSdkError(err as Error));
+      return new CacheListPushFront.Error(normalizeSdkError(err as Error));
     }
 
     this.logger.trace(
@@ -818,11 +821,10 @@ export class CacheClient {
     this.logger.trace(
       `Issuing 'dictionaryGetFields' request; fields: ${fields.toString()}`
     );
-    const encodedFields = fields.map(field => this.convert(field));
     const result = await this.sendDictionaryGetFields(
       cacheName,
       this.convert(dictionaryName),
-      encodedFields
+      this.convertArray(fields)
     );
     this.logger.trace(
       `'dictionaryGetFields' request result: ${result.toString()}`
@@ -938,11 +940,10 @@ export class CacheClient {
     this.logger.trace(
       `Issuing 'dictionaryRemoveFields' request; fields: ${fields.toString()}`
     );
-    const encodedFields = fields.map(field => this.convert(field));
     const result = await this.sendDictionaryRemoveFields(
       cacheName,
       this.convert(dictionaryName),
-      encodedFields
+      this.convertArray(fields)
     );
     this.logger.trace(
       `'dictionaryRemoveFields' request result: ${result.toString()}`
