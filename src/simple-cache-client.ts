@@ -12,6 +12,7 @@ import {
   RevokeSigningKey,
   CacheGet,
   CacheDelete,
+  CacheListConcatenateFront,
   CacheListFetch,
   CacheListPushFront,
   CacheSet,
@@ -135,6 +136,23 @@ export class SimpleCacheClient {
   ): Promise<CacheListFetch.Response> {
     const client = this.getNextDataClient();
     return await client.listFetch(cacheName, listName);
+  }
+
+  public async listConcatenateFront(
+    cacheName: string,
+    listName: string,
+    values: string[] | Uint8Array[],
+    ttl?: CollectionTtl,
+    truncateBackToSize?: number
+  ): Promise<CacheListConcatenateFront.Response> {
+    const client = this.getNextDataClient();
+    return await client.listConcatenateFront(
+      cacheName,
+      listName,
+      values,
+      ttl,
+      truncateBackToSize
+    );
   }
 
   public async listPushFront(

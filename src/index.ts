@@ -2,6 +2,7 @@ import {SimpleCacheClient} from './simple-cache-client';
 import * as Configurations from './config/configurations';
 import {CacheOperation, MomentoSigner} from './internal/momento-signer';
 import * as CacheGet from './messages/responses/cache-get';
+import * as CacheListConcatenateFront from './messages/responses/cache-list-concatenate-front';
 import * as CacheListFetch from './messages/responses/cache-list-fetch';
 import * as CacheListPushFront from './messages/responses/cache-list-push-front';
 import * as CacheSet from './messages/responses/cache-set';
@@ -69,6 +70,7 @@ export {
   CacheOperation,
   SimpleCacheClient,
   CacheGet,
+  CacheListConcatenateFront,
   CacheListFetch,
   CacheListPushFront,
   CacheSet,

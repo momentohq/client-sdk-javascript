@@ -2,6 +2,7 @@ import {v4} from 'uuid';
 import {sleep} from '../src/utils/sleep';
 import {
   CollectionTtl,
+  CacheListConcatenateFront,
   CacheListFetch,
   CacheListPushFront,
   MomentoErrorCode,
@@ -9,6 +10,7 @@ import {
 import {
   ResponseBase,
   IResponseError,
+  IListResponseSuccess,
 } from '../src/messages/responses/response-base';
 import {SetupIntegrationTest} from './integration-setup';
 
@@ -32,6 +34,127 @@ describe('lists', () => {
       expect((response as IResponseError).errorCode()).toEqual(
         MomentoErrorCode.INVALID_ARGUMENT_ERROR
       );
+    });
+  };
+
+  interface addValueProps {
+    cacheName: string;
+    listName: string;
+    value: string | Uint8Array;
+    ttl?: CollectionTtl;
+    truncateBackToSize?: number;
+  }
+
+  const sharedListAddToFrontSpecs = (
+    addValue: (props: addValueProps) => Promise<ResponseBase>
+  ) => {
+    it('pushes to to the front', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'three'];
+
+      for (const value of values) {
+        await addValue({
+          cacheName: IntegrationTestCacheName,
+          listName: listName,
+          value: value,
+        });
+      }
+
+      const respFetch = await Momento.listFetch(
+        IntegrationTestCacheName,
+        listName
+      );
+      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
+        values.reverse()
+      );
+    });
+
+    it('truncates', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'three'];
+
+      for (const value of values) {
+        await addValue({
+          cacheName: IntegrationTestCacheName,
+          listName: listName,
+          value: value,
+          truncateBackToSize: 2,
+        });
+      }
+
+      const respFetch = await Momento.listFetch(
+        IntegrationTestCacheName,
+        listName
+      );
+      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual([
+        'three',
+        'two',
+      ]);
+    });
+
+    it('sets ttl', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'three'];
+      const ttl = new CollectionTtl(0.5, false);
+
+      for (const value of values) {
+        await addValue({
+          cacheName: IntegrationTestCacheName,
+          listName: listName,
+          value: value,
+          ttl: ttl,
+        });
+      }
+      await sleep(1000);
+
+      const respFetch = await Momento.listFetch(
+        IntegrationTestCacheName,
+        listName
+      );
+      expect(respFetch).toBeInstanceOf(CacheListFetch.Miss);
+    });
+
+    it('refreshes ttl', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'three'];
+      const timeout = 1;
+      const ttl = new CollectionTtl(timeout, true);
+
+      for (const value of values) {
+        await addValue({
+          cacheName: IntegrationTestCacheName,
+          listName: listName,
+          value: value,
+          ttl: ttl,
+        });
+        // Sleep for half the ttl each loop. If we don't refresh they
+        // won't all live.
+        await sleep((timeout / 2) * 1000);
+      }
+
+      const respFetch = await Momento.listFetch(
+        IntegrationTestCacheName,
+        listName
+      );
+      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
+        values.reverse()
+      );
+    });
+
+    it('returns the new list length', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'three'];
+
+      let length = 0;
+      for (const value of values) {
+        const resp = await addValue({
+          cacheName: IntegrationTestCacheName,
+          listName: listName,
+          value: value,
+        });
+        length += 1;
+        expect((resp as IListResponseSuccess).listLength()).toEqual(length);
+      }
     });
   };
 
@@ -72,108 +195,76 @@ describe('lists', () => {
       return Momento.listPushFront(cacheName, listName, v4());
     });
 
-    it('pushes to to the front', async () => {
+    sharedListAddToFrontSpecs((props: addValueProps) => {
+      return Momento.listPushFront(
+        props.cacheName,
+        props.listName,
+        props.value,
+        props.ttl,
+        props.truncateBackToSize
+      );
+    });
+
+    it('returns a CacheListPushFront response', async () => {
+      const resp = await Momento.listPushFront(
+        IntegrationTestCacheName,
+        v4(),
+        'test'
+      );
+      expect(resp).toBeInstanceOf(CacheListPushFront.Success);
+    });
+  });
+
+  describe('#listConcatenateFront', () => {
+    sharedListValidationSpecs((cacheName: string, listName: string) => {
+      return Momento.listConcatenateFront(cacheName, listName, [v4()]);
+    });
+
+    sharedListAddToFrontSpecs((props: addValueProps) => {
+      return Momento.listConcatenateFront(
+        props.cacheName,
+        props.listName,
+        [props.value] as string[] | Uint8Array[],
+        props.ttl,
+        props.truncateBackToSize
+      );
+    });
+
+    it('adds multiple values', async () => {
       const listName = v4();
-      const values = ['one', 'two', 'three'];
+      const values1 = ['1', '2', '3', '4'];
+      const values2 = ['this', 'that'];
 
-      for (const value of values) {
-        await Momento.listPushFront(IntegrationTestCacheName, listName, value);
-      }
+      let respConcat = await Momento.listConcatenateFront(
+        IntegrationTestCacheName,
+        listName,
+        values1
+      );
+      expect(
+        (respConcat as CacheListConcatenateFront.Success).listLength()
+      ).toEqual(values1.length);
 
-      const respFetch = await Momento.listFetch(
+      let respFetch = await Momento.listFetch(
         IntegrationTestCacheName,
         listName
       );
       expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
-        values.reverse()
+        values1
       );
-    });
 
-    it('truncates', async () => {
-      const listName = v4();
-      const values = ['one', 'two', 'three'];
-
-      for (const value of values) {
-        await Momento.listPushFront(
-          IntegrationTestCacheName,
-          listName,
-          value,
-          undefined,
-          2
-        );
-      }
-
-      const respFetch = await Momento.listFetch(
+      respConcat = await Momento.listConcatenateFront(
         IntegrationTestCacheName,
-        listName
+        listName,
+        values2
       );
-      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual([
-        'three',
-        'two',
-      ]);
-    });
+      expect(
+        (respConcat as CacheListConcatenateFront.Success).listLength()
+      ).toEqual(values1.length + values2.length);
 
-    it('sets ttl', async () => {
-      const listName = v4();
-      const values = ['one', 'two', 'three'];
-      const ttl = new CollectionTtl(0.5, false);
-
-      for (const value of values) {
-        await Momento.listPushFront(
-          IntegrationTestCacheName,
-          listName,
-          value,
-          ttl
-        );
-      }
-      await sleep(1000);
-
-      const respFetch = await Momento.listFetch(
-        IntegrationTestCacheName,
-        listName
-      );
-      expect(respFetch).toBeInstanceOf(CacheListFetch.Miss);
-    });
-
-    it('refreshes ttl', async () => {
-      const listName = v4();
-      const values = ['one', 'two', 'three'];
-      const timeout = 1;
-      const ttl = new CollectionTtl(timeout, true);
-
-      for (const value of values) {
-        await Momento.listPushFront(
-          IntegrationTestCacheName,
-          listName,
-          value,
-          ttl
-        );
-        // Sleep for half the ttl each loop. If we don't refresh they
-        // won't all live.
-        await sleep((timeout / 2) * 1000);
-      }
-
-      const respFetch = await Momento.listFetch(
-        IntegrationTestCacheName,
-        listName
-      );
+      respFetch = await Momento.listFetch(IntegrationTestCacheName, listName);
       expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
-        values.reverse()
+        values2.concat(values1)
       );
-    });
-
-    it('returns the new list length', async () => {
-      const listName = v4();
-      const values = ['one', 'two', 'three'];
-
-      let length = 0;
-      for (const value of values) {
-        const resp = <CacheListPushFront.Success>(
-          await Momento.listPushFront(IntegrationTestCacheName, listName, value)
-        );
-        length++;
-        expect(resp.listLength()).toEqual(length);
-      }
     });
   });
 });
