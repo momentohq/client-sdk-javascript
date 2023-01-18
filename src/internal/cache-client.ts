@@ -462,12 +462,12 @@ export class CacheClient {
     value: string | Uint8Array,
     ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
     truncateBackToSize?: number
-  ): Promise<CacheListFetch.Response> {
+  ): Promise<CacheListPushFront.Response> {
     try {
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListFetch.Error(normalizeSdkError(err as Error));
+      return new CacheListPushFront.Error(normalizeSdkError(err as Error));
     }
 
     this.logger.trace(

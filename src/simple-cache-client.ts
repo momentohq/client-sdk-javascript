@@ -9,6 +9,7 @@ import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
 import * as CacheGet from './messages/responses/cache-get';
 import * as CacheDelete from './messages/responses/cache-delete';
 import * as CacheListFetch from './messages/responses/cache-list-fetch';
+import * as CacheListPushFront from './messages/responses/cache-list-push-front';
 import * as CacheSet from './messages/responses/cache-set';
 import * as CacheDictionaryFetch from './messages/responses/cache-dictionary-fetch';
 import * as CacheDictionarySetField from './messages/responses/cache-dictionary-set-field';
@@ -139,7 +140,7 @@ export class SimpleCacheClient {
     value: string | Uint8Array,
     ttl?: CollectionTtl,
     truncateBackToSize?: number
-  ): Promise<CacheListFetch.Response> {
+  ): Promise<CacheListPushFront.Response> {
     const client = this.getNextDataClient();
     return await client.listPushFront(
       cacheName,
