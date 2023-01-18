@@ -28,6 +28,10 @@ import {
   CacheSetAddElements,
   CacheSetRemoveElements,
 } from '../src';
+import {
+  ResponseBase,
+  IResponseError,
+} from '../src/messages/responses/response-base';
 import {TextEncoder} from 'util';
 import {SimpleCacheClientProps} from '../src/simple-cache-client-props';
 
@@ -93,19 +97,27 @@ async function withCache(
   }
 }
 
-describe('create/delete cache, get/set/delete', () => {
-  it('should create and delete a cache, set and get a value', async () => {
-    const cacheName = v4();
-    await withCache(momento, cacheName, async () => {
-      const setResponse = await momento.set(cacheName, 'key', 'value');
-      expect(setResponse).toBeInstanceOf(CacheSet.Success);
-      const res = await momento.get(cacheName, 'key');
-      expect(res).toBeInstanceOf(CacheGet.Hit);
-      if (res instanceof CacheGet.Hit) {
-        expect(res.valueString()).toEqual('value');
-      }
+describe('create/delete cache', () => {
+  const sharedValidationSpecs = (
+    getResponse: (cacheName: string) => Promise<ResponseBase>
+  ) => {
+    it('validates its cache name', async () => {
+      const response = await getResponse('   ');
+
+      expect((response as IResponseError).errorCode()).toEqual(
+        MomentoErrorCode.INVALID_ARGUMENT_ERROR
+      );
     });
+  };
+
+  sharedValidationSpecs((cacheName: string) => {
+    return momento.createCache(cacheName);
   });
+
+  sharedValidationSpecs((cacheName: string) => {
+    return momento.deleteCache(cacheName);
+  });
+
   it('should return NotFoundError if deleting a non-existent cache', async () => {
     const cacheName = v4();
     const deleteResponse = await momento.deleteCache(cacheName);
@@ -117,6 +129,7 @@ describe('create/delete cache, get/set/delete', () => {
       );
     }
   });
+
   it('should return AlreadyExists response if trying to create a cache that already exists', async () => {
     const cacheName = v4();
     await withCache(momento, cacheName, async () => {
@@ -124,6 +137,7 @@ describe('create/delete cache, get/set/delete', () => {
       expect(createResponse).toBeInstanceOf(CreateCache.AlreadyExists);
     });
   });
+
   it('should create 1 cache and list the created cache', async () => {
     const cacheName = v4();
     await withCache(momento, cacheName, async () => {
@@ -136,6 +150,31 @@ describe('create/delete cache, get/set/delete', () => {
       }
     });
   });
+});
+
+describe('get/set/delete', () => {
+  const sharedValidationSpecs = (
+    getResponse: (cacheName: string, key: string) => Promise<ResponseBase>
+  ) => {
+    it('validates its cache name', async () => {
+      const response = await getResponse('   ', v4());
+
+      expect((response as IResponseError).errorCode()).toEqual(
+        MomentoErrorCode.INVALID_ARGUMENT_ERROR
+      );
+    });
+  };
+
+  sharedValidationSpecs((cacheName: string, key: string) => {
+    return momento.get(cacheName, key);
+  });
+  sharedValidationSpecs((cacheName: string, key: string) => {
+    return momento.set(cacheName, key, v4());
+  });
+  sharedValidationSpecs((cacheName: string, key: string) => {
+    return momento.delete(cacheName, key);
+  });
+
   it('should set and get string from cache', async () => {
     const cacheKey = v4();
     const cacheValue = v4();
@@ -154,6 +193,7 @@ describe('create/delete cache, get/set/delete', () => {
       expect(getResponse.valueString()).toEqual(cacheValue);
     }
   });
+
   it('should set and get bytes from cache', async () => {
     const cacheKey = new TextEncoder().encode(v4());
     const cacheValue = new TextEncoder().encode(v4());
@@ -169,6 +209,7 @@ describe('create/delete cache, get/set/delete', () => {
     );
     expect(getResponse).toBeInstanceOf(CacheGet.Hit);
   });
+
   it('should set string key with bytes value', async () => {
     const cacheKey = v4();
     const cacheValue = new TextEncoder().encode(v4());
@@ -179,6 +220,7 @@ describe('create/delete cache, get/set/delete', () => {
     );
     expect(setResponse).toBeInstanceOf(CacheSet.Success);
   });
+
   it('should set byte key with string value', async () => {
     const cacheValue = v4();
     const cacheKey = new TextEncoder().encode(v4());
@@ -197,6 +239,7 @@ describe('create/delete cache, get/set/delete', () => {
       expect(getResponse.valueString()).toEqual(cacheValue);
     }
   });
+
   it('should set and get string from cache and returned set value matches string cacheValue', async () => {
     const cacheKey = v4();
     const cacheValue = v4();
@@ -207,6 +250,7 @@ describe('create/delete cache, get/set/delete', () => {
     );
     expect(setResponse).toBeInstanceOf(CacheSet.Success);
   });
+
   it('should set string key with bytes value and returned set value matches byte cacheValue', async () => {
     const cacheKey = v4();
     const cacheValue = new TextEncoder().encode(v4());
@@ -217,6 +261,7 @@ describe('create/delete cache, get/set/delete', () => {
     );
     expect(setResponse).toBeInstanceOf(CacheSet.Success);
   });
+
   it('should timeout on a request that exceeds specified timeout', async () => {
     const cacheName = v4();
     const defaultTimeoutClient = momento;
@@ -265,24 +310,6 @@ describe('create/delete cache, get/set/delete', () => {
     const getMiss = await momento.get(INTEGRATION_TEST_CACHE_NAME, cacheKey);
     expect(getMiss).toBeInstanceOf(CacheGet.Miss);
   });
-
-  it('should return InvalidArgument response for set, get, and delete with invalid cache name', async () => {
-    const setResponse = await momento.set('', 'bar', 'foo');
-    expect(setResponse).toBeInstanceOf(CacheSet.Error);
-    expect((setResponse as CacheSet.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    const getResponse = await momento.get('', 'bar');
-    expect(getResponse).toBeInstanceOf(CacheGet.Error);
-    expect((getResponse as CacheDelete.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    const deleteResponse = await momento.delete('', 'bar');
-    expect(deleteResponse).toBeInstanceOf(CacheDelete.Error);
-    expect((deleteResponse as CacheDelete.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-  });
 });
 
 describe('Signing keys', () => {
@@ -327,22 +354,29 @@ describe('Signing keys', () => {
 });
 
 describe('lists', () => {
-  describe('#listFetch', () => {
-    it('errors if the cache name is blank', async () => {
-      const respFetch = await momento.listFetch('  ', 'does-not-exist');
-      expect((respFetch as CacheListFetch.Error).errorCode()).toEqual(
+  const sharedListValidationSpecs = (
+    getResponse: (cacheName: string, listName: string) => Promise<ResponseBase>
+  ) => {
+    it('validates its cache name', async () => {
+      const response = await getResponse('   ', v4());
+
+      expect((response as IResponseError).errorCode()).toEqual(
         MomentoErrorCode.INVALID_ARGUMENT_ERROR
       );
     });
 
-    it('errors if the list name is bad', async () => {
-      const respFetch = await momento.listFetch(
-        INTEGRATION_TEST_CACHE_NAME,
-        '  '
-      );
-      expect((respFetch as CacheListFetch.Error).errorCode()).toEqual(
+    it('validates its list name', async () => {
+      const response = await getResponse(INTEGRATION_TEST_CACHE_NAME, '  ');
+
+      expect((response as IResponseError).errorCode()).toEqual(
         MomentoErrorCode.INVALID_ARGUMENT_ERROR
       );
+    });
+  };
+
+  describe('#listFetch', () => {
+    sharedListValidationSpecs((cacheName: string, listName: string) => {
+      return momento.listFetch(cacheName, listName);
     });
 
     it('returns a miss if the list does not exist', async () => {
@@ -373,28 +407,8 @@ describe('lists', () => {
   });
 
   describe('#listPushFront', () => {
-    const valueString = 'abc123';
-
-    it('errors if the cache name is blank', async () => {
-      const respPush = await momento.listPushFront(
-        '  ',
-        'does-not-exist',
-        valueString
-      );
-      expect((respPush as CacheListPushFront.Error).errorCode()).toEqual(
-        MomentoErrorCode.INVALID_ARGUMENT_ERROR
-      );
-    });
-
-    it('errors if the list name is bad', async () => {
-      const respPush = await momento.listPushFront(
-        INTEGRATION_TEST_CACHE_NAME,
-        '  ',
-        valueString
-      );
-      expect((respPush as CacheListPushFront.Error).errorCode()).toEqual(
-        MomentoErrorCode.INVALID_ARGUMENT_ERROR
-      );
+    sharedListValidationSpecs((cacheName: string, listName: string) => {
+      return momento.listPushFront(cacheName, listName, v4());
     });
 
     it('pushes to to the front', async () => {

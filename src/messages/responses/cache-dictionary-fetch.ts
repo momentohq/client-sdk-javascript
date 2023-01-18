@@ -1,6 +1,10 @@
-import {ResponseBase} from './response-base';
+import {
+  ResponseBase,
+  ResponseHit,
+  ResponseMiss,
+  ResponseError,
+} from './response-base';
 import {SdkError} from '../../errors/errors';
-import {applyMixins, ErrorBody} from '../../errors/error-utils';
 import {TextDecoder} from 'util';
 import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 
@@ -8,7 +12,7 @@ const TEXT_DECODER = new TextDecoder();
 
 export abstract class Response extends ResponseBase {}
 
-export class Hit extends Response {
+class _Hit extends Response {
   private readonly items: cache_client._DictionaryFieldValuePair[];
   private readonly dictionaryUint8ArrayUint8Array: Map<Uint8Array, Uint8Array> =
     new Map();
@@ -72,15 +76,14 @@ export class Hit extends Response {
     return `${super.toString()}: valueDictionaryStringString: ${this.truncateValueStrings()}`;
   }
 }
+export class Hit extends ResponseHit(_Hit) {}
 
-export class Miss extends Response {}
+class _Miss extends Response {}
+export class Miss extends ResponseMiss(_Miss) {}
 
-export class Error extends Response {
+class _Error extends Response {
   constructor(protected _innerException: SdkError) {
     super();
   }
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Error extends ErrorBody {}
-applyMixins(Error, [ErrorBody]);
+export class Error extends ResponseError(_Error) {}

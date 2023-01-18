@@ -1,12 +1,11 @@
 import {CacheInfo} from '../cache-info';
 import {control} from '@gomomento/generated-types';
 import {SdkError} from '../../errors/errors';
-import {ResponseBase} from './response-base';
-import {applyMixins, ErrorBody} from '../../errors/error-utils';
+import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 
 export abstract class Response extends ResponseBase {}
 
-export class Success extends Response {
+class _Success extends Response {
   private readonly nextToken?: string;
   private readonly caches: CacheInfo[];
   constructor(result?: control.control_client._ListCachesResponse) {
@@ -30,12 +29,11 @@ export class Success extends Response {
     return super.toString() + ': ' + caches.join(', ');
   }
 }
+export class Success extends ResponseSuccess(_Success) {}
 
-export class Error extends Response {
+class _Error extends Response {
   constructor(protected _innerException: SdkError) {
     super();
   }
 }
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Error extends ErrorBody {}
-applyMixins(Error, [ErrorBody]);
+export class Error extends ResponseError(_Error) {}
