@@ -1,31 +1,33 @@
 import {ControlClient} from './internal/control-client';
 import {CacheClient} from './internal/cache-client';
-import * as CreateCache from './messages/responses/create-cache';
-import * as ListCaches from './messages/responses/list-caches';
-import * as DeleteCache from './messages/responses/delete-cache';
-import * as CreateSigningKey from './messages/responses/create-signing-key';
-import * as ListSigningKeys from './messages/responses/list-signing-keys';
-import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
-import * as CacheGet from './messages/responses/cache-get';
-import * as CacheDelete from './messages/responses/cache-delete';
-import * as CacheListFetch from './messages/responses/cache-list-fetch';
-import * as CacheListPushFront from './messages/responses/cache-list-push-front';
-import * as CacheSet from './messages/responses/cache-set';
-import * as CacheDictionaryFetch from './messages/responses/cache-dictionary-fetch';
-import * as CacheDictionarySetField from './messages/responses/cache-dictionary-set-field';
-import * as CacheDictionarySetFields from './messages/responses/cache-dictionary-set-fields';
-import * as CacheDictionaryGetField from './messages/responses/cache-dictionary-get-field';
-import * as CacheDictionaryGetFields from './messages/responses/cache-dictionary-get-fields';
-import * as CacheDictionaryIncrement from './messages/responses/cache-dictionary-increment';
-import * as CacheSetFetch from './messages/responses/cache-set-fetch';
-import * as CacheSetAddElements from './messages/responses/cache-set-add-elements';
-import * as CacheSetRemoveElements from './messages/responses/cache-set-remove-elements';
+import {
+  CollectionTtl,
+  Configuration,
+  CredentialProvider,
+  CreateCache,
+  ListCaches,
+  DeleteCache,
+  CreateSigningKey,
+  ListSigningKeys,
+  RevokeSigningKey,
+  CacheGet,
+  CacheDelete,
+  CacheListFetch,
+  CacheListPushFront,
+  CacheSet,
+  CacheDictionaryFetch,
+  CacheDictionarySetField,
+  CacheDictionarySetFields,
+  CacheDictionaryGetField,
+  CacheDictionaryGetFields,
+  CacheDictionaryIncrement,
+  CacheSetFetch,
+  CacheSetAddElements,
+  CacheSetRemoveElements,
+} from '.';
 import {getLogger, initializeMomentoLogging, Logger} from './utils/logging';
 import {range} from './utils/collections';
-import {Configuration} from './config/configuration';
-import {CredentialProvider} from './auth/credential-provider';
 import {SimpleCacheClientProps} from './simple-cache-client-props';
-import {CollectionTtl} from './utils/collection-ttl';
 
 /**
  * Momento Simple Cache Client.
