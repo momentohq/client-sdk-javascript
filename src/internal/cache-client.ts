@@ -247,7 +247,7 @@ export class CacheClient {
         {
           interceptors: this.interceptors,
         },
-        (err, resp) => {
+        (err, _) => {
           if (err) {
             resolve(
               new CacheSetAddElements.Error(cacheServiceErrorMapper(err))
@@ -297,7 +297,7 @@ export class CacheClient {
         {
           interceptors: this.interceptors,
         },
-        (err, resp) => {
+        (err, _) => {
           if (err) {
             resolve(
               new CacheSetRemoveElements.Error(cacheServiceErrorMapper(err))

@@ -1,7 +1,6 @@
 import {ResponseBase} from './response-base';
 import {SdkError} from '../../errors/errors';
 import {applyMixins, ErrorBody} from '../../errors/error-utils';
-import {TextDecoder} from 'util';
 
 export abstract class Response extends ResponseBase {}
 
