@@ -136,6 +136,17 @@ export class SimpleCacheClient {
     return await client.delete(cacheName, key);
   }
 
+  /**
+   * Add multiple values to the end of a list. If the list does not exist it
+   * will be created.
+   *
+   * @param {string} cacheName - Name of the cache to store the list in.
+   * @param {string} listName - The list to add to.
+   * @param {string[] | Uint8Array[]} values - The values to add to the list.
+   * @param {CollectionTtl} [ttl] - How the ttl should be managed. Defaults to the client's TTL.
+   * @param {number} [truncateFrontToSize] - If the list exceeds this length, remove excess from the start of the list. Must be positive.
+   * @returns {Promise<CacheListConcatenateBack.Response>}
+   */
   public async listConcatenateBack(
     cacheName: string,
     listName: string,
@@ -153,6 +164,17 @@ export class SimpleCacheClient {
     );
   }
 
+  /**
+   * Add multiple values to the start of a list. If the list does not exist it
+   * will be created.
+   *
+   * @param {string} cacheName - Name of the cache to store the list in.
+   * @param {string} listName - The list to add to.
+   * @param {string[] | Uint8Array[]} values - The values to add to the list.
+   * @param {CollectionTtl} [ttl] - How the ttl should be managed. Defaults to the client's TTL.
+   * @param {number} [truncateBackToSize] - If the list exceeds this length, remove excess from the end of the list. Must be positive.
+   * @returns {Promise<CacheListConcatenateFront.Response>}
+   */
   public async listConcatenateFront(
     cacheName: string,
     listName: string,
