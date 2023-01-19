@@ -300,6 +300,13 @@ export class SimpleCacheClient {
     );
   }
 
+  /**
+   * Removes all elements from the list equal to the value.
+   * @param {string} cacheName - Name of the cache with the list.
+   * @param {string} listName - The list to remove elements from.
+   * @param {string | Uint8Array} value - The value to remove.
+   * @returns {Promise<CacheListRemoveValue.Response>}
+   */
   public async listRemoveValue(
     cacheName: string,
     listName: string,
