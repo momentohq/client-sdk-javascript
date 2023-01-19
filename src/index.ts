@@ -6,6 +6,7 @@ import * as CacheListConcatenateFront from './messages/responses/cache-list-conc
 import * as CacheListFetch from './messages/responses/cache-list-fetch';
 import * as CacheListLength from './messages/responses/cache-list-length';
 import * as CacheListPushFront from './messages/responses/cache-list-push-front';
+import * as CacheListRemoveValue from './messages/responses/cache-list-remove-value';
 import * as CacheSet from './messages/responses/cache-set';
 import * as CacheDelete from './messages/responses/cache-delete';
 import * as CreateCache from './messages/responses/create-cache';
@@ -75,6 +76,7 @@ export {
   CacheListFetch,
   CacheListLength,
   CacheListPushFront,
+  CacheListRemoveValue,
   CacheSet,
   CacheDelete,
   CreateCache,

@@ -26,6 +26,7 @@ import {
   CacheListFetch,
   CacheListLength,
   CacheListPushFront,
+  CacheListRemoveValue,
   CollectionTtl,
   Configuration,
   CredentialProvider,
@@ -648,6 +649,61 @@ export class CacheClient {
           } else {
             resolve(
               new CacheListConcatenateFront.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async listRemoveValue(
+    cacheName: string,
+    listName: string,
+    value: string | Uint8Array
+  ): Promise<CacheListRemoveValue.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateListName(listName);
+    } catch (err) {
+      return new CacheListRemoveValue.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      `Issuing 'listRemoveValue' request; listName: ${listName}, value length: ${value.length}`
+    );
+
+    const result = await this.sendListRemoveValue(
+      cacheName,
+      this.convert(listName),
+      this.convert(value)
+    );
+    this.logger.trace(`'listRemoveValue' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendListRemoveValue(
+    cacheName: string,
+    listName: Uint8Array,
+    value: Uint8Array
+  ): Promise<CacheListRemoveValue.Response> {
+    const request = new grpcCache._ListRemoveRequest({
+      list_name: listName,
+      all_elements_with_value: value,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ListRemove(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheListRemoveValue.Success());
+          } else {
+            resolve(
+              new CacheListRemoveValue.Error(cacheServiceErrorMapper(err))
             );
           }
         }

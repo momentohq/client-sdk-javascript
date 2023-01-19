@@ -6,6 +6,7 @@ import {
   CacheListFetch,
   CacheListLength,
   CacheListPushFront,
+  CacheListRemoveValue,
   MomentoErrorCode,
 } from '../src';
 import {
@@ -236,6 +237,46 @@ describe('lists', () => {
         'test'
       );
       expect(resp).toBeInstanceOf(CacheListPushFront.Success);
+    });
+  });
+
+  describe('#listRemoveValue', () => {
+    sharedListValidationSpecs((cacheName: string, listName: string) => {
+      return Momento.listRemoveValue(cacheName, listName, v4());
+    });
+
+    it('removes values', async () => {
+      const listName = v4();
+      const values = [
+        'number 9',
+        'turn me on',
+        'number 9',
+        'dead man',
+        'number 9',
+      ];
+      const expectedValues = ['turn me on', 'dead man'];
+      const removeValue = 'number 9';
+
+      await Momento.listConcatenateFront(
+        IntegrationTestCacheName,
+        listName,
+        values
+      );
+
+      const respRemove = await Momento.listRemoveValue(
+        IntegrationTestCacheName,
+        listName,
+        removeValue
+      );
+      expect(respRemove).toBeInstanceOf(CacheListRemoveValue.Success);
+
+      const respFetch = await Momento.listFetch(
+        IntegrationTestCacheName,
+        listName
+      );
+      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
+        expectedValues
+      );
     });
   });
 

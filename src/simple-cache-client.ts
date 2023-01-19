@@ -16,6 +16,7 @@ import {
   CacheListFetch,
   CacheListLength,
   CacheListPushFront,
+  CacheListRemoveValue,
   CacheSet,
   CacheDictionaryFetch,
   CacheDictionarySetField,
@@ -145,6 +146,15 @@ export class SimpleCacheClient {
   ): Promise<CacheListLength.Response> {
     const client = this.getNextDataClient();
     return await client.listLength(cacheName, listName);
+  }
+
+  public async listRemoveValue(
+    cacheName: string,
+    listName: string,
+    value: string | Uint8Array
+  ): Promise<CacheListRemoveValue.Response> {
+    const client = this.getNextDataClient();
+    return await client.listRemoveValue(cacheName, listName, value);
   }
 
   public async listConcatenateFront(
