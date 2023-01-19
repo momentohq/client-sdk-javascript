@@ -136,31 +136,6 @@ export class SimpleCacheClient {
     return await client.delete(cacheName, key);
   }
 
-  public async listFetch(
-    cacheName: string,
-    listName: string
-  ): Promise<CacheListFetch.Response> {
-    const client = this.getNextDataClient();
-    return await client.listFetch(cacheName, listName);
-  }
-
-  public async listLength(
-    cacheName: string,
-    listName: string
-  ): Promise<CacheListLength.Response> {
-    const client = this.getNextDataClient();
-    return await client.listLength(cacheName, listName);
-  }
-
-  public async listRemoveValue(
-    cacheName: string,
-    listName: string,
-    value: string | Uint8Array
-  ): Promise<CacheListRemoveValue.Response> {
-    const client = this.getNextDataClient();
-    return await client.listRemoveValue(cacheName, listName, value);
-  }
-
   public async listConcatenateBack(
     cacheName: string,
     listName: string,
@@ -193,6 +168,22 @@ export class SimpleCacheClient {
       ttl,
       truncateBackToSize
     );
+  }
+
+  public async listFetch(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListFetch.Response> {
+    const client = this.getNextDataClient();
+    return await client.listFetch(cacheName, listName);
+  }
+
+  public async listLength(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListLength.Response> {
+    const client = this.getNextDataClient();
+    return await client.listLength(cacheName, listName);
   }
 
   public async listPopBack(
@@ -243,6 +234,15 @@ export class SimpleCacheClient {
       ttl,
       truncateBackToSize
     );
+  }
+
+  public async listRemoveValue(
+    cacheName: string,
+    listName: string,
+    value: string | Uint8Array
+  ): Promise<CacheListRemoveValue.Response> {
+    const client = this.getNextDataClient();
+    return await client.listRemoveValue(cacheName, listName, value);
   }
 
   /**
