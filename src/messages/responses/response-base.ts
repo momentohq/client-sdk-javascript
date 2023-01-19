@@ -22,7 +22,7 @@ export interface IListResponseSuccess {
 
 export function ResponseError<TBase extends Constructor>(Base: TBase) {
   return class ResponseError extends Base {
-    public _innerException: SdkError;
+    protected _innerException: SdkError;
 
     public message(): string {
       return this._innerException.wrappedErrorMessage();
