@@ -1,18 +1,12 @@
-import {
-  ResponseBase,
-  ResponseError,
-  ResponseMiss,
-  ResponseHit,
-} from './response-base';
-import {SdkError} from '../../errors/errors';
+import * as ResponseBase from './response-base';
 import {TextDecoder} from 'util';
 import {truncateStringArray} from '../../utils/display';
 
 const TEXT_DECODER = new TextDecoder();
 
-export abstract class Response extends ResponseBase {}
+export {Response, Miss, Error} from './response-base';
 
-class _Hit extends Response {
+export class Hit extends ResponseBase.Hit {
   private readonly elements: Uint8Array[];
 
   constructor(elements: Uint8Array[]) {
@@ -35,14 +29,3 @@ class _Hit extends Response {
     return `${super.toString()}: [${truncatedStringArray.toString()}]`;
   }
 }
-export class Hit extends ResponseHit(_Hit) {}
-
-class _Miss extends Response {}
-export class Miss extends ResponseMiss(_Miss) {}
-
-class _Error extends Response {
-  constructor(public _innerException: SdkError) {
-    super();
-  }
-}
-export class Error extends ResponseError(_Error) {}

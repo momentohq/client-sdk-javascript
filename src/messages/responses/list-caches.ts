@@ -1,11 +1,10 @@
 import {CacheInfo} from '../cache-info';
 import {control} from '@gomomento/generated-types';
-import {SdkError} from '../../errors/errors';
-import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
+import * as ResponseBase from './response-base';
 
-export abstract class Response extends ResponseBase {}
+export {Response, Error} from './response-base';
 
-class _Success extends Response {
+export class Success extends ResponseBase.Success {
   private readonly nextToken?: string;
   private readonly caches: CacheInfo[];
   constructor(result?: control.control_client._ListCachesResponse) {
@@ -29,11 +28,3 @@ class _Success extends Response {
     return super.toString() + ': ' + caches.join(', ');
   }
 }
-export class Success extends ResponseSuccess(_Success) {}
-
-class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
-    super();
-  }
-}
-export class Error extends ResponseError(_Error) {}
