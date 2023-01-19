@@ -5,6 +5,7 @@ import {
   CacheSetAddElement,
   CacheSetFetch,
   CacheSetRemoveElements,
+  CacheSetRemoveElement,
   CollectionTtl,
 } from '../src';
 import {SetupIntegrationTest} from './integration-setup';
@@ -41,6 +42,58 @@ describe('Integration tests for convenience operations on sets datastructure', (
       'lol'
     );
     expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
+
+    const fetchResponse = await Momento.setFetch(
+      IntegrationTestCacheName,
+      setName
+    );
+    expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+    expect((fetchResponse as CacheSetFetch.Hit).valueSetUint8Array()).toEqual(
+      new Set([LOL_BYTE_ARRAY])
+    );
+  });
+
+  it('should succeed for removeElement with a byte array happy path', async () => {
+    const setName = v4();
+    const addResponse = await Momento.setAddElements(
+      IntegrationTestCacheName,
+      setName,
+      [FOO_BYTE_ARRAY, LOL_BYTE_ARRAY]
+    );
+    expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+
+    const removeResponse = await Momento.setRemoveElement(
+      IntegrationTestCacheName,
+      setName,
+      FOO_BYTE_ARRAY
+    );
+    expect(removeResponse).toBeInstanceOf(CacheSetRemoveElement.Success);
+
+    const fetchResponse = await Momento.setFetch(
+      IntegrationTestCacheName,
+      setName
+    );
+    expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+    expect((fetchResponse as CacheSetFetch.Hit).valueSetUint8Array()).toEqual(
+      new Set([LOL_BYTE_ARRAY])
+    );
+  });
+
+  it('should succeed for removeElement with a string array happy path', async () => {
+    const setName = v4();
+    const addResponse = await Momento.setAddElements(
+      IntegrationTestCacheName,
+      setName,
+      [FOO_BYTE_ARRAY, LOL_BYTE_ARRAY]
+    );
+    expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+
+    const removeResponse = await Momento.setRemoveElement(
+      IntegrationTestCacheName,
+      setName,
+      'foo'
+    );
+    expect(removeResponse).toBeInstanceOf(CacheSetRemoveElement.Success);
 
     const fetchResponse = await Momento.setFetch(
       IntegrationTestCacheName,
