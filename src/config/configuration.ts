@@ -1,6 +1,17 @@
 import {TransportStrategy} from './transport/transport-strategy';
 import {LoggerOptions} from '../utils/logging';
 
+export interface ConfigurationProps {
+  /**
+   * Configures logging verbosity and format
+   */
+  loggerOptions: LoggerOptions;
+  /**
+   * Configures low-level options for network interactions with the Momento service
+   */
+  transportStrategy: TransportStrategy;
+}
+
 /**
  * Configuration options for Momento Simple Cache client.
  *
@@ -33,10 +44,6 @@ export interface Configuration {
    * @returns {Configuration} a new Configuration object with the specified TransportStrategy
    */
   withTransportStrategy(transportStrategy: TransportStrategy): Configuration;
-  // TODO: move idle millis into transport strategy
-  getMaxIdleMillis(): number;
-  // TODO: move idle millis into transport strategy
-  withMaxIdleMillis(maxIdleMillis: number): Configuration;
 
   /**
    * Convenience copy constructor that updates the client-side timeout setting in the TransportStrategy
@@ -49,16 +56,10 @@ export interface Configuration {
 export class SimpleCacheConfiguration implements Configuration {
   private readonly loggerOptions: LoggerOptions;
   private readonly transportStrategy: TransportStrategy;
-  private readonly maxIdleMillis: number;
 
-  constructor(
-    loggerOptions: LoggerOptions,
-    transportStrategy: TransportStrategy,
-    maxIdleMillis: number
-  ) {
-    this.loggerOptions = loggerOptions;
-    this.transportStrategy = transportStrategy;
-    this.maxIdleMillis = maxIdleMillis;
+  constructor(props: ConfigurationProps) {
+    this.loggerOptions = props.loggerOptions;
+    this.transportStrategy = props.transportStrategy;
   }
 
   getLoggerOptions(): LoggerOptions {
@@ -69,39 +70,25 @@ export class SimpleCacheConfiguration implements Configuration {
     return this.transportStrategy;
   }
 
-  getMaxIdleMillis(): number {
-    return this.maxIdleMillis;
-  }
-
   withLoggerOptions(loggerOptions: LoggerOptions): Configuration {
-    return new SimpleCacheConfiguration(
-      loggerOptions,
-      this.transportStrategy,
-      this.maxIdleMillis
-    );
+    return new SimpleCacheConfiguration({
+      loggerOptions: loggerOptions,
+      transportStrategy: this.transportStrategy,
+    });
   }
 
   withTransportStrategy(transportStrategy: TransportStrategy): Configuration {
-    return new SimpleCacheConfiguration(
-      this.loggerOptions,
-      transportStrategy,
-      this.maxIdleMillis
-    );
-  }
-
-  withMaxIdleMillis(maxIdleMillis: number) {
-    return new SimpleCacheConfiguration(
-      this.loggerOptions,
-      this.transportStrategy,
-      maxIdleMillis
-    );
+    return new SimpleCacheConfiguration({
+      loggerOptions: this.loggerOptions,
+      transportStrategy: transportStrategy,
+    });
   }
 
   withClientTimeoutMillis(clientTimeout: number): Configuration {
-    return new SimpleCacheConfiguration(
-      this.loggerOptions,
-      this.transportStrategy.withClientTimeoutMillis(clientTimeout),
-      this.maxIdleMillis
-    );
+    return new SimpleCacheConfiguration({
+      loggerOptions: this.loggerOptions,
+      transportStrategy:
+        this.transportStrategy.withClientTimeoutMillis(clientTimeout),
+    });
   }
 }

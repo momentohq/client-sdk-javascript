@@ -38,7 +38,9 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
     this.logger = getLogger(this);
     this.clientFactoryFn = props.clientFactoryFn;
     this.client = this.clientFactoryFn();
-    this.maxIdleMillis = props.configuration.getMaxIdleMillis();
+    this.maxIdleMillis = props.configuration
+      .getTransportStrategy()
+      .getMaxIdleMillis();
     this.lastAccessTime = Date.now();
   }
 

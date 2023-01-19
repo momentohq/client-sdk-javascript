@@ -28,16 +28,19 @@ export class Laptop extends SimpleCacheConfiguration {
    * @returns {Laptop}
    */
   static latest(loggerOptions: LoggerOptions = defaultLoggerOptions) {
-    const maxIdleMillis = defaultMaxIdleMillis;
-    const deadlineMilliseconds = 5000;
-    const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration(
-      deadlineMilliseconds,
-      defaultMaxSessionMemoryMb
-    );
-    const transportStrategy: TransportStrategy = new StaticTransportStrategy(
-      grpcConfig
-    );
-    return new Laptop(loggerOptions, transportStrategy, maxIdleMillis);
+    const deadlineMillis = 5000;
+    const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
+      deadlineMillis: deadlineMillis,
+      maxSessionMemoryMb: defaultMaxSessionMemoryMb,
+    });
+    const transportStrategy: TransportStrategy = new StaticTransportStrategy({
+      grpcConfiguration: grpcConfig,
+      maxIdleMillis: defaultMaxIdleMillis,
+    });
+    return new Laptop({
+      loggerOptions: loggerOptions,
+      transportStrategy: transportStrategy,
+    });
   }
 }
 
@@ -50,16 +53,19 @@ class InRegionDefault extends SimpleCacheConfiguration {
    * @returns {InRegionDefault}
    */
   static latest(loggerOptions: LoggerOptions = defaultLoggerOptions) {
-    const maxIdleMillis = defaultMaxIdleMillis;
-    const deadlineMilliseconds = 1100;
-    const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration(
-      deadlineMilliseconds,
-      defaultMaxSessionMemoryMb
-    );
-    const transportStrategy: TransportStrategy = new StaticTransportStrategy(
-      grpcConfig
-    );
-    return new InRegionDefault(loggerOptions, transportStrategy, maxIdleMillis);
+    const deadlineMillis = 1100;
+    const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
+      deadlineMillis: deadlineMillis,
+      maxSessionMemoryMb: defaultMaxSessionMemoryMb,
+    });
+    const transportStrategy: TransportStrategy = new StaticTransportStrategy({
+      grpcConfiguration: grpcConfig,
+      maxIdleMillis: defaultMaxIdleMillis,
+    });
+    return new InRegionDefault({
+      loggerOptions: loggerOptions,
+      transportStrategy: transportStrategy,
+    });
   }
 }
 
@@ -70,16 +76,19 @@ class InRegionLowLatency extends SimpleCacheConfiguration {
    * @returns {InRegionLowLatency}
    */
   static latest(loggerOptions: LoggerOptions = defaultLoggerOptions) {
-    const maxIdleMillis = defaultMaxIdleMillis;
-    const deadlineMilliseconds = 500;
-    const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration(
-      deadlineMilliseconds,
-      defaultMaxSessionMemoryMb
-    );
-    const transportStrategy: TransportStrategy = new StaticTransportStrategy(
-      grpcConfig
-    );
-    return new InRegionDefault(loggerOptions, transportStrategy, maxIdleMillis);
+    const deadlineMillis = 500;
+    const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
+      deadlineMillis: deadlineMillis,
+      maxSessionMemoryMb: defaultMaxSessionMemoryMb,
+    });
+    const transportStrategy: TransportStrategy = new StaticTransportStrategy({
+      grpcConfiguration: grpcConfig,
+      maxIdleMillis: defaultMaxIdleMillis,
+    });
+    return new InRegionDefault({
+      loggerOptions: loggerOptions,
+      transportStrategy: transportStrategy,
+    });
   }
 }
 
