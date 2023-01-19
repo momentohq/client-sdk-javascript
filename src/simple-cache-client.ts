@@ -141,7 +141,7 @@ export class SimpleCacheClient {
     listName: string,
     values: string[] | Uint8Array[],
     ttl?: CollectionTtl,
-    truncateBackToSize?: number
+    truncateFrontToSize?: number
   ): Promise<CacheListConcatenateBack.Response> {
     const client = this.getNextDataClient();
     return await client.listConcatenateBack(
@@ -149,7 +149,7 @@ export class SimpleCacheClient {
       listName,
       values,
       ttl,
-      truncateBackToSize
+      truncateFrontToSize
     );
   }
 
