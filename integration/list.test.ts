@@ -6,6 +6,7 @@ import {
   CacheListConcatenateFront,
   CacheListFetch,
   CacheListLength,
+  CacheListPushBack,
   CacheListPushFront,
   CacheListRemoveValue,
   MomentoErrorCode,
@@ -275,6 +276,31 @@ describe('lists', () => {
       const resp = await Momento.listLength(IntegrationTestCacheName, listName);
       expect(resp).toBeInstanceOf(CacheListLength.Hit);
       expect((resp as CacheListLength.Hit).length()).toEqual(values.length);
+    });
+  });
+
+  describe('#listPushBack', () => {
+    sharedListValidationSpecs((cacheName: string, listName: string) => {
+      return Momento.listPushBack(cacheName, listName, v4());
+    });
+
+    sharedListAddToBackSpecs((props: addValueProps) => {
+      return Momento.listPushBack(
+        props.cacheName,
+        props.listName,
+        props.value,
+        props.ttl,
+        props.truncateToSize
+      );
+    });
+
+    it('returns a CacheListPushBack response', async () => {
+      const resp = await Momento.listPushBack(
+        IntegrationTestCacheName,
+        v4(),
+        'test'
+      );
+      expect(resp).toBeInstanceOf(CacheListPushBack.Success);
     });
   });
 

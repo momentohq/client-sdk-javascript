@@ -16,6 +16,7 @@ import {
   CacheListConcatenateFront,
   CacheListFetch,
   CacheListLength,
+  CacheListPushBack,
   CacheListPushFront,
   CacheListRemoveValue,
   CacheSet,
@@ -189,6 +190,23 @@ export class SimpleCacheClient {
       values,
       ttl,
       truncateBackToSize
+    );
+  }
+
+  public async listPushBack(
+    cacheName: string,
+    listName: string,
+    value: string | Uint8Array,
+    ttl?: CollectionTtl,
+    truncateFrontToSize?: number
+  ): Promise<CacheListPushBack.Response> {
+    const client = this.getNextDataClient();
+    return await client.listPushBack(
+      cacheName,
+      listName,
+      value,
+      ttl,
+      truncateFrontToSize
     );
   }
 

@@ -26,6 +26,7 @@ import {
   CacheListConcatenateFront,
   CacheListFetch,
   CacheListLength,
+  CacheListPushBack,
   CacheListPushFront,
   CacheListRemoveValue,
   CollectionTtl,
@@ -507,6 +508,75 @@ export class CacheClient {
             }
           } else {
             resolve(new CacheListLength.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async listPushBack(
+    cacheName: string,
+    listName: string,
+    value: string | Uint8Array,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    truncateFrontToSize?: number
+  ): Promise<CacheListPushBack.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateListName(listName);
+    } catch (err) {
+      return new CacheListPushBack.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      `Issuing 'listPushBack' request; listName: ${listName}, value length: ${
+        value.length
+      }, ${ttl.toString()}, truncateFrontToSize: ${
+        truncateFrontToSize?.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendListPushBack(
+      cacheName,
+      this.convert(listName),
+      this.convert(value),
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl(),
+      truncateFrontToSize
+    );
+    this.logger.trace(`'listPushBack' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendListPushBack(
+    cacheName: string,
+    listName: Uint8Array,
+    value: Uint8Array,
+    ttlMilliseconds: number,
+    refreshTtl: boolean,
+    truncateFrontToSize?: number
+  ): Promise<CacheListPushBack.Response> {
+    const request = new grpcCache._ListPushBackRequest({
+      list_name: listName,
+      value: value,
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
+      truncate_front_to_size: truncateFrontToSize,
+    });
+    const metadata = this.createMetadata(cacheName);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ListPushBack(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheListPushBack.Success(resp.list_length));
+          } else {
+            resolve(new CacheListPushBack.Error(cacheServiceErrorMapper(err)));
           }
         }
       );
