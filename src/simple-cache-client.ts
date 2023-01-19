@@ -273,7 +273,6 @@ export class SimpleCacheClient {
     );
   }
 
-
   /**
    * Add a value to the end of a list.
    * @param {string} cacheName - Name of the cache with the list.
