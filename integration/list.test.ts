@@ -6,6 +6,8 @@ import {
   CacheListConcatenateFront,
   CacheListFetch,
   CacheListLength,
+  CacheListPopBack,
+  CacheListPopFront,
   CacheListPushBack,
   CacheListPushFront,
   CacheListRemoveValue,
@@ -276,6 +278,68 @@ describe('lists', () => {
       const resp = await Momento.listLength(IntegrationTestCacheName, listName);
       expect(resp).toBeInstanceOf(CacheListLength.Hit);
       expect((resp as CacheListLength.Hit).length()).toEqual(values.length);
+    });
+  });
+
+  describe('#listPopBack', () => {
+    sharedListValidationSpecs((cacheName: string, listName: string) => {
+      return Momento.listPopBack(cacheName, listName);
+    });
+
+    it('misses when the list does not exist', async () => {
+      const resp = await Momento.listPopBack(IntegrationTestCacheName, v4());
+      expect(resp).toBeInstanceOf(CacheListPopBack.Miss);
+    });
+
+    it('hits when the list exists', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'lol'];
+      const poppedValue = values[values.length-1];
+      const poppedBinary = Uint8Array.of(108, 111, 108);
+
+      await Momento.listConcatenateFront(
+        IntegrationTestCacheName,
+        listName,
+        values
+      );
+
+      const resp = await Momento.listPopBack(IntegrationTestCacheName, listName);
+      expect(resp).toBeInstanceOf(CacheListPopBack.Hit);
+      expect((resp as CacheListPopBack.Hit).valueString()).toEqual(poppedValue);
+      expect((resp as CacheListPopBack.Hit).valueUint8Array()).toEqual(
+        poppedBinary
+      );
+    });
+  });
+
+  describe('#listPopFront', () => {
+    sharedListValidationSpecs((cacheName: string, listName: string) => {
+      return Momento.listPopFront(cacheName, listName);
+    });
+
+    it('misses when the list does not exist', async () => {
+      const resp = await Momento.listPopFront(IntegrationTestCacheName, v4());
+      expect(resp).toBeInstanceOf(CacheListPopFront.Miss);
+    });
+
+    it('hits when the list exists', async () => {
+      const listName = v4();
+      const values = ['lol', 'two', 'three'];
+      const poppedValue = values[0];
+      const poppedBinary = Uint8Array.of(108, 111, 108);
+
+      await Momento.listConcatenateFront(
+        IntegrationTestCacheName,
+        listName,
+        values
+      );
+
+      const resp = await Momento.listPopFront(IntegrationTestCacheName, listName);
+      expect(resp).toBeInstanceOf(CacheListPopFront.Hit);
+      expect((resp as CacheListPopFront.Hit).valueString()).toEqual(poppedValue);
+      expect((resp as CacheListPopFront.Hit).valueUint8Array()).toEqual(
+        poppedBinary
+      );
     });
   });
 

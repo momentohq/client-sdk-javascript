@@ -26,6 +26,8 @@ import {
   CacheListConcatenateFront,
   CacheListFetch,
   CacheListLength,
+  CacheListPopBack,
+  CacheListPopFront,
   CacheListPushBack,
   CacheListPushFront,
   CacheListRemoveValue,
@@ -508,6 +510,104 @@ export class CacheClient {
             }
           } else {
             resolve(new CacheListLength.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async listPopBack(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListPopBack.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateListName(listName);
+    } catch (err) {
+      return new CacheListPopBack.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'listPopBack' request");
+    const result = await this.sendListPopBack(
+      cacheName,
+      this.convert(listName)
+    );
+    this.logger.trace(`'listPopBack' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendListPopBack(
+    cacheName: string,
+    listName: Uint8Array
+  ): Promise<CacheListPopBack.Response> {
+    const request = new grpcCache._ListPopBackRequest({
+      list_name: listName,
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ListPopBack(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheListPopBack.Miss());
+          } else if (resp?.found) {
+            resolve(new CacheListPopBack.Hit(resp.found.back));
+          } else {
+            resolve(new CacheListPopBack.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async listPopFront(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListPopFront.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateListName(listName);
+    } catch (err) {
+      return new CacheListPopFront.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'listPopFront' request");
+    const result = await this.sendListPopFront(
+      cacheName,
+      this.convert(listName)
+    );
+    this.logger.trace(`'listPopFront' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendListPopFront(
+    cacheName: string,
+    listName: Uint8Array
+  ): Promise<CacheListPopFront.Response> {
+    const request = new grpcCache._ListPopFrontRequest({
+      list_name: listName,
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ListPopFront(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheListPopFront.Miss());
+          } else if (resp?.found) {
+            resolve(new CacheListPopFront.Hit(resp.found.front));
+          } else {
+            resolve(new CacheListPopFront.Error(cacheServiceErrorMapper(err)));
           }
         }
       );

@@ -16,6 +16,8 @@ import {
   CacheListConcatenateFront,
   CacheListFetch,
   CacheListLength,
+  CacheListPopBack,
+  CacheListPopFront,
   CacheListPushBack,
   CacheListPushFront,
   CacheListRemoveValue,
@@ -191,6 +193,22 @@ export class SimpleCacheClient {
       ttl,
       truncateBackToSize
     );
+  }
+
+  public async listPopBack(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListPopBack.Response> {
+    const client = this.getNextDataClient();
+    return await client.listPopBack(cacheName, listName);
+  }
+
+  public async listPopFront(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListPopFront.Response> {
+    const client = this.getNextDataClient();
+    return await client.listPopFront(cacheName, listName);
   }
 
   public async listPushBack(
