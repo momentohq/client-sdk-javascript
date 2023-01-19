@@ -24,6 +24,7 @@ import * as CacheDictionaryIncrement from './messages/responses/cache-dictionary
 import * as CacheSetAddElements from './messages/responses/cache-set-add-elements';
 import * as CacheSetAddElement from './messages/responses/cache-set-add-element';
 import * as CacheSetRemoveElements from './messages/responses/cache-set-remove-elements';
+import * as CacheSetRemoveElement from './messages/responses/cache-set-remove-element';
 import {CacheInfo} from './messages/cache-info';
 import {CollectionTtl} from './utils/collection-ttl';
 import {
@@ -92,6 +93,7 @@ export {
   CacheSetAddElements,
   CacheSetAddElement,
   CacheSetRemoveElements,
+  CacheSetRemoveElement,
   MomentoErrorCode,
   AlreadyExistsError,
   AuthenticationError,

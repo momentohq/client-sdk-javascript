@@ -25,6 +25,7 @@ import {
   CacheSetAddElements,
   CacheSetAddElement,
   CacheSetRemoveElements,
+  CacheSetRemoveElement,
 } from '.';
 import {getLogger, initializeMomentoLogging, Logger} from './utils/logging';
 import {range} from './utils/collections';
@@ -217,6 +218,25 @@ export class SimpleCacheClient {
 
   /**
    * Remove an element from a set.
+   *
+   * @param {string} cacheName - Name of the cache to store the set in.
+   * @param {string} setName - The set to remove the element from.
+   * @param {(string | Uint8Array)} element - The data to remove from the set.
+   */
+  public async setRemoveElement(
+    cacheName: string,
+    setName: string,
+    element: string | Uint8Array
+  ): Promise<CacheSetRemoveElement.Response> {
+    return (
+      await this.setRemoveElements(cacheName, setName, [element] as
+        | string[]
+        | Uint8Array[])
+    ).toSingularResponse();
+  }
+
+  /**
+   * Remove elements from a set.
    *
    * @param {string} cacheName - Name of the cache to store the set in.
    * @param {string} setName - The set to remove the element from.
