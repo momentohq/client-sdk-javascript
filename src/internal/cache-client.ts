@@ -162,7 +162,6 @@ export class CacheClient {
       ttl_milliseconds: ttl * 1000,
     });
     const metadata = this.createMetadata(cacheName);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise(resolve => {
       this.clientWrapper.getClient().Set(
         request,
@@ -474,7 +473,6 @@ export class CacheClient {
       truncate_front_to_size: truncateFrontToSize,
     });
     const metadata = this.createMetadata(cacheName);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise(resolve => {
       this.clientWrapper.getClient().ListConcatenateBack(
         request,
@@ -549,7 +547,6 @@ export class CacheClient {
       truncate_back_to_size: truncateBackToSize,
     });
     const metadata = this.createMetadata(cacheName);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise(resolve => {
       this.clientWrapper.getClient().ListConcatenateFront(
         request,
@@ -814,7 +811,6 @@ export class CacheClient {
       truncate_front_to_size: truncateFrontToSize,
     });
     const metadata = this.createMetadata(cacheName);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise(resolve => {
       this.clientWrapper.getClient().ListPushBack(
         request,
@@ -883,7 +879,6 @@ export class CacheClient {
       truncate_back_to_size: truncateBackToSize,
     });
     const metadata = this.createMetadata(cacheName);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise(resolve => {
       this.clientWrapper.getClient().ListPushFront(
         request,
