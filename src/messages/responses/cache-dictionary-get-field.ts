@@ -44,7 +44,7 @@ export class Miss extends GetValue.Miss {
 export class Error extends GetValue.Error {
   private readonly field: Uint8Array;
 
-  constructor(protected _innerException: SdkError, field: Uint8Array) {
+  constructor(public _innerException: SdkError, field: Uint8Array) {
     super(_innerException);
     this.field = field;
   }
