@@ -54,8 +54,7 @@ export class CacheClient {
       .getGrpcConfig();
 
     this.requestTimeoutMs =
-      grpcConfig.getDeadlineMilliseconds() ||
-      CacheClient.DEFAULT_REQUEST_TIMEOUT_MS;
+      grpcConfig.getDeadlineMillis() || CacheClient.DEFAULT_REQUEST_TIMEOUT_MS;
     this.validateRequestTimeout(this.requestTimeoutMs);
     this.logger.debug(
       `Creating cache client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`

@@ -1,6 +1,17 @@
 import {TransportStrategy} from './transport/transport-strategy';
 import {LoggerOptions} from '../utils/logging';
 
+export interface ConfigurationProps {
+  /**
+   * Configures logging verbosity and format
+   */
+  loggerOptions: LoggerOptions;
+  /**
+   * Configures low-level options for network interactions with the Momento service
+   */
+  transportStrategy: TransportStrategy;
+}
+
 /**
  * Configuration options for Momento Simple Cache client.
  *
@@ -46,12 +57,9 @@ export class SimpleCacheConfiguration implements Configuration {
   private readonly loggerOptions: LoggerOptions;
   private readonly transportStrategy: TransportStrategy;
 
-  constructor(
-    loggerOptions: LoggerOptions,
-    transportStrategy: TransportStrategy
-  ) {
-    this.loggerOptions = loggerOptions;
-    this.transportStrategy = transportStrategy;
+  constructor(props: ConfigurationProps) {
+    this.loggerOptions = props.loggerOptions;
+    this.transportStrategy = props.transportStrategy;
   }
 
   getLoggerOptions(): LoggerOptions {
@@ -63,17 +71,24 @@ export class SimpleCacheConfiguration implements Configuration {
   }
 
   withLoggerOptions(loggerOptions: LoggerOptions): Configuration {
-    return new SimpleCacheConfiguration(loggerOptions, this.transportStrategy);
+    return new SimpleCacheConfiguration({
+      loggerOptions: loggerOptions,
+      transportStrategy: this.transportStrategy,
+    });
   }
 
   withTransportStrategy(transportStrategy: TransportStrategy): Configuration {
-    return new SimpleCacheConfiguration(this.loggerOptions, transportStrategy);
+    return new SimpleCacheConfiguration({
+      loggerOptions: this.loggerOptions,
+      transportStrategy: transportStrategy,
+    });
   }
 
   withClientTimeoutMillis(clientTimeout: number): Configuration {
-    return new SimpleCacheConfiguration(
-      this.loggerOptions,
-      this.transportStrategy.withClientTimeoutMillis(clientTimeout)
-    );
+    return new SimpleCacheConfiguration({
+      loggerOptions: this.loggerOptions,
+      transportStrategy:
+        this.transportStrategy.withClientTimeoutMillis(clientTimeout),
+    });
   }
 }
