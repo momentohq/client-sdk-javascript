@@ -2,6 +2,7 @@ import {v4} from 'uuid';
 import {sleep} from '../src/utils/sleep';
 import {
   CollectionTtl,
+  CacheListConcatenateBack,
   CacheListConcatenateFront,
   CacheListFetch,
   CacheListLength,
@@ -44,56 +45,12 @@ describe('lists', () => {
     listName: string;
     value: string | Uint8Array;
     ttl?: CollectionTtl;
-    truncateBackToSize?: number;
+    truncateToSize?: number;
   }
 
-  const sharedListAddToFrontSpecs = (
+  const sharedListCollectionTtlSpecs = (
     addValue: (props: addValueProps) => Promise<ResponseBase>
   ) => {
-    it('pushes to to the front', async () => {
-      const listName = v4();
-      const values = ['one', 'two', 'three'];
-
-      for (const value of values) {
-        await addValue({
-          cacheName: IntegrationTestCacheName,
-          listName: listName,
-          value: value,
-        });
-      }
-
-      const respFetch = await Momento.listFetch(
-        IntegrationTestCacheName,
-        listName
-      );
-      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
-        values.reverse()
-      );
-    });
-
-    it('truncates', async () => {
-      const listName = v4();
-      const values = ['one', 'two', 'three'];
-
-      for (const value of values) {
-        await addValue({
-          cacheName: IntegrationTestCacheName,
-          listName: listName,
-          value: value,
-          truncateBackToSize: 2,
-        });
-      }
-
-      const respFetch = await Momento.listFetch(
-        IntegrationTestCacheName,
-        listName
-      );
-      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual([
-        'three',
-        'two',
-      ]);
-    });
-
     it('sets ttl', async () => {
       const listName = v4();
       const values = ['one', 'two', 'three'];
@@ -138,11 +95,15 @@ describe('lists', () => {
         IntegrationTestCacheName,
         listName
       );
-      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
-        values.reverse()
-      );
+      expect(
+        (respFetch as CacheListFetch.Hit).valueListString()
+      ).toIncludeAllMembers(values);
     });
+  };
 
+  const sharedListAddSpecs = (
+    addValue: (props: addValueProps) => Promise<ResponseBase>
+  ) => {
     it('returns the new list length', async () => {
       const listName = v4();
       const values = ['one', 'two', 'three'];
@@ -157,6 +118,108 @@ describe('lists', () => {
         length += 1;
         expect((resp as IListResponseSuccess).listLength()).toEqual(length);
       }
+    });
+  };
+
+  const sharedListAddToBackSpecs = (
+    addValue: (props: addValueProps) => Promise<ResponseBase>
+  ) => {
+    sharedListCollectionTtlSpecs(addValue);
+    sharedListAddSpecs(addValue);
+
+    it('adds to the back', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'three'];
+
+      for (const value of values) {
+        await addValue({
+          cacheName: IntegrationTestCacheName,
+          listName: listName,
+          value: value,
+        });
+      }
+
+      const respFetch = await Momento.listFetch(
+        IntegrationTestCacheName,
+        listName
+      );
+      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
+        values
+      );
+    });
+
+    it('truncates the front', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'three'];
+
+      for (const value of values) {
+        await addValue({
+          cacheName: IntegrationTestCacheName,
+          listName: listName,
+          value: value,
+          truncateToSize: 2,
+        });
+      }
+
+      const respFetch = await Momento.listFetch(
+        IntegrationTestCacheName,
+        listName
+      );
+      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual([
+        'two',
+        'three',
+      ]);
+    });
+  };
+
+  const sharedListAddToFrontSpecs = (
+    addValue: (props: addValueProps) => Promise<ResponseBase>
+  ) => {
+    sharedListCollectionTtlSpecs(addValue);
+    sharedListAddSpecs(addValue);
+
+    it('adds to the front', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'three'];
+
+      for (const value of values) {
+        await addValue({
+          cacheName: IntegrationTestCacheName,
+          listName: listName,
+          value: value,
+        });
+      }
+
+      const respFetch = await Momento.listFetch(
+        IntegrationTestCacheName,
+        listName
+      );
+      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
+        values.reverse()
+      );
+    });
+
+    it('truncates the back', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'three'];
+
+      for (const value of values) {
+        await addValue({
+          cacheName: IntegrationTestCacheName,
+          listName: listName,
+          value: value,
+          truncateToSize: 2,
+        });
+      }
+
+      const respFetch = await Momento.listFetch(
+        IntegrationTestCacheName,
+        listName
+      );
+      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual([
+        'three',
+        'two',
+      ]);
     });
   };
 
@@ -226,7 +289,7 @@ describe('lists', () => {
         props.listName,
         props.value,
         props.ttl,
-        props.truncateBackToSize
+        props.truncateToSize
       );
     });
 
@@ -280,6 +343,59 @@ describe('lists', () => {
     });
   });
 
+  describe('#listConcatenateBack', () => {
+    sharedListValidationSpecs((cacheName: string, listName: string) => {
+      return Momento.listConcatenateBack(cacheName, listName, [v4()]);
+    });
+
+    sharedListAddToBackSpecs((props: addValueProps) => {
+      return Momento.listConcatenateBack(
+        props.cacheName,
+        props.listName,
+        [props.value] as string[] | Uint8Array[],
+        props.ttl,
+        props.truncateToSize
+      );
+    });
+
+    it('adds multiple values', async () => {
+      const listName = v4();
+      const values1 = ['1', '2', '3', '4'];
+      const values2 = ['this', 'that'];
+
+      let respConcat = await Momento.listConcatenateBack(
+        IntegrationTestCacheName,
+        listName,
+        values1
+      );
+      expect(
+        (respConcat as CacheListConcatenateBack.Success).listLength()
+      ).toEqual(values1.length);
+
+      let respFetch = await Momento.listFetch(
+        IntegrationTestCacheName,
+        listName
+      );
+      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
+        values1
+      );
+
+      respConcat = await Momento.listConcatenateBack(
+        IntegrationTestCacheName,
+        listName,
+        values2
+      );
+      expect(
+        (respConcat as CacheListConcatenateBack.Success).listLength()
+      ).toEqual(values1.length + values2.length);
+
+      respFetch = await Momento.listFetch(IntegrationTestCacheName, listName);
+      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
+        values1.concat(values2)
+      );
+    });
+  });
+
   describe('#listConcatenateFront', () => {
     sharedListValidationSpecs((cacheName: string, listName: string) => {
       return Momento.listConcatenateFront(cacheName, listName, [v4()]);
@@ -291,7 +407,7 @@ describe('lists', () => {
         props.listName,
         [props.value] as string[] | Uint8Array[],
         props.ttl,
-        props.truncateBackToSize
+        props.truncateToSize
       );
     });
 
