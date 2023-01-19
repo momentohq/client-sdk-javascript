@@ -12,8 +12,15 @@ import {
   RevokeSigningKey,
   CacheGet,
   CacheDelete,
+  CacheListConcatenateBack,
+  CacheListConcatenateFront,
   CacheListFetch,
+  CacheListLength,
+  CacheListPopBack,
+  CacheListPopFront,
+  CacheListPushBack,
   CacheListPushFront,
+  CacheListRemoveValue,
   CacheSet,
   CacheDictionaryFetch,
   CacheDictionarySetField,
@@ -130,6 +137,68 @@ export class SimpleCacheClient {
     return await client.delete(cacheName, key);
   }
 
+  /**
+   * Add multiple values to the end of a list. If the list does not exist it
+   * will be created.
+   *
+   * @param {string} cacheName - Name of the cache to store the list in.
+   * @param {string} listName - The list to add to.
+   * @param {string[] | Uint8Array[]} values - The values to add to the list.
+   * @param {CollectionTtl} [ttl] - How the ttl should be managed. Defaults to the client's TTL.
+   * @param {number} [truncateFrontToSize] - If the list exceeds this length, remove excess from the start of the list. Must be positive.
+   * @returns {Promise<CacheListConcatenateBack.Response>}
+   */
+  public async listConcatenateBack(
+    cacheName: string,
+    listName: string,
+    values: string[] | Uint8Array[],
+    ttl?: CollectionTtl,
+    truncateFrontToSize?: number
+  ): Promise<CacheListConcatenateBack.Response> {
+    const client = this.getNextDataClient();
+    return await client.listConcatenateBack(
+      cacheName,
+      listName,
+      values,
+      ttl,
+      truncateFrontToSize
+    );
+  }
+
+  /**
+   * Add multiple values to the start of a list. If the list does not exist it
+   * will be created.
+   *
+   * @param {string} cacheName - Name of the cache to store the list in.
+   * @param {string} listName - The list to add to.
+   * @param {string[] | Uint8Array[]} values - The values to add to the list.
+   * @param {CollectionTtl} [ttl] - How the ttl should be managed. Defaults to the client's TTL.
+   * @param {number} [truncateBackToSize] - If the list exceeds this length, remove excess from the end of the list. Must be positive.
+   * @returns {Promise<CacheListConcatenateFront.Response>}
+   */
+  public async listConcatenateFront(
+    cacheName: string,
+    listName: string,
+    values: string[] | Uint8Array[],
+    ttl?: CollectionTtl,
+    truncateBackToSize?: number
+  ): Promise<CacheListConcatenateFront.Response> {
+    const client = this.getNextDataClient();
+    return await client.listConcatenateFront(
+      cacheName,
+      listName,
+      values,
+      ttl,
+      truncateBackToSize
+    );
+  }
+
+  /**
+   * Fetch the entire list.
+   * @param {string} cacheName - Name of the cache to fetch the list from.
+   * @param {string} listName - The list to fetch.
+   * @returns {Promise<CacheListFetch.Response>}
+   */
   public async listFetch(
     cacheName: string,
     listName: string
@@ -138,6 +207,82 @@ export class SimpleCacheClient {
     return await client.listFetch(cacheName, listName);
   }
 
+  /**
+   * Get the number of values in a list.
+   * @param {string} cacheName - Name of the cache with the list.
+   * @param {string} listName - The list to get the length of.
+   */
+  public async listLength(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListLength.Response> {
+    const client = this.getNextDataClient();
+    return await client.listLength(cacheName, listName);
+  }
+
+  /**
+   * Get and remove the last value from a list.
+   * @param {string} cacheName - Name of the cache with the list.
+   * @param {string} listName - The list to pop.
+   * @returns {Promise<CacheListPopBack.Response>}
+   */
+  public async listPopBack(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListPopBack.Response> {
+    const client = this.getNextDataClient();
+    return await client.listPopBack(cacheName, listName);
+  }
+
+  /**
+   * Get and remove the first value from a list.
+   * @param {string} cacheName - Name of the cache with the list.
+   * @param {string} listName - The list to pop.
+   * @returns {Promise<CacheListPopFront.Response>}
+   */
+  public async listPopFront(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListPopFront.Response> {
+    const client = this.getNextDataClient();
+    return await client.listPopFront(cacheName, listName);
+  }
+
+  /**
+   * Add a value to the beginning of a list.
+   * @param {string} cacheName - Name of the cache with the list.
+   * @param {string} listName - The list to push to.
+   * @param {string | Uint8Array} - The value to push.
+   * @param {CollectionTtl} [ttl] - How the ttl should be managed. Defaults to the client's TTL.
+   * @param {number} [truncateFrontToSize] - If the list exceeds this length, remove excess from the start of the list. Must be positive.
+   * @return {Promise<CacheListPushBack.Response>}
+   */
+  public async listPushBack(
+    cacheName: string,
+    listName: string,
+    value: string | Uint8Array,
+    ttl?: CollectionTtl,
+    truncateFrontToSize?: number
+  ): Promise<CacheListPushBack.Response> {
+    const client = this.getNextDataClient();
+    return await client.listPushBack(
+      cacheName,
+      listName,
+      value,
+      ttl,
+      truncateFrontToSize
+    );
+  }
+
+  /**
+   * Add a value to the end of a list.
+   * @param {string} cacheName - Name of the cache with the list.
+   * @param {string} listName - The list to push to.
+   * @param {string | Uint8Array} - The value to push.
+   * @param {CollectionTtl} [ttl] - How the ttl should be managed. Defaults to the client's TTL.
+   * @param {number} [truncateBackToSize] - If the list exceeds this length, remove excess from the end of the list. Must be positive.
+   * @return {Promise<CacheListPushFront.Response>}
+   */
   public async listPushFront(
     cacheName: string,
     listName: string,
@@ -153,6 +298,22 @@ export class SimpleCacheClient {
       ttl,
       truncateBackToSize
     );
+  }
+
+  /**
+   * Removes all elements from the list equal to the value.
+   * @param {string} cacheName - Name of the cache with the list.
+   * @param {string} listName - The list to remove elements from.
+   * @param {string | Uint8Array} value - The value to remove.
+   * @returns {Promise<CacheListRemoveValue.Response>}
+   */
+  public async listRemoveValue(
+    cacheName: string,
+    listName: string,
+    value: string | Uint8Array
+  ): Promise<CacheListRemoveValue.Response> {
+    const client = this.getNextDataClient();
+    return await client.listRemoveValue(cacheName, listName, value);
   }
 
   /**

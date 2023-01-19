@@ -16,6 +16,10 @@ export interface IResponseError {
   toString(): string;
 }
 
+export interface IListResponseSuccess {
+  listLength(): number;
+}
+
 export function ResponseError<TBase extends Constructor>(Base: TBase) {
   return class ResponseError extends Base {
     public _innerException: SdkError;

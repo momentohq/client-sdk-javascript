@@ -22,8 +22,15 @@ import {
   CacheDictionaryIncrement,
   CacheSetAddElements,
   CacheSetRemoveElements,
+  CacheListConcatenateBack,
+  CacheListConcatenateFront,
   CacheListFetch,
+  CacheListLength,
+  CacheListPopBack,
+  CacheListPopFront,
+  CacheListPushBack,
   CacheListPushFront,
+  CacheListRemoveValue,
   CollectionTtl,
   Configuration,
   CredentialProvider,
@@ -155,7 +162,6 @@ export class CacheClient {
       ttl_milliseconds: ttl * 1000,
     });
     const metadata = this.createMetadata(cacheName);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise(resolve => {
       this.clientWrapper.getClient().Set(
         request,
@@ -413,6 +419,154 @@ export class CacheClient {
     });
   }
 
+  public async listConcatenateBack(
+    cacheName: string,
+    listName: string,
+    values: string[] | Uint8Array[],
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    truncateFrontToSize?: number
+  ): Promise<CacheListConcatenateBack.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateListName(listName);
+    } catch (err) {
+      return new CacheListConcatenateBack.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+
+    this.logger.trace(
+      `Issuing 'listConcatenateBack' request; listName: ${listName}, values length: ${
+        values.length
+      }, ${ttl.toString()}, truncateFrontToSize: ${
+        truncateFrontToSize?.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendListConcatenateBack(
+      cacheName,
+      this.convert(listName),
+      this.convertArray(values),
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl(),
+      truncateFrontToSize
+    );
+    this.logger.trace(
+      `'listConcatenateBack' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendListConcatenateBack(
+    cacheName: string,
+    listName: Uint8Array,
+    values: Uint8Array[],
+    ttlMilliseconds: number,
+    refreshTtl: boolean,
+    truncateFrontToSize?: number
+  ): Promise<CacheListConcatenateBack.Response> {
+    const request = new grpcCache._ListConcatenateBackRequest({
+      list_name: listName,
+      values: values,
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
+      truncate_front_to_size: truncateFrontToSize,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ListConcatenateBack(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheListConcatenateBack.Success(resp.list_length));
+          } else {
+            resolve(
+              new CacheListConcatenateBack.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async listConcatenateFront(
+    cacheName: string,
+    listName: string,
+    values: string[] | Uint8Array[],
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    truncateBackToSize?: number
+  ): Promise<CacheListConcatenateFront.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateListName(listName);
+    } catch (err) {
+      return new CacheListConcatenateFront.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+
+    this.logger.trace(
+      `Issuing 'listConcatenateFront' request; listName: ${listName}, values length: ${
+        values.length
+      }, ${ttl.toString()}, truncateBackToSize: ${
+        truncateBackToSize?.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendListConcatenateFront(
+      cacheName,
+      this.convert(listName),
+      this.convertArray(values),
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl(),
+      truncateBackToSize
+    );
+    this.logger.trace(
+      `'listConcatenateFront' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendListConcatenateFront(
+    cacheName: string,
+    listName: Uint8Array,
+    values: Uint8Array[],
+    ttlMilliseconds: number,
+    refreshTtl: boolean,
+    truncateBackToSize?: number
+  ): Promise<CacheListConcatenateFront.Response> {
+    const request = new grpcCache._ListConcatenateFrontRequest({
+      list_name: listName,
+      values: values,
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
+      truncate_back_to_size: truncateBackToSize,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ListConcatenateFront(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheListConcatenateFront.Success(resp.list_length));
+          } else {
+            resolve(
+              new CacheListConcatenateFront.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
   public async listFetch(
     cacheName: string,
     listName: string
@@ -452,6 +606,223 @@ export class CacheClient {
             resolve(new CacheListFetch.Hit(resp.found.values));
           } else {
             resolve(new CacheListFetch.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async listLength(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListLength.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateListName(listName);
+    } catch (err) {
+      return new CacheListLength.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.trace(`Issuing 'listLength' request; listName: ${listName}`);
+    const result = await this.sendListLength(cacheName, this.convert(listName));
+    this.logger.trace(`'listLength' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendListLength(
+    cacheName: string,
+    listName: Uint8Array
+  ): Promise<CacheListLength.Response> {
+    const request = new grpcCache._ListLengthRequest({
+      list_name: listName,
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ListLength(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheListLength.Miss());
+          } else if (resp?.found) {
+            // Unlike listFetch, listLength will return found if there is no list,
+            // but there will be no length.
+            if (!resp.found.length) {
+              resolve(new CacheListLength.Miss());
+            } else {
+              resolve(new CacheListLength.Hit(resp.found.length));
+            }
+          } else {
+            resolve(new CacheListLength.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async listPopBack(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListPopBack.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateListName(listName);
+    } catch (err) {
+      return new CacheListPopBack.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'listPopBack' request");
+    const result = await this.sendListPopBack(
+      cacheName,
+      this.convert(listName)
+    );
+    this.logger.trace(`'listPopBack' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendListPopBack(
+    cacheName: string,
+    listName: Uint8Array
+  ): Promise<CacheListPopBack.Response> {
+    const request = new grpcCache._ListPopBackRequest({
+      list_name: listName,
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ListPopBack(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheListPopBack.Miss());
+          } else if (resp?.found) {
+            resolve(new CacheListPopBack.Hit(resp.found.back));
+          } else {
+            resolve(new CacheListPopBack.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async listPopFront(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListPopFront.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateListName(listName);
+    } catch (err) {
+      return new CacheListPopFront.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'listPopFront' request");
+    const result = await this.sendListPopFront(
+      cacheName,
+      this.convert(listName)
+    );
+    this.logger.trace(`'listPopFront' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendListPopFront(
+    cacheName: string,
+    listName: Uint8Array
+  ): Promise<CacheListPopFront.Response> {
+    const request = new grpcCache._ListPopFrontRequest({
+      list_name: listName,
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ListPopFront(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheListPopFront.Miss());
+          } else if (resp?.found) {
+            resolve(new CacheListPopFront.Hit(resp.found.front));
+          } else {
+            resolve(new CacheListPopFront.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async listPushBack(
+    cacheName: string,
+    listName: string,
+    value: string | Uint8Array,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    truncateFrontToSize?: number
+  ): Promise<CacheListPushBack.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateListName(listName);
+    } catch (err) {
+      return new CacheListPushBack.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      `Issuing 'listPushBack' request; listName: ${listName}, value length: ${
+        value.length
+      }, ${ttl.toString()}, truncateFrontToSize: ${
+        truncateFrontToSize?.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendListPushBack(
+      cacheName,
+      this.convert(listName),
+      this.convert(value),
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl(),
+      truncateFrontToSize
+    );
+    this.logger.trace(`'listPushBack' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendListPushBack(
+    cacheName: string,
+    listName: Uint8Array,
+    value: Uint8Array,
+    ttlMilliseconds: number,
+    refreshTtl: boolean,
+    truncateFrontToSize?: number
+  ): Promise<CacheListPushBack.Response> {
+    const request = new grpcCache._ListPushBackRequest({
+      list_name: listName,
+      value: value,
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
+      truncate_front_to_size: truncateFrontToSize,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ListPushBack(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheListPushBack.Success(resp.list_length));
+          } else {
+            resolve(new CacheListPushBack.Error(cacheServiceErrorMapper(err)));
           }
         }
       );
@@ -508,7 +879,6 @@ export class CacheClient {
       truncate_back_to_size: truncateBackToSize,
     });
     const metadata = this.createMetadata(cacheName);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await new Promise(resolve => {
       this.clientWrapper.getClient().ListPushFront(
         request,
@@ -521,6 +891,61 @@ export class CacheClient {
             resolve(new CacheListPushFront.Success(resp.list_length));
           } else {
             resolve(new CacheListPushFront.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async listRemoveValue(
+    cacheName: string,
+    listName: string,
+    value: string | Uint8Array
+  ): Promise<CacheListRemoveValue.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateListName(listName);
+    } catch (err) {
+      return new CacheListRemoveValue.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      `Issuing 'listRemoveValue' request; listName: ${listName}, value length: ${value.length}`
+    );
+
+    const result = await this.sendListRemoveValue(
+      cacheName,
+      this.convert(listName),
+      this.convert(value)
+    );
+    this.logger.trace(`'listRemoveValue' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendListRemoveValue(
+    cacheName: string,
+    listName: Uint8Array,
+    value: Uint8Array
+  ): Promise<CacheListRemoveValue.Response> {
+    const request = new grpcCache._ListRemoveRequest({
+      list_name: listName,
+      all_elements_with_value: value,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ListRemove(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheListRemoveValue.Success());
+          } else {
+            resolve(
+              new CacheListRemoveValue.Error(cacheServiceErrorMapper(err))
+            );
           }
         }
       );

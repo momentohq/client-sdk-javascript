@@ -2,8 +2,15 @@ import {SimpleCacheClient} from './simple-cache-client';
 import * as Configurations from './config/configurations';
 import {CacheOperation, MomentoSigner} from './internal/momento-signer';
 import * as CacheGet from './messages/responses/cache-get';
+import * as CacheListConcatenateBack from './messages/responses/cache-list-concatenate-back';
+import * as CacheListConcatenateFront from './messages/responses/cache-list-concatenate-front';
 import * as CacheListFetch from './messages/responses/cache-list-fetch';
+import * as CacheListLength from './messages/responses/cache-list-length';
+import * as CacheListPopBack from './messages/responses/cache-list-pop-back';
+import * as CacheListPopFront from './messages/responses/cache-list-pop-front';
+import * as CacheListPushBack from './messages/responses/cache-list-push-back';
 import * as CacheListPushFront from './messages/responses/cache-list-push-front';
+import * as CacheListRemoveValue from './messages/responses/cache-list-remove-value';
 import * as CacheSet from './messages/responses/cache-set';
 import * as CacheDelete from './messages/responses/cache-delete';
 import * as CreateCache from './messages/responses/create-cache';
@@ -70,8 +77,15 @@ export {
   CacheOperation,
   SimpleCacheClient,
   CacheGet,
+  CacheListConcatenateBack,
+  CacheListConcatenateFront,
   CacheListFetch,
+  CacheListLength,
+  CacheListPopBack,
+  CacheListPopFront,
+  CacheListPushBack,
   CacheListPushFront,
+  CacheListRemoveValue,
   CacheSet,
   CacheDelete,
   CreateCache,
