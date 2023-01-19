@@ -4,6 +4,7 @@ import {
   CollectionTtl,
   CacheListConcatenateFront,
   CacheListFetch,
+  CacheListLength,
   CacheListPushFront,
   MomentoErrorCode,
 } from '../src';
@@ -164,10 +165,7 @@ describe('lists', () => {
     });
 
     it('returns a miss if the list does not exist', async () => {
-      const respFetch = await Momento.listFetch(
-        IntegrationTestCacheName,
-        'does-not-exist'
-      );
+      const respFetch = await Momento.listFetch(IntegrationTestCacheName, v4());
       expect(respFetch).toBeInstanceOf(CacheListFetch.Miss);
     });
 
@@ -187,6 +185,32 @@ describe('lists', () => {
       );
       expect(respFetch.valueListString()).toEqual([valueString]);
       expect(respFetch.valueListUint8Array()).toEqual([valueBytes]);
+    });
+  });
+
+  describe('#listLength', () => {
+    sharedListValidationSpecs((cacheName: string, listName: string) => {
+      return Momento.listLength(cacheName, listName);
+    });
+
+    it('returns a miss if the list does not exist', async () => {
+      const resp = await Momento.listLength(IntegrationTestCacheName, v4());
+      expect(resp).toBeInstanceOf(CacheListLength.Miss);
+    });
+
+    it('returns the length if the list exists', async () => {
+      const listName = v4();
+      const values = ['one', 'two', 'three'];
+
+      await Momento.listConcatenateFront(
+        IntegrationTestCacheName,
+        listName,
+        values
+      );
+
+      const resp = await Momento.listLength(IntegrationTestCacheName, listName);
+      expect(resp).toBeInstanceOf(CacheListLength.Hit);
+      expect((resp as CacheListLength.Hit).length()).toEqual(values.length);
     });
   });
 

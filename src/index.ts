@@ -4,6 +4,7 @@ import {CacheOperation, MomentoSigner} from './internal/momento-signer';
 import * as CacheGet from './messages/responses/cache-get';
 import * as CacheListConcatenateFront from './messages/responses/cache-list-concatenate-front';
 import * as CacheListFetch from './messages/responses/cache-list-fetch';
+import * as CacheListLength from './messages/responses/cache-list-length';
 import * as CacheListPushFront from './messages/responses/cache-list-push-front';
 import * as CacheSet from './messages/responses/cache-set';
 import * as CacheDelete from './messages/responses/cache-delete';
@@ -72,6 +73,7 @@ export {
   CacheGet,
   CacheListConcatenateFront,
   CacheListFetch,
+  CacheListLength,
   CacheListPushFront,
   CacheSet,
   CacheDelete,

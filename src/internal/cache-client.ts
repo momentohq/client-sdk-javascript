@@ -24,6 +24,7 @@ import {
   CacheSetRemoveElements,
   CacheListConcatenateFront,
   CacheListFetch,
+  CacheListLength,
   CacheListPushFront,
   CollectionTtl,
   Configuration,
@@ -453,6 +454,57 @@ export class CacheClient {
             resolve(new CacheListFetch.Hit(resp.found.values));
           } else {
             resolve(new CacheListFetch.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async listLength(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListLength.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateListName(listName);
+    } catch (err) {
+      return new CacheListLength.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.trace(`Issuing 'listLength' request; listName: ${listName}`);
+    const result = await this.sendListLength(cacheName, this.convert(listName));
+    this.logger.trace(`'listLength' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendListLength(
+    cacheName: string,
+    listName: Uint8Array
+  ): Promise<CacheListLength.Response> {
+    const request = new grpcCache._ListLengthRequest({
+      list_name: listName,
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ListLength(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheListLength.Miss());
+          } else if (resp?.found) {
+            // Unlike listFetch, listLength will return found if there is no list,
+            // but there will be no length.
+            if (!resp.found.length) {
+              resolve(new CacheListLength.Miss());
+            } else {
+              resolve(new CacheListLength.Hit(resp.found.length));
+            }
+          } else {
+            resolve(new CacheListLength.Error(cacheServiceErrorMapper(err)));
           }
         }
       );

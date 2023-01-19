@@ -14,6 +14,7 @@ import {
   CacheDelete,
   CacheListConcatenateFront,
   CacheListFetch,
+  CacheListLength,
   CacheListPushFront,
   CacheSet,
   CacheDictionaryFetch,
@@ -136,6 +137,14 @@ export class SimpleCacheClient {
   ): Promise<CacheListFetch.Response> {
     const client = this.getNextDataClient();
     return await client.listFetch(cacheName, listName);
+  }
+
+  public async listLength(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListLength.Response> {
+    const client = this.getNextDataClient();
+    return await client.listLength(cacheName, listName);
   }
 
   public async listConcatenateFront(
