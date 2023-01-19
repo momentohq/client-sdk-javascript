@@ -219,6 +219,12 @@ export class SimpleCacheClient {
     return await client.listLength(cacheName, listName);
   }
 
+  /**
+   * Get and remove the last value from a list.
+   * @param {string} cacheName - Name of the cache with the list.
+   * @param {string} listName - The list to pop.
+   * @returns {Promise<CacheListPopBack.Response>}
+   */
   public async listPopBack(
     cacheName: string,
     listName: string
@@ -227,6 +233,12 @@ export class SimpleCacheClient {
     return await client.listPopBack(cacheName, listName);
   }
 
+  /**
+   * Get and remove the first value from a list.
+   * @param {string} cacheName - Name of the cache with the list.
+   * @param {string} listName - The list to pop.
+   * @returns {Promise<CacheListPopFront.Response>}
+   */
   public async listPopFront(
     cacheName: string,
     listName: string
