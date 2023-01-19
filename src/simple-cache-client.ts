@@ -247,6 +247,15 @@ export class SimpleCacheClient {
     return await client.listPopFront(cacheName, listName);
   }
 
+  /**
+   * Add a value to the beginning of a list.
+   * @param {string} cacheName - Name of the cache with the list.
+   * @param {string} listName - The list to push to.
+   * @param {string | Uint8Array} - The value to push.
+   * @param {CollectionTtl} [ttl] - How the ttl should be managed. Defaults to the client's TTL.
+   * @param {number} [truncateFrontToSize] - If the list exceeds this length, remove excess from the start of the list. Must be positive.
+   * @return {Promise<CacheListPushBack.Response>}
+   */
   public async listPushBack(
     cacheName: string,
     listName: string,
@@ -264,6 +273,16 @@ export class SimpleCacheClient {
     );
   }
 
+
+  /**
+   * Add a value to the end of a list.
+   * @param {string} cacheName - Name of the cache with the list.
+   * @param {string} listName - The list to push to.
+   * @param {string | Uint8Array} - The value to push.
+   * @param {CollectionTtl} [ttl] - How the ttl should be managed. Defaults to the client's TTL.
+   * @param {number} [truncateBackToSize] - If the list exceeds this length, remove excess from the end of the list. Must be positive.
+   * @return {Promise<CacheListPushFront.Response>}
+   */
   public async listPushFront(
     cacheName: string,
     listName: string,
