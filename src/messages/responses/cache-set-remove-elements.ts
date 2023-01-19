@@ -1,25 +1,18 @@
-import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
-import {SdkError} from '../../errors/errors';
-import * as CacheSetRemoveElement from './cache-set-remove-element';
+import * as SimpleSuccess from './response-simple-success';
+import * as CacheSetAddElement from './cache-set-add-element';
 
-export abstract class Response extends ResponseBase {
-  abstract toSingularResponse(): CacheSetRemoveElement.Response;
+export abstract class Response extends SimpleSuccess.Response {
+  abstract toSingularResponse(): CacheSetAddElement.Response;
 }
 
-class _Success extends Response {
-  toSingularResponse(): CacheSetRemoveElement.Response {
-    return new CacheSetRemoveElement.Success();
+export class Success extends SimpleSuccess.Success {
+  toSingularResponse(): CacheSetAddElement.Response {
+    return new CacheSetAddElement.Success();
   }
 }
-export class Success extends ResponseSuccess(_Success) {}
 
-class _Error extends Response {
-  constructor(public _innerException: SdkError) {
-    super();
-  }
-
-  toSingularResponse(): CacheSetRemoveElement.Response {
-    return new CacheSetRemoveElement.Error(this._innerException);
+export class Error extends SimpleSuccess.Error {
+  toSingularResponse(): CacheSetAddElement.Response {
+    return new CacheSetAddElement.Error(this._innerException);
   }
 }
-export class Error extends ResponseError(_Error) {}
