@@ -7,8 +7,18 @@ import {
   CacheSetRemoveElements,
   CacheSetRemoveElement,
   CollectionTtl,
+  MomentoErrorCode,
 } from '../src';
-import {SetupIntegrationTest} from './integration-setup';
+import {
+  ValidateCacheProps,
+  ItBehavesLikeItValidatesCacheName,
+  ValidateSetProps,
+  SetupIntegrationTest,
+} from './integration-setup';
+import {
+  ResponseBase,
+  IResponseError,
+} from '../src/messages/responses/response-base';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
@@ -16,6 +26,38 @@ const LOL_BYTE_ARRAY = Uint8Array.of(108, 111, 108);
 const FOO_BYTE_ARRAY = Uint8Array.of(102, 111, 111);
 
 describe('Integration tests for convenience operations on sets datastructure', () => {
+  const itBehavesLikeItValidates = (
+    getResponse: (props: ValidateSetProps) => Promise<ResponseBase>
+  ) => {
+    ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+      return getResponse({cacheName: props.cacheName, setName: v4()});
+    });
+
+    it('validates its set name', async () => {
+      const response = await getResponse({
+        cacheName: IntegrationTestCacheName,
+        setName: '  ',
+      });
+
+      expect((response as IResponseError).errorCode()).toEqual(
+        MomentoErrorCode.INVALID_ARGUMENT_ERROR
+      );
+    });
+  };
+
+  itBehavesLikeItValidates((props: ValidateSetProps) => {
+    return Momento.setAddElement(props.cacheName, props.setName, v4());
+  });
+  itBehavesLikeItValidates((props: ValidateSetProps) => {
+    return Momento.setAddElements(props.cacheName, props.setName, [v4()]);
+  });
+  itBehavesLikeItValidates((props: ValidateSetProps) => {
+    return Momento.setFetch(props.cacheName, props.setName);
+  });
+  itBehavesLikeItValidates((props: ValidateSetProps) => {
+    return Momento.setRemoveElements(props.cacheName, props.setName, [v4()]);
+  });
+
   it('should succeed for addElement with a byte array happy path', async () => {
     const setName = v4();
     const addResponse = await Momento.setAddElement(

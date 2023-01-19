@@ -8,85 +8,92 @@ import {
   CacheDictionarySetFields,
   CacheDictionaryGetField,
   CacheDictionaryGetFields,
-  CacheDictionaryRemoveField,
-  CacheDictionaryRemoveFields,
   CacheDictionaryIncrement,
 } from '../src';
 import {TextEncoder} from 'util';
-import {SetupIntegrationTest} from './integration-setup';
+import {
+  ItBehavesLikeItValidatesCacheName,
+  ValidateCacheProps,
+  ValidateDictionaryProps,
+  SetupIntegrationTest,
+} from './integration-setup';
+import {
+  IResponseError,
+  ResponseBase,
+} from '../src/messages/responses/response-base';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
 describe('Integration tests for dictionary operations', () => {
-  it('should return InvalidArgument response for dictionaryGetField with invalid cache and dictionary names', async () => {
-    let response = await Momento.dictionaryGetField(
-      '',
-      'myDictionary',
-      'myField'
-    );
-    expect(response).toBeInstanceOf(CacheDictionaryGetField.Error);
-    expect((response as CacheDictionaryGetField.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    response = await Momento.dictionaryGetField('cache', '', 'myField');
-    expect(response).toBeInstanceOf(CacheDictionaryGetField.Error);
-    expect((response as CacheDictionaryGetField.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+  const itBehavesLikeItValidates = (
+    getResponse: (props: ValidateDictionaryProps) => Promise<ResponseBase>
+  ) => {
+    ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+      return getResponse({cacheName: props.cacheName, dictionaryName: v4()});
+    });
+
+    it('validates its dictionary name', async () => {
+      const response = await getResponse({
+        cacheName: IntegrationTestCacheName,
+        dictionaryName: '  ',
+      });
+
+      expect((response as IResponseError).errorCode()).toEqual(
+        MomentoErrorCode.INVALID_ARGUMENT_ERROR
+      );
+    });
+  };
+
+  itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+    return Momento.dictionaryFetch(props.cacheName, props.dictionaryName);
+  });
+  itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+    return Momento.dictionaryGetField(
+      props.cacheName,
+      props.dictionaryName,
+      v4()
     );
   });
-
-  it('should return InvalidArgument response for dictionaryGetFields with invalid cache/dictionary names', async () => {
-    const fields = ['field1'];
-    let response = await Momento.dictionaryGetFields(
-      '',
-      'myDictionary',
-      fields
-    );
-    expect(response).toBeInstanceOf(CacheDictionaryGetFields.Error);
-    expect((response as CacheDictionaryGetFields.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    response = await Momento.dictionaryGetFields('cache', '', fields);
-    expect(response).toBeInstanceOf(CacheDictionaryGetFields.Error);
-    expect((response as CacheDictionaryGetFields.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+  itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+    return Momento.dictionaryGetFields(props.cacheName, props.dictionaryName, [
+      v4(),
+    ]);
+  });
+  itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+    return Momento.dictionaryIncrement(
+      props.cacheName,
+      props.dictionaryName,
+      v4()
     );
   });
-
-  it('should return InvalidArgument response for dictionarySetField with invalid cache/dictionary names', async () => {
-    let response = await Momento.dictionarySetField(
-      '',
-      'myDictionary',
-      'myField',
-      'myValue'
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Error);
-    expect((response as CacheDictionarySetField.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    response = await Momento.dictionarySetField(
-      'cache',
-      '',
-      'myField',
-      'myValue'
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Error);
-    expect((response as CacheDictionarySetField.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+  itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+    return Momento.dictionaryRemoveField(
+      props.cacheName,
+      props.dictionaryName,
+      v4()
     );
   });
-
-  it('should return InvalidArgument response for dictionarySetFields with invalid cache/dictionary names', async () => {
-    const items = [{field: 'field', value: 'value'}];
-    let response = await Momento.dictionarySetFields('', 'myDictionary', items);
-    expect(response).toBeInstanceOf(CacheDictionarySetFields.Error);
-    expect((response as CacheDictionarySetFields.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+  itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+    return Momento.dictionaryRemoveFields(
+      props.cacheName,
+      props.dictionaryName,
+      [v4()]
     );
-    response = await Momento.dictionarySetFields('cache', '', items);
-    expect(response).toBeInstanceOf(CacheDictionarySetFields.Error);
-    expect((response as CacheDictionarySetFields.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+  });
+  itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+    return Momento.dictionarySetField(
+      props.cacheName,
+      props.dictionaryName,
+      v4(),
+      v4()
+    );
+  });
+  itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+    const items = [{field: v4(), value: v4()}];
+    return Momento.dictionarySetFields(
+      props.cacheName,
+      props.dictionaryName,
+      items
     );
   });
 
@@ -1040,19 +1047,6 @@ describe('Integration tests for dictionary operations', () => {
     );
   });
 
-  it('should return InvalidArgument response for dictionary fetch with invalid cache/dictionary name', async () => {
-    const fetchResponse1 = await Momento.dictionaryFetch('', 'myDictionary');
-    expect(fetchResponse1).toBeInstanceOf(CacheDictionaryFetch.Error);
-    expect((fetchResponse1 as CacheDictionaryFetch.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    const fetchResponse2 = await Momento.dictionaryFetch('cache', '');
-    expect(fetchResponse2).toBeInstanceOf(CacheDictionaryFetch.Error);
-    expect((fetchResponse2 as CacheDictionaryFetch.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-  });
-
   it('should return MISS if dictionary does not exist for dictionaryFetch', async () => {
     const fetchResponse = await Momento.dictionaryFetch(
       IntegrationTestCacheName,
@@ -1110,23 +1104,6 @@ describe('Integration tests for dictionary operations', () => {
       dictionaryName
     );
     expect(response).toBeInstanceOf(CacheDictionaryFetch.Miss);
-  });
-
-  it('should return InvalidArgument response for dictionaryRemoveField with invalid cache/dictionary/field name', async () => {
-    let response = await Momento.dictionaryRemoveField(
-      '',
-      'myDictionary',
-      'myField'
-    );
-    expect(response).toBeInstanceOf(CacheDictionaryRemoveField.Error);
-    expect((response as CacheDictionaryRemoveField.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    response = await Momento.dictionaryRemoveField('cache', '', 'myField');
-    expect(response).toBeInstanceOf(CacheDictionaryRemoveField.Error);
-    expect((response as CacheDictionaryRemoveField.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
   });
 
   it('should remove a dictionary with dictionaryRemoveField with Uint8Array field', async () => {
@@ -1253,21 +1230,6 @@ describe('Integration tests for dictionary operations', () => {
     ).toBeInstanceOf(CacheDictionaryGetField.Miss);
   });
 
-  it('should return InvalidArgument response for dictionaryRemoveFields with invalid cache/dictionary name', async () => {
-    let response = await Momento.dictionaryRemoveFields('', 'myDictionary', [
-      'myField',
-    ]);
-    expect(response).toBeInstanceOf(CacheDictionaryRemoveFields.Error);
-    expect((response as CacheDictionaryRemoveFields.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    response = await Momento.dictionaryRemoveFields('cache', '', ['myField']);
-    expect(response).toBeInstanceOf(CacheDictionaryRemoveFields.Error);
-    expect((response as CacheDictionaryRemoveFields.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-  });
-
   it('should remove a dictionary with dictionaryRemoveFields with string field', async () => {
     const dictionaryName = v4();
     const fields = [v4(), v4()];
@@ -1318,23 +1280,6 @@ describe('Integration tests for dictionary operations', () => {
         otherField
       )
     ).toBeInstanceOf(CacheDictionaryGetField.Hit);
-  });
-
-  it('should return InvalidArgument response for dictionaryIncrement with invalid cache/dictionary/field name', async () => {
-    let response = await Momento.dictionaryIncrement(
-      '',
-      'myDictionary',
-      'myField'
-    );
-    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Error);
-    expect((response as CacheDictionaryIncrement.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    response = await Momento.dictionaryIncrement('cache', '', 'myField');
-    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Error);
-    expect((response as CacheDictionaryIncrement.Error).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
   });
 
   it('should increment from 0 to expected amount with dictionaryIncrement with string field', async () => {

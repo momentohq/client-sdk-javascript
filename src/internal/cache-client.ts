@@ -62,7 +62,7 @@ export class CacheClient {
   private readonly interceptors: Interceptor[];
 
   /**
-   * @param {MomentoCacheProps} props
+   * @param {MomentoValidateCacheProps} props
    */
   constructor(props: SimpleCacheClientProps) {
     this.configuration = props.configuration;
@@ -184,8 +184,12 @@ export class CacheClient {
     cacheName: string,
     setName: string
   ): Promise<CacheSetFetch.Response> {
-    validateCacheName(cacheName);
-    validateSetName(setName);
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+    } catch (err) {
+      return new CacheSetFetch.Error(normalizeSdkError(err as Error));
+    }
     return await this.sendSetFetch(cacheName, this.convert(setName));
   }
 
@@ -223,8 +227,12 @@ export class CacheClient {
     elements: string[] | Uint8Array[],
     ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheSetAddElements.Response> {
-    validateCacheName(cacheName);
-    validateSetName(setName);
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+    } catch (err) {
+      return new CacheSetAddElements.Error(normalizeSdkError(err as Error));
+    }
     return await this.sendSetAddElements(
       cacheName,
       this.convert(setName),
@@ -273,8 +281,12 @@ export class CacheClient {
     setName: string,
     elements: string[] | Uint8Array[]
   ): Promise<CacheSetRemoveElements.Response> {
-    validateCacheName(cacheName);
-    validateSetName(setName);
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+    } catch (err) {
+      return new CacheSetRemoveElements.Error(normalizeSdkError(err as Error));
+    }
     return await this.sendSetRemoveElements(
       cacheName,
       this.convert(setName),

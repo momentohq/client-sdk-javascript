@@ -6,40 +6,26 @@ import {
   MomentoErrorCode,
   SimpleCacheClient,
 } from '../src';
-import {
-  ResponseBase,
-  IResponseError,
-} from '../src/messages/responses/response-base';
 import {TextEncoder} from 'util';
 import {
   SetupIntegrationTest,
+  ValidateCacheProps,
   CacheClientProps,
+  ItBehavesLikeItValidatesCacheName,
   WithCache,
 } from './integration-setup';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
 describe('get/set/delete', () => {
-  const sharedValidationSpecs = (
-    getResponse: (cacheName: string, key: string) => Promise<ResponseBase>
-  ) => {
-    it('validates its cache name', async () => {
-      const response = await getResponse('   ', v4());
-
-      expect((response as IResponseError).errorCode()).toEqual(
-        MomentoErrorCode.INVALID_ARGUMENT_ERROR
-      );
-    });
-  };
-
-  sharedValidationSpecs((cacheName: string, key: string) => {
-    return Momento.get(cacheName, key);
+  ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+    return Momento.get(props.cacheName, v4());
   });
-  sharedValidationSpecs((cacheName: string, key: string) => {
-    return Momento.set(cacheName, key, v4());
+  ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+    return Momento.set(props.cacheName, v4(), v4());
   });
-  sharedValidationSpecs((cacheName: string, key: string) => {
-    return Momento.delete(cacheName, key);
+  ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+    return Momento.delete(props.cacheName, v4());
   });
 
   it('should set and get string from cache', async () => {
