@@ -23,7 +23,7 @@ import {SetupIntegrationTest} from './integration-setup';
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
 describe('lists', () => {
-  const sharedListValidationSpecs = (
+  const itBehavesLikeItValidates = (
     getResponse: (cacheName: string, listName: string) => Promise<ResponseBase>
   ) => {
     it('validates its cache name', async () => {
@@ -51,7 +51,7 @@ describe('lists', () => {
     truncateToSize?: number;
   }
 
-  const sharedListCollectionTtlSpecs = (
+  const itBehavesLikeItHasACollectionTtl = (
     addValue: (props: addValueProps) => Promise<ResponseBase>
   ) => {
     it('sets ttl', async () => {
@@ -104,7 +104,7 @@ describe('lists', () => {
     });
   };
 
-  const sharedListAddSpecs = (
+  const itBehavesLikeItAddsValues = (
     addValue: (props: addValueProps) => Promise<ResponseBase>
   ) => {
     it('returns the new list length', async () => {
@@ -124,11 +124,11 @@ describe('lists', () => {
     });
   };
 
-  const sharedListAddToBackSpecs = (
+  const itBehavesLikeItAddsValuesToTheBack = (
     addValue: (props: addValueProps) => Promise<ResponseBase>
   ) => {
-    sharedListCollectionTtlSpecs(addValue);
-    sharedListAddSpecs(addValue);
+    itBehavesLikeItHasACollectionTtl(addValue);
+    itBehavesLikeItAddsValues(addValue);
 
     it('adds to the back', async () => {
       const listName = v4();
@@ -175,11 +175,11 @@ describe('lists', () => {
     });
   };
 
-  const sharedListAddToFrontSpecs = (
+  const itBehavesLikeItAddsValuesToTheFront = (
     addValue: (props: addValueProps) => Promise<ResponseBase>
   ) => {
-    sharedListCollectionTtlSpecs(addValue);
-    sharedListAddSpecs(addValue);
+    itBehavesLikeItHasACollectionTtl(addValue);
+    itBehavesLikeItAddsValues(addValue);
 
     it('adds to the front', async () => {
       const listName = v4();
@@ -227,7 +227,7 @@ describe('lists', () => {
   };
 
   describe('#listFetch', () => {
-    sharedListValidationSpecs((cacheName: string, listName: string) => {
+    itBehavesLikeItValidates((cacheName: string, listName: string) => {
       return Momento.listFetch(cacheName, listName);
     });
 
@@ -256,7 +256,7 @@ describe('lists', () => {
   });
 
   describe('#listLength', () => {
-    sharedListValidationSpecs((cacheName: string, listName: string) => {
+    itBehavesLikeItValidates((cacheName: string, listName: string) => {
       return Momento.listLength(cacheName, listName);
     });
 
@@ -282,7 +282,7 @@ describe('lists', () => {
   });
 
   describe('#listPopBack', () => {
-    sharedListValidationSpecs((cacheName: string, listName: string) => {
+    itBehavesLikeItValidates((cacheName: string, listName: string) => {
       return Momento.listPopBack(cacheName, listName);
     });
 
@@ -313,7 +313,7 @@ describe('lists', () => {
   });
 
   describe('#listPopFront', () => {
-    sharedListValidationSpecs((cacheName: string, listName: string) => {
+    itBehavesLikeItValidates((cacheName: string, listName: string) => {
       return Momento.listPopFront(cacheName, listName);
     });
 
@@ -344,11 +344,11 @@ describe('lists', () => {
   });
 
   describe('#listPushBack', () => {
-    sharedListValidationSpecs((cacheName: string, listName: string) => {
+    itBehavesLikeItValidates((cacheName: string, listName: string) => {
       return Momento.listPushBack(cacheName, listName, v4());
     });
 
-    sharedListAddToBackSpecs((props: addValueProps) => {
+    itBehavesLikeItAddsValuesToTheBack((props: addValueProps) => {
       return Momento.listPushBack(
         props.cacheName,
         props.listName,
@@ -369,11 +369,11 @@ describe('lists', () => {
   });
 
   describe('#listPushFront', () => {
-    sharedListValidationSpecs((cacheName: string, listName: string) => {
+    itBehavesLikeItValidates((cacheName: string, listName: string) => {
       return Momento.listPushFront(cacheName, listName, v4());
     });
 
-    sharedListAddToFrontSpecs((props: addValueProps) => {
+    itBehavesLikeItAddsValuesToTheFront((props: addValueProps) => {
       return Momento.listPushFront(
         props.cacheName,
         props.listName,
@@ -394,7 +394,7 @@ describe('lists', () => {
   });
 
   describe('#listRemoveValue', () => {
-    sharedListValidationSpecs((cacheName: string, listName: string) => {
+    itBehavesLikeItValidates((cacheName: string, listName: string) => {
       return Momento.listRemoveValue(cacheName, listName, v4());
     });
 
@@ -434,11 +434,11 @@ describe('lists', () => {
   });
 
   describe('#listConcatenateBack', () => {
-    sharedListValidationSpecs((cacheName: string, listName: string) => {
+    itBehavesLikeItValidates((cacheName: string, listName: string) => {
       return Momento.listConcatenateBack(cacheName, listName, [v4()]);
     });
 
-    sharedListAddToBackSpecs((props: addValueProps) => {
+    itBehavesLikeItAddsValuesToTheBack((props: addValueProps) => {
       return Momento.listConcatenateBack(
         props.cacheName,
         props.listName,
@@ -487,11 +487,11 @@ describe('lists', () => {
   });
 
   describe('#listConcatenateFront', () => {
-    sharedListValidationSpecs((cacheName: string, listName: string) => {
+    itBehavesLikeItValidates((cacheName: string, listName: string) => {
       return Momento.listConcatenateFront(cacheName, listName, [v4()]);
     });
 
-    sharedListAddToFrontSpecs((props: addValueProps) => {
+    itBehavesLikeItAddsValuesToTheFront((props: addValueProps) => {
       return Momento.listConcatenateFront(
         props.cacheName,
         props.listName,
