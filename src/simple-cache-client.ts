@@ -192,6 +192,12 @@ export class SimpleCacheClient {
     );
   }
 
+  /**
+   * Fetch the entire list.
+   * @param {string} cacheName - Name of the cache to fetch the list from.
+   * @param {string} listName - The list to fetch.
+   * @returns {Promise<CacheListFetch.Response>}
+   */
   public async listFetch(
     cacheName: string,
     listName: string
@@ -200,6 +206,11 @@ export class SimpleCacheClient {
     return await client.listFetch(cacheName, listName);
   }
 
+  /**
+   * Get the number of values in a list.
+   * @param {string} cacheName - Name of the cache with the list.
+   * @param {string} listName - The list to get the length of.
+   */
   public async listLength(
     cacheName: string,
     listName: string
