@@ -30,7 +30,7 @@ jobs:
       matrix:
         node: [10, 12, 14, 16, 18]
         os: [ubuntu-latest, macos-latest, windows-latest]
-    name: Node ${{ matrix.node }} OS ${{ matrix.os }}
+    name: Test on Node ${{ matrix.node }} OS ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
       TEST_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
@@ -67,7 +67,7 @@ jobs:
       matrix:
         node: [10, 12, 14, 16, 18]
         os: [ubuntu-latest, macos-latest, windows-latest]
-    name: Node ${{ matrix.node }} OS ${{ matrix.os }}
+    name: Test examples on node ${{ matrix.node }} OS ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
       # TODO: remove token stored as secret in favor of using a
