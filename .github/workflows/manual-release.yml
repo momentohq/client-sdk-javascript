@@ -9,7 +9,7 @@ jobs:
   merge-to-release-branch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@v3
 
       - name: Merge main -> release
         uses: devmasx/merge-branch@master
