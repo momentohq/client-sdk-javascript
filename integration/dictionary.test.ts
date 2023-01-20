@@ -5,6 +5,7 @@ import {
   CacheDelete,
   MomentoErrorCode,
   CacheDictionaryFetch,
+  CacheDictionaryRemoveField,
   CacheDictionarySetField,
   CacheDictionarySetFields,
   CacheDictionaryGetField,
@@ -616,6 +617,126 @@ describe('Integration tests for dictionary operations', () => {
     };
 
     itBehavesLikeItValidates(responder);
+
+    it('should remove a Uint8Array field', async () => {
+      const dictionaryName = v4();
+      const field = new TextEncoder().encode(v4());
+      const value = new TextEncoder().encode(v4());
+
+      // When the field does not exist.
+      expect(
+        await Momento.dictionaryGetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        )
+      ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+      expect(
+        await Momento.dictionaryRemoveField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        )
+      ).toBeInstanceOf(CacheDictionaryRemoveField.Success);
+      expect(
+        await Momento.dictionaryGetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        )
+      ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+
+      // When the field exists.
+      expect(
+        await Momento.dictionarySetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field,
+          value
+        )
+      ).toBeInstanceOf(CacheDictionarySetField.Success);
+      expect(
+        await Momento.dictionaryGetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        )
+      ).toBeInstanceOf(CacheDictionaryGetField.Hit);
+      expect(
+        await Momento.dictionaryRemoveField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        )
+      ).toBeInstanceOf(CacheDictionaryRemoveField.Success);
+      expect(
+        await Momento.dictionaryGetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        )
+      ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+    });
+
+    it('should remove a string field', async () => {
+      const dictionaryName = v4();
+      const field = v4();
+      const value = v4();
+
+      // When the field does not exist.
+      expect(
+        await Momento.dictionaryGetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        )
+      ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+      expect(
+        await Momento.dictionaryRemoveField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        )
+      ).toBeInstanceOf(CacheDictionaryRemoveField.Success);
+      expect(
+        await Momento.dictionaryGetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        )
+      ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+
+      // When the field exists.
+      expect(
+        await Momento.dictionarySetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field,
+          value
+        )
+      ).toBeInstanceOf(CacheDictionarySetField.Success);
+      expect(
+        await Momento.dictionaryGetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        )
+      ).toBeInstanceOf(CacheDictionaryGetField.Hit);
+      expect(
+        await Momento.dictionaryRemoveField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        )
+      ).toBeInstanceOf(CacheDictionaryRemoveField.Success);
+      expect(
+        await Momento.dictionaryGetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        )
+      ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+    });
   });
 
   describe('#dictionaryRemoveFields', () => {
@@ -974,130 +1095,6 @@ describe('Integration tests for dictionary operations', () => {
     expect(otherDictionary.get(field2)).toEqual(
       new TextEncoder().encode(value2)
     );
-  });
-
-  it('should remove a dictionary with dictionaryRemoveField with Uint8Array field', async () => {
-    const dictionaryName = v4();
-    const field1 = new TextEncoder().encode(v4());
-    const value1 = new TextEncoder().encode(v4());
-    const field2 = new TextEncoder().encode(v4());
-
-    expect(
-      await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field1
-      )
-    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
-    await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field1,
-      value1
-    );
-    expect(
-      await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field1
-      )
-    ).toBeInstanceOf(CacheDictionaryGetField.Hit);
-
-    await Momento.dictionaryRemoveField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field1
-    );
-    expect(
-      await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field1
-      )
-    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
-
-    // Test no-op
-    expect(
-      await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field2
-      )
-    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
-    await Momento.dictionaryRemoveField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field2
-    );
-    expect(
-      await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field2
-      )
-    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
-  });
-
-  it('should remove a dictionary with dictionaryRemoveField with string field', async () => {
-    const dictionaryName = v4();
-    const field1 = v4();
-    const value1 = v4();
-    const field2 = v4();
-
-    expect(
-      await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field1
-      )
-    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
-    await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field1,
-      value1
-    );
-    expect(
-      await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field1
-      )
-    ).toBeInstanceOf(CacheDictionaryGetField.Hit);
-
-    await Momento.dictionaryRemoveField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field1
-    );
-    expect(
-      await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field1
-      )
-    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
-
-    // Test no-op
-    expect(
-      await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field2
-      )
-    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
-    await Momento.dictionaryRemoveField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field2
-    );
-    expect(
-      await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field2
-      )
-    ).toBeInstanceOf(CacheDictionaryGetField.Miss);
   });
 
   it('should remove a dictionary with dictionaryRemoveFields with string field', async () => {
