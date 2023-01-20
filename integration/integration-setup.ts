@@ -90,6 +90,7 @@ export interface ValidateListProps extends ValidateCacheProps {
 
 export interface ValidateDictionaryProps extends ValidateCacheProps {
   dictionaryName: string;
+  field: string | Uint8Array;
 }
 
 export interface ValidateSetProps extends ValidateCacheProps {

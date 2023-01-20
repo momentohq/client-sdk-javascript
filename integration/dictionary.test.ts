@@ -17,22 +17,27 @@ import {
   ValidateDictionaryProps,
   SetupIntegrationTest,
 } from './integration-setup';
-import {Error, Response} from '../src/messages/responses/response-base';
+import {Error, Miss, Response} from '../src/messages/responses/response-base';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
 describe('Integration tests for dictionary operations', () => {
   const itBehavesLikeItValidates = (
-    getResponse: (props: ValidateDictionaryProps) => Promise<Response>
+    responder: (props: ValidateDictionaryProps) => Promise<Response>
   ) => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-      return getResponse({cacheName: props.cacheName, dictionaryName: v4()});
+      return responder({
+        cacheName: props.cacheName,
+        dictionaryName: v4(),
+        field: v4(),
+      });
     });
 
     it('validates its dictionary name', async () => {
-      const response = await getResponse({
+      const response = await responder({
         cacheName: IntegrationTestCacheName,
         dictionaryName: '  ',
+        field: v4(),
       });
 
       expect((response as Error).errorCode()).toEqual(
@@ -41,82 +46,163 @@ describe('Integration tests for dictionary operations', () => {
     });
   };
 
-  describe('#dictionaryFetch', () => {
-    itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
-      return Momento.dictionaryFetch(props.cacheName, props.dictionaryName);
+  const itBehavesLikeItMissesWhenDictionaryDoesNotExist = (
+    responder: (props: ValidateDictionaryProps) => Promise<Response>
+  ) => {
+    it('misses when the dictionary does not exist', async () => {
+      const response = await responder({
+        cacheName: IntegrationTestCacheName,
+        dictionaryName: v4(),
+        field: v4(),
+      });
+
+      expect(response).toBeInstanceOf(Miss);
     });
+  };
+
+  const itBehavesLikeItMissesWhenFieldDoesNotExist = (
+    responder: (props: ValidateDictionaryProps) => Promise<Response>
+  ) => {
+    it('misses when a string field does not exist', async () => {
+      const dictionaryName = v4();
+
+      // Make sure the dictionary exists.
+      const setResponse = await Momento.dictionarySetField(
+        IntegrationTestCacheName,
+        dictionaryName,
+        v4(),
+        v4()
+      );
+      expect(setResponse).toBeInstanceOf(CacheDictionarySetField.Success);
+
+      const response = await responder({
+        cacheName: IntegrationTestCacheName,
+        dictionaryName: dictionaryName,
+        field: v4(),
+      });
+
+      expect(response).toBeInstanceOf(Miss);
+    });
+
+    it('misses when a byte field does not exist', async () => {
+      const dictionaryName = v4();
+      const fieldName = new TextEncoder().encode(v4());
+
+      // Make sure the dictionary exists.
+      const setResponse = await Momento.dictionarySetField(
+        IntegrationTestCacheName,
+        dictionaryName,
+        v4(),
+        v4()
+      );
+      expect(setResponse).toBeInstanceOf(CacheDictionarySetField.Success);
+
+      const response = await responder({
+        cacheName: IntegrationTestCacheName,
+        dictionaryName: dictionaryName,
+        field: fieldName,
+      });
+
+      expect(response).toBeInstanceOf(Miss);
+    });
+  };
+
+  describe('#dictionaryFetch', () => {
+    const responder = (props: ValidateDictionaryProps) => {
+      return Momento.dictionaryFetch(props.cacheName, props.dictionaryName);
+    };
+
+    itBehavesLikeItValidates(responder);
+    itBehavesLikeItMissesWhenDictionaryDoesNotExist(responder);
   });
 
   describe('#dictionaryGetField', () => {
-    itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+    const responder = (props: ValidateDictionaryProps) => {
       return Momento.dictionaryGetField(
         props.cacheName,
         props.dictionaryName,
         v4()
       );
-    });
+    };
+
+    itBehavesLikeItValidates(responder);
+    itBehavesLikeItMissesWhenDictionaryDoesNotExist(responder);
+    itBehavesLikeItMissesWhenFieldDoesNotExist(responder);
   });
 
   describe('#dictionaryGetFields', () => {
-    itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+    const responder = (props: ValidateDictionaryProps) => {
       return Momento.dictionaryGetFields(
         props.cacheName,
         props.dictionaryName,
-        [v4()]
+        [props.field] as string[] | Uint8Array[]
       );
-    });
+    };
+
+    itBehavesLikeItValidates(responder);
+    itBehavesLikeItMissesWhenDictionaryDoesNotExist(responder);
   });
 
   describe('#dictionaryIncrement', () => {
-    itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+    const responder = (props: ValidateDictionaryProps) => {
       return Momento.dictionaryIncrement(
         props.cacheName,
         props.dictionaryName,
-        v4()
+        props.field
       );
-    });
+    };
+
+    itBehavesLikeItValidates(responder);
   });
 
   describe('#dictionaryRemoveField', () => {
-    itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+    const responder = (props: ValidateDictionaryProps) => {
       return Momento.dictionaryRemoveField(
         props.cacheName,
         props.dictionaryName,
-        v4()
+        props.field
       );
-    });
+    };
+
+    itBehavesLikeItValidates(responder);
   });
 
   describe('#dictionaryRemoveFields', () => {
-    itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+    const responder = (props: ValidateDictionaryProps) => {
       return Momento.dictionaryRemoveFields(
         props.cacheName,
         props.dictionaryName,
-        [v4()]
+        [props.field] as string[] | Uint8Array[]
       );
-    });
+    };
+
+    itBehavesLikeItValidates(responder);
   });
 
   describe('#dictionarySetField', () => {
-    itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+    const responder = (props: ValidateDictionaryProps) => {
       return Momento.dictionarySetField(
         props.cacheName,
         props.dictionaryName,
-        v4(),
+        props.field,
         v4()
       );
-    });
+    };
+
+    itBehavesLikeItValidates(responder);
   });
 
-  describe('#dictinoarySetFields', () => {
-    itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
-      const items = [{field: v4(), value: v4()}];
+  describe('#dictionarySetFields', () => {
+    const responder = (props: ValidateDictionaryProps) => {
+      const items = [{field: props.field, value: v4()}];
       return Momento.dictionarySetFields(
         props.cacheName,
         props.dictionaryName,
         items
       );
-    });
+    };
+
+    itBehavesLikeItValidates(responder);
   });
 
   it('should set/get a dictionary with Uint8Array field/value', async () => {
@@ -139,26 +225,6 @@ describe('Integration tests for dictionary operations', () => {
     if (getResponse instanceof CacheDictionaryGetField.Hit) {
       expect(getResponse.valueUint8Array()).toEqual(value);
     }
-  });
-
-  it('should return MISS when field does not present for dictionaryGetField with Uint8Array field/value', async () => {
-    const dictionaryName = v4();
-    const field = new TextEncoder().encode(v4());
-    const value = new TextEncoder().encode(v4());
-    const otherField = new TextEncoder().encode(v4());
-    const response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      otherField
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
   });
 
   it('should dictionarySet/GetField with Uint8Array field/value with no refresh ttl', async () => {
@@ -232,20 +298,6 @@ describe('Integration tests for dictionary operations', () => {
     }
   });
 
-  it('should return MISS if dictionary does not exist for dictionaryGetField', async () => {
-    const dictionaryName = v4();
-    const field = new TextEncoder().encode(v4());
-    const response = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(response).toBeInstanceOf(CacheDictionaryGetField.Miss);
-    if (response instanceof CacheDictionaryGetField.Hit) {
-      expect(response.valueUint8Array()).toEqual(field);
-    }
-  });
-
   it('should set/get a dictionary with string field/value', async () => {
     const dictionaryName = v4();
     const field = v4();
@@ -288,26 +340,6 @@ describe('Integration tests for dictionary operations', () => {
     expect((getResponse as CacheDictionaryGetField.Hit).toString()).toEqual(
       `Hit: ${value.substring(0, 32)}...`
     );
-  });
-
-  it('should return MISS when field does not present for dictionaryGetField with string field/value', async () => {
-    const dictionaryName = v4();
-    const field = v4();
-    const value = v4();
-    const otherField = v4();
-    const response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      otherField
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
   });
 
   it('should dictionarySet/GetField with string field/value with no refresh ttl', async () => {
@@ -848,19 +880,6 @@ describe('Integration tests for dictionary operations', () => {
     );
   });
 
-  it('should return MISS if dictionary does not exist for dictionaryGetFields', async () => {
-    const dictionaryName = v4();
-    const field1 = new TextEncoder().encode(v4());
-    const field2 = new TextEncoder().encode(v4());
-    const field3 = new TextEncoder().encode(v4());
-    const response = await Momento.dictionaryGetFields(
-      IntegrationTestCacheName,
-      dictionaryName,
-      [field1, field2, field3]
-    );
-    expect(response).toBeInstanceOf(CacheDictionaryGetFields.Miss);
-  });
-
   it('should dictionarySetField/dictionaryGetFields with string fields/values', async () => {
     const dictionaryName = v4();
     const field1 = v4();
@@ -1067,14 +1086,6 @@ describe('Integration tests for dictionary operations', () => {
     expect(hitResponse.valueDictionaryStringUint8Array()).toEqual(
       contentDictionary
     );
-  });
-
-  it('should return MISS if dictionary does not exist for dictionaryFetch', async () => {
-    const fetchResponse = await Momento.dictionaryFetch(
-      IntegrationTestCacheName,
-      'nonExistingDictionary'
-    );
-    expect(fetchResponse).toBeInstanceOf(CacheDictionaryFetch.Miss);
   });
 
   it('should do nothing with dictionaryFetch if dictionary does not exist', async () => {
