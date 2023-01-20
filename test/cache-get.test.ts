@@ -1,11 +1,13 @@
 import * as CacheGet from '../src/messages/responses/cache-get';
-import {Buffer} from 'node:buffer';
+import {TextEncoder} from 'util';
+
+const TEXT_ENCODER = new TextEncoder();
 
 describe('CacheGet', () => {
   describe('#toString()', () => {
     it('shows a short value', () => {
       const value = 'Napoleon';
-      const hit = new CacheGet.Hit(Buffer.from(value));
+      const hit = new CacheGet.Hit(TEXT_ENCODER.encode(value));
 
       expect(hit.toString()).toEqual(`Hit: ${value}`);
     });
@@ -13,7 +15,7 @@ describe('CacheGet', () => {
     it('shows truncates long value', () => {
       const value = 'Pneumonoultramicroscopicsilicovolcanoconiosis';
       const truncatedValue = 'Pneumonoultramicroscopicsilicovo...';
-      const hit = new CacheGet.Hit(Buffer.from(value));
+      const hit = new CacheGet.Hit(TEXT_ENCODER.encode(value));
 
       expect(hit.toString()).toEqual(`Hit: ${truncatedValue}`);
     });
