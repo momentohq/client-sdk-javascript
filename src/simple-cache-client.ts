@@ -34,7 +34,7 @@ import {
   CacheSetRemoveElements,
   CacheSetRemoveElement,
 } from '.';
-import {getLogger, initializeMomentoLogging, Logger} from './utils/logging';
+import {initializeMomentoLogging} from './utils/logging';
 import {range} from './utils/collections';
 import {SimpleCacheClientProps} from './simple-cache-client-props';
 
@@ -54,14 +54,12 @@ export class SimpleCacheClient {
   private readonly dataClients: Array<CacheClient>;
   private nextDataClientIndex: number;
   private readonly controlClient: ControlClient;
-  private readonly logger: Logger;
 
   /**
    * Creates an instance of SimpleCacheClient.
    */
   constructor(props: SimpleCacheClientProps) {
     initializeMomentoLogging(props.configuration.getLoggerOptions());
-    this.logger = getLogger(this);
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
 
