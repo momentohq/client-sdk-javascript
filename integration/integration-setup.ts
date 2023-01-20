@@ -8,6 +8,10 @@ import {
   MomentoErrorCode,
   SimpleCacheClient,
 } from '../src';
+import {
+  IResponseError,
+  ResponseBase,
+} from '../src/messages/responses/response-base';
 
 function testCacheName(): string {
   const name = process.env.TEST_CACHE_NAME || 'js-integration-test-default';
@@ -77,4 +81,32 @@ export function SetupIntegrationTest(): {
 
   const client = momentoClientForTesting();
   return {Momento: client, IntegrationTestCacheName: cacheName};
+}
+
+export interface ValidateCacheProps {
+  cacheName: string;
+}
+
+export interface ValidateListProps extends ValidateCacheProps {
+  listName: string;
+}
+
+export interface ValidateDictionaryProps extends ValidateCacheProps {
+  dictionaryName: string;
+}
+
+export interface ValidateSetProps extends ValidateCacheProps {
+  setName: string;
+}
+
+export function ItBehavesLikeItValidatesCacheName(
+  getResponse: (props: ValidateCacheProps) => Promise<ResponseBase>
+) {
+  it('validates its cache name', async () => {
+    const response = await getResponse({cacheName: '   '});
+
+    expect((response as IResponseError).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+  });
 }

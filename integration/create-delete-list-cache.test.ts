@@ -1,32 +1,21 @@
 import {v4} from 'uuid';
-import {SetupIntegrationTest, WithCache} from './integration-setup';
-import {CreateCache, DeleteCache, ListCaches, MomentoErrorCode} from '../src';
 import {
-  ResponseBase,
-  IResponseError,
-} from '../src/messages/responses/response-base';
+  ValidateCacheProps,
+  ItBehavesLikeItValidatesCacheName,
+  SetupIntegrationTest,
+  WithCache,
+} from './integration-setup';
+import {CreateCache, DeleteCache, ListCaches, MomentoErrorCode} from '../src';
 
 const {Momento} = SetupIntegrationTest();
 
 describe('create/delete cache', () => {
-  const sharedValidationSpecs = (
-    getResponse: (cacheName: string) => Promise<ResponseBase>
-  ) => {
-    it('validates its cache name', async () => {
-      const response = await getResponse('   ');
-
-      expect((response as IResponseError).errorCode()).toEqual(
-        MomentoErrorCode.INVALID_ARGUMENT_ERROR
-      );
-    });
-  };
-
-  sharedValidationSpecs((cacheName: string) => {
-    return Momento.createCache(cacheName);
+  ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+    return Momento.createCache(props.cacheName);
   });
 
-  sharedValidationSpecs((cacheName: string) => {
-    return Momento.deleteCache(cacheName);
+  ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+    return Momento.deleteCache(props.cacheName);
   });
 
   it('should return NotFoundError if deleting a non-existent cache', async () => {

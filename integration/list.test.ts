@@ -18,24 +18,28 @@ import {
   IResponseError,
   IListResponseSuccess,
 } from '../src/messages/responses/response-base';
-import {SetupIntegrationTest} from './integration-setup';
+import {
+  ValidateCacheProps,
+  ValidateListProps,
+  ItBehavesLikeItValidatesCacheName,
+  SetupIntegrationTest,
+} from './integration-setup';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
 describe('lists', () => {
   const itBehavesLikeItValidates = (
-    getResponse: (cacheName: string, listName: string) => Promise<ResponseBase>
+    getResponse: (props: ValidateListProps) => Promise<ResponseBase>
   ) => {
-    it('validates its cache name', async () => {
-      const response = await getResponse('   ', v4());
-
-      expect((response as IResponseError).errorCode()).toEqual(
-        MomentoErrorCode.INVALID_ARGUMENT_ERROR
-      );
+    ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+      return getResponse({cacheName: props.cacheName, listName: v4()});
     });
 
     it('validates its list name', async () => {
-      const response = await getResponse(IntegrationTestCacheName, '  ');
+      const response = await getResponse({
+        cacheName: IntegrationTestCacheName,
+        listName: '  ',
+      });
 
       expect((response as IResponseError).errorCode()).toEqual(
         MomentoErrorCode.INVALID_ARGUMENT_ERROR
@@ -227,8 +231,8 @@ describe('lists', () => {
   };
 
   describe('#listFetch', () => {
-    itBehavesLikeItValidates((cacheName: string, listName: string) => {
-      return Momento.listFetch(cacheName, listName);
+    itBehavesLikeItValidates((props: ValidateListProps) => {
+      return Momento.listFetch(props.cacheName, props.listName);
     });
 
     it('returns a miss if the list does not exist', async () => {
@@ -256,8 +260,8 @@ describe('lists', () => {
   });
 
   describe('#listLength', () => {
-    itBehavesLikeItValidates((cacheName: string, listName: string) => {
-      return Momento.listLength(cacheName, listName);
+    itBehavesLikeItValidates((props: ValidateListProps) => {
+      return Momento.listLength(props.cacheName, props.listName);
     });
 
     it('returns a miss if the list does not exist', async () => {
@@ -282,8 +286,8 @@ describe('lists', () => {
   });
 
   describe('#listPopBack', () => {
-    itBehavesLikeItValidates((cacheName: string, listName: string) => {
-      return Momento.listPopBack(cacheName, listName);
+    itBehavesLikeItValidates((props: ValidateListProps) => {
+      return Momento.listPopBack(props.cacheName, props.listName);
     });
 
     it('misses when the list does not exist', async () => {
@@ -316,8 +320,8 @@ describe('lists', () => {
   });
 
   describe('#listPopFront', () => {
-    itBehavesLikeItValidates((cacheName: string, listName: string) => {
-      return Momento.listPopFront(cacheName, listName);
+    itBehavesLikeItValidates((props: ValidateListProps) => {
+      return Momento.listPopFront(props.cacheName, props.listName);
     });
 
     it('misses when the list does not exist', async () => {
@@ -352,8 +356,8 @@ describe('lists', () => {
   });
 
   describe('#listPushBack', () => {
-    itBehavesLikeItValidates((cacheName: string, listName: string) => {
-      return Momento.listPushBack(cacheName, listName, v4());
+    itBehavesLikeItValidates((props: ValidateListProps) => {
+      return Momento.listPushBack(props.cacheName, props.listName, v4());
     });
 
     itBehavesLikeItAddsValuesToTheBack((props: addValueProps) => {
@@ -377,8 +381,8 @@ describe('lists', () => {
   });
 
   describe('#listPushFront', () => {
-    itBehavesLikeItValidates((cacheName: string, listName: string) => {
-      return Momento.listPushFront(cacheName, listName, v4());
+    itBehavesLikeItValidates((props: ValidateListProps) => {
+      return Momento.listPushFront(props.cacheName, props.listName, v4());
     });
 
     itBehavesLikeItAddsValuesToTheFront((props: addValueProps) => {
@@ -402,8 +406,8 @@ describe('lists', () => {
   });
 
   describe('#listRemoveValue', () => {
-    itBehavesLikeItValidates((cacheName: string, listName: string) => {
-      return Momento.listRemoveValue(cacheName, listName, v4());
+    itBehavesLikeItValidates((props: ValidateListProps) => {
+      return Momento.listRemoveValue(props.cacheName, props.listName, v4());
     });
 
     it('removes values', async () => {
@@ -442,8 +446,10 @@ describe('lists', () => {
   });
 
   describe('#listConcatenateBack', () => {
-    itBehavesLikeItValidates((cacheName: string, listName: string) => {
-      return Momento.listConcatenateBack(cacheName, listName, [v4()]);
+    itBehavesLikeItValidates((props: ValidateListProps) => {
+      return Momento.listConcatenateBack(props.cacheName, props.listName, [
+        v4(),
+      ]);
     });
 
     itBehavesLikeItAddsValuesToTheBack((props: addValueProps) => {
@@ -495,8 +501,10 @@ describe('lists', () => {
   });
 
   describe('#listConcatenateFront', () => {
-    itBehavesLikeItValidates((cacheName: string, listName: string) => {
-      return Momento.listConcatenateFront(cacheName, listName, [v4()]);
+    itBehavesLikeItValidates((props: ValidateListProps) => {
+      return Momento.listConcatenateFront(props.cacheName, props.listName, [
+        v4(),
+      ]);
     });
 
     itBehavesLikeItAddsValuesToTheFront((props: addValueProps) => {
