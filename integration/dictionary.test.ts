@@ -1,4 +1,5 @@
 import {v4} from 'uuid';
+import {sleep} from '../src/utils/sleep';
 import {
   CollectionTtl,
   CacheDelete,
@@ -15,9 +16,15 @@ import {
   ItBehavesLikeItValidatesCacheName,
   ValidateCacheProps,
   ValidateDictionaryProps,
+  ValidateDictionaryChangerProps,
   SetupIntegrationTest,
 } from './integration-setup';
-import {Error, Miss, Response} from '../src/messages/responses/response-base';
+import {
+  Error,
+  Miss,
+  Response,
+  Success,
+} from '../src/messages/responses/response-base';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
@@ -104,6 +111,76 @@ describe('Integration tests for dictionary operations', () => {
       });
 
       expect(response).toBeInstanceOf(Miss);
+    });
+  };
+
+  const itBehavesLikeItHasACollectionTtl = (
+    changeResponder: (
+      props: ValidateDictionaryChangerProps
+    ) => Promise<Response>
+  ) => {
+    it('does not refresh with no refresh ttl', async () => {
+      const dictionaryName = v4();
+      const field = v4();
+      const timeout = 1;
+
+      let changeResponse = await changeResponder({
+        cacheName: IntegrationTestCacheName,
+        dictionaryName: dictionaryName,
+        field: field,
+        value: 'value1',
+        ttl: CollectionTtl.of(timeout).withNoRefreshTtlOnUpdates(),
+      });
+      expect(changeResponse).toBeInstanceOf(Success);
+
+      changeResponse = await changeResponder({
+        cacheName: IntegrationTestCacheName,
+        dictionaryName: dictionaryName,
+        field: field,
+        value: 'value2',
+        ttl: CollectionTtl.of(timeout * 10).withNoRefreshTtlOnUpdates(),
+      });
+      expect(changeResponse).toBeInstanceOf(CacheDictionarySetField.Success);
+      await sleep(timeout * 1000);
+
+      const getResponse = await Momento.dictionaryGetField(
+        IntegrationTestCacheName,
+        dictionaryName,
+        field
+      );
+      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
+    });
+
+    it('refreshes with refresh ttl', async () => {
+      const dictionaryName = v4();
+      const field = v4();
+      const timeout = 1;
+
+      let changeResponse = await changeResponder({
+        cacheName: IntegrationTestCacheName,
+        dictionaryName: dictionaryName,
+        field: field,
+        value: 'value1',
+        ttl: CollectionTtl.of(timeout).withRefreshTtlOnUpdates(),
+      });
+      expect(changeResponse).toBeInstanceOf(Success);
+
+      changeResponse = await changeResponder({
+        cacheName: IntegrationTestCacheName,
+        dictionaryName: dictionaryName,
+        field: field,
+        value: 'value2',
+        ttl: CollectionTtl.of(timeout * 10).withRefreshTtlOnUpdates(),
+      });
+      expect(changeResponse).toBeInstanceOf(CacheDictionarySetField.Success);
+      await sleep(timeout * 1000);
+
+      const getResponse = await Momento.dictionaryGetField(
+        IntegrationTestCacheName,
+        dictionaryName,
+        field
+      );
+      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
     });
   };
 
@@ -308,7 +385,18 @@ describe('Integration tests for dictionary operations', () => {
       );
     };
 
+    const changeResponder = (props: ValidateDictionaryChangerProps) => {
+      return Momento.dictionaryIncrement(
+        props.cacheName,
+        props.dictionaryName,
+        props.field,
+        5,
+        props.ttl
+      );
+    };
+
     itBehavesLikeItValidates(responder);
+    itBehavesLikeItHasACollectionTtl(changeResponder);
   });
 
   describe('#dictionaryRemoveField', () => {
@@ -345,20 +433,40 @@ describe('Integration tests for dictionary operations', () => {
       );
     };
 
-    itBehavesLikeItValidates(responder);
-  });
-
-  describe('#dictionarySetFields', () => {
-    const responder = (props: ValidateDictionaryProps) => {
-      const items = [{field: props.field, value: v4()}];
-      return Momento.dictionarySetFields(
+    const changeResponder = (props: ValidateDictionaryChangerProps) => {
+      return Momento.dictionarySetField(
         props.cacheName,
         props.dictionaryName,
-        items
+        props.field,
+        props.value,
+        props.ttl
       );
     };
 
     itBehavesLikeItValidates(responder);
+    itBehavesLikeItHasACollectionTtl(changeResponder);
+  });
+
+  describe('#dictionarySetFields', () => {
+    const responder = (props: ValidateDictionaryProps) => {
+      return Momento.dictionarySetFields(
+        props.cacheName,
+        props.dictionaryName,
+        [{field: props.field, value: v4()}]
+      );
+    };
+
+    const changeResponder = (props: ValidateDictionaryChangerProps) => {
+      return Momento.dictionarySetFields(
+        props.cacheName,
+        props.dictionaryName,
+        [{field: props.field, value: props.value}],
+        props.ttl
+      );
+    };
+
+    itBehavesLikeItValidates(responder);
+    itBehavesLikeItHasACollectionTtl(changeResponder);
   });
 
   it('should set/get a dictionary with Uint8Array field/value', async () => {
@@ -372,77 +480,6 @@ describe('Integration tests for dictionary operations', () => {
       value
     );
     expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    if (getResponse instanceof CacheDictionaryGetField.Hit) {
-      expect(getResponse.valueUint8Array()).toEqual(value);
-    }
-  });
-
-  it('should dictionarySet/GetField with Uint8Array field/value with no refresh ttl', async () => {
-    const dictionaryName = v4();
-    const field = new TextEncoder().encode(v4());
-    const value = new TextEncoder().encode(v4());
-    let response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value,
-      CollectionTtl.of(5).withNoRefreshTtlOnUpdates()
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    await new Promise(r => setTimeout(r, 100));
-
-    response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value,
-      CollectionTtl.of(10).withNoRefreshTtlOnUpdates()
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    await new Promise(r => setTimeout(r, 4900));
-
-    response = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
-  });
-
-  it('should dictionarySet/GetField with Uint8Array field/value with refresh ttl', async () => {
-    const dictionaryName = v4();
-    const field = new TextEncoder().encode(v4());
-    const value = new TextEncoder().encode(v4());
-    let response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value,
-      CollectionTtl.of(2)
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-
-    response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value,
-      CollectionTtl.of(10)
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    await new Promise(r => setTimeout(r, 2000));
-
     const getResponse = await Momento.dictionaryGetField(
       IntegrationTestCacheName,
       dictionaryName,
@@ -498,77 +535,6 @@ describe('Integration tests for dictionary operations', () => {
     );
   });
 
-  it('should dictionarySet/GetField with string field/value with no refresh ttl', async () => {
-    const dictionaryName = v4();
-    const field = v4();
-    const value = v4();
-    let response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value,
-      CollectionTtl.of(5).withNoRefreshTtlOnUpdates()
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    await new Promise(r => setTimeout(r, 100));
-
-    response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value,
-      CollectionTtl.of(10).withNoRefreshTtlOnUpdates()
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    await new Promise(r => setTimeout(r, 4900));
-
-    response = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
-  });
-
-  it('should dictionarySet/GetField with string field/value with refresh ttl', async () => {
-    const dictionaryName = v4();
-    const field = v4();
-    const value = v4();
-    let response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value,
-      CollectionTtl.of(2)
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-
-    response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value,
-      CollectionTtl.of(10)
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    await new Promise(r => setTimeout(r, 2000));
-
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    expect((getResponse as CacheDictionaryGetField.Hit).valueString()).toEqual(
-      value
-    );
-  });
-
   it('should set/get a dictionary with string field and Uint8Array value', async () => {
     const dictionaryName = v4();
     const field = v4();
@@ -580,77 +546,6 @@ describe('Integration tests for dictionary operations', () => {
       value
     );
     expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    expect(
-      (getResponse as CacheDictionaryGetField.Hit).valueUint8Array()
-    ).toEqual(value);
-  });
-
-  it('should dictionarySet/GetField with string field, Uint8Array value with no refresh ttl', async () => {
-    const dictionaryName = v4();
-    const field = v4();
-    const value = new TextEncoder().encode(v4());
-    let response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value,
-      CollectionTtl.of(5).withNoRefreshTtlOnUpdates()
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    await new Promise(r => setTimeout(r, 100));
-
-    response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value,
-      CollectionTtl.of(10).withNoRefreshTtlOnUpdates()
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    await new Promise(r => setTimeout(r, 4900));
-
-    response = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
-  });
-
-  it('should dictionarySet/GetField with string field, Uint8Array value with refresh ttl', async () => {
-    const dictionaryName = v4();
-    const field = v4();
-    const value = new TextEncoder().encode(v4());
-    let response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value,
-      CollectionTtl.of(2)
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-
-    response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value,
-      CollectionTtl.of(10)
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    await new Promise(r => setTimeout(r, 2000));
-
     const getResponse = await Momento.dictionaryGetField(
       IntegrationTestCacheName,
       dictionaryName,
@@ -698,75 +593,6 @@ describe('Integration tests for dictionary operations', () => {
     }
   });
 
-  it('should dictionarySetFields/dictionaryGetField with Uint8Array items with no refresh ttl', async () => {
-    const dictionaryName = v4();
-    const field = new TextEncoder().encode(v4());
-    const value = new TextEncoder().encode(v4());
-    const content = [{field, value}];
-    let response = await Momento.dictionarySetFields(
-      IntegrationTestCacheName,
-      dictionaryName,
-      content,
-      CollectionTtl.of(5).withNoRefreshTtlOnUpdates()
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-    await new Promise(r => setTimeout(r, 100));
-
-    response = await Momento.dictionarySetFields(
-      IntegrationTestCacheName,
-      dictionaryName,
-      content,
-      CollectionTtl.of(10).withNoRefreshTtlOnUpdates()
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-    await new Promise(r => setTimeout(r, 4900));
-
-    response = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
-  });
-
-  it('should dictionarySetFields/dictionaryGetField with Uint8Array field/value with refresh ttl', async () => {
-    const dictionaryName = v4();
-    const field = new TextEncoder().encode(v4());
-    const value = new TextEncoder().encode(v4());
-    const content = [{field, value}];
-    let response = await Momento.dictionarySetFields(
-      IntegrationTestCacheName,
-      dictionaryName,
-      content,
-      CollectionTtl.of(2)
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-
-    response = await Momento.dictionarySetFields(
-      IntegrationTestCacheName,
-      dictionaryName,
-      content,
-      CollectionTtl.of(10)
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-    await new Promise(r => setTimeout(r, 2000));
-
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    if (getResponse instanceof CacheDictionaryGetField.Hit) {
-      expect(getResponse.valueUint8Array()).toEqual(value);
-    }
-  });
-
   it('should dictionarySetFields/dictionaryGetField with string items', async () => {
     const dictionaryName = v4();
     const field1 = v4();
@@ -803,75 +629,6 @@ describe('Integration tests for dictionary operations', () => {
     }
   });
 
-  it('should dictionarySetFields/dictionaryGetField with string items with no refresh ttl', async () => {
-    const dictionaryName = v4();
-    const field = v4();
-    const value = v4();
-    const content = [{field, value}];
-    let response = await Momento.dictionarySetFields(
-      IntegrationTestCacheName,
-      dictionaryName,
-      content,
-      CollectionTtl.of(5).withNoRefreshTtlOnUpdates()
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-    await new Promise(r => setTimeout(r, 100));
-
-    response = await Momento.dictionarySetFields(
-      IntegrationTestCacheName,
-      dictionaryName,
-      content,
-      CollectionTtl.of(10).withNoRefreshTtlOnUpdates()
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-    await new Promise(r => setTimeout(r, 4900));
-
-    response = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
-  });
-
-  it('should dictionarySetFields/dictionaryGetField with string field/value with refresh ttl', async () => {
-    const dictionaryName = v4();
-    const field = v4();
-    const value = v4();
-    const content = [{field, value}];
-    let response = await Momento.dictionarySetFields(
-      IntegrationTestCacheName,
-      dictionaryName,
-      content,
-      CollectionTtl.of(2)
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-
-    response = await Momento.dictionarySetFields(
-      IntegrationTestCacheName,
-      dictionaryName,
-      content,
-      CollectionTtl.of(10)
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-    await new Promise(r => setTimeout(r, 2000));
-
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    if (getResponse instanceof CacheDictionaryGetField.Hit) {
-      expect(getResponse.valueString()).toEqual(value);
-    }
-  });
-
   it('should dictionarySetFields/dictionaryGetField with string field/Uint8Array value items', async () => {
     const dictionaryName = v4();
     const field1 = v4();
@@ -905,75 +662,6 @@ describe('Integration tests for dictionary operations', () => {
     expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
     if (getResponse instanceof CacheDictionaryGetField.Hit) {
       expect(getResponse.valueUint8Array()).toEqual(value2);
-    }
-  });
-
-  it('should dictionarySetFields/dictionaryGetField with string field/Uint8Array value with no refresh ttl', async () => {
-    const dictionaryName = v4();
-    const field = v4();
-    const value = new TextEncoder().encode(v4());
-    const content = [{field, value}];
-    let response = await Momento.dictionarySetFields(
-      IntegrationTestCacheName,
-      dictionaryName,
-      content,
-      CollectionTtl.of(5).withNoRefreshTtlOnUpdates()
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-    await new Promise(r => setTimeout(r, 100));
-
-    response = await Momento.dictionarySetFields(
-      IntegrationTestCacheName,
-      dictionaryName,
-      content,
-      CollectionTtl.of(10).withNoRefreshTtlOnUpdates()
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-    await new Promise(r => setTimeout(r, 4900));
-
-    response = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
-  });
-
-  it('should dictionarySetFields/dictionaryGetField with string field/Uint8Array value with refresh ttl', async () => {
-    const dictionaryName = v4();
-    const field = v4();
-    const value = new TextEncoder().encode(v4());
-    const content = [{field, value}];
-    let response = await Momento.dictionarySetFields(
-      IntegrationTestCacheName,
-      dictionaryName,
-      content,
-      CollectionTtl.of(2)
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-
-    response = await Momento.dictionarySetFields(
-      IntegrationTestCacheName,
-      dictionaryName,
-      content,
-      CollectionTtl.of(10)
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-    await new Promise(r => setTimeout(r, 2000));
-
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    if (getResponse instanceof CacheDictionaryGetField.Hit) {
-      expect(getResponse.valueUint8Array()).toEqual(value);
     }
   });
 
@@ -1389,75 +1077,6 @@ describe('Integration tests for dictionary operations', () => {
     expect(response).toBeInstanceOf(CacheDictionaryGetField.Hit);
     const hitResponse = response as CacheDictionaryGetField.Hit;
     expect(hitResponse.valueString()).toEqual('-1000');
-  });
-
-  it('should dictionaryIncrement with no refresh ttl', async () => {
-    const dictionaryName = v4();
-    const field = v4();
-    let response = await Momento.dictionaryIncrement(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      undefined,
-      CollectionTtl.of(5).withNoRefreshTtlOnUpdates()
-    );
-    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
-    await new Promise(r => setTimeout(r, 100));
-
-    response = await Momento.dictionaryIncrement(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      undefined,
-      CollectionTtl.of(10).withNoRefreshTtlOnUpdates()
-    );
-    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
-    await new Promise(r => setTimeout(r, 4900));
-
-    response = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
-  });
-
-  it('should dictionaryIncrement with refresh ttl', async () => {
-    const dictionaryName = v4();
-    const field = v4();
-    let response = await Momento.dictionaryIncrement(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      undefined,
-      CollectionTtl.of(2)
-    );
-    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
-
-    response = await Momento.dictionaryIncrement(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      undefined,
-      CollectionTtl.of(10)
-    );
-    expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
-    await new Promise(r => setTimeout(r, 2000));
-
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    if (getResponse instanceof CacheDictionaryGetField.Hit) {
-      expect(getResponse.valueString()).toEqual('2');
-    }
   });
 
   it('should dictionaryIncrement successfully with setting and resetting field', async () => {
