@@ -28,7 +28,7 @@ jobs:
   test:
     strategy:
       matrix:
-        node: [10, 12, 14, 16, 18]
+        node: [14, 16, 18]
         os: [ubuntu-latest, macos-latest, windows-latest]
     name: Test on Node ${{ matrix.node }} OS ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -65,7 +65,7 @@ jobs:
   test-examples:
     strategy:
       matrix:
-        node: [10, 12, 14, 16, 18]
+        node: [14, 16, 18]
         os: [ubuntu-latest, macos-latest, windows-latest]
     name: Test examples on node ${{ matrix.node }} OS ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
