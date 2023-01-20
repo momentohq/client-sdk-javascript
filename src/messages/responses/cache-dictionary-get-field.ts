@@ -1,11 +1,11 @@
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
-import * as GetValue from './response-get-value';
 import {TextDecoder} from 'util';
+import * as GetValue from './response-get-value';
 import {SdkError} from '../../errors/errors';
 
 const TEXT_DECODER = new TextDecoder();
 
-export abstract class Response extends GetValue.Response {}
+export {Response} from './response-get-value';
 
 export class Hit extends GetValue.Hit {
   private readonly field: Uint8Array;

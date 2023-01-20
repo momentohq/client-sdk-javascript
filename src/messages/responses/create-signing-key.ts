@@ -1,10 +1,9 @@
 import {control} from '@gomomento/generated-types';
-import {SdkError} from '../../errors/errors';
-import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
+import * as ResponseBase from './response-base';
 
-export abstract class Response extends ResponseBase {}
+export {Response, Error} from './response-base';
 
-class _Success extends Response {
+export class Success extends ResponseBase.Success {
   private readonly keyId: string;
   private readonly endpoint: string;
   private readonly key: string;
@@ -39,11 +38,3 @@ class _Success extends Response {
     return this.expiresAt;
   }
 }
-export class Success extends ResponseSuccess(_Success) {}
-
-class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
-    super();
-  }
-}
-export class Error extends ResponseError(_Error) {}

@@ -17,16 +17,13 @@ import {
   ValidateDictionaryProps,
   SetupIntegrationTest,
 } from './integration-setup';
-import {
-  IResponseError,
-  ResponseBase,
-} from '../src/messages/responses/response-base';
+import {Error, Response} from '../src/messages/responses/response-base';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
 describe('Integration tests for dictionary operations', () => {
   const itBehavesLikeItValidates = (
-    getResponse: (props: ValidateDictionaryProps) => Promise<ResponseBase>
+    getResponse: (props: ValidateDictionaryProps) => Promise<Response>
   ) => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
       return getResponse({cacheName: props.cacheName, dictionaryName: v4()});
@@ -38,7 +35,7 @@ describe('Integration tests for dictionary operations', () => {
         dictionaryName: '  ',
       });
 
-      expect((response as IResponseError).errorCode()).toEqual(
+      expect((response as Error).errorCode()).toEqual(
         MomentoErrorCode.INVALID_ARGUMENT_ERROR
       );
     });

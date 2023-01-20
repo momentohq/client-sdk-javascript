@@ -1,14 +1,9 @@
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
+import {TextDecoder} from 'util';
 import {cache} from '@gomomento/generated-types';
 import grpcCache = cache.cache_client;
-import {TextDecoder} from 'util';
-import {SdkError, UnknownError} from '../../errors/errors';
-import {
-  ResponseBase,
-  ResponseHit,
-  ResponseMiss,
-  ResponseError,
-} from './response-base';
+import {UnknownError} from '../../errors/errors';
+import * as ResponseBase from './response-base';
 import * as CacheDictionaryGetFieldResponse from './cache-dictionary-get-field';
 
 const TEXT_DECODER = new TextDecoder();
@@ -17,9 +12,9 @@ type CacheDictionaryGetFieldResponseType =
   | CacheDictionaryGetFieldResponse.Miss
   | CacheDictionaryGetFieldResponse.Error;
 
-export abstract class Response extends ResponseBase {}
+export {Response, Miss, Error} from './response-base';
 
-class _Hit extends Response {
+export class Hit extends ResponseBase.Hit {
   private readonly items: grpcCache._DictionaryGetResponse._DictionaryGetResponsePart[];
   private readonly fields: Uint8Array[];
   private readonly dictionaryUint8ArrayUint8Array: Map<Uint8Array, Uint8Array> =
@@ -107,14 +102,3 @@ class _Hit extends Response {
     )}`;
   }
 }
-export class Hit extends ResponseHit(_Hit) {}
-
-class _Miss extends Response {}
-export class Miss extends ResponseMiss(_Miss) {}
-
-class _Error extends Response {
-  constructor(public _innerException: SdkError) {
-    super();
-  }
-}
-export class Error extends ResponseError(_Error) {}
