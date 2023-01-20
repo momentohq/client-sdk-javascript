@@ -2,3 +2,4 @@ node_modules
 dist
 **/*.d.ts
 examples
+jest*.config.ts

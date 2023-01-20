@@ -1,13 +1,18 @@
-import {ResponseBase} from './response-base';
+import {
+  ResponseBase,
+  ResponseError,
+  ResponseMiss,
+  ResponseHit,
+} from './response-base';
 import {SdkError} from '../../errors/errors';
-import {applyMixins, ErrorBody} from '../../errors/error-utils';
 import {TextDecoder} from 'util';
+import {truncateStringArray} from '../../utils/display';
 
 const TEXT_DECODER = new TextDecoder();
 
 export abstract class Response extends ResponseBase {}
 
-export class Hit extends Response {
+class _Hit extends Response {
   private readonly elements: Uint8Array[];
 
   constructor(elements: Uint8Array[]) {
@@ -19,19 +24,25 @@ export class Hit extends Response {
     return new Set(this.elements.map(e => TEXT_DECODER.decode(e)));
   }
 
-  public valueSetByteArray(): Set<Uint8Array> {
+  public valueSetUint8Array(): Set<Uint8Array> {
     return new Set(this.elements);
   }
+
+  public override toString(): string {
+    const truncatedStringArray = truncateStringArray(
+      Array.from(this.valueSetString())
+    );
+    return `${super.toString()}: [${truncatedStringArray.toString()}]`;
+  }
 }
+export class Hit extends ResponseHit(_Hit) {}
 
-export class Miss extends Response {}
+class _Miss extends Response {}
+export class Miss extends ResponseMiss(_Miss) {}
 
-export class Error extends Response {
-  constructor(protected _innerException: SdkError) {
+class _Error extends Response {
+  constructor(public _innerException: SdkError) {
     super();
   }
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Error extends ErrorBody {}
-applyMixins(Error, [ErrorBody]);
+export class Error extends ResponseError(_Error) {}
