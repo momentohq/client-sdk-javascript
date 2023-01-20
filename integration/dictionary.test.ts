@@ -425,6 +425,132 @@ describe('Integration tests for dictionary operations', () => {
         'Hit: valueDictionaryStringString: a: b, c: d'
       );
     });
+
+    it('should dictionarySetField/dictionaryGetFields with string fields/values', async () => {
+      const dictionaryName = v4();
+      const field1 = v4();
+      const value1 = v4();
+      const field2 = v4();
+      const value2 = v4();
+      const field3 = v4();
+      let response = await Momento.dictionarySetField(
+        IntegrationTestCacheName,
+        dictionaryName,
+        field1,
+        value1
+      );
+      expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+      response = await Momento.dictionarySetField(
+        IntegrationTestCacheName,
+        dictionaryName,
+        field2,
+        value2
+      );
+      expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+      const getResponse = await Momento.dictionaryGetFields(
+        IntegrationTestCacheName,
+        dictionaryName,
+        [field1, field2, field3]
+      );
+      expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
+      const hitResponse = getResponse as CacheDictionaryGetFields.Hit;
+      expect(hitResponse.responsesList).toHaveLength(3);
+      expect(hitResponse.responsesList[0]).toBeInstanceOf(
+        CacheDictionaryGetField.Hit
+      );
+      const hitResponse1 = hitResponse
+        .responsesList[0] as CacheDictionaryGetField.Hit;
+      expect(hitResponse1.fieldString()).toEqual(field1);
+
+      expect(hitResponse.responsesList[1]).toBeInstanceOf(
+        CacheDictionaryGetField.Hit
+      );
+      const hitResponse2 = hitResponse
+        .responsesList[1] as CacheDictionaryGetField.Hit;
+      expect(hitResponse2.fieldString()).toEqual(field2);
+
+      expect(hitResponse.responsesList[2]).toBeInstanceOf(
+        CacheDictionaryGetField.Miss
+      );
+      const missResponse = hitResponse
+        .responsesList[2] as CacheDictionaryGetField.Miss;
+      expect(missResponse.fieldString()).toEqual(field3);
+
+      const expectedMap = new Map<string, string>([
+        [field1, value1],
+        [field2, value2],
+      ]);
+      expect(expectedMap).toEqual(hitResponse.valueDictionaryStringString());
+
+      const otherDictionary = hitResponse.valueDictionaryStringUint8Array();
+      expect(otherDictionary.size).toEqual(2);
+      expect(otherDictionary.get(field1)).toEqual(
+        new TextEncoder().encode(value1)
+      );
+      expect(otherDictionary.get(field2)).toEqual(
+        new TextEncoder().encode(value2)
+      );
+    });
+
+    it('should dictionarySetField/dictionaryGetFields with Uint8Array fields/values', async () => {
+      const dictionaryName = v4();
+      const field1 = new TextEncoder().encode(v4());
+      const value1 = new TextEncoder().encode(v4());
+      const field2 = new TextEncoder().encode(v4());
+      const value2 = new TextEncoder().encode(v4());
+      const field3 = new TextEncoder().encode(v4());
+      let response = await Momento.dictionarySetField(
+        IntegrationTestCacheName,
+        dictionaryName,
+        field1,
+        value1
+      );
+      expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+      response = await Momento.dictionarySetField(
+        IntegrationTestCacheName,
+        dictionaryName,
+        field2,
+        value2
+      );
+      expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+      const getResponse = await Momento.dictionaryGetFields(
+        IntegrationTestCacheName,
+        dictionaryName,
+        [field1, field2, field3]
+      );
+
+      expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
+      const hitResponse = getResponse as CacheDictionaryGetFields.Hit;
+      expect(hitResponse.responsesList).toHaveLength(3);
+      expect(hitResponse.responsesList[0]).toBeInstanceOf(
+        CacheDictionaryGetField.Hit
+      );
+      const hitResponse1 = hitResponse
+        .responsesList[0] as CacheDictionaryGetField.Hit;
+      expect(hitResponse1.fieldUint8Array()).toEqual(field1);
+
+      expect(hitResponse.responsesList[1]).toBeInstanceOf(
+        CacheDictionaryGetField.Hit
+      );
+      const hitResponse2 = hitResponse
+        .responsesList[1] as CacheDictionaryGetField.Hit;
+      expect(hitResponse2.fieldUint8Array()).toEqual(field2);
+
+      expect(hitResponse.responsesList[2]).toBeInstanceOf(
+        CacheDictionaryGetField.Miss
+      );
+      const missResponse = hitResponse
+        .responsesList[2] as CacheDictionaryGetField.Miss;
+      expect(missResponse.fieldUint8Array()).toEqual(field3);
+
+      const expectedMap = new Map<Uint8Array, Uint8Array>([
+        [field1, value1],
+        [field2, value2],
+      ]);
+      expect(expectedMap).toEqual(
+        hitResponse.valueDictionaryUint8ArrayUint8Array()
+      );
+    });
   });
 
   describe('#dictionaryIncrement', () => {
@@ -901,6 +1027,72 @@ describe('Integration tests for dictionary operations', () => {
 
     itBehavesLikeItValidates(responder);
     itBehavesLikeItHasACollectionTtl(changeResponder);
+
+    it('should set/get a dictionary with Uint8Array field/value', async () => {
+      const dictionaryName = v4();
+      const field = new TextEncoder().encode(v4());
+      const value = new TextEncoder().encode(v4());
+      const response = await Momento.dictionarySetField(
+        IntegrationTestCacheName,
+        dictionaryName,
+        field,
+        value
+      );
+      expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+      const getResponse = await Momento.dictionaryGetField(
+        IntegrationTestCacheName,
+        dictionaryName,
+        field
+      );
+      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+      if (getResponse instanceof CacheDictionaryGetField.Hit) {
+        expect(getResponse.valueUint8Array()).toEqual(value);
+      }
+    });
+
+    it('should set/get a dictionary with string field/value', async () => {
+      const dictionaryName = v4();
+      const field = v4();
+      const value = v4();
+      const response = await Momento.dictionarySetField(
+        IntegrationTestCacheName,
+        dictionaryName,
+        field,
+        value
+      );
+      expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+      const getResponse = await Momento.dictionaryGetField(
+        IntegrationTestCacheName,
+        dictionaryName,
+        field
+      );
+      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+      if (getResponse instanceof CacheDictionaryGetField.Hit) {
+        expect(getResponse.valueString()).toEqual(value);
+      }
+    });
+
+    it('should set/get a dictionary with string field and Uint8Array value', async () => {
+      const dictionaryName = v4();
+      const field = v4();
+      const value = new TextEncoder().encode(v4());
+      const response = await Momento.dictionarySetField(
+        IntegrationTestCacheName,
+        dictionaryName,
+        field,
+        value
+      );
+      expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+      const getResponse = await Momento.dictionaryGetField(
+        IntegrationTestCacheName,
+        dictionaryName,
+        field
+      );
+      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+      expect(
+        (getResponse as CacheDictionaryGetField.Hit).valueUint8Array()
+      ).toEqual(value);
+    });
   });
 
   describe('#dictionarySetFields', () => {
@@ -1031,197 +1223,5 @@ describe('Integration tests for dictionary operations', () => {
         expect(getResponse.valueUint8Array()).toEqual(value2);
       }
     });
-  });
-
-  it('should set/get a dictionary with Uint8Array field/value', async () => {
-    const dictionaryName = v4();
-    const field = new TextEncoder().encode(v4());
-    const value = new TextEncoder().encode(v4());
-    const response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    if (getResponse instanceof CacheDictionaryGetField.Hit) {
-      expect(getResponse.valueUint8Array()).toEqual(value);
-    }
-  });
-
-  it('should set/get a dictionary with string field/value', async () => {
-    const dictionaryName = v4();
-    const field = v4();
-    const value = v4();
-    const response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    if (getResponse instanceof CacheDictionaryGetField.Hit) {
-      expect(getResponse.valueString()).toEqual(value);
-    }
-  });
-
-  it('should set/get a dictionary with string field and Uint8Array value', async () => {
-    const dictionaryName = v4();
-    const field = v4();
-    const value = new TextEncoder().encode(v4());
-    const response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field,
-      value
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    const getResponse = await Momento.dictionaryGetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-    expect(
-      (getResponse as CacheDictionaryGetField.Hit).valueUint8Array()
-    ).toEqual(value);
-  });
-
-  it('should dictionarySetField/dictionaryGetFields with Uint8Array fields/values', async () => {
-    const dictionaryName = v4();
-    const field1 = new TextEncoder().encode(v4());
-    const value1 = new TextEncoder().encode(v4());
-    const field2 = new TextEncoder().encode(v4());
-    const value2 = new TextEncoder().encode(v4());
-    const field3 = new TextEncoder().encode(v4());
-    let response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field1,
-      value1
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field2,
-      value2
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    const getResponse = await Momento.dictionaryGetFields(
-      IntegrationTestCacheName,
-      dictionaryName,
-      [field1, field2, field3]
-    );
-
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
-    const hitResponse = getResponse as CacheDictionaryGetFields.Hit;
-    expect(hitResponse.responsesList).toHaveLength(3);
-    expect(hitResponse.responsesList[0]).toBeInstanceOf(
-      CacheDictionaryGetField.Hit
-    );
-    const hitResponse1 = hitResponse
-      .responsesList[0] as CacheDictionaryGetField.Hit;
-    expect(hitResponse1.fieldUint8Array()).toEqual(field1);
-
-    expect(hitResponse.responsesList[1]).toBeInstanceOf(
-      CacheDictionaryGetField.Hit
-    );
-    const hitResponse2 = hitResponse
-      .responsesList[1] as CacheDictionaryGetField.Hit;
-    expect(hitResponse2.fieldUint8Array()).toEqual(field2);
-
-    expect(hitResponse.responsesList[2]).toBeInstanceOf(
-      CacheDictionaryGetField.Miss
-    );
-    const missResponse = hitResponse
-      .responsesList[2] as CacheDictionaryGetField.Miss;
-    expect(missResponse.fieldUint8Array()).toEqual(field3);
-
-    const expectedMap = new Map<Uint8Array, Uint8Array>([
-      [field1, value1],
-      [field2, value2],
-    ]);
-    expect(expectedMap).toEqual(
-      hitResponse.valueDictionaryUint8ArrayUint8Array()
-    );
-  });
-
-  it('should dictionarySetField/dictionaryGetFields with string fields/values', async () => {
-    const dictionaryName = v4();
-    const field1 = v4();
-    const value1 = v4();
-    const field2 = v4();
-    const value2 = v4();
-    const field3 = v4();
-    let response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field1,
-      value1
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    response = await Momento.dictionarySetField(
-      IntegrationTestCacheName,
-      dictionaryName,
-      field2,
-      value2
-    );
-    expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-    const getResponse = await Momento.dictionaryGetFields(
-      IntegrationTestCacheName,
-      dictionaryName,
-      [field1, field2, field3]
-    );
-    expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
-    const hitResponse = getResponse as CacheDictionaryGetFields.Hit;
-    expect(hitResponse.responsesList).toHaveLength(3);
-    expect(hitResponse.responsesList[0]).toBeInstanceOf(
-      CacheDictionaryGetField.Hit
-    );
-    const hitResponse1 = hitResponse
-      .responsesList[0] as CacheDictionaryGetField.Hit;
-    expect(hitResponse1.fieldString()).toEqual(field1);
-
-    expect(hitResponse.responsesList[1]).toBeInstanceOf(
-      CacheDictionaryGetField.Hit
-    );
-    const hitResponse2 = hitResponse
-      .responsesList[1] as CacheDictionaryGetField.Hit;
-    expect(hitResponse2.fieldString()).toEqual(field2);
-
-    expect(hitResponse.responsesList[2]).toBeInstanceOf(
-      CacheDictionaryGetField.Miss
-    );
-    const missResponse = hitResponse
-      .responsesList[2] as CacheDictionaryGetField.Miss;
-    expect(missResponse.fieldString()).toEqual(field3);
-
-    const expectedMap = new Map<string, string>([
-      [field1, value1],
-      [field2, value2],
-    ]);
-    expect(expectedMap).toEqual(hitResponse.valueDictionaryStringString());
-
-    const otherDictionary = hitResponse.valueDictionaryStringUint8Array();
-    expect(otherDictionary.size).toEqual(2);
-    expect(otherDictionary.get(field1)).toEqual(
-      new TextEncoder().encode(value1)
-    );
-    expect(otherDictionary.get(field2)).toEqual(
-      new TextEncoder().encode(value2)
-    );
   });
 });
