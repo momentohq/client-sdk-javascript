@@ -41,57 +41,82 @@ describe('Integration tests for dictionary operations', () => {
     });
   };
 
-  itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
-    return Momento.dictionaryFetch(props.cacheName, props.dictionaryName);
+  describe('#dictionaryFetch', () => {
+    itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+      return Momento.dictionaryFetch(props.cacheName, props.dictionaryName);
+    });
   });
-  itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
-    return Momento.dictionaryGetField(
-      props.cacheName,
-      props.dictionaryName,
-      v4()
-    );
+
+  describe('#dictionaryGetField', () => {
+    itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+      return Momento.dictionaryGetField(
+        props.cacheName,
+        props.dictionaryName,
+        v4()
+      );
+    });
   });
-  itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
-    return Momento.dictionaryGetFields(props.cacheName, props.dictionaryName, [
-      v4(),
-    ]);
+
+  describe('#dictionaryGetFields', () => {
+    itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+      return Momento.dictionaryGetFields(
+        props.cacheName,
+        props.dictionaryName,
+        [v4()]
+      );
+    });
   });
-  itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
-    return Momento.dictionaryIncrement(
-      props.cacheName,
-      props.dictionaryName,
-      v4()
-    );
+
+  describe('#dictionaryIncrement', () => {
+    itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+      return Momento.dictionaryIncrement(
+        props.cacheName,
+        props.dictionaryName,
+        v4()
+      );
+    });
   });
-  itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
-    return Momento.dictionaryRemoveField(
-      props.cacheName,
-      props.dictionaryName,
-      v4()
-    );
+
+  describe('#dictionaryRemoveField', () => {
+    itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+      return Momento.dictionaryRemoveField(
+        props.cacheName,
+        props.dictionaryName,
+        v4()
+      );
+    });
   });
-  itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
-    return Momento.dictionaryRemoveFields(
-      props.cacheName,
-      props.dictionaryName,
-      [v4()]
-    );
+
+  describe('#dictionaryRemoveFields', () => {
+    itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+      return Momento.dictionaryRemoveFields(
+        props.cacheName,
+        props.dictionaryName,
+        [v4()]
+      );
+    });
   });
-  itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
-    return Momento.dictionarySetField(
-      props.cacheName,
-      props.dictionaryName,
-      v4(),
-      v4()
-    );
+
+  describe('#dictionarySetField', () => {
+    itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+      return Momento.dictionarySetField(
+        props.cacheName,
+        props.dictionaryName,
+        v4(),
+        v4()
+      );
+    });
   });
-  itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
-    const items = [{field: v4(), value: v4()}];
-    return Momento.dictionarySetFields(
-      props.cacheName,
-      props.dictionaryName,
-      items
-    );
+
+  describe('#dictinoarySetFields', () => {
+    itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+      const items = [{field: v4(), value: v4()}];
+      return Momento.dictionarySetFields(
+        props.cacheName,
+        props.dictionaryName,
+        items
+      );
+    });
   });
 
   it('should set/get a dictionary with Uint8Array field/value', async () => {
