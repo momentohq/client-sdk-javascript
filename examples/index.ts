@@ -92,6 +92,7 @@ main()
   .then(() => {
     console.log('success!!');
   })
-  .catch(e => {
-    console.error('failed to get from cache', e);
+  .catch((e: Error) => {
+    console.error(`failed to get from cache ${e.message}`);
+    throw e;
   });
