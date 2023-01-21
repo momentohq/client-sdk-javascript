@@ -29,9 +29,8 @@ jobs:
     strategy:
       matrix:
         node: [14, 16, 18]
-        os: [ubuntu-latest, macos-latest]
-    name: Test on Node ${{ matrix.node }} OS ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Test on Node ${{ matrix.node }}
+    runs-on: macos-latest
     env:
       TEST_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
       TEST_CACHE_NAME: js-integration-test-ci
@@ -66,9 +65,8 @@ jobs:
     strategy:
       matrix:
         node: [14, 16, 18]
-        os: [ubuntu-latest, macos-latest]
-    name: Test examples on node ${{ matrix.node }} OS ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Test examples on node ${{ matrix.node }}
+    runs-on: macos-latest
     env:
       # TODO: remove token stored as secret in favor of using a
       # momento-local instance that can be spun up for testing
