@@ -44,7 +44,7 @@ export interface StringMomentoTokenProviderProps {
 /**
  * Reads and parses a momento auth token stored in a String
  * @export
- * @class EnvMomentoTokenProvider
+ * @class StringMomentoTokenProvider
  */
 export class StringMomentoTokenProvider implements CredentialProvider {
   private readonly authToken: string;
