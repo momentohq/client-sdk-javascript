@@ -5,6 +5,7 @@ import {
   Configurations,
   DeleteCache,
   EnvMomentoTokenProvider,
+  CollectionTtl,
   MomentoErrorCode,
   SimpleCacheClient,
 } from '../src';
@@ -90,6 +91,13 @@ export interface ValidateListProps extends ValidateCacheProps {
 
 export interface ValidateDictionaryProps extends ValidateCacheProps {
   dictionaryName: string;
+  field: string | Uint8Array;
+}
+
+export interface ValidateDictionaryChangerProps
+  extends ValidateDictionaryProps {
+  value: string | Uint8Array;
+  ttl?: CollectionTtl;
 }
 
 export interface ValidateSetProps extends ValidateCacheProps {
