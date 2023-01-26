@@ -4,9 +4,9 @@ import {
 } from '../../src/auth/credential-provider';
 
 const testToken =
-  'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJmb29AYmFyLmNvbSIsImNwIjoiY29udHJvbC1wbGFuZS1lbmRwb2ludC5iYXIuY29tIiwiYyI6ImNhY2hlLWVuZHBvaW50LmJhci5jb20ifQo.rtxfu4miBHQ1uptWJ2x3UiAwwJYcMeYIkkpXxUno_wIavg4h6YJStcbxk32NDBbmJkJS7mUw6MsvJNWaxfdPOw';
-const testControlEndpoint = 'control-plane-endpoint.bar.com';
-const testCacheEndpoint = 'cache-endpoint.bar.com';
+  'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJmb29Abm90LmEuZG9tYWluIiwiY3AiOiJjb250cm9sLXBsYW5lLWVuZHBvaW50Lm5vdC5hLmRvbWFpbiIsImMiOiJjYWNoZS1lbmRwb2ludC5ub3QuYS5kb21haW4ifQo.rtxfu4miBHQ1uptWJ2x3UiAwwJYcMeYIkkpXxUno_wIavg4h6YJStcbxk32NDBbmJkJS7mUw6MsvJNWaxfdPOw';
+const testControlEndpoint = 'control-plane-endpoint.not.a.domain';
+const testCacheEndpoint = 'cache-endpoint.not.a.domain';
 
 describe('StringMomentoTokenProvider', () => {
   it('parses a valid token', () => {

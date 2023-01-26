@@ -1,6 +1,20 @@
 import {decodeJwt} from '../utils/jwt';
 
 /**
+ * Encapsulates arguments for instantiating an EnvMomentoTokenProvider
+ */
+interface CredentialProviderProps {
+  /**
+   * optionally overrides the default controlEndpoint
+   */
+  controlEndpoint?: string;
+  /**
+   * optionally overrides the default cacheEndpoint
+   */
+  cacheEndpoint?: string;
+}
+
+/**
  * Provides information that the SimpleCacheClient needs in order to establish a connection to and authenticate with
  * the Momento service.
  * @export
@@ -23,22 +37,12 @@ export interface CredentialProvider {
   getCacheEndpoint(): string;
 }
 
-/**
- * Encapsulates arguments for instantiating a StringMomentoTokenProvider
- */
-export interface StringMomentoTokenProviderProps {
+export interface StringMomentoTokenProviderProps
+  extends CredentialProviderProps {
   /**
    * authToken the momento auth token
    */
   authToken: string;
-  /**
-   * optionally overrides the default controlEndpoint
-   */
-  controlEndpoint?: string;
-  /**
-   * optionally overrides the default cacheEndpoint
-   */
-  cacheEndpoint?: string;
 }
 
 /**
@@ -74,32 +78,11 @@ export class StringMomentoTokenProvider implements CredentialProvider {
   }
 }
 
-/**
- * Encapsulates arguments for instantiating an EnvMomentoTokenProvider
- */
-export interface CredentialProviderProps {
-  /**
-   * optionally overrides the default controlEndpoint
-   */
-  controlEndpoint?: string;
-  /**
-   * optionally overrides the default cacheEndpoint
-   */
-  cacheEndpoint?: string;
-}
-
 export interface EnvMomentoTokenProviderProps extends CredentialProviderProps {
   /**
    * the name of the environment variable from which the auth token will be read
    */
   environmentVariableName: string;
-}
-
-export interface StringMomentoTokenProviderProps extends CredentialProviderProps {
-  /**
-   * authToken the momento auth token
-   */
-  authToken: string;
 }
 
 /**
