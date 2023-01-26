@@ -174,6 +174,9 @@ main()
   .then(() => {
     console.log('success!!');
   })
-  .catch(e => {
-    console.error('failure :(\n', e);
+  .catch((e: Error) => {
+    console.error(
+      `Uncaught exception while running presigned-url-example: ${e.message}`
+    );
+    throw e;
   });

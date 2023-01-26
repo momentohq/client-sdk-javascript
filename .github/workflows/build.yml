@@ -5,12 +5,8 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  verify:
     runs-on: macos-latest
-    env:
-      TEST_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
-      TEST_CACHE_NAME: js-integration-test-ci
-
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
@@ -29,10 +25,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  test:
+    strategy:
+      matrix:
+        node: [14, 16, 18]
+    name: Test on Node ${{ matrix.node }}
+    runs-on: macos-latest
+    env:
+      TEST_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+      TEST_CACHE_NAME: js-integration-test-ci
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v3
+
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: ${{ matrix.node }}
 
       - name: Install Dependencies
         run: |
@@ -52,7 +62,11 @@ jobs:
         run: npm run integration
 
   test-examples:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [14, 16, 18]
+    name: Test examples on node ${{ matrix.node }}
+    runs-on: macos-latest
     env:
       # TODO: remove token stored as secret in favor of using a
       # momento-local instance that can be spun up for testing
@@ -65,7 +79,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: ${{ matrix.node }}
 
       - name: Install Deps and Build
         id: validation
@@ -75,12 +89,14 @@ jobs:
             npm ci
             npm run build
           popd
+
       - name: Send CI failure mail
         if: ${{ steps.validation.outcome == 'failure' }}
         uses: momentohq/standards-and-practices/github-actions/error-email-action@gh-actions-v1
         with:
           username: ${{secrets.MOMENTO_ROBOT_GMAIL_USERNAME}}
           password: ${{secrets.MOMENTO_ROBOT_GMAIL_PASSWORD}}
+
       - name: Flag Job Failure
         if: ${{ steps.validation.outcome == 'failure' }}
         run: exit 1

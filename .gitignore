@@ -3,4 +3,4 @@ dist
 .DS_Store
 *.d.ts
 .idea
-
+.node-version

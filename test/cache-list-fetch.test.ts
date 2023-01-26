@@ -1,5 +1,7 @@
 import * as CacheListFetch from '../src/messages/responses/cache-list-fetch';
-import {Buffer} from 'node:buffer';
+import {TextEncoder} from 'util';
+
+const TEXT_ENCODER = new TextEncoder();
 
 describe('CacheListFetch', () => {
   describe('#toString()', () => {
@@ -16,7 +18,9 @@ describe('CacheListFetch', () => {
         'left',
         'right',
       ];
-      const hit = new CacheListFetch.Hit(values.map(v => Buffer.from(v)));
+      const hit = new CacheListFetch.Hit(
+        values.map(v => TEXT_ENCODER.encode(v))
+      );
 
       expect(hit.toString()).toEqual(
         `Hit: [short,345,${truncatedValue},that,up,...]`
@@ -25,7 +29,9 @@ describe('CacheListFetch', () => {
 
     it('shows a short list', () => {
       const values = ['short', 'list'];
-      const hit = new CacheListFetch.Hit(values.map(v => Buffer.from(v)));
+      const hit = new CacheListFetch.Hit(
+        values.map(v => TEXT_ENCODER.encode(v))
+      );
 
       expect(hit.toString()).toEqual('Hit: [short,list]');
     });
