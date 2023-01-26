@@ -5,7 +5,9 @@ import {
   EnvMomentoTokenProvider,
 } from '../src';
 import * as CreateCache from '../src/messages/responses/create-cache';
-const credentialProvider = new EnvMomentoTokenProvider('TEST_AUTH_TOKEN');
+const credentialProvider = new EnvMomentoTokenProvider({
+  environmentVariableName: 'TEST_AUTH_TOKEN',
+});
 const configuration = Configurations.Laptop.latest();
 
 describe('SimpleCacheClient.ts', () => {

@@ -44,7 +44,9 @@ export async function WithCache(
 
 export const CacheClientProps: SimpleCacheClientProps = {
   configuration: Configurations.Laptop.latest(),
-  credentialProvider: new EnvMomentoTokenProvider('TEST_AUTH_TOKEN'),
+  credentialProvider: new EnvMomentoTokenProvider({
+    environmentVariableName: 'TEST_AUTH_TOKEN',
+  }),
   defaultTtlSeconds: 1111,
 };
 
