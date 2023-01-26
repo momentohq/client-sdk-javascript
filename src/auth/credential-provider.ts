@@ -77,11 +77,7 @@ export class StringMomentoTokenProvider implements CredentialProvider {
 /**
  * Encapsulates arguments for instantiating an EnvMomentoTokenProvider
  */
-export interface EnvMomentoTokenProviderProps {
-  /**
-   * the name of the environment variable from which the auth token will be read
-   */
-  environmentVariableName: string;
+export interface CredentialProviderProps {
   /**
    * optionally overrides the default controlEndpoint
    */
@@ -90,6 +86,20 @@ export interface EnvMomentoTokenProviderProps {
    * optionally overrides the default cacheEndpoint
    */
   cacheEndpoint?: string;
+}
+
+export interface EnvMomentoTokenProviderProps extends CredentialProviderProps {
+  /**
+   * the name of the environment variable from which the auth token will be read
+   */
+  environmentVariableName: string;
+}
+
+export interface StringMomentoTokenProviderProps extends CredentialProviderProps {
+  /**
+   * authToken the momento auth token
+   */
+  authToken: string;
 }
 
 /**
