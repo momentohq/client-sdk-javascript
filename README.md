@@ -24,7 +24,7 @@ any of the operational overhead required by traditional caching solutions!
 
 ### Requirements
 
-- Node version [10.13 or higher](https://nodejs.org/en/download/) is required
+- Node version [14 or higher](https://nodejs.org/en/download/) is required
 - A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
 
 ### Examples
@@ -141,8 +141,9 @@ main()
   .then(() => {
     console.log('success!!');
   })
-  .catch(e => {
-    console.error('failed to get from cache', e);
+  .catch((e: Error) => {
+    console.error(`failed to get from cache ${e.message}`);
+    throw e;
   });
 
 ```
