@@ -39,7 +39,7 @@ const main = async () => {
   }
 
   console.log('Listing caches:');
-  let token:string|undefined;
+  let token:string | undefined;
   do {
     const listResponse = await momento.listCaches(token);
     if (listResponse instanceof ListCaches.Error) {
@@ -51,7 +51,7 @@ const main = async () => {
       });
       token = listResponse.getNextToken();
     }
-  } while (token != null);
+  } while (token !== undefined);
 
   const exampleTtlSeconds = 10;
   console.log(
