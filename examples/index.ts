@@ -39,7 +39,7 @@ const main = async () => {
   }
 
   console.log('Listing caches:');
-  let token:string | undefined;
+  let token: string | undefined;
   do {
     const listResponse = await momento.listCaches(token);
     if (listResponse instanceof ListCaches.Error) {
