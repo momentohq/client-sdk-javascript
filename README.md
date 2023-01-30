@@ -9,12 +9,6 @@
 # Momento JavaScript Client Library
 
 
-:warning: Alpha SDK :warning:
-
-This is an official Momento SDK, but the API is in an alpha stage and may be subject to backward-incompatible
-changes.  For more info, click on the alpha badge above.
-
-
 JavaScript client SDK for Momento Serverless Cache: a fast, simple, pay-as-you-go caching solution without
 any of the operational overhead required by traditional caching solutions!
 
@@ -88,9 +82,9 @@ const main = async () => {
   }
 
   console.log('Listing caches:');
-  let token;
+  let token: string | undefined;
   do {
-    const listResponse = await momento.listCaches();
+    const listResponse = await momento.listCaches(token);
     if (listResponse instanceof ListCaches.Error) {
       console.log(`Error listing caches: ${listResponse.message()}`);
       break;
@@ -100,7 +94,7 @@ const main = async () => {
       });
       token = listResponse.getNextToken();
     }
-  } while (token !== null);
+  } while (token !== undefined);
 
   const exampleTtlSeconds = 10;
   console.log(
