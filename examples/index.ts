@@ -39,9 +39,9 @@ const main = async () => {
   }
 
   console.log('Listing caches:');
-  let token;
+  let token: string | undefined;
   do {
-    const listResponse = await momento.listCaches();
+    const listResponse = await momento.listCaches(token);
     if (listResponse instanceof ListCaches.Error) {
       console.log(`Error listing caches: ${listResponse.message()}`);
       break;
@@ -51,7 +51,7 @@ const main = async () => {
       });
       token = listResponse.getNextToken();
     }
-  } while (token !== null);
+  } while (token !== undefined);
 
   const exampleTtlSeconds = 10;
   console.log(
