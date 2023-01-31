@@ -1,11 +1,14 @@
-import * as ResponseBase from './response-base';
+import {
+  IListResponseSuccess,
+  ResponseBase,
+  ResponseError,
+  ResponseSuccess,
+} from './response-base';
+import {SdkError} from '../../errors/errors';
 
-export {Response, Error} from './response-base';
+export abstract class Response extends ResponseBase {}
 
-export class Success
-  extends ResponseBase.Success
-  implements ResponseBase.IListResponseSuccess
-{
+class _Success extends Response implements IListResponseSuccess {
   private readonly _list_length: number;
   constructor(list_length: number) {
     super();
@@ -18,5 +21,13 @@ export class Success
 
   public override toString(): string {
     return `${super.toString()}: listLength: ${this._list_length}`;
+  }
+}
+export class Success extends ResponseSuccess(_Success) {}
+
+class _Error extends Response {}
+export class Error extends ResponseError(_Error) {
+  constructor(public _innerException: SdkError) {
+    super();
   }
 }

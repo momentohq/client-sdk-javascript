@@ -15,7 +15,10 @@ import {
   ValidateSetProps,
   SetupIntegrationTest,
 } from './integration-setup';
-import {Response, Error} from '../src/messages/responses/response-base';
+import {
+  ResponseBase,
+  IResponseError,
+} from '../src/messages/responses/response-base';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
@@ -24,7 +27,7 @@ const FOO_BYTE_ARRAY = Uint8Array.of(102, 111, 111);
 
 describe('Integration tests for convenience operations on sets datastructure', () => {
   const itBehavesLikeItValidates = (
-    getResponse: (props: ValidateSetProps) => Promise<Response>
+    getResponse: (props: ValidateSetProps) => Promise<ResponseBase>
   ) => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
       return getResponse({cacheName: props.cacheName, setName: v4()});
@@ -36,7 +39,7 @@ describe('Integration tests for convenience operations on sets datastructure', (
         setName: '  ',
       });
 
-      expect((response as Error).errorCode()).toEqual(
+      expect((response as IResponseError).errorCode()).toEqual(
         MomentoErrorCode.INVALID_ARGUMENT_ERROR
       );
     });
