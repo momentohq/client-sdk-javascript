@@ -142,7 +142,7 @@ describe('Integration tests for dictionary operations', () => {
         value: 'value2',
         ttl: CollectionTtl.of(timeout * 10).withNoRefreshTtlOnUpdates(),
       });
-      expect(changeResponse).toBeInstanceOf(CacheDictionarySetField.Success);
+      expect(changeResponse).toBeInstanceOf(Success);
       await sleep(timeout * 1000);
 
       const getResponse = await Momento.dictionaryGetField(
@@ -174,7 +174,7 @@ describe('Integration tests for dictionary operations', () => {
         value: 'value2',
         ttl: CollectionTtl.of(timeout * 10).withRefreshTtlOnUpdates(),
       });
-      expect(changeResponse).toBeInstanceOf(CacheDictionarySetField.Success);
+      expect(changeResponse).toBeInstanceOf(Success);
       await sleep(timeout * 1000);
 
       const getResponse = await Momento.dictionaryGetField(
@@ -902,7 +902,7 @@ describe('Integration tests for dictionary operations', () => {
           dictionaryName,
           fields
         )
-      ).toBeInstanceOf(CacheDictionaryRemoveField.Success);
+      ).toBeInstanceOf(CacheDictionaryRemoveFields.Success);
       expect(
         await Momento.dictionaryGetFields(
           IntegrationTestCacheName,
@@ -918,7 +918,7 @@ describe('Integration tests for dictionary operations', () => {
           dictionaryName,
           setFields
         )
-      ).toBeInstanceOf(CacheDictionarySetField.Success);
+      ).toBeInstanceOf(CacheDictionarySetFields.Success);
       expect(
         await Momento.dictionaryGetFields(
           IntegrationTestCacheName,
@@ -964,7 +964,7 @@ describe('Integration tests for dictionary operations', () => {
           dictionaryName,
           fields
         )
-      ).toBeInstanceOf(CacheDictionaryRemoveField.Success);
+      ).toBeInstanceOf(CacheDictionaryRemoveFields.Success);
       expect(
         await Momento.dictionaryGetFields(
           IntegrationTestCacheName,
@@ -980,7 +980,7 @@ describe('Integration tests for dictionary operations', () => {
           dictionaryName,
           setFields
         )
-      ).toBeInstanceOf(CacheDictionarySetField.Success);
+      ).toBeInstanceOf(CacheDictionarySetFields.Success);
       expect(
         await Momento.dictionaryGetFields(
           IntegrationTestCacheName,
