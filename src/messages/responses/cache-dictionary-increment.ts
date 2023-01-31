@@ -1,8 +1,10 @@
-import * as ResponseBase from './response-base';
+// older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
+import {SdkError} from '../../errors/errors';
+import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 
-export {Response, Error} from './response-base';
+export abstract class Response extends ResponseBase {}
 
-export class Success extends ResponseBase.Success {
+class _Success extends Response {
   private readonly value: number;
 
   constructor(value: number) {
@@ -18,3 +20,11 @@ export class Success extends ResponseBase.Success {
     return `${super.toString()}: value: ${this.valueNumber()}`;
   }
 }
+export class Success extends ResponseSuccess(_Success) {}
+
+class _Error extends Response {
+  constructor(protected _innerException: SdkError) {
+    super();
+  }
+}
+export class Error extends ResponseError(_Error) {}

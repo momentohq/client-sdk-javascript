@@ -14,8 +14,8 @@ import {
   MomentoErrorCode,
 } from '../src';
 import {
-  Response,
-  Error,
+  ResponseBase,
+  IResponseError,
   IListResponseSuccess,
 } from '../src/messages/responses/response-base';
 import {
@@ -29,7 +29,7 @@ const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
 describe('lists', () => {
   const itBehavesLikeItValidates = (
-    getResponse: (props: ValidateListProps) => Promise<Response>
+    getResponse: (props: ValidateListProps) => Promise<ResponseBase>
   ) => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
       return getResponse({cacheName: props.cacheName, listName: v4()});
@@ -41,7 +41,7 @@ describe('lists', () => {
         listName: '  ',
       });
 
-      expect((response as Error).errorCode()).toEqual(
+      expect((response as IResponseError).errorCode()).toEqual(
         MomentoErrorCode.INVALID_ARGUMENT_ERROR
       );
     });
@@ -56,7 +56,7 @@ describe('lists', () => {
   }
 
   const itBehavesLikeItHasACollectionTtl = (
-    addValue: (props: addValueProps) => Promise<Response>
+    addValue: (props: addValueProps) => Promise<ResponseBase>
   ) => {
     it('sets ttl', async () => {
       const listName = v4();
@@ -109,7 +109,7 @@ describe('lists', () => {
   };
 
   const itBehavesLikeItAddsValues = (
-    addValue: (props: addValueProps) => Promise<Response>
+    addValue: (props: addValueProps) => Promise<ResponseBase>
   ) => {
     it('returns the new list length', async () => {
       const listName = v4();
@@ -129,7 +129,7 @@ describe('lists', () => {
   };
 
   const itBehavesLikeItAddsValuesToTheBack = (
-    addValue: (props: addValueProps) => Promise<Response>
+    addValue: (props: addValueProps) => Promise<ResponseBase>
   ) => {
     itBehavesLikeItHasACollectionTtl(addValue);
     itBehavesLikeItAddsValues(addValue);
@@ -180,7 +180,7 @@ describe('lists', () => {
   };
 
   const itBehavesLikeItAddsValuesToTheFront = (
-    addValue: (props: addValueProps) => Promise<Response>
+    addValue: (props: addValueProps) => Promise<ResponseBase>
   ) => {
     itBehavesLikeItHasACollectionTtl(addValue);
     itBehavesLikeItAddsValues(addValue);
