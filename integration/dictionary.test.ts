@@ -22,17 +22,17 @@ import {
   SetupIntegrationTest,
 } from './integration-setup';
 import {
-  Error,
-  Miss,
-  Response,
-  Success,
+  IResponseError,
+  IResponseMiss,
+  IResponseSuccess,
+  ResponseBase,
 } from '../src/messages/responses/response-base';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
 describe('Integration tests for dictionary operations', () => {
   const itBehavesLikeItValidates = (
-    responder: (props: ValidateDictionaryProps) => Promise<Response>
+    responder: (props: ValidateDictionaryProps) => Promise<ResponseBase>
   ) => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
       return responder({
@@ -49,14 +49,14 @@ describe('Integration tests for dictionary operations', () => {
         field: v4(),
       });
 
-      expect((response as Error).errorCode()).toEqual(
+      expect((response as IResponseError).errorCode()).toEqual(
         MomentoErrorCode.INVALID_ARGUMENT_ERROR
       );
     });
   };
 
   const itBehavesLikeItMissesWhenDictionaryDoesNotExist = (
-    responder: (props: ValidateDictionaryProps) => Promise<Response>
+    responder: (props: ValidateDictionaryProps) => Promise<ResponseBase>
   ) => {
     it('misses when the dictionary does not exist', async () => {
       const response = await responder({
@@ -65,12 +65,12 @@ describe('Integration tests for dictionary operations', () => {
         field: v4(),
       });
 
-      expect(response).toBeInstanceOf(Miss);
+      expect((response as IResponseMiss).is_miss).toBeTrue();
     });
   };
 
   const itBehavesLikeItMissesWhenFieldDoesNotExist = (
-    responder: (props: ValidateDictionaryProps) => Promise<Response>
+    responder: (props: ValidateDictionaryProps) => Promise<ResponseBase>
   ) => {
     it('misses when a string field does not exist', async () => {
       const dictionaryName = v4();
@@ -90,7 +90,7 @@ describe('Integration tests for dictionary operations', () => {
         field: v4(),
       });
 
-      expect(response).toBeInstanceOf(Miss);
+      expect((response as IResponseMiss).is_miss).toBeTrue();
     });
 
     it('misses when a byte field does not exist', async () => {
@@ -112,14 +112,14 @@ describe('Integration tests for dictionary operations', () => {
         field: fieldName,
       });
 
-      expect(response).toBeInstanceOf(Miss);
+      expect((response as IResponseMiss).is_miss).toBeTrue();
     });
   };
 
   const itBehavesLikeItHasACollectionTtl = (
     changeResponder: (
       props: ValidateDictionaryChangerProps
-    ) => Promise<Response>
+    ) => Promise<ResponseBase>
   ) => {
     it('does not refresh with no refresh ttl', async () => {
       const dictionaryName = v4();
@@ -133,7 +133,7 @@ describe('Integration tests for dictionary operations', () => {
         value: 'value1',
         ttl: CollectionTtl.of(timeout).withNoRefreshTtlOnUpdates(),
       });
-      expect(changeResponse).toBeInstanceOf(Success);
+      expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
 
       changeResponse = await changeResponder({
         cacheName: IntegrationTestCacheName,
@@ -142,7 +142,7 @@ describe('Integration tests for dictionary operations', () => {
         value: 'value2',
         ttl: CollectionTtl.of(timeout * 10).withNoRefreshTtlOnUpdates(),
       });
-      expect(changeResponse).toBeInstanceOf(Success);
+      expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
       await sleep(timeout * 1000);
 
       const getResponse = await Momento.dictionaryGetField(
@@ -165,7 +165,7 @@ describe('Integration tests for dictionary operations', () => {
         value: 'value1',
         ttl: CollectionTtl.of(timeout).withRefreshTtlOnUpdates(),
       });
-      expect(changeResponse).toBeInstanceOf(Success);
+      expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
 
       changeResponse = await changeResponder({
         cacheName: IntegrationTestCacheName,
@@ -174,7 +174,7 @@ describe('Integration tests for dictionary operations', () => {
         value: 'value2',
         ttl: CollectionTtl.of(timeout * 10).withRefreshTtlOnUpdates(),
       });
-      expect(changeResponse).toBeInstanceOf(Success);
+      expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
       await sleep(timeout * 1000);
 
       const getResponse = await Momento.dictionaryGetField(

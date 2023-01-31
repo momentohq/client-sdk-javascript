@@ -1,8 +1,14 @@
-import * as ResponseBase from './response-base';
+import {SdkError} from '../../errors/errors';
+import {
+  ResponseBase,
+  ResponseError,
+  ResponseHit,
+  ResponseMiss,
+} from './response-base';
 
-export {Response, Miss, Error} from './response-base';
+export abstract class Response extends ResponseBase {}
 
-export class Hit extends ResponseBase.Hit {
+class _Hit extends Response {
   private readonly _length: number;
   constructor(length: number) {
     super();
@@ -17,3 +23,14 @@ export class Hit extends ResponseBase.Hit {
     return `${super.toString()}: length ${this._length}`;
   }
 }
+export class Hit extends ResponseHit(_Hit) {}
+
+class _Miss extends Response {}
+export class Miss extends ResponseMiss(_Miss) {}
+
+class _Error extends Response {
+  constructor(protected _innerException: SdkError) {
+    super();
+  }
+}
+export class Error extends ResponseError(_Error) {}

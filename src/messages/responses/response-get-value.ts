@@ -1,13 +1,19 @@
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextDecoder} from 'util';
-import * as ResponseBase from './response-base';
+import {SdkError} from '../../errors/errors';
+import {
+  ResponseBase,
+  ResponseError,
+  ResponseHit,
+  ResponseMiss,
+} from './response-base';
 import {truncateString} from '../../utils/display';
 
 const TEXT_DECODER = new TextDecoder();
 
-export {Response, Miss, Error} from './response-base';
+export abstract class Response extends ResponseBase {}
 
-export class Hit extends ResponseBase.Hit {
+class _Hit extends Response {
   private readonly body: Uint8Array;
   constructor(body: Uint8Array) {
     super();
@@ -30,3 +36,14 @@ export class Hit extends ResponseBase.Hit {
     return `${super.toString()}: ${display}`;
   }
 }
+export class Hit extends ResponseHit(_Hit) {}
+
+class _Miss extends Response {}
+export class Miss extends ResponseMiss(_Miss) {}
+
+class _Error extends Response {
+  constructor(protected _innerException: SdkError) {
+    super();
+  }
+}
+export class Error extends ResponseError(_Error) {}
