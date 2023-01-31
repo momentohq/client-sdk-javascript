@@ -9,6 +9,9 @@ export abstract class ResponseBase {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
 type Constructor = new (...args: any[]) => {};
 
+// These interfaces allow us to identify responses by their mixins.
+// They are only used to make shared tests work.
+// They are not for public consumption.
 export interface IResponseError {
   message(): string;
   innerException(): object;
