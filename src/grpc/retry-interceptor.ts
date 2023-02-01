@@ -120,6 +120,8 @@ export class RetryInterceptor {
                     }
                   },
                 });
+                newCall.sendMessage(savedSendMessage);
+                newCall.halfClose();
               };
               if (retryableGrpcStatusCodes.includes(status.code)) {
                 logger.debug(
@@ -136,6 +138,10 @@ export class RetryInterceptor {
             },
           };
           next(metadata, newListener);
+        },
+        sendMessage: function (message, next) {
+          savedSendMessage = message;
+          next(message);
         },
       });
     };
