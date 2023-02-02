@@ -55,7 +55,6 @@ export abstract class SdkError extends Error {
   protected readonly _errorCode: MomentoErrorCode;
   protected readonly _messageWrapper: string;
   private readonly _transportDetails: MomentoErrorTransportDetails;
-  private readonly _stack: string | undefined;
   constructor(
     message: string,
     code = 0,

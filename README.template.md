@@ -1,19 +1,10 @@
 {{ ossHeader }}
 
-## Preview Features
-
-This SDK contains APIs for interacting with collection data structures: Lists, Sets, and Dictionaries.  These APIs
-are currently in preview.  If you would like to request early access to the data structure APIs, please contact us
-at `support@momentohq.com`.
-
-**Note that if you call the List, Set, or Dictionary APIs without first signing up for our early access preview, you
-the calls will result in an `Unsupported operation` error.**
-
 ## Getting Started :running:
 
 ### Requirements
 
-- Node version [10.13 or higher](https://nodejs.org/en/download/) is required
+- Node version [14 or higher](https://nodejs.org/en/download/) is required
 - A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
 
 ### Examples
@@ -37,6 +28,47 @@ Here is a quickstart you can use in your own project:
 
 ```typescript
 {{ usageExampleCode }}
+```
+
+Momento also supports storing pure bytes,
+
+```typescript
+const key = new Uint8Array([109, 111, 109, 101, 110, 116, 111]);
+const value = new Uint8Array([
+  109, 111, 109, 101, 110, 116, 111, 32, 105, 115, 32, 97, 119, 101, 115, 111,
+  109, 101, 33, 33, 33,
+]);
+const setResponse = await momento.set('cache', key, value, 50);
+const getResponse = await momento.get('cache', key);
+```
+
+Handling cache misses,
+
+```typescript
+const getResponse = await cache.get('cache', 'non-existent key');
+if (getResponse instanceof CacheGet.Miss) {
+  console.log('cache miss');
+}
+```
+
+And storing files.
+
+```typescript
+const buffer = fs.readFileSync('./file.txt');
+const filebytes = Uint8Array.from(buffer);
+const cacheKey = 'key';
+const cacheName = 'my example cache';
+
+// store file in cache
+const setResponse = await momento.set(cacheName, cacheKey, filebytes);
+
+// retrieve file from cache
+const getResponse = await momento.get(cacheName, cacheKey);
+
+// write file to disk
+if (getResponse instanceof CacheGet.Hit) {
+  fs.writeFileSync('./file-from-cache.txt', Buffer.from(getResponse.valueUint8Array()));
+}
 ```
 
 ### Error Handling

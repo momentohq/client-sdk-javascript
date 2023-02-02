@@ -9,11 +9,22 @@ export abstract class ResponseBase {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
 type Constructor = new (...args: any[]) => {};
 
+// These interfaces allow us to identify responses by their mixins.
+// They are only used to make shared tests work.
+// They are not for public consumption.
 export interface IResponseError {
   message(): string;
   innerException(): object;
   errorCode(): MomentoErrorCode;
   toString(): string;
+}
+
+export interface IResponseSuccess {
+  is_success: boolean;
+}
+
+export interface IResponseMiss {
+  is_miss: boolean;
 }
 
 export interface IListResponseSuccess {
@@ -47,9 +58,13 @@ export function ResponseHit<TBase extends Constructor>(Base: TBase) {
 }
 
 export function ResponseMiss<TBase extends Constructor>(Base: TBase) {
-  return class ResponseMiss extends Base {};
+  return class ResponseMiss extends Base {
+    public readonly is_miss: boolean = true;
+  };
 }
 
 export function ResponseSuccess<TBase extends Constructor>(Base: TBase) {
-  return class ResponseSuccess extends Base {};
+  return class ResponseSuccess extends Base {
+    public readonly is_success: boolean = true;
+  };
 }

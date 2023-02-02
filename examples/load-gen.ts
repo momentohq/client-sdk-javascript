@@ -455,7 +455,7 @@ main(loadGeneratorOptions)
     console.log('success!!');
     console.log(PERFORMANCE_INFORMATION_MESSAGE);
   })
-  .catch(e => {
-    console.error('Uncaught exception while running load gen', e);
+  .catch((e: Error) => {
+    console.error(`Uncaught exception while running load gen: ${e.message}`);
     throw e;
   });

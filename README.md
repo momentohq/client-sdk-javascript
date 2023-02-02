@@ -9,31 +9,16 @@
 # Momento JavaScript Client Library
 
 
-:warning: Alpha SDK :warning:
-
-This is an official Momento SDK, but the API is in an alpha stage and may be subject to backward-incompatible
-changes.  For more info, click on the alpha badge above.
-
-
 JavaScript client SDK for Momento Serverless Cache: a fast, simple, pay-as-you-go caching solution without
 any of the operational overhead required by traditional caching solutions!
 
 
 
-## Preview Features
-
-This SDK contains APIs for interacting with collection data structures: Lists, Sets, and Dictionaries.  These APIs
-are currently in preview.  If you would like to request early access to the data structure APIs, please contact us
-at `support@momentohq.com`.
-
-**Note that if you call the List, Set, or Dictionary APIs without first signing up for our early access preview, you
-the calls will result in an `Unsupported operation` error.**
-
 ## Getting Started :running:
 
 ### Requirements
 
-- Node version [10.13 or higher](https://nodejs.org/en/download/) is required
+- Node version [14 or higher](https://nodejs.org/en/download/) is required
 - A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
 
 ### Examples
@@ -97,9 +82,9 @@ const main = async () => {
   }
 
   console.log('Listing caches:');
-  let token;
+  let token: string | undefined;
   do {
-    const listResponse = await momento.listCaches();
+    const listResponse = await momento.listCaches(token);
     if (listResponse instanceof ListCaches.Error) {
       console.log(`Error listing caches: ${listResponse.message()}`);
       break;
@@ -109,7 +94,7 @@ const main = async () => {
       });
       token = listResponse.getNextToken();
     }
-  } while (token !== null);
+  } while (token !== undefined);
 
   const exampleTtlSeconds = 10;
   console.log(
@@ -150,10 +135,52 @@ main()
   .then(() => {
     console.log('success!!');
   })
-  .catch(e => {
-    console.error('failed to get from cache', e);
+  .catch((e: Error) => {
+    console.error(`failed to get from cache ${e.message}`);
+    throw e;
   });
 
+```
+
+Momento also supports storing pure bytes,
+
+```typescript
+const key = new Uint8Array([109, 111, 109, 101, 110, 116, 111]);
+const value = new Uint8Array([
+  109, 111, 109, 101, 110, 116, 111, 32, 105, 115, 32, 97, 119, 101, 115, 111,
+  109, 101, 33, 33, 33,
+]);
+const setResponse = await momento.set('cache', key, value, 50);
+const getResponse = await momento.get('cache', key);
+```
+
+Handling cache misses,
+
+```typescript
+const getResponse = await cache.get('cache', 'non-existent key');
+if (getResponse instanceof CacheGet.Miss) {
+  console.log('cache miss');
+}
+```
+
+And storing files.
+
+```typescript
+const buffer = fs.readFileSync('./file.txt');
+const filebytes = Uint8Array.from(buffer);
+const cacheKey = 'key';
+const cacheName = 'my example cache';
+
+// store file in cache
+const setResponse = await momento.set(cacheName, cacheKey, filebytes);
+
+// retrieve file from cache
+const getResponse = await momento.get(cacheName, cacheKey);
+
+// write file to disk
+if (getResponse instanceof CacheGet.Hit) {
+  fs.writeFileSync('./file-from-cache.txt', Buffer.from(getResponse.valueUint8Array()));
+}
 ```
 
 ### Error Handling

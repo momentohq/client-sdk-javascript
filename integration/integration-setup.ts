@@ -5,6 +5,7 @@ import {
   Configurations,
   DeleteCache,
   EnvMomentoTokenProvider,
+  CollectionTtl,
   MomentoErrorCode,
   SimpleCacheClient,
 } from '../src';
@@ -46,7 +47,9 @@ export async function WithCache(
 
 export const CacheClientProps: SimpleCacheClientProps = {
   configuration: Configurations.Laptop.latest(),
-  credentialProvider: new EnvMomentoTokenProvider('TEST_AUTH_TOKEN'),
+  credentialProvider: new EnvMomentoTokenProvider({
+    environmentVariableName: 'TEST_AUTH_TOKEN',
+  }),
   defaultTtlSeconds: 1111,
 };
 
@@ -93,6 +96,13 @@ export interface ValidateListProps extends ValidateCacheProps {
 
 export interface ValidateDictionaryProps extends ValidateCacheProps {
   dictionaryName: string;
+  field: string | Uint8Array;
+}
+
+export interface ValidateDictionaryChangerProps
+  extends ValidateDictionaryProps {
+  value: string | Uint8Array;
+  ttl?: CollectionTtl;
 }
 
 export interface ValidateSetProps extends ValidateCacheProps {

@@ -1,11 +1,10 @@
-import {
-  Configurations,
-  InvalidArgumentError,
-  SimpleCacheClient,
-  EnvMomentoTokenProvider,
-} from '../src';
+import {Configurations, InvalidArgumentError, SimpleCacheClient} from '../src';
 import * as CreateCache from '../src/messages/responses/create-cache';
-const credentialProvider = new EnvMomentoTokenProvider('TEST_AUTH_TOKEN');
+import {StringMomentoTokenProvider} from '../src/auth/credential-provider';
+const credentialProvider = new StringMomentoTokenProvider({
+  authToken:
+    'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzcXVpcnJlbCIsImNwIjoiY29udHJvbCBwbGFuZSBlbmRwb2ludCIsImMiOiJkYXRhIHBsYW5lIGVuZHBvaW50In0.zsTsEXFawetTCZI',
+});
 const configuration = Configurations.Laptop.latest();
 
 describe('SimpleCacheClient.ts', () => {
