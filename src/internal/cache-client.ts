@@ -1086,7 +1086,7 @@ export class CacheClient {
   public async dictionarySendFields(
     cacheName: string,
     dictionaryName: string,
-    items: {field: string | Uint8Array; value: string | Uint8Array}[],
+    items: Map<string | Uint8Array, string | Uint8Array>,
     ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheDictionarySetFields.Response> {
     try {
@@ -1103,11 +1103,11 @@ export class CacheClient {
       }`
     );
 
-    const dictionaryFieldValuePairs = items.map(
+    const dictionaryFieldValuePairs = [...items.entries()].map(
       item =>
         new grpcCache._DictionaryFieldValuePair({
-          field: this.convert(item.field),
-          value: this.convert(item.value),
+          field: this.convert(item[0]),
+          value: this.convert(item[1]),
         })
     );
     const result = await this.sendDictionarySetFields(

@@ -207,10 +207,10 @@ describe('Integration tests for dictionary operations', () => {
       await Momento.dictionarySetFields(
         IntegrationTestCacheName,
         dictionaryName,
-        [
-          {field: field1, value: value1},
-          {field: field2, value: value2},
-        ]
+        new Map([
+          [field1, value1],
+          [field2, value2],
+        ])
       );
 
       const response = await Momento.dictionaryFetch(
@@ -256,10 +256,10 @@ describe('Integration tests for dictionary operations', () => {
       await Momento.dictionarySetFields(
         IntegrationTestCacheName,
         dictionaryName,
-        [
-          {field: field1, value: value1},
-          {field: field2, value: value2},
-        ]
+        new Map([
+          [field1, value1],
+          [field2, value2],
+        ])
       );
 
       const response = await Momento.dictionaryFetch(
@@ -287,10 +287,10 @@ describe('Integration tests for dictionary operations', () => {
       const setResponse = await Momento.dictionarySetFields(
         IntegrationTestCacheName,
         dictionaryName,
-        [
-          {field: field1, value: value1},
-          {field: field2, value: value2},
-        ]
+        new Map([
+          [field1, value1],
+          [field2, value2],
+        ])
       );
       expect(setResponse).toBeInstanceOf(CacheDictionarySetFields.Success);
 
@@ -327,11 +327,11 @@ describe('Integration tests for dictionary operations', () => {
       await Momento.dictionarySetFields(
         IntegrationTestCacheName,
         dictionaryName,
-        [
-          {field: v4(), value: v4()},
-          {field: v4(), value: v4()},
-          {field: v4(), value: v4()},
-        ]
+        new Map([
+          [v4(), v4()],
+          [v4(), v4()],
+          [v4(), v4()],
+        ])
       );
 
       let response = await Momento.dictionaryFetch(
@@ -883,10 +883,10 @@ describe('Integration tests for dictionary operations', () => {
         new TextEncoder().encode(v4()),
         new TextEncoder().encode(v4()),
       ];
-      const setFields = [
-        {field: fields[0], value: v4()},
-        {field: fields[1], value: v4()},
-      ];
+      const setFields = new Map([
+        [fields[0], v4()],
+        [fields[1], v4()],
+      ]);
 
       // When the fields do not exist.
       expect(
@@ -945,10 +945,10 @@ describe('Integration tests for dictionary operations', () => {
     it('should remove string fields', async () => {
       const dictionaryName = v4();
       const fields = [v4(), v4()];
-      const setFields = [
-        {field: fields[0], value: v4()},
-        {field: fields[1], value: v4()},
-      ];
+      const setFields = new Map([
+        [fields[0], v4()],
+        [fields[1], v4()],
+      ]);
 
       // When the fields do not exist.
       expect(
@@ -1100,7 +1100,7 @@ describe('Integration tests for dictionary operations', () => {
       return Momento.dictionarySetFields(
         props.cacheName,
         props.dictionaryName,
-        [{field: props.field, value: v4()}]
+        new Map([[props.field, v4()]])
       );
     };
 
@@ -1108,7 +1108,7 @@ describe('Integration tests for dictionary operations', () => {
       return Momento.dictionarySetFields(
         props.cacheName,
         props.dictionaryName,
-        [{field: props.field, value: props.value}],
+        new Map([[props.field, props.value]]),
         props.ttl
       );
     };
@@ -1125,10 +1125,10 @@ describe('Integration tests for dictionary operations', () => {
       const response = await Momento.dictionarySetFields(
         IntegrationTestCacheName,
         dictionaryName,
-        [
-          {field: field1, value: value1},
-          {field: field2, value: value2},
-        ],
+        new Map([
+          [field1, value1],
+          [field2, value2],
+        ]),
         CollectionTtl.of(10)
       );
       expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
@@ -1161,10 +1161,10 @@ describe('Integration tests for dictionary operations', () => {
       const response = await Momento.dictionarySetFields(
         IntegrationTestCacheName,
         dictionaryName,
-        [
-          {field: field1, value: value1},
-          {field: field2, value: value2},
-        ],
+        new Map([
+          [field1, value1],
+          [field2, value2],
+        ]),
         CollectionTtl.of(10)
       );
       expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
@@ -1197,10 +1197,10 @@ describe('Integration tests for dictionary operations', () => {
       const response = await Momento.dictionarySetFields(
         IntegrationTestCacheName,
         dictionaryName,
-        [
-          {field: field1, value: value1},
-          {field: field2, value: value2},
-        ],
+        new Map([
+          [field1, value1],
+          [field2, value2],
+        ]),
         CollectionTtl.of(10)
       );
       expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);

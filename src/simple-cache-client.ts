@@ -492,15 +492,15 @@ export class SimpleCacheClient {
    * Set several dictionary field-value pairs in the cache.
    * @param {string} cacheName - Name of the cache to store the dictionary in.
    * @param {string} dictionaryName - The dictionary to set.
-   * @param {{field: string | Uint8Array; value: string | Uint8Array}[]} items - The field-value pairs in the dictionary to set.
+   * @param {Map<string | Uint8Array, string | Uint8Array>} items - The field-value pairs in the dictionary to set.
    * @param {CollectionTtl} ttl -  TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
-   * @returns {Promise<CacheDictionarySetFieldsResponse>}- Promise containing the result of the cache operation.
+   * @returns {Promise<CacheDictionarySetFields.Response>}- Promise containing the result of the cache operation.
    * @memberof SimpleCacheClient
    */
   public async dictionarySetFields(
     cacheName: string,
     dictionaryName: string,
-    items: {field: string | Uint8Array; value: string | Uint8Array}[],
+    items: Map<string | Uint8Array, string | Uint8Array>,
     ttl?: CollectionTtl
   ): Promise<CacheDictionarySetFields.Response> {
     const client = this.getNextDataClient();
