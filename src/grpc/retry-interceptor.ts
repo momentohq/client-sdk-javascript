@@ -85,7 +85,9 @@ export class RetryInterceptor {
                       savedMessageNext(savedReceiveMessage);
                       next(status);
                     } else {
-                      `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`;
+                      logger.debug(
+                        `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`
+                      );
                       setTimeout(() => retry(message, metadata), whenToRetry);
                     }
                   },
@@ -104,13 +106,15 @@ export class RetryInterceptor {
                   attemptNumber: attempts,
                 });
                 if (whenToRetry === null) {
-                  logger.trace(
+                  logger.debug(
                     `Request not eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}.`
                   );
                   savedMessageNext(savedReceiveMessage);
                   next(status);
                 } else {
-                  `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`;
+                  logger.debug(
+                    `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`
+                  );
                   setTimeout(
                     () => retry(savedSendMessage, savedMetadata),
                     whenToRetry
