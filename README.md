@@ -59,7 +59,7 @@ const cacheName = 'cache';
 const cacheKey = 'key';
 const cacheValue = 'value';
 
-const credentialsProvider = new EnvMomentoTokenProvider('MOMENTO_AUTH_TOKEN');
+const credentialsProvider = new EnvMomentoTokenProvider({ environmentVariableName: 'MOMENTO_AUTH_TOKEN' });
 
 const loggerOptions: LoggerOptions = {
   level: LogLevel.INFO,
