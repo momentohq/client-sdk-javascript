@@ -34,6 +34,22 @@ MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run presigned-url-example
 
 Example Code: [presigned-url-example.ts](presigned-url-example.ts)
 
+## Running the Dictionary Example
+
+This example demonstrates how to use the dictionary data type.
+
+- Node version 16 or higher is required
+- A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
+
+```bash
+npm install
+
+# Run example code
+MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run dictionary
+```
+
+Example Code: [dictionary.ts](dictionary.ts)
+
 ## Using the SDK in your projects
 
 ### Installation
