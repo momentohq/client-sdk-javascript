@@ -59,13 +59,9 @@ import {
 } from './errors/errors';
 
 export {
-  getLogger,
-  initializeMomentoLogging,
-  Logger,
-  LoggerOptions,
-  LogLevel,
-  LogFormat,
-} from './utils/logging';
+  MomentoLogger,
+  MomentoLoggerFactory,
+} from './config/logging/momento-logger';
 
 export {
   CollectionTtl,

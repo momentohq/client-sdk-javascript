@@ -36,9 +36,9 @@ import {
   CredentialProvider,
   InvalidArgumentError,
   UnknownError,
+  MomentoLogger,
 } from '..';
 import {version} from '../../package.json';
-import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
@@ -58,7 +58,7 @@ export class CacheClient {
   private readonly defaultTtlSeconds: number;
   private readonly requestTimeoutMs: number;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
-  private readonly logger: Logger;
+  private readonly logger: MomentoLogger;
   private readonly interceptors: Interceptor[];
 
   /**
@@ -67,7 +67,7 @@ export class CacheClient {
   constructor(props: SimpleCacheClientProps) {
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
-    this.logger = getLogger(this);
+    this.logger = this.configuration.getLoggerFactory().getLogger(this);
     const grpcConfig = this.configuration
       .getTransportStrategy()
       .getGrpcConfig();
@@ -1086,7 +1086,9 @@ export class CacheClient {
   public async dictionarySendFields(
     cacheName: string,
     dictionaryName: string,
-    items: Map<string | Uint8Array, string | Uint8Array>,
+    items:
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Record<string, string | Uint8Array>,
     ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheDictionarySetFields.Response> {
     try {
@@ -1103,13 +1105,8 @@ export class CacheClient {
       }`
     );
 
-    const dictionaryFieldValuePairs = [...items.entries()].map(
-      item =>
-        new grpcCache._DictionaryFieldValuePair({
-          field: this.convert(item[0]),
-          value: this.convert(item[1]),
-        })
-    );
+    const dictionaryFieldValuePairs = this.convertMapOrRecord(items);
+
     const result = await this.sendDictionarySetFields(
       cacheName,
       this.convert(dictionaryName),
@@ -1504,7 +1501,10 @@ export class CacheClient {
     return [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
       ClientTimeoutInterceptor(this.requestTimeoutMs),
-      ...createRetryInterceptorIfEnabled(),
+      ...createRetryInterceptorIfEnabled(
+        this.configuration.getLoggerFactory(),
+        this.configuration.getRetryStrategy()
+      ),
     ];
   }
 
@@ -1517,6 +1517,30 @@ export class CacheClient {
 
   private convertArray(v: string[] | Uint8Array[]): Uint8Array[] {
     return v.map(i => this.convert(i));
+  }
+
+  private convertMapOrRecord(
+    items:
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Record<string, string | Uint8Array>
+  ): grpcCache._DictionaryFieldValuePair[] {
+    if (items instanceof Map) {
+      return [...items.entries()].map(
+        item =>
+          new grpcCache._DictionaryFieldValuePair({
+            field: this.convert(item[0]),
+            value: this.convert(item[1]),
+          })
+      );
+    } else {
+      return Object.entries(items).map(
+        item =>
+          new grpcCache._DictionaryFieldValuePair({
+            field: this.convert(item[0]),
+            value: this.convert(item[1]),
+          })
+      );
+    }
   }
 
   private createMetadata(cacheName: string): Metadata {

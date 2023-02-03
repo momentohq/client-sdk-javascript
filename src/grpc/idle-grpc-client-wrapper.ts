@@ -1,6 +1,6 @@
-import {getLogger, Logger} from '../utils/logging';
 import {CloseableGrpcClient, GrpcClientWrapper} from './grpc-client-wrapper';
 import {Configuration} from '../config/configuration';
+import {MomentoLogger} from '../config/logging/momento-logger';
 
 export interface IdleGrpcClientWrapperProps<T extends CloseableGrpcClient> {
   clientFactoryFn: () => T;
@@ -26,7 +26,7 @@ export interface IdleGrpcClientWrapperProps<T extends CloseableGrpcClient> {
 export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
   implements GrpcClientWrapper<T>
 {
-  private readonly logger: Logger;
+  private readonly logger: MomentoLogger;
 
   private client: T;
   private readonly clientFactoryFn: () => T;
@@ -35,7 +35,7 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
   private lastAccessTime: number;
 
   constructor(props: IdleGrpcClientWrapperProps<T>) {
-    this.logger = getLogger(this);
+    this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.clientFactoryFn = props.clientFactoryFn;
     this.client = this.clientFactoryFn();
     this.maxIdleMillis = props.configuration

@@ -59,7 +59,9 @@ const cacheName = 'cache';
 const cacheKey = 'key';
 const cacheValue = 'value';
 
-const credentialsProvider = new EnvMomentoTokenProvider('MOMENTO_AUTH_TOKEN');
+const credentialsProvider = new EnvMomentoTokenProvider({
+  environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+});
 
 const loggerOptions: LoggerOptions = {
   level: LogLevel.INFO,
@@ -107,9 +109,7 @@ const main = async () => {
     exampleTtlSeconds
   );
   if (setResponse instanceof CacheSet.Success) {
-    console.log(
-      'Key stored successfully with value ' + setResponse.valueString()
-    );
+    console.log('Key stored successfully with value ' + cacheValue);
   } else if (setResponse instanceof CacheSet.Error) {
     console.log('Error setting key: ' + setResponse.message());
   }

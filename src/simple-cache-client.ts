@@ -33,8 +33,8 @@ import {
   CacheSetAddElement,
   CacheSetRemoveElements,
   CacheSetRemoveElement,
+  MomentoLogger,
 } from '.';
-import {initializeMomentoLogging} from './utils/logging';
 import {range} from './utils/collections';
 import {SimpleCacheClientProps} from './simple-cache-client-props';
 
@@ -49,6 +49,7 @@ import {SimpleCacheClientProps} from './simple-cache-client-props';
  * @class SimpleCacheClient
  */
 export class SimpleCacheClient {
+  private readonly logger: MomentoLogger;
   private readonly configuration: Configuration;
   private readonly credentialProvider: CredentialProvider;
   private readonly dataClients: Array<CacheClient>;
@@ -59,7 +60,8 @@ export class SimpleCacheClient {
    * Creates an instance of SimpleCacheClient.
    */
   constructor(props: SimpleCacheClientProps) {
-    initializeMomentoLogging(props.configuration.getLoggerOptions());
+    this.logger = props.configuration.getLoggerFactory().getLogger(this);
+    this.logger.info('Instantiating Momento SimpleCacheClient');
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
 
@@ -500,7 +502,9 @@ export class SimpleCacheClient {
   public async dictionarySetFields(
     cacheName: string,
     dictionaryName: string,
-    items: Map<string | Uint8Array, string | Uint8Array>,
+    items:
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Record<string, string | Uint8Array>,
     ttl?: CollectionTtl
   ): Promise<CacheDictionarySetFields.Response> {
     const client = this.getNextDataClient();

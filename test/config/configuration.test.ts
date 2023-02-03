@@ -1,15 +1,18 @@
 import {SimpleCacheConfiguration} from '../../src/config/configuration';
-import {LogFormat, LoggerOptions, LogLevel} from '../../src';
 import {
   StaticGrpcConfiguration,
   StaticTransportStrategy,
 } from '../../src/config/transport/transport-strategy';
+import {FixedCountRetryStrategy} from '../../src/config/retry/fixed-count-retry-strategy';
+import {PinoMomentoLoggerFactory} from '../../src/config/logging/pino-momento-logger';
+import {NoopMomentoLoggerFactory} from '../../src/config/logging/noop-momento-logger';
 
 describe('configuration.ts', () => {
-  const testLoggerOptions: LoggerOptions = {
-    level: LogLevel.WARN,
-    format: LogFormat.CONSOLE,
-  };
+  const testLoggerFactory = new PinoMomentoLoggerFactory();
+  const testRetryStrategy = new FixedCountRetryStrategy({
+    loggerFactory: testLoggerFactory,
+    maxAttempts: 1,
+  });
   const testGrpcConfiguration = new StaticGrpcConfiguration({
     deadlineMillis: 90210,
     maxSessionMemoryMb: 90211,
@@ -20,21 +23,40 @@ describe('configuration.ts', () => {
     maxIdleMillis: testMaxIdleMillis,
   });
   const testConfiguration = new SimpleCacheConfiguration({
-    loggerOptions: testLoggerOptions,
+    loggerFactory: testLoggerFactory,
+    retryStrategy: testRetryStrategy,
     transportStrategy: testTransportStrategy,
   });
 
   it('should support overriding logger options', () => {
-    const newLoggerOptions = {
-      level: LogLevel.DEBUG,
-      format: LogFormat.JSON,
-    };
+    const newLoggerFactory = new NoopMomentoLoggerFactory();
     const configWithNewLoggerOptions =
-      testConfiguration.withLoggerOptions(newLoggerOptions);
-    expect(configWithNewLoggerOptions.getLoggerOptions()).toEqual(
-      newLoggerOptions
+      testConfiguration.withLoggerFactory(newLoggerFactory);
+    expect(configWithNewLoggerOptions.getLoggerFactory()).toEqual(
+      newLoggerFactory
+    );
+    expect(configWithNewLoggerOptions.getRetryStrategy()).toEqual(
+      testRetryStrategy
     );
     expect(configWithNewLoggerOptions.getTransportStrategy()).toEqual(
+      testTransportStrategy
+    );
+  });
+
+  it('should support overriding retry strategy', () => {
+    const newRetryStrategy = new FixedCountRetryStrategy({
+      loggerFactory: testLoggerFactory,
+      maxAttempts: 42,
+    });
+    const configWithNewRetryStrategy =
+      testConfiguration.withRetryStrategy(newRetryStrategy);
+    expect(configWithNewRetryStrategy.getLoggerFactory()).toEqual(
+      testLoggerFactory
+    );
+    expect(configWithNewRetryStrategy.getRetryStrategy()).toEqual(
+      newRetryStrategy
+    );
+    expect(configWithNewRetryStrategy.getTransportStrategy()).toEqual(
       testTransportStrategy
     );
   });
@@ -51,8 +73,11 @@ describe('configuration.ts', () => {
     });
     const configWithNewTransportStrategy =
       testConfiguration.withTransportStrategy(newTransportStrategy);
-    expect(configWithNewTransportStrategy.getLoggerOptions()).toEqual(
-      testLoggerOptions
+    expect(configWithNewTransportStrategy.getLoggerFactory()).toEqual(
+      testLoggerFactory
+    );
+    expect(configWithNewTransportStrategy.getRetryStrategy()).toEqual(
+      testRetryStrategy
     );
     expect(configWithNewTransportStrategy.getTransportStrategy()).toEqual(
       newTransportStrategy
@@ -70,8 +95,11 @@ describe('configuration.ts', () => {
     });
     const configWithNewClientTimeout =
       testConfiguration.withClientTimeoutMillis(newClientTimeoutMillis);
-    expect(configWithNewClientTimeout.getLoggerOptions()).toEqual(
-      testLoggerOptions
+    expect(configWithNewClientTimeout.getLoggerFactory()).toEqual(
+      testLoggerFactory
+    );
+    expect(configWithNewClientTimeout.getRetryStrategy()).toEqual(
+      testRetryStrategy
     );
     expect(configWithNewClientTimeout.getTransportStrategy()).toEqual(
       expectedTransportStrategy

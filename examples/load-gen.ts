@@ -78,7 +78,9 @@ class BasicJavaScriptLoadGen {
       configuration: Configurations.Laptop.latest(
         this.loggerOptions
       ).withClientTimeoutMillis(this.options.requestTimeoutMs),
-      credentialProvider: new EnvMomentoTokenProvider('MOMENTO_AUTH_TOKEN'),
+      credentialProvider: new EnvMomentoTokenProvider({
+        environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      }),
       defaultTtlSeconds: this.cacheItemTtlSeconds,
     });
 

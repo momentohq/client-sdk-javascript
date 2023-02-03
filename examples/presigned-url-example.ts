@@ -26,7 +26,9 @@ const loggerOptions: LoggerOptions = {
 const defaultTtl = 60;
 const momento = new SimpleCacheClient({
   configuration: Configurations.Laptop.latest(loggerOptions),
-  credentialProvider: new EnvMomentoTokenProvider('MOMENTO_AUTH_TOKEN'),
+  credentialProvider: new EnvMomentoTokenProvider({
+    environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+  }),
   defaultTtlSeconds: defaultTtl,
 });
 
