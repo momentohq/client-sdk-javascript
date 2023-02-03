@@ -1086,7 +1086,9 @@ export class CacheClient {
   public async dictionarySendFields(
     cacheName: string,
     dictionaryName: string,
-    items: Map<string | Uint8Array, string | Uint8Array>,
+    items:
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Record<string, string | Uint8Array>,
     ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheDictionarySetFields.Response> {
     try {
@@ -1103,13 +1105,8 @@ export class CacheClient {
       }`
     );
 
-    const dictionaryFieldValuePairs = [...items.entries()].map(
-      item =>
-        new grpcCache._DictionaryFieldValuePair({
-          field: this.convert(item[0]),
-          value: this.convert(item[1]),
-        })
-    );
+    const dictionaryFieldValuePairs = this.convertMapOrRecord(items);
+
     const result = await this.sendDictionarySetFields(
       cacheName,
       this.convert(dictionaryName),
@@ -1517,6 +1514,30 @@ export class CacheClient {
 
   private convertArray(v: string[] | Uint8Array[]): Uint8Array[] {
     return v.map(i => this.convert(i));
+  }
+
+  private convertMapOrRecord(
+    items:
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Record<string, string | Uint8Array>
+  ): grpcCache._DictionaryFieldValuePair[] {
+    if (items instanceof Map) {
+      return [...items.entries()].map(
+        item =>
+          new grpcCache._DictionaryFieldValuePair({
+            field: this.convert(item[0]),
+            value: this.convert(item[1]),
+          })
+      );
+    } else {
+      return Object.entries(items).map(
+        item =>
+          new grpcCache._DictionaryFieldValuePair({
+            field: this.convert(item[0]),
+            value: this.convert(item[1]),
+          })
+      );
+    }
   }
 
   private createMetadata(cacheName: string): Metadata {

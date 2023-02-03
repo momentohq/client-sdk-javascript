@@ -14,11 +14,6 @@ export abstract class Response extends ResponseBase {}
 
 class _Hit extends Response {
   private readonly items: cache_client._DictionaryFieldValuePair[];
-  private readonly dictionaryUint8ArrayUint8Array: Map<Uint8Array, Uint8Array> =
-    new Map();
-  private readonly dictionaryStringString: Map<string, string> = new Map();
-  private readonly dictionaryStringArrayBuffer: Map<string, Uint8Array> =
-    new Map();
   private readonly _displayListSizeLimit = 5;
 
   constructor(items: cache_client._DictionaryFieldValuePair[]) {
@@ -26,35 +21,51 @@ class _Hit extends Response {
     this.items = items;
   }
 
-  public valueDictionaryUint8ArrayUint8Array(): Map<Uint8Array, Uint8Array> {
-    for (const item of this.items) {
-      this.dictionaryUint8ArrayUint8Array.set(item.field, item.value);
-    }
-    return this.dictionaryUint8ArrayUint8Array;
+  public valueMap(): Map<string, string> {
+    return this.valueMapStringString();
   }
 
-  public valueDictionaryStringString(): Map<string, string> {
-    for (const item of this.items) {
-      this.dictionaryStringString.set(
-        TEXT_DECODER.decode(item.field),
-        TEXT_DECODER.decode(item.value)
-      );
-    }
-    return this.dictionaryStringString;
+  public valueMapUint8ArrayUint8Array(): Map<Uint8Array, Uint8Array> {
+    return this.items.reduce((acc, item) => {
+      acc.set(item.field, item.value);
+      return acc;
+    }, new Map<Uint8Array, Uint8Array>());
   }
 
-  public valueDictionaryStringUint8Array(): Map<string, Uint8Array> {
-    for (const item of this.items) {
-      this.dictionaryStringArrayBuffer.set(
-        TEXT_DECODER.decode(item.field),
-        item.value
-      );
-    }
-    return this.dictionaryStringArrayBuffer;
+  public valueMapStringString(): Map<string, string> {
+    return this.items.reduce((acc, item) => {
+      acc.set(TEXT_DECODER.decode(item.field), TEXT_DECODER.decode(item.value));
+      return acc;
+    }, new Map<string, string>());
+  }
+
+  public valueMapStringUint8Array(): Map<string, Uint8Array> {
+    return this.items.reduce((acc, item) => {
+      acc.set(TEXT_DECODER.decode(item.field), item.value);
+      return acc;
+    }, new Map<string, Uint8Array>());
+  }
+
+  public valueRecord(): Record<string, string> {
+    return this.valueRecordStringString();
+  }
+
+  public valueRecordStringString(): Record<string, string> {
+    return this.items.reduce<Record<string, string>>((acc, item) => {
+      acc[TEXT_DECODER.decode(item.field)] = TEXT_DECODER.decode(item.value);
+      return acc;
+    }, {});
+  }
+
+  public valueRecordStringUint8Array(): Record<string, Uint8Array> {
+    return this.items.reduce<Record<string, Uint8Array>>((acc, item) => {
+      acc[TEXT_DECODER.decode(item.field)] = item.value;
+      return acc;
+    }, {});
   }
 
   private truncateValueStrings(): string {
-    const keyValueIterable = this.valueDictionaryStringString().entries();
+    const keyValueIterable = this.valueMapStringString().entries();
     const keyValueArray = Array.from(keyValueIterable);
     if (keyValueArray.length <= this._displayListSizeLimit) {
       const pairs: string[] = [];

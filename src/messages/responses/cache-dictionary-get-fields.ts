@@ -22,12 +22,7 @@ export abstract class Response extends ResponseBase {}
 class _Hit extends Response {
   private readonly items: grpcCache._DictionaryGetResponse._DictionaryGetResponsePart[];
   private readonly fields: Uint8Array[];
-  private readonly dictionaryUint8ArrayUint8Array: Map<Uint8Array, Uint8Array> =
-    new Map();
-  private readonly dictionaryStringString: Map<string, string> = new Map();
-  private readonly dictionaryStringUint8Array: Map<string, Uint8Array> =
-    new Map();
-  public responsesList: CacheDictionaryGetFieldResponseType[] = [];
+  public responses: CacheDictionaryGetFieldResponseType[] = [];
 
   constructor(
     items: grpcCache._DictionaryGetResponse._DictionaryGetResponsePart[],
@@ -38,18 +33,18 @@ class _Hit extends Response {
     this.fields = fields;
     items.forEach((item, index) => {
       if (item.result === grpcCache.ECacheResult.Hit) {
-        this.responsesList.push(
+        this.responses.push(
           new CacheDictionaryGetFieldResponse.Hit(
             item.cache_body,
             fields[index]
           )
         );
       } else if (item.result === grpcCache.ECacheResult.Miss) {
-        this.responsesList.push(
+        this.responses.push(
           new CacheDictionaryGetFieldResponse.Miss(fields[index])
         );
       } else {
-        this.responsesList.push(
+        this.responses.push(
           new CacheDictionaryGetFieldResponse.Error(
             new UnknownError(item.result.toString()),
             fields[index]
@@ -59,45 +54,67 @@ class _Hit extends Response {
     });
   }
 
-  public valueDictionaryUint8ArrayUint8Array(): Map<Uint8Array, Uint8Array> {
-    this.items.forEach((item, index) => {
+  public valueMapUint8ArrayUint8Array(): Map<Uint8Array, Uint8Array> {
+    return this.items.reduce((acc, item, index) => {
       if (item.result === grpcCache.ECacheResult.Hit) {
-        this.dictionaryUint8ArrayUint8Array.set(
-          this.fields[index],
-          item.cache_body
-        );
+        acc.set(this.fields[index], item.cache_body);
       }
-    });
-    return this.dictionaryUint8ArrayUint8Array;
+      return acc;
+    }, new Map<Uint8Array, Uint8Array>());
   }
 
-  public valueDictionaryStringString(): Map<string, string> {
-    this.items.forEach((item, index) => {
+  public valueMapStringString(): Map<string, string> {
+    return this.items.reduce((acc, item, index) => {
       if (item.result === grpcCache.ECacheResult.Hit) {
-        this.dictionaryStringString.set(
+        acc.set(
           TEXT_DECODER.decode(this.fields[index]),
           TEXT_DECODER.decode(item.cache_body)
         );
       }
-    });
-    return this.dictionaryStringString;
+      return acc;
+    }, new Map<string, string>());
   }
 
-  public valueDictionaryStringUint8Array(): Map<string, Uint8Array> {
-    this.items.forEach((item, index) => {
+  public valueMap(): Map<string, string> {
+    return this.valueMapStringString();
+  }
+
+  public valueMapStringUint8Array(): Map<string, Uint8Array> {
+    return this.items.reduce((acc, item, index) => {
       if (item.result === grpcCache.ECacheResult.Hit) {
-        this.dictionaryStringUint8Array.set(
-          TEXT_DECODER.decode(this.fields[index]),
+        acc.set(TEXT_DECODER.decode(this.fields[index]), item.cache_body);
+      }
+      return acc;
+    }, new Map<string, Uint8Array>());
+  }
+
+  public valueRecordStringString(): Record<string, string> {
+    return this.items.reduce<Record<string, string>>((acc, item, index) => {
+      if (item.result === grpcCache.ECacheResult.Hit) {
+        acc[TEXT_DECODER.decode(this.fields[index])] = TEXT_DECODER.decode(
           item.cache_body
         );
       }
-    });
-    return this.dictionaryStringUint8Array;
+      return acc;
+    }, {});
+  }
+
+  public valueRecord(): Record<string, string> {
+    return this.valueRecordStringString();
+  }
+
+  public valueRecordStringUint8Array(): Record<string, Uint8Array> {
+    return this.items.reduce<Record<string, Uint8Array>>((acc, item, index) => {
+      if (item.result === grpcCache.ECacheResult.Hit) {
+        acc[TEXT_DECODER.decode(this.fields[index])] = item.cache_body;
+      }
+      return acc;
+    }, {});
   }
 
   public override toString(): string {
     let stringRepresentation = '';
-    this.valueDictionaryStringString().forEach((value, key) => {
+    this.valueMapStringString().forEach((value, key) => {
       const keyValue = `${key}: ${value}, `;
       stringRepresentation = stringRepresentation + keyValue;
     });
