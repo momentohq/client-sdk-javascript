@@ -4,12 +4,11 @@ import {
   CreateCache,
   CacheSet,
   CacheDelete,
-  LogLevel,
-  LogFormat,
   SimpleCacheClient,
   EnvMomentoTokenProvider,
   Configurations,
-  LoggerOptions,
+  MomentoLoggerFactory,
+  DefaultMomentoLoggerFactory,
 } from '@gomomento/sdk';
 
 const cacheName = 'cache';
@@ -20,14 +19,11 @@ const credentialsProvider = new EnvMomentoTokenProvider({
   environmentVariableName: 'MOMENTO_AUTH_TOKEN',
 });
 
-const loggerOptions: LoggerOptions = {
-  level: LogLevel.INFO,
-  format: LogFormat.JSON,
-};
+const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory();
 
 const defaultTtl = 60;
 const momento = new SimpleCacheClient({
-  configuration: Configurations.Laptop.latest(loggerOptions),
+  configuration: Configurations.Laptop.latest(loggerFactory),
   credentialProvider: credentialsProvider,
   defaultTtlSeconds: defaultTtl,
 });
