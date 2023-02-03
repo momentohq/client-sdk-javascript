@@ -2,24 +2,26 @@ import {
   DeterminewhenToRetryRequestProps,
   RetryStrategy,
 } from './retry-strategy';
-import {getLogger, Logger} from '../../utils/logging';
 import {EligibilityStrategy} from './eligibility-strategy';
 import {DefaultEligibilityStrategy} from './default-eligibility-strategy';
+import {MomentoLogger, MomentoLoggerFactory} from '../logging/momento-logger';
 
 export interface FixedCountRetryStrategyProps {
+  loggerFactory: MomentoLoggerFactory;
   maxAttempts: number;
   eligibilityStrategy?: EligibilityStrategy;
 }
 
 export class FixedCountRetryStrategy implements RetryStrategy {
-  private readonly logger: Logger;
+  private readonly logger: MomentoLogger;
   private readonly eligibilityStrategy: EligibilityStrategy;
   private readonly maxAttempts: number;
 
   constructor(props: FixedCountRetryStrategyProps) {
-    this.logger = getLogger(this);
+    this.logger = props.loggerFactory.getLogger(this);
     this.eligibilityStrategy =
-      props.eligibilityStrategy ?? new DefaultEligibilityStrategy();
+      props.eligibilityStrategy ??
+      new DefaultEligibilityStrategy(props.loggerFactory);
     this.maxAttempts = props.maxAttempts;
   }
 

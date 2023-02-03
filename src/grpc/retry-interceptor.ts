@@ -12,22 +12,31 @@ import {
   Metadata,
   StatusObject,
 } from '@grpc/grpc-js';
-import {getLogger, Logger} from '../utils/logging';
 import {RetryStrategy} from '../config/retry/retry-strategy';
 import {Status} from '@grpc/grpc-js/build/src/constants';
+import {
+  MomentoLogger,
+  MomentoLoggerFactory,
+} from '../config/logging/momento-logger';
 
 export function createRetryInterceptorIfEnabled(
+  loggerFactory: MomentoLoggerFactory,
   retryStrategy: RetryStrategy
 ): Array<Interceptor> {
-  return [new RetryInterceptor(retryStrategy).createRetryInterceptor()];
+  return [
+    new RetryInterceptor(loggerFactory, retryStrategy).createRetryInterceptor(),
+  ];
 }
 
 export class RetryInterceptor {
-  private readonly logger: Logger;
+  private readonly logger: MomentoLogger;
   private readonly retryStrategy: RetryStrategy;
 
-  constructor(retryStrategy: RetryStrategy) {
-    this.logger = getLogger(this);
+  constructor(
+    loggerFactory: MomentoLoggerFactory,
+    retryStrategy: RetryStrategy
+  ) {
+    this.logger = loggerFactory.getLogger(this);
     this.retryStrategy = retryStrategy;
   }
 

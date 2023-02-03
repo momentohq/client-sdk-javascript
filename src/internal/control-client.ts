@@ -14,9 +14,9 @@ import {
   CreateSigningKey,
   ListSigningKeys,
   RevokeSigningKey,
+  MomentoLogger,
 } from '..';
 import {version} from '../../package.json';
-import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
@@ -31,13 +31,13 @@ export class ControlClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcControl.ScsControlClient>;
   private readonly interceptors: Interceptor[];
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
-  private readonly logger: Logger;
+  private readonly logger: MomentoLogger;
 
   /**
    * @param {ControlClientProps} props
    */
   constructor(props: ControlClientProps) {
-    this.logger = getLogger(this);
+    this.logger = props.configuration.getLoggerFactory().getLogger(this);
     const headers = [
       new Header('Authorization', props.credentialProvider.getAuthToken()),
       new Header('Agent', `javascript:${version}`),

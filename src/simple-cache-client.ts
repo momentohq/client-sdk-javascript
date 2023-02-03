@@ -33,10 +33,8 @@ import {
   CacheSetAddElement,
   CacheSetRemoveElements,
   CacheSetRemoveElement,
-  Logger,
-  getLogger,
+  MomentoLogger,
 } from '.';
-import {initializeMomentoLogging} from './utils/logging';
 import {range} from './utils/collections';
 import {SimpleCacheClientProps} from './simple-cache-client-props';
 
@@ -51,7 +49,7 @@ import {SimpleCacheClientProps} from './simple-cache-client-props';
  * @class SimpleCacheClient
  */
 export class SimpleCacheClient {
-  private readonly logger: Logger;
+  private readonly logger: MomentoLogger;
   private readonly configuration: Configuration;
   private readonly credentialProvider: CredentialProvider;
   private readonly dataClients: Array<CacheClient>;
@@ -62,8 +60,7 @@ export class SimpleCacheClient {
    * Creates an instance of SimpleCacheClient.
    */
   constructor(props: SimpleCacheClientProps) {
-    initializeMomentoLogging(props.configuration.getLoggerOptions());
-    this.logger = getLogger(this);
+    this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.logger.info('Instantiating Momento SimpleCacheClient');
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;

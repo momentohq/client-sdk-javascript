@@ -5,17 +5,25 @@ import {
   StaticTransportStrategy,
 } from './transport/transport-strategy';
 import {GrpcConfiguration} from './transport/grpc-configuration';
-import {LogFormat, LoggerOptions, LogLevel} from '../utils/logging';
 import {FixedCountRetryStrategy} from './retry/fixed-count-retry-strategy';
+import {PinoMomentoLoggerFactory} from './logging/pino-momento-logger';
+import {MomentoLoggerFactory} from './logging/momento-logger';
+import {RetryStrategy} from './retry/retry-strategy';
 
 // 4 minutes.  We want to remain comfortably underneath the idle timeout for AWS NLB, which is 350s.
 const defaultMaxIdleMillis = 4 * 60 * 1_000;
 const defaultMaxSessionMemoryMb = 256;
-const defaultLoggerOptions: LoggerOptions = {
-  level: LogLevel.WARN,
-  format: LogFormat.CONSOLE,
-};
-const defaultRetryStrategy = new FixedCountRetryStrategy({maxAttempts: 3});
+const defaultLoggerFactory: MomentoLoggerFactory =
+  new PinoMomentoLoggerFactory();
+
+function defaultRetryStrategy(
+  loggerFactory: MomentoLoggerFactory
+): RetryStrategy {
+  return new FixedCountRetryStrategy({
+    loggerFactory: loggerFactory,
+    maxAttempts: 3,
+  });
+}
 
 /**
  * Laptop config provides defaults suitable for a medium-to-high-latency dev environment.  Permissive timeouts, retries, and
@@ -29,7 +37,7 @@ export class Laptop extends SimpleCacheConfiguration {
    * @param {LoggerOptions} [loggerOptions=defaultLoggerOptions]  if no options are provided, a sensible default will be used
    * @returns {Laptop}
    */
-  static latest(loggerOptions: LoggerOptions = defaultLoggerOptions) {
+  static latest(loggerFactory: MomentoLoggerFactory = defaultLoggerFactory) {
     const deadlineMillis = 5000;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
@@ -40,8 +48,8 @@ export class Laptop extends SimpleCacheConfiguration {
       maxIdleMillis: defaultMaxIdleMillis,
     });
     return new Laptop({
-      loggerOptions: loggerOptions,
-      retryStrategy: defaultRetryStrategy,
+      loggerFactory: loggerFactory,
+      retryStrategy: defaultRetryStrategy(loggerFactory),
       transportStrategy: transportStrategy,
     });
   }
@@ -52,10 +60,10 @@ class InRegionDefault extends SimpleCacheConfiguration {
    * Provides the latest recommended configuration for a low-latency in-region
    * environment.
    *
-   * @param {LoggerOptions} [loggerOptions=defaultLoggerOptions]  if no options are provided, a sensible default will be used
+   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]  if no options are provided, a sensible default will be used
    * @returns {InRegionDefault}
    */
-  static latest(loggerOptions: LoggerOptions = defaultLoggerOptions) {
+  static latest(loggerFactory: MomentoLoggerFactory = defaultLoggerFactory) {
     const deadlineMillis = 1100;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
@@ -66,8 +74,8 @@ class InRegionDefault extends SimpleCacheConfiguration {
       maxIdleMillis: defaultMaxIdleMillis,
     });
     return new InRegionDefault({
-      loggerOptions: loggerOptions,
-      retryStrategy: defaultRetryStrategy,
+      loggerFactory: loggerFactory,
+      retryStrategy: defaultRetryStrategy(loggerFactory),
       transportStrategy: transportStrategy,
     });
   }
@@ -76,10 +84,11 @@ class InRegionDefault extends SimpleCacheConfiguration {
 class InRegionLowLatency extends SimpleCacheConfiguration {
   /**
    * Provides the latest recommended configuration for an InRegion environment.
-   * @param {LoggerOptions} [loggerOptions=defaultLoggerOptions]  if no options are provided, a sensible default will be used
+   *
+   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]  if no options are provided, a sensible default will be used
    * @returns {InRegionLowLatency}
    */
-  static latest(loggerOptions: LoggerOptions = defaultLoggerOptions) {
+  static latest(loggerFactory: MomentoLoggerFactory = defaultLoggerFactory) {
     const deadlineMillis = 500;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
@@ -90,8 +99,8 @@ class InRegionLowLatency extends SimpleCacheConfiguration {
       maxIdleMillis: defaultMaxIdleMillis,
     });
     return new InRegionDefault({
-      loggerOptions: loggerOptions,
-      retryStrategy: defaultRetryStrategy,
+      loggerFactory: loggerFactory,
+      retryStrategy: defaultRetryStrategy(loggerFactory),
       transportStrategy: transportStrategy,
     });
   }
