@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@gomomento/generated-types": "0.20.0",
-    "@gomomento/sdk": "0.17.1",
+    "@gomomento/sdk": "0.19.1",
     "@grpc/grpc-js": "1.5.10",
     "hdr-histogram-js": "3.0.0",
     "node-fetch": "2.6.7"
