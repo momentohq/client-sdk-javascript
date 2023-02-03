@@ -64,6 +64,16 @@ export {
 } from './config/logging/momento-logger';
 
 export {
+  PinoMomentoLogger,
+  PinoMomentoLoggerFactory,
+} from './config/logging/pino-momento-logger';
+
+export {
+  DefaultMomentoLoggerFactory,
+  DefaultMomentoLoggerLevel,
+} from './config/logging/default-momento-logger';
+
+export {
   CollectionTtl,
   Configurations,
   Configuration,
