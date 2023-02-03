@@ -2,7 +2,6 @@ import {control} from '@gomomento/generated-types';
 import grpcControl = control.control_client;
 import {Header, HeaderInterceptor} from '../grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from '../grpc/client-timeout-interceptor';
-import {createRetryInterceptorIfEnabled} from '../grpc/retry-interceptor';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
@@ -46,7 +45,6 @@ export class ControlClient {
     this.interceptors = [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
       ClientTimeoutInterceptor(ControlClient.REQUEST_TIMEOUT_MS),
-      ...createRetryInterceptorIfEnabled(),
     ];
     this.logger.debug(
       `Creating control client using endpoint: '${props.credentialProvider.getControlEndpoint()}`

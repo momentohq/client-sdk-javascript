@@ -1501,7 +1501,7 @@ export class CacheClient {
     return [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
       ClientTimeoutInterceptor(this.requestTimeoutMs),
-      ...createRetryInterceptorIfEnabled(),
+      ...createRetryInterceptorIfEnabled(this.configuration.getRetryStrategy()),
     ];
   }
 

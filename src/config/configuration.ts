@@ -1,11 +1,16 @@
 import {TransportStrategy} from './transport/transport-strategy';
 import {LoggerOptions} from '../utils/logging';
+import {RetryStrategy} from './retry/retry-strategy';
 
 export interface ConfigurationProps {
   /**
    * Configures logging verbosity and format
    */
   loggerOptions: LoggerOptions;
+  /**
+   * Configures how and when failed requests will be retried
+   */
+  retryStrategy: RetryStrategy;
   /**
    * Configures low-level options for network interactions with the Momento service
    */
@@ -19,7 +24,6 @@ export interface ConfigurationProps {
  * @interface Configuration
  */
 export interface Configuration {
-  // TODO: add RetryStrategy
   // TODO: add Middlewares
   /**
    * @returns {LoggerOptions} the current configuration options for logging verbosity and format
@@ -32,6 +36,18 @@ export interface Configuration {
    * @returns {Configuration} a new Configuration object with the specified LoggerOptions
    */
   withLoggerOptions(loggerOptions: LoggerOptions): Configuration;
+
+  /**
+   * @returns {RetryStrategy} the current configuration options for how and when failed requests will be retried
+   */
+  getRetryStrategy(): RetryStrategy;
+
+  /**
+   * Copy constructor for overriding RetryStrategy
+   * @param {RetryStrategy} retryStrategy
+   * @returns {Configuration} a new Configuration object with the specified RetryStrategy
+   */
+  withRetryStrategy(retryStrategy: RetryStrategy): Configuration;
 
   /**
    * @returns {TransportStrategy} the current configuration options for wire interactions with the Momento service
@@ -55,10 +71,12 @@ export interface Configuration {
 
 export class SimpleCacheConfiguration implements Configuration {
   private readonly loggerOptions: LoggerOptions;
+  private readonly retryStrategy: RetryStrategy;
   private readonly transportStrategy: TransportStrategy;
 
   constructor(props: ConfigurationProps) {
     this.loggerOptions = props.loggerOptions;
+    this.retryStrategy = props.retryStrategy;
     this.transportStrategy = props.transportStrategy;
   }
 
@@ -66,20 +84,34 @@ export class SimpleCacheConfiguration implements Configuration {
     return this.loggerOptions;
   }
 
-  getTransportStrategy(): TransportStrategy {
-    return this.transportStrategy;
-  }
-
   withLoggerOptions(loggerOptions: LoggerOptions): Configuration {
     return new SimpleCacheConfiguration({
       loggerOptions: loggerOptions,
+      retryStrategy: this.retryStrategy,
       transportStrategy: this.transportStrategy,
     });
+  }
+
+  getRetryStrategy(): RetryStrategy {
+    return this.retryStrategy;
+  }
+
+  withRetryStrategy(retryStrategy: RetryStrategy): Configuration {
+    return new SimpleCacheConfiguration({
+      loggerOptions: this.loggerOptions,
+      retryStrategy: retryStrategy,
+      transportStrategy: this.transportStrategy,
+    });
+  }
+
+  getTransportStrategy(): TransportStrategy {
+    return this.transportStrategy;
   }
 
   withTransportStrategy(transportStrategy: TransportStrategy): Configuration {
     return new SimpleCacheConfiguration({
       loggerOptions: this.loggerOptions,
+      retryStrategy: this.retryStrategy,
       transportStrategy: transportStrategy,
     });
   }
@@ -87,6 +119,7 @@ export class SimpleCacheConfiguration implements Configuration {
   withClientTimeoutMillis(clientTimeout: number): Configuration {
     return new SimpleCacheConfiguration({
       loggerOptions: this.loggerOptions,
+      retryStrategy: this.retryStrategy,
       transportStrategy:
         this.transportStrategy.withClientTimeoutMillis(clientTimeout),
     });

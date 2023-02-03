@@ -4,12 +4,14 @@ import {
   StaticGrpcConfiguration,
   StaticTransportStrategy,
 } from '../../src/config/transport/transport-strategy';
+import {FixedCountRetryStrategy} from '../../src/config/retry/fixed-count-retry-strategy';
 
 describe('configuration.ts', () => {
   const testLoggerOptions: LoggerOptions = {
     level: LogLevel.WARN,
     format: LogFormat.CONSOLE,
   };
+  const testRetryStrategy = new FixedCountRetryStrategy({maxAttempts: 1});
   const testGrpcConfiguration = new StaticGrpcConfiguration({
     deadlineMillis: 90210,
     maxSessionMemoryMb: 90211,
@@ -21,6 +23,7 @@ describe('configuration.ts', () => {
   });
   const testConfiguration = new SimpleCacheConfiguration({
     loggerOptions: testLoggerOptions,
+    retryStrategy: testRetryStrategy,
     transportStrategy: testTransportStrategy,
   });
 
@@ -34,7 +37,25 @@ describe('configuration.ts', () => {
     expect(configWithNewLoggerOptions.getLoggerOptions()).toEqual(
       newLoggerOptions
     );
+    expect(configWithNewLoggerOptions.getRetryStrategy()).toEqual(
+      testRetryStrategy
+    );
     expect(configWithNewLoggerOptions.getTransportStrategy()).toEqual(
+      testTransportStrategy
+    );
+  });
+
+  it('should support overriding retry strategy', () => {
+    const newRetryStrategy = new FixedCountRetryStrategy({maxAttempts: 42});
+    const configWithNewRetryStrategy =
+      testConfiguration.withRetryStrategy(newRetryStrategy);
+    expect(configWithNewRetryStrategy.getLoggerOptions()).toEqual(
+      testLoggerOptions
+    );
+    expect(configWithNewRetryStrategy.getRetryStrategy()).toEqual(
+      newRetryStrategy
+    );
+    expect(configWithNewRetryStrategy.getTransportStrategy()).toEqual(
       testTransportStrategy
     );
   });
@@ -54,6 +75,9 @@ describe('configuration.ts', () => {
     expect(configWithNewTransportStrategy.getLoggerOptions()).toEqual(
       testLoggerOptions
     );
+    expect(configWithNewTransportStrategy.getRetryStrategy()).toEqual(
+      testRetryStrategy
+    );
     expect(configWithNewTransportStrategy.getTransportStrategy()).toEqual(
       newTransportStrategy
     );
@@ -72,6 +96,9 @@ describe('configuration.ts', () => {
       testConfiguration.withClientTimeoutMillis(newClientTimeoutMillis);
     expect(configWithNewClientTimeout.getLoggerOptions()).toEqual(
       testLoggerOptions
+    );
+    expect(configWithNewClientTimeout.getRetryStrategy()).toEqual(
+      testRetryStrategy
     );
     expect(configWithNewClientTimeout.getTransportStrategy()).toEqual(
       expectedTransportStrategy
