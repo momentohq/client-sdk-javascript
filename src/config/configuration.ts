@@ -1,12 +1,12 @@
 import {TransportStrategy} from './transport/transport-strategy';
-import {LoggerOptions} from '../utils/logging';
+import {MomentoLoggerFactory} from './logging/momento-logger';
 import {RetryStrategy} from './retry/retry-strategy';
 
 export interface ConfigurationProps {
   /**
    * Configures logging verbosity and format
    */
-  loggerOptions: LoggerOptions;
+  loggerFactory: MomentoLoggerFactory;
   /**
    * Configures how and when failed requests will be retried
    */
@@ -26,16 +26,16 @@ export interface ConfigurationProps {
 export interface Configuration {
   // TODO: add Middlewares
   /**
-   * @returns {LoggerOptions} the current configuration options for logging verbosity and format
+   * @returns {MomentoLoggerFactory} the current configuration options for logging verbosity and format
    */
-  getLoggerOptions(): LoggerOptions;
+  getLoggerFactory(): MomentoLoggerFactory;
 
   /**
    * Copy constructor for overriding LoggerOptions
-   * @param {LoggerOptions} loggerOptions
+   * @param {MomentoLoggerFactory} loggerFactory
    * @returns {Configuration} a new Configuration object with the specified LoggerOptions
    */
-  withLoggerOptions(loggerOptions: LoggerOptions): Configuration;
+  withLoggerFactory(loggerFactory: MomentoLoggerFactory): Configuration;
 
   /**
    * @returns {RetryStrategy} the current configuration options for how and when failed requests will be retried
@@ -70,23 +70,23 @@ export interface Configuration {
 }
 
 export class SimpleCacheConfiguration implements Configuration {
-  private readonly loggerOptions: LoggerOptions;
+  private readonly loggerFactory: MomentoLoggerFactory;
   private readonly retryStrategy: RetryStrategy;
   private readonly transportStrategy: TransportStrategy;
 
   constructor(props: ConfigurationProps) {
-    this.loggerOptions = props.loggerOptions;
+    this.loggerFactory = props.loggerFactory;
     this.retryStrategy = props.retryStrategy;
     this.transportStrategy = props.transportStrategy;
   }
 
-  getLoggerOptions(): LoggerOptions {
-    return this.loggerOptions;
+  getLoggerFactory(): MomentoLoggerFactory {
+    return this.loggerFactory;
   }
 
-  withLoggerOptions(loggerOptions: LoggerOptions): Configuration {
+  withLoggerFactory(loggerFactory: MomentoLoggerFactory): Configuration {
     return new SimpleCacheConfiguration({
-      loggerOptions: loggerOptions,
+      loggerFactory: loggerFactory,
       retryStrategy: this.retryStrategy,
       transportStrategy: this.transportStrategy,
     });
@@ -98,7 +98,7 @@ export class SimpleCacheConfiguration implements Configuration {
 
   withRetryStrategy(retryStrategy: RetryStrategy): Configuration {
     return new SimpleCacheConfiguration({
-      loggerOptions: this.loggerOptions,
+      loggerFactory: this.loggerFactory,
       retryStrategy: retryStrategy,
       transportStrategy: this.transportStrategy,
     });
@@ -110,7 +110,7 @@ export class SimpleCacheConfiguration implements Configuration {
 
   withTransportStrategy(transportStrategy: TransportStrategy): Configuration {
     return new SimpleCacheConfiguration({
-      loggerOptions: this.loggerOptions,
+      loggerFactory: this.loggerFactory,
       retryStrategy: this.retryStrategy,
       transportStrategy: transportStrategy,
     });
@@ -118,7 +118,7 @@ export class SimpleCacheConfiguration implements Configuration {
 
   withClientTimeoutMillis(clientTimeout: number): Configuration {
     return new SimpleCacheConfiguration({
-      loggerOptions: this.loggerOptions,
+      loggerFactory: this.loggerFactory,
       retryStrategy: this.retryStrategy,
       transportStrategy:
         this.transportStrategy.withClientTimeoutMillis(clientTimeout),

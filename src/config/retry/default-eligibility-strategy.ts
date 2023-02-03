@@ -3,7 +3,7 @@ import {
   EligibilityStrategy,
   EligibleForRetryProps,
 } from './eligibility-strategy';
-import {getLogger, Logger} from '../../utils/logging';
+import {MomentoLogger, MomentoLoggerFactory} from '../logging/momento-logger';
 
 const retryableGrpcStatusCodes: Array<Status> = [
   // including all the status codes for reference, but
@@ -58,10 +58,10 @@ const retryableRequestTypes: Array<string> = [
 ];
 
 export class DefaultEligibilityStrategy implements EligibilityStrategy {
-  private readonly logger: Logger;
+  private readonly logger: MomentoLogger;
 
-  constructor() {
-    this.logger = getLogger(this);
+  constructor(loggerFactory: MomentoLoggerFactory) {
+    this.logger = loggerFactory.getLogger(this);
   }
 
   isEligibleForRetry(props: EligibleForRetryProps): boolean {

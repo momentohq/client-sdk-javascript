@@ -36,9 +36,9 @@ import {
   CredentialProvider,
   InvalidArgumentError,
   UnknownError,
+  MomentoLogger,
 } from '..';
 import {version} from '../../package.json';
-import {getLogger, Logger} from '../utils/logging';
 import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
@@ -58,7 +58,7 @@ export class CacheClient {
   private readonly defaultTtlSeconds: number;
   private readonly requestTimeoutMs: number;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
-  private readonly logger: Logger;
+  private readonly logger: MomentoLogger;
   private readonly interceptors: Interceptor[];
 
   /**
@@ -67,7 +67,7 @@ export class CacheClient {
   constructor(props: SimpleCacheClientProps) {
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
-    this.logger = getLogger(this);
+    this.logger = this.configuration.getLoggerFactory().getLogger(this);
     const grpcConfig = this.configuration
       .getTransportStrategy()
       .getGrpcConfig();
@@ -1501,7 +1501,10 @@ export class CacheClient {
     return [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
       ClientTimeoutInterceptor(this.requestTimeoutMs),
-      ...createRetryInterceptorIfEnabled(this.configuration.getRetryStrategy()),
+      ...createRetryInterceptorIfEnabled(
+        this.configuration.getLoggerFactory(),
+        this.configuration.getRetryStrategy()
+      ),
     ];
   }
 
