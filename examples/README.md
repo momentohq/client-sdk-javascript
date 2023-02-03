@@ -4,10 +4,12 @@ _Read this in other languages_: [日本語](README.ja.md)
 
 <br>
 
-## Running the Example
+## Example Requirements
 
-- Node version 16 or higher is required
+- Node version 14 or higher is required
 - A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
+
+## Running the Example
 
 ```bash
 npm install
@@ -22,9 +24,6 @@ Example Code: [index.ts](index.ts)
 
 This example demonstrates how to use the `MomentoSigner` class, which enables creation of user-signed access tokens and presigned urls which can be used for doing cache get/set actions via HTTP.
 
-- Node version 16 or higher is required
-- A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
-
 ```bash
 npm install
 
@@ -37,9 +36,6 @@ Example Code: [presigned-url-example.ts](presigned-url-example.ts)
 ## Running the Dictionary Example
 
 This example demonstrates how to use the dictionary data type.
-
-- Node version 16 or higher is required
-- A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
 
 ```bash
 npm install
