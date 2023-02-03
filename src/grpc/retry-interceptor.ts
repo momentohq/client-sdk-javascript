@@ -12,54 +12,23 @@ import {
   Metadata,
   StatusObject,
 } from '@grpc/grpc-js';
-import {Status} from '@grpc/grpc-js/build/src/constants';
 import {getLogger, Logger} from '../utils/logging';
+import {RetryStrategy} from '../config/retry/retry-strategy';
+import {Status} from '@grpc/grpc-js/build/src/constants';
 
-const retryableGrpcStatusCodes: Array<Status> = [
-  // including all the status codes for reference, but
-  // commenting out the ones we don't want to retry on for now.
-
-  // Status.OK,
-  // Status.CANCELLED,
-  // Status.UNKNOWN,
-  // Status.INVALID_ARGUMENT,
-  // Status.DEADLINE_EXCEEDED,
-  // Status.NOT_FOUND,
-  // Status.ALREADY_EXISTS,
-  // Status.PERMISSION_DENIED,
-  // Status.RESOURCE_EXHAUSTED,
-  // Status.FAILED_PRECONDITION,
-  // Status.ABORTED,
-  // Status.OUT_OF_RANGE,
-  // Status.UNIMPLEMENTED,
-  Status.INTERNAL,
-  Status.UNAVAILABLE,
-  // Status.DATA_LOSS,
-  // Status.UNAUTHENTICATED
-];
-
-// TODO: Retry interceptor behavior should be configurable, but we need to
-// align on basic API design first:
-// https://github.com/momentohq/client-sdk-javascript/issues/79
-// https://github.com/momentohq/dev-eco-issue-tracker/issues/85
-// For now, for convenience during development, you can toggle this hard-coded
-// variable to enable/disable it.
-const RETRIES_ENABLED = true;
-const maxRetry = 3;
-
-export function createRetryInterceptorIfEnabled(): Array<Interceptor> {
-  if (RETRIES_ENABLED) {
-    return [new RetryInterceptor().createRetryInterceptor()];
-  } else {
-    return [];
-  }
+export function createRetryInterceptorIfEnabled(
+  retryStrategy: RetryStrategy
+): Array<Interceptor> {
+  return [new RetryInterceptor(retryStrategy).createRetryInterceptor()];
 }
 
 export class RetryInterceptor {
   private readonly logger: Logger;
+  private readonly retryStrategy: RetryStrategy;
 
-  constructor() {
+  constructor(retryStrategy: RetryStrategy) {
     this.logger = getLogger(this);
+    this.retryStrategy = retryStrategy;
   }
 
   // TODO: We need to send retry count information to the server so that we
@@ -69,6 +38,7 @@ export class RetryInterceptor {
   // https://github.com/momentohq/client-sdk-javascript/issues/81
   public createRetryInterceptor(): Interceptor {
     const logger = this.logger;
+    const retryStrategy = this.retryStrategy;
 
     return (options, nextCall) => {
       let savedMetadata: Metadata;
@@ -92,48 +62,60 @@ export class RetryInterceptor {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               next: (arg0: any) => void
             ) {
-              let retries = 0;
+              let attempts = 1;
               const retry = function (message: unknown, metadata: Metadata) {
-                retries++;
+                attempts++;
                 const newCall = nextCall(options);
                 newCall.start(metadata, {
                   onReceiveMessage: function (message) {
                     savedReceiveMessage = message;
                   },
                   onReceiveStatus: function (status) {
-                    if (retryableGrpcStatusCodes.includes(status.code)) {
-                      if (retries <= maxRetry) {
-                        logger.debug(
-                          `Request path: ${options.method_definition.path}; retryable status code: ${status.code}; number of retries (${retries}) is less than max (${maxRetry}), retrying.`
-                        );
-                        retry(message, metadata);
-                      } else {
-                        logger.debug(
-                          `Request path: ${options.method_definition.path}; retryable status code: ${status.code}; number of retries (${retries}) has exceeded max (${maxRetry}), not retrying.`
-                        );
-                        savedMessageNext(savedReceiveMessage);
-                        next(status);
-                      }
-                    } else {
+                    const whenToRetry =
+                      retryStrategy.determineWhenToRetryRequest({
+                        grpcStatus: status,
+                        grpcRequest: options.method_definition,
+                        attemptNumber: attempts,
+                      });
+
+                    if (whenToRetry === null) {
+                      logger.debug(
+                        `Request not eligible for retry: path: ${options.method_definition.path}; retryable status code: ${status.code}; number of attempts (${attempts}).`
+                      );
                       savedMessageNext(savedReceiveMessage);
-                      next({code: status.code});
+                      next(status);
+                    } else {
+                      `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`;
+                      setTimeout(() => retry(message, metadata), whenToRetry);
                     }
                   },
                 });
                 newCall.sendMessage(savedSendMessage);
                 newCall.halfClose();
               };
-              if (retryableGrpcStatusCodes.includes(status.code)) {
-                logger.debug(
-                  `Request path: ${options.method_definition.path}; response status code: ${status.code}; number of retries (${retries}) is less than max (${maxRetry}), retrying.`
-                );
-                retry(savedSendMessage, savedMetadata);
-              } else {
-                logger.trace(
-                  `Request path: ${options.method_definition.path}; response status code: ${status.code}; not eligible for retry.`
-                );
+
+              if (status.code === Status.OK) {
                 savedMessageNext(savedReceiveMessage);
                 next(status);
+              } else {
+                const whenToRetry = retryStrategy.determineWhenToRetryRequest({
+                  grpcStatus: status,
+                  grpcRequest: options.method_definition,
+                  attemptNumber: attempts,
+                });
+                if (whenToRetry === null) {
+                  logger.trace(
+                    `Request not eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}.`
+                  );
+                  savedMessageNext(savedReceiveMessage);
+                  next(status);
+                } else {
+                  `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`;
+                  setTimeout(
+                    () => retry(savedSendMessage, savedMetadata),
+                    whenToRetry
+                  );
+                }
               }
             },
           };

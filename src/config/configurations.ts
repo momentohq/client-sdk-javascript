@@ -6,6 +6,7 @@ import {
 } from './transport/transport-strategy';
 import {GrpcConfiguration} from './transport/grpc-configuration';
 import {LogFormat, LoggerOptions, LogLevel} from '../utils/logging';
+import {FixedCountRetryStrategy} from './retry/fixed-count-retry-strategy';
 
 // 4 minutes.  We want to remain comfortably underneath the idle timeout for AWS NLB, which is 350s.
 const defaultMaxIdleMillis = 4 * 60 * 1_000;
@@ -14,6 +15,7 @@ const defaultLoggerOptions: LoggerOptions = {
   level: LogLevel.WARN,
   format: LogFormat.CONSOLE,
 };
+const defaultRetryStrategy = new FixedCountRetryStrategy({maxAttempts: 3});
 
 /**
  * Laptop config provides defaults suitable for a medium-to-high-latency dev environment.  Permissive timeouts, retries, and
@@ -39,6 +41,7 @@ export class Laptop extends SimpleCacheConfiguration {
     });
     return new Laptop({
       loggerOptions: loggerOptions,
+      retryStrategy: defaultRetryStrategy,
       transportStrategy: transportStrategy,
     });
   }
@@ -64,6 +67,7 @@ class InRegionDefault extends SimpleCacheConfiguration {
     });
     return new InRegionDefault({
       loggerOptions: loggerOptions,
+      retryStrategy: defaultRetryStrategy,
       transportStrategy: transportStrategy,
     });
   }
@@ -87,6 +91,7 @@ class InRegionLowLatency extends SimpleCacheConfiguration {
     });
     return new InRegionDefault({
       loggerOptions: loggerOptions,
+      retryStrategy: defaultRetryStrategy,
       transportStrategy: transportStrategy,
     });
   }
