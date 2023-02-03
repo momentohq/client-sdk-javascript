@@ -6,15 +6,15 @@ import {
 } from './transport/transport-strategy';
 import {GrpcConfiguration} from './transport/grpc-configuration';
 import {FixedCountRetryStrategy} from './retry/fixed-count-retry-strategy';
-import {PinoMomentoLoggerFactory} from './logging/pino-momento-logger';
 import {MomentoLoggerFactory} from './logging/momento-logger';
 import {RetryStrategy} from './retry/retry-strategy';
+import {DefaultMomentoLoggerFactory} from './logging/default-momento-logger';
 
 // 4 minutes.  We want to remain comfortably underneath the idle timeout for AWS NLB, which is 350s.
 const defaultMaxIdleMillis = 4 * 60 * 1_000;
 const defaultMaxSessionMemoryMb = 256;
 const defaultLoggerFactory: MomentoLoggerFactory =
-  new PinoMomentoLoggerFactory();
+  new DefaultMomentoLoggerFactory();
 
 function defaultRetryStrategy(
   loggerFactory: MomentoLoggerFactory

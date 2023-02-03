@@ -4,11 +4,11 @@ import {
   StaticTransportStrategy,
 } from '../../src/config/transport/transport-strategy';
 import {FixedCountRetryStrategy} from '../../src/config/retry/fixed-count-retry-strategy';
-import {PinoMomentoLoggerFactory} from '../../src/config/logging/pino-momento-logger';
 import {NoopMomentoLoggerFactory} from '../../src/config/logging/noop-momento-logger';
+import {DefaultMomentoLoggerFactory} from '../../src';
 
 describe('configuration.ts', () => {
-  const testLoggerFactory = new PinoMomentoLoggerFactory();
+  const testLoggerFactory = new DefaultMomentoLoggerFactory();
   const testRetryStrategy = new FixedCountRetryStrategy({
     loggerFactory: testLoggerFactory,
     maxAttempts: 1,
