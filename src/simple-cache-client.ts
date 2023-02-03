@@ -500,7 +500,9 @@ export class SimpleCacheClient {
   public async dictionarySetFields(
     cacheName: string,
     dictionaryName: string,
-    items: Map<string | Uint8Array, string | Uint8Array>,
+    items:
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Record<string, string | Uint8Array>,
     ttl?: CollectionTtl
   ): Promise<CacheDictionarySetFields.Response> {
     const client = this.getNextDataClient();
