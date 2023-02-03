@@ -18,7 +18,7 @@ const retryableGrpcStatusCodes: Array<Status> = [
   // Status.ALREADY_EXISTS,
   // Status.PERMISSION_DENIED,
   // Status.RESOURCE_EXHAUSTED,
-  Status.FAILED_PRECONDITION,
+  // Status.FAILED_PRECONDITION,
   // Status.ABORTED,
   // Status.OUT_OF_RANGE,
   // Status.UNIMPLEMENTED,
