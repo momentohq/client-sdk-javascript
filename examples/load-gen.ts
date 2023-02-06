@@ -1,26 +1,24 @@
 import {
-  getLogger,
-  InternalServerError,
-  LimitExceededError,
-  LogFormat,
-  Logger,
-  LoggerOptions,
-  LogLevel,
-  initializeMomentoLogging,
-  SimpleCacheClient,
-  TimeoutError,
-  CreateCache,
   CacheGet,
   CacheSet,
   Configurations,
+  CreateCache,
+  DefaultMomentoLoggerFactory,
+  DefaultMomentoLoggerLevel,
   EnvMomentoTokenProvider,
+  InternalServerError,
+  LimitExceededError,
+  MomentoLogger,
+  MomentoLoggerFactory,
+  SimpleCacheClient,
+  TimeoutError,
 } from '@gomomento/sdk';
 import * as hdr from 'hdr-histogram-js';
 import {range} from './utils/collections';
 import {delay} from './utils/time';
 
 interface BasicJavaScriptLoadGenOptions {
-  loggerOptions: LoggerOptions;
+  loggerFactory: MomentoLoggerFactory;
   requestTimeoutMs: number;
   cacheItemPayloadBytes: number;
   numberOfConcurrentRequests: number;
@@ -53,9 +51,9 @@ interface BasicJavasScriptLoadGenContext {
 }
 
 class BasicJavaScriptLoadGen {
-  private readonly logger: Logger;
+  private readonly loggerFactory: MomentoLoggerFactory;
+  private readonly logger: MomentoLogger;
   private readonly cacheItemTtlSeconds = 60;
-  private readonly loggerOptions: LoggerOptions;
   private readonly options: BasicJavaScriptLoadGenOptions;
   private readonly delayMillisBetweenRequests: number;
   private readonly cacheValue: string;
@@ -63,9 +61,8 @@ class BasicJavaScriptLoadGen {
   private readonly cacheName: string = 'js-loadgen';
 
   constructor(options: BasicJavaScriptLoadGenOptions) {
-    initializeMomentoLogging(options.loggerOptions);
-    this.logger = getLogger('load-gen');
-    this.loggerOptions = options.loggerOptions;
+    this.loggerFactory = options.loggerFactory;
+    this.logger = this.loggerFactory.getLogger('load-gen');
     this.options = options;
     this.cacheValue = 'x'.repeat(options.cacheItemPayloadBytes);
     this.delayMillisBetweenRequests =
@@ -76,7 +73,7 @@ class BasicJavaScriptLoadGen {
   async run(): Promise<void> {
     const momento = new SimpleCacheClient({
       configuration: Configurations.Laptop.latest(
-        this.loggerOptions
+        this.loggerFactory
       ).withClientTimeoutMillis(this.options.requestTimeoutMs),
       credentialProvider: new EnvMomentoTokenProvider({
         environmentVariableName: 'MOMENTO_AUTH_TOKEN',
@@ -402,19 +399,12 @@ const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
    * This setting allows you to control the verbosity of the log output during
    * the load generator run.
    */
-  loggerOptions: {
+  loggerFactory: new DefaultMomentoLoggerFactory(
     /**
-     * Available log levels are TRACE, DEBUG, INFO, WARN, and ERROR.  INFO
-     * is a reasonable choice for this load generator program.
+     * Available log levels are trace, debug, info, warn, and error.
      */
-    level: LogLevel.DEBUG,
-    /**
-     * Allows you to choose between formatting your log output as JSON (a good
-     * choice for production environments) or CONSOLE (a better choice for
-     * development environments).
-     */
-    format: LogFormat.CONSOLE,
-  },
+    DefaultMomentoLoggerLevel.DEBUG
+  ),
   /** Print some statistics about throughput and latency every time this many
    *  seconds have passed.
    */

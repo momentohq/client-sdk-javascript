@@ -1,16 +1,15 @@
 import {
   CreateCache,
-  LogLevel,
-  LogFormat,
   SimpleCacheClient,
   EnvMomentoTokenProvider,
   Configurations,
-  LoggerOptions,
   CacheDictionarySetField,
   CacheDictionarySetFields,
   CacheDictionaryGetField,
   CacheDictionaryGetFields,
   CacheDictionaryFetch,
+  MomentoLoggerFactory,
+  DefaultMomentoLoggerFactory,
 } from '@gomomento/sdk';
 
 const cacheName = 'cache';
@@ -20,14 +19,11 @@ const credentialsProvider = new EnvMomentoTokenProvider({
   environmentVariableName: 'MOMENTO_AUTH_TOKEN',
 });
 
-const loggerOptions: LoggerOptions = {
-  level: LogLevel.INFO,
-  format: LogFormat.JSON,
-};
+const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory();
 
 const defaultTtl = 60;
 const momento = new SimpleCacheClient({
-  configuration: Configurations.Laptop.latest(loggerOptions),
+  configuration: Configurations.Laptop.latest(loggerFactory),
   credentialProvider: credentialsProvider,
   defaultTtlSeconds: defaultTtl,
 });
@@ -112,17 +108,13 @@ const main = async () => {
     fieldsList
   );
   if (dictionaryGetFieldsResponse instanceof CacheDictionaryGetFields.Hit) {
-    console.log('Displaying the result of dictionary get fields:');
-    dictionaryGetFieldsResponse.responsesList.forEach(response => {
-      const field = response.fieldString();
-      let status = 'MISS';
-      let value = '<NONE; field was a MISS>';
-      if (response instanceof CacheDictionaryGetField.Hit) {
-        status = 'HIT';
-        value = response.valueString();
-      }
-      console.log(`- field=${field}; status=${status}; value=${value}`);
-    });
+    console.log(
+      `Got dictionary fields: ${JSON.stringify(
+        dictionaryGetFieldsResponse.valueRecord(),
+        null,
+        2
+      )}`
+    );
   } else if (
     dictionaryGetFieldsResponse instanceof CacheDictionaryGetFields.Error
   ) {
@@ -139,11 +131,8 @@ const main = async () => {
     dictionaryName
   );
   if (dictionaryFetchResponse instanceof CacheDictionaryFetch.Hit) {
-    const dictionary = dictionaryFetchResponse.valueDictionaryStringString();
-    // console.log(`Accessing an entry of ${dictionaryName} by field: ${dictionary['field1']}`);
-    dictionary.forEach((value, key) => {
-      console.log(`- field=${key}; value=${value}`);
-    });
+    const dictionary = dictionaryFetchResponse.valueRecord();
+    console.log(`Fetched dictionary: ${JSON.stringify(dictionary, null, 2)}`);
   } else if (dictionaryFetchResponse instanceof CacheDictionaryFetch.Miss) {
     // You can reach here by:
     // - fetching a dictionary that does not exist, e.g. changing the name above, or
