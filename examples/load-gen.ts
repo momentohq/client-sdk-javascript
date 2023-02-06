@@ -364,7 +364,7 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
 }
 
 const PERFORMANCE_INFORMATION_MESSAGE = `
-Thanks for trying out our basic javascript load generator!  This tool is
+Thanks for trying out our basic node.js load generator!  This tool is
 included to allow you to experiment with performance in your environment
 based on different configurations.  It's very simplistic, and only intended
 to give you a quick way to explore the performance of the Momento client

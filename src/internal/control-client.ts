@@ -40,7 +40,7 @@ export class ControlClient {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     const headers = [
       new Header('Authorization', props.credentialProvider.getAuthToken()),
-      new Header('Agent', `javascript:${version}`),
+      new Header('Agent', `nodejs:${version}`),
     ];
     this.interceptors = [
       new HeaderInterceptor(headers).addHeadersInterceptor(),
