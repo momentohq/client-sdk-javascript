@@ -1,6 +1,6 @@
 import {CollectionTtl} from './collection-ttl';
 
-export interface SingleCallOptions {
+export interface ScalarCallOptions {
   /**
    * The time to live in seconds of the object being modified.
    */
@@ -18,12 +18,12 @@ export interface FrontTruncatableCallOptions extends CollectionCallOptions {
   /**
    * If the collection exceeds this length, remove excess from the start of the list. Must be positive.
    */
-  truncateFrontToSize?: number; //separate front and back
+  truncateFrontToSize?: number;
 }
 
 export interface BackTruncatableCallOptions extends CollectionCallOptions {
   /**
    * If the collection exceeds this length, remove excess from the end of the list. Must be positive.
    */
-  truncateBackToSize?: number; //separate front and back
+  truncateBackToSize?: number;
 }
