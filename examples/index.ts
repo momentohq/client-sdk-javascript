@@ -62,9 +62,9 @@ const main = async () => {
     exampleTtlSeconds
   );
   if (setResponse instanceof CacheSet.Success) {
-    console.log('Key stored successfully with value ' + cacheValue);
+    console.log(`Key stored successfully!`);
   } else if (setResponse instanceof CacheSet.Error) {
-    console.log('Error setting key: ' + setResponse.message());
+    console.log(`Error setting key: ${setResponse.message()}`);
   }
 
   const getResponse = await momento.get(cacheName, cacheKey);
