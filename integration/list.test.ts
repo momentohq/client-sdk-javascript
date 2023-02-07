@@ -365,8 +365,10 @@ describe('lists', () => {
         props.cacheName,
         props.listName,
         props.value,
-        props.truncateToSize,
-        props.ttl
+        {
+          truncateFrontToSize: props.truncateToSize,
+          ttl: props.ttl,
+        }
       );
     });
 
@@ -390,8 +392,10 @@ describe('lists', () => {
         props.cacheName,
         props.listName,
         props.value,
-        props.truncateToSize,
-        props.ttl
+        {
+          truncateBackToSize: props.truncateToSize,
+          ttl: props.ttl,
+        }
       );
     });
 
@@ -457,8 +461,10 @@ describe('lists', () => {
         props.cacheName,
         props.listName,
         [props.value] as string[] | Uint8Array[],
-        props.truncateToSize,
-        props.ttl
+        {
+          truncateFrontToSize: props.truncateToSize,
+          ttl: props.ttl,
+        }
       );
     });
 
@@ -512,8 +518,10 @@ describe('lists', () => {
         props.cacheName,
         props.listName,
         [props.value] as string[] | Uint8Array[],
-        props.truncateToSize,
-        props.ttl
+        {
+          truncateBackToSize: props.truncateToSize,
+          ttl: props.ttl,
+        }
       );
     });
 
