@@ -35,7 +35,7 @@ import {
   CacheSetRemoveElement,
   MomentoLogger,
 } from '.';
-import {range} from './utils/collections';
+import {range} from './internal/utils/collections';
 import {SimpleCacheClientProps} from './simple-cache-client-props';
 
 /**

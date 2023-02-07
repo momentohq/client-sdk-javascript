@@ -1,4 +1,4 @@
-import {InvalidArgumentError} from '../errors/errors';
+import {InvalidArgumentError} from '../../errors/errors';
 import jwtDecode from 'jwt-decode';
 
 interface Claims {

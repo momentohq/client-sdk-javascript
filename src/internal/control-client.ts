@@ -1,7 +1,7 @@
 import {control} from '@gomomento/generated-types';
 import grpcControl = control.control_client;
-import {Header, HeaderInterceptor} from '../grpc/headers-interceptor';
-import {ClientTimeoutInterceptor} from '../grpc/client-timeout-interceptor';
+import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
+import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
@@ -17,10 +17,10 @@ import {
   MomentoLogger,
 } from '..';
 import {version} from '../../package.json';
-import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
-import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
+import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
+import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
-import {validateCacheName, validateTtlMinutes} from '../utils/validators';
+import {validateCacheName, validateTtlMinutes} from './utils/validators';
 
 export interface ControlClientProps {
   configuration: Configuration;

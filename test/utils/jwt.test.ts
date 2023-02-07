@@ -1,4 +1,4 @@
-import {decodeJwt} from '../../src/utils/jwt';
+import {decodeJwt} from '../../src/internal/utils/jwt';
 import {InvalidArgumentError} from '../../src';
 
 const TEST_AUTH_TOKEN_NO_ENDPOINT =

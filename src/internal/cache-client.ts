@@ -2,9 +2,9 @@ import {cache} from '@gomomento/generated-types';
 import grpcCache = cache.cache_client;
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextEncoder} from 'util';
-import {Header, HeaderInterceptor} from '../grpc/headers-interceptor';
-import {ClientTimeoutInterceptor} from '../grpc/client-timeout-interceptor';
-import {createRetryInterceptorIfEnabled} from '../grpc/retry-interceptor';
+import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
+import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
+import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
 import {
@@ -39,15 +39,15 @@ import {
   MomentoLogger,
 } from '..';
 import {version} from '../../package.json';
-import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
-import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
+import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
+import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
 import {
   validateCacheName,
   validateDictionaryName,
   validateListName,
   validateSetName,
-} from '../utils/validators';
+} from './utils/validators';
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
 
 export class CacheClient {
