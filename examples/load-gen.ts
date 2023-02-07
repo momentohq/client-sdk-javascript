@@ -17,7 +17,7 @@ import * as hdr from 'hdr-histogram-js';
 import {range} from './utils/collections';
 import {delay} from './utils/time';
 
-interface BasicJavaScriptLoadGenOptions {
+interface BasicLoadGenOptions {
   loggerFactory: MomentoLoggerFactory;
   requestTimeoutMs: number;
   cacheItemPayloadBytes: number;
@@ -35,7 +35,7 @@ enum AsyncSetGetResult {
   RST_STREAM = 'RST_STREAM',
 }
 
-interface BasicJavasScriptLoadGenContext {
+interface BasicLoadGenContext {
   startTime: [number, number];
   getLatencies: hdr.Histogram;
   setLatencies: hdr.Histogram;
@@ -50,17 +50,17 @@ interface BasicJavasScriptLoadGenContext {
   globalRstStreamCount: number;
 }
 
-class BasicJavaScriptLoadGen {
+class BasicLoadGen {
   private readonly loggerFactory: MomentoLoggerFactory;
   private readonly logger: MomentoLogger;
   private readonly cacheItemTtlSeconds = 60;
-  private readonly options: BasicJavaScriptLoadGenOptions;
+  private readonly options: BasicLoadGenOptions;
   private readonly delayMillisBetweenRequests: number;
   private readonly cacheValue: string;
 
   private readonly cacheName: string = 'js-loadgen';
 
-  constructor(options: BasicJavaScriptLoadGenOptions) {
+  constructor(options: BasicLoadGenOptions) {
     this.loggerFactory = options.loggerFactory;
     this.logger = this.loggerFactory.getLogger('load-gen');
     this.options = options;
@@ -98,7 +98,7 @@ class BasicJavaScriptLoadGen {
     );
     this.logger.info(`Running for ${this.options.totalSecondsToRun} seconds`);
 
-    const loadGenContext: BasicJavasScriptLoadGenContext = {
+    const loadGenContext: BasicLoadGenContext = {
       startTime: process.hrtime(),
       getLatencies: hdr.build(),
       setLatencies: hdr.build(),
@@ -136,7 +136,7 @@ class BasicJavaScriptLoadGen {
 
   private async launchAndRunWorkers(
     client: SimpleCacheClient,
-    loadGenContext: BasicJavasScriptLoadGenContext,
+    loadGenContext: BasicLoadGenContext,
     workerId: number
   ): Promise<void> {
     let finished = false;
@@ -155,60 +155,60 @@ class BasicJavaScriptLoadGen {
     }
   }
 
-  private logStats(loadGenContext: BasicJavasScriptLoadGenContext): void {
+  private logStats(loadGenContext: BasicLoadGenContext): void {
     this.logger.info(`
 cumulative stats:
 total requests: ${
       loadGenContext.globalRequestCount
-    } (${BasicJavaScriptLoadGen.tps(
+    } (${BasicLoadGen.tps(
       loadGenContext,
       loadGenContext.globalRequestCount
     )} tps, limited to ${this.options.maxRequestsPerSecond} tps)
        success: ${
          loadGenContext.globalSuccessCount
-       } (${BasicJavaScriptLoadGen.percentRequests(
+       } (${BasicLoadGen.percentRequests(
       loadGenContext,
       loadGenContext.globalSuccessCount
-    )}%) (${BasicJavaScriptLoadGen.tps(
+    )}%) (${BasicLoadGen.tps(
       loadGenContext,
       loadGenContext.globalSuccessCount
     )} tps)
    unavailable: ${
      loadGenContext.globalUnavailableCount
-   } (${BasicJavaScriptLoadGen.percentRequests(
+   } (${BasicLoadGen.percentRequests(
       loadGenContext,
       loadGenContext.globalUnavailableCount
     )}%)
 deadline exceeded: ${
       loadGenContext.globalDeadlineExceededCount
-    } (${BasicJavaScriptLoadGen.percentRequests(
+    } (${BasicLoadGen.percentRequests(
       loadGenContext,
       loadGenContext.globalDeadlineExceededCount
     )}%)
 resource exhausted: ${
       loadGenContext.globalResourceExhaustedCount
-    } (${BasicJavaScriptLoadGen.percentRequests(
+    } (${BasicLoadGen.percentRequests(
       loadGenContext,
       loadGenContext.globalResourceExhaustedCount
     )}%)
     rst stream: ${
       loadGenContext.globalRstStreamCount
-    } (${BasicJavaScriptLoadGen.percentRequests(
+    } (${BasicLoadGen.percentRequests(
       loadGenContext,
       loadGenContext.globalRstStreamCount
     )}%)
 
 cumulative set latencies:
-${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.setLatencies)}
+${BasicLoadGen.outputHistogramSummary(loadGenContext.setLatencies)}
 
 cumulative get latencies:
-${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
+${BasicLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
 `);
   }
 
   private async issueAsyncSetGet(
     client: SimpleCacheClient,
-    loadGenContext: BasicJavasScriptLoadGenContext,
+    loadGenContext: BasicLoadGenContext,
     workerId: number,
     operationId: number
   ): Promise<void> {
@@ -220,7 +220,7 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
       () => client.set(this.cacheName, cacheKey, this.cacheValue)
     );
     if (result !== undefined) {
-      const setDuration = BasicJavaScriptLoadGen.getElapsedMillis(setStartTime);
+      const setDuration = BasicLoadGen.getElapsedMillis(setStartTime);
       loadGenContext.setLatencies.recordValue(setDuration);
       if (setDuration < this.delayMillisBetweenRequests) {
         const delayMs = this.delayMillisBetweenRequests - setDuration;
@@ -236,7 +236,7 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
     );
 
     if (getResult !== undefined) {
-      const getDuration = BasicJavaScriptLoadGen.getElapsedMillis(getStartTime);
+      const getDuration = BasicLoadGen.getElapsedMillis(getStartTime);
       loadGenContext.getLatencies.recordValue(getDuration);
       if (getDuration < this.delayMillisBetweenRequests) {
         const delayMs = this.delayMillisBetweenRequests - getDuration;
@@ -247,7 +247,7 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
   }
 
   private async executeRequestAndUpdateContextCounts<T>(
-    context: BasicJavasScriptLoadGenContext,
+    context: BasicLoadGenContext,
     block: () => Promise<T>
   ): Promise<T | undefined> {
     const [result, response] = await this.executeRequest(block);
@@ -301,7 +301,7 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
   }
 
   private updateContextCountsForRequest(
-    context: BasicJavasScriptLoadGenContext,
+    context: BasicLoadGenContext,
     result: AsyncSetGetResult
   ): void {
     context.globalRequestCount++;
@@ -327,17 +327,17 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
   }
 
   private static tps(
-    context: BasicJavasScriptLoadGenContext,
+    context: BasicLoadGenContext,
     requestCount: number
   ): number {
     return Math.round(
       (requestCount * 1000) /
-        BasicJavaScriptLoadGen.getElapsedMillis(context.startTime)
+        BasicLoadGen.getElapsedMillis(context.startTime)
     );
   }
 
   private static percentRequests(
-    context: BasicJavasScriptLoadGenContext,
+    context: BasicLoadGenContext,
     count: number
   ): string {
     return (
@@ -389,12 +389,12 @@ see how different configurations impact performance.
 If you have questions or need help experimenting further, please reach out to us!
 `;
 
-async function main(loadGeneratorOptions: BasicJavaScriptLoadGenOptions) {
-  const loadGenerator = new BasicJavaScriptLoadGen(loadGeneratorOptions);
+async function main(loadGeneratorOptions: BasicLoadGenOptions) {
+  const loadGenerator = new BasicLoadGen(loadGeneratorOptions);
   await loadGenerator.run();
 }
 
-const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
+const loadGeneratorOptions: BasicLoadGenOptions = {
   /**
    * This setting allows you to control the verbosity of the log output during
    * the load generator run.
