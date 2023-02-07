@@ -158,9 +158,7 @@ class BasicLoadGen {
   private logStats(loadGenContext: BasicLoadGenContext): void {
     this.logger.info(`
 cumulative stats:
-total requests: ${
-      loadGenContext.globalRequestCount
-    } (${BasicLoadGen.tps(
+total requests: ${loadGenContext.globalRequestCount} (${BasicLoadGen.tps(
       loadGenContext,
       loadGenContext.globalRequestCount
     )} tps, limited to ${this.options.maxRequestsPerSecond} tps)
@@ -331,8 +329,7 @@ ${BasicLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
     requestCount: number
   ): number {
     return Math.round(
-      (requestCount * 1000) /
-        BasicLoadGen.getElapsedMillis(context.startTime)
+      (requestCount * 1000) / BasicLoadGen.getElapsedMillis(context.startTime)
     );
   }
 
