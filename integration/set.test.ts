@@ -173,7 +173,7 @@ describe('Integration Tests for operations on sets datastructure', () => {
       IntegrationTestCacheName,
       setName,
       [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY],
-      new CollectionTtl(2, false)
+      {ttl: new CollectionTtl(2, false)}
     );
     expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
 
@@ -181,7 +181,7 @@ describe('Integration Tests for operations on sets datastructure', () => {
       IntegrationTestCacheName,
       setName,
       [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY],
-      new CollectionTtl(10, false)
+      {ttl: new CollectionTtl(10, false)}
     );
     expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
 
@@ -199,7 +199,7 @@ describe('Integration Tests for operations on sets datastructure', () => {
       IntegrationTestCacheName,
       setName,
       [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY],
-      new CollectionTtl(2, false)
+      {ttl: new CollectionTtl(2, false)}
     );
     expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
 
@@ -207,7 +207,7 @@ describe('Integration Tests for operations on sets datastructure', () => {
       IntegrationTestCacheName,
       setName,
       [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY],
-      new CollectionTtl(10, true)
+      {ttl: new CollectionTtl(10, true)}
     );
     expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
 

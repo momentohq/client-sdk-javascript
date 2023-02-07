@@ -435,8 +435,8 @@ export class CacheClient {
     cacheName: string,
     listName: string,
     values: string[] | Uint8Array[],
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
-    truncateFrontToSize?: number
+    truncateFrontToSize?: number,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheListConcatenateBack.Response> {
     try {
       validateCacheName(cacheName);
@@ -509,8 +509,8 @@ export class CacheClient {
     cacheName: string,
     listName: string,
     values: string[] | Uint8Array[],
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
-    truncateBackToSize?: number
+    truncateBackToSize?: number,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheListConcatenateFront.Response> {
     try {
       validateCacheName(cacheName);
@@ -777,8 +777,8 @@ export class CacheClient {
     cacheName: string,
     listName: string,
     value: string | Uint8Array,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
-    truncateFrontToSize?: number
+    truncateFrontToSize?: number,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheListPushBack.Response> {
     try {
       validateCacheName(cacheName);
@@ -845,8 +845,8 @@ export class CacheClient {
     cacheName: string,
     listName: string,
     value: string | Uint8Array,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
-    truncateBackToSize?: number
+    truncateBackToSize?: number,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheListPushFront.Response> {
     try {
       validateCacheName(cacheName);
