@@ -413,7 +413,7 @@ export class SimpleCacheClient {
   }
 
   // TODO add support for adding/removing a single element to/from a set.
-  // https://github.com/momentohq/client-sdk-javascript/issues/170
+  // https://github.com/momentohq/client-sdk-nodejs/issues/170
 
   /**
    * Create a cache if it does not exist.

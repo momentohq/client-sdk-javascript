@@ -1496,7 +1496,7 @@ export class CacheClient {
   private initializeInterceptors(): Interceptor[] {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
-      new Header('Agent', `javascript:${version}`),
+      new Header('Agent', `nodejs:${version}`),
     ];
     return [
       new HeaderInterceptor(headers).addHeadersInterceptor(),

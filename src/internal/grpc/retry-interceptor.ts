@@ -42,9 +42,9 @@ export class RetryInterceptor {
 
   // TODO: We need to send retry count information to the server so that we
   // will have some visibility into how often this is happening to customers:
-  // https://github.com/momentohq/client-sdk-javascript/issues/80
+  // https://github.com/momentohq/client-sdk-nodejs/issues/80
   // TODO: we need to add backoff/jitter for the retries:
-  // https://github.com/momentohq/client-sdk-javascript/issues/81
+  // https://github.com/momentohq/client-sdk-nodejs/issues/81
   public createRetryInterceptor(): Interceptor {
     const logger = this.logger;
     const retryStrategy = this.retryStrategy;

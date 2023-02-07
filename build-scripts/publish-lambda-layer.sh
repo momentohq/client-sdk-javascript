@@ -12,7 +12,7 @@ if [ "$#" -ne 1 ]; then
     echo "Must pass version as argument to publish the lambda layer"
 fi
 
-LAYER_NAME="momento-sdk-javascript-experimental"
+LAYER_NAME="momento-sdk-nodejs-experimental"
 FILENAME="layer.zip"
 pushd ..
   if [[ ! -f "${FILENAME}" ]]; then

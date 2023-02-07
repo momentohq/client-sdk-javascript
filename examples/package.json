@@ -1,5 +1,5 @@
 {
-  "name": "momento-javascript-example",
+  "name": "momento-nodejs-example",
   "version": "1.0.0",
   "description": "Getting started with Momento sdk",
   "main": "index.ts",

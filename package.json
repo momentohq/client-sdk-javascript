@@ -10,7 +10,7 @@
   "types": "dist/src/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/momentohq/client-sdk-javascript"
+    "url": "https://github.com/momentohq/client-sdk-nodejs"
   },
   "scripts": {
     "prebuild": "eslint . --ext .ts",
