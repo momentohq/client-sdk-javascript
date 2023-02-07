@@ -225,7 +225,7 @@ export class CacheClient {
     cacheName: string,
     setName: string,
     elements: string[] | Uint8Array[],
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    collectionTtl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheSetAddElements.Response> {
     try {
       validateCacheName(cacheName);
@@ -237,8 +237,8 @@ export class CacheClient {
       cacheName,
       this.convert(setName),
       this.convertArray(elements),
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
-      ttl.refreshTtl()
+      collectionTtl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      collectionTtl.refreshTtl()
     );
   }
 
@@ -435,8 +435,8 @@ export class CacheClient {
     cacheName: string,
     listName: string,
     values: string[] | Uint8Array[],
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
-    truncateFrontToSize?: number
+    truncateFrontToSize?: number,
+    collectionTtl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheListConcatenateBack.Response> {
     try {
       validateCacheName(cacheName);
@@ -450,7 +450,7 @@ export class CacheClient {
     this.logger.trace(
       `Issuing 'listConcatenateBack' request; listName: ${listName}, values length: ${
         values.length
-      }, ${ttl.toString()}, truncateFrontToSize: ${
+      }, ${collectionTtl.toString()}, truncateFrontToSize: ${
         truncateFrontToSize?.toString() ?? 'null'
       }`
     );
@@ -459,8 +459,8 @@ export class CacheClient {
       cacheName,
       this.convert(listName),
       this.convertArray(values),
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
-      ttl.refreshTtl(),
+      collectionTtl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      collectionTtl.refreshTtl(),
       truncateFrontToSize
     );
     this.logger.trace(
@@ -509,8 +509,8 @@ export class CacheClient {
     cacheName: string,
     listName: string,
     values: string[] | Uint8Array[],
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
-    truncateBackToSize?: number
+    truncateBackToSize?: number,
+    collectionTtl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheListConcatenateFront.Response> {
     try {
       validateCacheName(cacheName);
@@ -524,7 +524,7 @@ export class CacheClient {
     this.logger.trace(
       `Issuing 'listConcatenateFront' request; listName: ${listName}, values length: ${
         values.length
-      }, ${ttl.toString()}, truncateBackToSize: ${
+      }, ${collectionTtl.toString()}, truncateBackToSize: ${
         truncateBackToSize?.toString() ?? 'null'
       }`
     );
@@ -533,8 +533,8 @@ export class CacheClient {
       cacheName,
       this.convert(listName),
       this.convertArray(values),
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
-      ttl.refreshTtl(),
+      collectionTtl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      collectionTtl.refreshTtl(),
       truncateBackToSize
     );
     this.logger.trace(
@@ -777,8 +777,8 @@ export class CacheClient {
     cacheName: string,
     listName: string,
     value: string | Uint8Array,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
-    truncateFrontToSize?: number
+    truncateFrontToSize?: number,
+    collectionTtl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheListPushBack.Response> {
     try {
       validateCacheName(cacheName);
@@ -790,7 +790,7 @@ export class CacheClient {
     this.logger.trace(
       `Issuing 'listPushBack' request; listName: ${listName}, value length: ${
         value.length
-      }, ${ttl.toString()}, truncateFrontToSize: ${
+      }, ${collectionTtl.toString()}, truncateFrontToSize: ${
         truncateFrontToSize?.toString() ?? 'null'
       }`
     );
@@ -799,8 +799,8 @@ export class CacheClient {
       cacheName,
       this.convert(listName),
       this.convert(value),
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
-      ttl.refreshTtl(),
+      collectionTtl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      collectionTtl.refreshTtl(),
       truncateFrontToSize
     );
     this.logger.trace(`'listPushBack' request result: ${result.toString()}`);
@@ -845,8 +845,8 @@ export class CacheClient {
     cacheName: string,
     listName: string,
     value: string | Uint8Array,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
-    truncateBackToSize?: number
+    truncateBackToSize?: number,
+    collectionTtl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheListPushFront.Response> {
     try {
       validateCacheName(cacheName);
@@ -858,7 +858,7 @@ export class CacheClient {
     this.logger.trace(
       `Issuing 'listPushFront' request; listName: ${listName}, value length: ${
         value.length
-      }, ${ttl.toString()}, truncateBackToSize: ${
+      }, ${collectionTtl.toString()}, truncateBackToSize: ${
         truncateBackToSize?.toString() ?? 'null'
       }`
     );
@@ -867,8 +867,8 @@ export class CacheClient {
       cacheName,
       this.convert(listName),
       this.convert(value),
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
-      ttl.refreshTtl(),
+      collectionTtl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      collectionTtl.refreshTtl(),
       truncateBackToSize
     );
     this.logger.trace(`'listPushFront' request result: ${result.toString()}`);
@@ -1089,7 +1089,7 @@ export class CacheClient {
     items:
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    collectionTtl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheDictionarySetFields.Response> {
     try {
       validateCacheName(cacheName);
@@ -1101,7 +1101,7 @@ export class CacheClient {
     }
     this.logger.trace(
       `Issuing 'dictionarySetFields' request; items: ${items.toString()}, ttl: ${
-        ttl.ttlSeconds.toString() ?? 'null'
+        collectionTtl.ttlSeconds.toString() ?? 'null'
       }`
     );
 
@@ -1111,8 +1111,8 @@ export class CacheClient {
       cacheName,
       this.convert(dictionaryName),
       dictionaryFieldValuePairs,
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
-      ttl.refreshTtl()
+      collectionTtl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      collectionTtl.refreshTtl()
     );
     this.logger.trace(
       `'dictionarySetFields' request result: ${result.toString()}`
