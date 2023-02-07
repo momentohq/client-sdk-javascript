@@ -12,12 +12,12 @@ import {
   Metadata,
   StatusObject,
 } from '@grpc/grpc-js';
-import {RetryStrategy} from '../config/retry/retry-strategy';
+import {RetryStrategy} from '../../config/retry/retry-strategy';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {
   MomentoLogger,
   MomentoLoggerFactory,
-} from '../config/logging/momento-logger';
+} from '../../config/logging/momento-logger';
 
 export function createRetryInterceptorIfEnabled(
   loggerFactory: MomentoLoggerFactory,

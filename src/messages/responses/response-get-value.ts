@@ -7,7 +7,7 @@ import {
   ResponseHit,
   ResponseMiss,
 } from './response-base';
-import {truncateString} from '../../utils/display';
+import {truncateString} from '../../internal/utils/display';
 
 const TEXT_DECODER = new TextDecoder();
 
