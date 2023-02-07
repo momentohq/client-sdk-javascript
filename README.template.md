@@ -14,11 +14,19 @@ how to use the SDK.
 
 ### Installation
 
-Use `npm` to install Momento:
+To create a new node.js TypeScript project and install the Momento client library as a dependency:
 
-```bash
+ ```bash
+mkdir my-momento-nodejs-project
+cd my-momento-nodejs-project
+npm init --yes
+npm install -D typescript
+npx tsc --init
 npm install @gomomento/sdk
-```
+````
+
+Then create a `.ts` file and you can start adding code that uses the Momento client!  See the
+next section for a basic code example.
 
 ### Usage
 
