@@ -1,7 +1,6 @@
 import {ControlClient} from './internal/control-client';
 import {CacheClient} from './internal/cache-client';
 import {
-  CollectionTtl,
   Configuration,
   CredentialProvider,
   CreateCache,
@@ -35,8 +34,26 @@ import {
   CacheSetRemoveElement,
   MomentoLogger,
 } from '.';
-import {range} from './utils/collections';
+import {range} from './internal/utils/collections';
 import {SimpleCacheClientProps} from './simple-cache-client-props';
+import {
+  BackTruncatableCallOptions,
+  CollectionCallOptions,
+  FrontTruncatableCallOptions,
+  ScalarCallOptions,
+} from './utils/cache-call-options';
+
+// Type aliases to differentiate the different methods' optional arguments.
+type SetOptions = ScalarCallOptions;
+type ListConcatenateBackOptions = FrontTruncatableCallOptions;
+type ListConcatenateFrontOptions = BackTruncatableCallOptions;
+type ListPushBackOptions = FrontTruncatableCallOptions;
+type ListPushFrontOptions = BackTruncatableCallOptions;
+type SetAddElementOptions = CollectionCallOptions;
+type SetAddElementsOptions = CollectionCallOptions;
+type DictionarySetFieldOptions = CollectionCallOptions;
+type DictionarySetFieldsOptions = CollectionCallOptions;
+type DictionaryIncrementOptions = CollectionCallOptions;
 
 /**
  * Momento Simple Cache Client.
@@ -106,7 +123,8 @@ export class SimpleCacheClient {
    * @param {string} cacheName - Name of the cache to store the item in.
    * @param {(string | Uint8Array)} key - The key to set.
    * @param {(string | Uint8Array)} value - The value to be stored.
-   * @param {number} [ttl] - Time to live (TTL) for the item in Cache.
+   * @param {SetOptions} [options]
+   * @param {number} [options.ttl] - Time to live (TTL) for the item in Cache.
    * This TTL takes precedence over the TTL used when initializing a cache client.
    * @returns {Promise<CacheSet.Response>} - Result of the set operation.
    * @memberof SimpleCacheClient
@@ -115,10 +133,10 @@ export class SimpleCacheClient {
     cacheName: string,
     key: string | Uint8Array,
     value: string | Uint8Array,
-    ttl?: number
+    options?: SetOptions
   ): Promise<CacheSet.Response> {
     const client = this.getNextDataClient();
-    return await client.set(cacheName, key, value, ttl);
+    return await client.set(cacheName, key, value, options?.ttl);
   }
 
   /**
@@ -144,24 +162,26 @@ export class SimpleCacheClient {
    * @param {string} cacheName - Name of the cache to store the list in.
    * @param {string} listName - The list to add to.
    * @param {string[] | Uint8Array[]} values - The values to add to the list.
-   * @param {CollectionTtl} [ttl] - How the ttl should be managed. Defaults to the client's TTL.
-   * @param {number} [truncateFrontToSize] - If the list exceeds this length, remove excess from the start of the list. Must be positive.
+   * @param {ListConcatenateBackOptions} [options]
+   * @param {number} [options.truncateFrontToSize] - If the list exceeds this
+   * length, remove excess from the start of the list. Must be positive.
+   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
+   * Defaults to the client's TTL.
    * @returns {Promise<CacheListConcatenateBack.Response>}
    */
   public async listConcatenateBack(
     cacheName: string,
     listName: string,
     values: string[] | Uint8Array[],
-    ttl?: CollectionTtl,
-    truncateFrontToSize?: number
+    options?: ListConcatenateBackOptions
   ): Promise<CacheListConcatenateBack.Response> {
     const client = this.getNextDataClient();
     return await client.listConcatenateBack(
       cacheName,
       listName,
       values,
-      ttl,
-      truncateFrontToSize
+      options?.truncateFrontToSize,
+      options?.ttl
     );
   }
 
@@ -172,24 +192,26 @@ export class SimpleCacheClient {
    * @param {string} cacheName - Name of the cache to store the list in.
    * @param {string} listName - The list to add to.
    * @param {string[] | Uint8Array[]} values - The values to add to the list.
-   * @param {CollectionTtl} [ttl] - How the ttl should be managed. Defaults to the client's TTL.
-   * @param {number} [truncateBackToSize] - If the list exceeds this length, remove excess from the end of the list. Must be positive.
+   * @param {ListConcatenateFrontOptions} [options]
+   * @param {number} [options.truncateBackToSize] - If the list exceeds this
+   * length, remove excess from the end of the list. Must be positive.
+   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
+   * Defaults to the client's TTL.
    * @returns {Promise<CacheListConcatenateFront.Response>}
    */
   public async listConcatenateFront(
     cacheName: string,
     listName: string,
     values: string[] | Uint8Array[],
-    ttl?: CollectionTtl,
-    truncateBackToSize?: number
+    options?: ListConcatenateFrontOptions
   ): Promise<CacheListConcatenateFront.Response> {
     const client = this.getNextDataClient();
     return await client.listConcatenateFront(
       cacheName,
       listName,
       values,
-      ttl,
-      truncateBackToSize
+      options?.truncateBackToSize,
+      options?.ttl
     );
   }
 
@@ -252,25 +274,27 @@ export class SimpleCacheClient {
    * Add a value to the beginning of a list.
    * @param {string} cacheName - Name of the cache with the list.
    * @param {string} listName - The list to push to.
-   * @param {string | Uint8Array} - The value to push.
-   * @param {CollectionTtl} [ttl] - How the ttl should be managed. Defaults to the client's TTL.
-   * @param {number} [truncateFrontToSize] - If the list exceeds this length, remove excess from the start of the list. Must be positive.
+   * @param {string | Uint8Array} value - The value to push.
+   * @param {ListPushBackOptions} [options]
+   * @param {number} [options.truncateFrontToSize] - If the list exceeds this
+   * length, remove excess from the start of the list. Must be positive.
+   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
+   * Defaults to the client's TTL.
    * @return {Promise<CacheListPushBack.Response>}
    */
   public async listPushBack(
     cacheName: string,
     listName: string,
     value: string | Uint8Array,
-    ttl?: CollectionTtl,
-    truncateFrontToSize?: number
+    options?: ListPushBackOptions
   ): Promise<CacheListPushBack.Response> {
     const client = this.getNextDataClient();
     return await client.listPushBack(
       cacheName,
       listName,
       value,
-      ttl,
-      truncateFrontToSize
+      options?.truncateFrontToSize,
+      options?.ttl
     );
   }
 
@@ -278,25 +302,27 @@ export class SimpleCacheClient {
    * Add a value to the end of a list.
    * @param {string} cacheName - Name of the cache with the list.
    * @param {string} listName - The list to push to.
-   * @param {string | Uint8Array} - The value to push.
-   * @param {CollectionTtl} [ttl] - How the ttl should be managed. Defaults to the client's TTL.
-   * @param {number} [truncateBackToSize] - If the list exceeds this length, remove excess from the end of the list. Must be positive.
+   * @param {string | Uint8Array} value - The value to push.
+   * @param {ListPushFrontOptions} [options]
+   * @param {number} [options.truncateBackToSize] - If the list exceeds this
+   * length, remove excess from the end of the list. Must be positive.
+   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
+   * Defaults to the client's TTL.
    * @return {Promise<CacheListPushFront.Response>}
    */
   public async listPushFront(
     cacheName: string,
     listName: string,
     value: string | Uint8Array,
-    ttl?: CollectionTtl,
-    truncateBackToSize?: number
+    options?: ListPushFrontOptions
   ): Promise<CacheListPushFront.Response> {
     const client = this.getNextDataClient();
     return await client.listPushFront(
       cacheName,
       listName,
       value,
-      ttl,
-      truncateBackToSize
+      options?.truncateBackToSize,
+      options?.ttl
     );
   }
 
@@ -339,20 +365,22 @@ export class SimpleCacheClient {
    * @param {string} cacheName - Name of the cache to store the set in.
    * @param {string} setName - The set to add elements to.
    * @param {(string | Uint8Array)} element - The data to add to the set.
-   * @param {CollectionTtl} [ttl] - TTL for the set in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+   * @param {SetAddElementOptions} options
+   * @param {CollectionTtl} [options.ttl] - TTL for the set in cache. This TTL takes
+   * precedence over the TTL used when initializing a cache client. Defaults to client TTL.
    */
   public async setAddElement(
     cacheName: string,
     setName: string,
     element: string | Uint8Array,
-    ttl?: CollectionTtl
+    options?: SetAddElementOptions
   ): Promise<CacheSetAddElement.Response> {
     return (
       await this.setAddElements(
         cacheName,
         setName,
         [element] as string[] | Uint8Array[],
-        ttl
+        options
       )
     ).toSingularResponse();
   }
@@ -365,16 +393,23 @@ export class SimpleCacheClient {
    * @param {string} cacheName - Name of the cache to store the set in.
    * @param {string} setName - The set to add elements to.
    * @param {(string[] | Uint8Array[])} elements - The data to add to the set.
-   * @param {CollectionTtl} [ttl] - TTL for the set in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+   * @param {SetAddElementsOptions} options
+   * @param {CollectionTtl} [options.ttl] - TTL for the set in cache. This TTL takes
+   * precedence over the TTL used when initializing a cache client. Defaults to client TTL.
    */
   public async setAddElements(
     cacheName: string,
     setName: string,
     elements: string[] | Uint8Array[],
-    ttl?: CollectionTtl
+    options?: SetAddElementsOptions
   ): Promise<CacheSetAddElements.Response> {
     const client = this.getNextDataClient();
-    return await client.setAddElements(cacheName, setName, elements, ttl);
+    return await client.setAddElements(
+      cacheName,
+      setName,
+      elements,
+      options?.ttl
+    );
   }
 
   /**
@@ -413,7 +448,7 @@ export class SimpleCacheClient {
   }
 
   // TODO add support for adding/removing a single element to/from a set.
-  // https://github.com/momentohq/client-sdk-javascript/issues/170
+  // https://github.com/momentohq/client-sdk-nodejs/issues/170
 
   /**
    * Create a cache if it does not exist.
@@ -467,9 +502,11 @@ export class SimpleCacheClient {
    * After this operation, the set will contain the union of the element passed in and the elements of the set.
    * @param {string} cacheName - Name of the cache to store the dictionary in.
    * @param {string} dictionaryName - The dictionary to set.
-   * @param {string | Uint8Array} items - The field in the dictionary to set.
+   * @param {string | Uint8Array} field - The field in the dictionary to set.
    * @param {string | Uint8Array} value - The value to be stored.
-   * @param {CollectionTtl} ttl -  TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+   * @param {DictionarySetFieldOptions} options
+   * @param {CollectionTtl} [options.ttl] - TTL for the dictionary in cache. This TTL takes
+   * precedence over the TTL used when initializing a cache client. Defaults to client TTL.
    * @returns {Promise<CacheDictionarySetField.Response>}- Promise containing the result of the cache operation.
    * @memberof SimpleCacheClient
    */
@@ -478,7 +515,7 @@ export class SimpleCacheClient {
     dictionaryName: string,
     field: string | Uint8Array,
     value: string | Uint8Array,
-    ttl?: CollectionTtl
+    options?: DictionarySetFieldOptions
   ): Promise<CacheDictionarySetField.Response> {
     const client = this.getNextDataClient();
     return await client.dictionarySendField(
@@ -486,7 +523,7 @@ export class SimpleCacheClient {
       dictionaryName,
       field,
       value,
-      ttl
+      options?.ttl
     );
   }
 
@@ -495,7 +532,9 @@ export class SimpleCacheClient {
    * @param {string} cacheName - Name of the cache to store the dictionary in.
    * @param {string} dictionaryName - The dictionary to set.
    * @param {Map<string | Uint8Array, string | Uint8Array>} items - The field-value pairs in the dictionary to set.
-   * @param {CollectionTtl} ttl -  TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+   * @param {DictionarySetFieldsOptions} options
+   * @param {CollectionTtl} [options.ttl] - TTL for the dictionary in cache. This TTL takes
+   * precedence over the TTL used when initializing a cache client. Defaults to client TTL.
    * @returns {Promise<CacheDictionarySetFields.Response>}- Promise containing the result of the cache operation.
    * @memberof SimpleCacheClient
    */
@@ -505,14 +544,14 @@ export class SimpleCacheClient {
     items:
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>,
-    ttl?: CollectionTtl
+    options?: DictionarySetFieldsOptions
   ): Promise<CacheDictionarySetFields.Response> {
     const client = this.getNextDataClient();
     return await client.dictionarySendFields(
       cacheName,
       dictionaryName,
       items,
-      ttl
+      options?.ttl
     );
   }
 
@@ -595,7 +634,9 @@ export class SimpleCacheClient {
    * @param {string} dictionaryName - The dictionary to set.
    * @param {string | Uint8Array} field - Name of the field to increment from the dictionary.
    * @param {number} amount - The quantity to add to the value. May be positive, negative, or zero. Defaults to 1.
-   * @param {CollectionTtl} ttl - TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+   * @param {DictionaryIncrementOptions} options
+   * @param {CollectionTtl} [options.ttl] - TTL for the dictionary in cache. This TTL takes
+   * precedence over the TTL used when initializing a cache client. Defaults to client TTL.
    * @returns {Promise<CacheDictionaryIncrement>}- Promise containing the result of the cache operation.
    */
   public async dictionaryIncrement(
@@ -603,7 +644,7 @@ export class SimpleCacheClient {
     dictionaryName: string,
     field: string | Uint8Array,
     amount = 1,
-    ttl?: CollectionTtl
+    options?: DictionaryIncrementOptions
   ): Promise<CacheDictionaryIncrement.Response> {
     const client = this.getNextDataClient();
     return await client.dictionaryIncrement(
@@ -611,7 +652,7 @@ export class SimpleCacheClient {
       dictionaryName,
       field,
       amount,
-      ttl
+      options?.ttl
     );
   }
 

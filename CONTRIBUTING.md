@@ -1,6 +1,6 @@
-# Welcome to client-sdk-javascript contributing guide :wave:
+# Welcome to client-sdk-nodejs contributing guide :wave:
 
-Thank you for taking your time to contribute to our JavaScript SDK!
+Thank you for taking your time to contribute to our Node.js SDK!
 <br/>
 This guide will provide you information to start your own development and testing.
 <br/>

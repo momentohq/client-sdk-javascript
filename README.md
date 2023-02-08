@@ -1,15 +1,15 @@
 <head>
-  <meta name="Momento JavaScript Client Library Documentation" content="JavaScript client software development kit for Momento Serverless Cache">
+  <meta name="Momento Node.js Client Library Documentation" content="Node.js client software development kit for Momento Serverless Cache">
 </head>
 <img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
 
 [![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 [![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-alpha.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md) 
 
-# Momento JavaScript Client Library
+# Momento Node.js Client Library
 
 
-JavaScript client SDK for Momento Serverless Cache: a fast, simple, pay-as-you-go caching solution without
+Node.js client SDK for Momento Serverless Cache: a fast, simple, pay-as-you-go caching solution without
 any of the operational overhead required by traditional caching solutions!
 
 
@@ -28,11 +28,19 @@ how to use the SDK.
 
 ### Installation
 
-Use `npm` to install Momento:
+To create a new node.js TypeScript project and install the Momento client library as a dependency:
 
-```bash
+ ```bash
+mkdir my-momento-nodejs-project
+cd my-momento-nodejs-project
+npm init --yes
+npm install -D typescript
+npx tsc --init
 npm install @gomomento/sdk
-```
+````
+
+Then create a `.ts` file and you can start adding code that uses the Momento client!  See the
+next section for a basic code example.
 
 ### Usage
 
@@ -47,12 +55,11 @@ import {
   CreateCache,
   CacheSet,
   CacheDelete,
-  LogLevel,
-  LogFormat,
   SimpleCacheClient,
   EnvMomentoTokenProvider,
   Configurations,
-  LoggerOptions,
+  MomentoLoggerFactory,
+  DefaultMomentoLoggerFactory,
 } from '@gomomento/sdk';
 
 const cacheName = 'cache';
@@ -63,14 +70,11 @@ const credentialsProvider = new EnvMomentoTokenProvider({
   environmentVariableName: 'MOMENTO_AUTH_TOKEN',
 });
 
-const loggerOptions: LoggerOptions = {
-  level: LogLevel.INFO,
-  format: LogFormat.JSON,
-};
+const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory();
 
 const defaultTtl = 60;
 const momento = new SimpleCacheClient({
-  configuration: Configurations.Laptop.latest(loggerOptions),
+  configuration: Configurations.Laptop.latest(loggerFactory),
   credentialProvider: credentialsProvider,
   defaultTtlSeconds: defaultTtl,
 });
@@ -109,9 +113,9 @@ const main = async () => {
     exampleTtlSeconds
   );
   if (setResponse instanceof CacheSet.Success) {
-    console.log('Key stored successfully with value ' + cacheValue);
+    console.log(`Key stored successfully!`);
   } else if (setResponse instanceof CacheSet.Error) {
-    console.log('Error setting key: ' + setResponse.message());
+    console.log(`Error setting key: ${setResponse.message()}`);
   }
 
   const getResponse = await momento.get(cacheName, cacheKey);

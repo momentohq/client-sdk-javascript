@@ -1,4 +1,4 @@
-# JavaScript クライアント SDK
+# Node.js クライアント SDK
 
 _他言語バージョンもあります_：[English](README.md)
 
@@ -10,7 +10,7 @@ _他言語バージョンもあります_：[English](README.md)
 - Momento オーストークンが必要です。トークン発行は[Momento CLI](https://github.com/momentohq/momento-cli)から行えます。
 
 ```bash
-cd javascript
+cd examples
 npm install
 
 # SDKコード例を実行する

@@ -1,4 +1,4 @@
-import {InvalidArgumentError} from '../errors/errors';
+import {InvalidArgumentError} from '../../errors/errors';
 
 export function validateCacheName(name: string) {
   if (isEmpty(name)) {

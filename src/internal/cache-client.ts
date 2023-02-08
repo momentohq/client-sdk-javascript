@@ -2,9 +2,9 @@ import {cache} from '@gomomento/generated-types';
 import grpcCache = cache.cache_client;
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextEncoder} from 'util';
-import {Header, HeaderInterceptor} from '../grpc/headers-interceptor';
-import {ClientTimeoutInterceptor} from '../grpc/client-timeout-interceptor';
-import {createRetryInterceptorIfEnabled} from '../grpc/retry-interceptor';
+import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
+import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
+import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
 import {
@@ -39,15 +39,15 @@ import {
   MomentoLogger,
 } from '..';
 import {version} from '../../package.json';
-import {IdleGrpcClientWrapper} from '../grpc/idle-grpc-client-wrapper';
-import {GrpcClientWrapper} from '../grpc/grpc-client-wrapper';
+import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
+import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
 import {
   validateCacheName,
   validateDictionaryName,
   validateListName,
   validateSetName,
-} from '../utils/validators';
+} from './utils/validators';
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
 
 export class CacheClient {
@@ -435,8 +435,8 @@ export class CacheClient {
     cacheName: string,
     listName: string,
     values: string[] | Uint8Array[],
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
-    truncateFrontToSize?: number
+    truncateFrontToSize?: number,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheListConcatenateBack.Response> {
     try {
       validateCacheName(cacheName);
@@ -509,8 +509,8 @@ export class CacheClient {
     cacheName: string,
     listName: string,
     values: string[] | Uint8Array[],
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
-    truncateBackToSize?: number
+    truncateBackToSize?: number,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheListConcatenateFront.Response> {
     try {
       validateCacheName(cacheName);
@@ -777,8 +777,8 @@ export class CacheClient {
     cacheName: string,
     listName: string,
     value: string | Uint8Array,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
-    truncateFrontToSize?: number
+    truncateFrontToSize?: number,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheListPushBack.Response> {
     try {
       validateCacheName(cacheName);
@@ -845,8 +845,8 @@ export class CacheClient {
     cacheName: string,
     listName: string,
     value: string | Uint8Array,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
-    truncateBackToSize?: number
+    truncateBackToSize?: number,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheListPushFront.Response> {
     try {
       validateCacheName(cacheName);
@@ -1496,7 +1496,7 @@ export class CacheClient {
   private initializeInterceptors(): Interceptor[] {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
-      new Header('Agent', `javascript:${version}`),
+      new Header('Agent', `nodejs:${version}`),
     ];
     return [
       new HeaderInterceptor(headers).addHeadersInterceptor(),

@@ -1,5 +1,5 @@
 import {v4} from 'uuid';
-import {sleep} from '../src/utils/sleep';
+import {sleep} from '../src/internal/utils/sleep';
 import {
   CollectionTtl,
   CacheListConcatenateBack,
@@ -365,8 +365,10 @@ describe('lists', () => {
         props.cacheName,
         props.listName,
         props.value,
-        props.ttl,
-        props.truncateToSize
+        {
+          truncateFrontToSize: props.truncateToSize,
+          ttl: props.ttl,
+        }
       );
     });
 
@@ -390,8 +392,10 @@ describe('lists', () => {
         props.cacheName,
         props.listName,
         props.value,
-        props.ttl,
-        props.truncateToSize
+        {
+          truncateBackToSize: props.truncateToSize,
+          ttl: props.ttl,
+        }
       );
     });
 
@@ -457,8 +461,10 @@ describe('lists', () => {
         props.cacheName,
         props.listName,
         [props.value] as string[] | Uint8Array[],
-        props.ttl,
-        props.truncateToSize
+        {
+          truncateFrontToSize: props.truncateToSize,
+          ttl: props.ttl,
+        }
       );
     });
 
@@ -512,8 +518,10 @@ describe('lists', () => {
         props.cacheName,
         props.listName,
         [props.value] as string[] | Uint8Array[],
-        props.ttl,
-        props.truncateToSize
+        {
+          truncateBackToSize: props.truncateToSize,
+          ttl: props.ttl,
+        }
       );
     });
 

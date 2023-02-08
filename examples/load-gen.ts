@@ -1,26 +1,24 @@
 import {
-  getLogger,
-  InternalServerError,
-  LimitExceededError,
-  LogFormat,
-  Logger,
-  LoggerOptions,
-  LogLevel,
-  initializeMomentoLogging,
-  SimpleCacheClient,
-  TimeoutError,
-  CreateCache,
   CacheGet,
   CacheSet,
   Configurations,
+  CreateCache,
+  DefaultMomentoLoggerFactory,
+  DefaultMomentoLoggerLevel,
   EnvMomentoTokenProvider,
+  InternalServerError,
+  LimitExceededError,
+  MomentoLogger,
+  MomentoLoggerFactory,
+  SimpleCacheClient,
+  TimeoutError,
 } from '@gomomento/sdk';
 import * as hdr from 'hdr-histogram-js';
 import {range} from './utils/collections';
 import {delay} from './utils/time';
 
-interface BasicJavaScriptLoadGenOptions {
-  loggerOptions: LoggerOptions;
+interface BasicLoadGenOptions {
+  loggerFactory: MomentoLoggerFactory;
   requestTimeoutMs: number;
   cacheItemPayloadBytes: number;
   numberOfConcurrentRequests: number;
@@ -37,7 +35,7 @@ enum AsyncSetGetResult {
   RST_STREAM = 'RST_STREAM',
 }
 
-interface BasicJavasScriptLoadGenContext {
+interface BasicLoadGenContext {
   startTime: [number, number];
   getLatencies: hdr.Histogram;
   setLatencies: hdr.Histogram;
@@ -52,20 +50,19 @@ interface BasicJavasScriptLoadGenContext {
   globalRstStreamCount: number;
 }
 
-class BasicJavaScriptLoadGen {
-  private readonly logger: Logger;
+class BasicLoadGen {
+  private readonly loggerFactory: MomentoLoggerFactory;
+  private readonly logger: MomentoLogger;
   private readonly cacheItemTtlSeconds = 60;
-  private readonly loggerOptions: LoggerOptions;
-  private readonly options: BasicJavaScriptLoadGenOptions;
+  private readonly options: BasicLoadGenOptions;
   private readonly delayMillisBetweenRequests: number;
   private readonly cacheValue: string;
 
   private readonly cacheName: string = 'js-loadgen';
 
-  constructor(options: BasicJavaScriptLoadGenOptions) {
-    initializeMomentoLogging(options.loggerOptions);
-    this.logger = getLogger('load-gen');
-    this.loggerOptions = options.loggerOptions;
+  constructor(options: BasicLoadGenOptions) {
+    this.loggerFactory = options.loggerFactory;
+    this.logger = this.loggerFactory.getLogger('load-gen');
     this.options = options;
     this.cacheValue = 'x'.repeat(options.cacheItemPayloadBytes);
     this.delayMillisBetweenRequests =
@@ -76,7 +73,7 @@ class BasicJavaScriptLoadGen {
   async run(): Promise<void> {
     const momento = new SimpleCacheClient({
       configuration: Configurations.Laptop.latest(
-        this.loggerOptions
+        this.loggerFactory
       ).withClientTimeoutMillis(this.options.requestTimeoutMs),
       credentialProvider: new EnvMomentoTokenProvider({
         environmentVariableName: 'MOMENTO_AUTH_TOKEN',
@@ -101,7 +98,7 @@ class BasicJavaScriptLoadGen {
     );
     this.logger.info(`Running for ${this.options.totalSecondsToRun} seconds`);
 
-    const loadGenContext: BasicJavasScriptLoadGenContext = {
+    const loadGenContext: BasicLoadGenContext = {
       startTime: process.hrtime(),
       getLatencies: hdr.build(),
       setLatencies: hdr.build(),
@@ -139,7 +136,7 @@ class BasicJavaScriptLoadGen {
 
   private async launchAndRunWorkers(
     client: SimpleCacheClient,
-    loadGenContext: BasicJavasScriptLoadGenContext,
+    loadGenContext: BasicLoadGenContext,
     workerId: number
   ): Promise<void> {
     let finished = false;
@@ -158,60 +155,58 @@ class BasicJavaScriptLoadGen {
     }
   }
 
-  private logStats(loadGenContext: BasicJavasScriptLoadGenContext): void {
+  private logStats(loadGenContext: BasicLoadGenContext): void {
     this.logger.info(`
 cumulative stats:
-total requests: ${
-      loadGenContext.globalRequestCount
-    } (${BasicJavaScriptLoadGen.tps(
+total requests: ${loadGenContext.globalRequestCount} (${BasicLoadGen.tps(
       loadGenContext,
       loadGenContext.globalRequestCount
     )} tps, limited to ${this.options.maxRequestsPerSecond} tps)
        success: ${
          loadGenContext.globalSuccessCount
-       } (${BasicJavaScriptLoadGen.percentRequests(
+       } (${BasicLoadGen.percentRequests(
       loadGenContext,
       loadGenContext.globalSuccessCount
-    )}%) (${BasicJavaScriptLoadGen.tps(
+    )}%) (${BasicLoadGen.tps(
       loadGenContext,
       loadGenContext.globalSuccessCount
     )} tps)
    unavailable: ${
      loadGenContext.globalUnavailableCount
-   } (${BasicJavaScriptLoadGen.percentRequests(
+   } (${BasicLoadGen.percentRequests(
       loadGenContext,
       loadGenContext.globalUnavailableCount
     )}%)
 deadline exceeded: ${
       loadGenContext.globalDeadlineExceededCount
-    } (${BasicJavaScriptLoadGen.percentRequests(
+    } (${BasicLoadGen.percentRequests(
       loadGenContext,
       loadGenContext.globalDeadlineExceededCount
     )}%)
 resource exhausted: ${
       loadGenContext.globalResourceExhaustedCount
-    } (${BasicJavaScriptLoadGen.percentRequests(
+    } (${BasicLoadGen.percentRequests(
       loadGenContext,
       loadGenContext.globalResourceExhaustedCount
     )}%)
     rst stream: ${
       loadGenContext.globalRstStreamCount
-    } (${BasicJavaScriptLoadGen.percentRequests(
+    } (${BasicLoadGen.percentRequests(
       loadGenContext,
       loadGenContext.globalRstStreamCount
     )}%)
 
 cumulative set latencies:
-${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.setLatencies)}
+${BasicLoadGen.outputHistogramSummary(loadGenContext.setLatencies)}
 
 cumulative get latencies:
-${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
+${BasicLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
 `);
   }
 
   private async issueAsyncSetGet(
     client: SimpleCacheClient,
-    loadGenContext: BasicJavasScriptLoadGenContext,
+    loadGenContext: BasicLoadGenContext,
     workerId: number,
     operationId: number
   ): Promise<void> {
@@ -223,7 +218,7 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
       () => client.set(this.cacheName, cacheKey, this.cacheValue)
     );
     if (result !== undefined) {
-      const setDuration = BasicJavaScriptLoadGen.getElapsedMillis(setStartTime);
+      const setDuration = BasicLoadGen.getElapsedMillis(setStartTime);
       loadGenContext.setLatencies.recordValue(setDuration);
       if (setDuration < this.delayMillisBetweenRequests) {
         const delayMs = this.delayMillisBetweenRequests - setDuration;
@@ -239,7 +234,7 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
     );
 
     if (getResult !== undefined) {
-      const getDuration = BasicJavaScriptLoadGen.getElapsedMillis(getStartTime);
+      const getDuration = BasicLoadGen.getElapsedMillis(getStartTime);
       loadGenContext.getLatencies.recordValue(getDuration);
       if (getDuration < this.delayMillisBetweenRequests) {
         const delayMs = this.delayMillisBetweenRequests - getDuration;
@@ -250,7 +245,7 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
   }
 
   private async executeRequestAndUpdateContextCounts<T>(
-    context: BasicJavasScriptLoadGenContext,
+    context: BasicLoadGenContext,
     block: () => Promise<T>
   ): Promise<T | undefined> {
     const [result, response] = await this.executeRequest(block);
@@ -304,7 +299,7 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
   }
 
   private updateContextCountsForRequest(
-    context: BasicJavasScriptLoadGenContext,
+    context: BasicLoadGenContext,
     result: AsyncSetGetResult
   ): void {
     context.globalRequestCount++;
@@ -330,17 +325,16 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
   }
 
   private static tps(
-    context: BasicJavasScriptLoadGenContext,
+    context: BasicLoadGenContext,
     requestCount: number
   ): number {
     return Math.round(
-      (requestCount * 1000) /
-        BasicJavaScriptLoadGen.getElapsedMillis(context.startTime)
+      (requestCount * 1000) / BasicLoadGen.getElapsedMillis(context.startTime)
     );
   }
 
   private static percentRequests(
-    context: BasicJavasScriptLoadGenContext,
+    context: BasicLoadGenContext,
     count: number
   ): string {
     return (
@@ -367,7 +361,7 @@ ${BasicJavaScriptLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
 }
 
 const PERFORMANCE_INFORMATION_MESSAGE = `
-Thanks for trying out our basic javascript load generator!  This tool is
+Thanks for trying out our basic node.js load generator!  This tool is
 included to allow you to experiment with performance in your environment
 based on different configurations.  It's very simplistic, and only intended
 to give you a quick way to explore the performance of the Momento client
@@ -392,29 +386,22 @@ see how different configurations impact performance.
 If you have questions or need help experimenting further, please reach out to us!
 `;
 
-async function main(loadGeneratorOptions: BasicJavaScriptLoadGenOptions) {
-  const loadGenerator = new BasicJavaScriptLoadGen(loadGeneratorOptions);
+async function main(loadGeneratorOptions: BasicLoadGenOptions) {
+  const loadGenerator = new BasicLoadGen(loadGeneratorOptions);
   await loadGenerator.run();
 }
 
-const loadGeneratorOptions: BasicJavaScriptLoadGenOptions = {
+const loadGeneratorOptions: BasicLoadGenOptions = {
   /**
    * This setting allows you to control the verbosity of the log output during
    * the load generator run.
    */
-  loggerOptions: {
+  loggerFactory: new DefaultMomentoLoggerFactory(
     /**
-     * Available log levels are TRACE, DEBUG, INFO, WARN, and ERROR.  INFO
-     * is a reasonable choice for this load generator program.
+     * Available log levels are trace, debug, info, warn, and error.
      */
-    level: LogLevel.DEBUG,
-    /**
-     * Allows you to choose between formatting your log output as JSON (a good
-     * choice for production environments) or CONSOLE (a better choice for
-     * development environments).
-     */
-    format: LogFormat.CONSOLE,
-  },
+    DefaultMomentoLoggerLevel.DEBUG
+  ),
   /** Print some statistics about throughput and latency every time this many
    *  seconds have passed.
    */

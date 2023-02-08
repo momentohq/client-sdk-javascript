@@ -1,4 +1,4 @@
-import {truncateStringArray} from '../../src/utils/display';
+import {truncateStringArray} from '../../src/internal/utils/display';
 
 describe('string array trunctation logic', () => {
   it('should not truncate when array is not that big', () => {

@@ -1,6 +1,5 @@
 import {SimpleCacheClient} from './simple-cache-client';
 import * as Configurations from './config/configurations';
-import {CacheOperation, MomentoSigner} from './internal/momento-signer';
 import * as CacheGet from './messages/responses/cache-get';
 import * as CacheListConcatenateBack from './messages/responses/cache-list-concatenate-back';
 import * as CacheListConcatenateFront from './messages/responses/cache-list-concatenate-front';
@@ -64,12 +63,8 @@ export {
 } from './config/logging/momento-logger';
 
 export {
-  PinoMomentoLogger,
-  PinoMomentoLoggerFactory,
-} from './config/logging/pino-momento-logger';
-
-export {
   DefaultMomentoLoggerFactory,
+  DefaultMomentoLogger,
   DefaultMomentoLoggerLevel,
 } from './config/logging/default-momento-logger';
 
@@ -79,8 +74,6 @@ export {
   Configuration,
   CredentialProvider,
   EnvMomentoTokenProvider,
-  MomentoSigner,
-  CacheOperation,
   SimpleCacheClient,
   CacheGet,
   CacheListConcatenateBack,

@@ -1,4 +1,4 @@
-import {decodeJwt} from '../utils/jwt';
+import {decodeJwt} from '../internal/utils/jwt';
 
 /**
  * Encapsulates arguments for instantiating an EnvMomentoTokenProvider

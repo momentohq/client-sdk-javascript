@@ -1,6 +1,6 @@
 import {CloseableGrpcClient, GrpcClientWrapper} from './grpc-client-wrapper';
-import {Configuration} from '../config/configuration';
-import {MomentoLogger} from '../config/logging/momento-logger';
+import {Configuration} from '../../config/configuration';
+import {MomentoLogger} from '../../config/logging/momento-logger';
 
 export interface IdleGrpcClientWrapperProps<T extends CloseableGrpcClient> {
   clientFactoryFn: () => T;

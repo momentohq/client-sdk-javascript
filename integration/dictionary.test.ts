@@ -1,5 +1,5 @@
 import {v4} from 'uuid';
-import {sleep} from '../src/utils/sleep';
+import {sleep} from '../src/internal/utils/sleep';
 import {
   CollectionTtl,
   CacheDelete,
@@ -590,7 +590,7 @@ describe('Integration tests for dictionary operations', () => {
         props.dictionaryName,
         props.field,
         5,
-        props.ttl
+        {ttl: props.ttl}
       );
     };
 
@@ -1043,7 +1043,7 @@ describe('Integration tests for dictionary operations', () => {
         props.dictionaryName,
         props.field,
         props.value,
-        props.ttl
+        {ttl: props.ttl}
       );
     };
 
@@ -1131,7 +1131,7 @@ describe('Integration tests for dictionary operations', () => {
         props.cacheName,
         props.dictionaryName,
         new Map([[props.field, props.value]]),
-        props.ttl
+        {ttl: props.ttl}
       );
     };
 
@@ -1151,7 +1151,7 @@ describe('Integration tests for dictionary operations', () => {
           [field1, value1],
           [field2, value2],
         ]),
-        CollectionTtl.of(10)
+        {ttl: CollectionTtl.of(10)}
       );
       expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
       let getResponse = await Momento.dictionaryGetField(
@@ -1187,7 +1187,7 @@ describe('Integration tests for dictionary operations', () => {
           [field1, value1],
           [field2, value2],
         ]),
-        CollectionTtl.of(10)
+        {ttl: CollectionTtl.of(10)}
       );
       expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
       let getResponse = await Momento.dictionaryGetField(
@@ -1220,7 +1220,7 @@ describe('Integration tests for dictionary operations', () => {
         IntegrationTestCacheName,
         dictionaryName,
         {foo: value1, bar: value2},
-        CollectionTtl.of(10)
+        {ttl: CollectionTtl.of(10)}
       );
       expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
       let getResponse = await Momento.dictionaryGetField(
@@ -1256,7 +1256,7 @@ describe('Integration tests for dictionary operations', () => {
           [field1, value1],
           [field2, value2],
         ]),
-        CollectionTtl.of(10)
+        {ttl: CollectionTtl.of(10)}
       );
       expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
       let getResponse = await Momento.dictionaryGetField(
@@ -1290,7 +1290,7 @@ describe('Integration tests for dictionary operations', () => {
         IntegrationTestCacheName,
         dictionaryName,
         {foo: textEncoder.encode(value1), bar: textEncoder.encode(value2)},
-        CollectionTtl.of(10)
+        {ttl: CollectionTtl.of(10)}
       );
       expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
       let getResponse = await Momento.dictionaryGetField(
