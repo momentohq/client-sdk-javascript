@@ -4,7 +4,6 @@ import {
   StaticTransportStrategy,
 } from '../../src/config/transport/transport-strategy';
 import {FixedCountRetryStrategy} from '../../src/config/retry/fixed-count-retry-strategy';
-import {NoopMomentoLoggerFactory} from '../../src/config/logging/noop-momento-logger';
 import {DefaultMomentoLoggerFactory} from '../../src';
 
 describe('configuration.ts', () => {
@@ -26,21 +25,6 @@ describe('configuration.ts', () => {
     loggerFactory: testLoggerFactory,
     retryStrategy: testRetryStrategy,
     transportStrategy: testTransportStrategy,
-  });
-
-  it('should support overriding logger options', () => {
-    const newLoggerFactory = new NoopMomentoLoggerFactory();
-    const configWithNewLoggerOptions =
-      testConfiguration.withLoggerFactory(newLoggerFactory);
-    expect(configWithNewLoggerOptions.getLoggerFactory()).toEqual(
-      newLoggerFactory
-    );
-    expect(configWithNewLoggerOptions.getRetryStrategy()).toEqual(
-      testRetryStrategy
-    );
-    expect(configWithNewLoggerOptions.getTransportStrategy()).toEqual(
-      testTransportStrategy
-    );
   });
 
   it('should support overriding retry strategy', () => {
