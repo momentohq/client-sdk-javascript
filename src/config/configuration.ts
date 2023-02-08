@@ -31,13 +31,6 @@ export interface Configuration {
   getLoggerFactory(): MomentoLoggerFactory;
 
   /**
-   * Copy constructor for overriding LoggerOptions
-   * @param {MomentoLoggerFactory} loggerFactory
-   * @returns {Configuration} a new Configuration object with the specified LoggerOptions
-   */
-  withLoggerFactory(loggerFactory: MomentoLoggerFactory): Configuration;
-
-  /**
    * @returns {RetryStrategy} the current configuration options for how and when failed requests will be retried
    */
   getRetryStrategy(): RetryStrategy;
@@ -82,14 +75,6 @@ export class SimpleCacheConfiguration implements Configuration {
 
   getLoggerFactory(): MomentoLoggerFactory {
     return this.loggerFactory;
-  }
-
-  withLoggerFactory(loggerFactory: MomentoLoggerFactory): Configuration {
-    return new SimpleCacheConfiguration({
-      loggerFactory: loggerFactory,
-      retryStrategy: this.retryStrategy,
-      transportStrategy: this.transportStrategy,
-    });
   }
 
   getRetryStrategy(): RetryStrategy {
