@@ -1083,10 +1083,10 @@ export class CacheClient {
     });
   }
 
-  public async dictionarySendFields(
+  public async dictionarySetFields(
     cacheName: string,
     dictionaryName: string,
-    items:
+    elements:
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>,
     ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
@@ -1100,12 +1100,12 @@ export class CacheClient {
       );
     }
     this.logger.trace(
-      `Issuing 'dictionarySetFields' request; items: ${items.toString()}, ttl: ${
+      `Issuing 'dictionarySetFields' request; elements: ${elements.toString()}, ttl: ${
         ttl.ttlSeconds.toString() ?? 'null'
       }`
     );
 
-    const dictionaryFieldValuePairs = this.convertMapOrRecord(items);
+    const dictionaryFieldValuePairs = this.convertMapOrRecord(elements);
 
     const result = await this.sendDictionarySetFields(
       cacheName,
@@ -1123,13 +1123,13 @@ export class CacheClient {
   private async sendDictionarySetFields(
     cacheName: string,
     dictionaryName: Uint8Array,
-    items: grpcCache._DictionaryFieldValuePair[],
+    elements: grpcCache._DictionaryFieldValuePair[],
     ttlMilliseconds: number,
     refreshTtl: boolean
   ): Promise<CacheDictionarySetFields.Response> {
     const request = new grpcCache._DictionarySetRequest({
       dictionary_name: dictionaryName,
-      items: items,
+      items: elements,
       ttl_milliseconds: ttlMilliseconds,
       refresh_ttl: refreshTtl,
     });
@@ -1520,24 +1520,24 @@ export class CacheClient {
   }
 
   private convertMapOrRecord(
-    items:
+    elements:
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>
   ): grpcCache._DictionaryFieldValuePair[] {
-    if (items instanceof Map) {
-      return [...items.entries()].map(
-        item =>
+    if (elements instanceof Map) {
+      return [...elements.entries()].map(
+        element =>
           new grpcCache._DictionaryFieldValuePair({
-            field: this.convert(item[0]),
-            value: this.convert(item[1]),
+            field: this.convert(element[0]),
+            value: this.convert(element[1]),
           })
       );
     } else {
-      return Object.entries(items).map(
-        item =>
+      return Object.entries(elements).map(
+        element =>
           new grpcCache._DictionaryFieldValuePair({
-            field: this.convert(item[0]),
-            value: this.convert(item[1]),
+            field: this.convert(element[0]),
+            value: this.convert(element[1]),
           })
       );
     }
