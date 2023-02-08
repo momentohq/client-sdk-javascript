@@ -1,5 +1,5 @@
 import {MomentoLogger, MomentoLoggerFactory} from './momento-logger';
-import printf = require('../../internal/vendor/sprintfjs/printf');
+import printf = require('../../internal/vendor/printf/printf');
 
 export enum DefaultMomentoLoggerLevel {
   TRACE = 5,
