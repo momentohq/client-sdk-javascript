@@ -218,9 +218,14 @@ describe('Integration Tests for operations on sets datastructure', () => {
       setName
     );
     expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
-    expect((fetchResponse as CacheSetFetch.Hit).valueSetUint8Array()).toEqual(
+    const hit = fetchResponse as CacheSetFetch.Hit;
+    expect(hit.valueSetUint8Array()).toEqual(
       new Set([LOL_BYTE_ARRAY, FOO_BYTE_ARRAY])
     );
+    expect(hit.valueArrayUint8Array()).toEqual([
+      LOL_BYTE_ARRAY,
+      FOO_BYTE_ARRAY,
+    ]);
   });
   it('should succeed for addElements for string arrays happy path', async () => {
     const setName = v4();
@@ -236,9 +241,11 @@ describe('Integration Tests for operations on sets datastructure', () => {
       setName
     );
     expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
-    expect((fetchResponse as CacheSetFetch.Hit).valueSetString()).toEqual(
-      new Set(['lol', 'foo'])
-    );
+    const hit = fetchResponse as CacheSetFetch.Hit;
+    expect(hit.valueSet()).toEqual(new Set(['lol', 'foo']));
+    expect(hit.valueSetString()).toEqual(new Set(['lol', 'foo']));
+    expect(hit.valueArray()).toEqual(['lol', 'foo']);
+    expect(hit.valueArrayString()).toEqual(['lol', 'foo']);
   });
   it('should succeed for addElements with duplicate elements', async () => {
     const setName = v4();

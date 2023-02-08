@@ -27,6 +27,10 @@ class _Hit extends Response {
     return this._values.map(v => TEXT_DECODER.decode(v));
   }
 
+  public valueList(): string[] {
+    return this.valueListString();
+  }
+
   public override toString(): string {
     const truncatedStringArray = truncateStringArray(this.valueListString());
     return `${super.toString()}: [${truncatedStringArray.toString()}]`;
