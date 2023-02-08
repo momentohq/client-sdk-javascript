@@ -20,19 +20,6 @@ MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run example
 
 Example Code: [index.ts](index.ts)
 
-## Running the Presigned URL Example
-
-This example demonstrates how to use the `MomentoSigner` class, which enables creation of user-signed access tokens and presigned urls which can be used for doing cache get/set actions via HTTP.
-
-```bash
-npm install
-
-# Run example code
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run presigned-url-example
-```
-
-Example Code: [presigned-url-example.ts](presigned-url-example.ts)
-
 ## Running the Dictionary Example
 
 This example demonstrates how to use the dictionary data type.
