@@ -26,6 +26,8 @@ import {
   CacheDictionarySetFields,
   CacheDictionaryGetField,
   CacheDictionaryGetFields,
+  CacheDictionaryRemoveField,
+  CacheDictionaryRemoveFields,
   CacheDictionaryIncrement,
   CacheSetFetch,
   CacheSetAddElements,
@@ -486,7 +488,7 @@ export class SimpleCacheClient {
    * Fetch the entire dictionary from the cache.
    * @param {string} cacheName - Name of the cache to perform the lookup in.
    * @param {string} dictionaryName - The dictionary to fetch.
-   * @returns {Promise<DictionaryFetch.Response>}- Promise containing the result of the fetch operation and the associated dictionary.
+   * @returns {Promise<CacheDictionaryFetch.Response>}- Promise containing the result of the fetch operation and the associated dictionary.
    * @memberof SimpleCacheClient
    */
   public async dictionaryFetch(
@@ -593,13 +595,13 @@ export class SimpleCacheClient {
    * @param {string} cacheName - Name of the cache to perform the lookup in.
    * @param {string} dictionaryName - Name of the dictionary to remove the field from.
    * @param {string | Uint8Array} field - Name of the field to remove from the dictionary.
-   * @returns {Promise<CacheDictionaryRemoveField>}- Promise containing the result of the cache operation.
+   * @returns {Promise<CacheDictionaryRemoveField.Response>}- Promise containing the result of the cache operation.
    */
   public async dictionaryRemoveField(
     cacheName: string,
     dictionaryName: string,
     field: string | Uint8Array
-  ): Promise<CacheDictionaryGetField.Response> {
+  ): Promise<CacheDictionaryRemoveField.Response> {
     const client = this.getNextDataClient();
     return await client.dictionaryRemoveField(cacheName, dictionaryName, field);
   }
@@ -610,13 +612,13 @@ export class SimpleCacheClient {
    * @param {string} cacheName - Name of the cache to perform the lookup in.
    * @param {string} dictionaryName - Name of the dictionary to remove the field from.
    * @param {string[] | Uint8Array[]} fields - Name of the fields to remove from the dictionary.
-   * @returns {Promise<CacheDictionaryRemoveFields>}- Promise containing the result of the cache operation.
+   * @returns {Promise<CacheDictionaryRemoveFields.Response>}- Promise containing the result of the cache operation.
    */
   public async dictionaryRemoveFields(
     cacheName: string,
     dictionaryName: string,
     fields: string[] | Uint8Array[]
-  ): Promise<CacheDictionaryGetFields.Response> {
+  ): Promise<CacheDictionaryRemoveFields.Response> {
     const client = this.getNextDataClient();
     return await client.dictionaryRemoveFields(
       cacheName,

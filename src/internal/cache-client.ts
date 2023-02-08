@@ -62,7 +62,7 @@ export class CacheClient {
   private readonly interceptors: Interceptor[];
 
   /**
-   * @param {MomentoValidateCacheProps} props
+   * @param {SimpleCacheClientProps} props
    */
   constructor(props: SimpleCacheClientProps) {
     this.configuration = props.configuration;
@@ -126,28 +126,24 @@ export class CacheClient {
   ): Promise<CacheSet.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl && ttl < 0) {
-        throw new InvalidArgumentError('ttl must be a positive integer');
-      } else {
-        ttl || this.defaultTtlSeconds;
-      }
     } catch (err) {
       return new CacheSet.Error(normalizeSdkError(err as Error));
     }
+    if (ttl && ttl < 0) {
+      return new CacheSet.Error(
+        new InvalidArgumentError('ttl must be a positive integer')
+      );
+    }
+    const ttlToUse = ttl || this.defaultTtlSeconds;
     this.logger.trace(
       `Issuing 'set' request; key: ${key.toString()}, value length: ${
         value.length
-      }, ttl: ${ttl?.toString() ?? 'null'}`
+      }, ttl: ${ttlToUse.toString()}`
     );
     const encodedKey = this.convert(key);
     const encodedValue = this.convert(value);
 
-    return await this.sendSet(
-      cacheName,
-      encodedKey,
-      encodedValue,
-      ttl || this.defaultTtlSeconds
-    );
+    return await this.sendSet(cacheName, encodedKey, encodedValue, ttlToUse);
   }
 
   private async sendSet(
