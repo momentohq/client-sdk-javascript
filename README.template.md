@@ -122,6 +122,27 @@ trying to instantiate a `SimpleCacheClient` with an invalid authentication token
 
 ### Tuning
 
-TODO: Coming Soon
+Momento client-libraries provide pre-built configuration bundles out-of-the-box. We want to do the hard work of
+tuning for different environments for you, so that you can focus on the things that are unique to your business.
+(We even have a blog series about it! [Shockingly simple: Cache clients that do the hard work for you](https://www.gomomento.com/blog/shockingly-simple-cache-clients-that-do-the-hard-work-for-you))
+
+You can find the pre-built configurations in our `Configurations` namespace. Some of the pre-built configurations that
+you might be interested in:
+
+- `Configurations.Laptop` - this one is a development environment, just for poking around. It has relaxed timeouts
+  and assumes that your network latencies might be a bit high.
+- `Configurations.InRegion.Default` - provides defaults suitable for an environment where your client is running in the same region as the Momento
+  service. It has more aggressive timeouts and retry behavior than the Laptop config.
+- `Configurations.InRegion.LowLatency` - This config prioritizes keeping p99.9 latencies as low as possible, potentially sacrificing
+  some throughput to achieve this. It will time out more quickly than the Default configuration; use this configuration if the most important
+  factor is to ensure that cache unavailability doesn't force unacceptably high latencies for your own application and you want to fall
+  back to application logic more quickly if the cache hasn't responded.
+
+We hope that these configurations will meet the needs of most users, but if you find them lacking in any way, please
+open a github issue, or contact us at `support@momentohq.com`. We would love to hear about your use case so that we
+can fix or extend the pre-built configs to support it.
+
+If you do need to customize your configuration beyond what our pre-builts provide, you can build your own `Configuration`
+object.  See the examples in `configurations.ts` to see how they are constructed.
 
 {{ ossFooter }}
