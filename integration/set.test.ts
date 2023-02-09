@@ -222,7 +222,8 @@ describe('Integration Tests for operations on sets datastructure', () => {
     expect(hit.valueSetUint8Array()).toEqual(
       new Set([LOL_BYTE_ARRAY, FOO_BYTE_ARRAY])
     );
-    expect(hit.valueArrayUint8Array()).toEqual([
+    expect(hit.valueArrayUint8Array()).toBeArrayOfSize(2);
+    expect(hit.valueArrayUint8Array()).toContainAllValues([
       LOL_BYTE_ARRAY,
       FOO_BYTE_ARRAY,
     ]);
@@ -244,8 +245,10 @@ describe('Integration Tests for operations on sets datastructure', () => {
     const hit = fetchResponse as CacheSetFetch.Hit;
     expect(hit.valueSet()).toEqual(new Set(['lol', 'foo']));
     expect(hit.valueSetString()).toEqual(new Set(['lol', 'foo']));
-    expect(hit.valueArray()).toEqual(['lol', 'foo']);
-    expect(hit.valueArrayString()).toEqual(['lol', 'foo']);
+    expect(hit.valueArray()).toBeArrayOfSize(2);
+    expect(hit.valueArray()).toContainAllValues(['lol', 'foo']);
+    expect(hit.valueArrayString()).toBeArrayOfSize(2);
+    expect(hit.valueArrayString()).toContainAllValues(['lol', 'foo']);
   });
   it('should succeed for addElements with duplicate elements', async () => {
     const setName = v4();
