@@ -76,6 +76,10 @@ export class StringMomentoTokenProvider implements CredentialProvider {
   getControlEndpoint(): string {
     return this.controlEndpoint;
   }
+
+  public toString(): string {
+    return `Control endpoint: ${this.getControlEndpoint()} Cache endpoint: ${this.getCacheEndpoint()}`;
+  }
 }
 
 export interface EnvMomentoTokenProviderProps extends CredentialProviderProps {
@@ -91,6 +95,7 @@ export interface EnvMomentoTokenProviderProps extends CredentialProviderProps {
  * @class EnvMomentoTokenProvider
  */
 export class EnvMomentoTokenProvider extends StringMomentoTokenProvider {
+  environmentVariableName: string;
   /**
    * @param {EnvMomentoTokenProviderProps} props configuration options for the token provider
    */
@@ -106,5 +111,12 @@ export class EnvMomentoTokenProvider extends StringMomentoTokenProvider {
       controlEndpoint: props.controlEndpoint,
       cacheEndpoint: props.cacheEndpoint,
     });
+    this.environmentVariableName = props.environmentVariableName;
+  }
+
+  public toString(): string {
+    return `Token environment variable: ${
+      this.environmentVariableName
+    } Control endpoint: ${this.getControlEndpoint()} Cache endpoint: ${this.getCacheEndpoint()}`;
   }
 }
