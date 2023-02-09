@@ -449,9 +449,6 @@ export class SimpleCacheClient {
     return await client.setRemoveElements(cacheName, setName, elements);
   }
 
-  // TODO add support for adding/removing a single element to/from a set.
-  // https://github.com/momentohq/client-sdk-nodejs/issues/170
-
   /**
    * Create a cache if it does not exist.
    * @param {string} cacheName - Name of the cache to be created.
@@ -474,14 +471,12 @@ export class SimpleCacheClient {
 
   /**
    * List all caches.
-   * @param {string} [nextToken] - A token to specify where to start paginating.
-   * This is the NextToken from a previous response.
    * @returns {Promise<ListCaches.Response>} - Promise of the list cache response.
    * Contains the listed caches and a next token to continue listing.
    * @memberof SimpleCacheClient
    */
-  public async listCaches(nextToken?: string): Promise<ListCaches.Response> {
-    return await this.controlClient.listCaches(nextToken);
+  public async listCaches(): Promise<ListCaches.Response> {
+    return await this.controlClient.listCaches();
   }
 
   /**

@@ -115,9 +115,9 @@ export class ControlClient {
     });
   }
 
-  public async listCaches(nextToken?: string): Promise<ListCaches.Response> {
+  public async listCaches(): Promise<ListCaches.Response> {
     const request = new grpcControl._ListCachesRequest();
-    request.next_token = nextToken ?? '';
+    request.next_token = '';
     this.logger.debug("Issuing 'listCaches' request");
     return await new Promise<ListCaches.Response>(resolve => {
       this.clientWrapper
