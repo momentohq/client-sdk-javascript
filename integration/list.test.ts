@@ -255,6 +255,7 @@ describe('lists', () => {
         await Momento.listFetch(IntegrationTestCacheName, listName)
       );
       expect(respFetch.valueListString()).toEqual([valueString]);
+      expect(respFetch.valueList()).toEqual([valueString]);
       expect(respFetch.valueListUint8Array()).toEqual([valueBytes]);
     });
   });
