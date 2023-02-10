@@ -251,12 +251,32 @@ describe('lists', () => {
         valueString
       );
 
-      const respFetch = <CacheListFetch.Hit>(
-        await Momento.listFetch(IntegrationTestCacheName, listName)
+      const fetchResponse = await Momento.listFetch(
+        IntegrationTestCacheName,
+        listName
       );
-      expect(respFetch.valueListString()).toEqual([valueString]);
-      expect(respFetch.valueList()).toEqual([valueString]);
-      expect(respFetch.valueListUint8Array()).toEqual([valueBytes]);
+      expect(fetchResponse).toBeInstanceOf(CacheListFetch.Hit);
+      const hitResponse = fetchResponse as CacheListFetch.Hit;
+      expect(hitResponse.valueListString()).toEqual([valueString]);
+      expect(hitResponse.valueList()).toEqual([valueString]);
+      expect(hitResponse.valueListUint8Array()).toEqual([valueBytes]);
+
+      const hitOrElseHitResult = fetchResponse.hitOrElse(
+        h => h.valueList(),
+        () => ['FOO']
+      );
+      expect(hitOrElseHitResult).toEqual([valueString]);
+
+      const missResponse = await Momento.listFetch(
+        IntegrationTestCacheName,
+        'DoesNotExist'
+      );
+      expect(missResponse).toBeInstanceOf(CacheListFetch.Miss);
+      const hitOrElseMissResult = missResponse.hitOrElse(
+        h => h.valueList(),
+        () => ['FOO']
+      );
+      expect(hitOrElseMissResult).toEqual(['FOO']);
     });
   });
 
@@ -283,6 +303,23 @@ describe('lists', () => {
       const resp = await Momento.listLength(IntegrationTestCacheName, listName);
       expect(resp).toBeInstanceOf(CacheListLength.Hit);
       expect((resp as CacheListLength.Hit).length()).toEqual(values.length);
+
+      const hitOrElseHitResult = resp.hitOrElse(
+        h => h.length(),
+        () => 90210
+      );
+      expect(hitOrElseHitResult).toEqual(values.length);
+
+      const missResponse = await Momento.listLength(
+        IntegrationTestCacheName,
+        'DoesNotExist'
+      );
+      expect(missResponse).toBeInstanceOf(CacheListLength.Miss);
+      const hitOrElseMissResult = missResponse.hitOrElse(
+        h => h.length(),
+        () => 90210
+      );
+      expect(hitOrElseMissResult).toEqual(90210);
     });
   });
 
@@ -317,6 +354,23 @@ describe('lists', () => {
       expect((resp as CacheListPopBack.Hit).valueUint8Array()).toEqual(
         poppedBinary
       );
+
+      const hitOrElseHitResult = resp.hitOrElse(
+        h => h.valueString(),
+        () => 'FOO'
+      );
+      expect(hitOrElseHitResult).toEqual(poppedValue);
+
+      const missResponse = await Momento.listPopBack(
+        IntegrationTestCacheName,
+        'DoesNotExist'
+      );
+      expect(missResponse).toBeInstanceOf(CacheListPopBack.Miss);
+      const hitOrElseMissResult = missResponse.hitOrElse(
+        h => h.valueString(),
+        () => 'FOO'
+      );
+      expect(hitOrElseMissResult).toEqual('FOO');
     });
   });
 
@@ -353,6 +407,23 @@ describe('lists', () => {
       expect((resp as CacheListPopFront.Hit).valueUint8Array()).toEqual(
         poppedBinary
       );
+
+      const hitOrElseHitResult = resp.hitOrElse(
+        h => h.valueString(),
+        () => 'FOO'
+      );
+      expect(hitOrElseHitResult).toEqual(poppedValue);
+
+      const missResponse = await Momento.listPopFront(
+        IntegrationTestCacheName,
+        'DoesNotExist'
+      );
+      expect(missResponse).toBeInstanceOf(CacheListPopFront.Miss);
+      const hitOrElseMissResult = missResponse.hitOrElse(
+        h => h.valueString(),
+        () => 'FOO'
+      );
+      expect(hitOrElseMissResult).toEqual('FOO');
     });
   });
 

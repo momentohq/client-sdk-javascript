@@ -11,11 +11,12 @@ import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 const TEXT_DECODER = new TextDecoder();
 
 export abstract class Response extends ResponseBase {
-  public hitOrElse<T>(valueFn: (hit: Hit) => T, fallback: () => T): T {
+  public hitOrElse<T>(hitFn: (h: Hit) => T, elseFn: () => T): T {
     if (this instanceof Hit) {
-      return valueFn(this);
+      return hitFn(this);
+    } else {
+      return elseFn();
     }
-    return fallback();
   }
 }
 

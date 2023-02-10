@@ -27,11 +27,12 @@ export abstract class Response extends ResponseBase {
     return this.field;
   }
 
-  public hitOrElse(fallback: () => Uint8Array): Hit {
+  public hitOrElse<T>(hitFn: (h: Hit) => T, elseFn: () => T): T {
     if (this instanceof Hit) {
-      return this;
+      return hitFn(this);
+    } else {
+      return elseFn();
     }
-    return new Hit(fallback(), this.field);
   }
 }
 

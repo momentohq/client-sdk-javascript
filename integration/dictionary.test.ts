@@ -538,6 +538,24 @@ describe('Integration tests for dictionary operations', () => {
       expect(expectedRecordStringBytes).toEqual(
         hitResponse.valueRecordStringUint8Array()
       );
+
+      const hitOrElseHitResult = getResponse.hitOrElse(
+        h => h.valueRecord(),
+        () => ({foo: 'FOO'})
+      );
+      expect(hitOrElseHitResult).toEqual(expectedRecordStringString);
+
+      const anotherMissResponse = await Momento.dictionaryGetFields(
+        IntegrationTestCacheName,
+        'DoesNotExist',
+        [field1, field2, field3]
+      );
+      expect(anotherMissResponse).toBeInstanceOf(CacheDictionaryGetFields.Miss);
+      const hitOrElseMissResult = anotherMissResponse.hitOrElse(
+        h => h.valueRecord(),
+        () => ({foo: 'FOO'})
+      );
+      expect(hitOrElseMissResult).toEqual({foo: 'FOO'});
     });
 
     it('should dictionarySetField/dictionaryGetFields with Uint8Array fields/values', async () => {
@@ -1116,6 +1134,24 @@ describe('Integration tests for dictionary operations', () => {
       if (getResponse instanceof CacheDictionaryGetField.Hit) {
         expect(getResponse.valueString()).toEqual(value);
       }
+
+      const hitOrElseHitResult = getResponse.hitOrElse(
+        h => h.valueString(),
+        () => 'FOO'
+      );
+      expect(hitOrElseHitResult).toEqual(value);
+
+      const missResponse = await Momento.dictionaryGetField(
+        IntegrationTestCacheName,
+        dictionaryName,
+        'DoesNotExist'
+      );
+      expect(missResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
+      const hitOrElseMissResult = missResponse.hitOrElse(
+        h => h.valueString(),
+        () => 'FOO'
+      );
+      expect(hitOrElseMissResult).toEqual('FOO');
     });
 
     it('should set/get a dictionary with string field and Uint8Array value', async () => {

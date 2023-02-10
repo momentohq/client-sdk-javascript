@@ -249,6 +249,25 @@ describe('Integration Tests for operations on sets datastructure', () => {
     expect(hit.valueArray()).toContainAllValues(['lol', 'foo']);
     expect(hit.valueArrayString()).toBeArrayOfSize(2);
     expect(hit.valueArrayString()).toContainAllValues(['lol', 'foo']);
+
+    const hitOrElseHitResult = fetchResponse.hitOrElse(
+      h => h.valueArrayString(),
+      () => ['FOO']
+    );
+    expect(hitOrElseHitResult).toBeArrayOfSize(2);
+    expect(hitOrElseHitResult).toContainAllValues(['lol', 'foo']);
+
+    const missResponse = await Momento.setFetch(
+      IntegrationTestCacheName,
+      'DoesNotExist'
+    );
+    expect(missResponse).toBeInstanceOf(CacheSetFetch.Miss);
+    const hitOrElseMissResult = missResponse.hitOrElse(
+      h => h.valueArrayString(),
+      () => ['FOO']
+    );
+    expect(hitOrElseMissResult).toBeArrayOfSize(1);
+    expect(hitOrElseMissResult).toContainAllValues(['FOO']);
   });
   it('should succeed for addElements with duplicate elements', async () => {
     const setName = v4();

@@ -42,6 +42,23 @@ describe('get/set/delete', () => {
     if (getResponse instanceof CacheGet.Hit) {
       expect(getResponse.valueString()).toEqual(cacheValue);
     }
+
+    const hitOrElseHitResult = getResponse.hitOrElse(
+      h => h.valueString(),
+      () => 'FOO'
+    );
+    expect(hitOrElseHitResult).toEqual(cacheValue);
+
+    const missResponse = await Momento.get(
+      IntegrationTestCacheName,
+      'DoesNotExist'
+    );
+    expect(missResponse).toBeInstanceOf(CacheGet.Miss);
+    const hitOrElseMissResult = missResponse.hitOrElse(
+      h => h.valueString(),
+      () => 'FOO'
+    );
+    expect(hitOrElseMissResult).toEqual('FOO');
   });
 
   it('should set and get bytes from cache', async () => {

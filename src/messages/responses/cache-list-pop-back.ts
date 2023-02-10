@@ -11,7 +11,15 @@ import {truncateString} from '../../internal/utils/display';
 
 const TEXT_DECODER = new TextDecoder();
 
-export abstract class Response extends ResponseBase {}
+export abstract class Response extends ResponseBase {
+  public hitOrElse<T>(hitFn: (h: Hit) => T, elseFn: () => T): T {
+    if (this instanceof Hit) {
+      return hitFn(this);
+    } else {
+      return elseFn();
+    }
+  }
+}
 
 class _Hit extends Response {
   private readonly body: Uint8Array;
