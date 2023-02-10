@@ -11,12 +11,34 @@ import {truncateString} from '../../internal/utils/display';
 
 const TEXT_DECODER = new TextDecoder();
 
-export abstract class Response extends ResponseBase {}
+export abstract class Response extends ResponseBase {
+  protected readonly field: Uint8Array;
+
+  constructor(field: Uint8Array) {
+    super();
+    this.field = field;
+  }
+
+  public fieldString(): string {
+    return TEXT_DECODER.decode(this.field);
+  }
+
+  public fieldUint8Array(): Uint8Array {
+    return this.field;
+  }
+
+  public hitOrElse(fallback: () => Uint8Array): Hit {
+    if (this instanceof Hit) {
+      return this;
+    }
+    return new Hit(fallback(), this.field);
+  }
+}
 
 class _Hit extends Response {
   private readonly body: Uint8Array;
-  constructor(body: Uint8Array) {
-    super();
+  constructor(body: Uint8Array, field: Uint8Array) {
+    super(field);
     this.body = body;
   }
   /**
@@ -37,59 +59,26 @@ class _Hit extends Response {
   }
 }
 export class Hit extends ResponseHit(_Hit) {
-  private readonly field: Uint8Array;
-
   constructor(body: Uint8Array, field: Uint8Array) {
-    super(body);
-    this.field = field;
-  }
-
-  public fieldString(): string {
-    return TEXT_DECODER.decode(this.field);
-  }
-
-  public fieldUint8Array(): Uint8Array {
-    return this.field;
+    super(body, field);
   }
 }
 
 class _Miss extends Response {}
 export class Miss extends ResponseMiss(_Miss) {
-  private readonly field: Uint8Array;
-
   constructor(field: Uint8Array) {
-    super();
-    this.field = field;
-  }
-
-  public fieldString(): string {
-    return TEXT_DECODER.decode(this.field);
-  }
-
-  public fieldUint8Array(): Uint8Array {
-    return this.field;
+    super(field);
   }
 }
 
 class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
-    super();
+  constructor(protected _innerException: SdkError, field: Uint8Array) {
+    super(field);
   }
 }
 
 export class Error extends ResponseError(_Error) {
-  private readonly field: Uint8Array;
-
   constructor(public _innerException: SdkError, field: Uint8Array) {
-    super(_innerException);
-    this.field = field;
-  }
-
-  public fieldString(): string {
-    return TEXT_DECODER.decode(this.field);
-  }
-
-  public fieldUint8Array(): Uint8Array {
-    return this.field;
+    super(_innerException, field);
   }
 }

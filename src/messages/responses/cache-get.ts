@@ -1,5 +1,5 @@
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
-import {TextDecoder} from 'util';
+import {TextDecoder, TextEncoder} from 'util';
 import {SdkError} from '../../errors/errors';
 import {
   ResponseBase,
@@ -10,8 +10,21 @@ import {
 import {truncateString} from '../../internal/utils/display';
 
 const TEXT_DECODER = new TextDecoder();
+const TEXT_ENCODER = new TextEncoder();
 
-export abstract class Response extends ResponseBase {}
+export abstract class Response extends ResponseBase {
+  public hitOrElse(fallback: () => Uint8Array | string): Hit {
+    if (this instanceof Hit) {
+      return this;
+    }
+    const value = fallback();
+    if (value instanceof Uint8Array) {
+      return new Hit(value);
+    } else {
+      return new Hit(TEXT_ENCODER.encode(value));
+    }
+  }
+}
 
 class _Hit extends Response {
   private readonly body: Uint8Array;
