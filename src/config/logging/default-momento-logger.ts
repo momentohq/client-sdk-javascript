@@ -85,7 +85,7 @@ export class DefaultMomentoLogger implements MomentoLogger {
   ) {
     outputFn(
       printf(
-        '[%s] %s (%s): %s',
+        '[%s] %s (Momento: %s): %s',
         new Date().toISOString(),
         DefaultMomentoLoggerLevel[level],
         this.loggerName,
