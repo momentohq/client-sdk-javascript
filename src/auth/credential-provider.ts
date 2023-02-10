@@ -1,4 +1,5 @@
 import {decodeJwt} from '../internal/utils/jwt';
+import {fromEntries} from '../internal/utils/object';
 
 /**
  * Encapsulates arguments for instantiating an EnvMomentoTokenProvider
@@ -37,6 +38,21 @@ export interface CredentialProvider {
   getCacheEndpoint(): string;
 }
 
+abstract class CredentialProviderBase implements CredentialProvider {
+  abstract getAuthToken(): string;
+
+  abstract getCacheEndpoint(): string;
+
+  abstract getControlEndpoint(): string;
+
+  valueOf(): object {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const entries = Object.entries(this).filter(([k]) => k !== 'authToken');
+    const clone = fromEntries(entries);
+    return clone.valueOf();
+  }
+}
+
 export interface StringMomentoTokenProviderProps
   extends CredentialProviderProps {
   /**
@@ -50,7 +66,7 @@ export interface StringMomentoTokenProviderProps
  * @export
  * @class StringMomentoTokenProvider
  */
-export class StringMomentoTokenProvider implements CredentialProvider {
+export class StringMomentoTokenProvider extends CredentialProviderBase {
   private readonly authToken: string;
   private readonly controlEndpoint: string;
   private readonly cacheEndpoint: string;
@@ -59,6 +75,7 @@ export class StringMomentoTokenProvider implements CredentialProvider {
    * @param {StringMomentoTokenProviderProps} props configuration options for the token provider
    */
   constructor(props: StringMomentoTokenProviderProps) {
+    super();
     this.authToken = props.authToken;
     const claims = decodeJwt(props.authToken);
     this.controlEndpoint = props.controlEndpoint ?? claims.cp;
@@ -91,6 +108,7 @@ export interface EnvMomentoTokenProviderProps extends CredentialProviderProps {
  * @class EnvMomentoTokenProvider
  */
 export class EnvMomentoTokenProvider extends StringMomentoTokenProvider {
+  environmentVariableName: string;
   /**
    * @param {EnvMomentoTokenProviderProps} props configuration options for the token provider
    */
@@ -106,5 +124,6 @@ export class EnvMomentoTokenProvider extends StringMomentoTokenProvider {
       controlEndpoint: props.controlEndpoint,
       cacheEndpoint: props.cacheEndpoint,
     });
+    this.environmentVariableName = props.environmentVariableName;
   }
 }
