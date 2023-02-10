@@ -9,23 +9,13 @@ import {TextDecoder} from 'util';
 import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 
 const TEXT_DECODER = new TextDecoder();
-const TEXT_ENCODER = new TextEncoder();
 
 export abstract class Response extends ResponseBase {
-  public hitOrElse(fallback: () => Record<string, string>): Hit {
+  public hitOrElse<T>(valueFn: (hit: Hit) => T, fallback: () => T): T {
     if (this instanceof Hit) {
-      return this;
+      return valueFn(this);
     }
-    const value: cache_client._DictionaryFieldValuePair[] = Object.entries(
-      fallback()
-    ).map(
-      entry =>
-        new cache_client._DictionaryFieldValuePair({
-          field: TEXT_ENCODER.encode(entry[0]),
-          value: TEXT_ENCODER.encode(entry[1]),
-        })
-    );
-    return new Hit(value);
+    return fallback();
   }
 }
 

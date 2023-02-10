@@ -272,6 +272,24 @@ describe('Integration tests for dictionary operations', () => {
         expectedStringStringRecord
       );
       expect(hitResponse.valueRecord()).toEqual(expectedStringStringRecord);
+
+      const hitOrElseValueForHit = response.hitOrElse(
+        h => h.valueRecord(),
+        () => ({foo: 'FOO'})
+      );
+
+      expect(hitOrElseValueForHit).toEqual(expectedStringStringRecord);
+
+      const missResponse = await Momento.dictionaryFetch(
+        IntegrationTestCacheName,
+        'DoesNotExist'
+      );
+      expect(missResponse).toBeInstanceOf(CacheDictionaryFetch.Miss);
+      const hitOrElseValueForMiss = missResponse.hitOrElse(
+        h => h.valueRecord(),
+        () => ({foo: 'FOO'})
+      );
+      expect(hitOrElseValueForMiss).toEqual({foo: 'FOO'});
     });
 
     it('should provide value accessors for bytes fields with dictionaryFetch', async () => {
@@ -311,14 +329,17 @@ describe('Integration tests for dictionary operations', () => {
 
     it('should do nothing with dictionaryFetch if dictionary does not exist', async () => {
       const dictionaryName = v4();
-      let response = await Momento.dictionaryFetch(
+      const fetchResponse = await Momento.dictionaryFetch(
         IntegrationTestCacheName,
         dictionaryName
       );
-      expect(response).toBeInstanceOf(CacheDictionaryFetch.Miss);
-      response = await Momento.delete(IntegrationTestCacheName, dictionaryName);
-      expect(response).toBeInstanceOf(CacheDelete.Success);
-      response = await Momento.dictionaryFetch(
+      expect(fetchResponse).toBeInstanceOf(CacheDictionaryFetch.Miss);
+      const deleteResponse = await Momento.delete(
+        IntegrationTestCacheName,
+        dictionaryName
+      );
+      expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
+      const response = await Momento.dictionaryFetch(
         IntegrationTestCacheName,
         dictionaryName
       );
@@ -337,16 +358,19 @@ describe('Integration tests for dictionary operations', () => {
         ])
       );
 
-      let response = await Momento.dictionaryFetch(
+      const fetchResponse = await Momento.dictionaryFetch(
         IntegrationTestCacheName,
         dictionaryName
       );
-      expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
+      expect(fetchResponse).toBeInstanceOf(CacheDictionaryFetch.Hit);
 
-      response = await Momento.delete(IntegrationTestCacheName, dictionaryName);
-      expect(response).toBeInstanceOf(CacheDelete.Success);
+      const deleteResponse = await Momento.delete(
+        IntegrationTestCacheName,
+        dictionaryName
+      );
+      expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
 
-      response = await Momento.dictionaryFetch(
+      const response = await Momento.dictionaryFetch(
         IntegrationTestCacheName,
         dictionaryName
       );
