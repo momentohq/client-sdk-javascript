@@ -18,7 +18,7 @@ jobs:
           project_stability: alpha
           project_type: sdk
           sdk_language: Node.js
-          usage_example_path: ./examples/index.ts
+          usage_example_path: ./examples/basic.ts
 
       - name: Commitlint and Other Shared Build Steps
         uses: momentohq/standards-and-practices/github-actions/shared-build@gh-actions-v1
