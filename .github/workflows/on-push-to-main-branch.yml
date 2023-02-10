@@ -43,7 +43,7 @@ jobs:
         uses: momentohq/standards-and-practices/github-actions/generate-and-commit-oss-readme@gh-actions-v1
         with:
           project_status: official
-          project_stability: alpha
+          project_stability: stable
           project_type: sdk
           sdk_language: Node.js
           usage_example_path: ./examples/basic.ts
