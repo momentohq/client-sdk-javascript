@@ -21,21 +21,33 @@ interface CredentialProviderProps {
  * @export
  * @interface CredentialProvider
  */
-export interface CredentialProvider {
+export abstract class CredentialProvider {
   /**
    * @returns {string} Auth token provided by user, required to authenticate with the service
    */
-  getAuthToken(): string;
+  abstract getAuthToken(): string;
 
   /**
    * @returns {string} The host which the Momento client will connect to for Momento control plane operations
    */
-  getControlEndpoint(): string;
+  abstract getControlEndpoint(): string;
 
   /**
    * @returns {string} The host which the Momento client will connect to for Momento data plane operations
    */
-  getCacheEndpoint(): string;
+  abstract getCacheEndpoint(): string;
+
+  static fromEnvironmentVariable(
+    props: EnvMomentoTokenProviderProps
+  ): CredentialProvider {
+    return new EnvMomentoTokenProvider(props);
+  }
+
+  static fromString(
+    props: StringMomentoTokenProviderProps
+  ): CredentialProvider {
+    return new StringMomentoTokenProvider(props);
+  }
 }
 
 abstract class CredentialProviderBase implements CredentialProvider {

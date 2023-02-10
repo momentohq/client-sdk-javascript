@@ -1,7 +1,4 @@
-import {
-  StringMomentoTokenProvider,
-  EnvMomentoTokenProvider,
-} from '../../src/auth/credential-provider';
+import {CredentialProvider} from '../../src/auth/credential-provider';
 
 const testToken =
   'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJmb29Abm90LmEuZG9tYWluIiwiY3AiOiJjb250cm9sLXBsYW5lLWVuZHBvaW50Lm5vdC5hLmRvbWFpbiIsImMiOiJjYWNoZS1lbmRwb2ludC5ub3QuYS5kb21haW4ifQo.rtxfu4miBHQ1uptWJ2x3UiAwwJYcMeYIkkpXxUno_wIavg4h6YJStcbxk32NDBbmJkJS7mUw6MsvJNWaxfdPOw';
@@ -10,14 +7,14 @@ const testCacheEndpoint = 'cache-endpoint.not.a.domain';
 
 describe('StringMomentoTokenProvider', () => {
   it('parses a valid token', () => {
-    const authProvider = new StringMomentoTokenProvider({authToken: testToken});
+    const authProvider = CredentialProvider.fromString({authToken: testToken});
     expect(authProvider.getAuthToken()).toEqual(testToken);
     expect(authProvider.getControlEndpoint()).toEqual(testControlEndpoint);
     expect(authProvider.getCacheEndpoint()).toEqual(testCacheEndpoint);
   });
 
   it('supports overriding control endpoint', () => {
-    const authProvider = new StringMomentoTokenProvider({
+    const authProvider = CredentialProvider.fromString({
       authToken: testToken,
       controlEndpoint: 'foo',
     });
@@ -27,7 +24,7 @@ describe('StringMomentoTokenProvider', () => {
   });
 
   it('supports overriding cache endpoint', () => {
-    const authProvider = new StringMomentoTokenProvider({
+    const authProvider = CredentialProvider.fromString({
       authToken: testToken,
       cacheEndpoint: 'foo',
     });
@@ -42,7 +39,7 @@ describe('EnvMomentoTokenProvider', () => {
   process.env[testEnvVarName] = testToken;
 
   it('parses a valid token', () => {
-    const authProvider = new EnvMomentoTokenProvider({
+    const authProvider = CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: testEnvVarName,
     });
     expect(authProvider.getAuthToken()).toEqual(testToken);
@@ -51,7 +48,7 @@ describe('EnvMomentoTokenProvider', () => {
   });
 
   it('supports overriding control endpoint', () => {
-    const authProvider = new EnvMomentoTokenProvider({
+    const authProvider = CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: testEnvVarName,
       controlEndpoint: 'foo',
     });
@@ -61,7 +58,7 @@ describe('EnvMomentoTokenProvider', () => {
   });
 
   it('supports overriding cache endpoint', () => {
-    const authProvider = new EnvMomentoTokenProvider({
+    const authProvider = CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: testEnvVarName,
       cacheEndpoint: 'foo',
     });
