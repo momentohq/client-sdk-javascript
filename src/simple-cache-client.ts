@@ -686,19 +686,13 @@ export class SimpleCacheClient {
 
   /**
    * Lists all Momento signing keys for the provided auth token.
-   * @param {string} [nextToken] - Token to continue paginating through the list.
    * @returns {Promise<ListSigningKeys.Response>} - Promise of the list signing keys response.
-   * Contains the retrieved signing keys and a next token to continue listing.
+   * Contains the retrieved signing keys.
    * @memberof SimpleCacheClient
    */
-  public async listSigningKeys(
-    nextToken?: string
-  ): Promise<ListSigningKeys.Response> {
+  public async listSigningKeys(): Promise<ListSigningKeys.Response> {
     const client = this.getNextDataClient();
-    return await this.controlClient.listSigningKeys(
-      client.getEndpoint(),
-      nextToken
-    );
+    return await this.controlClient.listSigningKeys(client.getEndpoint());
   }
 
   private getNextDataClient(): CacheClient {
