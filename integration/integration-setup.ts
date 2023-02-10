@@ -4,10 +4,10 @@ import {
   CreateCache,
   Configurations,
   DeleteCache,
-  EnvMomentoTokenProvider,
   CollectionTtl,
   MomentoErrorCode,
   SimpleCacheClient,
+  CredentialProvider,
 } from '../src';
 import {
   IResponseError,
@@ -47,7 +47,7 @@ export async function WithCache(
 
 export const CacheClientProps: SimpleCacheClientProps = {
   configuration: Configurations.Laptop.latest(),
-  credentialProvider: new EnvMomentoTokenProvider({
+  credentialProvider: CredentialProvider.fromEnvironmentVariable({
     environmentVariableName: 'TEST_AUTH_TOKEN',
   }),
   defaultTtlSeconds: 1111,
