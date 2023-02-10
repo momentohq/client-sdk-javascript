@@ -26,6 +26,8 @@ import {
   CacheDictionarySetFields,
   CacheDictionaryGetField,
   CacheDictionaryGetFields,
+  CacheDictionaryRemoveField,
+  CacheDictionaryRemoveFields,
   CacheDictionaryIncrement,
   CacheSetFetch,
   CacheSetAddElements,
@@ -447,9 +449,6 @@ export class SimpleCacheClient {
     return await client.setRemoveElements(cacheName, setName, elements);
   }
 
-  // TODO add support for adding/removing a single element to/from a set.
-  // https://github.com/momentohq/client-sdk-nodejs/issues/170
-
   /**
    * Create a cache if it does not exist.
    * @param {string} cacheName - Name of the cache to be created.
@@ -472,21 +471,19 @@ export class SimpleCacheClient {
 
   /**
    * List all caches.
-   * @param {string} [nextToken] - A token to specify where to start paginating.
-   * This is the NextToken from a previous response.
    * @returns {Promise<ListCaches.Response>} - Promise of the list cache response.
    * Contains the listed caches and a next token to continue listing.
    * @memberof SimpleCacheClient
    */
-  public async listCaches(nextToken?: string): Promise<ListCaches.Response> {
-    return await this.controlClient.listCaches(nextToken);
+  public async listCaches(): Promise<ListCaches.Response> {
+    return await this.controlClient.listCaches();
   }
 
   /**
    * Fetch the entire dictionary from the cache.
    * @param {string} cacheName - Name of the cache to perform the lookup in.
    * @param {string} dictionaryName - The dictionary to fetch.
-   * @returns {Promise<DictionaryFetch.Response>}- Promise containing the result of the fetch operation and the associated dictionary.
+   * @returns {Promise<CacheDictionaryFetch.Response>}- Promise containing the result of the fetch operation and the associated dictionary.
    * @memberof SimpleCacheClient
    */
   public async dictionaryFetch(
@@ -531,7 +528,7 @@ export class SimpleCacheClient {
    * Set several dictionary field-value pairs in the cache.
    * @param {string} cacheName - Name of the cache to store the dictionary in.
    * @param {string} dictionaryName - The dictionary to set.
-   * @param {Map<string | Uint8Array, string | Uint8Array>} items - The field-value pairs in the dictionary to set.
+   * @param {Map<string | Uint8Array, string | Uint8Array>} elements - The field-value pairs in the dictionary to set.
    * @param {DictionarySetFieldsOptions} options
    * @param {CollectionTtl} [options.ttl] - TTL for the dictionary in cache. This TTL takes
    * precedence over the TTL used when initializing a cache client. Defaults to client TTL.
@@ -541,16 +538,16 @@ export class SimpleCacheClient {
   public async dictionarySetFields(
     cacheName: string,
     dictionaryName: string,
-    items:
+    elements:
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>,
     options?: DictionarySetFieldsOptions
   ): Promise<CacheDictionarySetFields.Response> {
     const client = this.getNextDataClient();
-    return await client.dictionarySendFields(
+    return await client.dictionarySetFields(
       cacheName,
       dictionaryName,
-      items,
+      elements,
       options?.ttl
     );
   }
@@ -593,13 +590,13 @@ export class SimpleCacheClient {
    * @param {string} cacheName - Name of the cache to perform the lookup in.
    * @param {string} dictionaryName - Name of the dictionary to remove the field from.
    * @param {string | Uint8Array} field - Name of the field to remove from the dictionary.
-   * @returns {Promise<CacheDictionaryRemoveField>}- Promise containing the result of the cache operation.
+   * @returns {Promise<CacheDictionaryRemoveField.Response>}- Promise containing the result of the cache operation.
    */
   public async dictionaryRemoveField(
     cacheName: string,
     dictionaryName: string,
     field: string | Uint8Array
-  ): Promise<CacheDictionaryGetField.Response> {
+  ): Promise<CacheDictionaryRemoveField.Response> {
     const client = this.getNextDataClient();
     return await client.dictionaryRemoveField(cacheName, dictionaryName, field);
   }
@@ -610,13 +607,13 @@ export class SimpleCacheClient {
    * @param {string} cacheName - Name of the cache to perform the lookup in.
    * @param {string} dictionaryName - Name of the dictionary to remove the field from.
    * @param {string[] | Uint8Array[]} fields - Name of the fields to remove from the dictionary.
-   * @returns {Promise<CacheDictionaryRemoveFields>}- Promise containing the result of the cache operation.
+   * @returns {Promise<CacheDictionaryRemoveFields.Response>}- Promise containing the result of the cache operation.
    */
   public async dictionaryRemoveFields(
     cacheName: string,
     dictionaryName: string,
     fields: string[] | Uint8Array[]
-  ): Promise<CacheDictionaryGetFields.Response> {
+  ): Promise<CacheDictionaryRemoveFields.Response> {
     const client = this.getNextDataClient();
     return await client.dictionaryRemoveFields(
       cacheName,

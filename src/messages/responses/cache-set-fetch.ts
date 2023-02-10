@@ -20,12 +20,55 @@ class _Hit extends Response {
     this.elements = elements;
   }
 
+  /**
+   * Convenience alias for {valueSetString}; call this if you want to get the elements back as a Set of strings
+   * @returns {Set<string>}
+   */
+  public valueSet(): Set<string> {
+    return this.valueSetString();
+  }
+
+  /**
+   * Call this if you want to get the elements back as a Set of strings
+   * @returns {Set<string>}
+   */
   public valueSetString(): Set<string> {
     return new Set(this.elements.map(e => TEXT_DECODER.decode(e)));
   }
 
+  /**
+   * Call this if you want to get the elements back as a Set of byte arrays
+   * @returns {Set<Uint8Array>}
+   */
   public valueSetUint8Array(): Set<Uint8Array> {
     return new Set(this.elements);
+  }
+
+  /**
+   * Convenience alias for {valueArrayString}; call this if you want to get the elements back as an Array of strings, since
+   * sometimes Array objects are easier to work with than Sets
+   * @returns {string[]}
+   */
+  public valueArray(): string[] {
+    return this.valueArrayString();
+  }
+
+  /**
+   * Call this if you want to get the elements back as an Array of strings, since
+   * sometimes Array objects are easier to work with than Sets
+   * @returns {string[]}
+   */
+  public valueArrayString(): string[] {
+    return this.elements.map(e => TEXT_DECODER.decode(e));
+  }
+
+  /**
+   * Call this if you want to get the elements back as an Array of byte arrays, since
+   * sometimes Array objects are easier to work with than Sets
+   * @returns {Uint8Array[]}
+   */
+  public valueArrayUint8Array(): Uint8Array[] {
+    return this.elements;
   }
 
   public override toString(): string {
