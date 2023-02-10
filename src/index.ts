@@ -35,6 +35,7 @@ import {CacheInfo} from './messages/cache-info';
 import {CollectionTtl} from './utils/collection-ttl';
 import {
   CredentialProvider,
+  StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
 } from './auth/credential-provider';
 import {Configuration} from './config/configuration';
@@ -73,6 +74,7 @@ export {
   Configurations,
   Configuration,
   CredentialProvider,
+  StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
   SimpleCacheClient,
   CacheGet,
