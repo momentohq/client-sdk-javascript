@@ -181,11 +181,10 @@ export class ControlClient {
   }
 
   public async listSigningKeys(
-    endpoint: string,
-    nextToken?: string
+    endpoint: string
   ): Promise<ListSigningKeys.Response> {
     const request = new grpcControl._ListSigningKeysRequest();
-    request.next_token = nextToken ?? '';
+    request.next_token = '';
     this.logger.debug("Issuing 'listSigningKeys' request");
     return await new Promise<ListSigningKeys.Response>(resolve => {
       this.clientWrapper
