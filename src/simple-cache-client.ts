@@ -64,8 +64,6 @@ type DictionaryIncrementOptions = CollectionCallOptions;
  * - Get, set, and delete data
  * - Create, delete, and list caches
  * - Create, revoke, and list signing keys
- * @export
- * @class SimpleCacheClient
  */
 export class SimpleCacheClient {
   private readonly logger: MomentoLogger;
@@ -84,17 +82,19 @@ export class SimpleCacheClient {
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
 
-    // For high load, we get better performance with multiple clients.  Here we are setting a default,
-    // hard-coded value for the number of clients to use, because we haven't yet designed the API for
-    // users to use to configure tunables:
+    // For high load, we get better performance with multiple clients.  Here we
+    // are setting a default, hard-coded value for the number of clients to use,
+    // because we haven't yet designed the API for users to use to configure
+    // tunables:
     // https://github.com/momentohq/dev-eco-issue-tracker/issues/85
-    // The choice of 6 as the initial value is a rough guess at a reasonable default for the short-term,
-    // based on load testing results captured in:
+    // The choice of 6 as the initial value is a rough guess at a reasonable
+    // default for the short-term, based on load testing results captured in:
     // https://github.com/momentohq/oncall-tracker/issues/186
     const numClients = 6;
     this.dataClients = range(numClients).map(() => new CacheClient(props));
-    // we will round-robin the requests through all of our clients.  Since javascript is single-threaded,
-    // we don't have to worry about thread safety on this index variable.
+    // We round-robin the requests through all of our clients.  Since javascript
+    // is single-threaded, we don't have to worry about thread safety on this
+    // index variable.
     this.nextDataClientIndex = 0;
 
     this.controlClient = new ControlClient({
@@ -104,12 +104,12 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Get the cache value stored for the given key.
-   * @param {string} cacheName - Name of the cache to perform the lookup in.
-   * @param {(string | Uint8Array)} key - The key to lookup.
-   * @returns {Promise<CacheGet.Response>} - Promise containing the status
-   * of the get operation (hit or miss) and the associated value.
-   * @memberof SimpleCacheClient
+   * Gets the value stored for the given key.
+   *
+   * @param {string} cacheName - The cache to perform the lookup in.
+   * @param {string | Uint8Array} key - The key to look up.
+   * @returns {Promise<CacheGet.Response>} - The result of the get operation
+   * (hit, miss, or error) and the value.
    */
   public async get(
     cacheName: string,
@@ -120,16 +120,17 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Sets the value in cache with a given time to live (TTL) seconds.
-   * If a value for this key is already present it will be replaced by the new value.
-   * @param {string} cacheName - Name of the cache to store the item in.
-   * @param {(string | Uint8Array)} key - The key to set.
-   * @param {(string | Uint8Array)} value - The value to be stored.
+   * Associates the given key with the given value. If a value for the key is
+   * already present it is replaced with the new value.
+   *
+   * @param {string} cacheName - The cache to store the value in.
+   * @param {string | Uint8Array} key - The key to set.
+   * @param {string | Uint8Array} value - The value to be stored.
    * @param {SetOptions} [options]
-   * @param {number} [options.ttl] - Time to live (TTL) for the item in Cache.
-   * This TTL takes precedence over the TTL used when initializing a cache client.
-   * @returns {Promise<CacheSet.Response>} - Result of the set operation.
-   * @memberof SimpleCacheClient
+   * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * Uses the client's default TTL if this is not supplied.
+   * @returns {Promise<CacheSet.Response>} - The result of the set operation
+   * (success or error).
    */
   public async set(
     cacheName: string,
@@ -142,12 +143,12 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Remove the key from the cache.
-   * @param {string} cacheName - Name of the cache to delete the key from.
-   * @param {(string | Uint8Array)} key - The key to delete.
-   * @returns {Promise<CacheDelete.Response>} - Promise containing the result of the
-   * delete operation.
-   * @memberof SimpleCacheClient
+   * Removes the given key from the cache.
+   *
+   * @param {string} cacheName - The cache to delete from.
+   * @param {string | Uint8Array} key - The key to delete.
+   * @returns {Promise<CacheDelete.Response>} - The result of the delete
+   * operation (success or error).
    */
   public async delete(
     cacheName: string,
@@ -158,18 +159,20 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Add multiple values to the end of a list. If the list does not exist it
-   * will be created.
+   * Adds multiple elements to the back of the given list. Creates the list if
+   * it does not already exist.
    *
-   * @param {string} cacheName - Name of the cache to store the list in.
+   * @param {string} cacheName - The cache to store the list in.
    * @param {string} listName - The list to add to.
-   * @param {string[] | Uint8Array[]} values - The values to add to the list.
+   * @param {string[] | Uint8Array[]} values - The elements to add to the list.
    * @param {ListConcatenateBackOptions} [options]
    * @param {number} [options.truncateFrontToSize] - If the list exceeds this
-   * length, remove excess from the start of the list. Must be positive.
+   * length, remove excess from the front of the list. Must be positive.
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
-   * Defaults to the client's TTL.
-   * @returns {Promise<CacheListConcatenateBack.Response>}
+   * Refreshes the list's TTL using the client's default if this is not
+   * supplied.
+   * @returns {Promise<CacheListConcatenateBack.Response>} - The result of the
+   * add operation (success or error).
    */
   public async listConcatenateBack(
     cacheName: string,
@@ -188,18 +191,20 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Add multiple values to the start of a list. If the list does not exist it
-   * will be created.
+   * Adds multiple elements to the front of the given list. Creates the list if
+   * it does not already exist.
    *
-   * @param {string} cacheName - Name of the cache to store the list in.
+   * @param {string} cacheName - The cache to store the list in.
    * @param {string} listName - The list to add to.
-   * @param {string[] | Uint8Array[]} values - The values to add to the list.
+   * @param {string[] | Uint8Array[]} values - The elements to add to the list.
    * @param {ListConcatenateFrontOptions} [options]
    * @param {number} [options.truncateBackToSize] - If the list exceeds this
-   * length, remove excess from the end of the list. Must be positive.
+   * length, remove excess from the back of the list. Must be positive.
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
-   * Defaults to the client's TTL.
-   * @returns {Promise<CacheListConcatenateFront.Response>}
+   * Refreshes the list's TTL using the client's default if this is not
+   * supplied.
+   * @returns {Promise<CacheListConcatenateFront.Response>} - The result of the
+   * add operation (success or error).
    */
   public async listConcatenateFront(
     cacheName: string,
@@ -218,10 +223,12 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Fetch the entire list.
-   * @param {string} cacheName - Name of the cache to fetch the list from.
+   * Fetches all elements of the given list.
+   *
+   * @param {string} cacheName - The cache containing the list.
    * @param {string} listName - The list to fetch.
-   * @returns {Promise<CacheListFetch.Response>}
+   * @returns {Promise<CacheListFetch.Response>} - The result of the fetch
+   * operation (hit, miss, or error) and the list elements.
    */
   public async listFetch(
     cacheName: string,
@@ -232,9 +239,12 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Get the number of values in a list.
-   * @param {string} cacheName - Name of the cache with the list.
+   * Gets the number of elements in the given list.
+   *
+   * @param {string} cacheName - The cache containing the list.
    * @param {string} listName - The list to get the length of.
+   * @returns {Promise<CacheListLength.Response>} - The result of the get
+   * operation (hit, miss, or error) and the list length.
    */
   public async listLength(
     cacheName: string,
@@ -245,10 +255,12 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Get and remove the last value from a list.
-   * @param {string} cacheName - Name of the cache with the list.
+   * Gets and removes the last value from the given list.
+   *
+   * @param {string} cacheName - The cache containing the list.
    * @param {string} listName - The list to pop.
-   * @returns {Promise<CacheListPopBack.Response>}
+   * @returns {Promise<CacheListPopBack.Response>} - The result of the pop
+   * operation (hit, miss, or error) and the removed element.
    */
   public async listPopBack(
     cacheName: string,
@@ -259,10 +271,12 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Get and remove the first value from a list.
-   * @param {string} cacheName - Name of the cache with the list.
+   * Gets and removes the first value from the given list.
+   *
+   * @param {string} cacheName - The cache containing the list.
    * @param {string} listName - The list to pop.
-   * @returns {Promise<CacheListPopFront.Response>}
+   * @returns {Promise<CacheListPopFront.Response>} - The result of the pop
+   * operation (hit, miss, or error) and the removed element.
    */
   public async listPopFront(
     cacheName: string,
@@ -273,16 +287,20 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Add a value to the beginning of a list.
-   * @param {string} cacheName - Name of the cache with the list.
+   * Adds an element to the back of the given list. Creates the list if
+   * it does not already exist.
+   *
+   * @param {string} cacheName - The cache to store the list in.
    * @param {string} listName - The list to push to.
    * @param {string | Uint8Array} value - The value to push.
    * @param {ListPushBackOptions} [options]
    * @param {number} [options.truncateFrontToSize] - If the list exceeds this
-   * length, remove excess from the start of the list. Must be positive.
+   * length, remove excess from the front of the list. Must be positive.
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
-   * Defaults to the client's TTL.
-   * @return {Promise<CacheListPushBack.Response>}
+   * Refreshes the list's TTL using the client's default if this is not
+   * supplied.
+   * @returns {Promise<CacheListPushBack.Response>} - The result of the push
+   * operation (success or error).
    */
   public async listPushBack(
     cacheName: string,
@@ -301,16 +319,20 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Add a value to the end of a list.
-   * @param {string} cacheName - Name of the cache with the list.
+   * Adds an element to the front of the given list. Creates the list if
+   * it does not already exist.
+   *
+   * @param {string} cacheName - The cache to store the list in.
    * @param {string} listName - The list to push to.
    * @param {string | Uint8Array} value - The value to push.
    * @param {ListPushFrontOptions} [options]
    * @param {number} [options.truncateBackToSize] - If the list exceeds this
    * length, remove excess from the end of the list. Must be positive.
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
-   * Defaults to the client's TTL.
-   * @return {Promise<CacheListPushFront.Response>}
+   * Refreshes the list's TTL using the client's default if this is not
+   * supplied.
+   * @returns {Promise<CacheListPushFront.Response>} - The result of the push
+   * operation (success or error).
    */
   public async listPushFront(
     cacheName: string,
@@ -329,11 +351,13 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Removes all elements from the list equal to the value.
-   * @param {string} cacheName - Name of the cache with the list.
-   * @param {string} listName - The list to remove elements from.
+   * Removes all elements from the given list equal to the given value.
+   *
+   * @param {string} cacheName - The cache containing the list.
+   * @param {string} listName - The list to remove from.
    * @param {string | Uint8Array} value - The value to remove.
-   * @returns {Promise<CacheListRemoveValue.Response>}
+   * @returns {Promise<CacheListRemoveValue.Response>} - The result of the
+   * remove operation (success or error).
    */
   public async listRemoveValue(
     cacheName: string,
@@ -345,11 +369,12 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Fetch the entire set from the cache.
-   * @param {string} cacheName - Name of the cache to perform the lookup in.
+   * Fetches all elements of the given set
+   *
+   * @param {string} cacheName - The cache containing the set.
    * @param {string} setName - The set to fetch.
-   * @returns Promise<SetFetch.Response> - Promise containing the result of the fetch operation and the associated set.
-   * @memberof SimpleCacheClient
+   * @returns {Promise<CacheSetFetch.Response>} - The result of the fetch
+   * operation (hit, miss, or error) and the set elements.
    */
   public async setFetch(
     cacheName: string,
@@ -360,16 +385,21 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Add an element to a set in the cache.
+   * Adds an element to the given set. Creates the set if it does not already
+   * exist.
    *
-   * After this operation, the set will contain the union
-   * of the element passed in and the elements of the set.
-   * @param {string} cacheName - Name of the cache to store the set in.
-   * @param {string} setName - The set to add elements to.
-   * @param {(string | Uint8Array)} element - The data to add to the set.
+   * @remarks
+   * After this operation the set will contain the union of the element passed
+   * in and the original elements of the set.
+   *
+   * @param {string} cacheName - The cache to store the set in.
+   * @param {string} setName - The set to add to.
+   * @param {string | Uint8Array} element - The element to add.
    * @param {SetAddElementOptions} options
-   * @param {CollectionTtl} [options.ttl] - TTL for the set in cache. This TTL takes
-   * precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
+   * Refreshes the set's TTL using the client's default if this is not supplied.
+   * @returns {Promise<CacheSetAddElement.Response>} - The result of the add
+   * operation (success or error).
    */
   public async setAddElement(
     cacheName: string,
@@ -388,16 +418,21 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Add several elements to a set in the cache.
+   * Adds multiple elements to the given set. Creates the set if it does not
+   * already exist.
    *
-   * After this operation, the set will contain the union
-   * of the elements passed in and the elements of the set.
-   * @param {string} cacheName - Name of the cache to store the set in.
-   * @param {string} setName - The set to add elements to.
-   * @param {(string[] | Uint8Array[])} elements - The data to add to the set.
+   * @remarks
+   * After this operation, the set will contain the union of the elements passed
+   * in and the original elements of the set.
+   *
+   * @param {string} cacheName - The cache to store the set in.
+   * @param {string} setName - The set to add to.
+   * @param {string[] | Uint8Array[]} elements - The elements to add.
    * @param {SetAddElementsOptions} options
-   * @param {CollectionTtl} [options.ttl] - TTL for the set in cache. This TTL takes
-   * precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
+   * Refreshes the set's TTL using the client's default if this is not supplied.
+   * @returns {Promise<CacheSetAddElements.Response>} - The result of the add
+   * operation (success or error).
    */
   public async setAddElements(
     cacheName: string,
@@ -415,11 +450,13 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Remove an element from a set.
+   * Removes an element from the given set.
    *
-   * @param {string} cacheName - Name of the cache to store the set in.
-   * @param {string} setName - The set to remove the element from.
-   * @param {(string | Uint8Array)} element - The data to remove from the set.
+   * @param {string} cacheName - The cache containing the set.
+   * @param {string} setName - The set to remove from.
+   * @param {string | Uint8Array} element - The element to remove.
+   * @returns {Promise<CacheSetRemoveElement.Response>} - The result of the
+   * remove operation (success or error).
    */
   public async setRemoveElement(
     cacheName: string,
@@ -434,11 +471,13 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Remove elements from a set.
+   * Removes multiple elements from the given set.
    *
-   * @param {string} cacheName - Name of the cache to store the set in.
-   * @param {string} setName - The set to remove the element from.
-   * @param {(string[] | Uint8Array[])} elements - The data to remove from the set.
+   * @param {string} cacheName - The cache containing the set.
+   * @param {string} setName - The set to remove from.
+   * @param {string[] | Uint8Array[]} elements - The elements to remove.
+   * @returns {Promise<CacheSetRemoveElements.Response>} - The result of the
+   * remove operation (success or error).
    */
   public async setRemoveElements(
     cacheName: string,
@@ -450,41 +489,44 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Create a cache if it does not exist.
-   * @param {string} cacheName - Name of the cache to be created.
-   * @returns {Promise<CreateCache.Response>} - Promise of the create cache result.
-   * @memberof SimpleCacheClient
+   * Creates a cache if it does not exist.
+   *
+   * @param {string} cacheName - The cache to be created.
+   * @returns {Promise<CreateCache.Response>} - The result of the create cache
+   * operation (success or error).
    */
   public async createCache(cacheName: string): Promise<CreateCache.Response> {
     return await this.controlClient.createCache(cacheName);
   }
 
   /**
-   * Delete a cache and all items stored in it.
-   * @param {string} cacheName - Name of the cache to delete.
-   * @returns {Promise<DeleteCache.Response>} - Promise of the delete cache result.
-   * @memberof SimpleCacheClient
+   * Deletes a cache and all items stored in it.
+   *
+   * @param {string} cacheName - The cache to delete.
+   * @returns {Promise<DeleteCache.Response>} - The result of the delete cache
+   * operation (success or error).
    */
   public async deleteCache(cacheName: string): Promise<DeleteCache.Response> {
     return await this.controlClient.deleteCache(cacheName);
   }
 
   /**
-   * List all caches.
-   * @returns {Promise<ListCaches.Response>} - Promise of the list cache response.
-   * Contains the listed caches and a next token to continue listing.
-   * @memberof SimpleCacheClient
+   * Lists all caches.
+   *
+   * @returns {Promise<ListCaches.Response>} - The result of the list caches
+   * operation (success or error) and the list of caches.
    */
   public async listCaches(): Promise<ListCaches.Response> {
     return await this.controlClient.listCaches();
   }
 
   /**
-   * Fetch the entire dictionary from the cache.
-   * @param {string} cacheName - Name of the cache to perform the lookup in.
+   * Fetches all elements of the given dictionary.
+   *
+   * @param {string} cacheName - The cache to perform the lookup in.
    * @param {string} dictionaryName - The dictionary to fetch.
-   * @returns {Promise<CacheDictionaryFetch.Response>}- Promise containing the result of the fetch operation and the associated dictionary.
-   * @memberof SimpleCacheClient
+   * @returns {Promise<CacheDictionaryFetch.Response>} - The result of the fetch
+   * operation (hit, miss, or error) and the dictionary elements.
    */
   public async dictionaryFetch(
     cacheName: string,
@@ -495,17 +537,19 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Add an element to a set in the cache.
-   * After this operation, the set will contain the union of the element passed in and the elements of the set.
-   * @param {string} cacheName - Name of the cache to store the dictionary in.
-   * @param {string} dictionaryName - The dictionary to set.
-   * @param {string | Uint8Array} field - The field in the dictionary to set.
-   * @param {string | Uint8Array} value - The value to be stored.
+   * Adds an element to the given dictionary. Creates the dictionary if it does
+   * not already exist.
+   *
+   * @param {string} cacheName - The cache to store the dictionary in.
+   * @param {string} dictionaryName - The dictionary to add to.
+   * @param {string | Uint8Array} field - The field to set.
+   * @param {string | Uint8Array} value - The value to store.
    * @param {DictionarySetFieldOptions} options
-   * @param {CollectionTtl} [options.ttl] - TTL for the dictionary in cache. This TTL takes
-   * precedence over the TTL used when initializing a cache client. Defaults to client TTL.
-   * @returns {Promise<CacheDictionarySetField.Response>}- Promise containing the result of the cache operation.
-   * @memberof SimpleCacheClient
+   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
+   * Refreshes the dictionary's TTL using the client's default if this is not
+   * supplied.
+   * @returns {Promise<CacheDictionarySetField.Response>} - The result of the
+   * set operation (success or error).
    */
   public async dictionarySetField(
     cacheName: string,
@@ -525,15 +569,19 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Set several dictionary field-value pairs in the cache.
-   * @param {string} cacheName - Name of the cache to store the dictionary in.
-   * @param {string} dictionaryName - The dictionary to set.
-   * @param {Map<string | Uint8Array, string | Uint8Array>} elements - The field-value pairs in the dictionary to set.
+   * Adds multiple elements to the given dictionary. Creates the dictionary if
+   * it does not already exist.
+   *
+   * @param {string} cacheName - The cache to store the dictionary in.
+   * @param {string} dictionaryName - The dictionary to add to.
+   * @param {Map<string | Uint8Array, string | Uint8Array>} elements - The
+   * elements to set.
    * @param {DictionarySetFieldsOptions} options
-   * @param {CollectionTtl} [options.ttl] - TTL for the dictionary in cache. This TTL takes
-   * precedence over the TTL used when initializing a cache client. Defaults to client TTL.
-   * @returns {Promise<CacheDictionarySetFields.Response>}- Promise containing the result of the cache operation.
-   * @memberof SimpleCacheClient
+   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
+   * Refreshes the dictionary's TTL using the client's default if this is not
+   * supplied.
+   * @returns {Promise<CacheDictionarySetFields.Response>} - The result of the
+   * set operation (success or error).
    */
   public async dictionarySetFields(
     cacheName: string,
@@ -553,11 +601,13 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Get the cache value stored for the given dictionary and field.
-   * @param {string} cacheName - Name of the cache to perform the lookup in.
+   * Gets the value stored for the given dictionary and field.
+   *
+   * @param {string} cacheName - The cache containing the dictionary.
    * @param {string} dictionaryName - The dictionary to look up.
-   * @param {string | Uint8Array} field - The field in the dictionary to lookup.
-   * @returns {Promise<CacheDictionaryGetField>}- Promise containing the status of the get operation and the associated value.
+   * @param {string | Uint8Array} field - The field to look up.
+   * @returns {Promise<CacheDictionaryGetField.Response>} - The result of the
+   * get operation (hit, miss, or error) and the element.
    */
   public async dictionaryGetField(
     cacheName: string,
@@ -569,11 +619,13 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Get several values from a dictionary.
-   * @param {string} cacheName - Name of the cache to perform the lookup in.
+   * Gets multiple values from the given dictionary.
+   *
+   * @param {string} cacheName - The cache containing the dictionary.
    * @param {string} dictionaryName - The dictionary to look up.
-   * @param {string[] | Uint8Array[]} fields - The field in the dictionary to lookup.
-   * @returns {Promise<CacheDictionaryGetField>}- Promise containing the status and associated value for each field.
+   * @param {string[] | Uint8Array[]} fields - The fields to look up.
+   * @returns {Promise<CacheDictionaryGetFields.Response>} - The result of the
+   * get operation (hit, miss, or error) and the elements.
    */
   public async dictionaryGetFields(
     cacheName: string,
@@ -585,12 +637,16 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Remove a field from a dictionary.
-   * Performs a no-op if dictionaryName or field does not exist.
-   * @param {string} cacheName - Name of the cache to perform the lookup in.
-   * @param {string} dictionaryName - Name of the dictionary to remove the field from.
-   * @param {string | Uint8Array} field - Name of the field to remove from the dictionary.
-   * @returns {Promise<CacheDictionaryRemoveField.Response>}- Promise containing the result of the cache operation.
+   * Removes an element from the given dictionary.
+   *
+   * @remarks
+   * Performs a no-op if the dictionary or field does not exist.
+   *
+   * @param {string} cacheName - The cache containing the dictionary.
+   * @param {string} dictionaryName - The dictionary to remove from.
+   * @param {string | Uint8Array} field - The field to remove.
+   * @returns {Promise<CacheDictionaryRemoveField.Response>} - The result of the
+   * remove operation (success or error).
    */
   public async dictionaryRemoveField(
     cacheName: string,
@@ -602,12 +658,16 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Remove fields from a dictionary.
-   * Performs a no-op if dictionaryName or field does not exist.
-   * @param {string} cacheName - Name of the cache to perform the lookup in.
-   * @param {string} dictionaryName - Name of the dictionary to remove the field from.
-   * @param {string[] | Uint8Array[]} fields - Name of the fields to remove from the dictionary.
-   * @returns {Promise<CacheDictionaryRemoveFields.Response>}- Promise containing the result of the cache operation.
+   * Removes multiple fields from the given dictionary.
+   *
+   * @remarks
+   * Performs a no-op if the dictionary or fields do not exist.
+   *
+   * @param {string} cacheName - The cache containing the dictionary.
+   * @param {string} dictionaryName - The dictionary to remove from.
+   * @param {string[] | Uint8Array[]} fields - The fields to remove.
+   * @returns {Promise<CacheDictionaryRemoveFields.Response>} - The result of
+   * the remove operation (success or error).
    */
   public async dictionaryRemoveFields(
     cacheName: string,
@@ -623,18 +683,25 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Add an integer quantity to a dictionary value.
+   * Adds an integer quantity to a dictionary value.
+   *
+   * @remarks
    * Incrementing the value of a missing field sets the value to amount.
-   * Incrementing a value that was not set using this method or not the string representation of an integer
-   * results in an error with FailedPreconditionException.
-   * @param {string} cacheName - Name of the cache to perform the lookup in.
+   * Incrementing a value that was not set using this method or is not the
+   * string representation of an integer results in a
+   * FailedPreconditionException error.
+   *
+   * @param {string} cacheName - The cache containing the dictionary.
    * @param {string} dictionaryName - The dictionary to set.
-   * @param {string | Uint8Array} field - Name of the field to increment from the dictionary.
-   * @param {number} amount - The quantity to add to the value. May be positive, negative, or zero. Defaults to 1.
+   * @param {string | Uint8Array} field - The field to increment.
+   * @param {number} amount - The quantity to add to the value. May be positive,
+   * negative, or zero. Defaults to 1.
    * @param {DictionaryIncrementOptions} options
-   * @param {CollectionTtl} [options.ttl] - TTL for the dictionary in cache. This TTL takes
-   * precedence over the TTL used when initializing a cache client. Defaults to client TTL.
-   * @returns {Promise<CacheDictionaryIncrement>}- Promise containing the result of the cache operation.
+   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
+   * Refreshes the dictionary's TTL using the client's default if this is not
+   * supplied.
+   * @returns {Promise<CacheDictionaryIncrement>} - The result of the increment
+   * operation (success or error).
    */
   public async dictionaryIncrement(
     cacheName: string,
@@ -654,11 +721,13 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Create a Momento signing key.
-   * @param {number} ttlMinutes - The time to live in minutes until the Momento signing key expires.
-   * @returns {Promise<CreateSigningKey.Response>} - Promise of create signing key
-   * response. Contains endpoint and expiration.
-   * @memberof SimpleCacheClient
+   * Creates a Momento signing key.
+   *
+   * @param {number} ttlMinutes - The time to live in minutes until the Momento
+   * signing key expires.
+   * @returns {Promise<CreateSigningKey.Response>} - The result of the create
+   * signing key operation (success or error) containing the key, key ID,
+   * endpoint, and expiration date.
    */
   public async createSigningKey(
     ttlMinutes: number
@@ -673,10 +742,12 @@ export class SimpleCacheClient {
   /**
    * Revokes a Momento signing key.
    *
+   * @remarks
    * All tokens signed by this key will be invalid.
-   * @param {string} keyId  - The ID of the Momento signing key to revoke.
-   * @returns {Promise<RevokeSigningKey.Response>} - Revocation response (empty)
-   * @memberof SimpleCacheClient
+   *
+   * @param {string} keyId - The ID of the key to revoke.
+   * @returns {Promise<RevokeSigningKey.Response>} - The result of the revoke
+   * signing key operation (success or error).
    */
   public async revokeSigningKey(
     keyId: string
@@ -686,9 +757,9 @@ export class SimpleCacheClient {
 
   /**
    * Lists all Momento signing keys for the provided auth token.
-   * @returns {Promise<ListSigningKeys.Response>} - Promise of the list signing keys response.
-   * Contains the retrieved signing keys.
-   * @memberof SimpleCacheClient
+   *
+   * @returns {Promise<ListSigningKeys.Response>} - The result of the revoke
+   * signing key operation (success or error) containing the keys.
    */
   public async listSigningKeys(): Promise<ListSigningKeys.Response> {
     const client = this.getNextDataClient();
