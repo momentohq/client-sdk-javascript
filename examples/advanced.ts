@@ -77,7 +77,7 @@ async function setGetDeleteExample() {
 
   const getResponse = await momento.get(cacheName, cacheKey);
   if (getResponse instanceof CacheGet.Hit) {
-    console.log(`cache hit: ${String(getResponse.valueString())}`);
+    console.log(`cache hit: ${getResponse.valueString()}`);
   } else if (getResponse instanceof CacheGet.Miss) {
     console.log('cache miss');
   } else if (getResponse instanceof CacheGet.Error) {
