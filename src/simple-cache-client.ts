@@ -315,7 +315,8 @@ export class SimpleCacheClient {
    * Refreshes the list's TTL using the client's default if this is not
    * supplied.
    * @returns {Promise<CacheListPushBack.Response>} -
-   * {@link CacheListPushBack.Success} on success.
+   * {@link CacheListPushBack.Success} containing the list's new length on
+   * success.
    * {@link CacheListPushBack.Error} on failure.
    */
   public async listPushBack(
@@ -348,7 +349,8 @@ export class SimpleCacheClient {
    * Refreshes the list's TTL using the client's default if this is not
    * supplied.
    * @returns {Promise<CacheListPushFront.Response>} -
-   * {@link CacheListPushFront.Success} on success.
+   * {@link CacheListPushFront.Success} containing the list's new length on
+   * success.
    * {@link CacheListPushFront.Error} on failure.
    */
   public async listPushFront(
@@ -734,9 +736,6 @@ export class SimpleCacheClient {
    *
    * @remarks
    * Incrementing the value of a missing field sets the value to amount.
-   * Incrementing a value that was not set using this method or is not the
-   * string representation of an integer results in a
-   * FailedPreconditionException error.
    *
    * @param {string} cacheName - The cache containing the dictionary.
    * @param {string} dictionaryName - The dictionary to set.
@@ -748,8 +747,11 @@ export class SimpleCacheClient {
    * Refreshes the dictionary's TTL using the client's default if this is not
    * supplied.
    * @returns {Promise<CacheDictionaryIncrement>} -
-   * {@link CacheDictionaryIncrement.Success} on success.
-   * {@link CacheDictionaryIncrement.Error} on failure.
+   * {@link CacheDictionaryIncrement.Success} containing the incremented value
+   * on success.
+   * {@link CacheDictionaryIncrement.Error} on failure. Incrementing a value
+   * that was not set using this method or is not the string representation of
+   * an integer results in a failure with a FailedPreconditionException error.
    */
   public async dictionaryIncrement(
     cacheName: string,
