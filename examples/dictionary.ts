@@ -10,6 +10,7 @@ import {
   CacheDictionaryFetch,
   MomentoLoggerFactory,
   DefaultMomentoLoggerFactory,
+  CollectionTtl,
 } from '@gomomento/sdk';
 
 const cacheName = 'cache';
@@ -57,7 +58,12 @@ const main = async () => {
     new Map([
       ['field2', 'value2'],
       ['field3', 'value3'],
-    ])
+    ]),
+    {
+      // this optional parameter can be used to control whether or not the ttl is refreshed if a collection already exists;
+      // for more info see the CollectionTtl class.
+      ttl: CollectionTtl.of(30).withNoRefreshTtlOnUpdates(),
+    }
   );
   if (dictionarySetFieldsResponse instanceof CacheDictionarySetFields.Error) {
     console.log(
