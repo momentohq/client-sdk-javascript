@@ -80,7 +80,7 @@ export class SimpleCacheClient {
    */
   constructor(props: SimpleCacheClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    this.logger.info('Instantiating Momento SimpleCacheClient');
+    this.logger.info('Creating Momento SimpleCacheClient');
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
 
