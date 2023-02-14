@@ -90,7 +90,7 @@ async function main() {
 
   const getResponse = await momento.get('cache', 'foo');
   if (getResponse instanceof CacheGet.Hit) {
-    console.log(`cache hit: ${String(getResponse.valueString())}`);
+    console.log(`cache hit: ${getResponse.valueString()}`);
   } else if (getResponse instanceof CacheGet.Miss) {
     console.log('cache miss');
   } else if (getResponse instanceof CacheGet.Error) {
