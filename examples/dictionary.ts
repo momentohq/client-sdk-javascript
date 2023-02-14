@@ -9,7 +9,8 @@ import {
   CacheDictionaryGetFields,
   CacheDictionaryFetch,
   MomentoLoggerFactory,
-  DefaultMomentoLoggerFactory, CollectionTtl,
+  DefaultMomentoLoggerFactory,
+  CollectionTtl,
 } from '@gomomento/sdk';
 
 const cacheName = 'cache';
