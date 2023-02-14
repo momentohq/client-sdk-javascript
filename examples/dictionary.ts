@@ -69,24 +69,22 @@ const main = async () => {
   // Get a value
   console.log('\nGetting a single dictionary value');
   const field = 'field1';
-  let getStatus = '';
-  let getValue = '';
   const dictionaryGetFieldResponse = await momento.dictionaryGetField(
     cacheName,
     dictionaryName,
     field
   );
   if (dictionaryGetFieldResponse instanceof CacheDictionaryGetField.Hit) {
-    getStatus = 'HIT';
-    getValue = dictionaryGetFieldResponse.valueString();
+    console.log(
+      `Dictionary get of ${field}: status=HIT; value=${dictionaryGetFieldResponse.valueString()}`
+    );
   } else if (
     dictionaryGetFieldResponse instanceof CacheDictionaryGetField.Miss
   ) {
     // In this example you can get here if you:
     // - change the field name to one that does not exist, or if you
-    // - set a short TTL, then add a Task.Delay so that it expires.
-    getStatus = 'MISS';
-    getValue = '<NONE; operation was a MISS>';
+    // - set a short TTL, then add a sleep so that it expires.
+    console.log(`Dictionary get of ${field}: status=MISS`);
   } else if (
     dictionaryGetFieldResponse instanceof CacheDictionaryGetField.Error
   ) {
@@ -94,10 +92,11 @@ const main = async () => {
       `Error getting value from dictionary: ${dictionaryGetFieldResponse.message()}`
     );
     process.exitCode = 1;
+  } else {
+    throw new Error(
+      `Unexpected response: ${dictionaryGetFieldResponse.toString()}`
+    );
   }
-  console.log(
-    `Dictionary get of ${field}: status=${getStatus}; value=${getValue}`
-  );
 
   // Get multiple values
   console.log('\nGetting multiple dictionary values');
@@ -122,6 +121,10 @@ const main = async () => {
       `Error getting values from a dictionary: ${dictionaryGetFieldsResponse.message()}`
     );
     process.exitCode = 1;
+  } else {
+    throw new Error(
+      `Unexpected response: ${dictionaryGetFieldsResponse.toString()}`
+    );
   }
 
   // Get the whole dictionary
@@ -143,6 +146,10 @@ const main = async () => {
       `Error while fetching ${dictionaryName}: ${dictionaryFetchResponse.message()}`
     );
     process.exitCode = 1;
+  } else {
+    throw new Error(
+      `Unexpected response: ${dictionaryFetchResponse.toString()}`
+    );
   }
 };
 
