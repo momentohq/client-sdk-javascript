@@ -19,6 +19,7 @@ const cacheValue = 'value';
 // you can customize your log level or provide your own logger factory to
 // integrate with your favorite logging framework
 const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory();
+const logger = loggerFactory.getLogger('AdvancedExample');
 
 const momento = new SimpleCacheClient({
   configuration: Configurations.Laptop.latest(loggerFactory),
@@ -38,7 +39,7 @@ async function main() {
 async function createCacheExample() {
   const createCacheResponse = await momento.createCache(cacheName);
   if (createCacheResponse instanceof CreateCache.AlreadyExists) {
-    console.log('cache already exists');
+    logger.info('cache already exists');
   } else if (createCacheResponse instanceof CreateCache.Error) {
     throw createCacheResponse.innerException();
   } else {
@@ -47,15 +48,17 @@ async function createCacheExample() {
 }
 
 async function listCachesExample() {
-  console.log('Listing caches:');
+  logger.info('Listing caches:');
   const listResponse = await momento.listCaches();
   if (listResponse instanceof ListCaches.Error) {
-    console.log(`Error listing caches: ${listResponse.message()}`);
+    logger.info(`Error listing caches: ${listResponse.message()}`);
   } else if (listResponse instanceof ListCaches.Success) {
-    console.log('Found caches:');
+    logger.info('Found caches:');
     listResponse.getCaches().forEach(cacheInfo => {
-      console.log(`${cacheInfo.getName()}`);
+      logger.info(`${cacheInfo.getName()}`);
     });
+  } else {
+    throw new Error(`Unrecognized response: ${listResponse.toString()}`);
   }
 }
 
@@ -63,51 +66,57 @@ async function setGetDeleteExample() {
   // ttl is an optional field on most write operations, but you can provide it if you
   // want to override the default ttl that you specified when constructing your client.
   const exampleTtlSeconds = 10;
-  console.log(
+  logger.info(
     `Storing key=${cacheKey}, value=${cacheValue}, ttl=${exampleTtlSeconds}`
   );
   const setResponse = await momento.set(cacheName, cacheKey, cacheValue, {
     ttl: exampleTtlSeconds,
   });
   if (setResponse instanceof CacheSet.Success) {
-    console.log('Key stored successfully!');
+    logger.info('Key stored successfully!');
   } else if (setResponse instanceof CacheSet.Error) {
-    console.log(`Error setting key: ${setResponse.message()}`);
+    logger.info(`Error setting key: ${setResponse.message()}`);
+  } else {
+    throw new Error(`Unrecognized response: ${setResponse.toString()}`);
   }
 
   const getResponse = await momento.get(cacheName, cacheKey);
   if (getResponse instanceof CacheGet.Hit) {
-    console.log(`cache hit: ${getResponse.valueString()}`);
+    logger.info(`cache hit: ${getResponse.valueString()}`);
   } else if (getResponse instanceof CacheGet.Miss) {
-    console.log('cache miss');
+    logger.info('cache miss');
   } else if (getResponse instanceof CacheGet.Error) {
-    console.log(`Error: ${getResponse.message()}`);
+    logger.info(`Error: ${getResponse.message()}`);
+  } else {
+    throw new Error(`Unrecognized response: ${getResponse.toString()}`);
   }
 
   const deleteResponse = await momento.delete(cacheName, cacheKey);
   if (deleteResponse instanceof CacheDelete.Error) {
-    console.log(`Error deleting cache key: ${deleteResponse.message()}`);
+    logger.info(`Error deleting cache key: ${deleteResponse.message()}`);
   } else if (deleteResponse instanceof CacheDelete.Success) {
-    console.log('Deleted key from cache');
+    logger.info('Deleted key from cache');
+  } else {
+    throw new Error(`Unrecognized response: ${deleteResponse.toString()}`);
   }
 }
 
 async function concurrentGetsExample() {
-  console.log('Saving 10 values to cache');
+  logger.info('Saving 10 values to cache');
   for (let i = 1; i <= 10; i++) {
     await momento.set(cacheName, `key${i}`, `value${i}`);
   }
-  console.log('Initiating 10 concurrent gets');
+  logger.info('Initiating 10 concurrent gets');
   const getPromises = range(10).map(i => momento.get(cacheName, `key${i + 1}`));
   const getResponses = await Promise.all(getPromises);
   getResponses.forEach((response, index) => {
     const key = `key${index + 1}`;
     if (response instanceof CacheGet.Hit) {
-      console.log(
+      logger.info(
         `Concurrent get for ${key} returned ${response.valueString()}`
       );
     } else {
-      console.log(
+      logger.info(
         `Something went wrong with concurrent get for key ${key}: ${response.toString()}`
       );
     }
@@ -116,7 +125,7 @@ async function concurrentGetsExample() {
 
 main()
   .then(() => {
-    console.log('success!!');
+    logger.info('success!!');
   })
   .catch((e: Error) => {
     console.error(`failed to get from cache ${e.message}`);
