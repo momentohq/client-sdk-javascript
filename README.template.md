@@ -5,7 +5,7 @@
 ### Requirements
 
 - Node version [14 or higher](https://nodejs.org/en/download/) is required
-- A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
+- A Momento Auth Token is required, you can generate one using the [Momento CLI](https://docs.momentohq.com/getting-started)
 
 ### Examples
 
