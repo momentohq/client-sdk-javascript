@@ -19,7 +19,7 @@ const cacheValue = 'value';
 // you can customize your log level or provide your own logger factory to
 // integrate with your favorite logging framework
 const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory();
-const logger = loggerFactory.getLogger(`AdvancedExample`);
+const logger = loggerFactory.getLogger('AdvancedExample');
 
 const momento = new SimpleCacheClient({
   configuration: Configurations.Laptop.latest(loggerFactory),
