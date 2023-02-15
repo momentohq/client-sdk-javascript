@@ -39,13 +39,17 @@ class _Hit extends Response {
     this.body = body;
   }
   /**
-   * decodes the body into a utf-8 string
+   * Returns the data as a utf-8 string, decoded from the underlying byte array.
    * @returns string
    */
   public valueString(): string {
     return TEXT_DECODER.decode(this.body);
   }
 
+  /**
+   * Returns the data as a byte array.
+   * @returns {Uint8Array}
+   */
   public valueUint8Array(): Uint8Array {
     return this.body;
   }
@@ -55,6 +59,11 @@ class _Hit extends Response {
     return `${super.toString()}: ${display}`;
   }
 }
+
+/**
+ * Indicates that the requested data was successfully retrieved from the cache.  Provides
+ * `value*` accessors to retrieve the data in the appropriate format.
+ */
 export class Hit extends ResponseHit(_Hit) {
   private readonly field: Uint8Array;
 
@@ -63,16 +72,28 @@ export class Hit extends ResponseHit(_Hit) {
     this.field = field;
   }
 
+  /**
+   * Returns the field name for the retrieved element, as a utf-8 string decoded from the underlying byte array.
+   * @returns {string}
+   */
   public fieldString(): string {
     return TEXT_DECODER.decode(this.field);
   }
 
+  /**
+   * Returns the field name for the retrieved element, as a byte array.
+   * @returns {Uint8Array}
+   */
   public fieldUint8Array(): Uint8Array {
     return this.field;
   }
 }
 
 class _Miss extends Response {}
+
+/**
+ * Indicates that the requested data was not available in the cache.
+ */
 export class Miss extends ResponseMiss(_Miss) {
   private readonly field: Uint8Array;
 
@@ -81,10 +102,18 @@ export class Miss extends ResponseMiss(_Miss) {
     this.field = field;
   }
 
+  /**
+   * Returns the field name for the retrieved element, as a utf-8 string decoded from the underlying byte array.
+   * @returns {string}
+   */
   public fieldString(): string {
     return TEXT_DECODER.decode(this.field);
   }
 
+  /**
+   * Returns the field name for the retrieved element, as a byte array.
+   * @returns {Uint8Array}
+   */
   public fieldUint8Array(): Uint8Array {
     return this.field;
   }
@@ -96,6 +125,16 @@ class _Error extends Response {
   }
 }
 
+/**
+ * Indicates that an error occurred during the cache delete request.
+ *
+ * This response object includes the following fields that you can use to determine
+ * how you would like to handle the error:
+ *
+ * - `errorCode()` - a unique Momento error code indicating the type of error that occurred.
+ * - `message()` - a human-readable description of the error
+ * - `innerException()` - the original error that caused the failure; can be re-thrown.
+ */
 export class Error extends ResponseError(_Error) {
   private readonly field: Uint8Array;
 
@@ -104,10 +143,18 @@ export class Error extends ResponseError(_Error) {
     this.field = field;
   }
 
+  /**
+   * Returns the field name for the retrieved element, as a utf-8 string decoded from the underlying byte array.
+   * @returns {string}
+   */
   public fieldString(): string {
     return TEXT_DECODER.decode(this.field);
   }
 
+  /**
+   * Returns the field name for the retrieved element, as a byte array.
+   * @returns {Uint8Array}
+   */
   public fieldUint8Array(): Uint8Array {
     return this.field;
   }

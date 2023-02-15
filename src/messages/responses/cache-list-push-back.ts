@@ -34,6 +34,10 @@ class _Success extends Response implements IListResponseSuccess {
     this._list_length = list_length;
   }
 
+  /**
+   * Returns the new length of the list after the push operation.
+   * @returns {number}
+   */
   public listLength(): number {
     return this._list_length;
   }
@@ -49,7 +53,6 @@ class _Success extends Response implements IListResponseSuccess {
 export class Success extends ResponseSuccess(_Success) {}
 
 class _Error extends Response {}
-
 
 /**
  * Indicates that an error occurred during the cache delete request.

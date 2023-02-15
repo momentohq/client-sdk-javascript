@@ -38,14 +38,27 @@ class _Hit extends Response {
     this._values = values;
   }
 
+  /**
+   * Returns the data as an array of byte arrays.
+   * @returns {Uint8Array[]}
+   */
   public valueListUint8Array(): Uint8Array[] {
     return this._values;
   }
 
+  /**
+   * Returns the data as an array of strings, decoded from the underlying byte array.
+   * @returns {string[]}
+   */
   public valueListString(): string[] {
     return this._values.map(v => TEXT_DECODER.decode(v));
   }
 
+  /**
+   * Returns the data as an array of strings, decoded from the underlying byte array.  This is a convenience alias
+   * for {valueListString}
+   * @returns {string[]}
+   */
   public valueList(): string[] {
     return this.valueListString();
   }
@@ -55,9 +68,18 @@ class _Hit extends Response {
     return `${super.toString()}: [${truncatedStringArray.toString()}]`;
   }
 }
+
+/**
+ * Indicates that the requested data was successfully retrieved from the cache.  Provides
+ * `value*` accessors to retrieve the data in the appropriate format.
+ */
 export class Hit extends ResponseHit(_Hit) {}
 
 class _Miss extends Response {}
+
+/**
+ * Indicates that the requested data was not available in the cache.
+ */
 export class Miss extends ResponseMiss(_Miss) {}
 
 class _Error extends Response {

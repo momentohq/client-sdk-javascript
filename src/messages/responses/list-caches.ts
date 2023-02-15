@@ -25,20 +25,18 @@ import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 export abstract class Response extends ResponseBase {}
 
 class _Success extends Response {
-  private readonly nextToken?: string;
   private readonly caches: CacheInfo[];
   constructor(result?: control.control_client._ListCachesResponse) {
     super();
-    this.nextToken = result?.next_token;
     if (result) {
       this.caches = result.cache.map(cache => new CacheInfo(cache.cache_name));
     }
   }
 
-  public getNextToken() {
-    return this.nextToken;
-  }
-
+  /**
+   * An array of CacheInfo, containing information about each cache.
+   * @returns {CacheInfo[]}
+   */
   public getCaches() {
     return this.caches;
   }

@@ -40,7 +40,8 @@ class _Hit extends Response {
   }
 
   /**
-   * Convenience alias for {valueSetString}; call this if you want to get the elements back as a Set of strings
+   * Returns the data as a Set whose values are utf-8 strings, decoded from the underlying byte arrays.  This
+   * is a convenience alias for {valueSetString}.
    * @returns {Set<string>}
    */
   public valueSet(): Set<string> {
@@ -48,7 +49,7 @@ class _Hit extends Response {
   }
 
   /**
-   * Call this if you want to get the elements back as a Set of strings
+   * Returns the data as a Set whose values are utf-8 strings, decoded from the underlying byte arrays.
    * @returns {Set<string>}
    */
   public valueSetString(): Set<string> {
@@ -56,7 +57,7 @@ class _Hit extends Response {
   }
 
   /**
-   * Call this if you want to get the elements back as a Set of byte arrays
+   * Returns the data as a Set whose values are byte arrays.
    * @returns {Set<Uint8Array>}
    */
   public valueSetUint8Array(): Set<Uint8Array> {
@@ -64,8 +65,9 @@ class _Hit extends Response {
   }
 
   /**
-   * Convenience alias for {valueArrayString}; call this if you want to get the elements back as an Array of strings, since
-   * sometimes Array objects are easier to work with than Sets
+   * Returns the data as an Array whose values are utf-8 strings, decoded from the underlying byte arrays.
+   * This accessor is provided because Arrays are sometimes easier to work with in TypeScript/JavaScript than Sets are.
+   * This is a convenience alias for {valueArrayString}.
    * @returns {string[]}
    */
   public valueArray(): string[] {
@@ -73,8 +75,8 @@ class _Hit extends Response {
   }
 
   /**
-   * Call this if you want to get the elements back as an Array of strings, since
-   * sometimes Array objects are easier to work with than Sets
+   * Returns the data as an Array whose values are utf-8 strings, decoded from the underlying byte arrays.
+   * This accessor is provided because Arrays are sometimes easier to work with in TypeScript/JavaScript than Sets are.
    * @returns {string[]}
    */
   public valueArrayString(): string[] {
@@ -82,8 +84,8 @@ class _Hit extends Response {
   }
 
   /**
-   * Call this if you want to get the elements back as an Array of byte arrays, since
-   * sometimes Array objects are easier to work with than Sets
+   * Returns the data as an Array whose values are byte arrays.
+   * This accessor is provided because Arrays are sometimes easier to work with in TypeScript/JavaScript than Sets are.
    * @returns {Uint8Array[]}
    */
   public valueArrayUint8Array(): Uint8Array[] {
@@ -97,9 +99,18 @@ class _Hit extends Response {
     return `${super.toString()}: [${truncatedStringArray.toString()}]`;
   }
 }
+
+/**
+ * Indicates that the requested data was successfully retrieved from the cache.  Provides
+ * `value*` accessors to retrieve the data in the appropriate format.
+ */
 export class Hit extends ResponseHit(_Hit) {}
 
 class _Miss extends Response {}
+
+/**
+ * Indicates that the requested data was not available in the cache.
+ */
 export class Miss extends ResponseMiss(_Miss) {}
 
 class _Error extends Response {

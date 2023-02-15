@@ -34,6 +34,10 @@ class _Success extends Response implements IListResponseSuccess {
     this._list_length = list_length;
   }
 
+  /**
+   * Returns the new length of the list after the concatenate operation.
+   * @returns {number}
+   */
   public listLength(): number {
     return this._list_length;
   }

@@ -7,6 +7,7 @@ import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
  * the following subtypes:
  *
  * - CacheDelete.Success
+ * - CacheCreate.AlreadyExists
  * - CacheDelete.Error
  *
  * `instanceof` type guards can be used to operate on the appropriate subtype.
@@ -47,4 +48,7 @@ class _Error extends Response {
  */
 export class Error extends ResponseError(_Error) {}
 
+/**
+ * Indicates that the cache already exists, so there was nothing to do.
+ */
 export class AlreadyExists extends Response {}

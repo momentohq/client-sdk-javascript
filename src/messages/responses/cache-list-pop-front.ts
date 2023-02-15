@@ -39,13 +39,17 @@ class _Hit extends Response {
     this.body = body;
   }
   /**
-   * decodes the body into a utf-8 string
+   * Returns the data as a utf-8 string, decoded from the underlying byte array.
    * @returns string
    */
   public valueString(): string {
     return TEXT_DECODER.decode(this.body);
   }
 
+  /**
+   * Returns the data as a byte array.
+   * @returns {Uint8Array}
+   */
   public valueUint8Array(): Uint8Array {
     return this.body;
   }
@@ -55,9 +59,18 @@ class _Hit extends Response {
     return `${super.toString()}: ${display}`;
   }
 }
+
+/**
+ * Indicates that the requested data was successfully retrieved from the cache.  Provides
+ * `value*` accessors to retrieve the data in the appropriate format.
+ */
 export class Hit extends ResponseHit(_Hit) {}
 
 class _Miss extends Response {}
+
+/**
+ * Indicates that the requested data was not available in the cache.
+ */
 export class Miss extends ResponseMiss(_Miss) {}
 
 class _Error extends Response {

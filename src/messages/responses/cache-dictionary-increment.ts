@@ -31,6 +31,10 @@ class _Success extends Response {
     this.value = value;
   }
 
+  /**
+   * The new value of the element after incrementing.
+   * @returns {number}
+   */
   public valueNumber(): number {
     return this.value;
   }

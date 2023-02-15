@@ -34,6 +34,10 @@ class _Hit extends Response {
     this._length = length;
   }
 
+  /**
+   * Returns the length of the list
+   * @returns {number}
+   */
   public length(): number {
     return this._length;
   }
@@ -42,9 +46,18 @@ class _Hit extends Response {
     return `${super.toString()}: length ${this._length}`;
   }
 }
+
+/**
+ * Indicates that the requested data was successfully retrieved from the cache.  Provides
+ * `value*` accessors to retrieve the data in the appropriate format.
+ */
 export class Hit extends ResponseHit(_Hit) {}
 
 class _Miss extends Response {}
+
+/**
+ * Indicates that the requested data was not available in the cache.
+ */
 export class Miss extends ResponseMiss(_Miss) {}
 
 class _Error extends Response {
