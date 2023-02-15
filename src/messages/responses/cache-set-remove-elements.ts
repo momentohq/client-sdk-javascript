@@ -11,7 +11,7 @@ class _Error extends ResponseBase {
 }
 
 /**
- * Parent response type for a cache delete request.  The
+ * Parent response type for a set remove elements request.  The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
@@ -22,9 +22,9 @@ class _Error extends ResponseBase {
  * @example
  * For example:
  * ```
- * if (response instanceof CacheDelete.Error) {
+ * if (response instanceof CacheSetRemoveElements.Error) {
  *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheDelete.Error` in this block, so you will have access to the properties
+ *   // `CacheSetRemoveElements.Error` in this block, so you will have access to the properties
  *   // of the Error class; e.g. `response.errorCode()`.
  * }
  * ```
@@ -34,7 +34,7 @@ export abstract class Response extends ResponseBase {
 }
 
 /**
- * Indicates a Successful cache delete request.
+ * Indicates a Successful set remove elements request.
  */
 export class Success extends ResponseSuccess(_Success) {
   toSingularResponse(): CacheSetRemoveElement.Response {
@@ -43,7 +43,7 @@ export class Success extends ResponseSuccess(_Success) {
 }
 
 /**
- * Indicates that an error occurred during the cache delete request.
+ * Indicates that an error occurred during the set remove elements request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:

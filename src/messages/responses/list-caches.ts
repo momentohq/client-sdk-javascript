@@ -4,7 +4,7 @@ import {SdkError} from '../../errors/errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 
 /**
- * Parent response type for a cache delete request.  The
+ * Parent response type for a list caches request.  The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
@@ -15,9 +15,9 @@ import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
  * @example
  * For example:
  * ```
- * if (response instanceof CacheDelete.Error) {
+ * if (response instanceof ListCaches.Error) {
  *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheDelete.Error` in this block, so you will have access to the properties
+ *   // `ListCaches.Error` in this block, so you will have access to the properties
  *   // of the Error class; e.g. `response.errorCode()`.
  * }
  * ```
@@ -48,7 +48,7 @@ class _Success extends Response {
 }
 
 /**
- * Indicates a Successful cache delete request.
+ * Indicates a Successful list caches request.
  */
 export class Success extends ResponseSuccess(_Success) {}
 
@@ -59,7 +59,7 @@ class _Error extends Response {
 }
 
 /**
- * Indicates that an error occurred during the cache delete request.
+ * Indicates that an error occurred during the list caches request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:

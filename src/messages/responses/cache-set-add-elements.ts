@@ -3,7 +3,7 @@ import {SdkError} from '../../errors/errors';
 import * as CacheSetAddElement from './cache-set-add-element';
 
 /**
- * Parent response type for a cache delete request.  The
+ * Parent response type for a set add elements request.  The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
@@ -14,9 +14,9 @@ import * as CacheSetAddElement from './cache-set-add-element';
  * @example
  * For example:
  * ```
- * if (response instanceof CacheDelete.Error) {
+ * if (response instanceof CacheSetAddElements.Error) {
  *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheDelete.Error` in this block, so you will have access to the properties
+ *   // `CacheSetAddElements.Error` in this block, so you will have access to the properties
  *   // of the Error class; e.g. `response.errorCode()`.
  * }
  * ```
@@ -32,7 +32,7 @@ class _Success extends Response {
 }
 
 /**
- * Indicates a Successful cache delete request.
+ * Indicates a Successful set add elements request.
  */
 export class Success extends ResponseSuccess(_Success) {}
 
@@ -47,7 +47,7 @@ class _Error extends Response {
 }
 
 /**
- * Indicates that an error occurred during the cache delete request.
+ * Indicates that an error occurred during the set add elements request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:

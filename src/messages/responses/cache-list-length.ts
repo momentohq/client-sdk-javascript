@@ -7,20 +7,21 @@ import {
 } from './response-base';
 
 /**
- * Parent response type for a cache delete request.  The
+ * Parent response type for a list length request.  The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * - {Success}
+ * - {Hit}
+ * - {Miss}
  * - {Error}
  *
  * `instanceof` type guards can be used to operate on the appropriate subtype.
  * @example
  * For example:
  * ```
- * if (response instanceof CacheDelete.Error) {
+ * if (response instanceof CacheListLength.Error) {
  *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheDelete.Error` in this block, so you will have access to the properties
+ *   // `CacheListLength.Error` in this block, so you will have access to the properties
  *   // of the Error class; e.g. `response.errorCode()`.
  * }
  * ```
@@ -67,7 +68,7 @@ class _Error extends Response {
 }
 
 /**
- * Indicates that an error occurred during the cache delete request.
+ * Indicates that an error occurred during the list length request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:
