@@ -11,6 +11,25 @@ import {truncateString} from '../../internal/utils/display';
 
 const TEXT_DECODER = new TextDecoder();
 
+/**
+ * Parent response type for a cache delete request.  The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * - CacheDelete.Success
+ * - CacheDelete.Error
+ *
+ * `instanceof` type guards can be used to operate on the appropriate subtype.
+ * @example
+ * For example:
+ * ```
+ * if (response instanceof CacheDelete.Error) {
+ *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
+ *   // `CacheDelete.Error` in this block, so you will have access to the properties
+ *   // of the Error class; e.g. `response.errorCode()`.
+ * }
+ * ```
+ */
 export abstract class Response extends ResponseBase {}
 
 class _Hit extends Response {
