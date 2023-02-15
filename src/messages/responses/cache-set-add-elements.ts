@@ -7,8 +7,8 @@ import * as CacheSetAddElement from './cache-set-add-element';
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * - CacheDelete.Success
- * - CacheDelete.Error
+ * - {Success}
+ * - {Error}
  *
  * `instanceof` type guards can be used to operate on the appropriate subtype.
  * @example
