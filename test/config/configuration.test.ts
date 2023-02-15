@@ -4,7 +4,7 @@ import {
   StaticTransportStrategy,
 } from '../../src/config/transport/transport-strategy';
 import {FixedCountRetryStrategy} from '../../src/config/retry/fixed-count-retry-strategy';
-import {DefaultMomentoLoggerFactory} from '../../src';
+import {DefaultMomentoLoggerFactory, Configurations} from '../../src';
 
 describe('configuration.ts', () => {
   const testLoggerFactory = new DefaultMomentoLoggerFactory();
@@ -87,6 +87,20 @@ describe('configuration.ts', () => {
     );
     expect(configWithNewClientTimeout.getTransportStrategy()).toEqual(
       expectedTransportStrategy
+    );
+  });
+
+  it('should make v1 laptop config available via latest alias', () => {
+    expect(Configurations.Laptop.latest()).toEqual(Configurations.Laptop.v1());
+  });
+  it('should make v1 inregion default config available via latest alias', () => {
+    expect(Configurations.InRegion.Default.latest()).toEqual(
+      Configurations.InRegion.Default.v1()
+    );
+  });
+  it('should make v1 inregion low latency config available via latest alias', () => {
+    expect(Configurations.InRegion.LowLatency.latest()).toEqual(
+      Configurations.InRegion.LowLatency.v1()
     );
   });
 });
