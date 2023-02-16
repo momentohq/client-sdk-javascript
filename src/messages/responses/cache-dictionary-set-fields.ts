@@ -13,7 +13,7 @@ import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
  * @example
  * For example:
  * ```
- * if (response instanceof CacheDictionarySetField.Error) {
+ * if (response instanceof CacheDictionarySetFields.Error) {
  *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
  *   // `CacheDictionarySetField.Error` in this block, so you will have access to the properties
  *   // of the Error class; e.g. `response.errorCode()`.
