@@ -22,7 +22,7 @@ const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory();
 const logger = loggerFactory.getLogger('AdvancedExample');
 
 const momento = new SimpleCacheClient({
-  configuration: Configurations.Laptop.latest(loggerFactory),
+  configuration: Configurations.Laptop.v1(loggerFactory),
   credentialProvider: CredentialProvider.fromEnvironmentVariable({
     environmentVariableName: 'MOMENTO_AUTH_TOKEN',
   }),

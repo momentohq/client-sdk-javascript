@@ -9,7 +9,7 @@ import {
 
 async function main() {
   const momento = new SimpleCacheClient({
-    configuration: Configurations.Laptop.latest(),
+    configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_AUTH_TOKEN',
     }),
