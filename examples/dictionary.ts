@@ -24,7 +24,7 @@ const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory();
 
 const defaultTtl = 60;
 const momento = new SimpleCacheClient({
-  configuration: Configurations.Laptop.latest(loggerFactory),
+  configuration: Configurations.Laptop.v1(loggerFactory),
   credentialProvider: credentialsProvider,
   defaultTtlSeconds: defaultTtl,
 });
