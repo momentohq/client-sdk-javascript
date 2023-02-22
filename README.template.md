@@ -5,7 +5,7 @@
 ### Requirements
 
 - Node version [14 or higher](https://nodejs.org/en/download/) is required
-- A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
+- A Momento Auth Token is required, you can generate one using the [Momento CLI](https://docs.momentohq.com/getting-started)
 
 ### Examples
 
@@ -13,6 +13,12 @@ Ready to dive right in? Just check out the [examples](./examples/README.md) dire
 how to use the SDK.
 
 ### Installation
+
+To install the Momento client library in an existing node.js project:
+
+```bash
+npm install @gomomento/sdk
+```
 
 To create a new node.js TypeScript project and install the Momento client library as a dependency:
 

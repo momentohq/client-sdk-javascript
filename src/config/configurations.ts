@@ -33,11 +33,26 @@ function defaultRetryStrategy(
  */
 export class Laptop extends SimpleCacheConfiguration {
   /**
-   * Provides the latest recommended configuration for a laptop development environment.
-   * @param {LoggerOptions} [loggerOptions=defaultLoggerOptions]  if no options are provided, a sensible default will be used
-   * @returns {Laptop}
+   * Provides the latest recommended configuration for a laptop development environment.  NOTE: this configuration may
+   * change in future releases to take advantage of improvements we identify for default configurations.
+   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]
+   * @returns {SimpleCacheConfiguration}
    */
-  static latest(loggerFactory: MomentoLoggerFactory = defaultLoggerFactory) {
+  static latest(
+    loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
+  ): SimpleCacheConfiguration {
+    return Laptop.v1(loggerFactory);
+  }
+
+  /**
+   * Provides v1 recommended configuration for a laptop development environment.  This configuration is guaranteed not
+   * to change in future releases of the Momento node.js SDK.
+   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]
+   * @returns {SimpleCacheConfiguration}
+   */
+  static v1(
+    loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
+  ): SimpleCacheConfiguration {
     const deadlineMillis = 5000;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
@@ -57,13 +72,26 @@ export class Laptop extends SimpleCacheConfiguration {
 
 class InRegionDefault extends SimpleCacheConfiguration {
   /**
-   * Provides the latest recommended configuration for a low-latency in-region
-   * environment.
-   *
-   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]  if no options are provided, a sensible default will be used
-   * @returns {InRegionDefault}
+   * Provides the latest recommended configuration for a typical in-region environment.  NOTE: this configuration may
+   * change in future releases to take advantage of improvements we identify for default configurations.
+   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]
+   * @returns {SimpleCacheConfiguration}
    */
-  static latest(loggerFactory: MomentoLoggerFactory = defaultLoggerFactory) {
+  static latest(
+    loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
+  ): SimpleCacheConfiguration {
+    return InRegionDefault.v1(loggerFactory);
+  }
+
+  /**
+   * Provides v1 recommended configuration for a typical in-region environment.  This configuration is guaranteed not
+   * to change in future releases of the Momento node.js SDK.
+   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]
+   * @returns {SimpleCacheConfiguration}
+   */
+  static v1(
+    loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
+  ): SimpleCacheConfiguration {
     const deadlineMillis = 1100;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
@@ -83,12 +111,27 @@ class InRegionDefault extends SimpleCacheConfiguration {
 
 class InRegionLowLatency extends SimpleCacheConfiguration {
   /**
-   * Provides the latest recommended configuration for an InRegion environment.
-   *
-   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]  if no options are provided, a sensible default will be used
-   * @returns {InRegionLowLatency}
+   * Provides the latest recommended configuration for an in-region environment with aggressive low-latency requirements.
+   * NOTE: this configuration may change in future releases to take advantage of improvements we identify for default
+   * configurations.
+   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]
+   * @returns {SimpleCacheConfiguration}
    */
-  static latest(loggerFactory: MomentoLoggerFactory = defaultLoggerFactory) {
+  static latest(
+    loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
+  ): SimpleCacheConfiguration {
+    return InRegionLowLatency.v1(loggerFactory);
+  }
+
+  /**
+   * Provides v1 recommended configuration for an in-region environment with aggressive low-latency requirements.
+   * This configuration is guaranteed not to change in future releases of the Momento node.js SDK.
+   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]
+   * @returns {SimpleCacheConfiguration}
+   */
+  static v1(
+    loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
+  ): SimpleCacheConfiguration {
     const deadlineMillis = 500;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
