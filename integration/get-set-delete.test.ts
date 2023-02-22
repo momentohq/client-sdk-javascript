@@ -14,7 +14,7 @@ import {
   ItBehavesLikeItValidatesCacheName,
   WithCache,
 } from './integration-setup';
-import {sleep} from "../src/internal/utils/sleep";
+import {sleep} from '../src/internal/utils/sleep';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
