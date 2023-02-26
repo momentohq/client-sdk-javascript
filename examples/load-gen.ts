@@ -72,7 +72,7 @@ class BasicLoadGen {
 
   async run(): Promise<void> {
     const momento = new SimpleCacheClient({
-      configuration: Configurations.Laptop.latest(
+      configuration: Configurations.Laptop.v1(
         this.loggerFactory
       ).withClientTimeoutMillis(this.options.requestTimeoutMs),
       credentialProvider: new EnvMomentoTokenProvider({
