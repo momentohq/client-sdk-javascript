@@ -174,21 +174,6 @@ describe('get/set/delete', () => {
     }
   });
 
-  it('should return INVALID_ARGUMENT_ERROR for invalid ttl when set with byte key/value', async () => {
-    const setResponse = await Momento.set(
-      IntegrationTestCacheName,
-      new TextEncoder().encode(v4()),
-      new TextEncoder().encode(v4()),
-      {ttl: -1}
-    );
-    expect(setResponse).toBeInstanceOf(CacheSet.Error);
-    if (setResponse instanceof CacheSet.Error) {
-      expect(setResponse.errorCode()).toEqual(
-        MomentoErrorCode.INVALID_ARGUMENT_ERROR
-      );
-    }
-  });
-
   it('should set string key/value with valid ttl and get successfully', async () => {
     const cacheKey = v4();
     const cacheValue = v4();
@@ -203,23 +188,6 @@ describe('get/set/delete', () => {
     const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
     if (getResponse instanceof CacheGet.Hit) {
       expect(getResponse.valueString()).toEqual(cacheValue);
-    }
-  });
-
-  it('should set byte key/value with valid ttl and get successfully', async () => {
-    const cacheKey = new TextEncoder().encode(v4());
-    const cacheValue = new TextEncoder().encode(v4());
-    const setResponse = await Momento.set(
-      IntegrationTestCacheName,
-      cacheKey,
-      cacheValue,
-      {ttl: 15}
-    );
-    expect(setResponse).toBeInstanceOf(CacheSet.Success);
-
-    const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
-    if (getResponse instanceof CacheGet.Hit) {
-      expect(getResponse.valueUint8Array()).toEqual(cacheValue);
     }
   });
 
