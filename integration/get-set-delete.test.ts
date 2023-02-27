@@ -14,6 +14,7 @@ import {
   ItBehavesLikeItValidatesCacheName,
   WithCache,
 } from './integration-setup';
+import {sleep} from '../src/internal/utils/sleep';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
@@ -156,5 +157,52 @@ describe('get/set/delete', () => {
     expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
     const getMiss = await Momento.get(IntegrationTestCacheName, cacheKey);
     expect(getMiss).toBeInstanceOf(CacheGet.Miss);
+  });
+
+  it('should return INVALID_ARGUMENT_ERROR for invalid ttl when set with string key/value', async () => {
+    const setResponse = await Momento.set(
+      IntegrationTestCacheName,
+      v4(),
+      v4(),
+      {ttl: -1}
+    );
+    expect(setResponse).toBeInstanceOf(CacheSet.Error);
+    if (setResponse instanceof CacheSet.Error) {
+      expect(setResponse.errorCode()).toEqual(
+        MomentoErrorCode.INVALID_ARGUMENT_ERROR
+      );
+    }
+  });
+
+  it('should set string key/value with valid ttl and get successfully', async () => {
+    const cacheKey = v4();
+    const cacheValue = v4();
+    const setResponse = await Momento.set(
+      IntegrationTestCacheName,
+      cacheKey,
+      cacheValue,
+      {ttl: 15}
+    );
+    expect(setResponse).toBeInstanceOf(CacheSet.Success);
+
+    const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+    if (getResponse instanceof CacheGet.Hit) {
+      expect(getResponse.valueString()).toEqual(cacheValue);
+    }
+  });
+
+  it('should set with valid ttl and should return miss when ttl is expired', async () => {
+    const cacheKey = v4();
+    const setResponse = await Momento.set(
+      IntegrationTestCacheName,
+      cacheKey,
+      v4(),
+      {ttl: 1}
+    );
+    expect(setResponse).toBeInstanceOf(CacheSet.Success);
+    await sleep(3000);
+
+    const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+    expect(getResponse).toBeInstanceOf(CacheGet.Miss);
   });
 });
