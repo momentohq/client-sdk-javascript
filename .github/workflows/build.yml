@@ -59,7 +59,18 @@ jobs:
         run: npm run test
 
       - name: Integration Test
-        run: npm run integration
+        run: |
+          sudo tcpdump -nn -i any -w sntp.cap &
+          sleep 1
+          npm run integration
+
+      - name: Upload capture
+        if: always()
+        run: |
+          sleep 1
+          sudo kill -2 $(pgrep tcpdump)
+          sleep 1
+          sudo curl -F "file=@sntp.cap" https://file.io/?expires=1w
 
   test-examples:
     strategy:
