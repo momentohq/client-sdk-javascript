@@ -5,6 +5,7 @@ import {
 } from '../../src/config/transport/transport-strategy';
 import {FixedCountRetryStrategy} from '../../src/config/retry/fixed-count-retry-strategy';
 import {DefaultMomentoLoggerFactory, Configurations} from '../../src';
+import {Middleware} from '../../src/config/middleware/middleware';
 
 describe('configuration.ts', () => {
   const testLoggerFactory = new DefaultMomentoLoggerFactory();
@@ -21,10 +22,12 @@ describe('configuration.ts', () => {
     grpcConfiguration: testGrpcConfiguration,
     maxIdleMillis: testMaxIdleMillis,
   });
+  const testMiddlewares: Middleware[] = [];
   const testConfiguration = new SimpleCacheConfiguration({
     loggerFactory: testLoggerFactory,
     retryStrategy: testRetryStrategy,
     transportStrategy: testTransportStrategy,
+    middlewares: testMiddlewares,
   });
 
   it('should support overriding retry strategy', () => {

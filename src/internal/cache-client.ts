@@ -2,7 +2,7 @@ import {cache} from '@gomomento/generated-types';
 import grpcCache = cache.cache_client;
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextEncoder} from 'util';
-import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
+import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
@@ -38,6 +38,7 @@ import {
   InvalidArgumentError,
   UnknownError,
   MomentoLogger,
+  MomentoLoggerFactory,
   CacheSetIfNotExists,
 } from '..';
 import {version} from '../../package.json';
@@ -51,6 +52,8 @@ import {
   validateSetName,
 } from './utils/validators';
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
+import {Middleware} from '../config/middleware/middleware';
+import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 
 export class CacheClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -102,7 +105,10 @@ export class CacheClient {
 
     this.textEncoder = new TextEncoder();
     this.defaultTtlSeconds = props.defaultTtlSeconds;
-    this.interceptors = this.initializeInterceptors();
+    this.interceptors = this.initializeInterceptors(
+      this.configuration.getLoggerFactory(),
+      this.configuration.getMiddlewares()
+    );
   }
 
   public getEndpoint(): string {
@@ -1634,13 +1640,17 @@ export class CacheClient {
     });
   }
 
-  private initializeInterceptors(): Interceptor[] {
+  private initializeInterceptors(
+    loggerFactory: MomentoLoggerFactory,
+    middlewares: Middleware[]
+  ): Interceptor[] {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
       new Header('Agent', `nodejs:${version}`),
     ];
     return [
-      new HeaderInterceptor(headers).addHeadersInterceptor(),
+      middlewaresInterceptor(loggerFactory, middlewares),
+      new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
       ClientTimeoutInterceptor(this.requestTimeoutMs),
       ...createRetryInterceptorIfEnabled(
         this.configuration.getLoggerFactory(),
