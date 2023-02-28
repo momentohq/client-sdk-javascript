@@ -2,6 +2,7 @@ import {v4} from 'uuid';
 import {
   CacheDelete,
   CacheGet,
+  CacheIncrement,
   CacheSet,
   MomentoErrorCode,
   SimpleCacheClient,
@@ -156,5 +157,93 @@ describe('get/set/delete', () => {
     expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
     const getMiss = await Momento.get(IntegrationTestCacheName, cacheKey);
     expect(getMiss).toBeInstanceOf(CacheGet.Miss);
+  });
+});
+
+describe('#increment', () => {
+  ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+    return Momento.increment(props.cacheName, v4());
+  });
+
+  it('increments from 0 to expected amount with string field', async () => {
+    const field = v4();
+    let response = await Momento.increment(IntegrationTestCacheName, field, 1);
+    expect(response).toBeInstanceOf(CacheIncrement.Success);
+    let successResponse = response as CacheIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(1);
+
+    response = await Momento.increment(IntegrationTestCacheName, field, 41);
+    expect(response).toBeInstanceOf(CacheIncrement.Success);
+    successResponse = response as CacheIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(42);
+    expect(successResponse.toString()).toEqual('Success: value: 42');
+
+    response = await Momento.increment(IntegrationTestCacheName, field, -1042);
+    expect(response).toBeInstanceOf(CacheIncrement.Success);
+    successResponse = response as CacheIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(-1000);
+
+    response = await Momento.get(IntegrationTestCacheName, field);
+    expect(response).toBeInstanceOf(CacheGet.Hit);
+    const hitResponse = response as CacheGet.Hit;
+    expect(hitResponse.valueString()).toEqual('-1000');
+  });
+
+  it('increments from 0 to expected amount with Uint8Array field', async () => {
+    const field = new TextEncoder().encode(v4());
+    let response = await Momento.increment(IntegrationTestCacheName, field, 1);
+    expect(response).toBeInstanceOf(CacheIncrement.Success);
+    let successResponse = response as CacheIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(1);
+
+    response = await Momento.increment(IntegrationTestCacheName, field, 41);
+    expect(response).toBeInstanceOf(CacheIncrement.Success);
+    successResponse = response as CacheIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(42);
+    expect(successResponse.toString()).toEqual('Success: value: 42');
+
+    response = await Momento.increment(IntegrationTestCacheName, field, -1042);
+    expect(response).toBeInstanceOf(CacheIncrement.Success);
+    successResponse = response as CacheIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(-1000);
+
+    response = await Momento.get(IntegrationTestCacheName, field);
+    expect(response).toBeInstanceOf(CacheGet.Hit);
+    const hitResponse = response as CacheGet.Hit;
+    expect(hitResponse.valueString()).toEqual('-1000');
+  });
+
+  it('increments with setting and resetting field', async () => {
+    const field = v4();
+
+    await Momento.set(IntegrationTestCacheName, field, '10');
+    let response = await Momento.increment(IntegrationTestCacheName, field, 0);
+    expect(response).toBeInstanceOf(CacheIncrement.Success);
+    let successResponse = response as CacheIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(10);
+
+    response = await Momento.increment(IntegrationTestCacheName, field, 90);
+    expect(response).toBeInstanceOf(CacheIncrement.Success);
+    successResponse = response as CacheIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(100);
+
+    // Reset field
+    await Momento.set(IntegrationTestCacheName, field, '0');
+    response = await Momento.increment(IntegrationTestCacheName, field, 0);
+    expect(response).toBeInstanceOf(CacheIncrement.Success);
+    successResponse = response as CacheIncrement.Success;
+    expect(successResponse.valueNumber()).toEqual(0);
+  });
+
+  it('fails with precondition with a bad amount', async () => {
+    const field = v4();
+
+    await Momento.set(IntegrationTestCacheName, field, 'abcxyz');
+    const response = await Momento.increment(IntegrationTestCacheName, field);
+    expect(response).toBeInstanceOf(CacheIncrement.Error);
+    const errorResponse = response as CacheIncrement.Error;
+    expect(errorResponse.errorCode()).toEqual(
+      MomentoErrorCode.FAILED_PRECONDITION_ERROR
+    );
   });
 });

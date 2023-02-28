@@ -31,6 +31,8 @@ import * as CacheSetAddElements from './messages/responses/cache-set-add-element
 import * as CacheSetAddElement from './messages/responses/cache-set-add-element';
 import * as CacheSetRemoveElements from './messages/responses/cache-set-remove-elements';
 import * as CacheSetRemoveElement from './messages/responses/cache-set-remove-element';
+import * as CacheIncrement from './messages/responses/cache-increment';
+
 import {CacheInfo} from './messages/cache-info';
 import {CollectionTtl} from './utils/collection-ttl';
 import {
@@ -92,6 +94,7 @@ export {
   CreateCache,
   DeleteCache,
   ListCaches,
+  CacheIncrement,
   CreateSigningKey,
   ListSigningKeys,
   RevokeSigningKey,
