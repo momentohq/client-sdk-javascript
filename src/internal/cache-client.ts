@@ -339,6 +339,11 @@ export class CacheClient {
     } catch (err) {
       return new CacheSetIfNotExists.Error(normalizeSdkError(err as Error));
     }
+    if (ttl && ttl < 0) {
+      return new CacheSetIfNotExists.Error(
+        new InvalidArgumentError('ttl must be a positive integer')
+      );
+    }
     this.logger.trace(
       `Issuing 'setIfNotExists' request; key: ${key.toString()}, field: ${field.toString()}, ttl: ${
         ttl?.toString() ?? 'null'
