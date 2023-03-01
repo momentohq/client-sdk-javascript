@@ -6,7 +6,7 @@ export interface MiddlewareRequestHandler {
   onRequestBody(request: Message): Promise<Message>;
 
   onResponseMetadata(metadata: Metadata): Promise<Metadata>;
-  onResponseBody(response: Message): Promise<Message>;
+  onResponseBody(response: Message | null): Promise<Message | null>;
   onResponseStatus(status: StatusObject): Promise<StatusObject>;
 }
 

@@ -3,9 +3,7 @@ import {MomentoLogger, MomentoLoggerFactory} from '../logging/momento-logger';
 import {Metadata, StatusObject} from '@grpc/grpc-js';
 import {Message} from 'google-protobuf';
 
-export class ExampleAsyncMiddlewareRequestHandler
-  implements MiddlewareRequestHandler
-{
+class ExampleAsyncMiddlewareRequestHandler implements MiddlewareRequestHandler {
   private readonly logger: MomentoLogger;
 
   constructor(logger: MomentoLogger) {
@@ -34,7 +32,7 @@ export class ExampleAsyncMiddlewareRequestHandler
     return metadata;
   }
 
-  async onResponseBody(response: Message): Promise<Message> {
+  async onResponseBody(response: Message | null): Promise<Message | null> {
     this.logger.info('ExampleAsyncMiddleware.onResponseBody enter');
     await delay(500);
     this.logger.info('ExampleAsyncMiddleware.onResponseBody exit');
@@ -50,6 +48,10 @@ export class ExampleAsyncMiddlewareRequestHandler
   }
 }
 
+/**
+ * This class provides an example of how users can implement a Middleware that
+ * requires async calls.
+ */
 export class ExampleAsyncMiddleware implements Middleware {
   private readonly logger: MomentoLogger;
 
