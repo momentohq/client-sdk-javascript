@@ -11,6 +11,7 @@ import {
   CacheGet,
   CacheSet,
   CacheDelete,
+  CacheIncrement,
   CacheSetFetch,
   CacheDictionaryFetch,
   CacheDictionarySetField,
@@ -1408,6 +1409,68 @@ export class CacheClient {
                 cacheServiceErrorMapper(err)
               )
             );
+          }
+        }
+      );
+    });
+  }
+
+  public async increment(
+    cacheName: string,
+    field: string | Uint8Array,
+    amount = 1,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheIncrement.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new CacheIncrement.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.trace(
+      `Issuing 'increment' request; field: ${field.toString()}, amount : ${amount}, ttl: ${
+        ttl.ttlSeconds.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendIncrement(
+      cacheName,
+      this.convert(field),
+      amount,
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000
+    );
+    this.logger.trace(`'increment' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendIncrement(
+    cacheName: string,
+    field: Uint8Array,
+    amount = 1,
+    ttlMilliseconds: number
+  ): Promise<CacheIncrement.Response> {
+    const request = new grpcCache._IncrementRequest({
+      cache_key: field,
+      amount,
+      ttl_milliseconds: ttlMilliseconds,
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().Increment(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            if (resp.value) {
+              resolve(new CacheIncrement.Success(resp.value));
+            } else {
+              resolve(new CacheIncrement.Success(0));
+            }
+          } else {
+            resolve(new CacheIncrement.Error(cacheServiceErrorMapper(err)));
           }
         }
       );
