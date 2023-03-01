@@ -535,7 +535,8 @@ export class SimpleCacheClient {
    * @param {number} [options.ttl] - The time to live for the item in the cache.
    * Uses the client's default TTL if this is not supplied.
    * @returns {Promise<CacheSetIfNotExists.Response>} -
-   * {@link CacheSetIfNotExists.Success} on success.
+   * {@link CacheSetIfNotExists.Stored} on storing the new value.
+   * {@link CacheSetIfNotExists.NotStored} on not storing the new value.
    * {@link CacheSetIfNotExists.Error} on failure.
    */
   public async setIfNotExists(
