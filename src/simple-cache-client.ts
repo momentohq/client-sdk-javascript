@@ -12,6 +12,7 @@ import {
   CacheGet,
   CacheDelete,
   CacheIncrement,
+  CacheSetIfNotExists,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
   CacheListFetch,
@@ -520,6 +521,35 @@ export class SimpleCacheClient {
   ): Promise<CacheSetRemoveElements.Response> {
     const client = this.getNextDataClient();
     return await client.setRemoveElements(cacheName, setName, elements);
+  }
+
+  /**
+   * Adds an integer quantity to a field value.
+   *
+   * @remarks
+   * Incrementing the value of a missing field sets the value to amount.
+   *
+   * @param {string} cacheName - The cache containing the field.
+   * @param {string | Uint8Array} field - The field to increment.
+   * @param {number} amount - The quantity to add to the value. May be positive,
+   * negative, or zero. Defaults to 1.
+   * @param {IncrementOptions} options
+   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
+   * @returns {Promise<CacheIncrement>} -
+   * {@link CacheIncrement.Success} containing the incremented value
+   * on success.
+   * {@link CacheIncrement.Error} on failure. Incrementing a value
+   * that was not set using this method or is not the string representation of
+   * an integer results in a failure with a FailedPreconditionException error.
+   */
+  public async setIfNotExists(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    options?: IncrementOptions
+  ): Promise<CacheSetIfNotExists.Response> {
+    const client = this.getNextDataClient();
+    return await client.setIfNotExists(cacheName, key, field, options?.ttl);
   }
 
   /**

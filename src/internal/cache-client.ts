@@ -38,6 +38,7 @@ import {
   InvalidArgumentError,
   UnknownError,
   MomentoLogger,
+  CacheSetIfNotExists,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -321,6 +322,66 @@ export class CacheClient {
             );
           } else {
             resolve(new CacheSetRemoveElements.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async setIfNotExists(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheSetIfNotExists.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new CacheSetIfNotExists.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.trace(
+      `Issuing 'setIfNotExists' request; key: ${key.toString()}, field: ${field.toString()}, ttl: ${
+        ttl.ttlSeconds.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendSetIfNotExists(
+      cacheName,
+      this.convert(key),
+      this.convert(field),
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000
+    );
+    this.logger.trace(`'setIfNotExists' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendSetIfNotExists(
+    cacheName: string,
+    key: Uint8Array,
+    field: Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheSetIfNotExists.Response> {
+    const request = new grpcCache._SetIfNotExistsRequest({
+      cache_key: key,
+      cache_body: field,
+      ttl_milliseconds: ttlMilliseconds,
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SetIfNotExists(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheSetIfNotExists.Success());
+          } else {
+            resolve(
+              new CacheSetIfNotExists.Error(cacheServiceErrorMapper(err))
+            );
           }
         }
       );
