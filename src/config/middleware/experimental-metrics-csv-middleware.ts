@@ -41,7 +41,6 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
 
   private receivedResponseBody: boolean;
   private receivedResponseStatus: boolean;
-  private receivedResponseMetadata: boolean;
 
   constructor(logger: MomentoLogger, csvPath: string) {
     this.logger = logger;
@@ -51,7 +50,6 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
 
     this.receivedResponseBody = false;
     this.receivedResponseStatus = false;
-    this.receivedResponseMetadata = false;
   }
 
   onRequestBody(request: Message): Promise<Message> {
@@ -76,8 +74,6 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
   }
 
   onResponseMetadata(metadata: Metadata): Promise<Metadata> {
-    this.receivedResponseMetadata = true;
-    if (this.done()) this.recordMetrics();
     return Promise.resolve(metadata);
   }
 
@@ -89,11 +85,7 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
   }
 
   private done(): boolean {
-    return (
-      this.receivedResponseMetadata &&
-      this.receivedResponseBody &&
-      this.receivedResponseStatus
-    );
+    return this.receivedResponseBody && this.receivedResponseStatus;
   }
 
   private recordMetrics(): void {

@@ -87,7 +87,6 @@ export class ExperimentalRequestLoggingMiddleware implements Middleware {
   }
 
   onNewRequest(): MiddlewareRequestHandler {
-    this.logger.warn('LOGGING MIDDLEWARE.onNewRequest');
     this.nextRequestId++;
     return new ExperimentalLoggingMiddlewareRequestHandler(
       this.logger,
