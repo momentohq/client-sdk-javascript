@@ -8,9 +8,14 @@ import {
   Configurations,
   MomentoLoggerFactory,
   DefaultMomentoLoggerFactory,
+  DefaultMomentoLoggerLevel,
+  ExperimentalMetricsCsvMiddleware,
+  ExperimentalRequestLoggingMiddleware,
   CredentialProvider,
 } from '@gomomento/sdk';
 import {range} from './utils/collections';
+import * as fs from 'fs';
+import {delay} from "./utils/time";
 
 const cacheName = 'cache';
 const cacheKey = 'key';
@@ -34,6 +39,7 @@ async function main() {
   await listCachesExample();
   await setGetDeleteExample();
   await concurrentGetsExample();
+  await middlewaresExample();
 }
 
 async function createCacheExample() {
@@ -121,6 +127,55 @@ async function concurrentGetsExample() {
       );
     }
   });
+}
+
+async function middlewaresExample() {
+  const middlewaresExampleloggerFactory: MomentoLoggerFactory =
+    new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.DEBUG);
+  const middlewaresExamplelogger = middlewaresExampleloggerFactory.getLogger(
+    'AdvancedMiddlewaresExample'
+  );
+  middlewaresExamplelogger.info(
+    'Constructing a new Momento client with logging and metrics middlewares enabled'
+  );
+
+  const metricsCsvPath = './advanced-middlewares-example-metrics.csv';
+
+  const middlewaresExampleClient = new SimpleCacheClient({
+    configuration: Configurations.Laptop.v1(
+      middlewaresExampleloggerFactory
+    ).withMiddlewares([
+      new ExperimentalRequestLoggingMiddleware(middlewaresExampleloggerFactory),
+      new ExperimentalMetricsCsvMiddleware(
+        metricsCsvPath,
+        middlewaresExampleloggerFactory
+      ),
+    ]),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+    }),
+    defaultTtlSeconds: 60,
+  });
+
+  middlewaresExamplelogger.info(
+    'Issuing 2 set and get requests to demonstrate middleware request logging and metrics.'
+  );
+
+  for (let i = 0; i < 2; i++) {
+    await middlewaresExampleClient.set(cacheName, `middleware${i}`, 'VALUE');
+    await middlewaresExampleClient.get(cacheName, `middleware${i}`);
+  }
+
+  // wait for metrics to flush to disk
+  await delay(100);
+
+  logger.info(
+    `Here are the contents of the metrics csv file:\n\n${fs
+      .readFileSync(metricsCsvPath)
+      .toString()}`
+  );
+
+  middlewaresExamplelogger.info('Middlewares example complete!');
 }
 
 main()
