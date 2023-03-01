@@ -22,12 +22,19 @@ import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
  */
 export abstract class Response extends ResponseBase {}
 
-class _Success extends Response {}
+class _Stored extends Response {}
 
 /**
- * Indicates a Successful cache setIfNotExists request.
+ * Indicates the key did not exist and the value was set.
  */
-export class Success extends ResponseSuccess(_Success) {}
+export class Stored extends ResponseSuccess(_Stored) {}
+
+class _NotStored extends Response {}
+
+/**
+ * Indicates the key existed and no value was set.
+ */
+export class NotStored extends ResponseSuccess(_NotStored) {}
 
 class _Error extends Response {
   constructor(protected _innerException: SdkError) {

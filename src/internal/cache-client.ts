@@ -332,7 +332,7 @@ export class CacheClient {
     cacheName: string,
     key: string | Uint8Array,
     field: string | Uint8Array,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    ttl?: number
   ): Promise<CacheSetIfNotExists.Response> {
     try {
       validateCacheName(cacheName);
@@ -341,7 +341,7 @@ export class CacheClient {
     }
     this.logger.trace(
       `Issuing 'setIfNotExists' request; key: ${key.toString()}, field: ${field.toString()}, ttl: ${
-        ttl.ttlSeconds.toString() ?? 'null'
+        ttl?.toString() ?? 'null'
       }`
     );
 
@@ -349,7 +349,7 @@ export class CacheClient {
       cacheName,
       this.convert(key),
       this.convert(field),
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000
+      ttl || this.defaultTtlSeconds * 1000
     );
     this.logger.trace(`'setIfNotExists' request result: ${result.toString()}`);
     return result;
@@ -377,7 +377,23 @@ export class CacheClient {
         },
         (err, resp) => {
           if (resp) {
-            resolve(new CacheSetIfNotExists.Success());
+            switch (resp.result) {
+              case 'stored':
+                resolve(new CacheSetIfNotExists.Stored());
+                break;
+              case 'not_stored':
+                resolve(new CacheSetIfNotExists.NotStored());
+                break;
+              default:
+                resolve(
+                  new CacheGet.Error(
+                    new UnknownError(
+                      'SetIfNotExists responded with an unknown result'
+                    )
+                  )
+                );
+                break;
+            }
           } else {
             resolve(
               new CacheSetIfNotExists.Error(cacheServiceErrorMapper(err))

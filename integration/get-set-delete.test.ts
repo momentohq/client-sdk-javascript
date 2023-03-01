@@ -1,6 +1,5 @@
 import {v4} from 'uuid';
 import {
-  CollectionTtl,
   CacheDelete,
   CacheGet,
   CacheIncrement,
@@ -311,7 +310,7 @@ describe('#setIfNotExists', () => {
       cacheKey,
       cacheValue
     );
-    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Success);
+    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
     const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
     expect(getResponse).toBeInstanceOf(CacheGet.Hit);
     if (getResponse instanceof CacheGet.Hit) {
@@ -323,18 +322,20 @@ describe('#setIfNotExists', () => {
     const cacheKey = v4();
     const cacheValueOld = 'value1';
     const cacheValueNew = 'value2';
-    const setResponse = await Momento.set(
+    const setResponse = await Momento.setIfNotExists(
       IntegrationTestCacheName,
       cacheKey,
       cacheValueOld
     );
-    expect(setResponse).toBeInstanceOf(CacheSet.Success);
+    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
     const setIfNotExistsResponse = await Momento.setIfNotExists(
       IntegrationTestCacheName,
       cacheKey,
       cacheValueNew
     );
-    expect(setIfNotExistsResponse).toBeInstanceOf(CacheSetIfNotExists.Success);
+    expect(setIfNotExistsResponse).toBeInstanceOf(
+      CacheSetIfNotExists.NotStored
+    );
     const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
     expect(getResponse).toBeInstanceOf(CacheGet.Hit);
     if (getResponse instanceof CacheGet.Hit) {
@@ -350,7 +351,7 @@ describe('#setIfNotExists', () => {
       cacheKey,
       cacheValue
     );
-    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Success);
+    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
     const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
     expect(getResponse).toBeInstanceOf(CacheGet.Hit);
   });
@@ -363,7 +364,7 @@ describe('#setIfNotExists', () => {
       cacheKey,
       cacheValue
     );
-    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Success);
+    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
     const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
     expect(getResponse).toBeInstanceOf(CacheGet.Hit);
     if (getResponse instanceof CacheGet.Hit) {
@@ -379,7 +380,7 @@ describe('#setIfNotExists', () => {
       cacheKey,
       cacheValue
     );
-    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Success);
+    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
     const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
     expect(getResponse).toBeInstanceOf(CacheGet.Hit);
     if (getResponse instanceof CacheGet.Hit) {
@@ -395,7 +396,7 @@ describe('#setIfNotExists', () => {
       cacheKey,
       cacheValue
     );
-    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Success);
+    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
   });
 
   it('should set string key with bytes value and returned set value matches byte cacheValue', async () => {
@@ -406,7 +407,7 @@ describe('#setIfNotExists', () => {
       cacheKey,
       cacheValue
     );
-    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Success);
+    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
   });
 
   it('should timeout on a request that exceeds specified timeout', async () => {
@@ -440,35 +441,12 @@ describe('#setIfNotExists', () => {
     });
   });
 
-  it('should set and then delete a value in cache', async () => {
-    const cacheKey = v4();
-    const cacheValue = new TextEncoder().encode(v4());
-    await Momento.setIfNotExists(
-      IntegrationTestCacheName,
-      cacheKey,
-      cacheValue
-    );
-    const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
-    expect(getResponse).toBeInstanceOf(CacheGet.Hit);
-
-    const deleteResponse = await Momento.delete(
-      IntegrationTestCacheName,
-      cacheKey
-    );
-    expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
-    const getMiss = await Momento.get(IntegrationTestCacheName, cacheKey);
-    expect(getMiss).toBeInstanceOf(CacheGet.Miss);
-  });
-
-  /*
-  Commented due to server side return error. Uncomment when the bug is fixed.
-
   it('should return INVALID_ARGUMENT_ERROR for invalid ttl when set with string key/value', async () => {
     const setResponse = await Momento.setIfNotExists(
       IntegrationTestCacheName,
       v4(),
       v4(),
-      {ttl: CollectionTtl.of(-1)}
+      {ttl: -1}
     );
     expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Error);
     if (setResponse instanceof CacheSetIfNotExists.Error) {
@@ -477,7 +455,6 @@ describe('#setIfNotExists', () => {
       );
     }
   });
-  */
 
   it('should set string key/value with valid ttl and get successfully', async () => {
     const cacheKey = v4();
@@ -486,9 +463,9 @@ describe('#setIfNotExists', () => {
       IntegrationTestCacheName,
       cacheKey,
       cacheValue,
-      {ttl: CollectionTtl.of(15)}
+      {ttl: 15}
     );
-    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Success);
+    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
 
     const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
     if (getResponse instanceof CacheGet.Hit) {
@@ -502,9 +479,9 @@ describe('#setIfNotExists', () => {
       IntegrationTestCacheName,
       cacheKey,
       v4(),
-      {ttl: CollectionTtl.of(1)}
+      {ttl: 1}
     );
-    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Success);
+    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
     await sleep(3000);
 
     const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);

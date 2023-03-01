@@ -49,6 +49,7 @@ import {
 
 // Type aliases to differentiate the different methods' optional arguments.
 type SetOptions = ScalarCallOptions;
+type SetIfNotExistsOptions = ScalarCallOptions;
 type ListConcatenateBackOptions = FrontTruncatableCallOptions;
 type ListConcatenateFrontOptions = BackTruncatableCallOptions;
 type ListPushBackOptions = FrontTruncatableCallOptions;
@@ -524,29 +525,24 @@ export class SimpleCacheClient {
   }
 
   /**
-   * Adds an integer quantity to a field value.
+   * Associates the given key with the given value. If a value for the key is
+   * already present it does not replaced with the new value.
    *
-   * @remarks
-   * Incrementing the value of a missing field sets the value to amount.
-   *
-   * @param {string} cacheName - The cache containing the field.
-   * @param {string | Uint8Array} field - The field to increment.
-   * @param {number} amount - The quantity to add to the value. May be positive,
-   * negative, or zero. Defaults to 1.
-   * @param {IncrementOptions} options
-   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
-   * @returns {Promise<CacheIncrement>} -
-   * {@link CacheIncrement.Success} containing the incremented value
-   * on success.
-   * {@link CacheIncrement.Error} on failure. Incrementing a value
-   * that was not set using this method or is not the string representation of
-   * an integer results in a failure with a FailedPreconditionException error.
+   * @param {string} cacheName - The cache to store the value in.
+   * @param {string | Uint8Array} key - The key to set.
+   * @param {string | Uint8Array} value - The value to be stored.
+   * @param {SetIfNotExistsOptions} [options]
+   * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * Uses the client's default TTL if this is not supplied.
+   * @returns {Promise<CacheSetIfNotExists.Response>} -
+   * {@link CacheSetIfNotExists.Success} on success.
+   * {@link CacheSetIfNotExists.Error} on failure.
    */
   public async setIfNotExists(
     cacheName: string,
     key: string | Uint8Array,
     field: string | Uint8Array,
-    options?: IncrementOptions
+    options?: SetIfNotExistsOptions
   ): Promise<CacheSetIfNotExists.Response> {
     const client = this.getNextDataClient();
     return await client.setIfNotExists(cacheName, key, field, options?.ttl);
