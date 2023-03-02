@@ -526,7 +526,7 @@ export class SimpleCacheClient {
 
   /**
    * Associates the given key with the given value. If a value for the key is
-   * already present it does not replaced with the new value.
+   * already present it is not replaced with the new value.
    *
    * @param {string} cacheName - The cache to store the value in.
    * @param {string | Uint8Array} key - The key to set.
