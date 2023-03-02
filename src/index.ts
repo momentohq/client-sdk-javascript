@@ -32,6 +32,7 @@ import * as CacheSetAddElement from './messages/responses/cache-set-add-element'
 import * as CacheSetRemoveElements from './messages/responses/cache-set-remove-elements';
 import * as CacheSetRemoveElement from './messages/responses/cache-set-remove-element';
 import * as CacheIncrement from './messages/responses/cache-increment';
+import * as CacheSetIfNotExists from './messages/responses/cache-set-if-not-exists';
 
 import {CacheInfo} from './messages/cache-info';
 import {CollectionTtl} from './utils/collection-ttl';
@@ -90,6 +91,7 @@ export {
   CacheListPushFront,
   CacheListRemoveValue,
   CacheSet,
+  CacheSetIfNotExists,
   CacheDelete,
   CreateCache,
   DeleteCache,

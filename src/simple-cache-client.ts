@@ -12,6 +12,7 @@ import {
   CacheGet,
   CacheDelete,
   CacheIncrement,
+  CacheSetIfNotExists,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
   CacheListFetch,
@@ -48,6 +49,7 @@ import {
 
 // Type aliases to differentiate the different methods' optional arguments.
 type SetOptions = ScalarCallOptions;
+type SetIfNotExistsOptions = ScalarCallOptions;
 type ListConcatenateBackOptions = FrontTruncatableCallOptions;
 type ListConcatenateFrontOptions = BackTruncatableCallOptions;
 type ListPushBackOptions = FrontTruncatableCallOptions;
@@ -520,6 +522,31 @@ export class SimpleCacheClient {
   ): Promise<CacheSetRemoveElements.Response> {
     const client = this.getNextDataClient();
     return await client.setRemoveElements(cacheName, setName, elements);
+  }
+
+  /**
+   * Associates the given key with the given value. If a value for the key is
+   * already present it is not replaced with the new value.
+   *
+   * @param {string} cacheName - The cache to store the value in.
+   * @param {string | Uint8Array} key - The key to set.
+   * @param {string | Uint8Array} value - The value to be stored.
+   * @param {SetIfNotExistsOptions} [options]
+   * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * Uses the client's default TTL if this is not supplied.
+   * @returns {Promise<CacheSetIfNotExists.Response>} -
+   * {@link CacheSetIfNotExists.Stored} on storing the new value.
+   * {@link CacheSetIfNotExists.NotStored} on not storing the new value.
+   * {@link CacheSetIfNotExists.Error} on failure.
+   */
+  public async setIfNotExists(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    options?: SetIfNotExistsOptions
+  ): Promise<CacheSetIfNotExists.Response> {
+    const client = this.getNextDataClient();
+    return await client.setIfNotExists(cacheName, key, field, options?.ttl);
   }
 
   /**
