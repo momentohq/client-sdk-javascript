@@ -9,12 +9,14 @@ import {FixedCountRetryStrategy} from './retry/fixed-count-retry-strategy';
 import {MomentoLoggerFactory} from './logging/momento-logger';
 import {RetryStrategy} from './retry/retry-strategy';
 import {DefaultMomentoLoggerFactory} from './logging/default-momento-logger';
+import {Middleware} from './middleware/middleware';
 
 // 4 minutes.  We want to remain comfortably underneath the idle timeout for AWS NLB, which is 350s.
 const defaultMaxIdleMillis = 4 * 60 * 1_000;
 const defaultMaxSessionMemoryMb = 256;
 const defaultLoggerFactory: MomentoLoggerFactory =
   new DefaultMomentoLoggerFactory();
+const defaultMiddlewares: Middleware[] = [];
 
 function defaultRetryStrategy(
   loggerFactory: MomentoLoggerFactory
@@ -66,6 +68,7 @@ export class Laptop extends SimpleCacheConfiguration {
       loggerFactory: loggerFactory,
       retryStrategy: defaultRetryStrategy(loggerFactory),
       transportStrategy: transportStrategy,
+      middlewares: defaultMiddlewares,
     });
   }
 }
@@ -105,6 +108,7 @@ class InRegionDefault extends SimpleCacheConfiguration {
       loggerFactory: loggerFactory,
       retryStrategy: defaultRetryStrategy(loggerFactory),
       transportStrategy: transportStrategy,
+      middlewares: defaultMiddlewares,
     });
   }
 }
@@ -145,6 +149,7 @@ class InRegionLowLatency extends SimpleCacheConfiguration {
       loggerFactory: loggerFactory,
       retryStrategy: defaultRetryStrategy(loggerFactory),
       transportStrategy: transportStrategy,
+      middlewares: defaultMiddlewares,
     });
   }
 }

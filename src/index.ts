@@ -72,6 +72,10 @@ export {
   DefaultMomentoLoggerLevel,
 } from './config/logging/default-momento-logger';
 
+export {ExperimentalRequestLoggingMiddleware} from './config/middleware/experimental-request-logging-middleware';
+export {ExperimentalMetricsCsvMiddleware} from './config/middleware/experimental-metrics-csv-middleware';
+export {ExampleAsyncMiddleware} from './config/middleware/example-async-middleware';
+
 export {
   CollectionTtl,
   Configurations,
