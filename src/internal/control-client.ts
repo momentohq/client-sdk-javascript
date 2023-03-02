@@ -1,6 +1,6 @@
 import {control} from '@gomomento/generated-types';
 import grpcControl = control.control_client;
-import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
+import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
@@ -43,7 +43,7 @@ export class ControlClient {
       new Header('Agent', `nodejs:${version}`),
     ];
     this.interceptors = [
-      new HeaderInterceptor(headers).addHeadersInterceptor(),
+      new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
       ClientTimeoutInterceptor(ControlClient.REQUEST_TIMEOUT_MS),
     ];
     this.logger.debug(

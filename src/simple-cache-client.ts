@@ -11,6 +11,8 @@ import {
   RevokeSigningKey,
   CacheGet,
   CacheDelete,
+  CacheIncrement,
+  CacheSetIfNotExists,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
   CacheListFetch,
@@ -47,6 +49,7 @@ import {
 
 // Type aliases to differentiate the different methods' optional arguments.
 type SetOptions = ScalarCallOptions;
+type SetIfNotExistsOptions = ScalarCallOptions;
 type ListConcatenateBackOptions = FrontTruncatableCallOptions;
 type ListConcatenateFrontOptions = BackTruncatableCallOptions;
 type ListPushBackOptions = FrontTruncatableCallOptions;
@@ -56,6 +59,7 @@ type SetAddElementsOptions = CollectionCallOptions;
 type DictionarySetFieldOptions = CollectionCallOptions;
 type DictionarySetFieldsOptions = CollectionCallOptions;
 type DictionaryIncrementOptions = CollectionCallOptions;
+type IncrementOptions = ScalarCallOptions;
 
 /**
  * Momento Simple Cache Client.
@@ -521,6 +525,31 @@ export class SimpleCacheClient {
   }
 
   /**
+   * Associates the given key with the given value. If a value for the key is
+   * already present it is not replaced with the new value.
+   *
+   * @param {string} cacheName - The cache to store the value in.
+   * @param {string | Uint8Array} key - The key to set.
+   * @param {string | Uint8Array} value - The value to be stored.
+   * @param {SetIfNotExistsOptions} [options]
+   * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * Uses the client's default TTL if this is not supplied.
+   * @returns {Promise<CacheSetIfNotExists.Response>} -
+   * {@link CacheSetIfNotExists.Stored} on storing the new value.
+   * {@link CacheSetIfNotExists.NotStored} on not storing the new value.
+   * {@link CacheSetIfNotExists.Error} on failure.
+   */
+  public async setIfNotExists(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    options?: SetIfNotExistsOptions
+  ): Promise<CacheSetIfNotExists.Response> {
+    const client = this.getNextDataClient();
+    return await client.setIfNotExists(cacheName, key, field, options?.ttl);
+  }
+
+  /**
    * Creates a cache if it does not exist.
    *
    * @param {string} cacheName - The cache to be created.
@@ -573,6 +602,35 @@ export class SimpleCacheClient {
   ): Promise<CacheDictionaryFetch.Response> {
     const client = this.getNextDataClient();
     return await client.dictionaryFetch(cacheName, dictionaryName);
+  }
+
+  /**
+   * Adds an integer quantity to a field value.
+   *
+   * @remarks
+   * Incrementing the value of a missing field sets the value to amount.
+   *
+   * @param {string} cacheName - The cache containing the field.
+   * @param {string | Uint8Array} field - The field to increment.
+   * @param {number} amount - The quantity to add to the value. May be positive,
+   * negative, or zero. Defaults to 1.
+   * @param {IncrementOptions} options
+   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
+   * @returns {Promise<CacheIncrement>} -
+   * {@link CacheIncrement.Success} containing the incremented value
+   * on success.
+   * {@link CacheIncrement.Error} on failure. Incrementing a value
+   * that was not set using this method or is not the string representation of
+   * an integer results in a failure with a FailedPreconditionException error.
+   */
+  public async increment(
+    cacheName: string,
+    field: string | Uint8Array,
+    amount = 1,
+    options?: IncrementOptions
+  ): Promise<CacheIncrement.Response> {
+    const client = this.getNextDataClient();
+    return await client.increment(cacheName, field, amount, options?.ttl);
   }
 
   /**

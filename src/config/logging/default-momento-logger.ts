@@ -81,7 +81,7 @@ export class DefaultMomentoLogger implements MomentoLogger {
     outputFn: (output: string) => void,
     level: DefaultMomentoLoggerLevel,
     msg: string,
-    ...args: unknown[]
+    args: unknown[]
   ) {
     outputFn(
       printf(

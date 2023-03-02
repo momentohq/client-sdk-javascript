@@ -15,7 +15,7 @@ export class Header {
   }
 }
 
-export class HeaderInterceptor {
+export class HeaderInterceptorProvider {
   private readonly headersToAddEveryTime: Header[];
   private readonly headersToAddOnce: Header[];
   private static areOnlyOnceHeadersSent = false;
@@ -32,15 +32,15 @@ export class HeaderInterceptor {
     );
   }
 
-  public addHeadersInterceptor(): Interceptor {
+  public createHeadersInterceptor(): Interceptor {
     return (options, nextCall) => {
       return new InterceptingCall(nextCall(options), {
         start: (metadata, listener, next) => {
           this.headersToAddEveryTime.forEach(h =>
             metadata.add(h.name, h.value)
           );
-          if (!HeaderInterceptor.areOnlyOnceHeadersSent) {
-            HeaderInterceptor.areOnlyOnceHeadersSent = true;
+          if (!HeaderInterceptorProvider.areOnlyOnceHeadersSent) {
+            HeaderInterceptorProvider.areOnlyOnceHeadersSent = true;
             this.headersToAddOnce.forEach(h => metadata.add(h.name, h.value));
           }
           next(metadata, {});

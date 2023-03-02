@@ -2,7 +2,7 @@ import {cache} from '@gomomento/generated-types';
 import grpcCache = cache.cache_client;
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextEncoder} from 'util';
-import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
+import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
@@ -11,6 +11,7 @@ import {
   CacheGet,
   CacheSet,
   CacheDelete,
+  CacheIncrement,
   CacheSetFetch,
   CacheDictionaryFetch,
   CacheDictionarySetField,
@@ -37,6 +38,8 @@ import {
   InvalidArgumentError,
   UnknownError,
   MomentoLogger,
+  MomentoLoggerFactory,
+  CacheSetIfNotExists,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -49,6 +52,8 @@ import {
   validateSetName,
 } from './utils/validators';
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
+import {Middleware} from '../config/middleware/middleware';
+import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 
 export class CacheClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -100,7 +105,10 @@ export class CacheClient {
 
     this.textEncoder = new TextEncoder();
     this.defaultTtlSeconds = props.defaultTtlSeconds;
-    this.interceptors = this.initializeInterceptors();
+    this.interceptors = this.initializeInterceptors(
+      this.configuration.getLoggerFactory(),
+      this.configuration.getMiddlewares()
+    );
   }
 
   public getEndpoint(): string {
@@ -320,6 +328,87 @@ export class CacheClient {
             );
           } else {
             resolve(new CacheSetRemoveElements.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async setIfNotExists(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfNotExists.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new CacheSetIfNotExists.Error(normalizeSdkError(err as Error));
+    }
+    if (ttl && ttl < 0) {
+      return new CacheSetIfNotExists.Error(
+        new InvalidArgumentError('ttl must be a positive integer')
+      );
+    }
+    this.logger.trace(
+      `Issuing 'setIfNotExists' request; key: ${key.toString()}, field: ${field.toString()}, ttl: ${
+        ttl?.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendSetIfNotExists(
+      cacheName,
+      this.convert(key),
+      this.convert(field),
+      ttl || this.defaultTtlSeconds * 1000
+    );
+    this.logger.trace(`'setIfNotExists' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendSetIfNotExists(
+    cacheName: string,
+    key: Uint8Array,
+    field: Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheSetIfNotExists.Response> {
+    const request = new grpcCache._SetIfNotExistsRequest({
+      cache_key: key,
+      cache_body: field,
+      ttl_milliseconds: ttlMilliseconds,
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SetIfNotExists(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            switch (resp.result) {
+              case 'stored':
+                resolve(new CacheSetIfNotExists.Stored());
+                break;
+              case 'not_stored':
+                resolve(new CacheSetIfNotExists.NotStored());
+                break;
+              default:
+                resolve(
+                  new CacheGet.Error(
+                    new UnknownError(
+                      'SetIfNotExists responded with an unknown result'
+                    )
+                  )
+                );
+                break;
+            }
+          } else {
+            resolve(
+              new CacheSetIfNotExists.Error(cacheServiceErrorMapper(err))
+            );
           }
         }
       );
@@ -1414,6 +1503,68 @@ export class CacheClient {
     });
   }
 
+  public async increment(
+    cacheName: string,
+    field: string | Uint8Array,
+    amount = 1,
+    ttl?: number
+  ): Promise<CacheIncrement.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new CacheIncrement.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.trace(
+      `Issuing 'increment' request; field: ${field.toString()}, amount : ${amount}, ttl: ${
+        ttl?.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendIncrement(
+      cacheName,
+      this.convert(field),
+      amount,
+      ttl || this.defaultTtlSeconds * 1000
+    );
+    this.logger.trace(`'increment' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendIncrement(
+    cacheName: string,
+    field: Uint8Array,
+    amount = 1,
+    ttlMilliseconds: number
+  ): Promise<CacheIncrement.Response> {
+    const request = new grpcCache._IncrementRequest({
+      cache_key: field,
+      amount,
+      ttl_milliseconds: ttlMilliseconds,
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().Increment(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            if (resp.value) {
+              resolve(new CacheIncrement.Success(resp.value));
+            } else {
+              resolve(new CacheIncrement.Success(0));
+            }
+          } else {
+            resolve(new CacheIncrement.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
   public async dictionaryIncrement(
     cacheName: string,
     dictionaryName: string,
@@ -1489,13 +1640,17 @@ export class CacheClient {
     });
   }
 
-  private initializeInterceptors(): Interceptor[] {
+  private initializeInterceptors(
+    loggerFactory: MomentoLoggerFactory,
+    middlewares: Middleware[]
+  ): Interceptor[] {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
       new Header('Agent', `nodejs:${version}`),
     ];
     return [
-      new HeaderInterceptor(headers).addHeadersInterceptor(),
+      middlewaresInterceptor(loggerFactory, middlewares),
+      new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
       ClientTimeoutInterceptor(this.requestTimeoutMs),
       ...createRetryInterceptorIfEnabled(
         this.configuration.getLoggerFactory(),

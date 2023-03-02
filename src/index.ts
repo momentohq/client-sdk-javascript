@@ -31,6 +31,9 @@ import * as CacheSetAddElements from './messages/responses/cache-set-add-element
 import * as CacheSetAddElement from './messages/responses/cache-set-add-element';
 import * as CacheSetRemoveElements from './messages/responses/cache-set-remove-elements';
 import * as CacheSetRemoveElement from './messages/responses/cache-set-remove-element';
+import * as CacheIncrement from './messages/responses/cache-increment';
+import * as CacheSetIfNotExists from './messages/responses/cache-set-if-not-exists';
+
 import {CacheInfo} from './messages/cache-info';
 import {CollectionTtl} from './utils/collection-ttl';
 import {
@@ -69,6 +72,10 @@ export {
   DefaultMomentoLoggerLevel,
 } from './config/logging/default-momento-logger';
 
+export {ExperimentalRequestLoggingMiddleware} from './config/middleware/experimental-request-logging-middleware';
+export {ExperimentalMetricsCsvMiddleware} from './config/middleware/experimental-metrics-csv-middleware';
+export {ExampleAsyncMiddleware} from './config/middleware/example-async-middleware';
+
 export {
   CollectionTtl,
   Configurations,
@@ -88,10 +95,12 @@ export {
   CacheListPushFront,
   CacheListRemoveValue,
   CacheSet,
+  CacheSetIfNotExists,
   CacheDelete,
   CreateCache,
   DeleteCache,
   ListCaches,
+  CacheIncrement,
   CreateSigningKey,
   ListSigningKeys,
   RevokeSigningKey,
