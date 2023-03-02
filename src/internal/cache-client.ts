@@ -1419,7 +1419,7 @@ export class CacheClient {
     cacheName: string,
     field: string | Uint8Array,
     amount = 1,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    ttl?: number
   ): Promise<CacheIncrement.Response> {
     try {
       validateCacheName(cacheName);
@@ -1428,7 +1428,7 @@ export class CacheClient {
     }
     this.logger.trace(
       `Issuing 'increment' request; field: ${field.toString()}, amount : ${amount}, ttl: ${
-        ttl.ttlSeconds.toString() ?? 'null'
+        ttl?.toString() ?? 'null'
       }`
     );
 
@@ -1436,7 +1436,7 @@ export class CacheClient {
       cacheName,
       this.convert(field),
       amount,
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000
+      ttl || this.defaultTtlSeconds * 1000
     );
     this.logger.trace(`'increment' request result: ${result.toString()}`);
     return result;

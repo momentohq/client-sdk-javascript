@@ -57,7 +57,7 @@ type SetAddElementsOptions = CollectionCallOptions;
 type DictionarySetFieldOptions = CollectionCallOptions;
 type DictionarySetFieldsOptions = CollectionCallOptions;
 type DictionaryIncrementOptions = CollectionCallOptions;
-type IncrementOptions = CollectionCallOptions;
+type IncrementOptions = ScalarCallOptions;
 
 /**
  * Momento Simple Cache Client.
