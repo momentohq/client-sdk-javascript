@@ -10,6 +10,7 @@ function headerFields(): Array<string> {
     'requestType',
     'status',
     'startTime',
+    'requestBodyTime',
     'endTime',
     'duration',
     'requestSize',
@@ -22,6 +23,7 @@ interface RequestMetrics {
   requestType: string;
   status: number;
   startTime: number;
+  requestBodyTime: number;
   endTime: number;
   duration: number;
   requestSize: number;
@@ -34,6 +36,7 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
   private readonly logger: MomentoLogger;
   private readonly csvPath: string;
   private readonly startTime: number;
+  private requestBodyTime: number;
   private requestType: string;
   private requestSize: number;
   private responseStatusCode: number;
@@ -55,6 +58,7 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
   onRequestBody(request: Message): Promise<Message> {
     this.requestSize = request.serializeBinary().length;
     this.requestType = request.constructor.name;
+    this.requestBodyTime = new Date().getTime();
     return Promise.resolve(request);
   }
 
@@ -95,6 +99,7 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
       requestType: this.requestType,
       status: this.responseStatusCode,
       startTime: this.startTime,
+      requestBodyTime: this.requestBodyTime,
       endTime: endTime,
       duration: endTime - this.startTime,
       requestSize: this.requestSize,
@@ -106,6 +111,7 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
       metrics.requestType,
       metrics.status,
       metrics.startTime,
+      metrics.requestBodyTime,
       metrics.endTime,
       metrics.duration,
       metrics.requestSize,

@@ -21,6 +21,12 @@ export function middlewaresInterceptor(
 ): Interceptor {
   return (options: InterceptorOptions, nextCall: NextCall) => {
     const middlewareRequestHandlers = middlewares.map(m => m.onNewRequest());
+    // create a copy of the handlers and reverse it, because for the response life cycle actions we should call
+    // the middlewares in the opposite order.
+    const reversedMiddlewareRequestHandlers = [
+      ...middlewareRequestHandlers,
+    ].reverse();
+
     const requester: Requester = {
       start: function (
         metadata: Metadata,
@@ -34,7 +40,7 @@ export function middlewaresInterceptor(
           ): void {
             applyMiddlewareHandlers(
               'onResponseMetadata',
-              middlewareRequestHandlers.reverse(),
+              reversedMiddlewareRequestHandlers,
               (h: MiddlewareRequestHandler) => (m: Metadata) =>
                 h.onResponseMetadata(m),
               metadata,
@@ -50,7 +56,7 @@ export function middlewaresInterceptor(
           ): void {
             applyMiddlewareHandlers(
               'onResponseBody',
-              middlewareRequestHandlers.reverse(),
+              reversedMiddlewareRequestHandlers,
               (h: MiddlewareRequestHandler) => (request: Message) =>
                 h.onResponseBody(request),
               message,
@@ -63,7 +69,7 @@ export function middlewaresInterceptor(
           ): void {
             applyMiddlewareHandlers(
               'onResponseStatus',
-              middlewareRequestHandlers.reverse(),
+              reversedMiddlewareRequestHandlers,
               (h: MiddlewareRequestHandler) => (s: StatusObject) =>
                 h.onResponseStatus(s),
               status,
