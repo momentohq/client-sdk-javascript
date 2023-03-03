@@ -43,6 +43,7 @@ import {
   MomentoLoggerFactory,
   CacheSetIfNotExists,
   CacheSortedSetGetRank,
+  CacheSortedSetIncrementScore,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -1827,7 +1828,7 @@ export class CacheClient {
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+      return new CacheSortedSetGetRank.Error(normalizeSdkError(err as Error));
     }
 
     this.logger.trace(
@@ -1873,6 +1874,81 @@ export class CacheClient {
             } else {
               resolve(
                 new CacheSortedSetGetRank.Error(cacheServiceErrorMapper(err))
+              );
+            }
+          }
+        );
+    });
+  }
+
+  public async sortedSetIncrementScore(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array,
+    amount = 1,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheSortedSetIncrementScore.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      "Issuing 'sortedSetIncrementScore' request; value: %s",
+      truncateString(value.toString())
+    );
+
+    const result = await this.sendSortedSetIncrementScore(
+      cacheName,
+      this.convert(sortedSetName),
+      this.convert(value),
+      amount,
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+
+    this.logger.trace(
+      "'sortedSetIncrementScore' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendSortedSetIncrementScore(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    value: Uint8Array,
+    amount: number,
+    ttlMilliseconds: number,
+    refreshTtl: boolean
+  ): Promise<CacheSortedSetIncrementScore.Response> {
+    const request = new grpcCache._SortedSetIncrementRequest({
+      set_name: sortedSetName,
+      value: value,
+      amount: amount,
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper
+        .getClient()
+        .SortedSetIncrement(
+          request,
+          metadata,
+          {interceptors: this.interceptors},
+          (err, resp) => {
+            if (resp) {
+              if (resp.score) {
+                resolve(new CacheSortedSetIncrementScore.Success(resp.score));
+              } else {
+                resolve(new CacheSortedSetIncrementScore.Success(0));
+              }
+            } else {
+              resolve(
+                new CacheDictionaryIncrement.Error(cacheServiceErrorMapper(err))
               );
             }
           }
