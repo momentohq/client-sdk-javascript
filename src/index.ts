@@ -35,6 +35,8 @@ import * as CacheIncrement from './messages/responses/cache-increment';
 import * as CacheSetIfNotExists from './messages/responses/cache-set-if-not-exists';
 import * as CacheSortedSetPutValue from './messages/responses/cache-sorted-set-put-element';
 import * as CacheSortedSetFetch from './messages/responses/cache-sorted-set-fetch';
+import * as CacheSortedSetGetRank from './messages/responses/cache-sorted-set-get-rank';
+import * as CacheSortedSetIncrementScore from './messages/responses/cache-sorted-set-increment-score';
 
 import {CacheInfo} from './messages/cache-info';
 import {CollectionTtl} from './utils/collection-ttl';
@@ -122,6 +124,8 @@ export {
   CacheSetRemoveElement,
   CacheSortedSetPutValue,
   CacheSortedSetFetch,
+  CacheSortedSetGetRank,
+  CacheSortedSetIncrementScore,
   MomentoErrorCode,
   AlreadyExistsError,
   AuthenticationError,
