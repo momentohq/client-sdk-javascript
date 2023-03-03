@@ -1763,9 +1763,9 @@ export class CacheClient {
   ): Promise<CacheSortedSetFetch.Response> {
     const by_index = new grpcCache._SortedSetFetchRequest._ByIndex();
     if (startIndex) {
-      by_index['inclusive_start_index'] = startIndex;
+      by_index.inclusive_start_index = startIndex;
     } else {
-      by_index['unbounded_start'] = new grpcCache._Unbounded();
+      by_index.unbounded_start = new grpcCache._Unbounded();
     }
     if (endIndex) {
       by_index.exclusive_end_index = endIndex;
