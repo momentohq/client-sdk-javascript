@@ -42,6 +42,7 @@ import {
   MomentoLogger,
   MomentoLoggerFactory,
   CacheSetIfNotExists,
+  CacheSortedSetGetRank,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -57,6 +58,7 @@ import {
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
 import {Middleware} from '../config/middleware/middleware';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
+import {truncateString} from './utils/display';
 
 export class CacheClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -1813,6 +1815,68 @@ export class CacheClient {
           }
         }
       );
+    });
+  }
+
+  public async sortedSetGetRank(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetGetRank.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      "Issuing 'sortedSetGetRank' request; value: %s",
+      truncateString(value.toString())
+    );
+
+    const result = await this.sendSortedSetGetRank(
+      cacheName,
+      this.convert(sortedSetName),
+      this.convert(value)
+    );
+
+    this.logger.trace(
+      "'sortedSetGetRank' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendSortedSetGetRank(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    value: Uint8Array
+  ): Promise<CacheSortedSetGetRank.Response> {
+    const request = new grpcCache._SortedSetGetRankRequest({
+      set_name: sortedSetName,
+      value: value,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper
+        .getClient()
+        .SortedSetGetRank(
+          request,
+          metadata,
+          {interceptors: this.interceptors},
+          (err, resp) => {
+            if (resp?.missing) {
+              resolve(new CacheSortedSetGetRank.Miss());
+            } else if (resp?.element_rank) {
+              resolve(new CacheSortedSetGetRank.Hit(resp.element_rank.rank));
+            } else {
+              resolve(
+                new CacheSortedSetGetRank.Error(cacheServiceErrorMapper(err))
+              );
+            }
+          }
+        );
     });
   }
 

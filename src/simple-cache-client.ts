@@ -39,6 +39,7 @@ import {
   CacheSortedSetPutValue,
   CacheSortedSetFetch,
   MomentoLogger,
+  CacheSortedSetGetRank,
 } from '.';
 import {range} from './internal/utils/collections';
 import {SimpleCacheClientProps} from './simple-cache-client-props';
@@ -897,7 +898,27 @@ export class SimpleCacheClient {
   // sorted set fetch by score
   // sorted set get score
   // sorted set get scores
-  // sorted set get rank
+
+  /**
+   * Look the rank of an element in the sorted set, by the value of the element.
+   *
+   * @param {string} cacheName - The cache containing the sorted set.
+   * @param {string} sortedSetName - The sorted set to fetch from.
+   * @param {string | Uint8Array} value - The value of the element whose rank we are retrieving.
+   * @returns {Promise<CacheSortedSetGetRank.Response>}
+   * {@link CacheSortedSetFetch.Hit} containing the rank of the requested elements when found.
+   * {@link CacheSortedSetFetch.Miss} when the element does not exist.
+   * {@link CacheSortedSetFetch.Error} on failure.
+   */
+  public async sortedSetGetRank(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetGetRank.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetGetRank(cacheName, sortedSetName, value);
+  }
+
   // sorted set get ranks
   // sorted set increment
   // sorted set remove value
