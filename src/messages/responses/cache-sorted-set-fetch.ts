@@ -41,7 +41,11 @@ class _Hit extends Response {
     this.elements = elements;
   }
 
-  // TODO: what is a better name for this?
+  /**
+   * Returns the elements as an array of objects, each containing a `value` and `score` field.
+   * The value is a byte array, and the score is a number.
+   * @returns {{value: Uint8Array; score: number}[]}
+   */
   public valueArrayUint8ArrayNumber(): {value: Uint8Array; score: number}[] {
     return this.elements.map(item => {
       return {
@@ -51,6 +55,11 @@ class _Hit extends Response {
     });
   }
 
+  /**
+   * Returns the elements as an array of objects, each containing a `value` and `score` field.
+   * The value is a utf-8 string, decoded from the underlying byte array, and the score is a number.
+   * @returns {{value: string; score: number}[]}
+   */
   public valueArrayStringNumber(): {value: string; score: number}[] {
     return this.elements.map(item => {
       return {
@@ -58,6 +67,16 @@ class _Hit extends Response {
         score: item.score,
       };
     });
+  }
+
+  /**
+   * Returns the elements as an array of objects, each containing a `value` and `score` field.
+   * The value is a utf-8 string, decoded from the underlying byte array, and the score is a number.
+   * This is a convenience alias for {valueArrayStringNumber}.
+   * @returns {value: string; score: number}[]
+   */
+  public valueArray(): {value: string; score: number}[] {
+    return this.valueArrayStringNumber();
   }
 
   private truncateValueStrings(): string {
