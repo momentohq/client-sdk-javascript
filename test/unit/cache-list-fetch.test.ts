@@ -1,4 +1,4 @@
-import * as CacheListFetch from '../src/messages/responses/cache-list-fetch';
+import * as CacheListFetch from '../../src/messages/responses/cache-list-fetch';
 import {TextEncoder} from 'util';
 
 const TEXT_ENCODER = new TextEncoder();

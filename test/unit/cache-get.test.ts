@@ -1,4 +1,4 @@
-import * as CacheGet from '../src/messages/responses/cache-get';
+import * as CacheGet from '../../src/messages/responses/cache-get';
 import {TextEncoder} from 'util';
 
 const TEXT_ENCODER = new TextEncoder();

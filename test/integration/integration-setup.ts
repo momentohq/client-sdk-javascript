@@ -1,5 +1,5 @@
 import {v4} from 'uuid';
-import {SimpleCacheClientProps} from '../src/simple-cache-client-props';
+import {SimpleCacheClientProps} from '../../src/simple-cache-client-props';
 import {
   CreateCache,
   Configurations,
@@ -8,11 +8,11 @@ import {
   MomentoErrorCode,
   SimpleCacheClient,
   CredentialProvider,
-} from '../src';
+} from '../../src';
 import {
   IResponseError,
   ResponseBase,
-} from '../src/messages/responses/response-base';
+} from '../../src/messages/responses/response-base';
 
 function testCacheName(): string {
   const name = process.env.TEST_CACHE_NAME || 'js-integration-test-default';

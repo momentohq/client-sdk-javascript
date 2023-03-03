@@ -1,4 +1,4 @@
-import {CollectionTtl} from '../../src/utils/collection-ttl';
+import {CollectionTtl} from '../../../src/utils/collection-ttl';
 
 const ttl = 1.23;
 

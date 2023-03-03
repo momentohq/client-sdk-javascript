@@ -1,7 +1,7 @@
 import {
   StaticGrpcConfiguration,
   StaticTransportStrategy,
-} from '../../../src/config/transport/transport-strategy';
+} from '../../../../src/config/transport/transport-strategy';
 
 describe('StaticGrpcConfiguration', () => {
   const testDeadlineMillis = 90210;
