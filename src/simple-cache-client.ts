@@ -918,11 +918,7 @@ export class SimpleCacheClient {
     value: string | Uint8Array
   ): Promise<CacheSortedSetGetRank.Response> {
     const client = this.getNextDataClient();
-    return await client.sortedSetGetRank(
-      cacheName,
-      sortedSetName,
-      value
-    );
+    return await client.sortedSetGetRank(cacheName, sortedSetName, value);
   }
 
   /**
