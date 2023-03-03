@@ -34,6 +34,7 @@ import * as CacheSetRemoveElement from './messages/responses/cache-set-remove-el
 import * as CacheIncrement from './messages/responses/cache-increment';
 import * as CacheSetIfNotExists from './messages/responses/cache-set-if-not-exists';
 import * as CacheSortedSetPutValue from './messages/responses/cache-sorted-set-put-value';
+import * as CacheSortedSetFetch from './messages/responses/cache-sorted-set-fetch';
 
 import {CacheInfo} from './messages/cache-info';
 import {CollectionTtl} from './utils/collection-ttl';
@@ -120,6 +121,7 @@ export {
   CacheSetRemoveElements,
   CacheSetRemoveElement,
   CacheSortedSetPutValue,
+  CacheSortedSetFetch,
   MomentoErrorCode,
   AlreadyExistsError,
   AuthenticationError,

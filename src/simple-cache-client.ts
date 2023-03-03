@@ -37,6 +37,7 @@ import {
   CacheSetRemoveElements,
   CacheSetRemoveElement,
   CacheSortedSetPutValue,
+  CacheSortedSetFetch,
   MomentoLogger,
 } from '.';
 import {range} from './internal/utils/collections';
@@ -865,7 +866,34 @@ export class SimpleCacheClient {
   }
 
   // sorted set put values
-  // sorted set fetch by index
+
+  /**
+   * Fetch the elements in the given sorted set.
+   *
+   * @param {string} cacheName - The cache containing the sorted set.
+   * @param {string} sortedSetName - The sorted set to fetch from.
+   * @param {number} startIndex - The index of the first element to return. If omitted, defaults to 0.
+   * @param {number} endIndex - The index of the last element to return. If omitted, defaults to end of the sorted set.
+   * @returns {Promise<CacheSortedSetFetch.Response>}
+   * {@link CacheSortedSetFetch.Hit} containing the requested elements when found.
+   * {@link CacheSortedSetFetch.Miss} when the sorted set does not exist.
+   * {@link CacheSortedSetFetch.Error} on failure.
+   */
+  public async sortedSetFetchByIndex(
+    cacheName: string,
+    sortedSetName: string,
+    startIndex?: number,
+    endIndex?: number
+  ): Promise<CacheSortedSetFetch.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetFetchByIndex(
+      cacheName,
+      sortedSetName,
+      startIndex,
+      endIndex
+    );
+  }
+
   // sorted set fetch by score
   // sorted set get score
   // sorted set get scores
