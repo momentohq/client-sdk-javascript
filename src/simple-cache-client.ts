@@ -906,7 +906,7 @@ export class SimpleCacheClient {
    *
    * @param {string} cacheName - The cache containing the sorted set.
    * @param {string} sortedSetName - The sorted set to fetch from.
-   * @param {string | Uint8Array} elementValue - The value of the element whose rank we are retrieving.
+   * @param {string | Uint8Array} value - The value of the element whose rank we are retrieving.
    * @returns {Promise<CacheSortedSetGetRank.Response>}
    * {@link CacheSortedSetFetch.Hit} containing the rank of the requested elements when found.
    * {@link CacheSortedSetFetch.Miss} when the element does not exist.
@@ -915,13 +915,13 @@ export class SimpleCacheClient {
   public async sortedSetGetRank(
     cacheName: string,
     sortedSetName: string,
-    elementValue: string | Uint8Array
+    value: string | Uint8Array
   ): Promise<CacheSortedSetGetRank.Response> {
     const client = this.getNextDataClient();
     return await client.sortedSetGetRank(
       cacheName,
       sortedSetName,
-      elementValue
+      value
     );
   }
 
@@ -930,7 +930,7 @@ export class SimpleCacheClient {
    *
    * @param {string} cacheName - The cache containing the sorted set.
    * @param {string} sortedSetName - The sorted set to fetch from.
-   * @param {string | Uint8Array} elementValue - The value of the element whose score we are incrementing.
+   * @param {string | Uint8Array} value - The value of the element whose score we are incrementing.
    * @param {number} amount - The quantity to add to the score. May be positive,
    * negative, or zero. Defaults to 1.
    * @param {SortedSetIncrementOptions} options
@@ -947,7 +947,7 @@ export class SimpleCacheClient {
   public async sortedSetIncrementScore(
     cacheName: string,
     sortedSetName: string,
-    elementValue: string | Uint8Array,
+    value: string | Uint8Array,
     amount = 1,
     options?: SortedSetIncrementOptions
   ): Promise<CacheSortedSetIncrementScore.Response> {
@@ -955,7 +955,7 @@ export class SimpleCacheClient {
     return await client.sortedSetIncrementScore(
       cacheName,
       sortedSetName,
-      elementValue,
+      value,
       amount,
       options?.ttl
     );

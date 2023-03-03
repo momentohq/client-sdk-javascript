@@ -1822,7 +1822,7 @@ export class CacheClient {
   public async sortedSetGetRank(
     cacheName: string,
     sortedSetName: string,
-    elementValue: string | Uint8Array
+    value: string | Uint8Array
   ): Promise<CacheSortedSetGetRank.Response> {
     try {
       validateCacheName(cacheName);
@@ -1832,14 +1832,14 @@ export class CacheClient {
     }
 
     this.logger.trace(
-      "Issuing 'sortedSetGetRank' request; elementValue: %s",
-      truncateString(elementValue.toString())
+      "Issuing 'sortedSetGetRank' request; value: %s",
+      truncateString(value.toString())
     );
 
     const result = await this.sendSortedSetGetRank(
       cacheName,
       this.convert(sortedSetName),
-      this.convert(elementValue)
+      this.convert(value)
     );
 
     this.logger.trace(
@@ -1852,11 +1852,11 @@ export class CacheClient {
   private async sendSortedSetGetRank(
     cacheName: string,
     sortedSetName: Uint8Array,
-    elementValue: Uint8Array
+    value: Uint8Array
   ): Promise<CacheSortedSetGetRank.Response> {
     const request = new grpcCache._SortedSetGetRankRequest({
       set_name: sortedSetName,
-      value: elementValue,
+      value: value,
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise(resolve => {
@@ -1884,7 +1884,7 @@ export class CacheClient {
   public async sortedSetIncrementScore(
     cacheName: string,
     sortedSetName: string,
-    elementValue: string | Uint8Array,
+    value: string | Uint8Array,
     amount = 1,
     ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheSortedSetIncrementScore.Response> {
@@ -1896,14 +1896,14 @@ export class CacheClient {
     }
 
     this.logger.trace(
-      "Issuing 'sortedSetIncrementScore' request; elementValue: %s",
-      truncateString(elementValue.toString())
+      "Issuing 'sortedSetIncrementScore' request; value: %s",
+      truncateString(value.toString())
     );
 
     const result = await this.sendSortedSetIncrementScore(
       cacheName,
       this.convert(sortedSetName),
-      this.convert(elementValue),
+      this.convert(value),
       amount,
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl()
@@ -1919,14 +1919,14 @@ export class CacheClient {
   private async sendSortedSetIncrementScore(
     cacheName: string,
     sortedSetName: Uint8Array,
-    elementValue: Uint8Array,
+    value: Uint8Array,
     amount: number,
     ttlMilliseconds: number,
     refreshTtl: boolean
   ): Promise<CacheSortedSetIncrementScore.Response> {
     const request = new grpcCache._SortedSetIncrementRequest({
       set_name: sortedSetName,
-      value: elementValue,
+      value: value,
       amount: amount,
       ttl_milliseconds: ttlMilliseconds,
       refresh_ttl: refreshTtl,
