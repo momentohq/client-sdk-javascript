@@ -2,7 +2,7 @@ import {SdkError} from '../../errors/errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 
 /**
- * Parent response type for a sorted set put value request.  The
+ * Parent response type for a sorted set put element request.  The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
@@ -13,9 +13,9 @@ import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
  * @example
  * For example:
  * ```
- * if (response instanceof CacheSortedSetPutValue.Error) {
+ * if (response instanceof CacheSortedSetPutElement.Error) {
  *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheSortedSetPutValue.Error` in this block, so you will have access to the properties
+ *   // `CacheSortedSetPutElement.Error` in this block, so you will have access to the properties
  *   // of the Error class; e.g. `response.errorCode()`.
  * }
  * ```
@@ -25,7 +25,7 @@ export abstract class Response extends ResponseBase {}
 class _Success extends Response {}
 
 /**
- * Indicates a Successful dictionary set field request.
+ * Indicates a Successful sorted set put element request.
  */
 export class Success extends ResponseSuccess(_Success) {}
 
@@ -36,7 +36,7 @@ class _Error extends Response {
 }
 
 /**
- * Indicates that an error occurred during the sorted set put value request.
+ * Indicates that an error occurred during the sorted set put element request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:

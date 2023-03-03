@@ -1034,7 +1034,7 @@ describe('Integration tests for sorted set operations', () => {
 
   describe('#sortedSetPutValue', () => {
     const responder = (props: ValidateSortedSetProps) => {
-      return Momento.sortedSetPutValue(
+      return Momento.sortedSetPutElement(
         props.cacheName,
         props.sortedSetName,
         props.value,
@@ -1043,7 +1043,7 @@ describe('Integration tests for sorted set operations', () => {
     };
 
     const changeResponder = (props: ValidateSortedSetChangerProps) => {
-      return Momento.sortedSetPutValue(
+      return Momento.sortedSetPutElement(
         props.cacheName,
         props.sortedSetName,
         props.value,

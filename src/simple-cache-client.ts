@@ -848,7 +848,7 @@ export class SimpleCacheClient {
    * {@link CacheSortedSetPutValue.Error} on failure.
    * @returns
    */
-  public async sortedSetPutValue(
+  public async sortedSetPutElement(
     cacheName: string,
     sortedSetName: string,
     value: string | Uint8Array,
@@ -856,7 +856,7 @@ export class SimpleCacheClient {
     options?: SortedSetPutValueOptions
   ): Promise<CacheSortedSetPutValue.Response> {
     const client = this.getNextDataClient();
-    return await client.sortedSetPutValue(
+    return await client.sortedSetPutElement(
       cacheName,
       sortedSetName,
       value,

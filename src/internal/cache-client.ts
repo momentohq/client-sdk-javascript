@@ -32,7 +32,7 @@ import {
   CacheListPushBack,
   CacheListPushFront,
   CacheListRemoveValue,
-  CacheSortedSetPutValue,
+  CacheSortedSetPutValue as CacheSortedSetPutElement,
   CacheSortedSetFetch,
   CollectionTtl,
   Configuration,
@@ -1643,18 +1643,20 @@ export class CacheClient {
     });
   }
 
-  public async sortedSetPutValue(
+  public async sortedSetPutElement(
     cacheName: string,
     sortedSetName: string,
     value: string | Uint8Array,
     score: number,
     ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
-  ): Promise<CacheSortedSetPutValue.Response> {
+  ): Promise<CacheSortedSetPutElement.Response> {
     try {
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetPutValue.Error(normalizeSdkError(err as Error));
+      return new CacheSortedSetPutElement.Error(
+        normalizeSdkError(err as Error)
+      );
     }
     this.logger.trace(
       `Issuing 'sortedSetPutValue' request; value: ${value.toString()}, score : ${score}, ttl: ${
@@ -1662,7 +1664,7 @@ export class CacheClient {
       }`
     );
 
-    const result = await this.sendSortedSetPutValue(
+    const result = await this.sendSortedSetPutElement(
       cacheName,
       this.convert(sortedSetName),
       this.convert(value),
@@ -1676,14 +1678,14 @@ export class CacheClient {
     return result;
   }
 
-  private async sendSortedSetPutValue(
+  private async sendSortedSetPutElement(
     cacheName: string,
     sortedSetName: Uint8Array,
     value: Uint8Array,
     score: number,
     ttlMilliseconds: number,
     refreshTtl: boolean
-  ): Promise<CacheSortedSetPutValue.Response> {
+  ): Promise<CacheSortedSetPutElement.Response> {
     const request = new grpcCache._SortedSetPutRequest({
       set_name: sortedSetName,
       elements: [new grpcCache._SortedSetElement({value, score})],
@@ -1700,10 +1702,10 @@ export class CacheClient {
         },
         (err, resp) => {
           if (resp) {
-            resolve(new CacheSortedSetPutValue.Success());
+            resolve(new CacheSortedSetPutElement.Success());
           } else {
             resolve(
-              new CacheSortedSetPutValue.Error(cacheServiceErrorMapper(err))
+              new CacheSortedSetPutElement.Error(cacheServiceErrorMapper(err))
             );
           }
         }
