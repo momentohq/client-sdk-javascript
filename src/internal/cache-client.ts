@@ -32,6 +32,7 @@ import {
   CacheListPushBack,
   CacheListPushFront,
   CacheListRemoveValue,
+  CacheSortedSetPutValue,
   CollectionTtl,
   Configuration,
   CredentialProvider,
@@ -50,6 +51,7 @@ import {
   validateDictionaryName,
   validateListName,
   validateSetName,
+  validateSortedSetName,
 } from './utils/validators';
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
 import {Middleware} from '../config/middleware/middleware';
@@ -1633,6 +1635,74 @@ export class CacheClient {
           } else {
             resolve(
               new CacheDictionaryIncrement.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async sortedSetPutValue(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array,
+    score: number,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheSortedSetPutValue.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetPutValue.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.trace(
+      `Issuing 'sortedSetPutValue' request; value: ${value.toString()}, score : ${score}, ttl: ${
+        ttl.ttlSeconds.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendSortedSetPutValue(
+      cacheName,
+      this.convert(sortedSetName),
+      this.convert(value),
+      score,
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+    this.logger.trace(
+      `'sortedSetPutValue' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendSortedSetPutValue(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    value: Uint8Array,
+    score: number,
+    ttlMilliseconds: number,
+    refreshTtl: boolean
+  ): Promise<CacheSortedSetPutValue.Response> {
+    const request = new grpcCache._SortedSetPutRequest({
+      set_name: sortedSetName,
+      elements: [new grpcCache._SortedSetElement({value, score})],
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SortedSetPut(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheSortedSetPutValue.Success());
+          } else {
+            resolve(
+              new CacheSortedSetPutValue.Error(cacheServiceErrorMapper(err))
             );
           }
         }
