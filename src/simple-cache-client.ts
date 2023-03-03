@@ -36,6 +36,8 @@ import {
   CacheSetAddElement,
   CacheSetRemoveElements,
   CacheSetRemoveElement,
+  CacheSortedSetPutValue,
+  CacheSortedSetFetch,
   MomentoLogger,
 } from '.';
 import {range} from './internal/utils/collections';
@@ -60,6 +62,7 @@ type DictionarySetFieldOptions = CollectionCallOptions;
 type DictionarySetFieldsOptions = CollectionCallOptions;
 type DictionaryIncrementOptions = CollectionCallOptions;
 type IncrementOptions = ScalarCallOptions;
+type SortedSetPutValueOptions = CollectionCallOptions;
 
 /**
  * Momento Simple Cache Client.
@@ -827,6 +830,77 @@ export class SimpleCacheClient {
       options?.ttl
     );
   }
+
+  /**
+   * Adds an element to the given sorted set. If the element already exists, its
+   * score is updated. Creates the sorted set if it does not exist.
+   *
+   * @param {string} cacheName - The cache containing the sorted set.
+   * @param {string} sortedSetName - The sorted set to add to.
+   * @param {string | Uint8Array} value - The value to add.
+   * @param {number} score - The score to assign to the value.
+   * @param {SortedSetPutValueOptions} options
+   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
+   * Refreshes the sorted set's TTL using the client's default if this is not
+   * supplied.
+   * @returns {Promise<CacheSortedSetPutValue.Response>} -
+   * {@link CacheSortedSetPutValue.Success} on success.
+   * {@link CacheSortedSetPutValue.Error} on failure.
+   * @returns
+   */
+  public async sortedSetPutElement(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array,
+    score: number,
+    options?: SortedSetPutValueOptions
+  ): Promise<CacheSortedSetPutValue.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetPutElement(
+      cacheName,
+      sortedSetName,
+      value,
+      score,
+      options?.ttl
+    );
+  }
+
+  // sorted set put values
+
+  /**
+   * Fetch the elements in the given sorted set.
+   *
+   * @param {string} cacheName - The cache containing the sorted set.
+   * @param {string} sortedSetName - The sorted set to fetch from.
+   * @param {number} startIndex - The index of the first element to return. If omitted, defaults to 0.
+   * @param {number} endIndex - The index of the last element to return. If omitted, defaults to end of the sorted set.
+   * @returns {Promise<CacheSortedSetFetch.Response>}
+   * {@link CacheSortedSetFetch.Hit} containing the requested elements when found.
+   * {@link CacheSortedSetFetch.Miss} when the sorted set does not exist.
+   * {@link CacheSortedSetFetch.Error} on failure.
+   */
+  public async sortedSetFetchByIndex(
+    cacheName: string,
+    sortedSetName: string,
+    startIndex?: number,
+    endIndex?: number
+  ): Promise<CacheSortedSetFetch.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetFetchByIndex(
+      cacheName,
+      sortedSetName,
+      startIndex,
+      endIndex
+    );
+  }
+
+  // sorted set fetch by score
+  // sorted set get score
+  // sorted set get scores
+  // sorted set get rank
+  // sorted set get ranks
+  // sorted set increment
+  // sorted set remove value
 
   /**
    * Creates a Momento signing key.

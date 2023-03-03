@@ -109,6 +109,16 @@ export interface ValidateSetProps extends ValidateCacheProps {
   setName: string;
 }
 
+export interface ValidateSortedSetProps extends ValidateCacheProps {
+  sortedSetName: string;
+  value: string | Uint8Array;
+}
+
+export interface ValidateSortedSetChangerProps extends ValidateSortedSetProps {
+  score: number;
+  ttl?: CollectionTtl;
+}
+
 export function ItBehavesLikeItValidatesCacheName(
   getResponse: (props: ValidateCacheProps) => Promise<ResponseBase>
 ) {

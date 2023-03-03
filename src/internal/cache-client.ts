@@ -32,6 +32,8 @@ import {
   CacheListPushBack,
   CacheListPushFront,
   CacheListRemoveValue,
+  CacheSortedSetPutValue as CacheSortedSetPutElement,
+  CacheSortedSetFetch,
   CollectionTtl,
   Configuration,
   CredentialProvider,
@@ -50,6 +52,7 @@ import {
   validateDictionaryName,
   validateListName,
   validateSetName,
+  validateSortedSetName,
 } from './utils/validators';
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
 import {Middleware} from '../config/middleware/middleware';
@@ -1633,6 +1636,179 @@ export class CacheClient {
           } else {
             resolve(
               new CacheDictionaryIncrement.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async sortedSetPutElement(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array,
+    score: number,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheSortedSetPutElement.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetPutElement.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    this.logger.trace(
+      "Issuing 'sortedSetPutValue' request; value: %s, score : %s, ttl: %s",
+      value.toString(),
+      score,
+      ttl.ttlSeconds.toString() ?? 'null'
+    );
+
+    const result = await this.sendSortedSetPutElement(
+      cacheName,
+      this.convert(sortedSetName),
+      this.convert(value),
+      score,
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+    this.logger.trace(
+      "'sortedSetPutValue' request result: %s",
+      result.toString()
+    );
+    return result;
+  }
+
+  private async sendSortedSetPutElement(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    value: Uint8Array,
+    score: number,
+    ttlMilliseconds: number,
+    refreshTtl: boolean
+  ): Promise<CacheSortedSetPutElement.Response> {
+    const request = new grpcCache._SortedSetPutRequest({
+      set_name: sortedSetName,
+      elements: [new grpcCache._SortedSetElement({value, score})],
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SortedSetPut(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheSortedSetPutElement.Success());
+          } else {
+            resolve(
+              new CacheSortedSetPutElement.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async sortedSetFetchByIndex(
+    cacheName: string,
+    sortedSetName: string,
+    startIndex?: number,
+    endIndex?: number
+  ): Promise<CacheSortedSetFetch.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.trace(
+      "Issuing 'sortedSetFetchByIndex' request; startIndex: %s, endIndex : %s",
+      startIndex?.toString() ?? 'null',
+      endIndex?.toString() ?? 'null'
+    );
+
+    const result = await this.sendSortedSetFetchByIndex(
+      cacheName,
+      this.convert(sortedSetName),
+      startIndex,
+      endIndex
+    );
+    this.logger.trace(
+      "'sortedSetFetchByIndex' request result: %s",
+      result.toString()
+    );
+    return result;
+  }
+
+  private async sendSortedSetFetchByIndex(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    startIndex?: number,
+    endIndex?: number
+  ): Promise<CacheSortedSetFetch.Response> {
+    const by_index = new grpcCache._SortedSetFetchRequest._ByIndex();
+    if (startIndex) {
+      by_index['inclusive_start_index'] = startIndex;
+    } else {
+      by_index['unbounded_start'] = new grpcCache._Unbounded();
+    }
+    if (endIndex) {
+      by_index.exclusive_end_index = endIndex;
+    } else {
+      by_index.unbounded_end = new grpcCache._Unbounded();
+    }
+
+    const request = new grpcCache._SortedSetFetchRequest({
+      set_name: sortedSetName,
+      order: grpcCache._SortedSetFetchRequest.Order.ASCENDING,
+      with_scores: true,
+      by_index: by_index,
+    });
+
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SortedSetFetch(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            if (resp?.found) {
+              if (resp?.found?.values_with_scores) {
+                resolve(
+                  new CacheSortedSetFetch.Hit(
+                    resp.found.values_with_scores.elements
+                  )
+                );
+              } else {
+                resolve(
+                  new CacheSortedSetFetch.Error(
+                    new UnknownError(
+                      'Unknown sorted set fetch hit response type'
+                    )
+                  )
+                );
+              }
+            } else if (resp?.missing) {
+              resolve(new CacheSortedSetFetch.Miss());
+            } else {
+              resolve(
+                new CacheSortedSetFetch.Error(
+                  new UnknownError('Unknown sorted set fetch response type')
+                )
+              );
+            }
+          } else {
+            resolve(
+              new CacheSortedSetFetch.Error(cacheServiceErrorMapper(err))
             );
           }
         }

@@ -12,6 +12,12 @@ export function validateSetName(name: string) {
   }
 }
 
+export function validateSortedSetName(name: string) {
+  if (isEmpty(name)) {
+    throw new InvalidArgumentError('sorted set name must not be empty');
+  }
+}
+
 export function validateDictionaryName(name: string) {
   if (isEmpty(name)) {
     throw new InvalidArgumentError('dictionary name must not be empty');
