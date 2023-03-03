@@ -40,6 +40,7 @@ import {
   CacheSortedSetFetch,
   MomentoLogger,
   CacheSortedSetGetRank,
+  CacheSortedSetIncrementScore,
 } from '.';
 import {range} from './internal/utils/collections';
 import {SimpleCacheClientProps} from './simple-cache-client-props';
@@ -64,6 +65,7 @@ type DictionarySetFieldsOptions = CollectionCallOptions;
 type DictionaryIncrementOptions = CollectionCallOptions;
 type IncrementOptions = ScalarCallOptions;
 type SortedSetPutValueOptions = CollectionCallOptions;
+type SortedSetIncrementOptions = CollectionCallOptions;
 
 /**
  * Momento Simple Cache Client.
@@ -808,7 +810,7 @@ export class SimpleCacheClient {
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the dictionary's TTL using the client's default if this is not
    * supplied.
-   * @returns {Promise<CacheDictionaryIncrement>} -
+   * @returns {Promise<CacheDictionaryIncrement.Response>} -
    * {@link CacheDictionaryIncrement.Success} containing the incremented value
    * on success.
    * {@link CacheDictionaryIncrement.Error} on failure. Incrementing a value
@@ -900,11 +902,11 @@ export class SimpleCacheClient {
   // sorted set get scores
 
   /**
-   * Look the rank of an element in the sorted set, by the value of the element.
+   * Look up the rank of an element in the sorted set, by the value of the element.
    *
    * @param {string} cacheName - The cache containing the sorted set.
    * @param {string} sortedSetName - The sorted set to fetch from.
-   * @param {string | Uint8Array} value - The value of the element whose rank we are retrieving.
+   * @param {string | Uint8Array} elementValue - The value of the element whose rank we are retrieving.
    * @returns {Promise<CacheSortedSetGetRank.Response>}
    * {@link CacheSortedSetFetch.Hit} containing the rank of the requested elements when found.
    * {@link CacheSortedSetFetch.Miss} when the element does not exist.
@@ -913,13 +915,52 @@ export class SimpleCacheClient {
   public async sortedSetGetRank(
     cacheName: string,
     sortedSetName: string,
-    value: string | Uint8Array
+    elementValue: string | Uint8Array
   ): Promise<CacheSortedSetGetRank.Response> {
     const client = this.getNextDataClient();
-    return await client.sortedSetGetRank(cacheName, sortedSetName, value);
+    return await client.sortedSetGetRank(
+      cacheName,
+      sortedSetName,
+      elementValue
+    );
   }
 
-  // sorted set get ranks
+  /**
+   * Increment the score of an element in the sorted set.
+   *
+   * @param {string} cacheName - The cache containing the sorted set.
+   * @param {string} sortedSetName - The sorted set to fetch from.
+   * @param {string | Uint8Array} elementValue - The value of the element whose score we are incrementing.
+   * @param {number} amount - The quantity to add to the score. May be positive,
+   * negative, or zero. Defaults to 1.
+   * @param {SortedSetIncrementOptions} options
+   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
+   * Refreshes the sorted set's TTL using the client's default if this is not
+   * supplied.
+   * @returns {Promise<CacheSortedSetIncrementScore.Response>} -
+   * {@link CacheSortedSetIncrementScore.Success} containing the incremented score
+   * on success.
+   * {@link CacheSortedSetIncrementScore.Error} on failure. Incrementing a score
+   * that was not set using this method or is not the string representation of
+   * an integer results in a failure with a FailedPreconditionException error.
+   */
+  public async sortedSetIncrementScore(
+    cacheName: string,
+    sortedSetName: string,
+    elementValue: string | Uint8Array,
+    amount = 1,
+    options?: SortedSetIncrementOptions
+  ): Promise<CacheSortedSetIncrementScore.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetIncrementScore(
+      cacheName,
+      sortedSetName,
+      elementValue,
+      amount,
+      options?.ttl
+    );
+  }
+
   // sorted set increment
   // sorted set remove value
 
