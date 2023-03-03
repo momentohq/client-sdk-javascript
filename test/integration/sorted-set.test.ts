@@ -4,6 +4,7 @@ import {
   CollectionTtl,
   //CacheDelete,
   MomentoErrorCode,
+  CacheSortedSetFetch,
   //CacheSortedSetPutValue,
 } from '../../src';
 //import {TextEncoder} from 'util';
@@ -16,7 +17,7 @@ import {
 } from './integration-setup';
 import {
   IResponseError,
-  //IResponseMiss,
+  IResponseMiss,
   IResponseSuccess,
   ResponseBase,
 } from '../../src/messages/responses/response-base';
@@ -48,21 +49,21 @@ describe('Integration tests for sorted set operations', () => {
     });
   };
 
-  /*
-  const itBehavesLikeItMissesWhenDictionaryDoesNotExist = (
-    responder: (props: ValidateDictionaryProps) => Promise<ResponseBase>
+  const itBehavesLikeItMissesWhenSortedSetDoesNotExist = (
+    responder: (props: ValidateSortedSetProps) => Promise<ResponseBase>
   ) => {
-    it('misses when the dictionary does not exist', async () => {
+    it('misses when the sorted set does not exist', async () => {
       const response = await responder({
         cacheName: IntegrationTestCacheName,
-        dictionaryName: v4(),
-        field: v4(),
+        sortedSetName: v4(),
+        value: v4(),
       });
 
       expect((response as IResponseMiss).is_miss).toBeTrue();
     });
   };
 
+  /*
   const itBehavesLikeItMissesWhenFieldDoesNotExist = (
     responder: (props: ValidateDictionaryProps) => Promise<ResponseBase>
   ) => {
@@ -139,15 +140,11 @@ describe('Integration tests for sorted set operations', () => {
       expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
       await sleep(timeout * 1000);
 
-      /*
-      TODO
-      const getResponse = await Momento.sortedSetGetRank(
+      const getResponse = await Momento.sortedSetFetchByIndex(
         IntegrationTestCacheName,
-        sortedSetName,
-        value
+        sortedSetName
       );
-      expect(getResponse).toBeInstanceOf(CacheSortedSetGetRank.Miss);
-      */
+      expect(getResponse).toBeInstanceOf(CacheSortedSetFetch.Miss);
     });
 
     it('refreshes with refresh ttl', async () => {
@@ -174,6 +171,11 @@ describe('Integration tests for sorted set operations', () => {
       expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
       await sleep(timeout * 1000);
 
+      const getResponse = await Momento.sortedSetFetchByIndex(
+        IntegrationTestCacheName,
+        sortedSetName
+      );
+      expect(getResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
       /* TODO
       const getResponse = await Momento.sortedSetGetRank(
         IntegrationTestCacheName,
@@ -184,15 +186,16 @@ describe('Integration tests for sorted set operations', () => {
       */
     });
   };
-  /*
-  describe('#dictionaryFetch', () => {
-    const responder = (props: ValidateDictionaryProps) => {
-      return Momento.dictionaryFetch(props.cacheName, props.dictionaryName);
+
+  describe('#sortedSetFetch', () => {
+    const responder = (props: ValidateSortedSetProps) => {
+      return Momento.dictionaryFetch(props.cacheName, props.sortedSetName);
     };
 
     itBehavesLikeItValidates(responder);
-    itBehavesLikeItMissesWhenDictionaryDoesNotExist(responder);
+    itBehavesLikeItMissesWhenSortedSetDoesNotExist(responder);
 
+    /*
     it('should return expected toString value with dictionaryFetch', async () => {
       const dictionaryName = v4();
       await Momento.dictionarySetField(
@@ -351,8 +354,10 @@ describe('Integration tests for sorted set operations', () => {
       );
       expect(response).toBeInstanceOf(CacheDictionaryFetch.Miss);
     });
+    */
   });
 
+  /*
   describe('#dictionaryGetField', () => {
     const responder = (props: ValidateDictionaryProps) => {
       return Momento.dictionaryGetField(

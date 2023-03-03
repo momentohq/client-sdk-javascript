@@ -33,84 +33,48 @@ const TEXT_DECODER = new TextDecoder();
 export abstract class Response extends ResponseBase {}
 
 class _Hit extends Response {
-  private readonly items: cache_client._SortedSetElement[];
+  private readonly elements: cache_client._SortedSetElement[];
   private readonly _displayListSizeLimit = 5;
 
-  constructor(items: cache_client._SortedSetElement[]) {
+  constructor(elements: cache_client._SortedSetElement[]) {
     super();
-    this.items = items;
+    this.elements = elements;
   }
 
-  /**
-   * Returns the data as a Map whose keys and values are utf-8 strings, decoded from the underlying byte arrays.
-   * This is a convenience alias for {valueMapStringString}.
-   * @returns {Map<string, number>}
-   */
-  public valueMap(): Map<string, number> {
-    return this.valueMapStringNumber();
+  // TODO: what is a better name for this?
+  public valueArrayUint8ArrayNumber(): {value: Uint8Array; score: number}[] {
+    return this.elements.map(item => {
+      return {
+        value: item.value,
+        score: item.score,
+      };
+    });
   }
 
-  /**
-   * Returns the data as a Map whose keys are byte arrays.
-   * @returns {Map<Uint8Array, number>}
-   */
-  public valueMapUint8ArrayNumber(): Map<Uint8Array, number> {
-    return this.items.reduce((acc, item) => {
-      acc.set(item.value, item.score);
-      return acc;
-    }, new Map<Uint8Array, number>());
-  }
-
-  /**
-   * Returns the data as a Map whose keys utf-8 strings, decoded from the underlying byte arrays.
-   * @returns {Map<string, number>}
-   */
-  public valueMapStringNumber(): Map<string, number> {
-    return this.items.reduce((acc, item) => {
-      acc.set(TEXT_DECODER.decode(item.value), item.score);
-      return acc;
-    }, new Map<string, number>());
-  }
-
-  /**
-   * Returns the data as a Record whose keys utf-8 strings, decoded from the underlying byte arrays.
-   * This can be used in most places where an Object is desired.  This is a convenience alias for
-   * {valueRecordStringString}.
-   * @returns {Record<string, number>}
-   */
-  public valueRecord(): Record<string, number> {
-    return this.valueRecordStringNumber();
-  }
-
-  /**
-   * Returns the data as a Record whose keys are utf-8 strings, decoded from the underlying byte arrays.
-   * This can be used in most places where an Object is desired.
-   * @returns {Record<string, number>}
-   */
-  public valueRecordStringNumber(): Record<string, number> {
-    return this.items.reduce<Record<string, number>>((acc, item) => {
-      acc[TEXT_DECODER.decode(item.value)] = item.score;
-      return acc;
-    }, {});
+  public valueArrayStringNumber(): {value: string; score: number}[] {
+    return this.elements.map(item => {
+      return {
+        value: TEXT_DECODER.decode(item.value),
+        score: item.score,
+      };
+    });
   }
 
   private truncateValueStrings(): string {
-    const keyValueIterable = this.valueMapStringNumber().entries();
-    const keyValueArray = Array.from(keyValueIterable);
+    const keyValueArray = this.valueArrayStringNumber();
+
+    const elements: string[] = [];
     if (keyValueArray.length <= this._displayListSizeLimit) {
-      const pairs: string[] = [];
-      keyValueArray.forEach(pair => {
-        pairs.push(`${pair[0]}: ${pair[1]}`);
+      keyValueArray.forEach(element => {
+        elements.push(`${element.value}: ${element.score}`);
       });
-      return pairs.join(',');
     } else {
       const slicedArray = keyValueArray.slice(0, this._displayListSizeLimit);
-      const pairs: string[] = [];
-      slicedArray.forEach(pair => {
-        pairs.push(`${pair[0]}: ${pair[1]}`);
+      slicedArray.forEach(element => {
+        elements.push(`${element.value}: ${element.score}`);
       });
-      return pairs.join(',');
     }
+    return elements.join(', ');
   }
 
   public override toString(): string {
