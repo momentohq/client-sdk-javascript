@@ -1659,9 +1659,10 @@ export class CacheClient {
       );
     }
     this.logger.trace(
-      `Issuing 'sortedSetPutValue' request; value: ${value.toString()}, score : ${score}, ttl: ${
-        ttl.ttlSeconds.toString() ?? 'null'
-      }`
+      "Issuing 'sortedSetPutValue' request; value: %s, score : %s, ttl: %s",
+      value.toString(),
+      score,
+      ttl.ttlSeconds.toString() ?? 'null'
     );
 
     const result = await this.sendSortedSetPutElement(
@@ -1673,7 +1674,8 @@ export class CacheClient {
       ttl.refreshTtl()
     );
     this.logger.trace(
-      `'sortedSetPutValue' request result: ${result.toString()}`
+      "'sortedSetPutValue' request result: %s",
+      result.toString()
     );
     return result;
   }
@@ -1725,9 +1727,11 @@ export class CacheClient {
     } catch (err) {
       return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
     }
-    //this.logger.trace(
-    //`Issuing 'sortedSetFetchByIndex' request; startIndex: ${startIndex}, endIndex : ${endIndex}`
-    //);
+    this.logger.trace(
+      "Issuing 'sortedSetFetchByIndex' request; startIndex: %s, endIndex : %s",
+      startIndex?.toString() ?? 'null',
+      endIndex?.toString() ?? 'null'
+    );
 
     const result = await this.sendSortedSetFetchByIndex(
       cacheName,
@@ -1736,7 +1740,8 @@ export class CacheClient {
       endIndex
     );
     this.logger.trace(
-      `'sortedSetFetchByIndex' request result: ${result.toString()}`
+      "'sortedSetFetchByIndex' request result: %s",
+      result.toString()
     );
     return result;
   }
