@@ -1664,7 +1664,7 @@ export class CacheClient {
     }
     this.logger.trace(
       "Issuing 'sortedSetPutValue' request; value: %s, score : %s, ttl: %s",
-      value.toString(),
+      truncateString(value.toString()),
       score,
       ttl.ttlSeconds.toString() ?? 'null'
     );
@@ -1783,6 +1783,130 @@ export class CacheClient {
       order: protoBufOrder,
       with_scores: true,
       by_index: by_index,
+    });
+
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SortedSetFetch(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            if (resp?.found) {
+              if (resp?.found?.values_with_scores) {
+                resolve(
+                  new CacheSortedSetFetch.Hit(
+                    resp.found.values_with_scores.elements
+                  )
+                );
+              } else {
+                resolve(
+                  new CacheSortedSetFetch.Error(
+                    new UnknownError(
+                      'Unknown sorted set fetch hit response type'
+                    )
+                  )
+                );
+              }
+            } else if (resp?.missing) {
+              resolve(new CacheSortedSetFetch.Miss());
+            } else {
+              resolve(
+                new CacheSortedSetFetch.Error(
+                  new UnknownError('Unknown sorted set fetch response type')
+                )
+              );
+            }
+          } else {
+            resolve(
+              new CacheSortedSetFetch.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async sortedSetFetchByScore(
+    cacheName: string,
+    sortedSetName: string,
+    order: SortedSetOrder,
+    minScore?: number,
+    maxScore?: number
+  ): Promise<CacheSortedSetFetch.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      "Issuing 'sortedSetFetchByScore' request; minScore: %s, maxScore : %s, order: %s",
+      minScore?.toString() ?? 'null',
+      maxScore?.toString() ?? 'null',
+      order.toString()
+    );
+
+    const result = await this.sendSortedSetFetchByScore(
+      cacheName,
+      this.convert(sortedSetName),
+      order,
+      minScore,
+      maxScore
+    );
+
+    this.logger.trace(
+      "'sortedSetFetchByScore' request result: %s",
+      result.toString()
+    );
+    return result;
+  }
+
+  private async sendSortedSetFetchByScore(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    order: SortedSetOrder,
+    minScore?: number,
+    maxScore?: number
+  ): Promise<CacheSortedSetFetch.Response> {
+    const by_score = new grpcCache._SortedSetFetchRequest._ByScore();
+    if (minScore) {
+      by_score.min_score = new grpcCache._SortedSetFetchRequest._ByScore._Score(
+        {
+          score: minScore,
+          exclusive: false,
+        }
+      );
+    } else {
+      by_score.unbounded_min = new grpcCache._Unbounded();
+    }
+    if (maxScore) {
+      by_score.max_score = new grpcCache._SortedSetFetchRequest._ByScore._Score(
+        {
+          score: maxScore,
+          exclusive: false,
+        }
+      );
+    } else {
+      by_score.unbounded_max = new grpcCache._Unbounded();
+    }
+    by_score.offset = 0;
+    by_score.count = -1;
+
+    const protoBufOrder =
+      order === SortedSetOrder.Descending
+        ? grpcCache._SortedSetFetchRequest.Order.DESCENDING
+        : grpcCache._SortedSetFetchRequest.Order.ASCENDING;
+
+    const request = new grpcCache._SortedSetFetchRequest({
+      set_name: sortedSetName,
+      order: protoBufOrder,
+      with_scores: true,
+      by_score: by_score,
     });
 
     const metadata = this.createMetadata(cacheName);
