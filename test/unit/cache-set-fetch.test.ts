@@ -1,4 +1,4 @@
-import {CacheSetFetch} from '../src';
+import {CacheSetFetch} from '../../src';
 
 const LOL_BYTE_ARRAY = Uint8Array.of(108, 111, 108);
 const FOO_BYTE_ARRAY = Uint8Array.of(102, 111, 111);

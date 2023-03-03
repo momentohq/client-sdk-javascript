@@ -1,5 +1,5 @@
 import {v4} from 'uuid';
-import {sleep} from '../src/internal/utils/sleep';
+import {sleep} from '../../src/internal/utils/sleep';
 import {
   CollectionTtl,
   CacheListConcatenateBack,
@@ -12,12 +12,12 @@ import {
   CacheListPushFront,
   CacheListRemoveValue,
   MomentoErrorCode,
-} from '../src';
+} from '../../src';
 import {
   ResponseBase,
   IResponseError,
   IListResponseSuccess,
-} from '../src/messages/responses/response-base';
+} from '../../src/messages/responses/response-base';
 import {
   ValidateCacheProps,
   ValidateListProps,

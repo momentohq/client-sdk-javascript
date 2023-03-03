@@ -5,7 +5,12 @@ import {
   SetupIntegrationTest,
   WithCache,
 } from './integration-setup';
-import {CreateCache, DeleteCache, ListCaches, MomentoErrorCode} from '../src';
+import {
+  CreateCache,
+  DeleteCache,
+  ListCaches,
+  MomentoErrorCode,
+} from '../../src';
 
 const {Momento} = SetupIntegrationTest();
 

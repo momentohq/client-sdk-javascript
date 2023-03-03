@@ -55,11 +55,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Test
-        run: npm run test
+      - name: Unit Test
+        run: npm run unit-test
 
       - name: Integration Test
-        run: npm run integration
+        run: npm run integration-test
 
   test-examples:
     strategy:

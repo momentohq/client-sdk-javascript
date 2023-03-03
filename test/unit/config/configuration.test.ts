@@ -1,11 +1,11 @@
-import {SimpleCacheConfiguration} from '../../src/config/configuration';
+import {SimpleCacheConfiguration} from '../../../src/config/configuration';
 import {
   StaticGrpcConfiguration,
   StaticTransportStrategy,
-} from '../../src/config/transport/transport-strategy';
-import {FixedCountRetryStrategy} from '../../src/config/retry/fixed-count-retry-strategy';
-import {DefaultMomentoLoggerFactory, Configurations} from '../../src';
-import {Middleware} from '../../src/config/middleware/middleware';
+} from '../../../src/config/transport/transport-strategy';
+import {FixedCountRetryStrategy} from '../../../src/config/retry/fixed-count-retry-strategy';
+import {DefaultMomentoLoggerFactory, Configurations} from '../../../src';
+import {Middleware} from '../../../src/config/middleware/middleware';
 
 describe('configuration.ts', () => {
   const testLoggerFactory = new DefaultMomentoLoggerFactory();

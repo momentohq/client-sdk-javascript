@@ -23,6 +23,6 @@
     "resolveJsonModule": true
   },
   "files": ["node_modules/jest-extended/types/index.d.ts"],
-  "include": ["src/", "test/", "integration/"],
+  "include": ["src/", "test/"],
   "exclude": ["node_modules", "dist", "examples/"]
 }

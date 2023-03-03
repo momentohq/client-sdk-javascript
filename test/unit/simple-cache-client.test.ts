@@ -1,6 +1,10 @@
-import {Configurations, InvalidArgumentError, SimpleCacheClient} from '../src';
-import * as CreateCache from '../src/messages/responses/create-cache';
-import {StringMomentoTokenProvider} from '../src/auth/credential-provider';
+import {
+  Configurations,
+  InvalidArgumentError,
+  SimpleCacheClient,
+} from '../../src';
+import * as CreateCache from '../../src/messages/responses/create-cache';
+import {StringMomentoTokenProvider} from '../../src/auth/credential-provider';
 const credentialProvider = new StringMomentoTokenProvider({
   authToken:
     'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzcXVpcnJlbCIsImNwIjoiY29udHJvbCBwbGFuZSBlbmRwb2ludCIsImMiOiJkYXRhIHBsYW5lIGVuZHBvaW50In0.zsTsEXFawetTCZI',

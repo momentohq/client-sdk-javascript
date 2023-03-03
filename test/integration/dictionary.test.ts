@@ -1,5 +1,5 @@
 import {v4} from 'uuid';
-import {sleep} from '../src/internal/utils/sleep';
+import {sleep} from '../../src/internal/utils/sleep';
 import {
   CollectionTtl,
   CacheDelete,
@@ -12,7 +12,7 @@ import {
   CacheDictionaryGetField,
   CacheDictionaryGetFields,
   CacheDictionaryIncrement,
-} from '../src';
+} from '../../src';
 import {TextEncoder} from 'util';
 import {
   ItBehavesLikeItValidatesCacheName,
@@ -26,7 +26,7 @@ import {
   IResponseMiss,
   IResponseSuccess,
   ResponseBase,
-} from '../src/messages/responses/response-base';
+} from '../../src/messages/responses/response-base';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
