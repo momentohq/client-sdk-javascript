@@ -38,6 +38,8 @@ import * as CacheSortedSetFetch from './messages/responses/cache-sorted-set-fetc
 import * as CacheSortedSetGetRank from './messages/responses/cache-sorted-set-get-rank';
 import * as CacheSortedSetGetScore from './messages/responses/cache-sorted-set-get-score';
 import * as CacheSortedSetIncrementScore from './messages/responses/cache-sorted-set-increment-score';
+import * as CacheSortedSetRemoveElement from './messages/responses/cache-sorted-set-remove-element';
+import * as CacheSortedSetRemoveElements from './messages/responses/cache-sorted-set-remove-elements';
 
 import {CacheInfo} from './messages/cache-info';
 import {CollectionTtl} from './utils/collection-ttl';
@@ -128,6 +130,8 @@ export {
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
   CacheSortedSetIncrementScore,
+  CacheSortedSetRemoveElement,
+  CacheSortedSetRemoveElements,
   MomentoErrorCode,
   AlreadyExistsError,
   AuthenticationError,
