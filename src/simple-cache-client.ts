@@ -47,6 +47,8 @@ import {
   CollectionCallOptions,
   FrontTruncatableCallOptions,
   ScalarCallOptions,
+  SortedSetFetchByIndexCallOptions,
+  SortedSetOrder,
 } from './utils/cache-call-options';
 
 // Type aliases to differentiate the different methods' optional arguments.
@@ -63,6 +65,7 @@ type DictionarySetFieldsOptions = CollectionCallOptions;
 type DictionaryIncrementOptions = CollectionCallOptions;
 type IncrementOptions = ScalarCallOptions;
 type SortedSetPutValueOptions = CollectionCallOptions;
+type SortedSetFetchByIndexOptions = SortedSetFetchByIndexCallOptions;
 
 /**
  * Momento Simple Cache Client.
@@ -872,8 +875,13 @@ export class SimpleCacheClient {
    *
    * @param {string} cacheName - The cache containing the sorted set.
    * @param {string} sortedSetName - The sorted set to fetch from.
-   * @param {number} startIndex - The index of the first element to return. If omitted, defaults to 0.
-   * @param {number} endIndex - The index of the last element to return. If omitted, defaults to end of the sorted set.
+   * @param {SortedSetFetchByIndexOptions} options
+   * @param {number} [options.startIndex] - The index of the first element to
+   * fetch. Defaults to 0.
+   * @param {number} [options.endIndex] - The index of the last element to fetch.
+   * Defaults to null, which fetches up until and including the last element.
+   * @param {SortedSetOrder} [options.order] - The order to fetch the elements in.
+   * Defaults to ascending.
    * @returns {Promise<CacheSortedSetFetch.Response>}
    * {@link CacheSortedSetFetch.Hit} containing the requested elements when found.
    * {@link CacheSortedSetFetch.Miss} when the sorted set does not exist.
@@ -882,15 +890,15 @@ export class SimpleCacheClient {
   public async sortedSetFetchByIndex(
     cacheName: string,
     sortedSetName: string,
-    startIndex?: number,
-    endIndex?: number
+    options?: SortedSetFetchByIndexOptions
   ): Promise<CacheSortedSetFetch.Response> {
     const client = this.getNextDataClient();
     return await client.sortedSetFetchByIndex(
       cacheName,
       sortedSetName,
-      startIndex,
-      endIndex
+      options?.order ?? SortedSetOrder.Ascending,
+      options?.startIndex ?? 0,
+      options?.endIndex
     );
   }
 

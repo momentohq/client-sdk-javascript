@@ -27,3 +27,14 @@ export interface BackTruncatableCallOptions extends CollectionCallOptions {
    */
   truncateBackToSize?: number;
 }
+
+export enum SortedSetOrder {
+  Ascending = 'ASC',
+  Descending = 'DESC',
+}
+
+export interface SortedSetFetchByIndexCallOptions {
+  startIndex?: number;
+  endIndex?: number;
+  order?: SortedSetOrder;
+}

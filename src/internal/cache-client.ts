@@ -47,6 +47,7 @@ import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
+import {SortedSetOrder} from '../utils/cache-call-options';
 import {
   validateCacheName,
   validateDictionaryName,
@@ -1718,7 +1719,8 @@ export class CacheClient {
   public async sortedSetFetchByIndex(
     cacheName: string,
     sortedSetName: string,
-    startIndex?: number,
+    order: SortedSetOrder,
+    startIndex: number,
     endIndex?: number
   ): Promise<CacheSortedSetFetch.Response> {
     try {
@@ -1727,15 +1729,18 @@ export class CacheClient {
     } catch (err) {
       return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
     }
+
     this.logger.trace(
-      "Issuing 'sortedSetFetchByIndex' request; startIndex: %s, endIndex : %s",
-      startIndex?.toString() ?? 'null',
-      endIndex?.toString() ?? 'null'
+      "Issuing 'sortedSetFetchByIndex' request; startIndex: %s, endIndex : %s, order: %s",
+      startIndex.toString() ?? 'null',
+      endIndex?.toString() ?? 'null',
+      order.toString()
     );
 
     const result = await this.sendSortedSetFetchByIndex(
       cacheName,
       this.convert(sortedSetName),
+      order,
       startIndex,
       endIndex
     );
@@ -1749,7 +1754,8 @@ export class CacheClient {
   private async sendSortedSetFetchByIndex(
     cacheName: string,
     sortedSetName: Uint8Array,
-    startIndex?: number,
+    order: SortedSetOrder,
+    startIndex: number,
     endIndex?: number
   ): Promise<CacheSortedSetFetch.Response> {
     const by_index = new grpcCache._SortedSetFetchRequest._ByIndex();
@@ -1764,9 +1770,14 @@ export class CacheClient {
       by_index.unbounded_end = new grpcCache._Unbounded();
     }
 
+    const protoBufOrder =
+      order === SortedSetOrder.Descending
+        ? grpcCache._SortedSetFetchRequest.Order.DESCENDING
+        : grpcCache._SortedSetFetchRequest.Order.ASCENDING;
+
     const request = new grpcCache._SortedSetFetchRequest({
       set_name: sortedSetName,
-      order: grpcCache._SortedSetFetchRequest.Order.ASCENDING,
+      order: protoBufOrder,
       with_scores: true,
       by_index: by_index,
     });
