@@ -2017,7 +2017,6 @@ export class CacheClient {
     });
   }
 
-  // sorted set get score
   public async sortedSetGetScore(
     cacheName: string,
     sortedSetName: string,

@@ -969,9 +969,9 @@ export class SimpleCacheClient {
    * @param {string} sortedSetName - The sorted set to fetch from.
    * @param {string | Uint8Array} value - The value of the element whose score we are retrieving.
    * @returns {Promise<CacheSortedSetGetScore.Response>}
-   * {@link CacheSortedSetFetch.Hit} containing the score of the requested elements when found.
-   * {@link CacheSortedSetFetch.Miss} when the element or collection does not exist.
-   * {@link CacheSortedSetFetch.Error} on failure.
+   * {@link CacheSortedGetScore.Hit} containing the score of the requested element when found.
+   * {@link CacheSortedGetScore.Miss} when the element or collection does not exist.
+   * {@link CacheSortedGetScore.Error} on failure.
    */
   public async sortedSetGetScore(
     cacheName: string,
