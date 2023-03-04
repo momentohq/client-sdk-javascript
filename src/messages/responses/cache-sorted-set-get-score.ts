@@ -7,7 +7,7 @@ import {
 import {SdkError} from '../../errors/errors';
 
 /**
- * Parent response type for a sorted set GetRank request.  The
+ * Parent response type for a sorted set get score request.  The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
@@ -19,9 +19,9 @@ import {SdkError} from '../../errors/errors';
  * @example
  * For example:
  * ```
- * if (response instanceof CacheSortedSetGetRank.Error) {
+ * if (response instanceof CacheSortedSetGetScore.Error) {
  *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheSortedSetGetRank.Error` in this block, so you will have access to the properties
+ *   // `CacheSortedSetGetScore.Error` in this block, so you will have access to the properties
  *   // of the Error class; e.g. `response.errorCode()`.
  * }
  * ```
@@ -29,23 +29,23 @@ import {SdkError} from '../../errors/errors';
 export abstract class Response extends ResponseBase {}
 
 class _Hit extends Response {
-  private readonly _rank: number;
+  private readonly _score: number;
 
-  constructor(rank: number) {
+  constructor(score: number) {
     super();
-    this._rank = rank;
+    this._score = score;
   }
 
   /**
-   * Returns the rank of the element in the sorted set.  Ranks start at 0.
+   * Returns the score of the element in the sorted set.
    * @returns {number}
    */
-  public rank(): number {
-    return this._rank;
+  public score(): number {
+    return this._score;
   }
 
   public override toString(): string {
-    return `${super.toString()}: rank: ${this.rank()}`;
+    return `${super.toString()}: score: ${this.score()}`;
   }
 }
 
@@ -69,7 +69,7 @@ class _Error extends Response {
 }
 
 /**
- * Indicates that an error occurred during the sorted set get rank request.
+ * Indicates that an error occurred during the sorted set get score request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:
