@@ -1,4 +1,4 @@
-import {CollectionTtl} from './collection-ttl';
+import { CollectionTtl } from './collection-ttl';
 
 export interface ScalarCallOptions {
   /**
@@ -83,4 +83,29 @@ export interface SortedSetFetchByScoreCallOptions {
    * Defaults to all elements in the result set.
    */
   count?: number;
+}
+
+export interface IndexSliceCollectionsCallOptions
+  extends CollectionCallOptions {
+  /**
+   * Starting inclusive index of operation.
+   */
+  startIndex?: number;
+
+  /**
+   * Ending exclusive index of operation.
+   */
+  endIndex?: number;
+}
+
+export interface IndexSliceCallOptions {
+  /**
+   * Starting inclusive index of operation.
+   */
+  startIndex?: number;
+
+  /**
+   * Ending exclusive index of operation.
+   */
+  endIndex?: number;
 }

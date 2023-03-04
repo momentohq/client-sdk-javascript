@@ -11,6 +11,7 @@ import {
   CacheListPushBack,
   CacheListPushFront,
   CacheListRemoveValue,
+  CacheListRetain,
   MomentoErrorCode,
 } from '../../src';
 import {
@@ -258,6 +259,32 @@ describe('lists', () => {
       expect(respFetch.valueList()).toEqual([valueString]);
       expect(respFetch.valueListUint8Array()).toEqual([valueBytes]);
     });
+
+    it('returns a sliced hit if the list exists', async () => {
+      const listName = v4();
+      const valueArray = ['a', 'b', 'c', '1', '2', '3'];
+      const valueStringExpected = ['c', '1'];
+
+      await Momento.listConcatenateBack(
+        IntegrationTestCacheName,
+        listName,
+        valueArray
+      );
+
+      const respFetch = await Momento.listFetch(
+        IntegrationTestCacheName,
+        listName,
+        {
+          startIndex: 2,
+          endIndex: 4,
+        }
+      );
+
+      expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+      expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
+        valueStringExpected
+      );
+    });
   });
 
   describe('#listLength', () => {
@@ -447,6 +474,58 @@ describe('lists', () => {
       expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
         expectedValues
       );
+    });
+  });
+
+  describe('#listRetain', () => {
+    itBehavesLikeItValidates((props: ValidateListProps) => {
+      return Momento.listRetain(props.cacheName, props.listName);
+    });
+
+    it('returns Success if the list does not exist', async () => {
+      const respFetch = await Momento.listRetain(
+        IntegrationTestCacheName,
+        v4()
+      );
+      expect(respFetch).toBeInstanceOf(CacheListRetain.Success);
+    });
+
+    it('returns Success if the list exists', async () => {
+      const listName = v4();
+      const valueString = ['a', 'b', 'c', '1', '2', '3'];
+      const valueStringExpected = ['b'];
+      const valueBytesExpected = new Uint8Array([98]);
+
+      const listPushResponse = await Momento.listConcatenateBack(
+        IntegrationTestCacheName,
+        listName,
+        valueString
+      );
+
+      expect(listPushResponse).toBeInstanceOf(CacheListConcatenateBack.Success);
+
+      const retainOptions = {
+        startIndex: 1,
+        endIndex: 2,
+      };
+
+      const respRetain = <CacheListRetain.Success>(
+        await Momento.listRetain(
+          IntegrationTestCacheName,
+          listName,
+          retainOptions
+        )
+      );
+
+      expect(respRetain).toBeInstanceOf(CacheListRetain.Success);
+
+      const respFetch = <CacheListFetch.Hit>(
+        await Momento.listFetch(IntegrationTestCacheName, listName)
+      );
+
+      expect(respFetch.valueListString()).toEqual(valueStringExpected);
+      expect(respFetch.valueList()).toEqual(valueStringExpected);
+      expect(respFetch.valueListUint8Array()).toEqual([valueBytesExpected]);
     });
   });
 

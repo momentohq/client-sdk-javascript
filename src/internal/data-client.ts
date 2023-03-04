@@ -49,6 +49,7 @@ import {
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
   CacheSortedSetPutElements,
+  CacheListRetain,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -71,6 +72,8 @@ import {Middleware} from '../config/middleware/middleware';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {truncateString} from './utils/display';
 import {SdkError} from '../errors/errors';
+import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
+import _Unbounded = cache_client._Unbounded;
 
 export class DataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -683,7 +686,9 @@ export class DataClient {
 
   public async listFetch(
     cacheName: string,
-    listName: string
+    listName: string,
+    startIndex?: number,
+    endIndex?: number
   ): Promise<CacheListFetch.Response> {
     try {
       validateCacheName(cacheName);
@@ -691,19 +696,41 @@ export class DataClient {
     } catch (err) {
       return new CacheListFetch.Error(normalizeSdkError(err as Error));
     }
-    this.logger.trace(`Issuing 'listFetch' request; listName: ${listName}`);
-    const result = await this.sendListFetch(cacheName, this.convert(listName));
+    this.logger.trace(
+      `Issuing 'listFetch' request;
+      listName: ${listName},
+      startIndex: ${startIndex ?? 'null'},
+      endIndex: ${endIndex ?? 'null'}`
+    );
+    const result = await this.sendListFetch(
+      cacheName,
+      this.convert(listName),
+      startIndex,
+      endIndex
+    );
     this.logger.trace(`'listFetch' request result: ${result.toString()}`);
     return result;
   }
 
   private async sendListFetch(
     cacheName: string,
-    listName: Uint8Array
+    listName: Uint8Array,
+    start?: number,
+    end?: number
   ): Promise<CacheListFetch.Response> {
     const request = new grpcCache._ListFetchRequest({
       list_name: listName,
     });
+    if (start) {
+      request.inclusive_start = start;
+    } else {
+      request.unbounded_start = new _Unbounded();
+    }
+    if (end) {
+      request.exclusive_end = end;
+    } else {
+      request.unbounded_end = new _Unbounded();
+    }
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise(resolve => {
@@ -720,6 +747,81 @@ export class DataClient {
             resolve(new CacheListFetch.Hit(resp.found.values));
           } else {
             resolve(new CacheListFetch.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async listRetain(
+    cacheName: string,
+    listName: string,
+    startIndex?: number,
+    endIndex?: number,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheListRetain.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateListName(listName);
+    } catch (err) {
+      return new CacheListRetain.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.trace(
+      `Issuing 'listRetain' request;
+      listName: ${listName},
+      startIndex: ${startIndex ?? 'null'},
+      endIndex: ${endIndex ?? 'null'},
+      ${ttl.toString()}`
+    );
+    const result = await this.sendListRetain(
+      cacheName,
+      this.convert(listName),
+      startIndex,
+      endIndex,
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+    this.logger.trace(`'listRetain' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendListRetain(
+    cacheName: string,
+    listName: Uint8Array,
+    start?: number,
+    end?: number,
+    ttlMilliseconds?: number,
+    refreshTtl?: boolean
+  ): Promise<CacheListRetain.Response> {
+    const request = new grpcCache._ListRetainRequest({
+      list_name: listName,
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
+    });
+    if (start) {
+      request.inclusive_start = start;
+    } else {
+      request.unbounded_start = new _Unbounded();
+    }
+    if (end) {
+      request.exclusive_end = end;
+    } else {
+      request.unbounded_end = new _Unbounded();
+    }
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ListRetain(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheListRetain.Success());
+          } else {
+            resolve(new CacheListRetain.Error(cacheServiceErrorMapper(err)));
           }
         }
       );
