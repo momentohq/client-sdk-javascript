@@ -34,7 +34,41 @@ export enum SortedSetOrder {
 }
 
 export interface SortedSetFetchByIndexCallOptions {
+  /**
+   * The index of the first element to return, inclusive.
+   * If negative, the index is relative to the end of the list.
+   * If the index is not specified, the first element is used.
+   */
   startIndex?: number;
+  /**
+   * The index of the last element to return, exclusive.
+   * If negative, the index is relative to the end of the list.
+   * If the index is not specified, the range extends to the end of the list.
+   */
   endIndex?: number;
+  /**
+   * The order in which to return the elements.
+   * If the order is not specified, the elements are returned in ascending order.
+   * If descending order is used, the start and end indexes are interpreted as if
+   * the list were reversed.
+   */
+  order?: SortedSetOrder;
+}
+
+export interface SortedSetFetchByScoreCallOptions {
+  /**
+   * The minimum score of the elements to return, inclusive.
+   * If the minimum score is not specified, the range extends to the lowest score.
+   */
+  minScore?: number;
+  /**
+   * The maximum score of the elements to return, inclusive.
+   * If the maximum score is not specified, the range extends to the highest score.
+   */
+  maxScore?: number;
+  /**
+   * The order in which to return the elements.
+   * If the order is not specified, the elements are returned in ascending order.
+   */
   order?: SortedSetOrder;
 }

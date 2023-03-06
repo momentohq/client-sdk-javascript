@@ -50,6 +50,7 @@ import {
   FrontTruncatableCallOptions,
   ScalarCallOptions,
   SortedSetFetchByIndexCallOptions,
+  SortedSetFetchByScoreCallOptions,
   SortedSetOrder,
 } from './utils/cache-call-options';
 
@@ -68,6 +69,7 @@ type DictionaryIncrementOptions = CollectionCallOptions;
 type IncrementOptions = ScalarCallOptions;
 type SortedSetPutValueOptions = CollectionCallOptions;
 type SortedSetFetchByIndexOptions = SortedSetFetchByIndexCallOptions;
+type SortedSetFetchByScoreOptions = SortedSetFetchByScoreCallOptions;
 type SortedSetIncrementOptions = CollectionCallOptions;
 
 /**
@@ -874,14 +876,16 @@ export class SimpleCacheClient {
   // sorted set put values
 
   /**
-   * Fetch the elements in the given sorted set.
+   * Fetch the elements in the given sorted set by index (rank).
    *
    * @param {string} cacheName - The cache containing the sorted set.
    * @param {string} sortedSetName - The sorted set to fetch from.
    * @param {SortedSetFetchByIndexOptions} options
    * @param {number} [options.startIndex] - The index of the first element to
-   * fetch. Defaults to 0.
+   * fetch. Defaults to 0. This index is inclusive, ie the element at this index
+   * will be fetched.
    * @param {number} [options.endIndex] - The index of the last element to fetch.
+   * This index is exclusive, ie the element at this index will not be fetched.
    * Defaults to null, which fetches up until and including the last element.
    * @param {SortedSetOrder} [options.order] - The order to fetch the elements in.
    * Defaults to ascending.
@@ -905,7 +909,38 @@ export class SimpleCacheClient {
     );
   }
 
-  // sorted set fetch by score
+  /**
+   * Fetch the elements in the given sorted set by score.
+   *
+   * @param {string} cacheName - The cache containing the sorted set.
+   * @param {string} sortedSetName - The sorted set to fetch from.
+   * @param {SortedSetFetchByScoreOptions} options
+   * @param {number} [options.minScore] - The minimum score (inclusive) of the
+   * elements to fetch. Defaults to negative infinity.
+   * @param {number} [options.maxScore] - The maximum score (inclusive) of the
+   * elements to fetch. Defaults to positive infinity.
+   * @param {SortedSetOrder} [options.order] - The order to fetch the elements in.
+   * Defaults to ascending.
+   * @returns {Promise<CacheSortedSetFetch.Response>} -
+   * {@link CacheSortedSetFetch.Hit} containing the requested elements when found.
+   * {@link CacheSortedSetFetch.Miss} when the sorted set does not exist.
+   * {@link CacheSortedSetFetch.Error} on failure.
+   */
+  public async sortedSetFetchByScore(
+    cacheName: string,
+    sortedSetName: string,
+    options?: SortedSetFetchByScoreOptions
+  ): Promise<CacheSortedSetFetch.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetFetchByScore(
+      cacheName,
+      sortedSetName,
+      options?.order ?? SortedSetOrder.Ascending,
+      options?.minScore,
+      options?.maxScore
+    );
+  }
+
   // sorted set get score
   // sorted set get scores
 
