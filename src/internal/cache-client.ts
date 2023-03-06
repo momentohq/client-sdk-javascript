@@ -32,7 +32,7 @@ import {
   CacheListPushBack,
   CacheListPushFront,
   CacheListRemoveValue,
-  CacheSortedSetPutValue as CacheSortedSetPutElement,
+  CacheSortedSetPutElement as CacheSortedSetPutElement,
   CacheSortedSetFetch,
   CollectionTtl,
   Configuration,
@@ -47,6 +47,7 @@ import {
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  CacheSortedSetPutElements,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -1668,7 +1669,7 @@ export class CacheClient {
       );
     }
     this.logger.trace(
-      "Issuing 'sortedSetPutValue' request; value: %s, score : %s, ttl: %s",
+      "Issuing 'sortedSetPutElement' request; value: %s, score : %s, ttl: %s",
       truncateString(value.toString()),
       score,
       ttl.ttlSeconds.toString() ?? 'null'
@@ -1683,7 +1684,7 @@ export class CacheClient {
       ttl.refreshTtl()
     );
     this.logger.trace(
-      "'sortedSetPutValue' request result: %s",
+      "'sortedSetPutElement' request result: %s",
       result.toString()
     );
     return result;
@@ -1717,6 +1718,76 @@ export class CacheClient {
           } else {
             resolve(
               new CacheSortedSetPutElement.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async sortedSetPutElements(
+    cacheName: string,
+    sortedSetName: string,
+    elements: Map<string | Uint8Array, number> | Record<string, number>,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheSortedSetPutElements.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetPutElements.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    this.logger.trace(
+      "Issuing 'sortedSetPutElements' request; value: %s, score : %s, ttl: %s",
+      elements.toString(),
+      ttl.ttlSeconds.toString() ?? 'null'
+    );
+
+    const sortedSetValueScorePairs = this.convertSortedSetMapOrRecord(elements);
+
+    const result = await this.sendSortedSetPutElements(
+      cacheName,
+      this.convert(sortedSetName),
+      sortedSetValueScorePairs,
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+    this.logger.trace(
+      "'sortedSetPutElements' request result: %s",
+      result.toString()
+    );
+    return result;
+  }
+
+  private async sendSortedSetPutElements(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    elements: grpcCache._SortedSetElement[],
+    ttlMilliseconds: number,
+    refreshTtl: boolean
+  ): Promise<CacheSortedSetPutElements.Response> {
+    const request = new grpcCache._SortedSetPutRequest({
+      set_name: sortedSetName,
+      elements: elements,
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SortedSetPut(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheSortedSetPutElements.Success());
+          } else {
+            resolve(
+              new CacheSortedSetPutElements.Error(cacheServiceErrorMapper(err))
             );
           }
         }
@@ -2355,6 +2426,28 @@ export class CacheClient {
           new grpcCache._DictionaryFieldValuePair({
             field: this.convert(element[0]),
             value: this.convert(element[1]),
+          })
+      );
+    }
+  }
+
+  private convertSortedSetMapOrRecord(
+    elements: Map<string | Uint8Array, number> | Record<string, number>
+  ): grpcCache._SortedSetElement[] {
+    if (elements instanceof Map) {
+      return [...elements.entries()].map(
+        element =>
+          new grpcCache._SortedSetElement({
+            value: this.convert(element[0]),
+            score: element[1],
+          })
+      );
+    } else {
+      return Object.entries(elements).map(
+        element =>
+          new grpcCache._SortedSetElement({
+            value: this.convert(element[0]),
+            score: element[1],
           })
       );
     }

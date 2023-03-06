@@ -42,7 +42,8 @@ import {
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
-  CacheSortedSetPutValue,
+  CacheSortedSetPutElement,
+  CacheSortedSetPutElements,
   MomentoLogger,
 } from '.';
 import {range} from './internal/utils/collections';
@@ -70,7 +71,8 @@ type DictionarySetFieldOptions = CollectionCallOptions;
 type DictionarySetFieldsOptions = CollectionCallOptions;
 type DictionaryIncrementOptions = CollectionCallOptions;
 type IncrementOptions = ScalarCallOptions;
-type SortedSetPutValueOptions = CollectionCallOptions;
+type SortedSetPutElementOptions = CollectionCallOptions;
+type SortedSetPutElementsOptions = CollectionCallOptions;
 type SortedSetFetchByIndexOptions = SortedSetFetchByIndexCallOptions;
 type SortedSetFetchByScoreOptions = SortedSetFetchByScoreCallOptions;
 type SortedSetIncrementOptions = CollectionCallOptions;
@@ -850,13 +852,13 @@ export class SimpleCacheClient {
    * @param {string} sortedSetName - The sorted set to add to.
    * @param {string | Uint8Array} value - The value to add.
    * @param {number} score - The score to assign to the value.
-   * @param {SortedSetPutValueOptions} options
+   * @param {SortedSetPutElementOptions} options
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the sorted set's TTL using the client's default if this is not
    * supplied.
-   * @returns {Promise<CacheSortedSetPutValue.Response>} -
-   * {@link CacheSortedSetPutValue.Success} on success.
-   * {@link CacheSortedSetPutValue.Error} on failure.
+   * @returns {Promise<CacheSortedSetPutElement.Response>} -
+   * {@link CacheSortedSetPutElement.Success} on success.
+   * {@link CacheSortedSetPutElement.Error} on failure.
    * @returns
    */
   public async sortedSetPutElement(
@@ -864,14 +866,45 @@ export class SimpleCacheClient {
     sortedSetName: string,
     value: string | Uint8Array,
     score: number,
-    options?: SortedSetPutValueOptions
-  ): Promise<CacheSortedSetPutValue.Response> {
+    options?: SortedSetPutElementOptions
+  ): Promise<CacheSortedSetPutElement.Response> {
     const client = this.getNextDataClient();
     return await client.sortedSetPutElement(
       cacheName,
       sortedSetName,
       value,
       score,
+      options?.ttl
+    );
+  }
+
+  /**
+   * Adds elements to the given sorted set. For any values that already exist, it
+   * the score is updated. Creates the sorted set if it does not exist.
+   *
+   * @param {string} cacheName - The cache containing the sorted set.
+   * @param {string} sortedSetName - The sorted set to add to.
+   * @param {Map<string | Uint8Array, number>| Record<string, number>} elements - The value->score pairs to add to the sorted set.
+   * @param {SortedSetPutElementOptions} options
+   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
+   * Refreshes the sorted set's TTL using the client's default if this is not
+   * supplied.
+   * @returns {Promise<CacheSortedSetPutElements.Response>} -
+   * {@link CacheSortedSetPutElements.Success} on success.
+   * {@link CacheSortedSetPutElements.Error} on failure.
+   * @returns
+   */
+  public async sortedSetPutElements(
+    cacheName: string,
+    sortedSetName: string,
+    elements: Map<string | Uint8Array, number> | Record<string, number>,
+    options?: SortedSetPutElementsOptions
+  ): Promise<CacheSortedSetPutElements.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetPutElements(
+      cacheName,
+      sortedSetName,
+      elements,
       options?.ttl
     );
   }
