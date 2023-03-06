@@ -1912,6 +1912,8 @@ export class CacheClient {
       by_score.unbounded_max = new grpcCache._Unbounded();
     }
     by_score.offset = offset ?? 0;
+    // Note: the service reserves negative counts to mean all elements in the
+    // result set.
     by_score.count = count ?? -1;
 
     const protoBufOrder =
