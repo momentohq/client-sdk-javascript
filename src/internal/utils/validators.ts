@@ -18,6 +18,18 @@ export function validateSortedSetName(name: string) {
   }
 }
 
+export function validateSortedSetOffset(offset: number) {
+  if (offset < 0) {
+    throw new InvalidArgumentError('offset must be non-negative (>= 0)');
+  }
+}
+
+export function validateSortedSetCount(count: number) {
+  if (count < 1) {
+    throw new InvalidArgumentError('count must be strictly positive (> 0)');
+  }
+}
+
 export function validateDictionaryName(name: string) {
   if (isEmpty(name)) {
     throw new InvalidArgumentError('dictionary name must not be empty');

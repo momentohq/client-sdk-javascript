@@ -59,6 +59,8 @@ import {
   validateListName,
   validateSetName,
   validateSortedSetName,
+  validateSortedSetOffset,
+  validateSortedSetCount,
 } from './utils/validators';
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
 import {Middleware} from '../config/middleware/middleware';
@@ -1838,20 +1840,30 @@ export class CacheClient {
     sortedSetName: string,
     order: SortedSetOrder,
     minScore?: number,
-    maxScore?: number
+    maxScore?: number,
+    offset?: number,
+    count?: number
   ): Promise<CacheSortedSetFetch.Response> {
     try {
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
+      if (offset !== undefined) {
+        validateSortedSetOffset(offset);
+      }
+      if (count !== undefined) {
+        validateSortedSetCount(count);
+      }
     } catch (err) {
       return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
     }
 
     this.logger.trace(
-      "Issuing 'sortedSetFetchByScore' request; minScore: %s, maxScore : %s, order: %s",
+      "Issuing 'sortedSetFetchByScore' request; minScore: %s, maxScore : %s, order: %s, offset: %s, count: %s",
       minScore?.toString() ?? 'null',
       maxScore?.toString() ?? 'null',
-      order.toString()
+      order.toString(),
+      offset?.toString() ?? 'null',
+      count?.toString() ?? 'null'
     );
 
     const result = await this.sendSortedSetFetchByScore(
@@ -1859,7 +1871,9 @@ export class CacheClient {
       this.convert(sortedSetName),
       order,
       minScore,
-      maxScore
+      maxScore,
+      offset,
+      count
     );
 
     this.logger.trace(
@@ -1874,7 +1888,9 @@ export class CacheClient {
     sortedSetName: Uint8Array,
     order: SortedSetOrder,
     minScore?: number,
-    maxScore?: number
+    maxScore?: number,
+    offset?: number,
+    count?: number
   ): Promise<CacheSortedSetFetch.Response> {
     const by_score = new grpcCache._SortedSetFetchRequest._ByScore();
     if (minScore) {
@@ -1897,8 +1913,10 @@ export class CacheClient {
     } else {
       by_score.unbounded_max = new grpcCache._Unbounded();
     }
-    by_score.offset = 0;
-    by_score.count = -1;
+    by_score.offset = offset ?? 0;
+    // Note: the service reserves negative counts to mean all elements in the
+    // result set.
+    by_score.count = count ?? -1;
 
     const protoBufOrder =
       order === SortedSetOrder.Descending
