@@ -43,6 +43,7 @@ import {
   MomentoLoggerFactory,
   CacheSetIfNotExists,
   CacheSortedSetGetRank,
+  CacheSortedSetGetScore,
   CacheSortedSetIncrementScore,
 } from '..';
 import {version} from '../../package.json';
@@ -2009,6 +2010,76 @@ export class CacheClient {
             } else {
               resolve(
                 new CacheSortedSetGetRank.Error(cacheServiceErrorMapper(err))
+              );
+            }
+          }
+        );
+    });
+  }
+
+  public async sortedSetGetScore(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetGetScore.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetGetScore.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      "Issuing 'sortedSetGetScore' request; value: %s",
+      truncateString(value.toString())
+    );
+
+    const result = await this.sendSortedSetGetScore(
+      cacheName,
+      this.convert(sortedSetName),
+      this.convert(value)
+    );
+
+    this.logger.trace(
+      "'sortedSetGetScore' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendSortedSetGetScore(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    value: Uint8Array
+  ): Promise<CacheSortedSetGetScore.Response> {
+    const request = new grpcCache._SortedSetGetScoreRequest({
+      set_name: sortedSetName,
+      values: [value],
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper
+        .getClient()
+        .SortedSetGetScore(
+          request,
+          metadata,
+          {interceptors: this.interceptors},
+          (err, resp) => {
+            if (resp?.missing) {
+              resolve(new CacheSortedSetGetScore.Miss());
+            } else if (resp?.found) {
+              if (
+                resp.found.elements[0].result === grpcCache.ECacheResult.Hit
+              ) {
+                resolve(
+                  new CacheSortedSetGetScore.Hit(resp.found.elements[0].score)
+                );
+              } else {
+                resolve(new CacheSortedSetGetScore.Miss());
+              }
+            } else {
+              resolve(
+                new CacheSortedSetGetScore.Error(cacheServiceErrorMapper(err))
               );
             }
           }

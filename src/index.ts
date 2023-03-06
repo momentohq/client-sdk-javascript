@@ -36,6 +36,7 @@ import * as CacheSetIfNotExists from './messages/responses/cache-set-if-not-exis
 import * as CacheSortedSetPutValue from './messages/responses/cache-sorted-set-put-element';
 import * as CacheSortedSetFetch from './messages/responses/cache-sorted-set-fetch';
 import * as CacheSortedSetGetRank from './messages/responses/cache-sorted-set-get-rank';
+import * as CacheSortedSetGetScore from './messages/responses/cache-sorted-set-get-score';
 import * as CacheSortedSetIncrementScore from './messages/responses/cache-sorted-set-increment-score';
 
 import {CacheInfo} from './messages/cache-info';
@@ -125,6 +126,7 @@ export {
   CacheSortedSetPutValue,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
+  CacheSortedSetGetScore,
   CacheSortedSetIncrementScore,
   MomentoErrorCode,
   AlreadyExistsError,
