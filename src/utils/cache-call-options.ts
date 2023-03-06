@@ -71,4 +71,16 @@ export interface SortedSetFetchByScoreCallOptions {
    * If the order is not specified, the elements are returned in ascending order.
    */
   order?: SortedSetOrder;
+  /**
+   * The index offset of the first element to return, relative to the first element in the result set.
+   * If specified must be non-negative (>= 0).
+   * Defaults to zero, ie. the start at first element in the result set.
+   */
+  offset?: number;
+  /**
+   * The maximum number of elements to return.
+   * If specified must be strictly positive (> 0).
+   * Defaults to all elements in the result set.
+   */
+  count?: number;
 }

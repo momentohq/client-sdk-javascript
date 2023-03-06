@@ -922,6 +922,12 @@ export class SimpleCacheClient {
    * elements to fetch. Defaults to positive infinity.
    * @param {SortedSetOrder} [options.order] - The order to fetch the elements in.
    * Defaults to ascending.
+   * @param {number} [options.offset] - The number of elements to skip before
+   * returning the first element. Defaults to 0. Note: this is not the index of
+   * the first element to return, but the number of elements of the result set
+   * to skip before returning the first element.
+   * @param {number} [options.count] - The maximum number of elements to return.
+   * Defaults to undefined, which returns all elements.
    * @returns {Promise<CacheSortedSetFetch.Response>} -
    * {@link CacheSortedSetFetch.Hit} containing the requested elements when found.
    * {@link CacheSortedSetFetch.Miss} when the sorted set does not exist.
@@ -938,7 +944,9 @@ export class SimpleCacheClient {
       sortedSetName,
       options?.order ?? SortedSetOrder.Ascending,
       options?.minScore,
-      options?.maxScore
+      options?.maxScore,
+      options?.offset,
+      options?.count
     );
   }
 
