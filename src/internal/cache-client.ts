@@ -45,6 +45,8 @@ import {
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
   CacheSortedSetIncrementScore,
+  CacheSortedSetRemoveElement,
+  CacheSortedSetRemoveElements,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -2159,6 +2161,130 @@ export class CacheClient {
             }
           }
         );
+    });
+  }
+
+  public async sortedSetRemoveElement(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetRemoveElement.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'sortedSetRemoveElement' request");
+
+    const result = await this.sendSortedSetRemoveElement(
+      cacheName,
+      this.convert(sortedSetName),
+      this.convert(value)
+    );
+
+    this.logger.trace(
+      "'sortedSetRemoveElement' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendSortedSetRemoveElement(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    value: Uint8Array
+  ): Promise<CacheSortedSetRemoveElement.Response> {
+    const request = new grpcCache._SortedSetRemoveRequest({
+      set_name: sortedSetName,
+      some: new grpcCache._SortedSetRemoveRequest._Some({
+        values: [value],
+      }),
+    });
+
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SortedSetRemove(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        err => {
+          if (err) {
+            resolve(
+              new CacheSortedSetRemoveElement.Error(
+                cacheServiceErrorMapper(err)
+              )
+            );
+          } else {
+            resolve(new CacheSortedSetRemoveElement.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async sortedSetRemoveElements(
+    cacheName: string,
+    sortedSetName: string,
+    values: string[] | Uint8Array[]
+  ): Promise<CacheSortedSetRemoveElements.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'sortedSetRemoveElements' request");
+
+    const result = await this.sendSortedSetRemoveElements(
+      cacheName,
+      this.convert(sortedSetName),
+      this.convertArray(values)
+    );
+
+    this.logger.trace(
+      "'sortedSetRemoveElements' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendSortedSetRemoveElements(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    values: Uint8Array[]
+  ): Promise<CacheSortedSetRemoveElements.Response> {
+    const request = new grpcCache._SortedSetRemoveRequest({
+      set_name: sortedSetName,
+      some: new grpcCache._SortedSetRemoveRequest._Some({
+        values: values,
+      }),
+    });
+
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SortedSetRemove(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        err => {
+          if (err) {
+            resolve(
+              new CacheSortedSetRemoveElements.Error(
+                cacheServiceErrorMapper(err)
+              )
+            );
+          } else {
+            resolve(new CacheSortedSetRemoveElements.Success());
+          }
+        }
+      );
     });
   }
 

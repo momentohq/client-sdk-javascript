@@ -40,6 +40,8 @@ import {
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
   CacheSortedSetIncrementScore,
+  CacheSortedSetRemoveElement,
+  CacheSortedSetRemoveElements,
   CacheSortedSetPutValue,
   MomentoLogger,
 } from '.';
@@ -1020,8 +1022,45 @@ export class SimpleCacheClient {
     );
   }
 
-  // sorted set increment
-  // sorted set remove value
+  /**
+   * Remove an element from the sorted set
+   * @param {string} cacheName - The cache containing the sorted set.
+   * @param {string} sortedSetName - The sorted set to remove from.
+   * @param {string | Uint8Array} value - The value of the element to remove from the set.
+   * @returns {Promise<CacheSortedSetRemoveElement.Response>}
+   * {@link CacheSortedSetRemoveElement.Success} if the element was successfully removed
+   * {@link CacheSortedSetIncrementScore.Error} on failure
+   */
+  public async sortedSetRemoveElement(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetRemoveElement.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetRemoveElement(cacheName, sortedSetName, value);
+  }
+
+  /**
+   * Remove multiple elements from the sorted set
+   * @param {string} cacheName - The cache containing the sorted set.
+   * @param {string} sortedSetName - The sorted set to remove from.
+   * @param {string | Uint8Array} values - The values of the elements to remove from the set.
+   * @returns {Promise<CacheSortedSetRemoveElement.Response>}
+   * {@link CacheSortedSetRemoveElement.Success} if the elements were successfully removed
+   * {@link CacheSortedSetIncrementScore.Error} on failure
+   */
+  public async sortedSetRemoveElements(
+    cacheName: string,
+    sortedSetName: string,
+    values: string[] | Uint8Array[]
+  ): Promise<CacheSortedSetRemoveElements.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetRemoveElements(
+      cacheName,
+      sortedSetName,
+      values
+    );
+  }
 
   /**
    * Creates a Momento signing key.
