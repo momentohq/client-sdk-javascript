@@ -916,10 +916,18 @@ export class SimpleCacheClient {
    * @param {string} cacheName - The cache containing the sorted set.
    * @param {string} sortedSetName - The sorted set to fetch from.
    * @param {SortedSetFetchByScoreOptions} options
-   * @param {number} [options.minScore] - The minimum score (inclusive) of the
-   * elements to fetch. Defaults to negative infinity.
-   * @param {number} [options.maxScore] - The maximum score (inclusive) of the
-   * elements to fetch. Defaults to positive infinity.
+   * @param {number} [options.minScore] - The minimum score of the elements to include
+   * in the range and whether it should be inclusive. Defaults to negative infinity.
+   * @param {number} [options.minScore.score] - The minimum score of range endpoint.
+   * If not specified, defaults to negative infinity.
+   * @param {boolean} [options.minScore.inclusive] - Whether the minimum score is
+   * included in the range. Defaults to true.
+   * @param {number} [options.maxScore] - The maximum score of the elements to include
+   * in the range and whether it should be inclusive. Defaults to positive infinity.
+   * @param {number} [options.maxScore.score] - The maximum score of range endpoint.
+   * If not specified, defaults to positive infinity.
+   * @param {boolean} [options.maxScore.inclusive] - Whether the maximum score is
+   * included in the range. Defaults to true.
    * @param {SortedSetOrder} [options.order] - The order to fetch the elements in.
    * Defaults to ascending.
    * @returns {Promise<CacheSortedSetFetch.Response>} -
@@ -937,8 +945,10 @@ export class SimpleCacheClient {
       cacheName,
       sortedSetName,
       options?.order ?? SortedSetOrder.Ascending,
-      options?.minScore,
-      options?.maxScore
+      options?.minScore?.score,
+      options?.minScore?.inclusive,
+      options?.maxScore?.score,
+      options?.maxScore?.inclusive
     );
   }
 

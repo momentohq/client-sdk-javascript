@@ -55,17 +55,35 @@ export interface SortedSetFetchByIndexCallOptions {
   order?: SortedSetOrder;
 }
 
+/**
+ * An endpoint of a range of scores.
+ */
+export interface ScoreEndpoint {
+  /**
+   * The score of the endpoint.
+   * If the score is not specified, the range extends to include +/- infinity.
+   * That is, if the minimum score is not specified, the range extends to always include
+   * the extreme value in that direction, regardless of the inclusive flag.
+   */
+  score?: number;
+  /**
+   * Whether the endpoint is inclusive, ie whether the score is included in the range.
+   * Defaults to true.
+   */
+  inclusive?: boolean;
+}
+
 export interface SortedSetFetchByScoreCallOptions {
   /**
-   * The minimum score of the elements to return, inclusive.
-   * If the minimum score is not specified, the range extends to the lowest score.
+   * The minimum score of the elements to return and whether it is inclusive.
+   * Defaults to extending to including the lowest score.
    */
-  minScore?: number;
+  minScore?: ScoreEndpoint;
   /**
-   * The maximum score of the elements to return, inclusive.
-   * If the maximum score is not specified, the range extends to the highest score.
+   * The maximum score of the elements to return and whether it is inclusive.
+   * Defaults to extending to including the highest score.
    */
-  maxScore?: number;
+  maxScore?: ScoreEndpoint;
   /**
    * The order in which to return the elements.
    * If the order is not specified, the elements are returned in ascending order.

@@ -1836,7 +1836,9 @@ export class CacheClient {
     sortedSetName: string,
     order: SortedSetOrder,
     minScore?: number,
-    maxScore?: number
+    minInclusive?: boolean,
+    maxScore?: number,
+    maxInclusive?: boolean
   ): Promise<CacheSortedSetFetch.Response> {
     try {
       validateCacheName(cacheName);
@@ -1846,9 +1848,11 @@ export class CacheClient {
     }
 
     this.logger.trace(
-      "Issuing 'sortedSetFetchByScore' request; minScore: %s, maxScore : %s, order: %s",
+      "Issuing 'sortedSetFetchByScore' request; minScore: %s, minInclusive: %s, maxScore : %s, maxInclusive: %s, order: %s",
       minScore?.toString() ?? 'null',
+      minInclusive?.toString() ?? 'null',
       maxScore?.toString() ?? 'null',
+      maxInclusive?.toString() ?? 'null',
       order.toString()
     );
 
@@ -1857,7 +1861,9 @@ export class CacheClient {
       this.convert(sortedSetName),
       order,
       minScore,
-      maxScore
+      minInclusive,
+      maxScore,
+      maxInclusive
     );
 
     this.logger.trace(
@@ -1872,24 +1878,28 @@ export class CacheClient {
     sortedSetName: Uint8Array,
     order: SortedSetOrder,
     minScore?: number,
-    maxScore?: number
+    minInclusive?: boolean,
+    maxScore?: number,
+    maxInclusive?: boolean
   ): Promise<CacheSortedSetFetch.Response> {
     const by_score = new grpcCache._SortedSetFetchRequest._ByScore();
     if (minScore) {
+      const isInclusive = minInclusive ?? true;
       by_score.min_score = new grpcCache._SortedSetFetchRequest._ByScore._Score(
         {
           score: minScore,
-          exclusive: false,
+          exclusive: !isInclusive,
         }
       );
     } else {
       by_score.unbounded_min = new grpcCache._Unbounded();
     }
     if (maxScore) {
+      const isInclusive = maxInclusive ?? true;
       by_score.max_score = new grpcCache._SortedSetFetchRequest._ByScore._Score(
         {
           score: maxScore,
-          exclusive: false,
+          exclusive: !isInclusive,
         }
       );
     } else {
