@@ -45,6 +45,7 @@ import * as CacheSortedSetRemoveElements from './messages/responses/cache-sorted
 
 import {CacheInfo} from './messages/cache-info';
 import {CollectionTtl} from './utils/collection-ttl';
+import {SortedSetOrder} from './utils/cache-call-options';
 import {
   CredentialProvider,
   StringMomentoTokenProvider,
@@ -87,6 +88,7 @@ export {ExampleAsyncMiddleware} from './config/middleware/example-async-middlewa
 
 export {
   CollectionTtl,
+  SortedSetOrder,
   Configurations,
   Configuration,
   CredentialProvider,

@@ -3,8 +3,10 @@ import {sleep} from '../../src/internal/utils/sleep';
 import {
   CacheDelete,
   CacheSortedSetFetch,
+  CacheSortedSetIncrementScore,
   CollectionTtl,
   MomentoErrorCode,
+  SortedSetOrder,
 } from '../../src';
 import {
   ItBehavesLikeItValidatesCacheName,
@@ -19,9 +21,10 @@ import {
   IResponseSuccess,
   ResponseBase,
 } from '../../src/messages/responses/response-base';
-import {SortedSetOrder} from '../../src/utils/cache-call-options';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
+
+const textEncoder = new TextEncoder();
 
 describe('Integration tests for sorted set operations', () => {
   const itBehavesLikeItValidates = (
@@ -213,8 +216,6 @@ describe('Integration tests for sorted set operations', () => {
     });
 
     it('should provide value accessors for string and byte elements', async () => {
-      const textEncoder = new TextEncoder();
-
       const sortedSetName = v4();
       const field1 = 'foo';
       const score1 = 90210;
@@ -650,8 +651,6 @@ describe('Integration tests for sorted set operations', () => {
     });
 
     it('should provide value accessors for string and byte elements', async () => {
-      const textEncoder = new TextEncoder();
-
       const sortedSetName = v4();
       const field1 = 'foo';
       const score1 = 90210;
@@ -1117,6 +1116,12 @@ describe('Integration tests for sorted set operations', () => {
     });
   });
 
+  describe('#sortedSetGetRank', () => {});
+
+  describe('#sortedSetGetScore', () => {});
+
+  describe('#sortedSetGetScores', () => {});
+
   /*
   describe('#dictionaryGetField', () => {
     const responder = (props: ValidateDictionaryProps) => {
@@ -1338,21 +1343,22 @@ describe('Integration tests for sorted set operations', () => {
       expect(expectedMap).toEqual(hitResponse.valueMapUint8ArrayUint8Array());
     });
   });
+  */
 
-  describe('#dictionaryIncrement', () => {
-    const responder = (props: ValidateDictionaryProps) => {
-      return Momento.dictionaryIncrement(
+  describe('#sortedSetIncrementScore', () => {
+    const responder = (props: ValidateSortedSetProps) => {
+      return Momento.sortedSetIncrementScore(
         props.cacheName,
-        props.dictionaryName,
-        props.field
+        props.sortedSetName,
+        props.value
       );
     };
 
-    const changeResponder = (props: ValidateDictionaryChangerProps) => {
-      return Momento.dictionaryIncrement(
+    const changeResponder = (props: ValidateSortedSetChangerProps) => {
+      return Momento.sortedSetIncrementScore(
         props.cacheName,
-        props.dictionaryName,
-        props.field,
+        props.sortedSetName,
+        props.value,
         5,
         {ttl: props.ttl}
       );
@@ -1361,165 +1367,192 @@ describe('Integration tests for sorted set operations', () => {
     itBehavesLikeItValidates(responder);
     itBehavesLikeItHasACollectionTtl(changeResponder);
 
-    it('increments from 0 to expected amount with string field', async () => {
-      const dictionaryName = v4();
-      const field = v4();
-      let response = await Momento.dictionaryIncrement(
+    it('creates sorted set and element if they do not exist', async () => {
+      const sortedSetName = v4();
+      let response = await Momento.sortedSetFetchByIndex(
         IntegrationTestCacheName,
-        dictionaryName,
-        field,
-        1
+        sortedSetName
       );
-      expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
-      let successResponse = response as CacheDictionaryIncrement.Success;
-      expect(successResponse.valueNumber()).toEqual(1);
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Miss);
 
-      response = await Momento.dictionaryIncrement(
+      response = await Momento.sortedSetIncrementScore(
         IntegrationTestCacheName,
-        dictionaryName,
-        field,
-        41
+        sortedSetName,
+        'foo'
       );
-      expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
-      successResponse = response as CacheDictionaryIncrement.Success;
-      expect(successResponse.valueNumber()).toEqual(42);
-      expect(successResponse.toString()).toEqual('Success: value: 42');
+      expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+      const incrementResponse =
+        response as CacheSortedSetIncrementScore.Success;
+      expect(incrementResponse.score()).toEqual(1);
 
-      response = await Momento.dictionaryIncrement(
+      response = await Momento.sortedSetFetchByIndex(
         IntegrationTestCacheName,
-        dictionaryName,
-        field,
-        -1042
+        sortedSetName
       );
-      expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
-      successResponse = response as CacheDictionaryIncrement.Success;
-      expect(successResponse.valueNumber()).toEqual(-1000);
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse.valueArray()).toEqual([
+        {
+          value: 'foo',
+          score: 1,
+        },
+      ]);
 
-      response = await Momento.dictionaryGetField(
+      response = await Momento.sortedSetIncrementScore(
         IntegrationTestCacheName,
-        dictionaryName,
-        field
+        sortedSetName,
+        'bar',
+        42
       );
-      expect(response).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      const hitResponse = response as CacheDictionaryGetField.Hit;
-      expect(hitResponse.valueString()).toEqual('-1000');
+
+      expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+      const incrementResponse2 =
+        response as CacheSortedSetIncrementScore.Success;
+      expect(incrementResponse2.score()).toEqual(42);
+
+      response = await Momento.sortedSetFetchByIndex(
+        IntegrationTestCacheName,
+        sortedSetName
+      );
+
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse2 = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse2.valueArray()).toEqual([
+        {value: 'foo', score: 1},
+        {value: 'bar', score: 42},
+      ]);
     });
 
-    it('increments from 0 to expected amount with Uint8Array field', async () => {
-      const dictionaryName = v4();
-      const field = new TextEncoder().encode(v4());
-      let response = await Momento.dictionaryIncrement(
+    it('increments an existing field by the expected amount for a string value', async () => {
+      const sortedSetName = v4();
+      const value = 'foo';
+      await Momento.sortedSetPutElement(
         IntegrationTestCacheName,
-        dictionaryName,
-        field,
-        1
+        sortedSetName,
+        value,
+        90210
       );
-      expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
-      let successResponse = response as CacheDictionaryIncrement.Success;
-      expect(successResponse.valueNumber()).toEqual(1);
 
-      response = await Momento.dictionaryIncrement(
+      let response = await Momento.sortedSetIncrementScore(
         IntegrationTestCacheName,
-        dictionaryName,
-        field,
-        41
+        sortedSetName,
+        value,
+        10
       );
-      expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
-      successResponse = response as CacheDictionaryIncrement.Success;
-      expect(successResponse.valueNumber()).toEqual(42);
-      expect(successResponse.toString()).toEqual('Success: value: 42');
+      expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+      const incrementResponse =
+        response as CacheSortedSetIncrementScore.Success;
+      expect(incrementResponse.score()).toEqual(90220);
 
-      response = await Momento.dictionaryIncrement(
+      response = await Momento.sortedSetFetchByIndex(
         IntegrationTestCacheName,
-        dictionaryName,
-        field,
-        -1042
+        sortedSetName
       );
-      expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
-      successResponse = response as CacheDictionaryIncrement.Success;
-      expect(successResponse.valueNumber()).toEqual(-1000);
-
-      response = await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field
-      );
-      expect(response).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      const hitResponse = response as CacheDictionaryGetField.Hit;
-      expect(hitResponse.valueString()).toEqual('-1000');
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse.valueArray()).toEqual([{value: value, score: 90220}]);
     });
 
-    it('increments with setting and resetting field', async () => {
-      const dictionaryName = v4();
-      const field = v4();
+    it('increments an existing field by the expected amount for a bytes value', async () => {
+      const sortedSetName = v4();
+      const value = textEncoder.encode('foo');
+      await Momento.sortedSetPutElement(
+        IntegrationTestCacheName,
+        sortedSetName,
+        value,
+        90210
+      );
 
-      await Momento.dictionarySetField(
+      let response = await Momento.sortedSetIncrementScore(
         IntegrationTestCacheName,
-        dictionaryName,
-        field,
-        '10'
+        sortedSetName,
+        value,
+        10
       );
-      let response = await Momento.dictionaryIncrement(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field,
-        0
-      );
-      expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
-      let successResponse = response as CacheDictionaryIncrement.Success;
-      expect(successResponse.valueNumber()).toEqual(10);
+      expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+      const incrementResponse =
+        response as CacheSortedSetIncrementScore.Success;
+      expect(incrementResponse.score()).toEqual(90220);
 
-      response = await Momento.dictionaryIncrement(
+      response = await Momento.sortedSetFetchByIndex(
         IntegrationTestCacheName,
-        dictionaryName,
-        field,
-        90
+        sortedSetName
       );
-      expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
-      successResponse = response as CacheDictionaryIncrement.Success;
-      expect(successResponse.valueNumber()).toEqual(100);
-
-      // Reset field
-      await Momento.dictionarySetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field,
-        '0'
-      );
-      response = await Momento.dictionaryIncrement(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field,
-        0
-      );
-      expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
-      successResponse = response as CacheDictionaryIncrement.Success;
-      expect(successResponse.valueNumber()).toEqual(0);
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse.valueArrayUint8Elements()).toEqual([
+        {value: value, score: 90220},
+      ]);
     });
 
-    it('fails with precondition with a bad amount', async () => {
-      const dictionaryName = v4();
-      const field = v4();
+    it('decrements an existing field by the expected amount for a string value', async () => {
+      const sortedSetName = v4();
+      const value = 'foo';
+      await Momento.sortedSetPutElement(
+        IntegrationTestCacheName,
+        sortedSetName,
+        value,
+        90210
+      );
 
-      await Momento.dictionarySetField(
+      let response = await Momento.sortedSetIncrementScore(
         IntegrationTestCacheName,
-        dictionaryName,
-        field,
-        'abcxyz'
+        sortedSetName,
+        value,
+        -10
       );
-      const response = await Momento.dictionaryIncrement(
+      expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+      const incrementResponse =
+        response as CacheSortedSetIncrementScore.Success;
+      expect(incrementResponse.score()).toEqual(90200);
+
+      response = await Momento.sortedSetFetchByIndex(
         IntegrationTestCacheName,
-        dictionaryName,
-        field
+        sortedSetName
       );
-      expect(response).toBeInstanceOf(CacheDictionaryIncrement.Error);
-      const errorResponse = response as CacheDictionaryIncrement.Error;
-      expect(errorResponse.errorCode()).toEqual(
-        MomentoErrorCode.FAILED_PRECONDITION_ERROR
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse.valueArray()).toEqual([{value: value, score: 90200}]);
+    });
+
+    it('increments an existing field by the expected amount for a bytes value', async () => {
+      const sortedSetName = v4();
+      const value = textEncoder.encode('foo');
+      await Momento.sortedSetPutElement(
+        IntegrationTestCacheName,
+        sortedSetName,
+        value,
+        90210
       );
+
+      let response = await Momento.sortedSetIncrementScore(
+        IntegrationTestCacheName,
+        sortedSetName,
+        value,
+        -10
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+      const incrementResponse =
+        response as CacheSortedSetIncrementScore.Success;
+      expect(incrementResponse.score()).toEqual(90200);
+
+      response = await Momento.sortedSetFetchByIndex(
+        IntegrationTestCacheName,
+        sortedSetName
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse.valueArrayUint8Elements()).toEqual([
+        {value: value, score: 90200},
+      ]);
     });
   });
 
+  describe('#sortedSetRemoveElement', () => {});
+
+  describe('#sortedSetRemoveElements', () => {});
+
+  /*
   describe('#dictionaryRemoveField', () => {
     const responder = (props: ValidateDictionaryProps) => {
       return Momento.dictionaryRemoveField(
@@ -1792,7 +1825,7 @@ describe('Integration tests for sorted set operations', () => {
   });
   */
 
-  describe('#sortedSetPutValue', () => {
+  describe('#sortedSetPutElement', () => {
     const responder = (props: ValidateSortedSetProps) => {
       return Momento.sortedSetPutElement(
         props.cacheName,
@@ -1814,6 +1847,7 @@ describe('Integration tests for sorted set operations', () => {
 
     itBehavesLikeItValidates(responder);
     itBehavesLikeItHasACollectionTtl(changeResponder);
+
     /*
     it('should set/get a dictionary with Uint8Array field/value', async () => {
       const dictionaryName = v4();
