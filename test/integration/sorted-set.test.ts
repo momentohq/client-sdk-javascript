@@ -773,7 +773,10 @@ describe('Integration tests for sorted set operations', () => {
         ]);
       });
 
-      it('should fetch an empty list if minScore is out of range', async () => {
+      // Skipping this for now; need to re-enable:
+      // https://github.com/momentohq/client-sdk-nodejs/issues/330
+      // https://github.com/momentohq/storage-store/issues/168
+      it.skip('should fetch an empty list if minScore is out of range', async () => {
         const response = await Momento.sortedSetFetchByScore(
           IntegrationTestCacheName,
           sortedSetName,
@@ -787,7 +790,10 @@ describe('Integration tests for sorted set operations', () => {
         expect(hitResponse.valueArray()).toEqual([]);
       });
 
-      it('should fetch an empty list if maxScore is out of range', async () => {
+      // Skipping this for now; need to re-enable:
+      // https://github.com/momentohq/client-sdk-nodejs/issues/330
+      // https://github.com/momentohq/storage-store/issues/168
+      it.skip('should fetch an empty list if maxScore is out of range', async () => {
         const response = await Momento.sortedSetFetchByScore(
           IntegrationTestCacheName,
           sortedSetName,
@@ -926,7 +932,10 @@ describe('Integration tests for sorted set operations', () => {
         ]);
       });
 
-      it('should return an empty list if offset is greater than the size of the results', async () => {
+      // Skipping this for now; need to re-enable:
+      // https://github.com/momentohq/client-sdk-nodejs/issues/330
+      // https://github.com/momentohq/storage-store/issues/168
+      it.skip('should return an empty list if offset is greater than the size of the results', async () => {
         const response = await Momento.sortedSetFetchByScore(
           IntegrationTestCacheName,
           sortedSetName,
