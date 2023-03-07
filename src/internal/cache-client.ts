@@ -1799,34 +1799,34 @@ export class CacheClient {
     });
   }
 
-  public async sortedSetFetchByIndex(
+  public async sortedSetFetchByRank(
     cacheName: string,
     sortedSetName: string,
     order: SortedSetOrder,
-    startIndex: number,
-    endIndex?: number
+    startRank: number,
+    endRank?: number
   ): Promise<CacheSortedSetFetch.Response> {
     try {
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
-      validateSortedSetIndices(startIndex, endIndex);
+      validateSortedSetIndices(startRank, endRank);
     } catch (err) {
       return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
     }
 
     this.logger.trace(
       "Issuing 'sortedSetFetchByIndex' request; startIndex: %s, endIndex : %s, order: %s",
-      startIndex.toString() ?? 'null',
-      endIndex?.toString() ?? 'null',
+      startRank.toString() ?? 'null',
+      endRank?.toString() ?? 'null',
       order.toString()
     );
 
-    const result = await this.sendSortedSetFetchByIndex(
+    const result = await this.sendSortedSetFetchByRank(
       cacheName,
       this.convert(sortedSetName),
       order,
-      startIndex,
-      endIndex
+      startRank,
+      endRank
     );
     this.logger.trace(
       "'sortedSetFetchByIndex' request result: %s",
@@ -1835,21 +1835,21 @@ export class CacheClient {
     return result;
   }
 
-  private async sendSortedSetFetchByIndex(
+  private async sendSortedSetFetchByRank(
     cacheName: string,
     sortedSetName: Uint8Array,
     order: SortedSetOrder,
-    startIndex: number,
-    endIndex?: number
+    startRank: number,
+    endRank?: number
   ): Promise<CacheSortedSetFetch.Response> {
     const by_index = new grpcCache._SortedSetFetchRequest._ByIndex();
-    if (startIndex) {
-      by_index.inclusive_start_index = startIndex;
+    if (startRank) {
+      by_index.inclusive_start_index = startRank;
     } else {
       by_index.unbounded_start = new grpcCache._Unbounded();
     }
-    if (endIndex) {
-      by_index.exclusive_end_index = endIndex;
+    if (endRank) {
+      by_index.exclusive_end_index = endRank;
     } else {
       by_index.unbounded_end = new grpcCache._Unbounded();
     }

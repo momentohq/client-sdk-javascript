@@ -54,7 +54,7 @@ import {
   CollectionCallOptions,
   FrontTruncatableCallOptions,
   ScalarCallOptions,
-  SortedSetFetchByIndexCallOptions,
+  SortedSetFetchByRankCallOptions,
   SortedSetFetchByScoreCallOptions,
   SortedSetOrder,
 } from './utils/cache-call-options';
@@ -74,7 +74,7 @@ type DictionaryIncrementOptions = CollectionCallOptions;
 type IncrementOptions = ScalarCallOptions;
 type SortedSetPutElementOptions = CollectionCallOptions;
 type SortedSetPutElementsOptions = CollectionCallOptions;
-type SortedSetFetchByIndexOptions = SortedSetFetchByIndexCallOptions;
+type SortedSetFetchByRankOptions = SortedSetFetchByRankCallOptions;
 type SortedSetFetchByScoreOptions = SortedSetFetchByScoreCallOptions;
 type SortedSetIncrementOptions = CollectionCallOptions;
 
@@ -917,11 +917,11 @@ export class SimpleCacheClient {
    *
    * @param {string} cacheName - The cache containing the sorted set.
    * @param {string} sortedSetName - The sorted set to fetch from.
-   * @param {SortedSetFetchByIndexOptions} options
-   * @param {number} [options.startIndex] - The index of the first element to
+   * @param {SortedSetFetchByRankOptions} options
+   * @param {number} [options.startRank] - The index of the first element to
    * fetch. Defaults to 0. This index is inclusive, ie the element at this index
    * will be fetched.
-   * @param {number} [options.endIndex] - The index of the last element to fetch.
+   * @param {number} [options.endRank] - The index of the last element to fetch.
    * This index is exclusive, ie the element at this index will not be fetched.
    * Defaults to null, which fetches up until and including the last element.
    * @param {SortedSetOrder} [options.order] - The order to fetch the elements in.
@@ -931,18 +931,18 @@ export class SimpleCacheClient {
    * {@link CacheSortedSetFetch.Miss} when the sorted set does not exist.
    * {@link CacheSortedSetFetch.Error} on failure.
    */
-  public async sortedSetFetchByIndex(
+  public async sortedSetFetchByRank(
     cacheName: string,
     sortedSetName: string,
-    options?: SortedSetFetchByIndexOptions
+    options?: SortedSetFetchByRankOptions
   ): Promise<CacheSortedSetFetch.Response> {
     const client = this.getNextDataClient();
-    return await client.sortedSetFetchByIndex(
+    return await client.sortedSetFetchByRank(
       cacheName,
       sortedSetName,
       options?.order ?? SortedSetOrder.Ascending,
-      options?.startIndex ?? 0,
-      options?.endIndex
+      options?.startRank ?? 0,
+      options?.endRank
     );
   }
 

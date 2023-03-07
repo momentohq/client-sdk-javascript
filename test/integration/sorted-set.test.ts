@@ -142,7 +142,7 @@ describe('Integration tests for sorted set operations', () => {
       expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
       await sleep(timeout * 1000);
 
-      const getResponse = await Momento.sortedSetFetchByIndex(
+      const getResponse = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
@@ -173,7 +173,7 @@ describe('Integration tests for sorted set operations', () => {
       expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
       await sleep(timeout * 1000);
 
-      const getResponse = await Momento.sortedSetFetchByIndex(
+      const getResponse = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
@@ -205,7 +205,7 @@ describe('Integration tests for sorted set operations', () => {
         'a',
         42
       );
-      const response = await Momento.sortedSetFetchByIndex(
+      const response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
@@ -231,7 +231,7 @@ describe('Integration tests for sorted set operations', () => {
         ])
       );
 
-      const response = await Momento.sortedSetFetchByIndex(
+      const response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
@@ -285,11 +285,11 @@ describe('Integration tests for sorted set operations', () => {
       });
 
       it('should fetch only the specified range if start index is specified', async () => {
-        const response = await Momento.sortedSetFetchByIndex(
+        const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
           {
-            startIndex: 4,
+            startRank: 4,
           }
         );
 
@@ -304,11 +304,11 @@ describe('Integration tests for sorted set operations', () => {
       });
 
       it('should fetch only the specified range if end index is specified', async () => {
-        const response = await Momento.sortedSetFetchByIndex(
+        const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
           {
-            endIndex: 3,
+            endRank: 3,
           }
         );
 
@@ -322,12 +322,12 @@ describe('Integration tests for sorted set operations', () => {
       });
 
       it('should fetch only the specified range if both start and end index are specified', async () => {
-        const response = await Momento.sortedSetFetchByIndex(
+        const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
           {
-            startIndex: 1,
-            endIndex: 5,
+            startRank: 1,
+            endRank: 5,
           }
         );
 
@@ -345,11 +345,11 @@ describe('Integration tests for sorted set operations', () => {
       // https://github.com/momentohq/client-sdk-nodejs/issues/330
       // https://github.com/momentohq/storage-store/issues/168
       it.skip('should return an empty list if start index is out of bounds', async () => {
-        const response = await Momento.sortedSetFetchByIndex(
+        const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
           {
-            startIndex: 10,
+            startRank: 10,
           }
         );
 
@@ -359,12 +359,12 @@ describe('Integration tests for sorted set operations', () => {
       });
 
       it('should return all the remaining elements if end index is out of bounds', async () => {
-        const response = await Momento.sortedSetFetchByIndex(
+        const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
           {
-            startIndex: 5,
-            endIndex: 100,
+            startRank: 5,
+            endRank: 100,
           }
         );
 
@@ -378,11 +378,11 @@ describe('Integration tests for sorted set operations', () => {
       });
 
       it('should return the last elements if start index is negative', async () => {
-        const response = await Momento.sortedSetFetchByIndex(
+        const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
           {
-            startIndex: -5,
+            startRank: -5,
           }
         );
 
@@ -398,11 +398,11 @@ describe('Integration tests for sorted set operations', () => {
       });
 
       it('should return all but the last elements if end index is negative', async () => {
-        const response = await Momento.sortedSetFetchByIndex(
+        const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
           {
-            endIndex: -2,
+            endRank: -2,
           }
         );
 
@@ -419,12 +419,12 @@ describe('Integration tests for sorted set operations', () => {
       });
 
       it('should return a range from the end of the set if both start and end index are negative', async () => {
-        const response = await Momento.sortedSetFetchByIndex(
+        const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
           {
-            startIndex: -5,
-            endIndex: -2,
+            startRank: -5,
+            endRank: -2,
           }
         );
 
@@ -438,7 +438,7 @@ describe('Integration tests for sorted set operations', () => {
       });
 
       it('should fetch in ascending order if order is explicitly specified', async () => {
-        const response = await Momento.sortedSetFetchByIndex(
+        const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
           {
@@ -461,7 +461,7 @@ describe('Integration tests for sorted set operations', () => {
       });
 
       it('should fetch in descending order if specified', async () => {
-        const response = await Momento.sortedSetFetchByIndex(
+        const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
           {
@@ -484,12 +484,12 @@ describe('Integration tests for sorted set operations', () => {
       });
 
       it('should support descending order with a start index', async () => {
-        const response = await Momento.sortedSetFetchByIndex(
+        const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
           {
             order: SortedSetOrder.Descending,
-            startIndex: 5,
+            startRank: 5,
           }
         );
 
@@ -503,12 +503,12 @@ describe('Integration tests for sorted set operations', () => {
       });
 
       it('should support descending order with a end index', async () => {
-        const response = await Momento.sortedSetFetchByIndex(
+        const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
           {
             order: SortedSetOrder.Descending,
-            endIndex: 3,
+            endRank: 3,
           }
         );
 
@@ -522,13 +522,13 @@ describe('Integration tests for sorted set operations', () => {
       });
 
       it('should support descending order with a start and end index', async () => {
-        const response = await Momento.sortedSetFetchByIndex(
+        const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
           {
             order: SortedSetOrder.Descending,
-            startIndex: 3,
-            endIndex: 5,
+            startRank: 3,
+            endRank: 5,
           }
         );
 
@@ -541,13 +541,13 @@ describe('Integration tests for sorted set operations', () => {
       });
 
       it('should error if start index is greater than end index', async () => {
-        const response = await Momento.sortedSetFetchByIndex(
+        const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
           {
             order: SortedSetOrder.Descending,
-            startIndex: 5,
-            endIndex: 3,
+            startRank: 5,
+            endRank: 3,
           }
         );
 
@@ -565,13 +565,13 @@ describe('Integration tests for sorted set operations', () => {
       });
 
       it('should error if negative start index is less than negative end index', async () => {
-        const response = await Momento.sortedSetFetchByIndex(
+        const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
           {
             order: SortedSetOrder.Descending,
-            startIndex: -3,
-            endIndex: -5,
+            startRank: -3,
+            endRank: -5,
           }
         );
 
@@ -591,7 +591,7 @@ describe('Integration tests for sorted set operations', () => {
 
     it('should return a miss if the sorted set does not exist', async () => {
       const sortedSetName = v4();
-      let response = await Momento.sortedSetFetchByIndex(
+      let response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
@@ -607,7 +607,7 @@ describe('Integration tests for sorted set operations', () => {
         ])
       );
 
-      response = await Momento.sortedSetFetchByIndex(
+      response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
@@ -616,7 +616,7 @@ describe('Integration tests for sorted set operations', () => {
       response = await Momento.delete(IntegrationTestCacheName, sortedSetName);
       expect(response).toBeInstanceOf(CacheDelete.Success);
 
-      response = await Momento.sortedSetFetchByIndex(
+      response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
@@ -1083,7 +1083,7 @@ describe('Integration tests for sorted set operations', () => {
 
     it('should return a miss if the sorted set does not exist', async () => {
       const sortedSetName = v4();
-      let response = await Momento.sortedSetFetchByIndex(
+      let response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
@@ -1099,7 +1099,7 @@ describe('Integration tests for sorted set operations', () => {
         ])
       );
 
-      response = await Momento.sortedSetFetchByIndex(
+      response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
@@ -1108,7 +1108,7 @@ describe('Integration tests for sorted set operations', () => {
       response = await Momento.delete(IntegrationTestCacheName, sortedSetName);
       expect(response).toBeInstanceOf(CacheDelete.Success);
 
-      response = await Momento.sortedSetFetchByIndex(
+      response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
@@ -1372,7 +1372,7 @@ describe('Integration tests for sorted set operations', () => {
 
     it('creates sorted set and element if they do not exist', async () => {
       const sortedSetName = v4();
-      let response = await Momento.sortedSetFetchByIndex(
+      let response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
@@ -1388,7 +1388,7 @@ describe('Integration tests for sorted set operations', () => {
         response as CacheSortedSetIncrementScore.Success;
       expect(incrementResponse.score()).toEqual(1);
 
-      response = await Momento.sortedSetFetchByIndex(
+      response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
@@ -1413,7 +1413,7 @@ describe('Integration tests for sorted set operations', () => {
         response as CacheSortedSetIncrementScore.Success;
       expect(incrementResponse2.score()).toEqual(42);
 
-      response = await Momento.sortedSetFetchByIndex(
+      response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
@@ -1447,7 +1447,7 @@ describe('Integration tests for sorted set operations', () => {
         response as CacheSortedSetIncrementScore.Success;
       expect(incrementResponse.score()).toEqual(90220);
 
-      response = await Momento.sortedSetFetchByIndex(
+      response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
@@ -1477,7 +1477,7 @@ describe('Integration tests for sorted set operations', () => {
         response as CacheSortedSetIncrementScore.Success;
       expect(incrementResponse.score()).toEqual(90220);
 
-      response = await Momento.sortedSetFetchByIndex(
+      response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
@@ -1509,7 +1509,7 @@ describe('Integration tests for sorted set operations', () => {
         response as CacheSortedSetIncrementScore.Success;
       expect(incrementResponse.score()).toEqual(90200);
 
-      response = await Momento.sortedSetFetchByIndex(
+      response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
@@ -1539,7 +1539,7 @@ describe('Integration tests for sorted set operations', () => {
         response as CacheSortedSetIncrementScore.Success;
       expect(incrementResponse.score()).toEqual(90200);
 
-      response = await Momento.sortedSetFetchByIndex(
+      response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
         sortedSetName
       );
