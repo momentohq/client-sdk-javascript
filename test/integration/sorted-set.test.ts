@@ -274,9 +274,13 @@ describe('Integration tests for sorted set operations', () => {
             jalapeno: 1_000_000,
           }
         );
-        setupPromise.then(() => {
-          done();
-        });
+        setupPromise
+          .then(() => {
+            done();
+          })
+          .catch(e => {
+            throw e;
+          });
       });
 
       it('should fetch only the specified range if start index is specified', async () => {

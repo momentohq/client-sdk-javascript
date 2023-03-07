@@ -62,7 +62,8 @@ import {
   validateSetName,
   validateSortedSetName,
   validateSortedSetOffset,
-  validateSortedSetCount, validateSortedSetIndices,
+  validateSortedSetCount,
+  validateSortedSetIndices,
 } from './utils/validators';
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
 import {Middleware} from '../config/middleware/middleware';

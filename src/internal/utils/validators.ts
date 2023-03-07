@@ -25,7 +25,7 @@ export function validateSortedSetIndices(
   if (end_index === undefined) {
     return;
   }
-  if (start_index > 0 && end_index > 0 && start_index >= end_index) {
+  if (start_index > 0 && end_index > 0 && start_index > end_index) {
     throw new InvalidArgumentError('start index must be less than end index');
   }
   if (start_index < 0 && end_index < 0 && start_index >= end_index) {
