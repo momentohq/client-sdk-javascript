@@ -64,6 +64,7 @@ import {
   validateSortedSetOffset,
   validateSortedSetCount,
   validateSortedSetIndices,
+  validateSortedSetScores,
 } from './utils/validators';
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
 import {Middleware} from '../config/middleware/middleware';
@@ -1922,6 +1923,7 @@ export class CacheClient {
     try {
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
+      validateSortedSetScores(minScore, maxScore);
       if (offset !== undefined) {
         validateSortedSetOffset(offset);
       }
@@ -1968,7 +1970,7 @@ export class CacheClient {
     count?: number
   ): Promise<CacheSortedSetFetch.Response> {
     const by_score = new grpcCache._SortedSetFetchRequest._ByScore();
-    if (minScore) {
+    if (minScore !== undefined) {
       by_score.min_score = new grpcCache._SortedSetFetchRequest._ByScore._Score(
         {
           score: minScore,
@@ -1978,7 +1980,7 @@ export class CacheClient {
     } else {
       by_score.unbounded_min = new grpcCache._Unbounded();
     }
-    if (maxScore) {
+    if (maxScore !== undefined) {
       by_score.max_score = new grpcCache._SortedSetFetchRequest._ByScore._Score(
         {
           score: maxScore,

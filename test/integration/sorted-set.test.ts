@@ -623,6 +623,487 @@ describe('Integration tests for sorted set operations', () => {
     });
   });
 
+  describe('#sortedSetFetchByScore', () => {
+    const responder = (props: ValidateSortedSetProps) => {
+      return Momento.dictionaryFetch(props.cacheName, props.sortedSetName);
+    };
+
+    itBehavesLikeItValidates(responder);
+    itBehavesLikeItMissesWhenSortedSetDoesNotExist(responder);
+
+    it('should return expected toString value', async () => {
+      const sortedSetName = v4();
+      await Momento.sortedSetPutElement(
+        IntegrationTestCacheName,
+        sortedSetName,
+        'a',
+        42
+      );
+      const response = await Momento.sortedSetFetchByScore(
+        IntegrationTestCacheName,
+        sortedSetName
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      expect((response as CacheSortedSetFetch.Hit).toString()).toEqual(
+        'Hit: valueArrayStringElements: a: 42'
+      );
+    });
+
+    it('should provide value accessors for string and byte elements', async () => {
+      const textEncoder = new TextEncoder();
+
+      const sortedSetName = v4();
+      const field1 = 'foo';
+      const score1 = 90210;
+      const field2 = 'bar';
+      const score2 = 42;
+
+      await Momento.sortedSetPutElements(
+        IntegrationTestCacheName,
+        sortedSetName,
+        new Map([
+          [field1, score1],
+          [field2, score2],
+        ])
+      );
+
+      const response = await Momento.sortedSetFetchByScore(
+        IntegrationTestCacheName,
+        sortedSetName
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+
+      const expectedStringElements = [
+        {value: 'bar', score: 42},
+        {value: 'foo', score: 90210},
+      ];
+
+      const expectedUint8Elements = [
+        {value: textEncoder.encode('bar'), score: 42},
+        {value: textEncoder.encode('foo'), score: 90210},
+      ];
+
+      expect(hitResponse.valueArrayStringElements()).toEqual(
+        expectedStringElements
+      );
+      expect(hitResponse.valueArrayUint8Elements()).toEqual(
+        expectedUint8Elements
+      );
+      expect(hitResponse.valueArray()).toEqual(expectedStringElements);
+    });
+
+    describe('when fetching with minScore, maxScore, ranges and order', () => {
+      const sortedSetName = v4();
+
+      beforeAll(done => {
+        const setupPromise = Momento.sortedSetPutElements(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            bam: 1000,
+            foo: 1,
+            taco: 90210,
+            bar: 2,
+            burrito: 9000,
+            baz: 42,
+            habanero: 68,
+            jalapeno: 1_000_000,
+          }
+        );
+        setupPromise.then(() => {
+          done();
+        });
+      });
+
+      it('should fetch only the matching elements if minScore is specified', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            minScore: 100,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([
+          {value: 'bam', score: 1000},
+          {value: 'burrito', score: 9000},
+          {value: 'taco', score: 90210},
+          {value: 'jalapeno', score: 1_000_000},
+        ]);
+      });
+
+      it('should fetch only the matching elements if maxScore is specified', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            maxScore: 1000,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([
+          {value: 'foo', score: 1},
+          {value: 'bar', score: 2},
+          {value: 'baz', score: 42},
+          {value: 'habanero', score: 68},
+          {value: 'bam', score: 1000},
+        ]);
+      });
+
+      it('should fetch only the matching elements if minScore and maxScore are specified', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            minScore: 100,
+            maxScore: 10_000,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([
+          {value: 'bam', score: 1000},
+          {value: 'burrito', score: 9000},
+        ]);
+      });
+
+      it('should fetch an empty list if minScore is out of range', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            minScore: 2_000_000,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([]);
+      });
+
+      it('should fetch an empty list if maxScore is out of range', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            maxScore: 0,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([]);
+      });
+
+      it('should fetch the whole set if minScore is less than the minimum score', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            minScore: 0,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([
+          {value: 'foo', score: 1},
+          {value: 'bar', score: 2},
+          {value: 'baz', score: 42},
+          {value: 'habanero', score: 68},
+          {value: 'bam', score: 1000},
+          {value: 'burrito', score: 9000},
+          {value: 'taco', score: 90210},
+          {value: 'jalapeno', score: 1_000_000},
+        ]);
+      });
+
+      it('should fetch the whole set if maxScore is greater than the maximum score', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            maxScore: 2_000_000,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([
+          {value: 'foo', score: 1},
+          {value: 'bar', score: 2},
+          {value: 'baz', score: 42},
+          {value: 'habanero', score: 68},
+          {value: 'bam', score: 1000},
+          {value: 'burrito', score: 9000},
+          {value: 'taco', score: 90210},
+          {value: 'jalapeno', score: 1_000_000},
+        ]);
+      });
+
+      it('should error if minScore is greater than maxScore', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            minScore: 1_000,
+            maxScore: 100,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Error);
+        const errorResponse = response as CacheSortedSetFetch.Error;
+        expect(errorResponse.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+        expect(errorResponse.message()).toEqual(
+          'Invalid argument passed to Momento client: minScore must be less than or equal to maxScore'
+        );
+        expect(errorResponse.toString()).toEqual(
+          'Invalid argument passed to Momento client: minScore must be less than or equal to maxScore'
+        );
+      });
+
+      it('should fetch starting from the offset if specified', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            minScore: 100,
+            offset: 2,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([
+          {value: 'taco', score: 90210},
+          {value: 'jalapeno', score: 1_000_000},
+        ]);
+      });
+
+      it('should fetch the specified number of results if count is specified', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            minScore: 100,
+            count: 2,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([
+          {value: 'bam', score: 1000},
+          {value: 'burrito', score: 9000},
+        ]);
+      });
+
+      it('should fetch the specified number of results from the offset if both count and offset are specified', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            minScore: 10,
+            offset: 2,
+            count: 3,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([
+          {value: 'bam', score: 1000},
+          {value: 'burrito', score: 9000},
+          {value: 'taco', score: 90210},
+        ]);
+      });
+
+      it('should return an empty list if offset is greater than the size of the results', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            minScore: 100,
+            offset: 5,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([]);
+      });
+
+      it('should return all remaining results if count is greater than the number of available results', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            minScore: 100,
+            count: 100,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([
+          {value: 'bam', score: 1000},
+          {value: 'burrito', score: 9000},
+          {value: 'taco', score: 90210},
+          {value: 'jalapeno', score: 1_000_000},
+        ]);
+      });
+
+      it('should error if count is negative', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            minScore: 100,
+            count: -2,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Error);
+        const errorResponse = response as CacheSortedSetFetch.Error;
+        expect(errorResponse.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+        expect(errorResponse.message()).toEqual(
+          'Invalid argument passed to Momento client: count must be strictly positive (> 0)'
+        );
+        expect(errorResponse.toString()).toEqual(
+          'Invalid argument passed to Momento client: count must be strictly positive (> 0)'
+        );
+      });
+
+      it('should error if offset is negative', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            minScore: 100,
+            offset: -2,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Error);
+        const errorResponse = response as CacheSortedSetFetch.Error;
+        expect(errorResponse.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+        expect(errorResponse.message()).toEqual(
+          'Invalid argument passed to Momento client: offset must be non-negative (>= 0)'
+        );
+        expect(errorResponse.toString()).toEqual(
+          'Invalid argument passed to Momento client: offset must be non-negative (>= 0)'
+        );
+      });
+
+      it('should return results in ascending order if order is explicitly set to ascending', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            order: SortedSetOrder.Ascending,
+            minScore: 100,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([
+          {value: 'bam', score: 1000},
+          {value: 'burrito', score: 9000},
+          {value: 'taco', score: 90210},
+          {value: 'jalapeno', score: 1_000_000},
+        ]);
+      });
+
+      it('should return results in descending order if order is set to descending', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            order: SortedSetOrder.Descending,
+            minScore: 100,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([
+          {value: 'jalapeno', score: 1_000_000},
+          {value: 'taco', score: 90210},
+          {value: 'burrito', score: 9000},
+          {value: 'bam', score: 1000},
+        ]);
+      });
+
+      it('should support offset and count when returning results in descending order', async () => {
+        const response = await Momento.sortedSetFetchByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          {
+            order: SortedSetOrder.Descending,
+            minScore: 20,
+            maxScore: 100_000,
+            offset: 2,
+            count: 2,
+          }
+        );
+
+        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([
+          {value: 'bam', score: 1000},
+          {value: 'habanero', score: 68},
+        ]);
+      });
+    });
+
+    it('should return a miss if the sorted set does not exist', async () => {
+      const sortedSetName = v4();
+      let response = await Momento.sortedSetFetchByIndex(
+        IntegrationTestCacheName,
+        sortedSetName
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Miss);
+
+      await Momento.sortedSetPutElements(
+        IntegrationTestCacheName,
+        sortedSetName,
+        new Map([
+          [v4(), 1],
+          [v4(), 2],
+          [v4(), 3],
+        ])
+      );
+
+      response = await Momento.sortedSetFetchByIndex(
+        IntegrationTestCacheName,
+        sortedSetName
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+
+      response = await Momento.delete(IntegrationTestCacheName, sortedSetName);
+      expect(response).toBeInstanceOf(CacheDelete.Success);
+
+      response = await Momento.sortedSetFetchByIndex(
+        IntegrationTestCacheName,
+        sortedSetName
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Miss);
+    });
+  });
+
   /*
   describe('#dictionaryGetField', () => {
     const responder = (props: ValidateDictionaryProps) => {
