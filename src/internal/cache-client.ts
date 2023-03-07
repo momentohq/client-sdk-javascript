@@ -2030,7 +2030,7 @@ export class CacheClient {
       value,
     ]);
     if (responses instanceof CacheSortedSetGetScores.Hit) {
-      return responses.responses[0];
+      return responses.responses()[0];
     } else if (responses instanceof CacheSortedSetGetScores.Miss) {
       return new CacheSortedSetGetScore.Miss(this.convert(value));
     } else if (responses instanceof CacheSortedSetGetScores.Error) {

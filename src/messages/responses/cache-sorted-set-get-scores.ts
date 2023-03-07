@@ -38,7 +38,7 @@ type CacheSortedSetGetScoreResponseType =
 export abstract class Response extends ResponseBase {}
 
 class _Hit extends Response {
-  public responses: CacheSortedSetGetScoreResponseType[] = [];
+  public _responses: CacheSortedSetGetScoreResponseType[] = [];
 
   constructor(
     scores: grpcCache._SortedSetGetScoreResponse._SortedSetGetScoreResponsePart[],
@@ -47,15 +47,15 @@ class _Hit extends Response {
     super();
     scores.forEach((score, index) => {
       if (score.result === grpcCache.ECacheResult.Hit) {
-        this.responses.push(
+        this._responses.push(
           new CacheSortedSetGetScoreResponse.Hit(score.score, values[index])
         );
       } else if (score.result === grpcCache.ECacheResult.Miss) {
-        this.responses.push(
+        this._responses.push(
           new CacheSortedSetGetScoreResponse.Miss(values[index])
         );
       } else {
-        this.responses.push(
+        this._responses.push(
           new CacheSortedSetGetScoreResponse.Error(
             new UnknownError(score.result.toString()),
             values[index]
@@ -65,12 +65,16 @@ class _Hit extends Response {
     });
   }
 
+  public responses(): CacheSortedSetGetScoreResponseType[] {
+    return this._responses;
+  }
+
   /**
    * Returns the data as a Map whose keys are byte arrays and values numbers.
    * @returns {Map<Uint8Array, number>}
    */
   public valueMapUint8Array(): Map<Uint8Array, number> {
-    return this.responses.reduce((acc, response) => {
+    return this._responses.reduce((acc, response) => {
       if (response instanceof CacheSortedSetGetScoreResponse.Hit) {
         acc.set(response.valueUint8Array(), response.score());
       }
@@ -83,7 +87,7 @@ class _Hit extends Response {
    * @returns {Map<string, number>}
    */
   public valueMapString(): Map<string, number> {
-    return this.responses.reduce((acc, response) => {
+    return this._responses.reduce((acc, response) => {
       if (response instanceof CacheSortedSetGetScoreResponse.Hit) {
         acc.set(response.valueString(), response.score());
       }
@@ -106,7 +110,7 @@ class _Hit extends Response {
    * @returns {Record<string, number>}
    */
   public valueRecordString(): Record<string, number> {
-    return this.responses.reduce<Record<string, number>>((acc, response) => {
+    return this._responses.reduce<Record<string, number>>((acc, response) => {
       if (response instanceof CacheSortedSetGetScoreResponse.Hit) {
         acc[response.valueString()] = response.score();
       }
