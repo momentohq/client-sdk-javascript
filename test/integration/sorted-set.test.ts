@@ -336,7 +336,10 @@ describe('Integration tests for sorted set operations', () => {
         ]);
       });
 
-      it('should return an empty list if start index is out of bounds', async () => {
+      // Skipping this for now; need to re-enable:
+      // https://github.com/momentohq/client-sdk-nodejs/issues/330
+      // https://github.com/momentohq/storage-store/issues/168
+      it.skip('should return an empty list if start index is out of bounds', async () => {
         const response = await Momento.sortedSetFetchByIndex(
           IntegrationTestCacheName,
           sortedSetName,
