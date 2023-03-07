@@ -105,7 +105,7 @@ class _Hit extends Response {
    * This can be used in most places where an Object is desired.
    * @returns {Record<string, number>}
    */
-  public valueRecordStringNumber(): Record<string, number> {
+  public valueRecordString(): Record<string, number> {
     return this.responses.reduce<Record<string, number>>((acc, response) => {
       if (response instanceof CacheSortedSetGetScoreResponse.Hit) {
         acc[response.valueString()] = response.score();
@@ -121,7 +121,7 @@ class _Hit extends Response {
    * @returns {Record<string, number>}
    */
   public valueRecord(): Record<string, number> {
-    return this.valueRecordStringNumber();
+    return this.valueRecordString();
   }
 
   public override toString(): string {
