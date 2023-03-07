@@ -58,8 +58,8 @@ import {
   SortedSetFetchByRankCallOptions,
   SortedSetFetchByScoreCallOptions,
   SortedSetOrder,
-  IndexSliceCallOptions,
-  IndexSliceCollectionsCallOptions,
+  ListRetainCallOptions,
+  ListFetchCallOptions,
 } from './utils/cache-call-options';
 
 // Type aliases to differentiate the different methods' optional arguments.
@@ -80,8 +80,6 @@ type SortedSetPutElementsOptions = CollectionCallOptions;
 type SortedSetFetchByRankOptions = SortedSetFetchByRankCallOptions;
 type SortedSetFetchByScoreOptions = SortedSetFetchByScoreCallOptions;
 type SortedSetIncrementOptions = CollectionCallOptions;
-type ListFetchIndexOptions = IndexSliceCallOptions;
-type ListRetainIndexOptions = IndexSliceCollectionsCallOptions;
 
 /**
  * Momento Cache Client.
@@ -260,7 +258,7 @@ export class CacheClient {
    *
    * @param {string} cacheName - The cache containing the list.
    * @param {string} listName - The list to fetch.
-   * @param {ListFetchIndexOptions} [options]
+   * @param {ListFetchCallOptions} [options]
    * @param {number} [options.startIndex] - Start inclusive index for fetch operation.
    * @param {number} [options.endIndex] - End exclusive index for fetch operation.
    * @returns {Promise<CacheListFetch.Response>} -
@@ -271,7 +269,7 @@ export class CacheClient {
   public async listFetch(
     cacheName: string,
     listName: string,
-    options?: ListFetchIndexOptions
+    options?: ListFetchCallOptions
   ): Promise<CacheListFetch.Response> {
     const client = this.getNextDataClient();
     return await client.listFetch(
@@ -426,11 +424,12 @@ export class CacheClient {
   }
 
   /**
-   * Retains slice of elements of a given list.
+   * Retains slice of elements of a given list, deletes the rest of the list
+   * that isn't being retained. Returns a Success or Error.
    *
    * @param {string} cacheName - The cache containing the list.
    * @param {string} listName - The list to retain a slice of.
-   * @param {ListRetainIndexOptions} [options]
+   * @param {ListRetainCallOptions} [options]
    * @param {number} [options.startIndex] - Start inclusive index for fetch
    * operation. Defaults to start of array if not given, 0.
    * @param {number} [options.endIndex] - End exclusive index for fetch
@@ -439,13 +438,13 @@ export class CacheClient {
    * Refreshes the list's TTL using the client's default if this is not
    * supplied.
    * @returns {Promise<CacheListRetain.Response>} -
-   * {@link CacheListRetain.Hit} containing the list elements if the list exists.
+   * {@link CacheListRetain.Success} on success.
    * {@link CacheListRetain.Error} on failure.
    */
   public async listRetain(
     cacheName: string,
     listName: string,
-    options?: ListRetainIndexOptions
+    options?: ListRetainCallOptions
   ): Promise<CacheListRetain.Response> {
     const client = this.getNextDataClient();
     return await client.listRetain(

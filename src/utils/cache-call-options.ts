@@ -85,8 +85,7 @@ export interface SortedSetFetchByScoreCallOptions {
   count?: number;
 }
 
-export interface IndexSliceCollectionsCallOptions
-  extends CollectionCallOptions {
+export interface ListRetainCallOptions extends CollectionCallOptions {
   /**
    * Starting inclusive index of operation.
    */
@@ -97,8 +96,7 @@ export interface IndexSliceCollectionsCallOptions
    */
   endIndex?: number;
 }
-
-export interface IndexSliceCallOptions {
+export interface ListFetchCallOptions {
   /**
    * Starting inclusive index of operation.
    */
