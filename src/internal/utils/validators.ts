@@ -18,6 +18,23 @@ export function validateSortedSetName(name: string) {
   }
 }
 
+export function validateSortedSetIndices(
+  start_index: number,
+  end_index?: number
+) {
+  if (end_index === undefined) {
+    return;
+  }
+  if (start_index > 0 && end_index > 0 && start_index >= end_index) {
+    throw new InvalidArgumentError('start index must be less than end index');
+  }
+  if (start_index < 0 && end_index < 0 && start_index >= end_index) {
+    throw new InvalidArgumentError(
+      'negative start index must be less than negative end index'
+    );
+  }
+}
+
 export function validateSortedSetOffset(offset: number) {
   if (offset < 0) {
     throw new InvalidArgumentError('offset must be non-negative (>= 0)');
