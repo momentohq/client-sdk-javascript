@@ -29,33 +29,80 @@ import {SdkError} from '../../errors/errors';
 export abstract class Response extends ResponseBase {}
 
 class _Hit extends Response {
+  private readonly _value: Uint8Array;
   private readonly _score: number;
 
-  constructor(score: number) {
+  constructor(score: number, value: Uint8Array) {
     super();
+    this._value = value;
     this._score = score;
   }
 
   /**
-   * Returns the score of the element in the sorted set.
+   * Returns the value of the element in the sorted set as a Uint8Array.
    * @returns {number}
+   */
+  public valueUint8Array(): Uint8Array {
+    return this._value;
+  }
+
+  /**
+   * Returns the score of the element in the sorted set as a string.
+   * @returns {string}
+   */
+  public valueString(): string {
+    return new TextDecoder().decode(this._value);
+  }
+
+  /**
+   *
+   *
+   * @return {*}  {number}
+   * @memberof _Hit
    */
   public score(): number {
     return this._score;
   }
 
   public override toString(): string {
-    return `${super.toString()}: score: ${this.score()}`;
+    return `${super.toString()}: value: ${this.valueString()}, score: ${this.score()}`;
   }
 }
 
 /**
  * Indicates that the requested data was successfully retrieved from the cache.  Provides
- * `rank()` accessor to retrieve rank.
+ * `score()` accessor to retrieve score.
  */
 export class Hit extends ResponseHit(_Hit) {}
 
-class _Miss extends Response {}
+class _Miss extends Response {
+  private readonly _value: Uint8Array;
+
+  constructor(value: Uint8Array) {
+    super();
+    this._value = value;
+  }
+
+  /**
+   * Returns the value of the element in the sorted set as a Uint8Array.
+   * @returns {number}
+   */
+  public valueUint8Array(): Uint8Array {
+    return this._value;
+  }
+
+  /**
+   * Returns the score of the element in the sorted set as a string.
+   * @returns {string}
+   */
+  public valueString(): string {
+    return new TextDecoder().decode(this._value);
+  }
+
+  public override toString(): string {
+    return `${super.toString()}: value: ${this.valueString()}`;
+  }
+}
 
 /**
  * Indicates that the requested data was not available in the cache.
@@ -63,8 +110,27 @@ class _Miss extends Response {}
 export class Miss extends ResponseMiss(_Miss) {}
 
 class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
+  private readonly _value: Uint8Array;
+
+  constructor(protected _innerException: SdkError, value: Uint8Array) {
     super();
+    this._value = value;
+  }
+
+  /**
+   * Returns the value of the element in the sorted set as a Uint8Array.
+   * @returns {number}
+   */
+  public valueUint8Array(): Uint8Array {
+    return this._value;
+  }
+
+  /**
+   * Returns the score of the element in the sorted set as a string.
+   * @returns {string}
+   */
+  public valueString(): string {
+    return new TextDecoder().decode(this._value);
   }
 }
 

@@ -37,6 +37,7 @@ import * as CacheSortedSetPutValue from './messages/responses/cache-sorted-set-p
 import * as CacheSortedSetFetch from './messages/responses/cache-sorted-set-fetch';
 import * as CacheSortedSetGetRank from './messages/responses/cache-sorted-set-get-rank';
 import * as CacheSortedSetGetScore from './messages/responses/cache-sorted-set-get-score';
+import * as CacheSortedSetGetScores from './messages/responses/cache-sorted-set-get-scores';
 import * as CacheSortedSetIncrementScore from './messages/responses/cache-sorted-set-increment-score';
 import * as CacheSortedSetRemoveElement from './messages/responses/cache-sorted-set-remove-element';
 import * as CacheSortedSetRemoveElements from './messages/responses/cache-sorted-set-remove-elements';
@@ -129,6 +130,7 @@ export {
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
+  CacheSortedSetGetScores,
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,

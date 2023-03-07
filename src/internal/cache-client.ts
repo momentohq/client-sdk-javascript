@@ -44,6 +44,7 @@ import {
   CacheSetIfNotExists,
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
+  CacheSortedSetGetScores,
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
@@ -66,6 +67,7 @@ import {SimpleCacheClientProps} from '../simple-cache-client-props';
 import {Middleware} from '../config/middleware/middleware';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {truncateString} from './utils/display';
+import {SdkError} from '../errors/errors';
 
 export class CacheClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -2042,39 +2044,64 @@ export class CacheClient {
     sortedSetName: string,
     value: string | Uint8Array
   ): Promise<CacheSortedSetGetScore.Response> {
+    const responses = await this.sortedSetGetScores(cacheName, sortedSetName, [
+      value,
+    ] as string[] | Uint8Array[]);
+    if (responses instanceof CacheSortedSetGetScores.Hit) {
+      return responses.responses()[0];
+    } else if (responses instanceof CacheSortedSetGetScores.Miss) {
+      return new CacheSortedSetGetScore.Miss(this.convert(value));
+    } else if (responses instanceof CacheSortedSetGetScores.Error) {
+      return new CacheSortedSetGetScore.Error(
+        <SdkError>responses.innerException(),
+        this.convert(value)
+      );
+    }
+
+    return new CacheSortedSetGetScore.Error(
+      new UnknownError('Unknown response type'),
+      this.convert(value)
+    );
+  }
+
+  public async sortedSetGetScores(
+    cacheName: string,
+    sortedSetName: string,
+    values: string[] | Uint8Array[]
+  ): Promise<CacheSortedSetGetScores.Response> {
     try {
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetGetScore.Error(normalizeSdkError(err as Error));
+      return new CacheSortedSetGetScores.Error(normalizeSdkError(err as Error));
     }
 
     this.logger.trace(
-      "Issuing 'sortedSetGetScore' request; value: %s",
-      truncateString(value.toString())
+      "Issuing 'sortedSetGetScores' request; values: %s",
+      truncateString(values.toString())
     );
 
-    const result = await this.sendSortedSetGetScore(
+    const result = await this.sendSortedSetGetScores(
       cacheName,
       this.convert(sortedSetName),
-      this.convert(value)
+      values.map(value => this.convert(value))
     );
 
     this.logger.trace(
-      "'sortedSetGetScore' request result: %s",
+      "'sortedSetGetScores' request result: %s",
       truncateString(result.toString())
     );
     return result;
   }
 
-  private async sendSortedSetGetScore(
+  private async sendSortedSetGetScores(
     cacheName: string,
     sortedSetName: Uint8Array,
-    value: Uint8Array
-  ): Promise<CacheSortedSetGetScore.Response> {
+    values: Uint8Array[]
+  ): Promise<CacheSortedSetGetScores.Response> {
     const request = new grpcCache._SortedSetGetScoreRequest({
       set_name: sortedSetName,
-      values: [value],
+      values: values,
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise(resolve => {
@@ -2086,20 +2113,14 @@ export class CacheClient {
           {interceptors: this.interceptors},
           (err, resp) => {
             if (resp?.missing) {
-              resolve(new CacheSortedSetGetScore.Miss());
+              resolve(new CacheSortedSetGetScores.Miss());
             } else if (resp?.found) {
-              if (
-                resp.found.elements[0].result === grpcCache.ECacheResult.Hit
-              ) {
-                resolve(
-                  new CacheSortedSetGetScore.Hit(resp.found.elements[0].score)
-                );
-              } else {
-                resolve(new CacheSortedSetGetScore.Miss());
-              }
+              resolve(
+                new CacheSortedSetGetScores.Hit(resp.found.elements, values)
+              );
             } else {
               resolve(
-                new CacheSortedSetGetScore.Error(cacheServiceErrorMapper(err))
+                new CacheSortedSetGetScores.Error(cacheServiceErrorMapper(err))
               );
             }
           }
