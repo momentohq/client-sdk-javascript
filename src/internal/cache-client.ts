@@ -2028,7 +2028,7 @@ export class CacheClient {
   ): Promise<CacheSortedSetGetScore.Response> {
     const responses = await this.sortedSetGetScores(cacheName, sortedSetName, [
       value,
-    ]);
+    ] as string[] | Uint8Array[]);
     if (responses instanceof CacheSortedSetGetScores.Hit) {
       return responses.responses()[0];
     } else if (responses instanceof CacheSortedSetGetScores.Miss) {
@@ -2049,7 +2049,7 @@ export class CacheClient {
   public async sortedSetGetScores(
     cacheName: string,
     sortedSetName: string,
-    values: (string | Uint8Array)[]
+    values: string[] | Uint8Array[]
   ): Promise<CacheSortedSetGetScores.Response> {
     try {
       validateCacheName(cacheName);

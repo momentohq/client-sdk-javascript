@@ -990,7 +990,7 @@ export class SimpleCacheClient {
    *
    * @param {string} cacheName - The cache containing the sorted set.
    * @param {string} sortedSetName - The sorted set to fetch from.
-   * @param {(string | Uint8Array)[]} values - The values of the elements whose scores we are retrieving.
+   * @param {string[] | Uint8Array[]} values - The values of the elements whose scores we are retrieving.
    * @returns {Promise<CacheSortedSetGetScores.Response>}
    * {@link CacheSortedGetScores.Hit} containing the scores of the requested elements when found.
    * {@link CacheSortedGetScores.Miss} when the element or collection does not exist.
@@ -999,7 +999,7 @@ export class SimpleCacheClient {
   public async sortedSetGetScores(
     cacheName: string,
     sortedSetName: string,
-    values: (string | Uint8Array)[]
+    values: string[] | Uint8Array[]
   ): Promise<CacheSortedSetGetScores.Response> {
     const client = this.getNextDataClient();
     return await client.sortedSetGetScores(cacheName, sortedSetName, values);
