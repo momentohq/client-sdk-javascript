@@ -46,7 +46,7 @@ class _Hit extends Response {
    * The value is a byte array, and the score is a number.
    * @returns {{value: Uint8Array; score: number}[]}
    */
-  public valueArrayUint8ArrayNumber(): {value: Uint8Array; score: number}[] {
+  public valueArrayUint8Elements(): {value: Uint8Array; score: number}[] {
     return this.elements.map(item => {
       return {
         value: item.value,
@@ -60,7 +60,7 @@ class _Hit extends Response {
    * The value is a utf-8 string, decoded from the underlying byte array, and the score is a number.
    * @returns {{value: string; score: number}[]}
    */
-  public valueArrayStringNumber(): {value: string; score: number}[] {
+  public valueArrayStringElements(): {value: string; score: number}[] {
     return this.elements.map(item => {
       return {
         value: TEXT_DECODER.decode(item.value),
@@ -76,11 +76,11 @@ class _Hit extends Response {
    * @returns {value: string; score: number}[]
    */
   public valueArray(): {value: string; score: number}[] {
-    return this.valueArrayStringNumber();
+    return this.valueArrayStringElements();
   }
 
   private truncateValueStrings(): string {
-    const keyValueArray = this.valueArrayStringNumber();
+    const keyValueArray = this.valueArrayStringElements();
 
     const elements: string[] = [];
     if (keyValueArray.length <= this._displayListSizeLimit) {
@@ -97,7 +97,7 @@ class _Hit extends Response {
   }
 
   public override toString(): string {
-    return `${super.toString()}: valueSortedSetStringString: ${this.truncateValueStrings()}`;
+    return `${super.toString()}: valueArrayStringElements: ${this.truncateValueStrings()}`;
   }
 }
 
