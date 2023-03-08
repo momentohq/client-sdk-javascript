@@ -4,6 +4,8 @@ import {
   CacheDelete,
   CacheSortedSetFetch,
   CacheSortedSetIncrementScore,
+  CacheSortedSetPutElement,
+  CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
   CollectionTtl,
@@ -1776,90 +1778,61 @@ describe('Integration tests for sorted set operations', () => {
     itBehavesLikeItValidates(responder);
     itBehavesLikeItHasACollectionTtl(changeResponder);
 
-    /*
-    it('should set/get a dictionary with Uint8Array field/value', async () => {
-      const dictionaryName = v4();
-      const field = new TextEncoder().encode(v4());
-      const value = new TextEncoder().encode(v4());
-      const response = await Momento.dictionarySetField(
+    it('should store an element with a string value', async () => {
+      const sortedSetName = v4();
+      let response = await Momento.sortedSetPutElement(
         IntegrationTestCacheName,
-        dictionaryName,
-        field,
-        value
+        sortedSetName,
+        'foo',
+        42
       );
-      expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-      const getResponse = await Momento.dictionaryGetField(
+      expect(response).toBeInstanceOf(CacheSortedSetPutElement.Success);
+
+      response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
-        dictionaryName,
-        field
+        sortedSetName
       );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      if (getResponse instanceof CacheDictionaryGetField.Hit) {
-        expect(getResponse.valueUint8Array()).toEqual(value);
-      }
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse.valueArray()).toEqual([{value: 'foo', score: 42}]);
     });
 
-    it('should set/get a dictionary with string field/value', async () => {
-      const dictionaryName = v4();
-      const field = v4();
-      const value = v4();
-      const response = await Momento.dictionarySetField(
+    it('should store an element with a bytes value', async () => {
+      const sortedSetName = v4();
+      let response = await Momento.sortedSetPutElement(
         IntegrationTestCacheName,
-        dictionaryName,
-        field,
-        value
+        sortedSetName,
+        textEncoder.encode('foo'),
+        42
       );
-      expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-      const getResponse = await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field
-      );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      if (getResponse instanceof CacheDictionaryGetField.Hit) {
-        expect(getResponse.valueString()).toEqual(value);
-      }
-    });
+      expect(response).toBeInstanceOf(CacheSortedSetPutElement.Success);
 
-    it('should set/get a dictionary with string field and Uint8Array value', async () => {
-      const dictionaryName = v4();
-      const field = v4();
-      const value = new TextEncoder().encode(v4());
-      const response = await Momento.dictionarySetField(
+      response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
-        dictionaryName,
-        field,
-        value
+        sortedSetName
       );
-      expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-      const getResponse = await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field
-      );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      expect(
-        (getResponse as CacheDictionaryGetField.Hit).valueUint8Array()
-      ).toEqual(value);
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse.valueArrayUint8Elements()).toEqual([
+        {value: textEncoder.encode('foo'), score: 42},
+      ]);
     });
-    */
   });
 
-  /*
-  describe('#dictionarySetFields', () => {
-    const responder = (props: ValidateDictionaryProps) => {
-      return Momento.dictionarySetFields(
+  describe('#sortedSetPutElements', () => {
+    const responder = (props: ValidateSortedSetProps) => {
+      return Momento.sortedSetPutElements(
         props.cacheName,
-        props.dictionaryName,
-        new Map([[props.field, v4()]])
+        props.sortedSetName,
+        new Map([[props.value, 42]])
       );
     };
 
-    const changeResponder = (props: ValidateDictionaryChangerProps) => {
-      return Momento.dictionarySetFields(
+    const changeResponder = (props: ValidateSortedSetChangerProps) => {
+      return Momento.sortedSetPutElements(
         props.cacheName,
-        props.dictionaryName,
-        new Map([[props.field, props.value]]),
+        props.sortedSetName,
+        new Map([[props.value, props.score]]),
         {ttl: props.ttl}
       );
     };
@@ -1867,180 +1840,73 @@ describe('Integration tests for sorted set operations', () => {
     itBehavesLikeItValidates(responder);
     itBehavesLikeItHasACollectionTtl(changeResponder);
 
-    it('should set fields with Uint8Array items', async () => {
-      const dictionaryName = v4();
-      const field1 = new TextEncoder().encode(v4());
-      const value1 = new TextEncoder().encode(v4());
-      const field2 = new TextEncoder().encode(v4());
-      const value2 = new TextEncoder().encode(v4());
-      const response = await Momento.dictionarySetFields(
+    it('should store elements with a string values passed via Map', async () => {
+      const sortedSetName = v4();
+      let response = await Momento.sortedSetPutElements(
         IntegrationTestCacheName,
-        dictionaryName,
+        sortedSetName,
         new Map([
-          [field1, value1],
-          [field2, value2],
-        ]),
-        {ttl: CollectionTtl.of(10)}
+          ['foo', 42],
+          ['bar', 84],
+        ])
       );
-      expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-      let getResponse = await Momento.dictionaryGetField(
+      expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
+
+      response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
-        dictionaryName,
-        field1
+        sortedSetName
       );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      if (getResponse instanceof CacheDictionaryGetField.Hit) {
-        expect(getResponse.valueUint8Array()).toEqual(value1);
-      }
-      getResponse = await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field2
-      );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      if (getResponse instanceof CacheDictionaryGetField.Hit) {
-        expect(getResponse.valueUint8Array()).toEqual(value2);
-      }
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse.valueArray()).toEqual([
+        {value: 'foo', score: 42},
+        {value: 'bar', score: 84},
+      ]);
     });
 
-    it('should set fields with string items Map', async () => {
-      const dictionaryName = v4();
-      const field1 = v4();
-      const value1 = v4();
-      const field2 = v4();
-      const value2 = v4();
-      const response = await Momento.dictionarySetFields(
+    it('should store elements with a string values passed via Record', async () => {
+      const sortedSetName = v4();
+      let response = await Momento.sortedSetPutElements(
         IntegrationTestCacheName,
-        dictionaryName,
+        sortedSetName,
+        {foo: 42, bar: 84}
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
+
+      response = await Momento.sortedSetFetchByRank(
+        IntegrationTestCacheName,
+        sortedSetName
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse.valueArray()).toEqual([
+        {value: 'foo', score: 42},
+        {value: 'bar', score: 84},
+      ]);
+    });
+
+    it('should store elements with a bytes values passed via Map', async () => {
+      const sortedSetName = v4();
+      let response = await Momento.sortedSetPutElements(
+        IntegrationTestCacheName,
+        sortedSetName,
         new Map([
-          [field1, value1],
-          [field2, value2],
-        ]),
-        {ttl: CollectionTtl.of(10)}
+          [textEncoder.encode('foo'), 42],
+          [textEncoder.encode('bar'), 84],
+        ])
       );
-      expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-      let getResponse = await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field1
-      );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      if (getResponse instanceof CacheDictionaryGetField.Hit) {
-        expect(getResponse.valueString()).toEqual(value1);
-      }
-      getResponse = await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field2
-      );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      if (getResponse instanceof CacheDictionaryGetField.Hit) {
-        expect(getResponse.valueString()).toEqual(value2);
-      }
-    });
+      expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
 
-    it('should set fields with string items Record', async () => {
-      const dictionaryName = v4();
-      const field1 = 'foo';
-      const value1 = v4();
-      const field2 = 'bar';
-      const value2 = v4();
-      const response = await Momento.dictionarySetFields(
+      response = await Momento.sortedSetFetchByRank(
         IntegrationTestCacheName,
-        dictionaryName,
-        {foo: value1, bar: value2},
-        {ttl: CollectionTtl.of(10)}
+        sortedSetName
       );
-      expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-      let getResponse = await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field1
-      );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      if (getResponse instanceof CacheDictionaryGetField.Hit) {
-        expect(getResponse.valueString()).toEqual(value1);
-      }
-      getResponse = await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field2
-      );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      if (getResponse instanceof CacheDictionaryGetField.Hit) {
-        expect(getResponse.valueString()).toEqual(value2);
-      }
-    });
-
-    it('should set fields with string field/Uint8Array value items', async () => {
-      const dictionaryName = v4();
-      const field1 = v4();
-      const value1 = new TextEncoder().encode(v4());
-      const field2 = v4();
-      const value2 = new TextEncoder().encode(v4());
-      const response = await Momento.dictionarySetFields(
-        IntegrationTestCacheName,
-        dictionaryName,
-        new Map([
-          [field1, value1],
-          [field2, value2],
-        ]),
-        {ttl: CollectionTtl.of(10)}
-      );
-      expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-      let getResponse = await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field1
-      );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      if (getResponse instanceof CacheDictionaryGetField.Hit) {
-        expect(getResponse.valueUint8Array()).toEqual(value1);
-      }
-      getResponse = await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field2
-      );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      if (getResponse instanceof CacheDictionaryGetField.Hit) {
-        expect(getResponse.valueUint8Array()).toEqual(value2);
-      }
-    });
-
-    it('should set fields with string fields / Uint8Array Record', async () => {
-      const textEncoder = new TextEncoder();
-      const dictionaryName = v4();
-      const field1 = 'foo';
-      const value1 = v4();
-      const field2 = 'bar';
-      const value2 = v4();
-      const response = await Momento.dictionarySetFields(
-        IntegrationTestCacheName,
-        dictionaryName,
-        {foo: textEncoder.encode(value1), bar: textEncoder.encode(value2)},
-        {ttl: CollectionTtl.of(10)}
-      );
-      expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
-      let getResponse = await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field1
-      );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      if (getResponse instanceof CacheDictionaryGetField.Hit) {
-        expect(getResponse.valueString()).toEqual(value1);
-      }
-      getResponse = await Momento.dictionaryGetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field2
-      );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      if (getResponse instanceof CacheDictionaryGetField.Hit) {
-        expect(getResponse.valueString()).toEqual(value2);
-      }
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse.valueArrayUint8Elements()).toEqual([
+        {value: textEncoder.encode('foo'), score: 42},
+        {value: textEncoder.encode('bar'), score: 84},
+      ]);
     });
   });
-  */
 });
