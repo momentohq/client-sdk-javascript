@@ -10,12 +10,12 @@ const MALFORMED_TOKEN = 'fsaf';
 describe('auth.ts', () => {
   it('should parse endpoints from jwt', () => {
     const res = decodeAuthToken(TEST_AUTH_TOKEN_ENDPOINT);
-    expect(res.cp).toEqual('control plane endpoint');
-    expect(res.c).toEqual('data plane endpoint');
+    expect(res.controlEndpoint).toEqual('control plane endpoint');
+    expect(res.cacheEndpoint).toEqual('data plane endpoint');
 
     const noEndpoints = decodeAuthToken(TEST_AUTH_TOKEN_NO_ENDPOINT);
-    expect(noEndpoints.cp).toBeUndefined();
-    expect(noEndpoints.c).toBeUndefined();
+    expect(noEndpoints.controlEndpoint).toBeUndefined();
+    expect(noEndpoints.cacheEndpoint).toBeUndefined();
   });
 
   it('should throw InvalidArgumentError if no jwt is passed', () => {

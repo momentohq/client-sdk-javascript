@@ -53,5 +53,9 @@ function isEmpty(str: string): boolean {
 }
 
 export function isBase64(str: string): boolean {
-  return btoa(atob(str)) === str;
+  try {
+    return btoa(atob(str)) === str;
+  } catch (e) {
+    return false;
+  }
 }
