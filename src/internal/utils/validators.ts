@@ -1,4 +1,5 @@
 import {InvalidArgumentError} from '../../errors/errors';
+import {decodeFromBase64, encodeToBase64} from './string';
 
 export function validateCacheName(name: string) {
   if (isEmpty(name)) {
@@ -54,7 +55,7 @@ function isEmpty(str: string): boolean {
 
 export function isBase64(str: string): boolean {
   try {
-    return btoa(atob(str)) === str;
+    return encodeToBase64(decodeFromBase64(str)) === str;
   } catch (e) {
     return false;
   }
