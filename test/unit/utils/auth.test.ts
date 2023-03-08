@@ -3,6 +3,7 @@ import {
   decodeAuthToken,
 } from '../../../src/internal/utils/auth';
 import {InvalidArgumentError} from '../../../src';
+import {encodeToBase64} from '../../../src/internal/utils/string';
 
 const TEST_LEGACY_AUTH_TOKEN_NO_ENDPOINT =
   'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJpbnRlZ3JhdGlvbiJ9.ZOgkTs';
@@ -29,7 +30,7 @@ describe('auth.ts', () => {
       api_key: V1_API_KEY,
       endpoint: 'test.momentohq.com',
     };
-    const base64EncodedToken = btoa(JSON.stringify(decodedToken));
+    const base64EncodedToken = encodeToBase64(JSON.stringify(decodedToken));
     const res = decodeAuthToken(base64EncodedToken);
     expect(res.cacheEndpoint).toEqual(`data.${decodedToken.endpoint}`);
     expect(res.controlEndpoint).toEqual(`control.${decodedToken.endpoint}`);

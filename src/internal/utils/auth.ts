@@ -1,6 +1,7 @@
 import {InvalidArgumentError} from '../../errors/errors';
 import jwtDecode from 'jwt-decode';
 import {isBase64} from './validators';
+import {decodeFromBase64} from './string';
 
 export interface LegacyClaims {
   /**
@@ -51,7 +52,7 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
   try {
     if (isBase64(token)) {
       const base64DecodedToken = JSON.parse(
-        atob(token)
+        decodeFromBase64(token)
       ) as Base64DecodedV1Token;
       return {
         controlEndpoint: `control.${base64DecodedToken.endpoint}`,
