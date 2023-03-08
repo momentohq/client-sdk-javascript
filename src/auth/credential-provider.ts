@@ -1,4 +1,4 @@
-import {decodeJwt} from '../internal/utils/jwt';
+import {decodeAuthToken} from '../internal/utils/auth';
 import {fromEntries} from '../internal/utils/object';
 
 /**
@@ -88,10 +88,11 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
    */
   constructor(props: StringMomentoTokenProviderProps) {
     super();
-    this.authToken = props.authToken;
-    const claims = decodeJwt(props.authToken);
-    this.controlEndpoint = props.controlEndpoint ?? claims.cp;
-    this.cacheEndpoint = props.cacheEndpoint ?? claims.c;
+    const decodedToken = decodeAuthToken(props.authToken);
+    this.authToken = decodedToken.authToken;
+    this.controlEndpoint =
+      props.controlEndpoint ?? decodedToken.controlEndpoint;
+    this.cacheEndpoint = props.cacheEndpoint ?? decodedToken.cacheEndpoint;
   }
 
   getAuthToken(): string {

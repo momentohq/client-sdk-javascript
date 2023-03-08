@@ -51,3 +51,7 @@ export function validateTtlMinutes(ttlMinutes: number) {
 function isEmpty(str: string): boolean {
   return !str.trim();
 }
+
+export function isBase64(str: string): boolean {
+  return btoa(atob(str)) === str;
+}
