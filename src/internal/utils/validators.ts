@@ -35,6 +35,16 @@ export function validateSortedSetIndices(
   }
 }
 
+export function validateSortedSetScores(minScore?: number, maxScore?: number) {
+  if (minScore === undefined) return;
+  if (maxScore === undefined) return;
+  if (minScore > maxScore) {
+    throw new InvalidArgumentError(
+      'minScore must be less than or equal to maxScore'
+    );
+  }
+}
+
 export function validateSortedSetOffset(offset: number) {
   if (offset < 0) {
     throw new InvalidArgumentError('offset must be non-negative (>= 0)');
