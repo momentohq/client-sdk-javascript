@@ -3,6 +3,9 @@ import {sleep} from '../../src/internal/utils/sleep';
 import {
   CacheDelete,
   CacheSortedSetFetch,
+  CacheSortedSetGetRank,
+  CacheSortedSetGetScore,
+  CacheSortedSetGetScores,
   CacheSortedSetIncrementScore,
   CacheSortedSetPutElement,
   CacheSortedSetPutElements,
@@ -69,54 +72,6 @@ describe('Integration tests for sorted set operations', () => {
     });
   };
 
-  /*
-  const itBehavesLikeItMissesWhenFieldDoesNotExist = (
-    responder: (props: ValidateDictionaryProps) => Promise<ResponseBase>
-  ) => {
-    it('misses when a string field does not exist', async () => {
-      const dictionaryName = v4();
-
-      // Make sure the dictionary exists.
-      const setResponse = await Momento.dictionarySetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        v4(),
-        v4()
-      );
-      expect(setResponse).toBeInstanceOf(CacheDictionarySetField.Success);
-
-      const response = await responder({
-        cacheName: IntegrationTestCacheName,
-        dictionaryName: dictionaryName,
-        field: v4(),
-      });
-
-      expect((response as IResponseMiss).is_miss).toBeTrue();
-    });
-
-    it('misses when a byte field does not exist', async () => {
-      const dictionaryName = v4();
-      const fieldName = new TextEncoder().encode(v4());
-
-      // Make sure the dictionary exists.
-      const setResponse = await Momento.dictionarySetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        v4(),
-        v4()
-      );
-      expect(setResponse).toBeInstanceOf(CacheDictionarySetField.Success);
-
-      const response = await responder({
-        cacheName: IntegrationTestCacheName,
-        dictionaryName: dictionaryName,
-        field: fieldName,
-      });
-
-      expect((response as IResponseMiss).is_miss).toBeTrue();
-    });
-  };*/
-
   const itBehavesLikeItHasACollectionTtl = (
     changeResponder: (
       props: ValidateSortedSetChangerProps
@@ -182,20 +137,12 @@ describe('Integration tests for sorted set operations', () => {
         sortedSetName
       );
       expect(getResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
-      /* TODO
-      const getResponse = await Momento.sortedSetGetRank(
-        IntegrationTestCacheName,
-        sortedSetName,
-        value
-      );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      */
     });
   };
 
   describe('#sortedSetFetchByRank', () => {
     const responder = (props: ValidateSortedSetProps) => {
-      return Momento.dictionaryFetch(props.cacheName, props.sortedSetName);
+      return Momento.sortedSetFetchByRank(props.cacheName, props.sortedSetName);
     };
 
     itBehavesLikeItValidates(responder);
@@ -630,7 +577,10 @@ describe('Integration tests for sorted set operations', () => {
 
   describe('#sortedSetFetchByScore', () => {
     const responder = (props: ValidateSortedSetProps) => {
-      return Momento.dictionaryFetch(props.cacheName, props.sortedSetName);
+      return Momento.sortedSetFetchByScore(
+        props.cacheName,
+        props.sortedSetName
+      );
     };
 
     itBehavesLikeItValidates(responder);
@@ -1120,237 +1070,169 @@ describe('Integration tests for sorted set operations', () => {
     });
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  describe('#sortedSetGetRank', () => {});
-
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  describe('#sortedSetGetScore', () => {});
-
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  describe('#sortedSetGetScores', () => {});
-
-  /*
-  describe('#dictionaryGetField', () => {
-    const responder = (props: ValidateDictionaryProps) => {
-      return Momento.dictionaryGetField(
+  describe('#sortedSetGetRank', () => {
+    const responder = (props: ValidateSortedSetProps) => {
+      return Momento.sortedSetGetRank(
         props.cacheName,
-        props.dictionaryName,
-        v4()
+        props.sortedSetName,
+        props.value
       );
     };
 
     itBehavesLikeItValidates(responder);
-    itBehavesLikeItMissesWhenDictionaryDoesNotExist(responder);
-    itBehavesLikeItMissesWhenFieldDoesNotExist(responder);
+    itBehavesLikeItMissesWhenSortedSetDoesNotExist(responder);
 
-    it('returns the expected toString value', async () => {
-      const dictionaryName = v4();
-      const field = v4();
-      const value = v4();
-
-      const response = await Momento.dictionarySetField(
+    it('retrieves rank for a value that exists', async () => {
+      const sortedSetName = v4();
+      await Momento.sortedSetPutElements(
         IntegrationTestCacheName,
-        dictionaryName,
-        field,
-        value
+        sortedSetName,
+        {foo: 42, bar: 84, baz: 90210}
       );
-      expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
 
-      const getResponse = await Momento.dictionaryGetField(
+      let result = await Momento.sortedSetGetRank(
         IntegrationTestCacheName,
-        dictionaryName,
-        field
+        sortedSetName,
+        'bar'
       );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      expect((getResponse as CacheDictionaryGetField.Hit).toString()).toEqual(
-        `Hit: ${value.substring(0, 32)}...`
+      expect(result).toBeInstanceOf(CacheSortedSetGetRank.Hit);
+      let hitResult = result as CacheSortedSetGetRank.Hit;
+      expect(hitResult.rank()).toEqual(1);
+
+      result = await Momento.sortedSetGetRank(
+        IntegrationTestCacheName,
+        sortedSetName,
+        'baz'
       );
+      expect(result).toBeInstanceOf(CacheSortedSetGetRank.Hit);
+      hitResult = result as CacheSortedSetGetRank.Hit;
+      expect(hitResult.rank()).toEqual(2);
+    });
+
+    it('returns a miss for a value that does not exist', async () => {
+      const sortedSetName = v4();
+      await Momento.sortedSetPutElements(
+        IntegrationTestCacheName,
+        sortedSetName,
+        {foo: 42, bar: 84, baz: 90210}
+      );
+
+      const result = await Momento.sortedSetGetRank(
+        IntegrationTestCacheName,
+        sortedSetName,
+        'taco'
+      );
+      expect(result).toBeInstanceOf(CacheSortedSetGetRank.Miss);
     });
   });
 
-  describe('#dictionaryGetFields', () => {
-    const responder = (props: ValidateDictionaryProps) => {
-      return Momento.dictionaryGetFields(
+  describe('#sortedSetGetScore', () => {
+    const responder = (props: ValidateSortedSetProps) => {
+      return Momento.sortedSetGetScore(
         props.cacheName,
-        props.dictionaryName,
-        [props.field] as string[] | Uint8Array[]
+        props.sortedSetName,
+        props.value
       );
     };
 
     itBehavesLikeItValidates(responder);
-    itBehavesLikeItMissesWhenDictionaryDoesNotExist(responder);
+    itBehavesLikeItMissesWhenSortedSetDoesNotExist(responder);
 
-    it('return expected toString value', async () => {
-      const dictionaryName = v4();
-      await Momento.dictionarySetField(
+    it('retrieves score for a value that exists', async () => {
+      const sortedSetName = v4();
+      await Momento.sortedSetPutElements(
         IntegrationTestCacheName,
-        dictionaryName,
-        'a',
-        'b'
+        sortedSetName,
+        {foo: 42, bar: 84, baz: 90210}
       );
-      await Momento.dictionarySetField(
+
+      let result = await Momento.sortedSetGetScore(
         IntegrationTestCacheName,
-        dictionaryName,
-        'c',
-        'd'
+        sortedSetName,
+        'bar'
       );
-      const getResponse = await Momento.dictionaryGetFields(
+      expect(result).toBeInstanceOf(CacheSortedSetGetScore.Hit);
+      let hitResult = result as CacheSortedSetGetScore.Hit;
+      expect(hitResult.score()).toEqual(84);
+
+      result = await Momento.sortedSetGetScore(
         IntegrationTestCacheName,
-        dictionaryName,
-        ['a', 'c']
+        sortedSetName,
+        'baz'
       );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
-      expect((getResponse as CacheDictionaryGetFields.Hit).toString()).toEqual(
-        'Hit: valueDictionaryStringString: a: b, c: d'
-      );
+      expect(result).toBeInstanceOf(CacheSortedSetGetScore.Hit);
+      hitResult = result as CacheSortedSetGetScore.Hit;
+      expect(hitResult.score()).toEqual(90210);
     });
 
-    it('should dictionarySetField/dictionaryGetFields with string fields/values', async () => {
-      const textEncoder = new TextEncoder();
-
-      const dictionaryName = v4();
-      const field1 = 'foo';
-      const value1 = v4();
-      const field2 = 'bar';
-      const value2 = v4();
-      const field3 = 'baz';
-      let response = await Momento.dictionarySetField(
+    it('returns a miss for a value that does not exist', async () => {
+      const sortedSetName = v4();
+      await Momento.sortedSetPutElements(
         IntegrationTestCacheName,
-        dictionaryName,
-        field1,
-        value1
+        sortedSetName,
+        {foo: 42, bar: 84, baz: 90210}
       );
-      expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-      response = await Momento.dictionarySetField(
+
+      const result = await Momento.sortedSetGetScore(
         IntegrationTestCacheName,
-        dictionaryName,
-        field2,
-        value2
+        sortedSetName,
+        'taco'
       );
-      expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-      const getResponse = await Momento.dictionaryGetFields(
-        IntegrationTestCacheName,
-        dictionaryName,
-        [field1, field2, field3]
-      );
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
-      const hitResponse = getResponse as CacheDictionaryGetFields.Hit;
-      expect(hitResponse.responses).toHaveLength(3);
-      expect(hitResponse.responses[0]).toBeInstanceOf(
-        CacheDictionaryGetField.Hit
-      );
-      const hitResponse1 = hitResponse
-        .responses[0] as CacheDictionaryGetField.Hit;
-      expect(hitResponse1.fieldString()).toEqual(field1);
-
-      expect(hitResponse.responses[1]).toBeInstanceOf(
-        CacheDictionaryGetField.Hit
-      );
-      const hitResponse2 = hitResponse
-        .responses[1] as CacheDictionaryGetField.Hit;
-      expect(hitResponse2.fieldString()).toEqual(field2);
-
-      expect(hitResponse.responses[2]).toBeInstanceOf(
-        CacheDictionaryGetField.Miss
-      );
-      const missResponse = hitResponse
-        .responses[2] as CacheDictionaryGetField.Miss;
-      expect(missResponse.fieldString()).toEqual(field3);
-
-      const expectedMapStringString = new Map<string, string>([
-        [field1, value1],
-        [field2, value2],
-      ]);
-      expect(expectedMapStringString).toEqual(
-        hitResponse.valueMapStringString()
-      );
-      expect(expectedMapStringString).toEqual(hitResponse.valueMap());
-
-      const expectedMapStringBytes = new Map<string, Uint8Array>([
-        [field1, textEncoder.encode(value1)],
-        [field2, textEncoder.encode(value2)],
-      ]);
-      expect(expectedMapStringBytes).toEqual(
-        hitResponse.valueMapStringUint8Array()
-      );
-
-      const expectedRecordStringString = {
-        foo: value1,
-        bar: value2,
-      };
-      expect(expectedRecordStringString).toEqual(
-        hitResponse.valueRecordStringString()
-      );
-      expect(expectedRecordStringString).toEqual(hitResponse.valueRecord());
-
-      const expectedRecordStringBytes = {
-        foo: textEncoder.encode(value1),
-        bar: textEncoder.encode(value2),
-      };
-      expect(expectedRecordStringBytes).toEqual(
-        hitResponse.valueRecordStringUint8Array()
-      );
-    });
-
-    it('should dictionarySetField/dictionaryGetFields with Uint8Array fields/values', async () => {
-      const dictionaryName = v4();
-      const field1 = new TextEncoder().encode(v4());
-      const value1 = new TextEncoder().encode(v4());
-      const field2 = new TextEncoder().encode(v4());
-      const value2 = new TextEncoder().encode(v4());
-      const field3 = new TextEncoder().encode(v4());
-      let response = await Momento.dictionarySetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field1,
-        value1
-      );
-      expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-      response = await Momento.dictionarySetField(
-        IntegrationTestCacheName,
-        dictionaryName,
-        field2,
-        value2
-      );
-      expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
-      const getResponse = await Momento.dictionaryGetFields(
-        IntegrationTestCacheName,
-        dictionaryName,
-        [field1, field2, field3]
-      );
-
-      expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
-      const hitResponse = getResponse as CacheDictionaryGetFields.Hit;
-      expect(hitResponse.responses).toHaveLength(3);
-      expect(hitResponse.responses[0]).toBeInstanceOf(
-        CacheDictionaryGetField.Hit
-      );
-      const hitResponse1 = hitResponse
-        .responses[0] as CacheDictionaryGetField.Hit;
-      expect(hitResponse1.fieldUint8Array()).toEqual(field1);
-
-      expect(hitResponse.responses[1]).toBeInstanceOf(
-        CacheDictionaryGetField.Hit
-      );
-      const hitResponse2 = hitResponse
-        .responses[1] as CacheDictionaryGetField.Hit;
-      expect(hitResponse2.fieldUint8Array()).toEqual(field2);
-
-      expect(hitResponse.responses[2]).toBeInstanceOf(
-        CacheDictionaryGetField.Miss
-      );
-      const missResponse = hitResponse
-        .responses[2] as CacheDictionaryGetField.Miss;
-      expect(missResponse.fieldUint8Array()).toEqual(field3);
-
-      const expectedMap = new Map<Uint8Array, Uint8Array>([
-        [field1, value1],
-        [field2, value2],
-      ]);
-      expect(expectedMap).toEqual(hitResponse.valueMapUint8ArrayUint8Array());
+      expect(result).toBeInstanceOf(CacheSortedSetGetScore.Miss);
     });
   });
-  */
+
+  describe('#sortedSetGetScores', () => {
+    const responder = (props: ValidateSortedSetProps) => {
+      return Momento.sortedSetGetScores(props.cacheName, props.sortedSetName, [
+        props.value,
+      ] as string[] | Uint8Array[]);
+    };
+
+    itBehavesLikeItValidates(responder);
+    itBehavesLikeItMissesWhenSortedSetDoesNotExist(responder);
+
+    it('retrieves scores for values that exist', async () => {
+      const sortedSetName = v4();
+      await Momento.sortedSetPutElements(
+        IntegrationTestCacheName,
+        sortedSetName,
+        {foo: 42, bar: 84, baz: 90210}
+      );
+
+      const result = await Momento.sortedSetGetScores(
+        IntegrationTestCacheName,
+        sortedSetName,
+        ['bar', 'baz']
+      );
+      expect(result).toBeInstanceOf(CacheSortedSetGetScores.Hit);
+      const hitResult = result as CacheSortedSetGetScores.Hit;
+      expect(hitResult.valueRecord()).toEqual({
+        bar: 84,
+        baz: 90210,
+      });
+    });
+
+    it('returns partial record if some values do not exist', async () => {
+      const sortedSetName = v4();
+      await Momento.sortedSetPutElements(
+        IntegrationTestCacheName,
+        sortedSetName,
+        {foo: 42, bar: 84, baz: 90210}
+      );
+
+      const result = await Momento.sortedSetGetScores(
+        IntegrationTestCacheName,
+        sortedSetName,
+        ['bar', 'taco']
+      );
+      expect(result).toBeInstanceOf(CacheSortedSetGetScores.Hit);
+      const hitResult = result as CacheSortedSetGetScores.Hit;
+      expect(hitResult.valueRecord()).toEqual({
+        bar: 84,
+      });
+    });
+  });
 
   describe('#sortedSetIncrementScore', () => {
     const responder = (props: ValidateSortedSetProps) => {
