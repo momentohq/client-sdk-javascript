@@ -24,7 +24,7 @@ export interface V1ApiTokenClaimsWithEndpoint extends V1ApiTokenClaims {
   authToken: string;
 }
 
-interface Base64DecodedV1Token {
+export interface Base64DecodedV1Token {
   api_key: string;
   endpoint: string;
 }
