@@ -2103,7 +2103,11 @@ export class CacheClient {
             if (resp?.missing) {
               resolve(new CacheSortedSetGetRank.Miss());
             } else if (resp?.element_rank) {
-              resolve(new CacheSortedSetGetRank.Hit(resp.element_rank.rank));
+              if (resp?.element_rank.rank === undefined) {
+                resolve(new CacheSortedSetGetRank.Miss());
+              } else {
+                resolve(new CacheSortedSetGetRank.Hit(resp.element_rank.rank));
+              }
             } else {
               resolve(
                 new CacheSortedSetGetRank.Error(cacheServiceErrorMapper(err))
