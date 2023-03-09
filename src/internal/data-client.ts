@@ -66,13 +66,13 @@ import {
   validateSortedSetRanks,
   validateSortedSetScores,
 } from './utils/validators';
-import {SimpleCacheClientProps} from '../simple-cache-client-props';
+import {CacheClientProps} from '../cache-client-props';
 import {Middleware} from '../config/middleware/middleware';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {truncateString} from './utils/display';
 import {SdkError} from '../errors/errors';
 
-export class CacheClient {
+export class DataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
   private readonly textEncoder: TextEncoder;
   private readonly configuration: Configuration;
@@ -84,9 +84,9 @@ export class CacheClient {
   private readonly interceptors: Interceptor[];
 
   /**
-   * @param {SimpleCacheClientProps} props
+   * @param {CacheClientProps} props
    */
-  constructor(props: SimpleCacheClientProps) {
+  constructor(props: CacheClientProps) {
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
@@ -95,7 +95,7 @@ export class CacheClient {
       .getGrpcConfig();
 
     this.requestTimeoutMs =
-      grpcConfig.getDeadlineMillis() || CacheClient.DEFAULT_REQUEST_TIMEOUT_MS;
+      grpcConfig.getDeadlineMillis() || DataClient.DEFAULT_REQUEST_TIMEOUT_MS;
     this.validateRequestTimeout(this.requestTimeoutMs);
     this.logger.debug(
       `Creating cache client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`

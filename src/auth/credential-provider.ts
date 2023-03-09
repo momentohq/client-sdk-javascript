@@ -16,7 +16,7 @@ interface CredentialProviderProps {
 }
 
 /**
- * Provides information that the SimpleCacheClient needs in order to establish a connection to and authenticate with
+ * Provides information that the CacheClient needs in order to establish a connection to and authenticate with
  * the Momento service.
  * @export
  * @interface CredentialProvider

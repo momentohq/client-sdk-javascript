@@ -6,13 +6,13 @@ import {
   CacheSet,
   CacheSetIfNotExists,
   MomentoErrorCode,
-  SimpleCacheClient,
+  CacheClient,
 } from '../../src';
 import {TextEncoder} from 'util';
 import {
   SetupIntegrationTest,
   ValidateCacheProps,
-  CacheClientProps,
+  IntegrationTestCacheClientProps,
   ItBehavesLikeItValidatesCacheName,
   WithCache,
 } from './integration-setup';
@@ -117,16 +117,17 @@ describe('get/set/delete', () => {
   it('should timeout on a request that exceeds specified timeout', async () => {
     const cacheName = v4();
     const defaultTimeoutClient = Momento;
-    const shortTimeoutTransportStrategy = CacheClientProps.configuration
-      .getTransportStrategy()
-      .withClientTimeoutMillis(1);
+    const shortTimeoutTransportStrategy =
+      IntegrationTestCacheClientProps.configuration
+        .getTransportStrategy()
+        .withClientTimeoutMillis(1);
     const shortTimeoutConfiguration =
-      CacheClientProps.configuration.withTransportStrategy(
+      IntegrationTestCacheClientProps.configuration.withTransportStrategy(
         shortTimeoutTransportStrategy
       );
-    const shortTimeoutClient = new SimpleCacheClient({
+    const shortTimeoutClient = new CacheClient({
       configuration: shortTimeoutConfiguration,
-      credentialProvider: CacheClientProps.credentialProvider,
+      credentialProvider: IntegrationTestCacheClientProps.credentialProvider,
       defaultTtlSeconds: 1111,
     });
     await WithCache(defaultTimeoutClient, cacheName, async () => {
@@ -413,16 +414,17 @@ describe('#setIfNotExists', () => {
   it('should timeout on a request that exceeds specified timeout', async () => {
     const cacheName = v4();
     const defaultTimeoutClient = Momento;
-    const shortTimeoutTransportStrategy = CacheClientProps.configuration
-      .getTransportStrategy()
-      .withClientTimeoutMillis(1);
+    const shortTimeoutTransportStrategy =
+      IntegrationTestCacheClientProps.configuration
+        .getTransportStrategy()
+        .withClientTimeoutMillis(1);
     const shortTimeoutConfiguration =
-      CacheClientProps.configuration.withTransportStrategy(
+      IntegrationTestCacheClientProps.configuration.withTransportStrategy(
         shortTimeoutTransportStrategy
       );
-    const shortTimeoutClient = new SimpleCacheClient({
+    const shortTimeoutClient = new CacheClient({
       configuration: shortTimeoutConfiguration,
-      credentialProvider: CacheClientProps.credentialProvider,
+      credentialProvider: IntegrationTestCacheClientProps.credentialProvider,
       defaultTtlSeconds: 1111,
     });
     await WithCache(defaultTimeoutClient, cacheName, async () => {
