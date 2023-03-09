@@ -1,5 +1,5 @@
 import {ControlClient} from './internal/control-client';
-import {CacheClient} from './internal/cache-client';
+import {DataClient} from './internal/data-client';
 import {
   Configuration,
   CredentialProvider,
@@ -48,7 +48,7 @@ import {
   MomentoLogger,
 } from '.';
 import {range} from './internal/utils/collections';
-import {SimpleCacheClientProps} from './simple-cache-client-props';
+import {CacheClientProps} from './cache-client-props';
 import {
   BackTruncatableCallOptions,
   CollectionCallOptions,
@@ -79,27 +79,27 @@ type SortedSetFetchByScoreOptions = SortedSetFetchByScoreCallOptions;
 type SortedSetIncrementOptions = CollectionCallOptions;
 
 /**
- * Momento Simple Cache Client.
+ * Momento Cache Client.
  *
  * Features include:
  * - Get, set, and delete data
  * - Create, delete, and list caches
  * - Create, revoke, and list signing keys
  */
-export class SimpleCacheClient {
+export class CacheClient {
   private readonly logger: MomentoLogger;
   private readonly configuration: Configuration;
   private readonly credentialProvider: CredentialProvider;
-  private readonly dataClients: Array<CacheClient>;
+  private readonly dataClients: Array<DataClient>;
   private nextDataClientIndex: number;
   private readonly controlClient: ControlClient;
 
   /**
-   * Creates an instance of SimpleCacheClient.
+   * Creates an instance of CacheClient.
    */
-  constructor(props: SimpleCacheClientProps) {
+  constructor(props: CacheClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    this.logger.info('Creating Momento SimpleCacheClient');
+    this.logger.info('Creating Momento CacheClient');
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
 
@@ -112,7 +112,7 @@ export class SimpleCacheClient {
     // default for the short-term, based on load testing results captured in:
     // https://github.com/momentohq/oncall-tracker/issues/186
     const numClients = 6;
-    this.dataClients = range(numClients).map(() => new CacheClient(props));
+    this.dataClients = range(numClients).map(() => new DataClient(props));
     // We round-robin the requests through all of our clients.  Since javascript
     // is single-threaded, we don't have to worry about thread safety on this
     // index variable.
@@ -1171,10 +1171,15 @@ export class SimpleCacheClient {
     return await this.controlClient.listSigningKeys(client.getEndpoint());
   }
 
-  private getNextDataClient(): CacheClient {
+  private getNextDataClient(): DataClient {
     const client = this.dataClients[this.nextDataClientIndex];
     this.nextDataClientIndex =
       (this.nextDataClientIndex + 1) % this.dataClients.length;
     return client;
   }
 }
+
+/**
+ * @deprecated use {CacheClient} instead
+ */
+export class SimpleCacheClient extends CacheClient {}

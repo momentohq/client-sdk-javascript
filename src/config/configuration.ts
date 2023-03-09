@@ -85,7 +85,7 @@ export interface Configuration {
   withClientTimeoutMillis(clientTimeoutMillis: number): Configuration;
 }
 
-export class SimpleCacheConfiguration implements Configuration {
+export class CacheConfiguration implements Configuration {
   private readonly loggerFactory: MomentoLoggerFactory;
   private readonly retryStrategy: RetryStrategy;
   private readonly transportStrategy: TransportStrategy;
@@ -107,7 +107,7 @@ export class SimpleCacheConfiguration implements Configuration {
   }
 
   withRetryStrategy(retryStrategy: RetryStrategy): Configuration {
-    return new SimpleCacheConfiguration({
+    return new CacheConfiguration({
       loggerFactory: this.loggerFactory,
       retryStrategy: retryStrategy,
       transportStrategy: this.transportStrategy,
@@ -120,7 +120,7 @@ export class SimpleCacheConfiguration implements Configuration {
   }
 
   withTransportStrategy(transportStrategy: TransportStrategy): Configuration {
-    return new SimpleCacheConfiguration({
+    return new CacheConfiguration({
       loggerFactory: this.loggerFactory,
       retryStrategy: this.retryStrategy,
       transportStrategy: transportStrategy,
@@ -133,7 +133,7 @@ export class SimpleCacheConfiguration implements Configuration {
   }
 
   withMiddlewares(middlewares: Middleware[]): Configuration {
-    return new SimpleCacheConfiguration({
+    return new CacheConfiguration({
       loggerFactory: this.loggerFactory,
       retryStrategy: this.retryStrategy,
       transportStrategy: this.transportStrategy,
@@ -142,7 +142,7 @@ export class SimpleCacheConfiguration implements Configuration {
   }
 
   addMiddleware(middleware: Middleware): Configuration {
-    return new SimpleCacheConfiguration({
+    return new CacheConfiguration({
       loggerFactory: this.loggerFactory,
       retryStrategy: this.retryStrategy,
       transportStrategy: this.transportStrategy,
@@ -151,7 +151,7 @@ export class SimpleCacheConfiguration implements Configuration {
   }
 
   withClientTimeoutMillis(clientTimeout: number): Configuration {
-    return new SimpleCacheConfiguration({
+    return new CacheConfiguration({
       loggerFactory: this.loggerFactory,
       retryStrategy: this.retryStrategy,
       transportStrategy:
