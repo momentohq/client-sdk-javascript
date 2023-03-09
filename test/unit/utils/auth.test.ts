@@ -41,8 +41,37 @@ describe('auth.ts', () => {
     expect(decodeAuthToken).toThrow(InvalidArgumentError);
   });
 
-  it('should throw InvalidJwtError when token is malformed', () => {
+  it('should throw InvalidJwtError when legacy token is malformed', () => {
     expect(() => decodeAuthToken(MALFORMED_TOKEN)).toThrow(
+      InvalidArgumentError
+    );
+  });
+
+  it('should throw InvalidJwtError when base64 token is missing endpoint', () => {
+    const decodedToken = {
+      api_key: 'key',
+    };
+    const invalidBase64Token = encodeToBase64(JSON.stringify(decodedToken));
+    expect(() => decodeAuthToken(invalidBase64Token)).toThrow(
+      InvalidArgumentError
+    );
+  });
+
+  it('should throw InvalidJwtError when base64 token is missing endpoint', () => {
+    const decodedToken = {
+      endpoint: 'endpoint',
+    };
+    const invalidBase64Token = encodeToBase64(JSON.stringify(decodedToken));
+    expect(() => decodeAuthToken(invalidBase64Token)).toThrow(
+      InvalidArgumentError
+    );
+  });
+
+  it('should throw InvalidJwtError when base64 token is not json', () => {
+    const invalidBase64Token = encodeToBase64(
+      'scissors, why did you get me scissors???'
+    );
+    expect(() => decodeAuthToken(invalidBase64Token)).toThrow(
       InvalidArgumentError
     );
   });

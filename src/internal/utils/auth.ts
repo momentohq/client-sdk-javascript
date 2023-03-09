@@ -14,17 +14,6 @@ export interface LegacyClaims {
   c: string;
 }
 
-interface V1ApiTokenClaims {
-  sub: string;
-  ver: number;
-  exp: number;
-}
-
-export interface V1ApiTokenClaimsWithEndpoint extends V1ApiTokenClaims {
-  endpoint: string;
-  authToken: string;
-}
-
 export interface Base64DecodedV1Token {
   api_key: string;
   endpoint: string;
@@ -50,10 +39,18 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
   }
 
   try {
+    // our v1 api tokens don't have an endpoint as part of their claims. Instead, when we give them to a customer, we
+    // give it to them as a base64 encoded string of '{ "api_key": "<the key>", "endpoint": "prod.momentohq.com" }'.
+    // Since in the near future, most customers are going to be using these newer tokens, we are first checking to see if
+    // they are base64 encoded, which will tell us that they are our v1 api tokens. If its not, we will fall back to decoding
+    // it as one of our legacy jwts.
     if (isBase64(token)) {
       const base64DecodedToken = JSON.parse(
         decodeFromBase64(token)
       ) as Base64DecodedV1Token;
+      if (!base64DecodedToken.endpoint || !base64DecodedToken.api_key) {
+        throw new InvalidArgumentError('failed to parse token');
+      }
       return {
         controlEndpoint: `control.${base64DecodedToken.endpoint}`,
         cacheEndpoint: `data.${base64DecodedToken.endpoint}`,
