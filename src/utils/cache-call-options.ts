@@ -33,23 +33,23 @@ export enum SortedSetOrder {
   Descending = 'DESC',
 }
 
-export interface SortedSetFetchByIndexCallOptions {
+export interface SortedSetFetchByRankCallOptions {
   /**
-   * The index of the first element to return, inclusive.
-   * If negative, the index is relative to the end of the list.
-   * If the index is not specified, the first element is used.
+   * The rank of the first element to return, inclusive.
+   * If negative, the rank is relative to the end of the list.
+   * If the rank is not specified, the first element is used.
    */
-  startIndex?: number;
+  startRank?: number;
   /**
-   * The index of the last element to return, exclusive.
-   * If negative, the index is relative to the end of the list.
-   * If the index is not specified, the range extends to the end of the list.
+   * The rank of the last element to return, exclusive.
+   * If negative, the rank is relative to the end of the list.
+   * If the rank is not specified, the range extends to the end of the list.
    */
-  endIndex?: number;
+  endRank?: number;
   /**
    * The order in which to return the elements.
    * If the order is not specified, the elements are returned in ascending order.
-   * If descending order is used, the start and end indexes are interpreted as if
+   * If descending order is used, the start and end ranks are interpreted as if
    * the list were reversed.
    */
   order?: SortedSetOrder;

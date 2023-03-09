@@ -18,19 +18,16 @@ export function validateSortedSetName(name: string) {
   }
 }
 
-export function validateSortedSetIndices(
-  start_index: number,
-  end_index?: number
-) {
-  if (end_index === undefined) {
+export function validateSortedSetRanks(start_rank: number, end_rank?: number) {
+  if (end_rank === undefined) {
     return;
   }
-  if (start_index > 0 && end_index > 0 && start_index > end_index) {
-    throw new InvalidArgumentError('start index must be less than end index');
+  if (start_rank > 0 && end_rank > 0 && start_rank > end_rank) {
+    throw new InvalidArgumentError('start rank must be less than end rank');
   }
-  if (start_index < 0 && end_index < 0 && start_index >= end_index) {
+  if (start_rank < 0 && end_rank < 0 && start_rank >= end_rank) {
     throw new InvalidArgumentError(
-      'negative start index must be less than negative end index'
+      'negative start rank must be less than negative end rank'
     );
   }
 }
