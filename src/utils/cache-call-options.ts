@@ -1,4 +1,4 @@
-import { CollectionTtl } from './collection-ttl';
+import {CollectionTtl} from './collection-ttl';
 
 export interface ScalarCallOptions {
   /**

@@ -66,6 +66,7 @@ import {
   validateSortedSetCount,
   validateSortedSetRanks,
   validateSortedSetScores,
+  validateListSliceStartEnd,
 } from './utils/validators';
 import {CacheClientProps} from '../cache-client-props';
 import {Middleware} from '../config/middleware/middleware';
@@ -693,14 +694,15 @@ export class DataClient {
     try {
       validateCacheName(cacheName);
       validateListName(listName);
+      validateListSliceStartEnd(startIndex, endIndex);
     } catch (err) {
       return new CacheListFetch.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(
-      `Issuing 'listFetch' request;
-      listName: ${listName},
-      startIndex: ${startIndex ?? 'null'},
-      endIndex: ${endIndex ?? 'null'}`
+      "Issuing 'listFetch' request; listName: %s, startIndex: %s, endIndex: %s",
+      listName,
+      startIndex ?? 'null',
+      endIndex ?? 'null'
     );
     const result = await this.sendListFetch(
       cacheName,
@@ -708,7 +710,7 @@ export class DataClient {
       startIndex,
       endIndex
     );
-    this.logger.trace(`'listFetch' request result: ${result.toString()}`);
+    this.logger.trace("'listFetch' request result: %s", result.toString());
     return result;
   }
 
@@ -763,15 +765,16 @@ export class DataClient {
     try {
       validateCacheName(cacheName);
       validateListName(listName);
+      validateListSliceStartEnd(startIndex, endIndex);
     } catch (err) {
       return new CacheListRetain.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(
-      `Issuing 'listRetain' request;
-      listName: ${listName},
-      startIndex: ${startIndex ?? 'null'},
-      endIndex: ${endIndex ?? 'null'},
-      ${ttl.toString()}`
+      "Issuing 'listRetain' request; listName: %s, startIndex: %s, endIndex: %s, ttl: %s",
+      listName,
+      startIndex ?? 'null',
+      endIndex ?? 'null',
+      ttl.ttlSeconds.toString() ?? 'null'
     );
     const result = await this.sendListRetain(
       cacheName,
@@ -781,7 +784,7 @@ export class DataClient {
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl()
     );
-    this.logger.trace(`'listRetain' request result: ${result.toString()}`);
+    this.logger.trace("'listRetain' request result: %s", result.toString());
     return result;
   }
 
