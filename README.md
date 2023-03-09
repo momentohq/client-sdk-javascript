@@ -152,13 +152,13 @@ if (getResponse instanceof CacheGet.Hit) {
 
 ### Error Handling
 
-Errors that occur in calls to `SimpleCacheClient` methods are surfaced to developers as part of the return values of
+Errors that occur in calls to `CacheClient` methods are surfaced to developers as part of the return values of
 the calls, as opposed to by throwing exceptions. This makes them more visible, and allows your IDE to be more
 helpful in ensuring that you've handled the ones you care about. (For more on our philosophy about this, see our
 blog post on why [Exceptions are bugs](https://www.gomomento.com/blog/exceptions-are-bugs). And send us any
 feedback you have!)
 
-The preferred way of interpreting the return values from `SimpleCacheClient` methods is
+The preferred way of interpreting the return values from `CacheClient` methods is
 using `instanceof` to match and handle the specific response type. Here's a quick example:
 
 ```typescript
@@ -187,8 +187,8 @@ if (getResponse instanceof CacheGet.Error) {
 }
 ```
 
-Note that, outside of `SimpleCacheClient` responses, exceptions can occur and should be handled as usual. For example,
-trying to instantiate a `SimpleCacheClient` with an invalid authentication token will result in an
+Note that, outside of `CacheClient` responses, exceptions can occur and should be handled as usual. For example,
+trying to instantiate a `CacheClient` with an invalid authentication token will result in an
 `IllegalArgumentException` being thrown.
 
 ### Tuning
