@@ -1116,10 +1116,13 @@ describe('Integration tests for sorted set operations', () => {
     });
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   describe('#sortedSetGetRank', () => {});
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   describe('#sortedSetGetScore', () => {});
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   describe('#sortedSetGetScores', () => {});
 
   /*
@@ -1548,8 +1551,10 @@ describe('Integration tests for sorted set operations', () => {
     });
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   describe('#sortedSetRemoveElement', () => {});
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   describe('#sortedSetRemoveElements', () => {});
 
   /*
