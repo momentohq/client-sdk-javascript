@@ -4,6 +4,8 @@ import {
   CacheDelete,
   CacheSortedSetFetch,
   CacheSortedSetIncrementScore,
+  CacheSortedSetRemoveElement,
+  CacheSortedSetRemoveElements,
   CollectionTtl,
   MomentoErrorCode,
   SortedSetOrder,
@@ -1551,284 +1553,205 @@ describe('Integration tests for sorted set operations', () => {
     });
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  describe('#sortedSetRemoveElement', () => {});
-
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  describe('#sortedSetRemoveElements', () => {});
-
-  /*
-  describe('#dictionaryRemoveField', () => {
-    const responder = (props: ValidateDictionaryProps) => {
-      return Momento.dictionaryRemoveField(
+  describe('#sortedSetRemoveElement', () => {
+    const responder = (props: ValidateSortedSetProps) => {
+      return Momento.sortedSetRemoveElement(
         props.cacheName,
-        props.dictionaryName,
-        props.field
+        props.sortedSetName,
+        props.value
       );
     };
 
     itBehavesLikeItValidates(responder);
 
-    it('should remove a Uint8Array field', async () => {
-      const dictionaryName = v4();
-      const field = new TextEncoder().encode(v4());
-      const value = new TextEncoder().encode(v4());
+    it('should remove a string value', async () => {
+      const sortedSetName = v4();
+      await Momento.sortedSetPutElements(
+        IntegrationTestCacheName,
+        sortedSetName,
+        {
+          foo: 21,
+          bar: 42,
+        }
+      );
 
-      // When the field does not exist.
-      expect(
-        await Momento.dictionaryGetField(
-          IntegrationTestCacheName,
-          dictionaryName,
-          field
-        )
-      ).toBeInstanceOf(CacheDictionaryGetField.Miss);
-      expect(
-        await Momento.dictionaryRemoveField(
-          IntegrationTestCacheName,
-          dictionaryName,
-          field
-        )
-      ).toBeInstanceOf(CacheDictionaryRemoveField.Success);
-      expect(
-        await Momento.dictionaryGetField(
-          IntegrationTestCacheName,
-          dictionaryName,
-          field
-        )
-      ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+      let response = await Momento.sortedSetRemoveElement(
+        IntegrationTestCacheName,
+        sortedSetName,
+        'foo'
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetRemoveElement.Success);
 
-      // When the field exists.
-      expect(
-        await Momento.dictionarySetField(
-          IntegrationTestCacheName,
-          dictionaryName,
-          field,
-          value
-        )
-      ).toBeInstanceOf(CacheDictionarySetField.Success);
-      expect(
-        await Momento.dictionaryGetField(
-          IntegrationTestCacheName,
-          dictionaryName,
-          field
-        )
-      ).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      expect(
-        await Momento.dictionaryRemoveField(
-          IntegrationTestCacheName,
-          dictionaryName,
-          field
-        )
-      ).toBeInstanceOf(CacheDictionaryRemoveField.Success);
-      expect(
-        await Momento.dictionaryGetField(
-          IntegrationTestCacheName,
-          dictionaryName,
-          field
-        )
-      ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+      response = await Momento.sortedSetFetchByRank(
+        IntegrationTestCacheName,
+        sortedSetName
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse.valueArray()).toEqual([{value: 'bar', score: 42}]);
     });
 
-    it('should remove a string field', async () => {
-      const dictionaryName = v4();
-      const field = v4();
-      const value = v4();
+    it('should remove a bytes value', async () => {
+      const sortedSetName = v4();
+      await Momento.sortedSetPutElements(
+        IntegrationTestCacheName,
+        sortedSetName,
+        new Map([
+          [textEncoder.encode('foo'), 21],
+          [textEncoder.encode('bar'), 42],
+        ])
+      );
 
-      // When the field does not exist.
-      expect(
-        await Momento.dictionaryGetField(
-          IntegrationTestCacheName,
-          dictionaryName,
-          field
-        )
-      ).toBeInstanceOf(CacheDictionaryGetField.Miss);
-      expect(
-        await Momento.dictionaryRemoveField(
-          IntegrationTestCacheName,
-          dictionaryName,
-          field
-        )
-      ).toBeInstanceOf(CacheDictionaryRemoveField.Success);
-      expect(
-        await Momento.dictionaryGetField(
-          IntegrationTestCacheName,
-          dictionaryName,
-          field
-        )
-      ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+      let response = await Momento.sortedSetRemoveElement(
+        IntegrationTestCacheName,
+        sortedSetName,
+        textEncoder.encode('foo')
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetRemoveElement.Success);
 
-      // When the field exists.
-      expect(
-        await Momento.dictionarySetField(
-          IntegrationTestCacheName,
-          dictionaryName,
-          field,
-          value
-        )
-      ).toBeInstanceOf(CacheDictionarySetField.Success);
-      expect(
-        await Momento.dictionaryGetField(
-          IntegrationTestCacheName,
-          dictionaryName,
-          field
-        )
-      ).toBeInstanceOf(CacheDictionaryGetField.Hit);
-      expect(
-        await Momento.dictionaryRemoveField(
-          IntegrationTestCacheName,
-          dictionaryName,
-          field
-        )
-      ).toBeInstanceOf(CacheDictionaryRemoveField.Success);
-      expect(
-        await Momento.dictionaryGetField(
-          IntegrationTestCacheName,
-          dictionaryName,
-          field
-        )
-      ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+      response = await Momento.sortedSetFetchByRank(
+        IntegrationTestCacheName,
+        sortedSetName
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse.valueArrayUint8Elements()).toEqual([
+        {value: textEncoder.encode('bar'), score: 42},
+      ]);
+    });
+
+    it("should do nothing for a value that doesn't exist", async () => {
+      const sortedSetName = v4();
+      await Momento.sortedSetPutElements(
+        IntegrationTestCacheName,
+        sortedSetName,
+        {
+          foo: 21,
+          bar: 42,
+        }
+      );
+
+      let response = await Momento.sortedSetRemoveElement(
+        IntegrationTestCacheName,
+        sortedSetName,
+        'taco'
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetRemoveElement.Success);
+
+      response = await Momento.sortedSetFetchByRank(
+        IntegrationTestCacheName,
+        sortedSetName
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse.valueArray()).toEqual([
+        {value: 'foo', score: 21},
+        {value: 'bar', score: 42},
+      ]);
     });
   });
 
-  describe('#dictionaryRemoveFields', () => {
-    const responder = (props: ValidateDictionaryProps) => {
-      return Momento.dictionaryRemoveFields(
+  describe('#sortedSetRemoveElements', () => {
+    const responder = (props: ValidateSortedSetProps) => {
+      return Momento.sortedSetRemoveElements(
         props.cacheName,
-        props.dictionaryName,
-        [props.field] as string[] | Uint8Array[]
+        props.sortedSetName,
+        ['foo']
       );
     };
 
     itBehavesLikeItValidates(responder);
 
-    it('should remove Uint8Array fields', async () => {
-      const dictionaryName = v4();
-      const fields = [
-        new TextEncoder().encode(v4()),
-        new TextEncoder().encode(v4()),
-      ];
-      const setFields = new Map([
-        [fields[0], v4()],
-        [fields[1], v4()],
-      ]);
+    it('should remove string values', async () => {
+      const sortedSetName = v4();
+      await Momento.sortedSetPutElements(
+        IntegrationTestCacheName,
+        sortedSetName,
+        {
+          foo: 21,
+          bar: 42,
+          baz: 84,
+        }
+      );
 
-      // When the fields do not exist.
-      expect(
-        await Momento.dictionaryGetFields(
-          IntegrationTestCacheName,
-          dictionaryName,
-          fields
-        )
-      ).toBeInstanceOf(CacheDictionaryGetFields.Miss);
-      expect(
-        await Momento.dictionaryRemoveFields(
-          IntegrationTestCacheName,
-          dictionaryName,
-          fields
-        )
-      ).toBeInstanceOf(CacheDictionaryRemoveFields.Success);
-      expect(
-        await Momento.dictionaryGetFields(
-          IntegrationTestCacheName,
-          dictionaryName,
-          fields
-        )
-      ).toBeInstanceOf(CacheDictionaryGetFields.Miss);
+      let response = await Momento.sortedSetRemoveElements(
+        IntegrationTestCacheName,
+        sortedSetName,
+        ['foo', 'baz']
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetRemoveElements.Success);
 
-      // When the fields exist.
-      expect(
-        await Momento.dictionarySetFields(
-          IntegrationTestCacheName,
-          dictionaryName,
-          setFields
-        )
-      ).toBeInstanceOf(CacheDictionarySetFields.Success);
-      expect(
-        await Momento.dictionaryGetFields(
-          IntegrationTestCacheName,
-          dictionaryName,
-          fields
-        )
-      ).toBeInstanceOf(CacheDictionaryGetFields.Hit);
-      expect(
-        await Momento.dictionaryRemoveFields(
-          IntegrationTestCacheName,
-          dictionaryName,
-          fields
-        )
-      ).toBeInstanceOf(CacheDictionaryRemoveFields.Success);
-      expect(
-        await Momento.dictionaryGetFields(
-          IntegrationTestCacheName,
-          dictionaryName,
-          fields
-        )
-      ).toBeInstanceOf(CacheDictionaryGetFields.Miss);
+      response = await Momento.sortedSetFetchByRank(
+        IntegrationTestCacheName,
+        sortedSetName
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse.valueArray()).toEqual([{value: 'bar', score: 42}]);
     });
 
-    it('should remove string fields', async () => {
-      const dictionaryName = v4();
-      const fields = [v4(), v4()];
-      const setFields = new Map([
-        [fields[0], v4()],
-        [fields[1], v4()],
+    it('should remove bytes values', async () => {
+      const sortedSetName = v4();
+      await Momento.sortedSetPutElements(
+        IntegrationTestCacheName,
+        sortedSetName,
+        new Map([
+          [textEncoder.encode('foo'), 21],
+          [textEncoder.encode('bar'), 42],
+          [textEncoder.encode('baz'), 84],
+        ])
+      );
+
+      let response = await Momento.sortedSetRemoveElements(
+        IntegrationTestCacheName,
+        sortedSetName,
+        [textEncoder.encode('foo'), textEncoder.encode('baz')]
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetRemoveElements.Success);
+
+      response = await Momento.sortedSetFetchByRank(
+        IntegrationTestCacheName,
+        sortedSetName
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse.valueArrayUint8Elements()).toEqual([
+        {value: textEncoder.encode('bar'), score: 42},
       ]);
+    });
 
-      // When the fields do not exist.
-      expect(
-        await Momento.dictionaryGetFields(
-          IntegrationTestCacheName,
-          dictionaryName,
-          fields
-        )
-      ).toBeInstanceOf(CacheDictionaryGetFields.Miss);
-      expect(
-        await Momento.dictionaryRemoveFields(
-          IntegrationTestCacheName,
-          dictionaryName,
-          fields
-        )
-      ).toBeInstanceOf(CacheDictionaryRemoveFields.Success);
-      expect(
-        await Momento.dictionaryGetFields(
-          IntegrationTestCacheName,
-          dictionaryName,
-          fields
-        )
-      ).toBeInstanceOf(CacheDictionaryGetFields.Miss);
+    it("should do nothing for values that don't exist", async () => {
+      const sortedSetName = v4();
+      await Momento.sortedSetPutElements(
+        IntegrationTestCacheName,
+        sortedSetName,
+        {
+          foo: 21,
+          bar: 42,
+          baz: 84,
+        }
+      );
 
-      // When the fields exist.
-      expect(
-        await Momento.dictionarySetFields(
-          IntegrationTestCacheName,
-          dictionaryName,
-          setFields
-        )
-      ).toBeInstanceOf(CacheDictionarySetFields.Success);
-      expect(
-        await Momento.dictionaryGetFields(
-          IntegrationTestCacheName,
-          dictionaryName,
-          fields
-        )
-      ).toBeInstanceOf(CacheDictionaryGetFields.Hit);
-      expect(
-        await Momento.dictionaryRemoveFields(
-          IntegrationTestCacheName,
-          dictionaryName,
-          fields
-        )
-      ).toBeInstanceOf(CacheDictionaryRemoveFields.Success);
-      expect(
-        await Momento.dictionaryGetFields(
-          IntegrationTestCacheName,
-          dictionaryName,
-          fields
-        )
-      ).toBeInstanceOf(CacheDictionaryGetFields.Miss);
+      let response = await Momento.sortedSetRemoveElements(
+        IntegrationTestCacheName,
+        sortedSetName,
+        ['taco', 'habanero']
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetRemoveElements.Success);
+
+      response = await Momento.sortedSetFetchByRank(
+        IntegrationTestCacheName,
+        sortedSetName
+      );
+      expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+      const hitResponse = response as CacheSortedSetFetch.Hit;
+      expect(hitResponse.valueArray()).toEqual([
+        {value: 'foo', score: 21},
+        {value: 'bar', score: 42},
+        {value: 'baz', score: 84},
+      ]);
     });
   });
-  */
 
   describe('#sortedSetPutElement', () => {
     const responder = (props: ValidateSortedSetProps) => {
