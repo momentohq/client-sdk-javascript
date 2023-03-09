@@ -2,13 +2,13 @@ import {
   CacheGet,
   CreateCache,
   CacheSet,
-  SimpleCacheClient,
+  CacheClient,
   Configurations,
   CredentialProvider,
 } from '@gomomento/sdk';
 
 async function main() {
-  const momento = new SimpleCacheClient({
+  const momento = new CacheClient({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_AUTH_TOKEN',
