@@ -918,11 +918,11 @@ export class SimpleCacheClient {
    * @param {string} cacheName - The cache containing the sorted set.
    * @param {string} sortedSetName - The sorted set to fetch from.
    * @param {SortedSetFetchByRankOptions} options
-   * @param {number} [options.startRank] - The index of the first element to
-   * fetch. Defaults to 0. This index is inclusive, ie the element at this index
+   * @param {number} [options.startRank] - The rank of the first element to
+   * fetch. Defaults to 0. This rank is inclusive, ie the element at this rank
    * will be fetched.
-   * @param {number} [options.endRank] - The index of the last element to fetch.
-   * This index is exclusive, ie the element at this index will not be fetched.
+   * @param {number} [options.endRank] - The rank of the last element to fetch.
+   * This rank is exclusive, ie the element at this rank will not be fetched.
    * Defaults to null, which fetches up until and including the last element.
    * @param {SortedSetOrder} [options.order] - The order to fetch the elements in.
    * Defaults to ascending.
@@ -959,7 +959,7 @@ export class SimpleCacheClient {
    * @param {SortedSetOrder} [options.order] - The order to fetch the elements in.
    * Defaults to ascending.
    * @param {number} [options.offset] - The number of elements to skip before
-   * returning the first element. Defaults to 0. Note: this is not the index of
+   * returning the first element. Defaults to 0. Note: this is not the rank of
    * the first element to return, but the number of elements of the result set
    * to skip before returning the first element.
    * @param {number} [options.count] - The maximum number of elements to return.

@@ -189,7 +189,7 @@ describe('Integration tests for sorted set operations', () => {
     });
   };
 
-  describe('#sortedSetFetchByIndex', () => {
+  describe('#sortedSetFetchByRank', () => {
     const responder = (props: ValidateSortedSetProps) => {
       return Momento.dictionaryFetch(props.cacheName, props.sortedSetName);
     };
@@ -284,7 +284,7 @@ describe('Integration tests for sorted set operations', () => {
           });
       });
 
-      it('should fetch only the specified range if start index is specified', async () => {
+      it('should fetch only the specified range if start rank is specified', async () => {
         const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
@@ -303,7 +303,7 @@ describe('Integration tests for sorted set operations', () => {
         ]);
       });
 
-      it('should fetch only the specified range if end index is specified', async () => {
+      it('should fetch only the specified range if end rank is specified', async () => {
         const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
@@ -321,7 +321,7 @@ describe('Integration tests for sorted set operations', () => {
         ]);
       });
 
-      it('should fetch only the specified range if both start and end index are specified', async () => {
+      it('should fetch only the specified range if both start and end rank are specified', async () => {
         const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
@@ -344,7 +344,7 @@ describe('Integration tests for sorted set operations', () => {
       // Skipping this for now; need to re-enable:
       // https://github.com/momentohq/client-sdk-nodejs/issues/330
       // https://github.com/momentohq/storage-store/issues/168
-      it.skip('should return an empty list if start index is out of bounds', async () => {
+      it.skip('should return an empty list if start rank is out of bounds', async () => {
         const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
@@ -358,7 +358,7 @@ describe('Integration tests for sorted set operations', () => {
         expect(hitResponse.valueArray()).toEqual([]);
       });
 
-      it('should return all the remaining elements if end index is out of bounds', async () => {
+      it('should return all the remaining elements if end rank is out of bounds', async () => {
         const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
@@ -377,7 +377,7 @@ describe('Integration tests for sorted set operations', () => {
         ]);
       });
 
-      it('should return the last elements if start index is negative', async () => {
+      it('should return the last elements if start rank is negative', async () => {
         const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
@@ -397,7 +397,7 @@ describe('Integration tests for sorted set operations', () => {
         ]);
       });
 
-      it('should return all but the last elements if end index is negative', async () => {
+      it('should return all but the last elements if end rank is negative', async () => {
         const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
@@ -418,7 +418,7 @@ describe('Integration tests for sorted set operations', () => {
         ]);
       });
 
-      it('should return a range from the end of the set if both start and end index are negative', async () => {
+      it('should return a range from the end of the set if both start and end rank are negative', async () => {
         const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
@@ -483,7 +483,7 @@ describe('Integration tests for sorted set operations', () => {
         ]);
       });
 
-      it('should support descending order with a start index', async () => {
+      it('should support descending order with a start rank', async () => {
         const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
@@ -502,7 +502,7 @@ describe('Integration tests for sorted set operations', () => {
         ]);
       });
 
-      it('should support descending order with a end index', async () => {
+      it('should support descending order with a end rank', async () => {
         const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
@@ -521,7 +521,7 @@ describe('Integration tests for sorted set operations', () => {
         ]);
       });
 
-      it('should support descending order with a start and end index', async () => {
+      it('should support descending order with a start and end rank', async () => {
         const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
@@ -540,7 +540,7 @@ describe('Integration tests for sorted set operations', () => {
         ]);
       });
 
-      it('should error if start index is greater than end index', async () => {
+      it('should error if start rank is greater than end rank', async () => {
         const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
@@ -557,14 +557,14 @@ describe('Integration tests for sorted set operations', () => {
           MomentoErrorCode.INVALID_ARGUMENT_ERROR
         );
         expect(errorResponse.message()).toEqual(
-          'Invalid argument passed to Momento client: start index must be less than end index'
+          'Invalid argument passed to Momento client: start rank must be less than end rank'
         );
         expect(errorResponse.toString()).toEqual(
-          'Invalid argument passed to Momento client: start index must be less than end index'
+          'Invalid argument passed to Momento client: start rank must be less than end rank'
         );
       });
 
-      it('should error if negative start index is less than negative end index', async () => {
+      it('should error if negative start rank is less than negative end rank', async () => {
         const response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName,
@@ -581,10 +581,10 @@ describe('Integration tests for sorted set operations', () => {
           MomentoErrorCode.INVALID_ARGUMENT_ERROR
         );
         expect(errorResponse.message()).toEqual(
-          'Invalid argument passed to Momento client: negative start index must be less than negative end index'
+          'Invalid argument passed to Momento client: negative start rank must be less than negative end rank'
         );
         expect(errorResponse.toString()).toEqual(
-          'Invalid argument passed to Momento client: negative start index must be less than negative end index'
+          'Invalid argument passed to Momento client: negative start rank must be less than negative end rank'
         );
       });
     });

@@ -63,7 +63,7 @@ import {
   validateSortedSetName,
   validateSortedSetOffset,
   validateSortedSetCount,
-  validateSortedSetIndices,
+  validateSortedSetRanks,
   validateSortedSetScores,
 } from './utils/validators';
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
@@ -1809,13 +1809,13 @@ export class CacheClient {
     try {
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
-      validateSortedSetIndices(startRank, endRank);
+      validateSortedSetRanks(startRank, endRank);
     } catch (err) {
       return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
     }
 
     this.logger.trace(
-      "Issuing 'sortedSetFetchByIndex' request; startIndex: %s, endIndex : %s, order: %s",
+      "Issuing 'sortedSetFetchByRank' request; startRank: %s, endRank : %s, order: %s",
       startRank.toString() ?? 'null',
       endRank?.toString() ?? 'null',
       order.toString()
@@ -1829,7 +1829,7 @@ export class CacheClient {
       endRank
     );
     this.logger.trace(
-      "'sortedSetFetchByIndex' request result: %s",
+      "'sortedSetFetchByRank' request result: %s",
       result.toString()
     );
     return result;
