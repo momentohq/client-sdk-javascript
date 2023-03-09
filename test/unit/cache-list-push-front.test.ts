@@ -1,4 +1,4 @@
-import {CacheListPushFront} from '../src';
+import {CacheListPushFront} from '../../src';
 
 describe('CacheListPushFront', () => {
   describe('#toString', () => {

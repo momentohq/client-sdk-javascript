@@ -1,5 +1,5 @@
 import {TextEncoder} from 'util';
-import {CacheGet} from '../../src';
+import {CacheGet} from '../../../src';
 
 describe('get-response.ts', () => {
   it('should correctly instantiate a GetResponse object', () => {

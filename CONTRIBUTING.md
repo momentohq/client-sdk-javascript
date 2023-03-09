@@ -44,12 +44,19 @@ npm run lint
 ### Run unit tests
 
 ```
-npm run test
+npm run unit-test
 ```
 
 ### Run integration tests
 
 ```
 export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
-npm run integration
+npm run integration-test
+```
+
+### Run all tests
+
+```
+export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
+npm run test
 ```

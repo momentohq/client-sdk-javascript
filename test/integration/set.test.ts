@@ -1,5 +1,5 @@
 import {v4} from 'uuid';
-import {sleep} from '../src/internal/utils/sleep';
+import {sleep} from '../../src/internal/utils/sleep';
 import {
   CacheSetAddElements,
   CacheSetAddElement,
@@ -8,7 +8,7 @@ import {
   CacheSetRemoveElement,
   CollectionTtl,
   MomentoErrorCode,
-} from '../src';
+} from '../../src';
 import {
   ValidateCacheProps,
   ItBehavesLikeItValidatesCacheName,
@@ -18,7 +18,7 @@ import {
 import {
   ResponseBase,
   IResponseError,
-} from '../src/messages/responses/response-base';
+} from '../../src/messages/responses/response-base';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 

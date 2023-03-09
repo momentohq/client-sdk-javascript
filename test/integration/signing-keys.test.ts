@@ -1,4 +1,4 @@
-import {CreateSigningKey, ListSigningKeys, RevokeSigningKey} from '../src';
+import {CreateSigningKey, ListSigningKeys, RevokeSigningKey} from '../../src';
 import {SetupIntegrationTest} from './integration-setup';
 
 const {Momento} = SetupIntegrationTest();

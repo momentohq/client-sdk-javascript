@@ -32,6 +32,8 @@ import {
   CacheListPushBack,
   CacheListPushFront,
   CacheListRemoveValue,
+  CacheSortedSetPutElement as CacheSortedSetPutElement,
+  CacheSortedSetFetch,
   CollectionTtl,
   Configuration,
   CredentialProvider,
@@ -40,20 +42,35 @@ import {
   MomentoLogger,
   MomentoLoggerFactory,
   CacheSetIfNotExists,
+  CacheSortedSetGetRank,
+  CacheSortedSetGetScore,
+  CacheSortedSetGetScores,
+  CacheSortedSetIncrementScore,
+  CacheSortedSetRemoveElement,
+  CacheSortedSetRemoveElements,
+  CacheSortedSetPutElements,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
+import {SortedSetOrder} from '../utils/cache-call-options';
 import {
   validateCacheName,
   validateDictionaryName,
   validateListName,
   validateSetName,
+  validateSortedSetName,
+  validateSortedSetOffset,
+  validateSortedSetCount,
+  validateSortedSetRanks,
+  validateSortedSetScores,
 } from './utils/validators';
 import {SimpleCacheClientProps} from '../simple-cache-client-props';
 import {Middleware} from '../config/middleware/middleware';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
+import {truncateString} from './utils/display';
+import {SdkError} from '../errors/errors';
 
 export class CacheClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -1640,6 +1657,755 @@ export class CacheClient {
     });
   }
 
+  public async sortedSetPutElement(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array,
+    score: number,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheSortedSetPutElement.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetPutElement.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    this.logger.trace(
+      "Issuing 'sortedSetPutElement' request; value: %s, score : %s, ttl: %s",
+      truncateString(value.toString()),
+      score,
+      ttl.ttlSeconds.toString() ?? 'null'
+    );
+
+    const result = await this.sendSortedSetPutElement(
+      cacheName,
+      this.convert(sortedSetName),
+      this.convert(value),
+      score,
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+    this.logger.trace(
+      "'sortedSetPutElement' request result: %s",
+      result.toString()
+    );
+    return result;
+  }
+
+  private async sendSortedSetPutElement(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    value: Uint8Array,
+    score: number,
+    ttlMilliseconds: number,
+    refreshTtl: boolean
+  ): Promise<CacheSortedSetPutElement.Response> {
+    const request = new grpcCache._SortedSetPutRequest({
+      set_name: sortedSetName,
+      elements: [new grpcCache._SortedSetElement({value, score})],
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SortedSetPut(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheSortedSetPutElement.Success());
+          } else {
+            resolve(
+              new CacheSortedSetPutElement.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async sortedSetPutElements(
+    cacheName: string,
+    sortedSetName: string,
+    elements: Map<string | Uint8Array, number> | Record<string, number>,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheSortedSetPutElements.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetPutElements.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    this.logger.trace(
+      "Issuing 'sortedSetPutElements' request; value: %s, score : %s, ttl: %s",
+      elements.toString(),
+      ttl.ttlSeconds.toString() ?? 'null'
+    );
+
+    const sortedSetValueScorePairs = this.convertSortedSetMapOrRecord(elements);
+
+    const result = await this.sendSortedSetPutElements(
+      cacheName,
+      this.convert(sortedSetName),
+      sortedSetValueScorePairs,
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+    this.logger.trace(
+      "'sortedSetPutElements' request result: %s",
+      result.toString()
+    );
+    return result;
+  }
+
+  private async sendSortedSetPutElements(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    elements: grpcCache._SortedSetElement[],
+    ttlMilliseconds: number,
+    refreshTtl: boolean
+  ): Promise<CacheSortedSetPutElements.Response> {
+    const request = new grpcCache._SortedSetPutRequest({
+      set_name: sortedSetName,
+      elements: elements,
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SortedSetPut(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheSortedSetPutElements.Success());
+          } else {
+            resolve(
+              new CacheSortedSetPutElements.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async sortedSetFetchByRank(
+    cacheName: string,
+    sortedSetName: string,
+    order: SortedSetOrder,
+    startRank: number,
+    endRank?: number
+  ): Promise<CacheSortedSetFetch.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+      validateSortedSetRanks(startRank, endRank);
+    } catch (err) {
+      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      "Issuing 'sortedSetFetchByRank' request; startRank: %s, endRank : %s, order: %s",
+      startRank.toString() ?? 'null',
+      endRank?.toString() ?? 'null',
+      order.toString()
+    );
+
+    const result = await this.sendSortedSetFetchByRank(
+      cacheName,
+      this.convert(sortedSetName),
+      order,
+      startRank,
+      endRank
+    );
+    this.logger.trace(
+      "'sortedSetFetchByRank' request result: %s",
+      result.toString()
+    );
+    return result;
+  }
+
+  private async sendSortedSetFetchByRank(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    order: SortedSetOrder,
+    startRank: number,
+    endRank?: number
+  ): Promise<CacheSortedSetFetch.Response> {
+    const by_index = new grpcCache._SortedSetFetchRequest._ByIndex();
+    if (startRank) {
+      by_index.inclusive_start_index = startRank;
+    } else {
+      by_index.unbounded_start = new grpcCache._Unbounded();
+    }
+    if (endRank) {
+      by_index.exclusive_end_index = endRank;
+    } else {
+      by_index.unbounded_end = new grpcCache._Unbounded();
+    }
+
+    const protoBufOrder =
+      order === SortedSetOrder.Descending
+        ? grpcCache._SortedSetFetchRequest.Order.DESCENDING
+        : grpcCache._SortedSetFetchRequest.Order.ASCENDING;
+
+    const request = new grpcCache._SortedSetFetchRequest({
+      set_name: sortedSetName,
+      order: protoBufOrder,
+      with_scores: true,
+      by_index: by_index,
+    });
+
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SortedSetFetch(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            if (resp?.found) {
+              if (resp?.found?.values_with_scores) {
+                resolve(
+                  new CacheSortedSetFetch.Hit(
+                    resp.found.values_with_scores.elements
+                  )
+                );
+              } else {
+                resolve(
+                  new CacheSortedSetFetch.Error(
+                    new UnknownError(
+                      'Unknown sorted set fetch hit response type'
+                    )
+                  )
+                );
+              }
+            } else if (resp?.missing) {
+              resolve(new CacheSortedSetFetch.Miss());
+            } else {
+              resolve(
+                new CacheSortedSetFetch.Error(
+                  new UnknownError('Unknown sorted set fetch response type')
+                )
+              );
+            }
+          } else {
+            resolve(
+              new CacheSortedSetFetch.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async sortedSetFetchByScore(
+    cacheName: string,
+    sortedSetName: string,
+    order: SortedSetOrder,
+    minScore?: number,
+    maxScore?: number,
+    offset?: number,
+    count?: number
+  ): Promise<CacheSortedSetFetch.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+      validateSortedSetScores(minScore, maxScore);
+      if (offset !== undefined) {
+        validateSortedSetOffset(offset);
+      }
+      if (count !== undefined) {
+        validateSortedSetCount(count);
+      }
+    } catch (err) {
+      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      "Issuing 'sortedSetFetchByScore' request; minScore: %s, maxScore : %s, order: %s, offset: %s, count: %s",
+      minScore?.toString() ?? 'null',
+      maxScore?.toString() ?? 'null',
+      order.toString(),
+      offset?.toString() ?? 'null',
+      count?.toString() ?? 'null'
+    );
+
+    const result = await this.sendSortedSetFetchByScore(
+      cacheName,
+      this.convert(sortedSetName),
+      order,
+      minScore,
+      maxScore,
+      offset,
+      count
+    );
+
+    this.logger.trace(
+      "'sortedSetFetchByScore' request result: %s",
+      result.toString()
+    );
+    return result;
+  }
+
+  private async sendSortedSetFetchByScore(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    order: SortedSetOrder,
+    minScore?: number,
+    maxScore?: number,
+    offset?: number,
+    count?: number
+  ): Promise<CacheSortedSetFetch.Response> {
+    const by_score = new grpcCache._SortedSetFetchRequest._ByScore();
+    if (minScore !== undefined) {
+      by_score.min_score = new grpcCache._SortedSetFetchRequest._ByScore._Score(
+        {
+          score: minScore,
+          exclusive: false,
+        }
+      );
+    } else {
+      by_score.unbounded_min = new grpcCache._Unbounded();
+    }
+    if (maxScore !== undefined) {
+      by_score.max_score = new grpcCache._SortedSetFetchRequest._ByScore._Score(
+        {
+          score: maxScore,
+          exclusive: false,
+        }
+      );
+    } else {
+      by_score.unbounded_max = new grpcCache._Unbounded();
+    }
+    by_score.offset = offset ?? 0;
+    // Note: the service reserves negative counts to mean all elements in the
+    // result set.
+    by_score.count = count ?? -1;
+
+    const protoBufOrder =
+      order === SortedSetOrder.Descending
+        ? grpcCache._SortedSetFetchRequest.Order.DESCENDING
+        : grpcCache._SortedSetFetchRequest.Order.ASCENDING;
+
+    const request = new grpcCache._SortedSetFetchRequest({
+      set_name: sortedSetName,
+      order: protoBufOrder,
+      with_scores: true,
+      by_score: by_score,
+    });
+
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SortedSetFetch(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            if (resp?.found) {
+              if (resp?.found?.values_with_scores) {
+                resolve(
+                  new CacheSortedSetFetch.Hit(
+                    resp.found.values_with_scores.elements
+                  )
+                );
+              } else {
+                resolve(
+                  new CacheSortedSetFetch.Error(
+                    new UnknownError(
+                      'Unknown sorted set fetch hit response type'
+                    )
+                  )
+                );
+              }
+            } else if (resp?.missing) {
+              resolve(new CacheSortedSetFetch.Miss());
+            } else {
+              resolve(
+                new CacheSortedSetFetch.Error(
+                  new UnknownError('Unknown sorted set fetch response type')
+                )
+              );
+            }
+          } else {
+            resolve(
+              new CacheSortedSetFetch.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async sortedSetGetRank(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetGetRank.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetGetRank.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      "Issuing 'sortedSetGetRank' request; value: %s",
+      truncateString(value.toString())
+    );
+
+    const result = await this.sendSortedSetGetRank(
+      cacheName,
+      this.convert(sortedSetName),
+      this.convert(value)
+    );
+
+    this.logger.trace(
+      "'sortedSetGetRank' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendSortedSetGetRank(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    value: Uint8Array
+  ): Promise<CacheSortedSetGetRank.Response> {
+    const request = new grpcCache._SortedSetGetRankRequest({
+      set_name: sortedSetName,
+      value: value,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper
+        .getClient()
+        .SortedSetGetRank(
+          request,
+          metadata,
+          {interceptors: this.interceptors},
+          (err, resp) => {
+            if (resp?.missing) {
+              resolve(new CacheSortedSetGetRank.Miss());
+            } else if (resp?.element_rank) {
+              if (resp?.element_rank.rank === undefined) {
+                resolve(new CacheSortedSetGetRank.Miss());
+              } else {
+                resolve(new CacheSortedSetGetRank.Hit(resp.element_rank.rank));
+              }
+            } else {
+              resolve(
+                new CacheSortedSetGetRank.Error(cacheServiceErrorMapper(err))
+              );
+            }
+          }
+        );
+    });
+  }
+
+  public async sortedSetGetScore(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetGetScore.Response> {
+    const responses = await this.sortedSetGetScores(cacheName, sortedSetName, [
+      value,
+    ] as string[] | Uint8Array[]);
+    if (responses instanceof CacheSortedSetGetScores.Hit) {
+      return responses.responses()[0];
+    } else if (responses instanceof CacheSortedSetGetScores.Miss) {
+      return new CacheSortedSetGetScore.Miss(this.convert(value));
+    } else if (responses instanceof CacheSortedSetGetScores.Error) {
+      return new CacheSortedSetGetScore.Error(
+        <SdkError>responses.innerException(),
+        this.convert(value)
+      );
+    }
+
+    return new CacheSortedSetGetScore.Error(
+      new UnknownError('Unknown response type'),
+      this.convert(value)
+    );
+  }
+
+  public async sortedSetGetScores(
+    cacheName: string,
+    sortedSetName: string,
+    values: string[] | Uint8Array[]
+  ): Promise<CacheSortedSetGetScores.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetGetScores.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      "Issuing 'sortedSetGetScores' request; values: %s",
+      truncateString(values.toString())
+    );
+
+    const result = await this.sendSortedSetGetScores(
+      cacheName,
+      this.convert(sortedSetName),
+      values.map(value => this.convert(value))
+    );
+
+    this.logger.trace(
+      "'sortedSetGetScores' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendSortedSetGetScores(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    values: Uint8Array[]
+  ): Promise<CacheSortedSetGetScores.Response> {
+    const request = new grpcCache._SortedSetGetScoreRequest({
+      set_name: sortedSetName,
+      values: values,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper
+        .getClient()
+        .SortedSetGetScore(
+          request,
+          metadata,
+          {interceptors: this.interceptors},
+          (err, resp) => {
+            if (resp?.missing) {
+              resolve(new CacheSortedSetGetScores.Miss());
+            } else if (resp?.found) {
+              resolve(
+                new CacheSortedSetGetScores.Hit(resp.found.elements, values)
+              );
+            } else {
+              resolve(
+                new CacheSortedSetGetScores.Error(cacheServiceErrorMapper(err))
+              );
+            }
+          }
+        );
+    });
+  }
+
+  public async sortedSetIncrementScore(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array,
+    amount = 1,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheSortedSetIncrementScore.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      "Issuing 'sortedSetIncrementScore' request; value: %s",
+      truncateString(value.toString())
+    );
+
+    const result = await this.sendSortedSetIncrementScore(
+      cacheName,
+      this.convert(sortedSetName),
+      this.convert(value),
+      amount,
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+
+    this.logger.trace(
+      "'sortedSetIncrementScore' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendSortedSetIncrementScore(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    value: Uint8Array,
+    amount: number,
+    ttlMilliseconds: number,
+    refreshTtl: boolean
+  ): Promise<CacheSortedSetIncrementScore.Response> {
+    const request = new grpcCache._SortedSetIncrementRequest({
+      set_name: sortedSetName,
+      value: value,
+      amount: amount,
+      ttl_milliseconds: ttlMilliseconds,
+      refresh_ttl: refreshTtl,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper
+        .getClient()
+        .SortedSetIncrement(
+          request,
+          metadata,
+          {interceptors: this.interceptors},
+          (err, resp) => {
+            if (resp) {
+              if (resp.score) {
+                resolve(new CacheSortedSetIncrementScore.Success(resp.score));
+              } else {
+                resolve(new CacheSortedSetIncrementScore.Success(0));
+              }
+            } else {
+              resolve(
+                new CacheDictionaryIncrement.Error(cacheServiceErrorMapper(err))
+              );
+            }
+          }
+        );
+    });
+  }
+
+  public async sortedSetRemoveElement(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetRemoveElement.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'sortedSetRemoveElement' request");
+
+    const result = await this.sendSortedSetRemoveElement(
+      cacheName,
+      this.convert(sortedSetName),
+      this.convert(value)
+    );
+
+    this.logger.trace(
+      "'sortedSetRemoveElement' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendSortedSetRemoveElement(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    value: Uint8Array
+  ): Promise<CacheSortedSetRemoveElement.Response> {
+    const request = new grpcCache._SortedSetRemoveRequest({
+      set_name: sortedSetName,
+      some: new grpcCache._SortedSetRemoveRequest._Some({
+        values: [value],
+      }),
+    });
+
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SortedSetRemove(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        err => {
+          if (err) {
+            resolve(
+              new CacheSortedSetRemoveElement.Error(
+                cacheServiceErrorMapper(err)
+              )
+            );
+          } else {
+            resolve(new CacheSortedSetRemoveElement.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async sortedSetRemoveElements(
+    cacheName: string,
+    sortedSetName: string,
+    values: string[] | Uint8Array[]
+  ): Promise<CacheSortedSetRemoveElements.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'sortedSetRemoveElements' request");
+
+    const result = await this.sendSortedSetRemoveElements(
+      cacheName,
+      this.convert(sortedSetName),
+      this.convertArray(values)
+    );
+
+    this.logger.trace(
+      "'sortedSetRemoveElements' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendSortedSetRemoveElements(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    values: Uint8Array[]
+  ): Promise<CacheSortedSetRemoveElements.Response> {
+    const request = new grpcCache._SortedSetRemoveRequest({
+      set_name: sortedSetName,
+      some: new grpcCache._SortedSetRemoveRequest._Some({
+        values: values,
+      }),
+    });
+
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().SortedSetRemove(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        err => {
+          if (err) {
+            resolve(
+              new CacheSortedSetRemoveElements.Error(
+                cacheServiceErrorMapper(err)
+              )
+            );
+          } else {
+            resolve(new CacheSortedSetRemoveElements.Success());
+          }
+        }
+      );
+    });
+  }
+
   private initializeInterceptors(
     loggerFactory: MomentoLoggerFactory,
     middlewares: Middleware[]
@@ -1689,6 +2455,28 @@ export class CacheClient {
           new grpcCache._DictionaryFieldValuePair({
             field: this.convert(element[0]),
             value: this.convert(element[1]),
+          })
+      );
+    }
+  }
+
+  private convertSortedSetMapOrRecord(
+    elements: Map<string | Uint8Array, number> | Record<string, number>
+  ): grpcCache._SortedSetElement[] {
+    if (elements instanceof Map) {
+      return [...elements.entries()].map(
+        element =>
+          new grpcCache._SortedSetElement({
+            value: this.convert(element[0]),
+            score: element[1],
+          })
+      );
+    } else {
+      return Object.entries(elements).map(
+        element =>
+          new grpcCache._SortedSetElement({
+            value: this.convert(element[0]),
+            score: element[1],
           })
       );
     }
