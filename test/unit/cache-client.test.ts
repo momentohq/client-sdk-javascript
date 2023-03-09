@@ -1,20 +1,31 @@
 import {
   Configurations,
   InvalidArgumentError,
+  CacheClient,
   SimpleCacheClient,
 } from '../../src';
 import * as CreateCache from '../../src/messages/responses/create-cache';
 import {StringMomentoTokenProvider} from '../../src/auth/credential-provider';
+import {SimpleCacheClientProps} from '../../src/cache-client-props';
 const credentialProvider = new StringMomentoTokenProvider({
   authToken:
     'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzcXVpcnJlbCIsImNwIjoiY29udHJvbCBwbGFuZSBlbmRwb2ludCIsImMiOiJkYXRhIHBsYW5lIGVuZHBvaW50In0.zsTsEXFawetTCZI',
 });
 const configuration = Configurations.Laptop.latest();
 
-describe('SimpleCacheClient.ts', () => {
+describe('CacheClient', () => {
+  it('can construct a CacheClient with the legacy class name SimpleCacheClient', () => {
+    const props: SimpleCacheClientProps = {
+      configuration: configuration,
+      credentialProvider: credentialProvider,
+      defaultTtlSeconds: 100,
+    };
+    new SimpleCacheClient(props);
+  });
+
   it('cannot create/get cache with invalid name', async () => {
     const invalidCacheNames = ['', '    '];
-    const momento = new SimpleCacheClient({
+    const momento = new CacheClient({
       configuration: configuration,
       credentialProvider: credentialProvider,
       defaultTtlSeconds: 100,
@@ -34,7 +45,7 @@ describe('SimpleCacheClient.ts', () => {
       const invalidTimeoutConfig = configuration.withTransportStrategy(
         configuration.getTransportStrategy().withClientTimeoutMillis(-1)
       );
-      new SimpleCacheClient({
+      new CacheClient({
         configuration: invalidTimeoutConfig,
         credentialProvider: credentialProvider,
         defaultTtlSeconds: 100,

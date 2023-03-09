@@ -1,4 +1,4 @@
-import {SimpleCacheConfiguration} from '../../../src/config/configuration';
+import {CacheConfiguration} from '../../../src/config/configuration';
 import {
   StaticGrpcConfiguration,
   StaticTransportStrategy,
@@ -23,7 +23,7 @@ describe('configuration.ts', () => {
     maxIdleMillis: testMaxIdleMillis,
   });
   const testMiddlewares: Middleware[] = [];
-  const testConfiguration = new SimpleCacheConfiguration({
+  const testConfiguration = new CacheConfiguration({
     loggerFactory: testLoggerFactory,
     retryStrategy: testRetryStrategy,
     transportStrategy: testTransportStrategy,

@@ -1,7 +1,7 @@
 import {CredentialProvider} from './auth/credential-provider';
 import {Configuration} from './config/configuration';
 
-export interface SimpleCacheClientProps {
+export interface CacheClientProps {
   /**
    * Configuration settings for the cache client
    */
@@ -15,3 +15,8 @@ export interface SimpleCacheClientProps {
    */
   defaultTtlSeconds: number;
 }
+
+/**
+ * @deprecated use {CacheClientProps} instead
+ */
+export type SimpleCacheClientProps = CacheClientProps;

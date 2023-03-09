@@ -1,12 +1,12 @@
 import {v4} from 'uuid';
-import {SimpleCacheClientProps} from '../../src/simple-cache-client-props';
+import {CacheClientProps} from '../../src/cache-client-props';
 import {
   CreateCache,
   Configurations,
   DeleteCache,
   CollectionTtl,
   MomentoErrorCode,
-  SimpleCacheClient,
+  CacheClient,
   CredentialProvider,
 } from '../../src';
 import {
@@ -19,10 +19,7 @@ function testCacheName(): string {
   return name + v4();
 }
 
-const deleteCacheIfExists = async (
-  momento: SimpleCacheClient,
-  cacheName: string
-) => {
+const deleteCacheIfExists = async (momento: CacheClient, cacheName: string) => {
   const deleteResponse = await momento.deleteCache(cacheName);
   if (deleteResponse instanceof DeleteCache.Error) {
     if (deleteResponse.errorCode() !== MomentoErrorCode.NOT_FOUND_ERROR) {
@@ -32,7 +29,7 @@ const deleteCacheIfExists = async (
 };
 
 export async function WithCache(
-  client: SimpleCacheClient,
+  client: CacheClient,
   cacheName: string,
   block: () => Promise<void>
 ) {
@@ -45,7 +42,7 @@ export async function WithCache(
   }
 }
 
-export const CacheClientProps: SimpleCacheClientProps = {
+export const IntegrationTestCacheClientProps: CacheClientProps = {
   configuration: Configurations.Laptop.latest(),
   credentialProvider: CredentialProvider.fromEnvironmentVariable({
     environmentVariableName: 'TEST_AUTH_TOKEN',
@@ -54,11 +51,11 @@ export const CacheClientProps: SimpleCacheClientProps = {
 };
 
 function momentoClientForTesting() {
-  return new SimpleCacheClient(CacheClientProps);
+  return new CacheClient(IntegrationTestCacheClientProps);
 }
 
 export function SetupIntegrationTest(): {
-  Momento: SimpleCacheClient;
+  Momento: CacheClient;
   IntegrationTestCacheName: string;
 } {
   const cacheName = testCacheName();

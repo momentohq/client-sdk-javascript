@@ -1,4 +1,4 @@
-import {SimpleCacheClient} from './simple-cache-client';
+import {CacheClient, SimpleCacheClient} from './cache-client';
 import * as Configurations from './config/configurations';
 import * as CacheGet from './messages/responses/cache-get';
 import * as CacheListConcatenateBack from './messages/responses/cache-list-concatenate-back';
@@ -94,6 +94,7 @@ export {
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
+  CacheClient,
   SimpleCacheClient,
   CacheGet,
   CacheListConcatenateBack,
