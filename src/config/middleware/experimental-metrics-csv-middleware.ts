@@ -6,7 +6,8 @@ import {MomentoLogger, MomentoLoggerFactory} from '../logging/momento-logger';
 
 function headerFields(): Array<string> {
   return [
-    'numActiveRequests',
+    'numActiveRequestsAtStart',
+    'numActiveRequestsAtFinish',
     'requestType',
     'status',
     'startTime',
@@ -19,7 +20,8 @@ function headerFields(): Array<string> {
 }
 
 interface RequestMetrics {
-  numActiveRequests: number;
+  numActiveRequestsAtStart: number;
+  numActiveRequestsAtFinish: number;
   requestType: string;
   status: number;
   startTime: number;
@@ -35,6 +37,7 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
 {
   private readonly logger: MomentoLogger;
   private readonly csvPath: string;
+  private readonly numActiveRequestsAtStart: number;
   private readonly startTime: number;
   private requestBodyTime: number;
   private requestType: string;
@@ -48,7 +51,8 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
   constructor(logger: MomentoLogger, csvPath: string) {
     this.logger = logger;
     this.csvPath = csvPath;
-    ExperimentalMetricsCsvMiddleware.numActiveRequests++;
+    this.numActiveRequestsAtStart =
+      ++ExperimentalMetricsCsvMiddleware.numActiveRequests;
     this.startTime = new Date().getTime();
 
     this.receivedResponseBody = false;
@@ -95,7 +99,9 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
   private recordMetrics(): void {
     const endTime = new Date().getTime();
     const metrics: RequestMetrics = {
-      numActiveRequests: ExperimentalMetricsCsvMiddleware.numActiveRequests,
+      numActiveRequestsAtStart: this.numActiveRequestsAtStart,
+      numActiveRequestsAtFinish:
+        ExperimentalMetricsCsvMiddleware.numActiveRequests,
       requestType: this.requestType,
       status: this.responseStatusCode,
       startTime: this.startTime,
@@ -107,7 +113,8 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
     };
 
     const csvRow = [
-      metrics.numActiveRequests,
+      metrics.numActiveRequestsAtStart,
+      metrics.numActiveRequestsAtFinish,
       metrics.requestType,
       metrics.status,
       metrics.startTime,
