@@ -674,7 +674,7 @@ export class CacheClient {
     options?: DictionarySetFieldOptions
   ): Promise<CacheDictionarySetField.Response> {
     const client = this.getNextDataClient();
-    return await client.dictionarySendField(
+    return await client.dictionarySetField(
       cacheName,
       dictionaryName,
       field,

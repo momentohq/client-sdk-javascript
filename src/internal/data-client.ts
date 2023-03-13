@@ -1117,7 +1117,7 @@ export class DataClient {
     });
   }
 
-  public async dictionarySendField(
+  public async dictionarySetField(
     cacheName: string,
     dictionaryName: string,
     field: string | Uint8Array,
