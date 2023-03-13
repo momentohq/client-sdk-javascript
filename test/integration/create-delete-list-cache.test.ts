@@ -101,5 +101,4 @@ describe('flush cache', () => {
     expect(getResponse1).toBeInstanceOf(CacheGet.Miss);
     expect(getResponse2).toBeInstanceOf(CacheGet.Miss);
   });
-
 });
