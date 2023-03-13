@@ -1,18 +1,36 @@
 import {
-  CacheClient, CacheGet, CacheSet, Configurations, CreateCache,
+  CacheClient,
+  CacheGet,
+  CacheSet,
+  Configurations,
+  CreateCache,
   DefaultMomentoLoggerFactory,
-  DefaultMomentoLoggerLevel, EnvMomentoTokenProvider, InternalServerError, LimitExceededError,
+  DefaultMomentoLoggerLevel,
+  EnvMomentoTokenProvider,
+  InternalServerError,
+  LimitExceededError,
   MomentoLogger,
-  MomentoLoggerFactory, TimeoutError
-} from "@gomomento/sdk";
-import {range} from "./utils/collections";
-import * as hdr from "hdr-histogram-js";
-import {delay} from "./utils/time";
+  MomentoLoggerFactory,
+  TimeoutError,
+} from '@gomomento/sdk';
+import {range} from './utils/collections';
+import * as hdr from 'hdr-histogram-js';
+import {delay} from './utils/time';
 
-let cacheKeys = ["cacheKey0", "cacheKey1", "cacheKey2", "cacheKey3", "cacheKey4",
-  "cacheKey5", "cacheKey6", "cacheKey7", "cacheKey8", "cacheKey9"];
+const cacheKeys = [
+  'cacheKey0',
+  'cacheKey1',
+  'cacheKey2',
+  'cacheKey3',
+  'cacheKey4',
+  'cacheKey5',
+  'cacheKey6',
+  'cacheKey7',
+  'cacheKey8',
+  'cacheKey9',
+];
 
-let requestCoalescerMap = new Map<string, Promise<CacheGet.Response>>();
+const requestCoalescerMap = new Map<string, Promise<CacheGet.Response>>();
 
 interface RequestCoalescerLoadGenOptions {
   loggerFactory: MomentoLoggerFactory;
@@ -104,14 +122,18 @@ class RequestCoalescerLoadGen {
       globalRstStreamCount: 0,
     };
 
-    console.log("------------ PROCESSING REQUESTS WITHOUT REQUEST COALESCING ------------")
+    console.log(
+      '------------ PROCESSING REQUESTS WITHOUT REQUEST COALESCING ------------'
+    );
     const asyncGetSetResults = range(
       this.options.numberOfConcurrentRequests
     ).map(_ =>
       this.launchAndRunWorkersWithoutRequestCoalescer(momento, loadGenContext)
     );
 
-    console.log("------------ PROCESSING REQUESTS WITH REQUEST COALESCING ------------")
+    console.log(
+      '------------ PROCESSING REQUESTS WITH REQUEST COALESCING ------------'
+    );
     const asyncGetSetResultsWithRequestCoalescer = range(
       this.options.numberOfConcurrentRequests
     ).map(_ =>
@@ -160,14 +182,32 @@ class RequestCoalescerLoadGen {
   ): Promise<void> {
     let finished = false;
     const finish = () => (finished = true);
+    const cacheKey = cacheKeys[Math.floor(Math.random() * cacheKeys.length)];
     setTimeout(finish, this.options.totalSecondsToRun * 1000);
-
     let i = 1;
     for (;;) {
-      this.issueAsyncSetGetWithRequestCoalescer(client, loadGenContext);
-
-      // create a callback function that takes in the promise and removes the key/value pair from map when the promise is resolved
-
+      const getStartTime = process.hrtime();
+      const getResult =
+        await this.executeRequestAndUpdateContextCountsRemoveFromMap(
+          loadGenContext,
+          cacheKey,
+          () =>
+            this.issueAsyncSetGetWithRequestCoalescer(
+              client,
+              cacheKey,
+              loadGenContext
+            )
+        );
+      if (getResult !== undefined) {
+        const getDuration =
+          RequestCoalescerLoadGen.getElapsedMillis(getStartTime);
+        loadGenContext.getLatencies.recordValue(getDuration);
+        if (getDuration < this.delayMillisBetweenRequests) {
+          const delayMs = this.delayMillisBetweenRequests - getDuration;
+          this.logger.trace(`delaying: ${delayMs}`);
+          await delay(delayMs);
+        }
+      }
       if (finished) {
         return;
       }
@@ -178,7 +218,6 @@ class RequestCoalescerLoadGen {
     client: CacheClient,
     loadGenContext: RequestCoalescerLoadGenContext
   ): Promise<void> {
-
     // pick random key from cacheKeys
     const cacheKey = cacheKeys[Math.floor(Math.random() * cacheKeys.length)];
 
@@ -188,7 +227,8 @@ class RequestCoalescerLoadGen {
       () => client.set(this.cacheName, cacheKey, this.cacheValue)
     );
     if (result !== undefined) {
-      const setDuration = RequestCoalescerLoadGen.getElapsedMillis(setStartTime);
+      const setDuration =
+        RequestCoalescerLoadGen.getElapsedMillis(setStartTime);
       loadGenContext.setLatencies.recordValue(setDuration);
       if (setDuration < this.delayMillisBetweenRequests) {
         const delayMs = this.delayMillisBetweenRequests - setDuration;
@@ -204,7 +244,8 @@ class RequestCoalescerLoadGen {
     );
 
     if (getResult !== undefined) {
-      const getDuration = RequestCoalescerLoadGen.getElapsedMillis(getStartTime);
+      const getDuration =
+        RequestCoalescerLoadGen.getElapsedMillis(getStartTime);
       loadGenContext.getLatencies.recordValue(getDuration);
       if (getDuration < this.delayMillisBetweenRequests) {
         const delayMs = this.delayMillisBetweenRequests - getDuration;
@@ -214,44 +255,44 @@ class RequestCoalescerLoadGen {
     }
   }
 
-  private async issueAsyncSetGetWithRequestCoalescer<T>(
+  private issueAsyncSetGetWithRequestCoalescer<T>(
     client: CacheClient,
+    cacheKey: string,
     loadGenContext: RequestCoalescerLoadGenContext
-  ): Promise<CacheGet.Response | undefined> {
-    const cacheKey = cacheKeys[Math.floor(Math.random() * cacheKeys.length)];
-
+  ): Promise<CacheGet.Response | undefined> | undefined {
     const getStartTime = process.hrtime();
     if (requestCoalescerMap.has(cacheKey)) {
-      return requestCoalescerMap.get(cacheKey)!
+      return requestCoalescerMap.get(cacheKey);
     } else {
       // Issue Momento get request and set the key/value in map
-      const getResultPromise = client.get(this.cacheName, cacheKey)
-      requestCoalescerMap.set(cacheKey, getResultPromise)
+      const getResultPromise = client.get(this.cacheName, cacheKey);
+      requestCoalescerMap.set(cacheKey, getResultPromise);
 
-      if (getResultPromise !== undefined) {
-        const getDuration = RequestCoalescerLoadGen.getElapsedMillis(getStartTime);
-        loadGenContext.getLatencies.recordValue(getDuration);
-        if (getDuration < this.delayMillisBetweenRequests) {
-          const delayMs = this.delayMillisBetweenRequests - getDuration;
-          this.logger.trace(`delaying: ${delayMs}`);
-          await delay(delayMs);
-        }
-      }
-      return getResultPromise
+      // if (getResultPromise !== undefined) {
+      //   const getDuration = RequestCoalescerLoadGen.getElapsedMillis(getStartTime);
+      //   loadGenContext.getLatencies.recordValue(getDuration);
+      //   if (getDuration < this.delayMillisBetweenRequests) {
+      //     const delayMs = this.delayMillisBetweenRequests - getDuration;
+      //     this.logger.trace(`delaying: ${delayMs}`);
+      //     await delay(delayMs);
+      //   }
+      // }
+      return getResultPromise;
     }
-
   }
 
   private logStats(loadGenContext: RequestCoalescerLoadGenContext): void {
     this.logger.info(`
 cumulative stats:
-total requests: ${loadGenContext.globalRequestCount} (${RequestCoalescerLoadGen.tps(
+total requests: ${
+      loadGenContext.globalRequestCount
+    } (${RequestCoalescerLoadGen.tps(
       loadGenContext,
       loadGenContext.globalRequestCount
     )} tps, limited to ${this.options.maxRequestsPerSecond} tps)
        success: ${
-      loadGenContext.globalSuccessCount
-    } (${RequestCoalescerLoadGen.percentRequests(
+         loadGenContext.globalSuccessCount
+       } (${RequestCoalescerLoadGen.percentRequests(
       loadGenContext,
       loadGenContext.globalSuccessCount
     )}%) (${RequestCoalescerLoadGen.tps(
@@ -259,8 +300,8 @@ total requests: ${loadGenContext.globalRequestCount} (${RequestCoalescerLoadGen.
       loadGenContext.globalSuccessCount
     )} tps)
    unavailable: ${
-      loadGenContext.globalUnavailableCount
-    } (${RequestCoalescerLoadGen.percentRequests(
+     loadGenContext.globalUnavailableCount
+   } (${RequestCoalescerLoadGen.percentRequests(
       loadGenContext,
       loadGenContext.globalUnavailableCount
     )}%)
@@ -296,7 +337,8 @@ ${RequestCoalescerLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
     requestCount: number
   ): number {
     return Math.round(
-      (requestCount * 1000) / RequestCoalescerLoadGen.getElapsedMillis(context.startTime)
+      (requestCount * 1000) /
+        RequestCoalescerLoadGen.getElapsedMillis(context.startTime)
     );
   }
 
@@ -330,8 +372,19 @@ ${RequestCoalescerLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
     return response;
   }
 
+  private async executeRequestAndUpdateContextCountsRemoveFromMap<T>(
+    context: RequestCoalescerLoadGenContext,
+    cacheKey: string,
+    block: () => Promise<T> | undefined
+  ): Promise<T | undefined> {
+    const [result, response] = await this.executeRequest(block);
+    this.updateContextCountsForRequest(context, result);
+    requestCoalescerMap.delete(cacheKey);
+    return response;
+  }
+
   private async executeRequest<T>(
-    block: () => Promise<T>
+    block: () => Promise<T> | undefined
   ): Promise<[AsyncSetGetResult, T | undefined]> {
     try {
       const result = await block();
@@ -475,4 +528,3 @@ main(loadGeneratorOptions)
     console.error(`Uncaught exception while running load gen: ${e.message}`);
     throw e;
   });
-
