@@ -39,7 +39,7 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
   }
 
   try {
-    // our v1 api tokens don't have an endpoint as part of their claims. Instead, when we give them to a customer, we
+    // v1 api tokens don't have an endpoint as part of their claims. Instead, when the SDK returns tokens, we
     // give it to them as a base64 encoded string of '{ "api_key": "<the key>", "endpoint": "prod.momentohq.com" }'.
     // Since in the near future, most customers are going to be using these newer tokens, we are first checking to see if
     // they are base64 encoded, which will tell us that they are our v1 api tokens. If its not, we will fall back to decoding
