@@ -66,6 +66,20 @@ export function validateListName(name: string) {
   }
 }
 
+export function validateListSliceStartEnd(
+  startIndex?: number,
+  endIndex?: number
+) {
+  if (startIndex === undefined || endIndex === undefined) return;
+  // can't validate bounds for start and index of either or are negative without list length
+  if (startIndex > 0 || endIndex < 0) return;
+  if (endIndex <= startIndex) {
+    throw new InvalidArgumentError(
+      'endIndex (exclusive) must be larger than startIndex (inclusive)'
+    );
+  }
+}
+
 export function validateTtlMinutes(ttlMinutes: number) {
   if (ttlMinutes < 0) {
     throw new InvalidArgumentError('ttlMinutes must be positive');
