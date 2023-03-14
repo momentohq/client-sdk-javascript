@@ -15,6 +15,7 @@ import {
   ListSigningKeys,
   RevokeSigningKey,
   MomentoLogger,
+  CacheFlush,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -109,6 +110,39 @@ export class ControlClient {
             resolve(new DeleteCache.Error(cacheServiceErrorMapper(err)));
           } else {
             resolve(new DeleteCache.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async flushCache(cacheName: string): Promise<CacheFlush.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new CacheFlush.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.trace(`Flushing cache: ${cacheName}`);
+    return await this.sendFlushCache(cacheName);
+  }
+
+  private async sendFlushCache(
+    cacheName: string
+  ): Promise<CacheFlush.Response> {
+    const request = new grpcControl._FlushCacheRequest({
+      cache_name: cacheName,
+    });
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().FlushCache(
+        request,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheFlush.Success());
+          } else {
+            resolve(new CacheFlush.Error(cacheServiceErrorMapper(err)));
           }
         }
       );

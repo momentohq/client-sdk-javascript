@@ -6,6 +6,8 @@ import {
   WithCache,
 } from './integration-setup';
 import {
+  CacheFlush,
+  CacheGet,
   CreateCache,
   DeleteCache,
   ListCaches,
@@ -54,5 +56,49 @@ describe('create/delete cache', () => {
         expect(names.includes(cacheName)).toBeTruthy();
       }
     });
+  });
+});
+
+describe('flush cache', () => {
+  ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+    return Momento.flushCache(props.cacheName);
+  });
+
+  it('should return NotFoundError if flushing a non-existent cache', async () => {
+    const cacheName = v4();
+    const flushResponse = await Momento.flushCache(cacheName);
+    expect(flushResponse).toBeInstanceOf(CacheFlush.Response);
+    expect(flushResponse).toBeInstanceOf(CacheFlush.Error);
+    if (flushResponse instanceof CacheFlush.Error) {
+      expect(flushResponse.errorCode()).toEqual(
+        MomentoErrorCode.NOT_FOUND_ERROR
+      );
+    }
+  });
+
+  it('should return success while flushing empty cache', async () => {
+    const cacheName = v4();
+    await Momento.createCache(cacheName);
+    const flushResponse = await Momento.flushCache(cacheName);
+    expect(flushResponse).toBeInstanceOf(CacheFlush.Response);
+    expect(flushResponse).toBeInstanceOf(CacheFlush.Success);
+  });
+
+  it('should return success while flushing non-empty cache', async () => {
+    const cacheName = v4();
+    const key1 = v4();
+    const key2 = v4();
+    const value1 = v4();
+    const value2 = v4();
+    await Momento.createCache(cacheName);
+    await Momento.set(cacheName, key1, value1);
+    await Momento.set(cacheName, key2, value2);
+    const flushResponse = await Momento.flushCache(cacheName);
+    expect(flushResponse).toBeInstanceOf(CacheFlush.Response);
+    expect(flushResponse).toBeInstanceOf(CacheFlush.Success);
+    const getResponse1 = await Momento.get(cacheName, key1);
+    const getResponse2 = await Momento.get(cacheName, key2);
+    expect(getResponse1).toBeInstanceOf(CacheGet.Miss);
+    expect(getResponse2).toBeInstanceOf(CacheGet.Miss);
   });
 });

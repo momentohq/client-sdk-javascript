@@ -46,6 +46,7 @@ import {
   CacheSortedSetPutElement,
   CacheSortedSetPutElements,
   MomentoLogger,
+  CacheFlush,
 } from '.';
 import {range} from './internal/utils/collections';
 import {CacheClientProps} from './cache-client-props';
@@ -589,6 +590,18 @@ export class CacheClient {
    */
   public async deleteCache(cacheName: string): Promise<DeleteCache.Response> {
     return await this.controlClient.deleteCache(cacheName);
+  }
+
+  /**
+   * Flushes / clears all the items of the given cache
+   *
+   * @param {string} cacheName - The cache to be flushed.
+   * @returns {Promise<CacheFlush.Response>} -
+   * {@link CacheFlush.Success} on success.
+   * {@link CacheFlush.Error} on failure.
+   */
+  public async flushCache(cacheName: string): Promise<CacheFlush.Response> {
+    return await this.controlClient.flushCache(cacheName);
   }
 
   /**
