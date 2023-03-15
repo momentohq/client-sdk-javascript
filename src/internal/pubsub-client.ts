@@ -246,7 +246,6 @@ export class PubsubClient {
     // Otherwise we resume starting from the next sequence number.
     let lastTopicSequenceNumber =
       resumeAtTopicSequenceNumber === 0 ? -1 : resumeAtTopicSequenceNumber;
-    let reconnectedDueToError = false;
     call
       .on('data', (resp: grpcPubsub._SubscriptionItem) => {
         if (resp?.item) {
@@ -260,17 +259,14 @@ export class PubsubClient {
         if (err.message === '13 INTERNAL: Received RST_STREAM with code 0') {
           console.log('Stream timed out? Restarting.');
           this.sendSubscribe(cacheName, topicName, lastTopicSequenceNumber + 1);
-          reconnectedDueToError = true;
           return;
         }
         errorHandler(err);
       })
       .on('end', () => {
+        // The stream may end due to error.
+        // Unclear why else it would end other than program termination.
         endStreamHandler();
-
-        if (!reconnectedDueToError) {
-          this.sendSubscribe(cacheName, topicName, lastTopicSequenceNumber + 1);
-        }
       });
     console.log('Subscription stream started; topic: %s', topicName);
   }
