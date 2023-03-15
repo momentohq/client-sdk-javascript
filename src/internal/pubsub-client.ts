@@ -163,66 +163,116 @@ export class PubsubClient {
       truncateString(topicName)
     );
 
-    return await this.sendSubscribe(cacheName, topicName);
+    return await new Promise(resolve => {
+      this.sendSubscribe(cacheName, topicName);
+      resolve();
+    });
   }
 
-  private async sendSubscribe(
+  private sendSubscribe(
     cacheName: string,
-    topicName: string
-  ): Promise<void> {
+    topicName: string,
+    resumeAtTopicSequenceNumber = 0
+  ): void {
     const request = new grpcPubsub._SubscriptionRequest({
       cache_name: cacheName,
       topic: topicName,
+      resume_at_topic_sequence_number: resumeAtTopicSequenceNumber,
     });
 
-    return await new Promise(resolve => {
-      const call = this.clientWrapper.getClient().Subscribe(request, {
-        interceptors: this.streamingInterceptors,
-      });
-      call
-        .on('data', (resp: grpcPubsub._SubscriptionItem) => {
-          console.log(resp);
-          if (resp?.item) {
-            if (resp.item.value.text) {
-              console.log(
-                'Received message from subscription stream; topic: %s, message: %s',
-                truncateString(topicName),
-                truncateString(resp.item.value.text)
-              );
-            } else if (resp.item.value.binary) {
-              console.log(
-                'Received message from subscription stream; topic: %s, message length: %s',
-                truncateString(topicName),
-                resp.item.value.binary.length
-              );
-            }
-          } else if (resp?.heartbeat) {
-            console.log(
-              'Received heartbeat from subscription stream; topic: %s',
-              truncateString(topicName)
-            );
-          } else if (resp?.discontinuity) {
-            console.log(
-              'Received discontinuity from subscription stream; topic: %s',
-              truncateString(topicName)
-            );
-          }
-        })
-        .on('error', (err: Error) => {
-          console.log(
-            'Error received from subscription stream; error: %s',
-            err.toString()
-          );
-        })
-        .on('end', () => {
-          console.log(
-            'Subscription stream ended; topic: %s',
-            truncateString(topicName)
-          );
-        });
-      console.log('Subscription stream started; topic: %s', topicName);
-      resolve();
+    const call = this.clientWrapper.getClient().Subscribe(request, {
+      interceptors: this.streamingInterceptors,
     });
+
+    // The following are example handlers for the various types of responses that can be received.
+    // These are for debugging right now. In a future commit, we will pull these out as arguments
+    // to the subscribe method.
+    const dataHandler = (resp: grpcPubsub._SubscriptionItem) => {
+      console.log(resp);
+      if (resp?.item) {
+        if (resp.item.value.text) {
+          console.log(
+            'Received message from subscription stream; topic: %s, message: %s',
+            truncateString(topicName),
+            truncateString(resp.item.value.text)
+          );
+        } else if (resp.item.value.binary) {
+          console.log(
+            'Received message from subscription stream; topic: %s, message length: %s',
+            truncateString(topicName),
+            resp.item.value.binary.length
+          );
+        }
+      } else if (resp?.heartbeat) {
+        console.log(
+          'Received heartbeat from subscription stream; topic: %s',
+          truncateString(topicName)
+        );
+      } else if (resp?.discontinuity) {
+        console.log(
+          'Received discontinuity from subscription stream; topic: %s',
+          truncateString(topicName)
+        );
+      }
+    };
+
+    const errorHandler = (err: Error) => {
+      console.log(typeof err);
+      console.log(err.constructor.name);
+      console.log(
+        'Error received from subscription stream; error: %s',
+        err.toString()
+      );
+      console.log(`
+        NAME: ${err.name}
+        MESSAGE: ${err.message}
+        STACK: ${err.stack || 'no stack'}
+        `);
+    };
+
+    const endStreamHandler = () => {
+      console.log(
+        'Subscription stream ended; topic: %s',
+        truncateString(topicName)
+      );
+    };
+
+    // The following are the outer handlers for the stream.
+    // They are responsible for reconnecting the stream if it ends unexpectedly, and for
+    // building the API facing response objects.
+
+    // The last topic sequence number we received. This is used to resume the stream.
+    // If resumeAtTopicSequenceNumber is 0, then we reconnect from the beginning again.
+    // Otherwise we resume starting from the next sequence number.
+    let lastTopicSequenceNumber =
+      resumeAtTopicSequenceNumber === 0 ? -1 : resumeAtTopicSequenceNumber;
+    let reconnectedDueToError = false;
+    call
+      .on('data', (resp: grpcPubsub._SubscriptionItem) => {
+        if (resp?.item) {
+          lastTopicSequenceNumber = resp.item.topic_sequence_number;
+        }
+        dataHandler(resp);
+      })
+      .on('error', (err: Error) => {
+        // Envoy cuts the the stream closes after ~1 minute. Hence we reconnect.
+        // The `err` object has no status code, so we have to match the string :|
+        if (err.message === '13 INTERNAL: Received RST_STREAM with code 0') {
+          console.log('Stream timed out? Restarting.');
+          this.sendSubscribe(cacheName, topicName, lastTopicSequenceNumber + 1);
+          reconnectedDueToError = true;
+          return;
+        }
+        errorHandler(err);
+      })
+      .on('end', () => {
+        endStreamHandler();
+
+        if (!reconnectedDueToError) {
+          this.sendSubscribe(cacheName, topicName, lastTopicSequenceNumber + 1);
+        }
+      });
+    console.log('Subscription stream started; topic: %s', topicName);
   }
 
   private initializeUnaryInterceptors(
@@ -240,7 +290,7 @@ export class PubsubClient {
     loggerFactory: MomentoLoggerFactory,
     middlewares: Middleware[]
   ): Interceptor[] {
-    return this.initializeInterceptors(loggerFactory, middlewares, 10000);
+    return this.initializeInterceptors(loggerFactory, middlewares);
   }
 
   private initializeInterceptors(
@@ -264,12 +314,7 @@ export class PubsubClient {
       ];
     } else {
       return [
-        middlewaresInterceptor(loggerFactory, middlewares),
         new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
-        ...createRetryInterceptorIfEnabled(
-          this.configuration.getLoggerFactory(),
-          this.configuration.getRetryStrategy()
-        ),
       ];
     }
   }
