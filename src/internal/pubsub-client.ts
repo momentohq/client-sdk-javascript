@@ -5,9 +5,11 @@ import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
+import {ChannelCredentials, Interceptor, ServiceError} from '@grpc/grpc-js';
+import {Status} from '@grpc/grpc-js/build/src/constants';
 import {
   TopicPublish,
+  TopicSubscribe,
   Configuration,
   CredentialProvider,
   InvalidArgumentError,
@@ -187,47 +189,12 @@ export class PubsubClient {
     // The following are example handlers for the various types of responses that can be received.
     // These are for debugging right now. In a future commit, we will pull these out as arguments
     // to the subscribe method.
-    const dataHandler = (resp: grpcPubsub._SubscriptionItem) => {
-      console.log(resp);
-      if (resp?.item) {
-        if (resp.item.value.text) {
-          console.log(
-            'Received message from subscription stream; topic: %s, message: %s',
-            truncateString(topicName),
-            truncateString(resp.item.value.text)
-          );
-        } else if (resp.item.value.binary) {
-          console.log(
-            'Received message from subscription stream; topic: %s, message length: %s',
-            truncateString(topicName),
-            resp.item.value.binary.length
-          );
-        }
-      } else if (resp?.heartbeat) {
-        console.log(
-          'Received heartbeat from subscription stream; topic: %s',
-          truncateString(topicName)
-        );
-      } else if (resp?.discontinuity) {
-        console.log(
-          'Received discontinuity from subscription stream; topic: %s',
-          truncateString(topicName)
-        );
-      }
+    const dataHandler = (resp: TopicSubscribe.Item) => {
+      console.log('Data received from subscription stream; %s', resp);
     };
 
-    const errorHandler = (err: Error) => {
-      console.log(typeof err);
-      console.log(err.constructor.name);
-      console.log(
-        'Error received from subscription stream; error: %s',
-        err.toString()
-      );
-      console.log(`
-        NAME: ${err.name}
-        MESSAGE: ${err.message}
-        STACK: ${err.stack || 'no stack'}
-        `);
+    const errorHandler = (err: TopicSubscribe.Error) => {
+      console.log(`Error received from subscription stream; ${err.toString()}`);
     };
 
     const endStreamHandler = () => {
@@ -250,18 +217,40 @@ export class PubsubClient {
       .on('data', (resp: grpcPubsub._SubscriptionItem) => {
         if (resp?.item) {
           lastTopicSequenceNumber = resp.item.topic_sequence_number;
+          if (resp.item.value.text) {
+            dataHandler(new TopicSubscribe.Item(resp.item.value.text));
+          } else if (resp.item.value.binary) {
+            dataHandler(new TopicSubscribe.Item(resp.item.value.binary));
+          }
+        } else if (resp?.heartbeat) {
+          console.log(
+            'Received heartbeat from subscription stream; topic: %s',
+            truncateString(topicName)
+          );
+        } else if (resp?.discontinuity) {
+          console.log(
+            'Received discontinuity from subscription stream; topic: %s',
+            truncateString(topicName)
+          );
         }
-        dataHandler(resp);
       })
       .on('error', (err: Error) => {
-        // Envoy cuts the the stream closes after ~1 minute. Hence we reconnect.
-        // The `err` object has no status code, so we have to match the string :|
-        if (err.message === '13 INTERNAL: Received RST_STREAM with code 0') {
+        const serviceError = err as unknown as ServiceError;
+        console.log(serviceError);
+        // The service cuts the the stream after ~1 minute. Hence we reconnect.
+        if (
+          serviceError.code === Status.INTERNAL &&
+          serviceError.details === 'Received RST_STREAM with code 0'
+        ) {
           console.log('Stream timed out? Restarting.');
           this.sendSubscribe(cacheName, topicName, lastTopicSequenceNumber + 1);
           return;
         }
-        errorHandler(err);
+
+        // Otherwise we propagate the error to the caller.
+        errorHandler(
+          new TopicSubscribe.Error(cacheServiceErrorMapper(serviceError))
+        );
       })
       .on('end', () => {
         // The stream may end due to error.

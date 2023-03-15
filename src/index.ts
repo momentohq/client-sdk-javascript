@@ -46,6 +46,7 @@ import * as CacheSortedSetIncrementScore from './messages/responses/cache-sorted
 import * as CacheSortedSetRemoveElement from './messages/responses/cache-sorted-set-remove-element';
 import * as CacheSortedSetRemoveElements from './messages/responses/cache-sorted-set-remove-elements';
 import * as TopicPublish from './messages/responses/topic-publish';
+import * as TopicSubscribe from './messages/responses/topic-subscribe';
 
 import {CacheInfo} from './messages/cache-info';
 import {CollectionTtl} from './utils/collection-ttl';
@@ -147,6 +148,7 @@ export {
   CacheSortedSetRemoveElements,
   TopicClient,
   TopicPublish,
+  TopicSubscribe,
   MomentoErrorCode,
   AlreadyExistsError,
   AuthenticationError,
