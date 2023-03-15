@@ -1,4 +1,5 @@
 import {CacheClient, SimpleCacheClient} from './cache-client';
+import {TopicClient} from './topic-client';
 import * as Configurations from './config/configurations';
 import * as CacheGet from './messages/responses/cache-get';
 import * as CacheListConcatenateBack from './messages/responses/cache-list-concatenate-back';
@@ -44,6 +45,7 @@ import * as CacheSortedSetGetScores from './messages/responses/cache-sorted-set-
 import * as CacheSortedSetIncrementScore from './messages/responses/cache-sorted-set-increment-score';
 import * as CacheSortedSetRemoveElement from './messages/responses/cache-sorted-set-remove-element';
 import * as CacheSortedSetRemoveElements from './messages/responses/cache-sorted-set-remove-elements';
+import * as TopicPublish from './messages/responses/topic-publish';
 
 import {CacheInfo} from './messages/cache-info';
 import {CollectionTtl} from './utils/collection-ttl';
@@ -143,6 +145,8 @@ export {
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  TopicClient,
+  TopicPublish,
   MomentoErrorCode,
   AlreadyExistsError,
   AuthenticationError,
