@@ -47,6 +47,11 @@ export class TopicClient {
     return await client.publish(cacheName, topicName, value);
   }
 
+  public async subscribe(cacheName: string, topicName: string): Promise<void> {
+    const client = this.getNextPubsubClient();
+    await client.subscribe(cacheName, topicName);
+  }
+
   private getNextPubsubClient(): PubsubClient {
     const client = this.pubsubClients[this.nextPubsubClientIndex];
     this.nextPubsubClientIndex =

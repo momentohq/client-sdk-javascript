@@ -10,7 +10,8 @@
     "advanced": "tsc && node dist/advanced.js",
     "load-gen": "tsc && node dist/load-gen.js",
     "dictionary": "tsc && node dist/dictionary.js",
-    "topics": "tsc && node dist/topics.js",
+    "topic-publish": "tsc && node dist/topic-publish.js",
+    "topic-subscribe": "tsc && node dist/topic-subscribe.js",
     "test": "jest",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix"

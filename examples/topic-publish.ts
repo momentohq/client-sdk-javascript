@@ -8,7 +8,7 @@ import {
 async function main() {
   const clargs = process.argv.slice(2);
   if (clargs.length !== 3) {
-    console.error('Usage: topics.ts <cacheName> <topicName> <value>');
+    console.error('Usage: topic-publish.ts <cacheName> <topicName> <value>');
     return;
   }
   const cacheName = clargs[0];
