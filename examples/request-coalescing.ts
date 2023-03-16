@@ -1,5 +1,4 @@
 import {
-  CacheClient,
   DefaultMomentoLoggerFactory,
   DefaultMomentoLoggerLevel,
   MomentoLogger,
@@ -12,14 +11,26 @@ import {
   BasicLoadGenOptions,
   executeRequestAndUpdateContextCounts,
   initiateLoadGenContext,
+  initiateRequestCoalescerContext,
 } from './utils/load-gen';
 import {
   getElapsedMillis,
+  logCoalescingStats,
   logStats,
 } from './utils/load-gen-statistics-calculator';
 import {createCache, getCacheClient} from './utils/cache';
+import {
+  GetAndSetOnlyClient,
+  MomentoClientWrapperWithCoalescing,
+} from './utils/momento-client-with-coalescing';
 
-class BasicLoadGen {
+const cacheKeys: string[] = [];
+
+for (let i = 0; i < 10; i++) {
+  cacheKeys.push(`cacheKey${i}`);
+}
+
+class RequestCoalescerLoadGen {
   private readonly loggerFactory: MomentoLoggerFactory;
   private readonly logger: MomentoLogger;
   private readonly cacheItemTtlSeconds = 60;
@@ -27,11 +38,11 @@ class BasicLoadGen {
   private readonly delayMillisBetweenRequests: number;
   private readonly cacheValue: string;
 
-  private readonly cacheName: string = 'js-loadgen';
+  private readonly cacheName: string = 'js-requestcoalescer';
 
   constructor(options: BasicLoadGenOptions) {
     this.loggerFactory = options.loggerFactory;
-    this.logger = this.loggerFactory.getLogger('load-gen');
+    this.logger = this.loggerFactory.getLogger('request-coalescer-load-gen');
     this.options = options;
     this.cacheValue = 'x'.repeat(options.cacheItemPayloadBytes);
     this.delayMillisBetweenRequests =
@@ -58,18 +69,19 @@ class BasicLoadGen {
     );
     this.logger.info(`Running for ${this.options.totalSecondsToRun} seconds`);
 
-    const loadGenContext = initiateLoadGenContext();
+    console.log(
+      '------------ PROCESSING REQUESTS WITHOUT REQUEST COALESCING ------------'
+    );
+
+    let loadGenContext = initiateLoadGenContext();
+    // Show stats periodically.
+    let logStatsIntervalId = setInterval(() => {
+      logStats(loadGenContext, this.logger, this.options.maxRequestsPerSecond);
+    }, this.options.showStatsIntervalSeconds * 1000);
 
     const asyncGetSetResults = range(
       this.options.numberOfConcurrentRequests
-    ).map(workerId =>
-      this.launchAndRunWorkers(momento, loadGenContext, workerId + 1)
-    );
-
-    // Show stats periodically.
-    const logStatsIntervalId = setInterval(() => {
-      logStats(loadGenContext, this.logger, this.options.maxRequestsPerSecond);
-    }, this.options.showStatsIntervalSeconds * 1000);
+    ).map(_ => this.launchAndRunWorkers(momento, loadGenContext));
 
     await Promise.all(asyncGetSetResults);
 
@@ -82,12 +94,47 @@ class BasicLoadGen {
     this.logger.info('DONE!');
     // wait a few millis to allow the logger to finish flushing
     await delay(500);
+
+    console.log(
+      '------------ PROCESSING REQUESTS WITH REQUEST COALESCING ------------'
+    );
+
+    loadGenContext = initiateLoadGenContext();
+
+    // Show stats periodically.
+    logStatsIntervalId = setInterval(() => {
+      logStats(loadGenContext, this.logger, this.options.maxRequestsPerSecond);
+      logCoalescingStats(requestCoalescerContext, loadGenContext, this.logger);
+    }, this.options.showStatsIntervalSeconds * 1000);
+
+    const requestCoalescerContext = initiateRequestCoalescerContext();
+
+    const momentoWithCoalescing = new MomentoClientWrapperWithCoalescing(
+      momento,
+      requestCoalescerContext
+    );
+
+    const asyncGetSetResultsWithRequestCoalescer = range(
+      this.options.numberOfConcurrentRequests
+    ).map(_ => this.launchAndRunWorkers(momentoWithCoalescing, loadGenContext));
+
+    await Promise.all(asyncGetSetResultsWithRequestCoalescer);
+
+    // We're done, stop showing stats.
+    clearInterval(logStatsIntervalId);
+
+    // Show the stats one last time at the end.
+    logStats(loadGenContext, this.logger, this.options.maxRequestsPerSecond);
+    logCoalescingStats(requestCoalescerContext, loadGenContext, this.logger);
+
+    this.logger.info('DONE!');
+    // wait a few millis to allow the logger to finish flushing
+    await delay(500);
   }
 
   private async launchAndRunWorkers(
-    client: CacheClient,
-    loadGenContext: BasicLoadGenContext,
-    workerId: number
+    client: GetAndSetOnlyClient,
+    loadGenContext: BasicLoadGenContext
   ): Promise<void> {
     let finished = false;
     const finish = () => (finished = true);
@@ -95,23 +142,19 @@ class BasicLoadGen {
 
     let i = 1;
     for (;;) {
-      await this.issueAsyncSetGet(client, loadGenContext, workerId, i);
-
+      await this.issueAsyncSetGet(client, loadGenContext);
       if (finished) {
         return;
       }
-
       i++;
     }
   }
 
   private async issueAsyncSetGet(
-    client: CacheClient,
-    loadGenContext: BasicLoadGenContext,
-    workerId: number,
-    operationId: number
+    client: GetAndSetOnlyClient,
+    loadGenContext: BasicLoadGenContext
   ): Promise<void> {
-    const cacheKey = `worker${workerId}operation${operationId}`;
+    const cacheKey = this.getRandomCacheKey();
 
     const setStartTime = process.hrtime();
     const result = await executeRequestAndUpdateContextCounts(
@@ -146,37 +189,10 @@ class BasicLoadGen {
       }
     }
   }
-}
 
-const PERFORMANCE_INFORMATION_MESSAGE = `
-Thanks for trying out our basic node.js load generator!  This tool is
-included to allow you to experiment with performance in your environment
-based on different configurations.  It's very simplistic, and only intended
-to give you a quick way to explore the performance of the Momento client
-running on a single nodejs process.
-
-Note that because nodejs javascript code runs on a single thread, the limiting
-factor in request throughput will often be CPU.  Keep an eye on your CPU
-consumption while running the load generator, and if you reach 100%
-of a CPU core then you most likely won't be able to improve throughput further
-without running additional nodejs processes.
-
-CPU will also impact your client-side latency; as you increase the number of
-concurrent requests, if they are competing for CPU time then the observed
-latency will increase.
-
-Also, since performance will be impacted by network latency, you'll get the best
-results if you run on a cloud VM in the same region as your Momento cache.
-
-Check out the configuration settings at the bottom of the 'load-gen.ts' to
-see how different configurations impact performance.
-
-If you have questions or need help experimenting further, please reach out to us!
-`;
-
-async function main(loadGeneratorOptions: BasicLoadGenOptions) {
-  const loadGenerator = new BasicLoadGen(loadGeneratorOptions);
-  await loadGenerator.run();
+  private getRandomCacheKey(): string {
+    return cacheKeys[Math.floor(Math.random() * cacheKeys.length)];
+  }
 }
 
 const loadGeneratorOptions: BasicLoadGenOptions = {
@@ -219,7 +235,7 @@ const loadGeneratorOptions: BasicLoadGenOptions = {
    * is more contention between the concurrent function calls, client-side latencies
    * may increase.
    */
-  numberOfConcurrentRequests: 10,
+  numberOfConcurrentRequests: 200,
   /**
    * Controls how long the load test will run, in milliseconds. We will execute operations
    * for this long and the exit.
@@ -227,10 +243,14 @@ const loadGeneratorOptions: BasicLoadGenOptions = {
   totalSecondsToRun: 60,
 };
 
+async function main(loadGeneratorOptions: BasicLoadGenOptions) {
+  const loadGenerator = new RequestCoalescerLoadGen(loadGeneratorOptions);
+  await loadGenerator.run();
+}
+
 main(loadGeneratorOptions)
   .then(() => {
     console.log('success!!');
-    console.log(PERFORMANCE_INFORMATION_MESSAGE);
   })
   .catch((e: Error) => {
     console.error(`Uncaught exception while running load gen: ${e.message}`);
