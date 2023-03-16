@@ -57,7 +57,7 @@ describe('auth.ts', () => {
     );
   });
 
-  it('should throw InvalidJwtError when base64 token is missing endpoint', () => {
+  it('should throw InvalidJwtError when base64 token is missing api key', () => {
     const decodedToken = {
       endpoint: 'endpoint',
     };
