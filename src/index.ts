@@ -10,8 +10,10 @@ import * as CacheListPopFront from './messages/responses/cache-list-pop-front';
 import * as CacheListPushBack from './messages/responses/cache-list-push-back';
 import * as CacheListPushFront from './messages/responses/cache-list-push-front';
 import * as CacheListRemoveValue from './messages/responses/cache-list-remove-value';
+import * as CacheListRetain from './messages/responses/cache-list-retain';
 import * as CacheSet from './messages/responses/cache-set';
 import * as CacheDelete from './messages/responses/cache-delete';
+import * as CacheFlush from './messages/responses/cache-flush';
 import * as CreateCache from './messages/responses/create-cache';
 import * as DeleteCache from './messages/responses/delete-cache';
 import * as ListCaches from './messages/responses/list-caches';
@@ -106,9 +108,11 @@ export {
   CacheListPushBack,
   CacheListPushFront,
   CacheListRemoveValue,
+  CacheListRetain,
   CacheSet,
   CacheSetIfNotExists,
   CacheDelete,
+  CacheFlush,
   CreateCache,
   DeleteCache,
   ListCaches,

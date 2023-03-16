@@ -84,3 +84,26 @@ export interface SortedSetFetchByScoreCallOptions {
    */
   count?: number;
 }
+
+export interface ListRetainCallOptions extends CollectionCallOptions {
+  /**
+   * Starting inclusive index of operation.
+   */
+  startIndex?: number;
+
+  /**
+   * Ending exclusive index of operation.
+   */
+  endIndex?: number;
+}
+export interface ListFetchCallOptions {
+  /**
+   * Starting inclusive index of operation.
+   */
+  startIndex?: number;
+
+  /**
+   * Ending exclusive index of operation.
+   */
+  endIndex?: number;
+}

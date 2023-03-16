@@ -4,7 +4,7 @@ import {
   CreateCache,
   CacheSet,
   CacheDelete,
-  SimpleCacheClient,
+  CacheClient,
   Configurations,
   MomentoLoggerFactory,
   DefaultMomentoLoggerFactory,
@@ -26,7 +26,7 @@ const cacheValue = 'value';
 const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory();
 const logger = loggerFactory.getLogger('AdvancedExample');
 
-const momento = new SimpleCacheClient({
+const momento = new CacheClient({
   configuration: Configurations.Laptop.v1(loggerFactory),
   credentialProvider: CredentialProvider.fromEnvironmentVariable({
     environmentVariableName: 'MOMENTO_AUTH_TOKEN',
@@ -141,7 +141,7 @@ async function middlewaresExample() {
 
   const metricsCsvPath = './advanced-middlewares-example-metrics.csv';
 
-  const middlewaresExampleClient = new SimpleCacheClient({
+  const middlewaresExampleClient = new CacheClient({
     configuration: Configurations.Laptop.v1(
       middlewaresExampleloggerFactory
     ).withMiddlewares([

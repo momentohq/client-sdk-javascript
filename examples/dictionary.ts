@@ -1,6 +1,6 @@
 import {
   CreateCache,
-  SimpleCacheClient,
+  CacheClient,
   EnvMomentoTokenProvider,
   Configurations,
   CacheDictionarySetField,
@@ -23,7 +23,7 @@ const credentialsProvider = new EnvMomentoTokenProvider({
 const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory();
 
 const defaultTtl = 60;
-const momento = new SimpleCacheClient({
+const momento = new CacheClient({
   configuration: Configurations.Laptop.v1(loggerFactory),
   credentialProvider: credentialsProvider,
   defaultTtlSeconds: defaultTtl,

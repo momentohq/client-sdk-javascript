@@ -30,14 +30,14 @@ npm install @gomomento/sdk
 ### 使用方法
 
 ```typescript
-import { SimpleCacheClient, CacheGetStatus } from "@gomomento/sdk";
+import { CacheClient, CacheGetStatus } from "@gomomento/sdk";
 
 // ユーザーのMomentoオーストークン
 const authToken = process.env.MOMENTO_AUTH_TOKEN;
 
 //  Momentoをイニシャライズする
 const DEFAULT_TTL = 60; // デフォルトTTLは60秒
-const momento = new SimpleCacheClient(authToken, DEFAULT_TTL);
+const momento = new CacheClient(authToken, DEFAULT_TTL);
 
 // "myCache"という名のキャッシュを作成する
 const CACHE_NAME = "myCache";

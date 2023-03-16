@@ -10,7 +10,7 @@ import {
   LimitExceededError,
   MomentoLogger,
   MomentoLoggerFactory,
-  SimpleCacheClient,
+  CacheClient,
   TimeoutError,
 } from '@gomomento/sdk';
 import * as hdr from 'hdr-histogram-js';
@@ -71,7 +71,7 @@ class BasicLoadGen {
   }
 
   async run(): Promise<void> {
-    const momento = new SimpleCacheClient({
+    const momento = new CacheClient({
       configuration: Configurations.Laptop.v1(
         this.loggerFactory
       ).withClientTimeoutMillis(this.options.requestTimeoutMs),
@@ -135,7 +135,7 @@ class BasicLoadGen {
   }
 
   private async launchAndRunWorkers(
-    client: SimpleCacheClient,
+    client: CacheClient,
     loadGenContext: BasicLoadGenContext,
     workerId: number
   ): Promise<void> {
@@ -205,7 +205,7 @@ ${BasicLoadGen.outputHistogramSummary(loadGenContext.getLatencies)}
   }
 
   private async issueAsyncSetGet(
-    client: SimpleCacheClient,
+    client: CacheClient,
     loadGenContext: BasicLoadGenContext,
     workerId: number,
     operationId: number
