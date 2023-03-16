@@ -15,6 +15,7 @@ export interface SubscribeCallOptions {
    * The callback to invoke when an error is received from the topic subscription.
    *
    * @param error The error received from the topic subscription.
+   * @param unsubscribeFn The function to invoke to unsubscribe from the topic subscription.
    */
-  onError(error: TopicSubscribe.Error): void;
+  onError(error: TopicSubscribe.Error, unsubscribeFn: () => void): void;
 }

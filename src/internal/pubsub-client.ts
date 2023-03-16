@@ -202,7 +202,20 @@ export class PubsubClient {
     // Otherwise we resume starting from the next sequence number.
     let lastTopicSequenceNumber =
       resumeAtTopicSequenceNumber === 0 ? -1 : resumeAtTopicSequenceNumber;
+    // Whether the stream was restarted due to an error. If so, we short circuit the end stream handler
+    // as the error handler will restart the stream.
     let restartedDueToError = false;
+
+    // Allow the caller to cancel the stream.
+    let isSubscribed = true;
+    const unsubscribeFn = () => {
+      // Prevent repeated calls to cancel the stream.
+      if (isSubscribed) {
+        isSubscribed = false;
+        call.cancel();
+      }
+    };
+
     call
       .on('data', (resp: grpcPubsub._SubscriptionItem) => {
         if (resp?.item) {
@@ -246,7 +259,8 @@ export class PubsubClient {
 
         // Otherwise we propagate the error to the caller.
         options.onError(
-          new TopicSubscribe.Error(cacheServiceErrorMapper(serviceError))
+          new TopicSubscribe.Error(cacheServiceErrorMapper(serviceError)),
+          unsubscribeFn
         );
       })
       .on('end', () => {
@@ -254,6 +268,12 @@ export class PubsubClient {
         if (restartedDueToError) {
           this.logger.trace(
             'Stream ended after error but was restarted on topic: %s',
+            topicName
+          );
+          return;
+        } else if (!isSubscribed) {
+          this.logger.trace(
+            'Stream ended after unsubscribe on topic: %s',
             topicName
           );
           return;
