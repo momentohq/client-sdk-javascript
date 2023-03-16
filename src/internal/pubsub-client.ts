@@ -36,7 +36,7 @@ export class PubsubClient {
   private readonly streamingInterceptors: Interceptor[];
 
   /**
-   * @param {CacheClientProps} props
+   * @param {TopicClientProps} props
    */
   constructor(props: TopicClientProps) {
     this.configuration = props.configuration;
