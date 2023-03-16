@@ -288,6 +288,8 @@ export class PubsubClient {
     ];
   }
 
+  // TODO https://github.com/momentohq/client-sdk-nodejs/issues/349
+  // decide on streaming interceptors and middlewares
   private static initializeStreamingInterceptors(
     headers: Header[]
   ): Interceptor[] {
