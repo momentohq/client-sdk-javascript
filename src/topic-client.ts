@@ -48,6 +48,16 @@ export class TopicClient {
     return await client.publish(cacheName, topicName, value);
   }
 
+  /**
+   * Subscribes to a topic.
+   *
+   * @param {string} cacheName - The name of the cache to containing the topic to subscribe to.
+   * @param {string} topicName - The name of the topic to subscribe to.
+   * @param {SubscribeCallOptions} options - The options for the subscription.
+   * @param {function} options.dataListener - The callback to invoke when data is received.
+   * @param {function} options.errorListener - The callback to invoke when an error is received.
+   * @returns
+   */
   public async subscribe(
     cacheName: string,
     topicName: string,
