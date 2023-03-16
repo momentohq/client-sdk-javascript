@@ -214,12 +214,12 @@ export class PubsubClient {
             );
           }
         } else if (resp?.heartbeat) {
-          console.log(
+          this.logger.trace(
             'Received heartbeat from subscription stream; topic: %s',
             truncateString(topicName)
           );
         } else if (resp?.discontinuity) {
-          console.log(
+          this.logger.trace(
             'Received discontinuity from subscription stream; topic: %s',
             truncateString(topicName)
           );
@@ -232,7 +232,9 @@ export class PubsubClient {
           serviceError.code === Status.INTERNAL &&
           serviceError.details === 'Received RST_STREAM with code 0'
         ) {
-          console.log('Stream timed out? Restarting.');
+          this.logger.trace(
+            'Server closed stream due to idle activity. Restarting.'
+          );
           this.sendSubscribe(
             cacheName,
             topicName,
@@ -251,8 +253,14 @@ export class PubsubClient {
       .on('end', () => {
         // The stream could have already been restarted due to an error.
         if (restartedDueToError) {
+          this.logger.trace(
+            'Stream ended after error but was restarted on topic: %s',
+            topicName
+          );
           return;
         }
+
+        this.logger.trace('Stream ended on topic: %s; restarting.', topicName);
         this.sendSubscribe(
           cacheName,
           topicName,
@@ -260,7 +268,6 @@ export class PubsubClient {
           lastTopicSequenceNumber + 1
         );
       });
-    console.log('Subscription stream started; topic: %s', topicName);
   }
 
   private initializeUnaryInterceptors(
