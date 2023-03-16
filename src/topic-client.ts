@@ -1,6 +1,5 @@
 import {PubsubClient} from './internal/pubsub-client';
 import {TopicPublish, MomentoLogger} from '.';
-import {range} from './internal/utils/collections';
 import {TopicClientProps} from './topic-client-props';
 import {SubscribeCallOptions} from './utils/topic-call-options';
 
@@ -11,8 +10,7 @@ import {SubscribeCallOptions} from './utils/topic-call-options';
  */
 export class TopicClient {
   private readonly logger: MomentoLogger;
-  private readonly pubsubClients: Array<PubsubClient>;
-  private nextPubsubClientIndex: number;
+  private readonly client: PubsubClient;
 
   /**
    * Creates an instance of TopicClient.
@@ -21,12 +19,7 @@ export class TopicClient {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.logger.info('Creating Momento CacheClient');
 
-    const numClients = 1;
-    this.pubsubClients = range(numClients).map(() => new PubsubClient(props));
-    // We round-robin the requests through all of our clients.  Since javascript
-    // is single-threaded, we don't have to worry about thread safety on this
-    // index variable.
-    this.nextPubsubClientIndex = 0;
+    this.client = new PubsubClient(props);
   }
 
   /**
@@ -44,8 +37,7 @@ export class TopicClient {
     topicName: string,
     value: string | Uint8Array
   ): Promise<TopicPublish.Response> {
-    const client = this.getNextPubsubClient();
-    return await client.publish(cacheName, topicName, value);
+    return await this.client.publish(cacheName, topicName, value);
   }
 
   /**
@@ -63,14 +55,6 @@ export class TopicClient {
     topicName: string,
     options: SubscribeCallOptions
   ): Promise<void> {
-    const client = this.getNextPubsubClient();
-    return await client.subscribe(cacheName, topicName, options);
-  }
-
-  private getNextPubsubClient(): PubsubClient {
-    const client = this.pubsubClients[this.nextPubsubClientIndex];
-    this.nextPubsubClientIndex =
-      (this.nextPubsubClientIndex + 1) % this.pubsubClients.length;
-    return client;
+    return await this.client.subscribe(cacheName, topicName, options);
   }
 }
