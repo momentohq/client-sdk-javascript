@@ -279,6 +279,9 @@ export class PubsubClient {
           return;
         }
 
+        // Prevent repeated calls to cancel the stream.
+        isSubscribed = false;
+
         this.logger.trace('Stream ended on topic: %s; restarting.', topicName);
         this.sendSubscribe(
           cacheName,
