@@ -2,6 +2,7 @@ import {PubsubClient} from './internal/pubsub-client';
 import {TopicPublish, MomentoLogger} from '.';
 import {range} from './internal/utils/collections';
 import {TopicClientProps} from './topic-client-props';
+import {SubscribeCallOptions} from './utils/topic-call-options';
 
 /**
  * Momento Topic Client.
@@ -47,9 +48,13 @@ export class TopicClient {
     return await client.publish(cacheName, topicName, value);
   }
 
-  public async subscribe(cacheName: string, topicName: string): Promise<void> {
+  public async subscribe(
+    cacheName: string,
+    topicName: string,
+    options: SubscribeCallOptions
+  ): Promise<void> {
     const client = this.getNextPubsubClient();
-    return await client.subscribe(cacheName, topicName);
+    return await client.subscribe(cacheName, topicName, options);
   }
 
   private getNextPubsubClient(): PubsubClient {

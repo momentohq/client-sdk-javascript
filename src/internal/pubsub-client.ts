@@ -25,6 +25,7 @@ import {TopicClientProps} from '../topic-client-props';
 import {Middleware} from '../config/middleware/middleware';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {truncateString} from './utils/display';
+import {SubscribeCallOptions} from '../utils/topic-call-options';
 
 export class PubsubClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcPubsub.PubsubClient>;
@@ -153,7 +154,11 @@ export class PubsubClient {
     });
   }
 
-  public async subscribe(cacheName: string, topicName: string): Promise<void> {
+  public async subscribe(
+    cacheName: string,
+    topicName: string,
+    options: SubscribeCallOptions
+  ): Promise<void> {
     try {
       validateCacheName(cacheName);
       // TODO: validate topic name
@@ -166,7 +171,7 @@ export class PubsubClient {
     );
 
     return await new Promise(resolve => {
-      this.sendSubscribe(cacheName, topicName);
+      this.sendSubscribe(cacheName, topicName, options, 0);
       resolve();
     });
   }
@@ -174,6 +179,7 @@ export class PubsubClient {
   private sendSubscribe(
     cacheName: string,
     topicName: string,
+    options: SubscribeCallOptions,
     resumeAtTopicSequenceNumber = 0
   ): void {
     const request = new grpcPubsub._SubscriptionRequest({
@@ -186,24 +192,6 @@ export class PubsubClient {
       interceptors: this.streamingInterceptors,
     });
 
-    // The following are example handlers for the various types of responses that can be received.
-    // These are for debugging right now. In a future commit, we will pull these out as arguments
-    // to the subscribe method.
-    const dataHandler = (resp: TopicSubscribe.Item) => {
-      console.log('Data received from subscription stream; %s', resp);
-    };
-
-    const errorHandler = (err: TopicSubscribe.Error) => {
-      console.log(`Error received from subscription stream; ${err.toString()}`);
-    };
-
-    const endStreamHandler = () => {
-      console.log(
-        'Subscription stream ended; topic: %s',
-        truncateString(topicName)
-      );
-    };
-
     // The following are the outer handlers for the stream.
     // They are responsible for reconnecting the stream if it ends unexpectedly, and for
     // building the API facing response objects.
@@ -213,14 +201,17 @@ export class PubsubClient {
     // Otherwise we resume starting from the next sequence number.
     let lastTopicSequenceNumber =
       resumeAtTopicSequenceNumber === 0 ? -1 : resumeAtTopicSequenceNumber;
+    let restartedDueToError = false;
     call
       .on('data', (resp: grpcPubsub._SubscriptionItem) => {
         if (resp?.item) {
           lastTopicSequenceNumber = resp.item.topic_sequence_number;
           if (resp.item.value.text) {
-            dataHandler(new TopicSubscribe.Item(resp.item.value.text));
+            options.dataListener(new TopicSubscribe.Item(resp.item.value.text));
           } else if (resp.item.value.binary) {
-            dataHandler(new TopicSubscribe.Item(resp.item.value.binary));
+            options.dataListener(
+              new TopicSubscribe.Item(resp.item.value.binary)
+            );
           }
         } else if (resp?.heartbeat) {
           console.log(
@@ -236,26 +227,38 @@ export class PubsubClient {
       })
       .on('error', (err: Error) => {
         const serviceError = err as unknown as ServiceError;
-        console.log(serviceError);
         // The service cuts the the stream after ~1 minute. Hence we reconnect.
         if (
           serviceError.code === Status.INTERNAL &&
           serviceError.details === 'Received RST_STREAM with code 0'
         ) {
           console.log('Stream timed out? Restarting.');
-          this.sendSubscribe(cacheName, topicName, lastTopicSequenceNumber + 1);
+          this.sendSubscribe(
+            cacheName,
+            topicName,
+            options,
+            lastTopicSequenceNumber + 1
+          );
+          restartedDueToError = true;
           return;
         }
 
         // Otherwise we propagate the error to the caller.
-        errorHandler(
+        options.errorListener(
           new TopicSubscribe.Error(cacheServiceErrorMapper(serviceError))
         );
       })
       .on('end', () => {
-        // The stream may end due to error.
-        // Unclear why else it would end other than program termination.
-        endStreamHandler();
+        // The stream could have already been restarted due to an error.
+        if (restartedDueToError) {
+          return;
+        }
+        this.sendSubscribe(
+          cacheName,
+          topicName,
+          options,
+          lastTopicSequenceNumber + 1
+        );
       });
     console.log('Subscription stream started; topic: %s', topicName);
   }
