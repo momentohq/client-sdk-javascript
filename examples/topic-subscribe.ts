@@ -21,17 +21,17 @@ async function main() {
 
   console.log(`Subscribing to cacheName=${cacheName}, topicName=${topicName}`);
   await momento.subscribe(cacheName, topicName, {
-    dataListener: handleData,
-    errorListener: handleError,
+    onItem: handleData,
+    onError: handleError,
   });
 }
 
 function handleData(data: TopicSubscribe.Item) {
-  console.log('Data received from subscription stream; %s', data);
+  console.log('Data received from topic subscription; %s', data);
 }
 
 function handleError(error: TopicSubscribe.Error) {
-  console.log(`Error received from subscription stream; ${error.toString()}`);
+  console.log(`Error received from topic subscription; ${error.toString()}`);
 }
 
 main()

@@ -208,11 +208,9 @@ export class PubsubClient {
         if (resp?.item) {
           lastTopicSequenceNumber = resp.item.topic_sequence_number;
           if (resp.item.value.text) {
-            options.dataListener(new TopicSubscribe.Item(resp.item.value.text));
+            options.onItem(new TopicSubscribe.Item(resp.item.value.text));
           } else if (resp.item.value.binary) {
-            options.dataListener(
-              new TopicSubscribe.Item(resp.item.value.binary)
-            );
+            options.onItem(new TopicSubscribe.Item(resp.item.value.binary));
           }
         } else if (resp?.heartbeat) {
           this.logger.trace(
@@ -247,7 +245,7 @@ export class PubsubClient {
         }
 
         // Otherwise we propagate the error to the caller.
-        options.errorListener(
+        options.onError(
           new TopicSubscribe.Error(cacheServiceErrorMapper(serviceError))
         );
       })
