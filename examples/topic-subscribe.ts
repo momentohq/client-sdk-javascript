@@ -30,8 +30,11 @@ function handleData(data: TopicSubscribe.Item) {
   console.log('Data received from topic subscription; %s', data);
 }
 
-function handleError(error: TopicSubscribe.Error) {
+function handleError(error: TopicSubscribe.Error, unsubscribeFn: () => void) {
   console.log(`Error received from topic subscription; ${error.toString()}`);
+
+  // optionally: unsubscribe from the topic subscription
+  //unsubscribeFn();
 }
 
 main()
