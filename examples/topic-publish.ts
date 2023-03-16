@@ -11,9 +11,7 @@ async function main() {
     console.error('Usage: topic-publish.ts <cacheName> <topicName> <value>');
     return;
   }
-  const cacheName = clargs[0];
-  const topicName = clargs[1];
-  const value = clargs[2];
+  const [cacheName, topicName, value] = clargs;
   const momento = new TopicClient({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({

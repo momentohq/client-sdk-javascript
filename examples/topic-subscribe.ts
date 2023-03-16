@@ -11,8 +11,7 @@ async function main() {
     console.error('Usage: topic-subscribe.ts <cacheName> <topicName>');
     return;
   }
-  const cacheName = clargs[0];
-  const topicName = clargs[1];
+  const [cacheName, topicName] = clargs;
   const momento = new TopicClient({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
