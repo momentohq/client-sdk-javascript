@@ -14,7 +14,6 @@ import {
   CredentialProvider,
   InvalidArgumentError,
   MomentoLogger,
-  MomentoLoggerFactory,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -22,7 +21,6 @@ import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
 import {validateCacheName} from './utils/validators';
 import {TopicClientProps} from '../topic-client-props';
-import {Middleware} from '../config/middleware/middleware';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {truncateString} from './utils/display';
 import {SubscribeCallOptions} from '../utils/topic-call-options';
@@ -74,14 +72,17 @@ export class PubsubClient {
       configuration: this.configuration,
     });
 
-    this.unaryInterceptors = this.initializeUnaryInterceptors(
-      this.configuration.getLoggerFactory(),
-      this.configuration.getMiddlewares()
+    const headers: Header[] = [
+      new Header('Authorization', this.credentialProvider.getAuthToken()),
+      new Header('Agent', `nodejs:${version}`),
+    ];
+    this.unaryInterceptors = PubsubClient.initializeUnaryInterceptors(
+      headers,
+      props.configuration,
+      this.unaryRequestTimeoutMs
     );
-    this.streamingInterceptors = this.initializeStreamingInterceptors(
-      this.configuration.getLoggerFactory(),
-      this.configuration.getMiddlewares()
-    );
+    this.streamingInterceptors =
+      PubsubClient.initializeStreamingInterceptors(headers);
   }
 
   public getEndpoint(): string {
@@ -270,47 +271,28 @@ export class PubsubClient {
       });
   }
 
-  private initializeUnaryInterceptors(
-    loggerFactory: MomentoLoggerFactory,
-    middlewares: Middleware[]
+  private static initializeUnaryInterceptors(
+    headers: Header[],
+    configuration: Configuration,
+    requestTimeoutMs: number
   ): Interceptor[] {
-    return this.initializeInterceptors(
-      loggerFactory,
-      middlewares,
-      this.unaryRequestTimeoutMs
-    );
-  }
-
-  private initializeStreamingInterceptors(
-    loggerFactory: MomentoLoggerFactory,
-    middlewares: Middleware[]
-  ): Interceptor[] {
-    return this.initializeInterceptors(loggerFactory, middlewares);
-  }
-
-  private initializeInterceptors(
-    loggerFactory: MomentoLoggerFactory,
-    middlewares: Middleware[],
-    timeoutMs?: number
-  ): Interceptor[] {
-    const headers = [
-      new Header('Authorization', this.credentialProvider.getAuthToken()),
-      new Header('Agent', `nodejs:${version}`),
+    return [
+      middlewaresInterceptor(
+        configuration.getLoggerFactory(),
+        configuration.getMiddlewares()
+      ),
+      new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
+      ClientTimeoutInterceptor(requestTimeoutMs),
+      ...createRetryInterceptorIfEnabled(
+        configuration.getLoggerFactory(),
+        configuration.getRetryStrategy()
+      ),
     ];
-    if (timeoutMs) {
-      return [
-        middlewaresInterceptor(loggerFactory, middlewares),
-        new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
-        ClientTimeoutInterceptor(timeoutMs),
-        ...createRetryInterceptorIfEnabled(
-          this.configuration.getLoggerFactory(),
-          this.configuration.getRetryStrategy()
-        ),
-      ];
-    } else {
-      return [
-        new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
-      ];
-    }
+  }
+
+  private static initializeStreamingInterceptors(
+    headers: Header[]
+  ): Interceptor[] {
+    return [new HeaderInterceptorProvider(headers).createHeadersInterceptor()];
   }
 }
