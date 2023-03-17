@@ -24,6 +24,7 @@ import {TopicClientProps} from '../topic-client-props';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {truncateString} from './utils/display';
 import {SubscribeCallOptions} from '../utils/topic-call-options';
+import {SubscriptionState} from './subscription-state';
 
 export class PubsubClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcPubsub.PubsubClient>;
@@ -172,7 +173,16 @@ export class PubsubClient {
     );
 
     return await new Promise(resolve => {
-      resolve(this.sendSubscribe(cacheName, topicName, options, 0));
+      const subscriptionState: SubscriptionState = new SubscriptionState();
+      const subscription = new TopicSubscribe.Subscription(subscriptionState);
+      this.sendSubscribe(
+        cacheName,
+        topicName,
+        options,
+        subscriptionState,
+        subscription
+      );
+      resolve(subscription);
     });
   }
 
@@ -197,50 +207,38 @@ export class PubsubClient {
     cacheName: string,
     topicName: string,
     options: SubscribeCallOptions,
-    resumeAtTopicSequenceNumber = 0,
-    subscription?: TopicSubscribe.Subscription
-  ): TopicSubscribe.Subscription {
+    subscriptionState: SubscriptionState,
+    subscription: TopicSubscribe.Subscription
+  ): void {
     const request = new grpcPubsub._SubscriptionRequest({
       cache_name: cacheName,
       topic: topicName,
-      resume_at_topic_sequence_number: resumeAtTopicSequenceNumber,
+      resume_at_topic_sequence_number:
+        subscriptionState.resumeAtTopicSequenceNumber,
     });
 
     const call = this.clientWrapper.getClient().Subscribe(request, {
       interceptors: this.streamingInterceptors,
     });
+    subscriptionState.setSubscribed();
 
-    // The following are the outer handlers for the stream.
-    // They are responsible for reconnecting the stream if it ends unexpectedly, and for
-    // building the API facing response objects.
-
-    // The last topic sequence number we received. This is used to resume the stream.
-    // If resumeAtTopicSequenceNumber is 0, then we reconnect from the beginning again.
-    // Otherwise we resume starting from the next sequence number.
-    let lastTopicSequenceNumber =
-      resumeAtTopicSequenceNumber === 0 ? -1 : resumeAtTopicSequenceNumber;
     // Whether the stream was restarted due to an error. If so, we short circuit the end stream handler
     // as the error handler will restart the stream.
     let restartedDueToError = false;
 
     // Allow the caller to cancel the stream.
-    const unsubscribeFn = () => {
-      call.cancel();
-    };
-
     // Note that because we restart the stream on error or stream end,
     // we need to ensure we keep the same subscription object. That way
     // stream restarts are transparent to the caller.
-    if (subscription === undefined) {
-      subscription = new TopicSubscribe.Subscription(unsubscribeFn);
-    } else {
-      subscription.setUnsubscribeFn(unsubscribeFn);
-    }
+    subscriptionState.unsubscribeFn = () => {
+      call.cancel();
+    };
 
     call
       .on('data', (resp: grpcPubsub._SubscriptionItem) => {
         if (resp?.item) {
-          lastTopicSequenceNumber = resp.item.topic_sequence_number;
+          subscriptionState.lastTopicSequenceNumber =
+            resp.item.topic_sequence_number;
           if (resp.item.value.text) {
             options.onItem(new TopicSubscribe.Item(resp.item.value.text));
           } else if (resp.item.value.binary) {
@@ -260,7 +258,7 @@ export class PubsubClient {
       })
       .on('error', (err: Error) => {
         // When the caller unsubscribes, we may get a follow on error, which we ignore.
-        if (!(subscription as TopicSubscribe.Subscription).isSubscribed()) {
+        if (!subscriptionState.isSubscribed) {
           return;
         }
 
@@ -277,7 +275,7 @@ export class PubsubClient {
             cacheName,
             topicName,
             options,
-            lastTopicSequenceNumber + 1,
+            subscriptionState,
             subscription
           );
           restartedDueToError = true;
@@ -287,7 +285,7 @@ export class PubsubClient {
         // Otherwise we propagate the error to the caller.
         options.onError(
           new TopicSubscribe.Error(cacheServiceErrorMapper(serviceError)),
-          subscription as TopicSubscribe.Subscription
+          subscription
         );
       })
       .on('end', () => {
@@ -300,9 +298,7 @@ export class PubsubClient {
             topicName
           );
           return;
-        } else if (
-          !(subscription as TopicSubscribe.Subscription).isSubscribed()
-        ) {
+        } else if (!subscriptionState.isSubscribed) {
           this.logger.trace(
             'Stream ended after unsubscribe on topic: %s',
             topicName
@@ -315,11 +311,10 @@ export class PubsubClient {
           cacheName,
           topicName,
           options,
-          lastTopicSequenceNumber + 1,
+          subscriptionState,
           subscription
         );
       });
-    return subscription;
   }
 
   private static initializeUnaryInterceptors(

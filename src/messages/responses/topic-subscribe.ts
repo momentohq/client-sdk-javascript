@@ -2,6 +2,7 @@
 import {SdkError} from '../../errors/errors';
 import {ResponseBase, ResponseError} from './response-base';
 import {truncateString} from '../../internal/utils/display';
+import {SubscriptionState} from '../../internal/subscription-state';
 
 /**
  * Parent response type for a cache get request.  The
@@ -53,13 +54,11 @@ export class Item extends Response {
  * statistics about the subscription.
  */
 export class Subscription extends Response {
-  protected _unsubscribeFn: () => void;
-  private _isSubscribed: boolean;
+  private subscriptionState: SubscriptionState;
 
-  constructor(_unsubscribeFn: () => void) {
+  constructor(subscriptionState: SubscriptionState) {
     super();
-    this._unsubscribeFn = _unsubscribeFn;
-    this._isSubscribed = true;
+    this.subscriptionState = subscriptionState;
   }
 
   /**
@@ -68,18 +67,7 @@ export class Subscription extends Response {
    * @returns void
    */
   public unsubscribe(): void {
-    if (this.isSubscribed()) {
-      this._unsubscribeFn();
-      this._isSubscribed = false;
-    }
-  }
-
-  public setUnsubscribeFn(unsubscribeFn: () => void): void {
-    this._unsubscribeFn = unsubscribeFn;
-  }
-
-  public isSubscribed(): boolean {
-    return this._isSubscribed;
+    this.subscriptionState.unsubscribe();
   }
 }
 
