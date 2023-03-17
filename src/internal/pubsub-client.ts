@@ -193,15 +193,15 @@ export class PubsubClient {
    * @param {string} cacheName
    * @param {string} topicName
    * @param {SubscribeCallOptions} options
-   * @param {number} [resumeAtTopicSequenceNumber=0]
+   * @param {SubscriptionState} subscriptionState
    * @param {TopicSubscribe.Subscription} [subscription]
-   * @return {*}  {TopicSubscribe.Subscription}
+   * @return {*}  {void}
    * @memberof PubsubClient
    *
    * @remark This method is responsible for reconnecting the stream if it ends unexpectedly.
    * Since we return a single subscription object to the user, we need to update it with the
    * unsubscribe function should we restart the stream. This is why we pass the subscription
-   * object as a parameter.
+   * state and subscription object to this method.
    */
   private sendSubscribe(
     cacheName: string,
