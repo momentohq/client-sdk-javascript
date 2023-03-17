@@ -20,21 +20,41 @@ async function main() {
   });
 
   console.log(`Subscribing to cacheName=${cacheName}, topicName=${topicName}`);
-  await momento.subscribe(cacheName, topicName, {
+  const response = await momento.subscribe(cacheName, topicName, {
     onItem: handleData,
     onError: handleError,
   });
+
+  if (response instanceof TopicSubscribe.Error) {
+    console.log('Error subscribing to topic subscription');
+    return;
+  } else if (response instanceof TopicSubscribe.Subscription) {
+    console.log('Successfully subscribed to topic subscription');
+
+    // Quit after 60s
+    const sleep = (seconds: number) =>
+      new Promise(r => setTimeout(r, seconds * 1000));
+    await sleep(60);
+    // test if response is instance of TopicSubscribe.Subscription
+    if (response instanceof TopicSubscribe.Subscription) {
+      console.log('Unsubscribing from topic subscription');
+      response.unsubscribe();
+    }
+  }
 }
 
 function handleData(data: TopicSubscribe.Item) {
   console.log('Data received from topic subscription; %s', data);
 }
 
-function handleError(error: TopicSubscribe.Error, unsubscribeFn: () => void) {
+function handleError(
+  error: TopicSubscribe.Error,
+  subscription: TopicSubscribe.Subscription
+) {
   console.log(`Error received from topic subscription; ${error.toString()}`);
 
   // optionally: unsubscribe from the topic subscription
-  //unsubscribeFn();
+  //subscription.unsubscribe();
 }
 
 main()
