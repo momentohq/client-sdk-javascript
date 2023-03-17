@@ -14,7 +14,7 @@ import {
   ResponseBase,
 } from '../../src/messages/responses/response-base';
 
-function testCacheName(): string {
+export function testCacheName(): string {
   const name = process.env.TEST_CACHE_NAME || 'js-integration-test-default';
   return name + v4();
 }

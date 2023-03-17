@@ -4,6 +4,7 @@ import {
   ItBehavesLikeItValidatesCacheName,
   SetupIntegrationTest,
   WithCache,
+  testCacheName,
 } from './integration-setup';
 import {
   CacheFlush,
@@ -26,7 +27,7 @@ describe('create/delete cache', () => {
   });
 
   it('should return NotFoundError if deleting a non-existent cache', async () => {
-    const cacheName = v4();
+    const cacheName = testCacheName();
     const deleteResponse = await Momento.deleteCache(cacheName);
     expect(deleteResponse).toBeInstanceOf(DeleteCache.Response);
     expect(deleteResponse).toBeInstanceOf(DeleteCache.Error);
@@ -38,7 +39,7 @@ describe('create/delete cache', () => {
   });
 
   it('should return AlreadyExists response if trying to create a cache that already exists', async () => {
-    const cacheName = v4();
+    const cacheName = testCacheName();
     await WithCache(Momento, cacheName, async () => {
       const createResponse = await Momento.createCache(cacheName);
       expect(createResponse).toBeInstanceOf(CreateCache.AlreadyExists);
@@ -46,7 +47,7 @@ describe('create/delete cache', () => {
   });
 
   it('should create 1 cache and list the created cache', async () => {
-    const cacheName = v4();
+    const cacheName = testCacheName();
     await WithCache(Momento, cacheName, async () => {
       const listResponse = await Momento.listCaches();
       expect(listResponse).toBeInstanceOf(ListCaches.Success);
@@ -65,7 +66,7 @@ describe('flush cache', () => {
   });
 
   it('should return NotFoundError if flushing a non-existent cache', async () => {
-    const cacheName = v4();
+    const cacheName = testCacheName();
     const flushResponse = await Momento.flushCache(cacheName);
     expect(flushResponse).toBeInstanceOf(CacheFlush.Response);
     expect(flushResponse).toBeInstanceOf(CacheFlush.Error);
@@ -77,28 +78,30 @@ describe('flush cache', () => {
   });
 
   it('should return success while flushing empty cache', async () => {
-    const cacheName = v4();
-    await Momento.createCache(cacheName);
-    const flushResponse = await Momento.flushCache(cacheName);
-    expect(flushResponse).toBeInstanceOf(CacheFlush.Response);
-    expect(flushResponse).toBeInstanceOf(CacheFlush.Success);
+    const cacheName = testCacheName();
+    await WithCache(Momento, cacheName, async () => {
+      const flushResponse = await Momento.flushCache(cacheName);
+      expect(flushResponse).toBeInstanceOf(CacheFlush.Response);
+      expect(flushResponse).toBeInstanceOf(CacheFlush.Success);
+    });
   });
 
   it('should return success while flushing non-empty cache', async () => {
-    const cacheName = v4();
+    const cacheName = testCacheName();
     const key1 = v4();
     const key2 = v4();
     const value1 = v4();
     const value2 = v4();
-    await Momento.createCache(cacheName);
-    await Momento.set(cacheName, key1, value1);
-    await Momento.set(cacheName, key2, value2);
-    const flushResponse = await Momento.flushCache(cacheName);
-    expect(flushResponse).toBeInstanceOf(CacheFlush.Response);
-    expect(flushResponse).toBeInstanceOf(CacheFlush.Success);
-    const getResponse1 = await Momento.get(cacheName, key1);
-    const getResponse2 = await Momento.get(cacheName, key2);
-    expect(getResponse1).toBeInstanceOf(CacheGet.Miss);
-    expect(getResponse2).toBeInstanceOf(CacheGet.Miss);
+    await WithCache(Momento, cacheName, async () => {
+      await Momento.set(cacheName, key1, value1);
+      await Momento.set(cacheName, key2, value2);
+      const flushResponse = await Momento.flushCache(cacheName);
+      expect(flushResponse).toBeInstanceOf(CacheFlush.Response);
+      expect(flushResponse).toBeInstanceOf(CacheFlush.Success);
+      const getResponse1 = await Momento.get(cacheName, key1);
+      const getResponse2 = await Momento.get(cacheName, key2);
+      expect(getResponse1).toBeInstanceOf(CacheGet.Miss);
+      expect(getResponse2).toBeInstanceOf(CacheGet.Miss);
+    });
   });
 });
