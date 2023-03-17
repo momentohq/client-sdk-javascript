@@ -14,7 +14,8 @@ import {
   ValidateCacheProps,
   IntegrationTestCacheClientProps,
   ItBehavesLikeItValidatesCacheName,
-  WithCache, testCacheName,
+  WithCache,
+  testCacheName,
 } from './integration-setup';
 import {sleep} from '../../src/internal/utils/sleep';
 
