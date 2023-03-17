@@ -2,21 +2,22 @@
 import {SdkError} from '../../errors/errors';
 import {ResponseBase, ResponseError} from './response-base';
 import {truncateString} from '../../internal/utils/display';
+import {SubscriptionState} from '../../internal/subscription-state';
 
 /**
  * Parent response type for a cache get request.  The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * - {Hit}
- * - {Miss}
+ * - {Subscription}
+ * - {Item}
  * - {Error}
  *
  * `instanceof` type guards can be used to operate on the appropriate subtype.
  * @example
  * For example:
  * ```
- * if (response instanceof CacheGet.Error) {
+ * if (response instanceof TopicSubscribe.Error) {
  *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
  *   // `CacheGet.Error` in this block, so you will have access to the properties
  *   // of the Error class; e.g. `response.errorCode()`.
@@ -45,6 +46,31 @@ export class Item extends Response {
   }
 }
 
+/**
+ * Encapsulates a topic subscription.
+ *
+ * @remarks Currently allows unsubscribing from the topic.
+ * In the future, this may be extended to include additional
+ * statistics about the subscription.
+ */
+export class Subscription extends Response {
+  private subscriptionState: SubscriptionState;
+
+  constructor(subscriptionState: SubscriptionState) {
+    super();
+    this.subscriptionState = subscriptionState;
+  }
+
+  /**
+   * Unsubscribes from the topic.
+   *
+   * @returns void
+   */
+  public unsubscribe(): void {
+    this.subscriptionState.unsubscribe();
+  }
+}
+
 class _Error extends Response {
   constructor(protected _innerException: SdkError) {
     super();
@@ -52,7 +78,7 @@ class _Error extends Response {
 }
 
 /**
- * Indicates that an error occurred during the cache get request.
+ * Indicates that an error occurred during the topic subscribe request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:

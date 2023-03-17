@@ -1,5 +1,5 @@
 import {PubsubClient} from './internal/pubsub-client';
-import {TopicPublish, MomentoLogger} from '.';
+import {TopicPublish, MomentoLogger, TopicSubscribe} from '.';
 import {TopicClientProps} from './topic-client-props';
 import {SubscribeCallOptions} from './utils/topic-call-options';
 
@@ -48,13 +48,15 @@ export class TopicClient {
    * @param {SubscribeCallOptions} options - The options for the subscription.
    * @param {function} options.onItem - The callback to invoke when data is received.
    * @param {function} options.onError - The callback to invoke when an error is received.
-   * @returns
+   * @returns {Promise<TopicSubscribe.Response>} -
+   * {@link TopicSubscribe.Subscription} on success.
+   * {@link TopicSubscribe.Error} on failure.
    */
   public async subscribe(
     cacheName: string,
     topicName: string,
     options: SubscribeCallOptions
-  ): Promise<void> {
+  ): Promise<TopicSubscribe.Response> {
     return await this.client.subscribe(cacheName, topicName, options);
   }
 }
