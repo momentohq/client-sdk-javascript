@@ -81,7 +81,7 @@ class RequestCoalescerLoadGen {
 
     const asyncGetSetResults = range(
       this.options.numberOfConcurrentRequests
-    ).map(_ => this.launchAndRunWorkers(momento, loadGenContext));
+    ).map(() => this.launchAndRunWorkers(momento, loadGenContext));
 
     await Promise.all(asyncGetSetResults);
 
@@ -116,7 +116,9 @@ class RequestCoalescerLoadGen {
 
     const asyncGetSetResultsWithRequestCoalescer = range(
       this.options.numberOfConcurrentRequests
-    ).map(_ => this.launchAndRunWorkers(momentoWithCoalescing, loadGenContext));
+    ).map(() =>
+      this.launchAndRunWorkers(momentoWithCoalescing, loadGenContext)
+    );
 
     await Promise.all(asyncGetSetResultsWithRequestCoalescer);
 
@@ -140,13 +142,11 @@ class RequestCoalescerLoadGen {
     const finish = () => (finished = true);
     setTimeout(finish, this.options.totalSecondsToRun * 1000);
 
-    let i = 1;
     for (;;) {
       await this.issueAsyncSetGet(client, loadGenContext);
       if (finished) {
         return;
       }
-      i++;
     }
   }
 

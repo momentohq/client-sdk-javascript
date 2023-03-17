@@ -1,7 +1,6 @@
 import {BasicLoadGenContext, RequestCoalescerContext} from './load-gen';
 import * as hdr from 'hdr-histogram-js';
 import {MomentoLogger} from '@gomomento/sdk';
-import {load} from '@grpc/grpc-js';
 
 export function tps(
   context: BasicLoadGenContext,
