@@ -1,5 +1,7 @@
 import {v4} from 'uuid';
 import {
+  CreateCache,
+  DeleteCache,
   TopicClient,
   MomentoErrorCode,
   TopicPublish,
@@ -20,7 +22,7 @@ import {
 import {SubscribeCallOptions} from '../../src/utils/topic-call-options';
 import {sleep} from '../../src/internal/utils/sleep';
 
-const {IntegrationTestCacheName} = SetupIntegrationTest();
+const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 const topicClient = new TopicClient({
   configuration: IntegrationTestCacheClientProps.configuration,
   credentialProvider: IntegrationTestCacheClientProps.credentialProvider,
@@ -238,5 +240,61 @@ describe('subscribe and publish', () => {
     );
     expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
     (subscribeResponse as TopicSubscribe.Subscription).unsubscribe();
+  });
+
+  it('should unsubscribe automatically if the cache is deleted mid-subscription', async () => {
+    const randomCacheName = v4();
+    const createCacheResponse = await Momento.createCache(randomCacheName);
+    let subscribeResponse: TopicSubscribe.Response | undefined;
+
+    try {
+      expect(createCacheResponse).toBeInstanceOf(CreateCache.Success);
+
+      const subscribeResponse = await topicClient.subscribe(
+        randomCacheName,
+        v4(),
+        {
+          onItem: (item: TopicSubscribe.Item) => {
+            expect(1).fail(
+              `Should not receive an item but got one: ${item.toString()}`
+            );
+          },
+          onError: (
+            error: TopicSubscribe.Error,
+            subscription: TopicSubscribe.Subscription
+          ) => {
+            expect(error.errorCode()).toEqual(MomentoErrorCode.NOT_FOUND_ERROR);
+            expect(subscription.isSubscribed).toBeFalse();
+          },
+        }
+      );
+      expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
+
+      // Wait for stream to start.
+      await sleep(STREAM_WAIT_TIME_MS);
+
+      // Pull the rug out from under the subscription.
+      const deleteCacheResponse = await Momento.deleteCache(randomCacheName);
+      expect(deleteCacheResponse).toBeInstanceOf(DeleteCache.Success);
+
+      // Wait for the subscription error handler to run.
+      await sleep(STREAM_WAIT_TIME_MS);
+    } finally {
+      // Just in case
+      const deleteCacheResponse = await Momento.deleteCache(randomCacheName);
+      if (deleteCacheResponse instanceof DeleteCache.Error) {
+        expect(deleteCacheResponse.errorCode()).toBe(
+          MomentoErrorCode.NOT_FOUND_ERROR
+        );
+      }
+
+      // Just in case
+      if (
+        subscribeResponse !== undefined &&
+        subscribeResponse instanceof TopicSubscribe.Subscription
+      ) {
+        subscribeResponse.unsubscribe();
+      }
+    }
   });
 });

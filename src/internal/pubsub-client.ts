@@ -4,7 +4,7 @@ import grpcPubsub = pubsub.cache_client.pubsub;
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
-import {UnknownError} from '../errors/errors';
+import {MomentoErrorCode, UnknownError} from '../errors/errors';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, ServiceError} from '@grpc/grpc-js';
 import {Status} from '@grpc/grpc-js/build/src/constants';
@@ -220,6 +220,13 @@ export class PubsubClient {
    * Since we return a single subscription object to the user, we need to update it with the
    * unsubscribe function should we restart the stream. This is why we pass the subscription
    * state and subscription object to this method.
+   *
+   * Handling a cache not exists requires special care as well. In the most likely case,
+   * when the subscription starts and the cache does not exist, we receive an error immediately.
+   * We return an error from the subscribe method and do immediately unsubscribe. In a distinct,
+   * unlikely but possible case, the user deletes the cache while the stream is running. In this
+   * case we already returned a subscription object to the user, so we instead cancel the stream and
+   * propagate an error to the user via the error handler.
    */
   private sendSubscribe(
     cacheName: string,
@@ -244,8 +251,8 @@ export class PubsubClient {
     });
     subscriptionState.setSubscribed();
 
-    // Whether the stream was restarted due to an error. If so, we short circuit the end stream handler
-    // as the error handler will restart the stream.
+    // Whether the stream was restarted due to an error. If so, we skip the end stream handler
+    // logic as the error handler will have restarted the stream.
     let restartedDueToError = false;
 
     // Allow the caller to cancel the stream.
@@ -314,8 +321,8 @@ export class PubsubClient {
 
           const serviceError = err as unknown as ServiceError;
 
-          // When the first message is an error, something Very Bad has happened, eg
-          // the cache does not exist. In this event the user should not receive a subscription
+          // When the first message is an error, an irrecoverable error has happened,
+          // eg the cache does not exist. The user should not receive a subscription
           // object but an error.
           if (firstMessage) {
             this.logger.trace(
@@ -330,7 +337,8 @@ export class PubsubClient {
             return;
           }
 
-          // The service cuts the the stream after a period of time. Hence we restart.
+          // The service cuts the the stream after a period of time.
+          // Transparently restart the stream instead of propagating an error.
           if (
             serviceError.code === Status.INTERNAL &&
             serviceError.details === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE
@@ -358,11 +366,25 @@ export class PubsubClient {
             return;
           }
 
-          // Otherwise we propagate the error to the caller.
-          onError(
-            new TopicSubscribe.Error(cacheServiceErrorMapper(serviceError)),
-            subscription
+          const momentoError = new TopicSubscribe.Error(
+            cacheServiceErrorMapper(serviceError)
           );
+
+          // Another special case is when the cache is not found.
+          // This happens here if the user deletes the cache in the middle of
+          // a subscription.
+          if (momentoError.errorCode() === MomentoErrorCode.NOT_FOUND_ERROR) {
+            this.logger.trace(
+              'Stream ended due to cache not found error on topic: %s',
+              topicName
+            );
+            subscription.unsubscribe();
+            onError(momentoError, subscription);
+            return;
+          }
+
+          // Otherwise we propagate the error to the caller.
+          onError(momentoError, subscription);
         })
         .on('end', () => {
           // We want to restart on stream end, except if:
