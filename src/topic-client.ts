@@ -45,7 +45,7 @@ export class TopicClient {
    *
    * @param {string} cacheName - The name of the cache to containing the topic to subscribe to.
    * @param {string} topicName - The name of the topic to subscribe to.
-   * @param {SubscribeCallOptions} options - The options for the subscription.
+   * @param {SubscribeCallOptions} options - The options for the subscription. Defaults to no-op handlers.
    * @param {function} options.onItem - The callback to invoke when data is received.
    * @param {function} options.onError - The callback to invoke when an error is received.
    * @returns {Promise<TopicSubscribe.Response>} -
@@ -55,7 +55,7 @@ export class TopicClient {
   public async subscribe(
     cacheName: string,
     topicName: string,
-    options: SubscribeCallOptions
+    options: SubscribeCallOptions = {}
   ): Promise<TopicSubscribe.Response> {
     return await this.client.subscribe(cacheName, topicName, options);
   }

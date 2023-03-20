@@ -239,4 +239,15 @@ describe('subscribe and publish', () => {
     // Need to close the stream before the test ends or else the test will hang.
     (subscribeResponse as TopicSubscribe.Subscription).unsubscribe();
   });
+
+  it('should subscribe with default handlers', async () => {
+    const topicName = v4();
+
+    const subscribeResponse = await topicClient.subscribe(
+      IntegrationTestCacheName,
+      topicName
+    );
+    expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
+    (subscribeResponse as TopicSubscribe.Subscription).unsubscribe();
+  });
 });
