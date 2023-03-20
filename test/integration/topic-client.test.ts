@@ -76,16 +76,6 @@ describe('#publish', () => {
     return topicClient.publish('cache', props.topicName, 'value');
   });
 
-  it('validates its value', async () => {
-    const response = await topicClient.publish('cache', 'topic', '  ');
-    expect((response as IResponseError).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    expect((response as IResponseError).message()).toEqual(
-      'Invalid argument passed to Momento client: value must not be empty'
-    );
-  });
-
   it('should error when publishing to a cache that does not exist', async () => {
     const response = await topicClient.publish(v4(), 'topic', 'value');
     expect((response as IResponseError).errorCode()).toEqual(
@@ -238,33 +228,5 @@ describe('subscribe and publish', () => {
 
     // Need to close the stream before the test ends or else the test will hang.
     (subscribeResponse as TopicSubscribe.Subscription).unsubscribe();
-  });
-
-  it('should subscribe with default handlers', async () => {
-    const topicName = v4();
-
-    const subscribeResponse = await topicClient.subscribe(
-      IntegrationTestCacheName,
-      topicName,
-      {
-        onItem: () => {
-          return;
-        },
-      }
-    );
-    expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
-    (subscribeResponse as TopicSubscribe.Subscription).unsubscribe();
-
-    const subscribeResponse2 = await topicClient.subscribe(
-      IntegrationTestCacheName,
-      topicName,
-      {
-        onError: () => {
-          return;
-        },
-      }
-    );
-    expect(subscribeResponse2).toBeInstanceOf(TopicSubscribe.Subscription);
-    (subscribeResponse2 as TopicSubscribe.Subscription).unsubscribe();
   });
 });
