@@ -4,6 +4,7 @@ import {
   MomentoErrorCode,
   TopicPublish,
   TopicSubscribe,
+  InvalidArgumentError,
 } from '../../src';
 import {
   SetupIntegrationTest,
@@ -42,6 +43,22 @@ function ItBehavesLikeItValidatesTopicName(
     );
   });
 }
+
+describe('topic client', () => {
+  it('should be throw an error for an invalid request timeout', () => {
+    expect(() => {
+      new TopicClient({
+        configuration:
+          IntegrationTestCacheClientProps.configuration.withClientTimeoutMillis(
+            -1
+          ),
+        credentialProvider: IntegrationTestCacheClientProps.credentialProvider,
+      });
+    }).toThrowError(
+      new InvalidArgumentError('request timeout must be greater than zero.')
+    );
+  });
+});
 
 describe('#publish', () => {
   ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
