@@ -20,11 +20,7 @@ import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
-import {
-  validateCacheName,
-  validateTopicName,
-  validateTopicValue,
-} from './utils/validators';
+import {validateCacheName, validateTopicName} from './utils/validators';
 import {TopicClientProps} from '../topic-client-props';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {truncateString} from './utils/display';
@@ -117,7 +113,6 @@ export class PubsubClient {
     try {
       validateCacheName(cacheName);
       validateTopicName(topicName);
-      validateTopicValue(value);
     } catch (err) {
       return new TopicPublish.Error(normalizeSdkError(err as Error));
     }
