@@ -30,6 +30,8 @@ interface ValidateTopicProps {
   topicName: string;
 }
 
+const STREAM_WAIT_TIME_MS = 2000;
+
 function ItBehavesLikeItValidatesTopicName(
   getResponse: (props: ValidateTopicProps) => Promise<ResponseBase>
 ) {
@@ -171,7 +173,7 @@ describe('subscribe and publish', () => {
     expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
 
     // Wait for stream to start.
-    await sleep(1000);
+    await sleep(STREAM_WAIT_TIME_MS);
 
     for (const value of publishedValues) {
       const publishResponse = await topicClient.publish(
@@ -183,7 +185,7 @@ describe('subscribe and publish', () => {
     }
 
     // Wait for values to be received.
-    await sleep(1000);
+    await sleep(STREAM_WAIT_TIME_MS);
 
     expect(receivedValues).toEqual(publishedValues);
     done = true;
@@ -217,7 +219,7 @@ describe('subscribe and publish', () => {
     expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
 
     // Wait for stream to start.
-    await sleep(1000);
+    await sleep(STREAM_WAIT_TIME_MS);
     // Unsubscribing before data is published should not receive any data.
     (subscribeResponse as TopicSubscribe.Subscription).unsubscribe();
 
@@ -229,7 +231,7 @@ describe('subscribe and publish', () => {
     expect(publishResponse).toBeInstanceOf(TopicPublish.Response);
 
     // Wait for values to go over the network.
-    await sleep(1000);
+    await sleep(STREAM_WAIT_TIME_MS);
 
     expect(receivedValues).toEqual([]);
     done = true;
