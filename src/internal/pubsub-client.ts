@@ -55,9 +55,9 @@ export class PubsubClient {
       .getTransportStrategy()
       .getGrpcConfig();
 
+    this.validateRequestTimeout(grpcConfig.getDeadlineMillis());
     this.unaryRequestTimeoutMs =
       grpcConfig.getDeadlineMillis() || PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
-    this.validateRequestTimeout(this.unaryRequestTimeoutMs);
     this.logger.debug(
       `Creating topic client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
     );
@@ -102,7 +102,7 @@ export class PubsubClient {
 
   private validateRequestTimeout(timeout?: number) {
     this.logger.debug(`Request timeout ms: ${String(timeout)}`);
-    if (timeout && timeout <= 0) {
+    if (timeout !== undefined && timeout <= 0) {
       throw new InvalidArgumentError(
         'request timeout must be greater than zero.'
       );

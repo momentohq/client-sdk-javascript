@@ -44,13 +44,13 @@ function ItBehavesLikeItValidatesTopicName(
   });
 }
 
-describe('topic client', () => {
-  it('should be throw an error for an invalid request timeout', () => {
+function ItBehavesLikeItValidatesRequestTimeout(requestTimeout: number) {
+  it(`should be throw an error for an invalid request timeout (requestTimeout=${requestTimeout})`, () => {
     expect(() => {
       new TopicClient({
         configuration:
           IntegrationTestCacheClientProps.configuration.withClientTimeoutMillis(
-            -1
+            requestTimeout
           ),
         credentialProvider: IntegrationTestCacheClientProps.credentialProvider,
       });
@@ -58,6 +58,11 @@ describe('topic client', () => {
       new InvalidArgumentError('request timeout must be greater than zero.')
     );
   });
+}
+
+describe('topic client constructor', () => {
+  ItBehavesLikeItValidatesRequestTimeout(0);
+  ItBehavesLikeItValidatesRequestTimeout(-1);
 });
 
 describe('#publish', () => {
