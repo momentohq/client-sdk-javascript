@@ -192,19 +192,16 @@ export class PubsubClient {
         return;
       });
 
-    return await new Promise(resolve => {
-      const subscriptionState = new SubscriptionState();
-      const subscription = new TopicSubscribe.Subscription(subscriptionState);
-      this.sendSubscribe(
-        cacheName,
-        topicName,
-        onItem,
-        onError,
-        subscriptionState,
-        subscription
-      );
-      resolve(subscription);
-    });
+    const subscriptionState = new SubscriptionState();
+    const subscription = new TopicSubscribe.Subscription(subscriptionState);
+    return await this.sendSubscribe(
+      cacheName,
+      topicName,
+      onItem,
+      onError,
+      subscriptionState,
+      subscription
+    );
   }
 
   /**
@@ -234,7 +231,7 @@ export class PubsubClient {
     ) => void,
     subscriptionState: SubscriptionState,
     subscription: TopicSubscribe.Subscription
-  ): void {
+  ): Promise<TopicSubscribe.Response> {
     const request = new grpcPubsub._SubscriptionRequest({
       cache_name: cacheName,
       topic: topicName,
@@ -259,63 +256,139 @@ export class PubsubClient {
       call.cancel();
     };
 
-    call
-      .on('data', (resp: grpcPubsub._SubscriptionItem) => {
-        if (resp?.item) {
-          subscriptionState.lastTopicSequenceNumber =
-            resp.item.topic_sequence_number;
-          if (resp.item.value.text) {
-            onItem(new TopicSubscribe.Item(resp.item.value.text));
-          } else if (resp.item.value.binary) {
-            onItem(new TopicSubscribe.Item(resp.item.value.binary));
+    // If the first message is an error, we return an error immediately and do not subscribe.
+    let firstMessage = true;
+    return new Promise(resolve => {
+      call
+        .on('data', (resp: grpcPubsub._SubscriptionItem) => {
+          if (firstMessage) {
+            resolve(subscription);
+          }
+          firstMessage = false;
+
+          if (resp?.item) {
+            subscriptionState.lastTopicSequenceNumber =
+              resp.item.topic_sequence_number;
+            if (resp.item.value.text) {
+              onItem(new TopicSubscribe.Item(resp.item.value.text));
+            } else if (resp.item.value.binary) {
+              onItem(new TopicSubscribe.Item(resp.item.value.binary));
+            } else {
+              this.logger.error(
+                'Received subscription item with unknown type; topic: %s',
+                truncateString(topicName)
+              );
+              onError(
+                new TopicSubscribe.Error(
+                  new UnknownError('Unknown item value type')
+                ),
+                subscription
+              );
+            }
+          } else if (resp?.heartbeat) {
+            this.logger.trace(
+              'Received heartbeat from subscription stream; topic: %s',
+              truncateString(topicName)
+            );
+          } else if (resp?.discontinuity) {
+            this.logger.trace(
+              'Received discontinuity from subscription stream; topic: %s',
+              truncateString(topicName)
+            );
           } else {
             this.logger.error(
-              'Received subscription item with unknown type; topic: %s',
+              'Received unknown subscription item; topic: %s',
               truncateString(topicName)
             );
             onError(
-              new TopicSubscribe.Error(
-                new UnknownError('Unknown item value type')
-              ),
+              new TopicSubscribe.Error(new UnknownError('Unknown item type')),
               subscription
             );
           }
-        } else if (resp?.heartbeat) {
-          this.logger.trace(
-            'Received heartbeat from subscription stream; topic: %s',
-            truncateString(topicName)
-          );
-        } else if (resp?.discontinuity) {
-          this.logger.trace(
-            'Received discontinuity from subscription stream; topic: %s',
-            truncateString(topicName)
-          );
-        } else {
-          this.logger.error(
-            'Received unknown subscription item; topic: %s',
-            truncateString(topicName)
-          );
+        })
+        .on('error', (err: Error) => {
+          // When the caller unsubscribes, we may get a follow on error, which we ignore.
+          if (!subscriptionState.isSubscribed) {
+            return;
+          }
+
+          const serviceError = err as unknown as ServiceError;
+
+          // When the first message is an error, something Very Bad has happened, eg
+          // the cache does not exist. In this event the user should not receive a subscription
+          // object but an error.
+          if (firstMessage) {
+            this.logger.trace(
+              'Received subscription stream error; topic: %s',
+              truncateString(topicName)
+            );
+
+            resolve(
+              new TopicSubscribe.Error(cacheServiceErrorMapper(serviceError))
+            );
+            subscription.unsubscribe();
+            return;
+          }
+
+          // The service cuts the the stream after a period of time. Hence we restart.
+          if (
+            serviceError.code === Status.INTERNAL &&
+            serviceError.details === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE
+          ) {
+            this.logger.trace(
+              'Server closed stream due to idle activity. Restarting.'
+            );
+            // When restarting the stream we do not do anything with the promises,
+            // because we should have already returned the subscription object to the user.
+            this.sendSubscribe(
+              cacheName,
+              topicName,
+              onItem,
+              onError,
+              subscriptionState,
+              subscription
+            )
+              .then(() => {
+                return;
+              })
+              .catch(() => {
+                return;
+              });
+            restartedDueToError = true;
+            return;
+          }
+
+          // Otherwise we propagate the error to the caller.
           onError(
-            new TopicSubscribe.Error(new UnknownError('Unknown item type')),
+            new TopicSubscribe.Error(cacheServiceErrorMapper(serviceError)),
             subscription
           );
-        }
-      })
-      .on('error', (err: Error) => {
-        // When the caller unsubscribes, we may get a follow on error, which we ignore.
-        if (!subscriptionState.isSubscribed) {
-          return;
-        }
+        })
+        .on('end', () => {
+          // We want to restart on stream end, except if:
+          // 1. The stream was cancelled by the caller.
+          // 2. The stream was restarted following an error.
+          if (restartedDueToError) {
+            this.logger.trace(
+              'Stream ended after error but was restarted on topic: %s',
+              topicName
+            );
+            return;
+          } else if (!subscriptionState.isSubscribed) {
+            this.logger.trace(
+              'Stream ended after unsubscribe on topic: %s',
+              topicName
+            );
+            return;
+          }
 
-        const serviceError = err as unknown as ServiceError;
-        // The service cuts the the stream after a period of time. Hence we restart.
-        if (
-          serviceError.code === Status.INTERNAL &&
-          serviceError.details === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE
-        ) {
           this.logger.trace(
-            'Server closed stream due to idle activity. Restarting.'
+            'Stream ended on topic: %s; restarting.',
+            topicName
           );
+
+          // When restarting the stream we do not do anything with the promises,
+          // because we should have already returned the subscription object to the user.
           this.sendSubscribe(
             cacheName,
             topicName,
@@ -323,45 +396,15 @@ export class PubsubClient {
             onError,
             subscriptionState,
             subscription
-          );
-          restartedDueToError = true;
-          return;
-        }
-
-        // Otherwise we propagate the error to the caller.
-        onError(
-          new TopicSubscribe.Error(cacheServiceErrorMapper(serviceError)),
-          subscription
-        );
-      })
-      .on('end', () => {
-        // We want to restart on stream end, except if:
-        // 1. The stream was cancelled by the caller.
-        // 2. The stream was restarted following an error.
-        if (restartedDueToError) {
-          this.logger.trace(
-            'Stream ended after error but was restarted on topic: %s',
-            topicName
-          );
-          return;
-        } else if (!subscriptionState.isSubscribed) {
-          this.logger.trace(
-            'Stream ended after unsubscribe on topic: %s',
-            topicName
-          );
-          return;
-        }
-
-        this.logger.trace('Stream ended on topic: %s; restarting.', topicName);
-        this.sendSubscribe(
-          cacheName,
-          topicName,
-          onItem,
-          onError,
-          subscriptionState,
-          subscription
-        );
-      });
+          )
+            .then(() => {
+              return;
+            })
+            .catch(() => {
+              return;
+            });
+        });
+    });
   }
 
   private static initializeUnaryInterceptors(

@@ -125,21 +125,10 @@ describe('#subscribe', () => {
   });
 
   it('should error when subscribing to a cache that does not exist and unsubscribe from the error handler', async () => {
-    await topicClient.subscribe(v4(), 'topic', {
-      onItem: () => {
-        return;
-      },
-      onError: (
-        error: TopicSubscribe.Error,
-        subscription: TopicSubscribe.Subscription
-      ) => {
-        expect(error.errorCode()).toEqual(MomentoErrorCode.NOT_FOUND_ERROR);
-        expect(error.message()).toEqual(
-          'A cache with the specified name does not exist.  To resolve this error, make sure you have created the cache before attempting to use it: 5 NOT_FOUND: Cache not found'
-        );
-        subscription.unsubscribe();
-      },
-    });
+    const response = await topicClient.subscribe(v4(), 'topic');
+    expect((response as IResponseError).errorCode()).toEqual(
+      MomentoErrorCode.NOT_FOUND_ERROR
+    );
   });
 });
 
