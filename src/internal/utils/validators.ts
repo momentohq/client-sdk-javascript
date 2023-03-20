@@ -80,6 +80,12 @@ export function validateListSliceStartEnd(
   }
 }
 
+export function validateTopicName(name: string) {
+  if (isEmpty(name)) {
+    throw new InvalidArgumentError('topic name must not be empty');
+  }
+}
+
 export function validateTtlMinutes(ttlMinutes: number) {
   if (ttlMinutes < 0) {
     throw new InvalidArgumentError('ttlMinutes must be positive');

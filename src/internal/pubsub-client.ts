@@ -4,6 +4,7 @@ import grpcPubsub = pubsub.cache_client.pubsub;
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
+import {UnknownError} from '../errors/errors';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, ServiceError} from '@grpc/grpc-js';
 import {Status} from '@grpc/grpc-js/build/src/constants';
@@ -19,7 +20,7 @@ import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
-import {validateCacheName} from './utils/validators';
+import {validateCacheName, validateTopicName} from './utils/validators';
 import {TopicClientProps} from '../topic-client-props';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {truncateString} from './utils/display';
@@ -36,6 +37,9 @@ export class PubsubClient {
   private readonly unaryInterceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
 
+  private static readonly RST_STREAM_NO_ERROR_MESSAGE =
+    'Received RST_STREAM with code 0';
+
   /**
    * @param {TopicClientProps} props
    */
@@ -47,9 +51,9 @@ export class PubsubClient {
       .getTransportStrategy()
       .getGrpcConfig();
 
+    this.validateRequestTimeout(grpcConfig.getDeadlineMillis());
     this.unaryRequestTimeoutMs =
       grpcConfig.getDeadlineMillis() || PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
-    this.validateRequestTimeout(this.unaryRequestTimeoutMs);
     this.logger.debug(
       `Creating topic client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
     );
@@ -94,7 +98,7 @@ export class PubsubClient {
 
   private validateRequestTimeout(timeout?: number) {
     this.logger.debug(`Request timeout ms: ${String(timeout)}`);
-    if (timeout && timeout <= 0) {
+    if (timeout !== undefined && timeout <= 0) {
       throw new InvalidArgumentError(
         'request timeout must be greater than zero.'
       );
@@ -108,7 +112,7 @@ export class PubsubClient {
   ): Promise<TopicPublish.Response> {
     try {
       validateCacheName(cacheName);
-      // todo: validate topic name
+      validateTopicName(topicName);
     } catch (err) {
       return new TopicPublish.Error(normalizeSdkError(err as Error));
     }
@@ -163,7 +167,7 @@ export class PubsubClient {
   ): Promise<TopicSubscribe.Response> {
     try {
       validateCacheName(cacheName);
-      // TODO: validate topic name
+      validateTopicName(topicName);
     } catch (err) {
       return new TopicSubscribe.Error(normalizeSdkError(err as Error));
     }
@@ -173,7 +177,7 @@ export class PubsubClient {
     );
 
     return await new Promise(resolve => {
-      const subscriptionState: SubscriptionState = new SubscriptionState();
+      const subscriptionState = new SubscriptionState();
       const subscription = new TopicSubscribe.Subscription(subscriptionState);
       this.sendSubscribe(
         cacheName,
@@ -198,7 +202,7 @@ export class PubsubClient {
    * @return {*}  {void}
    * @memberof PubsubClient
    *
-   * @remark This method is responsible for reconnecting the stream if it ends unexpectedly.
+   * @remark This method is responsible for restarting the stream if it ends unexpectedly.
    * Since we return a single subscription object to the user, we need to update it with the
    * unsubscribe function should we restart the stream. This is why we pass the subscription
    * state and subscription object to this method.
@@ -243,6 +247,17 @@ export class PubsubClient {
             options.onItem(new TopicSubscribe.Item(resp.item.value.text));
           } else if (resp.item.value.binary) {
             options.onItem(new TopicSubscribe.Item(resp.item.value.binary));
+          } else {
+            this.logger.error(
+              'Received subscription item with unknown type; topic: %s',
+              truncateString(topicName)
+            );
+            options.onError(
+              new TopicSubscribe.Error(
+                new UnknownError('Unknown item value type')
+              ),
+              subscription
+            );
           }
         } else if (resp?.heartbeat) {
           this.logger.trace(
@@ -254,6 +269,15 @@ export class PubsubClient {
             'Received discontinuity from subscription stream; topic: %s',
             truncateString(topicName)
           );
+        } else {
+          this.logger.error(
+            'Received unknown subscription item; topic: %s',
+            truncateString(topicName)
+          );
+          options.onError(
+            new TopicSubscribe.Error(new UnknownError('Unknown item type')),
+            subscription
+          );
         }
       })
       .on('error', (err: Error) => {
@@ -263,10 +287,10 @@ export class PubsubClient {
         }
 
         const serviceError = err as unknown as ServiceError;
-        // The service cuts the the stream after a period of time. Hence we reconnect.
+        // The service cuts the the stream after a period of time. Hence we restart.
         if (
           serviceError.code === Status.INTERNAL &&
-          serviceError.details === 'Received RST_STREAM with code 0'
+          serviceError.details === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE
         ) {
           this.logger.trace(
             'Server closed stream due to idle activity. Restarting.'
@@ -289,9 +313,9 @@ export class PubsubClient {
         );
       })
       .on('end', () => {
-        // We want to reconnect on stream end, except if:
+        // We want to restart on stream end, except if:
         // 1. The stream was cancelled by the caller.
-        // 2. The stream was restarted due to an error.
+        // 2. The stream was restarted following an error.
         if (restartedDueToError) {
           this.logger.trace(
             'Stream ended after error but was restarted on topic: %s',
