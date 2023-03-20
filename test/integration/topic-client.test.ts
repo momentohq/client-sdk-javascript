@@ -245,9 +245,26 @@ describe('subscribe and publish', () => {
 
     const subscribeResponse = await topicClient.subscribe(
       IntegrationTestCacheName,
-      topicName
+      topicName,
+      {
+        onItem: () => {
+          return;
+        },
+      }
     );
     expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
     (subscribeResponse as TopicSubscribe.Subscription).unsubscribe();
+
+    const subscribeResponse2 = await topicClient.subscribe(
+      IntegrationTestCacheName,
+      topicName,
+      {
+        onError: () => {
+          return;
+        },
+      }
+    );
+    expect(subscribeResponse2).toBeInstanceOf(TopicSubscribe.Subscription);
+    (subscribeResponse2 as TopicSubscribe.Subscription).unsubscribe();
   });
 });
