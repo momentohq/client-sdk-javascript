@@ -33,11 +33,27 @@ export class Item extends Response {
     this._value = _value;
   }
   /**
-   * Returns the data as a utf-8 string, decoded from the underlying byte array.
-   * @returns string
+   * Returns the data read from the stream.
+   * @returns string | Uint8Array
    */
   public value(): string | Uint8Array {
     return this._value;
+  }
+
+  /**
+   * Returns the data read from the stream as a string.
+   * @returns string
+   */
+  public valueString(): string {
+    return this.value().toString();
+  }
+
+  /**
+   * Returns the data read from the stream as a Uint8Array.
+   * @returns Uint8Array
+   */
+  public valueUint8Array(): Uint8Array {
+    return this.value() as Uint8Array;
   }
 
   public override toString(): string {

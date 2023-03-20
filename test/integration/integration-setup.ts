@@ -125,5 +125,8 @@ export function ItBehavesLikeItValidatesCacheName(
     expect((response as IResponseError).errorCode()).toEqual(
       MomentoErrorCode.INVALID_ARGUMENT_ERROR
     );
+    expect((response as IResponseError).message()).toEqual(
+      'Invalid argument passed to Momento client: cache name must not be empty'
+    );
   });
 }
