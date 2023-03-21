@@ -43,9 +43,10 @@ async function main() {
 
   const sleep = (seconds: number) =>
     new Promise(r => setTimeout(r, seconds * 1000));
-  // Sleeps for 2 seconds.
-  await sleep(30);
-  // test if response is instance of TopicSubscribe.Subscription
+
+  // Wait a couple minutes to receive some items, then unsubscribe to finish the example.
+  await sleep(120);
+
   if (response instanceof TopicSubscribe.Subscription) {
     console.log('Unsubscribing from topic subscription');
     response.unsubscribe();
