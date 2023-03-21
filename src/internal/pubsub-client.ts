@@ -33,7 +33,7 @@ import {SubscriptionState} from './subscription-state';
 interface SendSubscribeOptions {
   cacheName: string;
   topicName: string;
-  onItem: (data: TopicSubscribe.Item) => void;
+  onItem: (item: TopicSubscribe.Item) => void;
   onError: (
     error: TopicSubscribe.Error,
     subscription: TopicSubscribe.Subscription
