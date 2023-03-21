@@ -117,7 +117,11 @@ describe('#subscribe', () => {
   });
 
   it('should error when subscribing to a cache that does not exist and unsubscribe from the error handler', async () => {
-    const response = await topicClient.subscribe(v4(), 'topic');
+    const response = await topicClient.subscribe(
+      v4(),
+      'topic',
+      trivialHandlers
+    );
     expect((response as IResponseError).errorCode()).toEqual(
       MomentoErrorCode.NOT_FOUND_ERROR
     );
