@@ -22,9 +22,12 @@ import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
 import {validateCacheName, validateTtlMinutes} from './utils/validators';
-import {_Cache, _ListCachesResponse} from '../messages/responses/list-caches';
-import {_SigningKey} from '../messages/responses/create-signing-key';
-import {_ListSigningKeysResponse} from '../messages/responses/list-signing-keys';
+import {
+  _Cache,
+  _ListCachesResponse,
+  _SigningKey,
+  _ListSigningKeysResponse,
+} from '../messages/responses/grpc-response-types';
 
 export interface ControlClientProps {
   configuration: Configuration;
