@@ -1,7 +1,7 @@
 import {SigningKey} from '../signing-key';
 import {SdkError} from '../../errors/errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
-import {_SigningKey} from './create-signing-key';
+import {_ListSigningKeysResponse} from './grpc-response-types';
 
 /**
  * Parent response type for a list signing keys request.  The
@@ -23,16 +23,6 @@ import {_SigningKey} from './create-signing-key';
  * ```
  */
 export abstract class Response extends ResponseBase {}
-
-export class _ListSigningKeysResponse {
-  readonly signingKeys: _SigningKey[];
-  readonly nextToken: string;
-
-  constructor(signingKeys?: _SigningKey[], nextToken?: string) {
-    this.signingKeys = signingKeys ?? [];
-    this.nextToken = nextToken ?? '';
-  }
-}
 
 class _Success extends Response {
   private readonly nextToken?: string;

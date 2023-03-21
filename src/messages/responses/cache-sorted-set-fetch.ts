@@ -6,6 +6,7 @@ import {
 } from './response-base';
 import {SdkError} from '../../errors/errors';
 import {TextDecoder} from 'util';
+import {_SortedSetElement} from './grpc-response-types';
 
 const TEXT_DECODER = new TextDecoder();
 
@@ -30,16 +31,6 @@ const TEXT_DECODER = new TextDecoder();
  * ```
  */
 export abstract class Response extends ResponseBase {}
-
-export class _SortedSetElement {
-  readonly value: Uint8Array;
-  readonly score: number;
-
-  constructor(value: Uint8Array, score: number) {
-    this.value = value;
-    this.score = score;
-  }
-}
 
 class _Hit extends Response {
   private readonly elements: _SortedSetElement[];

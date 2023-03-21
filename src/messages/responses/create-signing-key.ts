@@ -1,4 +1,5 @@
 import {SdkError} from '../../errors/errors';
+import {_SigningKey} from './grpc-response-types';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 
 /**
@@ -21,15 +22,6 @@ import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
  * ```
  */
 export abstract class Response extends ResponseBase {}
-
-export class _SigningKey {
-  readonly key: string;
-  readonly expiresAt: number;
-  constructor(key?: string, expiresAt?: number) {
-    this.key = key ?? '';
-    this.expiresAt = expiresAt ?? 0;
-  }
-}
 
 class _Success extends Response {
   private readonly keyId: string;

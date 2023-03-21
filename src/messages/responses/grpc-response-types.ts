@@ -65,3 +65,23 @@ export class _SigningKey {
     this.expiresAt = expiresAt ?? 0;
   }
 }
+
+export class _SortedSetElement {
+  readonly value: Uint8Array;
+  readonly score: number;
+
+  constructor(value: Uint8Array, score: number) {
+    this.value = value;
+    this.score = score;
+  }
+}
+
+export class _ListSigningKeysResponse {
+  readonly signingKeys: _SigningKey[];
+  readonly nextToken: string;
+
+  constructor(signingKeys?: _SigningKey[], nextToken?: string) {
+    this.signingKeys = signingKeys ?? [];
+    this.nextToken = nextToken ?? '';
+  }
+}
