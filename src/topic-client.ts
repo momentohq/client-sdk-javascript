@@ -55,7 +55,7 @@ export class TopicClient {
   public async subscribe(
     cacheName: string,
     topicName: string,
-    options: SubscribeCallOptions
+    options: SubscribeCallOptions = {}
   ): Promise<TopicSubscribe.Response> {
     return await this.client.subscribe(cacheName, topicName, options);
   }

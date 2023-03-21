@@ -85,6 +85,10 @@ export class Subscription extends Response {
   public unsubscribe(): void {
     this.subscriptionState.unsubscribe();
   }
+
+  public get isSubscribed(): boolean {
+    return this.subscriptionState.isSubscribed;
+  }
 }
 
 class _Error extends Response {
