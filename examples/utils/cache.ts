@@ -36,3 +36,19 @@ export async function createCache(
     throw createResponse.innerException();
   }
 }
+
+export async function ensureCacheExists(cacheName: string): Promise<void> {
+  const momento = getCacheClient(null!, 5000, 60);
+  const createCacheResponse = await momento.createCache(cacheName);
+  if (createCacheResponse instanceof CreateCache.Success) {
+    console.log('Cache created successfully. Continuing.');
+  } else if (createCacheResponse instanceof CreateCache.AlreadyExists) {
+    console.log('Cache already exists. Continuing.');
+  } else if (createCacheResponse instanceof CreateCache.Error) {
+    throw createCacheResponse.innerException();
+  } else {
+    throw new Error(
+      `Unknown create cache response type: ${createCacheResponse.toString()}`
+    );
+  }
+}

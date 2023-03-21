@@ -1,0 +1,77 @@
+import {cache} from '@gomomento/generated-types';
+import {
+  TopicClient,
+  TopicItem,
+  TopicSubscribe,
+  Configurations,
+  CredentialProvider,
+} from '@gomomento/sdk';
+import {ensureCacheExists} from './utils/cache';
+
+async function main() {
+  const clargs = process.argv.slice(2);
+  if (clargs.length !== 2) {
+    console.error('Usage: topic-subscribe.ts <cacheName> <topicName>');
+    return;
+  }
+  const [cacheName, topicName] = clargs;
+  const momento = new TopicClient({
+    configuration: Configurations.Laptop.v1(),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+    }),
+  });
+
+  await ensureCacheExists(cacheName);
+
+  console.log(`Subscribing to cacheName=${cacheName}, topicName=${topicName}`);
+  const response = await momento.subscribe(cacheName, topicName, {
+    onItem: handleItem,
+    onError: handleError,
+  });
+
+  if (response instanceof TopicSubscribe.Subscription) {
+    console.log('Subscribed to topic');
+  } else if (response instanceof TopicSubscribe.Error) {
+    console.log(`Error subscribing to topic: ${response.toString()}`);
+    return;
+  } else {
+    console.log(
+      `Unexpected response from topic subscription: ${response.toString()}`
+    );
+    return;
+  }
+
+  const sleep = (seconds: number) =>
+    new Promise(r => setTimeout(r, seconds * 1000));
+  // Sleeps for 2 seconds.
+  await sleep(30);
+  // test if response is instance of TopicSubscribe.Subscription
+  if (response instanceof TopicSubscribe.Subscription) {
+    console.log('Unsubscribing from topic subscription');
+    response.unsubscribe();
+  }
+}
+
+function handleItem(item: TopicItem) {
+  console.log('Item received from topic subscription; %s', item);
+}
+
+function handleError(
+  error: TopicSubscribe.Error,
+  subscription: TopicSubscribe.Subscription
+) {
+  console.log(`Error received from topic subscription; ${error.toString()}`);
+
+  // optionally: unsubscribe from the topic subscription
+  //subscription.unsubscribe();
+}
+
+main()
+  .then(() => {
+    console.log('success!!');
+  })
+  .catch((e: Error) => {
+    console.error(`Uncaught exception while running example: ${e.message}`);
+    throw e;
+  });
