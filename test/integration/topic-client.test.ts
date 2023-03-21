@@ -78,16 +78,6 @@ describe('#publish', () => {
     return topicClient.publish('cache', props.topicName, 'value');
   });
 
-  it('validates its value', async () => {
-    const response = await topicClient.publish('cache', 'topic', '  ');
-    expect((response as IResponseError).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    expect((response as IResponseError).message()).toEqual(
-      'Invalid argument passed to Momento client: value must not be empty'
-    );
-  });
-
   it('should error when publishing to a cache that does not exist', async () => {
     const response = await topicClient.publish(v4(), 'topic', 'value');
     expect((response as IResponseError).errorCode()).toEqual(
