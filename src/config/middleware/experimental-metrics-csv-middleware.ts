@@ -6,7 +6,8 @@ import {MomentoLogger, MomentoLoggerFactory} from '../logging/momento-logger';
 
 function headerFields(): Array<string> {
   return [
-    'numActiveRequests',
+    'numActiveRequestsAtStart',
+    'numActiveRequestsAtFinish',
     'requestType',
     'status',
     'startTime',
@@ -19,14 +20,45 @@ function headerFields(): Array<string> {
 }
 
 interface RequestMetrics {
-  numActiveRequests: number;
+  /**
+   * number of requests active at the start of the request
+   */
+  numActiveRequestsAtStart: number;
+  /**
+   * number of requests active at the finish of the request (including the request itself)
+   */
+  numActiveRequestsAtFinish: number;
+  /**
+   * The generated grpc object type of the request
+   */
   requestType: string;
+  /**
+   * The grpc status code of the response
+   */
   status: number;
+  /**
+   * The time the request started (millis since epoch)
+   */
   startTime: number;
+  /**
+   * The time the body of the request was available to the grpc library (millis since epoch)
+   */
   requestBodyTime: number;
+  /**
+   * The time the request completed (millis since epoch)
+   */
   endTime: number;
+  /**
+   * The duration of the request (in millis)
+   */
   duration: number;
+  /**
+   * The size of the request body in bytes
+   */
   requestSize: number;
+  /**
+   * The size of the response body in bytes
+   */
   responseSize: number;
 }
 
@@ -35,6 +67,7 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
 {
   private readonly logger: MomentoLogger;
   private readonly csvPath: string;
+  private readonly numActiveRequestsAtStart: number;
   private readonly startTime: number;
   private requestBodyTime: number;
   private requestType: string;
@@ -48,7 +81,8 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
   constructor(logger: MomentoLogger, csvPath: string) {
     this.logger = logger;
     this.csvPath = csvPath;
-    ExperimentalMetricsCsvMiddleware.numActiveRequests++;
+    this.numActiveRequestsAtStart =
+      ++ExperimentalMetricsCsvMiddleware.numActiveRequests;
     this.startTime = new Date().getTime();
 
     this.receivedResponseBody = false;
@@ -95,7 +129,9 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
   private recordMetrics(): void {
     const endTime = new Date().getTime();
     const metrics: RequestMetrics = {
-      numActiveRequests: ExperimentalMetricsCsvMiddleware.numActiveRequests,
+      numActiveRequestsAtStart: this.numActiveRequestsAtStart,
+      numActiveRequestsAtFinish:
+        ExperimentalMetricsCsvMiddleware.numActiveRequests,
       requestType: this.requestType,
       status: this.responseStatusCode,
       startTime: this.startTime,
@@ -107,7 +143,8 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
     };
 
     const csvRow = [
-      metrics.numActiveRequests,
+      metrics.numActiveRequestsAtStart,
+      metrics.numActiveRequestsAtFinish,
       metrics.requestType,
       metrics.status,
       metrics.startTime,
