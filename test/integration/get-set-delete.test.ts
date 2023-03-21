@@ -15,6 +15,7 @@ import {
   IntegrationTestCacheClientProps,
   ItBehavesLikeItValidatesCacheName,
   WithCache,
+  testCacheName,
 } from './integration-setup';
 import {sleep} from '../../src/internal/utils/sleep';
 
@@ -115,7 +116,7 @@ describe('get/set/delete', () => {
   });
 
   it('should timeout on a request that exceeds specified timeout', async () => {
-    const cacheName = v4();
+    const cacheName = testCacheName();
     const defaultTimeoutClient = Momento;
     const shortTimeoutTransportStrategy =
       IntegrationTestCacheClientProps.configuration
@@ -412,7 +413,7 @@ describe('#setIfNotExists', () => {
   });
 
   it('should timeout on a request that exceeds specified timeout', async () => {
-    const cacheName = v4();
+    const cacheName = testCacheName();
     const defaultTimeoutClient = Momento;
     const shortTimeoutTransportStrategy =
       IntegrationTestCacheClientProps.configuration

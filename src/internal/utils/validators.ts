@@ -1,4 +1,5 @@
 import {InvalidArgumentError} from '../../errors/errors';
+import {decodeFromBase64, encodeToBase64} from './string';
 
 export function validateCacheName(name: string) {
   if (isEmpty(name)) {
@@ -80,6 +81,12 @@ export function validateListSliceStartEnd(
   }
 }
 
+export function validateTopicName(name: string) {
+  if (isEmpty(name)) {
+    throw new InvalidArgumentError('topic name must not be empty');
+  }
+}
+
 export function validateTtlMinutes(ttlMinutes: number) {
   if (ttlMinutes < 0) {
     throw new InvalidArgumentError('ttlMinutes must be positive');
@@ -88,4 +95,12 @@ export function validateTtlMinutes(ttlMinutes: number) {
 
 function isEmpty(str: string): boolean {
   return !str.trim();
+}
+
+export function isBase64(str: string): boolean {
+  try {
+    return encodeToBase64(decodeFromBase64(str)) === str;
+  } catch (e) {
+    return false;
+  }
 }

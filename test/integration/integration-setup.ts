@@ -14,7 +14,7 @@ import {
   ResponseBase,
 } from '../../src/messages/responses/response-base';
 
-function testCacheName(): string {
+export function testCacheName(): string {
   const name = process.env.TEST_CACHE_NAME || 'js-integration-test-default';
   return name + v4();
 }
@@ -124,6 +124,9 @@ export function ItBehavesLikeItValidatesCacheName(
 
     expect((response as IResponseError).errorCode()).toEqual(
       MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    expect((response as IResponseError).message()).toEqual(
+      'Invalid argument passed to Momento client: cache name must not be empty'
     );
   });
 }
