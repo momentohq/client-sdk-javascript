@@ -3,6 +3,8 @@ import {
   Configurations,
   CreateCache,
   EnvMomentoTokenProvider,
+  DefaultMomentoLoggerFactory,
+  DefaultMomentoLoggerLevel,
   MomentoLogger,
   MomentoLoggerFactory,
 } from '@gomomento/sdk';
@@ -38,7 +40,10 @@ export async function createCache(
 }
 
 export async function ensureCacheExists(cacheName: string): Promise<void> {
-  const momento = getCacheClient(null!, 5000, 60);
+  const loggerFactory = new DefaultMomentoLoggerFactory(
+    DefaultMomentoLoggerLevel.INFO
+  );
+  const momento = getCacheClient(loggerFactory, 5000, 60);
   const createCacheResponse = await momento.createCache(cacheName);
   if (createCacheResponse instanceof CreateCache.Success) {
     console.log('Cache created successfully. Continuing.');

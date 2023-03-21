@@ -44,6 +44,34 @@ MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run dictionary
 
 Example Code: [dictionary.ts](dictionary.ts)
 
+## Running the Pubsub Example
+
+This example demonstrates how to subscribe to a topic and publish values to it.
+
+In one terminal, subscribe to a topic on a cache:
+
+```bash
+MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run topic-subscribe <cache-name> <topic-name>
+```
+
+Then in another terminal, publish a value to the topic:
+
+```bash
+MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run topic-publish <cache-name> <topic-name> <value>
+```
+
+Note that you do not need to create the cache before running the examples; the examples take care of that. Also note the service creates a topic automatically.
+
+As an example:
+
+```bash
+# in the first terminal
+MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run topic-subscribe my-cache dogs
+# in another terminal
+MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run topic-publish my-cache dogs poodle
+# "poodle" should soon appear on the first terminal
+```
+
 ## Running the load generator example
 
 This repo includes a very basic load generator, to allow you to experiment with
