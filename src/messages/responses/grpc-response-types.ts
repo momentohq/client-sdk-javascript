@@ -40,3 +40,28 @@ export class _SortedSetGetScoreResponsePart {
     this.score = score;
   }
 }
+
+export class _Cache {
+  readonly cacheName: string;
+  constructor(cacheName: string) {
+    this.cacheName = cacheName;
+  }
+}
+
+export class _ListCachesResponse {
+  readonly caches: _Cache[];
+  readonly nextToken: string;
+  constructor(caches?: _Cache[], nextToken?: string) {
+    this.caches = caches ?? [];
+    this.nextToken = nextToken ?? '';
+  }
+}
+
+export class _SigningKey {
+  readonly key: string;
+  readonly expiresAt: number;
+  constructor(key?: string, expiresAt?: number) {
+    this.key = key ?? '';
+    this.expiresAt = expiresAt ?? 0;
+  }
+}
