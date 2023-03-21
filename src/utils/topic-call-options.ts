@@ -9,7 +9,7 @@ export interface SubscribeCallOptions {
    *
    * @param data The data received from the topic subscription.
    */
-  onItem(data: TopicSubscribe.Item): void;
+  onItem?: (data: TopicSubscribe.Item) => void;
 
   /**
    * The callback to invoke when an error is received from the topic subscription.
@@ -17,8 +17,8 @@ export interface SubscribeCallOptions {
    * @param error The error received from the topic subscription.
    * @param subscription The subscription that received the error.
    */
-  onError(
+  onError?: (
     error: TopicSubscribe.Error,
     subscription: TopicSubscribe.Subscription
-  ): void;
+  ) => void;
 }

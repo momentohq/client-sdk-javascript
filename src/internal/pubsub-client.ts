@@ -176,13 +176,25 @@ export class PubsubClient {
       truncateString(topicName)
     );
 
+    const onItem =
+      options.onItem ??
+      (() => {
+        return;
+      });
+    const onError =
+      options.onError ??
+      (() => {
+        return;
+      });
+
     return await new Promise(resolve => {
       const subscriptionState = new SubscriptionState();
       const subscription = new TopicSubscribe.Subscription(subscriptionState);
       this.sendSubscribe(
         cacheName,
         topicName,
-        options,
+        onItem,
+        onError,
         subscriptionState,
         subscription
       );
@@ -210,7 +222,11 @@ export class PubsubClient {
   private sendSubscribe(
     cacheName: string,
     topicName: string,
-    options: SubscribeCallOptions,
+    onItem: (item: TopicSubscribe.Item) => void,
+    onError: (
+      error: TopicSubscribe.Error,
+      subscription: TopicSubscribe.Subscription
+    ) => void,
     subscriptionState: SubscriptionState,
     subscription: TopicSubscribe.Subscription
   ): void {
@@ -244,15 +260,15 @@ export class PubsubClient {
           subscriptionState.lastTopicSequenceNumber =
             resp.item.topic_sequence_number;
           if (resp.item.value.text) {
-            options.onItem(new TopicSubscribe.Item(resp.item.value.text));
+            onItem(new TopicSubscribe.Item(resp.item.value.text));
           } else if (resp.item.value.binary) {
-            options.onItem(new TopicSubscribe.Item(resp.item.value.binary));
+            onItem(new TopicSubscribe.Item(resp.item.value.binary));
           } else {
             this.logger.error(
               'Received subscription item with unknown type; topic: %s',
               truncateString(topicName)
             );
-            options.onError(
+            onError(
               new TopicSubscribe.Error(
                 new UnknownError('Unknown item value type')
               ),
@@ -274,7 +290,7 @@ export class PubsubClient {
             'Received unknown subscription item; topic: %s',
             truncateString(topicName)
           );
-          options.onError(
+          onError(
             new TopicSubscribe.Error(new UnknownError('Unknown item type')),
             subscription
           );
@@ -298,7 +314,8 @@ export class PubsubClient {
           this.sendSubscribe(
             cacheName,
             topicName,
-            options,
+            onItem,
+            onError,
             subscriptionState,
             subscription
           );
@@ -307,7 +324,7 @@ export class PubsubClient {
         }
 
         // Otherwise we propagate the error to the caller.
-        options.onError(
+        onError(
           new TopicSubscribe.Error(cacheServiceErrorMapper(serviceError)),
           subscription
         );
@@ -334,7 +351,8 @@ export class PubsubClient {
         this.sendSubscribe(
           cacheName,
           topicName,
-          options,
+          onItem,
+          onError,
           subscriptionState,
           subscription
         );

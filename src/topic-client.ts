@@ -45,9 +45,9 @@ export class TopicClient {
    *
    * @param {string} cacheName - The name of the cache to containing the topic to subscribe to.
    * @param {string} topicName - The name of the topic to subscribe to.
-   * @param {SubscribeCallOptions} options - The options for the subscription.
-   * @param {function} options.onItem - The callback to invoke when data is received.
-   * @param {function} options.onError - The callback to invoke when an error is received.
+   * @param {SubscribeCallOptions} options - The options for the subscription. Defaults to no-op handlers.
+   * @param {function} options.onItem - The callback to invoke when data is received. Defaults to no-op.
+   * @param {function} options.onError - The callback to invoke when an error is received. Defaults to no-op.
    * @returns {Promise<TopicSubscribe.Response>} -
    * {@link TopicSubscribe.Subscription} on success.
    * {@link TopicSubscribe.Error} on failure.
