@@ -5,5 +5,5 @@ set -e
 
 echo "dev building nodejs sdk"
 
-./packages/build-package.sh "common"
-./packages/build-package.sh "client-sdk-nodejs"
+./scripts/build-package.sh "common"
+./scripts/build-package.sh "client-sdk-nodejs"
