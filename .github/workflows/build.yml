@@ -48,13 +48,13 @@ jobs:
       - name: Build Common Package
         run: |
           node -v
-          ./scripts/build-package.sh "common"
+          ./scripts/build-and-test-package.sh "common"
 
       # needs to happen after building our common package, since it depends on it
       - name: Build nodejs sdk
         run: |
           node -v
-          ./scripts/build-package.sh "client-sdk-nodejs"
+          ./scripts/build-and-test-package.sh "client-sdk-nodejs"
 
   test-examples:
     strategy:

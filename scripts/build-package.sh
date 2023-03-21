@@ -9,6 +9,4 @@ pushd ./packages/${1}
     npm ci
     npm run build
     npm run lint
-    npm run unit-test
-    npm run integration-test
 popd
