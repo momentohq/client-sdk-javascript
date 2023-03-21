@@ -20,15 +20,45 @@ function headerFields(): Array<string> {
 }
 
 interface RequestMetrics {
+  /**
+   * number of requests active at the start of the request
+   */
   numActiveRequestsAtStart: number;
+  /**
+   * number of requests active at the finish of the request (including the request itself)
+   */
   numActiveRequestsAtFinish: number;
+  /**
+   * The generated grpc object type of the request
+   */
   requestType: string;
+  /**
+   * The grpc status code of the response
+   */
   status: number;
+  /**
+   * The time the request started (millis since epoch)
+   */
   startTime: number;
+  /**
+   * The time the body of the request was available to the grpc library (millis since epoch)
+   */
   requestBodyTime: number;
+  /**
+   * The time the request completed (millis since epoch)
+   */
   endTime: number;
+  /**
+   * The duration of the request (in millis)
+   */
   duration: number;
+  /**
+   * The size of the request body in bytes
+   */
   requestSize: number;
+  /**
+   * The size of the response body in bytes
+   */
   responseSize: number;
 }
 
