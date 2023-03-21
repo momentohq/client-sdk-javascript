@@ -1,7 +1,7 @@
 import {CacheInfo} from '../cache-info';
-import {control} from '@gomomento/generated-types';
 import {SdkError} from '../../errors/errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
+import {_ListCachesResponse} from './grpc-response-types';
 
 /**
  * Parent response type for a list caches request.  The
@@ -26,10 +26,10 @@ export abstract class Response extends ResponseBase {}
 
 class _Success extends Response {
   private readonly caches: CacheInfo[];
-  constructor(result?: control.control_client._ListCachesResponse) {
+  constructor(result?: _ListCachesResponse) {
     super();
     if (result) {
-      this.caches = result.cache.map(cache => new CacheInfo(cache.cache_name));
+      this.caches = result.caches.map(cache => new CacheInfo(cache.cacheName));
     }
   }
 

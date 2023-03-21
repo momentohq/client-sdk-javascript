@@ -1,7 +1,7 @@
 import {SigningKey} from '../signing-key';
-import {control} from '@gomomento/generated-types';
 import {SdkError} from '../../errors/errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
+import {_ListSigningKeysResponse} from './grpc-response-types';
 
 /**
  * Parent response type for a list signing keys request.  The
@@ -28,18 +28,15 @@ class _Success extends Response {
   private readonly nextToken?: string;
   private readonly signingKeys: SigningKey[];
 
-  constructor(
-    endpoint: string,
-    result?: control.control_client._ListSigningKeysResponse
-  ) {
+  constructor(endpoint: string, result?: _ListSigningKeysResponse) {
     super();
-    this.nextToken = result?.next_token;
+    this.nextToken = result?.nextToken;
     this.signingKeys =
-      result?.signing_key.map(
+      result?.signingKeys.map(
         signingKey =>
           new SigningKey(
-            signingKey.key_id,
-            new Date(signingKey.expires_at * 1000),
+            signingKey.key,
+            new Date(signingKey.expiresAt * 1000),
             endpoint
           )
       ) ?? [];

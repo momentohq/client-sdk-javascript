@@ -1,6 +1,4 @@
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
-import {cache} from '@gomomento/generated-types';
-import grpcCache = cache.cache_client;
 import {SdkError, UnknownError} from '../../errors/errors';
 import {
   ResponseBase,
@@ -9,6 +7,10 @@ import {
   ResponseError,
 } from './response-base';
 import * as CacheSortedSetGetScoreResponse from './cache-sorted-set-get-score';
+import {
+  _ECacheResult,
+  _SortedSetGetScoreResponsePart,
+} from './grpc-response-types';
 
 type CacheSortedSetGetScoreResponseType =
   | CacheSortedSetGetScoreResponse.Hit
@@ -40,17 +42,14 @@ export abstract class Response extends ResponseBase {}
 class _Hit extends Response {
   public _responses: CacheSortedSetGetScoreResponseType[] = [];
 
-  constructor(
-    scores: grpcCache._SortedSetGetScoreResponse._SortedSetGetScoreResponsePart[],
-    values: Uint8Array[]
-  ) {
+  constructor(scores: _SortedSetGetScoreResponsePart[], values: Uint8Array[]) {
     super();
     scores.forEach((score, index) => {
-      if (score.result === grpcCache.ECacheResult.Hit) {
+      if (score.result === _ECacheResult.Hit) {
         this._responses.push(
           new CacheSortedSetGetScoreResponse.Hit(score.score, values[index])
         );
-      } else if (score.result === grpcCache.ECacheResult.Miss) {
+      } else if (score.result === _ECacheResult.Miss) {
         this._responses.push(
           new CacheSortedSetGetScoreResponse.Miss(values[index])
         );
