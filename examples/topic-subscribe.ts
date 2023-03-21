@@ -48,7 +48,9 @@ async function main() {
   await sleep(120);
 
   if (response instanceof TopicSubscribe.Subscription) {
-    console.log('Unsubscribing from topic subscription');
+    console.log(
+      'Unsubscribing from topic subscription. Restart the example to subscribe again.'
+    );
     response.unsubscribe();
   }
 }
