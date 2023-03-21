@@ -9,6 +9,7 @@ import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, ServiceError} from '@grpc/grpc-js';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {
+  TopicItem,
   TopicPublish,
   TopicSubscribe,
   Configuration,
@@ -33,7 +34,7 @@ import {SubscriptionState} from './subscription-state';
 interface SendSubscribeOptions {
   cacheName: string;
   topicName: string;
-  onItem: (data: TopicSubscribe.Item) => void;
+  onItem: (item: TopicItem) => void;
   onError: (
     error: TopicSubscribe.Error,
     subscription: TopicSubscribe.Subscription
@@ -297,9 +298,9 @@ export class PubsubClient {
         options.subscriptionState.lastTopicSequenceNumber =
           resp.item.topic_sequence_number;
         if (resp.item.value.text) {
-          options.onItem(new TopicSubscribe.Item(resp.item.value.text));
+          options.onItem(new TopicItem(resp.item.value.text));
         } else if (resp.item.value.binary) {
-          options.onItem(new TopicSubscribe.Item(resp.item.value.binary));
+          options.onItem(new TopicItem(resp.item.value.binary));
         } else {
           this.logger.error(
             'Received subscription item with unknown type; topic: %s',
