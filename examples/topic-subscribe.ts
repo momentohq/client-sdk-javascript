@@ -1,4 +1,3 @@
-import {cache} from '@gomomento/generated-types';
 import {
   TopicClient,
   TopicItem,
