@@ -1,5 +1,12 @@
 import {MomentoErrorCode, SdkError} from '../../errors/errors';
 
+export enum _ECacheResult {
+  Invalid = 0,
+  Ok = 1,
+  Hit = 2,
+  Miss = 3,
+}
+
 export abstract class ResponseBase {
   public toString(): string {
     return this.constructor.name;

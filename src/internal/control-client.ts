@@ -22,6 +22,9 @@ import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {normalizeSdkError} from '../errors/error-utils';
 import {validateCacheName, validateTtlMinutes} from './utils/validators';
+import {_Cache, _ListCachesResponse} from '../messages/responses/list-caches';
+import {_SigningKey} from '../messages/responses/create-signing-key';
+import {_ListSigningKeysResponse} from '../messages/responses/list-signing-keys';
 
 export interface ControlClientProps {
   configuration: Configuration;
@@ -160,7 +163,14 @@ export class ControlClient {
           if (err) {
             resolve(new ListCaches.Error(cacheServiceErrorMapper(err)));
           } else {
-            resolve(new ListCaches.Success(resp));
+            const caches = resp?.cache.map(
+              cache => new _Cache(cache.cache_name)
+            );
+            const listCachesResponse = new _ListCachesResponse(
+              caches,
+              resp?.next_token
+            );
+            resolve(new ListCaches.Success(listCachesResponse));
           }
         });
     });
@@ -188,7 +198,8 @@ export class ControlClient {
             if (err) {
               resolve(new CreateSigningKey.Error(cacheServiceErrorMapper(err)));
             } else {
-              resolve(new CreateSigningKey.Success(endpoint, resp));
+              const signingKey = new _SigningKey(resp?.key, resp?.expires_at);
+              resolve(new CreateSigningKey.Success(endpoint, signingKey));
             }
           }
         );
@@ -230,7 +241,16 @@ export class ControlClient {
             if (err) {
               resolve(new ListSigningKeys.Error(cacheServiceErrorMapper(err)));
             } else {
-              resolve(new ListSigningKeys.Success(endpoint, resp));
+              const signingKeys = resp?.signing_key.map(
+                sk => new _SigningKey(sk.key_id, sk.expires_at)
+              );
+              const listSigningKeyResponse = new _ListSigningKeysResponse(
+                signingKeys,
+                resp?.next_token
+              );
+              resolve(
+                new ListSigningKeys.Success(endpoint, listSigningKeyResponse)
+              );
             }
           }
         );

@@ -6,7 +6,6 @@ import {
 } from './response-base';
 import {SdkError} from '../../errors/errors';
 import {TextDecoder} from 'util';
-import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 
 const TEXT_DECODER = new TextDecoder();
 
@@ -32,11 +31,20 @@ const TEXT_DECODER = new TextDecoder();
  */
 export abstract class Response extends ResponseBase {}
 
+export class _DictionaryFieldValuePair {
+  readonly field: Uint8Array;
+  readonly value: Uint8Array;
+  constructor({field, value}: {field: Uint8Array; value: Uint8Array}) {
+    this.field = field;
+    this.value = value;
+  }
+}
+
 class _Hit extends Response {
-  private readonly items: cache_client._DictionaryFieldValuePair[];
+  private readonly items: _DictionaryFieldValuePair[];
   private readonly _displayListSizeLimit = 5;
 
-  constructor(items: cache_client._DictionaryFieldValuePair[]) {
+  constructor(items: _DictionaryFieldValuePair[]) {
     super();
     this.items = items;
   }

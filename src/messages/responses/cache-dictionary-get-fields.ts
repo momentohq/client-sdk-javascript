@@ -1,6 +1,4 @@
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
-import {cache} from '@gomomento/generated-types';
-import grpcCache = cache.cache_client;
 import {TextDecoder} from 'util';
 import {SdkError, UnknownError} from '../../errors/errors';
 import {
@@ -8,6 +6,7 @@ import {
   ResponseHit,
   ResponseMiss,
   ResponseError,
+  _ECacheResult,
 } from './response-base';
 import * as CacheDictionaryGetFieldResponse from './cache-dictionary-get-field';
 
@@ -39,27 +38,31 @@ type CacheDictionaryGetFieldResponseType =
  */
 export abstract class Response extends ResponseBase {}
 
+export class _DictionaryGetResponsePart {
+  readonly result: _ECacheResult;
+  readonly cacheBody: Uint8Array;
+
+  constructor(result: _ECacheResult, cacheBody: Uint8Array) {
+    this.result = result;
+    this.cacheBody = cacheBody;
+  }
+}
+
 class _Hit extends Response {
-  private readonly items: grpcCache._DictionaryGetResponse._DictionaryGetResponsePart[];
+  private readonly items: _DictionaryGetResponsePart[];
   private readonly fields: Uint8Array[];
   public responses: CacheDictionaryGetFieldResponseType[] = [];
 
-  constructor(
-    items: grpcCache._DictionaryGetResponse._DictionaryGetResponsePart[],
-    fields: Uint8Array[]
-  ) {
+  constructor(items: _DictionaryGetResponsePart[], fields: Uint8Array[]) {
     super();
     this.items = items;
     this.fields = fields;
     items.forEach((item, index) => {
-      if (item.result === grpcCache.ECacheResult.Hit) {
+      if (item.result === _ECacheResult.Hit) {
         this.responses.push(
-          new CacheDictionaryGetFieldResponse.Hit(
-            item.cache_body,
-            fields[index]
-          )
+          new CacheDictionaryGetFieldResponse.Hit(item.cacheBody, fields[index])
         );
-      } else if (item.result === grpcCache.ECacheResult.Miss) {
+      } else if (item.result === _ECacheResult.Miss) {
         this.responses.push(
           new CacheDictionaryGetFieldResponse.Miss(fields[index])
         );
@@ -80,8 +83,8 @@ class _Hit extends Response {
    */
   public valueMapUint8ArrayUint8Array(): Map<Uint8Array, Uint8Array> {
     return this.items.reduce((acc, item, index) => {
-      if (item.result === grpcCache.ECacheResult.Hit) {
-        acc.set(this.fields[index], item.cache_body);
+      if (item.result === _ECacheResult.Hit) {
+        acc.set(this.fields[index], item.cacheBody);
       }
       return acc;
     }, new Map<Uint8Array, Uint8Array>());
@@ -93,10 +96,10 @@ class _Hit extends Response {
    */
   public valueMapStringString(): Map<string, string> {
     return this.items.reduce((acc, item, index) => {
-      if (item.result === grpcCache.ECacheResult.Hit) {
+      if (item.result === _ECacheResult.Hit) {
         acc.set(
           TEXT_DECODER.decode(this.fields[index]),
-          TEXT_DECODER.decode(item.cache_body)
+          TEXT_DECODER.decode(item.cacheBody)
         );
       }
       return acc;
@@ -119,8 +122,8 @@ class _Hit extends Response {
    */
   public valueMapStringUint8Array(): Map<string, Uint8Array> {
     return this.items.reduce((acc, item, index) => {
-      if (item.result === grpcCache.ECacheResult.Hit) {
-        acc.set(TEXT_DECODER.decode(this.fields[index]), item.cache_body);
+      if (item.result === _ECacheResult.Hit) {
+        acc.set(TEXT_DECODER.decode(this.fields[index]), item.cacheBody);
       }
       return acc;
     }, new Map<string, Uint8Array>());
@@ -133,9 +136,9 @@ class _Hit extends Response {
    */
   public valueRecordStringString(): Record<string, string> {
     return this.items.reduce<Record<string, string>>((acc, item, index) => {
-      if (item.result === grpcCache.ECacheResult.Hit) {
+      if (item.result === _ECacheResult.Hit) {
         acc[TEXT_DECODER.decode(this.fields[index])] = TEXT_DECODER.decode(
-          item.cache_body
+          item.cacheBody
         );
       }
       return acc;
@@ -159,8 +162,8 @@ class _Hit extends Response {
    */
   public valueRecordStringUint8Array(): Record<string, Uint8Array> {
     return this.items.reduce<Record<string, Uint8Array>>((acc, item, index) => {
-      if (item.result === grpcCache.ECacheResult.Hit) {
-        acc[TEXT_DECODER.decode(this.fields[index])] = item.cache_body;
+      if (item.result === _ECacheResult.Hit) {
+        acc[TEXT_DECODER.decode(this.fields[index])] = item.cacheBody;
       }
       return acc;
     }, {});

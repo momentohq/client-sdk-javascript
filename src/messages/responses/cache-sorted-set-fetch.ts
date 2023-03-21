@@ -6,7 +6,6 @@ import {
 } from './response-base';
 import {SdkError} from '../../errors/errors';
 import {TextDecoder} from 'util';
-import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 
 const TEXT_DECODER = new TextDecoder();
 
@@ -32,11 +31,21 @@ const TEXT_DECODER = new TextDecoder();
  */
 export abstract class Response extends ResponseBase {}
 
+export class _SortedSetElement {
+  readonly value: Uint8Array;
+  readonly score: number;
+
+  constructor(value: Uint8Array, score: number) {
+    this.value = value;
+    this.score = score;
+  }
+}
+
 class _Hit extends Response {
-  private readonly elements: cache_client._SortedSetElement[];
+  private readonly elements: _SortedSetElement[];
   private readonly _displayListSizeLimit = 5;
 
-  constructor(elements: cache_client._SortedSetElement[]) {
+  constructor(elements: _SortedSetElement[]) {
     super();
     this.elements = elements;
   }

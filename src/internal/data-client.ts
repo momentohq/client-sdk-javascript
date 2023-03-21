@@ -75,6 +75,9 @@ import {truncateString} from './utils/display';
 import {SdkError} from '../errors/errors';
 import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 import _Unbounded = cache_client._Unbounded;
+import {_DictionaryGetResponsePart} from '../messages/responses/cache-dictionary-get-fields';
+import {_ECacheResult} from '../messages/responses/response-base';
+import {_SortedSetGetScoreResponsePart} from '../messages/responses/cache-sorted-set-get-scores';
 
 export class DataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -144,6 +147,19 @@ export class DataClient {
       throw new InvalidArgumentError(
         'request timeout must be greater than zero.'
       );
+    }
+  }
+
+  private convertECacheResult(result: grpcCache.ECacheResult): _ECacheResult {
+    switch (result) {
+      case grpcCache.ECacheResult.Hit:
+        return _ECacheResult.Hit;
+      case grpcCache.ECacheResult.Invalid:
+        return _ECacheResult.Invalid;
+      case grpcCache.ECacheResult.Miss:
+        return _ECacheResult.Miss;
+      case grpcCache.ECacheResult.Ok:
+        return _ECacheResult.Ok;
     }
   }
 
@@ -1492,7 +1508,11 @@ export class DataClient {
         },
         (err, resp) => {
           if (resp?.dictionary === 'found') {
-            resolve(new CacheDictionaryGetFields.Hit(resp.found.items, fields));
+            const items = resp.found.items.map(item => {
+              const result = this.convertECacheResult(item.result);
+              return new _DictionaryGetResponsePart(result, item.cache_body);
+            });
+            resolve(new CacheDictionaryGetFields.Hit(items, fields));
           } else if (resp?.dictionary === 'missing') {
             resolve(new CacheDictionaryGetFields.Miss());
           } else {
@@ -2299,9 +2319,11 @@ export class DataClient {
             if (resp?.missing) {
               resolve(new CacheSortedSetGetScores.Miss());
             } else if (resp?.found) {
-              resolve(
-                new CacheSortedSetGetScores.Hit(resp.found.elements, values)
-              );
+              const elements = resp.found.elements.map(ele => {
+                const result = this.convertECacheResult(ele.result);
+                return new _SortedSetGetScoreResponsePart(result, ele.score);
+              });
+              resolve(new CacheSortedSetGetScores.Hit(elements, values));
             } else {
               resolve(
                 new CacheSortedSetGetScores.Error(cacheServiceErrorMapper(err))

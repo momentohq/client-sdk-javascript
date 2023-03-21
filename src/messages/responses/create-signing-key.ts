@@ -1,4 +1,3 @@
-import {control} from '@gomomento/generated-types';
 import {SdkError} from '../../errors/errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 
@@ -23,23 +22,29 @@ import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
  */
 export abstract class Response extends ResponseBase {}
 
+export class _SigningKey {
+  readonly key: string;
+  readonly expiresAt: number;
+  constructor(key?: string, expiresAt?: number) {
+    this.key = key ?? '';
+    this.expiresAt = expiresAt ?? 0;
+  }
+}
+
 class _Success extends Response {
   private readonly keyId: string;
   private readonly endpoint: string;
   private readonly key: string;
   private readonly expiresAt: Date;
 
-  constructor(
-    endpoint: string,
-    result?: control.control_client._CreateSigningKeyResponse
-  ) {
+  constructor(endpoint: string, result?: _SigningKey) {
     super();
     const key = result?.key ?? '';
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     this.keyId = JSON.parse(key)['kid'];
     this.endpoint = endpoint;
     this.key = key;
-    this.expiresAt = new Date(result?.expires_at ?? 0 * 1000);
+    this.expiresAt = new Date(result?.expiresAt ?? 0 * 1000);
   }
 
   public getKeyId(): string {

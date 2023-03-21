@@ -1,5 +1,4 @@
 import {CacheInfo} from '../cache-info';
-import {control} from '@gomomento/generated-types';
 import {SdkError} from '../../errors/errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 
@@ -24,12 +23,28 @@ import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
  */
 export abstract class Response extends ResponseBase {}
 
+export class _Cache {
+  readonly cacheName: string;
+  constructor(cacheName: string) {
+    this.cacheName = cacheName;
+  }
+}
+
+export class _ListCachesResponse {
+  readonly caches: _Cache[];
+  readonly nextToken: string;
+  constructor(caches?: _Cache[], nextToken?: string) {
+    this.caches = caches ?? [];
+    this.nextToken = nextToken ?? '';
+  }
+}
+
 class _Success extends Response {
   private readonly caches: CacheInfo[];
-  constructor(result?: control.control_client._ListCachesResponse) {
+  constructor(result?: _ListCachesResponse) {
     super();
     if (result) {
-      this.caches = result.cache.map(cache => new CacheInfo(cache.cache_name));
+      this.caches = result.caches.map(cache => new CacheInfo(cache.cacheName));
     }
   }
 
