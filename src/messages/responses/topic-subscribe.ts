@@ -1,7 +1,6 @@
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {SdkError} from '../../errors/errors';
 import {ResponseBase, ResponseError} from './response-base';
-import {truncateString} from '../../internal/utils/display';
 import {SubscriptionState} from '../../internal/subscription-state';
 
 /**
@@ -25,42 +24,6 @@ import {SubscriptionState} from '../../internal/subscription-state';
  * ```
  */
 export abstract class Response extends ResponseBase {}
-
-export class Item extends Response {
-  private readonly _value: string | Uint8Array;
-  constructor(_value: string | Uint8Array) {
-    super();
-    this._value = _value;
-  }
-  /**
-   * Returns the data read from the stream.
-   * @returns string | Uint8Array
-   */
-  public value(): string | Uint8Array {
-    return this._value;
-  }
-
-  /**
-   * Returns the data read from the stream as a string.
-   * @returns string
-   */
-  public valueString(): string {
-    return this.value().toString();
-  }
-
-  /**
-   * Returns the data read from the stream as a Uint8Array.
-   * @returns Uint8Array
-   */
-  public valueUint8Array(): Uint8Array {
-    return this.value() as Uint8Array;
-  }
-
-  public override toString(): string {
-    const display = truncateString(this.value().toString());
-    return `${super.toString()}: ${display}`;
-  }
-}
 
 /**
  * Encapsulates a topic subscription.

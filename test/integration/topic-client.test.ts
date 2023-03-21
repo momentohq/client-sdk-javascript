@@ -4,6 +4,7 @@ import {
   DeleteCache,
   TopicClient,
   MomentoErrorCode,
+  TopicItem,
   TopicPublish,
   TopicSubscribe,
   InvalidArgumentError,
@@ -143,7 +144,7 @@ describe('subscribe and publish', () => {
       IntegrationTestCacheName,
       topicName,
       {
-        onItem: (item: TopicSubscribe.Item) => {
+        onItem: (item: TopicItem) => {
           receivedValues.push(item.value());
         },
         onError: (error: TopicSubscribe.Error) => {
@@ -189,7 +190,7 @@ describe('subscribe and publish', () => {
       IntegrationTestCacheName,
       topicName,
       {
-        onItem: (item: TopicSubscribe.Item) => {
+        onItem: (item: TopicItem) => {
           receivedValues.push(item.value());
         },
         onError: (error: TopicSubscribe.Error) => {
@@ -230,7 +231,12 @@ describe('subscribe and publish', () => {
 
     const subscribeResponse = await topicClient.subscribe(
       IntegrationTestCacheName,
-      topicName
+      topicName,
+      {
+        onItem: () => {
+          return;
+        },
+      }
     );
     expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
     (subscribeResponse as TopicSubscribe.Subscription).unsubscribe();
@@ -248,7 +254,7 @@ describe('subscribe and publish', () => {
         randomCacheName,
         v4(),
         {
-          onItem: (item: TopicSubscribe.Item) => {
+          onItem: (item: TopicItem) => {
             expect(1).fail(
               `Should not receive an item but got one: ${item.toString()}`
             );

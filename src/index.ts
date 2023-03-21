@@ -47,6 +47,7 @@ import * as CacheSortedSetRemoveElement from './messages/responses/cache-sorted-
 import * as CacheSortedSetRemoveElements from './messages/responses/cache-sorted-set-remove-elements';
 import * as TopicPublish from './messages/responses/topic-publish';
 import * as TopicSubscribe from './messages/responses/topic-subscribe';
+import {TopicItem} from './messages/responses/topic-item';
 
 import {CacheInfo} from './messages/cache-info';
 import {CollectionTtl} from './utils/collection-ttl';
@@ -147,6 +148,7 @@ export {
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
   TopicClient,
+  TopicItem,
   TopicPublish,
   TopicSubscribe,
   MomentoErrorCode,

@@ -1,4 +1,4 @@
-import {TopicSubscribe} from '..';
+import {TopicItem, TopicSubscribe} from '..';
 
 /**
  * Options for the subscribe call.
@@ -9,7 +9,7 @@ export interface SubscribeCallOptions {
    *
    * @param item The data received from the topic subscription.
    */
-  onItem?: (item: TopicSubscribe.Item) => void;
+  onItem?: (item: TopicItem) => void;
 
   /**
    * The callback to invoke when an error is received from the topic subscription.
