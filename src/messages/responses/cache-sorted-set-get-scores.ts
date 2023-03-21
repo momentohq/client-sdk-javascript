@@ -5,9 +5,12 @@ import {
   ResponseHit,
   ResponseMiss,
   ResponseError,
-  _ECacheResult,
 } from './response-base';
 import * as CacheSortedSetGetScoreResponse from './cache-sorted-set-get-score';
+import {
+  _ECacheResult,
+  _SortedSetGetScoreResponsePart,
+} from './grpc-response-types';
 
 type CacheSortedSetGetScoreResponseType =
   | CacheSortedSetGetScoreResponse.Hit
@@ -35,15 +38,6 @@ type CacheSortedSetGetScoreResponseType =
  * ```
  */
 export abstract class Response extends ResponseBase {}
-
-export class _SortedSetGetScoreResponsePart {
-  readonly result: _ECacheResult;
-  readonly score: number;
-  constructor(result: _ECacheResult, score: number) {
-    this.result = result;
-    this.score = score;
-  }
-}
 
 class _Hit extends Response {
   public _responses: CacheSortedSetGetScoreResponseType[] = [];

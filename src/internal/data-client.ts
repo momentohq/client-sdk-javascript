@@ -75,9 +75,11 @@ import {truncateString} from './utils/display';
 import {SdkError} from '../errors/errors';
 import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 import _Unbounded = cache_client._Unbounded;
-import {_DictionaryGetResponsePart} from '../messages/responses/cache-dictionary-get-fields';
-import {_ECacheResult} from '../messages/responses/response-base';
-import {_SortedSetGetScoreResponsePart} from '../messages/responses/cache-sorted-set-get-scores';
+import {
+  _DictionaryGetResponsePart,
+  _ECacheResult,
+  _SortedSetGetScoreResponsePart,
+} from '../messages/responses/grpc-response-types';
 
 export class DataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;

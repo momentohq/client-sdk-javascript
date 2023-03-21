@@ -6,9 +6,9 @@ import {
   ResponseHit,
   ResponseMiss,
   ResponseError,
-  _ECacheResult,
 } from './response-base';
 import * as CacheDictionaryGetFieldResponse from './cache-dictionary-get-field';
+import {_DictionaryGetResponsePart, _ECacheResult} from './grpc-response-types';
 
 const TEXT_DECODER = new TextDecoder();
 type CacheDictionaryGetFieldResponseType =
@@ -37,16 +37,6 @@ type CacheDictionaryGetFieldResponseType =
  * ```
  */
 export abstract class Response extends ResponseBase {}
-
-export class _DictionaryGetResponsePart {
-  readonly result: _ECacheResult;
-  readonly cacheBody: Uint8Array;
-
-  constructor(result: _ECacheResult, cacheBody: Uint8Array) {
-    this.result = result;
-    this.cacheBody = cacheBody;
-  }
-}
 
 class _Hit extends Response {
   private readonly items: _DictionaryGetResponsePart[];
