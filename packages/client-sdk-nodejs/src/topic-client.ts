@@ -1,4 +1,4 @@
-import {SubscribeCallOptions} from '@gomomento/common/dist/src/utils';
+import {SubscribeCallOptions} from './common/utils';
 import {MomentoLogger, TopicPublish, TopicSubscribe} from '.';
 import {PubsubClient} from './internal/pubsub-client';
 import {TopicClientProps} from './topic-client-props';

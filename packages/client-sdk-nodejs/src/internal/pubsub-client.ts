@@ -9,7 +9,7 @@ import {
   TopicItem,
   TopicPublish,
   TopicSubscribe,
-} from '@gomomento/common/dist/src';
+} from '../common';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, ServiceError} from '@grpc/grpc-js';
 import {Status} from '@grpc/grpc-js/build/src/constants';
@@ -20,19 +20,19 @@ import {TopicClientProps} from '../topic-client-props';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {Configuration} from '../config/configuration';
 import {CredentialProvider} from '../auth/credential-provider';
-import {MomentoLogger} from '@gomomento/common/dist/src/config/logging';
+import {MomentoLogger} from '../common/config/logging';
 import {
   truncateString,
   validateCacheName,
   validateTopicName,
-} from '@gomomento/common/dist/src/internal/utils';
+} from '../common/internal/utils';
 import {
   InvalidArgumentError,
   MomentoErrorCode,
   normalizeSdkError,
   UnknownError,
-} from '@gomomento/common/dist/src/errors';
-import {SubscribeCallOptions} from '@gomomento/common/dist/src/utils';
+} from '../common/errors';
+import {SubscribeCallOptions} from '../common/utils';
 
 /**
  * Encapsulates parameters for the `sendSubscribe` method.

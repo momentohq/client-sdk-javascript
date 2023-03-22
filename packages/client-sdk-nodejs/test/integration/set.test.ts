@@ -1,8 +1,8 @@
-import {sleep} from '@gomomento/common/dist/src/internal/utils';
+import {sleep} from '../../src/common/internal/utils';
 import {
   IResponseError,
   ResponseBase,
-} from '@gomomento/common/dist/src/messages/responses/response-base';
+} from '../../src/common/messages/responses/response-base';
 import {v4} from 'uuid';
 import {
   CacheSetAddElements,
