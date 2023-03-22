@@ -18,9 +18,9 @@ import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {Configuration} from '../config/configuration';
-import {CredentialProvider} from '../auth/credential-provider';
 import {MomentoLogger} from '@gomomento/common/dist/src/config/logging';
 import {normalizeSdkError} from '@gomomento/common/dist/src/errors';
+import {CredentialProvider} from '@gomomento/common/dist/src/auth';
 import {
   validateCacheName,
   validateTtlMinutes,

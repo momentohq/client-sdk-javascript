@@ -1,4 +1,4 @@
-import {CredentialProvider} from './auth/credential-provider';
+import {CredentialProvider} from '@gomomento/common/dist/src/auth';
 import {Configuration} from './config/configuration';
 
 export interface TopicClientProps {

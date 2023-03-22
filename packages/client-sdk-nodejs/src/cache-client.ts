@@ -50,7 +50,7 @@ import {MomentoLogger} from '@gomomento/common/dist/src/config/logging';
 import {range} from '@gomomento/common/dist/src/internal/utils';
 import {CacheClientProps} from './cache-client-props';
 import {Configuration} from './config/configuration';
-import {CredentialProvider} from './auth/credential-provider';
+import {CredentialProvider} from '@gomomento/common/dist/src/auth';
 import {
   BackTruncatableCallOptions,
   CollectionCallOptions,

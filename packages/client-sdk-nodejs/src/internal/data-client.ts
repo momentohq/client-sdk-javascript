@@ -53,7 +53,7 @@ import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 import _Unbounded = cache_client._Unbounded;
 import {Configuration} from '../config/configuration';
-import {CredentialProvider} from '../auth/credential-provider';
+import {CredentialProvider} from '@gomomento/common/dist/src/auth';
 import {
   MomentoLogger,
   MomentoLoggerFactory,

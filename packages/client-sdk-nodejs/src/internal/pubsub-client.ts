@@ -19,7 +19,7 @@ import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {TopicClientProps} from '../topic-client-props';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {Configuration} from '../config/configuration';
-import {CredentialProvider} from '../auth/credential-provider';
+import {CredentialProvider} from '@gomomento/common/dist/src/auth';
 import {MomentoLogger} from '@gomomento/common/dist/src/config/logging';
 import {
   truncateString,

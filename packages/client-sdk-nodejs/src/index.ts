@@ -72,7 +72,7 @@ import {
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
-} from './auth/credential-provider';
+} from '@gomomento/common/dist/src/auth';
 import {Configuration} from './config/configuration';
 import {CollectionTtl, SortedSetOrder} from '@gomomento/common/dist/src/utils';
 
