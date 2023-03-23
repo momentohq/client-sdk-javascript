@@ -25,7 +25,7 @@ jobs:
           #  to actually have anything to do with CI:
           # https://github.com/go-semantic-release/semantic-release/blob/master/cmd/semantic-release/main.go#L173-L194
           # https://github.com/go-semantic-release/condition-github/blob/4c8af3fc516151423fff2f77eb08bf7082570676/pkg/condition/github.go#L42-L44
-          custom-arguments: '--no-ci'
+          custom-arguments: "--no-ci"
 
       - name: Output release
         id: release
@@ -46,27 +46,24 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
 
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm run test
-
-      - name: Publish package to npm
+      - name: Build nodejs sdk
         run: |
-          export VERSION="${{ needs.release.outputs.version }}"
-          echo "Publishing package with version $VERSION"
-          mv package.json package.json.ORIG
-          cat package.json.ORIG|jq ". += {\"version\": \"$VERSION\"}" > package.json
-          npm publish
+          node -v
+          ./scripts/build-package.sh "client-sdk-nodejs"
+
+      # TODO: eventually we will have to add build steps for the grpc-web sdk
+
+      - name: Publish nodejs sdk package to npm
+        run: |
+          pushd ./packages/client-sdk-nodejs
+            export VERSION="${{ needs.release.outputs.version }}"
+            echo "Publishing package with version $VERSION"
+            mv package.json package.json.ORIG
+            cat package.json.ORIG|jq ". += {\"version\": \"$VERSION\"}" > package.json
+            npm publish
+          popd
         shell: bash
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
@@ -84,10 +81,12 @@ jobs:
 
       - name: Publish lambda layer
         run: |
-          export VERSION="${{ needs.release.outputs.version }}"
-          echo "Publishing lambda layer with version $VERSION"
-          pushd build-scripts
-            ./build-lambda-layer.sh
-            ./publish-lambda-layer.sh ${VERSION}
+          pushd ./packages/client-sdk-nodejs
+            export VERSION="${{ needs.release.outputs.version }}"
+            echo "Publishing lambda layer with version $VERSION"
+            pushd build-scripts
+              ./build-lambda-layer.sh
+              ./publish-lambda-layer.sh ${VERSION}
+            popd
           popd
         shell: bash

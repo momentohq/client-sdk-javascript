@@ -183,6 +183,6 @@ main()
     logger.info('success!!');
   })
   .catch((e: Error) => {
-    console.error(`failed to get from cache ${e.message}`);
+    console.error(`Uncaught exception while running example: ${e.message}`);
     throw e;
   });

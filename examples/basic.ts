@@ -46,6 +46,6 @@ main()
     console.log('success!!');
   })
   .catch((e: Error) => {
-    console.error(`An error occurred! ${e.message}`);
+    console.error(`Uncaught exception while running example: ${e.message}`);
     throw e;
   });
