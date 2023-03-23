@@ -43,7 +43,7 @@ import {
   CacheSortedSetRemoveElements,
   CacheSortedSetPutElements,
   CacheListRetain,
-} from '@gomomento/common/dist/src';
+} from '../common';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
@@ -53,17 +53,14 @@ import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 import _Unbounded = cache_client._Unbounded;
 import {Configuration} from '../config/configuration';
-import {CredentialProvider} from '@gomomento/common/dist/src/auth';
-import {
-  MomentoLogger,
-  MomentoLoggerFactory,
-} from '@gomomento/common/dist/src/config/logging';
+import {CredentialProvider} from '../common/auth/credential-provider';
+import {MomentoLogger, MomentoLoggerFactory} from '../common/config/logging';
 import {
   InvalidArgumentError,
   normalizeSdkError,
   SdkError,
   UnknownError,
-} from '@gomomento/common/dist/src/errors';
+} from '../common/errors';
 import {
   validateCacheName,
   validateSetName,
@@ -76,13 +73,13 @@ import {
   validateSortedSetScores,
   validateSortedSetOffset,
   validateSortedSetCount,
-} from '@gomomento/common/dist/src/internal/utils';
+} from '../common/internal/utils';
 import {
   _ECacheResult,
   _DictionaryGetResponsePart,
   _SortedSetGetScoreResponsePart,
-} from '@gomomento/common/dist/src/messages/responses/grpc-response-types';
-import {CollectionTtl, SortedSetOrder} from '@gomomento/common/dist/src/utils';
+} from '../common/messages/responses/grpc-response-types';
+import {CollectionTtl, SortedSetOrder} from '../common/utils';
 
 export class DataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;

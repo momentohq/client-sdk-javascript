@@ -1,4 +1,4 @@
-import {decodeAuthToken, fromEntries} from '../internal/utils';
+import {decodeAuthToken, fromEntries} from '../common/internal/utils';
 
 /**
  * Encapsulates arguments for instantiating an EnvMomentoTokenProvider
