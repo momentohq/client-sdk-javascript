@@ -1,7 +1,4 @@
-import {
-  IPingClient,
-  AbstractPingClient,
-} from './common/internal/clients';
+import {IPingClient, AbstractPingClient} from './common/internal/clients';
 import {
   InternalNodeGrpcPingClient,
   PingClientProps,

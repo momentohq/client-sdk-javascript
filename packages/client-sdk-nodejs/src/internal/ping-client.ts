@@ -46,6 +46,7 @@ export class InternalNodeGrpcPingClient {
     return await new Promise((resolve, reject) => {
       this.clientWrapper
         .getClient()
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         .Ping(request, {interceptors: this.interceptors}, (err, resp) => {
           if (err) {
             this.logger.error('failed to ping');
