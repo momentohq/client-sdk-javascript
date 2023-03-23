@@ -12,7 +12,7 @@ import {
 import {
   IResponseError,
   ResponseBase,
-} from '@gomomento/common/dist/src/messages/responses/response-base';
+} from '../../src/common/messages/responses/response-base';
 
 export function testCacheName(): string {
   const name = process.env.TEST_CACHE_NAME || 'js-integration-test-default';

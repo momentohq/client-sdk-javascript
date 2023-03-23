@@ -4,10 +4,7 @@ import {
 } from './retry-strategy';
 import {EligibilityStrategy} from './eligibility-strategy';
 import {DefaultEligibilityStrategy} from './default-eligibility-strategy';
-import {
-  MomentoLoggerFactory,
-  MomentoLogger,
-} from '@gomomento/common/dist/src/config/logging';
+import {MomentoLoggerFactory, MomentoLogger} from '../../common/config/logging';
 
 export interface FixedCountRetryStrategyProps {
   loggerFactory: MomentoLoggerFactory;

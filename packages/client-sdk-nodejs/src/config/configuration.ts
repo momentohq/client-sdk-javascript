@@ -1,7 +1,7 @@
 import {RetryStrategy} from './retry/retry-strategy';
 import {Middleware} from './middleware/middleware';
-import {MomentoLoggerFactory} from '@gomomento/common/dist/src/config/logging';
-import {TransportStrategy} from '@gomomento/common/dist/src/config/transport';
+import {MomentoLoggerFactory} from '../common/config/logging';
+import {TransportStrategy} from '../common/config/transport';
 
 export interface ConfigurationProps {
   /**

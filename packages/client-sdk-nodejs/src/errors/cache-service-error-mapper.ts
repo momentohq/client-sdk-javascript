@@ -16,7 +16,7 @@ import {
   ServerUnavailableError,
   UnknownError,
   FailedPreconditionError,
-} from '@gomomento/common/dist/src/errors';
+} from '../common/errors';
 
 export function cacheServiceErrorMapper(err: ServiceError | null): SdkError {
   const errParams: [

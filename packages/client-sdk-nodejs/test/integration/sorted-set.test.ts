@@ -3,8 +3,8 @@ import {
   IResponseError,
   IResponseMiss,
   IResponseSuccess,
-} from '@gomomento/common';
-import {sleep} from '@gomomento/common/dist/src/internal/utils';
+} from '../../src/common';
+import {sleep} from '../../src/common/internal/utils';
 import {v4} from 'uuid';
 import {
   CacheDelete,

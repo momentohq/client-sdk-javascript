@@ -17,7 +17,7 @@ import {
   WithCache,
   testCacheName,
 } from './integration-setup';
-import {sleep} from '@gomomento/common/dist/src/internal/utils';
+import {sleep} from '../../src/common/internal/utils';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
