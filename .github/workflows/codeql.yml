@@ -52,18 +52,12 @@ jobs:
         # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
         # queries: security-extended,security-and-quality
 
-
-    # TODO: eventually we will have to add build steps for the grpc-web sdk
-    - name: Build Common Package
-      run: |
-        node -v
-        ./scripts/build-package.sh "common"
-
-    # needs to happen after building our common package, since it depends on it
     - name: Build nodejs sdk
       run: |
         node -v
         ./scripts/build-package.sh "client-sdk-nodejs"
+
+    # TODO: eventually we will have to add build steps for the grpc-web sdk
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
