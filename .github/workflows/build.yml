@@ -44,12 +44,6 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Build Common Package
-        run: |
-          node -v
-          ./scripts/build-and-test-package.sh "common"
-
-      # needs to happen after building our common package, since it depends on it
       - name: Build nodejs sdk
         run: |
           node -v

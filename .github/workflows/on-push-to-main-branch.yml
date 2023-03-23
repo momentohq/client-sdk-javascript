@@ -22,12 +22,6 @@ jobs:
         with:
           node-version: 16
 
-      - name: Build Common Package
-        run: |
-          node -v
-          ./scripts/build-package.sh "common"
-
-      # needs to happen after building our common package, since it depends on it
       - name: Build nodejs sdk
         run: |
           node -v
