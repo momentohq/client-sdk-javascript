@@ -22,17 +22,13 @@ jobs:
         with:
           node-version: 16
 
-      # TODO: eventually we will have to add build steps for the grpc-web sdk
-      - name: Build Common Package
-        run: |
-          node -v
-          ./scripts/build-package.sh "common"
-
       # needs to happen after building our common package, since it depends on it
       - name: Build nodejs sdk
         run: |
           node -v
           ./scripts/build-package.sh "client-sdk-nodejs"
+
+      # TODO: eventually we will have to add build steps for the grpc-web sdk
 
       - name: Generate README
         uses: momentohq/standards-and-practices/github-actions/generate-and-commit-oss-readme@gh-actions-v1
