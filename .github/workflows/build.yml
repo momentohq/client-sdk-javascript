@@ -44,7 +44,6 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      # needs to happen after building our common package, since it depends on it
       - name: Build nodejs sdk
         run: |
           node -v
