@@ -7,7 +7,7 @@ import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {Configuration} from '../config/configuration';
-import {MomentoLogger} from '@gomomento/common/dist/src/config/logging';
+import {MomentoLogger} from '../common/config/logging';
 
 export interface PingClientProps {
   configuration: Configuration;

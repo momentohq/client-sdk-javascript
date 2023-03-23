@@ -1,4 +1,4 @@
-import {NoopMomentoLoggerFactory} from '@gomomento/common/dist/src/config/logging';
+import {NoopMomentoLoggerFactory} from '../../src/common/config/logging';
 import {PingClient} from '../../src/ping-client';
 
 describe('ping service', () => {

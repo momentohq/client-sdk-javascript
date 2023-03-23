@@ -1,7 +1,7 @@
 import {
   IPingClient,
   AbstractPingClient,
-} from '@gomomento/common/dist/src/internal/clients';
+} from './common/internal/clients';
 import {
   InternalNodeGrpcPingClient,
   PingClientProps,
