@@ -49,7 +49,11 @@ jobs:
           node -v
           ./scripts/build-and-test-package.sh "client-sdk-nodejs"
 
-      # TODO: eventually we will have to add build steps for the grpc-web sdk
+      # needs to happen after building our common package, since it depends on it
+      - name: Build web sdk
+        run: |
+          node -v
+          ./scripts/build-and-test-package.sh "client-sdk-web"
 
   test-examples:
     strategy:

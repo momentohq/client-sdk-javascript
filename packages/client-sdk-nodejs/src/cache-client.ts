@@ -50,7 +50,7 @@ import {MomentoLogger} from './common/config/logging';
 import {range} from './common/internal/utils';
 import {CacheClientProps} from './cache-client-props';
 import {Configuration} from './config/configuration';
-import {CredentialProvider} from './auth/credential-provider';
+import {CredentialProvider} from './common/auth';
 import {
   BackTruncatableCallOptions,
   CollectionCallOptions,
