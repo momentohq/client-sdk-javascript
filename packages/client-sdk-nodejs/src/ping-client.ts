@@ -19,6 +19,6 @@ export class PingClient extends AbstractPingClient {
     const createPingClient = (): IPingClient => {
       return new InternalNodeGrpcPingClient(props);
     };
-    super({...props, createPingClient});
+    super({createPingClient});
   }
 }

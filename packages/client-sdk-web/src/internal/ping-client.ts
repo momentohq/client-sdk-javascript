@@ -3,12 +3,12 @@ import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {version} from '../../package.json';
 import {Request, UnaryInterceptor, UnaryResponse} from 'grpc-web';
 import {_PingRequest} from '@gomomento/generated-types-webtext/dist/cacheping_pb';
-import {BasePingConfiguration} from '../common/internal/clients';
 import {MomentoLogger} from '../common/config/logging';
+import {Configuration} from '../config/configuration';
 
 export interface PingClientProps {
   endpoint: string;
-  configuration: BasePingConfiguration;
+  configuration: Configuration;
 }
 
 export class InternalGrpcWebPingClient<

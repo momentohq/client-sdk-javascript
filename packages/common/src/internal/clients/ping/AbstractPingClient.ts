@@ -1,15 +1,6 @@
-import {MomentoLogger, MomentoLoggerFactory} from '../../../config/logging';
 import {IPingClient} from './IPingClient';
 
-export interface BasePingConfiguration {
-  /**
-   * @returns {MomentoLoggerFactory} the current configuration options for logging verbosity and format
-   */
-  getLoggerFactory(): MomentoLoggerFactory;
-}
-
 export interface BasePingClientProps {
-  configuration: BasePingConfiguration;
   createPingClient: () => IPingClient;
 }
 
@@ -22,16 +13,12 @@ export interface BasePingClientProps {
  * - Create, revoke, and list signing keys
  */
 export abstract class AbstractPingClient implements IPingClient {
-  private readonly logger: MomentoLogger;
   private readonly pingClient: IPingClient;
 
   /**
    * Creates an instance of CacheClient.
    */
   protected constructor(props: BasePingClientProps) {
-    this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    this.logger.debug('Creating Momento PingClient');
-
     this.pingClient = props.createPingClient();
   }
 

@@ -1,7 +1,4 @@
-import {
-  IPingClient,
-  AbstractPingClient,
-} from './common/internal/clients';
+import {IPingClient, AbstractPingClient} from './common/internal/clients';
 import {
   InternalGrpcWebPingClient,
   PingClientProps,
@@ -19,6 +16,6 @@ export class PingClient extends AbstractPingClient {
     const createPingClient = (): IPingClient => {
       return new InternalGrpcWebPingClient(props);
     };
-    super({...props, createPingClient});
+    super({createPingClient});
   }
 }
