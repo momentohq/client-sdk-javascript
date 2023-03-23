@@ -146,7 +146,9 @@ Stats should like:
 | set, % of requests coalesced |         -         |      49.5%       |
 | get, % of requests coalesced |         -         |      49.5%       |
 
-Notice the reduction in cumulative latency foe get/set requests after coalescing.
+It's only about 50 lines of code to create a coalescing wrapper for the Momento cache client.  You can see our
+implementation here:
+https://github.com/momentohq/client-sdk-nodejs/blob/main/examples/utils/momento-client-with-coalescing.ts
 
 ### Run the above example:
 ```bash
