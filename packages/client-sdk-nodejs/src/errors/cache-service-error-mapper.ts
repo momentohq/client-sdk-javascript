@@ -16,7 +16,7 @@ import {
   ServerUnavailableError,
   UnknownError,
   FailedPreconditionError,
-} from '../common/errors';
+} from '../../src';
 
 export function cacheServiceErrorMapper(err: ServiceError | null): SdkError {
   const errParams: [

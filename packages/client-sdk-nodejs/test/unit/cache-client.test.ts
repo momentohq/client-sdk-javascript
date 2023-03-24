@@ -4,8 +4,8 @@ import {
   CacheClient,
   SimpleCacheClient,
   CreateCache,
+  StringMomentoTokenProvider,
 } from '../../src';
-import {StringMomentoTokenProvider} from '../../src/common/auth';
 import {SimpleCacheClientProps} from '../../src/cache-client-props';
 const credentialProvider = new StringMomentoTokenProvider({
   authToken:

@@ -4,12 +4,6 @@ import grpcPubsub = pubsub.cache_client.pubsub;
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
-import {
-  SubscriptionState,
-  TopicItem,
-  TopicPublish,
-  TopicSubscribe,
-} from '../common';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, ServiceError} from '@grpc/grpc-js';
 import {Status} from '@grpc/grpc-js/build/src/constants';
@@ -19,20 +13,24 @@ import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {TopicClientProps} from '../topic-client-props';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {Configuration} from '../config/configuration';
-import {CredentialProvider} from '../common/auth/credential-provider';
-import {MomentoLogger} from '../common/config/logging';
+import {
+  CredentialProvider,
+  InvalidArgumentError,
+  MomentoErrorCode,
+  MomentoLogger,
+  TopicItem,
+  TopicPublish,
+  TopicSubscribe,
+  UnknownError,
+} from '../';
+import {SubscriptionState} from '@gomomento/core/dist/src/internal/subscription-state';
 import {
   truncateString,
   validateCacheName,
   validateTopicName,
-} from '../common/internal/utils';
-import {
-  InvalidArgumentError,
-  MomentoErrorCode,
-  normalizeSdkError,
-  UnknownError,
-} from '../common/errors';
-import {SubscribeCallOptions} from '../common/utils';
+} from '@gomomento/core/dist/src/internal/utils';
+import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
+import {SubscribeCallOptions} from '@gomomento/core/dist/src/utils';
 
 /**
  * Encapsulates parameters for the `sendSubscribe` method.

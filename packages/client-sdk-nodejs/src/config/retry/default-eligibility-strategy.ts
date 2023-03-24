@@ -1,4 +1,4 @@
-import {MomentoLogger, MomentoLoggerFactory} from '../../common/config/logging';
+import {MomentoLogger, MomentoLoggerFactory} from '../../';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {
   EligibilityStrategy,

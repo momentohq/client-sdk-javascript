@@ -12,8 +12,8 @@ import {
   CreateCache,
   DeleteCache,
   ListCaches,
-  MomentoErrorCode,
 } from '../../src';
+import {MomentoErrorCode} from '@gomomento/core/dist/src/errors';
 
 const {Momento} = SetupIntegrationTest();
 

@@ -1,8 +1,3 @@
-import {sleep} from '../../src/common/internal/utils';
-import {
-  IResponseError,
-  ResponseBase,
-} from '../../src/common/messages/responses/response-base';
 import {v4} from 'uuid';
 import {
   CacheSetAddElements,
@@ -12,13 +7,18 @@ import {
   CacheSetRemoveElement,
   CollectionTtl,
   MomentoErrorCode,
-} from '../../src';
+} from '@gomomento/core';
 import {
   ValidateCacheProps,
   ItBehavesLikeItValidatesCacheName,
   ValidateSetProps,
   SetupIntegrationTest,
 } from './integration-setup';
+import {
+  IResponseError,
+  ResponseBase,
+} from '@gomomento/core/dist/src/messages/responses/response-base';
+import {sleep} from '@gomomento/core/dist/src/internal/utils';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
