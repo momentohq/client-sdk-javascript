@@ -5,7 +5,7 @@ import {Middleware} from '../../../src/config/middleware/middleware';
 import {
   StaticGrpcConfiguration,
   StaticTransportStrategy,
-} from '../../../src/common/config/transport';
+} from '@gomomento/common/dist/src/config/transport';
 
 describe('configuration.ts', () => {
   const testLoggerFactory = new DefaultMomentoLoggerFactory();

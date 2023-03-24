@@ -16,9 +16,9 @@ import {
   ValidateCacheProps,
 } from './integration-setup';
 import {TextEncoder} from 'util';
-import {IResponseError, ResponseBase} from '../../src/common';
-import {SubscribeCallOptions} from '../../src/common/utils';
-import {sleep} from '../../src/common/internal/utils';
+import {IResponseError, ResponseBase} from '@gomomento/common/dist/src';
+import {SubscribeCallOptions} from '@gomomento/common/dist/src/utils';
+import {sleep} from '@gomomento/common/dist/src/internal/utils';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 const topicClient = new TopicClient({

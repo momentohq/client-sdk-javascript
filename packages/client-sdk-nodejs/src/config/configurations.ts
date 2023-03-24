@@ -5,13 +5,13 @@ import {Middleware} from './middleware/middleware';
 import {
   MomentoLoggerFactory,
   DefaultMomentoLoggerFactory,
-} from '../common/config/logging';
+} from '@gomomento/common/dist/src/config/logging';
 import {
   GrpcConfiguration,
   TransportStrategy,
   StaticGrpcConfiguration,
   StaticTransportStrategy,
-} from '../common/config/transport';
+} from '@gomomento/common/dist/src/config/transport';
 
 // 4 minutes.  We want to remain comfortably underneath the idle timeout for AWS NLB, which is 350s.
 const defaultMaxIdleMillis = 4 * 60 * 1_000;

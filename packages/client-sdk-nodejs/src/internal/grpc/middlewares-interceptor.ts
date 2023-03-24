@@ -13,7 +13,7 @@ import {
   MiddlewareRequestHandler,
 } from '../../config/middleware/middleware';
 import {Message} from 'google-protobuf';
-import {MomentoLoggerFactory} from '../../common/config/logging';
+import {MomentoLoggerFactory} from '@gomomento/common/dist/src/config/logging';
 
 export function middlewaresInterceptor(
   loggerFactory: MomentoLoggerFactory,

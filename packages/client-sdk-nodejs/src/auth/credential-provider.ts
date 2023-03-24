@@ -1,4 +1,7 @@
-import {decodeAuthToken, fromEntries} from '../common/internal/utils';
+import {
+  decodeAuthToken,
+  fromEntries,
+} from '@gomomento/common/dist/src/internal/utils';
 
 /**
  * Encapsulates arguments for instantiating an EnvMomentoTokenProvider

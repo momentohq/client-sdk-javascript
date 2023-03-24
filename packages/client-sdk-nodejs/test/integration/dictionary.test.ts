@@ -20,13 +20,13 @@ import {
   ValidateDictionaryChangerProps,
   SetupIntegrationTest,
 } from './integration-setup';
-import {sleep} from '../../src/common/internal/utils';
+import {sleep} from '@gomomento/common/dist/src/internal/utils';
 import {
   ResponseBase,
   IResponseError,
   IResponseMiss,
   IResponseSuccess,
-} from '../../src/common/messages/responses/response-base';
+} from '@gomomento/common/dist/src/messages/responses/response-base';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 

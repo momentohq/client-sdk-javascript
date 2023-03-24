@@ -50,7 +50,7 @@ import {
   CacheSortedSetIncrementScore,
   TopicItem,
   CacheInfo,
-} from './common';
+} from '@gomomento/common/dist/src';
 import {
   MomentoErrorCode,
   AlreadyExistsError,
@@ -67,14 +67,14 @@ import {
   PermissionError,
   NotFoundError,
   UnknownError,
-} from './common/errors';
+} from '@gomomento/common/dist/src/errors';
 import {
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
 } from './auth/credential-provider';
 import {Configuration} from './config/configuration';
-import {CollectionTtl, SortedSetOrder} from './common/utils';
+import {CollectionTtl, SortedSetOrder} from '@gomomento/common/dist/src/utils';
 
 export {
   MomentoLogger,
@@ -82,7 +82,7 @@ export {
   DefaultMomentoLoggerFactory,
   DefaultMomentoLogger,
   DefaultMomentoLoggerLevel,
-} from './common/config/logging';
+} from '@gomomento/common/dist/src/config/logging';
 
 export {ExperimentalRequestLoggingMiddleware} from './config/middleware/experimental-request-logging-middleware';
 export {ExperimentalMetricsCsvMiddleware} from './config/middleware/experimental-metrics-csv-middleware';

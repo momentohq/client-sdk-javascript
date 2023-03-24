@@ -1,9 +1,9 @@
-import {sleep} from '../../src/common/internal/utils';
+import {sleep} from '@gomomento/common/dist/src/internal/utils';
 import {
   ResponseBase,
   IResponseError,
   IListResponseSuccess,
-} from '../../src/common/messages/responses/response-base';
+} from '@gomomento/common/dist/src/messages/responses/response-base';
 import {v4} from 'uuid';
 
 import {

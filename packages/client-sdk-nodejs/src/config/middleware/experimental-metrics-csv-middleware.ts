@@ -2,7 +2,10 @@ import {Middleware, MiddlewareRequestHandler} from './middleware';
 import {Metadata, StatusObject} from '@grpc/grpc-js';
 import {Message} from 'google-protobuf';
 import * as fs from 'fs';
-import {MomentoLogger, MomentoLoggerFactory} from '../../common/config/logging';
+import {
+  MomentoLogger,
+  MomentoLoggerFactory,
+} from '@gomomento/common/dist/src/config/logging';
 
 function headerFields(): Array<string> {
   return [
