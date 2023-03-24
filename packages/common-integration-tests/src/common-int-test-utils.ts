@@ -21,7 +21,7 @@ export function testCacheName(): string {
   return name + v4();
 }
 
-const deleteCacheIfExists = async (
+export const deleteCacheIfExists = async (
   momento: ICacheClient,
   cacheName: string
 ) => {

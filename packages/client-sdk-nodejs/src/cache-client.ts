@@ -1,9 +1,6 @@
 import {ControlClient} from './internal/control-client';
 import {DataClient} from './internal/data-client';
 import {
-  CreateCache,
-  ListCaches,
-  DeleteCache,
   CreateSigningKey,
   ListSigningKeys,
   RevokeSigningKey,
@@ -46,10 +43,8 @@ import {
   CacheSortedSetPutElements,
   CacheFlush,
   MomentoLogger,
-  CredentialProvider,
   SortedSetOrder,
 } from '.';
-import {Configuration} from './config/configuration';
 import {
   BackTruncatableCallOptions,
   CollectionCallOptions,
@@ -63,6 +58,7 @@ import {
 import {CacheClientProps} from './cache-client-props';
 import {range} from '@gomomento/core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/core/dist/src/internal/clients/cache/ICacheClient';
+import {AbstractCacheClient} from '@gomomento/core/dist/src/internal/clients/cache/AbstractCacheClient';
 
 // Type aliases to differentiate the different methods' optional arguments.
 type SetOptions = ScalarCallOptions;
@@ -91,22 +87,26 @@ type SortedSetIncrementOptions = CollectionCallOptions;
  * - Create, delete, and list caches
  * - Create, revoke, and list signing keys
  */
-export class CacheClient implements ICacheClient {
+export class CacheClient extends AbstractCacheClient implements ICacheClient {
   private readonly logger: MomentoLogger;
-  private readonly configuration: Configuration;
-  private readonly credentialProvider: CredentialProvider;
   private readonly dataClients: Array<DataClient>;
   private nextDataClientIndex: number;
-  private readonly controlClient: ControlClient;
+  private readonly notYetAbstractedControlClient: ControlClient;
 
   /**
    * Creates an instance of CacheClient.
    */
   constructor(props: CacheClientProps) {
+    const controlClient = new ControlClient({
+      configuration: props.configuration,
+      credentialProvider: props.credentialProvider,
+    });
+
+    super(controlClient);
+    this.notYetAbstractedControlClient = controlClient;
+
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.logger.info('Creating Momento CacheClient');
-    this.configuration = props.configuration;
-    this.credentialProvider = props.credentialProvider;
 
     // For high load, we get better performance with multiple clients.  Here we
     // are setting a default, hard-coded value for the number of clients to use,
@@ -122,11 +122,6 @@ export class CacheClient implements ICacheClient {
     // is single-threaded, we don't have to worry about thread safety on this
     // index variable.
     this.nextDataClientIndex = 0;
-
-    this.controlClient = new ControlClient({
-      configuration: this.configuration,
-      credentialProvider: this.credentialProvider,
-    });
   }
 
   /**
@@ -614,31 +609,6 @@ export class CacheClient implements ICacheClient {
   }
 
   /**
-   * Creates a cache if it does not exist.
-   *
-   * @param {string} cacheName - The cache to be created.
-   * @returns {Promise<CreateCache.Response>} -
-   * {@link CreateCache.Success} on success.
-   * {@link CreateCache.AlreadyExists} if the cache already exists.
-   * {@link CreateCache.Error} on failure.
-   */
-  public async createCache(cacheName: string): Promise<CreateCache.Response> {
-    return await this.controlClient.createCache(cacheName);
-  }
-
-  /**
-   * Deletes a cache and all items stored in it.
-   *
-   * @param {string} cacheName - The cache to delete.
-   * @returns {Promise<DeleteCache.Response>} -
-   * {@link DeleteCache.Success} on success.
-   * {@link DeleteCache.Error} on failure.
-   */
-  public async deleteCache(cacheName: string): Promise<DeleteCache.Response> {
-    return await this.controlClient.deleteCache(cacheName);
-  }
-
-  /**
    * Flushes / clears all the items of the given cache
    *
    * @param {string} cacheName - The cache to be flushed.
@@ -647,18 +617,7 @@ export class CacheClient implements ICacheClient {
    * {@link CacheFlush.Error} on failure.
    */
   public async flushCache(cacheName: string): Promise<CacheFlush.Response> {
-    return await this.controlClient.flushCache(cacheName);
-  }
-
-  /**
-   * Lists all caches.
-   *
-   * @returns {Promise<ListCaches.Response>} -
-   * {@link ListCaches.Success} containing the list on success.
-   * {@link ListCaches.Error} on failure.
-   */
-  public async listCaches(): Promise<ListCaches.Response> {
-    return await this.controlClient.listCaches();
+    return await this.notYetAbstractedControlClient.flushCache(cacheName);
   }
 
   /**
@@ -1195,7 +1154,7 @@ export class CacheClient implements ICacheClient {
     ttlMinutes: number
   ): Promise<CreateSigningKey.Response> {
     const client = this.getNextDataClient();
-    return await this.controlClient.createSigningKey(
+    return await this.notYetAbstractedControlClient.createSigningKey(
       ttlMinutes,
       client.getEndpoint()
     );
@@ -1215,7 +1174,7 @@ export class CacheClient implements ICacheClient {
   public async revokeSigningKey(
     keyId: string
   ): Promise<RevokeSigningKey.Response> {
-    return await this.controlClient.revokeSigningKey(keyId);
+    return await this.notYetAbstractedControlClient.revokeSigningKey(keyId);
   }
 
   /**
@@ -1227,7 +1186,9 @@ export class CacheClient implements ICacheClient {
    */
   public async listSigningKeys(): Promise<ListSigningKeys.Response> {
     const client = this.getNextDataClient();
-    return await this.controlClient.listSigningKeys(client.getEndpoint());
+    return await this.notYetAbstractedControlClient.listSigningKeys(
+      client.getEndpoint()
+    );
   }
 
   private getNextDataClient(): DataClient {
