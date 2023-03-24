@@ -40,18 +40,21 @@ import {
   CacheSortedSetPutElement,
   CacheSortedSetPutElements,
   CacheSortedSetFetch,
-  TopicSubscribe,
-  TopicPublish,
-  CacheSortedSetRemoveElements,
-  CacheSortedSetRemoveElement,
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
   CacheSortedSetGetScores,
   CacheSortedSetIncrementScore,
+  CacheSortedSetRemoveElement,
+  CacheSortedSetRemoveElements,
+  TopicPublish,
+  TopicSubscribe,
   TopicItem,
   CacheInfo,
-} from './common';
-import {
+  CollectionTtl,
+  SortedSetOrder,
+  CredentialProvider,
+  StringMomentoTokenProvider,
+  EnvMomentoTokenProvider,
   MomentoErrorCode,
   AlreadyExistsError,
   AuthenticationError,
@@ -67,22 +70,20 @@ import {
   PermissionError,
   NotFoundError,
   UnknownError,
-} from './common/errors';
-import {
-  CredentialProvider,
-  StringMomentoTokenProvider,
-  EnvMomentoTokenProvider,
-} from './common/auth';
+  SdkError,
+} from '@gomomento/core';
+
+import {SubscribeCallOptions} from '@gomomento/core/dist/src/utils';
+
 import {Configuration} from './config/configuration';
-import {CollectionTtl, SortedSetOrder} from './common/utils';
+
+export {MomentoLogger, MomentoLoggerFactory} from '@gomomento/core';
 
 export {
-  MomentoLogger,
-  MomentoLoggerFactory,
   DefaultMomentoLoggerFactory,
   DefaultMomentoLogger,
   DefaultMomentoLoggerLevel,
-} from './common/config/logging';
+} from '@gomomento/core';
 
 export {ExperimentalRequestLoggingMiddleware} from './config/middleware/experimental-request-logging-middleware';
 export {ExperimentalMetricsCsvMiddleware} from './config/middleware/experimental-metrics-csv-middleware';
@@ -147,6 +148,7 @@ export {
   TopicItem,
   TopicPublish,
   TopicSubscribe,
+  SubscribeCallOptions,
   MomentoErrorCode,
   AlreadyExistsError,
   AuthenticationError,
@@ -162,4 +164,5 @@ export {
   PermissionError,
   NotFoundError,
   UnknownError,
+  SdkError,
 };

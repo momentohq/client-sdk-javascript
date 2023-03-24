@@ -1,12 +1,4 @@
 import {
-  ResponseBase,
-  IResponseError,
-  IResponseMiss,
-  IResponseSuccess,
-} from '../../src/common';
-import {sleep} from '../../src/common/internal/utils';
-import {v4} from 'uuid';
-import {
   CacheDelete,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
@@ -18,9 +10,10 @@ import {
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
   CollectionTtl,
-  MomentoErrorCode,
   SortedSetOrder,
+  MomentoErrorCode,
 } from '../../src';
+import {v4} from 'uuid';
 import {
   ItBehavesLikeItValidatesCacheName,
   SetupIntegrationTest,
@@ -28,6 +21,13 @@ import {
   ValidateSortedSetChangerProps,
   ValidateSortedSetProps,
 } from './integration-setup';
+import {
+  IResponseError,
+  IResponseMiss,
+  IResponseSuccess,
+  ResponseBase,
+} from '@gomomento/core/dist/src/messages/responses/response-base';
+import {sleep} from '@gomomento/core/dist/src/internal/utils';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 

@@ -8,6 +8,7 @@ import {
   TopicPublish,
   TopicSubscribe,
   InvalidArgumentError,
+  SubscribeCallOptions,
 } from '../../src';
 import {
   SetupIntegrationTest,
@@ -16,9 +17,11 @@ import {
   ValidateCacheProps,
 } from './integration-setup';
 import {TextEncoder} from 'util';
-import {IResponseError, ResponseBase} from '../../src/common';
-import {SubscribeCallOptions} from '../../src/common/utils';
-import {sleep} from '../../src/common/internal/utils';
+import {
+  IResponseError,
+  ResponseBase,
+} from '@gomomento/core/dist/src/messages/responses/response-base';
+import {sleep} from '@gomomento/core/dist/src/internal/utils';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 const topicClient = new TopicClient({

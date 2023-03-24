@@ -5,7 +5,7 @@ import {Middleware} from '../../../src/config/middleware/middleware';
 import {
   StaticGrpcConfiguration,
   StaticTransportStrategy,
-} from '../../../src/common/config/transport';
+} from '../../../src/config/transport/transport-strategy';
 
 describe('configuration.ts', () => {
   const testLoggerFactory = new DefaultMomentoLoggerFactory();

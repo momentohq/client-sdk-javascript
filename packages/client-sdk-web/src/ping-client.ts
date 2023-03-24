@@ -1,8 +1,11 @@
-import {IPingClient, AbstractPingClient} from './common/internal/clients';
 import {
   InternalGrpcWebPingClient,
   PingClientProps,
 } from './internal/ping-client';
+import {
+  AbstractPingClient,
+  IPingClient,
+} from '@gomomento/core/dist/src/internal/clients';
 
 /**
  * Momento Ping Client.

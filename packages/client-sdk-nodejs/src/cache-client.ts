@@ -45,12 +45,11 @@ import {
   CacheSortedSetPutElement,
   CacheSortedSetPutElements,
   CacheFlush,
-} from './common';
-import {MomentoLogger} from './common/config/logging';
-import {range} from './common/internal/utils';
-import {CacheClientProps} from './cache-client-props';
+  MomentoLogger,
+  CredentialProvider,
+  SortedSetOrder,
+} from '.';
 import {Configuration} from './config/configuration';
-import {CredentialProvider} from './common/auth';
 import {
   BackTruncatableCallOptions,
   CollectionCallOptions,
@@ -60,8 +59,9 @@ import {
   ScalarCallOptions,
   SortedSetFetchByRankCallOptions,
   SortedSetFetchByScoreCallOptions,
-  SortedSetOrder,
-} from './common/utils';
+} from '@gomomento/core/dist/src/utils';
+import {CacheClientProps} from './cache-client-props';
+import {range} from '@gomomento/core/dist/src/internal/utils';
 
 // Type aliases to differentiate the different methods' optional arguments.
 type SetOptions = ScalarCallOptions;

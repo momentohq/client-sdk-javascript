@@ -1,7 +1,7 @@
 {
-  "name": "@gomomento/sdk",
+  "name": "@gomomento/core",
   "version": "0.0.1",
-  "description": "Client SDK for Momento services",
+  "description": "Common code for Momento JS SDKs",
   "main": "dist/src/index.js",
   "files": [
     "dist/src",
@@ -20,7 +20,7 @@
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
-    "build": "rm -rf dist && tsc && mkdir -p dist/src/common/internal/vendor && cp -r src/common/internal/vendor/printf dist/src/common/internal/vendor/printf"
+    "build": "rm -rf dist && tsc && mkdir -p dist/src/internal/vendor && cp -r src/internal/vendor/printf dist/src/internal/vendor/printf"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -47,10 +47,6 @@
     "uuid": "8.3.2"
   },
   "dependencies": {
-    "@gomomento/core": "file:../common",
-    "@gomomento/generated-types": "0.54.3",
-    "@grpc/grpc-js": "1.7.3",
-    "google-protobuf": "^3.21.2",
     "jwt-decode": "3.1.2"
   },
   "engines": {

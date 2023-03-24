@@ -47,12 +47,50 @@ import * as TopicSubscribe from './messages/responses/topic-subscribe';
 import {TopicItem} from './messages/responses/topic-item';
 
 import {CacheInfo} from './messages/cache-info';
-import {SubscriptionState} from './internal/subscription-state';
+import {CollectionTtl} from './utils/collection-ttl';
+import {SortedSetOrder} from './utils/cache-call-options';
+import {
+  CredentialProvider,
+  StringMomentoTokenProvider,
+  EnvMomentoTokenProvider,
+} from './auth/credential-provider';
 
-export * from './messages/responses/grpc-response-types';
-export * from './messages/responses/response-base';
+import {
+  MomentoErrorCode,
+  AlreadyExistsError,
+  AuthenticationError,
+  CancelledError,
+  FailedPreconditionError,
+  LimitExceededError,
+  InternalServerError,
+  InvalidArgumentError,
+  UnknownServiceError,
+  ServerUnavailableError,
+  TimeoutError,
+  BadRequestError,
+  PermissionError,
+  NotFoundError,
+  UnknownError,
+  SdkError,
+} from './errors/errors';
 
 export {
+  MomentoLogger,
+  MomentoLoggerFactory,
+} from './config/logging/momento-logger';
+
+export {
+  DefaultMomentoLoggerFactory,
+  DefaultMomentoLogger,
+  DefaultMomentoLoggerLevel,
+} from './config/logging/default-momento-logger';
+
+export {
+  CollectionTtl,
+  SortedSetOrder,
+  CredentialProvider,
+  StringMomentoTokenProvider,
+  EnvMomentoTokenProvider,
   CacheGet,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
@@ -101,5 +139,20 @@ export {
   TopicItem,
   TopicPublish,
   TopicSubscribe,
-  SubscriptionState,
+  MomentoErrorCode,
+  AlreadyExistsError,
+  AuthenticationError,
+  CancelledError,
+  FailedPreconditionError,
+  LimitExceededError,
+  InternalServerError,
+  InvalidArgumentError,
+  UnknownServiceError,
+  ServerUnavailableError,
+  TimeoutError,
+  BadRequestError,
+  PermissionError,
+  NotFoundError,
+  UnknownError,
+  SdkError,
 };

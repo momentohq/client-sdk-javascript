@@ -2,7 +2,7 @@ import {Middleware, MiddlewareRequestHandler} from './middleware';
 
 import {Metadata, StatusObject} from '@grpc/grpc-js';
 import {Message} from 'google-protobuf';
-import {MomentoLogger, MomentoLoggerFactory} from '../../common/config/logging';
+import {MomentoLogger, MomentoLoggerFactory} from '../..';
 
 class ExampleAsyncMiddlewareRequestHandler implements MiddlewareRequestHandler {
   private readonly logger: MomentoLogger;

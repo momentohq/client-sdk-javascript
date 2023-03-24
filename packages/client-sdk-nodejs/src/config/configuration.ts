@@ -1,7 +1,7 @@
 import {RetryStrategy} from './retry/retry-strategy';
 import {Middleware} from './middleware/middleware';
-import {MomentoLoggerFactory} from '../common/config/logging';
-import {TransportStrategy} from '../common/config/transport';
+import {MomentoLoggerFactory} from '../';
+import {TransportStrategy} from '../config/transport/transport-strategy';
 
 export interface ConfigurationProps {
   /**

@@ -13,21 +13,24 @@ import {
   ListSigningKeys,
   RevokeSigningKey,
   CacheFlush,
-} from '../common';
+  CredentialProvider,
+  MomentoLogger,
+} from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {Configuration} from '../config/configuration';
-import {CredentialProvider} from '../common/auth/credential-provider';
-import {MomentoLogger} from '../common/config/logging';
-import {normalizeSdkError} from '../common/errors';
-import {validateCacheName, validateTtlMinutes} from '../common/internal/utils';
+import {
+  validateCacheName,
+  validateTtlMinutes,
+} from '@gomomento/core/dist/src/internal/utils';
+import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
 import {
   _Cache,
   _ListCachesResponse,
-  _SigningKey,
   _ListSigningKeysResponse,
-} from '../common/messages/responses/grpc-response-types';
+  _SigningKey,
+} from '@gomomento/core/dist/src/messages/responses/grpc-response-types';
 
 export interface ControlClientProps {
   configuration: Configuration;

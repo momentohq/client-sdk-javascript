@@ -11,7 +11,7 @@ import {
   CacheDictionaryGetField,
   CacheDictionaryGetFields,
   CacheDictionaryIncrement,
-} from '../../src';
+} from '@gomomento/core';
 import {TextEncoder} from 'util';
 import {
   ItBehavesLikeItValidatesCacheName,
@@ -20,13 +20,13 @@ import {
   ValidateDictionaryChangerProps,
   SetupIntegrationTest,
 } from './integration-setup';
-import {sleep} from '../../src/common/internal/utils';
 import {
-  ResponseBase,
   IResponseError,
   IResponseMiss,
   IResponseSuccess,
-} from '../../src/common/messages/responses/response-base';
+  ResponseBase,
+} from '@gomomento/core/dist/src/messages/responses/response-base';
+import {sleep} from '@gomomento/core/dist/src/internal/utils';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
