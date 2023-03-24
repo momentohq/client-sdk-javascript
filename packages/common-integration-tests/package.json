@@ -15,8 +15,8 @@
   "scripts": {
     "prebuild": "eslint . --ext .ts",
     "test": "jest",
-    "unit-test": "jest unit",
-    "integration-test": "jest integration",
+    "unit-test": "jest unit --passWithNoTests",
+    "integration-test": "jest integration --passWithNoTests",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
