@@ -1,7 +1,6 @@
 {
-  "name": "@gomomento/common",
+  "name": "@gomomento/web-sdk",
   "version": "0.0.1",
-  "private": true,
   "description": "Client SDK for Momento services",
   "main": "dist/src/index.js",
   "files": [
