@@ -1,4 +1,4 @@
-import {CredentialProvider} from './common/auth';
+import {CredentialProvider} from './auth/credential-provider';
 import {Configuration} from './config/configuration';
 
 export interface CacheClientProps {

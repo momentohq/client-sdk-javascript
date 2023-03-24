@@ -72,7 +72,7 @@ import {
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
-} from './common/auth';
+} from './auth/credential-provider';
 import {Configuration} from './config/configuration';
 import {CollectionTtl, SortedSetOrder} from './common/utils';
 
