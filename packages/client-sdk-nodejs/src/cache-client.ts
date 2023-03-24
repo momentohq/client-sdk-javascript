@@ -62,6 +62,7 @@ import {
 } from '@gomomento/core/dist/src/utils';
 import {CacheClientProps} from './cache-client-props';
 import {range} from '@gomomento/core/dist/src/internal/utils';
+import {ICacheClient} from '@gomomento/core/dist/src/internal/clients/cache/ICacheClient';
 
 // Type aliases to differentiate the different methods' optional arguments.
 type SetOptions = ScalarCallOptions;
@@ -90,7 +91,7 @@ type SortedSetIncrementOptions = CollectionCallOptions;
  * - Create, delete, and list caches
  * - Create, revoke, and list signing keys
  */
-export class CacheClient {
+export class CacheClient implements ICacheClient {
   private readonly logger: MomentoLogger;
   private readonly configuration: Configuration;
   private readonly credentialProvider: CredentialProvider;
