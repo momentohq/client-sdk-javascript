@@ -7,6 +7,12 @@ import {
   IPingClient,
 } from '@gomomento/core/dist/src/internal/clients';
 
+// TODO
+// TODO
+// TODO - before we do a 1.0 release this needs to be removed; we will just have a ping method on the CacheClient.
+// TODO
+// TODO
+
 /**
  * Momento Ping Client.
  *

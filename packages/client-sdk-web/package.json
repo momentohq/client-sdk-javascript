@@ -26,10 +26,10 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@gomomento/common-integration-tests": "file:../common-integration-tests",
     "@types/google-protobuf": "^3.15.5",
     "@types/jest": "^27.0.2",
     "@types/node": "14.18.3",
-    "@types/uuid": "^8.3.1",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "eslint": "^7.32.0",
@@ -46,7 +46,6 @@
     "ts-jest": "^29",
     "ts-node": "^10.3.0",
     "typescript": "^4.4.3",
-    "uuid": "8.3.2",
     "xhr2": "^0.2.1"
   },
   "dependencies": {
