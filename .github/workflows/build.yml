@@ -44,16 +44,22 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Build nodejs sdk
+      - name: Install Dependencies
         run: |
+          npm ci
           node -v
-          ./scripts/build-and-test-package.sh "client-sdk-nodejs"
 
-      # needs to happen after building our common package, since it depends on it
-      - name: Build web sdk
-        run: |
-          node -v
-          ./scripts/build-and-test-package.sh "client-sdk-web"
+      - name: Build
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit Test
+        run: npm run unit-test
+
+      - name: Integration Test
+        run: npm run integration-test
 
   test-examples:
     strategy:
