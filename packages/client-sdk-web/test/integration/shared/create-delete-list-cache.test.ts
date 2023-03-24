@@ -1,4 +1,4 @@
-import {runCreateDeleteListCacheTests} from '@gomomento/common-integration-tests/dist/create-delete-list-cache';
+import {runCreateDeleteListCacheTests} from '@gomomento/common-integration-tests';
 import {SetupIntegrationTest} from '../integration-setup';
 
 const {Momento} = SetupIntegrationTest();

@@ -2,7 +2,7 @@ import {CacheClient} from '../../src/cache-client';
 import {
   deleteCacheIfExists,
   testCacheName,
-} from '@gomomento/common-integration-tests/dist/common-int-test-utils';
+} from '@gomomento/common-integration-tests';
 import {CreateCache, DeleteCache} from '@gomomento/core';
 
 function momentoClientForTesting() {

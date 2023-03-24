@@ -6,7 +6,7 @@ set -e
 echo "building package: ${1}"
 
 pushd ./packages/${1}
-    npm ci
+    npm ci -f
     npm run build
     npm run lint
 popd
