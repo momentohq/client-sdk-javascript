@@ -1,9 +1,0 @@
-#!/bin/bash
-
-set -x
-set -e
-
-echo "dev building nodejs sdk"
-
-./scripts/build-package.sh "common"
-./scripts/build-package.sh "client-sdk-nodejs"

@@ -48,27 +48,25 @@ jobs:
           node-version: 16
           registry-url: 'https://registry.npmjs.org'
 
-      # TODO: eventually we will have to add build steps for the grpc-web sdk
-      - name: Build Common Package
-        run: |
-          node -v
-          ./scripts/build-package.sh "common"
+      - name: Install Dependencies
+        run: npm ci
 
-      # needs to happen after building our common package, since it depends on it
-      - name: Build nodejs sdk
-        run: |
-          node -v
-          ./scripts/build-package.sh "client-sdk-nodejs"
+      - name: Build
+        run: npm run build
 
-      - name: Publish nodejs sdk package to npm
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test
+
+      - name: Publish package to npm
         run: |
-          pushd ./packages/client-sdk-nodejs
-            export VERSION="${{ needs.release.outputs.version }}"
-            echo "Publishing package with version $VERSION"
-            mv package.json package.json.ORIG
-            cat package.json.ORIG|jq ". += {\"version\": \"$VERSION\"}" > package.json
-            npm publish
-          popd
+          export VERSION="${{ needs.release.outputs.version }}"
+          echo "Publishing package with version $VERSION"
+          mv package.json package.json.ORIG
+          cat package.json.ORIG|jq ". += {\"version\": \"$VERSION\"}" > package.json
+          npm publish
         shell: bash
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
@@ -86,12 +84,10 @@ jobs:
 
       - name: Publish lambda layer
         run: |
-          pushd ./packages/client-sdk-nodejs
-            export VERSION="${{ needs.release.outputs.version }}"
-            echo "Publishing lambda layer with version $VERSION"
-            pushd build-scripts
-              ./build-lambda-layer.sh
-              ./publish-lambda-layer.sh ${VERSION}
-            popd
+          export VERSION="${{ needs.release.outputs.version }}"
+          echo "Publishing lambda layer with version $VERSION"
+          pushd build-scripts
+            ./build-lambda-layer.sh
+            ./publish-lambda-layer.sh ${VERSION}
           popd
         shell: bash

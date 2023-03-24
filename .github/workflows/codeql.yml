@@ -53,17 +53,10 @@ jobs:
         # queries: security-extended,security-and-quality
 
 
-    # TODO: eventually we will have to add build steps for the grpc-web sdk
-    - name: Build Common Package
-      run: |
-        node -v
-        ./scripts/build-package.sh "common"
-
-    # needs to happen after building our common package, since it depends on it
-    - name: Build nodejs sdk
-      run: |
-        node -v
-        ./scripts/build-package.sh "client-sdk-nodejs"
+    # Autobuild attempts to build any compiled languages  (C/C++, C#, Go, or Java).
+    # If this step fails, then you should remove it and run the build manually (see below)
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v2
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun

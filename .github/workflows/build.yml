@@ -44,17 +44,22 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      # TODO: eventually we will have to add build steps for the grpc-web sdk
-      - name: Build Common Package
+      - name: Install Dependencies
         run: |
+          npm ci
           node -v
-          ./scripts/build-and-test-package.sh "common"
 
-      # needs to happen after building our common package, since it depends on it
-      - name: Build nodejs sdk
-        run: |
-          node -v
-          ./scripts/build-and-test-package.sh "client-sdk-nodejs"
+      - name: Build
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit Test
+        run: npm run unit-test
+
+      - name: Integration Test
+        run: npm run integration-test
 
   test-examples:
     strategy:
