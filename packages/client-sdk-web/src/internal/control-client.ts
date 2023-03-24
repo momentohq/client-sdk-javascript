@@ -48,16 +48,14 @@ export class ControlClient<
   private readonly interceptors: UnaryInterceptor<REQ, RESP>[];
   // private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
   private readonly logger: MomentoLogger;
+  private readonly authToken: string;
 
   /**
    * @param {ControlClientProps} props
    */
   constructor(props: ControlClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    const headers = [
-      new Header('Authorization', props.credentialProvider.getAuthToken()),
-      new Header('Agent', `nodejs:${version}`),
-    ];
+    const headers = [new Header('Agent', `nodejs:${version}`)];
     this.interceptors = [
       new HeaderInterceptorProvider<REQ, RESP>(
         headers
@@ -76,10 +74,12 @@ export class ControlClient<
     //   configuration: props.configuration,
     // });
     console.log(
-      `\n\n\nCreating control client with endpoint: ${props.credentialProvider.getCacheEndpoint()}\n\n\n`
+      `\n\n\nCreating control client with endpoint: ${props.credentialProvider.getControlEndpoint()}\n\n\n`
     );
+
+    this.authToken = props.credentialProvider.getAuthToken();
     this.clientWrapper = new control.ScsControlClient(
-      `https://${props.credentialProvider.getCacheEndpoint()}`,
+      `https://${props.credentialProvider.getControlEndpoint()}`,
       null,
       {
         unaryInterceptors: this.interceptors,
@@ -100,7 +100,7 @@ export class ControlClient<
     return await new Promise<CreateCache.Response>(resolve => {
       this.clientWrapper.createCache(
         request,
-        null,
+        {authorization: this.authToken},
         // {interceptors: this.interceptors},
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
@@ -130,7 +130,7 @@ export class ControlClient<
     return await new Promise<DeleteCache.Response>(resolve => {
       this.clientWrapper.deleteCache(
         request,
-        null,
+        {authorization: this.authToken},
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
@@ -181,20 +181,24 @@ export class ControlClient<
     request.setNextToken('');
     this.logger.debug("Issuing 'listCaches' request");
     return await new Promise<ListCaches.Response>(resolve => {
-      this.clientWrapper.listCaches(request, null, (err, resp) => {
-        if (err) {
-          resolve(new ListCaches.Error(cacheServiceErrorMapper(err)));
-        } else {
-          const caches = resp
-            ?.getCacheList()
-            .map(cache => new _Cache(cache.getCacheName()));
-          const listCachesResponse = new _ListCachesResponse(
-            caches,
-            resp?.getNextToken()
-          );
-          resolve(new ListCaches.Success(listCachesResponse));
+      this.clientWrapper.listCaches(
+        request,
+        {authorization: this.authToken},
+        (err, resp) => {
+          if (err) {
+            resolve(new ListCaches.Error(cacheServiceErrorMapper(err)));
+          } else {
+            const caches = resp
+              ?.getCacheList()
+              .map(cache => new _Cache(cache.getCacheName()));
+            const listCachesResponse = new _ListCachesResponse(
+              caches,
+              resp?.getNextToken()
+            );
+            resolve(new ListCaches.Success(listCachesResponse));
+          }
         }
-      });
+      );
     });
   }
 
