@@ -28,7 +28,7 @@ jobs:
   test:
     strategy:
       matrix:
-        node: [18]
+        node: [14, 16, 18]
     name: Test on Node ${{ matrix.node }}
     runs-on: macos-latest
     env:
