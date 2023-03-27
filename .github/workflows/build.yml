@@ -2,7 +2,7 @@ name: Build
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, console-mvp]
 
 jobs:
   verify:
@@ -28,7 +28,7 @@ jobs:
   test:
     strategy:
       matrix:
-        node: [14, 16, 18]
+        node: [18]
     name: Test on Node ${{ matrix.node }}
     runs-on: macos-latest
     env:
@@ -43,6 +43,16 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
+
+      - name: Build common package
+        run: |
+          node -v
+          ./scripts/build-and-test-package.sh "common"
+
+      - name: Build common-integration-tests package
+        run: |
+          node -v
+          ./scripts/build-and-test-package.sh "common-integration-tests"
 
       - name: Build nodejs sdk
         run: |

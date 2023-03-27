@@ -18,15 +18,15 @@ export function testCacheName(): string {
   const name = process.env.TEST_CACHE_NAME || 'js-integration-test-default';
   return name + v4();
 }
-//
-// const deleteCacheIfExists = async (momento: CacheClient, cacheName: string) => {
-//   const deleteResponse = await momento.deleteCache(cacheName);
-//   if (deleteResponse instanceof DeleteCache.Error) {
-//     if (deleteResponse.errorCode() !== MomentoErrorCode.NOT_FOUND_ERROR) {
-//       throw deleteResponse.innerException();
-//     }
-//   }
-// };
+
+const deleteCacheIfExists = async (momento: CacheClient, cacheName: string) => {
+  const deleteResponse = await momento.deleteCache(cacheName);
+  if (deleteResponse instanceof DeleteCache.Error) {
+    if (deleteResponse.errorCode() !== MomentoErrorCode.NOT_FOUND_ERROR) {
+      throw deleteResponse.innerException();
+    }
+  }
+};
 
 export async function WithCache(
   client: CacheClient,
