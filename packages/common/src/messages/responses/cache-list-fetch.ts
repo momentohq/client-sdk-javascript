@@ -5,7 +5,6 @@ import {
   ResponseHit,
   ResponseMiss,
 } from './response-base';
-import {TextDecoder} from 'util';
 import {truncateStringArray} from '../../internal/utils/display';
 
 const TEXT_DECODER = new TextDecoder();
