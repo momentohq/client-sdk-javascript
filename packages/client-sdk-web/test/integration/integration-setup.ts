@@ -3,10 +3,14 @@ import {
   deleteCacheIfExists,
   testCacheName,
 } from '@gomomento/common-integration-tests';
-import {CreateCache, DeleteCache} from '@gomomento/core';
+import {CreateCache, CredentialProvider, DeleteCache} from '@gomomento/core';
 
 function momentoClientForTesting() {
-  return new CacheClient();
+  return new CacheClient({
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'TEST_AUTH_TOKEN',
+    }),
+  });
 }
 
 export function SetupIntegrationTest(): {
