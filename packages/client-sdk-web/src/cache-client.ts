@@ -4,14 +4,18 @@ import {ControlClient} from './internal/control-client';
 import {NoopMomentoLoggerFactory} from '@gomomento/core/dist/src/config/logging';
 import {CredentialProvider} from '@gomomento/core';
 
+export interface CacheClientProps {
+  credentialProvider: CredentialProvider;
+}
+
 export class CacheClient extends AbstractCacheClient {
-  constructor() {
-    const controlClient: IControlClient = createControlClient();
+  constructor(props: CacheClientProps) {
+    const controlClient: IControlClient = createControlClient(props);
     super(controlClient);
   }
 }
 
-function createControlClient(): IControlClient {
+function createControlClient(props: CacheClientProps): IControlClient {
   return new ControlClient({
     // TODO
     // TODO
@@ -21,8 +25,6 @@ function createControlClient(): IControlClient {
     configuration: {
       getLoggerFactory: () => new NoopMomentoLoggerFactory(),
     },
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'TEST_AUTH_TOKEN',
-    }),
+    credentialProvider: props.credentialProvider,
   });
 }
