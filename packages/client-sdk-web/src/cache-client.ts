@@ -1,8 +1,10 @@
-import {AbstractCacheClient} from '@gomomento/core/dist/src/internal/clients/cache/AbstractCacheClient';
-import {IControlClient} from '@gomomento/core/dist/src/internal/clients/cache/IControlClient';
 import {ControlClient} from './internal/control-client';
-import {NoopMomentoLoggerFactory} from '@gomomento/core/dist/src/config/logging';
-import {CredentialProvider} from '@gomomento/core';
+import {
+  AbstractCacheClient,
+  CredentialProvider,
+  IControlClient,
+  NoopMomentoLoggerFactory,
+} from '@gomomento/core';
 
 export interface CacheClientProps {
   credentialProvider: CredentialProvider;
