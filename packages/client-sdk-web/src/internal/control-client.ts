@@ -30,7 +30,7 @@ import {
   validateCacheName,
   _Cache,
   _ListCachesResponse,
-} from '@gomomento/core';
+} from '@gomomento/common';
 
 export interface ControlClientProps {
   configuration: Configuration;

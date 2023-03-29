@@ -1,4 +1,4 @@
-import {AbstractPingClient, IPingClient} from '@gomomento/core';
+import {AbstractPingClient, IPingClient} from '@gomomento/common';
 import {
   InternalGrpcWebPingClient,
   PingClientProps,

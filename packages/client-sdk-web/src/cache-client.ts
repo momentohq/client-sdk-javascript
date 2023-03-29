@@ -4,7 +4,7 @@ import {
   CredentialProvider,
   IControlClient,
   NoopMomentoLoggerFactory,
-} from '@gomomento/core';
+} from '@gomomento/common';
 
 export interface CacheClientProps {
   credentialProvider: CredentialProvider;
