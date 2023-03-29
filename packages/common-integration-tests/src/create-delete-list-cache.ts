@@ -1,22 +1,4 @@
-// import {v4} from 'uuid';
-// import {
-//   ValidateCacheProps,
-//   ItBehavesLikeItValidatesCacheName,
-//   SetupIntegrationTest,
-//   WithCache,
-//   testCacheName,
-// } from './integration-setup';
-// import {
-//   CacheFlush,
-//   CacheGet,
-//   CreateCache,
-//   DeleteCache,
-//   ListCaches,
-// } from '../../src';
-// import {MomentoErrorCode} from '@gomomento/core/dist/src/errors';
-
-// const {Momento} = SetupIntegrationTest();
-
+import {v4} from 'uuid';
 import {
   ItBehavesLikeItValidatesCacheName,
   testCacheName,
@@ -29,6 +11,8 @@ import {
   DeleteCache,
   ListCaches,
   MomentoErrorCode,
+  CacheFlush,
+  CacheGet,
 } from '@gomomento/core';
 
 export function runCreateDeleteListCacheTests(Momento: ICacheClient) {
@@ -74,50 +58,50 @@ export function runCreateDeleteListCacheTests(Momento: ICacheClient) {
       });
     });
 
-    // describe('flush cache', () => {
-    //   ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-    //     return Momento.flushCache(props.cacheName);
-    //   });
-    //
-    //   it('should return NotFoundError if flushing a non-existent cache', async () => {
-    //     const cacheName = testCacheName();
-    //     const flushResponse = await Momento.flushCache(cacheName);
-    //     expect(flushResponse).toBeInstanceOf(CacheFlush.Response);
-    //     expect(flushResponse).toBeInstanceOf(CacheFlush.Error);
-    //     if (flushResponse instanceof CacheFlush.Error) {
-    //       expect(flushResponse.errorCode()).toEqual(
-    //         MomentoErrorCode.NOT_FOUND_ERROR
-    //       );
-    //     }
-    //   });
-    //
-    //   it('should return success while flushing empty cache', async () => {
-    //     const cacheName = testCacheName();
-    //     await WithCache(Momento, cacheName, async () => {
-    //       const flushResponse = await Momento.flushCache(cacheName);
-    //       expect(flushResponse).toBeInstanceOf(CacheFlush.Response);
-    //       expect(flushResponse).toBeInstanceOf(CacheFlush.Success);
-    //     });
-    //   });
-    //
-    //   it('should return success while flushing non-empty cache', async () => {
-    //     const cacheName = testCacheName();
-    //     const key1 = v4();
-    //     const key2 = v4();
-    //     const value1 = v4();
-    //     const value2 = v4();
-    //     await WithCache(Momento, cacheName, async () => {
-    //       await Momento.set(cacheName, key1, value1);
-    //       await Momento.set(cacheName, key2, value2);
-    //       const flushResponse = await Momento.flushCache(cacheName);
-    //       expect(flushResponse).toBeInstanceOf(CacheFlush.Response);
-    //       expect(flushResponse).toBeInstanceOf(CacheFlush.Success);
-    //       const getResponse1 = await Momento.get(cacheName, key1);
-    //       const getResponse2 = await Momento.get(cacheName, key2);
-    //       expect(getResponse1).toBeInstanceOf(CacheGet.Miss);
-    //       expect(getResponse2).toBeInstanceOf(CacheGet.Miss);
-    //     });
-    //   });
-    // });
+    describe('flush cache', () => {
+      ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+        return Momento.flushCache(props.cacheName);
+      });
+
+      it('should return NotFoundError if flushing a non-existent cache', async () => {
+        const cacheName = testCacheName();
+        const flushResponse = await Momento.flushCache(cacheName);
+        expect(flushResponse).toBeInstanceOf(CacheFlush.Response);
+        expect(flushResponse).toBeInstanceOf(CacheFlush.Error);
+        if (flushResponse instanceof CacheFlush.Error) {
+          expect(flushResponse.errorCode()).toEqual(
+            MomentoErrorCode.NOT_FOUND_ERROR
+          );
+        }
+      });
+
+      it('should return success while flushing empty cache', async () => {
+        const cacheName = testCacheName();
+        await WithCache(Momento, cacheName, async () => {
+          const flushResponse = await Momento.flushCache(cacheName);
+          expect(flushResponse).toBeInstanceOf(CacheFlush.Response);
+          expect(flushResponse).toBeInstanceOf(CacheFlush.Success);
+        });
+      });
+
+      it('should return success while flushing non-empty cache', async () => {
+        const cacheName = testCacheName();
+        const key1 = v4();
+        const key2 = v4();
+        const value1 = v4();
+        const value2 = v4();
+        await WithCache(Momento, cacheName, async () => {
+          await Momento.set(cacheName, key1, value1);
+          await Momento.set(cacheName, key2, value2);
+          const flushResponse = await Momento.flushCache(cacheName);
+          expect(flushResponse).toBeInstanceOf(CacheFlush.Response);
+          expect(flushResponse).toBeInstanceOf(CacheFlush.Success);
+          const getResponse1 = await Momento.get(cacheName, key1);
+          const getResponse2 = await Momento.get(cacheName, key2);
+          expect(getResponse1).toBeInstanceOf(CacheGet.Miss);
+          expect(getResponse2).toBeInstanceOf(CacheGet.Miss);
+        });
+      });
+    });
   });
 }
