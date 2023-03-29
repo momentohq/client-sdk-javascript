@@ -69,19 +69,19 @@ import {
   NotFoundError,
   UnknownError,
   SdkError,
-} from '@gomomento/core';
+} from '@gomomento/common';
 
-import {SubscribeCallOptions} from '@gomomento/core/dist/src/utils';
+import {SubscribeCallOptions} from '@gomomento/common/dist/src/utils';
 
 import {Configuration} from './config/configuration';
 
-export {MomentoLogger, MomentoLoggerFactory} from '@gomomento/core';
+export {MomentoLogger, MomentoLoggerFactory} from '@gomomento/common';
 
 export {
   DefaultMomentoLoggerFactory,
   DefaultMomentoLogger,
   DefaultMomentoLoggerLevel,
-} from '@gomomento/core';
+} from '@gomomento/common';
 
 export {
   CollectionTtl,

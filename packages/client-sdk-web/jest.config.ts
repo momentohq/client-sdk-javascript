@@ -9,6 +9,7 @@ const config: Config = {
     '^.+\\.tsx?$': 'ts-jest',
   },
   testTimeout: 30000,
+  setupFiles: ['<rootDir>/jest.setup.js']
 };
 
 export default config;

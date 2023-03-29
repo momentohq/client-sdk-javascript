@@ -91,9 +91,9 @@ export async function WithCache(
 import {
   IResponseError,
   ResponseBase,
-} from '@gomomento/core/dist/src/messages/responses/response-base';
-import {DeleteCache, MomentoErrorCode} from '@gomomento/core';
-import {ICacheClient} from '@gomomento/core/dist/src/internal/clients/cache/ICacheClient';
+} from '@gomomento/common/dist/src/messages/responses/response-base';
+import {DeleteCache, MomentoErrorCode} from '@gomomento/common';
+import {ICacheClient} from '@gomomento/common/dist/src/internal/clients/cache/ICacheClient';
 
 export interface ValidateCacheProps {
   cacheName: string;

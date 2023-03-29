@@ -9,12 +9,6 @@ import {
 } from '..';
 import {version} from '../../package.json';
 import {Configuration} from '../config/configuration';
-import {validateCacheName} from '@gomomento/core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
-import {
-  _Cache,
-  _ListCachesResponse,
-} from '@gomomento/core/dist/src/messages/responses/grpc-response-types';
 import {Request, StatusCode, UnaryInterceptor, UnaryResponse} from 'grpc-web';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {
@@ -24,8 +18,13 @@ import {
   _FlushCacheRequest,
 } from '@gomomento/generated-types-webtext/dist/controlclient_pb';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-import {IControlClient} from '../../../common/dist/src/internal/clients/cache/IControlClient';
-
+import {
+  normalizeSdkError,
+  validateCacheName,
+  _Cache,
+  _ListCachesResponse,
+  IControlClient,
+} from '@gomomento/common';
 export interface ControlClientProps {
   configuration: Configuration;
   credentialProvider: CredentialProvider;

@@ -9,8 +9,11 @@ import {
 } from '..';
 import {version} from '../../package.json';
 import {Configuration} from '../config/configuration';
-import {validateCacheName} from '@gomomento/core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
+import {
+  validateCacheName,
+  normalizeSdkError,
+  IDataClient,
+} from '@gomomento/common';
 import {Request, UnaryInterceptor, UnaryResponse} from 'grpc-web';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
@@ -19,7 +22,6 @@ import {
   _SetRequest,
   ECacheResult,
 } from '@gomomento/generated-types-webtext/dist/cacheclient_pb';
-import {IDataClient} from '../../../common/dist/src/internal/clients/cache/IDataClient';
 
 export interface DataClientProps {
   configuration: Configuration;
