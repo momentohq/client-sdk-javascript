@@ -17,14 +17,6 @@ import {version} from '../../package.json';
 // import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 // import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {Configuration} from '../config/configuration';
-import {validateCacheName} from '@gomomento/core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
-import {
-  _Cache,
-  _ListCachesResponse,
-  // _ListSigningKeysResponse,
-  // _SigningKey,
-} from '@gomomento/core/dist/src/messages/responses/grpc-response-types';
 import {Request, StatusCode, UnaryInterceptor, UnaryResponse} from 'grpc-web';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {
@@ -33,6 +25,12 @@ import {
   _ListCachesRequest,
 } from '@gomomento/generated-types-webtext/dist/controlclient_pb';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {
+  normalizeSdkError,
+  validateCacheName,
+  _Cache,
+  _ListCachesResponse,
+} from '@gomomento/common';
 
 export interface ControlClientProps {
   configuration: Configuration;

@@ -23,13 +23,13 @@ import {
   ValidateCacheProps,
   WithCache,
 } from './common-int-test-utils';
-import {ICacheClient} from '@gomomento/core/dist/src/internal/clients/cache/ICacheClient';
+import {ICacheClient} from '@gomomento/common/dist/src/internal/clients/cache/ICacheClient';
 import {
   CreateCache,
   DeleteCache,
   ListCaches,
   MomentoErrorCode,
-} from '@gomomento/core';
+} from '@gomomento/common';
 
 export function runCreateDeleteListCacheTests(Momento: ICacheClient) {
   describe('create/delete cache', () => {

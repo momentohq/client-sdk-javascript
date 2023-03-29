@@ -74,16 +74,12 @@ import {
   SdkError,
 } from './errors/errors';
 
-export {
-  MomentoLogger,
-  MomentoLoggerFactory,
-} from './config/logging/momento-logger';
+export * from './internal/clients';
+export * from './messages/responses/grpc-response-types';
+export * from './internal/utils';
+export {normalizeSdkError} from './errors/error-utils';
 
-export {
-  DefaultMomentoLoggerFactory,
-  DefaultMomentoLogger,
-  DefaultMomentoLoggerLevel,
-} from './config/logging/default-momento-logger';
+export * from './config/logging';
 
 export {
   CollectionTtl,
