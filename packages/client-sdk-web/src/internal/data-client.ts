@@ -42,7 +42,6 @@ export class DataClient<
   // private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
   private readonly logger: MomentoLogger;
   private readonly authHeaders: {authorization: string};
-  private readonly textEncoder: TextEncoder;
   private readonly defaultTtlSeconds: number;
 
   /**
@@ -72,7 +71,6 @@ export class DataClient<
       `\n\n\nCreating data client with endpoint: ${props.credentialProvider.getCacheEndpoint()}\n\n\n`
     );
 
-    this.textEncoder = new TextEncoder();
     this.defaultTtlSeconds = props.defaultTtlSeconds;
     this.authHeaders = {authorization: props.credentialProvider.getAuthToken()};
     this.clientWrapper = new cache.ScsClient(
