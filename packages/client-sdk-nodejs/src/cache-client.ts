@@ -89,8 +89,6 @@ type SortedSetIncrementOptions = CollectionCallOptions;
  */
 export class CacheClient extends AbstractCacheClient implements ICacheClient {
   private readonly logger: MomentoLogger;
-  private readonly dataClients: Array<DataClient>;
-  private nextDataClientIndex: number;
   private readonly notYetAbstractedControlClient: ControlClient;
 
   /**
@@ -102,12 +100,6 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
       credentialProvider: props.credentialProvider,
     });
 
-    super(controlClient);
-    this.notYetAbstractedControlClient = controlClient;
-
-    this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    this.logger.info('Creating Momento CacheClient');
-
     // For high load, we get better performance with multiple clients.  Here we
     // are setting a default, hard-coded value for the number of clients to use,
     // because we haven't yet designed the API for users to use to configure
@@ -117,11 +109,13 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
     // default for the short-term, based on load testing results captured in:
     // https://github.com/momentohq/oncall-tracker/issues/186
     const numClients = 6;
-    this.dataClients = range(numClients).map(() => new DataClient(props));
-    // We round-robin the requests through all of our clients.  Since javascript
-    // is single-threaded, we don't have to worry about thread safety on this
-    // index variable.
-    this.nextDataClientIndex = 0;
+    const dataClients = range(numClients).map(() => new DataClient(props));
+    super(controlClient, dataClients);
+
+    this.notYetAbstractedControlClient = controlClient;
+
+    this.logger = props.configuration.getLoggerFactory().getLogger(this);
+    this.logger.info('Creating Momento CacheClient');
   }
 
   /**
@@ -1191,11 +1185,11 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
     );
   }
 
-  private getNextDataClient(): DataClient {
+  protected getNextDataClient(): DataClient {
     const client = this.dataClients[this.nextDataClientIndex];
     this.nextDataClientIndex =
       (this.nextDataClientIndex + 1) % this.dataClients.length;
-    return client;
+    return client as DataClient;
   }
 }
 
