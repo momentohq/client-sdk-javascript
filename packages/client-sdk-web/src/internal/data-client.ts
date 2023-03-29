@@ -94,14 +94,14 @@ export class DataClient<
       return new CacheGet.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
-    const result = await this.sendGet(cacheName, this.convert(key));
+    const result = await this.sendGet(cacheName, key);
     this.logger.trace(`'get' request result: ${result.toString()}`);
     return result;
   }
 
   private async sendGet(
     cacheName: string,
-    key: Uint8Array
+    key: string | Uint8Array
   ): Promise<CacheGet.Response> {
     const request = new _GetRequest();
     request.setCacheKey(key);
@@ -169,16 +169,14 @@ export class DataClient<
         value.length
       }, ttl: ${ttlToUse.toString()}`
     );
-    const encodedKey = this.convert(key);
-    const encodedValue = this.convert(value);
 
-    return await this.sendSet(cacheName, encodedKey, encodedValue, ttlToUse);
+    return await this.sendSet(cacheName, key, value, ttlToUse);
   }
 
   private async sendSet(
     cacheName: string,
-    key: Uint8Array,
-    value: Uint8Array,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
     ttl: number
   ): Promise<CacheSet.Response> {
     const request = new _SetRequest();
@@ -206,12 +204,5 @@ export class DataClient<
 
   private createMetadata(cacheName: string): {cache: string} {
     return {cache: cacheName};
-  }
-
-  private convert(v: string | Uint8Array): Uint8Array {
-    if (typeof v === 'string') {
-      return this.textEncoder.encode(v);
-    }
-    return v;
   }
 }
