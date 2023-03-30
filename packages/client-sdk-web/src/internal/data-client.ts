@@ -175,12 +175,12 @@ export class DataClient<
     cacheName: string,
     key: string | Uint8Array,
     value: string | Uint8Array,
-    ttl: number
+    ttlSeconds: number
   ): Promise<CacheSet.Response> {
     const request = new _SetRequest();
     request.setCacheKey(key);
     request.setCacheBody(value);
-    request.setTtlMilliseconds(ttl * 1000);
+    request.setTtlMilliseconds(this.convertSecondsToMilliseconds(ttlSeconds));
     const metadata = this.createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.set(
@@ -202,5 +202,9 @@ export class DataClient<
 
   private createMetadata(cacheName: string): {cache: string} {
     return {cache: cacheName};
+  }
+
+  private convertSecondsToMilliseconds(ttlSeconds: number): number {
+    return ttlSeconds * 1000;
   }
 }
