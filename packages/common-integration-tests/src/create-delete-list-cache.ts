@@ -91,9 +91,13 @@ export function runCreateDeleteListCacheTests(Momento: ICacheClient) {
         const value1 = v4();
         const value2 = v4();
         await WithCache(Momento, cacheName, async () => {
-          console.log(`setting cache: ${cacheName}, key: ${key1}, value: ${value1}`);
+          console.log(
+            `setting cache: ${cacheName}, key: ${key1}, value: ${value1}`
+          );
           await Momento.set(cacheName, key1, value1);
-          console.log(`setting cache: ${cacheName}, key: ${key2}, value: ${value2}`);
+          console.log(
+            `setting cache: ${cacheName}, key: ${key2}, value: ${value2}`
+          );
           await Momento.set(cacheName, key2, value2);
           const flushResponse = await Momento.flushCache(cacheName);
           expect(flushResponse).toBeInstanceOf(CacheFlush.Response);
