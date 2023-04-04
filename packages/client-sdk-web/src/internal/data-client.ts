@@ -185,6 +185,8 @@ export class DataClient<
     ttlSeconds: number
   ): Promise<CacheSet.Response> {
     const request = new _SetRequest();
+    console.log('send set key', key);
+    console.log('send set value', value);
     request.setCacheKey(key);
     request.setCacheBody(value);
     request.setTtlMilliseconds(this.convertSecondsToMilliseconds(ttlSeconds));
