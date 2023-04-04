@@ -43,11 +43,13 @@ export class DataClient<
   private readonly logger: MomentoLogger;
   private readonly authHeaders: {authorization: string};
   private readonly defaultTtlSeconds: number;
+  private readonly textEncoder: TextEncoder;
 
   /**
    * @param {DataClientProps} props
    */
   constructor(props: DataClientProps) {
+    this.textEncoder = new TextEncoder();
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     const headers = [new Header('Agent', `nodejs:${version}`)];
     this.interceptors = [
@@ -92,14 +94,14 @@ export class DataClient<
       return new CacheGet.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
-    const result = await this.sendGet(cacheName, key);
+    const result = await this.sendGet(cacheName, this.convert(key));
     this.logger.trace(`'get' request result: ${result.toString()}`);
     return result;
   }
 
   private async sendGet(
     cacheName: string,
-    key: string | Uint8Array
+    key: Uint8Array
   ): Promise<CacheGet.Response> {
     const request = new _GetRequest();
     request.setCacheKey(key);
@@ -168,13 +170,18 @@ export class DataClient<
       }, ttl: ${ttlToUse.toString()}`
     );
 
-    return await this.sendSet(cacheName, key, value, ttlToUse);
+    return await this.sendSet(
+      cacheName,
+      this.convert(key),
+      this.convert(value),
+      ttlToUse
+    );
   }
 
   private async sendSet(
     cacheName: string,
-    key: string | Uint8Array,
-    value: string | Uint8Array,
+    key: Uint8Array,
+    value: Uint8Array,
     ttlSeconds: number
   ): Promise<CacheSet.Response> {
     const request = new _SetRequest();
@@ -206,5 +213,12 @@ export class DataClient<
 
   private convertSecondsToMilliseconds(ttlSeconds: number): number {
     return ttlSeconds * 1000;
+  }
+
+  private convert(v: string | Uint8Array): Uint8Array {
+    if (typeof v === 'string') {
+      return this.textEncoder.encode(v);
+    }
+    return v;
   }
 }
