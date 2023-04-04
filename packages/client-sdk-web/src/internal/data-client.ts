@@ -43,13 +43,13 @@ export class DataClient<
   private readonly logger: MomentoLogger;
   private readonly authHeaders: {authorization: string};
   private readonly defaultTtlSeconds: number;
-  private readonly textEncoder: TextEncoder;
+  // private readonly textEncoder: TextEncoder;
 
   /**
    * @param {DataClientProps} props
    */
   constructor(props: DataClientProps) {
-    this.textEncoder = new TextEncoder();
+    // this.textEncoder = new TextEncoder();
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     const headers = [new Header('Agent', `nodejs:${version}`)];
     this.interceptors = [
@@ -74,6 +74,7 @@ export class DataClient<
     );
 
     this.defaultTtlSeconds = props.defaultTtlSeconds;
+    console.log('ttl', this.defaultTtlSeconds);
     this.authHeaders = {authorization: props.credentialProvider.getAuthToken()};
     this.clientWrapper = new cache.ScsClient(
       `https://${props.credentialProvider.getCacheEndpoint()}`,
@@ -101,7 +102,7 @@ export class DataClient<
 
   private async sendGet(
     cacheName: string,
-    key: Uint8Array
+    key: string | Uint8Array
   ): Promise<CacheGet.Response> {
     const request = new _GetRequest();
     request.setCacheKey(key);
@@ -180,13 +181,11 @@ export class DataClient<
 
   private async sendSet(
     cacheName: string,
-    key: Uint8Array,
-    value: Uint8Array,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
     ttlSeconds: number
   ): Promise<CacheSet.Response> {
     const request = new _SetRequest();
-    console.log('send set key', key);
-    console.log('send set value', value);
     request.setCacheKey(key);
     request.setCacheBody(value);
     request.setTtlMilliseconds(this.convertSecondsToMilliseconds(ttlSeconds));
@@ -217,10 +216,11 @@ export class DataClient<
     return ttlSeconds * 1000;
   }
 
-  private convert(v: string | Uint8Array): Uint8Array {
-    if (typeof v === 'string') {
-      return this.textEncoder.encode(v);
-    }
+  private convert(v: string | Uint8Array): string | Uint8Array {
     return v;
+    // if (typeof v === 'string') {
+    //   return this.textEncoder.encode(v);
+    // }
+    // return v;
   }
 }

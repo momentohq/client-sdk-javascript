@@ -14,11 +14,11 @@
 //   ResponseBase,
 // } from '@gomomento/core/dist/src/messages/responses/response-base';
 //
-import {v4} from 'uuid';
+// import {v4} from 'uuid';
 
 export function testCacheName(): string {
   const name = process.env.TEST_CACHE_NAME || 'js-integration-test-default';
-  return name + v4();
+  return name;
 }
 
 export const deleteCacheIfExists = async (
@@ -38,12 +38,12 @@ export async function WithCache(
   cacheName: string,
   block: () => Promise<void>
 ) {
-  await deleteCacheIfExists(client, cacheName);
-  await client.createCache(cacheName);
+  // await deleteCacheIfExists(client, cacheName);
+  // await client.createCache(cacheName);
   try {
     await block();
   } finally {
-    await deleteCacheIfExists(client, cacheName);
+    // await deleteCacheIfExists(client, cacheName);
   }
 }
 
