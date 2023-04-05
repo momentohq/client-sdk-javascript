@@ -92,14 +92,14 @@ export class DataClient<
       return new CacheGet.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
-    const result = await this.sendGet(cacheName, key);
+    const result = await this.sendGet(cacheName, this.convert(key));
     this.logger.trace(`'get' request result: ${result.toString()}`);
     return result;
   }
 
   private async sendGet(
     cacheName: string,
-    key: string | Uint8Array
+    key: string
   ): Promise<CacheGet.Response> {
     const request = new _GetRequest();
     request.setCacheKey(key);
@@ -168,13 +168,18 @@ export class DataClient<
       }, ttl: ${ttlToUse.toString()}`
     );
 
-    return await this.sendSet(cacheName, key, value, ttlToUse);
+    return await this.sendSet(
+      cacheName,
+      this.convert(key),
+      this.convert(value),
+      ttlToUse
+    );
   }
 
   private async sendSet(
     cacheName: string,
-    key: string | Uint8Array,
-    value: string | Uint8Array,
+    key: string,
+    value: string,
     ttlSeconds: number
   ): Promise<CacheSet.Response> {
     const request = new _SetRequest();
@@ -206,5 +211,14 @@ export class DataClient<
 
   private convertSecondsToMilliseconds(ttlSeconds: number): number {
     return ttlSeconds * 1000;
+  }
+
+  private convert(v: string | Uint8Array): string {
+    if (typeof v === 'string') {
+      return btoa(v);
+    }
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return btoa(String.fromCharCode.apply(null, v));
   }
 }
