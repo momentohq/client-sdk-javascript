@@ -4,6 +4,7 @@ import {
   CacheSetIfNotExists,
   MomentoErrorCode,
   CacheClient,
+  CacheGet,
 } from '../../src';
 import {TextEncoder} from 'util';
 import {
@@ -13,7 +14,7 @@ import {
   testCacheName,
 } from './integration-setup';
 
-const {Momento} = SetupIntegrationTest();
+const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
 describe('get/set/delete', () => {
   it('should timeout on a request that exceeds specified timeout', async () => {
@@ -78,5 +79,37 @@ describe('get/set/delete', () => {
         expect(setResponse.errorCode()).toEqual(MomentoErrorCode.TIMEOUT_ERROR);
       }
     });
+  });
+
+  it('should set string key with bytes value', async () => {
+    const cacheKey = v4();
+    const cacheValue = new TextEncoder().encode(v4());
+    const setResponse = await Momento.set(
+      IntegrationTestCacheName,
+      cacheKey,
+      cacheValue
+    );
+    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
+    const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+    expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+    if (getResponse instanceof CacheGet.Hit) {
+      expect(getResponse.valueUint8Array()).toEqual(cacheValue);
+    }
+  });
+
+  it('should setIfNotExists string key with bytes value', async () => {
+    const cacheKey = v4();
+    const cacheValue = new TextEncoder().encode(v4());
+    const setResponse = await Momento.setIfNotExists(
+      IntegrationTestCacheName,
+      cacheKey,
+      cacheValue
+    );
+    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
+    const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+    expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+    if (getResponse instanceof CacheGet.Hit) {
+      expect(getResponse.valueUint8Array()).toEqual(cacheValue);
+    }
   });
 });
