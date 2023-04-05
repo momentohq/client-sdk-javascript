@@ -89,7 +89,7 @@ describe('get/set/delete', () => {
       cacheKey,
       cacheValue
     );
-    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
+    expect(setResponse).toBeInstanceOf(CacheSet.Success);
     const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
     expect(getResponse).toBeInstanceOf(CacheGet.Hit);
     if (getResponse instanceof CacheGet.Hit) {
