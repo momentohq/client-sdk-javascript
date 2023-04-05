@@ -62,6 +62,7 @@ export function runGetSetDeleteTests(
     it('should set string key with bytes value', async () => {
       const cacheKey = v4();
       const cacheValue = new TextEncoder().encode(v4());
+      const decodedValue = new TextDecoder().decode(cacheValue);
       const setResponse = await Momento.set(
         IntegrationTestCacheName,
         cacheKey,
@@ -71,7 +72,7 @@ export function runGetSetDeleteTests(
       const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
       expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       if (getResponse instanceof CacheGet.Hit) {
-        expect(getResponse.valueUint8Array()).toEqual(cacheValue);
+        expect(getResponse.valueString()).toEqual(decodedValue);
       }
     });
 
@@ -351,6 +352,7 @@ export function runGetSetDeleteTests(
     it('should set string key with bytes value', async () => {
       const cacheKey = v4();
       const cacheValue = new TextEncoder().encode(v4());
+      const decodedValue = new TextDecoder().decode(cacheValue);
       const setResponse = await Momento.setIfNotExists(
         IntegrationTestCacheName,
         cacheKey,
@@ -360,7 +362,7 @@ export function runGetSetDeleteTests(
       const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
       expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       if (getResponse instanceof CacheGet.Hit) {
-        expect(getResponse.valueUint8Array()).toEqual(cacheValue);
+        expect(getResponse.valueString()).toEqual(decodedValue);
       }
     });
 
