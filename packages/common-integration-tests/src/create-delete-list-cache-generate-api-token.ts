@@ -8,6 +8,7 @@ import {
 import {ICacheClient} from '@gomomento/common/dist/src/internal/clients/cache/ICacheClient';
 import {
   CreateCache,
+  GenerateApiToken,
   DeleteCache,
   ListCaches,
   MomentoErrorCode,
@@ -100,6 +101,17 @@ export function runCreateDeleteListCacheTests(Momento: ICacheClient) {
           const getResponse2 = await Momento.get(cacheName, key2);
           expect(getResponse1).toBeInstanceOf(CacheGet.Miss);
           expect(getResponse2).toBeInstanceOf(CacheGet.Miss);
+        });
+      });
+    });
+
+    describe('generate api token', () => {
+      it('should return success and generate auth token', async () => {
+        const cacheName = testCacheName();
+        const sessionToken = process.env.SESSION_TOKEN as string;
+        await WithCache(Momento, cacheName, async () => {
+          const resp = await Momento.generateApiToken(sessionToken);
+          expect(resp).toBeInstanceOf(GenerateApiToken.Success);
         });
       });
     });

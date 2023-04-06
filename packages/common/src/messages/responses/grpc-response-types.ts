@@ -57,6 +57,24 @@ export class _ListCachesResponse {
   }
 }
 
+export class _GenerateApiTokenResponse {
+  readonly apiToken: string;
+  readonly refreshToken: string;
+  readonly endpoint: string;
+  readonly validUntil: number;
+  constructor(
+    apiToken?: string,
+    refreshToken?: string,
+    endpoint?: string,
+    validUntil?: number
+  ) {
+    this.apiToken = apiToken ?? '';
+    this.refreshToken = refreshToken ?? '';
+    this.endpoint = endpoint ?? '';
+    this.validUntil = validUntil ?? 0;
+  }
+}
+
 export class _SigningKey {
   readonly key: string;
   readonly expiresAt: number;

@@ -16,7 +16,7 @@
     "prebuild": "eslint . --ext .ts",
     "test": "jest",
     "unit-test": "jest unit --passWithNoTests",
-    "integration-test": "jest integration --passWithNoTests",
+    "integration-test": "jest integration --passWithNoTests --verbose false",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@gomomento/common": "file:../common",
-    "@gomomento/generated-types-webtext": "0.54.3",
+    "@gomomento/generated-types-webtext": "0.57.0",
     "google-protobuf": "^3.21.2",
     "grpc-web": "1.4.2",
     "jwt-decode": "3.1.2"
