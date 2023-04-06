@@ -6,6 +6,11 @@ import {
   CacheGet,
   CacheSet,
   GenerateApiToken,
+  CacheDelete,
+  CacheIncrement,
+  IncrementOptions,
+  CacheSetIfNotExists,
+  SetIfNotExistsOptions,
 } from '../../../index';
 import {ICacheClient, SetOptions} from './ICacheClient';
 import {IControlClient} from './IControlClient';
@@ -120,13 +125,13 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheDelete.Success} on success.
    * {@link CacheDelete.Error} on failure.
    */
-  // public async delete(
-  //   cacheName: string,
-  //   key: string | Uint8Array
-  // ): Promise<CacheDelete.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.delete(cacheName, key);
-  // }
+  public async delete(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<CacheDelete.Response> {
+    const client = this.getNextDataClient();
+    return await client.delete(cacheName, key);
+  }
 
   /**
    * Adds multiple elements to the back of the given list. Creates the list if
@@ -542,15 +547,15 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheSetIfNotExists.NotStored} on not storing the new value.
    * {@link CacheSetIfNotExists.Error} on failure.
    */
-  // public async setIfNotExists(
-  //   cacheName: string,
-  //   key: string | Uint8Array,
-  //   field: string | Uint8Array,
-  //   options?: SetIfNotExistsOptions
-  // ): Promise<CacheSetIfNotExists.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.setIfNotExists(cacheName, key, field, options?.ttl);
-  // }
+  public async setIfNotExists(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    options?: SetIfNotExistsOptions
+  ): Promise<CacheSetIfNotExists.Response> {
+    const client = this.getNextDataClient();
+    return await client.setIfNotExists(cacheName, key, field, options?.ttl);
+  }
 
   /**
    * Flushes / clears all the items of the given cache
@@ -602,15 +607,15 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * that was not set using this method or is not the string representation of
    * an integer results in a failure with a FailedPreconditionException error.
    */
-  // public async increment(
-  //   cacheName: string,
-  //   field: string | Uint8Array,
-  //   amount = 1,
-  //   options?: IncrementOptions
-  // ): Promise<CacheIncrement.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.increment(cacheName, field, amount, options?.ttl);
-  // }
+  public async increment(
+    cacheName: string,
+    field: string | Uint8Array,
+    amount = 1,
+    options?: IncrementOptions
+  ): Promise<CacheIncrement.Response> {
+    const client = this.getNextDataClient();
+    return await client.increment(cacheName, field, amount, options?.ttl);
+  }
 
   /**
    * Adds an element to the given dictionary. Creates the dictionary if it does
