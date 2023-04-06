@@ -69,13 +69,16 @@ export class AuthClient {
             if (err) {
               resolve(new GenerateApiToken.Error(cacheServiceErrorMapper(err)));
             } else {
-              const generateApiTokenResponse = new _GenerateApiTokenResponse(
-                resp?.api_key,
-                resp?.refresh_token,
-                resp?.endpoint,
-                resp?.valid_until
-              );
-              resolve(new GenerateApiToken.Success(generateApiTokenResponse));
+              let generateApiTokenResponse: _GenerateApiTokenResponse;
+              if (resp) {
+                generateApiTokenResponse = new _GenerateApiTokenResponse(
+                  resp.api_key,
+                  resp.refresh_token,
+                  resp.endpoint,
+                  resp.valid_until
+                );
+                resolve(new GenerateApiToken.Success(generateApiTokenResponse));
+              }
             }
           }
         );
