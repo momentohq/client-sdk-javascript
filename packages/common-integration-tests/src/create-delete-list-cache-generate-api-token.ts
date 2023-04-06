@@ -108,7 +108,7 @@ export function runCreateDeleteListCacheTests(Momento: ICacheClient) {
     describe('generate api token', () => {
       it('should return success and generate auth token', async () => {
         const cacheName = testCacheName();
-        const sessionToken = process.env.SESSION_TOKEN as string;
+        const sessionToken = process.env.TEST_SESSION_TOKEN as string;
         await WithCache(Momento, cacheName, async () => {
           const resp = await Momento.generateApiToken(sessionToken);
           expect(resp).toBeInstanceOf(GenerateApiToken.Success);
