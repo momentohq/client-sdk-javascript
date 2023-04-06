@@ -5,7 +5,6 @@ import {
   CacheFlush,
   CacheGet,
   CacheSet,
-  GenerateApiToken,
   CacheDelete,
   CacheIncrement,
   IncrementOptions,
@@ -66,12 +65,6 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async listCaches(): Promise<ListCaches.Response> {
     return await this.controlClient.listCaches();
-  }
-
-  public async generateApiToken(
-    sessionToken: string
-  ): Promise<GenerateApiToken.Response> {
-    return await this.controlClient.generateApiToken(sessionToken);
   }
 
   /**

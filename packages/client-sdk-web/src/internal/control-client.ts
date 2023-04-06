@@ -1,4 +1,4 @@
-import {auth, control} from '@gomomento/generated-types-webtext';
+import {control} from '@gomomento/generated-types-webtext';
 import {
   CreateCache,
   DeleteCache,
@@ -6,7 +6,6 @@ import {
   CredentialProvider,
   MomentoLogger,
   CacheFlush,
-  GenerateApiToken,
 } from '..';
 import {version} from '../../package.json';
 import {Configuration} from '../config/configuration';
@@ -18,7 +17,6 @@ import {
   _ListCachesRequest,
   _FlushCacheRequest,
 } from '@gomomento/generated-types-webtext/dist/controlclient_pb';
-import {_GenerateApiTokenRequest} from '@gomomento/generated-types-webtext/dist/auth_pb';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   normalizeSdkError,
@@ -26,9 +24,7 @@ import {
   _Cache,
   _ListCachesResponse,
   IControlClient,
-  _GenerateApiTokenResponse,
 } from '@gomomento/common';
-import Never = _GenerateApiTokenRequest.Never;
 export interface ControlClientProps {
   configuration: Configuration;
   credentialProvider: CredentialProvider;
@@ -40,7 +36,6 @@ export class ControlClient<
 > implements IControlClient
 {
   private readonly clientWrapper: control.ScsControlClient;
-  private readonly clientAuthWrapper: auth.AuthClient;
   private readonly interceptors: UnaryInterceptor<REQ, RESP>[];
   // private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
   private readonly logger: MomentoLogger;
@@ -75,13 +70,6 @@ export class ControlClient<
 
     this.authHeaders = {authorization: props.credentialProvider.getAuthToken()};
     this.clientWrapper = new control.ScsControlClient(
-      `https://${props.credentialProvider.getControlEndpoint()}`,
-      null,
-      {
-        unaryInterceptors: this.interceptors,
-      }
-    );
-    this.clientAuthWrapper = new auth.AuthClient(
       `https://${props.credentialProvider.getControlEndpoint()}`,
       null,
       {
@@ -195,33 +183,6 @@ export class ControlClient<
           resolve(new ListCaches.Success(listCachesResponse));
         }
       });
-    });
-  }
-
-  public async generateApiToken(
-    sessionToken: string
-  ): Promise<GenerateApiToken.Response> {
-    const request = new _GenerateApiTokenRequest();
-    request.setNever(new Never());
-    this.logger.debug("Issuing 'generateApiToken' request");
-    return await new Promise<GenerateApiToken.Response>(resolve => {
-      this.clientAuthWrapper.generateApiToken(
-        request,
-        {authorization: sessionToken},
-        (err, resp) => {
-          if (err) {
-            resolve(new GenerateApiToken.Error(cacheServiceErrorMapper(err)));
-          } else {
-            const generateApiTokenResponse = new _GenerateApiTokenResponse(
-              resp.getApiKey(),
-              resp.getRefreshToken(),
-              resp.getEndpoint(),
-              resp.getValidUntil()
-            );
-            resolve(new GenerateApiToken.Success(generateApiTokenResponse));
-          }
-        }
-      );
     });
   }
 

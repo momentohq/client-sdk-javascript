@@ -10,7 +10,7 @@ class _Success extends Response {
   readonly endpoint: string;
   readonly validUntil: number;
 
-  constructor(result?: _GenerateApiTokenResponse) {
+  constructor(result: _GenerateApiTokenResponse) {
     super();
     if (result) {
       this.apiToken = result.apiToken;
