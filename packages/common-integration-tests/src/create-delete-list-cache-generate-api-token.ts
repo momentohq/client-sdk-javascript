@@ -105,7 +105,8 @@ export function runCreateDeleteListCacheTests(Momento: ICacheClient) {
       });
     });
 
-    describe('generate api token', () => {
+    // skipping test for now until we decide how to feed a session token here
+    describe.skip('generate api token', () => {
       it('should return success and generate auth token', async () => {
         const cacheName = testCacheName();
         const sessionToken = process.env.TEST_SESSION_TOKEN as string;
