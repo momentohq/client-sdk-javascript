@@ -1,5 +1,6 @@
-import {control} from '@gomomento/generated-types';
+import {control, auth} from '@gomomento/generated-types';
 import grpcControl = control.control_client;
+import grpcAuth = auth.auth;
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {Status} from '@grpc/grpc-js/build/src/constants';
@@ -9,6 +10,7 @@ import {
   CreateCache,
   DeleteCache,
   ListCaches,
+  GenerateApiToken,
   CreateSigningKey,
   ListSigningKeys,
   RevokeSigningKey,
@@ -27,6 +29,7 @@ import {
 import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
 import {
   _Cache,
+  _GenerateApiTokenResponse,
   _ListCachesResponse,
   _ListSigningKeysResponse,
   _SigningKey,
@@ -39,6 +42,7 @@ export interface ControlClientProps {
 
 export class ControlClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcControl.ScsControlClient>;
+  private readonly clientAuthWrapper: GrpcClientWrapper<grpcAuth.AuthClient>;
   private readonly interceptors: Interceptor[];
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
   private readonly logger: MomentoLogger;
@@ -62,6 +66,15 @@ export class ControlClient {
     this.clientWrapper = new IdleGrpcClientWrapper({
       clientFactoryFn: () =>
         new grpcControl.ScsControlClient(
+          props.credentialProvider.getControlEndpoint(),
+          ChannelCredentials.createSsl()
+        ),
+      configuration: props.configuration,
+    });
+
+    this.clientAuthWrapper = new IdleGrpcClientWrapper({
+      clientFactoryFn: () =>
+        new grpcAuth.AuthClient(
           props.credentialProvider.getControlEndpoint(),
           ChannelCredentials.createSsl()
         ),
@@ -179,6 +192,36 @@ export class ControlClient {
             resolve(new ListCaches.Success(listCachesResponse));
           }
         });
+    });
+  }
+
+  public async generateApiToken(
+    sessionToken: string
+  ): Promise<GenerateApiToken.Response> {
+    const request = new grpcAuth._GenerateApiTokenRequest();
+    request.session_token = sessionToken;
+    request.never = new grpcAuth._GenerateApiTokenRequest.Never();
+    this.logger.debug("Issuing 'generateApiToken' request");
+    return await new Promise<GenerateApiToken.Response>(resolve => {
+      this.clientAuthWrapper
+        .getClient()
+        .GenerateApiToken(
+          request,
+          {interceptors: this.interceptors},
+          (err, resp) => {
+            if (err) {
+              resolve(new GenerateApiToken.Error(cacheServiceErrorMapper(err)));
+            } else {
+              const generateApiTokenResponse = new _GenerateApiTokenResponse(
+                resp?.api_key,
+                resp?.refresh_token,
+                resp?.endpoint,
+                resp?.valid_until
+              );
+              resolve(new GenerateApiToken.Success(generateApiTokenResponse));
+            }
+          }
+        );
     });
   }
 

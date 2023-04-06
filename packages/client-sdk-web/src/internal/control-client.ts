@@ -28,7 +28,6 @@ import {
   IControlClient,
   _GenerateApiTokenResponse,
 } from '@gomomento/common';
-//import {_GenerateApiTokenRequest} from '@gomomento/generated-types-webtext/dist/auth_pb';
 import Never = _GenerateApiTokenRequest.Never;
 export interface ControlClientProps {
   configuration: Configuration;
