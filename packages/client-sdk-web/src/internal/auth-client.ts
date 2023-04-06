@@ -21,7 +21,6 @@ export class InternalWebGrpcAuthClient<
 > {
   private readonly clientAuthWrapper: auth.AuthClient;
   private readonly interceptors: UnaryInterceptor<REQ, RESP>[];
-  // private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
   private readonly logger: MomentoLogger;
 
   /**
@@ -34,19 +33,10 @@ export class InternalWebGrpcAuthClient<
       new HeaderInterceptorProvider<REQ, RESP>(
         headers
       ).createHeadersInterceptor(),
-      // ClientTimeoutInterceptor(ControlClient.REQUEST_TIMEOUT_MS),
     ];
     this.logger.debug(
       `Creating control client using endpoint: '${props.credentialProvider.getControlEndpoint()}`
     );
-    // this.clientWrapper = new IdleGrpcClientWrapper({
-    //   clientFactoryFn: () =>
-    //     new grpcControl.ScsControlClient(
-    //       props.credentialProvider.getControlEndpoint(),
-    //       ChannelCredentials.createSsl()
-    //     ),
-    //   configuration: props.configuration,
-    // });
     console.log(
       `\n\n\nCreating control client with endpoint: ${props.credentialProvider.getControlEndpoint()}\n\n\n`
     );

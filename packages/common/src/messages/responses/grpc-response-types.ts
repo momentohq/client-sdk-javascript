@@ -63,15 +63,15 @@ export class _GenerateApiTokenResponse {
   readonly endpoint: string;
   readonly validUntil: number;
   constructor(
-    apiToken?: string,
-    refreshToken?: string,
-    endpoint?: string,
-    validUntil?: number
+    apiToken: string,
+    refreshToken: string,
+    endpoint: string,
+    validUntil: number
   ) {
-    this.apiToken = apiToken ?? '';
-    this.refreshToken = refreshToken ?? '';
-    this.endpoint = endpoint ?? '';
-    this.validUntil = validUntil ?? 0;
+    this.apiToken = apiToken;
+    this.refreshToken = refreshToken;
+    this.endpoint = endpoint;
+    this.validUntil = validUntil;
   }
 }
 

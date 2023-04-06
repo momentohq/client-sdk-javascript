@@ -27,10 +27,7 @@ export class AuthClient {
    */
   constructor(props: AuthClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    const headers = [
-      new Header('Authorization', props.credentialProvider.getAuthToken()),
-      new Header('Agent', `nodejs:${version}`),
-    ];
+    const headers = [new Header('Agent', `nodejs:${version}`)];
     this.interceptors = [
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
       ClientTimeoutInterceptor(AuthClient.REQUEST_TIMEOUT_MS),
