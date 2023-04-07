@@ -38,7 +38,7 @@ class _Success extends Response {
 }
 
 /**
- * Indicates a Successful list caches request.
+ * Indicates a Successful generate api token request.
  */
 export class Success extends ResponseSuccess(_Success) {}
 
@@ -49,7 +49,7 @@ class _Error extends Response {
 }
 
 /**
- * Indicates that an error occurred during the list caches request.
+ * Indicates that an error occurred during the generate api token request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:

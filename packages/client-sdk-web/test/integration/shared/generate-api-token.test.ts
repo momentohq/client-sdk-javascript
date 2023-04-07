@@ -1,14 +1,13 @@
 import {runGenerateApiTokenTest} from '@gomomento/common-integration-tests';
-import {CredentialProvider, NoopMomentoLoggerFactory} from '@gomomento/common';
+import {NoopMomentoLoggerFactory} from '@gomomento/common';
 import {AuthClient} from '../../../src/auth-client';
 
+// TODO: we need to figure out how to add a control endpoint for this test
 runGenerateApiTokenTest(
   new AuthClient({
     configuration: {
       getLoggerFactory: () => new NoopMomentoLoggerFactory(),
     },
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'TEST_AUTH_TOKEN',
-    }),
+    controlEndpoint: '',
   })
 );

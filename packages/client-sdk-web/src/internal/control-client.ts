@@ -64,9 +64,6 @@ export class ControlClient<
     //     ),
     //   configuration: props.configuration,
     // });
-    console.log(
-      `\n\n\nCreating control client with endpoint: ${props.credentialProvider.getControlEndpoint()}\n\n\n`
-    );
 
     this.authHeaders = {authorization: props.credentialProvider.getAuthToken()};
     this.clientWrapper = new control.ScsControlClient(

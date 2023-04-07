@@ -4,7 +4,7 @@ import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
-import {GenerateApiToken, CredentialProvider, MomentoLogger} from '..';
+import {GenerateApiToken, MomentoLogger} from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
@@ -13,7 +13,7 @@ import {_GenerateApiTokenResponse} from '@gomomento/core/dist/src/messages/respo
 
 export interface AuthClientProps {
   configuration: Configuration;
-  credentialProvider: CredentialProvider;
+  controlEndpoint: string;
 }
 
 export class AuthClient {
@@ -33,12 +33,12 @@ export class AuthClient {
       ClientTimeoutInterceptor(AuthClient.REQUEST_TIMEOUT_MS),
     ];
     this.logger.debug(
-      `Creating control client using endpoint: '${props.credentialProvider.getControlEndpoint()}`
+      `Creating auth client using endpoint: '${props.controlEndpoint}`
     );
     this.clientAuthWrapper = new IdleGrpcClientWrapper({
       clientFactoryFn: () =>
         new grpcAuth.AuthClient(
-          props.credentialProvider.getControlEndpoint(),
+          props.controlEndpoint,
           ChannelCredentials.createSsl()
         ),
       configuration: props.configuration,

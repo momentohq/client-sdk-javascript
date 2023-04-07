@@ -1,5 +1,5 @@
 import {auth} from '@gomomento/generated-types-webtext';
-import {CredentialProvider, MomentoLogger, GenerateApiToken} from '..';
+import {MomentoLogger, GenerateApiToken} from '..';
 import {version} from '../../package.json';
 import {Configuration} from '../config/configuration';
 import {Request, UnaryInterceptor, UnaryResponse} from 'grpc-web';
@@ -12,7 +12,7 @@ import Expires = _GenerateApiTokenRequest.Expires;
 
 export interface AuthClientProps {
   configuration: Configuration;
-  credentialProvider: CredentialProvider;
+  controlEndpoint: string;
 }
 
 export class InternalWebGrpcAuthClient<
@@ -35,19 +35,11 @@ export class InternalWebGrpcAuthClient<
       ).createHeadersInterceptor(),
     ];
     this.logger.debug(
-      `Creating control client using endpoint: '${props.credentialProvider.getControlEndpoint()}`
+      `Creating control client using endpoint: ${props.controlEndpoint}`
     );
-    console.log(
-      `\n\n\nCreating control client with endpoint: ${props.credentialProvider.getControlEndpoint()}\n\n\n`
-    );
-
-    this.clientAuthWrapper = new auth.AuthClient(
-      `https://${props.credentialProvider.getControlEndpoint()}`,
-      null,
-      {
-        unaryInterceptors: this.interceptors,
-      }
-    );
+    this.clientAuthWrapper = new auth.AuthClient(props.controlEndpoint, null, {
+      unaryInterceptors: this.interceptors,
+    });
   }
 
   public async generateApiToken(
