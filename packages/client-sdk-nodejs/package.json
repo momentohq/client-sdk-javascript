@@ -16,7 +16,7 @@
     "prebuild": "eslint . --ext .ts",
     "test": "jest",
     "unit-test": "jest unit",
-    "integration-test": "jest integration",
+    "integration-test": "jest integration --verbose false",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",

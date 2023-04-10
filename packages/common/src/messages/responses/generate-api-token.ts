@@ -1,6 +1,7 @@
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 import {_GenerateApiTokenResponse} from './grpc-response-types';
 import {SdkError} from '../../errors';
+import {encodeToBase64} from '../../internal/utils';
 
 export abstract class Response extends ResponseBase {}
 
@@ -21,15 +22,13 @@ class _Success extends Response {
   }
 
   public getApiToken() {
-    return this.apiToken;
+    return encodeToBase64(
+      JSON.stringify({endpoint: this.endpoint, api_key: this.apiToken})
+    );
   }
 
   public getRefreshToken() {
     return this.refreshToken;
-  }
-
-  public getEndpoint() {
-    return this.endpoint;
   }
 
   public getValidUntil() {
