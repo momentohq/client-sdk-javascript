@@ -53,7 +53,7 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
       }
       return {
         controlEndpoint: `control.${base64DecodedToken.endpoint}`,
-        cacheEndpoint: `data.${base64DecodedToken.endpoint}`,
+        cacheEndpoint: `cache.${base64DecodedToken.endpoint}`,
         authToken: base64DecodedToken.api_key,
       };
     } else {
