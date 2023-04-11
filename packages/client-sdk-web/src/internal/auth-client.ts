@@ -37,9 +37,13 @@ export class InternalWebGrpcAuthClient<
     this.logger.debug(
       `Creating control client using endpoint: ${props.controlEndpoint}`
     );
-    this.clientAuthWrapper = new auth.AuthClient(props.controlEndpoint, null, {
-      unaryInterceptors: this.interceptors,
-    });
+    this.clientAuthWrapper = new auth.AuthClient(
+      `https://${props.controlEndpoint}`,
+      null,
+      {
+        unaryInterceptors: this.interceptors,
+      }
+    );
   }
 
   public async generateApiToken(
