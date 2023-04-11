@@ -1,4 +1,5 @@
 import {CacheClient} from './cache-client';
+import {AuthClient} from './auth-client';
 import {
   CacheGet,
   CacheListConcatenateBack,
@@ -85,6 +86,7 @@ export {
 } from '@gomomento/common';
 
 export {
+  AuthClient,
   CollectionTtl,
   SortedSetOrder,
   Configuration,
