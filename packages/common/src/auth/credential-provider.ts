@@ -131,10 +131,11 @@ export class EnvMomentoTokenProvider extends StringMomentoTokenProvider {
         `Missing required environment variable ${props.environmentVariableName}`
       );
     }
+    const decodedToken = decodeAuthToken(authToken);
     super({
-      authToken: authToken,
-      controlEndpoint: props.controlEndpoint,
-      cacheEndpoint: props.cacheEndpoint,
+      authToken: decodedToken.authToken,
+      controlEndpoint: props.controlEndpoint ?? decodedToken.controlEndpoint,
+      cacheEndpoint: props.cacheEndpoint ?? decodedToken.cacheEndpoint,
     });
     this.environmentVariableName = props.environmentVariableName;
   }
