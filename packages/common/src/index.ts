@@ -15,6 +15,7 @@ import * as CacheFlush from './messages/responses/cache-flush';
 import * as CreateCache from './messages/responses/create-cache';
 import * as DeleteCache from './messages/responses/delete-cache';
 import * as ListCaches from './messages/responses/list-caches';
+import * as GenerateApiToken from './messages/responses/generate-api-token';
 import * as CreateSigningKey from './messages/responses/create-signing-key';
 import * as ListSigningKeys from './messages/responses/list-signing-keys';
 import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
@@ -105,6 +106,7 @@ export {
   CreateCache,
   DeleteCache,
   ListCaches,
+  GenerateApiToken,
   CacheIncrement,
   CreateSigningKey,
   ListSigningKeys,
