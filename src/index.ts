@@ -48,6 +48,7 @@ import * as CacheSortedSetRemoveElements from './messages/responses/cache-sorted
 import * as TopicPublish from './messages/responses/topic-publish';
 import * as TopicSubscribe from './messages/responses/topic-subscribe';
 import {TopicItem} from './messages/responses/topic-item';
+import {SubscribeCallOptions} from './utils/topic-call-options';
 
 import {CacheInfo} from './messages/cache-info';
 import {CollectionTtl} from './utils/collection-ttl';
@@ -57,7 +58,36 @@ import {
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
 } from './auth/credential-provider';
-import {Configuration} from './config/configuration';
+import {Configuration, CacheConfiguration} from './config/configuration';
+
+export {
+  EligibilityStrategy,
+  EligibleForRetryProps,
+} from './config/retry/eligibility-strategy';
+
+export {
+  RetryStrategy,
+  DeterminewhenToRetryRequestProps,
+} from './config/retry/retry-strategy';
+
+export {
+  FixedCountRetryStrategy,
+  FixedCountRetryStrategyProps,
+} from './config/retry/fixed-count-retry-strategy';
+
+export {DefaultEligibilityStrategy} from './config/retry/default-eligibility-strategy';
+
+export {
+  StaticGrpcConfiguration,
+  StaticTransportStrategy,
+  TransportStrategy,
+  TransportStrategyProps,
+} from './config/transport/transport-strategy';
+
+export {
+  GrpcConfiguration,
+  GrpcConfigurationProps,
+} from './config/transport/grpc-configuration';
 
 import {
   MomentoErrorCode,
@@ -88,6 +118,16 @@ export {
   DefaultMomentoLoggerLevel,
 } from './config/logging/default-momento-logger';
 
+export {
+  NoopMomentoLogger,
+  NoopMomentoLoggerFactory,
+} from './config/logging/noop-momento-logger';
+
+export {
+  Middleware,
+  MiddlewareRequestHandler,
+} from './config/middleware/middleware';
+
 export {ExperimentalRequestLoggingMiddleware} from './config/middleware/experimental-request-logging-middleware';
 export {ExperimentalMetricsCsvMiddleware} from './config/middleware/experimental-metrics-csv-middleware';
 export {ExampleAsyncMiddleware} from './config/middleware/example-async-middleware';
@@ -97,6 +137,7 @@ export {
   SortedSetOrder,
   Configurations,
   Configuration,
+  CacheConfiguration,
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
@@ -151,6 +192,7 @@ export {
   TopicItem,
   TopicPublish,
   TopicSubscribe,
+  SubscribeCallOptions,
   MomentoErrorCode,
   AlreadyExistsError,
   AuthenticationError,
