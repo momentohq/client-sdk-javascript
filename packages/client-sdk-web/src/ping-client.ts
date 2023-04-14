@@ -1,4 +1,7 @@
-import {AbstractPingClient, IPingClient} from '@gomomento/common';
+import {
+  AbstractPingClient,
+  IPingClient,
+} from '@gomomento/core/dist/src/internal/clients';
 import {
   InternalGrpcWebPingClient,
   PingClientProps,

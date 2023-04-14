@@ -12,11 +12,6 @@ import {
 } from '..';
 import {version} from '../../package.json';
 import {Configuration} from '../config/configuration';
-import {
-  validateCacheName,
-  normalizeSdkError,
-  IDataClient,
-} from '@gomomento/common';
 import {Request, UnaryInterceptor, UnaryResponse} from 'grpc-web';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
@@ -29,6 +24,9 @@ import {
   _SetRequest,
   ECacheResult,
 } from '@gomomento/generated-types-webtext/dist/cacheclient_pb';
+import {IDataClient} from '@gomomento/core/dist/src/internal/clients';
+import {validateCacheName} from '@gomomento/core/dist/src/internal/utils';
+import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
 
 export interface DataClientProps {
   configuration: Configuration;
@@ -46,7 +44,6 @@ export class DataClient<
 {
   private readonly clientWrapper: cache.ScsClient;
   private readonly interceptors: UnaryInterceptor<REQ, RESP>[];
-  // private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
   private readonly logger: MomentoLogger;
   private readonly authHeaders: {authorization: string};
   private readonly defaultTtlSeconds: number;
@@ -61,19 +58,10 @@ export class DataClient<
       new HeaderInterceptorProvider<REQ, RESP>(
         headers
       ).createHeadersInterceptor(),
-      // ClientTimeoutInterceptor(ControlClient.REQUEST_TIMEOUT_MS),
     ];
     this.logger.debug(
       `Creating data client using endpoint: '${props.credentialProvider.getCacheEndpoint()}`
     );
-    // this.clientWrapper = new IdleGrpcClientWrapper({
-    //   clientFactoryFn: () =>
-    //     new grpcControl.ScsControlClient(
-    //       props.credentialProvider.getControlEndpoint(),
-    //       ChannelCredentials.createSsl()
-    //     ),
-    //   configuration: props.configuration,
-    // });
     console.log(
       `\n\n\nCreating data client with endpoint: ${props.credentialProvider.getCacheEndpoint()}\n\n\n`
     );

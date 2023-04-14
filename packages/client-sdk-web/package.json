@@ -48,7 +48,7 @@
     "xhr2": "^0.2.1"
   },
   "dependencies": {
-    "@gomomento/common": "file:../common",
+    "@gomomento/core": "file:../common",
     "@gomomento/generated-types-webtext": "0.57.0",
     "google-protobuf": "^3.21.2",
     "grpc-web": "1.4.2",

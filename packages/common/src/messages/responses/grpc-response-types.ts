@@ -41,40 +41,6 @@ export class _SortedSetGetScoreResponsePart {
   }
 }
 
-export class _Cache {
-  readonly cacheName: string;
-  constructor(cacheName: string) {
-    this.cacheName = cacheName;
-  }
-}
-
-export class _ListCachesResponse {
-  readonly caches: _Cache[];
-  readonly nextToken: string;
-  constructor(caches?: _Cache[], nextToken?: string) {
-    this.caches = caches ?? [];
-    this.nextToken = nextToken ?? '';
-  }
-}
-
-export class _GenerateApiTokenResponse {
-  readonly apiToken: string;
-  readonly refreshToken: string;
-  readonly endpoint: string;
-  readonly validUntil: number;
-  constructor(
-    apiToken: string,
-    refreshToken: string,
-    endpoint: string,
-    validUntil: number
-  ) {
-    this.apiToken = apiToken;
-    this.refreshToken = refreshToken;
-    this.endpoint = endpoint;
-    this.validUntil = validUntil;
-  }
-}
-
 export class _SigningKey {
   readonly key: string;
   readonly expiresAt: number;
@@ -91,15 +57,5 @@ export class _SortedSetElement {
   constructor(value: Uint8Array, score: number) {
     this.value = value;
     this.score = score;
-  }
-}
-
-export class _ListSigningKeysResponse {
-  readonly signingKeys: _SigningKey[];
-  readonly nextToken: string;
-
-  constructor(signingKeys?: _SigningKey[], nextToken?: string) {
-    this.signingKeys = signingKeys ?? [];
-    this.nextToken = nextToken ?? '';
   }
 }

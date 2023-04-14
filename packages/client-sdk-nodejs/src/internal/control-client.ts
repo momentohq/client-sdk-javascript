@@ -15,6 +15,7 @@ import {
   CacheFlush,
   CredentialProvider,
   MomentoLogger,
+  CacheInfo,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -25,12 +26,7 @@ import {
   validateTtlMinutes,
 } from '@gomomento/core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
-import {
-  _Cache,
-  _ListCachesResponse,
-  _ListSigningKeysResponse,
-  _SigningKey,
-} from '@gomomento/core/dist/src/messages/responses/grpc-response-types';
+import {_SigningKey} from '@gomomento/core/dist/src/messages/responses/grpc-response-types';
 
 export interface ControlClientProps {
   configuration: Configuration;
@@ -166,17 +162,13 @@ export class ControlClient {
       this.clientWrapper
         .getClient()
         .ListCaches(request, {interceptors: this.interceptors}, (err, resp) => {
-          if (err) {
+          if (err || !resp) {
             resolve(new ListCaches.Error(cacheServiceErrorMapper(err)));
           } else {
-            const caches = resp?.cache.map(
-              cache => new _Cache(cache.cache_name)
+            const caches = resp.cache.map(
+              cache => new CacheInfo(cache.cache_name)
             );
-            const listCachesResponse = new _ListCachesResponse(
-              caches,
-              resp?.next_token
-            );
-            resolve(new ListCaches.Success(listCachesResponse));
+            resolve(new ListCaches.Success(caches));
           }
         });
     });
@@ -244,18 +236,18 @@ export class ControlClient {
           request,
           {interceptors: this.interceptors},
           (err, resp) => {
-            if (err) {
+            if (err || !resp) {
               resolve(new ListSigningKeys.Error(cacheServiceErrorMapper(err)));
             } else {
-              const signingKeys = resp?.signing_key.map(
+              const signingKeys = resp.signing_key.map(
                 sk => new _SigningKey(sk.key_id, sk.expires_at)
               );
-              const listSigningKeyResponse = new _ListSigningKeysResponse(
-                signingKeys,
-                resp?.next_token
-              );
               resolve(
-                new ListSigningKeys.Success(endpoint, listSigningKeyResponse)
+                new ListSigningKeys.Success(
+                  endpoint,
+                  signingKeys,
+                  resp.next_token
+                )
               );
             }
           }

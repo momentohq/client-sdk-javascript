@@ -6,6 +6,7 @@ import {
   CredentialProvider,
   MomentoLogger,
   CacheFlush,
+  CacheInfo,
 } from '..';
 import {version} from '../../package.json';
 import {Configuration} from '../config/configuration';
@@ -18,13 +19,10 @@ import {
   _FlushCacheRequest,
 } from '@gomomento/generated-types-webtext/dist/controlclient_pb';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-import {
-  normalizeSdkError,
-  validateCacheName,
-  _Cache,
-  _ListCachesResponse,
-  IControlClient,
-} from '@gomomento/common';
+import {IControlClient} from '@gomomento/core/dist/src/internal/clients';
+import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
+import {validateCacheName} from '@gomomento/core/dist/src/internal/utils';
+
 export interface ControlClientProps {
   configuration: Configuration;
   credentialProvider: CredentialProvider;
@@ -37,7 +35,6 @@ export class ControlClient<
 {
   private readonly clientWrapper: control.ScsControlClient;
   private readonly interceptors: UnaryInterceptor<REQ, RESP>[];
-  // private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
   private readonly logger: MomentoLogger;
   private readonly authHeaders: {authorization: string};
 
@@ -51,19 +48,10 @@ export class ControlClient<
       new HeaderInterceptorProvider<REQ, RESP>(
         headers
       ).createHeadersInterceptor(),
-      // ClientTimeoutInterceptor(ControlClient.REQUEST_TIMEOUT_MS),
     ];
     this.logger.debug(
       `Creating control client using endpoint: '${props.credentialProvider.getControlEndpoint()}`
     );
-    // this.clientWrapper = new IdleGrpcClientWrapper({
-    //   clientFactoryFn: () =>
-    //     new grpcControl.ScsControlClient(
-    //       props.credentialProvider.getControlEndpoint(),
-    //       ChannelCredentials.createSsl()
-    //     ),
-    //   configuration: props.configuration,
-    // });
 
     this.authHeaders = {authorization: props.credentialProvider.getAuthToken()};
     this.clientWrapper = new control.ScsControlClient(
@@ -172,92 +160,10 @@ export class ControlClient<
         } else {
           const caches = resp
             .getCacheList()
-            .map(cache => new _Cache(cache.getCacheName()));
-          const listCachesResponse = new _ListCachesResponse(
-            caches,
-            resp?.getNextToken()
-          );
-          resolve(new ListCaches.Success(listCachesResponse));
+            .map(cache => new CacheInfo(cache.getCacheName()));
+          resolve(new ListCaches.Success(caches));
         }
       });
     });
   }
-
-  // public async createSigningKey(
-  //   ttlMinutes: number,
-  //   endpoint: string
-  // ): Promise<CreateSigningKey.Response> {
-  //   try {
-  //     validateTtlMinutes(ttlMinutes);
-  //   } catch (err) {
-  //     return new CreateSigningKey.Error(normalizeSdkError(err as Error));
-  //   }
-  //   this.logger.debug("Issuing 'createSigningKey' request");
-  //   const request = new _CreateSigningKeyRequest();
-  //   request.setTtlMinutes(ttlMinutes);
-  //   return await new Promise<CreateSigningKey.Response>(resolve => {
-  //     this.clientWrapper.createSigningKey(
-  //       request,
-  //       this.authHeaders,
-  //       (err, resp) => {
-  //         if (err) {
-  //           resolve(new CreateSigningKey.Error(cacheServiceErrorMapper(err)));
-  //         } else {
-  //           const signingKey = new _SigningKey(
-  //             resp?.getKey(),
-  //             resp?.getExpiresAt()
-  //           );
-  //           resolve(new CreateSigningKey.Success(endpoint, signingKey));
-  //         }
-  //       }
-  //     );
-  //   });
-  // }
-  //
-  // public async revokeSigningKey(
-  //   keyId: string
-  // ): Promise<RevokeSigningKey.Response> {
-  //   const request = new _RevokeSigningKeyRequest();
-  //   request.setKeyId(keyId);
-  //   this.logger.debug("Issuing 'revokeSigningKey' request");
-  //   return await new Promise<RevokeSigningKey.Response>(resolve => {
-  //     this.clientWrapper.revokeSigningKey(request, this.authHeaders, err => {
-  //       if (err) {
-  //         resolve(new RevokeSigningKey.Error(cacheServiceErrorMapper(err)));
-  //       } else {
-  //         resolve(new RevokeSigningKey.Success());
-  //       }
-  //     });
-  //   });
-  // }
-  //
-  // public async listSigningKeys(
-  //   endpoint: string
-  // ): Promise<ListSigningKeys.Response> {
-  //   const request = new _ListSigningKeysRequest();
-  //   request.setNextToken('');
-  //   this.logger.debug("Issuing 'listSigningKeys' request");
-  //   return await new Promise<ListSigningKeys.Response>(resolve => {
-  //     this.clientWrapper.listSigningKeys(
-  //       request,
-  //       this.authHeaders,
-  //       (err, resp) => {
-  //         if (err) {
-  //           resolve(new ListSigningKeys.Error(cacheServiceErrorMapper(err)));
-  //         } else {
-  //           const signingKeys = resp
-  //             .getSigningKeyList()
-  //             .map(sk => new _SigningKey(sk.getKeyId(), sk.getExpiresAt()));
-  //           const listSigningKeyResponse = new _ListSigningKeysResponse(
-  //             signingKeys,
-  //             resp.getNextToken()
-  //           );
-  //           resolve(
-  //             new ListSigningKeys.Success(endpoint, listSigningKeyResponse)
-  //           );
-  //         }
-  //       }
-  //     );
-  //   });
-  // }
 }

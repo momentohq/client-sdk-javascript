@@ -1,3 +1,4 @@
+// Cache Client Response Types
 import * as CacheGet from './messages/responses/cache-get';
 import * as CacheListConcatenateBack from './messages/responses/cache-list-concatenate-back';
 import * as CacheListConcatenateFront from './messages/responses/cache-list-concatenate-front';
@@ -15,7 +16,6 @@ import * as CacheFlush from './messages/responses/cache-flush';
 import * as CreateCache from './messages/responses/create-cache';
 import * as DeleteCache from './messages/responses/delete-cache';
 import * as ListCaches from './messages/responses/list-caches';
-import * as GenerateApiToken from './messages/responses/generate-api-token';
 import * as CreateSigningKey from './messages/responses/create-signing-key';
 import * as ListSigningKeys from './messages/responses/list-signing-keys';
 import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
@@ -43,13 +43,17 @@ import * as CacheSortedSetGetScores from './messages/responses/cache-sorted-set-
 import * as CacheSortedSetIncrementScore from './messages/responses/cache-sorted-set-increment-score';
 import * as CacheSortedSetRemoveElement from './messages/responses/cache-sorted-set-remove-element';
 import * as CacheSortedSetRemoveElements from './messages/responses/cache-sorted-set-remove-elements';
+
+// TopicClient Response Types
 import * as TopicPublish from './messages/responses/topic-publish';
 import * as TopicSubscribe from './messages/responses/topic-subscribe';
 import {TopicItem} from './messages/responses/topic-item';
 
+// AuthClient Response Types
+import * as GenerateApiToken from './messages/responses/generate-api-token';
+
 import {CacheInfo} from './messages/cache-info';
-import {CollectionTtl} from './utils/collection-ttl';
-import {SortedSetOrder} from './utils/cache-call-options';
+import {SubscribeCallOptions, CollectionTtl, SortedSetOrder} from './utils';
 import {
   CredentialProvider,
   StringMomentoTokenProvider,
@@ -58,6 +62,7 @@ import {
 
 import {
   MomentoErrorCode,
+  SdkError,
   AlreadyExistsError,
   AuthenticationError,
   CancelledError,
@@ -72,15 +77,29 @@ import {
   PermissionError,
   NotFoundError,
   UnknownError,
-  SdkError,
-} from './errors/errors';
+} from './errors';
 
-export * from './internal/clients';
-export * from './messages/responses/grpc-response-types';
-export * from './internal/utils';
-export {normalizeSdkError} from './errors/error-utils';
+export {
+  MomentoLogger,
+  MomentoLoggerFactory,
+} from './config/logging/momento-logger';
 
-export * from './config/logging';
+export {
+  DefaultMomentoLoggerFactory,
+  DefaultMomentoLogger,
+  DefaultMomentoLoggerLevel,
+} from './config/logging/default-momento-logger';
+
+export {
+  NoopMomentoLogger,
+  NoopMomentoLoggerFactory,
+} from './config/logging/noop-momento-logger';
+
+export {
+  SetOptions,
+  SetIfNotExistsOptions,
+  IncrementOptions,
+} from './internal/clients/cache/ICacheClient';
 
 export {
   CollectionTtl,
@@ -88,6 +107,8 @@ export {
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
+
+  // CacheClient Response Types
   CacheGet,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
@@ -106,12 +127,10 @@ export {
   CreateCache,
   DeleteCache,
   ListCaches,
-  GenerateApiToken,
   CacheIncrement,
   CreateSigningKey,
   ListSigningKeys,
   RevokeSigningKey,
-  CacheInfo,
   CacheSetFetch,
   CacheDictionaryFetch,
   CacheDictionarySetField,
@@ -134,10 +153,17 @@ export {
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
-  TopicItem,
+  CacheInfo,
+  // TopicClient Response Types
   TopicPublish,
   TopicSubscribe,
+  TopicItem,
+  SubscribeCallOptions,
+  // AuthClient Response Types
+  GenerateApiToken,
+  // Errors
   MomentoErrorCode,
+  SdkError,
   AlreadyExistsError,
   AuthenticationError,
   CancelledError,
@@ -152,5 +178,4 @@ export {
   PermissionError,
   NotFoundError,
   UnknownError,
-  SdkError,
 };

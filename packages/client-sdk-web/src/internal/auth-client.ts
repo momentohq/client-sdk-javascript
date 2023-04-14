@@ -6,7 +6,6 @@ import {Request, UnaryInterceptor, UnaryResponse} from 'grpc-web';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {_GenerateApiTokenRequest} from '@gomomento/generated-types-webtext/dist/auth_pb';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-import {_GenerateApiTokenResponse} from '@gomomento/common';
 import Never = _GenerateApiTokenRequest.Never;
 import Expires = _GenerateApiTokenRequest.Expires;
 
@@ -63,13 +62,14 @@ export class InternalWebGrpcAuthClient<
         if (err) {
           resolve(new GenerateApiToken.Error(cacheServiceErrorMapper(err)));
         } else {
-          const generateApiTokenResponse = new _GenerateApiTokenResponse(
-            resp.getApiKey(),
-            resp.getRefreshToken(),
-            resp.getEndpoint(),
-            resp.getValidUntil()
+          resolve(
+            new GenerateApiToken.Success(
+              resp.getApiKey(),
+              resp.getRefreshToken(),
+              resp.getEndpoint(),
+              resp.getValidUntil()
+            )
           );
-          resolve(new GenerateApiToken.Success(generateApiTokenResponse));
         }
       });
     });

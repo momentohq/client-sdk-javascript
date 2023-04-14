@@ -3,7 +3,7 @@ import {
   deleteCacheIfExists,
   testCacheName,
 } from '@gomomento/common-integration-tests';
-import {CreateCache, CredentialProvider, DeleteCache} from '@gomomento/common';
+import {CreateCache, CredentialProvider, DeleteCache} from '@gomomento/core';
 
 function momentoClientForTesting() {
   return new CacheClient({
