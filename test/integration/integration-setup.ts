@@ -43,7 +43,7 @@ export async function WithCache(
 }
 
 export const IntegrationTestCacheClientProps: CacheClientProps = {
-  configuration: Configurations.Laptop.latest(),
+  configuration: Configurations.Laptop.latest().withClientTimeoutMillis(10000),
   credentialProvider: CredentialProvider.fromEnvironmentVariable({
     environmentVariableName: 'TEST_AUTH_TOKEN',
   }),
