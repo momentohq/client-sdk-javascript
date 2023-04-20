@@ -595,11 +595,11 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
   public async setIfNotExists(
     cacheName: string,
     key: string | Uint8Array,
-    field: string | Uint8Array,
+    value: string | Uint8Array,
     options?: SetIfNotExistsOptions
   ): Promise<CacheSetIfNotExists.Response> {
     const client = this.getNextDataClient();
-    return await client.setIfNotExists(cacheName, key, field, options?.ttl);
+    return await client.setIfNotExists(cacheName, key, value, options?.ttl);
   }
 
   /**

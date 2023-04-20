@@ -404,6 +404,8 @@ export class PubsubClient {
         options.subscription.unsubscribe();
         options.onError(momentoError, options.subscription);
         return;
+      } else {
+        options.onError(momentoError, options.subscription);
       }
     };
   }

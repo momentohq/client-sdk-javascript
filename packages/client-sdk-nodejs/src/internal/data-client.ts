@@ -376,7 +376,7 @@ export class DataClient {
   public async setIfNotExists(
     cacheName: string,
     key: string | Uint8Array,
-    field: string | Uint8Array,
+    value: string | Uint8Array,
     ttl?: number
   ): Promise<CacheSetIfNotExists.Response> {
     try {
@@ -390,7 +390,7 @@ export class DataClient {
       );
     }
     this.logger.trace(
-      `Issuing 'setIfNotExists' request; key: ${key.toString()}, field: ${field.toString()}, ttl: ${
+      `Issuing 'setIfNotExists' request; key: ${key.toString()}, field: ${value.toString()}, ttl: ${
         ttl?.toString() ?? 'null'
       }`
     );
@@ -398,7 +398,7 @@ export class DataClient {
     const result = await this.sendSetIfNotExists(
       cacheName,
       this.convert(key),
-      this.convert(field),
+      this.convert(value),
       ttl || this.defaultTtlSeconds * 1000
     );
     this.logger.trace(`'setIfNotExists' request result: ${result.toString()}`);
@@ -408,12 +408,12 @@ export class DataClient {
   private async sendSetIfNotExists(
     cacheName: string,
     key: Uint8Array,
-    field: Uint8Array,
+    value: Uint8Array,
     ttlMilliseconds: number
   ): Promise<CacheSetIfNotExists.Response> {
     const request = new grpcCache._SetIfNotExistsRequest({
       cache_key: key,
-      cache_body: field,
+      cache_body: value,
       ttl_milliseconds: ttlMilliseconds,
     });
     const metadata = this.createMetadata(cacheName);

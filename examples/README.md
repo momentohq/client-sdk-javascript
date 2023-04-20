@@ -106,3 +106,60 @@ MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run load-gen
 
 You can check out the example code in [load-gen.ts](load-gen.ts). The configurable
 settings are at the bottom of the file.
+
+## Running the request-coalescing example
+
+If your application has traffic patterns that result in a high number of concurrent requests to Momento,
+it is possible that the nodejs event loop can become overwhelmed and cause the observed client-side
+latencies to rise drastically.  Sometimes this results in client-side timeouts even when the
+server-side latencies are very low.
+
+If your application may have a lot of duplicate requests, one solution is to de-duplicate
+the requests (aka request coalescing).  With a tiny bit of code it's pretty easy to ensure
+that only one copy of each duplicate request actually goes out onto the network.
+This can reduce the amount of work that ends up in the node.js event loop, and dramatically
+improve the performance of your application.
+
+This repo includes a request-coalescer, to allow you to experiment
+with performance in your environment based on different configurations.
+
+The request-coalescing example shows difference between latencies when
+a basic load-generator is used v/s when request-coalescer is used.
+
+Check out the configuration settings at the bottom of the 'request-coalescing.ts' to
+see how different configurations impact performance.
+
+**Here are some stats and steps on how to run the example:**
+
+Change the configuration found at the end of the file to
+`maxRequestsPerSecond = 1000` and `numberOfConcurrentRequests = 1000`
+to achieve the stats shown below:
+
+Stats should like:
+
+|     Request type, Metric     | Before Coalescing | After Coalescing |
+|:----------------------------:|:-----------------:|:----------------:|
+|           set, p50           |        60         |        20        |
+|           set, p99           |        445        |        37        |
+|           get, p50           |        40         |        20        |
+|           get, p99           |        140        |        32        |
+| set, % of requests coalesced |         -         |      49.5%       |
+| get, % of requests coalesced |         -         |      49.5%       |
+
+It's only about 50 lines of code to create a coalescing wrapper for the Momento cache client.  You can see our
+implementation here:
+https://github.com/momentohq/client-sdk-nodejs/blob/main/examples/utils/momento-client-with-coalescing.ts
+
+### Run the above example:
+```bash
+# Run example request coalescing
+MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run request-coalsecing
+```
+
+You can check out the example code in [request-coalescing.ts](request-coalescing.ts). The configurable
+settings are at the bottom of the file.
+
+If you have questions or need help experimenting further, please reach out to us!
+
+
+

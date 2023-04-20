@@ -32,7 +32,7 @@ describe('auth.ts', () => {
     };
     const base64EncodedToken = encodeToBase64(JSON.stringify(decodedToken));
     const res = decodeAuthToken(base64EncodedToken);
-    expect(res.cacheEndpoint).toEqual(`data.${decodedToken.endpoint}`);
+    expect(res.cacheEndpoint).toEqual(`cache.${decodedToken.endpoint}`);
     expect(res.controlEndpoint).toEqual(`control.${decodedToken.endpoint}`);
     expect(res.authToken).toEqual(decodedToken.api_key);
   });
