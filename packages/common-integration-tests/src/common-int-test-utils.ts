@@ -41,6 +41,10 @@ export interface ValidateCacheProps {
   cacheName: string;
 }
 
+export interface ValidateListProps extends ValidateCacheProps {
+  listName: string;
+}
+
 export function ItBehavesLikeItValidatesCacheName(
   getResponse: (props: ValidateCacheProps) => Promise<ResponseBase>
 ) {

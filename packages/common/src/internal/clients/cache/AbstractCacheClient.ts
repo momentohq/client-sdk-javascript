@@ -10,8 +10,26 @@ import {
   IncrementOptions,
   CacheSetIfNotExists,
   SetIfNotExistsOptions,
+  CacheListFetch,
+  CacheListLength,
+  CacheListPushFront,
+  CacheListPushBack,
+  CacheListConcatenateBack,
+  CacheListConcatenateFront,
+  CacheListPopBack,
+  CacheListPopFront,
+  CacheListRemoveValue,
+  CacheListRetain,
 } from '../../../index';
-import {ICacheClient, SetOptions} from './ICacheClient';
+import {ListFetchCallOptions, ListRetainCallOptions} from '../../../utils';
+import {
+  ICacheClient,
+  SetOptions,
+  ListPushFrontOptions,
+  ListPushBackOptions,
+  ListConcatenateBackOptions,
+  ListConcatenateFrontOptions,
+} from './ICacheClient';
 import {IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
 
@@ -143,21 +161,21 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheListConcatenateBack.Success} on success.
    * {@link CacheListConcatenateBack.Error} on failure.
    */
-  // public async listConcatenateBack(
-  //   cacheName: string,
-  //   listName: string,
-  //   values: string[] | Uint8Array[],
-  //   options?: ListConcatenateBackOptions
-  // ): Promise<CacheListConcatenateBack.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.listConcatenateBack(
-  //     cacheName,
-  //     listName,
-  //     values,
-  //     options?.truncateFrontToSize,
-  //     options?.ttl
-  //   );
-  // }
+  public async listConcatenateBack(
+    cacheName: string,
+    listName: string,
+    values: string[] | Uint8Array[],
+    options?: ListConcatenateBackOptions
+  ): Promise<CacheListConcatenateBack.Response> {
+    const client = this.getNextDataClient();
+    return await client.listConcatenateBack(
+      cacheName,
+      listName,
+      values,
+      options?.truncateFrontToSize,
+      options?.ttl
+    );
+  }
 
   /**
    * Adds multiple elements to the front of the given list. Creates the list if
@@ -176,21 +194,21 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheListConcatenateFront.Success} on success.
    * {@link CacheListConcatenateFront.Error} on failure.
    */
-  // public async listConcatenateFront(
-  //   cacheName: string,
-  //   listName: string,
-  //   values: string[] | Uint8Array[],
-  //   options?: ListConcatenateFrontOptions
-  // ): Promise<CacheListConcatenateFront.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.listConcatenateFront(
-  //     cacheName,
-  //     listName,
-  //     values,
-  //     options?.truncateBackToSize,
-  //     options?.ttl
-  //   );
-  // }
+  public async listConcatenateFront(
+    cacheName: string,
+    listName: string,
+    values: string[] | Uint8Array[],
+    options?: ListConcatenateFrontOptions
+  ): Promise<CacheListConcatenateFront.Response> {
+    const client = this.getNextDataClient();
+    return await client.listConcatenateFront(
+      cacheName,
+      listName,
+      values,
+      options?.truncateBackToSize,
+      options?.ttl
+    );
+  }
 
   /**
    * Fetches all elements of the given list.
@@ -205,19 +223,19 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheListFetch.Miss} if the list does not exist.
    * {@link CacheListFetch.Error} on failure.
    */
-  // public async listFetch(
-  //   cacheName: string,
-  //   listName: string,
-  //   options?: ListFetchCallOptions
-  // ): Promise<CacheListFetch.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.listFetch(
-  //     cacheName,
-  //     listName,
-  //     options?.startIndex,
-  //     options?.endIndex
-  //   );
-  // }
+  public async listFetch(
+    cacheName: string,
+    listName: string,
+    options?: ListFetchCallOptions
+  ): Promise<CacheListFetch.Response> {
+    const client = this.getNextDataClient();
+    return await client.listFetch(
+      cacheName,
+      listName,
+      options?.startIndex,
+      options?.endIndex
+    );
+  }
 
   /**
    * Gets the number of elements in the given list.
@@ -229,13 +247,13 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheListLength.Miss} if the list does not exist.
    * {@link CacheListLength.Error} on failure.
    */
-  // public async listLength(
-  //   cacheName: string,
-  //   listName: string
-  // ): Promise<CacheListLength.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.listLength(cacheName, listName);
-  // }
+  public async listLength(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListLength.Response> {
+    const client = this.getNextDataClient();
+    return await client.listLength(cacheName, listName);
+  }
 
   /**
    * Gets and removes the last value from the given list.
@@ -247,13 +265,13 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheListPopBack.Miss} if the list does not exist.
    * {@link CacheListPopBack.Error} on failure.
    */
-  // public async listPopBack(
-  //   cacheName: string,
-  //   listName: string
-  // ): Promise<CacheListPopBack.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.listPopBack(cacheName, listName);
-  // }
+  public async listPopBack(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListPopBack.Response> {
+    const client = this.getNextDataClient();
+    return await client.listPopBack(cacheName, listName);
+  }
 
   /**
    * Gets and removes the first value from the given list.
@@ -265,13 +283,13 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheListPopFront.Miss} if the list does not exist.
    * {@link CacheListPopFront.Error} on failure.
    */
-  // public async listPopFront(
-  //   cacheName: string,
-  //   listName: string
-  // ): Promise<CacheListPopFront.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.listPopFront(cacheName, listName);
-  // }
+  public async listPopFront(
+    cacheName: string,
+    listName: string
+  ): Promise<CacheListPopFront.Response> {
+    const client = this.getNextDataClient();
+    return await client.listPopFront(cacheName, listName);
+  }
 
   /**
    * Adds an element to the back of the given list. Creates the list if
@@ -291,21 +309,21 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * success.
    * {@link CacheListPushBack.Error} on failure.
    */
-  // public async listPushBack(
-  //   cacheName: string,
-  //   listName: string,
-  //   value: string | Uint8Array,
-  //   options?: ListPushBackOptions
-  // ): Promise<CacheListPushBack.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.listPushBack(
-  //     cacheName,
-  //     listName,
-  //     value,
-  //     options?.truncateFrontToSize,
-  //     options?.ttl
-  //   );
-  // }
+  public async listPushBack(
+    cacheName: string,
+    listName: string,
+    value: string | Uint8Array,
+    options?: ListPushBackOptions
+  ): Promise<CacheListPushBack.Response> {
+    const client = this.getNextDataClient();
+    return await client.listPushBack(
+      cacheName,
+      listName,
+      value,
+      options?.truncateFrontToSize,
+      options?.ttl
+    );
+  }
 
   /**
    * Adds an element to the front of the given list. Creates the list if
@@ -325,21 +343,21 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * success.
    * {@link CacheListPushFront.Error} on failure.
    */
-  // public async listPushFront(
-  //   cacheName: string,
-  //   listName: string,
-  //   value: string | Uint8Array,
-  //   options?: ListPushFrontOptions
-  // ): Promise<CacheListPushFront.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.listPushFront(
-  //     cacheName,
-  //     listName,
-  //     value,
-  //     options?.truncateBackToSize,
-  //     options?.ttl
-  //   );
-  // }
+  public async listPushFront(
+    cacheName: string,
+    listName: string,
+    value: string | Uint8Array,
+    options?: ListPushFrontOptions
+  ): Promise<CacheListPushFront.Response> {
+    const client = this.getNextDataClient();
+    return await client.listPushFront(
+      cacheName,
+      listName,
+      value,
+      options?.truncateBackToSize,
+      options?.ttl
+    );
+  }
 
   /**
    * Removes all elements from the given list equal to the given value.
@@ -353,14 +371,14 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * success.
    * {@link CacheListRemoveValue.Error} on failure.
    */
-  // public async listRemoveValue(
-  //   cacheName: string,
-  //   listName: string,
-  //   value: string | Uint8Array
-  // ): Promise<CacheListRemoveValue.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.listRemoveValue(cacheName, listName, value);
-  // }
+  public async listRemoveValue(
+    cacheName: string,
+    listName: string,
+    value: string | Uint8Array
+  ): Promise<CacheListRemoveValue.Response> {
+    const client = this.getNextDataClient();
+    return await client.listRemoveValue(cacheName, listName, value);
+  }
 
   /**
    * Retains slice of elements of a given list, deletes the rest of the list
@@ -380,20 +398,20 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheListRetain.Success} on success.
    * {@link CacheListRetain.Error} on failure.
    */
-  // public async listRetain(
-  //   cacheName: string,
-  //   listName: string,
-  //   options?: ListRetainCallOptions
-  // ): Promise<CacheListRetain.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.listRetain(
-  //     cacheName,
-  //     listName,
-  //     options?.startIndex,
-  //     options?.endIndex,
-  //     options?.ttl
-  //   );
-  // }
+  public async listRetain(
+    cacheName: string,
+    listName: string,
+    options?: ListRetainCallOptions
+  ): Promise<CacheListRetain.Response> {
+    const client = this.getNextDataClient();
+    return await client.listRetain(
+      cacheName,
+      listName,
+      options?.startIndex,
+      options?.endIndex,
+      options?.ttl
+    );
+  }
 
   /**
    * Fetches all elements of the given set

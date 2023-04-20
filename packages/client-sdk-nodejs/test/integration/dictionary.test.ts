@@ -12,9 +12,9 @@ import {
   CacheDictionaryGetFields,
   CacheDictionaryIncrement,
 } from '@gomomento/core';
+import {ItBehavesLikeItValidatesCacheName} from '@gomomento/common-integration-tests';
 import {TextEncoder} from 'util';
 import {
-  ItBehavesLikeItValidatesCacheName,
   ValidateCacheProps,
   ValidateDictionaryProps,
   ValidateDictionaryChangerProps,

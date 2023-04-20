@@ -8,9 +8,9 @@ import {
   CollectionTtl,
   MomentoErrorCode,
 } from '@gomomento/core';
+import {ItBehavesLikeItValidatesCacheName} from '@gomomento/common-integration-tests';
 import {
   ValidateCacheProps,
-  ItBehavesLikeItValidatesCacheName,
   ValidateSetProps,
   SetupIntegrationTest,
 } from './integration-setup';

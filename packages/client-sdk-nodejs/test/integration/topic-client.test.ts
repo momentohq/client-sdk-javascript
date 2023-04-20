@@ -10,10 +10,10 @@ import {
   InvalidArgumentError,
   SubscribeCallOptions,
 } from '../../src';
+import {ItBehavesLikeItValidatesCacheName} from '@gomomento/common-integration-tests';
 import {
   SetupIntegrationTest,
   IntegrationTestCacheClientProps,
-  ItBehavesLikeItValidatesCacheName,
   ValidateCacheProps,
 } from './integration-setup';
 import {TextEncoder} from 'util';

@@ -13,9 +13,9 @@ import {
   SortedSetOrder,
   MomentoErrorCode,
 } from '../../src';
+import {ItBehavesLikeItValidatesCacheName} from '@gomomento/common-integration-tests';
 import {v4} from 'uuid';
 import {
-  ItBehavesLikeItValidatesCacheName,
   SetupIntegrationTest,
   ValidateCacheProps,
   ValidateSortedSetChangerProps,
