@@ -9,10 +9,6 @@ import {
   CacheClient,
   CredentialProvider,
 } from '../../src';
-import {
-  IResponseError,
-  ResponseBase,
-} from '@gomomento/core/dist/src/messages/responses/response-base';
 
 const deleteCacheIfExists = async (momento: CacheClient, cacheName: string) => {
   const deleteResponse = await momento.deleteCache(cacheName);
@@ -109,19 +105,4 @@ export interface ValidateSortedSetProps extends ValidateCacheProps {
 export interface ValidateSortedSetChangerProps extends ValidateSortedSetProps {
   score: number;
   ttl?: CollectionTtl;
-}
-
-export function ItBehavesLikeItValidatesCacheName(
-  getResponse: (props: ValidateCacheProps) => Promise<ResponseBase>
-) {
-  it('validates its cache name', async () => {
-    const response = await getResponse({cacheName: '   '});
-
-    expect((response as IResponseError).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    expect((response as IResponseError).message()).toEqual(
-      'Invalid argument passed to Momento client: cache name must not be empty'
-    );
-  });
 }
