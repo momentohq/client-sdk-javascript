@@ -1,5 +1,5 @@
-import {v4} from 'uuid';
 import {CacheClientProps} from '../../src/cache-client-props';
+import {testCacheName} from '@gomomento/common-integration-tests';
 import {
   CreateCache,
   Configurations,
@@ -13,11 +13,6 @@ import {
   IResponseError,
   ResponseBase,
 } from '@gomomento/core/dist/src/messages/responses/response-base';
-
-export function testCacheName(): string {
-  const name = process.env.TEST_CACHE_NAME || 'js-integration-test-default';
-  return name + v4();
-}
 
 const deleteCacheIfExists = async (momento: CacheClient, cacheName: string) => {
   const deleteResponse = await momento.deleteCache(cacheName);

@@ -1,23 +1,22 @@
 import {v4} from 'uuid';
+import {testCacheName} from '@gomomento/common-integration-tests';
 import {
   CacheSet,
   CacheSetIfNotExists,
   MomentoErrorCode,
   CacheClient,
-  CacheGet,
 } from '../../src';
 import {TextEncoder} from 'util';
 import {
   SetupIntegrationTest,
   IntegrationTestCacheClientProps,
   WithCache,
-  testCacheName,
 } from './integration-setup';
 
-const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
+const {Momento} = SetupIntegrationTest();
 
-describe('get/set/delete', () => {
-  it('should timeout on a request that exceeds specified timeout', async () => {
+describe('client timeout tests', () => {
+  it('should timeout on a set request that exceeds specified timeout', async () => {
     const cacheName = testCacheName();
     const defaultTimeoutClient = Momento;
     const shortTimeoutTransportStrategy =
@@ -49,7 +48,7 @@ describe('get/set/delete', () => {
     });
   });
 
-  it('should timeout on a request that exceeds specified timeout', async () => {
+  it('should timeout on a setIfNotExists request that exceeds specified timeout', async () => {
     const cacheName = testCacheName();
     const defaultTimeoutClient = Momento;
     const shortTimeoutTransportStrategy =
@@ -79,37 +78,5 @@ describe('get/set/delete', () => {
         expect(setResponse.errorCode()).toEqual(MomentoErrorCode.TIMEOUT_ERROR);
       }
     });
-  });
-
-  it('should set string key with bytes value', async () => {
-    const cacheKey = v4();
-    const cacheValue = new TextEncoder().encode(v4());
-    const setResponse = await Momento.set(
-      IntegrationTestCacheName,
-      cacheKey,
-      cacheValue
-    );
-    expect(setResponse).toBeInstanceOf(CacheSet.Success);
-    const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
-    expect(getResponse).toBeInstanceOf(CacheGet.Hit);
-    if (getResponse instanceof CacheGet.Hit) {
-      expect(getResponse.valueUint8Array()).toEqual(cacheValue);
-    }
-  });
-
-  it('should setIfNotExists string key with bytes value', async () => {
-    const cacheKey = v4();
-    const cacheValue = new TextEncoder().encode(v4());
-    const setResponse = await Momento.setIfNotExists(
-      IntegrationTestCacheName,
-      cacheKey,
-      cacheValue
-    );
-    expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
-    const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
-    expect(getResponse).toBeInstanceOf(CacheGet.Hit);
-    if (getResponse instanceof CacheGet.Hit) {
-      expect(getResponse.valueUint8Array()).toEqual(cacheValue);
-    }
   });
 });
