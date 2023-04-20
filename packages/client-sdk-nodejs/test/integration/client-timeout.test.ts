@@ -15,6 +15,9 @@ import {
 
 const {Momento} = SetupIntegrationTest();
 
+// TODO: these tests are only applicable to the nodejs CacheClient at the moment. Once the
+//  Web SDK supports the full Configuration interface, these tests should be moved into the
+//  get-set-delete file in the common-integration-tests package.
 describe('client timeout tests', () => {
   it('should timeout on a set request that exceeds specified timeout', async () => {
     const cacheName = testCacheName();
