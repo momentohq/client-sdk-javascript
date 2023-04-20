@@ -1,4 +1,4 @@
-import {MomentoLoggerFactory} from '@gomomento/common';
+import {MomentoLoggerFactory} from '@gomomento/core';
 
 export interface ConfigurationProps {
   /**

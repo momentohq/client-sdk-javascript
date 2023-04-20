@@ -1,7 +1,7 @@
 import {SigningKey} from '../signing-key';
 import {SdkError} from '../../errors/errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
-import {_ListSigningKeysResponse} from './grpc-response-types';
+import {_SigningKey} from './grpc-response-types';
 
 /**
  * Parent response type for a list signing keys request.  The
@@ -28,11 +28,15 @@ class _Success extends Response {
   private readonly nextToken?: string;
   private readonly signingKeys: SigningKey[];
 
-  constructor(endpoint: string, result?: _ListSigningKeysResponse) {
+  constructor(
+    endpoint: string,
+    signingKeys: _SigningKey[],
+    nextToken?: string
+  ) {
     super();
-    this.nextToken = result?.nextToken;
+    this.nextToken = nextToken;
     this.signingKeys =
-      result?.signingKeys.map(
+      signingKeys.map(
         signingKey =>
           new SigningKey(
             signingKey.key,

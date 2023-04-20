@@ -1,7 +1,6 @@
 import {CacheInfo} from '../cache-info';
 import {SdkError} from '../../errors/errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
-import {_ListCachesResponse} from './grpc-response-types';
 
 /**
  * Parent response type for a list caches request.  The
@@ -26,11 +25,9 @@ export abstract class Response extends ResponseBase {}
 
 class _Success extends Response {
   private readonly caches: CacheInfo[];
-  constructor(result?: _ListCachesResponse) {
+  constructor(caches: CacheInfo[]) {
     super();
-    if (result) {
-      this.caches = result.caches.map(cache => new CacheInfo(cache.cacheName));
-    }
+    this.caches = caches;
   }
 
   /**

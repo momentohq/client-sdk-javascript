@@ -46,7 +46,7 @@
     "typescript": "^4.4.3"
   },
   "dependencies": {
-    "@gomomento/common": "file:../common",
+    "@gomomento/core": "file:../common",
     "uuid": "9.0.0"
   },
   "engines": {

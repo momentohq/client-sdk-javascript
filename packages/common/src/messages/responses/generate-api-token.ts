@@ -1,5 +1,4 @@
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
-import {_GenerateApiTokenResponse} from './grpc-response-types';
 import {SdkError} from '../../errors';
 import {encodeToBase64} from '../../internal/utils';
 
@@ -11,14 +10,17 @@ class _Success extends Response {
   readonly endpoint: string;
   readonly validUntil: number;
 
-  constructor(result: _GenerateApiTokenResponse) {
+  constructor(
+    apiToken: string,
+    refreshToken: string,
+    endpoint: string,
+    validUntil: number
+  ) {
     super();
-    if (result) {
-      this.apiToken = result.apiToken;
-      this.refreshToken = result.refreshToken;
-      this.endpoint = result.endpoint;
-      this.validUntil = result.validUntil;
-    }
+    this.apiToken = apiToken;
+    this.refreshToken = refreshToken;
+    this.endpoint = endpoint;
+    this.validUntil = validUntil;
   }
 
   public getApiToken() {
