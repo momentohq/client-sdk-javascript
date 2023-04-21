@@ -90,9 +90,6 @@ export class DataClient<
     this.logger.debug(
       `Creating data client using endpoint: '${props.credentialProvider.getCacheEndpoint()}`
     );
-    console.log(
-      `\n\n\nCreating data client with endpoint: ${props.credentialProvider.getCacheEndpoint()}\n\n\n`
-    );
 
     this.defaultTtlSeconds = props.defaultTtlSeconds;
     this.authHeaders = {authorization: props.credentialProvider.getAuthToken()};
