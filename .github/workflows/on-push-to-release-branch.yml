@@ -48,46 +48,9 @@ jobs:
           node-version: 16
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm run test
-
-      - name: Publish package to npm
+      - name: Publish all packages to npm
         run: |
-          export VERSION="${{ needs.release.outputs.version }}"
-          echo "Publishing package with version $VERSION"
-          mv package.json package.json.ORIG
-          cat package.json.ORIG|jq ". += {\"version\": \"$VERSION\"}" > package.json
-          npm publish
+          ./scripts/publish-all-packages.sh "${{ needs.release.outputs.version }}"
         shell: bash
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-
-      - name: Configure AWS credentials for public artifacts account
-        uses: aws-actions/configure-aws-credentials@v1-node16
-        with:
-          role-to-assume: arn:aws:iam::537451838446:role/public-cicd-remote-deployer
-          aws-region: us-west-2
-          aws-access-key-id: ${{ secrets.PUBLIC_CICD_DEPLOYER_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.PUBLIC_CICD_DEPLOYER_SECRET_ACCESS_KEY }}
-          role-duration-seconds: 1200
-          role-session-name: javascript-sdk-lambda-layer-deployer
-          role-skip-session-tagging: true
-
-      - name: Publish lambda layer
-        run: |
-          export VERSION="${{ needs.release.outputs.version }}"
-          echo "Publishing lambda layer with version $VERSION"
-          pushd build-scripts
-            ./build-lambda-layer.sh
-            ./publish-lambda-layer.sh ${VERSION}
-          popd
-        shell: bash
