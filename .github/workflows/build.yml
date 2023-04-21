@@ -28,7 +28,7 @@ jobs:
   test:
     strategy:
       matrix:
-        node: [14, 16, 18]
+        node: [18]
     name: Test on Node ${{ matrix.node }}
     runs-on: macos-latest
     env:
@@ -44,22 +44,10 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Install Dependencies
+      - name: Build and test all packages
         run: |
-          npm ci
           node -v
-
-      - name: Build
-        run: npm run build
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Unit Test
-        run: npm run unit-test
-
-      - name: Integration Test
-        run: npm run integration-test
+          ./scripts/build-and-test-all-packages.sh
 
   test-examples:
     strategy:
