@@ -44,10 +44,10 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Build common package
+      - name: Build core package
         run: |
           node -v
-          ./scripts/build-and-test-package.sh "common"
+          ./scripts/build-and-test-package.sh "core"
 
       - name: Build common-integration-tests package
         run: |
@@ -59,7 +59,7 @@ jobs:
           node -v
           ./scripts/build-and-test-package.sh "client-sdk-nodejs"
 
-      # needs to happen after building our common package, since it depends on it
+      # needs to happen after building our core package, since it depends on it
       - name: Build web sdk
         run: |
           node -v
