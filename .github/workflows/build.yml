@@ -2,7 +2,7 @@ name: Build
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, console-mvp]
 
 jobs:
   verify:
@@ -28,7 +28,7 @@ jobs:
   test:
     strategy:
       matrix:
-        node: [14, 16, 18]
+        node: [18]
     name: Test on Node ${{ matrix.node }}
     runs-on: macos-latest
     env:
@@ -44,22 +44,26 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Install Dependencies
+      - name: Build core package
         run: |
-          npm ci
           node -v
+          ./scripts/build-and-test-package.sh "core"
 
-      - name: Build
-        run: npm run build
+      - name: Build common-integration-tests package
+        run: |
+          node -v
+          ./scripts/build-and-test-package.sh "common-integration-tests"
 
-      - name: Lint
-        run: npm run lint
+      - name: Build nodejs sdk
+        run: |
+          node -v
+          ./scripts/build-and-test-package.sh "client-sdk-nodejs"
 
-      - name: Unit Test
-        run: npm run unit-test
-
-      - name: Integration Test
-        run: npm run integration-test
+      # needs to happen after building our core package, since it depends on it
+      - name: Build web sdk
+        run: |
+          node -v
+          ./scripts/build-and-test-package.sh "client-sdk-web"
 
   test-examples:
     strategy:
