@@ -57,7 +57,7 @@ jobs:
           node -v
           ./scripts/build-package.sh "client-sdk-nodejs"
 
-      # needs to happen after building our common package, since it depends on it
+      # needs to happen after building our core package, since it depends on it
       - name: Build web sdk
         run: |
           node -v
