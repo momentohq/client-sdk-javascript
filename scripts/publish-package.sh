@@ -34,5 +34,5 @@ pushd ${ROOT_DIR}/packages/${PACKAGE}
     npm run test
     mv package.json package.json.ORIG
     cat package.json.ORIG |jq ". += {\"version\": \"${VERSION}\"}" > package.json
-    npm publish
+    npm publish --access public
 popd
