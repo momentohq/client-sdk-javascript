@@ -50,7 +50,7 @@ jobs:
 
       - name: Publish all packages to npm
         run: |
-          ./scripts/publish-all-packages.sh
+          ./scripts/publish-all-packages.sh "${{ needs.release.outputs.version }}"
         shell: bash
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
