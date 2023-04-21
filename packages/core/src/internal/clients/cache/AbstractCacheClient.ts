@@ -20,6 +20,14 @@ import {
   CacheListPopFront,
   CacheListRemoveValue,
   CacheListRetain,
+  CacheDictionarySetField,
+  CacheDictionarySetFields,
+  CacheDictionaryGetField,
+  CacheDictionaryGetFields,
+  CacheDictionaryIncrement,
+  CacheDictionaryFetch,
+  CacheDictionaryRemoveField,
+  CacheDictionaryRemoveFields,
 } from '../../../index';
 import {ListFetchCallOptions, ListRetainCallOptions} from '../../../utils';
 import {
@@ -29,6 +37,8 @@ import {
   ListPushBackOptions,
   ListConcatenateBackOptions,
   ListConcatenateFrontOptions,
+  DictionarySetFieldOptions,
+  DictionaryIncrementOptions,
 } from './ICacheClient';
 import {IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
@@ -591,13 +601,13 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheDictionaryFetch.Miss} if the dictionary does not exist.
    * {@link CacheDictionaryFetch.Error} on failure.
    */
-  // public async dictionaryFetch(
-  //   cacheName: string,
-  //   dictionaryName: string
-  // ): Promise<CacheDictionaryFetch.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.dictionaryFetch(cacheName, dictionaryName);
-  // }
+  public async dictionaryFetch(
+    cacheName: string,
+    dictionaryName: string
+  ): Promise<CacheDictionaryFetch.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryFetch(cacheName, dictionaryName);
+  }
 
   /**
    * Adds an integer quantity to a field value.
@@ -644,22 +654,22 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheDictionarySetField.Success} on success.
    * {@link CacheDictionarySetField.Error} on failure.
    */
-  // public async dictionarySetField(
-  //   cacheName: string,
-  //   dictionaryName: string,
-  //   field: string | Uint8Array,
-  //   value: string | Uint8Array,
-  //   options?: DictionarySetFieldOptions
-  // ): Promise<CacheDictionarySetField.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.dictionarySetField(
-  //     cacheName,
-  //     dictionaryName,
-  //     field,
-  //     value,
-  //     options?.ttl
-  //   );
-  // }
+  public async dictionarySetField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array,
+    value: string | Uint8Array,
+    options?: DictionarySetFieldOptions
+  ): Promise<CacheDictionarySetField.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionarySetField(
+      cacheName,
+      dictionaryName,
+      field,
+      value,
+      options?.ttl
+    );
+  }
 
   /**
    * Adds multiple elements to the given dictionary. Creates the dictionary if
@@ -677,22 +687,22 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheDictionarySetFields.Success} on success.
    * {@link CacheDictionarySetFields.Error} on failure.
    */
-  // public async dictionarySetFields(
-  //   cacheName: string,
-  //   dictionaryName: string,
-  //   elements:
-  //     | Map<string | Uint8Array, string | Uint8Array>
-  //     | Record<string, string | Uint8Array>,
-  //   options?: DictionarySetFieldsOptions
-  // ): Promise<CacheDictionarySetFields.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.dictionarySetFields(
-  //     cacheName,
-  //     dictionaryName,
-  //     elements,
-  //     options?.ttl
-  //   );
-  // }
+  public async dictionarySetFields(
+    cacheName: string,
+    dictionaryName: string,
+    elements:
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Record<string, string | Uint8Array>,
+    options?: DictionarySetFieldOptions
+  ): Promise<CacheDictionarySetFields.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionarySetFields(
+      cacheName,
+      dictionaryName,
+      elements,
+      options?.ttl
+    );
+  }
 
   /**
    * Gets the value stored for the given dictionary and field.
@@ -706,14 +716,14 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheDictionaryGetField.Miss} if the dictionary does not exist.
    * {@link CacheDictionaryGetField.Error} on failure.
    */
-  // public async dictionaryGetField(
-  //   cacheName: string,
-  //   dictionaryName: string,
-  //   field: string | Uint8Array
-  // ): Promise<CacheDictionaryGetField.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.dictionaryGetField(cacheName, dictionaryName, field);
-  // }
+  public async dictionaryGetField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array
+  ): Promise<CacheDictionaryGetField.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryGetField(cacheName, dictionaryName, field);
+  }
 
   /**
    * Gets multiple values from the given dictionary.
@@ -727,14 +737,14 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheDictionaryGetFields.Miss} if the dictionary does not exist.
    * {@link CacheDictionaryGetFields.Error} on failure.
    */
-  // public async dictionaryGetFields(
-  //   cacheName: string,
-  //   dictionaryName: string,
-  //   fields: string[] | Uint8Array[]
-  // ): Promise<CacheDictionaryGetFields.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.dictionaryGetFields(cacheName, dictionaryName, fields);
-  // }
+  public async dictionaryGetFields(
+    cacheName: string,
+    dictionaryName: string,
+    fields: string[] | Uint8Array[]
+  ): Promise<CacheDictionaryGetFields.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryGetFields(cacheName, dictionaryName, fields);
+  }
 
   /**
    * Removes an element from the given dictionary.
@@ -749,14 +759,14 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheDictionaryRemoveField.Success} on success.
    * {@link CacheDictionaryRemoveField.Error} on failure.
    */
-  // public async dictionaryRemoveField(
-  //   cacheName: string,
-  //   dictionaryName: string,
-  //   field: string | Uint8Array
-  // ): Promise<CacheDictionaryRemoveField.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.dictionaryRemoveField(cacheName, dictionaryName, field);
-  // }
+  public async dictionaryRemoveField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array
+  ): Promise<CacheDictionaryRemoveField.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryRemoveField(cacheName, dictionaryName, field);
+  }
 
   /**
    * Removes multiple fields from the given dictionary.
@@ -771,18 +781,18 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheDictionaryRemoveFields.Success} on success.
    * {@link CacheDictionaryRemoveFields.Error} on failure.
    */
-  // public async dictionaryRemoveFields(
-  //   cacheName: string,
-  //   dictionaryName: string,
-  //   fields: string[] | Uint8Array[]
-  // ): Promise<CacheDictionaryRemoveFields.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.dictionaryRemoveFields(
-  //     cacheName,
-  //     dictionaryName,
-  //     fields
-  //   );
-  // }
+  public async dictionaryRemoveFields(
+    cacheName: string,
+    dictionaryName: string,
+    fields: string[] | Uint8Array[]
+  ): Promise<CacheDictionaryRemoveFields.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryRemoveFields(
+      cacheName,
+      dictionaryName,
+      fields
+    );
+  }
 
   /**
    * Adds an integer quantity to a dictionary value.
@@ -806,22 +816,22 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * that was not set using this method or is not the string representation of
    * an integer results in a failure with a FailedPreconditionException error.
    */
-  // public async dictionaryIncrement(
-  //   cacheName: string,
-  //   dictionaryName: string,
-  //   field: string | Uint8Array,
-  //   amount = 1,
-  //   options?: DictionaryIncrementOptions
-  // ): Promise<CacheDictionaryIncrement.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.dictionaryIncrement(
-  //     cacheName,
-  //     dictionaryName,
-  //     field,
-  //     amount,
-  //     options?.ttl
-  //   );
-  // }
+  public async dictionaryIncrement(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array,
+    amount = 1,
+    options?: DictionaryIncrementOptions
+  ): Promise<CacheDictionaryIncrement.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryIncrement(
+      cacheName,
+      dictionaryName,
+      field,
+      amount,
+      options?.ttl
+    );
+  }
 
   /**
    * Adds an element to the given sorted set. If the element already exists, its
