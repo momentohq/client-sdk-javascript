@@ -1,4 +1,4 @@
-import {DeleteCache, MomentoErrorCode} from '@gomomento/core';
+import {CollectionTtl, DeleteCache, MomentoErrorCode} from '@gomomento/core';
 import {ICacheClient} from '@gomomento/core/dist/src/internal/clients/cache/ICacheClient';
 import {
   IResponseError,
@@ -43,6 +43,17 @@ export interface ValidateCacheProps {
 
 export interface ValidateListProps extends ValidateCacheProps {
   listName: string;
+}
+
+export interface ValidateDictionaryProps extends ValidateCacheProps {
+  dictionaryName: string;
+  field: string | Uint8Array;
+}
+
+export interface ValidateDictionaryChangerProps
+  extends ValidateDictionaryProps {
+  value: string | Uint8Array;
+  ttl?: CollectionTtl;
 }
 
 export function ItBehavesLikeItValidatesCacheName(
