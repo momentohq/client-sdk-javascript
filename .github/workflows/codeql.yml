@@ -52,16 +52,10 @@ jobs:
           # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
           # queries: security-extended,security-and-quality
 
-      - name: Build nodejs sdk
+      - name: Build all packages
         run: |
           node -v
-          ./scripts/build-package.sh "client-sdk-nodejs"
-
-      # needs to happen after building our core package, since it depends on it
-      - name: Build web sdk
-        run: |
-          node -v
-          ./scripts/build-and-test-package.sh "client-sdk-web"
+          ./scripts/build-all-packages.sh
 
       # ℹ️ Command-line programs to run using the OS shell.
       # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
