@@ -1,6 +1,6 @@
 {
   "name": "@gomomento/core",
-  "version": "0.0.1",
+  "version": "0.0.1000",
   "description": "Common code for Momento JS SDKs",
   "main": "dist/src/index.js",
   "files": [

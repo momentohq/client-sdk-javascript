@@ -8,7 +8,8 @@ usage() {
 }
 
 VERSION=${1}
-if [ "${VERSION}" == "" ];
+if [ "${VERSION}" == "" ]
+then
    echo "Missing required argument: VERSION"
    usage
    exit 1

@@ -10,14 +10,16 @@ usage() {
 ROOT_DIR="$(dirname "$0")/.."
 
 PACKAGE=${1}
-if [ "${PACKAGE}" == "" ];
+if [ "${PACKAGE}" == "" ]
+then
    echo "Missing required argument: PACKAGE"
    usage
    exit 1
 fi
 
 VERSION=${2}
-if [ "${VERSION}" == "" ];
+if [ "${VERSION}" == "" ]
+then
    echo "Missing required argument: VERSION"
    usage
    exit 1
