@@ -33,6 +33,10 @@ pushd ${ROOT_DIR}/packages/${PACKAGE}
     npm run lint
     npm run test
     mv package.json package.json.ORIG
-    cat package.json.ORIG |jq ". += {\"version\": \"${VERSION}\"}" > package.json
+    # We need to update the version number of the package itself; Also, if it has a dependency on @gomomento/core, then
+    # we need to update that dependency version too.
+    cat package.json.ORIG | \
+      jq ". += {\"version\": \"${VERSION}\"} | if .dependencies.\"@gomomento/core\"? then .dependencies.\"@gomomento/core\"=\"${VERSION}\" else . end" \
+      > package.json
     npm publish --access public
 popd
