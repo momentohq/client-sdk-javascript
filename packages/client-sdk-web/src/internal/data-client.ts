@@ -163,7 +163,7 @@ export class DataClient<
                 resolve(new CacheGet.Miss());
                 break;
               case ECacheResult.HIT:
-                resolve(new Uint8Array(resp.getCacheBody_asU8()).map(i => i));
+                resolve(resp.getCacheBody_asU8().map(i => i));
                 break;
               case ECacheResult.INVALID:
               case ECacheResult.OK:
@@ -1647,7 +1647,7 @@ export class DataClient<
     if (typeof v === 'string') {
       return this.textEncoder.encode(v);
     }
-    return v;
+    return new Uint8Array(v);
   }
 
   private convertArrayToUint8(v: (string | Uint8Array)[]): Uint8Array[] {
