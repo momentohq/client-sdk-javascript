@@ -28,9 +28,9 @@ fi
 echo "waiting for npm.js availability for package: ${PACKAGE} with version ${VERSION}"
 
 num_attempts=0
-seconds_between_retries=20
-# 20 seconds * 60 retries = 1200 seconds = 20 minutes
-max_num_attempts=60
+seconds_between_retries=120
+# 120 seconds * 30 retries = 3600 seconds = 60 minutes
+max_num_attempts=30
 while true; do
   num_attempts=$((num_attempts+1))
   package_exists_status_code=$(curl -v -o /dev/null -w "%{http_code}" https://registry.npmjs.org/${PACKAGE}/${VERSION})
