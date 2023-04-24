@@ -59,10 +59,7 @@ function handleItem(item: TopicItem) {
   console.log('Item received from topic subscription; %s', item);
 }
 
-function handleError(
-  error: TopicSubscribe.Error,
-  subscription: TopicSubscribe.Subscription
-) {
+function handleError(error: TopicSubscribe.Error) {
   console.log(`Error received from topic subscription; ${error.toString()}`);
 
   // optionally: unsubscribe from the topic subscription

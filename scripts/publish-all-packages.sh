@@ -20,3 +20,5 @@ ROOT_DIR="$(dirname "$0")/.."
 echo "publishing all packages"
 
 ${ROOT_DIR}/scripts/publish-package.sh "core" "${VERSION}"
+${ROOT_DIR}/scripts/wait-for-npmjs-release.sh "@gomomento/core" "${VERSION}"
+${ROOT_DIR}/scripts/publish-package.sh "client-sdk-nodejs" "${VERSION}"
