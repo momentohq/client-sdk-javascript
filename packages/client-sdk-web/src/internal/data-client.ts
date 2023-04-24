@@ -1647,7 +1647,9 @@ export class DataClient<
     if (typeof v === 'string') {
       return this.textEncoder.encode(v);
     }
-    return new Uint8Array(v);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return Array.from(v);
   }
 
   private convertArrayToUint8(v: (string | Uint8Array)[]): Uint8Array[] {
