@@ -28,15 +28,20 @@ fi
 echo "publishing package: ${PACKAGE} with version ${VERSION}"
 
 pushd ${ROOT_DIR}/packages/${PACKAGE}
-    npm ci
-    npm run build
-    npm run lint
-    npm run test
     mv package.json package.json.ORIG
     # We need to update the version number of the package itself; Also, if it has a dependency on @gomomento/core, then
     # we need to update that dependency version too.
     cat package.json.ORIG | \
       jq ". += {\"version\": \"${VERSION}\"} | if .dependencies.\"@gomomento/core\"? then .dependencies.\"@gomomento/core\"=\"${VERSION}\" else . end" \
       > package.json
+    echo ""
+    echo "New package.json:"
+    cat package.json
+    echo ""
+    npm ci
+    npm run build
+    npm run lint
+    npm run test
+
     npm publish --access public
 popd
