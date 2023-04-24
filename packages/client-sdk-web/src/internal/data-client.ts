@@ -163,7 +163,9 @@ export class DataClient<
                 resolve(new CacheGet.Miss());
                 break;
               case ECacheResult.HIT:
-                resolve(new CacheGet.Hit(resp.getCacheBody_asU8()));
+                resolve(
+                  new CacheGet.Hit(new Uint8Array(resp.getCacheBody_asU8()))
+                );
                 break;
               case ECacheResult.INVALID:
               case ECacheResult.OK:
@@ -1283,7 +1285,7 @@ export class DataClient<
             } else if (theList) {
               resolve(
                 new CacheDictionaryGetField.Hit(
-                  theList.getItemsList()[0].getCacheBody_asU8(),
+                  new Uint8Array(theList.getItemsList()[0].getCacheBody_asU8()),
                   this.convertToUint8Array(field)
                 )
               );
@@ -1352,7 +1354,7 @@ export class DataClient<
               const result = this.convertECacheResult(item.getResult());
               return new _DictionaryGetResponsePart(
                 result,
-                item.getCacheBody_asU8()
+                new Uint8Array(item.getCacheBody_asU8())
               );
             });
             resolve(
@@ -1412,7 +1414,7 @@ export class DataClient<
             const items = theDict.getItemsList();
             items.forEach(val => {
               const fvp = new _DictionaryFieldValuePair({
-                field: val.getField_asU8(),
+                field: new Uint8Array(val.getField_asU8()),
                 value: this.convertToUint8Array(val.getValue()),
               });
               retDict.push(fvp);
