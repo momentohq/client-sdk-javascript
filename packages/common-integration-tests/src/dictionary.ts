@@ -1169,7 +1169,9 @@ export function runDictionaryTests(
         );
         expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
-          expect(new Uint8Array(getResponse.valueUint8Array())).toEqual(value1);
+          expect(new Uint8Array(getResponse.valueUint8Array())).toEqual(
+            new Uint8Array(value1)
+          );
         }
         getResponse = await Momento.dictionaryGetField(
           IntegrationTestCacheName,
@@ -1178,7 +1180,9 @@ export function runDictionaryTests(
         );
         expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
-          expect(new Uint8Array(getResponse.valueUint8Array())).toEqual(value2);
+          expect(new Uint8Array(getResponse.valueUint8Array())).toEqual(
+            new Uint8Array(value2)
+          );
         }
       });
 
