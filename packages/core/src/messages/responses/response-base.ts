@@ -14,7 +14,7 @@ type Constructor = new (...args: any[]) => {};
 // They are not for public consumption.
 export interface IResponseError {
   message(): string;
-  innerException(): object;
+  innerException(): SdkError;
   errorCode(): MomentoErrorCode;
   toString(): string;
 }
@@ -39,7 +39,7 @@ export function ResponseError<TBase extends Constructor>(Base: TBase) {
       return this._innerException.wrappedErrorMessage();
     }
 
-    public innerException(): object {
+    public innerException(): SdkError {
       return this._innerException;
     }
 
