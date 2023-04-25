@@ -14,15 +14,16 @@ then
    usage
    exit 1
 fi
+CORE_VERSION=$VERSION
 
 ROOT_DIR="$(dirname "$0")/.."
 
 echo "publishing all packages"
 
-${ROOT_DIR}/scripts/publish-package.sh "core" "${VERSION}"
+${ROOT_DIR}/scripts/publish-package.sh "core" "${CORE_VERSION}" "${CORE_VERSION}"
 ${ROOT_DIR}/scripts/wait-for-npmjs-release.sh "@gomomento/core" "${VERSION}"
 ${ROOT_DIR}/scripts/build-package.sh "common-integration-tests"
-${ROOT_DIR}/scripts/publish-package.sh "client-sdk-nodejs" "${VERSION}"
+${ROOT_DIR}/scripts/publish-package.sh "client-sdk-nodejs" "${VERSION}" "${CORE_VERSION}"
 
 # We plan to version the web SDK along with the node.js SDK and core library for the time
 # being, just to keep things simple.
@@ -30,4 +31,4 @@ ${ROOT_DIR}/scripts/publish-package.sh "client-sdk-nodejs" "${VERSION}"
 # the leading `1.` in the version number with a `0.`, to make it clear that we are pre-`1.0`.
 # We will remove this line when we are ready to officially release the web sdk.
 WEB_SDK_VERSION=$(echo ${VERSION} |sed "s/^1\./0\./")
-${ROOT_DIR}/scripts/publish-package.sh "client-sdk-web" "${WEB_SDK_VERSION}"
+${ROOT_DIR}/scripts/publish-package.sh "client-sdk-web" "${WEB_SDK_VERSION}" "${CORE_VERSION}"
