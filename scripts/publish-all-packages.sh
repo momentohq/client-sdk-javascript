@@ -30,5 +30,4 @@ ${ROOT_DIR}/scripts/publish-package.sh "client-sdk-nodejs" "${VERSION}"
 # the leading `1.` in the version number with a `0.`, to make it clear that we are pre-`1.0`.
 # We will remove this line when we are ready to officially release the web sdk.
 WEB_SDK_VERSION=$(echo ${VERSION} |sed "s/^1\./0\./")
-echo "This is a dry run, but otherwise I would now be attempting to publish web SDK version ${WEB_SDK_VERSION}"
-#${ROOT_DIR}/scripts/publish-package.sh "client-sdk-web" "${WEB_SDK_VERSION}"
+${ROOT_DIR}/scripts/publish-package.sh "client-sdk-web" "${WEB_SDK_VERSION}"
