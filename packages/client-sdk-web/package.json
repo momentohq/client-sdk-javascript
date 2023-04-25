@@ -1,5 +1,5 @@
 {
-  "name": "@gomomento/web-sdk",
+  "name": "@gomomento/sdk-web",
   "version": "0.0.1",
   "description": "Client SDK for Momento services",
   "main": "dist/src/index.js",
