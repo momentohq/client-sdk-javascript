@@ -4,7 +4,7 @@ set -x
 set -e
 
 usage() {
-   echo "Usage: $0 <PACKAGE> <VERSION>"
+   echo "Usage: $0 <PACKAGE> <VERSION> <CORE_VERSION>"
 }
 
 ROOT_DIR="$(dirname "$0")/.."
@@ -25,14 +25,22 @@ then
    exit 1
 fi
 
-echo "publishing package: ${PACKAGE} with version ${VERSION}"
+CORE_VERSION=${3}
+if [ "${CORE_VERSION}" == "" ]
+then
+   echo "Missing required argument: CORE_VERSION"
+   usage
+   exit 1
+fi
+
+echo "publishing package: ${PACKAGE} with version ${VERSION} (core version: ${CORE_VERSION})"
 
 pushd ${ROOT_DIR}/packages/${PACKAGE}
     mv package.json package.json.ORIG
     # We need to update the version number of the package itself; Also, if it has a dependency on @gomomento/core, then
     # we need to update that dependency version too.
     cat package.json.ORIG | \
-      jq ". += {\"version\": \"${VERSION}\"} | if .dependencies.\"@gomomento/core\"? then .dependencies.\"@gomomento/core\"=\"${VERSION}\" else . end" \
+      jq ". += {\"version\": \"${VERSION}\"} | if .dependencies.\"@gomomento/core\"? then .dependencies.\"@gomomento/core\"=\"${CORE_VERSION}\" else . end" \
       > package.json
     echo ""
     echo "New package.json:"
