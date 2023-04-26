@@ -70,3 +70,19 @@ export function ItBehavesLikeItValidatesCacheName(
     );
   });
 }
+
+const bytesEncoderForTests = new TextEncoder();
+
+/**
+ * TODO
+ * TODO
+ * TODO explain
+ * TODO
+ * TODO
+ *
+ * @param {string} value
+ * @returns {Uint8Array}
+ */
+export function uint8ArrayForTest(value: string): Uint8Array {
+  return Uint8Array.from(bytesEncoderForTests.encode(value));
+}

@@ -17,6 +17,7 @@
     "test": "jest",
     "unit-test": "jest unit",
     "integration-test": "jest integration",
+    "build-and-run-tests": "cd ../common-integration-tests && npm run build && cd - && jest",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",

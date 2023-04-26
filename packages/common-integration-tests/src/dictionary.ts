@@ -17,6 +17,7 @@ import {
   ItBehavesLikeItValidatesCacheName,
   ValidateDictionaryProps,
   ValidateDictionaryChangerProps,
+  uint8ArrayForTest,
 } from './common-int-test-utils';
 import {TextEncoder} from 'util';
 import {
@@ -215,7 +216,18 @@ export function runDictionaryTests(
       });
 
       it('should provide value accessors for string fields with dictionaryFetch', async () => {
-        const textEncoder = new TextEncoder();
+        const map1 = new Map<string, string>([
+          ['foo', 'FOO'],
+          ['bar', 'BAR'],
+        ]);
+        const map2 = new Map<string, string>([
+          ['foo', 'FOO'],
+          ['bar', 'BAR'],
+        ]);
+        expect(map1).toEqual(map2);
+        console.log('MAPS ARE EQUAL YO!!!!\n\n\n\n\n\n\n');
+
+        // const textEncoder = new TextEncoder();
 
         const dictionaryName = v4();
         const field1 = 'foo';
@@ -239,9 +251,12 @@ export function runDictionaryTests(
         expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
         const hitResponse = response as CacheDictionaryFetch.Hit;
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const expectedStringBytesMap = new Map<string, Uint8Array>([
-          ['foo', textEncoder.encode(value1)],
-          ['bar', textEncoder.encode(value2)],
+          // ['foo', textEncoder.encode(value1)],
+          // ['bar', textEncoder.encode(value2)],
+          ['foo', uint8ArrayForTest(value1)],
+          ['bar', uint8ArrayForTest(value2)],
         ]);
 
         const expectedStringStringMap = new Map<string, string>([
@@ -251,6 +266,7 @@ export function runDictionaryTests(
 
         expect(hitResponse.valueMapStringUint8Array()).toEqual(
           expectedStringBytesMap
+          // map2
         );
         expect(hitResponse.valueMapStringString()).toEqual(
           expectedStringStringMap
@@ -258,8 +274,10 @@ export function runDictionaryTests(
         expect(hitResponse.valueMap()).toEqual(expectedStringStringMap);
 
         const expectedStringBytesRecord = {
-          foo: textEncoder.encode(value1),
-          bar: textEncoder.encode(value2),
+          // foo: textEncoder.encode(value1),
+          // bar: textEncoder.encode(value2),
+          foo: uint8ArrayForTest(value1),
+          bar: uint8ArrayForTest(value2),
         };
 
         const expectedStringStringRecord = {
@@ -277,12 +295,18 @@ export function runDictionaryTests(
       });
 
       it('should provide value accessors for bytes fields with dictionaryFetch', async () => {
-        const textEncoder = new TextEncoder();
+        // const textEncoder = new TextEncoder();
+
+        // const dictionaryName = v4();
+        // const field1 = textEncoder.encode(v4());
+        // const value1 = v4();
+        // const field2 = textEncoder.encode(v4());
+        // const value2 = v4();
 
         const dictionaryName = v4();
-        const field1 = textEncoder.encode(v4());
+        const field1 = uint8ArrayForTest(v4());
         const value1 = v4();
-        const field2 = textEncoder.encode(v4());
+        const field2 = uint8ArrayForTest(v4());
         const value2 = v4();
 
         await Momento.dictionarySetFields(
@@ -302,8 +326,10 @@ export function runDictionaryTests(
         const hitResponse = response as CacheDictionaryFetch.Hit;
 
         const expectedBytesBytesMap = new Map<Uint8Array, Uint8Array>([
-          [field1, textEncoder.encode(value1)],
-          [field2, textEncoder.encode(value2)],
+          // [field1, textEncoder.encode(value1)],
+          // [field2, textEncoder.encode(value2)],
+          [field1, uint8ArrayForTest(value1)],
+          [field2, uint8ArrayForTest(value2)],
         ]);
 
         expect(hitResponse.valueMapUint8ArrayUint8Array()).toEqual(
@@ -358,6 +384,7 @@ export function runDictionaryTests(
           IntegrationTestCacheName,
           dictionaryName
         );
+        console.log(`\n\nFETCH RESPONSE: ${response.toString()}\n\n`);
         expect(response).toBeInstanceOf(CacheDictionaryFetch.Miss);
       });
     });
@@ -414,6 +441,15 @@ export function runDictionaryTests(
 
       it('return expected toString value', async () => {
         const dictionaryName = v4();
+
+        const listCachesResponse = await Momento.listCaches();
+        console.log(
+          `\n\n\nLIST CACHES RESPONSE: ${listCachesResponse.toString()}\n\n\n\n`
+        );
+
+        console.log(
+          `\n\n\nTEST ABOUT TO CALL DICTIONARY SET FIELD ON CACHE: ${IntegrationTestCacheName}\n\n\n\n`
+        );
         await Momento.dictionarySetField(
           IntegrationTestCacheName,
           dictionaryName,
@@ -431,6 +467,24 @@ export function runDictionaryTests(
           dictionaryName,
           ['a', 'c']
         );
+
+        console.log('\n\n\nDOING ANOTHER SET\n\n\n');
+
+        const finalSetResponse = await Momento.dictionarySetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          'h',
+          'i'
+        );
+
+        console.log(`
+
+
+        DID ANOTHER SET: ${finalSetResponse.toString()}
+
+
+        `);
+
         expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
         expect(
           (getResponse as CacheDictionaryGetFields.Hit).toString()
@@ -438,8 +492,6 @@ export function runDictionaryTests(
       });
 
       it('should dictionarySetField/dictionaryGetFields with string fields/values', async () => {
-        const textEncoder = new TextEncoder();
-
         const dictionaryName = v4();
         const field1 = 'foo';
         const value1 = v4();
@@ -499,8 +551,10 @@ export function runDictionaryTests(
         expect(expectedMapStringString).toEqual(hitResponse.valueMap());
 
         const expectedMapStringBytes = new Map<string, Uint8Array>([
-          [field1, textEncoder.encode(value1)],
-          [field2, textEncoder.encode(value2)],
+          // [field1, textEncoder.encode(value1)],
+          // [field2, textEncoder.encode(value2)],
+          [field1, uint8ArrayForTest(value1)],
+          [field2, uint8ArrayForTest(value2)],
         ]);
         expect(expectedMapStringBytes).toEqual(
           hitResponse.valueMapStringUint8Array()
@@ -516,8 +570,10 @@ export function runDictionaryTests(
         expect(expectedRecordStringString).toEqual(hitResponse.valueRecord());
 
         const expectedRecordStringBytes = {
-          foo: textEncoder.encode(value1),
-          bar: textEncoder.encode(value2),
+          // foo: textEncoder.encode(value1),
+          // bar: textEncoder.encode(value2),
+          foo: uint8ArrayForTest(value1),
+          bar: uint8ArrayForTest(value2),
         };
         expect(expectedRecordStringBytes).toEqual(
           hitResponse.valueRecordStringUint8Array()
@@ -526,11 +582,16 @@ export function runDictionaryTests(
 
       it('should dictionarySetField/dictionaryGetFields with Uint8Array fields/values', async () => {
         const dictionaryName = v4();
-        const field1 = new TextEncoder().encode(v4());
-        const value1 = new TextEncoder().encode(v4());
-        const field2 = new TextEncoder().encode(v4());
-        const value2 = new TextEncoder().encode(v4());
-        const field3 = new TextEncoder().encode(v4());
+        // const field1 = new TextEncoder().encode(v4());
+        // const value1 = new TextEncoder().encode(v4());
+        // const field2 = new TextEncoder().encode(v4());
+        // const value2 = new TextEncoder().encode(v4());
+        // const field3 = new TextEncoder().encode(v4());
+        const field1 = uint8ArrayForTest(v4());
+        const value1 = uint8ArrayForTest(v4());
+        const field2 = uint8ArrayForTest(v4());
+        const value2 = uint8ArrayForTest(v4());
+        const field3 = uint8ArrayForTest(v4());
         let response = await Momento.dictionarySetField(
           IntegrationTestCacheName,
           dictionaryName,
@@ -1060,8 +1121,10 @@ export function runDictionaryTests(
 
       it('should set/get a dictionary with Uint8Array field/value', async () => {
         const dictionaryName = v4();
-        const field = new TextEncoder().encode(v4());
-        const value = new TextEncoder().encode(v4());
+        // const field = new TextEncoder().encode(v4());
+        // const value = new TextEncoder().encode(v4());
+        const field = uint8ArrayForTest(v4());
+        const value = uint8ArrayForTest(v4());
         const response = await Momento.dictionarySetField(
           IntegrationTestCacheName,
           dictionaryName,
@@ -1105,7 +1168,8 @@ export function runDictionaryTests(
       it('should set/get a dictionary with string field and Uint8Array value', async () => {
         const dictionaryName = v4();
         const field = v4();
-        const value = new TextEncoder().encode(v4());
+        // const value = new TextEncoder().encode(v4());
+        const value = uint8ArrayForTest(v4());
         const response = await Momento.dictionarySetField(
           IntegrationTestCacheName,
           dictionaryName,
@@ -1148,10 +1212,14 @@ export function runDictionaryTests(
 
       it('should set fields with Uint8Array items', async () => {
         const dictionaryName = v4();
-        const field1 = new TextEncoder().encode(v4());
-        const value1 = new TextEncoder().encode(v4());
-        const field2 = new TextEncoder().encode(v4());
-        const value2 = new TextEncoder().encode(v4());
+        // const field1 = new TextEncoder().encode(v4());
+        // const value1 = new TextEncoder().encode(v4());
+        // const field2 = new TextEncoder().encode(v4());
+        // const value2 = new TextEncoder().encode(v4());
+        const field1 = uint8ArrayForTest(v4());
+        const value1 = uint8ArrayForTest(v4());
+        const field2 = uint8ArrayForTest(v4());
+        const value2 = uint8ArrayForTest(v4());
         const response = await Momento.dictionarySetFields(
           IntegrationTestCacheName,
           dictionaryName,
@@ -1254,9 +1322,12 @@ export function runDictionaryTests(
       it('should set fields with string field/Uint8Array value items', async () => {
         const dictionaryName = v4();
         const field1 = v4();
-        const value1 = new TextEncoder().encode(v4());
+        // const value1 = new TextEncoder().encode(v4());
+        // const value1 = new TextEncoder().encode('foo');
+        const value1 = uint8ArrayForTest(v4());
         const field2 = v4();
-        const value2 = new TextEncoder().encode(v4());
+        // const value2 = new TextEncoder().encode(v4());
+        const value2 = uint8ArrayForTest(v4());
         const response = await Momento.dictionarySetFields(
           IntegrationTestCacheName,
           dictionaryName,
@@ -1274,8 +1345,26 @@ export function runDictionaryTests(
         );
         expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
-          expect(getResponse.valueUint8Array()).toEqual(value1);
+          console.log(`RECEIVED TYPE: ${typeof getResponse.valueUint8Array()}`);
+          console.log(
+            `RECEIVED constructor: ${
+              getResponse.valueUint8Array().constructor.name
+            }`
+          );
+          console.log(
+            `RECEIVED: ${JSON.stringify(getResponse.valueUint8Array())}`
+          );
+          console.log(`EXPECTED TYPE: ${typeof value1}`);
+          console.log(`EXPECTED constructor: ${value1.constructor.name}`);
+          console.log(`EXPECTED: ${JSON.stringify(value1)}`);
+          // expect(getResponse.valueUint8Array()).toEqual(value1);
+          expect(getResponse.valueUint8Array()).toEqual(
+            // Uint8Array.of(102, 111, 111)
+            // Uint8Array.from(value1)
+            value1
+          );
         }
+
         getResponse = await Momento.dictionaryGetField(
           IntegrationTestCacheName,
           dictionaryName,
