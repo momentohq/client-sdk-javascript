@@ -53,7 +53,6 @@ import {
   validateListSliceStartEnd,
 } from '@gomomento/core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
-import {TextEncoder} from 'util';
 
 export interface DataClientProps {
   configuration: Configuration;
