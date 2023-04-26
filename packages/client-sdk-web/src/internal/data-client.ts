@@ -136,7 +136,7 @@ export class DataClient<
       return new CacheGet.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
-    const result = await this.sendGet(cacheName, this.convert(key));
+    const result = await this.sendGet(cacheName, this.convertToB64String(key));
     this.logger.trace(`'get' request result: ${result.toString()}`);
     return result;
   }
@@ -214,8 +214,8 @@ export class DataClient<
 
     return await this.sendSet(
       cacheName,
-      this.convert(key),
-      this.convert(value),
+      this.convertToB64String(key),
+      this.convertToB64String(value),
       ttlToUse
     );
   }
@@ -273,8 +273,8 @@ export class DataClient<
 
     const result = await this.sendSetIfNotExists(
       cacheName,
-      this.convert(key),
-      this.convert(field),
+      this.convertToB64String(key),
+      this.convertToB64String(field),
       ttl || this.defaultTtlSeconds * 1000
     );
     this.logger.trace(`'setIfNotExists' request result: ${result.toString()}`);
@@ -339,7 +339,7 @@ export class DataClient<
       return new CacheDelete.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(`Issuing 'delete' request; key: ${key.toString()}`);
-    return await this.sendDelete(cacheName, this.convert(key));
+    return await this.sendDelete(cacheName, this.convertToB64String(key));
   }
 
   private async sendDelete(
@@ -386,7 +386,7 @@ export class DataClient<
 
     const result = await this.sendIncrement(
       cacheName,
-      this.convert(field),
+      this.convertToB64String(field),
       amount,
       ttl || this.defaultTtlSeconds * 1000
     );
@@ -455,7 +455,7 @@ export class DataClient<
     const result = await this.sendListConcatenateBack(
       cacheName,
       listName,
-      this.convertArray(values),
+      this.convertArrayToB64Strings(values),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl(),
       truncateFrontToSize
@@ -528,8 +528,8 @@ export class DataClient<
 
     const result = await this.sendListConcatenateFront(
       cacheName,
-      listName,
-      this.convertArray(values),
+      this.convertToB64String(listName),
+      this.convertArrayToB64Strings(values),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl(),
       truncateBackToSize
@@ -907,8 +907,8 @@ export class DataClient<
 
     const result = await this.sendListPushBack(
       cacheName,
-      listName,
-      this.convert(value),
+      this.convertToB64String(listName),
+      this.convertToB64String(value),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl(),
       truncateFrontToSize
@@ -975,7 +975,7 @@ export class DataClient<
     const result = await this.sendListPushFront(
       cacheName,
       listName,
-      this.convert(value),
+      this.convertToB64String(value),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl(),
       truncateBackToSize
@@ -1036,7 +1036,7 @@ export class DataClient<
     const result = await this.sendListRemoveValue(
       cacheName,
       listName,
-      this.convert(value)
+      this.convertToB64String(value)
     );
     this.logger.trace(`'listRemoveValue' request result: ${result.toString()}`);
     return result;
@@ -1091,9 +1091,9 @@ export class DataClient<
     );
     const result = await this.sendDictionarySetField(
       cacheName,
-      dictionaryName,
-      this.convert(field),
-      this.convert(value),
+      this.convertToB64String(dictionaryName),
+      this.convertToB64String(field),
+      this.convertToB64String(value),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl()
     );
@@ -1166,7 +1166,7 @@ export class DataClient<
 
     const result = await this.sendDictionarySetFields(
       cacheName,
-      dictionaryName,
+      this.convertToB64String(dictionaryName),
       dictionaryFieldValuePairs,
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl()
@@ -1229,8 +1229,8 @@ export class DataClient<
     );
     const result = await this.sendDictionaryGetField(
       cacheName,
-      dictionaryName,
-      this.convert(field)
+      this.convertToB64String(dictionaryName),
+      this.convertToB64String(field)
     );
     this.logger.trace(
       `'dictionaryGetField' request result: ${result.toString()}`
@@ -1319,8 +1319,8 @@ export class DataClient<
     );
     const result = await this.sendDictionaryGetFields(
       cacheName,
-      dictionaryName,
-      this.convertArray(fields)
+      this.convertToB64String(dictionaryName),
+      fields
     );
     this.logger.trace(
       `'dictionaryGetFields' request result: ${result.toString()}`
@@ -1331,12 +1331,13 @@ export class DataClient<
   private async sendDictionaryGetFields(
     cacheName: string,
     dictionaryName: string,
-    fields: string[]
+    fields: string[] | Uint8Array[]
   ): Promise<CacheDictionaryGetFields.Response> {
     const request = new _DictionaryGetRequest();
     request.setDictionaryName(dictionaryName);
-    request.setFieldsList(fields);
+    request.setFieldsList(this.convertArrayToB64Strings(fields));
     const metadata = this.createMetadata(cacheName);
+    console.log(`IN DICTIONARY GET FIELDS; cache name: ${cacheName}`);
 
     return await new Promise(resolve => {
       this.clientWrapper.dictionaryGet(
@@ -1348,6 +1349,12 @@ export class DataClient<
         (err, resp) => {
           const found = resp?.getFound();
           if (found) {
+            console.log(
+              // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+              `\n\n\nDICTIONARY GET FIELDS RESPONSE: ${found
+                .getItemsList()
+                .map(item => item.getCacheBody())}\n\n\n`
+            );
             const items = found.getItemsList().map(item => {
               const result = this.convertECacheResult(item.getResult());
               return new _DictionaryGetResponsePart(
@@ -1355,6 +1362,9 @@ export class DataClient<
                 item.getCacheBody_asU8()
               );
             });
+            console.log(
+              `ABOUT TO CALL HIT CONSTRUCTOR, FIELDS: ${fields.join('|')}`
+            );
             resolve(
               new CacheDictionaryGetFields.Hit(
                 items,
@@ -1364,6 +1374,8 @@ export class DataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheDictionaryGetFields.Miss());
           } else {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            console.log(`\n\n\nDICTIONARY GET FIELDS GOT AN ERROR: ${err}`);
             resolve(
               new CacheDictionaryGetFields.Error(cacheServiceErrorMapper(err))
             );
@@ -1386,7 +1398,10 @@ export class DataClient<
     this.logger.trace(
       `Issuing 'dictionaryFetch' request; dictionaryName: ${dictionaryName}`
     );
-    const result = await this.sendDictionaryFetch(cacheName, dictionaryName);
+    const result = await this.sendDictionaryFetch(
+      cacheName,
+      this.convertToB64String(dictionaryName)
+    );
     this.logger.trace(`'dictionaryFetch' request result: ${result.toString()}`);
     return result;
   }
@@ -1453,8 +1468,8 @@ export class DataClient<
 
     const result = await this.sendDictionaryIncrement(
       cacheName,
-      dictionaryName,
-      this.convert(field),
+      this.convertToB64String(dictionaryName),
+      this.convertToB64String(field),
       amount,
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl()
@@ -1522,8 +1537,8 @@ export class DataClient<
     );
     const result = await this.sendDictionaryRemoveField(
       cacheName,
-      dictionaryName,
-      this.convert(field)
+      this.convertToB64String(dictionaryName),
+      this.convertToB64String(field)
     );
     this.logger.trace(
       `'dictionaryRemoveField' request result: ${result.toString()}`
@@ -1578,8 +1593,8 @@ export class DataClient<
     );
     const result = await this.sendDictionaryRemoveFields(
       cacheName,
-      dictionaryName,
-      this.convertArray(fields)
+      this.convertToB64String(dictionaryName),
+      this.convertArrayToB64Strings(fields)
     );
     this.logger.trace(
       `'dictionaryRemoveFields' request result: ${result.toString()}`
@@ -1627,7 +1642,7 @@ export class DataClient<
     return ttlSeconds * 1000;
   }
 
-  private convert(v: string | Uint8Array): string {
+  private convertToB64String(v: string | Uint8Array): string {
     if (typeof v === 'string') {
       return btoa(v);
     }
@@ -1636,8 +1651,8 @@ export class DataClient<
     return btoa(String.fromCharCode.apply(null, v));
   }
 
-  private convertArray(v: string[] | Uint8Array[]): string[] {
-    return v.map(i => this.convert(i));
+  private convertArrayToB64Strings(v: string[] | Uint8Array[]): string[] {
+    return v.map(i => this.convertToB64String(i));
   }
 
   private convertToUint8Array(v: string | Uint8Array): Uint8Array {
@@ -1659,14 +1674,14 @@ export class DataClient<
     if (elements instanceof Map) {
       return [...elements.entries()].map(element =>
         new _DictionaryFieldValuePairGrpc()
-          .setField(this.convert(element[0]))
-          .setValue(this.convert(element[1]))
+          .setField(this.convertToB64String(element[0]))
+          .setValue(this.convertToB64String(element[1]))
       );
     } else {
       return Object.entries(elements).map(element =>
         new _DictionaryFieldValuePairGrpc()
-          .setField(this.convert(element[0]))
-          .setValue(this.convert(element[1]))
+          .setField(this.convertToB64String(element[0]))
+          .setValue(this.convertToB64String(element[1]))
       );
     }
   }

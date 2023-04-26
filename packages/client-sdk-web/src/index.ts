@@ -59,11 +59,9 @@ import {
   CacheInfo,
   CollectionTtl,
   SortedSetOrder,
-  // Credentials/Auth
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
-  // Errors
   MomentoErrorCode,
   SdkError,
   AlreadyExistsError,
@@ -80,7 +78,6 @@ import {
   PermissionError,
   NotFoundError,
   UnknownError,
-  // Logging
   MomentoLogger,
   MomentoLoggerFactory,
   DefaultMomentoLoggerFactory,
@@ -98,11 +95,9 @@ export {
   Configuration,
   CacheClient,
   CacheInfo,
-  // Credentials / Auth
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
-  // CacheClient response types
   CacheGet,
   CacheListConcatenateBack,
   CacheListConcatenateFront,

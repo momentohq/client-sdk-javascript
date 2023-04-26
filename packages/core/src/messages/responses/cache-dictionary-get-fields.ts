@@ -45,6 +45,15 @@ class _Hit extends Response {
     super();
     this.items = items;
     this.fields = fields;
+
+    console.log(
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      `CREATING DGFs HIT RESPONSE; FIELDS: ${this.fields.join('|')}, ITEMS: ${
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        this.items
+      }`
+    );
+
     items.forEach((item, index) => {
       if (item.result === _ECacheResult.Hit) {
         this.responses.push(
