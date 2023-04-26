@@ -216,19 +216,6 @@ export function runDictionaryTests(
       });
 
       it('should provide value accessors for string fields with dictionaryFetch', async () => {
-        const map1 = new Map<string, string>([
-          ['foo', 'FOO'],
-          ['bar', 'BAR'],
-        ]);
-        const map2 = new Map<string, string>([
-          ['foo', 'FOO'],
-          ['bar', 'BAR'],
-        ]);
-        expect(map1).toEqual(map2);
-        console.log('MAPS ARE EQUAL YO!!!!\n\n\n\n\n\n\n');
-
-        // const textEncoder = new TextEncoder();
-
         const dictionaryName = v4();
         const field1 = 'foo';
         const value1 = v4();
@@ -251,10 +238,7 @@ export function runDictionaryTests(
         expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
         const hitResponse = response as CacheDictionaryFetch.Hit;
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const expectedStringBytesMap = new Map<string, Uint8Array>([
-          // ['foo', textEncoder.encode(value1)],
-          // ['bar', textEncoder.encode(value2)],
           ['foo', uint8ArrayForTest(value1)],
           ['bar', uint8ArrayForTest(value2)],
         ]);
@@ -1345,24 +1329,7 @@ export function runDictionaryTests(
         );
         expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
-          console.log(`RECEIVED TYPE: ${typeof getResponse.valueUint8Array()}`);
-          console.log(
-            `RECEIVED constructor: ${
-              getResponse.valueUint8Array().constructor.name
-            }`
-          );
-          console.log(
-            `RECEIVED: ${JSON.stringify(getResponse.valueUint8Array())}`
-          );
-          console.log(`EXPECTED TYPE: ${typeof value1}`);
-          console.log(`EXPECTED constructor: ${value1.constructor.name}`);
-          console.log(`EXPECTED: ${JSON.stringify(value1)}`);
-          // expect(getResponse.valueUint8Array()).toEqual(value1);
-          expect(getResponse.valueUint8Array()).toEqual(
-            // Uint8Array.of(102, 111, 111)
-            // Uint8Array.from(value1)
-            value1
-          );
+          expect(getResponse.valueUint8Array()).toEqual(value1);
         }
 
         getResponse = await Momento.dictionaryGetField(
