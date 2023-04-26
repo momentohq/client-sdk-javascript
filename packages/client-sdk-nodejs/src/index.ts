@@ -1,5 +1,6 @@
 import {CacheClient, SimpleCacheClient} from './cache-client';
 import {TopicClient} from './topic-client';
+// import {AuthClient} from './auth-client';
 import * as Configurations from './config/configurations';
 
 // Cache Client Response Types
@@ -52,6 +53,10 @@ import * as CacheSortedSetRemoveElements from '@gomomento/core/dist/src/messages
 import * as TopicPublish from '@gomomento/core/dist/src/messages/responses/topic-publish';
 import * as TopicSubscribe from '@gomomento/core/dist/src/messages/responses/topic-subscribe';
 import {TopicItem} from '@gomomento/core/dist/src/messages/responses/topic-item';
+
+// AuthClient Response Types
+import * as GenerateApiToken from '@gomomento/core/dist/src/messages/responses/generate-api-token';
+import * as RefreshApiToken from '@gomomento/core/dist/src/messages/responses/refresh-api-token';
 
 import {
   SubscribeCallOptions,
@@ -190,6 +195,8 @@ export {
   TopicPublish,
   TopicSubscribe,
   SubscribeCallOptions,
+  // AuthClient response types
+  GenerateApiToken,
   // Errors
   MomentoErrorCode,
   SdkError,
