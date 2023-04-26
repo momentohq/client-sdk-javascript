@@ -1,6 +1,6 @@
 import {ControlClient} from './internal/control-client';
 import {DataClient} from './internal/data-client';
-import {CredentialProvider, DefaultMomentoLoggerFactory} from '@gomomento/core';
+import {CredentialProvider, NoopMomentoLoggerFactory} from '@gomomento/core';
 import {
   AbstractCacheClient,
   IControlClient,
@@ -28,7 +28,7 @@ function createControlClient(props: CacheClientProps): IControlClient {
     // TODO
     // TODO
     configuration: {
-      getLoggerFactory: () => new DefaultMomentoLoggerFactory(),
+      getLoggerFactory: () => new NoopMomentoLoggerFactory(),
     },
     credentialProvider: props.credentialProvider,
   });
@@ -42,9 +42,9 @@ function createDataClient(props: CacheClientProps): IDataClient {
     // TODO
     // TODO
     configuration: {
-      getLoggerFactory: () => new DefaultMomentoLoggerFactory(),
+      getLoggerFactory: () => new NoopMomentoLoggerFactory(),
     },
     credentialProvider: props.credentialProvider,
-    defaultTtlSeconds: 60 * 20,
+    defaultTtlSeconds: 60,
   });
 }
