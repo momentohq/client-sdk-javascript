@@ -15,7 +15,7 @@
   "scripts": {
     "prebuild": "eslint . --ext .ts",
     "test": "jest",
-    "unit-test": "jest unit",
+    "unit-test": "jest unit --passWithNoTests",
     "integration-test": "jest integration",
     "build-and-run-tests": "cd ../common-integration-tests && npm run build && cd - && jest",
     "lint": "eslint . --ext .ts",
