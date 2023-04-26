@@ -19,10 +19,6 @@ const deleteCacheIfExists = async (momento: CacheClient, cacheName: string) => {
   }
 };
 
-function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 export async function WithCache(
   client: CacheClient,
   cacheName: string,
@@ -58,7 +54,6 @@ export function SetupIntegrationTest(): {
   beforeAll(async () => {
     // Use a fresh client to avoid test interference with setup.
     const momento = momentoClientForTesting();
-    await delay(250);
     await deleteCacheIfExists(momento, cacheName);
     const createResponse = await momento.createCache(cacheName);
     if (createResponse instanceof CreateCache.Error) {

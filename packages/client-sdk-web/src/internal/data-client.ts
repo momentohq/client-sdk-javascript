@@ -454,7 +454,7 @@ export class DataClient<
 
     const result = await this.sendListConcatenateBack(
       cacheName,
-      listName,
+      this.convertToB64String(listName),
       this.convertArrayToB64Strings(values),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl(),
@@ -599,7 +599,7 @@ export class DataClient<
     );
     const result = await this.sendListFetch(
       cacheName,
-      listName,
+      this.convertToB64String(listName),
       startIndex,
       endIndex
     );
@@ -678,7 +678,7 @@ export class DataClient<
     );
     const result = await this.sendListRetain(
       cacheName,
-      listName,
+      this.convertToB64String(listName),
       // passing ttl info before start/end because it's guaranteed to be defined so doesn't need
       // to be nullable
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
@@ -743,7 +743,10 @@ export class DataClient<
       return new CacheListLength.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(`Issuing 'listLength' request; listName: ${listName}`);
-    const result = await this.sendListLength(cacheName, listName);
+    const result = await this.sendListLength(
+      cacheName,
+      this.convertToB64String(listName)
+    );
     this.logger.trace(`'listLength' request result: ${result.toString()}`);
     return result;
   }
@@ -795,7 +798,10 @@ export class DataClient<
     }
 
     this.logger.trace("Issuing 'listPopBack' request");
-    const result = await this.sendListPopBack(cacheName, listName);
+    const result = await this.sendListPopBack(
+      cacheName,
+      this.convertToB64String(listName)
+    );
     this.logger.trace(`'listPopBack' request result: ${result.toString()}`);
     return result;
   }
@@ -845,7 +851,10 @@ export class DataClient<
     }
 
     this.logger.trace("Issuing 'listPopFront' request");
-    const result = await this.sendListPopFront(cacheName, listName);
+    const result = await this.sendListPopFront(
+      cacheName,
+      this.convertToB64String(listName)
+    );
     this.logger.trace(`'listPopFront' request result: ${result.toString()}`);
     return result;
   }
@@ -974,7 +983,7 @@ export class DataClient<
 
     const result = await this.sendListPushFront(
       cacheName,
-      listName,
+      this.convertToB64String(listName),
       this.convertToB64String(value),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl(),
@@ -1035,7 +1044,7 @@ export class DataClient<
 
     const result = await this.sendListRemoveValue(
       cacheName,
-      listName,
+      this.convertToB64String(listName),
       this.convertToB64String(value)
     );
     this.logger.trace(`'listRemoveValue' request result: ${result.toString()}`);
@@ -1349,12 +1358,6 @@ export class DataClient<
         (err, resp) => {
           const found = resp?.getFound();
           if (found) {
-            console.log(
-              // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-              `\n\n\nDICTIONARY GET FIELDS RESPONSE: ${found
-                .getItemsList()
-                .map(item => item.getCacheBody())}\n\n\n`
-            );
             const items = found.getItemsList().map(item => {
               const result = this.convertECacheResult(item.getResult());
               return new _DictionaryGetResponsePart(
@@ -1362,9 +1365,6 @@ export class DataClient<
                 item.getCacheBody_asU8()
               );
             });
-            console.log(
-              `ABOUT TO CALL HIT CONSTRUCTOR, FIELDS: ${fields.join('|')}`
-            );
             resolve(
               new CacheDictionaryGetFields.Hit(
                 items,
@@ -1374,8 +1374,6 @@ export class DataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheDictionaryGetFields.Miss());
           } else {
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            console.log(`\n\n\nDICTIONARY GET FIELDS GOT AN ERROR: ${err}`);
             resolve(
               new CacheDictionaryGetFields.Error(cacheServiceErrorMapper(err))
             );

@@ -21,8 +21,7 @@
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
-    "build": "rm -rf dist && tsc",
-    "foo": "node ./dist/src/foo.js"
+    "build": "rm -rf dist && tsc"
   },
   "author": "",
   "license": "Apache-2.0",
