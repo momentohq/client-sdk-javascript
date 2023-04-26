@@ -110,9 +110,6 @@ export class DataClient<
     this.logger.debug(
       `Creating data client using endpoint: '${props.credentialProvider.getCacheEndpoint()}`
     );
-    console.log(
-      `\n\n\nCreating data client with endpoint: ${props.credentialProvider.getCacheEndpoint()}\n\n\n`
-    );
 
     this.defaultTtlSeconds = props.defaultTtlSeconds;
     this.authHeaders = {authorization: props.credentialProvider.getAuthToken()};
@@ -1346,7 +1343,6 @@ export class DataClient<
     request.setDictionaryName(dictionaryName);
     request.setFieldsList(this.convertArrayToB64Strings(fields));
     const metadata = this.createMetadata(cacheName);
-    console.log(`IN DICTIONARY GET FIELDS; cache name: ${cacheName}`);
 
     return await new Promise(resolve => {
       this.clientWrapper.dictionaryGet(
