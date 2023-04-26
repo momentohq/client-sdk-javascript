@@ -49,7 +49,6 @@ import {
   CollectionTtl,
   UnknownError,
   SortedSetOrder,
-  SdkError,
   MomentoLoggerFactory,
 } from '..';
 import {version} from '../../package.json';
@@ -2259,7 +2258,7 @@ export class DataClient {
       return new CacheSortedSetGetScore.Miss(this.convert(value));
     } else if (responses instanceof CacheSortedSetGetScores.Error) {
       return new CacheSortedSetGetScore.Error(
-        <SdkError>responses.innerException(),
+        responses.innerException(),
         this.convert(value)
       );
     }
