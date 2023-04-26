@@ -74,11 +74,10 @@ export function ItBehavesLikeItValidatesCacheName(
 const bytesEncoderForTests = new TextEncoder();
 
 /**
- * TODO
- * TODO
- * TODO explain
- * TODO
- * TODO
+ * The nodejs SDK and the web SDK differ in how their TextEncoders encode Uint8Array values.
+ * Although the array byte data is the same, differences in the backing representation
+ * trip Jest up causing tests to fail. This function replaces the TextEncoder and normalizes
+ * the Uint8Array data encoding to a simple array of ints.
  *
  * @param {string} value
  * @returns {Uint8Array}
