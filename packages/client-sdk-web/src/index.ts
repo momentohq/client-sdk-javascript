@@ -60,11 +60,9 @@ import {
   CacheInfo,
   CollectionTtl,
   SortedSetOrder,
-  // Credentials/Auth
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
-  // Errors
   MomentoErrorCode,
   SdkError,
   AlreadyExistsError,
@@ -81,7 +79,6 @@ import {
   PermissionError,
   NotFoundError,
   UnknownError,
-  // Logging
   MomentoLogger,
   MomentoLoggerFactory,
   DefaultMomentoLoggerFactory,
@@ -100,11 +97,9 @@ export {
   CacheClient,
   AuthClient,
   CacheInfo,
-  // Credentials / Auth
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
-  // CacheClient response types
   CacheGet,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
@@ -149,15 +144,11 @@ export {
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
-  // TopicClient Response types
-  // TopicClient,
   TopicItem,
   TopicPublish,
   TopicSubscribe,
   SubscribeCallOptions,
-  // AuthClient Response types
   GenerateApiToken,
-  // Errors
   MomentoErrorCode,
   SdkError,
   AlreadyExistsError,
@@ -174,7 +165,6 @@ export {
   PermissionError,
   NotFoundError,
   UnknownError,
-  // Logging
   MomentoLogger,
   MomentoLoggerFactory,
   DefaultMomentoLoggerFactory,
