@@ -15,8 +15,9 @@
   "scripts": {
     "prebuild": "eslint . --ext .ts",
     "test": "jest",
-    "unit-test": "jest unit --passWithNoTests",
-    "integration-test": "jest integration --passWithNoTests",
+    "unit-test": "jest unit",
+    "integration-test": "jest integration",
+    "build-and-run-tests": "cd ../common-integration-tests && npm run build && cd - && jest",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
@@ -48,7 +49,7 @@
     "xhr2": "^0.2.1"
   },
   "dependencies": {
-    "@gomomento/core": "file:../core",
+    "@gomomento/sdk-core": "file:../core",
     "@gomomento/generated-types-webtext": "0.57.0",
     "google-protobuf": "^3.21.2",
     "grpc-web": "1.4.2",

@@ -1,1 +1,1 @@
-export * from '@gomomento/core/dist/src/config/transport';
+export * from '@gomomento/sdk-core/dist/src/config/transport';

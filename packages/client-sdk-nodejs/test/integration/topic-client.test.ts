@@ -20,8 +20,8 @@ import {TextEncoder} from 'util';
 import {
   IResponseError,
   ResponseBase,
-} from '@gomomento/core/dist/src/messages/responses/response-base';
-import {sleep} from '@gomomento/core/dist/src/internal/utils';
+} from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
+import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 const topicClient = new TopicClient({

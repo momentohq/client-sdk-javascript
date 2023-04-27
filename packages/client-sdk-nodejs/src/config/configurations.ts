@@ -5,7 +5,7 @@ import {Middleware} from './middleware/middleware';
 import {
   DefaultMomentoLoggerFactory,
   MomentoLoggerFactory,
-} from '@gomomento/core';
+} from '@gomomento/sdk-core';
 import {
   GrpcConfiguration,
   StaticGrpcConfiguration,

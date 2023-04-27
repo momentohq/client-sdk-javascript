@@ -98,25 +98,6 @@ export interface ValidateCacheProps {
   cacheName: string;
 }
 
-export interface ValidateListProps extends ValidateCacheProps {
-  listName: string;
-}
-
-export interface ValidateDictionaryProps extends ValidateCacheProps {
-  dictionaryName: string;
-  field: string | Uint8Array;
-}
-
-export interface ValidateDictionaryChangerProps
-  extends ValidateDictionaryProps {
-  value: string | Uint8Array;
-  ttl?: CollectionTtl;
-}
-
-export interface ValidateSetProps extends ValidateCacheProps {
-  setName: string;
-}
-
 export interface ValidateSortedSetProps extends ValidateCacheProps {
   sortedSetName: string;
   value: string | Uint8Array;

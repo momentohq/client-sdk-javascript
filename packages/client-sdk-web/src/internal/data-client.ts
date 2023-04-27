@@ -9,6 +9,9 @@ import {
   CacheSetIfNotExists,
   CacheDelete,
   CacheIncrement,
+  CacheSetFetch,
+  CacheSetAddElements,
+  CacheSetRemoveElements,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
   CacheListFetch,
@@ -19,6 +22,14 @@ import {
   CacheListPushFront,
   CacheListRemoveValue,
   CacheListRetain,
+  CacheDictionarySetField,
+  CacheDictionarySetFields,
+  CacheDictionaryGetField,
+  CacheDictionaryGetFields,
+  CacheDictionaryFetch,
+  CacheDictionaryIncrement,
+  CacheDictionaryRemoveField,
+  CacheDictionaryRemoveFields,
   CollectionTtl,
 } from '..';
 import {version} from '../../package.json';
@@ -27,12 +38,20 @@ import {Request, UnaryInterceptor, UnaryResponse} from 'grpc-web';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
+  _DictionaryFieldValuePair,
+  _DictionaryGetResponsePart,
+  _ECacheResult,
+} from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
+import {
   _DeleteRequest,
   _GetRequest,
   _IncrementRequest,
   _SetIfNotExistsRequest,
   _SetIfNotExistsResponse,
   _SetRequest,
+  _SetFetchRequest,
+  _SetUnionRequest,
+  _SetDifferenceRequest,
   _ListConcatenateBackRequest,
   _ListConcatenateFrontRequest,
   _ListFetchRequest,
@@ -44,16 +63,23 @@ import {
   _ListPushBackRequest,
   _ListPushFrontRequest,
   _ListRemoveRequest,
+  _DictionarySetRequest,
+  _DictionaryGetRequest,
+  _DictionaryFetchRequest,
+  _DictionaryFieldValuePair as _DictionaryFieldValuePairGrpc,
+  _DictionaryIncrementRequest,
+  _DictionaryDeleteRequest,
   ECacheResult,
 } from '@gomomento/generated-types-webtext/dist/cacheclient_pb';
-import {IDataClient} from '@gomomento/core/dist/src/internal/clients';
+import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {
   validateCacheName,
+  validateDictionaryName,
   validateListName,
   validateListSliceStartEnd,
-} from '@gomomento/core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
-import {TextEncoder} from 'util';
+  validateSetName,
+} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 
 export interface DataClientProps {
   configuration: Configuration;
@@ -113,7 +139,7 @@ export class DataClient<
       return new CacheGet.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
-    const result = await this.sendGet(cacheName, this.convert(key));
+    const result = await this.sendGet(cacheName, this.convertToB64String(key));
     this.logger.trace(`'get' request result: ${result.toString()}`);
     return result;
   }
@@ -191,8 +217,8 @@ export class DataClient<
 
     return await this.sendSet(
       cacheName,
-      this.convert(key),
-      this.convert(value),
+      this.convertToB64String(key),
+      this.convertToB64String(value),
       ttlToUse
     );
   }
@@ -250,8 +276,8 @@ export class DataClient<
 
     const result = await this.sendSetIfNotExists(
       cacheName,
-      this.convert(key),
-      this.convert(field),
+      this.convertToB64String(key),
+      this.convertToB64String(field),
       ttl || this.defaultTtlSeconds * 1000
     );
     this.logger.trace(`'setIfNotExists' request result: ${result.toString()}`);
@@ -316,7 +342,7 @@ export class DataClient<
       return new CacheDelete.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(`Issuing 'delete' request; key: ${key.toString()}`);
-    return await this.sendDelete(cacheName, this.convert(key));
+    return await this.sendDelete(cacheName, this.convertToB64String(key));
   }
 
   private async sendDelete(
@@ -363,7 +389,7 @@ export class DataClient<
 
     const result = await this.sendIncrement(
       cacheName,
-      this.convert(field),
+      this.convertToB64String(field),
       amount,
       ttl || this.defaultTtlSeconds * 1000
     );
@@ -405,6 +431,154 @@ export class DataClient<
     });
   }
 
+  public async setFetch(
+    cacheName: string,
+    setName: string
+  ): Promise<CacheSetFetch.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+    } catch (err) {
+      return new CacheSetFetch.Error(normalizeSdkError(err as Error));
+    }
+    return await this.sendSetFetch(cacheName, this.convertToB64String(setName));
+  }
+
+  private async sendSetFetch(
+    cacheName: string,
+    setName: string
+  ): Promise<CacheSetFetch.Response> {
+    const request = new _SetFetchRequest();
+    request.setSetName(setName);
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.setFetch(
+        request,
+        {
+          ...this.authHeaders,
+          ...metadata,
+        },
+        (err, resp) => {
+          const theSet = resp.getFound();
+          if (theSet && theSet.getElementsList()) {
+            const found = theSet.getElementsList();
+            resolve(new CacheSetFetch.Hit(this.convertArrayToUint8(found)));
+          } else if (resp?.getMissing()) {
+            resolve(new CacheSetFetch.Miss());
+          } else {
+            resolve(new CacheSetFetch.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async setAddElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[],
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheSetAddElements.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+    } catch (err) {
+      return new CacheSetAddElements.Error(normalizeSdkError(err as Error));
+    }
+    return await this.sendSetAddElements(
+      cacheName,
+      this.convertToB64String(setName),
+      this.convertArrayToB64Strings(elements),
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+  }
+
+  private async sendSetAddElements(
+    cacheName: string,
+    setName: string,
+    elements: string[],
+    ttlMilliseconds: number,
+    refreshTtl: boolean
+  ): Promise<CacheSetAddElements.Response> {
+    const request = new _SetUnionRequest();
+    request.setSetName(setName);
+    request.setElementsList(elements);
+    request.setTtlMilliseconds(ttlMilliseconds);
+    request.setRefreshTtl(refreshTtl);
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.setUnion(
+        request,
+        {
+          ...this.authHeaders,
+          ...metadata,
+        },
+        err => {
+          if (err) {
+            resolve(
+              new CacheSetAddElements.Error(cacheServiceErrorMapper(err))
+            );
+          } else {
+            resolve(new CacheSetAddElements.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async setRemoveElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[]
+  ): Promise<CacheSetRemoveElements.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+    } catch (err) {
+      return new CacheSetRemoveElements.Error(normalizeSdkError(err as Error));
+    }
+    return await this.sendSetRemoveElements(
+      cacheName,
+      this.convertToB64String(setName),
+      this.convertArrayToB64Strings(elements)
+    );
+  }
+
+  private async sendSetRemoveElements(
+    cacheName: string,
+    setName: string,
+    elements: string[]
+  ): Promise<CacheSetRemoveElements.Response> {
+    const subtrahend = new _SetDifferenceRequest._Subtrahend();
+    const set = new _SetDifferenceRequest._Subtrahend._Set();
+    set.setElementsList(elements);
+    subtrahend.setSet(set);
+    const request = new _SetDifferenceRequest();
+    request.setSetName(setName);
+    request.setSubtrahend(subtrahend);
+
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.setDifference(
+        request,
+        {
+          ...this.authHeaders,
+          ...metadata,
+        },
+        err => {
+          if (err) {
+            resolve(
+              new CacheSetRemoveElements.Error(cacheServiceErrorMapper(err))
+            );
+          } else {
+            resolve(new CacheSetRemoveElements.Success());
+          }
+        }
+      );
+    });
+  }
+
   public async listConcatenateBack(
     cacheName: string,
     listName: string,
@@ -431,8 +605,8 @@ export class DataClient<
 
     const result = await this.sendListConcatenateBack(
       cacheName,
-      listName,
-      this.convertArray(values),
+      this.convertToB64String(listName),
+      this.convertArrayToB64Strings(values),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl(),
       truncateFrontToSize
@@ -505,8 +679,8 @@ export class DataClient<
 
     const result = await this.sendListConcatenateFront(
       cacheName,
-      listName,
-      this.convertArray(values),
+      this.convertToB64String(listName),
+      this.convertArrayToB64Strings(values),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl(),
       truncateBackToSize
@@ -576,7 +750,7 @@ export class DataClient<
     );
     const result = await this.sendListFetch(
       cacheName,
-      listName,
+      this.convertToB64String(listName),
       startIndex,
       endIndex
     );
@@ -655,7 +829,7 @@ export class DataClient<
     );
     const result = await this.sendListRetain(
       cacheName,
-      listName,
+      this.convertToB64String(listName),
       // passing ttl info before start/end because it's guaranteed to be defined so doesn't need
       // to be nullable
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
@@ -720,7 +894,10 @@ export class DataClient<
       return new CacheListLength.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(`Issuing 'listLength' request; listName: ${listName}`);
-    const result = await this.sendListLength(cacheName, listName);
+    const result = await this.sendListLength(
+      cacheName,
+      this.convertToB64String(listName)
+    );
     this.logger.trace(`'listLength' request result: ${result.toString()}`);
     return result;
   }
@@ -772,7 +949,10 @@ export class DataClient<
     }
 
     this.logger.trace("Issuing 'listPopBack' request");
-    const result = await this.sendListPopBack(cacheName, listName);
+    const result = await this.sendListPopBack(
+      cacheName,
+      this.convertToB64String(listName)
+    );
     this.logger.trace(`'listPopBack' request result: ${result.toString()}`);
     return result;
   }
@@ -822,7 +1002,10 @@ export class DataClient<
     }
 
     this.logger.trace("Issuing 'listPopFront' request");
-    const result = await this.sendListPopFront(cacheName, listName);
+    const result = await this.sendListPopFront(
+      cacheName,
+      this.convertToB64String(listName)
+    );
     this.logger.trace(`'listPopFront' request result: ${result.toString()}`);
     return result;
   }
@@ -884,8 +1067,8 @@ export class DataClient<
 
     const result = await this.sendListPushBack(
       cacheName,
-      listName,
-      this.convert(value),
+      this.convertToB64String(listName),
+      this.convertToB64String(value),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl(),
       truncateFrontToSize
@@ -951,8 +1134,8 @@ export class DataClient<
 
     const result = await this.sendListPushFront(
       cacheName,
-      listName,
-      this.convert(value),
+      this.convertToB64String(listName),
+      this.convertToB64String(value),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl(),
       truncateBackToSize
@@ -1012,8 +1195,8 @@ export class DataClient<
 
     const result = await this.sendListRemoveValue(
       cacheName,
-      listName,
-      this.convert(value)
+      this.convertToB64String(listName),
+      this.convertToB64String(value)
     );
     this.logger.trace(`'listRemoveValue' request result: ${result.toString()}`);
     return result;
@@ -1048,6 +1231,557 @@ export class DataClient<
     });
   }
 
+  public async dictionarySetField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array,
+    value: string | Uint8Array,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheDictionarySetField.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+    } catch (err) {
+      return new CacheDictionarySetField.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.trace(
+      `Issuing 'dictionarySetField' request; field: ${field.toString()}, value length: ${
+        value.length
+      }, ttl: ${ttl.ttlSeconds.toString() ?? 'null'}`
+    );
+    const result = await this.sendDictionarySetField(
+      cacheName,
+      this.convertToB64String(dictionaryName),
+      this.convertToB64String(field),
+      this.convertToB64String(value),
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+    this.logger.trace(
+      `'dictionarySetField' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendDictionarySetField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string,
+    value: string,
+    ttlMilliseconds: number,
+    refreshTtl: boolean
+  ): Promise<CacheDictionarySetField.Response> {
+    const request = new _DictionarySetRequest();
+    request.setDictionaryName(dictionaryName);
+    const item = new _DictionaryFieldValuePairGrpc();
+    item.setField(field);
+    item.setValue(value);
+    request.setItemsList([item]);
+    request.setTtlMilliseconds(ttlMilliseconds);
+    request.setRefreshTtl(refreshTtl);
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.dictionarySet(
+        request,
+        {
+          ...this.authHeaders,
+          ...metadata,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheDictionarySetField.Success());
+          } else {
+            resolve(
+              new CacheDictionarySetField.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async dictionarySetFields(
+    cacheName: string,
+    dictionaryName: string,
+    elements:
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Record<string, string | Uint8Array>,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheDictionarySetFields.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+    } catch (err) {
+      return new CacheDictionarySetFields.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'dictionarySetFields' request; elements: ${elements.toString()}, ttl: ${
+        ttl.ttlSeconds.toString() ?? 'null'
+      }`
+    );
+
+    const dictionaryFieldValuePairs = this.convertMapOrRecord(elements);
+
+    const result = await this.sendDictionarySetFields(
+      cacheName,
+      this.convertToB64String(dictionaryName),
+      dictionaryFieldValuePairs,
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+    this.logger.trace(
+      `'dictionarySetFields' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendDictionarySetFields(
+    cacheName: string,
+    dictionaryName: string,
+    elements: _DictionaryFieldValuePairGrpc[],
+    ttlMilliseconds: number,
+    refreshTtl: boolean
+  ): Promise<CacheDictionarySetFields.Response> {
+    const request = new _DictionarySetRequest();
+    request.setDictionaryName(dictionaryName);
+    request.setItemsList(elements);
+    request.setTtlMilliseconds(ttlMilliseconds);
+    request.setRefreshTtl(refreshTtl);
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.dictionarySet(
+        request,
+        {
+          ...this.authHeaders,
+          ...metadata,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheDictionarySetFields.Success());
+          } else {
+            resolve(
+              new CacheDictionarySetFields.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async dictionaryGetField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array
+  ): Promise<CacheDictionaryGetField.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+    } catch (err) {
+      return new CacheDictionaryGetField.Error(
+        normalizeSdkError(err as Error),
+        this.convertToUint8Array(field)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'dictionaryGetField' request; field: ${field.toString()}`
+    );
+    const result = await this.sendDictionaryGetField(
+      cacheName,
+      this.convertToB64String(dictionaryName),
+      this.convertToB64String(field)
+    );
+    this.logger.trace(
+      `'dictionaryGetField' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendDictionaryGetField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string
+  ): Promise<CacheDictionaryGetField.Response> {
+    const request = new _DictionaryGetRequest();
+    request.setDictionaryName(dictionaryName);
+    request.setFieldsList([field]);
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.dictionaryGet(
+        request,
+        {
+          ...this.authHeaders,
+          ...metadata,
+        },
+        (err, resp) => {
+          if (resp?.getMissing()) {
+            resolve(
+              new CacheDictionaryGetField.Miss(this.convertToUint8Array(field))
+            );
+          } else if (resp?.getFound()) {
+            const theList = resp.getFound();
+            if (theList && theList.getItemsList().length === 0) {
+              resolve(
+                new CacheDictionaryGetField.Error(
+                  new UnknownError(
+                    '_DictionaryGetResponseResponse contained no data but was found'
+                  ),
+                  this.convertToUint8Array(field)
+                )
+              );
+            } else if (
+              theList &&
+              theList.getItemsList()[0].getResult() === ECacheResult.MISS
+            ) {
+              resolve(
+                new CacheDictionaryGetField.Miss(
+                  this.convertToUint8Array(field)
+                )
+              );
+            } else if (theList) {
+              resolve(
+                new CacheDictionaryGetField.Hit(
+                  theList.getItemsList()[0].getCacheBody_asU8(),
+                  this.convertToUint8Array(field)
+                )
+              );
+            }
+          } else {
+            resolve(
+              new CacheDictionaryGetField.Error(
+                cacheServiceErrorMapper(err),
+                this.convertToUint8Array(field)
+              )
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async dictionaryGetFields(
+    cacheName: string,
+    dictionaryName: string,
+    fields: string[] | Uint8Array[]
+  ): Promise<CacheDictionaryGetFields.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+    } catch (err) {
+      return new CacheDictionaryGetFields.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'dictionaryGetFields' request; fields: ${fields.toString()}`
+    );
+    const result = await this.sendDictionaryGetFields(
+      cacheName,
+      this.convertToB64String(dictionaryName),
+      fields
+    );
+    this.logger.trace(
+      `'dictionaryGetFields' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendDictionaryGetFields(
+    cacheName: string,
+    dictionaryName: string,
+    fields: string[] | Uint8Array[]
+  ): Promise<CacheDictionaryGetFields.Response> {
+    const request = new _DictionaryGetRequest();
+    request.setDictionaryName(dictionaryName);
+    request.setFieldsList(this.convertArrayToB64Strings(fields));
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.dictionaryGet(
+        request,
+        {
+          ...this.authHeaders,
+          ...metadata,
+        },
+        (err, resp) => {
+          const found = resp?.getFound();
+          if (found) {
+            const items = found.getItemsList().map(item => {
+              const result = this.convertECacheResult(item.getResult());
+              return new _DictionaryGetResponsePart(
+                result,
+                item.getCacheBody_asU8()
+              );
+            });
+            resolve(
+              new CacheDictionaryGetFields.Hit(
+                items,
+                this.convertArrayToUint8(fields)
+              )
+            );
+          } else if (resp?.getMissing()) {
+            resolve(new CacheDictionaryGetFields.Miss());
+          } else {
+            resolve(
+              new CacheDictionaryGetFields.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async dictionaryFetch(
+    cacheName: string,
+    dictionaryName: string
+  ): Promise<CacheDictionaryFetch.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+    } catch (err) {
+      return new CacheDictionaryFetch.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.trace(
+      `Issuing 'dictionaryFetch' request; dictionaryName: ${dictionaryName}`
+    );
+    const result = await this.sendDictionaryFetch(
+      cacheName,
+      this.convertToB64String(dictionaryName)
+    );
+    this.logger.trace(`'dictionaryFetch' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendDictionaryFetch(
+    cacheName: string,
+    dictionaryName: string
+  ): Promise<CacheDictionaryFetch.Response> {
+    const request = new _DictionaryFetchRequest();
+    request.setDictionaryName(dictionaryName);
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.dictionaryFetch(
+        request,
+        {
+          ...this.authHeaders,
+          ...metadata,
+        },
+        (err, resp) => {
+          const theDict = resp?.getFound();
+          if (theDict && theDict.getItemsList()) {
+            const retDict: _DictionaryFieldValuePair[] = [];
+            const items = theDict.getItemsList();
+            items.forEach(val => {
+              const fvp = new _DictionaryFieldValuePair({
+                field: val.getField_asU8(),
+                value: this.convertToUint8Array(val.getValue()),
+              });
+              retDict.push(fvp);
+            });
+            resolve(new CacheDictionaryFetch.Hit(retDict));
+          } else if (resp?.getMissing()) {
+            resolve(new CacheDictionaryFetch.Miss());
+          } else {
+            resolve(
+              new CacheDictionaryFetch.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async dictionaryIncrement(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array,
+    amount = 1,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheDictionaryIncrement.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+    } catch (err) {
+      return new CacheDictionaryIncrement.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'dictionaryIncrement' request; field: ${field.toString()}, amount : ${amount}, ttl: ${
+        ttl.ttlSeconds.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendDictionaryIncrement(
+      cacheName,
+      this.convertToB64String(dictionaryName),
+      this.convertToB64String(field),
+      amount,
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+    this.logger.trace(
+      `'dictionaryIncrement' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendDictionaryIncrement(
+    cacheName: string,
+    dictionaryName: string,
+    field: string,
+    amount: number,
+    ttlMilliseconds: number,
+    refreshTtl: boolean
+  ): Promise<CacheDictionaryIncrement.Response> {
+    const request = new _DictionaryIncrementRequest();
+    request.setDictionaryName(dictionaryName);
+    request.setField(field);
+    request.setAmount(amount);
+    request.setTtlMilliseconds(ttlMilliseconds);
+    request.setRefreshTtl(refreshTtl);
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.dictionaryIncrement(
+        request,
+        {
+          ...this.authHeaders,
+          ...metadata,
+        },
+        (err, resp) => {
+          if (resp) {
+            if (resp.getValue()) {
+              resolve(new CacheDictionaryIncrement.Success(resp.getValue()));
+            } else {
+              resolve(new CacheDictionaryIncrement.Success(0));
+            }
+          } else {
+            resolve(
+              new CacheDictionaryIncrement.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async dictionaryRemoveField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array
+  ): Promise<CacheDictionaryRemoveField.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+    } catch (err) {
+      return new CacheDictionaryRemoveField.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'dictionaryRemoveField' request; field: ${field.toString()}`
+    );
+    const result = await this.sendDictionaryRemoveField(
+      cacheName,
+      this.convertToB64String(dictionaryName),
+      this.convertToB64String(field)
+    );
+    this.logger.trace(
+      `'dictionaryRemoveField' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendDictionaryRemoveField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string
+  ): Promise<CacheDictionaryRemoveField.Response> {
+    const request = new _DictionaryDeleteRequest();
+    request.setDictionaryName(dictionaryName);
+    request.setSome(new _DictionaryDeleteRequest.Some().addFields(field));
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.dictionaryDelete(
+        request,
+        {
+          ...this.authHeaders,
+          ...metadata,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheDictionaryRemoveField.Success());
+          } else {
+            resolve(
+              new CacheDictionaryRemoveField.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async dictionaryRemoveFields(
+    cacheName: string,
+    dictionaryName: string,
+    fields: string[] | Uint8Array[]
+  ): Promise<CacheDictionaryRemoveFields.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+    } catch (err) {
+      return new CacheDictionaryRemoveFields.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'dictionaryRemoveFields' request; fields: ${fields.toString()}`
+    );
+    const result = await this.sendDictionaryRemoveFields(
+      cacheName,
+      this.convertToB64String(dictionaryName),
+      this.convertArrayToB64Strings(fields)
+    );
+    this.logger.trace(
+      `'dictionaryRemoveFields' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendDictionaryRemoveFields(
+    cacheName: string,
+    dictionaryName: string,
+    fields: string[]
+  ): Promise<CacheDictionaryRemoveFields.Response> {
+    const request = new _DictionaryDeleteRequest();
+    request.setDictionaryName(dictionaryName);
+    request.setSome(new _DictionaryDeleteRequest.Some().setFieldsList(fields));
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.dictionaryDelete(
+        request,
+        {
+          ...this.authHeaders,
+          ...metadata,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheDictionaryRemoveFields.Success());
+          } else {
+            resolve(
+              new CacheDictionaryRemoveFields.Error(
+                cacheServiceErrorMapper(err)
+              )
+            );
+          }
+        }
+      );
+    });
+  }
+
   private createMetadata(cacheName: string): {cache: string} {
     return {cache: cacheName};
   }
@@ -1056,7 +1790,7 @@ export class DataClient<
     return ttlSeconds * 1000;
   }
 
-  private convert(v: string | Uint8Array): string {
+  private convertToB64String(v: string | Uint8Array): string {
     if (typeof v === 'string') {
       return btoa(v);
     }
@@ -1065,8 +1799,8 @@ export class DataClient<
     return btoa(String.fromCharCode.apply(null, v));
   }
 
-  private convertArray(v: string[] | Uint8Array[]): string[] {
-    return v.map(i => this.convert(i));
+  private convertArrayToB64Strings(v: string[] | Uint8Array[]): string[] {
+    return v.map(i => this.convertToB64String(i));
   }
 
   private convertToUint8Array(v: string | Uint8Array): Uint8Array {
@@ -1078,5 +1812,38 @@ export class DataClient<
 
   private convertArrayToUint8(v: (string | Uint8Array)[]): Uint8Array[] {
     return v.map(i => this.convertToUint8Array(i));
+  }
+
+  private convertMapOrRecord(
+    elements:
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Record<string, string | Uint8Array>
+  ): _DictionaryFieldValuePairGrpc[] {
+    if (elements instanceof Map) {
+      return [...elements.entries()].map(element =>
+        new _DictionaryFieldValuePairGrpc()
+          .setField(this.convertToB64String(element[0]))
+          .setValue(this.convertToB64String(element[1]))
+      );
+    } else {
+      return Object.entries(elements).map(element =>
+        new _DictionaryFieldValuePairGrpc()
+          .setField(this.convertToB64String(element[0]))
+          .setValue(this.convertToB64String(element[1]))
+      );
+    }
+  }
+
+  private convertECacheResult(result: ECacheResult): _ECacheResult {
+    switch (result) {
+      case ECacheResult.HIT:
+        return _ECacheResult.Hit;
+      case ECacheResult.INVALID:
+        return _ECacheResult.Invalid;
+      case ECacheResult.MISS:
+        return _ECacheResult.Miss;
+      case ECacheResult.OK:
+        return _ECacheResult.Ok;
+    }
   }
 }

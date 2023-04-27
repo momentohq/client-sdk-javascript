@@ -49,7 +49,6 @@ import {
   CollectionTtl,
   UnknownError,
   SortedSetOrder,
-  SdkError,
   MomentoLoggerFactory,
 } from '..';
 import {version} from '../../package.json';
@@ -73,13 +72,13 @@ import {
   validateSortedSetScores,
   validateSortedSetOffset,
   validateSortedSetCount,
-} from '@gomomento/core/dist/src/internal/utils';
+} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
   _ECacheResult,
   _DictionaryGetResponsePart,
   _SortedSetGetScoreResponsePart,
-} from '@gomomento/core/dist/src/messages/responses/grpc-response-types';
-import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
+} from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
+import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 
 export class DataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -2259,7 +2258,7 @@ export class DataClient {
       return new CacheSortedSetGetScore.Miss(this.convert(value));
     } else if (responses instanceof CacheSortedSetGetScores.Error) {
       return new CacheSortedSetGetScore.Error(
-        <SdkError>responses.innerException(),
+        responses.innerException(),
         this.convert(value)
       );
     }

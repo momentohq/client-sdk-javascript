@@ -2,6 +2,7 @@ import {v4} from 'uuid';
 
 import {
   CollectionTtl,
+  CacheDelete,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
   CacheListFetch,
@@ -13,7 +14,7 @@ import {
   CacheListRemoveValue,
   CacheListRetain,
   MomentoErrorCode,
-} from '@gomomento/core';
+} from '@gomomento/sdk-core';
 
 import {
   ValidateCacheProps,
@@ -24,9 +25,9 @@ import {
   IListResponseSuccess,
   IResponseError,
   ResponseBase,
-} from '@gomomento/core/dist/src/messages/responses/response-base';
-import {sleep} from '@gomomento/core/dist/src/internal/utils';
-import {ICacheClient} from '@gomomento/core/dist/src/internal/clients/cache';
+} from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
+import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
 
 export function runListTests(
   Momento: ICacheClient,
@@ -107,6 +108,7 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
+        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
         expect(
           (respFetch as CacheListFetch.Hit).valueListString()
         ).toIncludeAllMembers(values);
@@ -155,6 +157,7 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
+        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           values
         );
@@ -177,6 +180,7 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
+        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual([
           'two',
           'three',
@@ -206,6 +210,7 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
+        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           values.reverse()
         );
@@ -228,6 +233,7 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
+        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual([
           'three',
           'two',
@@ -259,12 +265,42 @@ export function runListTests(
           valueString
         );
 
-        const respFetch = <CacheListFetch.Hit>(
-          await Momento.listFetch(IntegrationTestCacheName, listName)
+        const respFetch = await Momento.listFetch(
+          IntegrationTestCacheName,
+          listName
         );
-        expect(respFetch.valueListString()).toEqual([valueString]);
-        expect(respFetch.valueList()).toEqual([valueString]);
-        expect(respFetch.valueListUint8Array()).toEqual([valueBytes]);
+        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual([
+          valueString,
+        ]);
+        expect((respFetch as CacheListFetch.Hit).valueList()).toEqual([
+          valueString,
+        ]);
+        expect((respFetch as CacheListFetch.Hit).valueListUint8Array()).toEqual(
+          [valueBytes]
+        );
+      });
+
+      it('returns a miss if the list is deleted', async () => {
+        const listName = v4();
+        await Momento.listPushFront(IntegrationTestCacheName, listName, '123');
+        const respFetch = await Momento.listFetch(
+          IntegrationTestCacheName,
+          listName
+        );
+        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+
+        const deleteResp = await Momento.delete(
+          IntegrationTestCacheName,
+          listName
+        );
+        expect(deleteResp).toBeInstanceOf(CacheDelete.Success);
+
+        const respFetch2 = await Momento.listFetch(
+          IntegrationTestCacheName,
+          listName
+        );
+        expect(respFetch2).toBeInstanceOf(CacheListFetch.Miss);
       });
 
       it('returns a sliced hit if the list exists', async () => {
@@ -483,6 +519,7 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
+        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           expectedValues
         );
@@ -537,6 +574,7 @@ export function runListTests(
           await Momento.listFetch(IntegrationTestCacheName, listName)
         );
 
+        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
         expect(respFetch.valueListString()).toEqual(valueStringExpected);
         expect(respFetch.valueList()).toEqual(valueStringExpected);
         expect(respFetch.valueListUint8Array()).toEqual([valueBytesExpected]);
@@ -572,6 +610,7 @@ export function runListTests(
           listName,
           values1
         );
+        expect(respConcat).toBeInstanceOf(CacheListConcatenateBack.Success);
         expect(
           (respConcat as CacheListConcatenateBack.Success).listLength()
         ).toEqual(values1.length);
@@ -580,6 +619,7 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
+        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           values1
         );
@@ -589,11 +629,13 @@ export function runListTests(
           listName,
           values2
         );
+        expect(respConcat).toBeInstanceOf(CacheListConcatenateBack.Success);
         expect(
           (respConcat as CacheListConcatenateBack.Success).listLength()
         ).toEqual(values1.length + values2.length);
 
         respFetch = await Momento.listFetch(IntegrationTestCacheName, listName);
+        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           values1.concat(values2)
         );
@@ -629,6 +671,7 @@ export function runListTests(
           listName,
           values1
         );
+        expect(respConcat).toBeInstanceOf(CacheListConcatenateFront.Success);
         expect(
           (respConcat as CacheListConcatenateFront.Success).listLength()
         ).toEqual(values1.length);
@@ -637,6 +680,7 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
+        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           values1
         );
@@ -646,11 +690,13 @@ export function runListTests(
           listName,
           values2
         );
+        expect(respConcat).toBeInstanceOf(CacheListConcatenateFront.Success);
         expect(
           (respConcat as CacheListConcatenateFront.Success).listLength()
         ).toEqual(values1.length + values2.length);
 
         respFetch = await Momento.listFetch(IntegrationTestCacheName, listName);
+        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           values2.concat(values1)
         );
