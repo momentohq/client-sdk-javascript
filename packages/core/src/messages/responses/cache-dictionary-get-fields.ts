@@ -45,6 +45,7 @@ class _Hit extends Response {
     super();
     this.items = items;
     this.fields = fields;
+
     items.forEach((item, index) => {
       if (item.result === _ECacheResult.Hit) {
         this.responses.push(

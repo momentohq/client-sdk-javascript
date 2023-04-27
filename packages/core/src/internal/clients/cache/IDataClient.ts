@@ -14,6 +14,13 @@ import {
   CacheListPopFront,
   CacheListRemoveValue,
   CacheListRetain,
+  CacheDictionarySetField,
+  CacheDictionarySetFields,
+  CacheDictionaryGetField,
+  CacheDictionaryFetch,
+  CacheDictionaryIncrement,
+  CacheDictionaryRemoveField,
+  CacheDictionaryRemoveFields,
   CollectionTtl,
 } from '../../../index';
 
@@ -99,4 +106,50 @@ export interface IDataClient {
     endIndex?: number,
     ttl?: CollectionTtl
   ): Promise<CacheListRetain.Response>;
+  dictionarySetField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array,
+    value: string | Uint8Array,
+    ttl?: CollectionTtl
+  ): Promise<CacheDictionarySetField.Response>;
+  dictionarySetFields(
+    cacheName: string,
+    dictionaryName: string,
+    elements:
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Record<string, string | Uint8Array>,
+    ttl?: CollectionTtl
+  ): Promise<CacheDictionarySetFields.Response>;
+  dictionaryGetField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array
+  ): Promise<CacheDictionaryGetField.Response>;
+  dictionaryGetFields(
+    cacheName: string,
+    dictionaryName: string,
+    fields: string[] | Uint8Array[]
+  ): Promise<CacheDictionaryGetField.Response>;
+  dictionaryFetch(
+    cacheName: string,
+    dictionaryName: string
+  ): Promise<CacheDictionaryFetch.Response>;
+  dictionaryIncrement(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array,
+    amount?: number,
+    ttl?: CollectionTtl
+  ): Promise<CacheDictionaryIncrement.Response>;
+  dictionaryRemoveField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array
+  ): Promise<CacheDictionaryRemoveField.Response>;
+  dictionaryRemoveFields(
+    cacheName: string,
+    dictionaryName: string,
+    fields: string[] | Uint8Array[]
+  ): Promise<CacheDictionaryRemoveFields.Response>;
 }

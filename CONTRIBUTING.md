@@ -60,3 +60,28 @@ npm run integration-test
 export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
 npm run test
 ```
+
+### Limit the test concurrency
+
+By default, jest runs tests concurrently. Sometimes if you allow too many tests to run concurrently you
+will hit Momento throttling limits.  To limit the concurrency to ensure you don't hit throttling limits,
+you can use jest's `--maxWorkers` flag:
+
+```
+export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
+npx jest --maxWorkers 1
+```
+
+### Build integration tests as part of test run, pass args to jest
+
+If you make changes to `common-integration-tests` you will need to rebuild them before you try to
+run them from the `client-sdk-nodejs` or `client-sdk-web` packages.  We provide an npm script
+`build-and-run-tests` that can be used for this, during development.  You can also pass a pattern
+to jest in order to limit the set of tests that you want to run.
+
+e.g. to re-build and run the integration tests, and filter to only the dictionary tests:
+
+```
+export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
+npm run build-and-run-tests -- dictionary
+```

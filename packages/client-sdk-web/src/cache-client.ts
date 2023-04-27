@@ -1,6 +1,6 @@
 import {ControlClient} from './internal/control-client';
 import {DataClient} from './internal/data-client';
-import {NoopMomentoLoggerFactory, CredentialProvider} from '@gomomento/core';
+import {CredentialProvider, NoopMomentoLoggerFactory} from '@gomomento/core';
 import {
   AbstractCacheClient,
   IControlClient,
