@@ -5,6 +5,11 @@ import {
   CacheIncrement,
   CacheSet,
   CacheSetIfNotExists,
+  CacheSetFetch,
+  CacheSetAddElements,
+  CacheSetAddElement,
+  CacheSetRemoveElements,
+  CacheSetRemoveElement,
   CacheListFetch,
   CacheListLength,
   CacheListPushFront,
@@ -39,8 +44,8 @@ export type ListConcatenateBackOptions = FrontTruncatableCallOptions;
 export type ListConcatenateFrontOptions = BackTruncatableCallOptions;
 export type ListPushBackOptions = FrontTruncatableCallOptions;
 export type ListPushFrontOptions = BackTruncatableCallOptions;
-// export type SetAddElementOptions = CollectionCallOptions;
-// export type SetAddElementsOptions = CollectionCallOptions;
+export type SetAddElementOptions = CollectionCallOptions;
+export type SetAddElementsOptions = CollectionCallOptions;
 export type DictionarySetFieldOptions = CollectionCallOptions;
 export type DictionarySetFieldsOptions = CollectionCallOptions;
 export type DictionaryIncrementOptions = CollectionCallOptions;
@@ -75,6 +80,29 @@ export interface ICacheClient extends IControlClient {
     field: string | Uint8Array,
     options?: SetIfNotExistsOptions
   ): Promise<CacheSetIfNotExists.Response>;
+  setFetch(cacheName: string, setName: string): Promise<CacheSetFetch.Response>;
+  setAddElement(
+    cacheName: string,
+    setName: string,
+    element: string | Uint8Array,
+    options?: SetAddElementsOptions
+  ): Promise<CacheSetAddElement.Response>;
+  setAddElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[],
+    options?: SetAddElementsOptions
+  ): Promise<CacheSetAddElements.Response>;
+  setRemoveElement(
+    cacheName: string,
+    setName: string,
+    element: string | Uint8Array
+  ): Promise<CacheSetRemoveElement.Response>;
+  setRemoveElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[]
+  ): Promise<CacheSetRemoveElements.Response>;
   listFetch(
     cacheName: string,
     listName: string,
