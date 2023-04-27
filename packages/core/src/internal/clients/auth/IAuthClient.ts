@@ -5,7 +5,7 @@ export interface IAuthClient {
     sessionToken: string,
     validForSeconds?: number
   ): Promise<GenerateApiToken.Response>;
-  
+
   refreshApiToken(
     apiToken: string,
     refreshToken: string

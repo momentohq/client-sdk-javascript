@@ -18,7 +18,7 @@
     "integration-test-auth": "jest -- auth.test.ts",
     "unit-test": "jest unit --testPathIgnorePatterns auth.test.ts",
     "integration-test": "jest integration --testPathIgnorePatterns auth.test.ts",
-    "build-and-run-tests": "cd ../common-integration-tests && npm run build && cd - && jest",
+    "build-and-run-tests": "cd ../common-integration-tests && npm run build && cd - && jest --testPathIgnorePatterns auth.test.ts",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
