@@ -21,11 +21,11 @@ import {
   CollectionCallOptions,
   SortedSetFetchByRankCallOptions,
   SortedSetFetchByScoreCallOptions,
-} from '@gomomento/core/dist/src/utils';
+} from '@gomomento/sdk-core/dist/src/utils';
 import {CacheClientProps} from './cache-client-props';
-import {range} from '@gomomento/core/dist/src/internal/utils';
-import {ICacheClient} from '@gomomento/core/dist/src/internal/clients/cache/ICacheClient';
-import {AbstractCacheClient} from '@gomomento/core/dist/src/internal/clients/cache/AbstractCacheClient';
+import {range} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/ICacheClient';
+import {AbstractCacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/AbstractCacheClient';
 
 // Type aliases to differentiate the different methods' optional arguments.
 type SortedSetPutElementOptions = CollectionCallOptions;

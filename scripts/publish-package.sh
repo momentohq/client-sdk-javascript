@@ -37,12 +37,12 @@ echo "publishing package: ${PACKAGE} with version ${VERSION} (core version: ${CO
 
 pushd ${ROOT_DIR}/packages/${PACKAGE}
     mv package.json package.json.ORIG
-    # We need to update the version number of the package itself; Also, if it has a dependency on @gomomento/core, then
+    # We need to update the version number of the package itself; Also, if it has a dependency on @gomomento/sdk-core, then
     # we need to update that dependency version too.
     cat package.json.ORIG | \
       jq ". += {\"version\": \"${VERSION}\"}" \
       > package.json
-    has_dependency_on_core=$(cat package.json|jq '.dependencies."@gomomento/core" != null')
+    has_dependency_on_core=$(cat package.json|jq '.dependencies."@gomomento/sdk-core" != null')
     if [ "${has_dependency_on_core}" == "true" ];
     then
        npm install @gomomento/core@${CORE_VERSION}
