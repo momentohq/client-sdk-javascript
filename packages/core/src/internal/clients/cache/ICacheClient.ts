@@ -27,6 +27,14 @@ import {
   CacheDictionaryIncrement,
   CacheDictionaryRemoveField,
   CacheDictionaryRemoveFields,
+  CacheSortedSetFetch,
+  CacheSortedSetPutElement,
+  CacheSortedSetPutElements,
+  CacheSortedSetGetRank,
+  CacheSortedSetGetScore,
+  CacheSortedSetGetScores,
+  CacheSortedSetIncrementScore,
+  CacheSortedSetRemoveElement,
 } from '../../../index';
 import {
   ScalarCallOptions,
@@ -35,6 +43,8 @@ import {
   BackTruncatableCallOptions,
   FrontTruncatableCallOptions,
   CollectionCallOptions,
+  SortedSetFetchByRankCallOptions,
+  SortedSetFetchByScoreCallOptions,
 } from '../../../utils';
 
 // Type aliases to differentiate the different methods' optional arguments.
@@ -50,11 +60,11 @@ export type DictionarySetFieldOptions = CollectionCallOptions;
 export type DictionarySetFieldsOptions = CollectionCallOptions;
 export type DictionaryIncrementOptions = CollectionCallOptions;
 export type IncrementOptions = ScalarCallOptions;
-// export type SortedSetPutElementOptions = CollectionCallOptions;
-// export type SortedSetPutElementsOptions = CollectionCallOptions;
-// export type SortedSetFetchByRankOptions = SortedSetFetchByRankCallOptions;
-// export type SortedSetFetchByScoreOptions = SortedSetFetchByScoreCallOptions;
-// export type SortedSetIncrementOptions = CollectionCallOptions;
+export type SortedSetPutElementOptions = CollectionCallOptions;
+export type SortedSetPutElementsOptions = CollectionCallOptions;
+export type SortedSetFetchByRankOptions = SortedSetFetchByRankCallOptions;
+export type SortedSetFetchByScoreOptions = SortedSetFetchByScoreCallOptions;
+export type SortedSetIncrementOptions = CollectionCallOptions;
 
 export interface ICacheClient extends IControlClient {
   get(cacheName: string, key: string | Uint8Array): Promise<CacheGet.Response>;
@@ -200,4 +210,59 @@ export interface ICacheClient extends IControlClient {
     dictionaryName: string,
     fields: string[] | Uint8Array[]
   ): Promise<CacheDictionaryRemoveFields.Response>;
+  sortedSetFetchByRank(
+    cacheName: string,
+    sortedSetName: string,
+    options?: SortedSetFetchByRankOptions
+  ): Promise<CacheSortedSetFetch.Response>;
+  sortedSetFetchByScore(
+    cacheName: string,
+    sortedSetName: string,
+    options?: SortedSetFetchByScoreOptions
+  ): Promise<CacheSortedSetFetch.Response>;
+  sortedSetPutElement(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array,
+    score: number,
+    options?: SortedSetPutElementOptions
+  ): Promise<CacheSortedSetPutElement.Response>;
+  sortedSetPutElements(
+    cacheName: string,
+    sortedSetName: string,
+    elements: Map<string | Uint8Array, number> | Record<string, number>,
+    options?: SortedSetPutElementsOptions
+  ): Promise<CacheSortedSetPutElements.Response>;
+  sortedSetGetRank(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetGetRank.Response>;
+  sortedSetGetScore(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetGetScore.Response>;
+  sortedSetGetScores(
+    cacheName: string,
+    sortedSetName: string,
+    values: string[] | Uint8Array[]
+  ): Promise<CacheSortedSetGetScores.Response>;
+  sortedSetIncrementScore(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array,
+    amount?: number,
+    options?: SortedSetIncrementOptions
+  ): Promise<CacheSortedSetIncrementScore.Response>;
+  sortedSetRemoveElement(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetRemoveElement.Response>;
+  sortedSetRemoveElements(
+    cacheName: string,
+    sortedSetName: string,
+    values: string[] | Uint8Array[]
+  ): Promise<CacheSortedSetRemoveElement.Response>;
 }
