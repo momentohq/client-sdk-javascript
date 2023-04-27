@@ -1,4 +1,4 @@
-import {DeleteCache, MomentoErrorCode} from '@gomomento/core';
+import {CollectionTtl, DeleteCache, MomentoErrorCode} from '@gomomento/core';
 import {ICacheClient} from '@gomomento/core/dist/src/internal/clients/cache/ICacheClient';
 import {
   IResponseError,
@@ -45,6 +45,21 @@ export interface ValidateListProps extends ValidateCacheProps {
   listName: string;
 }
 
+export interface ValidateDictionaryProps extends ValidateCacheProps {
+  dictionaryName: string;
+  field: string | Uint8Array;
+}
+
+export interface ValidateDictionaryChangerProps
+  extends ValidateDictionaryProps {
+  value: string | Uint8Array;
+  ttl?: CollectionTtl;
+}
+
+export interface ValidateSetProps extends ValidateCacheProps {
+  setName: string;
+}
+
 export function ItBehavesLikeItValidatesCacheName(
   getResponse: (props: ValidateCacheProps) => Promise<ResponseBase>
 ) {
@@ -58,4 +73,19 @@ export function ItBehavesLikeItValidatesCacheName(
       'Invalid argument passed to Momento client: cache name must not be empty'
     );
   });
+}
+
+const bytesEncoderForTests = new TextEncoder();
+
+/**
+ * The nodejs SDK and the web SDK differ in how their TextEncoders encode Uint8Array values.
+ * Although the array byte data is the same, differences in the backing representation
+ * trip Jest up causing tests to fail. This function replaces the TextEncoder and normalizes
+ * the Uint8Array data encoding to a simple array of ints.
+ *
+ * @param {string} value
+ * @returns {Uint8Array}
+ */
+export function uint8ArrayForTest(value: string): Uint8Array {
+  return Uint8Array.from(bytesEncoderForTests.encode(value));
 }

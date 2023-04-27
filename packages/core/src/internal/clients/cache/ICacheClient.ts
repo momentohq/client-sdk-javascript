@@ -5,6 +5,11 @@ import {
   CacheIncrement,
   CacheSet,
   CacheSetIfNotExists,
+  CacheSetFetch,
+  CacheSetAddElements,
+  CacheSetAddElement,
+  CacheSetRemoveElements,
+  CacheSetRemoveElement,
   CacheListFetch,
   CacheListLength,
   CacheListPushFront,
@@ -15,6 +20,13 @@ import {
   CacheListPopFront,
   CacheListRemoveValue,
   CacheListRetain,
+  CacheDictionarySetField,
+  CacheDictionarySetFields,
+  CacheDictionaryGetField,
+  CacheDictionaryFetch,
+  CacheDictionaryIncrement,
+  CacheDictionaryRemoveField,
+  CacheDictionaryRemoveFields,
 } from '../../../index';
 import {
   ScalarCallOptions,
@@ -22,6 +34,7 @@ import {
   ListRetainCallOptions,
   BackTruncatableCallOptions,
   FrontTruncatableCallOptions,
+  CollectionCallOptions,
 } from '../../../utils';
 
 // Type aliases to differentiate the different methods' optional arguments.
@@ -31,11 +44,11 @@ export type ListConcatenateBackOptions = FrontTruncatableCallOptions;
 export type ListConcatenateFrontOptions = BackTruncatableCallOptions;
 export type ListPushBackOptions = FrontTruncatableCallOptions;
 export type ListPushFrontOptions = BackTruncatableCallOptions;
-// export type SetAddElementOptions = CollectionCallOptions;
-// export type SetAddElementsOptions = CollectionCallOptions;
-// export type DictionarySetFieldOptions = CollectionCallOptions;
-// export type DictionarySetFieldsOptions = CollectionCallOptions;
-// export type DictionaryIncrementOptions = CollectionCallOptions;
+export type SetAddElementOptions = CollectionCallOptions;
+export type SetAddElementsOptions = CollectionCallOptions;
+export type DictionarySetFieldOptions = CollectionCallOptions;
+export type DictionarySetFieldsOptions = CollectionCallOptions;
+export type DictionaryIncrementOptions = CollectionCallOptions;
 export type IncrementOptions = ScalarCallOptions;
 // export type SortedSetPutElementOptions = CollectionCallOptions;
 // export type SortedSetPutElementsOptions = CollectionCallOptions;
@@ -67,6 +80,29 @@ export interface ICacheClient extends IControlClient {
     field: string | Uint8Array,
     options?: SetIfNotExistsOptions
   ): Promise<CacheSetIfNotExists.Response>;
+  setFetch(cacheName: string, setName: string): Promise<CacheSetFetch.Response>;
+  setAddElement(
+    cacheName: string,
+    setName: string,
+    element: string | Uint8Array,
+    options?: SetAddElementsOptions
+  ): Promise<CacheSetAddElement.Response>;
+  setAddElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[],
+    options?: SetAddElementsOptions
+  ): Promise<CacheSetAddElements.Response>;
+  setRemoveElement(
+    cacheName: string,
+    setName: string,
+    element: string | Uint8Array
+  ): Promise<CacheSetRemoveElement.Response>;
+  setRemoveElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[]
+  ): Promise<CacheSetRemoveElements.Response>;
   listFetch(
     cacheName: string,
     listName: string,
@@ -118,4 +154,50 @@ export interface ICacheClient extends IControlClient {
     listName: string,
     options?: ListRetainCallOptions
   ): Promise<CacheListRetain.Response>;
+  dictionarySetField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array,
+    value: string | Uint8Array,
+    options?: DictionarySetFieldOptions
+  ): Promise<CacheDictionarySetField.Response>;
+  dictionarySetFields(
+    cacheName: string,
+    dictionaryName: string,
+    elements:
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Record<string, string | Uint8Array>,
+    options?: DictionarySetFieldsOptions
+  ): Promise<CacheDictionarySetFields.Response>;
+  dictionaryGetField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array
+  ): Promise<CacheDictionaryGetField.Response>;
+  dictionaryGetFields(
+    cacheName: string,
+    dictionaryName: string,
+    fields: string[] | Uint8Array[]
+  ): Promise<CacheDictionaryGetField.Response>;
+  dictionaryFetch(
+    cacheName: string,
+    dictionaryName: string
+  ): Promise<CacheDictionaryFetch.Response>;
+  dictionaryIncrement(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array,
+    amount?: number,
+    options?: DictionaryIncrementOptions
+  ): Promise<CacheDictionaryIncrement.Response>;
+  dictionaryRemoveField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array
+  ): Promise<CacheDictionaryRemoveField.Response>;
+  dictionaryRemoveFields(
+    cacheName: string,
+    dictionaryName: string,
+    fields: string[] | Uint8Array[]
+  ): Promise<CacheDictionaryRemoveFields.Response>;
 }

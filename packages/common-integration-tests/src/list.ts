@@ -2,6 +2,7 @@ import {v4} from 'uuid';
 
 import {
   CollectionTtl,
+  CacheDelete,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
   CacheListFetch,
@@ -278,6 +279,28 @@ export function runListTests(
         expect((respFetch as CacheListFetch.Hit).valueListUint8Array()).toEqual(
           [valueBytes]
         );
+      });
+
+      it('returns a miss if the list is deleted', async () => {
+        const listName = v4();
+        await Momento.listPushFront(IntegrationTestCacheName, listName, '123');
+        const respFetch = await Momento.listFetch(
+          IntegrationTestCacheName,
+          listName
+        );
+        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+
+        const deleteResp = await Momento.delete(
+          IntegrationTestCacheName,
+          listName
+        );
+        expect(deleteResp).toBeInstanceOf(CacheDelete.Success);
+
+        const respFetch2 = await Momento.listFetch(
+          IntegrationTestCacheName,
+          listName
+        );
+        expect(respFetch2).toBeInstanceOf(CacheListFetch.Miss);
       });
 
       it('returns a sliced hit if the list exists', async () => {
