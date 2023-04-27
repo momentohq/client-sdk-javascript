@@ -16,6 +16,9 @@ export abstract class AbstractAuthClient implements IAuthClient {
     sessionToken: string,
     validUntilSeconds?: number
   ): Promise<GenerateApiToken.Response> {
-    return await this.authClient.generateApiToken(sessionToken);
+    return await this.authClient.generateApiToken(
+      sessionToken,
+      validUntilSeconds
+    );
   }
 }
