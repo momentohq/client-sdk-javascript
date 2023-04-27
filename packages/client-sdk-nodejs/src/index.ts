@@ -197,6 +197,7 @@ export {
   SubscribeCallOptions,
   // AuthClient response types
   GenerateApiToken,
+  RefreshApiToken,
   // Errors
   MomentoErrorCode,
   SdkError,

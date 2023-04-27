@@ -3,12 +3,21 @@ import grpcAuth = auth.auth;
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
-import {GenerateApiToken, CredentialProvider, MomentoLogger} from '..';
+import {
+  GenerateApiToken,
+  RefreshApiToken,
+  CredentialProvider,
+  MomentoLogger,
+} from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {Configuration} from '../config/configuration';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
+import {validateValidForSeconds} from '@gomomento/core/dist/src/internal/utils';
+import Never = grpcAuth._GenerateApiTokenRequest.Never;
+import Expires = grpcAuth._GenerateApiTokenRequest.Expires;
 
 export interface AuthClientProps {
   configuration: Configuration;
@@ -20,14 +29,12 @@ export class AuthClient {
   private readonly interceptors: Interceptor[];
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
   private readonly logger: MomentoLogger;
-  private readonly sessionToken: string;
 
   /**
    * @param {AuthClientProps} props
    */
   constructor(props: AuthClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    this.sessionToken = props.credentialProvider.getAuthToken();
     const headers = [
       new Header('Authorization', props.credentialProvider.getAuthToken()),
       new Header('Agent', `nodejs:${version}`),
@@ -36,7 +43,7 @@ export class AuthClient {
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
       ClientTimeoutInterceptor(AuthClient.REQUEST_TIMEOUT_MS),
     ];
-    this.logger.debug(
+    this.logger.info(
       `Creating control client using endpoint: '${props.credentialProvider.getControlEndpoint()}`
     );
     this.clientWrapper = new IdleGrpcClientWrapper({
@@ -49,10 +56,28 @@ export class AuthClient {
     });
   }
 
-  public async GenerateApiToken(): Promise<GenerateApiToken.Response> {
+  public async generateApiToken(
+    sessionToken: string,
+    validForSeconds?: number
+  ): Promise<GenerateApiToken.Response> {
+    try {
+      validateValidForSeconds(validForSeconds);
+    } catch (err) {
+      return new GenerateApiToken.Error(normalizeSdkError(err as Error));
+    }
+
     const request = new grpcAuth._GenerateApiTokenRequest({
-      session_token: this.sessionToken,
+      session_token: sessionToken,
     });
+
+    if (validForSeconds) {
+      request.expires = new Expires({
+        valid_for_seconds: validForSeconds,
+      });
+    } else {
+      request.never = new Never();
+    }
+
     return await new Promise<GenerateApiToken.Response>(resolve => {
       this.clientWrapper
         .getClient()
@@ -77,15 +102,15 @@ export class AuthClient {
     });
   }
 
-  public async RefreshApiToken(
-    api_key: string,
-    refresh_token: string
-  ): Promise<GenerateApiToken.Response> {
+  public async refreshApiToken(
+    apiToken: string,
+    refreshToken: string
+  ): Promise<RefreshApiToken.Response> {
     const request = new grpcAuth._RefreshApiTokenRequest({
-      api_key: api_key,
-      refresh_token: refresh_token,
+      api_key: apiToken,
+      refresh_token: refreshToken,
     });
-    return await new Promise<GenerateApiToken.Response>(resolve => {
+    return await new Promise<RefreshApiToken.Response>(resolve => {
       this.clientWrapper
         .getClient()
         .RefreshApiToken(
@@ -93,10 +118,10 @@ export class AuthClient {
           {interceptors: this.interceptors},
           (err, resp) => {
             if (err || !resp) {
-              resolve(new GenerateApiToken.Error(cacheServiceErrorMapper(err)));
+              resolve(new RefreshApiToken.Error(cacheServiceErrorMapper(err)));
             } else {
               resolve(
-                new GenerateApiToken.Success(
+                new RefreshApiToken.Success(
                   resp.api_key,
                   resp.refresh_token,
                   resp.endpoint,

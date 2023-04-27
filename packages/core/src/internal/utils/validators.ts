@@ -93,6 +93,13 @@ export function validateTtlMinutes(ttlMinutes: number) {
   }
 }
 
+export function validateValidForSeconds(validForSeconds?: number) {
+  if (validForSeconds === undefined) return;
+  if (validForSeconds < 0) {
+    throw new InvalidArgumentError('validForSeconds must be positive');
+  }
+}
+
 function isEmpty(str: string): boolean {
   return !str.trim();
 }

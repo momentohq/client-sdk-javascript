@@ -9,6 +9,7 @@ import {
   CacheClient,
   CredentialProvider,
 } from '../../src';
+import {AuthClient} from '../../src/auth-client';
 
 const deleteCacheIfExists = async (momento: CacheClient, cacheName: string) => {
   const deleteResponse = await momento.deleteCache(cacheName);
@@ -45,6 +46,10 @@ function momentoClientForTesting() {
   return new CacheClient(IntegrationTestCacheClientProps);
 }
 
+function momentoAuthClientForTesting() {
+  return new AuthClient(IntegrationTestCacheClientProps);
+}
+
 export function SetupIntegrationTest(): {
   Momento: CacheClient;
   IntegrationTestCacheName: string;
@@ -72,6 +77,21 @@ export function SetupIntegrationTest(): {
 
   const client = momentoClientForTesting();
   return {Momento: client, IntegrationTestCacheName: cacheName};
+}
+
+export function SetupAuthIntegrationTest(): {
+  Momento: AuthClient;
+  SessionToken: string;
+} {
+  const sessionToken = process.env.TEST_SESSION_TOKEN;
+  if (sessionToken === undefined) {
+    throw new Error('Missing required env var TEST_SESSION_TOKEN');
+  }
+
+  return {
+    Momento: momentoAuthClientForTesting(),
+    SessionToken: sessionToken,
+  };
 }
 
 export interface ValidateCacheProps {

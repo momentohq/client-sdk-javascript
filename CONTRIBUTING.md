@@ -60,3 +60,11 @@ npm run integration-test
 export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
 npm run test
 ```
+
+### Run auth integration tests
+
+```
+export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
+export TEST_SESSION_TOKEN=<YOUR_SESSION_TOKEN>
+npm run integration-test-auth
+```
