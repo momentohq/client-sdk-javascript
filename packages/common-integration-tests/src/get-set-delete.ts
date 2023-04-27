@@ -6,14 +6,14 @@ import {
   CacheSet,
   CacheSetIfNotExists,
   MomentoErrorCode,
-} from '@gomomento/core';
+} from '@gomomento/sdk-core';
 import {TextEncoder} from 'util';
 import {
   ValidateCacheProps,
   ItBehavesLikeItValidatesCacheName,
 } from './common-int-test-utils';
-import {sleep} from '@gomomento/core/dist/src/internal/utils';
-import {ICacheClient} from '@gomomento/core/dist/src/internal/clients/cache';
+import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
 
 export function runGetSetDeleteTests(
   Momento: ICacheClient,

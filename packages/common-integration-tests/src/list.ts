@@ -14,7 +14,7 @@ import {
   CacheListRemoveValue,
   CacheListRetain,
   MomentoErrorCode,
-} from '@gomomento/core';
+} from '@gomomento/sdk-core';
 
 import {
   ValidateCacheProps,
@@ -25,9 +25,9 @@ import {
   IListResponseSuccess,
   IResponseError,
   ResponseBase,
-} from '@gomomento/core/dist/src/messages/responses/response-base';
-import {sleep} from '@gomomento/core/dist/src/internal/utils';
-import {ICacheClient} from '@gomomento/core/dist/src/internal/clients/cache';
+} from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
+import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
 
 export function runListTests(
   Momento: ICacheClient,

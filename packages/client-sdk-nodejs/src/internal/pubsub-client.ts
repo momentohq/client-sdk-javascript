@@ -23,14 +23,14 @@ import {
   TopicSubscribe,
   UnknownError,
 } from '../';
-import {SubscriptionState} from '@gomomento/core/dist/src/internal/subscription-state';
+import {SubscriptionState} from '@gomomento/sdk-core/dist/src/internal/subscription-state';
 import {
   truncateString,
   validateCacheName,
   validateTopicName,
-} from '@gomomento/core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
-import {SubscribeCallOptions} from '@gomomento/core/dist/src/utils';
+} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {SubscribeCallOptions} from '@gomomento/sdk-core/dist/src/utils';
 
 /**
  * Encapsulates parameters for the `sendSubscribe` method.

@@ -1,5 +1,5 @@
-import {GenerateApiToken} from '@gomomento/core';
-import {IAuthClient} from '@gomomento/core/dist/src/internal/clients/auth/IAuthClient';
+import {GenerateApiToken} from '@gomomento/sdk-core';
+import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients/auth/IAuthClient';
 
 export function runGenerateApiTokenTest(client: IAuthClient) {
   // skipping test for now until we decide how to feed a session token here

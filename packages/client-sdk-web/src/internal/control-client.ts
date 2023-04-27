@@ -19,9 +19,9 @@ import {
   _FlushCacheRequest,
 } from '@gomomento/generated-types-webtext/dist/controlclient_pb';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-import {IControlClient} from '@gomomento/core/dist/src/internal/clients';
-import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
-import {validateCacheName} from '@gomomento/core/dist/src/internal/utils';
+import {IControlClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {validateCacheName} from '@gomomento/sdk-core/dist/src/internal/utils';
 
 export interface ControlClientProps {
   configuration: Configuration;

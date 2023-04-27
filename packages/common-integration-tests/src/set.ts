@@ -8,7 +8,7 @@ import {
   CacheSetRemoveElement,
   CollectionTtl,
   MomentoErrorCode,
-} from '@gomomento/core';
+} from '@gomomento/sdk-core';
 import {
   ValidateCacheProps,
   ValidateSetProps,
@@ -17,9 +17,9 @@ import {
 import {
   IResponseError,
   ResponseBase,
-} from '@gomomento/core/dist/src/messages/responses/response-base';
-import {sleep} from '@gomomento/core/dist/src/internal/utils';
-import {ICacheClient} from '@gomomento/core/dist/src/internal/clients';
+} from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
+import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 const LOL_BYTE_ARRAY = Uint8Array.of(108, 111, 108);
 const FOO_BYTE_ARRAY = Uint8Array.of(102, 111, 111);

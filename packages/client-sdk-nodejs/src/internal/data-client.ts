@@ -72,13 +72,13 @@ import {
   validateSortedSetScores,
   validateSortedSetOffset,
   validateSortedSetCount,
-} from '@gomomento/core/dist/src/internal/utils';
+} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
   _ECacheResult,
   _DictionaryGetResponsePart,
   _SortedSetGetScoreResponsePart,
-} from '@gomomento/core/dist/src/messages/responses/grpc-response-types';
-import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
+} from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
+import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 
 export class DataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;

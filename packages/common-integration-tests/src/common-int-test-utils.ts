@@ -1,9 +1,13 @@
-import {CollectionTtl, DeleteCache, MomentoErrorCode} from '@gomomento/core';
-import {ICacheClient} from '@gomomento/core/dist/src/internal/clients/cache/ICacheClient';
+import {
+  CollectionTtl,
+  DeleteCache,
+  MomentoErrorCode,
+} from '@gomomento/sdk-core';
+import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/ICacheClient';
 import {
   IResponseError,
   ResponseBase,
-} from '@gomomento/core/dist/src/messages/responses/response-base';
+} from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
 import {v4} from 'uuid';
 
 export function testCacheName(): string {
