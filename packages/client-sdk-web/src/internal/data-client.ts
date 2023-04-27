@@ -9,6 +9,9 @@ import {
   CacheSetIfNotExists,
   CacheDelete,
   CacheIncrement,
+  CacheSetFetch,
+  CacheSetAddElements,
+  CacheSetRemoveElements,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
   CacheListFetch,
@@ -46,6 +49,9 @@ import {
   _SetIfNotExistsRequest,
   _SetIfNotExistsResponse,
   _SetRequest,
+  _SetFetchRequest,
+  _SetUnionRequest,
+  _SetDifferenceRequest,
   _ListConcatenateBackRequest,
   _ListConcatenateFrontRequest,
   _ListFetchRequest,
@@ -71,6 +77,7 @@ import {
   validateDictionaryName,
   validateListName,
   validateListSliceStartEnd,
+  validateSetName,
 } from '@gomomento/core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
 
@@ -418,6 +425,154 @@ export class DataClient<
             }
           } else {
             resolve(new CacheIncrement.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async setFetch(
+    cacheName: string,
+    setName: string
+  ): Promise<CacheSetFetch.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+    } catch (err) {
+      return new CacheSetFetch.Error(normalizeSdkError(err as Error));
+    }
+    return await this.sendSetFetch(cacheName, this.convertToB64String(setName));
+  }
+
+  private async sendSetFetch(
+    cacheName: string,
+    setName: string
+  ): Promise<CacheSetFetch.Response> {
+    const request = new _SetFetchRequest();
+    request.setSetName(setName);
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.setFetch(
+        request,
+        {
+          ...this.authHeaders,
+          ...metadata,
+        },
+        (err, resp) => {
+          const theSet = resp.getFound();
+          if (theSet && theSet.getElementsList()) {
+            const found = theSet.getElementsList();
+            resolve(new CacheSetFetch.Hit(this.convertArrayToUint8(found)));
+          } else if (resp?.getMissing()) {
+            resolve(new CacheSetFetch.Miss());
+          } else {
+            resolve(new CacheSetFetch.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async setAddElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[],
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheSetAddElements.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+    } catch (err) {
+      return new CacheSetAddElements.Error(normalizeSdkError(err as Error));
+    }
+    return await this.sendSetAddElements(
+      cacheName,
+      this.convertToB64String(setName),
+      this.convertArrayToB64Strings(elements),
+      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      ttl.refreshTtl()
+    );
+  }
+
+  private async sendSetAddElements(
+    cacheName: string,
+    setName: string,
+    elements: string[],
+    ttlMilliseconds: number,
+    refreshTtl: boolean
+  ): Promise<CacheSetAddElements.Response> {
+    const request = new _SetUnionRequest();
+    request.setSetName(setName);
+    request.setElementsList(elements);
+    request.setTtlMilliseconds(ttlMilliseconds);
+    request.setRefreshTtl(refreshTtl);
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.setUnion(
+        request,
+        {
+          ...this.authHeaders,
+          ...metadata,
+        },
+        err => {
+          if (err) {
+            resolve(
+              new CacheSetAddElements.Error(cacheServiceErrorMapper(err))
+            );
+          } else {
+            resolve(new CacheSetAddElements.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async setRemoveElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[]
+  ): Promise<CacheSetRemoveElements.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+    } catch (err) {
+      return new CacheSetRemoveElements.Error(normalizeSdkError(err as Error));
+    }
+    return await this.sendSetRemoveElements(
+      cacheName,
+      this.convertToB64String(setName),
+      this.convertArrayToB64Strings(elements)
+    );
+  }
+
+  private async sendSetRemoveElements(
+    cacheName: string,
+    setName: string,
+    elements: string[]
+  ): Promise<CacheSetRemoveElements.Response> {
+    const subtrahend = new _SetDifferenceRequest._Subtrahend();
+    const set = new _SetDifferenceRequest._Subtrahend._Set();
+    set.setElementsList(elements);
+    subtrahend.setSet(set);
+    const request = new _SetDifferenceRequest();
+    request.setSetName(setName);
+    request.setSubtrahend(subtrahend);
+
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.setDifference(
+        request,
+        {
+          ...this.authHeaders,
+          ...metadata,
+        },
+        err => {
+          if (err) {
+            resolve(
+              new CacheSetRemoveElements.Error(cacheServiceErrorMapper(err))
+            );
+          } else {
+            resolve(new CacheSetRemoveElements.Success());
           }
         }
       );

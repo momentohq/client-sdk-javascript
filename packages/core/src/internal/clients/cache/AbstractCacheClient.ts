@@ -10,6 +10,11 @@ import {
   IncrementOptions,
   CacheSetIfNotExists,
   SetIfNotExistsOptions,
+  CacheSetFetch,
+  CacheSetAddElement,
+  CacheSetAddElements,
+  CacheSetRemoveElement,
+  CacheSetRemoveElements,
   CacheListFetch,
   CacheListLength,
   CacheListPushFront,
@@ -33,6 +38,8 @@ import {ListFetchCallOptions, ListRetainCallOptions} from '../../../utils';
 import {
   ICacheClient,
   SetOptions,
+  SetAddElementOptions,
+  SetAddElementsOptions,
   ListPushFrontOptions,
   ListPushBackOptions,
   ListConcatenateBackOptions,
@@ -433,13 +440,13 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheSetFetch.Miss} if the set does not exist.
    * {@link CacheSetFetch.Error} on failure.
    */
-  // public async setFetch(
-  //   cacheName: string,
-  //   setName: string
-  // ): Promise<CacheSetFetch.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.setFetch(cacheName, setName);
-  // }
+  public async setFetch(
+    cacheName: string,
+    setName: string
+  ): Promise<CacheSetFetch.Response> {
+    const client = this.getNextDataClient();
+    return await client.setFetch(cacheName, setName);
+  }
 
   /**
    * Adds an element to the given set. Creates the set if it does not already
@@ -459,21 +466,21 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheSetAddElement.Success} on success.
    * {@link CacheSetAddElement.Error} on failure.
    */
-  // public async setAddElement(
-  //   cacheName: string,
-  //   setName: string,
-  //   element: string | Uint8Array,
-  //   options?: SetAddElementOptions
-  // ): Promise<CacheSetAddElement.Response> {
-  //   return (
-  //     await this.setAddElements(
-  //       cacheName,
-  //       setName,
-  //       [element] as string[] | Uint8Array[],
-  //       options
-  //     )
-  //   ).toSingularResponse();
-  // }
+  public async setAddElement(
+    cacheName: string,
+    setName: string,
+    element: string | Uint8Array,
+    options?: SetAddElementOptions
+  ): Promise<CacheSetAddElement.Response> {
+    return (
+      await this.setAddElements(
+        cacheName,
+        setName,
+        [element] as string[] | Uint8Array[],
+        options
+      )
+    ).toSingularResponse();
+  }
 
   /**
    * Adds multiple elements to the given set. Creates the set if it does not
@@ -493,20 +500,20 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheSetAddElements.Success} on success.
    * {@link CacheSetAddElements.Error} on failure.
    */
-  // public async setAddElements(
-  //   cacheName: string,
-  //   setName: string,
-  //   elements: string[] | Uint8Array[],
-  //   options?: SetAddElementsOptions
-  // ): Promise<CacheSetAddElements.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.setAddElements(
-  //     cacheName,
-  //     setName,
-  //     elements,
-  //     options?.ttl
-  //   );
-  // }
+  public async setAddElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[],
+    options?: SetAddElementsOptions
+  ): Promise<CacheSetAddElements.Response> {
+    const client = this.getNextDataClient();
+    return await client.setAddElements(
+      cacheName,
+      setName,
+      elements,
+      options?.ttl
+    );
+  }
 
   /**
    * Removes an element from the given set.
@@ -520,17 +527,17 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * success.
    * {@link CacheSetRemoveElement.Error} on failure.
    */
-  // public async setRemoveElement(
-  //   cacheName: string,
-  //   setName: string,
-  //   element: string | Uint8Array
-  // ): Promise<CacheSetRemoveElement.Response> {
-  //   return (
-  //     await this.setRemoveElements(cacheName, setName, [element] as
-  //       | string[]
-  //       | Uint8Array[])
-  //   ).toSingularResponse();
-  // }
+  public async setRemoveElement(
+    cacheName: string,
+    setName: string,
+    element: string | Uint8Array
+  ): Promise<CacheSetRemoveElement.Response> {
+    return (
+      await this.setRemoveElements(cacheName, setName, [element] as
+        | string[]
+        | Uint8Array[])
+    ).toSingularResponse();
+  }
 
   /**
    * Removes multiple elements from the given set.
@@ -544,14 +551,14 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * success.
    * {@link CacheSetRemoveElements.Error} on failure.
    */
-  // public async setRemoveElements(
-  //   cacheName: string,
-  //   setName: string,
-  //   elements: string[] | Uint8Array[]
-  // ): Promise<CacheSetRemoveElements.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.setRemoveElements(cacheName, setName, elements);
-  // }
+  public async setRemoveElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[]
+  ): Promise<CacheSetRemoveElements.Response> {
+    const client = this.getNextDataClient();
+    return await client.setRemoveElements(cacheName, setName, elements);
+  }
 
   /**
    * Associates the given key with the given value. If a value for the key is
@@ -559,7 +566,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    *
    * @param {string} cacheName - The cache to store the value in.
    * @param {string | Uint8Array} key - The key to set.
-   * @param {string | Uint8Array} value - The value to be stored.
+   * @param {string | Uint8Array} field - The value to be stored.
    * @param {SetIfNotExistsOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
    * Uses the client's default TTL if this is not supplied.

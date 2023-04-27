@@ -4,6 +4,9 @@ import {
   CacheIncrement,
   CacheSet,
   CacheSetIfNotExists,
+  CacheSetFetch,
+  CacheSetAddElements,
+  CacheSetRemoveElements,
   CacheListFetch,
   CacheListLength,
   CacheListPushFront,
@@ -48,6 +51,18 @@ export interface IDataClient {
     field: string | Uint8Array,
     ttl?: number
   ): Promise<CacheSetIfNotExists.Response>;
+  setFetch(cacheName: string, setName: string): Promise<CacheSetFetch.Response>;
+  setAddElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[],
+    ttl?: CollectionTtl
+  ): Promise<CacheSetAddElements.Response>;
+  setRemoveElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[]
+  ): Promise<CacheSetRemoveElements.Response>;
   listFetch(
     cacheName: string,
     listName: string,

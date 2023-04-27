@@ -4,14 +4,6 @@ import {
   CreateSigningKey,
   ListSigningKeys,
   RevokeSigningKey,
-  CacheIncrement,
-  CacheSetIfNotExists,
-  CacheDictionaryFetch,
-  CacheSetFetch,
-  CacheSetAddElements,
-  CacheSetAddElement,
-  CacheSetRemoveElements,
-  CacheSetRemoveElement,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
@@ -27,7 +19,6 @@ import {
 } from '.';
 import {
   CollectionCallOptions,
-  ScalarCallOptions,
   SortedSetFetchByRankCallOptions,
   SortedSetFetchByScoreCallOptions,
 } from '@gomomento/core/dist/src/utils';
@@ -37,10 +28,6 @@ import {ICacheClient} from '@gomomento/core/dist/src/internal/clients/cache/ICac
 import {AbstractCacheClient} from '@gomomento/core/dist/src/internal/clients/cache/AbstractCacheClient';
 
 // Type aliases to differentiate the different methods' optional arguments.
-type SetIfNotExistsOptions = ScalarCallOptions;
-type SetAddElementOptions = CollectionCallOptions;
-type SetAddElementsOptions = CollectionCallOptions;
-type IncrementOptions = ScalarCallOptions;
 type SortedSetPutElementOptions = CollectionCallOptions;
 type SortedSetPutElementsOptions = CollectionCallOptions;
 type SortedSetFetchByRankOptions = SortedSetFetchByRankCallOptions;
@@ -87,161 +74,6 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
   }
 
   /**
-   * Fetches all elements of the given set
-   *
-   * @param {string} cacheName - The cache containing the set.
-   * @param {string} setName - The set to fetch.
-   * @returns {Promise<CacheSetFetch.Response>} -
-   * {@link CacheSetFetch.Hit} containing the set elements if the set exists.
-   * {@link CacheSetFetch.Miss} if the set does not exist.
-   * {@link CacheSetFetch.Error} on failure.
-   */
-  public async setFetch(
-    cacheName: string,
-    setName: string
-  ): Promise<CacheSetFetch.Response> {
-    const client = this.getNextDataClient();
-    return await client.setFetch(cacheName, setName);
-  }
-
-  /**
-   * Adds an element to the given set. Creates the set if it does not already
-   * exist.
-   *
-   * @remarks
-   * After this operation the set will contain the union of the element passed
-   * in and the original elements of the set.
-   *
-   * @param {string} cacheName - The cache to store the set in.
-   * @param {string} setName - The set to add to.
-   * @param {string | Uint8Array} element - The element to add.
-   * @param {SetAddElementOptions} options
-   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
-   * Refreshes the set's TTL using the client's default if this is not supplied.
-   * @returns {Promise<CacheSetAddElement.Response>} -
-   * {@link CacheSetAddElement.Success} on success.
-   * {@link CacheSetAddElement.Error} on failure.
-   */
-  public async setAddElement(
-    cacheName: string,
-    setName: string,
-    element: string | Uint8Array,
-    options?: SetAddElementOptions
-  ): Promise<CacheSetAddElement.Response> {
-    return (
-      await this.setAddElements(
-        cacheName,
-        setName,
-        [element] as string[] | Uint8Array[],
-        options
-      )
-    ).toSingularResponse();
-  }
-
-  /**
-   * Adds multiple elements to the given set. Creates the set if it does not
-   * already exist.
-   *
-   * @remarks
-   * After this operation, the set will contain the union of the elements passed
-   * in and the original elements of the set.
-   *
-   * @param {string} cacheName - The cache to store the set in.
-   * @param {string} setName - The set to add to.
-   * @param {string[] | Uint8Array[]} elements - The elements to add.
-   * @param {SetAddElementsOptions} options
-   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
-   * Refreshes the set's TTL using the client's default if this is not supplied.
-   * @returns {Promise<CacheSetAddElements.Response>} -
-   * {@link CacheSetAddElements.Success} on success.
-   * {@link CacheSetAddElements.Error} on failure.
-   */
-  public async setAddElements(
-    cacheName: string,
-    setName: string,
-    elements: string[] | Uint8Array[],
-    options?: SetAddElementsOptions
-  ): Promise<CacheSetAddElements.Response> {
-    const client = this.getNextDataClient();
-    return await client.setAddElements(
-      cacheName,
-      setName,
-      elements,
-      options?.ttl
-    );
-  }
-
-  /**
-   * Removes an element from the given set.
-   *
-   * @param {string} cacheName - The cache containing the set.
-   * @param {string} setName - The set to remove from.
-   * @param {string | Uint8Array} element - The element to remove.
-   * @returns {Promise<CacheSetRemoveElement.Response>} -
-   * {@link CacheSetRemoveElement.Success} on success. Removing an element that
-   * does not occur in the set or removing from a non-existent set counts as a
-   * success.
-   * {@link CacheSetRemoveElement.Error} on failure.
-   */
-  public async setRemoveElement(
-    cacheName: string,
-    setName: string,
-    element: string | Uint8Array
-  ): Promise<CacheSetRemoveElement.Response> {
-    return (
-      await this.setRemoveElements(cacheName, setName, [element] as
-        | string[]
-        | Uint8Array[])
-    ).toSingularResponse();
-  }
-
-  /**
-   * Removes multiple elements from the given set.
-   *
-   * @param {string} cacheName - The cache containing the set.
-   * @param {string} setName - The set to remove from.
-   * @param {string[] | Uint8Array[]} elements - The elements to remove.
-   * @returns {Promise<CacheSetRemoveElements.Response>} -
-   * {@link CacheSetRemoveElements.Success} on success. Removing elements that
-   * do not occur in the set or removing from a non-existent set counts as a
-   * success.
-   * {@link CacheSetRemoveElements.Error} on failure.
-   */
-  public async setRemoveElements(
-    cacheName: string,
-    setName: string,
-    elements: string[] | Uint8Array[]
-  ): Promise<CacheSetRemoveElements.Response> {
-    const client = this.getNextDataClient();
-    return await client.setRemoveElements(cacheName, setName, elements);
-  }
-
-  /**
-   * Associates the given key with the given value. If a value for the key is
-   * already present it is not replaced with the new value.
-   *
-   * @param {string} cacheName - The cache to store the value in.
-   * @param {string | Uint8Array} key - The key to set.
-   * @param {string | Uint8Array} value - The value to be stored.
-   * @param {SetIfNotExistsOptions} [options]
-   * @param {number} [options.ttl] - The time to live for the item in the cache.
-   * Uses the client's default TTL if this is not supplied.
-   * @returns {Promise<CacheSetIfNotExists.Response>} -
-   * {@link CacheSetIfNotExists.Stored} on storing the new value.
-   * {@link CacheSetIfNotExists.NotStored} on not storing the new value.
-   * {@link CacheSetIfNotExists.Error} on failure.
-   */
-  public async setIfNotExists(
-    cacheName: string,
-    key: string | Uint8Array,
-    value: string | Uint8Array,
-    options?: SetIfNotExistsOptions
-  ): Promise<CacheSetIfNotExists.Response> {
-    const client = this.getNextDataClient();
-    return await client.setIfNotExists(cacheName, key, value, options?.ttl);
-  }
-
-  /**
    * Flushes / clears all the items of the given cache
    *
    * @param {string} cacheName - The cache to be flushed.
@@ -251,54 +83,6 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
    */
   public async flushCache(cacheName: string): Promise<CacheFlush.Response> {
     return await this.notYetAbstractedControlClient.flushCache(cacheName);
-  }
-
-  /**
-   * Fetches all elements of the given dictionary.
-   *
-   * @param {string} cacheName - The cache to perform the lookup in.
-   * @param {string} dictionaryName - The dictionary to fetch.
-   * @returns {Promise<CacheDictionaryFetch.Response>} -
-   * {@link CacheDictionaryFetch.Hit} containing the dictionary elements if the
-   * dictionary exists.
-   * {@link CacheDictionaryFetch.Miss} if the dictionary does not exist.
-   * {@link CacheDictionaryFetch.Error} on failure.
-   */
-  public async dictionaryFetch(
-    cacheName: string,
-    dictionaryName: string
-  ): Promise<CacheDictionaryFetch.Response> {
-    const client = this.getNextDataClient();
-    return await client.dictionaryFetch(cacheName, dictionaryName);
-  }
-
-  /**
-   * Adds an integer quantity to a field value.
-   *
-   * @remarks
-   * Incrementing the value of a missing field sets the value to amount.
-   *
-   * @param {string} cacheName - The cache containing the field.
-   * @param {string | Uint8Array} field - The field to increment.
-   * @param {number} amount - The quantity to add to the value. May be positive,
-   * negative, or zero. Defaults to 1.
-   * @param {IncrementOptions} options
-   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
-   * @returns {Promise<CacheIncrement>} -
-   * {@link CacheIncrement.Success} containing the incremented value
-   * on success.
-   * {@link CacheIncrement.Error} on failure. Incrementing a value
-   * that was not set using this method or is not the string representation of
-   * an integer results in a failure with a FailedPreconditionException error.
-   */
-  public async increment(
-    cacheName: string,
-    field: string | Uint8Array,
-    amount = 1,
-    options?: IncrementOptions
-  ): Promise<CacheIncrement.Response> {
-    const client = this.getNextDataClient();
-    return await client.increment(cacheName, field, amount, options?.ttl);
   }
 
   /**

@@ -56,6 +56,10 @@ export interface ValidateDictionaryChangerProps
   ttl?: CollectionTtl;
 }
 
+export interface ValidateSetProps extends ValidateCacheProps {
+  setName: string;
+}
+
 export function ItBehavesLikeItValidatesCacheName(
   getResponse: (props: ValidateCacheProps) => Promise<ResponseBase>
 ) {
