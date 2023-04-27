@@ -40,8 +40,13 @@ pushd ${ROOT_DIR}/packages/${PACKAGE}
     # We need to update the version number of the package itself; Also, if it has a dependency on @gomomento/core, then
     # we need to update that dependency version too.
     cat package.json.ORIG | \
-      jq ". += {\"version\": \"${VERSION}\"} | if .dependencies.\"@gomomento/core\"? then .dependencies.\"@gomomento/core\"=\"${CORE_VERSION}\" else . end" \
+      jq ". += {\"version\": \"${VERSION}\"}" \
       > package.json
+    has_dependency_on_core=$(cat package.json|jq '.dependencies."@gomomento/core" != null')
+    if [ "${has_dependency_on_core}" == "true" ];
+    then
+       npm install @gomomento/core@${CORE_VERSION}
+    fi
     echo ""
     echo "New package.json:"
     cat package.json
