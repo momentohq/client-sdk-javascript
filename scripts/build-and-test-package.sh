@@ -3,8 +3,7 @@
 set -x
 set -e
 
-
-ROOT_DIR="$(dirname "$0")/.."
+ROOT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )"/.. &> /dev/null && pwd )
 
 echo "building and testing package: ${1}"
 
