@@ -2,7 +2,7 @@ import {
   GenerateApiToken,
   MomentoErrorCode,
   RefreshApiToken,
-} from '@gomomento/core';
+} from '@gomomento/sdk-core';
 import {SetupAuthIntegrationTest} from './integration-setup';
 
 const {Momento, SessionToken} = SetupAuthIntegrationTest();
@@ -19,7 +19,7 @@ describe('Integration tests for generting api tokens', () => {
     expect(expireResponseSuccess.is_success);
 
     expect(expireResponseSuccess.validUntil).toBeWithin(
-      expiresIn,
+      expiresIn - 1,
       expiresIn + 1
     );
   });

@@ -14,8 +14,8 @@ import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {Configuration} from '../config/configuration';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
-import {validateValidForSeconds} from '@gomomento/core/dist/src/internal/utils';
+import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {validateValidForSeconds} from '@gomomento/sdk-core/dist/src/internal/utils';
 import Never = grpcAuth._GenerateApiTokenRequest.Never;
 import Expires = grpcAuth._GenerateApiTokenRequest.Expires;
 
