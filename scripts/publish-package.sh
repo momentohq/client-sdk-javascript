@@ -45,7 +45,8 @@ pushd ${ROOT_DIR}/packages/${PACKAGE}
     has_dependency_on_core=$(cat package.json|jq '.dependencies."@gomomento/sdk-core" != null')
     if [ "${has_dependency_on_core}" == "true" ];
     then
-       npm install @gomomento/sdk-core@${CORE_VERSION}
+      npm uninstall @gomomento/sdk-core
+      npm install -E @gomomento/sdk-core@${CORE_VERSION}
     fi
     echo ""
     echo "New package.json:"
