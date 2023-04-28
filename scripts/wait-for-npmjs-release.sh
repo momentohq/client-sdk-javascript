@@ -7,7 +7,7 @@ usage() {
    echo "Usage: $0 <PACKAGE> <VERSION>"
 }
 
-ROOT_DIR="$(dirname "$0")/.."
+ROOT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )"/.. &> /dev/null && pwd )
 
 PACKAGE=${1}
 if [ "${PACKAGE}" == "" ]

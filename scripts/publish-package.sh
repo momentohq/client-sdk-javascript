@@ -7,7 +7,7 @@ usage() {
    echo "Usage: $0 <PACKAGE> <VERSION> <CORE_VERSION>"
 }
 
-ROOT_DIR="$(dirname "$0")/.."
+ROOT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )"/.. &> /dev/null && pwd )
 
 PACKAGE=${1}
 if [ "${PACKAGE}" == "" ]
@@ -38,5 +38,5 @@ ${ROOT_DIR}/scripts/update-package-versions.sh ${PACKAGE} ${VERSION} ${CORE_VERS
 echo "publishing package: ${PACKAGE} with version ${VERSION} (core version: ${CORE_VERSION})"
 
 pushd ${ROOT_DIR}/packages/${PACKAGE}
-    npm publish --access public
+    #npm publish --access public
 popd

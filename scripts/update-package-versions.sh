@@ -7,7 +7,7 @@ usage() {
    echo "Usage: $0 <PACKAGE> <VERSION> <CORE_VERSION>"
 }
 
-ROOT_DIR="$(dirname "$0")/.."
+ROOT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )"/.. &> /dev/null && pwd )
 
 PACKAGE=${1}
 if [ "${PACKAGE}" == "" ]
@@ -47,6 +47,12 @@ pushd ${ROOT_DIR}/packages/${PACKAGE}
     then
       npm uninstall @gomomento/sdk-core
       npm install -E @gomomento/sdk-core@${CORE_VERSION}
+    fi
+    has_dependency_on_common_int_tests=$(cat package.json|jq '.devDependencies."@gomomento/common-integration-tests" != null')
+    if [ "${has_dependency_on_common_int_tests}" == "true" ];
+    then
+      npm uninstall @gomomento/common-integration-tests
+      npm install -DE ${ROOT_DIR}/packages/common-integration-tests/gomomento-common-integration-tests-${CORE_VERSION}.tgz
     fi
     echo ""
     echo "New package.json:"
