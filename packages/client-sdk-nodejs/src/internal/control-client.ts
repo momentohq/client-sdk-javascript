@@ -24,9 +24,9 @@ import {Configuration} from '../config/configuration';
 import {
   validateCacheName,
   validateTtlMinutes,
-} from '@gomomento/core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
-import {_SigningKey} from '@gomomento/core/dist/src/messages/responses/grpc-response-types';
+} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {_SigningKey} from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
 
 export interface ControlClientProps {
   configuration: Configuration;

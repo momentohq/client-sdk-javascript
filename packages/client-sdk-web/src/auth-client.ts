@@ -1,7 +1,7 @@
 import {
   AbstractAuthClient,
   IAuthClient,
-} from '@gomomento/core/dist/src/internal/clients/index';
+} from '@gomomento/sdk-core/dist/src/internal/clients/index';
 import {
   AuthClientProps,
   InternalWebGrpcAuthClient,

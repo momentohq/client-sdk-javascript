@@ -4,7 +4,7 @@ import {version} from '../../package.json';
 import {Request, UnaryInterceptor, UnaryResponse} from 'grpc-web';
 import {_PingRequest} from '@gomomento/generated-types-webtext/dist/cacheping_pb';
 import {Configuration} from '../config/configuration';
-import {MomentoLogger} from '@gomomento/core';
+import {MomentoLogger} from '@gomomento/sdk-core';
 
 export interface PingClientProps {
   endpoint: string;

@@ -41,7 +41,7 @@ import {
   _DictionaryFieldValuePair,
   _DictionaryGetResponsePart,
   _ECacheResult,
-} from '@gomomento/core/dist/src/messages/responses/grpc-response-types';
+} from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
 import {
   _DeleteRequest,
   _GetRequest,
@@ -71,15 +71,15 @@ import {
   _DictionaryDeleteRequest,
   ECacheResult,
 } from '@gomomento/generated-types-webtext/dist/cacheclient_pb';
-import {IDataClient} from '@gomomento/core/dist/src/internal/clients';
+import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {
   validateCacheName,
   validateDictionaryName,
   validateListName,
   validateListSliceStartEnd,
   validateSetName,
-} from '@gomomento/core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/core/dist/src/errors';
+} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 
 export interface DataClientProps {
   configuration: Configuration;

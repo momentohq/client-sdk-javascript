@@ -2,7 +2,7 @@ import {
   CreateSigningKey,
   ListSigningKeys,
   RevokeSigningKey,
-} from '@gomomento/core';
+} from '@gomomento/sdk-core';
 import {SetupIntegrationTest} from './integration-setup';
 
 const {Momento} = SetupIntegrationTest();
