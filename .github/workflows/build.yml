@@ -76,6 +76,7 @@ jobs:
           pushd examples
             npm ci
             npm run build
+            npm run validate-examples
           popd
 
       - name: Send CI failure mail
