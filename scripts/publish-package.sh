@@ -38,5 +38,5 @@ ${ROOT_DIR}/scripts/update-package-versions.sh ${PACKAGE} ${VERSION} ${CORE_VERS
 echo "publishing package: ${PACKAGE} with version ${VERSION} (core version: ${CORE_VERSION})"
 
 pushd ${ROOT_DIR}/packages/${PACKAGE}
-    #npm publish --access public
+    npm publish --access public
 popd
