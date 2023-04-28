@@ -22,7 +22,7 @@ echo "publishing all packages"
 
 ${ROOT_DIR}/scripts/publish-package.sh "core" "${CORE_VERSION}" "${CORE_VERSION}"
 ${ROOT_DIR}/scripts/wait-for-npmjs-release.sh "@gomomento/sdk-core" "${VERSION}"
-${ROOT_DIR}/scripts/build-package.sh "common-integration-tests"
+${ROOT_DIR}/scripts/update-package-versions.sh "common-integration-tests" "${VERSION}" "${CORE_VERSION}"
 ${ROOT_DIR}/scripts/publish-package.sh "client-sdk-nodejs" "${VERSION}" "${CORE_VERSION}"
 
 # We plan to version the web SDK along with the node.js SDK and core library for the time
