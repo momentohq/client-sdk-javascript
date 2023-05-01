@@ -48,6 +48,6 @@ function createDataClient(props: CacheClientProps): IDataClient {
       getLoggerFactory: () => new NoopMomentoLoggerFactory(),
     },
     credentialProvider: props.credentialProvider,
-    defaultTtlSeconds: 60,
+    defaultTtlSeconds: 300,
   });
 }
