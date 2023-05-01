@@ -89,7 +89,7 @@ export function runListTests(
       it('refreshes ttl', async () => {
         const listName = v4();
         const values = ['one', 'two', 'three'];
-        const timeout = 1;
+        const timeout = 3;
         const ttl = new CollectionTtl(timeout, true);
 
         for (const value of values) {
