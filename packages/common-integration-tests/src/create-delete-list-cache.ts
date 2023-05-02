@@ -13,7 +13,8 @@ import {
   ListCaches,
   MomentoErrorCode,
   CacheFlush,
-  CacheGet, CacheSet,
+  CacheGet,
+  CacheSet,
 } from '@gomomento/sdk-core';
 
 export function runCreateDeleteListCacheTests(Momento: ICacheClient) {
