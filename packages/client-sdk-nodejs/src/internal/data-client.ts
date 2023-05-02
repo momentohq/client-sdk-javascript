@@ -79,6 +79,7 @@ import {
   _SortedSetGetScoreResponsePart,
 } from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import ECacheResult = cache_client.ECacheResult;
 
 export class DataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -2226,14 +2227,20 @@ export class DataClient {
           metadata,
           {interceptors: this.interceptors},
           (err, resp) => {
-            if (resp?.missing) {
+            if (
+              resp?.missing ||
+              resp?.element_rank.result === ECacheResult.Miss
+            ) {
               resolve(new CacheSortedSetGetRank.Miss());
-            } else if (resp?.element_rank) {
-              if (resp?.element_rank.rank === undefined) {
-                resolve(new CacheSortedSetGetRank.Miss());
-              } else {
-                resolve(new CacheSortedSetGetRank.Hit(resp.element_rank.rank));
-              }
+            } else if (resp?.element_rank.result === ECacheResult.Hit) {
+              console.log(
+                `\n\n---> result: ${
+                  resp.element_rank.result
+                }\nvalue: ${new TextDecoder().decode(value)}\nrank: ${
+                  resp.element_rank.rank
+                }`
+              );
+              resolve(new CacheSortedSetGetRank.Hit(resp.element_rank.rank));
             } else {
               resolve(
                 new CacheSortedSetGetRank.Error(cacheServiceErrorMapper(err))
