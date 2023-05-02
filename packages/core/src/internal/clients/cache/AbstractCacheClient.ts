@@ -33,6 +33,16 @@ import {
   CacheDictionaryFetch,
   CacheDictionaryRemoveField,
   CacheDictionaryRemoveFields,
+  CacheSortedSetFetch,
+  CacheSortedSetPutElement,
+  CacheSortedSetPutElements,
+  CacheSortedSetGetRank,
+  CacheSortedSetGetScore,
+  CacheSortedSetGetScores,
+  CacheSortedSetIncrementScore,
+  CacheSortedSetRemoveElement,
+  CacheSortedSetRemoveElements,
+  SortedSetOrder,
 } from '../../../index';
 import {ListFetchCallOptions, ListRetainCallOptions} from '../../../utils';
 import {
@@ -46,6 +56,11 @@ import {
   ListConcatenateFrontOptions,
   DictionarySetFieldOptions,
   DictionaryIncrementOptions,
+  SortedSetFetchByRankOptions,
+  SortedSetPutElementOptions,
+  SortedSetPutElementsOptions,
+  SortedSetFetchByScoreOptions,
+  SortedSetIncrementOptions,
 } from './ICacheClient';
 import {IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
@@ -56,7 +71,10 @@ export abstract class AbstractCacheClient implements ICacheClient {
   protected readonly dataClients: IDataClient[];
   protected nextDataClientIndex: number;
 
-  constructor(controlClient: IControlClient, dataClients: IDataClient[]) {
+  protected constructor(
+    controlClient: IControlClient,
+    dataClients: IDataClient[]
+  ) {
     this.controlClient = controlClient;
     this.dataClients = dataClients;
 
@@ -857,22 +875,22 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheSortedSetPutElement.Error} on failure.
    * @returns
    */
-  // public async sortedSetPutElement(
-  //   cacheName: string,
-  //   sortedSetName: string,
-  //   value: string | Uint8Array,
-  //   score: number,
-  //   options?: SortedSetPutElementOptions
-  // ): Promise<CacheSortedSetPutElement.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.sortedSetPutElement(
-  //     cacheName,
-  //     sortedSetName,
-  //     value,
-  //     score,
-  //     options?.ttl
-  //   );
-  // }
+  public async sortedSetPutElement(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array,
+    score: number,
+    options?: SortedSetPutElementOptions
+  ): Promise<CacheSortedSetPutElement.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetPutElement(
+      cacheName,
+      sortedSetName,
+      value,
+      score,
+      options?.ttl
+    );
+  }
 
   /**
    * Adds elements to the given sorted set. For any values that already exist, it
@@ -890,22 +908,20 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheSortedSetPutElements.Error} on failure.
    * @returns
    */
-  // public async sortedSetPutElements(
-  //   cacheName: string,
-  //   sortedSetName: string,
-  //   elements: Map<string | Uint8Array, number> | Record<string, number>,
-  //   options?: SortedSetPutElementsOptions
-  // ): Promise<CacheSortedSetPutElements.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.sortedSetPutElements(
-  //     cacheName,
-  //     sortedSetName,
-  //     elements,
-  //     options?.ttl
-  //   );
-  // }
-
-  // sorted set put values
+  public async sortedSetPutElements(
+    cacheName: string,
+    sortedSetName: string,
+    elements: Map<string | Uint8Array, number> | Record<string, number>,
+    options?: SortedSetPutElementsOptions
+  ): Promise<CacheSortedSetPutElements.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetPutElements(
+      cacheName,
+      sortedSetName,
+      elements,
+      options?.ttl
+    );
+  }
 
   /**
    * Fetch the elements in the given sorted set by index (rank).
@@ -926,20 +942,20 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheSortedSetFetch.Miss} when the sorted set does not exist.
    * {@link CacheSortedSetFetch.Error} on failure.
    */
-  // public async sortedSetFetchByRank(
-  //   cacheName: string,
-  //   sortedSetName: string,
-  //   options?: SortedSetFetchByRankOptions
-  // ): Promise<CacheSortedSetFetch.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.sortedSetFetchByRank(
-  //     cacheName,
-  //     sortedSetName,
-  //     options?.order ?? SortedSetOrder.Ascending,
-  //     options?.startRank ?? 0,
-  //     options?.endRank
-  //   );
-  // }
+  public async sortedSetFetchByRank(
+    cacheName: string,
+    sortedSetName: string,
+    options?: SortedSetFetchByRankOptions
+  ): Promise<CacheSortedSetFetch.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetFetchByRank(
+      cacheName,
+      sortedSetName,
+      options?.order ?? SortedSetOrder.Ascending,
+      options?.startRank ?? 0,
+      options?.endRank
+    );
+  }
 
   /**
    * Fetch the elements in the given sorted set by score.
@@ -964,22 +980,22 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheSortedSetFetch.Miss} when the sorted set does not exist.
    * {@link CacheSortedSetFetch.Error} on failure.
    */
-  // public async sortedSetFetchByScore(
-  //   cacheName: string,
-  //   sortedSetName: string,
-  //   options?: SortedSetFetchByScoreOptions
-  // ): Promise<CacheSortedSetFetch.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.sortedSetFetchByScore(
-  //     cacheName,
-  //     sortedSetName,
-  //     options?.order ?? SortedSetOrder.Ascending,
-  //     options?.minScore,
-  //     options?.maxScore,
-  //     options?.offset,
-  //     options?.count
-  //   );
-  // }
+  public async sortedSetFetchByScore(
+    cacheName: string,
+    sortedSetName: string,
+    options?: SortedSetFetchByScoreOptions
+  ): Promise<CacheSortedSetFetch.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetFetchByScore(
+      cacheName,
+      sortedSetName,
+      options?.order ?? SortedSetOrder.Ascending,
+      options?.minScore,
+      options?.maxScore,
+      options?.offset,
+      options?.count
+    );
+  }
 
   /**
    * Look up the rank of an element in the sorted set, by the value of the element.
@@ -988,18 +1004,18 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} sortedSetName - The sorted set to fetch from.
    * @param {string | Uint8Array} value - The value of the element whose rank we are retrieving.
    * @returns {Promise<CacheSortedSetGetRank.Response>}
-   * {@link CacheSortedGetRank.Hit} containing the rank of the requested elements when found.
-   * {@link CacheSortedGetRank.Miss} when the element does not exist.
-   * {@link CacheSortedGetRank.Error} on failure.
+   * {@link CacheSortedSetGetRank.Hit} containing the rank of the requested elements when found.
+   * {@link CacheSortedSetGetRank.Miss} when the element does not exist.
+   * {@link CacheSortedSetGetRank.Error} on failure.
    */
-  // public async sortedSetGetRank(
-  //   cacheName: string,
-  //   sortedSetName: string,
-  //   value: string | Uint8Array
-  // ): Promise<CacheSortedSetGetRank.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.sortedSetGetRank(cacheName, sortedSetName, value);
-  // }
+  public async sortedSetGetRank(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetGetRank.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetGetRank(cacheName, sortedSetName, value);
+  }
 
   /**
    * Look up the score of an element in the sorted set, by the value of the element.
@@ -1008,18 +1024,18 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} sortedSetName - The sorted set to fetch from.
    * @param {string | Uint8Array} value - The value of the element whose score we are retrieving.
    * @returns {Promise<CacheSortedSetGetScore.Response>}
-   * {@link CacheSortedGetScore.Hit} containing the score of the requested element when found.
-   * {@link CacheSortedGetScore.Miss} when the element or collection does not exist.
-   * {@link CacheSortedGetScore.Error} on failure.
+   * {@link CacheSortedSetGetScore.Hit} containing the score of the requested element when found.
+   * {@link CacheSortedSetGetScore.Miss} when the element or collection does not exist.
+   * {@link CacheSortedSetGetScore.Error} on failure.
    */
-  // public async sortedSetGetScore(
-  //   cacheName: string,
-  //   sortedSetName: string,
-  //   value: string | Uint8Array
-  // ): Promise<CacheSortedSetGetScore.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.sortedSetGetScore(cacheName, sortedSetName, value);
-  // }
+  public async sortedSetGetScore(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetGetScore.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetGetScore(cacheName, sortedSetName, value);
+  }
 
   /**
    * Look up the scores of multiple elements in the sorted set, by the value of the elements.
@@ -1028,18 +1044,18 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} sortedSetName - The sorted set to fetch from.
    * @param {string[] | Uint8Array[]} values - The values of the elements whose scores we are retrieving.
    * @returns {Promise<CacheSortedSetGetScores.Response>}
-   * {@link CacheSortedGetScores.Hit} containing the scores of the requested elements when found.
-   * {@link CacheSortedGetScores.Miss} when the element or collection does not exist.
-   * {@link CacheSortedGetScores.Error} on failure.
+   * {@link CacheSortedSetGetScores.Hit} containing the scores of the requested elements when found.
+   * {@link CacheSortedSetGetScores.Miss} when the element or collection does not exist.
+   * {@link CacheSortedSetGetScores.Error} on failure.
    */
-  // public async sortedSetGetScores(
-  //   cacheName: string,
-  //   sortedSetName: string,
-  //   values: string[] | Uint8Array[]
-  // ): Promise<CacheSortedSetGetScores.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.sortedSetGetScores(cacheName, sortedSetName, values);
-  // }
+  public async sortedSetGetScores(
+    cacheName: string,
+    sortedSetName: string,
+    values: string[] | Uint8Array[]
+  ): Promise<CacheSortedSetGetScores.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetGetScores(cacheName, sortedSetName, values);
+  }
 
   /**
    * Increment the score of an element in the sorted set.
@@ -1060,22 +1076,22 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * that was not set using this method or is not the string representation of
    * an integer results in a failure with a FailedPreconditionException error.
    */
-  // public async sortedSetIncrementScore(
-  //   cacheName: string,
-  //   sortedSetName: string,
-  //   value: string | Uint8Array,
-  //   amount = 1,
-  //   options?: SortedSetIncrementOptions
-  // ): Promise<CacheSortedSetIncrementScore.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.sortedSetIncrementScore(
-  //     cacheName,
-  //     sortedSetName,
-  //     value,
-  //     amount,
-  //     options?.ttl
-  //   );
-  // }
+  public async sortedSetIncrementScore(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array,
+    amount?: number,
+    options?: SortedSetIncrementOptions
+  ): Promise<CacheSortedSetIncrementScore.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetIncrementScore(
+      cacheName,
+      sortedSetName,
+      value,
+      amount || 1,
+      options?.ttl
+    );
+  }
 
   /**
    * Remove an element from the sorted set
@@ -1086,14 +1102,14 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheSortedSetRemoveElement.Success} if the element was successfully removed
    * {@link CacheSortedSetIncrementScore.Error} on failure
    */
-  // public async sortedSetRemoveElement(
-  //   cacheName: string,
-  //   sortedSetName: string,
-  //   value: string | Uint8Array
-  // ): Promise<CacheSortedSetRemoveElement.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.sortedSetRemoveElement(cacheName, sortedSetName, value);
-  // }
+  public async sortedSetRemoveElement(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetRemoveElement.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetRemoveElement(cacheName, sortedSetName, value);
+  }
 
   /**
    * Remove multiple elements from the sorted set
@@ -1104,18 +1120,18 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheSortedSetRemoveElement.Success} if the elements were successfully removed
    * {@link CacheSortedSetIncrementScore.Error} on failure
    */
-  // public async sortedSetRemoveElements(
-  //   cacheName: string,
-  //   sortedSetName: string,
-  //   values: string[] | Uint8Array[]
-  // ): Promise<CacheSortedSetRemoveElements.Response> {
-  //   const client = this.getNextDataClient();
-  //   return await client.sortedSetRemoveElements(
-  //     cacheName,
-  //     sortedSetName,
-  //     values
-  //   );
-  // }
+  public async sortedSetRemoveElements(
+    cacheName: string,
+    sortedSetName: string,
+    values: string[] | Uint8Array[]
+  ): Promise<CacheSortedSetRemoveElements.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetRemoveElements(
+      cacheName,
+      sortedSetName,
+      values
+    );
+  }
 
   /**
    * Creates a Momento signing key.

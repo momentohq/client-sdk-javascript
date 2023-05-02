@@ -4,7 +4,6 @@ import {
   CreateCache,
   Configurations,
   DeleteCache,
-  CollectionTtl,
   MomentoErrorCode,
   CacheClient,
   CredentialProvider,
@@ -72,18 +71,4 @@ export function SetupIntegrationTest(): {
 
   const client = momentoClientForTesting();
   return {Momento: client, IntegrationTestCacheName: cacheName};
-}
-
-export interface ValidateCacheProps {
-  cacheName: string;
-}
-
-export interface ValidateSortedSetProps extends ValidateCacheProps {
-  sortedSetName: string;
-  value: string | Uint8Array;
-}
-
-export interface ValidateSortedSetChangerProps extends ValidateSortedSetProps {
-  score: number;
-  ttl?: CollectionTtl;
 }
