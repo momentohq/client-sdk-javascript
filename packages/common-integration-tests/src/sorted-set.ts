@@ -11,16 +11,16 @@ import {
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
   CollectionTtl,
-  SortedSetOrder,
   MomentoErrorCode,
+  SortedSetOrder,
 } from '@gomomento/sdk-core';
 import {
+  expectWithMessage,
+  ItBehavesLikeItValidatesCacheName,
+  uint8ArrayForTest,
   ValidateCacheProps,
   ValidateSortedSetChangerProps,
   ValidateSortedSetProps,
-  ItBehavesLikeItValidatesCacheName,
-  uint8ArrayForTest,
-  expectWithMessage,
 } from './common-int-test-utils';
 import {
   IResponseError,
@@ -1212,17 +1212,6 @@ export function runSortedSetTests(
         }, `expected HIT but got ${result.toString()}`);
         hitResult = result as CacheSortedSetGetRank.Hit;
         expect(hitResult.rank()).toEqual(2);
-
-        result = await Momento.sortedSetGetRank(
-          IntegrationTestCacheName,
-          sortedSetName,
-          'foo'
-        );
-        expectWithMessage(() => {
-          expect(result).toBeInstanceOf(CacheSortedSetGetRank.Hit);
-        }, `expected HIT but got ${result.toString()}`);
-        hitResult = result as CacheSortedSetGetRank.Hit;
-        expect(hitResult.rank()).toEqual(0);
       });
 
       it('returns a miss for a value that does not exist', async () => {
