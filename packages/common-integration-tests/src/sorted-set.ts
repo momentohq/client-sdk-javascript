@@ -20,6 +20,7 @@ import {
   ValidateSortedSetProps,
   ItBehavesLikeItValidatesCacheName,
   uint8ArrayForTest,
+  expectWithMessage,
 } from './common-int-test-utils';
 import {
   IResponseError,
@@ -111,7 +112,9 @@ export function runSortedSetTests(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(getResponse).toBeInstanceOf(CacheSortedSetFetch.Miss);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheSortedSetFetch.Miss);
+        }, `expected MISS but got ${getResponse.toString()}`);
       });
 
       it('refreshes with refresh ttl', async () => {
@@ -142,7 +145,9 @@ export function runSortedSetTests(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(getResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
       });
     };
 
@@ -169,7 +174,9 @@ export function runSortedSetTests(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         expect((response as CacheSortedSetFetch.Hit).toString()).toEqual(
           'Hit: valueArrayStringElements: a: 42'
         );
@@ -195,7 +202,9 @@ export function runSortedSetTests(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
 
         const expectedStringElements = [
@@ -253,7 +262,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'bam', score: 1000},
@@ -272,7 +283,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'foo', score: 1},
@@ -291,7 +304,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'bar', score: 2},
@@ -310,7 +325,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([]);
         });
@@ -325,7 +342,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'burrito', score: 9000},
@@ -343,7 +362,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'habanero', score: 68},
@@ -363,7 +384,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'foo', score: 1},
@@ -385,7 +408,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'habanero', score: 68},
@@ -403,7 +428,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'foo', score: 1},
@@ -426,7 +453,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'jalapeno', score: 1_000_000},
@@ -450,7 +479,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'baz', score: 42},
@@ -469,7 +500,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'jalapeno', score: 1_000_000},
@@ -489,7 +522,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'bam', score: 1000},
@@ -508,7 +543,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Error);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Error);
+          }, `expected ERROR but got ${response.toString()}`);
           const errorResponse = response as CacheSortedSetFetch.Error;
           expect(errorResponse.errorCode()).toEqual(
             MomentoErrorCode.INVALID_ARGUMENT_ERROR
@@ -532,7 +569,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Error);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Error);
+          }, `expected ERROR but got ${response.toString()}`);
           const errorResponse = response as CacheSortedSetFetch.Error;
           expect(errorResponse.errorCode()).toEqual(
             MomentoErrorCode.INVALID_ARGUMENT_ERROR
@@ -552,7 +591,9 @@ export function runSortedSetTests(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Miss);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Miss);
+        }, `expected MISS but got ${response.toString()}`);
 
         await Momento.sortedSetPutElements(
           IntegrationTestCacheName,
@@ -568,19 +609,25 @@ export function runSortedSetTests(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
 
         response = await Momento.delete(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheDelete.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDelete.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
 
         response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Miss);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Miss);
+        }, `expected MISS but got ${response.toString()}`);
       });
     });
 
@@ -607,7 +654,9 @@ export function runSortedSetTests(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         expect((response as CacheSortedSetFetch.Hit).toString()).toEqual(
           'Hit: valueArrayStringElements: a: 42'
         );
@@ -620,7 +669,7 @@ export function runSortedSetTests(
         const field2 = 'bar';
         const score2 = 42;
 
-        await Momento.sortedSetPutElements(
+        const putResponse = await Momento.sortedSetPutElements(
           IntegrationTestCacheName,
           sortedSetName,
           new Map([
@@ -628,12 +677,17 @@ export function runSortedSetTests(
             [field2, score2],
           ])
         );
+        expectWithMessage(() => {
+          expect(putResponse).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        }, `expected SUCCESS but got ${putResponse.toString()}`);
 
         const response = await Momento.sortedSetFetchByScore(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
 
         const expectedStringElements = [
@@ -691,7 +745,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'bam', score: 1000},
@@ -710,7 +766,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'foo', score: 1},
@@ -731,7 +789,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'bam', score: 1000},
@@ -748,7 +808,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([]);
         });
@@ -762,7 +824,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([]);
         });
@@ -776,7 +840,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'foo', score: 1},
@@ -799,7 +865,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'foo', score: 1},
@@ -823,7 +891,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Error);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Error);
+          }, `expected ERROR but got ${response.toString()}`);
           const errorResponse = response as CacheSortedSetFetch.Error;
           expect(errorResponse.errorCode()).toEqual(
             MomentoErrorCode.INVALID_ARGUMENT_ERROR
@@ -846,7 +916,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'taco', score: 90210},
@@ -864,7 +936,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'bam', score: 1000},
@@ -883,7 +957,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'bam', score: 1000},
@@ -902,7 +978,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([]);
         });
@@ -917,7 +995,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'bam', score: 1000},
@@ -937,7 +1017,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Error);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Error);
+          }, `expected ERROR but got ${response.toString()}`);
           const errorResponse = response as CacheSortedSetFetch.Error;
           expect(errorResponse.errorCode()).toEqual(
             MomentoErrorCode.INVALID_ARGUMENT_ERROR
@@ -960,7 +1042,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Error);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Error);
+          }, `expected ERROR but got ${response.toString()}`);
           const errorResponse = response as CacheSortedSetFetch.Error;
           expect(errorResponse.errorCode()).toEqual(
             MomentoErrorCode.INVALID_ARGUMENT_ERROR
@@ -983,7 +1067,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'bam', score: 1000},
@@ -1003,7 +1089,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'jalapeno', score: 1_000_000},
@@ -1026,7 +1114,9 @@ export function runSortedSetTests(
             }
           );
 
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          expectWithMessage(() => {
+            expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+          }, `expected HIT but got ${response.toString()}`);
           const hitResponse = response as CacheSortedSetFetch.Hit;
           expect(hitResponse.valueArray()).toEqual([
             {value: 'bam', score: 1000},
@@ -1041,7 +1131,9 @@ export function runSortedSetTests(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Miss);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Miss);
+        }, `expected MISS but got ${response.toString()}`);
 
         await Momento.sortedSetPutElements(
           IntegrationTestCacheName,
@@ -1057,19 +1149,25 @@ export function runSortedSetTests(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
 
         response = await Momento.delete(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheDelete.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDelete.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
 
         response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Miss);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Miss);
+        }, `expected MISS but got ${response.toString()}`);
       });
     });
 
@@ -1098,7 +1196,9 @@ export function runSortedSetTests(
           sortedSetName,
           'bar'
         );
-        expect(result).toBeInstanceOf(CacheSortedSetGetRank.Hit);
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetGetRank.Hit);
+        }, `expected HIT but got ${result.toString()}`);
         let hitResult = result as CacheSortedSetGetRank.Hit;
         expect(hitResult.rank()).toEqual(1);
 
@@ -1107,9 +1207,22 @@ export function runSortedSetTests(
           sortedSetName,
           'baz'
         );
-        expect(result).toBeInstanceOf(CacheSortedSetGetRank.Hit);
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetGetRank.Hit);
+        }, `expected HIT but got ${result.toString()}`);
         hitResult = result as CacheSortedSetGetRank.Hit;
         expect(hitResult.rank()).toEqual(2);
+
+        result = await Momento.sortedSetGetRank(
+          IntegrationTestCacheName,
+          sortedSetName,
+          'foo'
+        );
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetGetRank.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        hitResult = result as CacheSortedSetGetRank.Hit;
+        expect(hitResult.rank()).toEqual(0);
       });
 
       it('returns a miss for a value that does not exist', async () => {
@@ -1125,7 +1238,9 @@ export function runSortedSetTests(
           sortedSetName,
           'taco'
         );
-        expect(result).toBeInstanceOf(CacheSortedSetGetRank.Miss);
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetGetRank.Miss);
+        }, `expected MISS but got ${result.toString()}`);
       });
     });
 
@@ -1154,7 +1269,9 @@ export function runSortedSetTests(
           sortedSetName,
           'bar'
         );
-        expect(result).toBeInstanceOf(CacheSortedSetGetScore.Hit);
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetGetScore.Hit);
+        }, `expected HIT but got ${result.toString()}`);
         let hitResult = result as CacheSortedSetGetScore.Hit;
         expect(hitResult.score()).toEqual(84);
 
@@ -1163,7 +1280,9 @@ export function runSortedSetTests(
           sortedSetName,
           'baz'
         );
-        expect(result).toBeInstanceOf(CacheSortedSetGetScore.Hit);
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetGetScore.Hit);
+        }, `expected HIT but got ${result.toString()}`);
         hitResult = result as CacheSortedSetGetScore.Hit;
         expect(hitResult.score()).toEqual(90210);
       });
@@ -1181,7 +1300,9 @@ export function runSortedSetTests(
           sortedSetName,
           'taco'
         );
-        expect(result).toBeInstanceOf(CacheSortedSetGetScore.Miss);
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetGetScore.Miss);
+        }, `expected MISS but got ${result.toString()}`);
       });
     });
 
@@ -1210,7 +1331,9 @@ export function runSortedSetTests(
           sortedSetName,
           ['bar', 'baz']
         );
-        expect(result).toBeInstanceOf(CacheSortedSetGetScores.Hit);
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetGetScores.Hit);
+        }, `expected HIT but got ${result.toString()}`);
         const hitResult = result as CacheSortedSetGetScores.Hit;
         expect(hitResult.valueRecord()).toEqual({
           bar: 84,
@@ -1231,7 +1354,9 @@ export function runSortedSetTests(
           sortedSetName,
           ['bar', 'taco']
         );
-        expect(result).toBeInstanceOf(CacheSortedSetGetScores.Hit);
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetGetScores.Hit);
+        }, `expected HIT but got ${result.toString()}`);
         const hitResult = result as CacheSortedSetGetScores.Hit;
         expect(hitResult.valueRecord()).toEqual({
           bar: 84,
@@ -1267,14 +1392,18 @@ export function runSortedSetTests(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Miss);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Miss);
+        }, `expected MISS but got ${response.toString()}`);
 
         response = await Momento.sortedSetIncrementScore(
           IntegrationTestCacheName,
           sortedSetName,
           'foo'
         );
-        expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         const incrementResponse =
           response as CacheSortedSetIncrementScore.Success;
         expect(incrementResponse.score()).toEqual(1);
@@ -1283,7 +1412,9 @@ export function runSortedSetTests(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([
           {
@@ -1299,7 +1430,9 @@ export function runSortedSetTests(
           42
         );
 
-        expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         const incrementResponse2 =
           response as CacheSortedSetIncrementScore.Success;
         expect(incrementResponse2.score()).toEqual(42);
@@ -1309,7 +1442,9 @@ export function runSortedSetTests(
           sortedSetName
         );
 
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse2 = response as CacheSortedSetFetch.Hit;
         expect(hitResponse2.valueArray()).toEqual([
           {value: 'foo', score: 1},
@@ -1333,7 +1468,9 @@ export function runSortedSetTests(
           value,
           10
         );
-        expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         const incrementResponse =
           response as CacheSortedSetIncrementScore.Success;
         expect(incrementResponse.score()).toEqual(90220);
@@ -1342,7 +1479,9 @@ export function runSortedSetTests(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([
           {value: value, score: 90220},
@@ -1365,7 +1504,9 @@ export function runSortedSetTests(
           value,
           10
         );
-        expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         const incrementResponse =
           response as CacheSortedSetIncrementScore.Success;
         expect(incrementResponse.score()).toEqual(90220);
@@ -1374,7 +1515,9 @@ export function runSortedSetTests(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArrayUint8Elements()).toEqual([
           {value: value, score: 90220},
@@ -1397,7 +1540,9 @@ export function runSortedSetTests(
           value,
           -10
         );
-        expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         const incrementResponse =
           response as CacheSortedSetIncrementScore.Success;
         expect(incrementResponse.score()).toEqual(90200);
@@ -1406,7 +1551,9 @@ export function runSortedSetTests(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([
           {value: value, score: 90200},
@@ -1429,7 +1576,9 @@ export function runSortedSetTests(
           value,
           -10
         );
-        expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         const incrementResponse =
           response as CacheSortedSetIncrementScore.Success;
         expect(incrementResponse.score()).toEqual(90200);
@@ -1438,7 +1587,9 @@ export function runSortedSetTests(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArrayUint8Elements()).toEqual([
           {value: value, score: 90200},
@@ -1473,13 +1624,17 @@ export function runSortedSetTests(
           sortedSetName,
           'foo'
         );
-        expect(response).toBeInstanceOf(CacheSortedSetRemoveElement.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetRemoveElement.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
 
         response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([{value: 'bar', score: 42}]);
       });
@@ -1500,13 +1655,17 @@ export function runSortedSetTests(
           sortedSetName,
           uint8ArrayForTest('foo')
         );
-        expect(response).toBeInstanceOf(CacheSortedSetRemoveElement.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetRemoveElement.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
 
         response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArrayUint8Elements()).toEqual([
           {value: uint8ArrayForTest('bar'), score: 42},
@@ -1529,13 +1688,17 @@ export function runSortedSetTests(
           sortedSetName,
           'taco'
         );
-        expect(response).toBeInstanceOf(CacheSortedSetRemoveElement.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetRemoveElement.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
 
         response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([
           {value: 'foo', score: 21},
@@ -1572,13 +1735,17 @@ export function runSortedSetTests(
           sortedSetName,
           ['foo', 'baz']
         );
-        expect(response).toBeInstanceOf(CacheSortedSetRemoveElements.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetRemoveElements.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
 
         response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([{value: 'bar', score: 42}]);
       });
@@ -1600,13 +1767,17 @@ export function runSortedSetTests(
           sortedSetName,
           [uint8ArrayForTest('foo'), uint8ArrayForTest('baz')]
         );
-        expect(response).toBeInstanceOf(CacheSortedSetRemoveElements.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetRemoveElements.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
 
         response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArrayUint8Elements()).toEqual([
           {value: uint8ArrayForTest('bar'), score: 42},
@@ -1630,13 +1801,17 @@ export function runSortedSetTests(
           sortedSetName,
           ['taco', 'habanero']
         );
-        expect(response).toBeInstanceOf(CacheSortedSetRemoveElements.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetRemoveElements.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
 
         response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([
           {value: 'foo', score: 21},
@@ -1677,13 +1852,17 @@ export function runSortedSetTests(
           'foo',
           42
         );
-        expect(response).toBeInstanceOf(CacheSortedSetPutElement.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetPutElement.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
 
         response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([{value: 'foo', score: 42}]);
       });
@@ -1696,13 +1875,17 @@ export function runSortedSetTests(
           uint8ArrayForTest('foo'),
           42
         );
-        expect(response).toBeInstanceOf(CacheSortedSetPutElement.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetPutElement.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
 
         response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArrayUint8Elements()).toEqual([
           {value: uint8ArrayForTest('foo'), score: 42},
@@ -1741,13 +1924,17 @@ export function runSortedSetTests(
             ['bar', 84],
           ])
         );
-        expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
 
         response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([
           {value: 'foo', score: 42},
@@ -1762,13 +1949,17 @@ export function runSortedSetTests(
           sortedSetName,
           {foo: 42, bar: 84}
         );
-        expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
 
         response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([
           {value: 'foo', score: 42},
@@ -1786,13 +1977,17 @@ export function runSortedSetTests(
             [uint8ArrayForTest('bar'), 84],
           ])
         );
-        expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
 
         response = await Momento.sortedSetFetchByRank(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArrayUint8Elements()).toEqual([
           {value: uint8ArrayForTest('foo'), score: 42},
@@ -1812,18 +2007,24 @@ export function runSortedSetTests(
             ['bar', 84],
           ])
         );
-        expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         response = await Momento.delete(
           IntegrationTestCacheName,
           sortedSetName
         );
-        expect(response).toBeInstanceOf(CacheDelete.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDelete.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         response = await Momento.sortedSetGetScore(
           IntegrationTestCacheName,
           sortedSetName,
           'foo'
         );
-        expect(response).toBeInstanceOf(CacheSortedSetGetScore.Miss);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetGetScore.Miss);
+        }, `expected MISS but got ${response.toString()}`);
       });
     });
   });
