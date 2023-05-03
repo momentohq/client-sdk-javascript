@@ -23,7 +23,8 @@ export class ExpiresIn extends Expiration {
    * @param {number} [validForSeconds]
    * @param {boolean} [doesExpire]
    */
-  private constructor(validForSeconds: number, doesExpire: boolean) {
+  private constructor(validForSeconds: number) {
+    const doesExpire = validForSeconds !== Infinity
     super(doesExpire);
     this._validForSeconds =
       validForSeconds === null ? Infinity : validForSeconds;
@@ -56,7 +57,7 @@ export class ExpiresIn extends Expiration {
    * @returns {ExpiresIn}
    */
   public static never(): ExpiresIn {
-    return new ExpiresIn(Infinity, false);
+    return new ExpiresIn(Infinity);
   }
 
   /**
@@ -66,7 +67,7 @@ export class ExpiresIn extends Expiration {
    * @returns {ExpiresIn}
    */
   public static seconds(validForSeconds: number): ExpiresIn {
-    return new ExpiresIn(validForSeconds, true);
+    return new ExpiresIn(validForSeconds);
   }
 
   /**
@@ -75,7 +76,7 @@ export class ExpiresIn extends Expiration {
    * @returns {ExpiresIn}
    */
   public static minutes(validForMinutes: number): ExpiresIn {
-    return new ExpiresIn(validForMinutes * 60, true);
+    return new ExpiresIn(validForMinutes * 60);
   }
 
   /**
@@ -84,7 +85,7 @@ export class ExpiresIn extends Expiration {
    * @returns {ExpiresIn}
    */
   public static hours(validForHours: number): ExpiresIn {
-    return new ExpiresIn(validForHours * 3600, true);
+    return new ExpiresIn(validForHours * 3600);
   }
 
   /**
@@ -93,7 +94,7 @@ export class ExpiresIn extends Expiration {
    * @returns {ExpiresIn}
    */
   public static days(validForDays: number): ExpiresIn {
-    return new ExpiresIn(validForDays * 86400, true);
+    return new ExpiresIn(validForDays * 86400);
   }
 
   /**
@@ -105,7 +106,7 @@ export class ExpiresIn extends Expiration {
     const secondsUntilDate = Math.round(
       expiresBy.getTime() / 1000 - new Date().getTime() / 1000
     );
-    return new ExpiresIn(secondsUntilDate, true);
+    return new ExpiresIn(secondsUntilDate);
   }
 
   /**
@@ -116,7 +117,7 @@ export class ExpiresIn extends Expiration {
   public static epoch(expiresBy: number): ExpiresIn {
     const currentEpoch = new Date().getTime() / 1000;
     const secondsUntilEpoch = Math.round(expiresBy - currentEpoch);
-    return new ExpiresIn(secondsUntilEpoch, true);
+    return new ExpiresIn(secondsUntilEpoch);
   }
 }
 
