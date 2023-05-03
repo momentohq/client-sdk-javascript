@@ -7,7 +7,7 @@ export function runGenerateApiTokenTest(client: IAuthClient) {
     it.skip('should return success and generate auth token', async () => {
       const sessionToken = process.env.TEST_SESSION_TOKEN as string;
       const resp = await client.generateApiToken(
-        "place-control-plane-endpoint-here",
+        'place-control-plane-endpoint-here',
         sessionToken,
         ExpiresIn.seconds(10)
       );
