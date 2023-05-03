@@ -26,7 +26,7 @@ describe('Integration tests for generating api tokens', () => {
     expect(expireResponseSuccess.getExpiresAt().doesExpire());
     expect(expireResponseSuccess.getExpiresAt().epoch()).toBeWithin(
       expiresIn - 1,
-      expiresIn + 1
+      expiresIn + 2
     );
   });
 

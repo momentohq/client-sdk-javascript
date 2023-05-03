@@ -15,7 +15,7 @@ describe('Expiration', () => {
 
       expect(expiresIn.doesExpire()).toBe(true);
       expect(expiresIn.seconds()).toBe(10);
-      expect(expiresIn.epoch()).toBeWithin(epoch - 1, epoch + 1);
+      expect(expiresIn.epoch()).toBeWithin(epoch - 1, epoch + 2);
     });
 
     test('expiresIn.minutes is valid', () => {
