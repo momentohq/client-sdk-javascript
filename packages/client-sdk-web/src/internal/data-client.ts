@@ -1,17 +1,16 @@
 import {cache} from '@gomomento/generated-types-webtext';
 import {
-  CredentialProvider,
-  MomentoLogger,
-  CacheGet,
-  UnknownError,
-  CacheSet,
-  InvalidArgumentError,
-  CacheSetIfNotExists,
   CacheDelete,
+  CacheDictionaryFetch,
+  CacheDictionaryGetField,
+  CacheDictionaryGetFields,
+  CacheDictionaryIncrement,
+  CacheDictionaryRemoveField,
+  CacheDictionaryRemoveFields,
+  CacheDictionarySetField,
+  CacheDictionarySetFields,
+  CacheGet,
   CacheIncrement,
-  CacheSetFetch,
-  CacheSetAddElements,
-  CacheSetRemoveElements,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
   CacheListFetch,
@@ -22,25 +21,26 @@ import {
   CacheListPushFront,
   CacheListRemoveValue,
   CacheListRetain,
-  CacheDictionarySetField,
-  CacheDictionarySetFields,
-  CacheDictionaryGetField,
-  CacheDictionaryGetFields,
-  CacheDictionaryFetch,
-  CacheDictionaryIncrement,
-  CacheDictionaryRemoveField,
-  CacheDictionaryRemoveFields,
+  CacheSet,
+  CacheSetAddElements,
+  CacheSetFetch,
+  CacheSetIfNotExists,
+  CacheSetRemoveElements,
   CacheSortedSetFetch,
-  CacheSortedSetPutElement,
-  CacheSortedSetPutElements,
+  CacheSortedSetGetRank,
   CacheSortedSetGetScore,
   CacheSortedSetGetScores,
-  CacheSortedSetGetRank,
   CacheSortedSetIncrementScore,
+  CacheSortedSetPutElement,
+  CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
-  SortedSetOrder,
   CollectionTtl,
+  CredentialProvider,
+  InvalidArgumentError,
+  MomentoLogger,
+  SortedSetOrder,
+  UnknownError,
 } from '..';
 import {version} from '../../package.json';
 import {Configuration} from '../config/configuration';
@@ -56,38 +56,38 @@ import {
 } from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
 import {
   _DeleteRequest,
+  _DictionaryDeleteRequest,
+  _DictionaryFetchRequest,
+  _DictionaryFieldValuePair as _DictionaryFieldValuePairGrpc,
+  _DictionaryGetRequest,
+  _DictionaryIncrementRequest,
+  _DictionarySetRequest,
   _GetRequest,
   _IncrementRequest,
-  _SetIfNotExistsRequest,
-  _SetIfNotExistsResponse,
-  _SetRequest,
-  _SetFetchRequest,
-  _SetUnionRequest,
-  _SetDifferenceRequest,
   _ListConcatenateBackRequest,
   _ListConcatenateFrontRequest,
   _ListFetchRequest,
-  _ListRetainRequest,
   _ListLengthRequest,
-  _Unbounded,
-  _ListPopFrontRequest,
   _ListPopBackRequest,
+  _ListPopFrontRequest,
   _ListPushBackRequest,
   _ListPushFrontRequest,
   _ListRemoveRequest,
-  _DictionarySetRequest,
-  _DictionaryGetRequest,
-  _DictionaryFetchRequest,
-  _DictionaryFieldValuePair as _DictionaryFieldValuePairGrpc,
-  _DictionaryIncrementRequest,
-  _DictionaryDeleteRequest,
-  _SortedSetFetchRequest,
-  _SortedSetPutRequest,
+  _ListRetainRequest,
+  _SetDifferenceRequest,
+  _SetFetchRequest,
+  _SetIfNotExistsRequest,
+  _SetIfNotExistsResponse,
+  _SetRequest,
+  _SetUnionRequest,
   _SortedSetElement as _SortedSetElementGrpc,
-  _SortedSetGetScoreRequest,
+  _SortedSetFetchRequest,
   _SortedSetGetRankRequest,
+  _SortedSetGetScoreRequest,
   _SortedSetIncrementRequest,
+  _SortedSetPutRequest,
   _SortedSetRemoveRequest,
+  _Unbounded,
   ECacheResult,
 } from '@gomomento/generated-types-webtext/dist/cacheclient_pb';
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
@@ -2357,14 +2357,17 @@ export class DataClient<
           ...metadata,
         },
         (err, resp) => {
-          if (resp?.getMissing()) {
+          if (
+            resp?.getMissing() ||
+            resp?.getElementRank()?.getResult() === ECacheResult.MISS
+          ) {
             resolve(new CacheSortedSetGetRank.Miss());
-          } else if (resp?.getElementRank()) {
+          } else if (resp?.getElementRank()?.getResult() === ECacheResult.HIT) {
             const rank = resp?.getElementRank()?.getRank();
-            if (!rank) {
-              resolve(new CacheSortedSetGetRank.Miss());
-            } else {
+            if (rank !== undefined) {
               resolve(new CacheSortedSetGetRank.Hit(rank));
+            } else {
+              resolve(new CacheSortedSetGetRank.Miss());
             }
           } else {
             resolve(

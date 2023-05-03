@@ -13,6 +13,7 @@ import {
   ValidateCacheProps,
   ValidateSetProps,
   ItBehavesLikeItValidatesCacheName,
+  expectWithMessage,
 } from './common-int-test-utils';
 import {
   IResponseError,
@@ -68,13 +69,17 @@ export function runSetTests(
         setName,
         LOL_BYTE_ARRAY
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
 
       const fetchResponse = await Momento.setFetch(
         IntegrationTestCacheName,
         setName
       );
-      expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      }, `expected HIT but got ${fetchResponse.toString()}`);
       expect((fetchResponse as CacheSetFetch.Hit).valueSetUint8Array()).toEqual(
         new Set([LOL_BYTE_ARRAY])
       );
@@ -87,13 +92,17 @@ export function runSetTests(
         setName,
         'lol'
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
 
       const fetchResponse = await Momento.setFetch(
         IntegrationTestCacheName,
         setName
       );
-      expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      }, `expected HIT but got ${fetchResponse.toString()}`);
       expect((fetchResponse as CacheSetFetch.Hit).valueSetUint8Array()).toEqual(
         new Set([LOL_BYTE_ARRAY])
       );
@@ -106,7 +115,9 @@ export function runSetTests(
         setName,
         [FOO_BYTE_ARRAY, LOL_BYTE_ARRAY]
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
 
       const removeResponse = await Momento.setRemoveElement(
         IntegrationTestCacheName,
@@ -119,7 +130,9 @@ export function runSetTests(
         IntegrationTestCacheName,
         setName
       );
-      expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      }, `expected HIT but got ${fetchResponse.toString()}`);
       expect((fetchResponse as CacheSetFetch.Hit).valueSetUint8Array()).toEqual(
         new Set([LOL_BYTE_ARRAY])
       );
@@ -132,20 +145,26 @@ export function runSetTests(
         setName,
         [FOO_BYTE_ARRAY, LOL_BYTE_ARRAY]
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
 
       const removeResponse = await Momento.setRemoveElement(
         IntegrationTestCacheName,
         setName,
         'foo'
       );
-      expect(removeResponse).toBeInstanceOf(CacheSetRemoveElement.Success);
+      expectWithMessage(() => {
+        expect(removeResponse).toBeInstanceOf(CacheSetRemoveElement.Success);
+      }, `expected SUCCESS but got ${removeResponse.toString()}`);
 
       const fetchResponse = await Momento.setFetch(
         IntegrationTestCacheName,
         setName
       );
-      expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      }, `expected HIT but got ${fetchResponse.toString()}`);
       expect((fetchResponse as CacheSetFetch.Hit).valueSetUint8Array()).toEqual(
         new Set([LOL_BYTE_ARRAY])
       );
@@ -160,13 +179,17 @@ export function runSetTests(
         setName,
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY]
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
 
       const fetchResponse = await Momento.setFetch(
         IntegrationTestCacheName,
         setName
       );
-      expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      }, `expected HIT but got ${fetchResponse.toString()}`);
       expect((fetchResponse as CacheSetFetch.Hit).valueSetUint8Array()).toEqual(
         new Set([LOL_BYTE_ARRAY, FOO_BYTE_ARRAY])
       );
@@ -180,7 +203,9 @@ export function runSetTests(
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY],
         {ttl: new CollectionTtl(2, false)}
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
 
       addResponse = await Momento.setAddElements(
         IntegrationTestCacheName,
@@ -188,7 +213,9 @@ export function runSetTests(
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY],
         {ttl: new CollectionTtl(10, false)}
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
 
       await sleep(2_000);
 
@@ -196,7 +223,9 @@ export function runSetTests(
         IntegrationTestCacheName,
         setName
       );
-      expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Miss);
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Miss);
+      }, `expected MISS but got ${fetchResponse.toString()}`);
     });
 
     it('should succeed for addElements with byte arrays happy path with refresh ttl', async () => {
@@ -207,7 +236,9 @@ export function runSetTests(
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY],
         {ttl: new CollectionTtl(2, false)}
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
 
       addResponse = await Momento.setAddElements(
         IntegrationTestCacheName,
@@ -215,7 +246,9 @@ export function runSetTests(
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY],
         {ttl: new CollectionTtl(10, true)}
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
 
       await sleep(2_000);
 
@@ -223,7 +256,9 @@ export function runSetTests(
         IntegrationTestCacheName,
         setName
       );
-      expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      }, `expected HIT but got ${fetchResponse.toString()}`);
       const hit = fetchResponse as CacheSetFetch.Hit;
       expect(hit.valueSetUint8Array()).toEqual(
         new Set([LOL_BYTE_ARRAY, FOO_BYTE_ARRAY])
@@ -242,13 +277,17 @@ export function runSetTests(
         setName,
         ['lol', 'foo']
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
 
       const fetchResponse = await Momento.setFetch(
         IntegrationTestCacheName,
         setName
       );
-      expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      }, `expected HIT but got ${fetchResponse.toString()}`);
       const hit = fetchResponse as CacheSetFetch.Hit;
       expect(hit.valueSet()).toEqual(new Set(['lol', 'foo']));
       expect(hit.valueSetString()).toEqual(new Set(['lol', 'foo']));
@@ -265,19 +304,25 @@ export function runSetTests(
         setName,
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY]
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
       addResponse = await Momento.setAddElements(
         IntegrationTestCacheName,
         setName,
         [LOL_BYTE_ARRAY]
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
 
       const fetchResponse = await Momento.setFetch(
         IntegrationTestCacheName,
         setName
       );
-      expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      }, `expected HIT but got ${fetchResponse.toString()}`);
       expect((fetchResponse as CacheSetFetch.Hit).valueSetUint8Array()).toEqual(
         new Set([LOL_BYTE_ARRAY, FOO_BYTE_ARRAY])
       );
@@ -290,20 +335,26 @@ export function runSetTests(
         setName,
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY]
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
 
       const removeResponse = await Momento.setRemoveElements(
         IntegrationTestCacheName,
         setName,
         [FOO_BYTE_ARRAY]
       );
-      expect(removeResponse).toBeInstanceOf(CacheSetRemoveElements.Success);
+      expectWithMessage(() => {
+        expect(removeResponse).toBeInstanceOf(CacheSetRemoveElements.Success);
+      }, `expected SUCCESS but got ${removeResponse.toString()}`);
 
       const fetchResponse = await Momento.setFetch(
         IntegrationTestCacheName,
         setName
       );
-      expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      }, `expected HIT but got ${fetchResponse.toString()}`);
       expect((fetchResponse as CacheSetFetch.Hit).valueSetUint8Array()).toEqual(
         new Set([LOL_BYTE_ARRAY])
       );
@@ -316,20 +367,26 @@ export function runSetTests(
         setName,
         ['lol', 'foo']
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
 
       const removeResponse = await Momento.setRemoveElements(
         IntegrationTestCacheName,
         setName,
         ['foo']
       );
-      expect(removeResponse).toBeInstanceOf(CacheSetRemoveElements.Success);
+      expectWithMessage(() => {
+        expect(removeResponse).toBeInstanceOf(CacheSetRemoveElements.Success);
+      }, `expected SUCCESS but got ${removeResponse.toString()}`);
 
       const fetchResponse = await Momento.setFetch(
         IntegrationTestCacheName,
         setName
       );
-      expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      }, `expected HIT but got ${fetchResponse.toString()}`);
       expect((fetchResponse as CacheSetFetch.Hit).valueSetString()).toEqual(
         new Set(['lol'])
       );
@@ -342,20 +399,26 @@ export function runSetTests(
         setName,
         [LOL_BYTE_ARRAY]
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
 
       const removeResponse = await Momento.setRemoveElements(
         IntegrationTestCacheName,
         setName,
         [FOO_BYTE_ARRAY]
       );
-      expect(removeResponse).toBeInstanceOf(CacheSetRemoveElements.Success);
+      expectWithMessage(() => {
+        expect(removeResponse).toBeInstanceOf(CacheSetRemoveElements.Success);
+      }, `expected SUCCESS but got ${removeResponse.toString()}`);
 
       const fetchResponse = await Momento.setFetch(
         IntegrationTestCacheName,
         setName
       );
-      expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      }, `expected HIT but got ${fetchResponse.toString()}`);
       expect((fetchResponse as CacheSetFetch.Hit).valueSetUint8Array()).toEqual(
         new Set([LOL_BYTE_ARRAY])
       );
@@ -368,20 +431,26 @@ export function runSetTests(
         setName,
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY]
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
 
       const removeResponse = await Momento.setRemoveElements(
         IntegrationTestCacheName,
         setName,
         ['lol']
       );
-      expect(removeResponse).toBeInstanceOf(CacheSetRemoveElements.Success);
+      expectWithMessage(() => {
+        expect(removeResponse).toBeInstanceOf(CacheSetRemoveElements.Success);
+      }, `expected SUCCESS but got ${removeResponse.toString()}`);
 
       const fetchResponse = await Momento.setFetch(
         IntegrationTestCacheName,
         setName
       );
-      expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      }, `expected HIT but got ${fetchResponse.toString()}`);
       expect((fetchResponse as CacheSetFetch.Hit).valueSetUint8Array()).toEqual(
         new Set([FOO_BYTE_ARRAY])
       );
@@ -402,7 +471,9 @@ export function runSetTests(
         setName,
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY]
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
       const deleteResponse = await Momento.delete(
         IntegrationTestCacheName,
         setName
@@ -412,7 +483,9 @@ export function runSetTests(
         IntegrationTestCacheName,
         setName
       );
-      expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Miss);
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Miss);
+      }, `expected MISS but got ${fetchResponse.toString()}`);
     });
   });
 }
