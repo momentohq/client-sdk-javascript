@@ -30,7 +30,7 @@ export class AuthClient extends AbstractAuthClient implements IAuthClient {
    * @param {string} sessionToken - The session token to allow access for generation of api tokens.
    * @param {string} expiresIn - How long the token is valid for in epoch timestamp.
    * @returns {Promise<GenerateApiToken.Response>} -
-   * {@link GenerateApiToken.Success} containing the api token, refresh token, origin and epoch timestamp when token expires. 
+   * {@link GenerateApiToken.Success} containing the api token, refresh token, origin and epoch timestamp when token expires.
    * If the token never expires, then no refresh token will be returned and expires at timestamp will be infinite.
    * {@link GenerateApiToken.Error} on failure.
    */
@@ -52,7 +52,7 @@ export class AuthClient extends AbstractAuthClient implements IAuthClient {
    * @param {string} credentialProvider - Credentials provider built from a api token.
    * @param {string} refreshToken - Refresh token used to refresh the api token.
    * @returns {Promise<RefreshApiToken.Response>} -
-   * {@link RefreshApiToken.Success} containing the new api token, refresh token, origin and epoch timestamp when token expires. 
+   * {@link RefreshApiToken.Success} containing the new api token, refresh token, origin and epoch timestamp when token expires.
    * {@link RefreshApiToken.Error} on failure.
    */
   public async refreshApiToken(

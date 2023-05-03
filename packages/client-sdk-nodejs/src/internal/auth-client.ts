@@ -72,7 +72,7 @@ export class AuthClient {
       }
 
       request.expires = new Expires({
-        valid_for_seconds: expiresIn.seconds()!,
+        valid_for_seconds: expiresIn.seconds(),
       });
     } else {
       request.never = new Never();

@@ -141,9 +141,9 @@ export class ExpiresAt extends Expiration {
   }
 
   /**
-   * Constructs a ExpiresAt with a the specified epoch timestamp, 
+   * Constructs a ExpiresAt with a the specified epoch timestamp,
    * if timestamp is undefined, then epoch timetamp will instead be Infinity.
-   * @param epoch 
+   * @param epoch
    * @returns {ExpiresAt}
    */
   public static fromEpoch(epoch: number | undefined): ExpiresAt {
