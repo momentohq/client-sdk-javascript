@@ -57,7 +57,7 @@ export class AuthClient {
     });
 
     this.logger.info(
-      `Creating control client using endpoint: '${controlEndpoint}`
+      `Creating auth client using endpoint: '${controlEndpoint}`
     );
 
     const request = new grpcAuth._GenerateApiTokenRequest({
@@ -116,7 +116,7 @@ export class AuthClient {
     });
 
     this.logger.info(
-      `Creating control client using endpoint: '${credentialProvider.getControlEndpoint()}`
+      `Creating auth client using endpoint: '${credentialProvider.getControlEndpoint()}`
     );
 
     const request = new grpcAuth._RefreshApiTokenRequest({

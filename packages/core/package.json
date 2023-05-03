@@ -14,9 +14,9 @@
   },
   "scripts": {
     "prebuild": "eslint . --ext .ts",
-    "test": "jest --testPathIgnorePatterns expiration.test.ts",
-    "unit-test": "jest unit --testPathIgnorePatterns expiration.test.ts",
-    "integration-test": "jest integration --passWithNoTests --testPathIgnorePatterns expiration.test.ts",
+    "test": "jest",
+    "unit-test": "jest unit",
+    "integration-test": "jest integration --passWithNoTests",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
