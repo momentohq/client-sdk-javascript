@@ -14,7 +14,7 @@
   },
   "scripts": {
     "prebuild": "eslint . --ext .ts",
-    "test": "jest -- expiration.test.ts",
+    "test": "jest",
     "unit-test": "jest unit",
     "integration-test": "jest integration --passWithNoTests",
     "lint": "eslint . --ext .ts",
