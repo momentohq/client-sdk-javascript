@@ -7,6 +7,7 @@ import {
   MomentoErrorCode,
   CacheClient,
   CredentialProvider,
+  CollectionTtl,
 } from '../../src';
 import {AuthClient} from '../../src/auth-client';
 import {AuthClientProps} from '../../src/auth-client-props';
