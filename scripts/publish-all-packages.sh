@@ -16,13 +16,16 @@ then
 fi
 CORE_VERSION=$VERSION
 
-ROOT_DIR="$(dirname "$0")/.."
+ROOT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )"/.. &> /dev/null && pwd )
 
 echo "publishing all packages"
 
 ${ROOT_DIR}/scripts/publish-package.sh "core" "${CORE_VERSION}" "${CORE_VERSION}"
 ${ROOT_DIR}/scripts/wait-for-npmjs-release.sh "@gomomento/sdk-core" "${VERSION}"
-${ROOT_DIR}/scripts/build-package.sh "common-integration-tests"
+${ROOT_DIR}/scripts/update-package-versions.sh "common-integration-tests" "${VERSION}" "${CORE_VERSION}"
+pushd ${ROOT_DIR}/packages/common-integration-tests
+  npm pack
+popd
 ${ROOT_DIR}/scripts/publish-package.sh "client-sdk-nodejs" "${VERSION}" "${CORE_VERSION}"
 
 # We plan to version the web SDK along with the node.js SDK and core library for the time

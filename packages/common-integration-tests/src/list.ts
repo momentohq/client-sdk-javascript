@@ -1,5 +1,4 @@
 import {v4} from 'uuid';
-
 import {
   CollectionTtl,
   CacheDelete,
@@ -17,6 +16,7 @@ import {
 } from '@gomomento/sdk-core';
 
 import {
+  expectWithMessage,
   ValidateCacheProps,
   ValidateListProps,
   ItBehavesLikeItValidatesCacheName,
@@ -83,13 +83,15 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
-        expect(respFetch).toBeInstanceOf(CacheListFetch.Miss);
+        expectWithMessage(() => {
+          expect(respFetch).toBeInstanceOf(CacheListFetch.Miss);
+        }, `expected a MISS but got ${respFetch.toString()}`);
       });
 
       it('refreshes ttl', async () => {
         const listName = v4();
         const values = ['one', 'two', 'three'];
-        const timeout = 1;
+        const timeout = 3;
         const ttl = new CollectionTtl(timeout, true);
 
         for (const value of values) {
@@ -108,7 +110,9 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
-        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        expectWithMessage(() => {
+          expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${respFetch.toString()}`);
         expect(
           (respFetch as CacheListFetch.Hit).valueListString()
         ).toIncludeAllMembers(values);
@@ -157,7 +161,9 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
-        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        expectWithMessage(() => {
+          expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${respFetch.toString()}`);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           values
         );
@@ -180,7 +186,9 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
-        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        expectWithMessage(() => {
+          expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${respFetch.toString()}`);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual([
           'two',
           'three',
@@ -210,7 +218,9 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
-        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        expectWithMessage(() => {
+          expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${respFetch.toString()}`);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           values.reverse()
         );
@@ -233,7 +243,9 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
-        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        expectWithMessage(() => {
+          expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${respFetch.toString()}`);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual([
           'three',
           'two',
@@ -269,7 +281,9 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
-        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        expectWithMessage(() => {
+          expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${respFetch.toString()}`);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual([
           valueString,
         ]);
@@ -288,7 +302,9 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
-        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        expectWithMessage(() => {
+          expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${respFetch.toString()}`);
 
         const deleteResp = await Momento.delete(
           IntegrationTestCacheName,
@@ -300,7 +316,9 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
-        expect(respFetch2).toBeInstanceOf(CacheListFetch.Miss);
+        expectWithMessage(() => {
+          expect(respFetch2).toBeInstanceOf(CacheListFetch.Miss);
+        }, `expected a MISS but got ${respFetch.toString()}`);
       });
 
       it('returns a sliced hit if the list exists', async () => {
@@ -323,7 +341,9 @@ export function runListTests(
           }
         );
 
-        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        expectWithMessage(() => {
+          expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${respFetch.toString()}`);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           valueStringExpected
         );
@@ -354,7 +374,9 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
-        expect(resp).toBeInstanceOf(CacheListLength.Hit);
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheListLength.Hit);
+        }, `expected a HIT but got ${resp.toString()}`);
         expect((resp as CacheListLength.Hit).length()).toEqual(values.length);
       });
     });
@@ -366,7 +388,9 @@ export function runListTests(
 
       it('misses when the list does not exist', async () => {
         const resp = await Momento.listPopBack(IntegrationTestCacheName, v4());
-        expect(resp).toBeInstanceOf(CacheListPopBack.Miss);
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheListPopBack.Miss);
+        }, `expected a MISS but got ${resp.toString()}`);
       });
 
       it('hits when the list exists', async () => {
@@ -385,7 +409,9 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
-        expect(resp).toBeInstanceOf(CacheListPopBack.Hit);
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheListPopBack.Hit);
+        }, `expected a HIT but got ${resp.toString()}`);
         expect((resp as CacheListPopBack.Hit).valueString()).toEqual(
           poppedValue
         );
@@ -402,7 +428,9 @@ export function runListTests(
 
       it('misses when the list does not exist', async () => {
         const resp = await Momento.listPopFront(IntegrationTestCacheName, v4());
-        expect(resp).toBeInstanceOf(CacheListPopFront.Miss);
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheListPopFront.Miss);
+        }, `expected a MISS but got ${resp.toString()}`);
       });
 
       it('hits when the list exists', async () => {
@@ -421,7 +449,9 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
-        expect(resp).toBeInstanceOf(CacheListPopFront.Hit);
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheListPopFront.Hit);
+        }, `expected a HIT but got ${resp.toString()}`);
         expect((resp as CacheListPopFront.Hit).valueString()).toEqual(
           poppedValue
         );
@@ -454,7 +484,9 @@ export function runListTests(
           v4(),
           'test'
         );
-        expect(resp).toBeInstanceOf(CacheListPushBack.Success);
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheListPushBack.Success);
+        }, `expected a SUCCESS but got ${resp.toString()}`);
       });
     });
 
@@ -481,7 +513,9 @@ export function runListTests(
           v4(),
           'test'
         );
-        expect(resp).toBeInstanceOf(CacheListPushFront.Success);
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheListPushFront.Success);
+        }, `expected a SUCCESS but got ${resp.toString()}`);
       });
     });
 
@@ -519,7 +553,9 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
-        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        expectWithMessage(() => {
+          expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${respFetch.toString()}`);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           expectedValues
         );
@@ -532,11 +568,10 @@ export function runListTests(
       });
 
       it('returns Success if the list does not exist', async () => {
-        const respFetch = await Momento.listRetain(
-          IntegrationTestCacheName,
-          v4()
-        );
-        expect(respFetch).toBeInstanceOf(CacheListRetain.Success);
+        const resp = await Momento.listRetain(IntegrationTestCacheName, v4());
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheListRetain.Success);
+        }, `expected a SUCCESS but got ${resp.toString()}`);
       });
 
       it('returns Success if the list exists', async () => {
@@ -551,33 +586,43 @@ export function runListTests(
           valueString
         );
 
-        expect(listPushResponse).toBeInstanceOf(
-          CacheListConcatenateBack.Success
-        );
+        expectWithMessage(() => {
+          expect(listPushResponse).toBeInstanceOf(
+            CacheListConcatenateBack.Success
+          );
+        }, `expected a SUCCESS but got ${listPushResponse.toString()}`);
 
         const retainOptions = {
           startIndex: 1,
           endIndex: 2,
         };
 
-        const respRetain = <CacheListRetain.Success>(
-          await Momento.listRetain(
-            IntegrationTestCacheName,
-            listName,
-            retainOptions
-          )
+        const respRetain = await Momento.listRetain(
+          IntegrationTestCacheName,
+          listName,
+          retainOptions
+        );
+        expectWithMessage(() => {
+          expect(respRetain).toBeInstanceOf(CacheListRetain.Success);
+        }, `expected a SUCCESS but got ${respRetain.toString()}`);
+
+        const respFetch = await Momento.listFetch(
+          IntegrationTestCacheName,
+          listName
         );
 
-        expect(respRetain).toBeInstanceOf(CacheListRetain.Success);
-
-        const respFetch = <CacheListFetch.Hit>(
-          await Momento.listFetch(IntegrationTestCacheName, listName)
+        expectWithMessage(() => {
+          expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${respFetch.toString()}`);
+        expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
+          valueStringExpected
         );
-
-        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
-        expect(respFetch.valueListString()).toEqual(valueStringExpected);
-        expect(respFetch.valueList()).toEqual(valueStringExpected);
-        expect(respFetch.valueListUint8Array()).toEqual([valueBytesExpected]);
+        expect((respFetch as CacheListFetch.Hit).valueList()).toEqual(
+          valueStringExpected
+        );
+        expect((respFetch as CacheListFetch.Hit).valueListUint8Array()).toEqual(
+          [valueBytesExpected]
+        );
       });
     });
 
@@ -610,7 +655,9 @@ export function runListTests(
           listName,
           values1
         );
-        expect(respConcat).toBeInstanceOf(CacheListConcatenateBack.Success);
+        expectWithMessage(() => {
+          expect(respConcat).toBeInstanceOf(CacheListConcatenateBack.Success);
+        }, `expected a SUCCESS but got ${respConcat.toString()}`);
         expect(
           (respConcat as CacheListConcatenateBack.Success).listLength()
         ).toEqual(values1.length);
@@ -619,7 +666,9 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
-        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        expectWithMessage(() => {
+          expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${respFetch.toString()}`);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           values1
         );
@@ -629,13 +678,17 @@ export function runListTests(
           listName,
           values2
         );
-        expect(respConcat).toBeInstanceOf(CacheListConcatenateBack.Success);
+        expectWithMessage(() => {
+          expect(respConcat).toBeInstanceOf(CacheListConcatenateBack.Success);
+        }, `expected a SUCCESS but got ${respConcat.toString()}`);
         expect(
           (respConcat as CacheListConcatenateBack.Success).listLength()
         ).toEqual(values1.length + values2.length);
 
         respFetch = await Momento.listFetch(IntegrationTestCacheName, listName);
-        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        expectWithMessage(() => {
+          expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${respFetch.toString()}`);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           values1.concat(values2)
         );
@@ -671,7 +724,9 @@ export function runListTests(
           listName,
           values1
         );
-        expect(respConcat).toBeInstanceOf(CacheListConcatenateFront.Success);
+        expectWithMessage(() => {
+          expect(respConcat).toBeInstanceOf(CacheListConcatenateFront.Success);
+        }, `expected a SUCCESS but got ${respConcat.toString()}`);
         expect(
           (respConcat as CacheListConcatenateFront.Success).listLength()
         ).toEqual(values1.length);
@@ -680,7 +735,9 @@ export function runListTests(
           IntegrationTestCacheName,
           listName
         );
-        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        expectWithMessage(() => {
+          expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${respFetch.toString()}`);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           values1
         );
@@ -690,13 +747,17 @@ export function runListTests(
           listName,
           values2
         );
-        expect(respConcat).toBeInstanceOf(CacheListConcatenateFront.Success);
+        expectWithMessage(() => {
+          expect(respConcat).toBeInstanceOf(CacheListConcatenateFront.Success);
+        }, `expected a SUCCESS but got ${respConcat.toString()}`);
         expect(
           (respConcat as CacheListConcatenateFront.Success).listLength()
         ).toEqual(values1.length + values2.length);
 
         respFetch = await Momento.listFetch(IntegrationTestCacheName, listName);
-        expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        expectWithMessage(() => {
+          expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${respFetch.toString()}`);
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           values2.concat(values1)
         );

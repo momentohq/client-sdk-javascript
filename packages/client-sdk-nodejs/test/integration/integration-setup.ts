@@ -4,7 +4,6 @@ import {
   CreateCache,
   Configurations,
   DeleteCache,
-  CollectionTtl,
   MomentoErrorCode,
   CacheClient,
   CredentialProvider,

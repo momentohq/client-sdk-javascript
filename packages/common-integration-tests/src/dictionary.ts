@@ -18,6 +18,7 @@ import {
   ValidateDictionaryProps,
   ValidateDictionaryChangerProps,
   uint8ArrayForTest,
+  expectWithMessage,
 } from './common-int-test-utils';
 import {TextEncoder} from 'util';
 import {
@@ -85,7 +86,9 @@ export function runDictionaryTests(
           v4(),
           v4()
         );
-        expect(setResponse).toBeInstanceOf(CacheDictionarySetField.Success);
+        expectWithMessage(() => {
+          expect(setResponse).toBeInstanceOf(CacheDictionarySetField.Success);
+        }, `expected SUCCESS but got ${setResponse.toString()}`);
 
         const response = await responder({
           cacheName: IntegrationTestCacheName,
@@ -107,7 +110,9 @@ export function runDictionaryTests(
           v4(),
           v4()
         );
-        expect(setResponse).toBeInstanceOf(CacheDictionarySetField.Success);
+        expectWithMessage(() => {
+          expect(setResponse).toBeInstanceOf(CacheDictionarySetField.Success);
+        }, `expected SUCCESS but got ${setResponse.toString()}`);
 
         const response = await responder({
           cacheName: IntegrationTestCacheName,
@@ -153,7 +158,9 @@ export function runDictionaryTests(
           dictionaryName,
           field
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
+        }, `expected MISS but got ${getResponse.toString()}`);
       });
 
       it('refreshes with refresh ttl', async () => {
@@ -185,7 +192,9 @@ export function runDictionaryTests(
           dictionaryName,
           field
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
       });
     };
 
@@ -209,7 +218,9 @@ export function runDictionaryTests(
           IntegrationTestCacheName,
           dictionaryName
         );
-        expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         expect((response as CacheDictionaryFetch.Hit).toString()).toEqual(
           'Hit: valueDictionaryStringString: a: b'
         );
@@ -235,7 +246,9 @@ export function runDictionaryTests(
           IntegrationTestCacheName,
           dictionaryName
         );
-        expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheDictionaryFetch.Hit;
 
         const expectedStringBytesMap = new Map<string, Uint8Array>([
@@ -295,7 +308,9 @@ export function runDictionaryTests(
           IntegrationTestCacheName,
           dictionaryName
         );
-        expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheDictionaryFetch.Hit;
 
         const expectedBytesBytesMap = new Map<Uint8Array, Uint8Array>([
@@ -314,17 +329,23 @@ export function runDictionaryTests(
           IntegrationTestCacheName,
           dictionaryName
         );
-        expect(response).toBeInstanceOf(CacheDictionaryFetch.Miss);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryFetch.Miss);
+        }, `expected MISS but got ${response.toString()}`);
         response = await Momento.delete(
           IntegrationTestCacheName,
           dictionaryName
         );
-        expect(response).toBeInstanceOf(CacheDelete.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDelete.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         response = await Momento.dictionaryFetch(
           IntegrationTestCacheName,
           dictionaryName
         );
-        expect(response).toBeInstanceOf(CacheDictionaryFetch.Miss);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryFetch.Miss);
+        }, `expected MISS but got ${response.toString()}`);
       });
 
       it('should delete with dictionaryFetch if dictionary exists', async () => {
@@ -343,19 +364,25 @@ export function runDictionaryTests(
           IntegrationTestCacheName,
           dictionaryName
         );
-        expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
 
         response = await Momento.delete(
           IntegrationTestCacheName,
           dictionaryName
         );
-        expect(response).toBeInstanceOf(CacheDelete.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDelete.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
 
         response = await Momento.dictionaryFetch(
           IntegrationTestCacheName,
           dictionaryName
         );
-        expect(response).toBeInstanceOf(CacheDictionaryFetch.Miss);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryFetch.Miss);
+        }, `expected MISS but got ${response.toString()}`);
       });
     });
 
@@ -383,14 +410,18 @@ export function runDictionaryTests(
           field,
           value
         );
-        expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
 
         const getResponse = await Momento.dictionaryGetField(
           IntegrationTestCacheName,
           dictionaryName,
           field
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         expect((getResponse as CacheDictionaryGetField.Hit).toString()).toEqual(
           `Hit: ${value.substring(0, 32)}...`
         );
@@ -428,7 +459,9 @@ export function runDictionaryTests(
           dictionaryName,
           ['a', 'c']
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         expect(
           (getResponse as CacheDictionaryGetFields.Hit).toString()
         ).toEqual('Hit: valueDictionaryStringString: a: b, c: d');
@@ -447,39 +480,51 @@ export function runDictionaryTests(
           field1,
           value1
         );
-        expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         response = await Momento.dictionarySetField(
           IntegrationTestCacheName,
           dictionaryName,
           field2,
           value2
         );
-        expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         const getResponse = await Momento.dictionaryGetFields(
           IntegrationTestCacheName,
           dictionaryName,
           [field1, field2, field3]
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         const hitResponse = getResponse as CacheDictionaryGetFields.Hit;
         expect(hitResponse.responses).toHaveLength(3);
-        expect(hitResponse.responses[0]).toBeInstanceOf(
-          CacheDictionaryGetField.Hit
-        );
+        expectWithMessage(() => {
+          expect(hitResponse.responses[0]).toBeInstanceOf(
+            CacheDictionaryGetField.Hit
+          );
+        }, `expected HIT but got ${hitResponse.responses[0].toString()}`);
         const hitResponse1 = hitResponse
           .responses[0] as CacheDictionaryGetField.Hit;
         expect(hitResponse1.fieldString()).toEqual(field1);
 
-        expect(hitResponse.responses[1]).toBeInstanceOf(
-          CacheDictionaryGetField.Hit
-        );
+        expectWithMessage(() => {
+          expect(hitResponse.responses[1]).toBeInstanceOf(
+            CacheDictionaryGetField.Hit
+          );
+        }, `expected HIT but got ${hitResponse.responses[1].toString()}`);
         const hitResponse2 = hitResponse
           .responses[1] as CacheDictionaryGetField.Hit;
         expect(hitResponse2.fieldString()).toEqual(field2);
 
-        expect(hitResponse.responses[2]).toBeInstanceOf(
-          CacheDictionaryGetField.Miss
-        );
+        expectWithMessage(() => {
+          expect(hitResponse.responses[2]).toBeInstanceOf(
+            CacheDictionaryGetField.Miss
+          );
+        }, `expected MISS but got ${hitResponse.responses[2].toString()}`);
         const missResponse = hitResponse
           .responses[2] as CacheDictionaryGetField.Miss;
         expect(missResponse.fieldString()).toEqual(field3);
@@ -532,40 +577,52 @@ export function runDictionaryTests(
           field1,
           value1
         );
-        expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         response = await Momento.dictionarySetField(
           IntegrationTestCacheName,
           dictionaryName,
           field2,
           value2
         );
-        expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         const getResponse = await Momento.dictionaryGetFields(
           IntegrationTestCacheName,
           dictionaryName,
           [field1, field2, field3]
         );
 
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         const hitResponse = getResponse as CacheDictionaryGetFields.Hit;
         expect(hitResponse.responses).toHaveLength(3);
-        expect(hitResponse.responses[0]).toBeInstanceOf(
-          CacheDictionaryGetField.Hit
-        );
+        expectWithMessage(() => {
+          expect(hitResponse.responses[0]).toBeInstanceOf(
+            CacheDictionaryGetField.Hit
+          );
+        }, `expected HIT but got ${hitResponse.responses[0].toString()}`);
         const hitResponse1 = hitResponse
           .responses[0] as CacheDictionaryGetField.Hit;
         expect(hitResponse1.fieldUint8Array()).toEqual(field1);
 
-        expect(hitResponse.responses[1]).toBeInstanceOf(
-          CacheDictionaryGetField.Hit
-        );
+        expectWithMessage(() => {
+          expect(hitResponse.responses[1]).toBeInstanceOf(
+            CacheDictionaryGetField.Hit
+          );
+        }, `expected HIT but got ${hitResponse.responses[1].toString()}`);
         const hitResponse2 = hitResponse
           .responses[1] as CacheDictionaryGetField.Hit;
         expect(hitResponse2.fieldUint8Array()).toEqual(field2);
 
-        expect(hitResponse.responses[2]).toBeInstanceOf(
-          CacheDictionaryGetField.Miss
-        );
+        expectWithMessage(() => {
+          expect(hitResponse.responses[2]).toBeInstanceOf(
+            CacheDictionaryGetField.Miss
+          );
+        }, `expected MISS but got ${hitResponse.responses[2].toString()}`);
         const missResponse = hitResponse
           .responses[2] as CacheDictionaryGetField.Miss;
         expect(missResponse.fieldUint8Array()).toEqual(field3);
@@ -609,7 +666,9 @@ export function runDictionaryTests(
           field,
           1
         );
-        expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         let successResponse = response as CacheDictionaryIncrement.Success;
         expect(successResponse.valueNumber()).toEqual(1);
 
@@ -619,7 +678,9 @@ export function runDictionaryTests(
           field,
           41
         );
-        expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         successResponse = response as CacheDictionaryIncrement.Success;
         expect(successResponse.valueNumber()).toEqual(42);
         expect(successResponse.toString()).toEqual('Success: value: 42');
@@ -630,7 +691,9 @@ export function runDictionaryTests(
           field,
           -1042
         );
-        expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         successResponse = response as CacheDictionaryIncrement.Success;
         expect(successResponse.valueNumber()).toEqual(-1000);
 
@@ -639,7 +702,9 @@ export function runDictionaryTests(
           dictionaryName,
           field
         );
-        expect(response).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheDictionaryGetField.Hit;
         expect(hitResponse.valueString()).toEqual('-1000');
       });
@@ -653,7 +718,9 @@ export function runDictionaryTests(
           field,
           1
         );
-        expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         let successResponse = response as CacheDictionaryIncrement.Success;
         expect(successResponse.valueNumber()).toEqual(1);
 
@@ -663,7 +730,9 @@ export function runDictionaryTests(
           field,
           41
         );
-        expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         successResponse = response as CacheDictionaryIncrement.Success;
         expect(successResponse.valueNumber()).toEqual(42);
         expect(successResponse.toString()).toEqual('Success: value: 42');
@@ -674,7 +743,9 @@ export function runDictionaryTests(
           field,
           -1042
         );
-        expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         successResponse = response as CacheDictionaryIncrement.Success;
         expect(successResponse.valueNumber()).toEqual(-1000);
 
@@ -683,7 +754,9 @@ export function runDictionaryTests(
           dictionaryName,
           field
         );
-        expect(response).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${response.toString()}`);
         const hitResponse = response as CacheDictionaryGetField.Hit;
         expect(hitResponse.valueString()).toEqual('-1000');
       });
@@ -704,7 +777,9 @@ export function runDictionaryTests(
           field,
           0
         );
-        expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         let successResponse = response as CacheDictionaryIncrement.Success;
         expect(successResponse.valueNumber()).toEqual(10);
 
@@ -714,7 +789,9 @@ export function runDictionaryTests(
           field,
           90
         );
-        expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         successResponse = response as CacheDictionaryIncrement.Success;
         expect(successResponse.valueNumber()).toEqual(100);
 
@@ -731,7 +808,9 @@ export function runDictionaryTests(
           field,
           0
         );
-        expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         successResponse = response as CacheDictionaryIncrement.Success;
         expect(successResponse.valueNumber()).toEqual(0);
       });
@@ -751,7 +830,9 @@ export function runDictionaryTests(
           dictionaryName,
           field
         );
-        expect(response).toBeInstanceOf(CacheDictionaryIncrement.Error);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryIncrement.Error);
+        }, `expected ERROR but got ${response.toString()}`);
         const errorResponse = response as CacheDictionaryIncrement.Error;
         expect(errorResponse.errorCode()).toEqual(
           MomentoErrorCode.FAILED_PRECONDITION_ERROR
@@ -776,58 +857,65 @@ export function runDictionaryTests(
         const value = new TextEncoder().encode(v4());
 
         // When the field does not exist.
-        expect(
-          await Momento.dictionaryGetField(
-            IntegrationTestCacheName,
-            dictionaryName,
-            field
-          )
-        ).toBeInstanceOf(CacheDictionaryGetField.Miss);
-        expect(
-          await Momento.dictionaryRemoveField(
-            IntegrationTestCacheName,
-            dictionaryName,
-            field
-          )
-        ).toBeInstanceOf(CacheDictionaryRemoveField.Success);
-        expect(
-          await Momento.dictionaryGetField(
-            IntegrationTestCacheName,
-            dictionaryName,
-            field
-          )
-        ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+        let resp = await Momento.dictionaryGetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryGetField.Miss);
+        }, `expected MISS but got ${resp.toString()}`);
+        resp = await Momento.dictionaryRemoveField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryRemoveField.Success);
+        }, `expected SUCCESS but got ${resp.toString()}`);
+        resp = await Momento.dictionaryGetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryGetField.Miss);
+        }, `expected MISS but got ${resp.toString()}`);
 
         // When the field exists.
-        expect(
-          await Momento.dictionarySetField(
-            IntegrationTestCacheName,
-            dictionaryName,
-            field,
-            value
-          )
-        ).toBeInstanceOf(CacheDictionarySetField.Success);
-        expect(
-          await Momento.dictionaryGetField(
-            IntegrationTestCacheName,
-            dictionaryName,
-            field
-          )
-        ).toBeInstanceOf(CacheDictionaryGetField.Hit);
-        expect(
-          await Momento.dictionaryRemoveField(
-            IntegrationTestCacheName,
-            dictionaryName,
-            field
-          )
-        ).toBeInstanceOf(CacheDictionaryRemoveField.Success);
-        expect(
-          await Momento.dictionaryGetField(
-            IntegrationTestCacheName,
-            dictionaryName,
-            field
-          )
-        ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+        resp = await Momento.dictionarySetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field,
+          value
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionarySetField.Success);
+        }, `expected SUCCESS but got ${resp.toString()}`);
+        resp = await Momento.dictionaryGetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${resp.toString()}`);
+        resp = await Momento.dictionaryRemoveField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryRemoveField.Success);
+        }, `expected SUCCESS but got ${resp.toString()}`);
+        resp = await Momento.dictionaryGetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryGetField.Miss);
+        }, `expected MISS but got ${resp.toString()}`);
       });
 
       it('should remove a string field', async () => {
@@ -836,58 +924,65 @@ export function runDictionaryTests(
         const value = v4();
 
         // When the field does not exist.
-        expect(
-          await Momento.dictionaryGetField(
-            IntegrationTestCacheName,
-            dictionaryName,
-            field
-          )
-        ).toBeInstanceOf(CacheDictionaryGetField.Miss);
-        expect(
-          await Momento.dictionaryRemoveField(
-            IntegrationTestCacheName,
-            dictionaryName,
-            field
-          )
-        ).toBeInstanceOf(CacheDictionaryRemoveField.Success);
-        expect(
-          await Momento.dictionaryGetField(
-            IntegrationTestCacheName,
-            dictionaryName,
-            field
-          )
-        ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+        let resp = await Momento.dictionaryGetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryGetField.Miss);
+        }, `expected MISS but got ${resp.toString()}`);
+        resp = await Momento.dictionaryRemoveField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryRemoveField.Success);
+        }, `expected SUCCESS but got ${resp.toString()}`);
+        resp = await Momento.dictionaryGetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryGetField.Miss);
+        }, `expected MISS but got ${resp.toString()}`);
 
         // When the field exists.
-        expect(
-          await Momento.dictionarySetField(
-            IntegrationTestCacheName,
-            dictionaryName,
-            field,
-            value
-          )
-        ).toBeInstanceOf(CacheDictionarySetField.Success);
-        expect(
-          await Momento.dictionaryGetField(
-            IntegrationTestCacheName,
-            dictionaryName,
-            field
-          )
-        ).toBeInstanceOf(CacheDictionaryGetField.Hit);
-        expect(
-          await Momento.dictionaryRemoveField(
-            IntegrationTestCacheName,
-            dictionaryName,
-            field
-          )
-        ).toBeInstanceOf(CacheDictionaryRemoveField.Success);
-        expect(
-          await Momento.dictionaryGetField(
-            IntegrationTestCacheName,
-            dictionaryName,
-            field
-          )
-        ).toBeInstanceOf(CacheDictionaryGetField.Miss);
+        resp = await Momento.dictionarySetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field,
+          value
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionarySetField.Success);
+        }, `expected SUCCESS but got ${resp.toString()}`);
+        resp = await Momento.dictionaryGetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${resp.toString()}`);
+        resp = await Momento.dictionaryRemoveField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryRemoveField.Success);
+        }, `expected SUCCESS but got ${resp.toString()}`);
+        resp = await Momento.dictionaryGetField(
+          IntegrationTestCacheName,
+          dictionaryName,
+          field
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryGetField.Miss);
+        }, `expected MISS but got ${resp.toString()}`);
       });
     });
 
@@ -914,57 +1009,64 @@ export function runDictionaryTests(
         ]);
 
         // When the fields do not exist.
-        expect(
-          await Momento.dictionaryGetFields(
-            IntegrationTestCacheName,
-            dictionaryName,
-            fields
-          )
-        ).toBeInstanceOf(CacheDictionaryGetFields.Miss);
-        expect(
-          await Momento.dictionaryRemoveFields(
-            IntegrationTestCacheName,
-            dictionaryName,
-            fields
-          )
-        ).toBeInstanceOf(CacheDictionaryRemoveFields.Success);
-        expect(
-          await Momento.dictionaryGetFields(
-            IntegrationTestCacheName,
-            dictionaryName,
-            fields
-          )
-        ).toBeInstanceOf(CacheDictionaryGetFields.Miss);
+        let resp = await Momento.dictionaryGetFields(
+          IntegrationTestCacheName,
+          dictionaryName,
+          fields
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryGetFields.Miss);
+        }, `expected MISS but got ${resp.toString()}`);
+        resp = await Momento.dictionaryRemoveFields(
+          IntegrationTestCacheName,
+          dictionaryName,
+          fields
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryRemoveFields.Success);
+        }, `expected SUCCESS but got ${resp.toString()}`);
+        resp = await Momento.dictionaryGetFields(
+          IntegrationTestCacheName,
+          dictionaryName,
+          fields
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryGetFields.Miss);
+        }, `expected MISS but got ${resp.toString()}`);
 
         // When the fields exist.
-        expect(
-          await Momento.dictionarySetFields(
-            IntegrationTestCacheName,
-            dictionaryName,
-            setFields
-          )
-        ).toBeInstanceOf(CacheDictionarySetFields.Success);
-        expect(
-          await Momento.dictionaryGetFields(
-            IntegrationTestCacheName,
-            dictionaryName,
-            fields
-          )
-        ).toBeInstanceOf(CacheDictionaryGetFields.Hit);
-        expect(
-          await Momento.dictionaryRemoveFields(
-            IntegrationTestCacheName,
-            dictionaryName,
-            fields
-          )
-        ).toBeInstanceOf(CacheDictionaryRemoveFields.Success);
-        expect(
-          await Momento.dictionaryGetFields(
-            IntegrationTestCacheName,
-            dictionaryName,
-            fields
-          )
-        ).toBeInstanceOf(CacheDictionaryGetFields.Miss);
+        resp = await Momento.dictionarySetFields(
+          IntegrationTestCacheName,
+          dictionaryName,
+          setFields
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionarySetFields.Success);
+        }, `expected SUCCESS but got ${resp.toString()}`);
+        resp = await Momento.dictionaryGetFields(
+          IntegrationTestCacheName,
+          dictionaryName,
+          fields
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryGetFields.Hit);
+        }, `expected HIT but got ${resp.toString()}`);
+        resp = await Momento.dictionaryRemoveFields(
+          IntegrationTestCacheName,
+          dictionaryName,
+          fields
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryRemoveFields.Success);
+        }, `expected SUCCESS but got ${resp.toString()}`);
+        resp = await Momento.dictionaryGetFields(
+          IntegrationTestCacheName,
+          dictionaryName,
+          fields
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryGetFields.Miss);
+        }, `expected MISS but got ${resp.toString()}`);
       });
 
       it('should remove string fields', async () => {
@@ -976,57 +1078,64 @@ export function runDictionaryTests(
         ]);
 
         // When the fields do not exist.
-        expect(
-          await Momento.dictionaryGetFields(
-            IntegrationTestCacheName,
-            dictionaryName,
-            fields
-          )
-        ).toBeInstanceOf(CacheDictionaryGetFields.Miss);
-        expect(
-          await Momento.dictionaryRemoveFields(
-            IntegrationTestCacheName,
-            dictionaryName,
-            fields
-          )
-        ).toBeInstanceOf(CacheDictionaryRemoveFields.Success);
-        expect(
-          await Momento.dictionaryGetFields(
-            IntegrationTestCacheName,
-            dictionaryName,
-            fields
-          )
-        ).toBeInstanceOf(CacheDictionaryGetFields.Miss);
+        let resp = await Momento.dictionaryGetFields(
+          IntegrationTestCacheName,
+          dictionaryName,
+          fields
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryGetFields.Miss);
+        }, `expected MISS but got ${resp.toString()}`);
+        resp = await Momento.dictionaryRemoveFields(
+          IntegrationTestCacheName,
+          dictionaryName,
+          fields
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryRemoveFields.Success);
+        }, `expected SUCCESS but got ${resp.toString()}`);
+        resp = await Momento.dictionaryGetFields(
+          IntegrationTestCacheName,
+          dictionaryName,
+          fields
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryGetFields.Miss);
+        }, `expected MISS but got ${resp.toString()}`);
 
         // When the fields exist.
-        expect(
-          await Momento.dictionarySetFields(
-            IntegrationTestCacheName,
-            dictionaryName,
-            setFields
-          )
-        ).toBeInstanceOf(CacheDictionarySetFields.Success);
-        expect(
-          await Momento.dictionaryGetFields(
-            IntegrationTestCacheName,
-            dictionaryName,
-            fields
-          )
-        ).toBeInstanceOf(CacheDictionaryGetFields.Hit);
-        expect(
-          await Momento.dictionaryRemoveFields(
-            IntegrationTestCacheName,
-            dictionaryName,
-            fields
-          )
-        ).toBeInstanceOf(CacheDictionaryRemoveFields.Success);
-        expect(
-          await Momento.dictionaryGetFields(
-            IntegrationTestCacheName,
-            dictionaryName,
-            fields
-          )
-        ).toBeInstanceOf(CacheDictionaryGetFields.Miss);
+        resp = await Momento.dictionarySetFields(
+          IntegrationTestCacheName,
+          dictionaryName,
+          setFields
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionarySetFields.Success);
+        }, `expected SUCCESS but got ${resp.toString()}`);
+        resp = await Momento.dictionaryGetFields(
+          IntegrationTestCacheName,
+          dictionaryName,
+          fields
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryGetFields.Hit);
+        }, `expected HIT but got ${resp.toString()}`);
+        resp = await Momento.dictionaryRemoveFields(
+          IntegrationTestCacheName,
+          dictionaryName,
+          fields
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryRemoveFields.Success);
+        }, `expected SUCCESS but got ${resp.toString()}`);
+        resp = await Momento.dictionaryGetFields(
+          IntegrationTestCacheName,
+          dictionaryName,
+          fields
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryGetFields.Miss);
+        }, `expected MISS but got ${resp.toString()}`);
       });
     });
 
@@ -1063,13 +1172,17 @@ export function runDictionaryTests(
           field,
           value
         );
-        expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         const getResponse = await Momento.dictionaryGetField(
           IntegrationTestCacheName,
           dictionaryName,
           field
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
           expect(getResponse.valueUint8Array()).toEqual(value);
         }
@@ -1085,13 +1198,17 @@ export function runDictionaryTests(
           field,
           value
         );
-        expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         const getResponse = await Momento.dictionaryGetField(
           IntegrationTestCacheName,
           dictionaryName,
           field
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
           expect(getResponse.valueString()).toEqual(value);
         }
@@ -1107,13 +1224,17 @@ export function runDictionaryTests(
           field,
           value
         );
-        expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         const getResponse = await Momento.dictionaryGetField(
           IntegrationTestCacheName,
           dictionaryName,
           field
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         expect(
           (getResponse as CacheDictionaryGetField.Hit).valueUint8Array()
         ).toEqual(value);
@@ -1162,7 +1283,9 @@ export function runDictionaryTests(
           dictionaryName,
           field1
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
           expect(getResponse.valueUint8Array()).toEqual(value1);
         }
@@ -1171,7 +1294,9 @@ export function runDictionaryTests(
           dictionaryName,
           field2
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
           expect(getResponse.valueUint8Array()).toEqual(value2);
         }
@@ -1192,13 +1317,17 @@ export function runDictionaryTests(
           ]),
           {ttl: CollectionTtl.of(10)}
         );
-        expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         let getResponse = await Momento.dictionaryGetField(
           IntegrationTestCacheName,
           dictionaryName,
           field1
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
           expect(getResponse.valueString()).toEqual(value1);
         }
@@ -1207,7 +1336,9 @@ export function runDictionaryTests(
           dictionaryName,
           field2
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
           expect(getResponse.valueString()).toEqual(value2);
         }
@@ -1225,13 +1356,17 @@ export function runDictionaryTests(
           {foo: value1, bar: value2},
           {ttl: CollectionTtl.of(10)}
         );
-        expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         let getResponse = await Momento.dictionaryGetField(
           IntegrationTestCacheName,
           dictionaryName,
           field1
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
           expect(getResponse.valueString()).toEqual(value1);
         }
@@ -1240,7 +1375,9 @@ export function runDictionaryTests(
           dictionaryName,
           field2
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
           expect(getResponse.valueString()).toEqual(value2);
         }
@@ -1261,13 +1398,17 @@ export function runDictionaryTests(
           ]),
           {ttl: CollectionTtl.of(10)}
         );
-        expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         let getResponse = await Momento.dictionaryGetField(
           IntegrationTestCacheName,
           dictionaryName,
           field1
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
           expect(getResponse.valueUint8Array()).toEqual(value1);
         }
@@ -1277,7 +1418,9 @@ export function runDictionaryTests(
           dictionaryName,
           field2
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
           expect(getResponse.valueUint8Array()).toEqual(value2);
         }
@@ -1296,13 +1439,17 @@ export function runDictionaryTests(
           {foo: textEncoder.encode(value1), bar: textEncoder.encode(value2)},
           {ttl: CollectionTtl.of(10)}
         );
-        expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
         let getResponse = await Momento.dictionaryGetField(
           IntegrationTestCacheName,
           dictionaryName,
           field1
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
           expect(getResponse.valueString()).toEqual(value1);
         }
@@ -1311,7 +1458,9 @@ export function runDictionaryTests(
           dictionaryName,
           field2
         );
-        expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
           expect(getResponse.valueString()).toEqual(value2);
         }
