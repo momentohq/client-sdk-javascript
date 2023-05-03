@@ -3,14 +3,17 @@ import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients/auth/IA
 import {AbstractAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients/auth/AbstractAuthClient';
 import {MomentoLogger, RefreshApiToken} from '.';
 import {AuthClientProps} from './auth-client-props';
-import {GenerateApiToken} from '@gomomento/sdk-core';
+import {
+  GenerateApiToken,
+  ExpiresIn,
+  CredentialProvider,
+} from '@gomomento/sdk-core';
 
 export class AuthClient extends AbstractAuthClient implements IAuthClient {
   private readonly logger: MomentoLogger;
 
   constructor(props: AuthClientProps) {
     const authClient = new InternalAuthClient({
-      credentialProvider: props.credentialProvider,
       configuration: props.configuration,
     });
 
@@ -23,35 +26,41 @@ export class AuthClient extends AbstractAuthClient implements IAuthClient {
   /**
    * Gets a api token, refresh token given a valid session token.
    *
+   * @param {string} controlEndpoint - Endpoint for control plane.
    * @param {string} sessionToken - The session token to allow access for generation of api tokens.
-   * @param {string} validForSeconds - How long the token is valid for in seconds.
+   * @param {string} expiresIn - How long the token is valid for in epoch timestamp.
    * @returns {Promise<GenerateApiToken.Response>} -
    * {@link GenerateApiToken.Success} containing the api token, refresh token, origin an how long the token is valid for.
    * {@link GenerateApiToken.Error} on failure.
    */
   public async generateApiToken(
+    controlEndpoint: string,
     sessionToken: string,
-    validForSeconds?: number
+    expiresIn: ExpiresIn
   ): Promise<GenerateApiToken.Response> {
     return await this.authClient.generateApiToken(
+      controlEndpoint,
       sessionToken,
-      validForSeconds
+      expiresIn
     );
   }
 
   /**
    * Refreshs a api token.
    *
-   * @param {string} apiToken - The api token to be refreshed.
+   * @param {string} credentialProvider - Credentials provider built from a api token.
    * @param {string} refreshToken - Refresh token used to refresh the api token.
    * @returns {Promise<RefreshApiToken.Response>} -
    * {@link RefreshApiToken.Success} containing the new api token, refresh token, origin and how long the new token is valid for.
    * {@link RefreshApiToken.Error} on failure.
    */
   public async refreshApiToken(
-    apiToken: string,
+    credentialProvider: CredentialProvider,
     refreshToken: string
   ): Promise<RefreshApiToken.Response> {
-    return await this.authClient.refreshApiToken(apiToken, refreshToken);
+    return await this.authClient.refreshApiToken(
+      credentialProvider,
+      refreshToken
+    );
   }
 }

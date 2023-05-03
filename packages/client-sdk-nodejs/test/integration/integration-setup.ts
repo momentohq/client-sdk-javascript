@@ -10,6 +10,7 @@ import {
   CredentialProvider,
 } from '../../src';
 import {AuthClient} from '../../src/auth-client';
+import {AuthClientProps} from '../../src/auth-client-props';
 
 const deleteCacheIfExists = async (momento: CacheClient, cacheName: string) => {
   const deleteResponse = await momento.deleteCache(cacheName);
@@ -34,20 +35,26 @@ export async function WithCache(
   }
 }
 
+const credsProvider = CredentialProvider.fromEnvironmentVariable({
+  environmentVariableName: 'TEST_AUTH_TOKEN',
+});
+
 export const IntegrationTestCacheClientProps: CacheClientProps = {
   configuration: Configurations.Laptop.latest(),
-  credentialProvider: CredentialProvider.fromEnvironmentVariable({
-    environmentVariableName: 'TEST_AUTH_TOKEN',
-  }),
+  credentialProvider: credsProvider,
   defaultTtlSeconds: 1111,
 };
 
-function momentoClientForTesting() {
+export const AuthIntegrationTestCacheClientProps: AuthClientProps = {
+  configuration: Configurations.Laptop.latest(),
+};
+
+function momentoClientForTesting(): CacheClient {
   return new CacheClient(IntegrationTestCacheClientProps);
 }
 
-function momentoAuthClientForTesting() {
-  return new AuthClient(IntegrationTestCacheClientProps);
+function momentoAuthClientForTesting(): AuthClient {
+  return new AuthClient(AuthIntegrationTestCacheClientProps);
 }
 
 export function SetupIntegrationTest(): {
@@ -80,8 +87,9 @@ export function SetupIntegrationTest(): {
 }
 
 export function SetupAuthIntegrationTest(): {
-  Momento: AuthClient;
-  SessionToken: string;
+  authClient: AuthClient;
+  sessionToken: string;
+  controlEndpoint: string;
 } {
   const sessionToken = process.env.TEST_SESSION_TOKEN;
   if (sessionToken === undefined) {
@@ -89,8 +97,9 @@ export function SetupAuthIntegrationTest(): {
   }
 
   return {
-    Momento: momentoAuthClientForTesting(),
-    SessionToken: sessionToken,
+    authClient: momentoAuthClientForTesting(),
+    sessionToken: sessionToken,
+    controlEndpoint: credsProvider.getControlEndpoint(),
   };
 }
 
@@ -106,4 +115,8 @@ export interface ValidateSortedSetProps extends ValidateCacheProps {
 export interface ValidateSortedSetChangerProps extends ValidateSortedSetProps {
   score: number;
   ttl?: CollectionTtl;
+}
+
+export function delay(ms: number): Promise<unknown> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

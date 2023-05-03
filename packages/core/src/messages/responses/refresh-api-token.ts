@@ -1,6 +1,7 @@
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 import {SdkError} from '../../errors';
 import {encodeToBase64} from '../../internal/utils';
+import {ExpiresAt} from '../../utils/expiration';
 
 export abstract class Response extends ResponseBase {}
 
@@ -8,33 +9,33 @@ class _Success extends Response {
   readonly apiToken: string;
   readonly refreshToken: string;
   readonly endpoint: string;
-  readonly validUntil: number;
+  readonly expiresAt: ExpiresAt;
 
   constructor(
     apiToken: string,
     refreshToken: string,
     endpoint: string,
-    validUntil: number
+    expiresAt: ExpiresAt
   ) {
     super();
     this.apiToken = apiToken;
     this.refreshToken = refreshToken;
     this.endpoint = endpoint;
-    this.validUntil = validUntil;
+    this.expiresAt = expiresAt;
   }
 
-  public getApiToken() {
+  public getApiToken(): string {
     return encodeToBase64(
       JSON.stringify({endpoint: this.endpoint, api_key: this.apiToken})
     );
   }
 
-  public getRefreshToken() {
+  public getRefreshToken(): string {
     return this.refreshToken;
   }
 
-  public getValidUntil() {
-    return this.validUntil;
+  public getExpiresAt(): ExpiresAt {
+    return this.expiresAt;
   }
 }
 

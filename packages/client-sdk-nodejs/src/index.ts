@@ -1,6 +1,5 @@
 import {CacheClient, SimpleCacheClient} from './cache-client';
 import {TopicClient} from './topic-client';
-// import {AuthClient} from './auth-client';
 import * as Configurations from './config/configurations';
 
 // Cache Client Response Types
