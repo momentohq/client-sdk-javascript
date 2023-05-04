@@ -8,6 +8,12 @@ are a few ways we can handle this.
 2. pull these functions out into their respective sdks
 3. maybe some 3rd party library can help? */
 
-export const decodeFromBase64 = (base64: string) => atob(base64);
+import {Buffer} from 'buffer/index';
 
-export const encodeToBase64 = (str: string) => btoa(str);
+export const decodeFromBase64 = (base64: string) => {
+  return Buffer.from(base64, 'base64').toString('utf8');
+};
+
+export const encodeToBase64 = (str: string) => {
+  return Buffer.from(str, 'utf-8').toString('base64');
+};
