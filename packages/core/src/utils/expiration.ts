@@ -24,7 +24,7 @@ export class ExpiresIn extends Expiration {
    * @param {boolean} [doesExpire]
    */
   private constructor(validForSeconds: number) {
-    const doesExpire = validForSeconds !== Infinity
+    const doesExpire = validForSeconds !== Infinity;
     super(doesExpire);
     this._validForSeconds =
       validForSeconds === null ? Infinity : validForSeconds;
