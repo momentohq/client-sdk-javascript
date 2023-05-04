@@ -64,6 +64,16 @@ export interface ValidateSetProps extends ValidateCacheProps {
   setName: string;
 }
 
+export interface ValidateSortedSetProps extends ValidateCacheProps {
+  sortedSetName: string;
+  value: string | Uint8Array;
+}
+
+export interface ValidateSortedSetChangerProps extends ValidateSortedSetProps {
+  score: number;
+  ttl?: CollectionTtl;
+}
+
 export function ItBehavesLikeItValidatesCacheName(
   getResponse: (props: ValidateCacheProps) => Promise<ResponseBase>
 ) {
@@ -92,4 +102,31 @@ const bytesEncoderForTests = new TextEncoder();
  */
 export function uint8ArrayForTest(value: string): Uint8Array {
   return Uint8Array.from(bytesEncoderForTests.encode(value));
+}
+
+/**
+ * Jest doesn't provide a way to emit a custom message when a test fails, so this method
+ * provides a wrapper to allow this:
+ *
+ * ```ts
+ * it('fails a simple failing test', () => {
+ *   const val = 42;
+ *   expectWithMessage(() => {
+ *     expect(val).toBeFalse();
+ *   }, `it turns out ${val} is not false`);
+ * });
+ *```
+ *
+ * @param expected Function containing the `expect` assertion
+ * @param message Message to be printed when the test fails
+ */
+export function expectWithMessage(expected: () => void, message: string) {
+  try {
+    expected();
+  } catch (e) {
+    if (e instanceof Error && e.stack !== undefined) {
+      message += `\n\nOriginal stack trace:\n${e.stack}`;
+    }
+    throw new Error(message);
+  }
 }

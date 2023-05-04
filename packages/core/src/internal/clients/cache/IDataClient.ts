@@ -24,7 +24,16 @@ import {
   CacheDictionaryIncrement,
   CacheDictionaryRemoveField,
   CacheDictionaryRemoveFields,
+  CacheSortedSetFetch,
+  CacheSortedSetPutElement,
+  CacheSortedSetPutElements,
+  CacheSortedSetGetRank,
+  CacheSortedSetGetScore,
+  CacheSortedSetGetScores,
+  CacheSortedSetIncrementScore,
+  CacheSortedSetRemoveElement,
   CollectionTtl,
+  SortedSetOrder,
 } from '../../../index';
 
 export interface IDataClient {
@@ -167,4 +176,65 @@ export interface IDataClient {
     dictionaryName: string,
     fields: string[] | Uint8Array[]
   ): Promise<CacheDictionaryRemoveFields.Response>;
+  sortedSetFetchByRank(
+    cacheName: string,
+    sortedSetName: string,
+    order?: SortedSetOrder,
+    startRank?: number,
+    endRank?: number
+  ): Promise<CacheSortedSetFetch.Response>;
+  sortedSetFetchByScore(
+    cacheName: string,
+    sortedSetName: string,
+    order?: SortedSetOrder,
+    minScore?: number,
+    maxScore?: number,
+    offset?: number,
+    count?: number
+  ): Promise<CacheSortedSetFetch.Response>;
+  sortedSetPutElement(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array,
+    score: number,
+    ttl?: CollectionTtl
+  ): Promise<CacheSortedSetPutElement.Response>;
+  sortedSetPutElements(
+    cacheName: string,
+    sortedSetName: string,
+    elements: Map<string | Uint8Array, number> | Record<string, number>,
+    ttl?: CollectionTtl
+  ): Promise<CacheSortedSetPutElements.Response>;
+  sortedSetGetRank(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetGetRank.Response>;
+  sortedSetGetScore(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetGetScore.Response>;
+  sortedSetGetScores(
+    cacheName: string,
+    sortedSetName: string,
+    values: string[] | Uint8Array[]
+  ): Promise<CacheSortedSetGetScores.Response>;
+  sortedSetIncrementScore(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array,
+    amount?: number,
+    ttl?: CollectionTtl
+  ): Promise<CacheSortedSetIncrementScore.Response>;
+  sortedSetRemoveElement(
+    cacheName: string,
+    sortedSetName: string,
+    value: string | Uint8Array
+  ): Promise<CacheSortedSetRemoveElement.Response>;
+  sortedSetRemoveElements(
+    cacheName: string,
+    sortedSetName: string,
+    values: string[] | Uint8Array[]
+  ): Promise<CacheSortedSetRemoveElement.Response>;
 }

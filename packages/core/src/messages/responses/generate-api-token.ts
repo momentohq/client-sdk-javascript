@@ -5,10 +5,10 @@ import {encodeToBase64} from '../../internal/utils';
 export abstract class Response extends ResponseBase {}
 
 class _Success extends Response {
-  readonly apiToken: string;
-  readonly refreshToken: string;
-  readonly endpoint: string;
-  readonly validUntil: number;
+  private readonly apiToken: string;
+  private readonly refreshToken: string;
+  private readonly endpoint: string;
+  private readonly validUntil: number;
 
   constructor(
     apiToken: string,

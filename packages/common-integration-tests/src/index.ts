@@ -5,3 +5,4 @@ export * from './generate-api-token';
 export * from './list';
 export * from './dictionary';
 export * from './set';
+export * from './sorted-set';
