@@ -11,9 +11,9 @@ export interface IAuthClient {
     sessionToken: string,
     expiresIn: ExpiresIn
   ): Promise<GenerateApiToken.Response>;
-
-  refreshApiToken(
-    credentialProvider: CredentialProvider,
-    refreshToken: string
-  ): Promise<RefreshApiToken.Response>;
+  //
+  // refreshApiToken(
+  //   credentialProvider: CredentialProvider,
+  //   refreshToken: string
+  // ): Promise<RefreshApiToken.Response>;
 }

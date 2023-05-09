@@ -4,12 +4,11 @@
     "module": "commonjs",
     "lib": ["es2018", "dom"],
     "declaration": true,
-    "strict": true,
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "strictNullChecks": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": false,
@@ -20,9 +19,11 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "dist",
     "typeRoots": ["./node_modules/@types"],
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true
   },
   "files": ["node_modules/jest-extended/types/index.d.ts"],
-  "include": ["src/", "test/"],
-  "exclude": ["node_modules", "dist", "examples/"]
+  "include": ["src/**/*", "test/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

@@ -102,49 +102,49 @@ export class AuthClient {
     });
   }
 
-  public async refreshApiToken(
-    credentialProvider: CredentialProvider,
-    refreshToken: string
-  ): Promise<RefreshApiToken.Response> {
-    const refreshClientWrapper = new IdleGrpcClientWrapper({
-      clientFactoryFn: () =>
-        new grpcAuth.AuthClient(
-          credentialProvider.getControlEndpoint(),
-          ChannelCredentials.createSsl()
-        ),
-      configuration: this.config,
-    });
-
-    this.logger.info(
-      `Creating auth client using endpoint: '${credentialProvider.getControlEndpoint()}`
-    );
-
-    const request = new grpcAuth._RefreshApiTokenRequest({
-      api_key: credentialProvider.getAuthToken(),
-      refresh_token: refreshToken,
-    });
-
-    return await new Promise<RefreshApiToken.Response>(resolve => {
-      refreshClientWrapper
-        .getClient()
-        .RefreshApiToken(
-          request,
-          {interceptors: this.interceptors},
-          (err, resp) => {
-            if (err || !resp) {
-              resolve(new RefreshApiToken.Error(cacheServiceErrorMapper(err)));
-            } else {
-              resolve(
-                new RefreshApiToken.Success(
-                  resp.api_key,
-                  resp.refresh_token,
-                  resp.endpoint,
-                  ExpiresAt.fromEpoch(resp.valid_until)
-                )
-              );
-            }
-          }
-        );
-    });
-  }
+  // public async refreshApiToken(
+  //   credentialProvider: CredentialProvider,
+  //   refreshToken: string
+  // ): Promise<RefreshApiToken.Response> {
+  //   const refreshClientWrapper = new IdleGrpcClientWrapper({
+  //     clientFactoryFn: () =>
+  //       new grpcAuth.AuthClient(
+  //         credentialProvider.getControlEndpoint(),
+  //         ChannelCredentials.createSsl()
+  //       ),
+  //     configuration: this.config,
+  //   });
+  //
+  //   this.logger.info(
+  //     `Creating auth client using endpoint: '${credentialProvider.getControlEndpoint()}`
+  //   );
+  //
+  //   const request = new grpcAuth._RefreshApiTokenRequest({
+  //     api_key: credentialProvider.getAuthToken(),
+  //     refresh_token: refreshToken,
+  //   });
+  //
+  //   return await new Promise<RefreshApiToken.Response>(resolve => {
+  //     refreshClientWrapper
+  //       .getClient()
+  //       .RefreshApiToken(
+  //         request,
+  //         {interceptors: this.interceptors},
+  //         (err, resp) => {
+  //           if (err || !resp) {
+  //             resolve(new RefreshApiToken.Error(cacheServiceErrorMapper(err)));
+  //           } else {
+  //             resolve(
+  //               new RefreshApiToken.Success(
+  //                 resp.api_key,
+  //                 resp.refresh_token,
+  //                 resp.endpoint,
+  //                 ExpiresAt.fromEpoch(resp.valid_until)
+  //               )
+  //             );
+  //           }
+  //         }
+  //       );
+  //   });
+  // }
 }

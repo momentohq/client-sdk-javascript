@@ -55,13 +55,13 @@ export class AuthClient extends AbstractAuthClient implements IAuthClient {
    * {@link RefreshApiToken.Success} containing the new api token, refresh token, origin and epoch timestamp when token expires.
    * {@link RefreshApiToken.Error} on failure.
    */
-  public async refreshApiToken(
-    credentialProvider: CredentialProvider,
-    refreshToken: string
-  ): Promise<RefreshApiToken.Response> {
-    return await this.authClient.refreshApiToken(
-      credentialProvider,
-      refreshToken
-    );
-  }
+  // public async refreshApiToken(
+  //   credentialProvider: CredentialProvider,
+  //   refreshToken: string
+  // ): Promise<RefreshApiToken.Response> {
+  //   return await this.authClient.refreshApiToken(
+  //     credentialProvider,
+  //     refreshToken
+  //   );
+  // }
 }

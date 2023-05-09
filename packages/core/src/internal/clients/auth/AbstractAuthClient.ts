@@ -24,13 +24,13 @@ export abstract class AbstractAuthClient implements IAuthClient {
     );
   }
 
-  public async refreshApiToken(
-    credentialProvider: CredentialProvider,
-    refreshToken: string
-  ): Promise<GenerateApiToken.Response> {
-    return await this.authClient.refreshApiToken(
-      credentialProvider,
-      refreshToken
-    );
-  }
+  // public async refreshApiToken(
+  //   credentialProvider: CredentialProvider,
+  //   refreshToken: string
+  // ): Promise<GenerateApiToken.Response> {
+  //   return await this.authClient.refreshApiToken(
+  //     credentialProvider,
+  //     refreshToken
+  //   );
+  // }
 }

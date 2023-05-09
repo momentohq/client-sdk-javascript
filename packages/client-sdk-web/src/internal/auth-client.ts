@@ -8,6 +8,9 @@ import {_GenerateApiTokenRequest} from '@gomomento/generated-types-webtext/dist/
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import Never = _GenerateApiTokenRequest.Never;
 import Expires = _GenerateApiTokenRequest.Expires;
+import {ExpiresAt, ExpiresIn} from '../../../core';
+import {validateValidForSeconds} from '../../../core/dist/src/internal/utils';
+import {normalizeSdkError} from '../../../core/dist/src/errors';
 
 export interface AuthClientProps {
   configuration: Configuration;
@@ -46,13 +49,21 @@ export class InternalWebGrpcAuthClient<
   }
 
   public async generateApiToken(
+    controlEndpoint: string,
     sessionToken: string,
-    validUntilSeconds?: number
+    expiresIn: ExpiresIn
   ): Promise<GenerateApiToken.Response> {
     const request = new _GenerateApiTokenRequest();
     request.setSessionToken(sessionToken);
-    if (validUntilSeconds) {
-      request.setExpires(new Expires().setValidForSeconds(validUntilSeconds));
+
+    if (expiresIn.doesExpire()) {
+      try {
+        validateValidForSeconds(expiresIn.seconds());
+      } catch (err) {
+        return new GenerateApiToken.Error(normalizeSdkError(err as Error));
+      }
+
+      request.setExpires(new Expires().setValidForSeconds(expiresIn.seconds()));
     } else {
       request.setNever(new Never());
     }
@@ -67,7 +78,7 @@ export class InternalWebGrpcAuthClient<
               resp.getApiKey(),
               resp.getRefreshToken(),
               resp.getEndpoint(),
-              resp.getValidUntil()
+              ExpiresAt.fromEpoch(resp.getValidUntil())
             )
           );
         }

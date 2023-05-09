@@ -57,8 +57,7 @@ import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {CacheClientProps} from '../cache-client-props';
 import {Middleware} from '../config/middleware/middleware';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
-import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
-import _Unbounded = cache_client._Unbounded;
+import _Unbounded = cache.cache_client._Unbounded;
 import {Configuration} from '../config/configuration';
 import {
   validateCacheName,
@@ -2289,7 +2288,7 @@ export class DataClient {
     const result = await this.sendSortedSetGetScores(
       cacheName,
       this.convert(sortedSetName),
-      values.map(value => this.convert(value))
+      values.map((value: string | Uint8Array) => this.convert(value))
     );
 
     this.logger.trace(
@@ -2561,7 +2560,7 @@ export class DataClient {
   }
 
   private convertArray(v: string[] | Uint8Array[]): Uint8Array[] {
-    return v.map(i => this.convert(i));
+    return v.map((i: string | Uint8Array) => this.convert(i));
   }
 
   private convertMapOrRecord(
