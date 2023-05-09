@@ -1,24 +1,18 @@
 import {AuthClient as InternalAuthClient} from './internal/auth-client';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients/auth/IAuthClient';
 import {AbstractAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients/auth/AbstractAuthClient';
-import {MomentoLogger, RefreshApiToken} from '.';
-import {AuthClientProps} from './auth-client-props';
 import {
   GenerateApiToken,
   ExpiresIn,
   CredentialProvider,
+  RefreshApiToken,
 } from '@gomomento/sdk-core';
 
 export class AuthClient extends AbstractAuthClient implements IAuthClient {
-  private readonly logger: MomentoLogger;
-
-  constructor(props: AuthClientProps) {
+  constructor() {
     const authClient = new InternalAuthClient();
 
     super({createAuthClient: () => authClient});
-
-    this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    this.logger.info('Creating Momento AuthClient');
   }
 
   /**

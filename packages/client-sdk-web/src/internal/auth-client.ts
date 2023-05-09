@@ -1,7 +1,6 @@
 import {auth} from '@gomomento/generated-types-webtext';
 import {MomentoLogger, GenerateApiToken} from '..';
 import {version} from '../../package.json';
-import {Configuration} from '../config/configuration';
 import {Request, UnaryInterceptor, UnaryResponse} from 'grpc-web';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {_GenerateApiTokenRequest} from '@gomomento/generated-types-webtext/dist/auth_pb';
@@ -10,11 +9,6 @@ import Never = _GenerateApiTokenRequest.Never;
 import Expires = _GenerateApiTokenRequest.Expires;
 import {CredentialProvider, ExpiresAt, ExpiresIn} from '@gomomento/sdk-core';
 
-export interface AuthClientProps {
-  configuration: Configuration;
-  controlEndpoint: string;
-}
-
 export class InternalWebGrpcAuthClient<
   REQ extends Request<REQ, RESP>,
   RESP extends UnaryResponse<REQ, RESP>
@@ -22,20 +16,13 @@ export class InternalWebGrpcAuthClient<
   private readonly interceptors: UnaryInterceptor<REQ, RESP>[];
   private readonly logger: MomentoLogger;
 
-  /**
-   * @param {AuthClientProps} props
-   */
-  constructor(props: AuthClientProps) {
-    this.logger = props.configuration.getLoggerFactory().getLogger(this);
+  constructor() {
     const headers = [new Header('Agent', `nodejs:${version}`)];
     this.interceptors = [
       new HeaderInterceptorProvider<REQ, RESP>(
         headers
       ).createHeadersInterceptor(),
     ];
-    this.logger.debug(
-      `Creating control client using endpoint: ${props.controlEndpoint}`
-    );
   }
 
   public async generateApiToken(

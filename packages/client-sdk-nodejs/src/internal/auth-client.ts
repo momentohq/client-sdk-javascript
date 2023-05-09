@@ -21,9 +21,6 @@ export class AuthClient {
 
   private readonly interceptors: Interceptor[];
 
-  /**
-   * @param {AuthClientProps} props
-   */
   constructor() {
     const headers = [new Header('Agent', `nodejs:${version}`)];
     this.interceptors = [

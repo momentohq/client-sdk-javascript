@@ -10,7 +10,6 @@ import {
   CollectionTtl,
 } from '../../src';
 import {AuthClient} from '../../src/auth-client';
-import {AuthClientProps} from '../../src/auth-client-props';
 
 const deleteCacheIfExists = async (momento: CacheClient, cacheName: string) => {
   const deleteResponse = await momento.deleteCache(cacheName);
@@ -45,16 +44,12 @@ export const IntegrationTestCacheClientProps: CacheClientProps = {
   defaultTtlSeconds: 1111,
 };
 
-export const AuthIntegrationTestCacheClientProps: AuthClientProps = {
-  configuration: Configurations.Laptop.latest(),
-};
-
 function momentoClientForTesting(): CacheClient {
   return new CacheClient(IntegrationTestCacheClientProps);
 }
 
 function momentoAuthClientForTesting(): AuthClient {
-  return new AuthClient(AuthIntegrationTestCacheClientProps);
+  return new AuthClient();
 }
 
 export function SetupIntegrationTest(): {
