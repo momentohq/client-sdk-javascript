@@ -14,10 +14,11 @@
   },
   "scripts": {
     "prebuild": "eslint . --ext .ts",
-    "test": "jest",
-    "unit-test": "jest unit",
-    "integration-test": "jest integration",
-    "build-and-run-tests": "cd ../common-integration-tests && npm run build && cd - && jest",
+    "test": "jest --testPathIgnorePatterns auth.test.ts",
+    "integration-test-auth": "jest -- auth.test.ts",
+    "unit-test": "jest unit --testPathIgnorePatterns auth.test.ts",
+    "integration-test": "jest integration --testPathIgnorePatterns auth.test.ts",
+    "build-and-run-tests": "cd ../common-integration-tests && npm run build && cd - && jest --testPathIgnorePatterns auth.test.ts",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
@@ -50,7 +51,7 @@
   },
   "dependencies": {
     "@gomomento/sdk-core": "file:../core",
-    "@gomomento/generated-types": "0.57.0",
+    "@gomomento/generated-types": "0.60.2",
     "@grpc/grpc-js": "1.7.3",
     "google-protobuf": "^3.21.2",
     "jwt-decode": "3.1.2"
