@@ -8,6 +8,7 @@ import {_GenerateApiTokenRequest} from '@gomomento/generated-types-webtext/dist/
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import Never = _GenerateApiTokenRequest.Never;
 import Expires = _GenerateApiTokenRequest.Expires;
+import {CredentialProvider, ExpiresAt, ExpiresIn} from '@gomomento/sdk-core';
 
 export interface AuthClientProps {
   configuration: Configuration;
@@ -18,7 +19,6 @@ export class InternalWebGrpcAuthClient<
   REQ extends Request<REQ, RESP>,
   RESP extends UnaryResponse<REQ, RESP>
 > {
-  private readonly clientAuthWrapper: auth.AuthClient;
   private readonly interceptors: UnaryInterceptor<REQ, RESP>[];
   private readonly logger: MomentoLogger;
 
@@ -36,29 +36,30 @@ export class InternalWebGrpcAuthClient<
     this.logger.debug(
       `Creating control client using endpoint: ${props.controlEndpoint}`
     );
-    this.clientAuthWrapper = new auth.AuthClient(
-      `https://${props.controlEndpoint}`,
+  }
+
+  public async generateApiToken(
+    controlEndpoint: string,
+    sessionToken: string,
+    expiresIn: ExpiresIn
+  ): Promise<GenerateApiToken.Response> {
+    const request = new _GenerateApiTokenRequest();
+    request.setSessionToken(sessionToken);
+    if (expiresIn.doesExpire()) {
+      request.setExpires(new Expires().setValidForSeconds(expiresIn.seconds()));
+    } else {
+      request.setNever(new Never());
+    }
+    const clientAuthWrapper = new auth.AuthClient(
+      `https://${controlEndpoint}`,
       null,
       {
         unaryInterceptors: this.interceptors,
       }
     );
-  }
-
-  public async generateApiToken(
-    sessionToken: string,
-    validUntilSeconds?: number
-  ): Promise<GenerateApiToken.Response> {
-    const request = new _GenerateApiTokenRequest();
-    request.setSessionToken(sessionToken);
-    if (validUntilSeconds) {
-      request.setExpires(new Expires().setValidForSeconds(validUntilSeconds));
-    } else {
-      request.setNever(new Never());
-    }
     this.logger.debug("Issuing 'generateApiToken' request");
     return await new Promise<GenerateApiToken.Response>(resolve => {
-      this.clientAuthWrapper.generateApiToken(request, null, (err, resp) => {
+      clientAuthWrapper.generateApiToken(request, null, (err, resp) => {
         if (err) {
           resolve(new GenerateApiToken.Error(cacheServiceErrorMapper(err)));
         } else {
@@ -67,11 +68,18 @@ export class InternalWebGrpcAuthClient<
               resp.getApiKey(),
               resp.getRefreshToken(),
               resp.getEndpoint(),
-              resp.getValidUntil()
+              ExpiresAt.fromEpoch(resp.getValidUntil())
             )
           );
         }
       });
     });
+  }
+
+  public refreshApiToken(
+    _credentialProvider: CredentialProvider,
+    _refreshToken: string
+  ): Promise<GenerateApiToken.Response> {
+    throw new Error('not implemented');
   }
 }

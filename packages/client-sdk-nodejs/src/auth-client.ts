@@ -13,9 +13,7 @@ export class AuthClient extends AbstractAuthClient implements IAuthClient {
   private readonly logger: MomentoLogger;
 
   constructor(props: AuthClientProps) {
-    const authClient = new InternalAuthClient({
-      configuration: props.configuration,
-    });
+    const authClient = new InternalAuthClient();
 
     super({createAuthClient: () => authClient});
 

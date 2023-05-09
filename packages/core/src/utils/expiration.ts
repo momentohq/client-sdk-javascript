@@ -83,18 +83,6 @@ export class ExpiresIn extends Expiration {
   }
 
   /**
-   * Constructs a ExpiresIn with a specified expiresBy period in Date format.
-   * @param expiresBy
-   * @returns {ExpiresIn}
-   */
-  public static date(expiresBy: Date): ExpiresIn {
-    const secondsUntilDate = Math.round(
-      expiresBy.getTime() / 1000 - new Date().getTime() / 1000
-    );
-    return new ExpiresIn(secondsUntilDate);
-  }
-
-  /**
    * Constructs a ExpiresIn with a specified expiresBy period in epoch format.
    * @param expiresBy
    * @returns {ExpiresIn}

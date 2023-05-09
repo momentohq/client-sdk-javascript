@@ -10,12 +10,10 @@ describe('Expiration', () => {
     });
 
     test('expiresIn.seconds is valid', () => {
-      const epoch = Math.floor(new Date().getTime() / 1000 + 10);
       const expiresIn = ExpiresIn.seconds(10);
 
       expect(expiresIn.doesExpire()).toBe(true);
       expect(expiresIn.seconds()).toBe(10);
-      expect(expiresIn.epoch()).toBeWithin(epoch - 1, epoch + 2);
     });
 
     test('expiresIn.minutes is valid', () => {
@@ -37,16 +35,6 @@ describe('Expiration', () => {
 
       expect(expiresIn.doesExpire()).toBe(true);
       expect(expiresIn.seconds()).toBe(86400);
-    });
-
-    test('expiresIn.date is valid', () => {
-      const currentDate = new Date();
-      currentDate.setSeconds(currentDate.getSeconds() + 100);
-
-      const expiresIn = ExpiresIn.date(currentDate);
-
-      expect(expiresIn.doesExpire()).toBe(true);
-      expect(expiresIn.seconds()).toBe(100);
     });
   });
 
