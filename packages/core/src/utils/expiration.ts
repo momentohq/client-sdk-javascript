@@ -15,7 +15,6 @@ abstract class Expiration {
 }
 
 export class ExpiresIn extends Expiration {
-  private readonly _expiresAtEpoch: number;
   private readonly _validForSeconds: number;
 
   /**
@@ -24,15 +23,9 @@ export class ExpiresIn extends Expiration {
    * @param {boolean} [doesExpire]
    */
   private constructor(validForSeconds: number) {
-    const doesExpire = validForSeconds !== Infinity;
-    super(doesExpire);
+    super(validForSeconds !== Infinity);
     this._validForSeconds =
       validForSeconds === null ? Infinity : validForSeconds;
-    const currentEpoch = new Date().getTime() / 1000;
-    this._expiresAtEpoch =
-      validForSeconds === null
-        ? Infinity
-        : Math.round(currentEpoch + validForSeconds);
   }
 
   /**
@@ -41,14 +34,6 @@ export class ExpiresIn extends Expiration {
    */
   public seconds(): number {
     return this._validForSeconds;
-  }
-
-  /**
-   * When token expires, epoch format.
-   * @returns {number} Infinity, if token doesn't expire.
-   */
-  public epoch(): number {
-    return this._expiresAtEpoch;
   }
 
   /**
