@@ -61,6 +61,14 @@ export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
 npm run test
 ```
 
+### Run auth integration tests
+
+```
+export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
+export TEST_SESSION_TOKEN=<YOUR_SESSION_TOKEN>
+npm run integration-test-auth
+```
+
 ### Limit the test concurrency
 
 By default, jest runs tests concurrently. Sometimes if you allow too many tests to run concurrently you

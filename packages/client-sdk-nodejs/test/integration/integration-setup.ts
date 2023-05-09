@@ -7,7 +7,9 @@ import {
   MomentoErrorCode,
   CacheClient,
   CredentialProvider,
+  CollectionTtl,
 } from '../../src';
+import {AuthClient} from '../../src/auth-client';
 
 const deleteCacheIfExists = async (momento: CacheClient, cacheName: string) => {
   const deleteResponse = await momento.deleteCache(cacheName);
@@ -32,16 +34,22 @@ export async function WithCache(
   }
 }
 
+const credsProvider = CredentialProvider.fromEnvironmentVariable({
+  environmentVariableName: 'TEST_AUTH_TOKEN',
+});
+
 export const IntegrationTestCacheClientProps: CacheClientProps = {
   configuration: Configurations.Laptop.latest(),
-  credentialProvider: CredentialProvider.fromEnvironmentVariable({
-    environmentVariableName: 'TEST_AUTH_TOKEN',
-  }),
+  credentialProvider: credsProvider,
   defaultTtlSeconds: 1111,
 };
 
-function momentoClientForTesting() {
+function momentoClientForTesting(): CacheClient {
   return new CacheClient(IntegrationTestCacheClientProps);
+}
+
+function momentoAuthClientForTesting(): AuthClient {
+  return new AuthClient();
 }
 
 export function SetupIntegrationTest(): {
@@ -71,4 +79,39 @@ export function SetupIntegrationTest(): {
 
   const client = momentoClientForTesting();
   return {Momento: client, IntegrationTestCacheName: cacheName};
+}
+
+export function SetupAuthIntegrationTest(): {
+  authClient: AuthClient;
+  sessionToken: string;
+  controlEndpoint: string;
+} {
+  const sessionToken = process.env.TEST_SESSION_TOKEN;
+  if (sessionToken === undefined) {
+    throw new Error('Missing required env var TEST_SESSION_TOKEN');
+  }
+
+  return {
+    authClient: momentoAuthClientForTesting(),
+    sessionToken: sessionToken,
+    controlEndpoint: credsProvider.getControlEndpoint(),
+  };
+}
+
+export interface ValidateCacheProps {
+  cacheName: string;
+}
+
+export interface ValidateSortedSetProps extends ValidateCacheProps {
+  sortedSetName: string;
+  value: string | Uint8Array;
+}
+
+export interface ValidateSortedSetChangerProps extends ValidateSortedSetProps {
+  score: number;
+  ttl?: CollectionTtl;
+}
+
+export function delay(ms: number): Promise<unknown> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

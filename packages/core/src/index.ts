@@ -51,9 +51,16 @@ import {TopicItem} from './messages/responses/topic-item';
 
 // AuthClient Response Types
 import * as GenerateApiToken from './messages/responses/generate-api-token';
+import * as RefreshApiToken from './messages/responses/refresh-api-token';
 
 import {CacheInfo} from './messages/cache-info';
-import {SubscribeCallOptions, CollectionTtl, SortedSetOrder} from './utils';
+import {
+  SubscribeCallOptions,
+  CollectionTtl,
+  SortedSetOrder,
+  ExpiresIn,
+  ExpiresAt,
+} from './utils';
 import {
   CredentialProvider,
   StringMomentoTokenProvider,
@@ -102,6 +109,8 @@ export {
 } from './internal/clients/cache/ICacheClient';
 
 export {
+  ExpiresIn,
+  ExpiresAt,
   CollectionTtl,
   SortedSetOrder,
   CredentialProvider,
@@ -161,6 +170,7 @@ export {
   SubscribeCallOptions,
   // AuthClient Response Types
   GenerateApiToken,
+  RefreshApiToken,
   // Errors
   MomentoErrorCode,
   SdkError,
