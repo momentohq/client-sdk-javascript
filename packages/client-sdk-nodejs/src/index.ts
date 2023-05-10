@@ -54,6 +54,7 @@ import * as TopicSubscribe from '@gomomento/sdk-core/dist/src/messages/responses
 import {TopicItem} from '@gomomento/sdk-core/dist/src/messages/responses/topic-item';
 
 // AuthClient Response Types
+import {AuthClient} from './auth-client';
 import * as GenerateApiToken from '@gomomento/sdk-core/dist/src/messages/responses/generate-api-token';
 import * as RefreshApiToken from '@gomomento/sdk-core/dist/src/messages/responses/refresh-api-token';
 
@@ -195,6 +196,7 @@ export {
   TopicSubscribe,
   SubscribeCallOptions,
   // AuthClient response types
+  AuthClient,
   GenerateApiToken,
   RefreshApiToken,
   // Errors
