@@ -28,7 +28,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@gomomento/common-integration-tests": "file:../common-integration-tests",
-    "@types/google-protobuf": "^3.15.5",
+    "@types/google-protobuf": "3.15.6",
     "@types/jest": "^27.0.2",
     "@types/node": "14.18.3",
     "@types/uuid": "^8.3.1",
@@ -50,10 +50,10 @@
     "uuid": "8.3.2"
   },
   "dependencies": {
+    "@gomomento/generated-types": "0.61.0",
     "@gomomento/sdk-core": "file:../core",
-    "@gomomento/generated-types": "0.60.2",
-    "@grpc/grpc-js": "1.7.3",
-    "google-protobuf": "^3.21.2",
+    "@grpc/grpc-js": "1.8.14",
+    "google-protobuf": "3.21.2",
     "jwt-decode": "3.1.2"
   },
   "engines": {
