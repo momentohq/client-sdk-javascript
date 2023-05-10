@@ -3,7 +3,6 @@ import grpcAuth = auth.auth;
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
-import {GenerateApiToken, RefreshApiToken} from '..';
 import {version} from '../../package.json';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
@@ -14,6 +13,8 @@ import {
   ExpiresIn,
   ExpiresAt,
   CredentialProvider,
+  RefreshAuthToken,
+  GenerateAuthToken,
 } from '@gomomento/sdk-core/dist/src';
 
 export class AuthClient {
@@ -29,11 +30,11 @@ export class AuthClient {
     ];
   }
 
-  public async generateApiToken(
+  public async generateAuthToken(
     controlEndpoint: string,
     sessionToken: string,
     expiresIn: ExpiresIn
-  ): Promise<GenerateApiToken.Response> {
+  ): Promise<GenerateAuthToken.Response> {
     const authClient = new grpcAuth.AuthClient(
       controlEndpoint,
       ChannelCredentials.createSsl()
@@ -47,7 +48,7 @@ export class AuthClient {
       try {
         validateValidForSeconds(expiresIn.seconds());
       } catch (err) {
-        return new GenerateApiToken.Error(normalizeSdkError(err as Error));
+        return new GenerateAuthToken.Error(normalizeSdkError(err as Error));
       }
 
       request.expires = new Expires({
@@ -57,16 +58,16 @@ export class AuthClient {
       request.never = new Never();
     }
 
-    return await new Promise<GenerateApiToken.Response>(resolve => {
+    return await new Promise<GenerateAuthToken.Response>(resolve => {
       authClient.GenerateApiToken(
         request,
         {interceptors: this.interceptors},
         (err, resp) => {
           if (err || !resp) {
-            resolve(new GenerateApiToken.Error(cacheServiceErrorMapper(err)));
+            resolve(new GenerateAuthToken.Error(cacheServiceErrorMapper(err)));
           } else {
             resolve(
-              new GenerateApiToken.Success(
+              new GenerateAuthToken.Success(
                 resp.api_key,
                 resp.refresh_token,
                 resp.endpoint,
@@ -79,10 +80,10 @@ export class AuthClient {
     });
   }
 
-  public async refreshApiToken(
+  public async refreshAuthToken(
     credentialProvider: CredentialProvider,
     refreshToken: string
-  ): Promise<RefreshApiToken.Response> {
+  ): Promise<RefreshAuthToken.Response> {
     const authClient = new grpcAuth.AuthClient(
       credentialProvider.getControlEndpoint(),
       ChannelCredentials.createSsl()
@@ -93,16 +94,16 @@ export class AuthClient {
       refresh_token: refreshToken,
     });
 
-    return await new Promise<RefreshApiToken.Response>(resolve => {
+    return await new Promise<RefreshAuthToken.Response>(resolve => {
       authClient.RefreshApiToken(
         request,
         {interceptors: this.interceptors},
         (err, resp) => {
           if (err || !resp) {
-            resolve(new RefreshApiToken.Error(cacheServiceErrorMapper(err)));
+            resolve(new RefreshAuthToken.Error(cacheServiceErrorMapper(err)));
           } else {
             resolve(
-              new RefreshApiToken.Success(
+              new RefreshAuthToken.Success(
                 resp.api_key,
                 resp.refresh_token,
                 resp.endpoint,
