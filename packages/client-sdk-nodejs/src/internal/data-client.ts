@@ -2214,12 +2214,6 @@ export class DataClient {
     sortedSetName: Uint8Array,
     value: Uint8Array
   ): Promise<CacheSortedSetGetRank.Response> {
-    console.log(`
-
-    SEND SORTED SET GET RANK YO
-
-    `);
-
     const request = new grpcCache._SortedSetGetRankRequest({
       set_name: sortedSetName,
       value: value,
