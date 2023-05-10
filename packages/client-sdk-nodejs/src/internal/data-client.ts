@@ -1,5 +1,4 @@
 import {cache} from '@gomomento/generated-types';
-import grpcCache = cache.cache_client;
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextEncoder} from 'util';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
@@ -8,21 +7,17 @@ import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
 import {
-  CacheGet,
-  CacheSet,
   CacheDelete,
-  CacheIncrement,
-  CacheSetFetch,
   CacheDictionaryFetch,
-  CacheDictionarySetField,
-  CacheDictionarySetFields,
   CacheDictionaryGetField,
   CacheDictionaryGetFields,
+  CacheDictionaryIncrement,
   CacheDictionaryRemoveField,
   CacheDictionaryRemoveFields,
-  CacheDictionaryIncrement,
-  CacheSetAddElements,
-  CacheSetRemoveElements,
+  CacheDictionarySetField,
+  CacheDictionarySetFields,
+  CacheGet,
+  CacheIncrement,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
   CacheListFetch,
@@ -32,24 +27,28 @@ import {
   CacheListPushBack,
   CacheListPushFront,
   CacheListRemoveValue,
-  CacheSortedSetPutElement,
-  CacheSortedSetFetch,
+  CacheListRetain,
+  CacheSet,
+  CacheSetAddElements,
+  CacheSetFetch,
   CacheSetIfNotExists,
+  CacheSetRemoveElements,
+  CacheSortedSetFetch,
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
   CacheSortedSetGetScores,
   CacheSortedSetIncrementScore,
+  CacheSortedSetPutElement,
+  CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
-  CacheSortedSetPutElements,
-  CacheListRetain,
-  CredentialProvider,
-  MomentoLogger,
-  InvalidArgumentError,
   CollectionTtl,
-  UnknownError,
-  SortedSetOrder,
+  CredentialProvider,
+  InvalidArgumentError,
+  MomentoLogger,
   MomentoLoggerFactory,
+  SortedSetOrder,
+  UnknownError,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -58,27 +57,29 @@ import {CacheClientProps} from '../cache-client-props';
 import {Middleware} from '../config/middleware/middleware';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
-import _Unbounded = cache_client._Unbounded;
 import {Configuration} from '../config/configuration';
 import {
+  truncateString,
   validateCacheName,
-  validateSetName,
+  validateDictionaryName,
   validateListName,
   validateListSliceStartEnd,
-  validateDictionaryName,
+  validateSetName,
+  validateSortedSetCount,
   validateSortedSetName,
-  truncateString,
+  validateSortedSetOffset,
   validateSortedSetRanks,
   validateSortedSetScores,
-  validateSortedSetOffset,
-  validateSortedSetCount,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
-  _ECacheResult,
   _DictionaryGetResponsePart,
+  _ECacheResult,
   _SortedSetGetScoreResponsePart,
 } from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import grpcCache = cache.cache_client;
+import _Unbounded = cache_client._Unbounded;
+import ECacheResult = cache_client.ECacheResult;
 
 export class DataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -2213,6 +2214,12 @@ export class DataClient {
     sortedSetName: Uint8Array,
     value: Uint8Array
   ): Promise<CacheSortedSetGetRank.Response> {
+    console.log(`
+
+    SEND SORTED SET GET RANK YO
+
+    `);
+
     const request = new grpcCache._SortedSetGetRankRequest({
       set_name: sortedSetName,
       value: value,
@@ -2226,9 +2233,12 @@ export class DataClient {
           metadata,
           {interceptors: this.interceptors},
           (err, resp) => {
-            if (resp?.missing) {
+            if (
+              resp?.missing ||
+              resp?.element_rank?.result === ECacheResult.Miss
+            ) {
               resolve(new CacheSortedSetGetRank.Miss());
-            } else if (resp?.element_rank) {
+            } else if (resp?.element_rank?.result === ECacheResult.Hit) {
               if (resp?.element_rank.rank === undefined) {
                 resolve(new CacheSortedSetGetRank.Miss());
               } else {
