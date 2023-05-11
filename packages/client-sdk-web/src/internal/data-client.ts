@@ -2582,12 +2582,12 @@ export class DataClient<
     } catch (err) {
       return new ItemType.Error(normalizeSdkError(err as Error));
     }
-    return await this.sendItemType(cacheName, this.convertToUint8Array(key));
+    return await this.sendItemType(cacheName, key);
   }
 
   private async sendItemType(
     cacheName: string,
-    key: Uint8Array
+    key: string | Uint8Array
   ): Promise<ItemType.Response> {
     const request = new _ItemGetTypeRequest();
     request.setCacheKey(key);
