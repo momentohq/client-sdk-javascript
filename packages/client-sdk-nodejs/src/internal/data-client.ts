@@ -81,7 +81,6 @@ import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import grpcCache = cache.cache_client;
 import _Unbounded = cache_client._Unbounded;
 import ECacheResult = cache_client.ECacheResult;
-import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 
 export class DataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -2647,11 +2646,7 @@ export class DataClient {
           if (resp?.missing) {
             resolve(new ItemType.Miss());
           } else if (resp?.found) {
-            resolve(
-              new ItemType.Hit(
-                _ItemGetTypeResponse.ItemType[resp.found.item_type]
-              )
-            );
+            resolve(new ItemType.Hit(resp.found.item_type));
           } else {
             resolve(new ItemType.Error(cacheServiceErrorMapper(err)));
           }

@@ -2603,7 +2603,7 @@ export class DataClient<
           const theType = resp.getFound();
           if (theType && theType.getItemType()) {
             const found = theType.getItemType();
-            resolve(new ItemType.Hit(found.toString()));
+            resolve(new ItemType.Hit(found));
           } else if (resp?.getMissing()) {
             resolve(new ItemType.Miss());
           } else {
