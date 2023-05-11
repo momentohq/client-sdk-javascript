@@ -77,7 +77,7 @@ describe('Integration tests for generating api tokens', () => {
 
     const refreshResponse = await authClient.refreshAuthToken(
       CredentialProvider.fromString({
-        authToken: generateSuccessRst.getApiToken(),
+        authToken: generateSuccessRst.getAuthToken(),
       }),
       generateSuccessRst.refreshToken
     );
@@ -104,7 +104,7 @@ describe('Integration tests for generating api tokens', () => {
 
     const refreshResponse = await authClient.refreshAuthToken(
       CredentialProvider.fromString({
-        authToken: generateSuccessRst.getApiToken(),
+        authToken: generateSuccessRst.getAuthToken(),
       }),
       generateSuccessRst.refreshToken
     );

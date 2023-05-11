@@ -6,27 +6,27 @@ import {ExpiresAt} from '../../utils/expiration';
 export abstract class Response extends ResponseBase {}
 
 class _Success extends Response {
-  readonly apiToken: string;
+  readonly authToken: string;
   readonly refreshToken: string;
   readonly endpoint: string;
   readonly expiresAt: ExpiresAt;
 
   constructor(
-    apiToken: string,
+    authToken: string,
     refreshToken: string,
     endpoint: string,
     expiresAt: ExpiresAt
   ) {
     super();
-    this.apiToken = apiToken;
+    this.authToken = authToken;
     this.refreshToken = refreshToken;
     this.endpoint = endpoint;
     this.expiresAt = expiresAt;
   }
 
-  public getApiToken(): string {
+  public getAuthToken(): string {
     return encodeToBase64(
-      JSON.stringify({endpoint: this.endpoint, api_key: this.apiToken})
+      JSON.stringify({endpoint: this.endpoint, api_key: this.authToken})
     );
   }
 
