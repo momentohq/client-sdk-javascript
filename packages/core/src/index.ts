@@ -43,6 +43,7 @@ import * as CacheSortedSetGetScores from './messages/responses/cache-sorted-set-
 import * as CacheSortedSetIncrementScore from './messages/responses/cache-sorted-set-increment-score';
 import * as CacheSortedSetRemoveElement from './messages/responses/cache-sorted-set-remove-element';
 import * as CacheSortedSetRemoveElements from './messages/responses/cache-sorted-set-remove-elements';
+import * as ItemType from './messages/responses/item-type-api';
 
 // TopicClient Response Types
 import * as TopicPublish from './messages/responses/topic-publish';
@@ -162,6 +163,7 @@ export {
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  ItemType,
   CacheInfo,
   // TopicClient Response Types
   TopicPublish,

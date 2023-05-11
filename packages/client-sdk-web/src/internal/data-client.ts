@@ -35,6 +35,7 @@ import {
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  ItemType,
   CollectionTtl,
   CredentialProvider,
   InvalidArgumentError,
@@ -64,6 +65,7 @@ import {
   _DictionarySetRequest,
   _GetRequest,
   _IncrementRequest,
+  _ItemGetTypeRequest,
   _ListConcatenateBackRequest,
   _ListConcatenateFrontRequest,
   _ListFetchRequest,
@@ -2565,6 +2567,47 @@ export class DataClient<
             );
           } else {
             resolve(new CacheSortedSetRemoveElements.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async itemType(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<ItemType.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new ItemType.Error(normalizeSdkError(err as Error));
+    }
+    return await this.sendItemType(cacheName, this.convertToUint8Array(key));
+  }
+
+  private async sendItemType(
+    cacheName: string,
+    key: Uint8Array
+  ): Promise<ItemType.Response> {
+    const request = new _ItemGetTypeRequest();
+    request.setCacheKey(key);
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.itemGetType(
+        request,
+        {
+          ...this.authHeaders,
+          ...metadata,
+        },
+        (err, resp) => {
+          const theType = resp.getFound();
+          if (theType && theType.getItemType()) {
+            const found = theType.getItemType();
+            resolve(new ItemType.Hit(found.toString()));
+          } else if (resp?.getMissing()) {
+            resolve(new ItemType.Miss());
+          } else {
+            resolve(new ItemType.Error(cacheServiceErrorMapper(err)));
           }
         }
       );

@@ -42,6 +42,7 @@ import {
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  ItemType,
   CollectionTtl,
   CredentialProvider,
   InvalidArgumentError,
@@ -80,6 +81,7 @@ import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import grpcCache = cache.cache_client;
 import _Unbounded = cache_client._Unbounded;
 import ECacheResult = cache_client.ECacheResult;
+import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 
 export class DataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -2612,6 +2614,50 @@ export class DataClient {
           })
       );
     }
+  }
+
+  public async itemType(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<ItemType.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new ItemType.Error(normalizeSdkError(err as Error));
+    }
+    return await this.sendItemType(cacheName, this.convert(key));
+  }
+
+  private async sendItemType(
+    cacheName: string,
+    key: Uint8Array
+  ): Promise<ItemType.Response> {
+    const request = new grpcCache._ItemGetTypeRequest({
+      cache_key: key,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ItemGetType(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new ItemType.Miss());
+          } else if (resp?.found) {
+            resolve(
+              new ItemType.Hit(
+                _ItemGetTypeResponse.ItemType[resp.found.item_type]
+              )
+            );
+          } else {
+            resolve(new ItemType.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
   }
 
   private createMetadata(cacheName: string): Metadata {
