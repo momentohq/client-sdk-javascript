@@ -1,19 +1,19 @@
 import {
   CredentialProvider,
   ExpiresIn,
-  GenerateApiToken,
-  RefreshApiToken,
+  GenerateAuthToken,
+  RefreshAuthToken,
 } from '../../../index';
 
 export interface IAuthClient {
-  generateApiToken(
+  generateAuthToken(
     controlEndpoint: string,
     sessionToken: string,
     expiresIn: ExpiresIn
-  ): Promise<GenerateApiToken.Response>;
+  ): Promise<GenerateAuthToken.Response>;
 
-  refreshApiToken(
+  refreshAuthToken(
     credentialProvider: CredentialProvider,
     refreshToken: string
-  ): Promise<RefreshApiToken.Response>;
+  ): Promise<RefreshAuthToken.Response>;
 }

@@ -1,7 +1,7 @@
 import {
-  GenerateApiToken,
+  GenerateAuthToken,
   MomentoErrorCode,
-  RefreshApiToken,
+  RefreshAuthToken,
   ExpiresIn,
   CredentialProvider,
 } from '@gomomento/sdk-core';
@@ -12,16 +12,16 @@ const {authClient, sessionToken, controlEndpoint} = SetupAuthIntegrationTest();
 describe('Integration tests for generating api tokens', () => {
   it('should succeed for generating an api token that expires', async () => {
     const secondsSinceEpoch = Math.round(Date.now() / 1000);
-    const expireResponse = await authClient.generateApiToken(
+    const expireResponse = await authClient.generateAuthToken(
       controlEndpoint,
       sessionToken,
       ExpiresIn.seconds(10)
     );
     const expiresIn = secondsSinceEpoch + 10;
 
-    expect(expireResponse).toBeInstanceOf(GenerateApiToken.Success);
+    expect(expireResponse).toBeInstanceOf(GenerateAuthToken.Success);
 
-    const expireResponseSuccess = expireResponse as GenerateApiToken.Success;
+    const expireResponseSuccess = expireResponse as GenerateAuthToken.Success;
     expect(expireResponseSuccess.is_success);
     expect(expireResponseSuccess.getExpiresAt().doesExpire());
     expect(expireResponseSuccess.getExpiresAt().epoch()).toBeWithin(
@@ -31,58 +31,58 @@ describe('Integration tests for generating api tokens', () => {
   });
 
   it('should succeed for generating an api token that never expires', async () => {
-    const neverExpiresResponse = await authClient.generateApiToken(
+    const neverExpiresResponse = await authClient.generateAuthToken(
       controlEndpoint,
       sessionToken,
       ExpiresIn.never()
     );
-    expect(neverExpiresResponse).toBeInstanceOf(GenerateApiToken.Success);
+    expect(neverExpiresResponse).toBeInstanceOf(GenerateAuthToken.Success);
     const neverExpireResponseSuccess =
-      neverExpiresResponse as GenerateApiToken.Success;
+      neverExpiresResponse as GenerateAuthToken.Success;
     expect(neverExpireResponseSuccess.is_success);
     expect(neverExpireResponseSuccess.getExpiresAt().doesExpire()).toBeFalse();
   });
 
   it('should not succeed for generating an api token that has an invalid expires', async () => {
-    const invalidExpiresResponse = await authClient.generateApiToken(
+    const invalidExpiresResponse = await authClient.generateAuthToken(
       controlEndpoint,
       sessionToken,
       ExpiresIn.seconds(-100)
     );
-    expect(invalidExpiresResponse).toBeInstanceOf(GenerateApiToken.Error);
+    expect(invalidExpiresResponse).toBeInstanceOf(GenerateAuthToken.Error);
     expect(
-      (invalidExpiresResponse as GenerateApiToken.Error).errorCode()
+      (invalidExpiresResponse as GenerateAuthToken.Error).errorCode()
     ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
   });
 
   it('should not succeed for generating an api token that has an invalid session token', async () => {
-    const invalidExpiresResponse = await authClient.generateApiToken(
+    const invalidExpiresResponse = await authClient.generateAuthToken(
       controlEndpoint,
       'this is *not* valid',
       ExpiresIn.seconds(60)
     );
-    expect(invalidExpiresResponse).toBeInstanceOf(GenerateApiToken.Error);
+    expect(invalidExpiresResponse).toBeInstanceOf(GenerateAuthToken.Error);
     expect(
-      (invalidExpiresResponse as GenerateApiToken.Error).errorCode()
+      (invalidExpiresResponse as GenerateAuthToken.Error).errorCode()
     ).toEqual(MomentoErrorCode.AUTHENTICATION_ERROR);
   });
 
   it('should succeed for refreshing an api token', async () => {
-    const generateResponse = await authClient.generateApiToken(
+    const generateResponse = await authClient.generateAuthToken(
       controlEndpoint,
       sessionToken,
       ExpiresIn.seconds(10)
     );
-    const generateSuccessRst = generateResponse as GenerateApiToken.Success;
+    const generateSuccessRst = generateResponse as GenerateAuthToken.Success;
 
-    const refreshResponse = await authClient.refreshApiToken(
+    const refreshResponse = await authClient.refreshAuthToken(
       CredentialProvider.fromString({
-        authToken: generateSuccessRst.getApiToken(),
+        authToken: generateSuccessRst.getAuthToken(),
       }),
       generateSuccessRst.refreshToken
     );
-    expect(refreshResponse).toBeInstanceOf(RefreshApiToken.Success);
-    const refreshSuccessRst = refreshResponse as RefreshApiToken.Success;
+    expect(refreshResponse).toBeInstanceOf(RefreshAuthToken.Success);
+    const refreshSuccessRst = refreshResponse as RefreshAuthToken.Success;
 
     expect(refreshSuccessRst.is_success);
 
@@ -92,24 +92,24 @@ describe('Integration tests for generating api tokens', () => {
   });
 
   it("should not succeed for refreshing an api token that's expired", async () => {
-    const generateResponse = await authClient.generateApiToken(
+    const generateResponse = await authClient.generateAuthToken(
       controlEndpoint,
       sessionToken,
       ExpiresIn.seconds(1)
     );
-    const generateSuccessRst = generateResponse as GenerateApiToken.Success;
+    const generateSuccessRst = generateResponse as GenerateAuthToken.Success;
 
     // Wait 1sec for the token to expire
     await delay(1000);
 
-    const refreshResponse = await authClient.refreshApiToken(
+    const refreshResponse = await authClient.refreshAuthToken(
       CredentialProvider.fromString({
-        authToken: generateSuccessRst.getApiToken(),
+        authToken: generateSuccessRst.getAuthToken(),
       }),
       generateSuccessRst.refreshToken
     );
-    expect(refreshResponse).toBeInstanceOf(RefreshApiToken.Error);
-    expect((refreshResponse as GenerateApiToken.Error).errorCode()).toEqual(
+    expect(refreshResponse).toBeInstanceOf(RefreshAuthToken.Error);
+    expect((refreshResponse as RefreshAuthToken.Error).errorCode()).toEqual(
       MomentoErrorCode.AUTHENTICATION_ERROR
     );
   });

@@ -50,8 +50,8 @@ import * as TopicSubscribe from './messages/responses/topic-subscribe';
 import {TopicItem} from './messages/responses/topic-item';
 
 // AuthClient Response Types
-import * as GenerateApiToken from './messages/responses/generate-api-token';
-import * as RefreshApiToken from './messages/responses/refresh-api-token';
+import * as GenerateAuthToken from './messages/responses/generate-auth-token';
+import * as RefreshAuthToken from './messages/responses/refresh-auth-token';
 
 import {CacheInfo} from './messages/cache-info';
 import {
@@ -169,8 +169,8 @@ export {
   TopicItem,
   SubscribeCallOptions,
   // AuthClient Response Types
-  GenerateApiToken,
-  RefreshApiToken,
+  GenerateAuthToken,
+  RefreshAuthToken,
   // Errors
   MomentoErrorCode,
   SdkError,

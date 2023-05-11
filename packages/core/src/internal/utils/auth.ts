@@ -19,8 +19,8 @@ export interface Base64DecodedV1Token {
   endpoint: string;
 }
 
-function decodeAuthTokenClaims<T>(apiToken: string): T {
-  return jwtDecode<T>(apiToken);
+function decodeAuthTokenClaims<T>(authToken: string): T {
+  return jwtDecode<T>(authToken);
 }
 
 interface TokenAndEndpoints {

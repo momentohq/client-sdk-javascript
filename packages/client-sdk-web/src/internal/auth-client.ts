@@ -1,5 +1,5 @@
 import {auth} from '@gomomento/generated-types-webtext';
-import {MomentoLogger, GenerateApiToken} from '..';
+import {MomentoLogger, GenerateAuthToken, RefreshAuthToken} from '..';
 import {version} from '../../package.json';
 import {Request, UnaryInterceptor, UnaryResponse} from 'grpc-web';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
@@ -25,11 +25,11 @@ export class InternalWebGrpcAuthClient<
     ];
   }
 
-  public async generateApiToken(
+  public async generateAuthToken(
     controlEndpoint: string,
     sessionToken: string,
     expiresIn: ExpiresIn
-  ): Promise<GenerateApiToken.Response> {
+  ): Promise<GenerateAuthToken.Response> {
     const request = new _GenerateApiTokenRequest();
     request.setSessionToken(sessionToken);
     if (expiresIn.doesExpire()) {
@@ -45,13 +45,13 @@ export class InternalWebGrpcAuthClient<
       }
     );
     this.logger.debug("Issuing 'generateApiToken' request");
-    return await new Promise<GenerateApiToken.Response>(resolve => {
+    return await new Promise<GenerateAuthToken.Response>(resolve => {
       clientAuthWrapper.generateApiToken(request, null, (err, resp) => {
         if (err) {
-          resolve(new GenerateApiToken.Error(cacheServiceErrorMapper(err)));
+          resolve(new GenerateAuthToken.Error(cacheServiceErrorMapper(err)));
         } else {
           resolve(
-            new GenerateApiToken.Success(
+            new GenerateAuthToken.Success(
               resp.getApiKey(),
               resp.getRefreshToken(),
               resp.getEndpoint(),
@@ -63,10 +63,10 @@ export class InternalWebGrpcAuthClient<
     });
   }
 
-  public refreshApiToken(
+  public refreshAuthToken(
     _credentialProvider: CredentialProvider,
     _refreshToken: string
-  ): Promise<GenerateApiToken.Response> {
+  ): Promise<RefreshAuthToken.Response> {
     throw new Error('not implemented');
   }
 }
