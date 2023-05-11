@@ -27,7 +27,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@gomomento/common-integration-tests": "file:../common-integration-tests",
-    "@types/google-protobuf": "^3.15.5",
+    "@types/google-protobuf": "3.15.6",
     "@types/jest": "^27.0.2",
     "@types/node": "14.18.3",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
@@ -50,8 +50,8 @@
   },
   "dependencies": {
     "@gomomento/sdk-core": "file:../core",
-    "@gomomento/generated-types-webtext": "0.57.0",
-    "google-protobuf": "^3.21.2",
+    "@gomomento/generated-types-webtext": "0.61.0",
+    "google-protobuf": "3.21.2",
     "grpc-web": "1.4.2",
     "jwt-decode": "3.1.2"
   },
