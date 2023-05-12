@@ -35,10 +35,10 @@ import {
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
-  ItemType,
   CollectionTtl,
   CredentialProvider,
   InvalidArgumentError,
+  ItemType,
   MomentoLogger,
   SortedSetOrder,
   UnknownError,
@@ -66,6 +66,7 @@ import {
   _GetRequest,
   _IncrementRequest,
   _ItemGetTypeRequest,
+  _ItemGetTypeResponse,
   _ListConcatenateBackRequest,
   _ListConcatenateFrontRequest,
   _ListFetchRequest,
@@ -2582,12 +2583,12 @@ export class DataClient<
     } catch (err) {
       return new ItemType.Error(normalizeSdkError(err as Error));
     }
-    return await this.sendItemType(cacheName, key);
+    return await this.sendItemType(cacheName, this.convertToB64String(key));
   }
 
   private async sendItemType(
     cacheName: string,
-    key: string | Uint8Array
+    key: string
   ): Promise<ItemType.Response> {
     const request = new _ItemGetTypeRequest();
     request.setCacheKey(key);
@@ -2601,7 +2602,7 @@ export class DataClient<
         },
         (err, resp) => {
           const theType = resp.getFound();
-          if (theType && theType.getItemType()) {
+          if (theType) {
             const found = theType.getItemType();
             resolve(new ItemType.Hit(found));
           } else if (resp?.getMissing()) {

@@ -6,3 +6,4 @@ export * from './list';
 export * from './dictionary';
 export * from './set';
 export * from './sorted-set';
+export * from './item-type';

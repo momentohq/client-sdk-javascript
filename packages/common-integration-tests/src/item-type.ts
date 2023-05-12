@@ -6,7 +6,6 @@ import {
 } from './common-int-test-utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
 import {ItemType} from '@gomomento/sdk-core';
-import {TextEncoder} from 'util';
 import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 
