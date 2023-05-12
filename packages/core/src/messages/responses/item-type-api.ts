@@ -5,8 +5,7 @@ import {
   ResponseHit,
   ResponseMiss,
 } from './response-base';
-import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
-import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
+import {_ItemType} from './grpc-response-types';
 
 /**
  * Parent response type for a item type request.  The
@@ -32,9 +31,9 @@ import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 export abstract class Response extends ResponseBase {}
 
 class _Hit extends Response {
-  private readonly keyType: _ItemGetTypeResponse.ItemType;
+  private readonly keyType: _ItemType;
 
-  constructor(keyType: _ItemGetTypeResponse.ItemType) {
+  constructor(keyType: _ItemType) {
     super();
     this.keyType = keyType;
   }
@@ -43,7 +42,7 @@ class _Hit extends Response {
    * Returns the type of key.
    * @returns string
    */
-  public getItemType(): _ItemGetTypeResponse.ItemType {
+  public getItemType(): _ItemType {
     return this.keyType;
   }
 }

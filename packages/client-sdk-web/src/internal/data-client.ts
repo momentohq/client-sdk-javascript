@@ -52,6 +52,7 @@ import {
   _DictionaryFieldValuePair,
   _DictionaryGetResponsePart,
   _ECacheResult,
+  _ItemType,
   _SortedSetElement,
   _SortedSetGetScoreResponsePart,
 } from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
@@ -2604,7 +2605,7 @@ export class DataClient<
           const theType = resp.getFound();
           if (theType) {
             const found = theType.getItemType();
-            resolve(new ItemType.Hit(found));
+            resolve(new ItemType.Hit(this.convertItemTypeResult(found)));
           } else if (resp?.getMissing()) {
             resolve(new ItemType.Miss());
           } else {
@@ -2695,6 +2696,23 @@ export class DataClient<
         return _ECacheResult.Miss;
       case ECacheResult.OK:
         return _ECacheResult.Ok;
+    }
+  }
+
+  private convertItemTypeResult(
+    result: _ItemGetTypeResponse.ItemType
+  ): _ItemType {
+    switch (result) {
+      case _ItemGetTypeResponse.ItemType.SCALAR:
+        return _ItemType.SCALAR;
+      case _ItemGetTypeResponse.ItemType.LIST:
+        return _ItemType.LIST;
+      case _ItemGetTypeResponse.ItemType.DICTIONARY:
+        return _ItemType.DICTIONARY;
+      case _ItemGetTypeResponse.ItemType.SET:
+        return _ItemType.SET;
+      case _ItemGetTypeResponse.ItemType.SORTED_SET:
+        return _ItemType.SORTED_SET;
     }
   }
 }

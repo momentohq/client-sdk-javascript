@@ -6,9 +6,7 @@ import {
 } from './common-int-test-utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
 import {ItemType} from '@gomomento/sdk-core';
-import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
-import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
-
+import {_ItemType} from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
 export function runItemTypeTest(
   Momento: ICacheClient,
   IntegrationTestCacheName: string
@@ -32,9 +30,7 @@ export function runItemTypeTest(
         expect(itemTypeResponse).toBeInstanceOf(ItemType.Hit);
       }, `expected HIT but got ${itemTypeResponse.toString()}`);
       let hitResult = itemTypeResponse as ItemType.Hit;
-      expect(hitResult.getItemType()).toEqual(
-        _ItemGetTypeResponse.ItemType.SCALAR
-      );
+      expect(hitResult.getItemType()).toEqual(_ItemType.SCALAR);
 
       // byte array cache key
       itemTypeResponse = await Momento.itemType(
@@ -45,9 +41,7 @@ export function runItemTypeTest(
         expect(itemTypeResponse).toBeInstanceOf(ItemType.Hit);
       }, `expected HIT but got ${itemTypeResponse.toString()}`);
       hitResult = itemTypeResponse as ItemType.Hit;
-      expect(hitResult.getItemType()).toEqual(
-        _ItemGetTypeResponse.ItemType.SCALAR
-      );
+      expect(hitResult.getItemType()).toEqual(_ItemType.SCALAR);
     });
 
     it('should get item type dictionary', async () => {
@@ -68,9 +62,7 @@ export function runItemTypeTest(
         expect(itemTypeResponse).toBeInstanceOf(ItemType.Hit);
       }, `expected HIT but got ${itemTypeResponse.toString()}`);
       let hitResult = itemTypeResponse as ItemType.Hit;
-      expect(hitResult.getItemType()).toEqual(
-        _ItemGetTypeResponse.ItemType.DICTIONARY
-      );
+      expect(hitResult.getItemType()).toEqual(_ItemType.DICTIONARY);
 
       // byte array cache key
       itemTypeResponse = await Momento.itemType(
@@ -81,9 +73,7 @@ export function runItemTypeTest(
         expect(itemTypeResponse).toBeInstanceOf(ItemType.Hit);
       }, `expected HIT but got ${itemTypeResponse.toString()}`);
       hitResult = itemTypeResponse as ItemType.Hit;
-      expect(hitResult.getItemType()).toEqual(
-        _ItemGetTypeResponse.ItemType.DICTIONARY
-      );
+      expect(hitResult.getItemType()).toEqual(_ItemType.DICTIONARY);
     });
 
     it('should get item type list', async () => {
@@ -99,9 +89,7 @@ export function runItemTypeTest(
         expect(itemTypeResponse).toBeInstanceOf(ItemType.Hit);
       }, `expected HIT but got ${itemTypeResponse.toString()}`);
       let hitResult = itemTypeResponse as ItemType.Hit;
-      expect(hitResult.getItemType()).toEqual(
-        _ItemGetTypeResponse.ItemType.LIST
-      );
+      expect(hitResult.getItemType()).toEqual(_ItemType.LIST);
 
       // byte array cache key
       itemTypeResponse = await Momento.itemType(
@@ -112,9 +100,7 @@ export function runItemTypeTest(
         expect(itemTypeResponse).toBeInstanceOf(ItemType.Hit);
       }, `expected HIT but got ${itemTypeResponse.toString()}`);
       hitResult = itemTypeResponse as ItemType.Hit;
-      expect(hitResult.getItemType()).toEqual(
-        _ItemGetTypeResponse.ItemType.LIST
-      );
+      expect(hitResult.getItemType()).toEqual(_ItemType.LIST);
     });
 
     it('should get item type set', async () => {
@@ -130,9 +116,7 @@ export function runItemTypeTest(
         expect(itemTypeResponse).toBeInstanceOf(ItemType.Hit);
       }, `expected HIT but got ${itemTypeResponse.toString()}`);
       let hitResult = itemTypeResponse as ItemType.Hit;
-      expect(hitResult.getItemType()).toEqual(
-        _ItemGetTypeResponse.ItemType.SET
-      );
+      expect(hitResult.getItemType()).toEqual(_ItemType.SET);
 
       // byte array cache key
       itemTypeResponse = await Momento.itemType(
@@ -143,9 +127,7 @@ export function runItemTypeTest(
         expect(itemTypeResponse).toBeInstanceOf(ItemType.Hit);
       }, `expected HIT but got ${itemTypeResponse.toString()}`);
       hitResult = itemTypeResponse as ItemType.Hit;
-      expect(hitResult.getItemType()).toEqual(
-        _ItemGetTypeResponse.ItemType.SET
-      );
+      expect(hitResult.getItemType()).toEqual(_ItemType.SET);
     });
 
     it('should get item type sorted set', async () => {
@@ -166,9 +148,7 @@ export function runItemTypeTest(
         expect(itemTypeResponse).toBeInstanceOf(ItemType.Hit);
       }, `expected HIT but got ${itemTypeResponse.toString()}`);
       let hitResult = itemTypeResponse as ItemType.Hit;
-      expect(hitResult.getItemType()).toEqual(
-        _ItemGetTypeResponse.ItemType.SORTED_SET
-      );
+      expect(hitResult.getItemType()).toEqual(_ItemType.SORTED_SET);
 
       // byte array cache key
       itemTypeResponse = await Momento.itemType(
@@ -179,9 +159,7 @@ export function runItemTypeTest(
         expect(itemTypeResponse).toBeInstanceOf(ItemType.Hit);
       }, `expected HIT but got ${itemTypeResponse.toString()}`);
       hitResult = itemTypeResponse as ItemType.Hit;
-      expect(hitResult.getItemType()).toEqual(
-        _ItemGetTypeResponse.ItemType.SORTED_SET
-      );
+      expect(hitResult.getItemType()).toEqual(_ItemType.SORTED_SET);
     });
   });
 }

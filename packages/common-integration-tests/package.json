@@ -47,7 +47,6 @@
   },
   "dependencies": {
     "@gomomento/sdk-core": "file:../core",
-    "@gomomento/generated-types": "0.61.0",
     "uuid": "9.0.0"
   },
   "engines": {

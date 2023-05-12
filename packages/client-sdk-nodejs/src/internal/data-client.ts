@@ -42,10 +42,10 @@ import {
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
-  ItemType,
   CollectionTtl,
   CredentialProvider,
   InvalidArgumentError,
+  ItemType,
   MomentoLogger,
   MomentoLoggerFactory,
   SortedSetOrder,
@@ -75,12 +75,14 @@ import {
 import {
   _DictionaryGetResponsePart,
   _ECacheResult,
+  _ItemType,
   _SortedSetGetScoreResponsePart,
 } from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import grpcCache = cache.cache_client;
 import _Unbounded = cache_client._Unbounded;
 import ECacheResult = cache_client.ECacheResult;
+import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 
 export class DataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -163,6 +165,23 @@ export class DataClient {
         return _ECacheResult.Miss;
       case grpcCache.ECacheResult.Ok:
         return _ECacheResult.Ok;
+    }
+  }
+
+  private convertItemTypeResult(
+    result: _ItemGetTypeResponse.ItemType
+  ): _ItemType {
+    switch (result) {
+      case _ItemGetTypeResponse.ItemType.SCALAR:
+        return _ItemType.SCALAR;
+      case _ItemGetTypeResponse.ItemType.LIST:
+        return _ItemType.LIST;
+      case _ItemGetTypeResponse.ItemType.DICTIONARY:
+        return _ItemType.DICTIONARY;
+      case _ItemGetTypeResponse.ItemType.SET:
+        return _ItemType.SET;
+      case _ItemGetTypeResponse.ItemType.SORTED_SET:
+        return _ItemType.SORTED_SET;
     }
   }
 
@@ -2646,7 +2665,9 @@ export class DataClient {
           if (resp?.missing) {
             resolve(new ItemType.Miss());
           } else if (resp?.found) {
-            resolve(new ItemType.Hit(resp.found.item_type));
+            resolve(
+              new ItemType.Hit(this.convertItemTypeResult(resp.found.item_type))
+            );
           } else {
             resolve(new ItemType.Error(cacheServiceErrorMapper(err)));
           }
