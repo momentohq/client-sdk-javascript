@@ -4,21 +4,19 @@ import {
   TopicSubscribe,
   SubscribeCallOptions,
 } from '.';
+import {ITopicClient} from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/ITopicClient';
 import {PubsubClient} from './internal/pubsub-client';
 import {TopicClientProps} from './topic-client-props';
-import {Request, UnaryResponse} from 'grpc-web';
+import {IPubsubClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 /**
  * Momento Topic Client.
  *
  * Publish and subscribe to topics.
  */
-export class TopicClient<
-  REQ extends Request<REQ, RESP>,
-  RESP extends UnaryResponse<REQ, RESP>
-> {
+export class TopicClient implements ITopicClient {
   private readonly logger: MomentoLogger;
-  private readonly client: PubsubClient<REQ, RESP>;
+  private readonly client: IPubsubClient;
 
   /**
    * Creates an instance of TopicClient.

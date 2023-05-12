@@ -6,15 +6,17 @@ import {
 } from '.';
 import {PubsubClient} from './internal/pubsub-client';
 import {TopicClientProps} from './topic-client-props';
+import {ITopicClient} from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/ITopicClient';
+import {IPubsubClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 /**
  * Momento Topic Client.
  *
  * Publish and subscribe to topics.
  */
-export class TopicClient {
+export class TopicClient implements ITopicClient {
   private readonly logger: MomentoLogger;
-  private readonly client: PubsubClient;
+  private readonly client: IPubsubClient;
 
   /**
    * Creates an instance of TopicClient.

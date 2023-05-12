@@ -4,7 +4,6 @@ import {Configuration} from '../config/configuration';
 import {
   CredentialProvider,
   MomentoErrorCode,
-  // InvalidArgumentError,
   MomentoLogger,
   SubscribeCallOptions,
   TopicItem,
@@ -30,6 +29,7 @@ import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {TopicPublish, TopicSubscribe} from '../index';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {SubscriptionState} from '@gomomento/sdk-core/dist/src/internal/subscription-state';
+import {IPubsubClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 /**
  * Encapsulates parameters for the `sendSubscribe` method.
@@ -70,7 +70,8 @@ interface PrepareSubscribeCallbackOptions extends SendSubscribeOptions {
 export class PubsubClient<
   REQ extends Request<REQ, RESP>,
   RESP extends UnaryResponse<REQ, RESP>
-> {
+> implements IPubsubClient
+{
   private readonly client: pubsub.PubsubClient;
   private readonly configuration: Configuration;
   private readonly credentialProvider: CredentialProvider;
@@ -103,10 +104,7 @@ export class PubsubClient<
       `Creating topic client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
     );
 
-    const headers: Header[] = [
-      new Header('Authorization', this.credentialProvider.getAuthToken()),
-      new Header('Agent', `nodejs:${version}`),
-    ];
+    const headers: Header[] = [new Header('Agent', `nodejs:${version}`)];
     this.unaryInterceptors = this.initializeUnaryInterceptors(headers);
     this.streamingInterceptors = this.initializeStreamingInterceptors(headers);
     this.client = new pubsub.PubsubClient(
@@ -117,9 +115,6 @@ export class PubsubClient<
         streamInterceptors: this.streamingInterceptors,
       }
     );
-
-    // TODO: Remove me. I'm just here to stop the compiler from complaining
-    console.log(this.unaryInterceptors, this.streamingInterceptors);
     this.authHeaders = {authorization: props.credentialProvider.getAuthToken()};
   }
 
@@ -129,6 +124,9 @@ export class PubsubClient<
     return endpoint;
   }
 
+  // TODO:
+  // TODO: uncomment after Configuration plumbing is in place . . .
+  // TODO
   // private validateRequestTimeout(timeout?: number) {
   //   this.logger.debug(`Request timeout ms: ${String(timeout)}`);
   //   if (timeout !== undefined && timeout <= 0) {
@@ -155,20 +153,20 @@ export class PubsubClient<
       value.length
     );
 
-    return await this.sendPublish(
-      cacheName,
-      this.convertToB64String(topicName),
-      this.convertToB64String(value)
-    );
+    return await this.sendPublish(cacheName, topicName, value);
   }
 
   private async sendPublish(
     cacheName: string,
     topicName: string,
-    value: string
+    value: string | Uint8Array
   ): Promise<TopicPublish.Response> {
     const topicValue = new cachepubsub_pb._TopicValue();
-    topicValue.setText(value);
+    if (typeof value === 'string') {
+      topicValue.setText(value);
+    } else {
+      topicValue.setBinary(this.convertToB64String(value));
+    }
 
     const request = new cachepubsub_pb._PublishRequest();
     request.setCacheName(cacheName);
@@ -177,7 +175,6 @@ export class PubsubClient<
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise(resolve => {
-      // TODO: add `metadata` to this call (2nd arg)
       this.client.publish(
         request,
         {
@@ -226,7 +223,7 @@ export class PubsubClient<
     const subscription = new TopicSubscribe.Subscription(subscriptionState);
     return await this.sendSubscribe({
       cacheName: cacheName,
-      topicName: this.convertToB64String(topicName),
+      topicName: topicName,
       onItem: onItem,
       onError: onError,
       subscriptionState: subscriptionState,
@@ -257,8 +254,7 @@ export class PubsubClient<
       options.subscriptionState.resumeAtTopicSequenceNumber
     );
 
-    // TODO: add `metadata` to this call (2nd arg)
-    const call = this.client.subscribe(request, {});
+    const call = this.client.subscribe(request, {...this.authHeaders});
     options.subscriptionState.setSubscribed();
 
     // Allow the caller to cancel the stream.
@@ -345,10 +341,7 @@ export class PubsubClient<
         return;
       }
 
-      // TODO: This is a `ServiceError` in nodejs . . . is this the correct thing
-      // to be using here?
       const serviceError = err as unknown as RpcError;
-
       // When the first message is an error, an irrecoverable error has happened,
       // eg the cache does not exist. The user should not receive a subscription
       // object but an error.
@@ -451,9 +444,7 @@ export class PubsubClient<
     // configuration: Configuration,
     // requestTimeoutMs: number
   ): UnaryInterceptor<REQ, RESP>[] {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return [
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       new HeaderInterceptorProvider<REQ, RESP>(
         headers
       ).createHeadersInterceptor(),

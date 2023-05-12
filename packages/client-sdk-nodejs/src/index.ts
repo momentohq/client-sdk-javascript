@@ -1,6 +1,7 @@
 import {CacheClient, SimpleCacheClient} from './cache-client';
 import {TopicClient} from './topic-client';
 import * as Configurations from './config/configurations';
+import {TopicClientProps} from './topic-client-props';
 
 // Cache Client Response Types
 import * as CacheGet from '@gomomento/sdk-core/dist/src/messages/responses/cache-get';
@@ -197,6 +198,7 @@ export {
   ItemGetType,
   // TopicClient Response types
   TopicClient,
+  TopicClientProps,
   TopicItem,
   TopicPublish,
   TopicSubscribe,

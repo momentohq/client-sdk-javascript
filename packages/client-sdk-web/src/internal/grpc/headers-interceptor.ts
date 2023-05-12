@@ -51,8 +51,7 @@ export class HeaderInterceptorProvider<
       ): Promise<UnaryResponse<REQ, RESP>> => {
         const md = request.getMetadata();
         this.headersToAddEveryTime.forEach(h => (md[h.name] = h.value));
-        // TODO: Shouldn't this be `if (!...)` instead of `if(...)`?
-        if (HeaderInterceptorProvider.areOnlyOnceHeadersSent) {
+        if (!HeaderInterceptorProvider.areOnlyOnceHeadersSent) {
           HeaderInterceptorProvider.areOnlyOnceHeadersSent = true;
           this.headersToAddOnce.forEach(h => (md[h.name] = h.value));
         }
@@ -62,7 +61,7 @@ export class HeaderInterceptorProvider<
   }
 
   public createStreamingHeadersInterceptor(): StreamInterceptor<REQ, RESP> {
-    // TODO: "this" gets reassigned to StreamInterceptor in the body of intercept
+    // "this" gets reassigned to StreamInterceptor in the body of intercept
     //  below. Saving a reference to the HeaderInterceptorProvider instance so I
     //  can use its properties
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -74,7 +73,7 @@ export class HeaderInterceptorProvider<
       ): ClientReadableStream<RESP> {
         const md = request.getMetadata();
         self.headersToAddEveryTime.forEach(h => (md[h.name] = h.value));
-        if (HeaderInterceptorProvider.areOnlyOnceHeadersSent) {
+        if (!HeaderInterceptorProvider.areOnlyOnceHeadersSent) {
           HeaderInterceptorProvider.areOnlyOnceHeadersSent = true;
           self.headersToAddOnce.forEach(h => (md[h.name] = h.value));
         }

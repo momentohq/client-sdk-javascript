@@ -74,6 +74,10 @@ export interface ValidateSortedSetChangerProps extends ValidateSortedSetProps {
   ttl?: CollectionTtl;
 }
 
+export interface ValidateTopicProps {
+  topicName: string;
+}
+
 export function ItBehavesLikeItValidatesCacheName(
   getResponse: (props: ValidateCacheProps) => Promise<ResponseBase>
 ) {
@@ -88,6 +92,37 @@ export function ItBehavesLikeItValidatesCacheName(
     );
   });
 }
+
+export function ItBehavesLikeItValidatesTopicName(
+  getResponse: (props: ValidateTopicProps) => Promise<ResponseBase>
+) {
+  it('validates its topic name', async () => {
+    const response = await getResponse({topicName: '   '});
+    expect((response as IResponseError).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    expect((response as IResponseError).message()).toEqual(
+      'Invalid argument passed to Momento client: topic name must not be empty'
+    );
+  });
+}
+
+// TODO: uncomment when Configuration is plumbed through
+// export function ItBehavesLikeItValidatesRequestTimeout(requestTimeout: number) {
+//   it(`should be throw an error for an invalid request timeout (requestTimeout=${requestTimeout})`, () => {
+//     expect(() => {
+//       new TopicClient({
+//         configuration:
+//           IntegrationTestCacheClientProps.configuration.withClientTimeoutMillis(
+//             requestTimeout
+//           ),
+//         credentialProvider: IntegrationTestCacheClientProps.credentialProvider,
+//       });
+//     }).toThrowError(
+//       new InvalidArgumentError('request timeout must be greater than zero.')
+//     );
+//   });
+// }
 
 const bytesEncoderForTests = new TextEncoder();
 

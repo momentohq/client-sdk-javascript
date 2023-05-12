@@ -31,6 +31,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {SubscribeCallOptions} from '@gomomento/sdk-core/dist/src/utils';
+import {IPubsubClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 /**
  * Encapsulates parameters for the `sendSubscribe` method.
@@ -68,7 +69,7 @@ interface PrepareSubscribeCallbackOptions extends SendSubscribeOptions {
   firstMessage: boolean;
 }
 
-export class PubsubClient {
+export class PubsubClient implements IPubsubClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcPubsub.PubsubClient>;
   private readonly configuration: Configuration;
   private readonly credentialProvider: CredentialProvider;
