@@ -1,5 +1,5 @@
 import {auth} from '@gomomento/generated-types-webtext';
-import {MomentoLogger, GenerateAuthToken, RefreshAuthToken} from '..';
+import {GenerateAuthToken, RefreshAuthToken} from '..';
 import {version} from '../../package.json';
 import {Request, UnaryInterceptor, UnaryResponse} from 'grpc-web';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
@@ -14,8 +14,6 @@ export class InternalWebGrpcAuthClient<
   RESP extends UnaryResponse<REQ, RESP>
 > {
   private readonly interceptors: UnaryInterceptor<REQ, RESP>[];
-  private readonly logger: MomentoLogger;
-
   constructor() {
     const headers = [new Header('Agent', `nodejs:${version}`)];
     this.interceptors = [
@@ -44,7 +42,6 @@ export class InternalWebGrpcAuthClient<
         unaryInterceptors: this.interceptors,
       }
     );
-    this.logger.debug("Issuing 'generateApiToken' request");
     return await new Promise<GenerateAuthToken.Response>(resolve => {
       clientAuthWrapper.generateApiToken(request, null, (err, resp) => {
         if (err) {
