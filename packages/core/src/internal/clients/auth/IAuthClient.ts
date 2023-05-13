@@ -8,7 +8,7 @@ import {
 export interface IAuthClient {
   generateAuthToken(
     controlEndpoint: string,
-    sessionToken: string,
+    token: string,
     expiresIn: ExpiresIn
   ): Promise<GenerateAuthToken.Response>;
 

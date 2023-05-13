@@ -32,7 +32,7 @@ export class AuthClient {
 
   public async generateAuthToken(
     controlEndpoint: string,
-    sessionToken: string,
+    token: string,
     expiresIn: ExpiresIn
   ): Promise<GenerateAuthToken.Response> {
     const authClient = new grpcAuth.AuthClient(
@@ -41,7 +41,7 @@ export class AuthClient {
     );
 
     const request = new grpcAuth._GenerateApiTokenRequest({
-      session_token: sessionToken,
+      session_token: token,
     });
 
     if (expiresIn.doesExpire()) {

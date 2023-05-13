@@ -19,12 +19,12 @@ export abstract class AbstractAuthClient implements IAuthClient {
 
   public async generateAuthToken(
     controlEndpoint: string,
-    sessionToken: string,
+    token: string,
     expiresIn: ExpiresIn
   ): Promise<GenerateAuthToken.Response> {
     return await this.authClient.generateAuthToken(
       controlEndpoint,
-      sessionToken,
+      token,
       expiresIn
     );
   }

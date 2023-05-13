@@ -19,7 +19,7 @@ export class AuthClient extends AbstractAuthClient implements IAuthClient {
    * Gets a api token, refresh token given a valid session token.
    *
    * @param {string} controlEndpoint - Endpoint for control plane.
-   * @param {string} sessionToken - The session token to allow access for generation of api tokens.
+   * @param {string} token - The token to allow access for generation of api tokens.
    * @param {string} expiresIn - How long the token is valid for in epoch timestamp.
    * @returns {Promise<GenerateAuthToken.Response>} -
    * {@link GenerateAuthToken.Success} containing the api token, refresh token, origin and epoch timestamp when token expires.
@@ -28,12 +28,12 @@ export class AuthClient extends AbstractAuthClient implements IAuthClient {
    */
   public async generateAuthToken(
     controlEndpoint: string,
-    sessionToken: string,
+    token: string,
     expiresIn: ExpiresIn
   ): Promise<GenerateAuthToken.Response> {
     return await this.authClient.generateAuthToken(
       controlEndpoint,
-      sessionToken,
+      token,
       expiresIn
     );
   }
