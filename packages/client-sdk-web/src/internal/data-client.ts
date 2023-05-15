@@ -35,7 +35,9 @@ import {
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  ItemGetType,
   CollectionTtl,
+  ItemType,
   CredentialProvider,
   InvalidArgumentError,
   MomentoLogger,
@@ -64,6 +66,8 @@ import {
   _DictionarySetRequest,
   _GetRequest,
   _IncrementRequest,
+  _ItemGetTypeRequest,
+  _ItemGetTypeResponse,
   _ListConcatenateBackRequest,
   _ListConcatenateFrontRequest,
   _ListFetchRequest,
@@ -2571,6 +2575,47 @@ export class DataClient<
     });
   }
 
+  public async itemGetType(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<ItemGetType.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new ItemGetType.Error(normalizeSdkError(err as Error));
+    }
+    return await this.sendItemGetType(cacheName, this.convertToB64String(key));
+  }
+
+  private async sendItemGetType(
+    cacheName: string,
+    key: string
+  ): Promise<ItemGetType.Response> {
+    const request = new _ItemGetTypeRequest();
+    request.setCacheKey(key);
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.itemGetType(
+        request,
+        {
+          ...this.authHeaders,
+          ...metadata,
+        },
+        (err, resp) => {
+          const theType = resp.getFound();
+          if (theType) {
+            const found = theType.getItemType();
+            resolve(new ItemGetType.Hit(this.convertItemTypeResult(found)));
+          } else if (resp?.getMissing()) {
+            resolve(new ItemGetType.Miss());
+          } else {
+            resolve(new ItemGetType.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
   private createMetadata(cacheName: string): {cache: string} {
     return {cache: cacheName};
   }
@@ -2651,6 +2696,23 @@ export class DataClient<
         return _ECacheResult.Miss;
       case ECacheResult.OK:
         return _ECacheResult.Ok;
+    }
+  }
+
+  private convertItemTypeResult(
+    result: _ItemGetTypeResponse.ItemType
+  ): ItemType {
+    switch (result) {
+      case _ItemGetTypeResponse.ItemType.SCALAR:
+        return ItemType.SCALAR;
+      case _ItemGetTypeResponse.ItemType.LIST:
+        return ItemType.LIST;
+      case _ItemGetTypeResponse.ItemType.DICTIONARY:
+        return ItemType.DICTIONARY;
+      case _ItemGetTypeResponse.ItemType.SET:
+        return ItemType.SET;
+      case _ItemGetTypeResponse.ItemType.SORTED_SET:
+        return ItemType.SORTED_SET;
     }
   }
 }
