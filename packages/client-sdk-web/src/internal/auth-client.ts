@@ -25,11 +25,11 @@ export class InternalWebGrpcAuthClient<
 
   public async generateAuthToken(
     controlEndpoint: string,
-    sessionToken: string,
+    token: string,
     expiresIn: ExpiresIn
   ): Promise<GenerateAuthToken.Response> {
     const request = new _GenerateApiTokenRequest();
-    request.setSessionToken(sessionToken);
+    request.setSessionToken(token);
     if (expiresIn.doesExpire()) {
       request.setExpires(new Expires().setValidForSeconds(expiresIn.seconds()));
     } else {
