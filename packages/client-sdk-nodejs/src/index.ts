@@ -89,6 +89,8 @@ import {
   DefaultMomentoLoggerLevel,
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
+  ExpiresAt,
+  ExpiresIn,
 } from '@gomomento/sdk-core';
 
 import {Configuration, CacheConfiguration} from './config/configuration';
@@ -199,6 +201,8 @@ export {
   AuthClient,
   GenerateAuthToken,
   RefreshAuthToken,
+  ExpiresAt,
+  ExpiresIn,
   // Errors
   MomentoErrorCode,
   SdkError,
