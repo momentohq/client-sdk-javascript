@@ -1138,10 +1138,10 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * Return the type of the key in the cache
    * @param {string} cacheName - The cache containing the key.
    * @param {string} key - The key for which type is requested.
-   * @returns {Promise<ItemType.Response>}
-   * {@link ItemType.Hit} containing type of key when found.
-   * {@link ItemType.Miss} when the key does not exist.
-   * {@link ItemType.Error} on failure.
+   * @returns {Promise<ItemGetType.Response>}
+   * {@link ItemGetType.Hit} containing type of key when found.
+   * {@link ItemGetType.Miss} when the key does not exist.
+   * {@link ItemGetType.Error} on failure.
    */
   public async itemGetType(
     cacheName: string,
