@@ -46,6 +46,7 @@ import * as CacheSortedSetGetScores from '@gomomento/sdk-core/dist/src/messages/
 import * as CacheSortedSetIncrementScore from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-increment-score';
 import * as CacheSortedSetRemoveElement from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-remove-element';
 import * as CacheSortedSetRemoveElements from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-remove-elements';
+import * as ItemGetType from '@gomomento/sdk-core/dist/src/messages/responses/item-get-type-api';
 
 // TopicClient Response Types
 import * as TopicPublish from '@gomomento/sdk-core/dist/src/messages/responses/topic-publish';
@@ -60,6 +61,7 @@ import {
   SubscribeCallOptions,
   CacheInfo,
   CollectionTtl,
+  ItemType,
   SortedSetOrder,
   CredentialProvider,
   StringMomentoTokenProvider,
@@ -93,6 +95,7 @@ import {Configuration} from './config/configuration';
 
 export {
   CollectionTtl,
+  ItemType,
   SortedSetOrder,
   Configuration,
   CacheClient,
@@ -145,6 +148,7 @@ export {
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  ItemGetType,
   TopicItem,
   TopicPublish,
   TopicSubscribe,

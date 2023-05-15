@@ -42,7 +42,9 @@ import {
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  ItemGetType,
   CollectionTtl,
+  ItemType,
   CredentialProvider,
   InvalidArgumentError,
   MomentoLogger,
@@ -80,6 +82,7 @@ import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import grpcCache = cache.cache_client;
 import _Unbounded = cache_client._Unbounded;
 import ECacheResult = cache_client.ECacheResult;
+import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 
 export class DataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -162,6 +165,23 @@ export class DataClient {
         return _ECacheResult.Miss;
       case grpcCache.ECacheResult.Ok:
         return _ECacheResult.Ok;
+    }
+  }
+
+  private convertItemTypeResult(
+    result: _ItemGetTypeResponse.ItemType
+  ): ItemType {
+    switch (result) {
+      case _ItemGetTypeResponse.ItemType.SCALAR:
+        return ItemType.SCALAR;
+      case _ItemGetTypeResponse.ItemType.LIST:
+        return ItemType.LIST;
+      case _ItemGetTypeResponse.ItemType.DICTIONARY:
+        return ItemType.DICTIONARY;
+      case _ItemGetTypeResponse.ItemType.SET:
+        return ItemType.SET;
+      case _ItemGetTypeResponse.ItemType.SORTED_SET:
+        return ItemType.SORTED_SET;
     }
   }
 
@@ -2612,6 +2632,50 @@ export class DataClient {
           })
       );
     }
+  }
+
+  public async itemGetType(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<ItemGetType.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new ItemGetType.Error(normalizeSdkError(err as Error));
+    }
+    return await this.sendItemGetType(cacheName, this.convert(key));
+  }
+
+  private async sendItemGetType(
+    cacheName: string,
+    key: Uint8Array
+  ): Promise<ItemGetType.Response> {
+    const request = new grpcCache._ItemGetTypeRequest({
+      cache_key: key,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ItemGetType(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new ItemGetType.Miss());
+          } else if (resp?.found) {
+            resolve(
+              new ItemGetType.Hit(
+                this.convertItemTypeResult(resp.found.item_type)
+              )
+            );
+          } else {
+            resolve(new ItemGetType.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
   }
 
   private createMetadata(cacheName: string): Metadata {

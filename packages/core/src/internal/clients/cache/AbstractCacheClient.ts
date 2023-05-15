@@ -43,6 +43,7 @@ import {
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
   SortedSetOrder,
+  ItemGetType,
 } from '../../../index';
 import {ListFetchCallOptions, ListRetainCallOptions} from '../../../utils';
 import {
@@ -1131,6 +1132,23 @@ export abstract class AbstractCacheClient implements ICacheClient {
       sortedSetName,
       values
     );
+  }
+
+  /**
+   * Return the type of the key in the cache
+   * @param {string} cacheName - The cache containing the key.
+   * @param {string} key - The key for which type is requested.
+   * @returns {Promise<ItemType.Response>}
+   * {@link ItemType.Hit} containing type of key when found.
+   * {@link ItemType.Miss} when the key does not exist.
+   * {@link ItemType.Error} on failure.
+   */
+  public async itemGetType(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<ItemGetType.Response> {
+    const client = this.getNextDataClient();
+    return await client.itemGetType(cacheName, key);
   }
 
   /**
