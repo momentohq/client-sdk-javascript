@@ -56,19 +56,28 @@ class GodTierRole extends MomentoRole {
   }
 }
 
+enum Permissions {
+  Readonly = 'readonly',
+  ReadWrite = 'read/write',
+  Admin = 'admin',
+}
+
 interface TopicSpecificRoleProps extends MomentoRoleProps {
   topicName: string;
   cacheName: string;
+  permissions: Permissions;
 }
 
 class TopicSpecificRole extends MomentoRole {
   private readonly _topicName: string;
   private readonly _cacheName: string;
+  private readonly _permissions: Permissions;
   constructor(props: TopicSpecificRoleProps) {
     super(props);
 
     this._topicName = props.topicName;
     this._cacheName = props.cacheName;
+    this._permissions = props.permissions;
   }
 
   public topicName(): string {
@@ -77,6 +86,10 @@ class TopicSpecificRole extends MomentoRole {
 
   public cacheName(): string {
     return this._cacheName;
+  }
+
+  public permissions(): Permissions {
+    return this._permissions;
   }
 }
 
