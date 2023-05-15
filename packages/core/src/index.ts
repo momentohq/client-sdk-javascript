@@ -43,7 +43,7 @@ import * as CacheSortedSetGetScores from './messages/responses/cache-sorted-set-
 import * as CacheSortedSetIncrementScore from './messages/responses/cache-sorted-set-increment-score';
 import * as CacheSortedSetRemoveElement from './messages/responses/cache-sorted-set-remove-element';
 import * as CacheSortedSetRemoveElements from './messages/responses/cache-sorted-set-remove-elements';
-import * as ItemType from './messages/responses/item-type-api';
+import * as ItemGetType from './messages/responses/item-get-type-api';
 
 // TopicClient Response Types
 import * as TopicPublish from './messages/responses/topic-publish';
@@ -61,6 +61,7 @@ import {
   SortedSetOrder,
   ExpiresIn,
   ExpiresAt,
+  ItemType,
 } from './utils';
 import {
   CredentialProvider,
@@ -113,6 +114,7 @@ export {
   ExpiresIn,
   ExpiresAt,
   CollectionTtl,
+  ItemType,
   SortedSetOrder,
   CredentialProvider,
   StringMomentoTokenProvider,
@@ -163,7 +165,7 @@ export {
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
-  ItemType,
+  ItemGetType,
   CacheInfo,
   // TopicClient Response Types
   TopicPublish,

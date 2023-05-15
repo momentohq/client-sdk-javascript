@@ -13,14 +13,6 @@ export enum _ECacheResult {
   Miss = 3,
 }
 
-export enum _ItemType {
-  SCALAR = 0,
-  DICTIONARY = 1,
-  LIST = 2,
-  SET = 3,
-  SORTED_SET = 4,
-}
-
 export class _DictionaryFieldValuePair {
   readonly field: Uint8Array;
   readonly value: Uint8Array;

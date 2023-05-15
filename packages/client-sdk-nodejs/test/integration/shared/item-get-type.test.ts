@@ -1,6 +1,6 @@
 import {SetupIntegrationTest} from '../integration-setup';
-import {runItemTypeTest} from '@gomomento/common-integration-tests';
+import {runItemGetTypeTest} from '@gomomento/common-integration-tests';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
 
-runItemTypeTest(Momento, IntegrationTestCacheName);
+runItemGetTypeTest(Momento, IntegrationTestCacheName);

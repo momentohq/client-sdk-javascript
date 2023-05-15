@@ -35,10 +35,11 @@ import {
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  ItemGetType,
   CollectionTtl,
+  ItemType,
   CredentialProvider,
   InvalidArgumentError,
-  ItemType,
   MomentoLogger,
   SortedSetOrder,
   UnknownError,
@@ -52,7 +53,6 @@ import {
   _DictionaryFieldValuePair,
   _DictionaryGetResponsePart,
   _ECacheResult,
-  _ItemType,
   _SortedSetElement,
   _SortedSetGetScoreResponsePart,
 } from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
@@ -2575,22 +2575,22 @@ export class DataClient<
     });
   }
 
-  public async itemType(
+  public async itemGetType(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<ItemType.Response> {
+  ): Promise<ItemGetType.Response> {
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new ItemType.Error(normalizeSdkError(err as Error));
+      return new ItemGetType.Error(normalizeSdkError(err as Error));
     }
-    return await this.sendItemType(cacheName, this.convertToB64String(key));
+    return await this.sendItemGetType(cacheName, this.convertToB64String(key));
   }
 
-  private async sendItemType(
+  private async sendItemGetType(
     cacheName: string,
     key: string
-  ): Promise<ItemType.Response> {
+  ): Promise<ItemGetType.Response> {
     const request = new _ItemGetTypeRequest();
     request.setCacheKey(key);
     const metadata = this.createMetadata(cacheName);
@@ -2605,11 +2605,11 @@ export class DataClient<
           const theType = resp.getFound();
           if (theType) {
             const found = theType.getItemType();
-            resolve(new ItemType.Hit(this.convertItemTypeResult(found)));
+            resolve(new ItemGetType.Hit(this.convertItemTypeResult(found)));
           } else if (resp?.getMissing()) {
-            resolve(new ItemType.Miss());
+            resolve(new ItemGetType.Miss());
           } else {
-            resolve(new ItemType.Error(cacheServiceErrorMapper(err)));
+            resolve(new ItemGetType.Error(cacheServiceErrorMapper(err)));
           }
         }
       );
@@ -2701,18 +2701,18 @@ export class DataClient<
 
   private convertItemTypeResult(
     result: _ItemGetTypeResponse.ItemType
-  ): _ItemType {
+  ): ItemType {
     switch (result) {
       case _ItemGetTypeResponse.ItemType.SCALAR:
-        return _ItemType.SCALAR;
+        return ItemType.SCALAR;
       case _ItemGetTypeResponse.ItemType.LIST:
-        return _ItemType.LIST;
+        return ItemType.LIST;
       case _ItemGetTypeResponse.ItemType.DICTIONARY:
-        return _ItemType.DICTIONARY;
+        return ItemType.DICTIONARY;
       case _ItemGetTypeResponse.ItemType.SET:
-        return _ItemType.SET;
+        return ItemType.SET;
       case _ItemGetTypeResponse.ItemType.SORTED_SET:
-        return _ItemType.SORTED_SET;
+        return ItemType.SORTED_SET;
     }
   }
 }

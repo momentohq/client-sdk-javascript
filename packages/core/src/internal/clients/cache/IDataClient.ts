@@ -34,7 +34,7 @@ import {
   CacheSortedSetRemoveElement,
   CollectionTtl,
   SortedSetOrder,
-  ItemType,
+  ItemGetType,
 } from '../../../index';
 
 export interface IDataClient {
@@ -238,8 +238,8 @@ export interface IDataClient {
     sortedSetName: string,
     values: string[] | Uint8Array[]
   ): Promise<CacheSortedSetRemoveElement.Response>;
-  itemType(
+  itemGetType(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<ItemType.Response>;
+  ): Promise<ItemGetType.Response>;
 }

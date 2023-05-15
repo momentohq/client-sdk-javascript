@@ -5,7 +5,7 @@ import {
   ResponseHit,
   ResponseMiss,
 } from './response-base';
-import {_ItemType} from './grpc-response-types';
+import {ItemType} from '../../utils/itemType';
 
 /**
  * Parent response type for a item type request.  The
@@ -31,9 +31,9 @@ import {_ItemType} from './grpc-response-types';
 export abstract class Response extends ResponseBase {}
 
 class _Hit extends Response {
-  private readonly keyType: _ItemType;
+  private readonly keyType: ItemType;
 
-  constructor(keyType: _ItemType) {
+  constructor(keyType: ItemType) {
     super();
     this.keyType = keyType;
   }
@@ -42,7 +42,7 @@ class _Hit extends Response {
    * Returns the type of key.
    * @returns string
    */
-  public getItemType(): _ItemType {
+  public itemType(): ItemType {
     return this.keyType;
   }
 }
