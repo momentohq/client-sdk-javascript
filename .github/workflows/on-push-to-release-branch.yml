@@ -48,6 +48,7 @@ jobs:
 
       - name: Publish all packages to npm
         run: |
+          cp README.md ./packages/client-sdk-nodejs
           ./scripts/publish-all-packages.sh "${{ needs.release.outputs.version }}"
         shell: bash
         env:
