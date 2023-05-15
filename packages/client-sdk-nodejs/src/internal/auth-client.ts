@@ -106,6 +106,14 @@ export class AuthClient {
       session_token: credentialsProvider.getAuthToken(),
     });
 
+    if (role instanceof GodTierRole) {
+      // handle creating role request
+    } else if (role instanceof DataPlaneReadOnlyRole) {
+      // handle creating role request
+    } else if (role instanceof TopicSpecificRole) {
+      // handle creating role request
+    }
+
     if (role.expiresIn().doesExpire()) {
       try {
         validateValidForSeconds(role.expiresIn().seconds());
