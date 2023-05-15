@@ -17,6 +17,69 @@ import {
   GenerateAuthToken,
 } from '@gomomento/sdk-core/dist/src';
 
+interface MomentoRoleProps {
+  expiresIn: ExpiresIn;
+}
+
+abstract class MomentoRole {
+  private readonly _expiresIn: ExpiresIn;
+  constructor(props: MomentoRoleProps) {
+    this._expiresIn = props.expiresIn;
+  }
+
+  public expiresIn(): ExpiresIn {
+    return this._expiresIn;
+  }
+}
+
+class DataPlaneReadOnlyRole extends MomentoRole {
+  constructor(props: {expiresInSeconds: number}) {
+    // these readonly roles can have a max expiration of 1 day
+    const oneDayInSeconds = 24 * 60 * 60;
+    let numSecondsToUse: number;
+    if (props.expiresInSeconds > oneDayInSeconds) {
+      console.warn(
+        'requested number of seconds til expiration is greater than 1 day, limiting expiration time to a day'
+      );
+      numSecondsToUse = oneDayInSeconds;
+    } else {
+      numSecondsToUse = props.expiresInSeconds;
+    }
+    const expiresIn = ExpiresIn.seconds(numSecondsToUse);
+    super({expiresIn});
+  }
+}
+
+class GodTierRole extends MomentoRole {
+  constructor(props: MomentoRoleProps) {
+    super(props);
+  }
+}
+
+interface TopicSpecificRoleProps extends MomentoRoleProps {
+  topicName: string;
+  cacheName: string;
+}
+
+class TopicSpecificRole extends MomentoRole {
+  private readonly _topicName: string;
+  private readonly _cacheName: string;
+  constructor(props: TopicSpecificRoleProps) {
+    super(props);
+
+    this._topicName = props.topicName;
+    this._cacheName = props.cacheName;
+  }
+
+  public topicName(): string {
+    return this._topicName;
+  }
+
+  public cacheName(): string {
+    return this._cacheName;
+  }
+}
+
 export class AuthClient {
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
 
@@ -31,28 +94,27 @@ export class AuthClient {
   }
 
   public async generateAuthToken(
-    controlEndpoint: string,
-    token: string,
-    expiresIn: ExpiresIn
+    credentialsProvider: CredentialProvider,
+    role: MomentoRole
   ): Promise<GenerateAuthToken.Response> {
     const authClient = new grpcAuth.AuthClient(
-      controlEndpoint,
+      credentialsProvider.getControlEndpoint(),
       ChannelCredentials.createSsl()
     );
 
     const request = new grpcAuth._GenerateApiTokenRequest({
-      session_token: token,
+      session_token: credentialsProvider.getAuthToken(),
     });
 
-    if (expiresIn.doesExpire()) {
+    if (role.expiresIn().doesExpire()) {
       try {
-        validateValidForSeconds(expiresIn.seconds());
+        validateValidForSeconds(role.expiresIn().seconds());
       } catch (err) {
         return new GenerateAuthToken.Error(normalizeSdkError(err as Error));
       }
 
       request.expires = new Expires({
-        valid_for_seconds: expiresIn.seconds(),
+        valid_for_seconds: role.expiresIn().seconds(),
       });
     } else {
       request.never = new Never();
