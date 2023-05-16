@@ -83,8 +83,9 @@ import grpcCache = cache.cache_client;
 import _Unbounded = cache_client._Unbounded;
 import ECacheResult = cache_client.ECacheResult;
 import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
+import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 
-export class DataClient {
+export class DataClient implements IDataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
   private readonly textEncoder: TextEncoder;
   private readonly configuration: Configuration;
