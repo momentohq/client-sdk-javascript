@@ -156,7 +156,7 @@ export class PubsubClient extends AbstractPubsubClient {
    * case we already returned a subscription object to the user, so we instead cancel the stream and
    * propagate an error to the user via the error handler.
    */
-  public sendSubscribe(
+  protected sendSubscribe(
     options: SendSubscribeOptions
   ): Promise<TopicSubscribe.Response> {
     const request = new grpcPubsub._SubscriptionRequest({

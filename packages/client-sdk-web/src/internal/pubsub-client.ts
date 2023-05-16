@@ -26,6 +26,7 @@ import {
   SendSubscribeOptions,
   PrepareSubscribeCallbackOptions,
 } from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/AbstractPubsubClient';
+import {convertToB64String, createMetadata} from '../utils/web-client-utils';
 
 export class PubsubClient<
   REQ extends Request<REQ, RESP>,
@@ -105,14 +106,14 @@ export class PubsubClient<
     if (typeof value === 'string') {
       topicValue.setText(value);
     } else {
-      topicValue.setBinary(this.convertToB64String(value));
+      topicValue.setBinary(convertToB64String(value));
     }
 
     const request = new cachepubsub_pb._PublishRequest();
     request.setCacheName(cacheName);
     request.setTopic(topicName);
     request.setValue(topicValue);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
 
     return await new Promise(resolve => {
       this.client.publish(
@@ -275,18 +276,5 @@ export class PubsubClient<
         headers
       ).createStreamingHeadersInterceptor(),
     ];
-  }
-
-  private createMetadata(cacheName: string): {cache: string} {
-    return {cache: cacheName};
-  }
-
-  private convertToB64String(v: string | Uint8Array): string {
-    if (typeof v === 'string') {
-      return btoa(v);
-    }
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    return btoa(String.fromCharCode.apply(null, v));
   }
 }
