@@ -255,7 +255,7 @@ export class PubsubClient extends AbstractPubsubClient {
       const serviceError = err as unknown as ServiceError;
       const isRstStreamNoError =
         serviceError.code === Status.INTERNAL &&
-        serviceError.message === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE;
+        serviceError.details === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE;
       const momentoError = new TopicSubscribe.Error(
         cacheServiceErrorMapper(serviceError)
       );
