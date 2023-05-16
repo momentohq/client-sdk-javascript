@@ -28,6 +28,7 @@ export class HeaderInterceptorProvider<
   private readonly headersToAddEveryTime: Header[];
   private readonly headersToAddOnce: Header[];
   private static areOnlyOnceHeadersSent = false;
+  private static areStreamingOnlyOnceHeadersSent = false;
 
   /**
    * @param {Header[]} headers
@@ -73,8 +74,8 @@ export class HeaderInterceptorProvider<
       ): ClientReadableStream<RESP> {
         const md = request.getMetadata();
         self.headersToAddEveryTime.forEach(h => (md[h.name] = h.value));
-        if (!HeaderInterceptorProvider.areOnlyOnceHeadersSent) {
-          HeaderInterceptorProvider.areOnlyOnceHeadersSent = true;
+        if (!HeaderInterceptorProvider.areStreamingOnlyOnceHeadersSent) {
+          HeaderInterceptorProvider.areStreamingOnlyOnceHeadersSent = true;
           self.headersToAddOnce.forEach(h => (md[h.name] = h.value));
         }
         return invoker(request);
