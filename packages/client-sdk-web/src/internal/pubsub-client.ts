@@ -1,36 +1,34 @@
-import {pubsub} from '@gomomento/generated-types';
-import grpcPubsub = pubsub.cache_client.pubsub;
-// older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
-import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
-import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
-import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
-import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-import {ChannelCredentials, Interceptor, ServiceError} from '@grpc/grpc-js';
-import {Status} from '@grpc/grpc-js/build/src/constants';
-import {version} from '../../package.json';
-import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
-import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
-import {TopicClientProps} from '../topic-client-props';
-import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
+import * as pubsub from '@gomomento/generated-types-webtext/dist/CachepubsubServiceClientPb';
+import * as cachepubsub_pb from '@gomomento/generated-types-webtext/dist/cachepubsub_pb';
 import {Configuration} from '../config/configuration';
 import {
   CredentialProvider,
-  InvalidArgumentError,
   MomentoErrorCode,
   MomentoLogger,
+  SubscribeCallOptions,
   TopicItem,
-  TopicPublish,
-  TopicSubscribe,
   UnknownError,
-} from '../';
-import {SubscriptionState} from '@gomomento/sdk-core/dist/src/internal/subscription-state';
+} from '@gomomento/sdk-core';
+import {
+  Request,
+  StreamInterceptor,
+  UnaryInterceptor,
+  UnaryResponse,
+  RpcError,
+  StatusCode,
+} from 'grpc-web';
+import {TopicClientProps} from '../topic-client-props';
+import {version} from '../../package.json';
+import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {
   truncateString,
   validateCacheName,
   validateTopicName,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
-import {SubscribeCallOptions} from '@gomomento/sdk-core/dist/src/utils';
+import {TopicPublish, TopicSubscribe} from '../index';
+import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {SubscriptionState} from '@gomomento/sdk-core/dist/src/internal/subscription-state';
 import {IPubsubClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 /**
@@ -69,67 +67,55 @@ interface PrepareSubscribeCallbackOptions extends SendSubscribeOptions {
   firstMessage: boolean;
 }
 
-export class PubsubClient implements IPubsubClient {
-  private readonly clientWrapper: GrpcClientWrapper<grpcPubsub.PubsubClient>;
+export class PubsubClient<
+  REQ extends Request<REQ, RESP>,
+  RESP extends UnaryResponse<REQ, RESP>
+> implements IPubsubClient
+{
+  private readonly client: pubsub.PubsubClient;
   private readonly configuration: Configuration;
   private readonly credentialProvider: CredentialProvider;
-  private readonly unaryRequestTimeoutMs: number;
-  private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
+  // private readonly unaryRequestTimeoutMs: number;
+  // private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   private readonly logger: MomentoLogger;
-  private readonly unaryInterceptors: Interceptor[];
-  private readonly streamingInterceptors: Interceptor[];
+  private readonly authHeaders: {authorization: string};
+  private readonly unaryInterceptors: UnaryInterceptor<REQ, RESP>[];
+  private readonly streamingInterceptors: StreamInterceptor<REQ, RESP>[];
 
   private static readonly RST_STREAM_NO_ERROR_MESSAGE =
     'Received RST_STREAM with code 0';
 
-  /**
-   * @param {TopicClientProps} props
-   */
   constructor(props: TopicClientProps) {
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
-    const grpcConfig = this.configuration
-      .getTransportStrategy()
-      .getGrpcConfig();
 
-    this.validateRequestTimeout(grpcConfig.getDeadlineMillis());
-    this.unaryRequestTimeoutMs =
-      grpcConfig.getDeadlineMillis() || PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
+    // TODO:
+    // TODO: uncomment after Configuration plumbing is in place . . .
+    // TODO
+    // const grpcConfig = this.configuration
+    //   .getTransportStrategy()
+    //   .getGrpcConfig();
+    //
+    // this.validateRequestTimeout(grpcConfig.getDeadlineMillis());
+    // this.unaryRequestTimeoutMs =
+    //   grpcConfig.getDeadlineMillis() || PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
     this.logger.debug(
       `Creating topic client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
     );
 
-    this.clientWrapper = new IdleGrpcClientWrapper({
-      clientFactoryFn: () =>
-        new grpcPubsub.PubsubClient(
-          this.credentialProvider.getCacheEndpoint(),
-          ChannelCredentials.createSsl(),
-          {
-            // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
-            // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
-            'grpc-node.max_session_memory': grpcConfig.getMaxSessionMemoryMb(),
-            // This flag controls whether channels use a shared global pool of subchannels, or whether
-            // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
-            // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
-            // than one grpc client.
-            'grpc.use_local_subchannel_pool': 1,
-          }
-        ),
-      configuration: this.configuration,
-    });
-
-    const headers: Header[] = [
-      new Header('Authorization', this.credentialProvider.getAuthToken()),
-      new Header('Agent', `nodejs:${version}`),
-    ];
-    this.unaryInterceptors = PubsubClient.initializeUnaryInterceptors(
-      headers,
-      props.configuration,
-      this.unaryRequestTimeoutMs
+    const headers: Header[] = [new Header('Agent', `nodejs:${version}`)];
+    this.unaryInterceptors = this.initializeUnaryInterceptors(headers);
+    this.streamingInterceptors = this.initializeStreamingInterceptors(headers);
+    this.client = new pubsub.PubsubClient(
+      `https://${props.credentialProvider.getCacheEndpoint()}`,
+      null,
+      {
+        unaryInterceptors: this.unaryInterceptors,
+        streamInterceptors: this.streamingInterceptors,
+      }
     );
-    this.streamingInterceptors =
-      PubsubClient.initializeStreamingInterceptors(headers);
+    this.authHeaders = {authorization: props.credentialProvider.getAuthToken()};
   }
 
   public getEndpoint(): string {
@@ -138,14 +124,17 @@ export class PubsubClient implements IPubsubClient {
     return endpoint;
   }
 
-  private validateRequestTimeout(timeout?: number) {
-    this.logger.debug(`Request timeout ms: ${String(timeout)}`);
-    if (timeout !== undefined && timeout <= 0) {
-      throw new InvalidArgumentError(
-        'request timeout must be greater than zero.'
-      );
-    }
-  }
+  // TODO:
+  // TODO: uncomment after Configuration plumbing is in place . . .
+  // TODO
+  // private validateRequestTimeout(timeout?: number) {
+  //   this.logger.debug(`Request timeout ms: ${String(timeout)}`);
+  //   if (timeout !== undefined && timeout <= 0) {
+  //     throw new InvalidArgumentError(
+  //       'request timeout must be greater than zero.'
+  //     );
+  //   }
+  // }
 
   public async publish(
     cacheName: string,
@@ -172,24 +161,25 @@ export class PubsubClient implements IPubsubClient {
     topicName: string,
     value: string | Uint8Array
   ): Promise<TopicPublish.Response> {
-    const topicValue = new grpcPubsub._TopicValue();
+    const topicValue = new cachepubsub_pb._TopicValue();
     if (typeof value === 'string') {
-      topicValue.text = value;
+      topicValue.setText(value);
     } else {
-      topicValue.binary = value;
+      topicValue.setBinary(this.convertToB64String(value));
     }
 
-    const request = new grpcPubsub._PublishRequest({
-      cache_name: cacheName,
-      topic: topicName,
-      value: topicValue,
-    });
+    const request = new cachepubsub_pb._PublishRequest();
+    request.setCacheName(cacheName);
+    request.setTopic(topicName);
+    request.setValue(topicValue);
+    const metadata = this.createMetadata(cacheName);
 
     return await new Promise(resolve => {
-      this.clientWrapper.getClient().Publish(
+      this.client.publish(
         request,
         {
-          interceptors: this.unaryInterceptors,
+          ...this.authHeaders,
+          ...metadata,
         },
         (err, resp) => {
           if (resp) {
@@ -232,12 +222,12 @@ export class PubsubClient implements IPubsubClient {
     const subscriptionState = new SubscriptionState();
     const subscription = new TopicSubscribe.Subscription(subscriptionState);
     return await this.sendSubscribe({
-      cacheName,
-      topicName,
-      onItem,
-      onError,
-      subscriptionState,
-      subscription,
+      cacheName: cacheName,
+      topicName: topicName,
+      onItem: onItem,
+      onError: onError,
+      subscriptionState: subscriptionState,
+      subscription: subscription,
     });
   }
 
@@ -257,16 +247,14 @@ export class PubsubClient implements IPubsubClient {
   private sendSubscribe(
     options: SendSubscribeOptions
   ): Promise<TopicSubscribe.Response> {
-    const request = new grpcPubsub._SubscriptionRequest({
-      cache_name: options.cacheName,
-      topic: options.topicName,
-      resume_at_topic_sequence_number:
-        options.subscriptionState.resumeAtTopicSequenceNumber,
-    });
+    const request = new cachepubsub_pb._SubscriptionRequest();
+    request.setCacheName(options.cacheName);
+    request.setTopic(options.topicName);
+    request.setResumeAtTopicSequenceNumber(
+      options.subscriptionState.resumeAtTopicSequenceNumber
+    );
 
-    const call = this.clientWrapper.getClient().Subscribe(request, {
-      interceptors: this.streamingInterceptors,
-    });
+    const call = this.client.subscribe(request, {...this.authHeaders});
     options.subscriptionState.setSubscribed();
 
     // Allow the caller to cancel the stream.
@@ -292,20 +280,23 @@ export class PubsubClient implements IPubsubClient {
 
   private prepareDataCallback(
     options: PrepareSubscribeCallbackOptions
-  ): (resp: grpcPubsub._SubscriptionItem) => void {
-    return (resp: grpcPubsub._SubscriptionItem) => {
+  ): (resp: cachepubsub_pb._SubscriptionItem) => void {
+    return (resp: cachepubsub_pb._SubscriptionItem) => {
       if (options.firstMessage) {
         options.resolve(options.subscription);
       }
       options.firstMessage = false;
 
-      if (resp?.item) {
-        options.subscriptionState.lastTopicSequenceNumber =
-          resp.item.topic_sequence_number;
-        if (resp.item.value.text) {
-          options.onItem(new TopicItem(resp.item.value.text));
-        } else if (resp.item.value.binary) {
-          options.onItem(new TopicItem(resp.item.value.binary));
+      if (resp?.getItem()) {
+        options.subscriptionState.lastTopicSequenceNumber = resp
+          .getItem()
+          ?.getTopicSequenceNumber();
+        const itemText = resp.getItem()?.getValue()?.getText();
+        const itemBinary = resp.getItem()?.getValue()?.getBinary();
+        if (itemText) {
+          options.onItem(new TopicItem(itemText));
+        } else if (itemBinary) {
+          options.onItem(new TopicItem(itemBinary));
         } else {
           this.logger.error(
             'Received subscription item with unknown type; topic: %s',
@@ -318,12 +309,12 @@ export class PubsubClient implements IPubsubClient {
             options.subscription
           );
         }
-      } else if (resp?.heartbeat) {
+      } else if (resp?.getHeartbeat()) {
         this.logger.trace(
           'Received heartbeat from subscription stream; topic: %s',
           truncateString(options.topicName)
         );
-      } else if (resp?.discontinuity) {
+      } else if (resp?.getDiscontinuity()) {
         this.logger.trace(
           'Received discontinuity from subscription stream; topic: %s',
           truncateString(options.topicName)
@@ -345,13 +336,12 @@ export class PubsubClient implements IPubsubClient {
     options: PrepareSubscribeCallbackOptions
   ): (err: Error) => void {
     return (err: Error) => {
-      // When the caller unsubscribes, we may get a follow on error, which we ignore.
+      // When the caller unsubscribes, we may get a follow-on error, which we ignore.
       if (!options.subscriptionState.isSubscribed) {
         return;
       }
 
-      const serviceError = err as unknown as ServiceError;
-
+      const serviceError = err as unknown as RpcError;
       // When the first message is an error, an irrecoverable error has happened,
       // eg the cache does not exist. The user should not receive a subscription
       // object but an error.
@@ -368,11 +358,11 @@ export class PubsubClient implements IPubsubClient {
         return;
       }
 
-      // The service cuts the the stream after a period of time.
+      // The service cuts the stream after a period of time.
       // Transparently restart the stream instead of propagating an error.
       if (
-        serviceError.code === Status.INTERNAL &&
-        serviceError.details === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE
+        serviceError.code === StatusCode.INTERNAL &&
+        serviceError.message === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE
       ) {
         this.logger.trace(
           'Server closed stream due to idle activity. Restarting.'
@@ -449,30 +439,40 @@ export class PubsubClient implements IPubsubClient {
     };
   }
 
-  private static initializeUnaryInterceptors(
-    headers: Header[],
-    configuration: Configuration,
-    requestTimeoutMs: number
-  ): Interceptor[] {
+  private initializeUnaryInterceptors(
+    headers: Header[]
+    // configuration: Configuration,
+    // requestTimeoutMs: number
+  ): UnaryInterceptor<REQ, RESP>[] {
     return [
-      middlewaresInterceptor(
-        configuration.getLoggerFactory(),
-        configuration.getMiddlewares()
-      ),
-      new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
-      ClientTimeoutInterceptor(requestTimeoutMs),
-      ...createRetryInterceptorIfEnabled(
-        configuration.getLoggerFactory(),
-        configuration.getRetryStrategy()
-      ),
+      new HeaderInterceptorProvider<REQ, RESP>(
+        headers
+      ).createHeadersInterceptor(),
     ];
   }
 
   // TODO https://github.com/momentohq/client-sdk-nodejs/issues/349
   // decide on streaming interceptors and middlewares
-  private static initializeStreamingInterceptors(
+  private initializeStreamingInterceptors(
     headers: Header[]
-  ): Interceptor[] {
-    return [new HeaderInterceptorProvider(headers).createHeadersInterceptor()];
+  ): StreamInterceptor<REQ, RESP>[] {
+    return [
+      new HeaderInterceptorProvider<REQ, RESP>(
+        headers
+      ).createStreamingHeadersInterceptor(),
+    ];
+  }
+
+  private createMetadata(cacheName: string): {cache: string} {
+    return {cache: cacheName};
+  }
+
+  private convertToB64String(v: string | Uint8Array): string {
+    if (typeof v === 'string') {
+      return btoa(v);
+    }
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return btoa(String.fromCharCode.apply(null, v));
   }
 }

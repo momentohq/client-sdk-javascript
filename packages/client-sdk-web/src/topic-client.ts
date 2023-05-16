@@ -4,9 +4,9 @@ import {
   TopicSubscribe,
   SubscribeCallOptions,
 } from '.';
+import {ITopicClient} from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/ITopicClient';
 import {PubsubClient} from './internal/pubsub-client';
 import {TopicClientProps} from './topic-client-props';
-import {ITopicClient} from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/ITopicClient';
 import {IPubsubClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 /**

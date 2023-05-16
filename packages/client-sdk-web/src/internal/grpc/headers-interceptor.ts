@@ -1,4 +1,10 @@
-import {Request, UnaryInterceptor, UnaryResponse} from 'grpc-web';
+import {
+  ClientReadableStream,
+  Request,
+  StreamInterceptor,
+  UnaryInterceptor,
+  UnaryResponse,
+} from 'grpc-web';
 
 export class Header {
   public readonly onceOnlyHeaders: string[] = ['Agent'];
@@ -22,6 +28,7 @@ export class HeaderInterceptorProvider<
   private readonly headersToAddEveryTime: Header[];
   private readonly headersToAddOnce: Header[];
   private static areOnlyOnceHeadersSent = false;
+  private static areStreamingOnlyOnceHeadersSent = false;
 
   /**
    * @param {Header[]} headers
@@ -45,9 +52,31 @@ export class HeaderInterceptorProvider<
       ): Promise<UnaryResponse<REQ, RESP>> => {
         const md = request.getMetadata();
         this.headersToAddEveryTime.forEach(h => (md[h.name] = h.value));
-        if (HeaderInterceptorProvider.areOnlyOnceHeadersSent) {
+        if (!HeaderInterceptorProvider.areOnlyOnceHeadersSent) {
           HeaderInterceptorProvider.areOnlyOnceHeadersSent = true;
           this.headersToAddOnce.forEach(h => (md[h.name] = h.value));
+        }
+        return invoker(request);
+      },
+    };
+  }
+
+  public createStreamingHeadersInterceptor(): StreamInterceptor<REQ, RESP> {
+    // "this" gets reassigned to StreamInterceptor in the body of intercept
+    //  below. Saving a reference to the HeaderInterceptorProvider instance so I
+    //  can use its properties
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+    return {
+      intercept(
+        request: Request<REQ, RESP>,
+        invoker: (request: Request<REQ, RESP>) => ClientReadableStream<RESP>
+      ): ClientReadableStream<RESP> {
+        const md = request.getMetadata();
+        self.headersToAddEveryTime.forEach(h => (md[h.name] = h.value));
+        if (!HeaderInterceptorProvider.areStreamingOnlyOnceHeadersSent) {
+          HeaderInterceptorProvider.areStreamingOnlyOnceHeadersSent = true;
+          self.headersToAddOnce.forEach(h => (md[h.name] = h.value));
         }
         return invoker(request);
       },
