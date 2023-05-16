@@ -259,7 +259,7 @@ export class PubsubClient extends AbstractPubsubClient {
       const momentoError = new TopicSubscribe.Error(
         cacheServiceErrorMapper(serviceError)
       );
-      this.handleError(options, momentoError, isRstStreamNoError);
+      this.handleSubscribeError(options, momentoError, isRstStreamNoError);
     };
   }
 

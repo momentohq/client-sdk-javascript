@@ -168,7 +168,7 @@ export abstract class AbstractPubsubClient implements IPubsubClient {
     };
   }
 
-  protected handleError(
+  protected handleSubscribeError(
     options: PrepareSubscribeCallbackOptions,
     momentoError: TopicSubscribe.Error,
     isRstStreamNoError: boolean

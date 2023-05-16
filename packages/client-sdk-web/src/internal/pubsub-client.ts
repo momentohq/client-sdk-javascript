@@ -250,7 +250,7 @@ export class PubsubClient<
       const momentoError = new TopicSubscribe.Error(
         cacheServiceErrorMapper(serviceError)
       );
-      this.handleError(options, momentoError, isRstStreamNoError);
+      this.handleSubscribeError(options, momentoError, isRstStreamNoError);
     };
   }
 
