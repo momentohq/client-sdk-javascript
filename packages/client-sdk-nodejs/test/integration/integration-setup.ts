@@ -1,6 +1,7 @@
 import {CacheClientProps} from '../../src/cache-client-props';
 import {testCacheName} from '@gomomento/common-integration-tests';
 import {
+  AuthClient,
   CreateCache,
   Configurations,
   DeleteCache,
@@ -8,9 +9,8 @@ import {
   CacheClient,
   CredentialProvider,
   CollectionTtl,
+  TopicClient,
 } from '../../src';
-import {AuthClient} from '../../src/auth-client';
-
 const deleteCacheIfExists = async (momento: CacheClient, cacheName: string) => {
   const deleteResponse = await momento.deleteCache(cacheName);
   if (deleteResponse instanceof DeleteCache.Error) {
@@ -52,6 +52,13 @@ function momentoAuthClientForTesting(): AuthClient {
   return new AuthClient();
 }
 
+function momentoTopicClientForTesting(): TopicClient {
+  return new TopicClient({
+    configuration: IntegrationTestCacheClientProps.configuration,
+    credentialProvider: IntegrationTestCacheClientProps.credentialProvider,
+  });
+}
+
 export function SetupIntegrationTest(): {
   Momento: CacheClient;
   IntegrationTestCacheName: string;
@@ -79,6 +86,16 @@ export function SetupIntegrationTest(): {
 
   const client = momentoClientForTesting();
   return {Momento: client, IntegrationTestCacheName: cacheName};
+}
+
+export function SetupTopicIntegrationTest(): {
+  topicClient: TopicClient;
+  Momento: CacheClient;
+  IntegrationTestCacheName: string;
+} {
+  const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
+  const topicClient = momentoTopicClientForTesting();
+  return {topicClient, Momento, IntegrationTestCacheName};
 }
 
 export function SetupAuthIntegrationTest(): {
