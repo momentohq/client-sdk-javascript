@@ -31,7 +31,7 @@ describe('ping service', () => {
       expect(true).toBeFalse();
     } catch (error) {
       expectWithMessage(() => {
-        expect((error as Error).name).toEqual('RpcErrorx');
+        expect((error as Error).name).toEqual('RpcError');
       }, `expected RpcError but got ${(error as Error).toString()}`);
     }
   });
