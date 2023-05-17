@@ -1,4 +1,4 @@
-import {ITopicClient} from './ITopicClient';
+import {ITopicClient} from '../../../clients/ITopicClient';
 import {
   MomentoLogger,
   SubscribeCallOptions,

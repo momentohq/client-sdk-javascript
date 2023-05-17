@@ -15,6 +15,7 @@ import {
   CredentialProvider,
   RefreshAuthToken,
   GenerateAuthToken,
+  TokenScope,
 } from '@gomomento/sdk-core/dist/src';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {AuthClientProps} from '../auth-client-props';
@@ -35,6 +36,7 @@ export class InternalAuthClient implements IAuthClient {
   }
 
   public async generateAuthToken(
+    scope: TokenScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateAuthToken.Response> {
     const authClient = new grpcAuth.AuthClient(

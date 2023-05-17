@@ -4,8 +4,11 @@ import {
   MomentoErrorCode,
   RefreshAuthToken,
 } from '@gomomento/sdk-core';
-import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients/auth/IAuthClient';
+import {IAuthClient} from '@gomomento/sdk-core/dist/src/clients/IAuthClient';
 import {expectWithMessage} from './common-int-test-utils';
+import {Restrictions} from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
+
+const SUPER_USER_RESTRICTIONS: Restrictions = {restrictions: []};
 
 export function runAuthClientTests(
   sessionTokenAuthClient: IAuthClient,
@@ -14,6 +17,7 @@ export function runAuthClientTests(
   describe('generate auth token using session token credentials', () => {
     it('should return success and generate auth token', async () => {
       const resp = await sessionTokenAuthClient.generateAuthToken(
+        SUPER_USER_RESTRICTIONS,
         ExpiresIn.seconds(10)
       );
       expectWithMessage(
@@ -25,6 +29,7 @@ export function runAuthClientTests(
     it('should succeed for generating an api token that expires', async () => {
       const secondsSinceEpoch = Math.round(Date.now() / 1000);
       const expireResponse = await sessionTokenAuthClient.generateAuthToken(
+        SUPER_USER_RESTRICTIONS,
         ExpiresIn.seconds(10)
       );
       const expiresIn = secondsSinceEpoch + 10;
@@ -42,7 +47,10 @@ export function runAuthClientTests(
 
     it('should succeed for generating an api token that never expires', async () => {
       const neverExpiresResponse =
-        await sessionTokenAuthClient.generateAuthToken(ExpiresIn.never());
+        await sessionTokenAuthClient.generateAuthToken(
+          SUPER_USER_RESTRICTIONS,
+          ExpiresIn.never()
+        );
       expect(neverExpiresResponse).toBeInstanceOf(GenerateAuthToken.Success);
       const neverExpireResponseSuccess =
         neverExpiresResponse as GenerateAuthToken.Success;
@@ -52,7 +60,10 @@ export function runAuthClientTests(
 
     it('should not succeed for generating an api token that has an invalid expires', async () => {
       const invalidExpiresResponse =
-        await sessionTokenAuthClient.generateAuthToken(ExpiresIn.seconds(-100));
+        await sessionTokenAuthClient.generateAuthToken(
+          SUPER_USER_RESTRICTIONS,
+          ExpiresIn.seconds(-100)
+        );
       expect(invalidExpiresResponse).toBeInstanceOf(GenerateAuthToken.Error);
       expect(
         (invalidExpiresResponse as GenerateAuthToken.Error).errorCode()
@@ -63,13 +74,23 @@ export function runAuthClientTests(
   describe('refresh auth token use auth token credentials', () => {
     it('should succeed for refreshing an auth token', async () => {
       const generateResponse = await sessionTokenAuthClient.generateAuthToken(
+        SUPER_USER_RESTRICTIONS,
         ExpiresIn.seconds(10)
       );
+      expectWithMessage(() => {
+        expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      }, `Unexpected response: ${generateResponse.toString()}`);
       const generateSuccessRst = generateResponse as GenerateAuthToken.Success;
 
       const authTokenAuthClient = authTokenAuthClientFactory(
         generateSuccessRst.authToken
       );
+
+      // we need to sleep for a bit here so that the timestamp on the refreshed token will be different than the
+      // one on the original token
+      const delaySecondsBeforeRefresh = 2;
+      await delay(delaySecondsBeforeRefresh * 1_000);
+
       const refreshResponse = await authTokenAuthClient.refreshAuthToken(
         generateSuccessRst.refreshToken
       );
@@ -80,13 +101,16 @@ export function runAuthClientTests(
 
       expect(refreshSuccessRst.is_success);
 
-      expect(generateSuccessRst.expiresAt.epoch()).toEqual(
-        refreshSuccessRst.getExpiresAt().epoch()
-      );
+      const expiresAtDelta =
+        refreshSuccessRst.expiresAt.epoch() -
+        generateSuccessRst.expiresAt.epoch();
+
+      expect(expiresAtDelta).toBeGreaterThanOrEqual(delaySecondsBeforeRefresh);
     });
 
     it("should not succeed for refreshing an api token that's expired", async () => {
       const generateResponse = await sessionTokenAuthClient.generateAuthToken(
+        SUPER_USER_RESTRICTIONS,
         ExpiresIn.seconds(1)
       );
       const generateSuccessRst = generateResponse as GenerateAuthToken.Success;

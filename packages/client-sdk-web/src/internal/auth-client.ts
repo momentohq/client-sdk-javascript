@@ -10,7 +10,12 @@ import {
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import Never = _GenerateApiTokenRequest.Never;
 import Expires = _GenerateApiTokenRequest.Expires;
-import {CredentialProvider, ExpiresAt, ExpiresIn} from '@gomomento/sdk-core';
+import {
+  CredentialProvider,
+  ExpiresAt,
+  ExpiresIn,
+  TokenScope,
+} from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {AuthClientProps} from '../auth-client-props';
 import {validateValidForSeconds} from '@gomomento/sdk-core/dist/src/internal/utils';
@@ -37,6 +42,7 @@ export class InternalWebGrpcAuthClient<
   }
 
   public async generateAuthToken(
+    scope: TokenScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateAuthToken.Response> {
     const authClient = new auth.AuthClient(

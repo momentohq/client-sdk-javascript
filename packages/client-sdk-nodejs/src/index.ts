@@ -94,6 +94,14 @@ import {
   NoopMomentoLoggerFactory,
   ExpiresAt,
   ExpiresIn,
+  CacheRole,
+  CacheRestriction,
+  TopicRole,
+  TopicRestriction,
+  Restriction,
+  Restrictions,
+  AllDataReadWrite,
+  TokenScope,
 } from '@gomomento/sdk-core';
 
 import {Configuration, CacheConfiguration} from './config/configuration';
@@ -150,6 +158,14 @@ export {
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
+  CacheRole,
+  CacheRestriction,
+  TopicRole,
+  TopicRestriction,
+  Restriction,
+  Restrictions,
+  AllDataReadWrite,
+  TokenScope,
   // CacheClient response types
   CacheGet,
   CacheListConcatenateBack,

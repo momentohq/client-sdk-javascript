@@ -1,8 +1,4 @@
-import {
-  TopicPublish,
-  TopicSubscribe,
-  SubscribeCallOptions,
-} from '../../../index';
+import {TopicPublish, TopicSubscribe, SubscribeCallOptions} from '../index';
 
 export interface ITopicClient {
   publish(

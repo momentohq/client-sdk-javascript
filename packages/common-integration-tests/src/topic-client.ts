@@ -18,8 +18,10 @@ import {
 } from './common-int-test-utils';
 import {TextEncoder} from 'util';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
-import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients';
-import {ITopicClient} from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/ITopicClient';
+import {
+  ICacheClient,
+  ITopicClient,
+} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {IResponseError} from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
 
 const STREAM_WAIT_TIME_MS = 2000;

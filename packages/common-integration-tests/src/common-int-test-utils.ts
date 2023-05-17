@@ -3,7 +3,7 @@ import {
   DeleteCache,
   MomentoErrorCode,
 } from '@gomomento/sdk-core';
-import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/ICacheClient';
+import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {
   IResponseError,
   ResponseBase,

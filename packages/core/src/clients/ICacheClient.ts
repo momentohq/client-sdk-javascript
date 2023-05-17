@@ -1,5 +1,3 @@
-import {IControlClient} from './IControlClient';
-import {IPingClient} from './IPingClient';
 import {
   CacheDelete,
   CacheGet,
@@ -37,7 +35,7 @@ import {
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   ItemGetType,
-} from '../../../index';
+} from '../index';
 import {
   ScalarCallOptions,
   ListFetchCallOptions,
@@ -47,7 +45,8 @@ import {
   CollectionCallOptions,
   SortedSetFetchByRankCallOptions,
   SortedSetFetchByScoreCallOptions,
-} from '../../../utils';
+} from '../utils';
+import {IControlClient, IPingClient} from '../internal/clients';
 
 // Type aliases to differentiate the different methods' optional arguments.
 export type SetOptions = ScalarCallOptions;
