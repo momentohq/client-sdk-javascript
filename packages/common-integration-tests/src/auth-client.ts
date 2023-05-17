@@ -106,6 +106,7 @@ export function runAuthClientTests(
         generateSuccessRst.expiresAt.epoch();
 
       expect(expiresAtDelta).toBeGreaterThanOrEqual(delaySecondsBeforeRefresh);
+      expect(expiresAtDelta).toBeLessThanOrEqual(delaySecondsBeforeRefresh + 1);
     });
 
     it("should not succeed for refreshing an api token that's expired", async () => {

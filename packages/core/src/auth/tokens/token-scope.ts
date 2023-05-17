@@ -22,14 +22,11 @@ export interface Restrictions {
   restrictions: Array<Restriction>;
 }
 
-export class AllDataReadWrite implements Restrictions {
-  readonly restrictions: Array<Restriction>;
-  constructor() {
-    this.restrictions = [
-      {cacheRole: CacheRole.ReadWrite},
-      {topicRole: TopicRole.ReadWrite},
-    ];
-  }
-}
+export const AllDataReadWrite: Restrictions = {
+  restrictions: [
+    {cacheRole: CacheRole.ReadWrite},
+    {topicRole: TopicRole.ReadWrite},
+  ],
+};
 
-export type TokenScope = AllDataReadWrite | Restrictions;
+export type TokenScope = typeof AllDataReadWrite | Restrictions;
