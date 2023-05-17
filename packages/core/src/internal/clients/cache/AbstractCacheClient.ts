@@ -65,24 +65,37 @@ import {
 } from './ICacheClient';
 import {IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
+import {IPingClient} from './IPingClient';
 
 export abstract class AbstractCacheClient implements ICacheClient {
   // making these protected until we fully abstract away the nodejs client
   protected readonly controlClient: IControlClient;
   protected readonly dataClients: IDataClient[];
+  // TODO: Make pingClient required if and when the nodejs side starts adding
+  //  one as well
+  protected readonly pingClient?: IPingClient;
   protected nextDataClientIndex: number;
 
   protected constructor(
     controlClient: IControlClient,
-    dataClients: IDataClient[]
+    dataClients: IDataClient[],
+    pingClient?: IPingClient
   ) {
     this.controlClient = controlClient;
     this.dataClients = dataClients;
+    this.pingClient = pingClient;
 
     // We round-robin the requests through all of our clients.  Since javascript
     // is single-threaded, we don't have to worry about thread safety on this
     // index variable.
     this.nextDataClientIndex = 0;
+  }
+
+  /**
+   * Ping the service to verify it is up and running
+   */
+  public async ping(): Promise<void> {
+    return await this.pingClient?.ping();
   }
 
   /**
