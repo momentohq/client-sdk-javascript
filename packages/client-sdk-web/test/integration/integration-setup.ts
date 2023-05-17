@@ -1,4 +1,4 @@
-import {CacheClient, TopicClient} from '../../src';
+import {AuthClient, CacheClient, TopicClient} from '../../src';
 import {
   deleteCacheIfExists,
   testCacheName,
@@ -67,4 +67,27 @@ export function SetupTopicIntegrationTest(): {
   const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
   const topicClient = momentoTopicClientForTesting();
   return {topicClient, Momento, IntegrationTestCacheName};
+}
+
+export function SetupAuthClientIntegrationTest(): {
+  sessionTokenAuthClient: AuthClient;
+  authTokenAuthClientFactory: (authToken: string) => AuthClient;
+} {
+  return {
+    sessionTokenAuthClient: new AuthClient({
+      credentialProvider: CredentialProvider.fromEnvironmentVariable({
+        environmentVariableName: 'TEST_SESSION_TOKEN',
+        // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
+        // steal them from the auth-token-based creds provider.
+        cacheEndpoint: credsProvider.getCacheEndpoint(),
+        controlEndpoint: credsProvider.getControlEndpoint(),
+      }),
+    }),
+    authTokenAuthClientFactory: authToken =>
+      new AuthClient({
+        credentialProvider: CredentialProvider.fromString({
+          authToken: authToken,
+        }),
+      }),
+  };
 }

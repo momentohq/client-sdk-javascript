@@ -1,16 +1,16 @@
-import {AuthClient as InternalAuthClient} from './internal/auth-client';
+import {InternalAuthClient} from './internal/internal-auth-client';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients/auth/IAuthClient';
 import {AbstractAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients/auth/AbstractAuthClient';
 import {
   GenerateAuthToken,
   ExpiresIn,
-  CredentialProvider,
   RefreshAuthToken,
 } from '@gomomento/sdk-core';
+import {AuthClientProps} from './auth-client-props';
 
 export class AuthClient extends AbstractAuthClient implements IAuthClient {
-  constructor() {
-    const authClient = new InternalAuthClient();
+  constructor(props: AuthClientProps) {
+    const authClient = new InternalAuthClient(props);
 
     super({createAuthClient: () => authClient});
   }
@@ -27,15 +27,9 @@ export class AuthClient extends AbstractAuthClient implements IAuthClient {
    * {@link GenerateAuthToken.Error} on failure.
    */
   public async generateAuthToken(
-    controlEndpoint: string,
-    token: string,
     expiresIn: ExpiresIn
   ): Promise<GenerateAuthToken.Response> {
-    return await this.authClient.generateAuthToken(
-      controlEndpoint,
-      token,
-      expiresIn
-    );
+    return await this.authClient.generateAuthToken(expiresIn);
   }
 
   /**
@@ -48,12 +42,8 @@ export class AuthClient extends AbstractAuthClient implements IAuthClient {
    * {@link RefreshAuthToken.Error} on failure.
    */
   public async refreshAuthToken(
-    credentialProvider: CredentialProvider,
     refreshToken: string
   ): Promise<RefreshAuthToken.Response> {
-    return await this.authClient.refreshAuthToken(
-      credentialProvider,
-      refreshToken
-    );
+    return await this.authClient.refreshAuthToken(refreshToken);
   }
 }

@@ -11,5 +11,5 @@ ${ROOT_DIR}/scripts/build-package.sh ${1}
 
 pushd ${ROOT_DIR}/packages/${1}
     npm run unit-test
-    npm run integration-test
+    npm run integration-test -- --maxWorkers 1
 popd
