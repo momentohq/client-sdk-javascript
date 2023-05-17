@@ -98,7 +98,7 @@ export class ExpiresAt extends Expiration {
   private readonly validUntil: number;
 
   private constructor(epochTimestamp: number | undefined) {
-    super(epochTimestamp !== undefined);
+    super(epochTimestamp !== undefined && epochTimestamp !== 0);
     if (this.doesExpire()) {
       this.validUntil = epochTimestamp as number;
     } else {

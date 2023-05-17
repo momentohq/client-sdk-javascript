@@ -89,9 +89,22 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
     super();
     const decodedToken = decodeAuthToken(props.authToken);
     this.authToken = decodedToken.authToken;
-    this.controlEndpoint =
+    const controlEndpoint =
       props.controlEndpoint ?? decodedToken.controlEndpoint;
-    this.cacheEndpoint = props.cacheEndpoint ?? decodedToken.cacheEndpoint;
+    if (controlEndpoint === undefined) {
+      throw new Error(
+        'Malformed token; unable to determine control endpoint.  Depending on the type of token you are using, you may need to specify the controlEndpoint explicitly.'
+      );
+    }
+    const cacheEndpoint = props.cacheEndpoint ?? decodedToken.cacheEndpoint;
+    if (cacheEndpoint === undefined) {
+      throw new Error(
+        'Malformed token; unable to determine cache endpoint.  Depending on the type of token you are using, you may need to specify the cacheEndpoint explicitly.'
+      );
+    }
+
+    this.controlEndpoint = controlEndpoint;
+    this.cacheEndpoint = cacheEndpoint;
   }
 
   getAuthToken(): string {
