@@ -3,9 +3,7 @@ import * as cachepubsub_pb from '@gomomento/generated-types-webtext/dist/cachepu
 import {Configuration} from '../config/configuration';
 import {
   CredentialProvider,
-  MomentoErrorCode,
   MomentoLogger,
-  SubscribeCallOptions,
   TopicItem,
   UnknownError,
 } from '@gomomento/sdk-core';
@@ -20,64 +18,26 @@ import {
 import {TopicClientProps} from '../topic-client-props';
 import {version} from '../../package.json';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
-import {
-  truncateString,
-  validateCacheName,
-  validateTopicName,
-} from '@gomomento/sdk-core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {truncateString} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {TopicPublish, TopicSubscribe} from '../index';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-import {SubscriptionState} from '@gomomento/sdk-core/dist/src/internal/subscription-state';
-import {IPubsubClient} from '@gomomento/sdk-core/dist/src/internal/clients';
-
-/**
- * Encapsulates parameters for the `sendSubscribe` method.
- */
-interface SendSubscribeOptions {
-  cacheName: string;
-  topicName: string;
-  onItem: (item: TopicItem) => void;
-  onError: (
-    error: TopicSubscribe.Error,
-    subscription: TopicSubscribe.Subscription
-  ) => void;
-  subscriptionState: SubscriptionState;
-  subscription: TopicSubscribe.Subscription;
-}
-
-/**
- * Encapsulates parameters for the subscribe callback prepare methods.
- */
-interface PrepareSubscribeCallbackOptions extends SendSubscribeOptions {
-  /**
-   * The promise resolve function.
-   */
-  resolve: (
-    value: TopicSubscribe.Response | PromiseLike<TopicSubscribe.Subscription>
-  ) => void;
-  /**
-   * Whether the stream was restarted due to an error. If so, we skip the end stream handler
-   * logic as the error handler will have restarted the stream.
-   */
-  restartedDueToError: boolean;
-  /**
-   * If the first message is an error, we return an error immediately and do not subscribe.
-   */
-  firstMessage: boolean;
-}
+import {
+  AbstractPubsubClient,
+  SendSubscribeOptions,
+  PrepareSubscribeCallbackOptions,
+} from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/AbstractPubsubClient';
+import {convertToB64String, createMetadata} from '../utils/web-client-utils';
 
 export class PubsubClient<
   REQ extends Request<REQ, RESP>,
   RESP extends UnaryResponse<REQ, RESP>
-> implements IPubsubClient
-{
+> extends AbstractPubsubClient {
   private readonly client: pubsub.PubsubClient;
   private readonly configuration: Configuration;
-  private readonly credentialProvider: CredentialProvider;
+  protected readonly credentialProvider: CredentialProvider;
   // private readonly unaryRequestTimeoutMs: number;
   // private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
-  private readonly logger: MomentoLogger;
+  protected readonly logger: MomentoLogger;
   private readonly authHeaders: {authorization: string};
   private readonly unaryInterceptors: UnaryInterceptor<REQ, RESP>[];
   private readonly streamingInterceptors: StreamInterceptor<REQ, RESP>[];
@@ -86,6 +46,7 @@ export class PubsubClient<
     'Received RST_STREAM with code 0';
 
   constructor(props: TopicClientProps) {
+    super();
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
@@ -136,27 +97,7 @@ export class PubsubClient<
   //   }
   // }
 
-  public async publish(
-    cacheName: string,
-    topicName: string,
-    value: string | Uint8Array
-  ): Promise<TopicPublish.Response> {
-    try {
-      validateCacheName(cacheName);
-      validateTopicName(topicName);
-    } catch (err) {
-      return new TopicPublish.Error(normalizeSdkError(err as Error));
-    }
-    this.logger.trace(
-      'Issuing publish request; topic: %s, message length: %s',
-      truncateString(topicName),
-      value.length
-    );
-
-    return await this.sendPublish(cacheName, topicName, value);
-  }
-
-  private async sendPublish(
+  protected async sendPublish(
     cacheName: string,
     topicName: string,
     value: string | Uint8Array
@@ -165,14 +106,14 @@ export class PubsubClient<
     if (typeof value === 'string') {
       topicValue.setText(value);
     } else {
-      topicValue.setBinary(this.convertToB64String(value));
+      topicValue.setBinary(convertToB64String(value));
     }
 
     const request = new cachepubsub_pb._PublishRequest();
     request.setCacheName(cacheName);
     request.setTopic(topicName);
     request.setValue(topicValue);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
 
     return await new Promise(resolve => {
       this.client.publish(
@@ -192,45 +133,6 @@ export class PubsubClient<
     });
   }
 
-  public async subscribe(
-    cacheName: string,
-    topicName: string,
-    options: SubscribeCallOptions
-  ): Promise<TopicSubscribe.Response> {
-    try {
-      validateCacheName(cacheName);
-      validateTopicName(topicName);
-    } catch (err) {
-      return new TopicSubscribe.Error(normalizeSdkError(err as Error));
-    }
-    this.logger.trace(
-      'Issuing subscribe request; topic: %s',
-      truncateString(topicName)
-    );
-
-    const onItem =
-      options.onItem ??
-      (() => {
-        return;
-      });
-    const onError =
-      options.onError ??
-      (() => {
-        return;
-      });
-
-    const subscriptionState = new SubscriptionState();
-    const subscription = new TopicSubscribe.Subscription(subscriptionState);
-    return await this.sendSubscribe({
-      cacheName: cacheName,
-      topicName: topicName,
-      onItem: onItem,
-      onError: onError,
-      subscriptionState: subscriptionState,
-      subscription: subscription,
-    });
-  }
-
   /**
    * @remark This method is responsible for restarting the stream if it ends unexpectedly.
    * Since we return a single subscription object to the user, we need to update it with the
@@ -244,7 +146,7 @@ export class PubsubClient<
    * case we already returned a subscription object to the user, so we instead cancel the stream and
    * propagate an error to the user via the error handler.
    */
-  private sendSubscribe(
+  protected sendSubscribe(
     options: SendSubscribeOptions
   ): Promise<TopicSubscribe.Response> {
     const request = new cachepubsub_pb._SubscriptionRequest();
@@ -342,100 +244,13 @@ export class PubsubClient<
       }
 
       const serviceError = err as unknown as RpcError;
-      // When the first message is an error, an irrecoverable error has happened,
-      // eg the cache does not exist. The user should not receive a subscription
-      // object but an error.
-      if (options.firstMessage) {
-        this.logger.trace(
-          'Received subscription stream error; topic: %s',
-          truncateString(options.topicName)
-        );
-
-        options.resolve(
-          new TopicSubscribe.Error(cacheServiceErrorMapper(serviceError))
-        );
-        options.subscription.unsubscribe();
-        return;
-      }
-
-      // The service cuts the stream after a period of time.
-      // Transparently restart the stream instead of propagating an error.
-      if (
+      const isRstStreamNoError =
         serviceError.code === StatusCode.INTERNAL &&
-        serviceError.message === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE
-      ) {
-        this.logger.trace(
-          'Server closed stream due to idle activity. Restarting.'
-        );
-        // When restarting the stream we do not do anything with the promises,
-        // because we should have already returned the subscription object to the user.
-        this.sendSubscribe(options)
-          .then(() => {
-            return;
-          })
-          .catch(() => {
-            return;
-          });
-        options.restartedDueToError = true;
-        return;
-      }
-
+        serviceError.message === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE;
       const momentoError = new TopicSubscribe.Error(
         cacheServiceErrorMapper(serviceError)
       );
-
-      // Another special case is when the cache is not found.
-      // This happens here if the user deletes the cache in the middle of
-      // a subscription.
-      if (momentoError.errorCode() === MomentoErrorCode.NOT_FOUND_ERROR) {
-        this.logger.trace(
-          'Stream ended due to cache not found error on topic: %s',
-          options.topicName
-        );
-        options.subscription.unsubscribe();
-        options.onError(momentoError, options.subscription);
-        return;
-      } else {
-        options.onError(momentoError, options.subscription);
-      }
-    };
-  }
-
-  private prepareEndCallback(
-    options: PrepareSubscribeCallbackOptions
-  ): () => void {
-    return () => {
-      // We want to restart on stream end, except if:
-      // 1. The stream was cancelled by the caller.
-      // 2. The stream was restarted following an error.
-      if (options.restartedDueToError) {
-        this.logger.trace(
-          'Stream ended after error but was restarted on topic: %s',
-          options.topicName
-        );
-        return;
-      } else if (!options.subscriptionState.isSubscribed) {
-        this.logger.trace(
-          'Stream ended after unsubscribe on topic: %s',
-          options.topicName
-        );
-        return;
-      }
-
-      this.logger.trace(
-        'Stream ended on topic: %s; restarting.',
-        options.topicName
-      );
-
-      // When restarting the stream we do not do anything with the promises,
-      // because we should have already returned the subscription object to the user.
-      this.sendSubscribe(options)
-        .then(() => {
-          return;
-        })
-        .catch(() => {
-          return;
-        });
+      this.handleSubscribeError(options, momentoError, isRstStreamNoError);
     };
   }
 
@@ -461,18 +276,5 @@ export class PubsubClient<
         headers
       ).createStreamingHeadersInterceptor(),
     ];
-  }
-
-  private createMetadata(cacheName: string): {cache: string} {
-    return {cache: cacheName};
-  }
-
-  private convertToB64String(v: string | Uint8Array): string {
-    if (typeof v === 'string') {
-      return btoa(v);
-    }
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    return btoa(String.fromCharCode.apply(null, v));
   }
 }

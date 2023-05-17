@@ -109,6 +109,7 @@ import {
   validateSortedSetScores,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {convertToB64String, createMetadata} from '../utils/web-client-utils';
 
 export interface DataClientProps {
   configuration: Configuration;
@@ -168,7 +169,7 @@ export class DataClient<
       return new CacheGet.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
-    const result = await this.sendGet(cacheName, this.convertToB64String(key));
+    const result = await this.sendGet(cacheName, convertToB64String(key));
     this.logger.trace(`'get' request result: ${result.toString()}`);
     return result;
   }
@@ -179,7 +180,7 @@ export class DataClient<
   ): Promise<CacheGet.Response> {
     const request = new _GetRequest();
     request.setCacheKey(key);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
 
     return await new Promise(resolve => {
       this.clientWrapper.get(
@@ -246,8 +247,8 @@ export class DataClient<
 
     return await this.sendSet(
       cacheName,
-      this.convertToB64String(key),
-      this.convertToB64String(value),
+      convertToB64String(key),
+      convertToB64String(value),
       ttlToUse
     );
   }
@@ -262,7 +263,7 @@ export class DataClient<
     request.setCacheKey(key);
     request.setCacheBody(value);
     request.setTtlMilliseconds(this.convertSecondsToMilliseconds(ttlSeconds));
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.set(
         request,
@@ -305,8 +306,8 @@ export class DataClient<
 
     const result = await this.sendSetIfNotExists(
       cacheName,
-      this.convertToB64String(key),
-      this.convertToB64String(field),
+      convertToB64String(key),
+      convertToB64String(field),
       ttl || this.defaultTtlSeconds * 1000
     );
     this.logger.trace(`'setIfNotExists' request result: ${result.toString()}`);
@@ -323,7 +324,7 @@ export class DataClient<
     request.setCacheKey(key);
     request.setCacheBody(field);
     request.setTtlMilliseconds(ttlMilliseconds);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
 
     return await new Promise(resolve => {
       this.clientWrapper.setIfNotExists(
@@ -371,7 +372,7 @@ export class DataClient<
       return new CacheDelete.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(`Issuing 'delete' request; key: ${key.toString()}`);
-    return await this.sendDelete(cacheName, this.convertToB64String(key));
+    return await this.sendDelete(cacheName, convertToB64String(key));
   }
 
   private async sendDelete(
@@ -380,7 +381,7 @@ export class DataClient<
   ): Promise<CacheDelete.Response> {
     const request = new _DeleteRequest();
     request.setCacheKey(key);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.delete(
         request,
@@ -418,7 +419,7 @@ export class DataClient<
 
     const result = await this.sendIncrement(
       cacheName,
-      this.convertToB64String(field),
+      convertToB64String(field),
       amount,
       ttl || this.defaultTtlSeconds * 1000
     );
@@ -436,7 +437,7 @@ export class DataClient<
     request.setCacheKey(field);
     request.setAmount(amount);
     request.setTtlMilliseconds(ttlMilliseconds);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
 
     return await new Promise(resolve => {
       this.clientWrapper.increment(
@@ -470,7 +471,7 @@ export class DataClient<
     } catch (err) {
       return new CacheSetFetch.Error(normalizeSdkError(err as Error));
     }
-    return await this.sendSetFetch(cacheName, this.convertToB64String(setName));
+    return await this.sendSetFetch(cacheName, convertToB64String(setName));
   }
 
   private async sendSetFetch(
@@ -479,7 +480,7 @@ export class DataClient<
   ): Promise<CacheSetFetch.Response> {
     const request = new _SetFetchRequest();
     request.setSetName(setName);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.setFetch(
         request,
@@ -516,7 +517,7 @@ export class DataClient<
     }
     return await this.sendSetAddElements(
       cacheName,
-      this.convertToB64String(setName),
+      convertToB64String(setName),
       this.convertArrayToB64Strings(elements),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl()
@@ -535,7 +536,7 @@ export class DataClient<
     request.setElementsList(elements);
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.setUnion(
         request,
@@ -569,7 +570,7 @@ export class DataClient<
     }
     return await this.sendSetRemoveElements(
       cacheName,
-      this.convertToB64String(setName),
+      convertToB64String(setName),
       this.convertArrayToB64Strings(elements)
     );
   }
@@ -587,7 +588,7 @@ export class DataClient<
     request.setSetName(setName);
     request.setSubtrahend(subtrahend);
 
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.setDifference(
         request,
@@ -634,7 +635,7 @@ export class DataClient<
 
     const result = await this.sendListConcatenateBack(
       cacheName,
-      this.convertToB64String(listName),
+      convertToB64String(listName),
       this.convertArrayToB64Strings(values),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl(),
@@ -661,7 +662,7 @@ export class DataClient<
     request.setRefreshTtl(refreshTtl);
     request.setTruncateFrontToSize(truncateFrontToSize || 0);
 
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.listConcatenateBack(
         request,
@@ -708,7 +709,7 @@ export class DataClient<
 
     const result = await this.sendListConcatenateFront(
       cacheName,
-      this.convertToB64String(listName),
+      convertToB64String(listName),
       this.convertArrayToB64Strings(values),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl(),
@@ -735,7 +736,7 @@ export class DataClient<
     request.setRefreshTtl(refreshTtl);
     request.setTruncateBackToSize(truncateBackToSize || 0);
 
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.listConcatenateFront(
         request,
@@ -779,7 +780,7 @@ export class DataClient<
     );
     const result = await this.sendListFetch(
       cacheName,
-      this.convertToB64String(listName),
+      convertToB64String(listName),
       startIndex,
       endIndex
     );
@@ -805,7 +806,7 @@ export class DataClient<
     } else {
       request.setUnboundedEnd(new _Unbounded());
     }
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
 
     return await new Promise(resolve => {
       this.clientWrapper.listFetch(
@@ -858,7 +859,7 @@ export class DataClient<
     );
     const result = await this.sendListRetain(
       cacheName,
-      this.convertToB64String(listName),
+      convertToB64String(listName),
       // passing ttl info before start/end because it's guaranteed to be defined so doesn't need
       // to be nullable
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
@@ -892,7 +893,7 @@ export class DataClient<
     } else {
       request.setUnboundedEnd(new _Unbounded());
     }
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
 
     return await new Promise(resolve => {
       this.clientWrapper.listRetain(
@@ -925,7 +926,7 @@ export class DataClient<
     this.logger.trace(`Issuing 'listLength' request; listName: ${listName}`);
     const result = await this.sendListLength(
       cacheName,
-      this.convertToB64String(listName)
+      convertToB64String(listName)
     );
     this.logger.trace(`'listLength' request result: ${result.toString()}`);
     return result;
@@ -937,7 +938,7 @@ export class DataClient<
   ): Promise<CacheListLength.Response> {
     const request = new _ListLengthRequest();
     request.setListName(listName);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
 
     return await new Promise(resolve => {
       this.clientWrapper.listLength(
@@ -980,7 +981,7 @@ export class DataClient<
     this.logger.trace("Issuing 'listPopBack' request");
     const result = await this.sendListPopBack(
       cacheName,
-      this.convertToB64String(listName)
+      convertToB64String(listName)
     );
     this.logger.trace(`'listPopBack' request result: ${result.toString()}`);
     return result;
@@ -992,7 +993,7 @@ export class DataClient<
   ): Promise<CacheListPopBack.Response> {
     const request = new _ListPopBackRequest();
     request.setListName(listName);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
 
     return await new Promise(resolve => {
       this.clientWrapper.listPopBack(
@@ -1033,7 +1034,7 @@ export class DataClient<
     this.logger.trace("Issuing 'listPopFront' request");
     const result = await this.sendListPopFront(
       cacheName,
-      this.convertToB64String(listName)
+      convertToB64String(listName)
     );
     this.logger.trace(`'listPopFront' request result: ${result.toString()}`);
     return result;
@@ -1045,7 +1046,7 @@ export class DataClient<
   ): Promise<CacheListPopFront.Response> {
     const request = new _ListPopFrontRequest();
     request.setListName(listName);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
 
     return await new Promise(resolve => {
       this.clientWrapper.listPopFront(
@@ -1096,8 +1097,8 @@ export class DataClient<
 
     const result = await this.sendListPushBack(
       cacheName,
-      this.convertToB64String(listName),
-      this.convertToB64String(value),
+      convertToB64String(listName),
+      convertToB64String(value),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl(),
       truncateFrontToSize
@@ -1120,7 +1121,7 @@ export class DataClient<
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
     request.setTruncateFrontToSize(truncateFrontToSize || 0);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.listPushBack(
         request,
@@ -1163,8 +1164,8 @@ export class DataClient<
 
     const result = await this.sendListPushFront(
       cacheName,
-      this.convertToB64String(listName),
-      this.convertToB64String(value),
+      convertToB64String(listName),
+      convertToB64String(value),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl(),
       truncateBackToSize
@@ -1187,7 +1188,7 @@ export class DataClient<
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
     request.setTruncateBackToSize(truncateBackToSize || 0);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.listPushFront(
         request,
@@ -1224,8 +1225,8 @@ export class DataClient<
 
     const result = await this.sendListRemoveValue(
       cacheName,
-      this.convertToB64String(listName),
-      this.convertToB64String(value)
+      convertToB64String(listName),
+      convertToB64String(value)
     );
     this.logger.trace(`'listRemoveValue' request result: ${result.toString()}`);
     return result;
@@ -1239,7 +1240,7 @@ export class DataClient<
     const request = new _ListRemoveRequest();
     request.setListName(listName);
     request.setAllElementsWithValue(value);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.listRemove(
         request,
@@ -1280,9 +1281,9 @@ export class DataClient<
     );
     const result = await this.sendDictionarySetField(
       cacheName,
-      this.convertToB64String(dictionaryName),
-      this.convertToB64String(field),
-      this.convertToB64String(value),
+      convertToB64String(dictionaryName),
+      convertToB64String(field),
+      convertToB64String(value),
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl()
     );
@@ -1308,7 +1309,7 @@ export class DataClient<
     request.setItemsList([item]);
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.dictionarySet(
         request,
@@ -1355,7 +1356,7 @@ export class DataClient<
 
     const result = await this.sendDictionarySetFields(
       cacheName,
-      this.convertToB64String(dictionaryName),
+      convertToB64String(dictionaryName),
       dictionaryFieldValuePairs,
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl()
@@ -1378,7 +1379,7 @@ export class DataClient<
     request.setItemsList(elements);
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.dictionarySet(
         request,
@@ -1418,8 +1419,8 @@ export class DataClient<
     );
     const result = await this.sendDictionaryGetField(
       cacheName,
-      this.convertToB64String(dictionaryName),
-      this.convertToB64String(field)
+      convertToB64String(dictionaryName),
+      convertToB64String(field)
     );
     this.logger.trace(
       `'dictionaryGetField' request result: ${result.toString()}`
@@ -1435,7 +1436,7 @@ export class DataClient<
     const request = new _DictionaryGetRequest();
     request.setDictionaryName(dictionaryName);
     request.setFieldsList([field]);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
 
     return await new Promise(resolve => {
       this.clientWrapper.dictionaryGet(
@@ -1508,7 +1509,7 @@ export class DataClient<
     );
     const result = await this.sendDictionaryGetFields(
       cacheName,
-      this.convertToB64String(dictionaryName),
+      convertToB64String(dictionaryName),
       fields
     );
     this.logger.trace(
@@ -1525,7 +1526,7 @@ export class DataClient<
     const request = new _DictionaryGetRequest();
     request.setDictionaryName(dictionaryName);
     request.setFieldsList(this.convertArrayToB64Strings(fields));
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
 
     return await new Promise(resolve => {
       this.clientWrapper.dictionaryGet(
@@ -1577,7 +1578,7 @@ export class DataClient<
     );
     const result = await this.sendDictionaryFetch(
       cacheName,
-      this.convertToB64String(dictionaryName)
+      convertToB64String(dictionaryName)
     );
     this.logger.trace(`'dictionaryFetch' request result: ${result.toString()}`);
     return result;
@@ -1589,7 +1590,7 @@ export class DataClient<
   ): Promise<CacheDictionaryFetch.Response> {
     const request = new _DictionaryFetchRequest();
     request.setDictionaryName(dictionaryName);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.dictionaryFetch(
         request,
@@ -1645,8 +1646,8 @@ export class DataClient<
 
     const result = await this.sendDictionaryIncrement(
       cacheName,
-      this.convertToB64String(dictionaryName),
-      this.convertToB64String(field),
+      convertToB64String(dictionaryName),
+      convertToB64String(field),
       amount,
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl()
@@ -1671,7 +1672,7 @@ export class DataClient<
     request.setAmount(amount);
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.dictionaryIncrement(
         request,
@@ -1714,8 +1715,8 @@ export class DataClient<
     );
     const result = await this.sendDictionaryRemoveField(
       cacheName,
-      this.convertToB64String(dictionaryName),
-      this.convertToB64String(field)
+      convertToB64String(dictionaryName),
+      convertToB64String(field)
     );
     this.logger.trace(
       `'dictionaryRemoveField' request result: ${result.toString()}`
@@ -1731,7 +1732,7 @@ export class DataClient<
     const request = new _DictionaryDeleteRequest();
     request.setDictionaryName(dictionaryName);
     request.setSome(new _DictionaryDeleteRequest.Some().addFields(field));
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.dictionaryDelete(
         request,
@@ -1770,7 +1771,7 @@ export class DataClient<
     );
     const result = await this.sendDictionaryRemoveFields(
       cacheName,
-      this.convertToB64String(dictionaryName),
+      convertToB64String(dictionaryName),
       this.convertArrayToB64Strings(fields)
     );
     this.logger.trace(
@@ -1787,7 +1788,7 @@ export class DataClient<
     const request = new _DictionaryDeleteRequest();
     request.setDictionaryName(dictionaryName);
     request.setSome(new _DictionaryDeleteRequest.Some().setFieldsList(fields));
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
 
     return await new Promise(resolve => {
       this.clientWrapper.dictionaryDelete(
@@ -1835,7 +1836,7 @@ export class DataClient<
 
     const result = await this.sendSortedSetFetchByRank(
       cacheName,
-      this.convertToB64String(sortedSetName),
+      convertToB64String(sortedSetName),
       order,
       startRank,
       endRank
@@ -1877,7 +1878,7 @@ export class DataClient<
     request.setWithScores(true);
     request.setByIndex(by_index);
 
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetFetch(
         request,
@@ -1952,7 +1953,7 @@ export class DataClient<
 
     const result = await this.sendSortedSetFetchByScore(
       cacheName,
-      this.convertToB64String(sortedSetName),
+      convertToB64String(sortedSetName),
       order,
       minScore,
       maxScore,
@@ -2011,7 +2012,7 @@ export class DataClient<
     request.setWithScores(true);
     request.setByScore(by_score);
 
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetFetch(
         request,
@@ -2086,8 +2087,8 @@ export class DataClient<
 
     const result = await this.sendSortedSetPutElement(
       cacheName,
-      this.convertToB64String(sortedSetName),
-      this.convertToB64String(value),
+      convertToB64String(sortedSetName),
+      convertToB64String(value),
       score,
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl()
@@ -2115,7 +2116,7 @@ export class DataClient<
     request.setElementsList([elem]);
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetPut(
         request,
@@ -2160,7 +2161,7 @@ export class DataClient<
 
     const result = await this.sendSortedSetPutElements(
       cacheName,
-      this.convertToB64String(sortedSetName),
+      convertToB64String(sortedSetName),
       sortedSetValueScorePairs,
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl()
@@ -2184,7 +2185,7 @@ export class DataClient<
     request.setElementsList(elements);
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetPut(
         request,
@@ -2249,8 +2250,8 @@ export class DataClient<
 
     const result = await this.sendSortedSetGetScores(
       cacheName,
-      this.convertToB64String(sortedSetName),
-      values.map(value => this.convertToB64String(value))
+      convertToB64String(sortedSetName),
+      values.map(value => convertToB64String(value))
     );
 
     this.logger.trace(
@@ -2268,7 +2269,7 @@ export class DataClient<
     const request = new _SortedSetGetScoreRequest();
     request.setSetName(sortedSetName);
     request.setValuesList(values);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetGetScore(
         request,
@@ -2333,8 +2334,8 @@ export class DataClient<
 
     const result = await this.sendSortedSetGetRank(
       cacheName,
-      this.convertToB64String(sortedSetName),
-      this.convertToB64String(value)
+      convertToB64String(sortedSetName),
+      convertToB64String(value)
     );
 
     this.logger.trace(
@@ -2352,7 +2353,7 @@ export class DataClient<
     const request = new _SortedSetGetRankRequest();
     request.setSetName(sortedSetName);
     request.setValue(value);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetGetRank(
         request,
@@ -2404,8 +2405,8 @@ export class DataClient<
 
     const result = await this.sendSortedSetIncrementScore(
       cacheName,
-      this.convertToB64String(sortedSetName),
-      this.convertToB64String(value),
+      convertToB64String(sortedSetName),
+      convertToB64String(value),
       amount,
       ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
       ttl.refreshTtl()
@@ -2432,7 +2433,7 @@ export class DataClient<
     request.setAmount(amount);
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetIncrement(
         request,
@@ -2475,8 +2476,8 @@ export class DataClient<
 
     const result = await this.sendSortedSetRemoveElement(
       cacheName,
-      this.convertToB64String(sortedSetName),
-      this.convertToB64String(value)
+      convertToB64String(sortedSetName),
+      convertToB64String(value)
     );
 
     this.logger.trace(
@@ -2494,7 +2495,7 @@ export class DataClient<
     const request = new _SortedSetRemoveRequest();
     request.setSetName(sortedSetName);
     request.setSome(new _SortedSetRemoveRequest._Some().setValuesList([value]));
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetRemove(
         request,
@@ -2533,7 +2534,7 @@ export class DataClient<
 
     const result = await this.sendSortedSetRemoveElements(
       cacheName,
-      this.convertToB64String(sortedSetName),
+      convertToB64String(sortedSetName),
       this.convertArrayToB64Strings(values)
     );
 
@@ -2552,7 +2553,7 @@ export class DataClient<
     const request = new _SortedSetRemoveRequest();
     request.setSetName(sortedSetName);
     request.setSome(new _SortedSetRemoveRequest._Some().setValuesList(values));
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetRemove(
         request,
@@ -2584,7 +2585,7 @@ export class DataClient<
     } catch (err) {
       return new ItemGetType.Error(normalizeSdkError(err as Error));
     }
-    return await this.sendItemGetType(cacheName, this.convertToB64String(key));
+    return await this.sendItemGetType(cacheName, convertToB64String(key));
   }
 
   private async sendItemGetType(
@@ -2593,7 +2594,7 @@ export class DataClient<
   ): Promise<ItemGetType.Response> {
     const request = new _ItemGetTypeRequest();
     request.setCacheKey(key);
-    const metadata = this.createMetadata(cacheName);
+    const metadata = createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.itemGetType(
         request,
@@ -2616,25 +2617,12 @@ export class DataClient<
     });
   }
 
-  private createMetadata(cacheName: string): {cache: string} {
-    return {cache: cacheName};
-  }
-
   private convertSecondsToMilliseconds(ttlSeconds: number): number {
     return ttlSeconds * 1000;
   }
 
-  private convertToB64String(v: string | Uint8Array): string {
-    if (typeof v === 'string') {
-      return btoa(v);
-    }
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    return btoa(String.fromCharCode.apply(null, v));
-  }
-
   private convertArrayToB64Strings(v: string[] | Uint8Array[]): string[] {
-    return v.map(i => this.convertToB64String(i));
+    return v.map(i => convertToB64String(i));
   }
 
   private convertToUint8Array(v: string | Uint8Array): Uint8Array {
@@ -2656,14 +2644,14 @@ export class DataClient<
     if (elements instanceof Map) {
       return [...elements.entries()].map(element =>
         new _DictionaryFieldValuePairGrpc()
-          .setField(this.convertToB64String(element[0]))
-          .setValue(this.convertToB64String(element[1]))
+          .setField(convertToB64String(element[0]))
+          .setValue(convertToB64String(element[1]))
       );
     } else {
       return Object.entries(elements).map(element =>
         new _DictionaryFieldValuePairGrpc()
-          .setField(this.convertToB64String(element[0]))
-          .setValue(this.convertToB64String(element[1]))
+          .setField(convertToB64String(element[0]))
+          .setValue(convertToB64String(element[1]))
       );
     }
   }
@@ -2674,13 +2662,13 @@ export class DataClient<
     if (elements instanceof Map) {
       return [...elements.entries()].map(element =>
         new _SortedSetElementGrpc()
-          .setValue(this.convertToB64String(element[0]))
+          .setValue(convertToB64String(element[0]))
           .setScore(element[1])
       );
     } else {
       return Object.entries(elements).map(element =>
         new _SortedSetElementGrpc()
-          .setValue(this.convertToB64String(element[0]))
+          .setValue(convertToB64String(element[0]))
           .setScore(element[1])
       );
     }
