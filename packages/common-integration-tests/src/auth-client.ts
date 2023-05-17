@@ -6,9 +6,9 @@ import {
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/clients/IAuthClient';
 import {expectWithMessage} from './common-int-test-utils';
-import {Restrictions} from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
+import {Permissions} from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
 
-const SUPER_USER_RESTRICTIONS: Restrictions = {restrictions: []};
+const SUPER_USER_PERMISSIONS: Permissions = {permissions: []};
 
 export function runAuthClientTests(
   sessionTokenAuthClient: IAuthClient,
@@ -17,7 +17,7 @@ export function runAuthClientTests(
   describe('generate auth token using session token credentials', () => {
     it('should return success and generate auth token', async () => {
       const resp = await sessionTokenAuthClient.generateAuthToken(
-        SUPER_USER_RESTRICTIONS,
+        SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(10)
       );
       expectWithMessage(
@@ -29,7 +29,7 @@ export function runAuthClientTests(
     it('should succeed for generating an api token that expires', async () => {
       const secondsSinceEpoch = Math.round(Date.now() / 1000);
       const expireResponse = await sessionTokenAuthClient.generateAuthToken(
-        SUPER_USER_RESTRICTIONS,
+        SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(10)
       );
       const expiresIn = secondsSinceEpoch + 10;
@@ -48,7 +48,7 @@ export function runAuthClientTests(
     it('should succeed for generating an api token that never expires', async () => {
       const neverExpiresResponse =
         await sessionTokenAuthClient.generateAuthToken(
-          SUPER_USER_RESTRICTIONS,
+          SUPER_USER_PERMISSIONS,
           ExpiresIn.never()
         );
       expect(neverExpiresResponse).toBeInstanceOf(GenerateAuthToken.Success);
@@ -61,7 +61,7 @@ export function runAuthClientTests(
     it('should not succeed for generating an api token that has an invalid expires', async () => {
       const invalidExpiresResponse =
         await sessionTokenAuthClient.generateAuthToken(
-          SUPER_USER_RESTRICTIONS,
+          SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(-100)
         );
       expect(invalidExpiresResponse).toBeInstanceOf(GenerateAuthToken.Error);
@@ -74,7 +74,7 @@ export function runAuthClientTests(
   describe('refresh auth token use auth token credentials', () => {
     it('should succeed for refreshing an auth token', async () => {
       const generateResponse = await sessionTokenAuthClient.generateAuthToken(
-        SUPER_USER_RESTRICTIONS,
+        SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(10)
       );
       expectWithMessage(() => {
@@ -111,7 +111,7 @@ export function runAuthClientTests(
 
     it("should not succeed for refreshing an api token that's expired", async () => {
       const generateResponse = await sessionTokenAuthClient.generateAuthToken(
-        SUPER_USER_RESTRICTIONS,
+        SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(1)
       );
       const generateSuccessRst = generateResponse as GenerateAuthToken.Success;

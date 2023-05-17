@@ -113,11 +113,11 @@ export {
 
 export {
   CacheRole,
-  CacheRestriction,
+  CachePermission,
   TopicRole,
-  TopicRestriction,
-  Restriction,
-  Restrictions,
+  TopicPermission,
+  Permission,
+  Permissions,
   AllDataReadWrite,
   TokenScope,
 } from './auth/tokens/token-scope';
