@@ -33,7 +33,7 @@ export class PingClient<
       ).createHeadersInterceptor(),
     ];
     this.clientWrapper = new ping.PingClient(
-      `https://cache.${props.endpoint}:443`,
+      `https://${props.endpoint}:443`,
       null,
       {
         unaryInterceptors: this.unaryInterceptors,

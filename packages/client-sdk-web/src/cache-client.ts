@@ -56,16 +56,13 @@ function createDataClient(props: CacheClientProps): IDataClient {
 }
 
 function createPingClient(props: CacheClientProps): IPingClient {
-  // remove the 'cache.' portion of the data endpoint to get the ping URL
-  const cacheEndpoint = props.credentialProvider.getCacheEndpoint();
-  const pingUrl = cacheEndpoint.split('.').slice(1).join('.');
   return new PingClient({
     // TODO
     // TODO
     // TODO these shouldn't be hard-coded
     // TODO
     // TODO
-    endpoint: pingUrl,
+    endpoint: props.credentialProvider.getCacheEndpoint(),
     configuration: {
       getLoggerFactory: () => new NoopMomentoLoggerFactory(),
     },
