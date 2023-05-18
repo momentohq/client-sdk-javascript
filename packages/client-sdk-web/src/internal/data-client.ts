@@ -131,6 +131,7 @@ export class DataClient<
   private readonly logger: MomentoLogger;
   private readonly authHeaders: {authorization: string};
   private readonly defaultTtlSeconds: number;
+  private readonly deadlineMillis: number;
 
   /**
    * @param {DataClientProps} props
@@ -147,6 +148,10 @@ export class DataClient<
       `Creating data client using endpoint: '${props.credentialProvider.getCacheEndpoint()}`
     );
 
+    this.deadlineMillis = props.configuration
+      .getTransportStrategy()
+      .getGrpcConfig()
+      .getDeadlineMillis();
     this.defaultTtlSeconds = props.defaultTtlSeconds;
     this.authHeaders = {authorization: props.credentialProvider.getAuthToken()};
     this.clientWrapper = new cache.ScsClient(
@@ -180,7 +185,7 @@ export class DataClient<
   ): Promise<CacheGet.Response> {
     const request = new _GetRequest();
     request.setCacheKey(key);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
 
     return await new Promise(resolve => {
       this.clientWrapper.get(
@@ -263,7 +268,7 @@ export class DataClient<
     request.setCacheKey(key);
     request.setCacheBody(value);
     request.setTtlMilliseconds(this.convertSecondsToMilliseconds(ttlSeconds));
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.set(
         request,
@@ -324,7 +329,7 @@ export class DataClient<
     request.setCacheKey(key);
     request.setCacheBody(field);
     request.setTtlMilliseconds(ttlMilliseconds);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
 
     return await new Promise(resolve => {
       this.clientWrapper.setIfNotExists(
@@ -381,7 +386,7 @@ export class DataClient<
   ): Promise<CacheDelete.Response> {
     const request = new _DeleteRequest();
     request.setCacheKey(key);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.delete(
         request,
@@ -437,7 +442,7 @@ export class DataClient<
     request.setCacheKey(field);
     request.setAmount(amount);
     request.setTtlMilliseconds(ttlMilliseconds);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
 
     return await new Promise(resolve => {
       this.clientWrapper.increment(
@@ -480,7 +485,7 @@ export class DataClient<
   ): Promise<CacheSetFetch.Response> {
     const request = new _SetFetchRequest();
     request.setSetName(setName);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.setFetch(
         request,
@@ -536,7 +541,7 @@ export class DataClient<
     request.setElementsList(elements);
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.setUnion(
         request,
@@ -588,7 +593,7 @@ export class DataClient<
     request.setSetName(setName);
     request.setSubtrahend(subtrahend);
 
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.setDifference(
         request,
@@ -662,7 +667,7 @@ export class DataClient<
     request.setRefreshTtl(refreshTtl);
     request.setTruncateFrontToSize(truncateFrontToSize || 0);
 
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.listConcatenateBack(
         request,
@@ -736,7 +741,7 @@ export class DataClient<
     request.setRefreshTtl(refreshTtl);
     request.setTruncateBackToSize(truncateBackToSize || 0);
 
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.listConcatenateFront(
         request,
@@ -806,7 +811,7 @@ export class DataClient<
     } else {
       request.setUnboundedEnd(new _Unbounded());
     }
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
 
     return await new Promise(resolve => {
       this.clientWrapper.listFetch(
@@ -893,7 +898,7 @@ export class DataClient<
     } else {
       request.setUnboundedEnd(new _Unbounded());
     }
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
 
     return await new Promise(resolve => {
       this.clientWrapper.listRetain(
@@ -938,7 +943,7 @@ export class DataClient<
   ): Promise<CacheListLength.Response> {
     const request = new _ListLengthRequest();
     request.setListName(listName);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
 
     return await new Promise(resolve => {
       this.clientWrapper.listLength(
@@ -993,7 +998,7 @@ export class DataClient<
   ): Promise<CacheListPopBack.Response> {
     const request = new _ListPopBackRequest();
     request.setListName(listName);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
 
     return await new Promise(resolve => {
       this.clientWrapper.listPopBack(
@@ -1046,7 +1051,7 @@ export class DataClient<
   ): Promise<CacheListPopFront.Response> {
     const request = new _ListPopFrontRequest();
     request.setListName(listName);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
 
     return await new Promise(resolve => {
       this.clientWrapper.listPopFront(
@@ -1121,7 +1126,7 @@ export class DataClient<
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
     request.setTruncateFrontToSize(truncateFrontToSize || 0);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.listPushBack(
         request,
@@ -1188,7 +1193,7 @@ export class DataClient<
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
     request.setTruncateBackToSize(truncateBackToSize || 0);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.listPushFront(
         request,
@@ -1240,7 +1245,7 @@ export class DataClient<
     const request = new _ListRemoveRequest();
     request.setListName(listName);
     request.setAllElementsWithValue(value);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.listRemove(
         request,
@@ -1309,7 +1314,7 @@ export class DataClient<
     request.setItemsList([item]);
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.dictionarySet(
         request,
@@ -1379,7 +1384,7 @@ export class DataClient<
     request.setItemsList(elements);
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.dictionarySet(
         request,
@@ -1436,7 +1441,7 @@ export class DataClient<
     const request = new _DictionaryGetRequest();
     request.setDictionaryName(dictionaryName);
     request.setFieldsList([field]);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
 
     return await new Promise(resolve => {
       this.clientWrapper.dictionaryGet(
@@ -1526,7 +1531,7 @@ export class DataClient<
     const request = new _DictionaryGetRequest();
     request.setDictionaryName(dictionaryName);
     request.setFieldsList(this.convertArrayToB64Strings(fields));
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
 
     return await new Promise(resolve => {
       this.clientWrapper.dictionaryGet(
@@ -1590,7 +1595,7 @@ export class DataClient<
   ): Promise<CacheDictionaryFetch.Response> {
     const request = new _DictionaryFetchRequest();
     request.setDictionaryName(dictionaryName);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.dictionaryFetch(
         request,
@@ -1672,7 +1677,7 @@ export class DataClient<
     request.setAmount(amount);
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.dictionaryIncrement(
         request,
@@ -1732,7 +1737,7 @@ export class DataClient<
     const request = new _DictionaryDeleteRequest();
     request.setDictionaryName(dictionaryName);
     request.setSome(new _DictionaryDeleteRequest.Some().addFields(field));
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.dictionaryDelete(
         request,
@@ -1788,7 +1793,7 @@ export class DataClient<
     const request = new _DictionaryDeleteRequest();
     request.setDictionaryName(dictionaryName);
     request.setSome(new _DictionaryDeleteRequest.Some().setFieldsList(fields));
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
 
     return await new Promise(resolve => {
       this.clientWrapper.dictionaryDelete(
@@ -1878,7 +1883,7 @@ export class DataClient<
     request.setWithScores(true);
     request.setByIndex(by_index);
 
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetFetch(
         request,
@@ -2012,7 +2017,7 @@ export class DataClient<
     request.setWithScores(true);
     request.setByScore(by_score);
 
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetFetch(
         request,
@@ -2116,7 +2121,7 @@ export class DataClient<
     request.setElementsList([elem]);
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetPut(
         request,
@@ -2185,7 +2190,7 @@ export class DataClient<
     request.setElementsList(elements);
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetPut(
         request,
@@ -2269,7 +2274,7 @@ export class DataClient<
     const request = new _SortedSetGetScoreRequest();
     request.setSetName(sortedSetName);
     request.setValuesList(values);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetGetScore(
         request,
@@ -2353,7 +2358,7 @@ export class DataClient<
     const request = new _SortedSetGetRankRequest();
     request.setSetName(sortedSetName);
     request.setValue(value);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetGetRank(
         request,
@@ -2433,7 +2438,7 @@ export class DataClient<
     request.setAmount(amount);
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetIncrement(
         request,
@@ -2495,7 +2500,7 @@ export class DataClient<
     const request = new _SortedSetRemoveRequest();
     request.setSetName(sortedSetName);
     request.setSome(new _SortedSetRemoveRequest._Some().setValuesList([value]));
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetRemove(
         request,
@@ -2553,7 +2558,7 @@ export class DataClient<
     const request = new _SortedSetRemoveRequest();
     request.setSetName(sortedSetName);
     request.setSome(new _SortedSetRemoveRequest._Some().setValuesList(values));
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.sortedSetRemove(
         request,
@@ -2594,7 +2599,7 @@ export class DataClient<
   ): Promise<ItemGetType.Response> {
     const request = new _ItemGetTypeRequest();
     request.setCacheKey(key);
-    const metadata = createMetadata(cacheName);
+    const metadata = createMetadata(cacheName, this.deadlineMillis);
     return await new Promise(resolve => {
       this.clientWrapper.itemGetType(
         request,

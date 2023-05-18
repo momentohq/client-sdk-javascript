@@ -7,6 +7,10 @@ export function convertToB64String(v: string | Uint8Array): string {
   return btoa(String.fromCharCode.apply(null, v));
 }
 
-export function createMetadata(cacheName: string): {cache: string} {
-  return {cache: cacheName};
+export function createMetadata(
+  cacheName: string,
+  timeoutMillis: number
+): {cache: string; deadline: string} {
+  const deadline = Date.now() + timeoutMillis;
+  return {cache: cacheName, deadline: deadline.toString()};
 }

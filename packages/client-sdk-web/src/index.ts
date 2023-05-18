@@ -1,6 +1,7 @@
 import {CacheClient} from './cache-client';
 import {AuthClient} from './auth-client';
 import {TopicClient} from './topic-client';
+import * as Configurations from './config/configurations';
 
 // Cache Client Response Types
 import * as CacheGet from '@gomomento/sdk-core/dist/src/messages/responses/cache-get';
@@ -99,6 +100,7 @@ export {
   ItemType,
   SortedSetOrder,
   Configuration,
+  Configurations,
   CacheClient,
   AuthClient,
   CacheInfo,

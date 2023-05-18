@@ -1,7 +1,4 @@
 import {CacheConfiguration} from './configuration';
-import {FixedCountRetryStrategy} from './retry/fixed-count-retry-strategy';
-import {RetryStrategy} from './retry/retry-strategy';
-import {Middleware} from './middleware/middleware';
 import {
   DefaultMomentoLoggerFactory,
   MomentoLoggerFactory,
@@ -13,21 +10,8 @@ import {
   TransportStrategy,
 } from './transport';
 
-// 4 minutes.  We want to remain comfortably underneath the idle timeout for AWS NLB, which is 350s.
-const defaultMaxIdleMillis = 4 * 60 * 1_000;
-const defaultMaxSessionMemoryMb = 256;
 const defaultLoggerFactory: MomentoLoggerFactory =
   new DefaultMomentoLoggerFactory();
-const defaultMiddlewares: Middleware[] = [];
-
-function defaultRetryStrategy(
-  loggerFactory: MomentoLoggerFactory
-): RetryStrategy {
-  return new FixedCountRetryStrategy({
-    loggerFactory: loggerFactory,
-    maxAttempts: 3,
-  });
-}
 
 /**
  * Laptop config provides defaults suitable for a medium-to-high-latency dev environment.  Permissive timeouts, retries, and
@@ -60,17 +44,13 @@ export class Laptop extends CacheConfiguration {
     const deadlineMillis = 5000;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
-      maxSessionMemoryMb: defaultMaxSessionMemoryMb,
     });
     const transportStrategy: TransportStrategy = new StaticTransportStrategy({
       grpcConfiguration: grpcConfig,
-      maxIdleMillis: defaultMaxIdleMillis,
     });
     return new Laptop({
       loggerFactory: loggerFactory,
-      retryStrategy: defaultRetryStrategy(loggerFactory),
       transportStrategy: transportStrategy,
-      middlewares: defaultMiddlewares,
     });
   }
 }
@@ -100,17 +80,13 @@ class InRegionDefault extends CacheConfiguration {
     const deadlineMillis = 1100;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
-      maxSessionMemoryMb: defaultMaxSessionMemoryMb,
     });
     const transportStrategy: TransportStrategy = new StaticTransportStrategy({
       grpcConfiguration: grpcConfig,
-      maxIdleMillis: defaultMaxIdleMillis,
     });
     return new InRegionDefault({
       loggerFactory: loggerFactory,
-      retryStrategy: defaultRetryStrategy(loggerFactory),
       transportStrategy: transportStrategy,
-      middlewares: defaultMiddlewares,
     });
   }
 }
@@ -141,17 +117,13 @@ class InRegionLowLatency extends CacheConfiguration {
     const deadlineMillis = 500;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
-      maxSessionMemoryMb: defaultMaxSessionMemoryMb,
     });
     const transportStrategy: TransportStrategy = new StaticTransportStrategy({
       grpcConfiguration: grpcConfig,
-      maxIdleMillis: defaultMaxIdleMillis,
     });
     return new InRegionDefault({
       loggerFactory: loggerFactory,
-      retryStrategy: defaultRetryStrategy(loggerFactory),
       transportStrategy: transportStrategy,
-      middlewares: defaultMiddlewares,
     });
   }
 }
