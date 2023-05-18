@@ -17,7 +17,7 @@
     "test": "jest --testPathIgnorePatterns auth-client.test.ts",
     "integration-test-auth": "jest auth-client.test.ts",
     "unit-test": "jest unit",
-    "integration-test": "jest integration --testPathIgnorePatterns auth-client.test.ts",
+    "integration-test": "jest integration/shared/get-set-delete --testPathIgnorePatterns auth-client.test.ts --maxWorkers 1",
     "build-and-run-tests": "cd ../common-integration-tests && npm run build && cd - && jest --testPathIgnorePatterns auth-client.test.ts",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",

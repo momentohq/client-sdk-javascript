@@ -18,6 +18,7 @@ import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache'
 
 export function runGetSetDeleteTests(
   Momento: ICacheClient,
+  MomentoShortDeadline: ICacheClient,
   IntegrationTestCacheName: string
 ) {
   describe('get/set/delete', () => {
@@ -536,6 +537,25 @@ export function runGetSetDeleteTests(
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Miss);
       }, `expected MISS but got ${getResponse.toString()}`);
+    });
+
+    it('should respect client timeout values', async () => {
+      console.log('\n\n\n\n\n-------->');
+      console.log(MomentoShortDeadline);
+      const cacheKey = v4();
+      const setResponse = await MomentoShortDeadline.set(
+        IntegrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      console.log(setResponse);
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Error);
+      }, `expected ERROR but got ${setResponse.toString()}`);
+      const respErrorCode = (setResponse as CacheSet.Error).errorCode();
+      expectWithMessage(() => {
+        expect(respErrorCode).toEqual(MomentoErrorCode.TIMEOUT_ERROR);
+      }, `expected TIMEOUT but got ${respErrorCode}`);
     });
   });
 }

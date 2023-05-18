@@ -1,6 +1,10 @@
 import {runGetSetDeleteTests} from '@gomomento/common-integration-tests';
-import {SetupIntegrationTest} from '../integration-setup';
+import {
+  momentoClientForTestingWithDeadline,
+  SetupIntegrationTest,
+} from '../integration-setup';
 
 const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
+const MomentoShortDeadline = momentoClientForTestingWithDeadline(1);
 
-runGetSetDeleteTests(Momento, IntegrationTestCacheName);
+runGetSetDeleteTests(Momento, MomentoShortDeadline, IntegrationTestCacheName);

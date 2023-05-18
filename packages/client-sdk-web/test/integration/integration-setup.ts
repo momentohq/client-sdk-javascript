@@ -28,6 +28,15 @@ function momentoClientForTesting(): CacheClient {
   return new CacheClient(IntegrationTestCacheClientProps);
 }
 
+export function momentoClientForTestingWithDeadline(deadlineMillis: number) {
+  return new CacheClient({
+    configuration:
+      Configurations.Laptop.latest().withClientTimeoutMillis(deadlineMillis),
+    credentialProvider: credsProvider,
+    defaultTtlSeconds: 1111,
+  });
+}
+
 function momentoTopicClientForTesting(): TopicClient {
   return new TopicClient({
     configuration: Configurations.Laptop.latest(),

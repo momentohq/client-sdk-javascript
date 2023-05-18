@@ -55,6 +55,15 @@ function momentoTopicClientForTesting(): TopicClient {
   });
 }
 
+export function momentoClientForTestingWithDeadline(deadlineMillis: number) {
+  return new CacheClient({
+    configuration:
+      Configurations.Laptop.latest().withClientTimeoutMillis(deadlineMillis),
+    credentialProvider: credsProvider,
+    defaultTtlSeconds: 1111,
+  });
+}
+
 export function SetupIntegrationTest(): {
   Momento: CacheClient;
   IntegrationTestCacheName: string;
