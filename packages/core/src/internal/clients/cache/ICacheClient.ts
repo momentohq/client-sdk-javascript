@@ -1,4 +1,5 @@
 import {IControlClient} from './IControlClient';
+import {IPingClient} from './IPingClient';
 import {
   CacheDelete,
   CacheGet,
@@ -67,7 +68,7 @@ export type SortedSetFetchByRankOptions = SortedSetFetchByRankCallOptions;
 export type SortedSetFetchByScoreOptions = SortedSetFetchByScoreCallOptions;
 export type SortedSetIncrementOptions = CollectionCallOptions;
 
-export interface ICacheClient extends IControlClient {
+export interface ICacheClient extends IControlClient, IPingClient {
   get(cacheName: string, key: string | Uint8Array): Promise<CacheGet.Response>;
   set(
     cacheName: string,
