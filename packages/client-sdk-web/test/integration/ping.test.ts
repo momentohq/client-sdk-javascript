@@ -17,6 +17,9 @@ describe('ping service', () => {
     await cacheClient.ping();
   });
   it('should fail on bad URL', async () => {
+    // suppress error output to the console as we are intentionally triggering an error
+    const consoleErr = console.error;
+    console.error = jest.fn();
     const pingClient = new PingClient({
       endpoint: 'bad.url',
       configuration: {
@@ -34,5 +37,6 @@ describe('ping service', () => {
         expect((error as Error).name).toEqual('RpcError');
       }, `expected RpcError but got ${(error as Error).toString()}`);
     }
+    console.error = consoleErr;
   });
 });

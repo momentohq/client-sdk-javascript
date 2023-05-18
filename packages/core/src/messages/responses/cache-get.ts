@@ -1,11 +1,11 @@
-import {SdkError} from '../../errors/errors';
+import {SdkError} from '../../errors';
 import {
   ResponseBase,
   ResponseError,
   ResponseHit,
   ResponseMiss,
 } from './response-base';
-import {truncateString} from '../../internal/utils/display';
+import {truncateString} from '../../internal/utils';
 
 const TEXT_DECODER = new TextDecoder();
 

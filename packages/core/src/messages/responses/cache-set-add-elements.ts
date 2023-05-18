@@ -1,5 +1,5 @@
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
-import {SdkError} from '../../errors/errors';
+import {SdkError} from '../../errors';
 import * as CacheSetAddElement from './cache-set-add-element';
 
 /**

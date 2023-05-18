@@ -1,11 +1,11 @@
-import {SdkError} from '../../errors/errors';
+import {SdkError} from '../../errors';
 import {
   ResponseBase,
   ResponseError,
   ResponseHit,
   ResponseMiss,
 } from './response-base';
-import {ItemType} from '../../utils/itemType';
+import {ItemType} from '../../utils';
 
 /**
  * Parent response type for a item type request.  The

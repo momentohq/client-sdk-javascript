@@ -1,5 +1,5 @@
 import {SigningKey} from '../signing-key';
-import {SdkError} from '../../errors/errors';
+import {SdkError} from '../../errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 import {_SigningKey} from './grpc-response-types';
 

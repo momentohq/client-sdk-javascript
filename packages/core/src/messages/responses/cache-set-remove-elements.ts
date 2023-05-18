@@ -1,6 +1,6 @@
 import * as CacheSetRemoveElement from './cache-set-remove-element';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
-import {SdkError} from '../../errors/errors';
+import {SdkError} from '../../errors';
 
 class _Success extends ResponseBase {}
 

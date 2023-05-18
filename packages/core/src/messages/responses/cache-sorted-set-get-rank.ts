@@ -4,7 +4,7 @@ import {
   ResponseMiss,
   ResponseError,
 } from './response-base';
-import {SdkError} from '../../errors/errors';
+import {SdkError} from '../../errors';
 
 /**
  * Parent response type for a sorted set GetRank request.  The

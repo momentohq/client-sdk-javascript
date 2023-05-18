@@ -1,4 +1,4 @@
-import {SdkError, UnknownError} from '../../errors/errors';
+import {SdkError, UnknownError} from '../../errors';
 import {
   ResponseBase,
   ResponseHit,
