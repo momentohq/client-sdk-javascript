@@ -1,4 +1,4 @@
-import {Buffer} from 'buffer/index';
+import {Buffer} from 'buffer';
 
 export const decodeFromBase64 = (base64: string) => {
   return Buffer.from(base64, 'base64').toString('utf8');

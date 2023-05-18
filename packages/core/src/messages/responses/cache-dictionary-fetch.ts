@@ -4,7 +4,7 @@ import {
   ResponseMiss,
   ResponseError,
 } from './response-base';
-import {SdkError} from '../../errors/errors';
+import {SdkError} from '../../errors';
 import {_DictionaryFieldValuePair} from './grpc-response-types';
 
 const TEXT_DECODER = new TextDecoder();

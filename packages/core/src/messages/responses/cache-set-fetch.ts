@@ -4,8 +4,8 @@ import {
   ResponseMiss,
   ResponseHit,
 } from './response-base';
-import {SdkError} from '../../errors/errors';
-import {truncateStringArray} from '../../internal/utils/display';
+import {SdkError} from '../../errors';
+import {truncateStringArray} from '../../internal/utils';
 
 const TEXT_DECODER = new TextDecoder();
 

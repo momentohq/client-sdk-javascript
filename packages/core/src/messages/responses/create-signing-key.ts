@@ -1,4 +1,4 @@
-import {SdkError} from '../../errors/errors';
+import {SdkError} from '../../errors';
 import {_SigningKey} from './grpc-response-types';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 
@@ -36,7 +36,7 @@ class _Success extends Response {
     this.keyId = JSON.parse(key)['kid'];
     this.endpoint = endpoint;
     this.key = key;
-    this.expiresAt = new Date(result?.expiresAt ?? 0 * 1000);
+    this.expiresAt = new Date(result?.expiresAt ?? 0);
   }
 
   public getKeyId(): string {

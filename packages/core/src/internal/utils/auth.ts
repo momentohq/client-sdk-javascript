@@ -1,4 +1,4 @@
-import {InvalidArgumentError} from '../../errors/errors';
+import {InvalidArgumentError} from '../../errors';
 import jwtDecode from 'jwt-decode';
 import {isBase64} from './validators';
 import {decodeFromBase64} from './string';
@@ -32,7 +32,7 @@ interface TokenAndEndpoints {
 }
 
 /**
- * @param {string=} token
+ * @param {string} token
  * @returns TokenAndEndpoints
  */
 export const decodeAuthToken = (token?: string): TokenAndEndpoints => {

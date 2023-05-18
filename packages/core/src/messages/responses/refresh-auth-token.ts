@@ -1,7 +1,7 @@
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 import {SdkError} from '../../errors';
 import {encodeToBase64} from '../../internal/utils';
-import {ExpiresAt} from '../../utils/expiration';
+import {ExpiresAt} from '../../utils';
 
 export abstract class Response extends ResponseBase {}
 

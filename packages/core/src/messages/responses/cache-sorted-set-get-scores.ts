@@ -1,5 +1,4 @@
-// older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
-import {SdkError, UnknownError} from '../../errors/errors';
+import {SdkError, UnknownError} from '../../errors';
 import {
   ResponseBase,
   ResponseHit,
