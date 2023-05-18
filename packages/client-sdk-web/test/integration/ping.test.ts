@@ -1,14 +1,38 @@
-import {PingClient} from '../../src/ping-client';
-import {NoopMomentoLoggerFactory} from '@gomomento/sdk-core';
+import {
+  CredentialProvider,
+  MomentoLoggerFactory,
+  NoopMomentoLoggerFactory,
+} from '@gomomento/sdk-core';
+import {CacheClient} from '../../src';
+import {PingClient} from '../../src/internal/ping-client';
+import {expectWithMessage} from '@gomomento/common-integration-tests';
 
 describe('ping service', () => {
   it('ping should work', async () => {
-    const client = new PingClient({
-      endpoint: 'cell-alpha-dev.preprod.a.momentohq.com',
+    const cacheClient = new CacheClient({
+      credentialProvider: CredentialProvider.fromEnvironmentVariable({
+        environmentVariableName: 'TEST_AUTH_TOKEN',
+      }),
+    });
+    await cacheClient.ping();
+  });
+  it('should fail on bad URL', async () => {
+    const pingClient = new PingClient({
+      endpoint: 'bad.url',
       configuration: {
-        getLoggerFactory: () => new NoopMomentoLoggerFactory(),
+        getLoggerFactory(): MomentoLoggerFactory {
+          return new NoopMomentoLoggerFactory();
+        },
       },
     });
-    await client.ping();
+    try {
+      await pingClient.ping();
+      // we shouldn't get to the assertion below
+      expect(true).toBeFalse();
+    } catch (error) {
+      expectWithMessage(() => {
+        expect((error as Error).name).toEqual('RpcError');
+      }, `expected RpcError but got ${(error as Error).toString()}`);
+    }
   });
 });

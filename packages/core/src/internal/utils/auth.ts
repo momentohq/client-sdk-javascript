@@ -24,8 +24,10 @@ function decodeAuthTokenClaims<T>(authToken: string): T {
 }
 
 interface TokenAndEndpoints {
-  controlEndpoint: string;
-  cacheEndpoint: string;
+  // If we decode a JWT that doesn't actually have the controlEndpoint/cacheEndpoint claims, then they will come back
+  // as undefined; thus we need the types here to be `string | undefined`.
+  controlEndpoint: string | undefined;
+  cacheEndpoint: string | undefined;
   authToken: string;
 }
 
@@ -57,6 +59,9 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
         authToken: base64DecodedToken.api_key,
       };
     } else {
+      // This decode function uses generics to advertise that we will usually expect to find the LegacyClaims.  However,
+      // if the token is a valid JWT but not actually one of our legacy tokens, the endpoint claims will be undefined,
+      // which is why the return type for this function specifies that the controlEndpoint/cacheEndpoint may be undefined.
       const decodedLegacyToken = decodeAuthTokenClaims<LegacyClaims>(token);
       return {
         controlEndpoint: decodedLegacyToken.cp,

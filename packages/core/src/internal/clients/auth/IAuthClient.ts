@@ -1,19 +1,7 @@
-import {
-  CredentialProvider,
-  ExpiresIn,
-  GenerateAuthToken,
-  RefreshAuthToken,
-} from '../../../index';
+import {ExpiresIn, GenerateAuthToken, RefreshAuthToken} from '../../../index';
 
 export interface IAuthClient {
-  generateAuthToken(
-    controlEndpoint: string,
-    token: string,
-    expiresIn: ExpiresIn
-  ): Promise<GenerateAuthToken.Response>;
+  generateAuthToken(expiresIn: ExpiresIn): Promise<GenerateAuthToken.Response>;
 
-  refreshAuthToken(
-    credentialProvider: CredentialProvider,
-    refreshToken: string
-  ): Promise<RefreshAuthToken.Response>;
+  refreshAuthToken(refreshToken: string): Promise<RefreshAuthToken.Response>;
 }
