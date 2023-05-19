@@ -15,12 +15,20 @@ import {
   ExpiresAt,
   ExpiresIn,
   TokenScope,
+  Permissions,
+  Permission,
+  TopicPermission,
+  CachePermission,
+  CacheRole,
+  TopicRole,
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {AuthClientProps} from '../auth-client-props';
-import {validateValidForSeconds} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {
+  InternalSuperUserPermissions,
+  validateValidForSeconds,
+} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
-// import exp = require('constants');
 
 export class InternalWebGrpcAuthClient<
   REQ extends Request<REQ, RESP>,
@@ -54,7 +62,8 @@ export class InternalWebGrpcAuthClient<
     );
 
     const request = new _GenerateApiTokenRequest();
-    request.setSessionToken(this.creds.getAuthToken());
+    request.setAuthToken(this.creds.getAuthToken());
+    request.setPermissions(permissionsFromScope(scope));
 
     if (expiresIn.doesExpire()) {
       try {
@@ -120,4 +129,79 @@ export class InternalWebGrpcAuthClient<
       });
     });
   }
+}
+
+export function permissionsFromScope(
+  scope: TokenScope
+): _GenerateApiTokenRequest.Permissions {
+  const result = new _GenerateApiTokenRequest.Permissions();
+  if (scope instanceof InternalSuperUserPermissions) {
+    result.setSuperUser(
+      _GenerateApiTokenRequest.SuperUserPermissions.SUPERUSER
+    );
+    return result;
+  } else if (scope instanceof Permissions) {
+    const explicitPermissions =
+      new _GenerateApiTokenRequest.ExplicitPermissions();
+    explicitPermissions.setPermissionsList(
+      scope.permissions.map(p => tokenPermissionToGrpcPermission(p))
+    );
+    result.setExplicit(explicitPermissions);
+    return result;
+  }
+  throw new Error(`Unrecognized token scope: ${JSON.stringify(scope)}`);
+}
+
+function tokenPermissionToGrpcPermission(
+  permission: Permission
+): _GenerateApiTokenRequest.PermissionsType {
+  const result = new _GenerateApiTokenRequest.PermissionsType();
+  if (permission instanceof TopicPermission) {
+    result.setTopicPermissions(topicPermissionToGrpcPermission(permission));
+    return result;
+  } else if (permission instanceof CachePermission) {
+    result.setCachePermissions(cachePermissionToGrpcPermission(permission));
+    return result;
+  }
+  throw new Error(
+    `Unrecognized token permission: ${JSON.stringify(permission)}`
+  );
+}
+
+function topicPermissionToGrpcPermission(
+  permission: TopicPermission
+): _GenerateApiTokenRequest.PermissionsType.TopicPermissions {
+  switch (permission.topicRole) {
+    case TopicRole.None:
+      throw new Error('TopicRole.None not yet supported');
+    case TopicRole.ReadWrite: {
+      const grpcPermission =
+        new _GenerateApiTokenRequest.PermissionsType.TopicPermissions();
+      grpcPermission.setRole(_GenerateApiTokenRequest.TopicRole.TOPICREADWRITE);
+      return grpcPermission;
+    }
+  }
+
+  throw new Error(
+    `Unrecognized topic permission: ${JSON.stringify(permission)}`
+  );
+}
+
+function cachePermissionToGrpcPermission(
+  permission: CachePermission
+): _GenerateApiTokenRequest.PermissionsType.CachePermissions {
+  switch (permission.cacheRole) {
+    case CacheRole.None:
+      throw new Error('CacheRole.None not yet supported');
+    case CacheRole.ReadWrite: {
+      const grpcPermission =
+        new _GenerateApiTokenRequest.PermissionsType.CachePermissions();
+      grpcPermission.setRole(_GenerateApiTokenRequest.CacheRole.CACHEREADWRITE);
+      return grpcPermission;
+    }
+  }
+
+  throw new Error(
+    `Unrecognized cache permission: ${JSON.stringify(permission)}`
+  );
 }

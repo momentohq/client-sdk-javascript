@@ -3,8 +3,12 @@ export enum CacheRole {
   ReadWrite = 'readwrite',
 }
 
-export interface CachePermission {
+export class CachePermission {
   cacheRole: CacheRole;
+
+  constructor(cacheRole: CacheRole) {
+    this.cacheRole = cacheRole;
+  }
 }
 
 export enum TopicRole {
@@ -12,21 +16,32 @@ export enum TopicRole {
   ReadWrite = 'readwrite',
 }
 
-export interface TopicPermission {
+export class TopicPermission {
   topicRole: TopicRole;
+
+  constructor(topicRole: TopicRole) {
+    this.topicRole = topicRole;
+  }
 }
 
 export type Permission = CachePermission | TopicPermission;
 
-export interface Permissions {
+export class Permissions {
   permissions: Array<Permission>;
+
+  constructor(permissions: Array<Permission>) {
+    this.permissions = permissions;
+  }
 }
 
-export const AllDataReadWrite: Permissions = {
-  permissions: [
-    {cacheRole: CacheRole.ReadWrite},
-    {topicRole: TopicRole.ReadWrite},
-  ],
-};
+export const AllDataReadWrite: Permissions = new Permissions([
+  new CachePermission(CacheRole.ReadWrite),
+  new TopicPermission(TopicRole.ReadWrite),
+]);
 
-export type TokenScope = typeof AllDataReadWrite | Permissions;
+export abstract class PredefinedScope {}
+
+export type TokenScope =
+  | typeof AllDataReadWrite
+  | Permissions
+  | PredefinedScope;

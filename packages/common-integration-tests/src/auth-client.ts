@@ -1,17 +1,20 @@
 import {
+  AllDataReadWrite,
   ExpiresIn,
   GenerateAuthToken,
   MomentoErrorCode,
   RefreshAuthToken,
+  TokenScope,
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/clients/IAuthClient';
 import {expectWithMessage} from './common-int-test-utils';
-import {Permissions} from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
+import {InternalSuperUserPermissions} from '@gomomento/sdk-core/dist/src/internal/utils/auth';
 
-const SUPER_USER_PERMISSIONS: Permissions = {permissions: []};
+const SUPER_USER_PERMISSIONS: TokenScope = new InternalSuperUserPermissions();
 
 export function runAuthClientTests(
   sessionTokenAuthClient: IAuthClient,
+  legacyTokenAuthClient: IAuthClient,
   authTokenAuthClientFactory: (authToken: string) => IAuthClient
 ) {
   describe('generate auth token using session token credentials', () => {
@@ -130,6 +133,118 @@ export function runAuthClientTests(
       expect((refreshResponse as RefreshAuthToken.Error).errorCode()).toEqual(
         MomentoErrorCode.AUTHENTICATION_ERROR
       );
+    });
+
+    it('should support generating a superuser token when authenticated via a session token', async () => {
+      const generateResponse = await sessionTokenAuthClient.generateAuthToken(
+        SUPER_USER_PERMISSIONS,
+        ExpiresIn.seconds(1)
+      );
+      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Success);
+    });
+
+    it('should support generating an AllDataReadWrite token when authenticated via a session token', async () => {
+      const generateResponse = await sessionTokenAuthClient.generateAuthToken(
+        AllDataReadWrite,
+        ExpiresIn.seconds(1)
+      );
+      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Success);
+    });
+
+    it('should support generating a superuser token when authenticated via a v1 superuser token', async () => {
+      const superUserTokenResponse =
+        await sessionTokenAuthClient.generateAuthToken(
+          SUPER_USER_PERMISSIONS,
+          ExpiresIn.seconds(10)
+        );
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+
+      const authClient = authTokenAuthClientFactory(
+        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+      );
+
+      const generateResponse = await authClient.generateAuthToken(
+        SUPER_USER_PERMISSIONS,
+        ExpiresIn.seconds(1)
+      );
+      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Success);
+    });
+
+    it('should support generating an AllDataReadWrite token when authenticated via a v1 superuser token', async () => {
+      const superUserTokenResponse =
+        await sessionTokenAuthClient.generateAuthToken(
+          SUPER_USER_PERMISSIONS,
+          ExpiresIn.seconds(10)
+        );
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+
+      const authClient = authTokenAuthClientFactory(
+        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+      );
+
+      const generateResponse = await authClient.generateAuthToken(
+        AllDataReadWrite,
+        ExpiresIn.seconds(1)
+      );
+      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Success);
+    });
+
+    it('should not support generating a superuser token when authenticated via a v1 AllDataReadWrite token', async () => {
+      const allDataReadWriteTokenResponse =
+        await sessionTokenAuthClient.generateAuthToken(
+          AllDataReadWrite,
+          ExpiresIn.seconds(10)
+        );
+      expect(allDataReadWriteTokenResponse).toBeInstanceOf(
+        GenerateAuthToken.Success
+      );
+
+      const authClient = authTokenAuthClientFactory(
+        (allDataReadWriteTokenResponse as GenerateAuthToken.Success).authToken
+      );
+
+      const generateResponse = await authClient.generateAuthToken(
+        SUPER_USER_PERMISSIONS,
+        ExpiresIn.seconds(1)
+      );
+      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Error);
+    });
+
+    it('should not support generating an AllDataReadWrite token when authenticated via a v1 AllDataReadWrite token', async () => {
+      const allDataReadWriteTokenResponse =
+        await sessionTokenAuthClient.generateAuthToken(
+          AllDataReadWrite,
+          ExpiresIn.seconds(10)
+        );
+      expect(allDataReadWriteTokenResponse).toBeInstanceOf(
+        GenerateAuthToken.Success
+      );
+
+      const authClient = authTokenAuthClientFactory(
+        (allDataReadWriteTokenResponse as GenerateAuthToken.Success).authToken
+      );
+
+      const generateResponse = await authClient.generateAuthToken(
+        AllDataReadWrite,
+        ExpiresIn.seconds(1)
+      );
+      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Error);
+    });
+
+    it('should not support generating a superuser token when authenticated via a legacy token', async () => {
+      const generateResponse = await legacyTokenAuthClient.generateAuthToken(
+        SUPER_USER_PERMISSIONS,
+        ExpiresIn.seconds(1)
+      );
+      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Error);
+    });
+
+    it('should not support generating an AllDataReadWrite token when authenticated via a legacy token', async () => {
+      const generateResponse = await legacyTokenAuthClient.generateAuthToken(
+        AllDataReadWrite,
+        ExpiresIn.seconds(1)
+      );
+      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Error);
     });
   });
 }
