@@ -3,16 +3,15 @@ import {
   testCacheName,
 } from '@gomomento/common-integration-tests';
 import {
-  AuthClient,
   CreateCache,
-  Configurations,
   DeleteCache,
-  CacheClient,
   CredentialProvider,
-  TopicClient,
-} from '../../src';
-import {ITopicClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+} from '@gomomento/sdk-core';
 import {CacheClientProps} from '../../src/cache-client-props';
+import {CacheClient, TopicClient, Configurations, AuthClient} from '../../src';
+import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
+import {IAuthClient} from '@gomomento/sdk-core/dist/src/clients/IAuthClient';
+import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 
 const credsProvider = CredentialProvider.fromEnvironmentVariable({
   environmentVariableName: 'TEST_AUTH_TOKEN',
@@ -100,5 +99,53 @@ export function SetupAuthClientIntegrationTest(): {
           authToken: authToken,
         }),
       }),
+  };
+}
+
+export function setupTokenScopeTest(): {
+  v1SuperUserToken: string;
+  authClientFactory: (token: string) => IAuthClient;
+  cacheClientFactory: (token: string) => ICacheClient;
+  cacheName: string;
+} {
+  const cacheName = testCacheName();
+
+  beforeAll(async () => {
+    // Use a fresh client to avoid test interference with setup.
+    const momento = momentoClientForTesting();
+    await deleteCacheIfExists(momento, cacheName);
+    const createResponse = await momento.createCache(cacheName);
+    if (createResponse instanceof CreateCache.Error) {
+      throw createResponse.innerException();
+    }
+  });
+
+  afterAll(async () => {
+    // Use a fresh client to avoid test interference with teardown.
+    const momento = momentoClientForTesting();
+    const deleteResponse = await momento.deleteCache(cacheName);
+    if (deleteResponse instanceof DeleteCache.Error) {
+      throw deleteResponse.innerException();
+    }
+  });
+
+  return {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    v1SuperUserToken: process.env['TEST_AUTH_TOKEN']!,
+    authClientFactory: authToken =>
+      new AuthClient({
+        credentialProvider: CredentialProvider.fromString({
+          authToken: authToken,
+        }),
+      }),
+    cacheClientFactory: authToken =>
+      new CacheClient({
+        credentialProvider: CredentialProvider.fromString({
+          authToken: authToken,
+        }),
+        configuration: Configurations.Laptop.v1(),
+        defaultTtlSeconds: 60,
+      }),
+    cacheName: cacheName,
   };
 }
