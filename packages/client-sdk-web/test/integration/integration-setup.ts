@@ -1,31 +1,36 @@
-import {AuthClient, CacheClient, TopicClient} from '../../src';
 import {
   deleteCacheIfExists,
   testCacheName,
 } from '@gomomento/common-integration-tests';
 import {
+  AuthClient,
   CreateCache,
-  CredentialProvider,
+  Configurations,
   DeleteCache,
-  NoopMomentoLoggerFactory,
-} from '@gomomento/sdk-core';
+  CacheClient,
+  CredentialProvider,
+  TopicClient,
+} from '../../src';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {CacheClientProps} from '../../src/cache-client-props';
 
 const credsProvider = CredentialProvider.fromEnvironmentVariable({
   environmentVariableName: 'TEST_AUTH_TOKEN',
 });
 
-function momentoClientForTesting() {
-  return new CacheClient({
-    credentialProvider: credsProvider,
-  });
+export const IntegrationTestCacheClientProps: CacheClientProps = {
+  configuration: Configurations.Laptop.latest(),
+  credentialProvider: credsProvider,
+  defaultTtlSeconds: 1111,
+};
+
+function momentoClientForTesting(): CacheClient {
+  return new CacheClient(IntegrationTestCacheClientProps);
 }
 
-function momentoTopicClientForTesting(): ITopicClient {
+function momentoTopicClientForTesting(): TopicClient {
   return new TopicClient({
-    configuration: {
-      getLoggerFactory: () => new NoopMomentoLoggerFactory(),
-    },
+    configuration: Configurations.Laptop.latest(),
     credentialProvider: credsProvider,
   });
 }

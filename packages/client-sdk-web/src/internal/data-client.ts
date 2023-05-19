@@ -109,7 +109,11 @@ import {
   validateSortedSetScores,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
-import {convertToB64String, createMetadata} from '../utils/web-client-utils';
+import {
+  convertToB64String,
+  createDeadline,
+  createMetadata,
+} from '../utils/web-client-utils';
 
 export interface DataClientProps {
   configuration: Configuration;
@@ -131,6 +135,7 @@ export class DataClient<
   private readonly logger: MomentoLogger;
   private readonly authHeaders: {authorization: string};
   private readonly defaultTtlSeconds: number;
+  private readonly deadlineMillis: number;
 
   /**
    * @param {DataClientProps} props
@@ -147,6 +152,10 @@ export class DataClient<
       `Creating data client using endpoint: '${props.credentialProvider.getCacheEndpoint()}`
     );
 
+    this.deadlineMillis = props.configuration
+      .getTransportStrategy()
+      .getGrpcConfig()
+      .getDeadlineMillis();
     this.defaultTtlSeconds = props.defaultTtlSeconds;
     this.authHeaders = {authorization: props.credentialProvider.getAuthToken()};
     this.clientWrapper = new cache.ScsClient(
@@ -188,6 +197,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -270,6 +280,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -332,6 +343,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -388,6 +400,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -445,6 +458,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -487,6 +501,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           const theSet = resp.getFound();
@@ -543,6 +558,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         err => {
           if (err) {
@@ -595,6 +611,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         err => {
           if (err) {
@@ -669,6 +686,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -743,6 +761,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -814,6 +833,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp?.getMissing()) {
@@ -901,6 +921,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -946,6 +967,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp?.getMissing()) {
@@ -1001,6 +1023,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp?.getMissing()) {
@@ -1054,6 +1077,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp?.getMissing()) {
@@ -1128,6 +1152,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -1195,6 +1220,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -1247,6 +1273,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -1316,6 +1343,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -1386,6 +1414,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -1444,6 +1473,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp?.getMissing()) {
@@ -1534,6 +1564,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           const found = resp?.getFound();
@@ -1597,6 +1628,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           const theDict = resp?.getFound();
@@ -1679,6 +1711,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -1739,6 +1772,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -1796,6 +1830,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -1885,6 +1920,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp && resp.getFound()) {
@@ -2019,6 +2055,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -2123,6 +2160,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -2192,6 +2230,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -2276,6 +2315,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp?.getMissing()) {
@@ -2360,6 +2400,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (
@@ -2440,6 +2481,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -2502,6 +2544,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         err => {
           if (err) {
@@ -2560,6 +2603,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         err => {
           if (err) {
@@ -2601,6 +2645,7 @@ export class DataClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.deadlineMillis),
         },
         (err, resp) => {
           const theType = resp.getFound();

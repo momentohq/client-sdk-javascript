@@ -1,1 +1,2 @@
-export * from '@gomomento/sdk-core/dist/src/config/transport';
+export * from './grpc-configuration';
+export * from './transport-strategy';

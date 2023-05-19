@@ -1,19 +1,19 @@
-import {
-  CredentialProvider,
-  MomentoLoggerFactory,
-  NoopMomentoLoggerFactory,
-} from '@gomomento/sdk-core';
-import {CacheClient} from '../../src';
+import {CredentialProvider} from '@gomomento/sdk-core';
+import {CacheClient, Configurations} from '../../src';
 import {PingClient} from '../../src/internal/ping-client';
 import {expectWithMessage} from '@gomomento/common-integration-tests';
+import {CacheClientProps} from '../../src/cache-client-props';
 
 describe('ping service', () => {
   it('ping should work', async () => {
-    const cacheClient = new CacheClient({
+    const cacheClientProps: CacheClientProps = {
+      configuration: Configurations.Laptop.latest(),
       credentialProvider: CredentialProvider.fromEnvironmentVariable({
         environmentVariableName: 'TEST_AUTH_TOKEN',
       }),
-    });
+      defaultTtlSeconds: 1111,
+    };
+    const cacheClient = new CacheClient(cacheClientProps);
     await cacheClient.ping();
   });
   it('should fail on bad URL', async () => {
@@ -22,11 +22,7 @@ describe('ping service', () => {
     console.error = jest.fn();
     const pingClient = new PingClient({
       endpoint: 'bad.url',
-      configuration: {
-        getLoggerFactory(): MomentoLoggerFactory {
-          return new NoopMomentoLoggerFactory();
-        },
-      },
+      configuration: Configurations.Laptop.latest(),
     });
     try {
       await pingClient.ping();
