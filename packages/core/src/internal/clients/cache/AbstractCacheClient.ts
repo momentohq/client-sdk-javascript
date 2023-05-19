@@ -62,7 +62,7 @@ import {
   SortedSetPutElementsOptions,
   SortedSetFetchByScoreOptions,
   SortedSetIncrementOptions,
-} from './ICacheClient';
+} from '../../../clients/ICacheClient';
 import {IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
 import {IPingClient} from './IPingClient';

@@ -71,6 +71,7 @@ export function SetupTopicIntegrationTest(): {
 
 export function SetupAuthClientIntegrationTest(): {
   sessionTokenAuthClient: AuthClient;
+  legacyTokenAuthClient: AuthClient;
   authTokenAuthClientFactory: (authToken: string) => AuthClient;
 } {
   return {
@@ -81,6 +82,11 @@ export function SetupAuthClientIntegrationTest(): {
         // steal them from the auth-token-based creds provider.
         cacheEndpoint: credsProvider.getCacheEndpoint(),
         controlEndpoint: credsProvider.getControlEndpoint(),
+      }),
+    }),
+    legacyTokenAuthClient: new AuthClient({
+      credentialProvider: CredentialProvider.fromEnvironmentVariable({
+        environmentVariableName: 'TEST_LEGACY_AUTH_TOKEN',
       }),
     }),
     authTokenAuthClientFactory: authToken =>

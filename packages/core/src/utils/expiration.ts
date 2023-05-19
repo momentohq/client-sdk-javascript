@@ -114,7 +114,7 @@ export class ExpiresAt extends Expiration {
 
   /**
    * Constructs an ExpiresAt with the specified epoch timestamp,
-   * if timestamp is undefined, then epoch timetamp will instead be Infinity.
+   * if timestamp is undefined, then epoch timestamp will instead be Infinity.
    * @param epoch
    * @returns {ExpiresAt}
    */

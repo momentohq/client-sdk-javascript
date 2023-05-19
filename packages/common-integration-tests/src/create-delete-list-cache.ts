@@ -6,7 +6,7 @@ import {
   ValidateCacheProps,
   WithCache,
 } from './common-int-test-utils';
-import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/ICacheClient';
+import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {
   CreateCache,
   DeleteCache,
