@@ -9,7 +9,7 @@ import {
 } from '.';
 import {CacheClientProps} from './cache-client-props';
 import {range} from '@gomomento/sdk-core/dist/src/internal/utils';
-import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/ICacheClient';
+import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {AbstractCacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/AbstractCacheClient';
 
 /**

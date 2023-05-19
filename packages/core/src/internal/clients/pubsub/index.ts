@@ -1,2 +1,2 @@
-export * from './ITopicClient';
+export * from '../../../clients/ITopicClient';
 export * from './IPubsubClient';

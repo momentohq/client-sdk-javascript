@@ -1,12 +1,12 @@
 abstract class Expiration {
   private readonly _doesExpire: boolean;
 
-  constructor(doesExpire: boolean) {
+  protected constructor(doesExpire: boolean) {
     this._doesExpire = doesExpire;
   }
 
   /**
-   * Whether or not the token expires or not.
+   * Whether the token expires or not.
    * @returns {boolean}
    */
   public doesExpire(): boolean {
@@ -20,7 +20,6 @@ export class ExpiresIn extends Expiration {
   /**
    * If doesExpire is false, the refresh token will not have a expiration time, instead validForSeconds will be 'Infinity'.
    * @param {number} [validForSeconds]
-   * @param {boolean} [doesExpire]
    */
   private constructor(validForSeconds: number) {
     super(validForSeconds !== Infinity);
@@ -38,7 +37,6 @@ export class ExpiresIn extends Expiration {
 
   /**
    * Constructs a ExpiresIn which never expires.
-   * @param validForSeconds
    * @returns {ExpiresIn}
    */
   public static never(): ExpiresIn {
@@ -74,7 +72,7 @@ export class ExpiresIn extends Expiration {
   }
 
   /**
-   * Constructs a ExpiresIn with a specified validFor period in days.
+   * Constructs an ExpiresIn with a specified validFor period in days.
    * @param validForDays
    * @returns {ExpiresIn}
    */
@@ -83,7 +81,7 @@ export class ExpiresIn extends Expiration {
   }
 
   /**
-   * Constructs a ExpiresIn with a specified expiresBy period in epoch format.
+   * Constructs an ExpiresIn with a specified expiresBy period in epoch format.
    * @param expiresBy
    * @returns {ExpiresIn}
    */
@@ -115,8 +113,8 @@ export class ExpiresAt extends Expiration {
   }
 
   /**
-   * Constructs a ExpiresAt with a the specified epoch timestamp,
-   * if timestamp is undefined, then epoch timetamp will instead be Infinity.
+   * Constructs an ExpiresAt with the specified epoch timestamp,
+   * if timestamp is undefined, then epoch timestamp will instead be Infinity.
    * @param epoch
    * @returns {ExpiresAt}
    */

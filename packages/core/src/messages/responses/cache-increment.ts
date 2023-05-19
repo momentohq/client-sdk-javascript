@@ -1,5 +1,4 @@
-// older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
-import {SdkError} from '../../errors/errors';
+import {SdkError} from '../../errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 
 /**

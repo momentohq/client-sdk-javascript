@@ -4,7 +4,7 @@ import {
   ResponseError,
   ResponseSuccess,
 } from './response-base';
-import {SdkError} from '../../errors/errors';
+import {SdkError} from '../../errors';
 
 /**
  * Parent response type for a list push back request.  The

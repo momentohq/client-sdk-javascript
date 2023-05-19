@@ -62,7 +62,7 @@ import {
   SortedSetPutElementsOptions,
   SortedSetFetchByScoreOptions,
   SortedSetIncrementOptions,
-} from './ICacheClient';
+} from '../../../clients/ICacheClient';
 import {IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
 import {IPingClient} from './IPingClient';
@@ -1163,42 +1163,6 @@ export abstract class AbstractCacheClient implements ICacheClient {
     const client = this.getNextDataClient();
     return await client.itemGetType(cacheName, key);
   }
-
-  /**
-   * Creates a Momento signing key.
-   *
-   * @param {number} ttlMinutes - The time to live in minutes until the Momento
-   * signing key expires.
-   * @returns {Promise<CreateSigningKey.Response>} -
-   * {@link CreateSigningKey.Success} containing the key, key ID, endpoint, and
-   * expiration date on success.
-   * {@link CreateSigningKey.Error} on failure.
-   */
-  // public async createSigningKey(
-  //   ttlMinutes: number
-  // ): Promise<CreateSigningKey.Response> {
-  //   return await this.controlClient.createSigningKey(
-  //     ttlMinutes,
-  //     this.dataClient.getEndpoint()
-  //   );
-  // }
-
-  /**
-   * Revokes a Momento signing key.
-   *
-   * @remarks
-   * All tokens signed by this key will be invalid.
-   *
-   * @param {string} keyId - The ID of the key to revoke.
-   * @returns {Promise<RevokeSigningKey.Response>} -
-   * {@link RevokeSigningKey.Success} on success.
-   * {@link RevokeSigningKey.Error} on failure.
-   */
-  // public async revokeSigningKey(
-  //   keyId: string
-  // ): Promise<RevokeSigningKey.Response> {
-  //   return await this.controlClient.revokeSigningKey(keyId);
-  // }
 
   protected getNextDataClient(): IDataClient {
     const client = this.dataClients[this.nextDataClientIndex];

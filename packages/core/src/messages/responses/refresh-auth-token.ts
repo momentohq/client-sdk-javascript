@@ -1,7 +1,7 @@
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 import {SdkError} from '../../errors';
 import {encodeToBase64} from '../../internal/utils';
-import {ExpiresAt} from '../../utils/expiration';
+import {ExpiresAt} from '../../utils';
 
 export abstract class Response extends ResponseBase {}
 
@@ -12,30 +12,18 @@ class _Success extends Response {
   readonly expiresAt: ExpiresAt;
 
   constructor(
-    authToken: string,
+    apiKey: string,
     refreshToken: string,
     endpoint: string,
     expiresAt: ExpiresAt
   ) {
     super();
-    this.authToken = authToken;
+    this.authToken = encodeToBase64(
+      JSON.stringify({endpoint: endpoint, api_key: apiKey})
+    );
     this.refreshToken = refreshToken;
     this.endpoint = endpoint;
     this.expiresAt = expiresAt;
-  }
-
-  public getAuthToken(): string {
-    return encodeToBase64(
-      JSON.stringify({endpoint: this.endpoint, api_key: this.authToken})
-    );
-  }
-
-  public getRefreshToken(): string {
-    return this.refreshToken;
-  }
-
-  public getExpiresAt(): ExpiresAt {
-    return this.expiresAt;
   }
 }
 

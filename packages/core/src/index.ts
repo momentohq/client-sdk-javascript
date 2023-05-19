@@ -63,6 +63,7 @@ import {
   ExpiresAt,
   ItemType,
 } from './utils';
+
 import {
   CredentialProvider,
   StringMomentoTokenProvider,
@@ -108,7 +109,18 @@ export {
   SetOptions,
   SetIfNotExistsOptions,
   IncrementOptions,
-} from './internal/clients/cache/ICacheClient';
+} from './clients/ICacheClient';
+
+export {
+  CacheRole,
+  CachePermission,
+  TopicRole,
+  TopicPermission,
+  Permission,
+  Permissions,
+  AllDataReadWrite,
+  TokenScope,
+} from './auth/tokens/token-scope';
 
 export {
   ExpiresIn,

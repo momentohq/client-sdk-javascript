@@ -1,7 +1,8 @@
-import {InvalidArgumentError} from '../../errors/errors';
+import {InvalidArgumentError} from '../../errors';
 import jwtDecode from 'jwt-decode';
 import {isBase64} from './validators';
 import {decodeFromBase64} from './string';
+import {PredefinedScope} from '../../auth/tokens/token-scope';
 
 export interface LegacyClaims {
   /**
@@ -32,7 +33,7 @@ interface TokenAndEndpoints {
 }
 
 /**
- * @param {string=} token
+ * @param {string} token
  * @returns TokenAndEndpoints
  */
 export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
@@ -73,3 +74,5 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
     throw new InvalidArgumentError('failed to parse token');
   }
 };
+
+export class InternalSuperUserPermissions extends PredefinedScope {}

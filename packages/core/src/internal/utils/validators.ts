@@ -1,4 +1,4 @@
-import {InvalidArgumentError} from '../../errors/errors';
+import {InvalidArgumentError} from '../../errors';
 import {decodeFromBase64, encodeToBase64} from './string';
 
 export function validateCacheName(name: string) {

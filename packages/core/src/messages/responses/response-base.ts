@@ -1,4 +1,4 @@
-import {MomentoErrorCode, SdkError} from '../../errors/errors';
+import {MomentoErrorCode, SdkError} from '../../errors';
 
 export abstract class ResponseBase {
   public toString(): string {

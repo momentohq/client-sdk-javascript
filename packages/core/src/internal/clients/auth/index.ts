@@ -1,2 +1,2 @@
 export * from './AbstractAuthClient';
-export * from './IAuthClient';
+export * from '../../../clients/IAuthClient';

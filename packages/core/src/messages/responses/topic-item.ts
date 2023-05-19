@@ -1,4 +1,4 @@
-import {truncateString} from '../../internal/utils/display';
+import {truncateString} from '../../internal/utils';
 
 /**
  * Represents the data received from a topic subscription.

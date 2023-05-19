@@ -1,5 +1,5 @@
 import {CacheInfo} from '../cache-info';
-import {SdkError} from '../../errors/errors';
+import {SdkError} from '../../errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 
 /**
