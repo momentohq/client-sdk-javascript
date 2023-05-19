@@ -27,7 +27,11 @@ import {
   SendSubscribeOptions,
   PrepareSubscribeCallbackOptions,
 } from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/AbstractPubsubClient';
-import {convertToB64String, createMetadata} from '../utils/web-client-utils';
+import {
+  convertToB64String,
+  createDeadline,
+  createMetadata,
+} from '../utils/web-client-utils';
 
 export class PubsubClient<
   REQ extends Request<REQ, RESP>,
@@ -108,7 +112,7 @@ export class PubsubClient<
     request.setCacheName(cacheName);
     request.setTopic(topicName);
     request.setValue(topicValue);
-    const metadata = createMetadata(cacheName, this.requestTimeoutMs);
+    const metadata = createMetadata(cacheName);
 
     return await new Promise(resolve => {
       this.client.publish(
@@ -116,6 +120,7 @@ export class PubsubClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.requestTimeoutMs),
         },
         (err, resp) => {
           if (resp) {

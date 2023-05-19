@@ -14,8 +14,7 @@ const defaultLoggerFactory: MomentoLoggerFactory =
   new DefaultMomentoLoggerFactory();
 
 /**
- * Laptop config provides defaults suitable for a medium-to-high-latency dev environment.  Permissive timeouts, retries, and
- * relaxed latency and throughput targets.
+ * Laptop config provides defaults suitable for a medium-to-high-latency dev environment.
  * @export
  * @class Laptop
  */
@@ -34,7 +33,7 @@ export class Laptop extends CacheConfiguration {
 
   /**
    * Provides v1 recommended configuration for a laptop development environment.  This configuration is guaranteed not
-   * to change in future releases of the Momento node.js SDK.
+   * to change in future releases of the Momento web SDK.
    * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]
    * @returns {CacheConfiguration}
    */
@@ -55,9 +54,14 @@ export class Laptop extends CacheConfiguration {
   }
 }
 
-class InRegionDefault extends CacheConfiguration {
+/**
+ * Browser config provides defaults suitable for use in a web browser.
+ * @export
+ * @class Browser
+ */
+export class Browser extends CacheConfiguration {
   /**
-   * Provides the latest recommended configuration for a typical in-region environment.  NOTE: this configuration may
+   * Provides the latest recommended configuration for an in-browser environment.  NOTE: this configuration may
    * change in future releases to take advantage of improvements we identify for default configurations.
    * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]
    * @returns {CacheConfiguration}
@@ -65,88 +69,28 @@ class InRegionDefault extends CacheConfiguration {
   static latest(
     loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
   ): CacheConfiguration {
-    return InRegionDefault.v1(loggerFactory);
+    return Browser.v1(loggerFactory);
   }
 
   /**
-   * Provides v1 recommended configuration for a typical in-region environment.  This configuration is guaranteed not
-   * to change in future releases of the Momento node.js SDK.
+   * Provides v1 recommended configuration for an in-browser environment.  This configuration is guaranteed not
+   * to change in future releases of the Momento web SDK.
    * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]
    * @returns {CacheConfiguration}
    */
   static v1(
     loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
   ): CacheConfiguration {
-    const deadlineMillis = 1100;
+    const deadlineMillis = 5000;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
     });
     const transportStrategy: TransportStrategy = new StaticTransportStrategy({
       grpcConfiguration: grpcConfig,
     });
-    return new InRegionDefault({
+    return new Browser({
       loggerFactory: loggerFactory,
       transportStrategy: transportStrategy,
     });
   }
-}
-
-class InRegionLowLatency extends CacheConfiguration {
-  /**
-   * Provides the latest recommended configuration for an in-region environment with aggressive low-latency requirements.
-   * NOTE: this configuration may change in future releases to take advantage of improvements we identify for default
-   * configurations.
-   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]
-   * @returns {CacheConfiguration}
-   */
-  static latest(
-    loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
-  ): CacheConfiguration {
-    return InRegionLowLatency.v1(loggerFactory);
-  }
-
-  /**
-   * Provides v1 recommended configuration for an in-region environment with aggressive low-latency requirements.
-   * This configuration is guaranteed not to change in future releases of the Momento node.js SDK.
-   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]
-   * @returns {CacheConfiguration}
-   */
-  static v1(
-    loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
-  ): CacheConfiguration {
-    const deadlineMillis = 500;
-    const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
-      deadlineMillis: deadlineMillis,
-    });
-    const transportStrategy: TransportStrategy = new StaticTransportStrategy({
-      grpcConfiguration: grpcConfig,
-    });
-    return new InRegionDefault({
-      loggerFactory: loggerFactory,
-      transportStrategy: transportStrategy,
-    });
-  }
-}
-
-/**
- * InRegion provides defaults suitable for an environment where your client is running in the same region as the Momento
- * service.  It has more aggressive timeouts and retry behavior than the Laptop config.
- * @export
- * @class InRegion
- */
-export class InRegion {
-  /**
-   * This config prioritizes throughput and client resource utilization.  It has a slightly relaxed client-side timeout
-   * setting to maximize throughput.
-   * @type {InRegionDefault}
-   */
-  static Default = InRegionDefault;
-  /**
-   * This config prioritizes keeping p99.9 latencies as low as possible, potentially sacrificing
-   * some throughput to achieve this.  It has a very aggressive client-side timeout.  Use this
-   * configuration if the most important factor is to ensure that cache unavailability doesn't force
-   * unacceptably high latencies for your own application.
-   * @type {InRegionLowLatency}
-   */
-  static LowLatency = InRegionLowLatency;
 }
