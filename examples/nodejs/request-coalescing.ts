@@ -13,16 +13,9 @@ import {
   initiateLoadGenContext,
   initiateRequestCoalescerContext,
 } from './utils/load-gen';
-import {
-  getElapsedMillis,
-  logCoalescingStats,
-  logStats,
-} from './utils/load-gen-statistics-calculator';
+import {getElapsedMillis, logCoalescingStats, logStats} from './utils/load-gen-statistics-calculator';
 import {createCache, getCacheClient} from './utils/cache';
-import {
-  GetAndSetOnlyClient,
-  MomentoClientWrapperWithCoalescing,
-} from './utils/momento-client-with-coalescing';
+import {GetAndSetOnlyClient, MomentoClientWrapperWithCoalescing} from './utils/momento-client-with-coalescing';
 
 const cacheKeys: string[] = [];
 
@@ -46,32 +39,21 @@ class RequestCoalescerLoadGen {
     this.options = options;
     this.cacheValue = 'x'.repeat(options.cacheItemPayloadBytes);
     this.delayMillisBetweenRequests =
-      (1000.0 * this.options.numberOfConcurrentRequests) /
-      this.options.maxRequestsPerSecond;
+      (1000.0 * this.options.numberOfConcurrentRequests) / this.options.maxRequestsPerSecond;
   }
 
   async run(): Promise<void> {
-    const momento = getCacheClient(
-      this.loggerFactory,
-      this.options.requestTimeoutMs,
-      this.cacheItemTtlSeconds
-    );
+    const momento = getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
 
     await createCache(momento, this.cacheName, this.logger);
 
-    this.logger.trace(
-      `delayMillisBetweenRequests: ${this.delayMillisBetweenRequests}`
-    );
+    this.logger.trace(`delayMillisBetweenRequests: ${this.delayMillisBetweenRequests}`);
 
     this.logger.info(`Limiting to ${this.options.maxRequestsPerSecond} tps`);
-    this.logger.info(
-      `Running ${this.options.numberOfConcurrentRequests} concurrent requests`
-    );
+    this.logger.info(`Running ${this.options.numberOfConcurrentRequests} concurrent requests`);
     this.logger.info(`Running for ${this.options.totalSecondsToRun} seconds`);
 
-    console.log(
-      '------------ PROCESSING REQUESTS WITHOUT REQUEST COALESCING ------------'
-    );
+    console.log('------------ PROCESSING REQUESTS WITHOUT REQUEST COALESCING ------------');
 
     let loadGenContext = initiateLoadGenContext();
     // Show stats periodically.
@@ -79,9 +61,9 @@ class RequestCoalescerLoadGen {
       logStats(loadGenContext, this.logger, this.options.maxRequestsPerSecond);
     }, this.options.showStatsIntervalSeconds * 1000);
 
-    const asyncGetSetResults = range(
-      this.options.numberOfConcurrentRequests
-    ).map(() => this.launchAndRunWorkers(momento, loadGenContext));
+    const asyncGetSetResults = range(this.options.numberOfConcurrentRequests).map(() =>
+      this.launchAndRunWorkers(momento, loadGenContext)
+    );
 
     await Promise.all(asyncGetSetResults);
 
@@ -95,9 +77,7 @@ class RequestCoalescerLoadGen {
     // wait a few millis to allow the logger to finish flushing
     await delay(500);
 
-    console.log(
-      '------------ PROCESSING REQUESTS WITH REQUEST COALESCING ------------'
-    );
+    console.log('------------ PROCESSING REQUESTS WITH REQUEST COALESCING ------------');
 
     loadGenContext = initiateLoadGenContext();
 
@@ -109,14 +89,9 @@ class RequestCoalescerLoadGen {
 
     const requestCoalescerContext = initiateRequestCoalescerContext();
 
-    const momentoWithCoalescing = new MomentoClientWrapperWithCoalescing(
-      momento,
-      requestCoalescerContext
-    );
+    const momentoWithCoalescing = new MomentoClientWrapperWithCoalescing(momento, requestCoalescerContext);
 
-    const asyncGetSetResultsWithRequestCoalescer = range(
-      this.options.numberOfConcurrentRequests
-    ).map(() =>
+    const asyncGetSetResultsWithRequestCoalescer = range(this.options.numberOfConcurrentRequests).map(() =>
       this.launchAndRunWorkers(momentoWithCoalescing, loadGenContext)
     );
 
@@ -134,10 +109,7 @@ class RequestCoalescerLoadGen {
     await delay(500);
   }
 
-  private async launchAndRunWorkers(
-    client: GetAndSetOnlyClient,
-    loadGenContext: BasicLoadGenContext
-  ): Promise<void> {
+  private async launchAndRunWorkers(client: GetAndSetOnlyClient, loadGenContext: BasicLoadGenContext): Promise<void> {
     let finished = false;
     const finish = () => (finished = true);
     setTimeout(finish, this.options.totalSecondsToRun * 1000);
@@ -150,17 +122,12 @@ class RequestCoalescerLoadGen {
     }
   }
 
-  private async issueAsyncSetGet(
-    client: GetAndSetOnlyClient,
-    loadGenContext: BasicLoadGenContext
-  ): Promise<void> {
+  private async issueAsyncSetGet(client: GetAndSetOnlyClient, loadGenContext: BasicLoadGenContext): Promise<void> {
     const cacheKey = this.getRandomCacheKey();
 
     const setStartTime = process.hrtime();
-    const result = await executeRequestAndUpdateContextCounts(
-      this.logger,
-      loadGenContext,
-      () => client.set(this.cacheName, cacheKey, this.cacheValue)
+    const result = await executeRequestAndUpdateContextCounts(this.logger, loadGenContext, () =>
+      client.set(this.cacheName, cacheKey, this.cacheValue)
     );
     if (result !== undefined) {
       const setDuration = getElapsedMillis(setStartTime);
@@ -173,10 +140,8 @@ class RequestCoalescerLoadGen {
     }
 
     const getStartTime = process.hrtime();
-    const getResult = await executeRequestAndUpdateContextCounts(
-      this.logger,
-      loadGenContext,
-      () => client.get(this.cacheName, cacheKey)
+    const getResult = await executeRequestAndUpdateContextCounts(this.logger, loadGenContext, () =>
+      client.get(this.cacheName, cacheKey)
     );
 
     if (getResult !== undefined) {

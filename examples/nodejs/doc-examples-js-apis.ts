@@ -28,9 +28,7 @@ async function example_API_CreateCache(cacheClient: CacheClient) {
   } else if (result instanceof CreateCache.AlreadyExists) {
     console.log("Cache 'test-cache' already exists");
   } else {
-    throw new Error(
-      `An error occurred while attempting to create cache 'test-cache': ${result.toString()}`
-    );
+    throw new Error(`An error occurred while attempting to create cache 'test-cache': ${result.toString()}`);
   }
 }
 
@@ -55,9 +53,7 @@ async function example_API_ListCaches(cacheClient: CacheClient) {
         .join('\n')}\n\n`
     );
   } else if (result instanceof ListCaches.Error) {
-    throw new Error(
-      `An error occurred while attempting to list caches: ${result.errorCode()}: ${result.toString()}`
-    );
+    throw new Error(`An error occurred while attempting to list caches: ${result.errorCode()}: ${result.toString()}`);
   }
 }
 

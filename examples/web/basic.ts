@@ -1,11 +1,4 @@
-import {
-  CacheGet,
-  CreateCache,
-  CacheSet,
-  CacheClient,
-  Configurations,
-  CredentialProvider,
-} from '@gomomento/sdk-web';
+import {CacheGet, CreateCache, CacheSet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk-web';
 
 // Because we're not running in a browser, we need to explicitly make
 // XMLHttpRequest available.

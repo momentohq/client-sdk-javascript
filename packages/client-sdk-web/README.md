@@ -1,12 +1,12 @@
 <head>
-  <meta name="Momento JavaScript Client Library Documentation" content="JavaScript client software development kit for Momento Serverless Cache">
+  <meta name="Momento Web Client Library Documentation" content="JavaScript web client software development kit for Momento Serverless Cache">
 </head>
 <img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
 
 [![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 [![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 
-# Momento JavaScript Client Libraries
+# Momento JavaScript Web Client Library
 
 * Website: [https://www.gomomento.com/](https://www.gomomento.com/)
 * Documentation: [https://docs.momentohq.com/](https://docs.momentohq.com/)
@@ -18,19 +18,19 @@ required by traditional caching solutions.  This repo contains the source code f
 
 ## Packages
 
-There are two different JavaScript SDKs available for Momento on npmjs.  The API is identical in both SDKs, but each
-is best suited for a particular environment:
+The JavaScript Web SDK is available on npmjs: [`@gomomento/sdk-web`](https://www.npmjs.com/package/@gomomento/sdk-web).
 
-* [`@gomomento/sdk`](https://www.npmjs.com/package/@gomomento/sdk): the Momento node.js SDK, for use in server-side applications
-  and other node.js environments where performance considerations are key.
-* [`@gomomento/sdk-web`](https://www.npmjs.com/package/@gomomento/sdk-web): the Momento web SDK, for use in browsers or
-  other non-node.js JavaScript environments.  More portable but less performant for server-side use cases.
+The web SDK is the best choice for client-side JavaScript applications, such as code that will run in a browser.  For
+node.js server-side applications, check out the [Momento Node.js SDK](../client-sdk-nodejs).
 
 ## Usage
 
 ```javascript
-import {CacheGet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
-
+/* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/ban-ts-comment */
+import {CacheGet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk-web';
+// @ts-ignore
+// This global is required in order to use the Web SDK outside of a browser
+global.XMLHttpRequest = require('xhr2');
 async function main() {
   const momento = new CacheClient({
     configuration: Configurations.Laptop.v1(),
@@ -59,10 +59,7 @@ Documentation is available on the [Momento Docs website](https://docs.momentohq.
 
 ## Examples
 
-Working example projects, with all required build configuration files, are available for both the node.js and web SDKs:
-
-* [Node.js SDK examples](./examples/nodejs)
-* [Web SDK examples](./examples/web)
+Working example projects, with all required build configuration files, are available in the [examples](../../examples/web) subdirectory.
 
 ## Developing
 

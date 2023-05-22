@@ -9,7 +9,7 @@
     "example": "tsc && node dist/basic.js",
     "advanced": "tsc && node dist/advanced.js",
     "dictionary": "tsc && node dist/dictionary.js",
-    "validate-examples": "tsc && node dist/basic.js && node dist/advanced.js && node dist/dictionary.js",
+    "validate-examples": "tsc && node dist/basic.js && node dist/advanced.js && node dist/dictionary.js && node dist/readme.js",
     "test": "jest",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix"
