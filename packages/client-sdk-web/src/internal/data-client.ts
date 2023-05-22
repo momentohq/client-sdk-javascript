@@ -152,7 +152,8 @@ export class DataClient<
       authToken: props.credentialProvider.getAuthToken(),
     });
     this.clientWrapper = new cache.ScsClient(
-      `https://${props.credentialProvider.getCacheEndpoint()}`,
+      // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
+      `https://web.${props.credentialProvider.getCacheEndpoint()}`,
       null,
       {}
     );

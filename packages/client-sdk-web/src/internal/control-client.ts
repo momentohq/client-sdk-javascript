@@ -50,7 +50,8 @@ export class ControlClient<
       authToken: props.credentialProvider.getAuthToken(),
     });
     this.clientWrapper = new control.ScsControlClient(
-      `https://${props.credentialProvider.getControlEndpoint()}`,
+      // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
+      `https://web.${props.credentialProvider.getControlEndpoint()}`,
       null,
       {}
     );
