@@ -59,6 +59,8 @@ import {TopicItem} from '@gomomento/sdk-core/dist/src/messages/responses/topic-i
 import * as GenerateAuthToken from '@gomomento/sdk-core/dist/src/messages/responses/generate-auth-token';
 import * as RefreshAuthToken from '@gomomento/sdk-core/dist/src/messages/responses/refresh-auth-token';
 
+import {InternalSuperUserPermissions} from '@gomomento/sdk-core/dist/src/internal/utils/auth';
+
 import {
   SubscribeCallOptions,
   CacheInfo,
@@ -91,6 +93,10 @@ import {
   DefaultMomentoLoggerLevel,
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
+  AllDataReadWrite,
+  TokenScope,
+  ExpiresIn,
+  ExpiresAt,
 } from '@gomomento/sdk-core';
 
 import {Configuration} from './config/configuration';
@@ -107,6 +113,9 @@ export {
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
+  AllDataReadWrite,
+  InternalSuperUserPermissions,
+  TokenScope,
   CacheGet,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
@@ -159,6 +168,8 @@ export {
   SubscribeCallOptions,
   GenerateAuthToken,
   RefreshAuthToken,
+  ExpiresAt,
+  ExpiresIn,
   MomentoErrorCode,
   SdkError,
   AlreadyExistsError,
