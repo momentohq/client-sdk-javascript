@@ -26,7 +26,7 @@ export class PingClient<
    */
   constructor(props: PingClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    const headers = [new Header('Agent', `nodejs:${version}`)];
+    const headers = [new Header('Agent', `web:${version}`)];
     this.unaryInterceptors = [
       new HeaderInterceptorProvider<REQ, RESP>(
         headers

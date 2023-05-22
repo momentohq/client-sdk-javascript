@@ -67,7 +67,7 @@ export class PubsubClient<
       `Creating topic client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
     );
 
-    const headers: Header[] = [new Header('Agent', `nodejs:${version}`)];
+    const headers: Header[] = [new Header('Agent', `web:${version}`)];
     this.unaryInterceptors = this.initializeUnaryInterceptors(headers);
     this.streamingInterceptors = this.initializeStreamingInterceptors(headers);
     this.client = new pubsub.PubsubClient(

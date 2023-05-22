@@ -43,7 +43,7 @@ export class ControlClient<
    */
   constructor(props: ControlClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    const headers = [new Header('Agent', `nodejs:${version}`)];
+    const headers = [new Header('Agent', `web:${version}`)];
     this.interceptors = [
       new HeaderInterceptorProvider<REQ, RESP>(
         headers

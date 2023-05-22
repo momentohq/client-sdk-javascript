@@ -40,7 +40,7 @@ export class InternalWebGrpcAuthClient<
 
   constructor(props: AuthClientProps) {
     this.creds = props.credentialProvider;
-    const headers = [new Header('Agent', `nodejs:${version}`)];
+    const headers = [new Header('Agent', `web:${version}`)];
 
     this.interceptors = [
       new HeaderInterceptorProvider<REQ, RESP>(
