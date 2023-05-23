@@ -28,7 +28,7 @@ export class PingClient<
     this.clientMetadataProvider = new ClientMetadataProvider({});
     this.clientWrapper = new ping.PingClient(
       // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
-      `https://web.${props.endpoint}`,
+      `https://${props.endpoint}`,
       null,
       {}
     );
