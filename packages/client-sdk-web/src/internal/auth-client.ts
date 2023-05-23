@@ -27,6 +27,7 @@ import {
   validateValidForSeconds,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {getWebControlEndpoint} from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 
 export class InternalWebGrpcAuthClient<
@@ -43,7 +44,7 @@ export class InternalWebGrpcAuthClient<
     this.clientMetadataProvider = new ClientMetadataProvider({});
     this.authClient = new auth.AuthClient(
       // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
-      `https://web.${this.creds.getControlEndpoint()}`,
+      `https://${getWebControlEndpoint(this.creds)}`,
       null,
       {}
     );

@@ -21,6 +21,7 @@ import {
 import {
   convertToB64String,
   createCallMetadata,
+  getWebCacheEndpoint,
 } from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 
@@ -53,12 +54,14 @@ export class PubsubClient<
     this.requestTimeoutMs =
       grpcConfig.getDeadlineMillis() || PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
     this.logger.debug(
-      `Creating topic client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
+      `Creating topic client using endpoint: '${getWebCacheEndpoint(
+        this.credentialProvider
+      )}'`
     );
 
     this.client = new pubsub.PubsubClient(
       // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
-      `https://web.${props.credentialProvider.getCacheEndpoint()}`,
+      `https://${getWebCacheEndpoint(props.credentialProvider)}`,
       null,
       {}
     );
@@ -68,7 +71,7 @@ export class PubsubClient<
   }
 
   public getEndpoint(): string {
-    const endpoint = this.credentialProvider.getCacheEndpoint();
+    const endpoint = getWebCacheEndpoint(this.credentialProvider);
     this.logger.debug(`Using cache endpoint: ${endpoint}`);
     return endpoint;
   }
