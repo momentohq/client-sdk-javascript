@@ -6,8 +6,15 @@
 version: 2
 updates:
   - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/examples" # Location of package manifests
+    directory: "/examples/nodejs" # Location of package manifests
     schedule:
       interval: "daily"
     allow:
       - dependency-name: "@gomomento/sdk"
+
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/examples/web" # Location of package manifests
+    schedule:
+      interval: "daily"
+    allow:
+      - dependency-name: "@gomomento/sdk-web"
