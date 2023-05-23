@@ -1,8 +1,6 @@
 import {auth} from '@gomomento/generated-types-webtext';
 import {GenerateAuthToken, RefreshAuthToken} from '..';
-import {version} from '../../package.json';
-import {Request, UnaryInterceptor, UnaryResponse} from 'grpc-web';
-import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
+import {Request, UnaryResponse} from 'grpc-web';
 import {
   _GenerateApiTokenRequest,
   _RefreshApiTokenRequest,
@@ -29,6 +27,7 @@ import {
   validateValidForSeconds,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {ClientMetadataProvider} from './client-metadata-provider';
 
 export class InternalWebGrpcAuthClient<
   REQ extends Request<REQ, RESP>,
@@ -36,17 +35,11 @@ export class InternalWebGrpcAuthClient<
 > implements IAuthClient
 {
   private readonly creds: CredentialProvider;
-  private readonly interceptors: UnaryInterceptor<REQ, RESP>[];
+  private readonly clientMetadataProvider: ClientMetadataProvider;
 
   constructor(props: AuthClientProps) {
     this.creds = props.credentialProvider;
-    const headers = [new Header('Agent', `web:${version}`)];
-
-    this.interceptors = [
-      new HeaderInterceptorProvider<REQ, RESP>(
-        headers
-      ).createHeadersInterceptor(),
-    ];
+    this.clientMetadataProvider = new ClientMetadataProvider({});
   }
 
   public async generateAuthToken(
@@ -56,9 +49,7 @@ export class InternalWebGrpcAuthClient<
     const authClient = new auth.AuthClient(
       `https://${this.creds.getControlEndpoint()}`,
       null,
-      {
-        unaryInterceptors: this.interceptors,
-      }
+      {}
     );
 
     const request = new _GenerateApiTokenRequest();
@@ -80,20 +71,24 @@ export class InternalWebGrpcAuthClient<
     }
 
     return await new Promise<GenerateAuthToken.Response>(resolve => {
-      authClient.generateApiToken(request, null, (err, resp) => {
-        if (err || !resp) {
-          resolve(new GenerateAuthToken.Error(cacheServiceErrorMapper(err)));
-        } else {
-          resolve(
-            new GenerateAuthToken.Success(
-              resp.getApiKey(),
-              resp.getRefreshToken(),
-              resp.getEndpoint(),
-              ExpiresAt.fromEpoch(resp.getValidUntil())
-            )
-          );
+      authClient.generateApiToken(
+        request,
+        this.clientMetadataProvider.createClientMetadata(),
+        (err, resp) => {
+          if (err || !resp) {
+            resolve(new GenerateAuthToken.Error(cacheServiceErrorMapper(err)));
+          } else {
+            resolve(
+              new GenerateAuthToken.Success(
+                resp.getApiKey(),
+                resp.getRefreshToken(),
+                resp.getEndpoint(),
+                ExpiresAt.fromEpoch(resp.getValidUntil())
+              )
+            );
+          }
         }
-      });
+      );
     });
   }
 
@@ -103,9 +98,7 @@ export class InternalWebGrpcAuthClient<
     const authClient = new auth.AuthClient(
       `https://${this.creds.getControlEndpoint()}`,
       null,
-      {
-        unaryInterceptors: this.interceptors,
-      }
+      {}
     );
 
     const request = new _RefreshApiTokenRequest();
@@ -113,20 +106,24 @@ export class InternalWebGrpcAuthClient<
     request.setRefreshToken(_refreshToken);
 
     return await new Promise<RefreshAuthToken.Response>(resolve => {
-      authClient.refreshApiToken(request, null, (err, resp) => {
-        if (err || !resp) {
-          resolve(new RefreshAuthToken.Error(cacheServiceErrorMapper(err)));
-        } else {
-          resolve(
-            new RefreshAuthToken.Success(
-              resp.getApiKey(),
-              resp.getRefreshToken(),
-              resp.getEndpoint(),
-              ExpiresAt.fromEpoch(resp.getValidUntil())
-            )
-          );
+      authClient.refreshApiToken(
+        request,
+        this.clientMetadataProvider.createClientMetadata(),
+        (err, resp) => {
+          if (err || !resp) {
+            resolve(new RefreshAuthToken.Error(cacheServiceErrorMapper(err)));
+          } else {
+            resolve(
+              new RefreshAuthToken.Success(
+                resp.getApiKey(),
+                resp.getRefreshToken(),
+                resp.getEndpoint(),
+                ExpiresAt.fromEpoch(resp.getValidUntil())
+              )
+            );
+          }
         }
-      });
+      );
     });
   }
 }
