@@ -1,31 +1,34 @@
-import {AuthClient, CacheClient, TopicClient} from '../../src';
 import {
   deleteCacheIfExists,
   testCacheName,
 } from '@gomomento/common-integration-tests';
 import {
   CreateCache,
-  CredentialProvider,
   DeleteCache,
-  NoopMomentoLoggerFactory,
+  CredentialProvider,
 } from '@gomomento/sdk-core';
-import {ITopicClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {CacheClientProps} from '../../src/cache-client-props';
+import {CacheClient, TopicClient, Configurations, AuthClient} from '../../src';
+import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
+import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 
 const credsProvider = CredentialProvider.fromEnvironmentVariable({
   environmentVariableName: 'TEST_AUTH_TOKEN',
 });
 
-function momentoClientForTesting() {
-  return new CacheClient({
-    credentialProvider: credsProvider,
-  });
+export const IntegrationTestCacheClientProps: CacheClientProps = {
+  configuration: Configurations.Laptop.latest(),
+  credentialProvider: credsProvider,
+  defaultTtlSeconds: 1111,
+};
+
+function momentoClientForTesting(): CacheClient {
+  return new CacheClient(IntegrationTestCacheClientProps);
 }
 
-function momentoTopicClientForTesting(): ITopicClient {
+function momentoTopicClientForTesting(): TopicClient {
   return new TopicClient({
-    configuration: {
-      getLoggerFactory: () => new NoopMomentoLoggerFactory(),
-    },
+    configuration: Configurations.Laptop.latest(),
     credentialProvider: credsProvider,
   });
 }
@@ -73,7 +76,30 @@ export function SetupAuthClientIntegrationTest(): {
   sessionTokenAuthClient: AuthClient;
   legacyTokenAuthClient: AuthClient;
   authTokenAuthClientFactory: (authToken: string) => AuthClient;
+  cacheClientFactory: (token: string) => ICacheClient;
+  cacheName: string;
 } {
+  const cacheName = testCacheName();
+
+  beforeAll(async () => {
+    // Use a fresh client to avoid test interference with setup.
+    const momento = momentoClientForTesting();
+    await deleteCacheIfExists(momento, cacheName);
+    const createResponse = await momento.createCache(cacheName);
+    if (createResponse instanceof CreateCache.Error) {
+      throw createResponse.innerException();
+    }
+  });
+
+  afterAll(async () => {
+    // Use a fresh client to avoid test interference with teardown.
+    const momento = momentoClientForTesting();
+    const deleteResponse = await momento.deleteCache(cacheName);
+    if (deleteResponse instanceof DeleteCache.Error) {
+      throw deleteResponse.innerException();
+    }
+  });
+
   return {
     sessionTokenAuthClient: new AuthClient({
       credentialProvider: CredentialProvider.fromEnvironmentVariable({
@@ -95,5 +121,14 @@ export function SetupAuthClientIntegrationTest(): {
           authToken: authToken,
         }),
       }),
+    cacheClientFactory: authToken =>
+      new CacheClient({
+        credentialProvider: CredentialProvider.fromString({
+          authToken: authToken,
+        }),
+        configuration: Configurations.Laptop.v1(),
+        defaultTtlSeconds: 60,
+      }),
+    cacheName: cacheName,
   };
 }

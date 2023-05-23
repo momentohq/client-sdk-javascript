@@ -11,6 +11,7 @@ import {
   CollectionTtl,
   TopicClient,
 } from '../../src';
+import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 const deleteCacheIfExists = async (momento: CacheClient, cacheName: string) => {
   const deleteResponse = await momento.deleteCache(cacheName);
   if (deleteResponse instanceof DeleteCache.Error) {
@@ -98,7 +99,30 @@ export function SetupAuthClientIntegrationTest(): {
   sessionTokenAuthClient: AuthClient;
   legacyTokenAuthClient: AuthClient;
   authTokenAuthClientFactory: (authToken: string) => AuthClient;
+  cacheClientFactory: (token: string) => ICacheClient;
+  cacheName: string;
 } {
+  const cacheName = testCacheName();
+
+  beforeAll(async () => {
+    // Use a fresh client to avoid test interference with setup.
+    const momento = momentoClientForTesting();
+    await deleteCacheIfExists(momento, cacheName);
+    const createResponse = await momento.createCache(cacheName);
+    if (createResponse instanceof CreateCache.Error) {
+      throw createResponse.innerException();
+    }
+  });
+
+  afterAll(async () => {
+    // Use a fresh client to avoid test interference with teardown.
+    const momento = momentoClientForTesting();
+    const deleteResponse = await momento.deleteCache(cacheName);
+    if (deleteResponse instanceof DeleteCache.Error) {
+      throw deleteResponse.innerException();
+    }
+  });
+
   return {
     sessionTokenAuthClient: new AuthClient({
       credentialProvider: CredentialProvider.fromEnvironmentVariable({
@@ -121,6 +145,16 @@ export function SetupAuthClientIntegrationTest(): {
         }),
       });
     },
+
+    cacheClientFactory: authToken =>
+      new CacheClient({
+        credentialProvider: CredentialProvider.fromString({
+          authToken: authToken,
+        }),
+        configuration: Configurations.Laptop.latest(),
+        defaultTtlSeconds: 60,
+      }),
+    cacheName: cacheName,
   };
 }
 

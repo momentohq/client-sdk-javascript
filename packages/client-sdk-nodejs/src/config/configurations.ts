@@ -11,7 +11,7 @@ import {
   StaticGrpcConfiguration,
   StaticTransportStrategy,
   TransportStrategy,
-} from '../config/transport';
+} from './transport';
 
 // 4 minutes.  We want to remain comfortably underneath the idle timeout for AWS NLB, which is 350s.
 const defaultMaxIdleMillis = 4 * 60 * 1_000;

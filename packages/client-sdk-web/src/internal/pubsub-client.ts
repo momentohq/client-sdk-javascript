@@ -3,6 +3,7 @@ import * as cachepubsub_pb from '@gomomento/generated-types-webtext/dist/cachepu
 import {Configuration} from '../config/configuration';
 import {
   CredentialProvider,
+  InvalidArgumentError,
   MomentoLogger,
   TopicItem,
   UnknownError,
@@ -26,7 +27,11 @@ import {
   SendSubscribeOptions,
   PrepareSubscribeCallbackOptions,
 } from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/AbstractPubsubClient';
-import {convertToB64String, createMetadata} from '../utils/web-client-utils';
+import {
+  convertToB64String,
+  createDeadline,
+  createMetadata,
+} from '../utils/web-client-utils';
 
 export class PubsubClient<
   REQ extends Request<REQ, RESP>,
@@ -35,8 +40,8 @@ export class PubsubClient<
   private readonly client: pubsub.PubsubClient;
   private readonly configuration: Configuration;
   protected readonly credentialProvider: CredentialProvider;
-  // private readonly unaryRequestTimeoutMs: number;
-  // private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
+  private readonly requestTimeoutMs: number;
+  private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   protected readonly logger: MomentoLogger;
   private readonly authHeaders: {authorization: string};
   private readonly unaryInterceptors: UnaryInterceptor<REQ, RESP>[];
@@ -51,16 +56,13 @@ export class PubsubClient<
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
 
-    // TODO:
-    // TODO: uncomment after Configuration plumbing is in place . . .
-    // TODO
-    // const grpcConfig = this.configuration
-    //   .getTransportStrategy()
-    //   .getGrpcConfig();
-    //
-    // this.validateRequestTimeout(grpcConfig.getDeadlineMillis());
-    // this.unaryRequestTimeoutMs =
-    //   grpcConfig.getDeadlineMillis() || PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
+    const grpcConfig = this.configuration
+      .getTransportStrategy()
+      .getGrpcConfig();
+
+    this.validateRequestTimeout(grpcConfig.getDeadlineMillis());
+    this.requestTimeoutMs =
+      grpcConfig.getDeadlineMillis() || PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
     this.logger.debug(
       `Creating topic client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
     );
@@ -85,17 +87,14 @@ export class PubsubClient<
     return endpoint;
   }
 
-  // TODO:
-  // TODO: uncomment after Configuration plumbing is in place . . .
-  // TODO
-  // private validateRequestTimeout(timeout?: number) {
-  //   this.logger.debug(`Request timeout ms: ${String(timeout)}`);
-  //   if (timeout !== undefined && timeout <= 0) {
-  //     throw new InvalidArgumentError(
-  //       'request timeout must be greater than zero.'
-  //     );
-  //   }
-  // }
+  private validateRequestTimeout(timeout?: number) {
+    this.logger.debug(`Request timeout ms: ${String(timeout)}`);
+    if (timeout !== undefined && timeout <= 0) {
+      throw new InvalidArgumentError(
+        'request timeout must be greater than zero.'
+      );
+    }
+  }
 
   protected async sendPublish(
     cacheName: string,
@@ -121,6 +120,7 @@ export class PubsubClient<
         {
           ...this.authHeaders,
           ...metadata,
+          ...createDeadline(this.requestTimeoutMs),
         },
         (err, resp) => {
           if (resp) {
@@ -256,8 +256,6 @@ export class PubsubClient<
 
   private initializeUnaryInterceptors(
     headers: Header[]
-    // configuration: Configuration,
-    // requestTimeoutMs: number
   ): UnaryInterceptor<REQ, RESP>[] {
     return [
       new HeaderInterceptorProvider<REQ, RESP>(

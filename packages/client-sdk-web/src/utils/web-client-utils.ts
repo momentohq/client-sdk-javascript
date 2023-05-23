@@ -10,3 +10,8 @@ export function convertToB64String(v: string | Uint8Array): string {
 export function createMetadata(cacheName: string): {cache: string} {
   return {cache: cacheName};
 }
+
+export function createDeadline(timeoutMillis: number): {deadline: string} {
+  const deadline = Date.now() + timeoutMillis;
+  return {deadline: deadline.toString()};
+}
