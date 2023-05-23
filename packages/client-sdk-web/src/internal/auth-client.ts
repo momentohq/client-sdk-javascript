@@ -27,6 +27,7 @@ import {
   validateValidForSeconds,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {getWebControlEndpoint} from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 
 export class InternalWebGrpcAuthClient<
@@ -36,22 +37,23 @@ export class InternalWebGrpcAuthClient<
 {
   private readonly creds: CredentialProvider;
   private readonly clientMetadataProvider: ClientMetadataProvider;
+  private readonly authClient: auth.AuthClient;
 
   constructor(props: AuthClientProps) {
     this.creds = props.credentialProvider;
     this.clientMetadataProvider = new ClientMetadataProvider({});
+    this.authClient = new auth.AuthClient(
+      // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
+      `https://${getWebControlEndpoint(this.creds)}`,
+      null,
+      {}
+    );
   }
 
   public async generateAuthToken(
     scope: TokenScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateAuthToken.Response> {
-    const authClient = new auth.AuthClient(
-      `https://${this.creds.getControlEndpoint()}`,
-      null,
-      {}
-    );
-
     const request = new _GenerateApiTokenRequest();
     request.setAuthToken(this.creds.getAuthToken());
     request.setPermissions(permissionsFromScope(scope));
@@ -71,7 +73,7 @@ export class InternalWebGrpcAuthClient<
     }
 
     return await new Promise<GenerateAuthToken.Response>(resolve => {
-      authClient.generateApiToken(
+      this.authClient.generateApiToken(
         request,
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
@@ -95,18 +97,12 @@ export class InternalWebGrpcAuthClient<
   public async refreshAuthToken(
     _refreshToken: string
   ): Promise<RefreshAuthToken.Response> {
-    const authClient = new auth.AuthClient(
-      `https://${this.creds.getControlEndpoint()}`,
-      null,
-      {}
-    );
-
     const request = new _RefreshApiTokenRequest();
     request.setApiKey(this.creds.getAuthToken());
     request.setRefreshToken(_refreshToken);
 
     return await new Promise<RefreshAuthToken.Response>(resolve => {
-      authClient.refreshApiToken(
+      this.authClient.refreshApiToken(
         request,
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {

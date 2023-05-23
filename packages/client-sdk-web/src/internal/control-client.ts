@@ -20,6 +20,7 @@ import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {IControlClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {validateCacheName} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {getWebControlEndpoint} from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 
 export interface ControlClientProps {
@@ -43,14 +44,17 @@ export class ControlClient<
   constructor(props: ControlClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.logger.debug(
-      `Creating control client using endpoint: '${props.credentialProvider.getControlEndpoint()}`
+      `Creating control client using endpoint: '${getWebControlEndpoint(
+        props.credentialProvider
+      )}`
     );
 
     this.clientMetadataProvider = new ClientMetadataProvider({
       authToken: props.credentialProvider.getAuthToken(),
     });
     this.clientWrapper = new control.ScsControlClient(
-      `https://${props.credentialProvider.getControlEndpoint()}`,
+      // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
+      `https://${getWebControlEndpoint(props.credentialProvider)}`,
       null,
       {}
     );

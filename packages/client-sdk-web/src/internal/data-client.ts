@@ -110,6 +110,7 @@ import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
   convertToB64String,
   createCallMetadata,
+  getWebCacheEndpoint,
 } from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 
@@ -140,7 +141,9 @@ export class DataClient<
   constructor(props: DataClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.logger.debug(
-      `Creating data client using endpoint: '${props.credentialProvider.getCacheEndpoint()}`
+      `Creating data client using endpoint: '${getWebCacheEndpoint(
+        props.credentialProvider
+      )}`
     );
 
     this.deadlineMillis = props.configuration
@@ -152,7 +155,8 @@ export class DataClient<
       authToken: props.credentialProvider.getAuthToken(),
     });
     this.clientWrapper = new cache.ScsClient(
-      `https://${props.credentialProvider.getCacheEndpoint()}`,
+      // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
+      `https://${getWebCacheEndpoint(props.credentialProvider)}`,
       null,
       {}
     );

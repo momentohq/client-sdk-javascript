@@ -9,6 +9,7 @@ import {
   IPingClient,
 } from '@gomomento/sdk-core/dist/src/internal/clients';
 import {CacheClientProps} from './cache-client-props';
+import {getWebCacheEndpoint} from './utils/web-client-utils';
 
 export class CacheClient extends AbstractCacheClient implements ICacheClient {
   constructor(props: CacheClientProps) {
@@ -36,7 +37,7 @@ function createDataClient(props: CacheClientProps): IDataClient {
 
 function createPingClient(props: CacheClientProps): IPingClient {
   return new PingClient({
-    endpoint: props.credentialProvider.getCacheEndpoint(),
+    endpoint: getWebCacheEndpoint(props.credentialProvider),
     configuration: props.configuration,
   });
 }
