@@ -8,10 +8,8 @@ import {
   CacheFlush,
   CacheInfo,
 } from '..';
-import {version} from '../../package.json';
 import {Configuration} from '../config/configuration';
-import {Request, StatusCode, UnaryInterceptor, UnaryResponse} from 'grpc-web';
-import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
+import {Request, StatusCode, UnaryResponse} from 'grpc-web';
 import {
   _CreateCacheRequest,
   _DeleteCacheRequest,
@@ -22,6 +20,7 @@ import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {IControlClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {validateCacheName} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {ClientMetadataProvider} from './client-metadata-provider';
 
 export interface ControlClientProps {
   configuration: Configuration;
@@ -34,32 +33,26 @@ export class ControlClient<
 > implements IControlClient
 {
   private readonly clientWrapper: control.ScsControlClient;
-  private readonly interceptors: UnaryInterceptor<REQ, RESP>[];
   private readonly logger: MomentoLogger;
-  private readonly authHeaders: {authorization: string};
+
+  private readonly clientMetadataProvider: ClientMetadataProvider;
 
   /**
    * @param {ControlClientProps} props
    */
   constructor(props: ControlClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    const headers = [new Header('Agent', `nodejs:${version}`)];
-    this.interceptors = [
-      new HeaderInterceptorProvider<REQ, RESP>(
-        headers
-      ).createHeadersInterceptor(),
-    ];
     this.logger.debug(
       `Creating control client using endpoint: '${props.credentialProvider.getControlEndpoint()}`
     );
 
-    this.authHeaders = {authorization: props.credentialProvider.getAuthToken()};
+    this.clientMetadataProvider = new ClientMetadataProvider({
+      authToken: props.credentialProvider.getAuthToken(),
+    });
     this.clientWrapper = new control.ScsControlClient(
       `https://${props.credentialProvider.getControlEndpoint()}`,
       null,
-      {
-        unaryInterceptors: this.interceptors,
-      }
+      {}
     );
   }
 
@@ -76,7 +69,7 @@ export class ControlClient<
     return await new Promise<CreateCache.Response>(resolve => {
       this.clientWrapper.createCache(
         request,
-        this.authHeaders,
+        this.clientMetadataProvider.createClientMetadata(),
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
@@ -105,7 +98,7 @@ export class ControlClient<
     return await new Promise<DeleteCache.Response>(resolve => {
       this.clientWrapper.deleteCache(
         request,
-        this.authHeaders,
+        this.clientMetadataProvider.createClientMetadata(),
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
@@ -136,7 +129,7 @@ export class ControlClient<
     return await new Promise<CacheFlush.Response>(resolve => {
       this.clientWrapper.flushCache(
         request,
-        this.authHeaders,
+        this.clientMetadataProvider.createClientMetadata(),
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (resp) {
@@ -154,16 +147,20 @@ export class ControlClient<
     request.setNextToken('');
     this.logger.debug("Issuing 'listCaches' request");
     return await new Promise<ListCaches.Response>(resolve => {
-      this.clientWrapper.listCaches(request, this.authHeaders, (err, resp) => {
-        if (err) {
-          resolve(new ListCaches.Error(cacheServiceErrorMapper(err)));
-        } else {
-          const caches = resp
-            .getCacheList()
-            .map(cache => new CacheInfo(cache.getCacheName()));
-          resolve(new ListCaches.Success(caches));
+      this.clientWrapper.listCaches(
+        request,
+        this.clientMetadataProvider.createClientMetadata(),
+        (err, resp) => {
+          if (err) {
+            resolve(new ListCaches.Error(cacheServiceErrorMapper(err)));
+          } else {
+            const caches = resp
+              .getCacheList()
+              .map(cache => new CacheInfo(cache.getCacheName()));
+            resolve(new ListCaches.Success(caches));
+          }
         }
-      });
+      );
     });
   }
 }

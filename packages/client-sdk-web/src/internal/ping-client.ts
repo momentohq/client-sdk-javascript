@@ -1,11 +1,10 @@
 import {ping} from '@gomomento/generated-types-webtext';
-import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
-import {version} from '../../package.json';
-import {Request, UnaryInterceptor, UnaryResponse} from 'grpc-web';
+import {Request, UnaryResponse} from 'grpc-web';
 import {_PingRequest} from '@gomomento/generated-types-webtext/dist/cacheping_pb';
 import {Configuration} from '../config/configuration';
 import {MomentoLogger} from '@gomomento/sdk-core';
 import {IPingClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {ClientMetadataProvider} from './client-metadata-provider';
 
 export interface PingClientProps {
   endpoint: string;
@@ -18,7 +17,7 @@ export class PingClient<
 > implements IPingClient
 {
   private readonly clientWrapper: ping.PingClient;
-  private readonly unaryInterceptors: UnaryInterceptor<REQ, RESP>[];
+  private readonly clientMetadataProvider: ClientMetadataProvider;
   private readonly logger: MomentoLogger;
 
   /**
@@ -26,25 +25,21 @@ export class PingClient<
    */
   constructor(props: PingClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    const headers = [new Header('Agent', `nodejs:${version}`)];
-    this.unaryInterceptors = [
-      new HeaderInterceptorProvider<REQ, RESP>(
-        headers
-      ).createHeadersInterceptor(),
-    ];
+    this.clientMetadataProvider = new ClientMetadataProvider({});
     this.clientWrapper = new ping.PingClient(
       `https://${props.endpoint}:443`,
       null,
-      {
-        unaryInterceptors: this.unaryInterceptors,
-      }
+      {}
     );
   }
 
   public async ping(): Promise<void> {
     this.logger.debug('pinging...');
     const request = new _PingRequest();
-    await this.clientWrapper.ping(request, null);
+    await this.clientWrapper.ping(
+      request,
+      this.clientMetadataProvider.createClientMetadata()
+    );
     return;
   }
 }
