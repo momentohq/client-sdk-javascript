@@ -34,4 +34,4 @@ jobs:
           project_stability: stable
           project_type: sdk
           sdk_language: Node.js
-          usage_example_path: ./examples/basic.ts
+          usage_example_path: ./examples/nodejs/basic.ts
