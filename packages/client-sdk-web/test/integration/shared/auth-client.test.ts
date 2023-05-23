@@ -5,10 +5,14 @@ const {
   sessionTokenAuthClient,
   legacyTokenAuthClient,
   authTokenAuthClientFactory,
+  cacheClientFactory,
+  cacheName,
 } = SetupAuthClientIntegrationTest();
 
 runAuthClientTests(
   sessionTokenAuthClient,
   legacyTokenAuthClient,
-  authTokenAuthClientFactory
+  authTokenAuthClientFactory,
+  cacheClientFactory,
+  cacheName
 );

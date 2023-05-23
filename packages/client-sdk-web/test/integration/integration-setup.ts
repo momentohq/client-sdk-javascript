@@ -10,7 +10,6 @@ import {
 import {CacheClientProps} from '../../src/cache-client-props';
 import {CacheClient, TopicClient, Configurations, AuthClient} from '../../src';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
-import {IAuthClient} from '@gomomento/sdk-core/dist/src/clients/IAuthClient';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 
 const credsProvider = CredentialProvider.fromEnvironmentVariable({
@@ -77,34 +76,6 @@ export function SetupAuthClientIntegrationTest(): {
   sessionTokenAuthClient: AuthClient;
   legacyTokenAuthClient: AuthClient;
   authTokenAuthClientFactory: (authToken: string) => AuthClient;
-} {
-  return {
-    sessionTokenAuthClient: new AuthClient({
-      credentialProvider: CredentialProvider.fromEnvironmentVariable({
-        environmentVariableName: 'TEST_SESSION_TOKEN',
-        // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
-        // steal them from the auth-token-based creds provider.
-        cacheEndpoint: credsProvider.getCacheEndpoint(),
-        controlEndpoint: credsProvider.getControlEndpoint(),
-      }),
-    }),
-    legacyTokenAuthClient: new AuthClient({
-      credentialProvider: CredentialProvider.fromEnvironmentVariable({
-        environmentVariableName: 'TEST_LEGACY_AUTH_TOKEN',
-      }),
-    }),
-    authTokenAuthClientFactory: authToken =>
-      new AuthClient({
-        credentialProvider: CredentialProvider.fromString({
-          authToken: authToken,
-        }),
-      }),
-  };
-}
-
-export function setupTokenScopeTest(): {
-  v1SuperUserToken: string;
-  authClientFactory: (token: string) => IAuthClient;
   cacheClientFactory: (token: string) => ICacheClient;
   cacheName: string;
 } {
@@ -130,9 +101,21 @@ export function setupTokenScopeTest(): {
   });
 
   return {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    v1SuperUserToken: process.env['TEST_AUTH_TOKEN']!,
-    authClientFactory: authToken =>
+    sessionTokenAuthClient: new AuthClient({
+      credentialProvider: CredentialProvider.fromEnvironmentVariable({
+        environmentVariableName: 'TEST_SESSION_TOKEN',
+        // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
+        // steal them from the auth-token-based creds provider.
+        cacheEndpoint: credsProvider.getCacheEndpoint(),
+        controlEndpoint: credsProvider.getControlEndpoint(),
+      }),
+    }),
+    legacyTokenAuthClient: new AuthClient({
+      credentialProvider: CredentialProvider.fromEnvironmentVariable({
+        environmentVariableName: 'TEST_LEGACY_AUTH_TOKEN',
+      }),
+    }),
+    authTokenAuthClientFactory: authToken =>
       new AuthClient({
         credentialProvider: CredentialProvider.fromString({
           authToken: authToken,

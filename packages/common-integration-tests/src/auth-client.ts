@@ -1,5 +1,9 @@
 import {
   AllDataReadWrite,
+  CacheGet,
+  CacheSet,
+  CreateCache,
+  DeleteCache,
   ExpiresIn,
   GenerateAuthToken,
   MomentoErrorCode,
@@ -9,13 +13,16 @@ import {
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/clients/IAuthClient';
 import {expectWithMessage} from './common-int-test-utils';
 import {InternalSuperUserPermissions} from '@gomomento/sdk-core/dist/src/internal/utils/auth';
+import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 
 const SUPER_USER_PERMISSIONS: TokenScope = new InternalSuperUserPermissions();
 
 export function runAuthClientTests(
   sessionTokenAuthClient: IAuthClient,
   legacyTokenAuthClient: IAuthClient,
-  authTokenAuthClientFactory: (authToken: string) => IAuthClient
+  authTokenAuthClientFactory: (authToken: string) => IAuthClient,
+  cacheClientFactory: (token: string) => ICacheClient,
+  cacheName: string
 ) {
   describe('generate auth token using session token credentials', () => {
     it('should return success and generate auth token', async () => {
@@ -151,7 +158,7 @@ export function runAuthClientTests(
       expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Success);
     });
 
-    it('should support generating a superuser token when authenticated via a v1 superuser token', async () => {
+    it('should not support generating a superuser token when authenticated via a v1 superuser token', async () => {
       const superUserTokenResponse =
         await sessionTokenAuthClient.generateAuthToken(
           SUPER_USER_PERMISSIONS,
@@ -167,7 +174,10 @@ export function runAuthClientTests(
         SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Error);
+      const error = generateResponse as GenerateAuthToken.Error;
+      expect(error.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(error.message()).toContain('Insufficient permissions');
     });
 
     it('should support generating an AllDataReadWrite token when authenticated via a v1 superuser token', async () => {
@@ -245,6 +255,59 @@ export function runAuthClientTests(
         ExpiresIn.seconds(1)
       );
       expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Error);
+    });
+  });
+
+  describe('AllDataReadWrite token scope', () => {
+    let allDataReadWriteClient: ICacheClient;
+
+    beforeAll(async () => {
+      const generateResponse = await sessionTokenAuthClient.generateAuthToken(
+        AllDataReadWrite,
+        ExpiresIn.seconds(60)
+      );
+      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      const allDataReadWriteToken = (
+        generateResponse as GenerateAuthToken.Success
+      ).authToken;
+      allDataReadWriteClient = cacheClientFactory(allDataReadWriteToken);
+    });
+    it('cannot create a cache', async () => {
+      const createCacheResponse = await allDataReadWriteClient.createCache(
+        'FOOFOOFOO'
+      );
+      expect(createCacheResponse).toBeInstanceOf(CreateCache.Error);
+      const createCacheError = createCacheResponse as CreateCache.Error;
+      expect(createCacheError.errorCode()).toEqual(
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      expect(createCacheError.message()).toContain('Insufficient permissions');
+    });
+    it('cannot delete a cache', async () => {
+      const deleteCacheResponse = await allDataReadWriteClient.deleteCache(
+        cacheName
+      );
+      expect(deleteCacheResponse).toBeInstanceOf(DeleteCache.Error);
+      const deleteCacheError = deleteCacheResponse as DeleteCache.Error;
+      expect(deleteCacheError.errorCode()).toEqual(
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      expect(deleteCacheError.message()).toContain('Insufficient permissions');
+    });
+    it('can set values in an existing cache', async () => {
+      const setResponse = await allDataReadWriteClient.set(
+        cacheName,
+        'foo',
+        'FOO'
+      );
+      expect(setResponse).toBeInstanceOf(CacheSet.Success);
+    });
+    it('can get values from an existing cache', async () => {
+      const getResponse = await allDataReadWriteClient.get(
+        cacheName,
+        'habanero'
+      );
+      expect(getResponse).toBeInstanceOf(CacheGet.Miss);
     });
   });
 }
