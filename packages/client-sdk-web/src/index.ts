@@ -91,6 +91,10 @@ import {
   DefaultMomentoLoggerLevel,
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
+  AllDataReadWrite,
+  TokenScope,
+  ExpiresIn,
+  ExpiresAt,
 } from '@gomomento/sdk-core';
 
 import {Configuration} from './config/configuration';
@@ -107,6 +111,8 @@ export {
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
+  AllDataReadWrite,
+  TokenScope,
   CacheGet,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
@@ -159,6 +165,8 @@ export {
   SubscribeCallOptions,
   GenerateAuthToken,
   RefreshAuthToken,
+  ExpiresAt,
+  ExpiresIn,
   MomentoErrorCode,
   SdkError,
   AlreadyExistsError,

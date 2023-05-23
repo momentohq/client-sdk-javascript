@@ -8,17 +8,8 @@ import {
   TopicItem,
   UnknownError,
 } from '@gomomento/sdk-core';
-import {
-  Request,
-  StreamInterceptor,
-  UnaryInterceptor,
-  UnaryResponse,
-  RpcError,
-  StatusCode,
-} from 'grpc-web';
+import {Request, UnaryResponse, RpcError, StatusCode} from 'grpc-web';
 import {TopicClientProps} from '../topic-client-props';
-import {version} from '../../package.json';
-import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {truncateString} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {TopicPublish, TopicSubscribe} from '../index';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
@@ -29,9 +20,10 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/AbstractPubsubClient';
 import {
   convertToB64String,
-  createDeadline,
-  createMetadata,
+  createCallMetadata,
+  getWebCacheEndpoint,
 } from '../utils/web-client-utils';
+import {ClientMetadataProvider} from './client-metadata-provider';
 
 export class PubsubClient<
   REQ extends Request<REQ, RESP>,
@@ -43,9 +35,7 @@ export class PubsubClient<
   private readonly requestTimeoutMs: number;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   protected readonly logger: MomentoLogger;
-  private readonly authHeaders: {authorization: string};
-  private readonly unaryInterceptors: UnaryInterceptor<REQ, RESP>[];
-  private readonly streamingInterceptors: StreamInterceptor<REQ, RESP>[];
+  private readonly clientMetadataProvider: ClientMetadataProvider;
 
   private static readonly RST_STREAM_NO_ERROR_MESSAGE =
     'Received RST_STREAM with code 0';
@@ -64,25 +54,24 @@ export class PubsubClient<
     this.requestTimeoutMs =
       grpcConfig.getDeadlineMillis() || PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
     this.logger.debug(
-      `Creating topic client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
+      `Creating topic client using endpoint: '${getWebCacheEndpoint(
+        this.credentialProvider
+      )}'`
     );
 
-    const headers: Header[] = [new Header('Agent', `nodejs:${version}`)];
-    this.unaryInterceptors = this.initializeUnaryInterceptors(headers);
-    this.streamingInterceptors = this.initializeStreamingInterceptors(headers);
     this.client = new pubsub.PubsubClient(
-      `https://${props.credentialProvider.getCacheEndpoint()}`,
+      // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
+      `https://${getWebCacheEndpoint(props.credentialProvider)}`,
       null,
-      {
-        unaryInterceptors: this.unaryInterceptors,
-        streamInterceptors: this.streamingInterceptors,
-      }
+      {}
     );
-    this.authHeaders = {authorization: props.credentialProvider.getAuthToken()};
+    this.clientMetadataProvider = new ClientMetadataProvider({
+      authToken: props.credentialProvider.getAuthToken(),
+    });
   }
 
   public getEndpoint(): string {
-    const endpoint = this.credentialProvider.getCacheEndpoint();
+    const endpoint = getWebCacheEndpoint(this.credentialProvider);
     this.logger.debug(`Using cache endpoint: ${endpoint}`);
     return endpoint;
   }
@@ -112,15 +101,13 @@ export class PubsubClient<
     request.setCacheName(cacheName);
     request.setTopic(topicName);
     request.setValue(topicValue);
-    const metadata = createMetadata(cacheName);
 
     return await new Promise(resolve => {
       this.client.publish(
         request,
         {
-          ...this.authHeaders,
-          ...metadata,
-          ...createDeadline(this.requestTimeoutMs),
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.requestTimeoutMs),
         },
         (err, resp) => {
           if (resp) {
@@ -156,7 +143,9 @@ export class PubsubClient<
       options.subscriptionState.resumeAtTopicSequenceNumber
     );
 
-    const call = this.client.subscribe(request, {...this.authHeaders});
+    const call = this.client.subscribe(request, {
+      ...this.clientMetadataProvider.createClientMetadata(),
+    });
     options.subscriptionState.setSubscribed();
 
     // Allow the caller to cancel the stream.
@@ -252,27 +241,5 @@ export class PubsubClient<
       );
       this.handleSubscribeError(options, momentoError, isRstStreamNoError);
     };
-  }
-
-  private initializeUnaryInterceptors(
-    headers: Header[]
-  ): UnaryInterceptor<REQ, RESP>[] {
-    return [
-      new HeaderInterceptorProvider<REQ, RESP>(
-        headers
-      ).createHeadersInterceptor(),
-    ];
-  }
-
-  // TODO https://github.com/momentohq/client-sdk-nodejs/issues/349
-  // decide on streaming interceptors and middlewares
-  private initializeStreamingInterceptors(
-    headers: Header[]
-  ): StreamInterceptor<REQ, RESP>[] {
-    return [
-      new HeaderInterceptorProvider<REQ, RESP>(
-        headers
-      ).createStreamingHeadersInterceptor(),
-    ];
   }
 }
