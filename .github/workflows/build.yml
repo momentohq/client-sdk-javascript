@@ -18,7 +18,7 @@ jobs:
           project_stability: stable
           project_type: sdk
           sdk_language: Node.js
-          usage_example_path: ./examples/basic.ts
+          usage_example_path: ./examples/nodejs/basic.ts
 
       - name: Commitlint and Other Shared Build Steps
         uses: momentohq/standards-and-practices/github-actions/shared-build@gh-actions-v1
@@ -73,7 +73,12 @@ jobs:
         id: validation
         continue-on-error: true
         run: |
-          pushd examples
+          pushd examples/nodejs
+            npm ci
+            npm run build
+            npm run validate-examples
+          popd
+          pushd examples/web
             npm ci
             npm run build
             npm run validate-examples
