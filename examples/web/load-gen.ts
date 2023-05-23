@@ -21,7 +21,9 @@ import {createCache, getCacheClient} from './utils/cache';
 
 // Because we're not running in a browser, we need to explicitly make
 // XMLHttpRequest available.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 global.XMLHttpRequest = require('xhr2');
 
 class BasicLoadGen {

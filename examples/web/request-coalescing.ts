@@ -24,6 +24,11 @@ import {
   MomentoClientWrapperWithCoalescing,
 } from './utils/momento-client-with-coalescing';
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+global.XMLHttpRequest = require('xhr2');
+
 const cacheKeys: string[] = [];
 
 for (let i = 0; i < 10; i++) {
