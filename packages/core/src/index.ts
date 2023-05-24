@@ -95,12 +95,6 @@ export {
 } from './config/logging/momento-logger';
 
 export {
-  DefaultMomentoLoggerFactory,
-  DefaultMomentoLogger,
-  DefaultMomentoLoggerLevel,
-} from './config/logging/default-momento-logger';
-
-export {
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
 } from './config/logging/noop-momento-logger';

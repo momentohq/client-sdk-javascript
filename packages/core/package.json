@@ -20,7 +20,7 @@
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
-    "build": "rm -rf dist && tsc && mkdir -p dist/src/internal/vendor && cp -r src/internal/vendor/printf dist/src/internal/vendor/printf"
+    "build": "rm -rf dist && tsc"
   },
   "author": "",
   "license": "Apache-2.0",

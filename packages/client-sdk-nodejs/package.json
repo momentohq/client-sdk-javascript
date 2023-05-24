@@ -22,7 +22,7 @@
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
-    "build": "cd ../core && npm run build && cd - && rm -rf dist && tsc"
+    "build": "cd ../core && npm run build && cd - && rm -rf dist && tsc && mkdir -p dist/src/internal/vendor && cp -r ../client-sdk-nodejs/src/internal/vendor/printf dist/src/internal/vendor/printf"
   },
   "author": "",
   "license": "Apache-2.0",

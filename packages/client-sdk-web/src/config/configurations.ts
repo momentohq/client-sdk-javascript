@@ -1,14 +1,12 @@
 import {CacheConfiguration} from './configuration';
-import {
-  DefaultMomentoLoggerFactory,
-  MomentoLoggerFactory,
-} from '@gomomento/sdk-core';
+import {MomentoLoggerFactory} from '@gomomento/sdk-core';
 import {
   GrpcConfiguration,
   StaticGrpcConfiguration,
   StaticTransportStrategy,
   TransportStrategy,
 } from './transport';
+import {DefaultMomentoLoggerFactory} from './logging/default-momento-logger';
 
 const defaultLoggerFactory: MomentoLoggerFactory =
   new DefaultMomentoLoggerFactory();
