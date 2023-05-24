@@ -490,7 +490,7 @@ export class DataClient<
           ...createCallMetadata(cacheName, this.deadlineMillis),
         },
         (err, resp) => {
-          const theSet = resp.getFound();
+          const theSet = resp?.getFound();
           if (theSet && theSet.getElementsList()) {
             const found = theSet.getElementsList();
             resolve(new CacheSetFetch.Hit(this.convertArrayToUint8(found)));
