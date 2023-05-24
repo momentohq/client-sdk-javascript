@@ -86,9 +86,6 @@ import {
   UnknownError,
   MomentoLogger,
   MomentoLoggerFactory,
-  DefaultMomentoLoggerFactory,
-  DefaultMomentoLogger,
-  DefaultMomentoLoggerLevel,
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
   AllDataReadWrite,
@@ -98,6 +95,12 @@ import {
 } from '@gomomento/sdk-core';
 
 import {Configuration} from './config/configuration';
+
+export {
+  DefaultMomentoLoggerFactory,
+  DefaultMomentoLogger,
+  DefaultMomentoLoggerLevel,
+} from './config/logging/default-momento-logger';
 
 export {
   CollectionTtl,
@@ -185,9 +188,6 @@ export {
   UnknownError,
   MomentoLogger,
   MomentoLoggerFactory,
-  DefaultMomentoLoggerFactory,
-  DefaultMomentoLogger,
-  DefaultMomentoLoggerLevel,
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
 };
