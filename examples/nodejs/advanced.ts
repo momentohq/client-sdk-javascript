@@ -72,9 +72,7 @@ async function setGetDeleteExample() {
   // ttl is an optional field on most write operations, but you can provide it if you
   // want to override the default ttl that you specified when constructing your client.
   const exampleTtlSeconds = 10;
-  logger.info(
-    `Storing key=${cacheKey}, value=${cacheValue}, ttl=${exampleTtlSeconds}`
-  );
+  logger.info(`Storing key=${cacheKey}, value=${cacheValue}, ttl=${exampleTtlSeconds}`);
   const setResponse = await momento.set(cacheName, cacheKey, cacheValue, {
     ttl: exampleTtlSeconds,
   });
@@ -118,38 +116,26 @@ async function concurrentGetsExample() {
   getResponses.forEach((response, index) => {
     const key = `key${index + 1}`;
     if (response instanceof CacheGet.Hit) {
-      logger.info(
-        `Concurrent get for ${key} returned ${response.valueString()}`
-      );
+      logger.info(`Concurrent get for ${key} returned ${response.valueString()}`);
     } else {
-      logger.info(
-        `Something went wrong with concurrent get for key ${key}: ${response.toString()}`
-      );
+      logger.info(`Something went wrong with concurrent get for key ${key}: ${response.toString()}`);
     }
   });
 }
 
 async function middlewaresExample() {
-  const middlewaresExampleloggerFactory: MomentoLoggerFactory =
-    new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.DEBUG);
-  const middlewaresExamplelogger = middlewaresExampleloggerFactory.getLogger(
-    'AdvancedMiddlewaresExample'
+  const middlewaresExampleloggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory(
+    DefaultMomentoLoggerLevel.DEBUG
   );
-  middlewaresExamplelogger.info(
-    'Constructing a new Momento client with logging and metrics middlewares enabled'
-  );
+  const middlewaresExamplelogger = middlewaresExampleloggerFactory.getLogger('AdvancedMiddlewaresExample');
+  middlewaresExamplelogger.info('Constructing a new Momento client with logging and metrics middlewares enabled');
 
   const metricsCsvPath = './advanced-middlewares-example-metrics.csv';
 
   const middlewaresExampleClient = new CacheClient({
-    configuration: Configurations.Laptop.v1(
-      middlewaresExampleloggerFactory
-    ).withMiddlewares([
+    configuration: Configurations.Laptop.v1(middlewaresExampleloggerFactory).withMiddlewares([
       new ExperimentalRequestLoggingMiddleware(middlewaresExampleloggerFactory),
-      new ExperimentalMetricsCsvMiddleware(
-        metricsCsvPath,
-        middlewaresExampleloggerFactory
-      ),
+      new ExperimentalMetricsCsvMiddleware(metricsCsvPath, middlewaresExampleloggerFactory),
     ]),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_AUTH_TOKEN',
@@ -169,11 +155,7 @@ async function middlewaresExample() {
   // wait for metrics to flush to disk
   await delay(100);
 
-  logger.info(
-    `Here are the contents of the metrics csv file:\n\n${fs
-      .readFileSync(metricsCsvPath)
-      .toString()}`
-  );
+  logger.info(`Here are the contents of the metrics csv file:\n\n${fs.readFileSync(metricsCsvPath).toString()}`);
 
   middlewaresExamplelogger.info('Middlewares example complete!');
 }

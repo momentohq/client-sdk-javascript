@@ -3,11 +3,7 @@ import {RequestCoalescerContext} from './load-gen';
 
 export interface GetAndSetOnlyClient {
   get(cacheName: string, key: string): Promise<CacheGet.Response>;
-  set(
-    cacheName: string,
-    key: string,
-    value: string
-  ): Promise<CacheSet.Response>;
+  set(cacheName: string, key: string, value: string): Promise<CacheSet.Response>;
 }
 
 export class MomentoClientWrapperWithCoalescing {
@@ -38,11 +34,7 @@ export class MomentoClientWrapperWithCoalescing {
     });
   }
 
-  set(
-    cacheName: string,
-    key: string,
-    value: string
-  ): Promise<CacheSet.Response> {
+  set(cacheName: string, key: string, value: string): Promise<CacheSet.Response> {
     if (this.setRequestMap.has(key)) {
       this.context.numberOfSetRequestsCoalesced++;
       const mapResponse = this.setRequestMap.get(key);

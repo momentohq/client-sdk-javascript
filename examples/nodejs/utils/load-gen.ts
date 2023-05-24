@@ -47,10 +47,7 @@ export interface RequestCoalescerContext {
   numberOfGetRequestsCoalesced: number;
 }
 
-export function updateContextCountsForRequest(
-  context: BasicLoadGenContext,
-  result: AsyncSetGetResult
-): void {
+export function updateContextCountsForRequest(context: BasicLoadGenContext, result: AsyncSetGetResult): void {
   context.globalRequestCount++;
   // TODO: this could be simplified and made more generic, worth doing if we ever want to
   //  expand this to additional types of behavior
@@ -98,18 +95,14 @@ export async function executeRequest<T>(
       if (e.message.includes('UNAVAILABLE')) {
         return [AsyncSetGetResult.UNAVAILABLE, undefined];
       } else if (e.message.includes('RST_STREAM')) {
-        logger.error(
-          `Caught RST_STREAM error; swallowing: ${e.name}, ${e.message}`
-        );
+        logger.error(`Caught RST_STREAM error; swallowing: ${e.name}, ${e.message}`);
         return [AsyncSetGetResult.RST_STREAM, undefined];
       } else {
         throw e;
       }
     } else if (e instanceof LimitExceededError) {
       if (e.message.includes('RESOURCE_EXHAUSTED')) {
-        logger.error(
-          `Caught RESOURCE_EXHAUSTED error; swallowing: ${e.name}, ${e.message}`
-        );
+        logger.error(`Caught RESOURCE_EXHAUSTED error; swallowing: ${e.name}, ${e.message}`);
         return [AsyncSetGetResult.RESOURCE_EXHAUSTED, undefined];
       } else {
         throw e;
