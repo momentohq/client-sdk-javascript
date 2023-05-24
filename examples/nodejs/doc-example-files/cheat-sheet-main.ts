@@ -1,12 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  CacheGet,
-  CreateCache,
-  CacheSet,
-  CacheClient,
-  Configurations,
-  CredentialProvider,
-} from '@gomomento/sdk';
+import {CacheGet, CreateCache, CacheSet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
 
 function main() {
   const cacheClient = new CacheClient({
@@ -21,8 +14,6 @@ function main() {
 try {
   main();
 } catch (e) {
-  console.error(
-    `Uncaught exception while running example: ${JSON.stringify(e)}`
-  );
+  console.error(`Uncaught exception while running example: ${JSON.stringify(e)}`);
   throw e;
 }
