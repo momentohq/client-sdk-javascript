@@ -1,5 +1,5 @@
 <head>
-  <meta name="Momento Node.js Client Library Documentation" content="Node.js client software development kit for Momento Serverless Cache">
+  <meta name="Momento Node.js Client Library Documentation" content="Node.js client software development kit for Momento Cache">
 </head>
 <img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
 

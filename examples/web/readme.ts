@@ -12,8 +12,8 @@ async function main() {
     defaultTtlSeconds: 60,
   });
 
-  const createCacheResponse = await momento.createCache('cache');
-  const setResponse = await momento.set('cache', 'foo', 'FOO');
+  await momento.createCache('cache');
+  await momento.set('cache', 'foo', 'FOO');
   const getResponse = await momento.get('cache', 'foo');
   if (getResponse instanceof CacheGet.Hit) {
     console.log(`Got value: ${getResponse.valueString()}`);

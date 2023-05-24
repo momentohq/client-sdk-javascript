@@ -1,5 +1,5 @@
 <head>
-  <meta name="Momento JavaScript Client Library Documentation" content="JavaScript client software development kit for Momento Serverless Cache">
+  <meta name="Momento JavaScript Client Library Documentation" content="JavaScript client software development kit for Momento Cache">
 </head>
 <img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
 
@@ -13,7 +13,7 @@
 * Getting Started: [https://docs.momentohq.com/getting-started](https://docs.momentohq.com/getting-started)
 * Discuss: [Momento Discord](https://discord.gg/3HkAKjUZGq)
 
-Momento Serverless Cache is a fast, simple, pay-as-you-go caching solution without any of the operational overhead
+Momento Cache is a fast, simple, pay-as-you-go caching solution without any of the operational overhead
 required by traditional caching solutions.  This repo contains the source code for the Momento JavaScript client libraries.
 
 ## Packages
@@ -40,8 +40,8 @@ async function main() {
     defaultTtlSeconds: 60,
   });
 
-  const createCacheResponse = await momento.createCache('cache');
-  const setResponse = await momento.set('cache', 'foo', 'FOO');
+  await momento.createCache('cache');
+  await momento.set('cache', 'foo', 'FOO');
   const getResponse = await momento.get('cache', 'foo');
   if (getResponse instanceof CacheGet.Hit) {
     console.log(`Got value: ${getResponse.valueString()}`);
