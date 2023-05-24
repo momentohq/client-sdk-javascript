@@ -15,10 +15,7 @@ export function getCacheClient(
   cacheItemTtlSeconds: number
 ) {
   return new CacheClient({
-    configuration:
-      Configurations.Laptop.v1(loggerFactory).withClientTimeoutMillis(
-        requestTimeoutMs
-      ),
+    configuration: Configurations.Laptop.v1(loggerFactory).withClientTimeoutMillis(requestTimeoutMs),
     credentialProvider: new EnvMomentoTokenProvider({
       environmentVariableName: 'MOMENTO_AUTH_TOKEN',
     }),
@@ -26,11 +23,7 @@ export function getCacheClient(
   });
 }
 
-export async function createCache(
-  momentCacheClient: CacheClient,
-  cacheName: string,
-  logger: MomentoLogger
-) {
+export async function createCache(momentCacheClient: CacheClient, cacheName: string, logger: MomentoLogger) {
   const createResponse = await momentCacheClient.createCache(cacheName);
   if (createResponse instanceof CreateCache.AlreadyExists) {
     logger.info(`cache '${cacheName}' already exists`);
@@ -40,9 +33,7 @@ export async function createCache(
 }
 
 export async function ensureCacheExists(cacheName: string): Promise<void> {
-  const loggerFactory = new DefaultMomentoLoggerFactory(
-    DefaultMomentoLoggerLevel.INFO
-  );
+  const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.INFO);
   const momento = getCacheClient(loggerFactory, 5000, 60);
   const createCacheResponse = await momento.createCache(cacheName);
   if (createCacheResponse instanceof CreateCache.Success) {
@@ -52,8 +43,6 @@ export async function ensureCacheExists(cacheName: string): Promise<void> {
   } else if (createCacheResponse instanceof CreateCache.Error) {
     throw createCacheResponse.innerException();
   } else {
-    throw new Error(
-      `Unknown create cache response type: ${createCacheResponse.toString()}`
-    );
+    throw new Error(`Unknown create cache response type: ${createCacheResponse.toString()}`);
   }
 }

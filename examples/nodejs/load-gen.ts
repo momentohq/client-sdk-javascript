@@ -13,10 +13,7 @@ import {
   executeRequestAndUpdateContextCounts,
   initiateLoadGenContext,
 } from './utils/load-gen';
-import {
-  getElapsedMillis,
-  logStats,
-} from './utils/load-gen-statistics-calculator';
+import {getElapsedMillis, logStats} from './utils/load-gen-statistics-calculator';
 import {createCache, getCacheClient} from './utils/cache';
 
 class BasicLoadGen {
@@ -35,34 +32,23 @@ class BasicLoadGen {
     this.options = options;
     this.cacheValue = 'x'.repeat(options.cacheItemPayloadBytes);
     this.delayMillisBetweenRequests =
-      (1000.0 * this.options.numberOfConcurrentRequests) /
-      this.options.maxRequestsPerSecond;
+      (1000.0 * this.options.numberOfConcurrentRequests) / this.options.maxRequestsPerSecond;
   }
 
   async run(): Promise<void> {
-    const momento = getCacheClient(
-      this.loggerFactory,
-      this.options.requestTimeoutMs,
-      this.cacheItemTtlSeconds
-    );
+    const momento = getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
 
     await createCache(momento, this.cacheName, this.logger);
 
-    this.logger.trace(
-      `delayMillisBetweenRequests: ${this.delayMillisBetweenRequests}`
-    );
+    this.logger.trace(`delayMillisBetweenRequests: ${this.delayMillisBetweenRequests}`);
 
     this.logger.info(`Limiting to ${this.options.maxRequestsPerSecond} tps`);
-    this.logger.info(
-      `Running ${this.options.numberOfConcurrentRequests} concurrent requests`
-    );
+    this.logger.info(`Running ${this.options.numberOfConcurrentRequests} concurrent requests`);
     this.logger.info(`Running for ${this.options.totalSecondsToRun} seconds`);
 
     const loadGenContext = initiateLoadGenContext();
 
-    const asyncGetSetResults = range(
-      this.options.numberOfConcurrentRequests
-    ).map(workerId =>
+    const asyncGetSetResults = range(this.options.numberOfConcurrentRequests).map(workerId =>
       this.launchAndRunWorkers(momento, loadGenContext, workerId + 1)
     );
 
@@ -114,10 +100,8 @@ class BasicLoadGen {
     const cacheKey = `worker${workerId}operation${operationId}`;
 
     const setStartTime = process.hrtime();
-    const result = await executeRequestAndUpdateContextCounts(
-      this.logger,
-      loadGenContext,
-      () => client.set(this.cacheName, cacheKey, this.cacheValue)
+    const result = await executeRequestAndUpdateContextCounts(this.logger, loadGenContext, () =>
+      client.set(this.cacheName, cacheKey, this.cacheValue)
     );
     if (result !== undefined) {
       const setDuration = getElapsedMillis(setStartTime);
@@ -130,10 +114,8 @@ class BasicLoadGen {
     }
 
     const getStartTime = process.hrtime();
-    const getResult = await executeRequestAndUpdateContextCounts(
-      this.logger,
-      loadGenContext,
-      () => client.get(this.cacheName, cacheKey)
+    const getResult = await executeRequestAndUpdateContextCounts(this.logger, loadGenContext, () =>
+      client.get(this.cacheName, cacheKey)
     );
 
     if (getResult !== undefined) {

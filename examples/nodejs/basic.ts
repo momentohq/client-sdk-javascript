@@ -1,11 +1,4 @@
-import {
-  CacheGet,
-  CreateCache,
-  CacheSet,
-  CacheClient,
-  Configurations,
-  CredentialProvider,
-} from '@gomomento/sdk';
+import {CacheGet, CreateCache, CacheSet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
 
 async function main() {
   const momento = new CacheClient({

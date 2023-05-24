@@ -1,4 +1,18 @@
-{{ ossHeader }}
+<head>
+  <meta name="Momento Node.js Client Library Documentation" content="Node.js client software development kit for Momento Serverless Cache">
+</head>
+<img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
+
+[![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
+[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md) 
+
+# Momento Node.js Client Library
+
+
+Node.js client SDK for Momento Serverless Cache: a fast, simple, pay-as-you-go caching solution without
+any of the operational overhead required by traditional caching solutions!
+
+
 
 ## Getting Started :running:
 
@@ -41,7 +55,58 @@ Checkout our [examples](./examples/README.md) directory for complete examples of
 Here is a quickstart you can use in your own project:
 
 ```typescript
-{{ usageExampleCode }}
+import {
+  CacheGet,
+  CreateCache,
+  CacheSet,
+  CacheClient,
+  Configurations,
+  CredentialProvider,
+} from '@gomomento/sdk';
+
+async function main() {
+  const momento = new CacheClient({
+    configuration: Configurations.Laptop.v1(),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+    }),
+    defaultTtlSeconds: 60,
+  });
+
+  const createCacheResponse = await momento.createCache('cache');
+  if (createCacheResponse instanceof CreateCache.AlreadyExists) {
+    console.log('cache already exists');
+  } else if (createCacheResponse instanceof CreateCache.Error) {
+    throw createCacheResponse.innerException();
+  }
+
+  console.log('Storing key=foo, value=FOO');
+  const setResponse = await momento.set('cache', 'foo', 'FOO');
+  if (setResponse instanceof CacheSet.Success) {
+    console.log('Key stored successfully!');
+  } else {
+    console.log(`Error setting key: ${setResponse.toString()}`);
+  }
+
+  const getResponse = await momento.get('cache', 'foo');
+  if (getResponse instanceof CacheGet.Hit) {
+    console.log(`cache hit: ${getResponse.valueString()}`);
+  } else if (getResponse instanceof CacheGet.Miss) {
+    console.log('cache miss');
+  } else if (getResponse instanceof CacheGet.Error) {
+    console.log(`Error: ${getResponse.message()}`);
+  }
+}
+
+main()
+  .then(() => {
+    console.log('success!!');
+  })
+  .catch((e: Error) => {
+    console.error(`Uncaught exception while running example: ${e.message}`);
+    throw e;
+  });
+
 ```
 
 Momento also supports storing pure bytes,
@@ -151,4 +216,5 @@ can fix or extend the pre-built configs to support it.
 If you do need to customize your configuration beyond what our pre-builts provide, you can build your own `Configuration`
 object.  See the examples in `configurations.ts` to see how they are constructed.
 
-{{ ossFooter }}
+----------------------------------------------------------------------------------------
+For more info, visit our website at [https://gomomento.com](https://gomomento.com)!

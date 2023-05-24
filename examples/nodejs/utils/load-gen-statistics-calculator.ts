@@ -2,13 +2,8 @@ import {BasicLoadGenContext, RequestCoalescerContext} from './load-gen';
 import * as hdr from 'hdr-histogram-js';
 import {MomentoLogger} from '@gomomento/sdk';
 
-export function tps(
-  context: BasicLoadGenContext,
-  requestCount: number
-): number {
-  return Math.round(
-    (requestCount * 1000) / getElapsedMillis(context.startTime)
-  );
+export function tps(context: BasicLoadGenContext, requestCount: number): number {
+  return Math.round((requestCount * 1000) / getElapsedMillis(context.startTime));
 }
 
 export function getElapsedMillis(startTime: [number, number]): number {
@@ -16,13 +11,8 @@ export function getElapsedMillis(startTime: [number, number]): number {
   return (endTime[0] * 1e9 + endTime[1]) / 1e6;
 }
 
-export function percentRequests(
-  context: BasicLoadGenContext,
-  count: number
-): string {
-  return (
-    Math.round((count / context.globalRequestCount) * 100 * 10) / 10
-  ).toString();
+export function percentRequests(context: BasicLoadGenContext, count: number): string {
+  return (Math.round((count / context.globalRequestCount) * 100 * 10) / 10).toString();
 }
 
 export function outputHistogramSummary(histogram: hdr.Histogram): string {
@@ -56,15 +46,11 @@ total requests: ${loadGenContext.globalRequestCount} (${tps(
     loadGenContext,
     loadGenContext.globalUnavailableCount
   )}%)
-deadline exceeded: ${
-    loadGenContext.globalDeadlineExceededCount
-  } (${percentRequests(
+deadline exceeded: ${loadGenContext.globalDeadlineExceededCount} (${percentRequests(
     loadGenContext,
     loadGenContext.globalDeadlineExceededCount
   )}%)
-resource exhausted: ${
-    loadGenContext.globalResourceExhaustedCount
-  } (${percentRequests(
+resource exhausted: ${loadGenContext.globalResourceExhaustedCount} (${percentRequests(
     loadGenContext,
     loadGenContext.globalResourceExhaustedCount
   )}%)
@@ -89,15 +75,9 @@ export function logCoalescingStats(
   logger.info(`
 For request coalescer:
 Number of set requests coalesced:
-${context.numberOfSetRequestsCoalesced} (${percentRequests(
-    loadGenContext,
-    context.numberOfSetRequestsCoalesced
-  )}%)
+${context.numberOfSetRequestsCoalesced} (${percentRequests(loadGenContext, context.numberOfSetRequestsCoalesced)}%)
 
 Number of get requests coalesced:
-${context.numberOfGetRequestsCoalesced} (${percentRequests(
-    loadGenContext,
-    context.numberOfGetRequestsCoalesced
-  )}%)
+${context.numberOfGetRequestsCoalesced} (${percentRequests(loadGenContext, context.numberOfGetRequestsCoalesced)}%)
 `);
 }

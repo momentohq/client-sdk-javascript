@@ -73,9 +73,7 @@ async function setGetDeleteExample() {
   // ttl is an optional field on most write operations, but you can provide it if you
   // want to override the default ttl that you specified when constructing your client.
   const exampleTtlSeconds = 10;
-  logger.info(
-    `Storing key=${cacheKey}, value=${cacheValue}, ttl=${exampleTtlSeconds}`
-  );
+  logger.info(`Storing key=${cacheKey}, value=${cacheValue}, ttl=${exampleTtlSeconds}`);
   const setResponse = await momento.set(cacheName, cacheKey, cacheValue, {
     ttl: exampleTtlSeconds,
   });
@@ -119,13 +117,9 @@ async function concurrentGetsExample() {
   getResponses.forEach((response, index) => {
     const key = `key${index + 1}`;
     if (response instanceof CacheGet.Hit) {
-      logger.info(
-        `Concurrent get for ${key} returned ${response.valueString()}`
-      );
+      logger.info(`Concurrent get for ${key} returned ${response.valueString()}`);
     } else {
-      logger.info(
-        `Something went wrong with concurrent get for key ${key}: ${response.toString()}`
-      );
+      logger.info(`Something went wrong with concurrent get for key ${key}: ${response.toString()}`);
     }
   });
 }
