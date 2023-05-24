@@ -1,5 +1,7 @@
-import {MomentoLogger, MomentoLoggerFactory} from './momento-logger';
-import printf = require('../../internal/vendor/printf/printf');
+import {
+  MomentoLogger,
+  MomentoLoggerFactory,
+} from '@gomomento/sdk-core/dist/src/config/logging';
 
 export enum DefaultMomentoLoggerLevel {
   TRACE = 5,
@@ -83,14 +85,12 @@ export class DefaultMomentoLogger implements MomentoLogger {
     msg: string,
     args: unknown[]
   ) {
+    // TODO: this should really be doing a printf-style interpolation of `args` into `msg`, but the `printf` function
+    // we were using doesn't work outside of node.js.  Revisit this if it we have a more serious need for browser logging.
     outputFn(
-      printf(
-        '[%s] %s (Momento: %s): %s',
-        new Date().toISOString(),
-        DefaultMomentoLoggerLevel[level],
-        this.loggerName,
-        printf(msg, ...args)
-      )
+      `[${new Date().toISOString()}] ${
+        DefaultMomentoLoggerLevel[level]
+      } (Momento: ${this.loggerName}): ${msg}${args.join(',')}`
     );
   }
 }

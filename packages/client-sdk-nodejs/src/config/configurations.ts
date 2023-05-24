@@ -2,16 +2,14 @@ import {CacheConfiguration} from './configuration';
 import {FixedCountRetryStrategy} from './retry/fixed-count-retry-strategy';
 import {RetryStrategy} from './retry/retry-strategy';
 import {Middleware} from './middleware/middleware';
-import {
-  DefaultMomentoLoggerFactory,
-  MomentoLoggerFactory,
-} from '@gomomento/sdk-core';
+import {MomentoLoggerFactory} from '@gomomento/sdk-core';
 import {
   GrpcConfiguration,
   StaticGrpcConfiguration,
   StaticTransportStrategy,
   TransportStrategy,
 } from './transport';
+import {DefaultMomentoLoggerFactory} from './logging/default-momento-logger';
 
 // 4 minutes.  We want to remain comfortably underneath the idle timeout for AWS NLB, which is 350s.
 const defaultMaxIdleMillis = 4 * 60 * 1_000;

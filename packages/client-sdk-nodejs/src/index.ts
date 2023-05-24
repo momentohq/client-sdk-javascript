@@ -87,9 +87,6 @@ import {
   UnknownError,
   MomentoLogger,
   MomentoLoggerFactory,
-  DefaultMomentoLoggerFactory,
-  DefaultMomentoLogger,
-  DefaultMomentoLoggerLevel,
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
   ExpiresAt,
@@ -105,6 +102,12 @@ import {
 } from '@gomomento/sdk-core';
 
 import {Configuration, CacheConfiguration} from './config/configuration';
+
+export {
+  DefaultMomentoLoggerFactory,
+  DefaultMomentoLogger,
+  DefaultMomentoLoggerLevel,
+} from './config/logging/default-momento-logger';
 
 export {
   EligibilityStrategy,
@@ -245,9 +248,6 @@ export {
   // Logging
   MomentoLogger,
   MomentoLoggerFactory,
-  DefaultMomentoLoggerFactory,
-  DefaultMomentoLogger,
-  DefaultMomentoLoggerLevel,
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
 };
