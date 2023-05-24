@@ -19,7 +19,22 @@ import {
   CacheSet,
   CacheGet,
   CacheDelete,
+  AuthClient,
+  AllDataReadWrite,
+  ExpiresIn,
+  GenerateAuthToken,
+  RefreshAuthToken,
 } from '@gomomento/sdk';
+
+function example_API_InstantiateCacheClient() {
+  new CacheClient({
+    configuration: Configurations.Laptop.v1(),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+    }),
+    defaultTtlSeconds: 60,
+  });
+}
 
 async function example_API_CreateCache(cacheClient: CacheClient) {
   const result = await cacheClient.createCache('test-cache');
@@ -103,7 +118,43 @@ async function example_API_Delete(cacheClient: CacheClient) {
   }
 }
 
+function example_API_InstantiateAuthClient() {
+  new AuthClient({
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+    }),
+  });
+}
+
+async function example_API_GenerateAuthToken(authClient: AuthClient) {
+  const generateTokenResponse = await authClient.generateAuthToken(AllDataReadWrite, ExpiresIn.minutes(30));
+  if (generateTokenResponse instanceof GenerateAuthToken.Success) {
+    console.log('Auth token generated!');
+    console.log(`Auth token starts with: ${generateTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`Refresh token starts with: ${generateTokenResponse.refreshToken.substring(0, 10)}`);
+    console.log(`Expires At: ${generateTokenResponse.expiresAt.epoch()}`);
+  }
+}
+
+async function example_API_RefreshAuthToken(authClient: AuthClient) {
+  const generateTokenResponse = await authClient.generateAuthToken(AllDataReadWrite, ExpiresIn.minutes(30));
+  if (generateTokenResponse instanceof GenerateAuthToken.Success) {
+    console.log('Generated auth token; refreshing!');
+    const refreshAuthClient = new AuthClient({
+      credentialProvider: CredentialProvider.fromString({authToken: generateTokenResponse.authToken}),
+    });
+    const refreshTokenResponse = await refreshAuthClient.refreshAuthToken(generateTokenResponse.refreshToken);
+    if (refreshTokenResponse instanceof RefreshAuthToken.Success) {
+      console.log('Auth token refreshed!');
+      console.log(`Refreshed auth token starts with: ${refreshTokenResponse.authToken.substring(0, 10)}`);
+      console.log(`New refresh token starts with: ${refreshTokenResponse.refreshToken.substring(0, 10)}`);
+      console.log(`Refreshed auth token expires At: ${refreshTokenResponse.expiresAt.epoch()}`);
+    }
+  }
+}
+
 async function main() {
+  example_API_InstantiateCacheClient();
   const cacheClient = new CacheClient({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
@@ -121,6 +172,15 @@ async function main() {
   await example_API_Set(cacheClient);
   await example_API_Get(cacheClient);
   await example_API_Delete(cacheClient);
+
+  example_API_InstantiateAuthClient();
+  const authClient = new AuthClient({
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+    }),
+  });
+  await example_API_GenerateAuthToken(authClient);
+  await example_API_RefreshAuthToken(authClient);
 }
 
 main().catch(e => {
