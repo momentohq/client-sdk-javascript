@@ -30,7 +30,7 @@ the [Momento Web SDK](../client-sdk-web).
 import {CacheGet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
 
 async function main() {
-  const momento = new CacheClient({
+  const cacheClient = new CacheClient({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_AUTH_TOKEN',
@@ -38,9 +38,9 @@ async function main() {
     defaultTtlSeconds: 60,
   });
 
-  await momento.createCache('cache');
-  await momento.set('cache', 'foo', 'FOO');
-  const getResponse = await momento.get('cache', 'foo');
+  await cacheClient.createCache('cache');
+  await cacheClient.set('cache', 'foo', 'FOO');
+  const getResponse = await cacheClient.get('cache', 'foo');
   if (getResponse instanceof CacheGet.Hit) {
     console.log(`Got value: ${getResponse.valueString()}`);
   }
