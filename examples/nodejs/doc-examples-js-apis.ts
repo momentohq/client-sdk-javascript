@@ -129,7 +129,8 @@ function example_API_InstantiateAuthClient() {
 async function example_API_GenerateAuthToken(authClient: AuthClient) {
   const generateTokenResponse = await authClient.generateAuthToken(AllDataReadWrite, ExpiresIn.minutes(30));
   if (generateTokenResponse instanceof GenerateAuthToken.Success) {
-    console.log('Auth token generated!');
+    console.log('Generated an auth token with AllDataReadWrite scope!');
+    // logging only a substring of the tokens, because logging security credentials is not advisable :)
     console.log(`Auth token starts with: ${generateTokenResponse.authToken.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${generateTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${generateTokenResponse.expiresAt.epoch()}`);
@@ -146,6 +147,7 @@ async function example_API_RefreshAuthToken(authClient: AuthClient) {
     const refreshTokenResponse = await refreshAuthClient.refreshAuthToken(generateTokenResponse.refreshToken);
     if (refreshTokenResponse instanceof RefreshAuthToken.Success) {
       console.log('Auth token refreshed!');
+      // logging only a substring of the tokens, because logging security credentials is not advisable :)
       console.log(`Refreshed auth token starts with: ${refreshTokenResponse.authToken.substring(0, 10)}`);
       console.log(`New refresh token starts with: ${refreshTokenResponse.refreshToken.substring(0, 10)}`);
       console.log(`Refreshed auth token expires At: ${refreshTokenResponse.expiresAt.epoch()}`);
