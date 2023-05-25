@@ -60,6 +60,7 @@ import * as GenerateAuthToken from '@gomomento/sdk-core/dist/src/messages/respon
 import * as RefreshAuthToken from '@gomomento/sdk-core/dist/src/messages/responses/refresh-auth-token';
 
 import {
+  ICacheClient,
   SubscribeCallOptions,
   CacheInfo,
   CollectionTtl,
@@ -103,6 +104,7 @@ export {
 } from './config/logging/default-momento-logger';
 
 export {
+  ICacheClient,
   CollectionTtl,
   ItemType,
   SortedSetOrder,
