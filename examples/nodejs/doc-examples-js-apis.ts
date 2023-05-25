@@ -26,6 +26,34 @@ import {
   RefreshAuthToken,
 } from '@gomomento/sdk';
 
+function retrieveAuthTokenFromYourSecretsManager(): string {
+  // this is not a valid API key but conforms to the syntax requirements.
+  const fakeTestV1ApiKey =
+    'eyJhcGlfa2V5IjogImV5SjBlWEFpT2lKS1YxUWlMQ0poYkdjaU9pSklVekkxTmlKOS5leUpwYzNNaU9pSlBibXhwYm1VZ1NsZFVJRUoxYVd4a1pYSWlMQ0pwWVhRaU9qRTJOemd6TURVNE1USXNJbVY0Y0NJNk5EZzJOVFV4TlRReE1pd2lZWFZrSWpvaUlpd2ljM1ZpSWpvaWFuSnZZMnRsZEVCbGVHRnRjR3hsTG1OdmJTSjkuOEl5OHE4NExzci1EM1lDb19IUDRkLXhqSGRUOFVDSXV2QVljeGhGTXl6OCIsICJlbmRwb2ludCI6ICJ0ZXN0Lm1vbWVudG9ocS5jb20ifQo=';
+  return fakeTestV1ApiKey;
+}
+
+function example_API_CredentialProviderFromEnvVar() {
+  CredentialProvider.fromEnvironmentVariable({environmentVariableName: 'MOMENTO_AUTH_TOKEN'});
+}
+
+function example_API_CredentialProviderFromString() {
+  const authToken = retrieveAuthTokenFromYourSecretsManager();
+  CredentialProvider.fromString({authToken: authToken});
+}
+
+function example_API_ConfigurationLaptop() {
+  Configurations.Laptop.v1();
+}
+
+function example_API_ConfigurationInRegionDefault() {
+  Configurations.InRegion.Default.v1();
+}
+
+function example_API_ConfigurationInRegionLowLatency() {
+  Configurations.InRegion.LowLatency.v1();
+}
+
 function example_API_InstantiateCacheClient() {
   new CacheClient({
     configuration: Configurations.Laptop.v1(),
@@ -34,6 +62,30 @@ function example_API_InstantiateCacheClient() {
     }),
     defaultTtlSeconds: 60,
   });
+}
+
+async function example_API_ErrorHandlingHitMiss(cacheClient: CacheClient) {
+  const result = await cacheClient.get('test-cache', 'test-key');
+  if (result instanceof CacheGet.Hit) {
+    console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
+  } else if (result instanceof CacheGet.Miss) {
+    console.log("Key 'test-key' was not found in cache 'test-cache");
+  } else if (result instanceof CacheGet.Error) {
+    throw new Error(
+      `An error occurred while attempting to get key 'test-key' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_ErrorHandlingSuccess(cacheClient: CacheClient) {
+  const result = await cacheClient.set('test-cache', 'test-key', 'test-value');
+  if (result instanceof CacheSet.Success) {
+    console.log("Key 'test-key' stored successfully");
+  } else if (result instanceof CacheSet.Error) {
+    throw new Error(
+      `An error occurred while attempting to store key 'test-key' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
 }
 
 async function example_API_CreateCache(cacheClient: CacheClient) {
@@ -156,6 +208,16 @@ async function example_API_RefreshAuthToken(authClient: AuthClient) {
 }
 
 async function main() {
+  const originalAuthToken = process.env['MOMENTO_AUTH_TOKEN'];
+  process.env['MOMENTO_AUTH_TOKEN'] = retrieveAuthTokenFromYourSecretsManager();
+  example_API_CredentialProviderFromEnvVar();
+  process.env['MOMENTO_AUTH_TOKEN'] = originalAuthToken;
+
+  example_API_CredentialProviderFromString();
+  example_API_ConfigurationLaptop();
+  example_API_ConfigurationInRegionDefault();
+  example_API_ConfigurationInRegionLowLatency();
+
   example_API_InstantiateCacheClient();
   const cacheClient = new CacheClient({
     configuration: Configurations.Laptop.v1(),
@@ -164,6 +226,9 @@ async function main() {
     }),
     defaultTtlSeconds: 60,
   });
+
+  await example_API_ErrorHandlingHitMiss(cacheClient);
+  await example_API_ErrorHandlingSuccess(cacheClient);
 
   await example_API_CreateCache(cacheClient);
   await example_API_DeleteCache(cacheClient);
