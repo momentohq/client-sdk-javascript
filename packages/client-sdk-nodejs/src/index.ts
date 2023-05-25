@@ -61,6 +61,7 @@ import * as GenerateAuthToken from '@gomomento/sdk-core/dist/src/messages/respon
 import * as RefreshAuthToken from '@gomomento/sdk-core/dist/src/messages/responses/refresh-auth-token';
 
 import {
+  ICacheClient,
   SubscribeCallOptions,
   CacheInfo,
   CollectionTtl,
@@ -148,6 +149,7 @@ export {ExperimentalMetricsCsvMiddleware} from './config/middleware/experimental
 export {ExampleAsyncMiddleware} from './config/middleware/example-async-middleware';
 
 export {
+  ICacheClient,
   CollectionTtl,
   ItemType,
   SortedSetOrder,
