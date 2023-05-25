@@ -100,6 +100,7 @@ export {
 } from './config/logging/noop-momento-logger';
 
 export {
+  ICacheClient,
   SetOptions,
   SetIfNotExistsOptions,
   IncrementOptions,
