@@ -50,6 +50,10 @@ function example_API_ConfigurationInRegionDefault() {
   Configurations.InRegion.Default.v1();
 }
 
+function example_API_ConfigurationInRegionDefaultLatest() {
+  Configurations.InRegion.Default.latest();
+}
+
 function example_API_ConfigurationInRegionLowLatency() {
   Configurations.InRegion.LowLatency.v1();
 }
@@ -216,6 +220,7 @@ async function main() {
   example_API_CredentialProviderFromString();
   example_API_ConfigurationLaptop();
   example_API_ConfigurationInRegionDefault();
+  example_API_ConfigurationInRegionDefaultLatest();
   example_API_ConfigurationInRegionLowLatency();
 
   example_API_InstantiateCacheClient();
