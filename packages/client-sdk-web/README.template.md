@@ -1,3 +1,5 @@
+{{ ossHeader }}
+
 ## Packages
 
 The JavaScript Web SDK is available on npmjs: [`@gomomento/sdk-web`](https://www.npmjs.com/package/@gomomento/sdk-web).
@@ -22,3 +24,5 @@ Working example projects, with all required build configuration files, are avail
 ## Developing
 
 If you are interested in contributing to the SDK, please see the [CONTRIBUTING](./CONTRIBUTING.md) docs.
+
+{{ ossFooter }}
