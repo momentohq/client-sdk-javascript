@@ -22,7 +22,7 @@ jobs:
           multiple_sdks: true
 
       - name: Commitlint and Other Shared Build Steps
-        uses: momentohq/standards-and-practices/github-actions/shared-build@gh-actions-v1
+        uses: momentohq/standards-and-practices/github-actions/shared-build@gh-actions-v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -87,7 +87,7 @@ jobs:
 
       - name: Send CI failure mail
         if: ${{ steps.validation.outcome == 'failure' }}
-        uses: momentohq/standards-and-practices/github-actions/error-email-action@gh-actions-v1
+        uses: momentohq/standards-and-practices/github-actions/error-email-action@gh-actions-v2
         with:
           username: ${{secrets.MOMENTO_ROBOT_GMAIL_USERNAME}}
           password: ${{secrets.MOMENTO_ROBOT_GMAIL_PASSWORD}}
