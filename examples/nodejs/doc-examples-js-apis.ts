@@ -28,7 +28,6 @@ import {
   ItemGetType,
   CacheSetIfNotExists,
 } from '@gomomento/sdk';
-import {cache} from '@gomomento/generated-types';
 
 function retrieveAuthTokenFromYourSecretsManager(): string {
   // this is not a valid API key but conforms to the syntax requirements.
@@ -179,9 +178,10 @@ async function example_API_Delete(cacheClient: CacheClient) {
 }
 
 async function example_API_Increment(cacheClient: CacheClient) {
+  await cacheClient.set('test-cache', 'test-key', '10');
   const result = await cacheClient.increment('test-cache', 'test-key', 1);
   if (result instanceof CacheIncrement.Success) {
-    console.log("Key 'test-key' incremented by value 1 successfully");
+    console.log(`Key 'test-key' incremented successfully. New value in key test-key: ${result.toString()}`);
   } else if (result instanceof CacheIncrement.Error) {
     throw new Error(
       `An error occurred while attempting to increment the value of key 'test-key' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
@@ -207,12 +207,10 @@ async function example_API_SetIfNotExists(cacheClient: CacheClient) {
   if (result instanceof CacheSetIfNotExists.Stored) {
     console.log("Field 'test-field' set in key 'test-key'");
   } else if (result instanceof CacheSetIfNotExists.NotStored) {
-    console.log(
-      "Key 'test-key' already exists in cache 'test-cache' and the field 'test-field' was not set in key 'test-key'"
-    );
+    console.log("Key 'test-key' already exists in cache 'test-cache', so we did not overwrite it");
   } else if (result instanceof ItemGetType.Error) {
     throw new Error(
-      `An error occurred while attempting to set the key 'test-key' if it does not exists in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call setIfNotExists for the key 'test-key' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
