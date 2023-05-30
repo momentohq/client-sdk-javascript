@@ -181,7 +181,7 @@ async function example_API_Increment(cacheClient: CacheClient) {
   await cacheClient.set('test-cache', 'test-key', '10');
   const result = await cacheClient.increment('test-cache', 'test-key', 1);
   if (result instanceof CacheIncrement.Success) {
-    console.log(`Key 'test-key' incremented successfully. New value in key test-key: ${result.toString()}`);
+    console.log(`Key 'test-key' incremented successfully. New value in key test-key: ${result.valueNumber()}`);
   } else if (result instanceof CacheIncrement.Error) {
     throw new Error(
       `An error occurred while attempting to increment the value of key 'test-key' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
