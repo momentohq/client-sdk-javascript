@@ -24,6 +24,9 @@ import {
   ExpiresIn,
   GenerateAuthToken,
   RefreshAuthToken,
+  CacheIncrement,
+  ItemGetType,
+  CacheSetIfNotExists,
 } from '@gomomento/sdk';
 
 function retrieveAuthTokenFromYourSecretsManager(): string {
@@ -73,7 +76,7 @@ async function example_API_ErrorHandlingHitMiss(cacheClient: CacheClient) {
   if (result instanceof CacheGet.Hit) {
     console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
   } else if (result instanceof CacheGet.Miss) {
-    console.log("Key 'test-key' was not found in cache 'test-cache");
+    console.log("Key 'test-key' was not found in cache 'test-cache'");
   } else if (result instanceof CacheGet.Error) {
     throw new Error(
       `An error occurred while attempting to get key 'test-key' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
@@ -155,7 +158,7 @@ async function example_API_Get(cacheClient: CacheClient) {
   if (result instanceof CacheGet.Hit) {
     console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
   } else if (result instanceof CacheGet.Miss) {
-    console.log("Key 'test-key' was not found in cache 'test-cache");
+    console.log("Key 'test-key' was not found in cache 'test-cache'");
   } else if (result instanceof CacheGet.Error) {
     throw new Error(
       `An error occurred while attempting to get key 'test-key' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
@@ -170,6 +173,44 @@ async function example_API_Delete(cacheClient: CacheClient) {
   } else if (result instanceof CacheDelete.Error) {
     throw new Error(
       `An error occurred while attempting to delete key 'test-key' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_Increment(cacheClient: CacheClient) {
+  await cacheClient.set('test-cache', 'test-key', '10');
+  const result = await cacheClient.increment('test-cache', 'test-key', 1);
+  if (result instanceof CacheIncrement.Success) {
+    console.log(`Key 'test-key' incremented successfully. New value in key test-key: ${result.valueNumber()}`);
+  } else if (result instanceof CacheIncrement.Error) {
+    throw new Error(
+      `An error occurred while attempting to increment the value of key 'test-key' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_ItemGetType(cacheClient: CacheClient) {
+  const result = await cacheClient.itemGetType('test-cache', 'test-key');
+  if (result instanceof ItemGetType.Hit) {
+    console.log(`Item type retrieved successfully: ${result.itemType()}`);
+  } else if (result instanceof ItemGetType.Miss) {
+    console.log("Key 'test-key' was not found in cache 'test-cache'");
+  } else if (result instanceof ItemGetType.Error) {
+    throw new Error(
+      `An error occurred while attempting to get the type of key 'test-key' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SetIfNotExists(cacheClient: CacheClient) {
+  const result = await cacheClient.setIfNotExists('test-cache', 'test-key', 'test-field');
+  if (result instanceof CacheSetIfNotExists.Stored) {
+    console.log("Field 'test-field' set in key 'test-key'");
+  } else if (result instanceof CacheSetIfNotExists.NotStored) {
+    console.log("Key 'test-key' already exists in cache 'test-cache', so we did not overwrite it");
+  } else if (result instanceof ItemGetType.Error) {
+    throw new Error(
+      `An error occurred while attempting to call setIfNotExists for the key 'test-key' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
@@ -244,6 +285,9 @@ async function main() {
   await example_API_Set(cacheClient);
   await example_API_Get(cacheClient);
   await example_API_Delete(cacheClient);
+  await example_API_Increment(cacheClient);
+  await example_API_ItemGetType(cacheClient);
+  await example_API_SetIfNotExists(cacheClient);
 
   example_API_InstantiateAuthClient();
   const authClient = new AuthClient({
