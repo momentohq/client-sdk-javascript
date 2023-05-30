@@ -79,6 +79,30 @@ MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run topic-subscribe my-cache dogs
 MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run topic-publish my-cache dogs poodle
 # "poodle" should soon appear on the first terminal
 ```
+## Running the observability example
+
+The observability example shows a basic way of capturing metrics and traces via
+OpenTelemetry. It automatically captures momento grpc traces and uses a middleware
+implementation to capture momento request counts faceted on method. The metrics
+are exported to Prometheus and the traces are Exported to Zipkin.
+
+To run the observability example:
+
+```bash
+# Run the docker compose file to start Prometheus and Zipkin
+docker-compose up -d
+```
+```bash
+# Run the observability example
+MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run observability
+```
+To shut down Prometheus and Zipkin, stop the docker containers:
+```bash
+docker-compose down
+```
+
+Example Code: [observability.ts](observability.ts)
+OpenTelemetry setup: [instrumentation.ts](utils/instrumentation.ts)
 
 ## Running the load generator example
 
