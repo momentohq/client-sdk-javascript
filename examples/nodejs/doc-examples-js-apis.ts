@@ -410,14 +410,14 @@ async function main() {
     defaultTtlSeconds: 60,
   });
 
-  await example_API_ErrorHandlingHitMiss(cacheClient);
-  await example_API_ErrorHandlingSuccess(cacheClient);
-
   await example_API_CreateCache(cacheClient);
   await example_API_DeleteCache(cacheClient);
   await example_API_CreateCache(cacheClient);
   await example_API_ListCaches(cacheClient);
   await example_API_FlushCache(cacheClient);
+
+  await example_API_ErrorHandlingHitMiss(cacheClient);
+  await example_API_ErrorHandlingSuccess(cacheClient);
 
   await example_API_Set(cacheClient);
   await example_API_Get(cacheClient);
