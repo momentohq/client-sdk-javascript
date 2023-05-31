@@ -227,6 +227,7 @@ async function example_API_SetIfNotExists(cacheClient: CacheClient) {
 }
 
 async function example_API_ListFetch(cacheClient: CacheClient) {
+  await cacheClient.listConcatenateBack('test-cache', 'test-list', ['a', 'b', 'c']);
   const result = await cacheClient.listFetch('test-cache', 'test-list');
   if (result instanceof CacheListFetch.Hit) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
