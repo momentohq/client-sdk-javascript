@@ -27,6 +27,17 @@ import {
   CacheIncrement,
   ItemGetType,
   CacheSetIfNotExists,
+  CacheListFetch,
+  CacheListConcatenateBack,
+  CacheListConcatenateFront,
+  CacheListLength,
+  CacheListPopBack,
+  CacheListPopFront,
+  CacheListPushBack,
+  CacheListPushFront,
+  CacheListRemoveValue,
+  CacheListRetain,
+  ItemType,
 } from '@gomomento/sdk';
 
 function retrieveAuthTokenFromYourSecretsManager(): string {
@@ -192,7 +203,7 @@ async function example_API_Increment(cacheClient: CacheClient) {
 async function example_API_ItemGetType(cacheClient: CacheClient) {
   const result = await cacheClient.itemGetType('test-cache', 'test-key');
   if (result instanceof ItemGetType.Hit) {
-    console.log(`Item type retrieved successfully: ${result.itemType()}`);
+    console.log(`Item type retrieved successfully: ${ItemType[result.itemType()]}`);
   } else if (result instanceof ItemGetType.Miss) {
     console.log("Key 'test-key' was not found in cache 'test-cache'");
   } else if (result instanceof ItemGetType.Error) {
@@ -211,6 +222,135 @@ async function example_API_SetIfNotExists(cacheClient: CacheClient) {
   } else if (result instanceof ItemGetType.Error) {
     throw new Error(
       `An error occurred while attempting to call setIfNotExists for the key 'test-key' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_ListFetch(cacheClient: CacheClient) {
+  await cacheClient.listConcatenateBack('test-cache', 'test-list', ['a', 'b', 'c']);
+  const result = await cacheClient.listFetch('test-cache', 'test-list');
+  if (result instanceof CacheListFetch.Hit) {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    console.log(`List fetched successfully: ${result.valueList()}`);
+  } else if (result instanceof CacheListFetch.Miss) {
+    console.log("List 'test-list' was not found in cache 'test-cache'");
+  } else if (result instanceof CacheListFetch.Error) {
+    throw new Error(
+      `An error occurred while attempting to fetch the list 'test-list' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_ListConcatenateBack(cacheClient: CacheClient) {
+  await cacheClient.listConcatenateBack('test-cache', 'test-list', ['a', 'b', 'c']);
+  const result = await cacheClient.listConcatenateBack('test-cache', 'test-list', ['x', 'y', 'z']);
+  if (result instanceof CacheListConcatenateBack.Success) {
+    console.log(`Values added successfully to the back of the list 'test-list'. Result - ${result.toString()}`);
+  } else if (result instanceof CacheListConcatenateBack.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheListConcatenateBack on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_ListConcatenateFront(cacheClient: CacheClient) {
+  await cacheClient.listConcatenateFront('test-cache', 'test-list', ['a', 'b', 'c']);
+  const result = await cacheClient.listConcatenateFront('test-cache', 'test-list', ['x', 'y', 'z']);
+  if (result instanceof CacheListConcatenateFront.Success) {
+    console.log(`Values added successfully to the front of the list 'test-list'. Result - ${result.toString()}`);
+  } else if (result instanceof CacheListConcatenateFront.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheListConcatenateFront on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_ListLength(cacheClient: CacheClient) {
+  await cacheClient.listConcatenateBack('test-cache', 'test-list', ['one', 'two', 'three']);
+  const result = await cacheClient.listLength('test-cache', 'test-list');
+  if (result instanceof CacheListLength.Hit) {
+    console.log(`Length of list 'test-list' is ${result.length()}`);
+  } else if (result instanceof CacheListLength.Miss) {
+    console.log("List 'test-list' was not found in cache 'test-cache'");
+  } else if (result instanceof CacheListLength.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheListLength on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_ListPopBack(cacheClient: CacheClient) {
+  await cacheClient.listConcatenateBack('test-cache', 'test-list', ['one', 'two', 'three']);
+  const result = await cacheClient.listPopBack('test-cache', 'test-list');
+  if (result instanceof CacheListPopBack.Hit) {
+    console.log(`Last value was removed successfully from list 'test-list': ${result.valueString()}`);
+  } else if (result instanceof CacheListPopBack.Miss) {
+    console.log("List 'test-list' was not found in cache 'test-cache'");
+  } else if (result instanceof CacheListPopBack.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheListPopBack on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_ListPopFront(cacheClient: CacheClient) {
+  await cacheClient.listConcatenateFront('test-cache', 'test-list', ['one', 'two', 'three']);
+  const result = await cacheClient.listPopFront('test-cache', 'test-list');
+  if (result instanceof CacheListPopFront.Hit) {
+    console.log(`First value was removed successfully from list 'test-list': ${result.valueString()}`);
+  } else if (result instanceof CacheListPopFront.Miss) {
+    console.log("List 'test-list' was not found in cache 'test-cache'");
+  } else if (result instanceof CacheListPopFront.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheListPopFront on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_ListPushBack(cacheClient: CacheClient) {
+  await cacheClient.listConcatenateBack('test-cache', 'test-list', ['a', 'b', 'c']);
+  const result = await cacheClient.listPushBack('test-cache', 'test-list', 'x');
+  if (result instanceof CacheListPushBack.Success) {
+    console.log("Value 'x' added successfully to back of list 'test-list'");
+  } else if (result instanceof CacheListPushBack.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheListPushBack on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_ListPushFront(cacheClient: CacheClient) {
+  await cacheClient.listConcatenateFront('test-cache', 'test-list', ['a', 'b', 'c']);
+  const result = await cacheClient.listPushFront('test-cache', 'test-list', 'x');
+  if (result instanceof CacheListPushFront.Success) {
+    console.log("Value 'x' added successfully to front of list 'test-list'");
+  } else if (result instanceof CacheListPushFront.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheListPushFront on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_ListRemoveValue(cacheClient: CacheClient) {
+  await cacheClient.listConcatenateFront('test-cache', 'test-list', ['a', 'b', 'c']);
+  const result = await cacheClient.listRemoveValue('test-cache', 'test-list', 'b');
+  if (result instanceof CacheListRemoveValue.Success) {
+    console.log("Value 'b' removed successfully from list 'test-list'");
+  } else if (result instanceof CacheListPushFront.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheListRemoveValue on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_ListRetain(cacheClient: CacheClient) {
+  await cacheClient.listConcatenateFront('test-cache', 'test-list', ['a', 'b', 'c', 'd', 'e', 'f']);
+  const result = await cacheClient.listRetain('test-cache', 'test-list', {startIndex: 1, endIndex: 4});
+  if (result instanceof CacheListRetain.Success) {
+    console.log("Retaining elements from index 1 to 4 from list 'test-list'");
+  } else if (result instanceof CacheListRetain.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheListRetain on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
@@ -273,10 +413,10 @@ async function main() {
     defaultTtlSeconds: 60,
   });
 
+  await example_API_CreateCache(cacheClient);
   await example_API_ErrorHandlingHitMiss(cacheClient);
   await example_API_ErrorHandlingSuccess(cacheClient);
 
-  await example_API_CreateCache(cacheClient);
   await example_API_DeleteCache(cacheClient);
   await example_API_CreateCache(cacheClient);
   await example_API_ListCaches(cacheClient);
@@ -288,6 +428,17 @@ async function main() {
   await example_API_Increment(cacheClient);
   await example_API_ItemGetType(cacheClient);
   await example_API_SetIfNotExists(cacheClient);
+
+  await example_API_ListFetch(cacheClient);
+  await example_API_ListConcatenateBack(cacheClient);
+  await example_API_ListConcatenateFront(cacheClient);
+  await example_API_ListLength(cacheClient);
+  await example_API_ListPopBack(cacheClient);
+  await example_API_ListPopFront(cacheClient);
+  await example_API_ListPushBack(cacheClient);
+  await example_API_ListPushFront(cacheClient);
+  await example_API_ListRemoveValue(cacheClient);
+  await example_API_ListRetain(cacheClient);
 
   example_API_InstantiateAuthClient();
   const authClient = new AuthClient({
