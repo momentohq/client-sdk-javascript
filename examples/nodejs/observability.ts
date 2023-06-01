@@ -1,12 +1,17 @@
+// The trace auto-generation and metrics are set up here:
 import setupObservability from './utils/instrumentation';
 setupObservability('observability-example');
+// Note that this must run before anything else to properly instrument the gRPC calls and
+// configure OpenTelemetry to send metrics to Prometheus and traces to Zipkin.
 
 import {CacheGet, CreateCache, CacheSet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
 import {ExampleMetricMiddleware} from './utils/example-metric-middleware';
 
 async function main() {
   const momento = new CacheClient({
-    configuration: Configurations.Laptop.v1().withMiddlewares([new ExampleMetricMiddleware()]),
+    configuration: Configurations.Laptop.v1()
+      // This is where the middleware that captures the request count metric is added.
+      .addMiddleware(new ExampleMetricMiddleware()),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_AUTH_TOKEN',
     }),
