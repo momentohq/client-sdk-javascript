@@ -51,6 +51,15 @@ import {
   CacheSetFetch,
   CacheSetRemoveElement,
   CacheSetRemoveElements,
+  CacheSortedSetPutElement,
+  CacheSortedSetPutElements,
+  CacheSortedSetFetch,
+  CacheSortedSetGetRank,
+  CacheSortedSetGetScore,
+  CacheSortedSetGetScores,
+  CacheSortedSetIncrementScore,
+  CacheSortedSetRemoveElement,
+  CacheSortedSetRemoveElements,
 } from '@gomomento/sdk';
 import {ExampleMetricMiddleware} from './doc-example-files/example-metric-middleware';
 
@@ -571,6 +580,193 @@ async function example_API_SetRemoveElements(cacheClient: CacheClient) {
   }
 }
 
+async function example_API_SortedSetPutElement(cacheClient: CacheClient) {
+  const result = await cacheClient.sortedSetPutElement('test-cache', 'test-sorted-set', 'test-value', 5);
+  if (result instanceof CacheSortedSetPutElement.Success) {
+    console.log("Value 'test-value' with score '5' added successfully to sorted set 'test-sorted-set'");
+  } else if (result instanceof CacheSortedSetPutElement.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheSortedSetPutElement on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SortedSetPutElements(cacheClient: CacheClient) {
+  const result = await cacheClient.sortedSetPutElements(
+    'test-cache',
+    'test-sorted-set',
+    new Map<string, number>([
+      ['key1', 10],
+      ['key2', 20],
+    ])
+  );
+  if (result instanceof CacheSortedSetPutElements.Success) {
+    console.log("Elements added successfully to sorted set 'test-sorted-set'");
+  } else if (result instanceof CacheSortedSetPutElements.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheSortedSetPutElements on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SortedSetFetchByRank(cacheClient: CacheClient) {
+  await cacheClient.sortedSetPutElements(
+    'test-cache',
+    'test-sorted-set',
+    new Map<string, number>([
+      ['key1', 10],
+      ['key2', 20],
+    ])
+  );
+  const result = await cacheClient.sortedSetFetchByRank('test-cache', 'test-sorted-set');
+  if (result instanceof CacheSortedSetFetch.Hit) {
+    console.log("Values from sorted set 'test-sorted-set' fetched by rank successfully- ");
+    result.valueArray().forEach(res => {
+      console.log(`${res.value} : ${res.score}`);
+    });
+  } else if (result instanceof CacheSortedSetFetch.Miss) {
+    console.log("Sorted Set 'test-sorted-set' was not found in cache 'test-cache'");
+  } else if (result instanceof CacheSortedSetFetch.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheSortedSetFetchByRank on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SortedSetFetchByScore(cacheClient: CacheClient) {
+  await cacheClient.sortedSetPutElements(
+    'test-cache',
+    'test-sorted-set',
+    new Map<string, number>([
+      ['key1', 100],
+      ['key2', 25],
+    ])
+  );
+  const result = await cacheClient.sortedSetFetchByScore('test-cache', 'test-sorted-set');
+  if (result instanceof CacheSortedSetFetch.Hit) {
+    console.log("Values from sorted set 'test-sorted-set' fetched by score successfully- ");
+    result.valueArray().forEach(res => {
+      console.log(`${res.value} : ${res.score}`);
+    });
+  } else if (result instanceof CacheSortedSetFetch.Miss) {
+    console.log("Sorted Set 'test-sorted-set' was not found in cache 'test-cache'");
+  } else if (result instanceof CacheSortedSetFetch.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheSortedSetFetchByScore on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SortedSetGetRank(cacheClient: CacheClient) {
+  await cacheClient.sortedSetPutElements(
+    'test-cache',
+    'test-sorted-set',
+    new Map<string, number>([
+      ['key1', 10],
+      ['key2', 20],
+      ['key3', 30],
+    ])
+  );
+  const result = await cacheClient.sortedSetGetRank('test-cache', 'test-sorted-set', 'key2');
+  if (result instanceof CacheSortedSetGetRank.Hit) {
+    console.log(`Element with value 'key1' has rank: ${result.rank()}`);
+  } else if (result instanceof CacheSortedSetGetRank.Miss) {
+    console.log("Sorted Set 'test-sorted-set' was not found in cache 'test-cache'");
+  } else if (result instanceof CacheSortedSetGetRank.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheSortedSetFetchGetRank on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SortedSetGetScore(cacheClient: CacheClient) {
+  await cacheClient.sortedSetPutElements(
+    'test-cache',
+    'test-sorted-set',
+    new Map<string, number>([
+      ['key1', 10],
+      ['key2', 20],
+    ])
+  );
+  const result = await cacheClient.sortedSetGetScore('test-cache', 'test-sorted-set', 'key1');
+  if (result instanceof CacheSortedSetGetScore.Hit) {
+    console.log(`Element with value 'key1' has score: ${result.score()}`);
+  } else if (result instanceof CacheSortedSetGetScore.Miss) {
+    console.log("Sorted Set 'test-sorted-set' was not found in cache 'test-cache'");
+  } else if (result instanceof CacheSortedSetGetScore.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheSortedSetFetchGetScore on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SortedSetGetScores(cacheClient: CacheClient) {
+  await cacheClient.sortedSetPutElements(
+    'test-cache',
+    'test-sorted-set',
+    new Map<string, number>([
+      ['key1', 10],
+      ['key2', 20],
+    ])
+  );
+  const result = await cacheClient.sortedSetGetScores('test-cache', 'test-sorted-set', ['key1', 'key2']);
+  if (result instanceof CacheSortedSetGetScores.Hit) {
+    console.log('Element scores retrieved successfully -');
+    result.valueMap().forEach((value, key) => {
+      console.log(`${key} : ${value}`);
+    });
+  } else if (result instanceof CacheSortedSetGetScores.Miss) {
+    console.log("Sorted Set 'test-sorted-set' was not found in cache 'test-cache'");
+  } else if (result instanceof CacheSortedSetGetScores.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheSortedSetFetchGetScores on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SortedSetIncrementScore(cacheClient: CacheClient) {
+  await cacheClient.sortedSetPutElement('test-cache', 'test-sorted-set', 'test-value', 10);
+  const result = await cacheClient.sortedSetIncrementScore('test-cache', 'test-sorted-set', 'test-value', 1);
+  if (result instanceof CacheSortedSetIncrementScore.Success) {
+    console.log(`Score for value 'test-value' incremented successfully. New score - ${result.score()}`);
+  } else if (result instanceof CacheSortedSetIncrementScore.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheSortedSetIncrementScore on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SortedSetRemoveElement(cacheClient: CacheClient) {
+  await cacheClient.sortedSetPutElement('test-cache', 'test-sorted-set', 'test-value', 10);
+  const result = await cacheClient.sortedSetRemoveElement('test-cache', 'test-sorted-set', 'test-value');
+  if (result instanceof CacheSortedSetRemoveElement.Success) {
+    console.log("Element with value 'test-value' removed successfully");
+  } else if (result instanceof CacheSortedSetRemoveElement.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheSortedSetRemoveElement on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SortedSetRemoveElements(cacheClient: CacheClient) {
+  await cacheClient.sortedSetPutElements(
+    'test-cache',
+    'test-sorted-set',
+    new Map<string, number>([
+      ['key1', 10],
+      ['key2', 20],
+    ])
+  );
+  const result = await cacheClient.sortedSetRemoveElements('test-cache', 'test-sorted-set', ['key1', 'key2']);
+  if (result instanceof CacheSortedSetRemoveElements.Success) {
+    console.log("Elements with value 'key1' and 'key2 removed successfully");
+  } else if (result instanceof CacheSortedSetRemoveElements.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheSortedSetRemoveElements on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
 function example_API_InstantiateAuthClient() {
   new AuthClient({
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
@@ -671,6 +867,17 @@ async function main() {
   await example_API_SetFetch(cacheClient);
   await example_API_SetRemoveElement(cacheClient);
   await example_API_SetRemoveElements(cacheClient);
+
+  await example_API_SortedSetPutElement(cacheClient);
+  await example_API_SortedSetPutElements(cacheClient);
+  await example_API_SortedSetFetchByRank(cacheClient);
+  await example_API_SortedSetFetchByScore(cacheClient);
+  await example_API_SortedSetGetRank(cacheClient);
+  await example_API_SortedSetGetScore(cacheClient);
+  await example_API_SortedSetGetScores(cacheClient);
+  await example_API_SortedSetIncrementScore(cacheClient);
+  await example_API_SortedSetRemoveElement(cacheClient);
+  await example_API_SortedSetRemoveElements(cacheClient);
 
   example_API_InstantiateAuthClient();
   const authClient = new AuthClient({
