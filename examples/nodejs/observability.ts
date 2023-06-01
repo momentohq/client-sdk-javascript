@@ -49,8 +49,8 @@ main()
     console.log('Pausing for 5 seconds to let metrics flush');
     setTimeout(() => {
       console.log(
-        'Success! Zipkin should contain traces for the cache creation, get, and set. ' +
-          "Prometheus should contain a counter increment for the get and set under 'momento_requests_counter_total'."
+        'Success! Zipkin at http://localhost:9411 should contain traces for the cache creation, get, and set. ' +
+          "Prometheus at http://localhost:9090 should contain a counter increment for the get and set under 'momento_requests_counter_total'."
       );
     }, 5000);
   })
