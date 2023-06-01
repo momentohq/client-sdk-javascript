@@ -542,7 +542,7 @@ async function example_API_SetFetch(cacheClient: CacheClient) {
     console.log("Set 'test-set' was not found in cache 'test-cache'");
   } else if (result instanceof CacheSetFetch.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSetFetch on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSetFetch on set 'test-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
@@ -554,7 +554,7 @@ async function example_API_SetRemoveElement(cacheClient: CacheClient) {
     console.log("Element 'test-element' removed successfully from set 'test-set'");
   } else if (result instanceof CacheSetRemoveElement.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSetRemoveElement on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSetRemoveElement on set 'test-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
@@ -566,7 +566,7 @@ async function example_API_SetRemoveElements(cacheClient: CacheClient) {
     console.log("Elements 'test-element1' and 'test-element2' removed successfully from set 'test-set'");
   } else if (result instanceof CacheSetRemoveElements.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSetRemoveElements on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSetRemoveElements on set 'test-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
