@@ -6,7 +6,7 @@ example_observability_setupMetrics();
 // configure OpenTelemetry to send metrics to Prometheus and traces to Zipkin.
 
 import {CacheGet, CreateCache, CacheSet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
-import {ExampleMetricMiddleware} from './utils/example-metric-middleware';
+import {ExampleMetricMiddleware} from './doc-example-files/example-metric-middleware';
 
 async function main() {
   const momento = new CacheClient({
