@@ -39,6 +39,7 @@ import {
   CacheListRetain,
   ItemType,
 } from '@gomomento/sdk';
+import {ExampleMetricMiddleware} from './doc-example-files/example-metric-middleware';
 
 function retrieveAuthTokenFromYourSecretsManager(): string {
   // this is not a valid API key but conforms to the syntax requirements.
@@ -75,6 +76,16 @@ function example_API_ConfigurationInRegionLowLatency() {
 function example_API_InstantiateCacheClient() {
   new CacheClient({
     configuration: Configurations.Laptop.v1(),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+    }),
+    defaultTtlSeconds: 60,
+  });
+}
+
+function example_API_InstantiateCacheClientWithMiddleware() {
+  new CacheClient({
+    configuration: Configurations.Laptop.v1().addMiddleware(new ExampleMetricMiddleware()),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_AUTH_TOKEN',
     }),
@@ -405,6 +416,7 @@ async function main() {
   example_API_ConfigurationInRegionLowLatency();
 
   example_API_InstantiateCacheClient();
+  example_API_InstantiateCacheClientWithMiddleware();
   const cacheClient = new CacheClient({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
