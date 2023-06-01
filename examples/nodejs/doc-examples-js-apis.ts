@@ -46,6 +46,11 @@ import {
   CacheDictionaryIncrement,
   CacheDictionaryRemoveField,
   CacheDictionaryRemoveFields,
+  CacheSetAddElement,
+  CacheSetAddElements,
+  CacheSetFetch,
+  CacheSetRemoveElement,
+  CacheSetRemoveElements,
 } from '@gomomento/sdk';
 import {ExampleMetricMiddleware} from './doc-example-files/example-metric-middleware';
 
@@ -503,6 +508,69 @@ async function example_API_DictionaryRemoveFields(cacheClient: CacheClient) {
   }
 }
 
+async function example_API_SetAddElement(cacheClient: CacheClient) {
+  const result = await cacheClient.setAddElement('test-cache', 'test-set', 'test-element');
+  if (result instanceof CacheSetAddElement.Success) {
+    console.log("Element added successfully to set 'test-set'");
+  } else if (result instanceof CacheSetAddElement.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheSetAddElement on set 'test-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SetAddElements(cacheClient: CacheClient) {
+  const result = await cacheClient.setAddElements('test-cache', 'test-set', ['test-element1', 'test-element2']);
+  if (result instanceof CacheSetAddElements.Success) {
+    console.log("Elements added successfully to set 'test-set'");
+  } else if (result instanceof CacheSetAddElements.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheSetAddElements on set 'test-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SetFetch(cacheClient: CacheClient) {
+  await cacheClient.setAddElements('test-cache', 'test-set', ['test-element1', 'test-element2']);
+  const result = await cacheClient.setFetch('test-cache', 'test-set');
+  if (result instanceof CacheSetFetch.Hit) {
+    console.log('Set fetched successfully- ');
+    result.valueSet().forEach((value, key) => {
+      console.log(`${key} : ${value}`);
+    });
+  } else if (result instanceof CacheSetFetch.Miss) {
+    console.log("Set 'test-set' was not found in cache 'test-cache'");
+  } else if (result instanceof CacheSetFetch.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheSetFetch on set 'test-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SetRemoveElement(cacheClient: CacheClient) {
+  await cacheClient.setAddElement('test-cache', 'test-set', 'test-element');
+  const result = await cacheClient.setRemoveElement('test-cache', 'test-set', 'test-element');
+  if (result instanceof CacheSetRemoveElement.Success) {
+    console.log("Element 'test-element' removed successfully from set 'test-set'");
+  } else if (result instanceof CacheSetRemoveElement.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheSetRemoveElement on set 'test-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SetRemoveElements(cacheClient: CacheClient) {
+  await cacheClient.setAddElements('test-cache', 'test-set', ['test-element1', 'test-element2']);
+  const result = await cacheClient.setRemoveElements('test-cache', 'test-set', ['test-element1', 'test-element2']);
+  if (result instanceof CacheSetRemoveElements.Success) {
+    console.log("Elements 'test-element1' and 'test-element2' removed successfully from set 'test-set'");
+  } else if (result instanceof CacheSetRemoveElements.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheSetRemoveElements on set 'test-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
 function example_API_InstantiateAuthClient() {
   new AuthClient({
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
@@ -597,6 +665,12 @@ async function main() {
   await example_API_DictionaryIncrement(cacheClient);
   await example_API_DictionaryRemoveField(cacheClient);
   await example_API_DictionaryRemoveFields(cacheClient);
+
+  await example_API_SetAddElement(cacheClient);
+  await example_API_SetAddElements(cacheClient);
+  await example_API_SetFetch(cacheClient);
+  await example_API_SetRemoveElement(cacheClient);
+  await example_API_SetRemoveElements(cacheClient);
 
   example_API_InstantiateAuthClient();
   const authClient = new AuthClient({
