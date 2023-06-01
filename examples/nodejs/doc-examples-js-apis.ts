@@ -584,7 +584,7 @@ async function example_API_SortedSetPutElement(cacheClient: CacheClient) {
   const result = await cacheClient.sortedSetPutElement('test-cache', 'test-sorted-set', 'test-value', 5);
   if (result instanceof CacheSortedSetPutElement.Success) {
     console.log("Value 'test-value' with score '5' added successfully to sorted set 'test-sorted-set'");
-  } else if (result instanceof CacheSetRemoveElements.Error) {
+  } else if (result instanceof CacheSortedSetPutElement.Error) {
     throw new Error(
       `An error occurred while attempting to call cacheSortedSetPutElement on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
     );
@@ -602,7 +602,7 @@ async function example_API_SortedSetPutElements(cacheClient: CacheClient) {
   );
   if (result instanceof CacheSortedSetPutElements.Success) {
     console.log("Elements added successfully to sorted set 'test-sorted-set'");
-  } else if (result instanceof CacheSetRemoveElements.Error) {
+  } else if (result instanceof CacheSortedSetPutElements.Error) {
     throw new Error(
       `An error occurred while attempting to call cacheSortedSetPutElements on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
     );
