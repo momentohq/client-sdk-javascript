@@ -1,7 +1,8 @@
 // The trace auto-generation and metrics are set up here:
-import setupObservability from './utils/instrumentation';
-setupObservability('observability-example');
-// Note that this must run before anything else to properly instrument the gRPC calls and
+import {example_observability_setupMetrics, example_observability_setupTracing} from './utils/instrumentation';
+example_observability_setupTracing();
+example_observability_setupMetrics();
+// Note that these must run before anything else to properly instrument the gRPC calls and
 // configure OpenTelemetry to send metrics to Prometheus and traces to Zipkin.
 
 import {CacheGet, CreateCache, CacheSet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';

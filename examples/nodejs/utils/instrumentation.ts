@@ -1,7 +1,6 @@
 import {registerInstrumentations} from '@opentelemetry/instrumentation';
 import {NodeTracerProvider} from '@opentelemetry/sdk-trace-node';
 import {Resource} from '@opentelemetry/resources';
-import {SemanticResourceAttributes} from '@opentelemetry/semantic-conventions';
 import {SimpleSpanProcessor} from '@opentelemetry/sdk-trace-base';
 import {GrpcInstrumentation} from '@opentelemetry/instrumentation-grpc';
 import {metrics} from '@opentelemetry/api';
@@ -10,17 +9,11 @@ import {PrometheusExporter} from '@opentelemetry/exporter-prometheus';
 import {MeterProvider} from '@opentelemetry/sdk-metrics';
 
 /**
- * Initializes automatic grpc tracing exported to Zipkin and metrics exported to Prometheus.
- * @param serviceName the name of the example.
+ * Initialize automatic grpc tracing, exporting to Zipkin.
  */
-export default (serviceName: string) => {
-  const resource = Resource.default().merge(
-    new Resource({
-      [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
-    })
-  );
+export const example_observability_setupTracing = () => {
+  const resource = Resource.default();
 
-  // Set up tracing via zipkin
   const provider = new NodeTracerProvider({
     resource: resource,
   });
@@ -33,17 +26,23 @@ export default (serviceName: string) => {
   registerInstrumentations({
     instrumentations: [new GrpcInstrumentation()],
   });
+};
 
-  // Set up metrics via prometheus
+/**
+ * Initialize metrics, exporting to Prometheus.
+ */
+export const example_observability_setupMetrics = () => {
+  const resource = Resource.default();
+
   const metricsExporter = new PrometheusExporter({}, () => {
     console.log('prometheus scrape endpoint: http://localhost:9464/metrics');
   });
 
-  const myServiceMeterProvider = new MeterProvider({
+  const meterProvider = new MeterProvider({
     resource: resource,
   });
 
-  myServiceMeterProvider.addMetricReader(metricsExporter);
+  meterProvider.addMetricReader(metricsExporter);
 
-  metrics.setGlobalMeterProvider(myServiceMeterProvider);
+  metrics.setGlobalMeterProvider(meterProvider);
 };
