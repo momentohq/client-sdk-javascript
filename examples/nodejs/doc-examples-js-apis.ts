@@ -123,8 +123,10 @@ async function example_API_CreateCache(cacheClient: CacheClient) {
     console.log("Cache 'test-cache' created");
   } else if (result instanceof CreateCache.AlreadyExists) {
     console.log("Cache 'test-cache' already exists");
-  } else {
-    throw new Error(`An error occurred while attempting to create cache 'test-cache': ${result.toString()}`);
+  } else if (result instanceof CreateCache.Error) {
+    throw new Error(
+      `An error occurred while attempting to create cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
   }
 }
 
