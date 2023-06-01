@@ -378,8 +378,10 @@ async function example_API_DictionaryFetch(cacheClient: CacheClient) {
   await cacheClient.dictionarySetField('test-cache', 'test-dictionary', 'test-field', 'test-value');
   const result = await cacheClient.dictionaryFetch('test-cache', 'test-dictionary');
   if (result instanceof CacheDictionaryFetch.Hit) {
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    console.log(`Dictionary fetched successfully from cache 'test-cache': ${result.valueMapStringString()}`);
+    console.log('Dictionary fetched successfully- ');
+    result.valueMapStringString().forEach((value, key) => {
+      console.log(`${key} : ${value}`);
+    });
   } else if (result instanceof CacheDictionaryFetch.Miss) {
     console.log("Dictionary 'test-dictionary' was not found in cache 'test-cache'");
   } else if (result instanceof CacheDictionaryFetch.Error) {
@@ -416,10 +418,10 @@ async function example_API_DictionaryGetFields(cacheClient: CacheClient) {
   );
   const result = await cacheClient.dictionaryGetFields('test-cache', 'test-dictionary', ['key1', 'key2']);
   if (result instanceof CacheDictionaryGetFields.Hit) {
-    console.log(
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      `Values for 'key1' and 'key2' fetched successfully from cache 'test-cache': ${result.valueMapStringString()}`
-    );
+    console.log('Values fetched successfully- ');
+    result.valueMapStringString().forEach((value, key) => {
+      console.log(`${key} : ${value}`);
+    });
   } else if (result instanceof CacheDictionaryGetFields.Miss) {
     console.log("Dictionary 'test-dictionary' was not found in cache 'test-cache'");
   } else if (result instanceof CacheDictionaryGetFields.Error) {
