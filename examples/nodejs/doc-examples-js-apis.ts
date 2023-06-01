@@ -38,6 +38,14 @@ import {
   CacheListRemoveValue,
   CacheListRetain,
   ItemType,
+  CacheDictionaryFetch,
+  CacheDictionaryGetField,
+  CacheDictionaryGetFields,
+  CacheDictionarySetField,
+  CacheDictionarySetFields,
+  CacheDictionaryIncrement,
+  CacheDictionaryRemoveField,
+  CacheDictionaryRemoveFields,
 } from '@gomomento/sdk';
 import {ExampleMetricMiddleware} from './doc-example-files/example-metric-middleware';
 
@@ -366,6 +374,135 @@ async function example_API_ListRetain(cacheClient: CacheClient) {
   }
 }
 
+async function example_API_DictionaryFetch(cacheClient: CacheClient) {
+  await cacheClient.dictionarySetField('test-cache', 'test-dictionary', 'test-field', 'test-value');
+  const result = await cacheClient.dictionaryFetch('test-cache', 'test-dictionary');
+  if (result instanceof CacheDictionaryFetch.Hit) {
+    console.log('Dictionary fetched successfully- ');
+    result.valueMapStringString().forEach((value, key) => {
+      console.log(`${key} : ${value}`);
+    });
+  } else if (result instanceof CacheDictionaryFetch.Miss) {
+    console.log("Dictionary 'test-dictionary' was not found in cache 'test-cache'");
+  } else if (result instanceof CacheDictionaryFetch.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheDictionaryFetch on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_DictionaryGetField(cacheClient: CacheClient) {
+  await cacheClient.dictionarySetField('test-cache', 'test-dictionary', 'test-field', 'test-value');
+  const result = await cacheClient.dictionaryGetField('test-cache', 'test-dictionary', 'test-field');
+  if (result instanceof CacheDictionaryGetField.Hit) {
+    console.log(
+      `Field ${result.fieldString()} fetched successfully from cache 'test-cache' with value: ${result.valueString()}`
+    );
+  } else if (result instanceof CacheDictionaryGetField.Miss) {
+    console.log("Dictionary 'test-dictionary' was not found in cache 'test-cache'");
+  } else if (result instanceof CacheDictionaryGetField.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheDictionaryGetField on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_DictionaryGetFields(cacheClient: CacheClient) {
+  await cacheClient.dictionarySetFields(
+    'test-cache',
+    'test-dictionary',
+    new Map<string, string>([
+      ['key1', 'value1'],
+      ['key2', 'value2'],
+    ])
+  );
+  const result = await cacheClient.dictionaryGetFields('test-cache', 'test-dictionary', ['key1', 'key2']);
+  if (result instanceof CacheDictionaryGetFields.Hit) {
+    console.log('Values fetched successfully- ');
+    result.valueMapStringString().forEach((value, key) => {
+      console.log(`${key} : ${value}`);
+    });
+  } else if (result instanceof CacheDictionaryGetFields.Miss) {
+    console.log("Dictionary 'test-dictionary' was not found in cache 'test-cache'");
+  } else if (result instanceof CacheDictionaryGetFields.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheDictionaryGetFields on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_DictionarySetField(cacheClient: CacheClient) {
+  const result = await cacheClient.dictionarySetField('test-cache', 'test-dictionary', 'test-field', 'test-value');
+  if (result instanceof CacheDictionarySetField.Success) {
+    console.log("Field set successfully into cache 'test-cache'");
+  } else if (result instanceof CacheDictionarySetField.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheDictionarySetField on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_DictionarySetFields(cacheClient: CacheClient) {
+  const result = await cacheClient.dictionarySetFields(
+    'test-cache',
+    'test-dictionary',
+    new Map<string, string>([
+      ['key1', 'value1'],
+      ['key2', 'value2'],
+    ])
+  );
+  if (result instanceof CacheDictionarySetFields.Success) {
+    console.log("Fields set successfully into cache 'test-cache'");
+  } else if (result instanceof CacheDictionarySetFields.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheDictionarySetFields on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_DictionaryIncrement(cacheClient: CacheClient) {
+  await cacheClient.dictionarySetField('test-cache', 'test-dictionary', 'test-field', '10');
+  const result = await cacheClient.dictionaryIncrement('test-cache', 'test-dictionary', 'test-field', 1);
+  if (result instanceof CacheDictionaryIncrement.Success) {
+    console.log(`Field value incremented by 1. Result - ${result.valueNumber()}`);
+  } else if (result instanceof CacheDictionaryIncrement.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheDictionaryIncrement on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_DictionaryRemoveField(cacheClient: CacheClient) {
+  await cacheClient.dictionarySetField('test-cache', 'test-dictionary', 'test-field', '10');
+  const result = await cacheClient.dictionaryRemoveField('test-cache', 'test-dictionary', 'test-field');
+  if (result instanceof CacheDictionaryRemoveField.Success) {
+    console.log("Field removed successfully from dictionary 'test-dictionary'");
+  } else if (result instanceof CacheDictionaryRemoveField.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheDictionaryRemoveField on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_DictionaryRemoveFields(cacheClient: CacheClient) {
+  await cacheClient.dictionarySetFields(
+    'test-cache',
+    'test-dictionary',
+    new Map<string, string>([
+      ['key1', 'value1'],
+      ['key2', 'value2'],
+    ])
+  );
+  const result = await cacheClient.dictionaryRemoveFields('test-cache', 'test-dictionary', ['key1', 'key2']);
+  if (result instanceof CacheDictionaryRemoveFields.Success) {
+    console.log("Fields removed successfully from dictionary 'test-dictionary'");
+  } else if (result instanceof CacheDictionaryRemoveFields.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheDictionaryRemoveFields on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
 function example_API_InstantiateAuthClient() {
   new AuthClient({
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
@@ -451,6 +588,15 @@ async function main() {
   await example_API_ListPushFront(cacheClient);
   await example_API_ListRemoveValue(cacheClient);
   await example_API_ListRetain(cacheClient);
+
+  await example_API_DictionaryFetch(cacheClient);
+  await example_API_DictionaryGetField(cacheClient);
+  await example_API_DictionaryGetFields(cacheClient);
+  await example_API_DictionarySetField(cacheClient);
+  await example_API_DictionarySetFields(cacheClient);
+  await example_API_DictionaryIncrement(cacheClient);
+  await example_API_DictionaryRemoveField(cacheClient);
+  await example_API_DictionaryRemoveFields(cacheClient);
 
   example_API_InstantiateAuthClient();
   const authClient = new AuthClient({
