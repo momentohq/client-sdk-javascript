@@ -11,7 +11,7 @@ import {MeterProvider} from '@opentelemetry/sdk-metrics';
 /**
  * Initialize automatic grpc tracing, exporting to Zipkin.
  */
-export const example_observability_setupTracing = () => {
+export function example_observability_setupTracing() {
   const resource = Resource.default();
 
   const provider = new NodeTracerProvider({
@@ -26,12 +26,12 @@ export const example_observability_setupTracing = () => {
   registerInstrumentations({
     instrumentations: [new GrpcInstrumentation()],
   });
-};
+}
 
 /**
  * Initialize metrics, exporting to Prometheus.
  */
-export const example_observability_setupMetrics = () => {
+export function example_observability_setupMetrics() {
   const resource = Resource.default();
 
   const metricsExporter = new PrometheusExporter({}, () => {
@@ -45,4 +45,4 @@ export const example_observability_setupMetrics = () => {
   meterProvider.addMetricReader(metricsExporter);
 
   metrics.setGlobalMeterProvider(meterProvider);
-};
+}
