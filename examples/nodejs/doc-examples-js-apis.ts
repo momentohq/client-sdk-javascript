@@ -63,6 +63,7 @@ import {
   TopicClient,
   TopicPublish,
   TopicSubscribe,
+  TopicItem,
 } from '@gomomento/sdk';
 import {ExampleMetricMiddleware} from './doc-example-files/example-metric-middleware';
 
@@ -830,22 +831,19 @@ async function example_API_TopicPublish(topicClient: TopicClient) {
 }
 
 async function example_API_TopicSubscribe(topicClient: TopicClient) {
+  const receivedValues: (string | Uint8Array)[] = [];
   const result = await topicClient.subscribe('test-cache', 'test-topic', {
     onError: () => {
       return;
     },
-    onItem: () => {
-      console.log("Publishing values to the topic 'test-topic'!");
+    onItem: (item: TopicItem) => {
+      receivedValues.push(item.value());
+      console.log(`Publishing values to the topic 'test-topic': ${receivedValues.toString()}`);
       return;
     },
   });
   if (result instanceof TopicSubscribe.Subscription) {
     console.log("Successfully subscribed to topic 'test-topic'");
-
-    // Wait for stream to start.
-    setTimeout(() => {
-      console.log('Waiting for the stream to start');
-    }, 2000);
 
     // Publish a value
     await topicClient.publish('test-cache', 'test-topic', 'test-value');
