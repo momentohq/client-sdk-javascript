@@ -13,7 +13,7 @@ is best suited for a particular environment:
 ## Usage
 
 ```javascript
-{% include "./examples/nodejs/readme.ts" %}
+{% include "./examples/nodejs/basic/readme.ts" %}
 ```
 
 ## Getting Started and Documentation

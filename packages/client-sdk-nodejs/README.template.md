@@ -11,7 +11,7 @@ the [Momento Web SDK](../client-sdk-web).
 ## Usage
 
 ```javascript
-{% include "./examples/nodejs/readme.ts" %}
+{% include "./examples/nodejs/basic/readme.ts" %}
 ```
 
 ## Getting Started and Documentation
