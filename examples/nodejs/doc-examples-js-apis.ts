@@ -64,6 +64,7 @@ import {
   TopicPublish,
   TopicSubscribe,
 } from '@gomomento/sdk';
+import {InternalNodeGrpcPingClient} from '../../packages/client-sdk-nodejs/src/internal/ping-client';
 import {ExampleMetricMiddleware} from './doc-example-files/example-metric-middleware';
 
 function retrieveAuthTokenFromYourSecretsManager(): string {
@@ -864,6 +865,25 @@ async function example_API_TopicSubscribe(topicClient: TopicClient) {
   }
 }
 
+function example_API_InstantiatePingClient() {
+  new InternalNodeGrpcPingClient({
+    endpoint: 'some.url',
+    configuration: Configurations.Laptop.latest(),
+  });
+}
+
+async function example_API_Ping(pingClient: InternalNodeGrpcPingClient) {
+  await pingClient
+    .ping()
+    .then(() => {
+      console.log('pinged successfully!');
+    })
+    .catch(err => {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      console.log(`failed to ping: ${err}`);
+    });
+}
+
 async function main() {
   const originalAuthToken = process.env['MOMENTO_AUTH_TOKEN'];
   process.env['MOMENTO_AUTH_TOKEN'] = retrieveAuthTokenFromYourSecretsManager();
@@ -957,6 +977,13 @@ async function main() {
   });
   await example_API_TopicPublish(topicClient);
   await example_API_TopicSubscribe(topicClient);
+
+  example_API_InstantiatePingClient();
+  const pingClient = new InternalNodeGrpcPingClient({
+    endpoint: 'bad.url',
+    configuration: Configurations.Laptop.latest(),
+  });
+  await example_API_Ping(pingClient);
 }
 
 main().catch(e => {
