@@ -252,7 +252,7 @@ async function example_API_SetIfNotExists(cacheClient: CacheClient) {
     console.log("Field 'test-field' set in key 'test-key'");
   } else if (result instanceof CacheSetIfNotExists.NotStored) {
     console.log("Key 'test-key' already exists in cache 'test-cache', so we did not overwrite it");
-  } else if (result instanceof ItemGetType.Error) {
+  } else if (result instanceof CacheSetIfNotExists.Error) {
     throw new Error(
       `An error occurred while attempting to call setIfNotExists for the key 'test-key' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
     );
@@ -369,7 +369,7 @@ async function example_API_ListRemoveValue(cacheClient: CacheClient) {
   const result = await cacheClient.listRemoveValue('test-cache', 'test-list', 'b');
   if (result instanceof CacheListRemoveValue.Success) {
     console.log("Value 'b' removed successfully from list 'test-list'");
-  } else if (result instanceof CacheListPushFront.Error) {
+  } else if (result instanceof CacheListRemoveValue.Error) {
     throw new Error(
       `An error occurred while attempting to call cacheListRemoveValue on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
     );
