@@ -107,5 +107,3 @@ dist
 
 # VSCode directory files
 .vscode
-
-*.json
