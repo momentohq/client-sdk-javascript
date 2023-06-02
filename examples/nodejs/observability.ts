@@ -51,7 +51,8 @@ main()
     setTimeout(() => {
       console.log(
         'Success! Zipkin at http://localhost:9411 should contain traces for the cache creation, get, and set. ' +
-          "Prometheus at http://localhost:9090 should contain a counter increment for the get and set under 'momento_requests_counter_total'."
+          'Grafana at http://localhost:3000 (username: admin, password: grafana) should contain a dashboard showing ' +
+          'the requests made to Momento.'
       );
     }, 5000);
   })
