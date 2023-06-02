@@ -96,7 +96,7 @@ jobs:
         id: validation
         continue-on-error: true
         run: |
-          pushd examples/nodejs
+          pushd examples/nodejs/basic
             npm ci
             npm run build
             npm run validate-examples
