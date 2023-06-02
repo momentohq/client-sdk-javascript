@@ -831,14 +831,12 @@ async function example_API_TopicPublish(topicClient: TopicClient) {
 }
 
 async function example_API_TopicSubscribe(topicClient: TopicClient) {
-  const receivedValues: (string | Uint8Array)[] = [];
   const result = await topicClient.subscribe('test-cache', 'test-topic', {
     onError: () => {
       return;
     },
     onItem: (item: TopicItem) => {
-      receivedValues.push(item.value());
-      console.log(`Publishing values to the topic 'test-topic': ${receivedValues.toString()}`);
+      console.log(`Publishing values to the topic 'test-topic': ${item.value().toString()}`);
       return;
     },
   });
