@@ -60,6 +60,10 @@ import {
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  TopicClient,
+  TopicPublish,
+  TopicSubscribe,
+  TopicItem,
 } from '@gomomento/sdk';
 import {ExampleMetricMiddleware} from './doc-example-files/example-metric-middleware';
 
@@ -777,6 +781,15 @@ function example_API_InstantiateAuthClient() {
   });
 }
 
+function example_API_InstantiateTopicClient() {
+  new TopicClient({
+    configuration: Configurations.Laptop.v1(),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+    }),
+  });
+}
+
 async function example_API_GenerateAuthToken(authClient: AuthClient) {
   const generateTokenResponse = await authClient.generateAuthToken(AllDataReadWrite, ExpiresIn.minutes(30));
   if (generateTokenResponse instanceof GenerateAuthToken.Success) {
@@ -803,6 +816,47 @@ async function example_API_RefreshAuthToken(authClient: AuthClient) {
       console.log(`New refresh token starts with: ${refreshTokenResponse.refreshToken.substring(0, 10)}`);
       console.log(`Refreshed auth token expires At: ${refreshTokenResponse.expiresAt.epoch()}`);
     }
+  }
+}
+
+async function example_API_TopicPublish(topicClient: TopicClient) {
+  const result = await topicClient.publish('test-cache', 'test-topic', 'test-topic-value');
+  if (result instanceof TopicPublish.Success) {
+    console.log("Value published to topic 'test-topic'");
+  } else if (result instanceof TopicPublish.Error) {
+    throw new Error(
+      `An error occurred while attempting to publish to the topic 'test-topic' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_TopicSubscribe(topicClient: TopicClient) {
+  const result = await topicClient.subscribe('test-cache', 'test-topic', {
+    onError: () => {
+      return;
+    },
+    onItem: (item: TopicItem) => {
+      console.log(`Publishing values to the topic 'test-topic': ${item.value().toString()}`);
+      return;
+    },
+  });
+  if (result instanceof TopicSubscribe.Subscription) {
+    console.log("Successfully subscribed to topic 'test-topic'");
+
+    // Publish a value
+    await topicClient.publish('test-cache', 'test-topic', 'test-value');
+
+    // Wait for published values to be received.
+    setTimeout(() => {
+      console.log('Waiting for the published values');
+    }, 2000);
+
+    // Need to close the stream before the example ends or else the example will hang.
+    result.unsubscribe();
+  } else if (result instanceof TopicSubscribe.Error) {
+    throw new Error(
+      `An error occurred while attempting to subscribe to the topic 'test-topic' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
   }
 }
 
@@ -889,6 +943,16 @@ async function main() {
   });
   await example_API_GenerateAuthToken(authClient);
   await example_API_RefreshAuthToken(authClient);
+
+  example_API_InstantiateTopicClient();
+  const topicClient = new TopicClient({
+    configuration: Configurations.Laptop.v1(),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+    }),
+  });
+  await example_API_TopicPublish(topicClient);
+  await example_API_TopicSubscribe(topicClient);
 }
 
 main().catch(e => {
