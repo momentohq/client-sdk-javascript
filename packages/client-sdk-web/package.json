@@ -22,13 +22,12 @@
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
-    "build": "cd ../core && npm run build && cd - && rm -rf dist && tsc"
+    "build": "rm -rf dist && tsc"
   },
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@gomomento/common-integration-tests": "file:../common-integration-tests",
-    "@types/google-protobuf": "3.15.6",
+    "@types/google-protobuf": "^3.15.6",
     "@types/jest": "^27.0.2",
     "@types/node": "14.18.3",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
@@ -50,9 +49,9 @@
     "xhr2": "^0.2.1"
   },
   "dependencies": {
-    "@gomomento/sdk-core": "file:../core",
-    "@gomomento/generated-types-webtext": "0.62.1",
-    "google-protobuf": "3.21.2",
+    "@gomomento/generated-types-webtext": "file:gomomento-generated-types-webtext-0.0.1.tgz",
+    "@gomomento/sdk-core": "file:gomomento-sdk-core-0.0.1.tgz",
+    "google-protobuf": "^3.21.2",
     "grpc-web": "1.4.2",
     "jwt-decode": "3.1.2"
   },

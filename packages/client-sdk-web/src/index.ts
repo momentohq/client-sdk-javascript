@@ -1,5 +1,5 @@
 import {CacheClient} from './cache-client';
-import {AuthClient} from './auth-client';
+// import {AuthClient} from './auth-client';
 import {TopicClient} from './topic-client';
 import * as Configurations from './config/configurations';
 
@@ -111,7 +111,6 @@ export {
   Configuration,
   Configurations,
   CacheClient,
-  AuthClient,
   CacheInfo,
   CredentialProvider,
   StringMomentoTokenProvider,

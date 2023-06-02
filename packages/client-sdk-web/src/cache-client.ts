@@ -10,6 +10,8 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/clients';
 import {CacheClientProps} from './cache-client-props';
 import {getWebCacheEndpoint} from './utils/web-client-utils';
+import {ListRetainCallOptions} from '@gomomento/sdk-core/dist/src/utils';
+import {CacheListRetain} from '@gomomento/sdk-core';
 
 export class CacheClient extends AbstractCacheClient implements ICacheClient {
   constructor(props: CacheClientProps) {
@@ -17,6 +19,14 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
     const dataClient: IDataClient = createDataClient(props);
     const pingClient: IPingClient = createPingClient(props);
     super(controlClient, [dataClient], pingClient);
+  }
+
+  listRetain(
+    cacheName: string,
+    listName: string,
+    options?: ListRetainCallOptions
+  ): Promise<CacheListRetain.Response> {
+    throw new Error('woot');
   }
 }
 
