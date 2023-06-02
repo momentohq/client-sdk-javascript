@@ -835,11 +835,26 @@ async function example_API_TopicSubscribe(topicClient: TopicClient) {
       return;
     },
     onItem: () => {
+      console.log("Publishing values to the topic 'test-topic'!");
       return;
     },
   });
   if (result instanceof TopicSubscribe.Subscription) {
     console.log("Successfully subscribed to topic 'test-topic'");
+
+    // Wait for stream to start.
+    setTimeout(() => {
+      console.log('Waiting for the stream to start');
+    }, 2000);
+
+    // Publish a value
+    await topicClient.publish('test-cache', 'test-topic', 'test-value');
+
+    // Wait for published values to be received.
+    setTimeout(() => {
+      console.log('Waiting for the published values');
+    }, 2000);
+
     // Need to close the stream before the example ends or else the example will hang.
     result.unsubscribe();
   } else if (result instanceof TopicSubscribe.Error) {
