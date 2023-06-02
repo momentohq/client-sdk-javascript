@@ -27,6 +27,7 @@
     "@types/google-protobuf": "3.15.6",
     "@types/node": "^16.11.4",
     "@types/node-fetch": "2.6.2",
+    "@types/uuidv4": "^5.0.0",
     "@typescript-eslint/eslint-plugin": "5.30.5",
     "@typescript-eslint/parser": "^5.0.0",
     "eslint": "8.19.0",
@@ -55,6 +56,7 @@
     "hdr-histogram-js": "3.0.0",
     "node-fetch": "2.6.7",
     "pino": "8.14.1",
-    "pino-pretty": "8.1.0"
+    "pino-pretty": "8.1.0",
+    "uuidv4": "^6.2.13"
   }
 }
