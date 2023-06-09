@@ -1,9 +1,7 @@
 import * as pubsub from '@gomomento/generated-types-webtext/dist/CachepubsubServiceClientPb';
 import * as cachepubsub_pb from '@gomomento/generated-types-webtext/dist/cachepubsub_pb';
-import {Configuration} from '../config/configuration';
 import {
   CredentialProvider,
-  InvalidArgumentError,
   MomentoLogger,
   TopicItem,
   UnknownError,
@@ -24,13 +22,14 @@ import {
   getWebCacheEndpoint,
 } from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
+import {TopicConfiguration} from '../config/topic-configuration';
 
 export class PubsubClient<
   REQ extends Request<REQ, RESP>,
   RESP extends UnaryResponse<REQ, RESP>
 > extends AbstractPubsubClient {
   private readonly client: pubsub.PubsubClient;
-  private readonly configuration: Configuration;
+  private readonly configuration: TopicConfiguration;
   protected readonly credentialProvider: CredentialProvider;
   private readonly requestTimeoutMs: number;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
@@ -46,13 +45,7 @@ export class PubsubClient<
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
 
-    const grpcConfig = this.configuration
-      .getTransportStrategy()
-      .getGrpcConfig();
-
-    this.validateRequestTimeout(grpcConfig.getDeadlineMillis());
-    this.requestTimeoutMs =
-      grpcConfig.getDeadlineMillis() || PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
+    this.requestTimeoutMs = PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
     this.logger.debug(
       `Creating topic client using endpoint: '${getWebCacheEndpoint(
         this.credentialProvider
@@ -74,15 +67,6 @@ export class PubsubClient<
     const endpoint = getWebCacheEndpoint(this.credentialProvider);
     this.logger.debug(`Using cache endpoint: ${endpoint}`);
     return endpoint;
-  }
-
-  private validateRequestTimeout(timeout?: number) {
-    this.logger.debug(`Request timeout ms: ${String(timeout)}`);
-    if (timeout !== undefined && timeout <= 0) {
-      throw new InvalidArgumentError(
-        'request timeout must be greater than zero.'
-      );
-    }
   }
 
   protected async sendPublish(

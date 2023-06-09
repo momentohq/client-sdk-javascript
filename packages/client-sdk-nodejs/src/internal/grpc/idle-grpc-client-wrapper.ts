@@ -1,10 +1,10 @@
 import {CloseableGrpcClient, GrpcClientWrapper} from './grpc-client-wrapper';
-import {Configuration} from '../../config/configuration';
-import {MomentoLogger} from '../../';
+import {MomentoLogger, MomentoLoggerFactory} from '@gomomento/sdk-core';
 
 export interface IdleGrpcClientWrapperProps<T extends CloseableGrpcClient> {
   clientFactoryFn: () => T;
-  configuration: Configuration;
+  loggerFactory: MomentoLoggerFactory;
+  maxIdleMillis: number;
 }
 
 /**
@@ -35,12 +35,10 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
   private lastAccessTime: number;
 
   constructor(props: IdleGrpcClientWrapperProps<T>) {
-    this.logger = props.configuration.getLoggerFactory().getLogger(this);
+    this.logger = props.loggerFactory.getLogger(this);
     this.clientFactoryFn = props.clientFactoryFn;
     this.client = this.clientFactoryFn();
-    this.maxIdleMillis = props.configuration
-      .getTransportStrategy()
-      .getMaxIdleMillis();
+    this.maxIdleMillis = props.maxIdleMillis;
     this.lastAccessTime = Date.now();
   }
 

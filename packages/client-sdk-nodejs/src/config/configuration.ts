@@ -23,7 +23,7 @@ export interface ConfigurationProps {
 }
 
 /**
- * Configuration options for Momento Simple Cache client.
+ * Configuration options for Momento CacheClient.
  *
  * @export
  * @interface Configuration
