@@ -8,13 +8,14 @@
 
 # Momento JavaScript Client Libraries
 
-* Website: [https://www.gomomento.com/](https://www.gomomento.com/)
-* Documentation: [https://docs.momentohq.com/](https://docs.momentohq.com/)
-* Getting Started: [https://docs.momentohq.com/getting-started](https://docs.momentohq.com/getting-started)
-* Discuss: [Momento Discord](https://discord.gg/3HkAKjUZGq)
-
 Momento Cache is a fast, simple, pay-as-you-go caching solution without any of the operational overhead
 required by traditional caching solutions.  This repo contains the source code for the Momento JavaScript client libraries.
+
+* Website: [https://www.gomomento.com/](https://www.gomomento.com/)
+* Momento Documentation: [https://docs.momentohq.com/](https://docs.momentohq.com/)
+* Getting Started: [https://docs.momentohq.com/getting-started](https://docs.momentohq.com/getting-started)
+* JavaScript SDK Documentation: [https://docs.momentohq.com/develop/sdks/nodejs](https://docs.momentohq.com/develop/sdks/nodejs)
+* Discuss: [Momento Discord](https://discord.gg/3HkAKjUZGq)
 
 ## Packages
 
@@ -51,6 +52,7 @@ async function main() {
 main().catch(e => {
   throw e;
 });
+
 ```
 
 ## Getting Started and Documentation
@@ -67,3 +69,6 @@ Working example projects, with all required build configuration files, are avail
 ## Developing
 
 If you are interested in contributing to the SDK, please see the [CONTRIBUTING](./CONTRIBUTING.md) docs.
+
+----------------------------------------------------------------------------------------
+For more info, visit our website at [https://gomomento.com](https://gomomento.com)!

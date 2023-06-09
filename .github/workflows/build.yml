@@ -11,17 +11,40 @@ jobs:
       - name: Setup repo
         uses: actions/checkout@v3
 
-      #- name: Verify README generation
-      #  uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v1
-      #  with:
-      #    project_status: official
-      #    project_stability: stable
-      #    project_type: sdk
-      #    sdk_language: Node.js
-      #    usage_example_path: ./examples/nodejs/basic.ts
+      - name: Verify README generation
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: sdk
+          sdk_language: JavaScript
+          dev_docs_slug: nodejs
+          multiple_sdks: true
+
+      - name: Verify README generation for nodejs
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: sdk
+          sdk_language: Node.js
+          dev_docs_slug: nodejs
+          template_file: ./packages/client-sdk-nodejs/README.template.md
+          output_file: ./packages/client-sdk-nodejs/README.md
+
+      - name: Verify README generation for web
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: sdk
+          sdk_language: "JavaScript Web"
+          dev_docs_slug: web
+          template_file: ./packages/client-sdk-web/README.template.md
+          output_file: ./packages/client-sdk-web/README.md
 
       - name: Commitlint and Other Shared Build Steps
-        uses: momentohq/standards-and-practices/github-actions/shared-build@gh-actions-v1
+        uses: momentohq/standards-and-practices/github-actions/shared-build@gh-actions-v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -73,7 +96,12 @@ jobs:
         id: validation
         continue-on-error: true
         run: |
-          pushd examples/nodejs
+          pushd examples/nodejs/cache
+            npm ci
+            npm run build
+            npm run validate-examples
+          popd
+          pushd examples/nodejs/observability
             npm ci
             npm run build
             npm run validate-examples
@@ -86,7 +114,7 @@ jobs:
 
       - name: Send CI failure mail
         if: ${{ steps.validation.outcome == 'failure' }}
-        uses: momentohq/standards-and-practices/github-actions/error-email-action@gh-actions-v1
+        uses: momentohq/standards-and-practices/github-actions/error-email-action@gh-actions-v2
         with:
           username: ${{secrets.MOMENTO_ROBOT_GMAIL_USERNAME}}
           password: ${{secrets.MOMENTO_ROBOT_GMAIL_PASSWORD}}

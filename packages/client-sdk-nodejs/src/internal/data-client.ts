@@ -130,7 +130,10 @@ export class DataClient implements IDataClient {
             'grpc.use_local_subchannel_pool': 1,
           }
         ),
-      configuration: this.configuration,
+      loggerFactory: this.configuration.getLoggerFactory(),
+      maxIdleMillis: this.configuration
+        .getTransportStrategy()
+        .getMaxIdleMillis(),
     });
 
     this.textEncoder = new TextEncoder();

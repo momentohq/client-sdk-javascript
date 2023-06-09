@@ -61,7 +61,10 @@ export class ControlClient {
           props.credentialProvider.getControlEndpoint(),
           ChannelCredentials.createSsl()
         ),
-      configuration: props.configuration,
+      loggerFactory: props.configuration.getLoggerFactory(),
+      maxIdleMillis: props.configuration
+        .getTransportStrategy()
+        .getMaxIdleMillis(),
     });
   }
 
