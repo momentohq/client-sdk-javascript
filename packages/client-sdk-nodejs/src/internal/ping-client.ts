@@ -36,7 +36,10 @@ export class InternalNodeGrpcPingClient {
     this.clientWrapper = new IdleGrpcClientWrapper({
       clientFactoryFn: () =>
         new grpcPing.PingClient(props.endpoint, ChannelCredentials.createSsl()),
-      configuration: props.configuration,
+      loggerFactory: props.configuration.getLoggerFactory(),
+      maxIdleMillis: props.configuration
+        .getTransportStrategy()
+        .getMaxIdleMillis(),
     });
   }
 

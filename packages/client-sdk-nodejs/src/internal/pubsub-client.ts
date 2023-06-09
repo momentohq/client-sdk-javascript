@@ -3,7 +3,6 @@ import grpcPubsub = pubsub.cache_client.pubsub;
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
-import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, ServiceError} from '@grpc/grpc-js';
 import {Status} from '@grpc/grpc-js/build/src/constants';
@@ -12,10 +11,8 @@ import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {TopicClientProps} from '../topic-client-props';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
-import {Configuration} from '../config/configuration';
 import {
   CredentialProvider,
-  InvalidArgumentError,
   MomentoLogger,
   TopicItem,
   TopicPublish,
@@ -28,13 +25,17 @@ import {
   SendSubscribeOptions,
   PrepareSubscribeCallbackOptions,
 } from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/AbstractPubsubClient';
+import {TopicConfiguration} from '../config/topic-configuration';
 
 export class PubsubClient extends AbstractPubsubClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcPubsub.PubsubClient>;
-  private readonly configuration: Configuration;
+  private readonly configuration: TopicConfiguration;
   protected readonly credentialProvider: CredentialProvider;
   private readonly unaryRequestTimeoutMs: number;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
+  private static readonly DEFAULT_MAX_SESSION_MEMORY_MB: number = 256;
+  // 4 minutes.  We want to remain comfortably underneath the idle timeout for AWS NLB, which is 350s.
+  private static readonly DEFAULT_MAX_IDLE_MILLIS: number = 4 * 60 * 1_000;
   protected readonly logger: MomentoLogger;
   private readonly unaryInterceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
@@ -50,13 +51,7 @@ export class PubsubClient extends AbstractPubsubClient {
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
-    const grpcConfig = this.configuration
-      .getTransportStrategy()
-      .getGrpcConfig();
-
-    this.validateRequestTimeout(grpcConfig.getDeadlineMillis());
-    this.unaryRequestTimeoutMs =
-      grpcConfig.getDeadlineMillis() || PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
+    this.unaryRequestTimeoutMs = PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
     this.logger.debug(
       `Creating topic client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
     );
@@ -69,7 +64,8 @@ export class PubsubClient extends AbstractPubsubClient {
           {
             // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
             // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
-            'grpc-node.max_session_memory': grpcConfig.getMaxSessionMemoryMb(),
+            'grpc-node.max_session_memory':
+              PubsubClient.DEFAULT_MAX_SESSION_MEMORY_MB,
             // This flag controls whether channels use a shared global pool of subchannels, or whether
             // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
             // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
@@ -77,7 +73,8 @@ export class PubsubClient extends AbstractPubsubClient {
             'grpc.use_local_subchannel_pool': 1,
           }
         ),
-      configuration: this.configuration,
+      loggerFactory: this.configuration.getLoggerFactory(),
+      maxIdleMillis: PubsubClient.DEFAULT_MAX_IDLE_MILLIS,
     });
 
     const headers: Header[] = [
@@ -97,15 +94,6 @@ export class PubsubClient extends AbstractPubsubClient {
     const endpoint = this.credentialProvider.getCacheEndpoint();
     this.logger.debug(`Using cache endpoint: ${endpoint}`);
     return endpoint;
-  }
-
-  private validateRequestTimeout(timeout?: number) {
-    this.logger.debug(`Request timeout ms: ${String(timeout)}`);
-    if (timeout !== undefined && timeout <= 0) {
-      throw new InvalidArgumentError(
-        'request timeout must be greater than zero.'
-      );
-    }
   }
 
   protected async sendPublish(
@@ -265,20 +253,13 @@ export class PubsubClient extends AbstractPubsubClient {
 
   private static initializeUnaryInterceptors(
     headers: Header[],
-    configuration: Configuration,
+    configuration: TopicConfiguration,
     requestTimeoutMs: number
   ): Interceptor[] {
     return [
-      middlewaresInterceptor(
-        configuration.getLoggerFactory(),
-        configuration.getMiddlewares()
-      ),
+      middlewaresInterceptor(configuration.getLoggerFactory(), []),
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
       ClientTimeoutInterceptor(requestTimeoutMs),
-      ...createRetryInterceptorIfEnabled(
-        configuration.getLoggerFactory(),
-        configuration.getRetryStrategy()
-      ),
     ];
   }
 
