@@ -1,6 +1,7 @@
 import {CacheClient, SimpleCacheClient} from './cache-client';
 import {TopicClient} from './topic-client';
 import * as Configurations from './config/configurations';
+import * as TopicConfigurations from './config/topic-configurations';
 import {TopicClientProps} from './topic-client-props';
 
 // Cache Client Response Types
@@ -103,6 +104,10 @@ import {
 } from '@gomomento/sdk-core';
 
 import {Configuration, CacheConfiguration} from './config/configuration';
+import {
+  TopicConfiguration,
+  TopicClientConfiguration,
+} from './config/topic-configuration';
 
 export {
   DefaultMomentoLoggerFactory,
@@ -217,7 +222,10 @@ export {
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
   ItemGetType,
-  // TopicClient Response types
+  // TopicClient
+  TopicConfigurations,
+  TopicConfiguration,
+  TopicClientConfiguration,
   TopicClient,
   TopicClientProps,
   TopicItem,
