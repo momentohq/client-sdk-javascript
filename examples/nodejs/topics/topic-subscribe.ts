@@ -1,4 +1,11 @@
-import {TopicClient, TopicItem, TopicSubscribe, Configurations, CredentialProvider} from '@gomomento/sdk';
+import {
+  TopicClient,
+  TopicItem,
+  TopicSubscribe,
+  Configurations,
+  CredentialProvider,
+  TopicConfigurations,
+} from '@gomomento/sdk';
 import {ensureCacheExists} from './utils/cache';
 
 async function main() {
@@ -9,7 +16,7 @@ async function main() {
   }
   const [cacheName, topicName] = clargs;
   const momento = new TopicClient({
-    configuration: Configurations.Laptop.v1(),
+    configuration: TopicConfigurations.Default.latest(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_AUTH_TOKEN',
     }),
