@@ -64,6 +64,7 @@ import {
   TopicPublish,
   TopicSubscribe,
   TopicItem,
+  TopicConfigurations,
 } from '@gomomento/sdk';
 
 function retrieveAuthTokenFromYourSecretsManager(): string {
@@ -772,7 +773,7 @@ function example_API_InstantiateAuthClient() {
 
 function example_API_InstantiateTopicClient() {
   new TopicClient({
-    configuration: Configurations.Laptop.v1(),
+    configuration: TopicConfigurations.Default.latest(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_AUTH_TOKEN',
     }),
@@ -935,7 +936,7 @@ async function main() {
 
   example_API_InstantiateTopicClient();
   const topicClient = new TopicClient({
-    configuration: Configurations.Laptop.v1(),
+    configuration: TopicConfigurations.Default.latest(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_AUTH_TOKEN',
     }),
