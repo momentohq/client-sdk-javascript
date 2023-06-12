@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.341.0",
+    "@gomomento/sdk": "^1.23.0",
+    "mongodb": "^5.5.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.1",
+    "jest": "^29",
+    "jest-extended": "^3.2.3",
+    "ts-jest": "^29",
+    "ts-node": "^10.3.0"
+  }
+}
