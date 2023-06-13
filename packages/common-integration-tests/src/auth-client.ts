@@ -142,6 +142,29 @@ export function runAuthClientTests(
       );
     });
 
+    it("expired token can't create cache", async () => {
+      const generateResponse = await sessionTokenAuthClient.generateAuthToken(
+        SUPER_USER_PERMISSIONS,
+        ExpiresIn.seconds(1)
+      );
+      const generateSuccessRst = generateResponse as GenerateAuthToken.Success;
+
+      // Wait 1sec for the token to expire
+      await delay(1000);
+
+      const cacheClient = cacheClientFactory(generateSuccessRst.authToken);
+
+      const createCacheRst = await cacheClient.createCache(
+        'cache-should-fail-to-create'
+      );
+
+      expect(createCacheRst).toBeInstanceOf(CreateCache.Error);
+      const createCacheErrorRst = createCacheRst as CreateCache.Error;
+      expect(createCacheErrorRst.errorCode()).toEqual(
+        MomentoErrorCode.AUTHENTICATION_ERROR
+      );
+    });
+
     it('should support generating a superuser token when authenticated via a session token', async () => {
       const generateResponse = await sessionTokenAuthClient.generateAuthToken(
         SUPER_USER_PERMISSIONS,
