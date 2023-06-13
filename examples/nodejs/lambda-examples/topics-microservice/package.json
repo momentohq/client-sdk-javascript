@@ -18,8 +18,8 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.22.5",
+    "jest-extended": "^3.2.4",
     "ts-jest": "^29",
-    "ts-node": "^10.3.0",
-    "jest-extended": "^3.2.3"
+    "ts-node": "^10.3.0"
   }
 }

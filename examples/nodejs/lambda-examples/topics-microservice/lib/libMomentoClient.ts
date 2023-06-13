@@ -46,7 +46,7 @@ export async function GetToken(
 
 /* This function calls to the GetToken function, uses the Momento auth token to create a
  Momento client connection to Momento Cache and returns that object for later use. */
-export default async function CreateCacheClient(
+export async function CreateCacheClient(
   ttl:number = 600,
   tokenName:string = "Momento_Auth_Token",
   ): Promise<CacheClient> {
@@ -60,7 +60,7 @@ export default async function CreateCacheClient(
   });
 }
 
-export default async function CreateTopicClient(
+export async function CreateTopicClient(
   tokenName:string = "Momento_Auth_Token",
 ): Promise<TopicClient> {
   // Call the Get Token function to get a Momento auth token from AWS Secrets Manager.

@@ -1,10 +1,9 @@
-import CreateTopicClient from "../lib/libMomentoClient";
+import { CreateTopicClient } from "../lib/libMomentoClient";
 import { PublishingWrapper } from "../lib/libMomento";
-import {TopicClient} from "@gomomento/sdk";
 
 describe('WrapperTests', () => {
   it('can construct a Momento Topics wrapper and execute a function', async () => {
-    let client: TopicClient = await CreateTopicClient();
+    let client = await CreateTopicClient();
 
     // init the publishing wrapper class.
     const wrapper = new PublishingWrapper({
