@@ -12,7 +12,7 @@ describe('WrapperTests', () => {
       topicName: "myTopic"
     });
     // Call the getItem function in the read-aside class and pass in the key and loader function with test return value.
-    const ret = await wrapper.publishItem("testval");
+    const ret = await wrapper.publishItem("how dare you!");
     console.log(JSON.stringify(ret));
   });
 });
