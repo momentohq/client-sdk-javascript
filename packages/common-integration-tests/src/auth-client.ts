@@ -11,7 +11,7 @@ import {
   TokenScope,
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/clients/IAuthClient';
-import {deleteCacheIfExists, expectWithMessage} from './common-int-test-utils';
+import {expectWithMessage} from './common-int-test-utils';
 import {InternalSuperUserPermissions} from '@gomomento/sdk-core/dist/src/internal/utils/auth';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 
