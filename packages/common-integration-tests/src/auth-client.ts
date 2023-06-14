@@ -296,7 +296,9 @@ export function runAuthClientTests(
       allDataReadWriteClient = cacheClientFactory(allDataReadWriteToken);
 
       await deleteCacheIfExists(allDataReadWriteClient, cacheName);
-      const createResponse = await allDataReadWriteClient.createCache(cacheName);
+      const createResponse = await allDataReadWriteClient.createCache(
+        cacheName
+      );
       if (createResponse instanceof CreateCache.Error) {
         throw createResponse.innerException();
       }
