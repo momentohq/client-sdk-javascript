@@ -323,6 +323,7 @@ export function runAuthClientTests(
         'foo',
         'FOO'
       );
+      console.log('setResponse', setResponse);
       expect(setResponse).toBeInstanceOf(CacheSet.Success);
     });
     it('can get values from an existing cache', async () => {
@@ -330,6 +331,7 @@ export function runAuthClientTests(
         cacheName,
         'habanero'
       );
+      console.log('getResponse', getResponse);
       expect(getResponse).toBeInstanceOf(CacheGet.Miss);
     });
   });
