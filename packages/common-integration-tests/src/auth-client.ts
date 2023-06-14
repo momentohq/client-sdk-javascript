@@ -11,7 +11,7 @@ import {
   TokenScope,
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/clients/IAuthClient';
-import {expectWithMessage} from './common-int-test-utils';
+import {deleteCacheIfExists, expectWithMessage} from './common-int-test-utils';
 import {InternalSuperUserPermissions} from '@gomomento/sdk-core/dist/src/internal/utils/auth';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 
@@ -294,6 +294,12 @@ export function runAuthClientTests(
         generateResponse as GenerateAuthToken.Success
       ).authToken;
       allDataReadWriteClient = cacheClientFactory(allDataReadWriteToken);
+
+      await deleteCacheIfExists(allDataReadWriteClient, cacheName);
+      const createResponse = await allDataReadWriteClient.createCache(cacheName);
+      if (createResponse instanceof CreateCache.Error) {
+        throw createResponse.innerException();
+      }
     });
     it('cannot create a cache', async () => {
       const createCacheResponse = await allDataReadWriteClient.createCache(

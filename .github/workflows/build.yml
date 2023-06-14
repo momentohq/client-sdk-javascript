@@ -57,7 +57,7 @@ jobs:
     env:
       TEST_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
       TEST_SESSION_TOKEN: ${{ secrets.MOMENTO_PREPROD_SESSION_TOKEN }}
-      TEST_LEGACY_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+      TEST_LEGACY_AUTH_TOKEN: ${{ secrets.ALPHA_LEGACY_TEST_AUTH_TOKEN }}
       TEST_CACHE_NAME: js-integration-test-ci
 
     steps:
@@ -73,6 +73,11 @@ jobs:
         run: |
           node -v
           ./scripts/build-and-test-all-packages.sh
+
+      - name: Run auth tests for packages
+        run: |
+          node -v
+          ./scripts/test-auth-packages.sh
 
   test-examples:
     strategy:

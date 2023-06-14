@@ -12,7 +12,7 @@ import {
   TopicClient,
 } from '../../src';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
-const deleteCacheIfExists = async (momento: CacheClient, cacheName: string) => {
+export const deleteCacheIfExists = async (momento: CacheClient, cacheName: string) => {
   const deleteResponse = await momento.deleteCache(cacheName);
   if (deleteResponse instanceof DeleteCache.Error) {
     if (deleteResponse.errorCode() !== MomentoErrorCode.NOT_FOUND_ERROR) {
