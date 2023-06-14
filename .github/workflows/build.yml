@@ -57,6 +57,7 @@ jobs:
     env:
       TEST_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
       TEST_SESSION_TOKEN: ${{ secrets.MOMENTO_PREPROD_SESSION_TOKEN }}
+      TEST_LEGACY_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
       TEST_CACHE_NAME: js-integration-test-ci
 
     steps:
@@ -83,7 +84,6 @@ jobs:
       # TODO: remove token stored as secret in favor of using a
       # momento-local instance that can be spun up for testing
       MOMENTO_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
-      TEST_SESSION_TOKEN: ${{ secrets.MOMENTO_PREPROD_SESSION_TOKEN }}
 
     steps:
       - name: Setup repo
