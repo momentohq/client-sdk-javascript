@@ -106,7 +106,15 @@ jobs:
             npm run build
             npm run validate-examples
           popd
-          pushd examples/web
+          pushd examples/nodejs/load-gen
+            npm ci
+            npm run build
+          popd
+          pushd examples/nodejs/topics
+            npm ci
+            npm run build
+          popd
+          pushd examples/web/cache
             npm ci
             npm run build
             npm run validate-examples
