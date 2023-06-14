@@ -300,6 +300,7 @@ export function runAuthClientTests(
         cacheName
       );
       if (createResponse instanceof CreateCache.Error) {
+        console.log('createResponse', createResponse);
         throw createResponse.innerException();
       }
     });
