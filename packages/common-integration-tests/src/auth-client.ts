@@ -294,15 +294,6 @@ export function runAuthClientTests(
         generateResponse as GenerateAuthToken.Success
       ).authToken;
       allDataReadWriteClient = cacheClientFactory(allDataReadWriteToken);
-
-      await deleteCacheIfExists(allDataReadWriteClient, cacheName);
-      const createResponse = await allDataReadWriteClient.createCache(
-        cacheName
-      );
-      if (createResponse instanceof CreateCache.Error) {
-        console.log('createResponse', createResponse);
-        throw createResponse.innerException();
-      }
     });
     it('cannot create a cache', async () => {
       const createCacheResponse = await allDataReadWriteClient.createCache(
