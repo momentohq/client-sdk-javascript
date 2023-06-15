@@ -51,8 +51,22 @@ npm run unit-test
 
 ```
 export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
-export TEST_SESSION_TOKEN=<YOUR_SESSION_TOKEN>
 npm run integration-test
+```
+
+### Run all tests
+
+```
+export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
+npm run test
+```
+
+### Run auth integration tests
+
+```
+export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
+export TEST_SESSION_TOKEN=<YOUR_SESSION_TOKEN>
+npm run integration-test-auth
 ```
 
 How do I get a session token?
@@ -61,20 +75,11 @@ Visit the [preprod console](https://momento-console-preview.vercel.app/caches), 
 inspect the webpage, navigate to the `Storage` tab and and under `Local Storage`,
 copy your `momento_session_token` :tada:
 
-
-### Run all tests
-
-```
-export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
-export TEST_SESSION_TOKEN=<YOUR_SESSION_TOKEN>
-npm run test
-```
-
 ### Limit the test concurrency
 
 By default, jest runs tests concurrently. Sometimes if you allow too many tests to run concurrently you
 will hit Momento throttling limits.  To limit the concurrency to ensure you don't hit throttling limits,
-you can use jest's `--maxWorkers` :flag:
+you can use jest's `--maxWorkers` flag:
 
 ```
 export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
