@@ -1,5 +1,5 @@
-import { CreateTopicClient } from "../lib/libMomentoClient";
-import { PublishingWrapper } from "../lib/libMomento";
+import { CreateTopicClient } from "../resources/libMomentoClient";
+import { PublishingWrapper } from "../resources/libMomento";
 
 describe('WrapperTests', () => {
   it('can construct a Momento Topics wrapper and execute a function', async () => {
