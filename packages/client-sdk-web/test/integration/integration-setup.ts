@@ -8,7 +8,13 @@ import {
   CredentialProvider,
 } from '@gomomento/sdk-core';
 import {CacheClientProps} from '../../src/cache-client-props';
-import {CacheClient, TopicClient, Configurations, AuthClient} from '../../src';
+import {
+  CacheClient,
+  TopicClient,
+  Configurations,
+  AuthClient,
+  TopicConfigurations,
+} from '../../src';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 
@@ -28,7 +34,7 @@ function momentoClientForTesting(): CacheClient {
 
 function momentoTopicClientForTesting(): TopicClient {
   return new TopicClient({
-    configuration: Configurations.Laptop.latest(),
+    configuration: TopicConfigurations.Default.latest(),
     credentialProvider: credsProvider,
   });
 }
