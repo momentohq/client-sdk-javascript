@@ -23,7 +23,7 @@ export function getWebControlEndpoint(
   if (credentialProvider.isControlEndpointOverridden()) {
     return withProtocolPrefix(credentialProvider.getControlEndpoint());
   }
-  return withProtocolPrefix(`${credentialProvider.getControlEndpoint()}`);
+  return withProtocolPrefix(`web.${credentialProvider.getControlEndpoint()}`);
 }
 
 export function getWebCacheEndpoint(
@@ -32,7 +32,7 @@ export function getWebCacheEndpoint(
   if (credentialProvider.isCacheEndpointOverridden()) {
     return withProtocolPrefix(credentialProvider.getCacheEndpoint());
   }
-  return withProtocolPrefix(`${credentialProvider.getCacheEndpoint()}`);
+  return withProtocolPrefix(`web.${credentialProvider.getCacheEndpoint()}`);
 }
 
 function withProtocolPrefix(endpoint: string): string {
