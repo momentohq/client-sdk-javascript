@@ -69,6 +69,11 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
+      - name: Build and test all packages
+        run: |
+          node -v
+          ./scripts/build-and-test-all-packages.sh
+
       - name: Run auth tests for packages
         run: |
           node -v
