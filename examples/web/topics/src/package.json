@@ -7,7 +7,6 @@
     "prebuild": "eslint . --ext .ts",
     "build": "tsc",
     "topics-loadgen": "tsc && node dist/topics-loadgen.js",
-    "validate-examples": "tsc && node dist/basic.js && node dist/advanced.js && node dist/dictionary.js && node dist/readme.js",
     "test": "jest",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix"
@@ -23,12 +22,13 @@
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-prettier": "4.2.1",
+    "hdr-histogram-js": "3.0.0",
     "prettier": "2.7.1",
-    "typescript": "4.4.3",
-    "hdr-histogram-js": "3.0.0"
+    "typescript": "4.4.3"
   },
   "dependencies": {
     "@gomomento/sdk-web": "1.25.1",
+    "aws-cdk-lib": "^2.84.0",
     "jsdom": "22.1.0"
   }
 }
