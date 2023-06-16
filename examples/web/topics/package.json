@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "eslint . --ext .ts",
     "build": "tsc",
-    "topics-loadgen": "tsc && node dist/browser-topics.js",
+    "topics-loadgen": "tsc && node dist/topics-loadgen.js",
     "validate-examples": "tsc && node dist/basic.js && node dist/advanced.js && node dist/dictionary.js && node dist/readme.js",
     "test": "jest",
     "lint": "eslint . --ext .ts",

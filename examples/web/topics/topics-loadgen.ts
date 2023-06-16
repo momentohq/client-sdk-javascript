@@ -207,7 +207,7 @@ for (let i = 0; i < browserConfig.numberOfBrowserInstances; i++) {
       console.log('success!!');
     })
     .catch((e: Error) => {
-      console.error(`Uncaught exception while running dictionary example: ${e.message}`);
+      console.error(`Uncaught exception while running topics-loadgen: ${e.message}`);
       throw e;
     });
 }
