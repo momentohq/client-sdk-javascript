@@ -1,8 +1,8 @@
 FROM node:16
 
 WORKDIR /loadgen
-COPY * .
+COPY . .
 
-RUN npm install
+#RUN npm install
 
 CMD npm run topics-loadgen
