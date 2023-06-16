@@ -12,13 +12,7 @@ import {
   DefaultMomentoLoggerFactory,
   CollectionTtl,
 } from '@gomomento/sdk-web';
-
-// Because we're not running in a browser, we need to explicitly make
-// XMLHttpRequest available.
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-global.XMLHttpRequest = require('xhr2');
+import {initJSDom} from './utils/jsdom';
 
 const cacheName = 'cache';
 const dictionaryName = 'dictionary';
@@ -37,6 +31,9 @@ const momento = new CacheClient({
 });
 
 const main = async () => {
+  // Because the Momento Web SDK is intended for use in a browser, we use the JSDom library to set up an environment
+  // that will allow us to use it in a node.js program.
+  initJSDom();
   const createCacheResponse = await momento.createCache(cacheName);
   if (createCacheResponse instanceof CreateCache.AlreadyExists) {
     console.log('cache already exists');
