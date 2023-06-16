@@ -7,6 +7,8 @@ import {
   MomentoErrorCode,
   RefreshAuthToken,
   TokenScope,
+  CacheSet,
+  CacheGet,
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/clients/IAuthClient';
 import {expectWithMessage} from './common-int-test-utils';
@@ -316,30 +318,23 @@ export function runAuthClientTests(
       expect(deleteCacheError.message()).toContain('Insufficient permissions');
     });
 
-    /*
-      todo: fix these tests
-      for now, I'm commenting out these tests, currently
-      there seems to be an issue with not finding the cache
-      annndd I want to get get these test working in CI
-    */
-
-    // it('can set values in an existing cache', async () => {
-    //   const setResponse = await allDataReadWriteClient.set(
-    //     cacheName,
-    //     'foo',
-    //     'FOO'
-    //   );
-    //   console.log('setResponse', setResponse);
-    //   expect(setResponse).toBeInstanceOf(CacheSet.Success);
-    // });
-    // it('can get values from an existing cache', async () => {
-    //   const getResponse = await allDataReadWriteClient.get(
-    //     cacheName,
-    //     'habanero'
-    //   );
-    //   console.log('getResponse', getResponse);
-    //   expect(getResponse).toBeInstanceOf(CacheGet.Miss);
-    // });
+    it('can set values in an existing cache', async () => {
+      const setResponse = await allDataReadWriteClient.set(
+        cacheName,
+        'foo',
+        'FOO'
+      );
+      console.log('setResponse', setResponse);
+      expect(setResponse).toBeInstanceOf(CacheSet.Success);
+    });
+    it('can get values from an existing cache', async () => {
+      const getResponse = await allDataReadWriteClient.get(
+        cacheName,
+        'habanero'
+      );
+      console.log('getResponse', getResponse);
+      expect(getResponse).toBeInstanceOf(CacheGet.Miss);
+    });
   });
 }
 
