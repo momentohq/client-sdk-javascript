@@ -5,6 +5,7 @@ import * as hdr from 'hdr-histogram-js';
 
 import {BasicConfigOptions, BrowserConfigOptions, TopicsLoadGenContextImpl} from './utils/config';
 import * as fs from 'fs';
+import {initJSDom} from './utils/jsdom';
 
 const publishHistogram = hdr.build();
 const subscriptionHistogram = hdr.build();
@@ -17,6 +18,8 @@ export class Browser {
   private basicConfigOptions: BasicConfigOptions;
   private readonly topicClient: TopicClient;
 
+  private subscriptionResponse: TopicSubscribe.Response;
+
   private topicLoadGenContext = TopicsLoadGenContextImpl.initiateTopicsLoadGenContext();
 
   constructor(browserConfigOptions: BrowserConfigOptions, basicConfigOptions: BasicConfigOptions) {
@@ -26,18 +29,17 @@ export class Browser {
   }
 
   async startSimulating(): Promise<void> {
+    initJSDom();
     await ensureCacheExists(this.basicConfigOptions.cacheName);
 
     deleteCsvIfExists(publishCsv);
     deleteCsvIfExists(publishReceiveCsv);
     deleteCsvIfExists(topicsContextCsv);
 
-    let subscriptionResponse: TopicSubscribe.Response = TopicSubscribe.Subscription;
-
     // Subscribe to the topic to receive published values
     for (let i = 0; i < this.browserConfigOptions.numSubscriptions; i++) {
       console.log(`Subscribing to topic ${this.basicConfigOptions.topicName}, subscription number: ${i}`);
-      subscriptionResponse = await this.subscribeToTopic();
+      this.subscriptionResponse = await this.subscribeToTopic();
     }
 
     console.log('starting to simulate publish requests');
@@ -65,15 +67,10 @@ export class Browser {
     this.topicLoadGenContext.totalPublishRequests = publishHistogram.totalCount;
     this.topicLoadGenContext.totalSubscriptionRequests = this.browserConfigOptions.numSubscriptions;
 
-    console.log(publishHistogram);
-    console.log(subscriptionHistogram);
-
     addToCSV(this.topicLoadGenContext.toString(), topicsContextCsv);
 
-    // unsubscribe from topic
-    if (subscriptionResponse instanceof TopicSubscribe.Subscription) {
-      subscriptionResponse.unsubscribe();
-    }
+    console.log(publishHistogram);
+    console.log(subscriptionHistogram);
   }
 
   async publishToTopic(topicClient: TopicClient, message: string) {
@@ -100,9 +97,9 @@ export class Browser {
       console.log(`Error publishing ${message} to topic ${this.basicConfigOptions.topicName}, ${response.errorCode()}`);
       if (response.errorCode().includes('UNAVAILABLE')) {
         this.topicLoadGenContext.numPublishUnavailable += 1;
-      } else if (response.errorCode().includes('LIMIT_EXCEEDED')) {
+      } else if (response.errorCode().includes('LIMIT_EXCEEDED_ERROR')) {
         this.topicLoadGenContext.numPublishLimitExceeded += 1;
-      } else if (response.errorCode().includes('TIMEOUT_EXCEEDED')) {
+      } else if (response.errorCode().includes('TIMEOUT_ERROR')) {
         this.topicLoadGenContext.numPublishTimeoutExceeded += 1;
       }
     }
@@ -134,14 +131,21 @@ export class Browser {
       console.log(`Error subscribing to topic ${this.basicConfigOptions.topicName}`);
       if (subscribeResponse.errorCode().includes('UNAVAILABLE')) {
         this.topicLoadGenContext.numSubscriptionUnavailable += 1;
-      } else if (subscribeResponse.errorCode().includes('LIMIT_EXCEEDED')) {
+      } else if (subscribeResponse.errorCode().includes('LIMIT_EXCEEDED_ERROR')) {
         this.topicLoadGenContext.numSubscriptionLimitExceeded += 1;
-      } else if (subscribeResponse.errorCode().includes('TIMEOUT_EXCEEDED')) {
+      } else if (subscribeResponse.errorCode().includes('TIMEOUT_ERROR')) {
         this.topicLoadGenContext.numSubscriptionTimeoutExceeded += 1;
       }
     }
 
     return subscribeResponse;
+  }
+
+  stopSimulating() {
+    // Unsubscribe from the topic
+    if (this.subscriptionResponse instanceof TopicSubscribe.Subscription) {
+      this.subscriptionResponse.unsubscribe();
+    }
   }
 }
 
@@ -174,3 +178,47 @@ function deleteCsvIfExists(filePath: string) {
     fs.unlinkSync(filePath);
   }
 }
+
+// export BROWSER_CONFIG='{"numberOfBrowserInstances": 1, "publishRatePerSecond": 10}'
+const browserConfigEnv = process.env.BROWSER_CONFIG;
+if (!browserConfigEnv) {
+  throw new Error('Missing environment variable(s). Please set BROWSER_CONFIG.');
+}
+let browserConfig: BrowserConfigOptions;
+try {
+  browserConfig = JSON.parse(browserConfigEnv) as BrowserConfigOptions;
+} catch (error) {
+  throw new Error('Error parsing JSON configuration');
+}
+
+const basicConfig: BasicConfigOptions = {
+  cacheName: 'topicLoadTestCache',
+  topicName: 'topicLoadTestTopic',
+};
+
+const browserInstances: Browser[] = [];
+
+for (let i = 0; i < browserConfig.numberOfBrowserInstances; i++) {
+  const browser = new Browser(browserConfig, basicConfig);
+  browserInstances.push(browser);
+  browser
+    .startSimulating()
+    .then(() => {
+      console.log('success!!');
+    })
+    .catch((e: Error) => {
+      console.error(`Uncaught exception while running dictionary example: ${e.message}`);
+      throw e;
+    });
+}
+
+setTimeout(() => {
+  // Stop all browser instances
+  for (const browser of browserInstances) {
+    browser.stopSimulating();
+  }
+
+  console.log('Program execution completed.');
+  // eslint-disable-next-line no-process-exit
+  process.exit(0);
+}, 60000);
