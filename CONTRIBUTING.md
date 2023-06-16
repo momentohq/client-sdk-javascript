@@ -34,27 +34,25 @@ The easiest way to do your initial build of all the packages is to run:
 ./scripts/build-all-packages.sh
 ```
 
-From that point you can change directories into any of the `package` subdirs to work on an individual package. Take a look at the `scripts` section of the `package.json` in each package directory to see what build commands are available. They all support `npm run build` to compile the code. Most also have `npm run unit-test` and `npm run integration-test` to run the unit and integration tests, respectively.
+From that point you can change directories into any of the `package` subdirs to work on an individual package. Take a look at the `scripts` section of the `package.json` in each package directory to see what build commands are available. They all support `npm run build` to compile the code. 
+
+## Running tests
+
+Most packages.json files have script targets like `unit-test` and `integration-test` that show how the tests will get run in CI. You can use these as an example to set up a command to run the tests you want to run locally. Most will require a little tweaking in order to run just the things you're interested in and deal with other constraints.
+
+For example you will probably need to limit Jest `maxWorkers` to avoid throttling errors due to concurrency, and you will want to skip the auth tests unless you have a session token, etc. So here is an example command you might use to run all of the integration tests other than the auth tests:
+
+```
+TEST_AUTH_TOKEN=<your_token_here> npx jest integration --maxWorkers 1 --testPathIgnorePatterns auth-client-test.ts
+```
+
+Or, if you only want to run the dictionary tests:
+
+```
+TEST_AUTH_TOKEN=<your_token_here> npx jest dictionary
+```
 
 **NOTE**: if you make changes in the `core` or `common-integration-tests` packages, you will need to build your changes before the SDK packages can pick them up. You can do this via `npm run build` in the shared package directory, or `./scripts/build-all-packages.sh` from the root dir.
-
-### Running integration tests
-
-In a given package directory:
-
-```
-export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
-npm run integration-test
-```
-
-### Run all tests
-
-In a given package directory:
-
-```
-export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
-npm run test
-```
 
 ### Run auth integration tests
 
