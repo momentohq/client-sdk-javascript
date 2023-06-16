@@ -114,6 +114,42 @@ jobs:
             npm ci
             npm run build
           popd
+
+      - name: Send CI failure mail
+        if: ${{ steps.validation.outcome == 'failure' }}
+        uses: momentohq/standards-and-practices/github-actions/error-email-action@gh-actions-v2
+        with:
+          username: ${{secrets.MOMENTO_ROBOT_GMAIL_USERNAME}}
+          password: ${{secrets.MOMENTO_ROBOT_GMAIL_PASSWORD}}
+
+      - name: Flag Job Failure
+        if: ${{ steps.validation.outcome == 'failure' }}
+        run: exit 1
+
+  test-web-examples:
+    strategy:
+      matrix:
+        node: [ 16, 18 ]
+    name: Test web examples on node ${{ matrix.node }}
+    runs-on: macos-latest
+    env:
+      # TODO: remove token stored as secret in favor of using a
+      # momento-local instance that can be spun up for testing
+      MOMENTO_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v3
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install Deps and Build
+        id: validation
+        continue-on-error: true
+        run: |
           pushd examples/web/cache
             npm ci
             npm run build
@@ -130,3 +166,4 @@ jobs:
       - name: Flag Job Failure
         if: ${{ steps.validation.outcome == 'failure' }}
         run: exit 1
+
