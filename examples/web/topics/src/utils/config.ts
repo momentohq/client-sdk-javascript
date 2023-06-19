@@ -33,7 +33,8 @@ export class TopicsLoadGenContextImpl implements TopicsLoadGenContext {
     public numSubscriptionTimeoutExceeded: number,
     public numPublishTimeoutExceeded: number,
     public numSubscriptionLimitExceeded: number,
-    public numPublishLimitExceeded: number
+    public numPublishLimitExceeded: number,
+    public numMessagesReceived: number
   ) {}
 
   toString(): string {
@@ -47,10 +48,12 @@ export class TopicsLoadGenContextImpl implements TopicsLoadGenContext {
     Number of Subscription Timeout Exceeded: ${this.numSubscriptionTimeoutExceeded}
     Number of Publish Timeout Exceeded: ${this.numPublishTimeoutExceeded}
     Number of Subscription Limit Exceeded: ${this.numSubscriptionLimitExceeded}
-    Number of Publish Limit Exceeded: ${this.numPublishLimitExceeded}`;
+    Number of Publish Limit Exceeded: ${this.numPublishLimitExceeded}
+    Number of Messages Received: ${this.numMessagesReceived}
+    `;
   }
 
   static initiateTopicsLoadGenContext(): TopicsLoadGenContextImpl {
-    return new TopicsLoadGenContextImpl(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    return new TopicsLoadGenContextImpl(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
   }
 }

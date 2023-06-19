@@ -8,6 +8,8 @@ import * as fs from 'fs';
 import {PutObjectCommand, S3Client} from '@aws-sdk/client-s3';
 import {initJSDom} from './utils/jsdom';
 import {v4} from 'uuid';
+import {clearInterval} from 'timers';
+import path from 'path';
 
 const publishHistogram = hdr.build();
 const subscriptionHistogram = hdr.build();
@@ -27,24 +29,26 @@ export class Browser {
   private topicLoadGenContext: TopicsLoadGenContextImpl;
 
   private readonly topicName: string;
+  private readonly numMessagesToPublish: number;
+  private readonly runId: string;
 
-  constructor(browserConfigOptions: BrowserConfigOptions) {
+  constructor(browserConfigOptions: BrowserConfigOptions, runId: string, numMessagesToPublish: number) {
     this.browserConfigOptions = browserConfigOptions;
     this.topicClient = getTopicClient();
 
     this.topicName = topics[Math.floor(Math.random() * topics.length)];
+    this.numMessagesToPublish = numMessagesToPublish;
+    this.runId = runId;
 
     this.topicLoadGenContext = TopicsLoadGenContextImpl.initiateTopicsLoadGenContext();
   }
 
   async startSimulating(runId: string, fargateId: string, browserNum: number): Promise<void> {
-    const programStartTimeInMilliseconds = Date.now();
-    initJSDom();
     await ensureCacheExists(cacheName);
 
-    deleteCsvIfExists(`${publishCsv}-${browserNum}`);
-    deleteCsvIfExists(`${publishReceiveCsv}-${browserNum}.csv`);
-    deleteCsvIfExists(`${topicsContextCsv}-${browserNum}.csv`);
+    deleteCsvIfExists(`data/${this.runId}/${publishCsv}-${browserNum}`);
+    deleteCsvIfExists(`data/${this.runId}/${publishReceiveCsv}-${browserNum}.csv`);
+    deleteCsvIfExists(`data/${this.runId}/${topicsContextCsv}-${browserNum}.csv`);
 
     // Subscribe to the topic to receive published values
     this.subscriptionResponse = await this.subscribeToTopic();
@@ -58,36 +62,26 @@ export class Browser {
       characterArray.push(character);
     }
 
-    // log histogram stats every 30 sec
-    const logHistograms = () => {
-      console.log('Publish Histogram:');
-      console.log(publishHistogram);
-      console.log('Subscription Histogram:');
-      console.log(subscriptionHistogram);
-    };
-    setInterval(logHistograms, 5000);
-
     const interval = 1000 / this.browserConfigOptions.publishRatePerSecondPerBrowser;
 
-    const loadTestDurationInSeconds = this.browserConfigOptions.loadTestDurationInSeconds;
-    const endTime = programStartTimeInMilliseconds + loadTestDurationInSeconds * 1000;
-
-    while (Date.now() <= endTime) {
+    let messagePublishCount = 0;
+    while (messagePublishCount < this.numMessagesToPublish) {
       const currentTimestamp = process.hrtime();
-      const message = `${currentTimestamp[0]} ${currentTimestamp[1]}: ${browserNum}: ${characterArray.join('')}`;
+      const message = `${currentTimestamp[0]} ${currentTimestamp[1]}:${browserNum}: ${characterArray.join('')}`;
 
       await this.publishToTopic(this.topicClient, message, browserNum);
 
       await delay(interval);
+      messagePublishCount++;
     }
 
-    addToCSV('', this.topicLoadGenContext.toString(), `${topicsContextCsv}-${browserNum}.csv`);
+    addToCSV('', this.topicLoadGenContext.toString(), runId, `${topicsContextCsv}-${browserNum}.csv`);
 
-    uploadFiles(runId, fargateId, browserNum);
+    // uploadFiles(runId, fargateId, browserNum);
   }
 
   async publishToTopic(topicClient: TopicClient, message: string, browserNum: number) {
-    console.log(`Beginning to publish ${message} to topic ${this.topicName}`);
+    // console.log(`Beginning to publish ${message} to topic ${this.topicName}`);
     this.topicLoadGenContext.totalPublishRequests += 1;
 
     const startTime = process.hrtime();
@@ -98,7 +92,7 @@ export class Browser {
     const elapsedTime = endTime[0] * 1000 + endTime[1] / 1000000; // Convert to milliseconds
 
     publishHistogram.recordValue(elapsedTime);
-    addToCSV(getTimestamp(endTime), elapsedTime.toString(), `${publishCsv}-${browserNum}.csv`);
+    addToCSV(getTimestamp(endTime), elapsedTime.toString(), this.runId, `${publishCsv}-${browserNum}.csv`);
 
     if (response instanceof TopicPublish.Success) {
       this.topicLoadGenContext.numPublishSuccess += 1;
@@ -118,18 +112,17 @@ export class Browser {
   async subscribeToTopic() {
     // console.log(`Subscribing to topic ${this.topicName} in cache ${cacheName}`);
     const subscribeResponse = await this.topicClient.subscribe(cacheName, this.topicName, {
-      onError: handleError,
-      onItem: handleItem,
+      onError: e => this.handleError(e),
+      onItem: item => this.handleItem(item),
     });
 
     this.topicLoadGenContext.totalSubscriptionRequests += 1;
     if (subscribeResponse instanceof TopicSubscribe.Subscription) {
       // console.log(`Successfully subscribed to topic ${this.topicName}`);
-
       // Wait for published values to be received.
-      setTimeout(() => {
-        console.log('Waiting for the published values');
-      }, 120000);
+      // setTimeout(() => {
+      //   console.log('Waiting for the published values');
+      // }, 120000);
     } else if (subscribeResponse instanceof TopicSubscribe.Error) {
       console.log(`Error subscribing to topic ${this.topicName}`);
       if (subscribeResponse.errorCode().includes('UNAVAILABLE')) {
@@ -144,11 +137,31 @@ export class Browser {
     return subscribeResponse;
   }
 
-  stopSimulating() {
+  async stopSimulating(browserNum: number): Promise<void> {
+    console.log(`Browser ${browserNum} sleeping for 5 seconds to allow remaining messages to flush`);
+    await delay(5000);
     // Unsubscribe from the topic
     if (this.subscriptionResponse instanceof TopicSubscribe.Subscription) {
       this.subscriptionResponse.unsubscribe();
     }
+  }
+
+  handleItem(item: TopicItem) {
+    // console.log('Item received from topic subscription; %s', item);
+    this.topicLoadGenContext.numMessagesReceived++;
+
+    // console.log(`Got an item: ${item.valueString()}`);
+    const splitItems = item.valueString().split(':');
+    const browserNum = splitItems[1].trim();
+    const [startTimeSec, startTimeNanosec] = splitItems[0].split(' ');
+    const endTime = process.hrtime([parseInt(startTimeSec), parseInt(startTimeNanosec)]);
+    const elapsedTime = endTime[0] * 1000 + endTime[1] / 1000000; // Convert to milliseconds
+    subscriptionHistogram.recordValue(elapsedTime);
+    addToCSV(getTimestamp(endTime), elapsedTime.toString(), this.runId, `${publishReceiveCsv}-${browserNum}.csv`);
+  }
+
+  handleError(error: TopicSubscribe.Error) {
+    console.log(`Error received from topic subscription; ${error.toString()}`);
   }
 }
 
@@ -178,32 +191,17 @@ function uploadFiles(runId: string, fargateContainerId: string, browserNum: numb
     });
 }
 
-function handleItem(item: TopicItem) {
-  // console.log('Item received from topic subscription; %s', item);
-
-  const splitItems = item.valueString().split(':');
-  const browserNum = splitItems[1];
-  const [startTimeSec, startTimeNanosec] = splitItems[0].split(' ');
-  const endTime = process.hrtime([parseInt(startTimeSec), parseInt(startTimeNanosec)]);
-  const elapsedTime = endTime[0] * 1000 + endTime[1] / 1000000; // Convert to milliseconds
-  subscriptionHistogram.recordValue(elapsedTime);
-  addToCSV(getTimestamp(endTime), elapsedTime.toString(), `${publishReceiveCsv}-${browserNum}.csv`);
-}
-
-function handleError(error: TopicSubscribe.Error) {
-  console.log(`Error received from topic subscription; ${error.toString()}`);
-}
-
-function addToCSV(timestamp: string, data: string, filePath: string): void {
+function addToCSV(timestamp: string, data: string, runId: string, filePath: string): void {
+  const filePathInDataDir = path.join('data', runId, filePath);
   try {
-    const line = timestamp !== '' ? timestamp + '\t' + data : data;
+    const line = timestamp !== '' ? timestamp + ',' + data : data;
 
-    if (timestamp !== '' && !fs.existsSync(filePath)) {
-      const headers = 'Timestamp\tElapsedTime';
-      fs.writeFileSync(filePath, headers + '\n');
+    if (timestamp !== '' && !fs.existsSync(filePathInDataDir)) {
+      const headers = 'Timestamp,ElapsedTime';
+      fs.writeFileSync(filePathInDataDir, headers + '\n');
     }
 
-    fs.writeFileSync(filePath, line + '\n', {flag: 'a'});
+    fs.writeFileSync(filePathInDataDir, line + '\n', {flag: 'a'});
   } catch (err) {
     console.error('Error appending to CSV file:', err);
   }
@@ -216,10 +214,10 @@ function deleteCsvIfExists(filePath: string) {
   }
 }
 
-function getTimestamp(hrTime: [number, number]) {
+function getTimestamp(hrTime: [number, number]): string {
   const elapsedMillis = hrTime[0] * 1000 + hrTime[1] / 1000000;
   const currentTime = Date.now();
-  return new Date(currentTime - elapsedMillis).toUTCString();
+  return new Date(currentTime - elapsedMillis).getTime().toString();
 }
 
 async function uploadFileToS3(filePath: string, bucketName: string, key: string): Promise<void> {
@@ -243,48 +241,75 @@ async function uploadFileToS3(filePath: string, bucketName: string, key: string)
   }
 }
 
-// export BROWSER_CONFIG='{"numberOfBrowserInstances": 1, "publishRatePerSecond": 10}'
-const browserConfigEnv = process.env.BROWSER_CONFIG;
-if (!browserConfigEnv) {
-  throw new Error('Missing environment variable(s). Please set BROWSER_CONFIG.');
-}
-let browserConfig: BrowserConfigOptions;
-try {
-  browserConfig = JSON.parse(browserConfigEnv) as BrowserConfigOptions;
-} catch (error) {
-  throw new Error('Error parsing JSON configuration');
-}
-
-const runId = process.env.LOADTEST_RUN_ID;
-if (runId === undefined) {
-  throw new Error('Missing environment variable(s). Please set LOADTEST_RUN_ID.');
-}
-
-const browserInstances: Browser[] = [];
-
-const fargateId: string = v4();
-
-for (let i = 0; i < browserConfig.numberOfBrowsers; i++) {
-  const browser = new Browser(browserConfig);
-  browserInstances.push(browser);
-  browser
-    .startSimulating(runId, fargateId, i)
-    .then(() => {
-      console.log('success!!');
-    })
-    .catch((e: Error) => {
-      console.error(`Uncaught exception while running topics-loadgen: ${e.message}`);
-      throw e;
-    });
-}
-
-setTimeout(() => {
-  // Stop all browser instances
-  for (const browser of browserInstances) {
-    browser.stopSimulating();
+async function main(): Promise<void> {
+  initJSDom();
+  // export BROWSER_CONFIG='{"numberOfBrowserInstances": 1, "publishRatePerSecond": 10}'
+  const browserConfigEnv = process.env.BROWSER_CONFIG;
+  if (!browserConfigEnv) {
+    throw new Error('Missing environment variable(s). Please set BROWSER_CONFIG.');
+  }
+  let browserConfig: BrowserConfigOptions;
+  try {
+    browserConfig = JSON.parse(browserConfigEnv) as BrowserConfigOptions;
+  } catch (error) {
+    throw new Error('Error parsing JSON configuration');
   }
 
-  console.log('Program execution completed.');
-  // eslint-disable-next-line no-process-exit
-  process.exit(0);
-}, 60000);
+  const runId = process.env.LOADTEST_RUN_ID;
+  if (runId === undefined) {
+    throw new Error('Missing environment variable(s). Please set LOADTEST_RUN_ID.');
+  }
+
+  const runIdDataDir = path.join('data', runId);
+  if (!fs.existsSync(runIdDataDir)) {
+    fs.mkdirSync(runIdDataDir, {recursive: true});
+  }
+
+  const numRequestsToIssuePerBrowser =
+    browserConfig.loadTestDurationInSeconds / browserConfig.publishRatePerSecondPerBrowser;
+  // const programStartTimeInMilliseconds = Date.now();
+
+  // const browserInstances: Browser[] = [];
+  const browserSimulationPromises = [];
+
+  const fargateId: string = v4();
+
+  let logPeriod = 1;
+  // log histogram stats every 30 sec
+  const logHistograms = () => {
+    console.log(`Publish Histogram (${logPeriod}):`);
+    console.log(publishHistogram);
+    console.log(`Subscription Histogram (${logPeriod}):`);
+    console.log(subscriptionHistogram);
+    console.log('');
+    logPeriod++;
+  };
+  const logHistogramsInterval = setInterval(logHistograms, 20_000);
+
+  for (let i = 0; i < browserConfig.numberOfBrowsers; i++) {
+    const browser = new Browser(browserConfig, runId, numRequestsToIssuePerBrowser);
+    // browserInstances.push(browser);
+    browserSimulationPromises.push(
+      browser
+        .startSimulating(runId, fargateId, i)
+        .then(() => {
+          console.log('success!!');
+          return browser.stopSimulating(i);
+        })
+        .catch((e: Error) => {
+          console.error(`Uncaught exception while running topics-loadgen: ${e.message}`);
+          throw e;
+        })
+    );
+  }
+  await Promise.all(browserSimulationPromises);
+
+  clearInterval(logHistogramsInterval);
+  logHistograms();
+}
+
+main().catch(e => {
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+  console.error(`Uncaught exception in main: ${e}`);
+  throw e;
+});
