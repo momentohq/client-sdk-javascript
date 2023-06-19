@@ -7,6 +7,7 @@ import {BrowserConfigOptions, TopicsLoadGenContextImpl} from './utils/config';
 import * as fs from 'fs';
 import {PutObjectCommand, S3Client} from '@aws-sdk/client-s3';
 import {initJSDom} from './utils/jsdom';
+import {v4} from 'uuid';
 
 const publishHistogram = hdr.build();
 const subscriptionHistogram = hdr.build();
@@ -36,7 +37,7 @@ export class Browser {
     this.topicLoadGenContext = TopicsLoadGenContextImpl.initiateTopicsLoadGenContext();
   }
 
-  async startSimulating(browserNum: number): Promise<void> {
+  async startSimulating(runId: string, fargateId: string, browserNum: number): Promise<void> {
     const programStartTimeInMilliseconds = Date.now();
     initJSDom();
     await ensureCacheExists(cacheName);
@@ -47,8 +48,6 @@ export class Browser {
 
     // Subscribe to the topic to receive published values
     this.subscriptionResponse = await this.subscribeToTopic();
-
-    console.log('Starting to simulate publish requests');
 
     // create payload of `messageSizeInKb`
     const desiredSizeInBytes = this.browserConfigOptions.messageSizeInKb * 1024;
@@ -66,7 +65,7 @@ export class Browser {
       console.log('Subscription Histogram:');
       console.log(subscriptionHistogram);
     };
-    setInterval(logHistograms, 30000);
+    setInterval(logHistograms, 5000);
 
     const interval = 1000 / this.browserConfigOptions.publishRatePerSecondPerBrowser;
 
@@ -84,7 +83,7 @@ export class Browser {
 
     addToCSV('', this.topicLoadGenContext.toString(), `${topicsContextCsv}-${browserNum}.csv`);
 
-    uploadFiles(browserNum);
+    uploadFiles(runId, fargateId, browserNum);
   }
 
   async publishToTopic(topicClient: TopicClient, message: string, browserNum: number) {
@@ -117,7 +116,7 @@ export class Browser {
   }
 
   async subscribeToTopic() {
-    console.log(`Subscribing to topic ${this.topicName} in cache ${cacheName}`);
+    // console.log(`Subscribing to topic ${this.topicName} in cache ${cacheName}`);
     const subscribeResponse = await this.topicClient.subscribe(cacheName, this.topicName, {
       onError: handleError,
       onItem: handleItem,
@@ -125,7 +124,7 @@ export class Browser {
 
     this.topicLoadGenContext.totalSubscriptionRequests += 1;
     if (subscribeResponse instanceof TopicSubscribe.Subscription) {
-      console.log(`Successfully subscribed to topic ${this.topicName}`);
+      // console.log(`Successfully subscribed to topic ${this.topicName}`);
 
       // Wait for published values to be received.
       setTimeout(() => {
@@ -153,8 +152,8 @@ export class Browser {
   }
 }
 
-function uploadFiles(browserNum: number) {
-  uploadFileToS3(publishCsv, bucketName, `${publishCsv}-${browserNum}.csv`)
+function uploadFiles(runId: string, fargateContainerId: string, browserNum: number) {
+  uploadFileToS3(publishCsv, bucketName, `${runId}/${fargateContainerId}-${publishCsv}-${browserNum}.csv`)
     .then(() => {
       console.log(`Uploaded ${publishCsv}-${browserNum}.csv to S3`);
     })
@@ -162,7 +161,7 @@ function uploadFiles(browserNum: number) {
       console.error(`Error uploading ${publishCsv}-${browserNum}.csv to S3:`, err);
     });
 
-  uploadFileToS3(publishReceiveCsv, bucketName, `${publishReceiveCsv}-${browserNum}.csv`)
+  uploadFileToS3(publishReceiveCsv, bucketName, `${runId}/${fargateContainerId}-${publishReceiveCsv}-${browserNum}.csv`)
     .then(() => {
       console.log(`Uploaded ${publishReceiveCsv}-${browserNum}.csv to S3`);
     })
@@ -170,7 +169,7 @@ function uploadFiles(browserNum: number) {
       console.error(`Error uploading ${publishReceiveCsv}-${browserNum}.csv to S3:`, err);
     });
 
-  uploadFileToS3(topicsContextCsv, bucketName, `${topicsContextCsv}-${browserNum}.csv`)
+  uploadFileToS3(topicsContextCsv, bucketName, `${runId}/${fargateContainerId}-${topicsContextCsv}-${browserNum}.csv`)
     .then(() => {
       console.log(`Uploaded ${topicsContextCsv}-${browserNum}.csv to S3`);
     })
@@ -180,7 +179,7 @@ function uploadFiles(browserNum: number) {
 }
 
 function handleItem(item: TopicItem) {
-  console.log('Item received from topic subscription; %s', item);
+  // console.log('Item received from topic subscription; %s', item);
 
   const splitItems = item.valueString().split(':');
   const browserNum = splitItems[1];
@@ -256,13 +255,20 @@ try {
   throw new Error('Error parsing JSON configuration');
 }
 
+const runId = process.env.LOADTEST_RUN_ID;
+if (runId === undefined) {
+  throw new Error('Missing environment variable(s). Please set LOADTEST_RUN_ID.');
+}
+
 const browserInstances: Browser[] = [];
+
+const fargateId: string = v4();
 
 for (let i = 0; i < browserConfig.numberOfBrowsers; i++) {
   const browser = new Browser(browserConfig);
   browserInstances.push(browser);
   browser
-    .startSimulating(i)
+    .startSimulating(runId, fargateId, i)
     .then(() => {
       console.log('success!!');
     })
