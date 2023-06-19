@@ -1,12 +1,10 @@
 export interface BrowserConfigOptions {
-  numberOfBrowserInstances: number;
-  numSubscriptions: number;
-  publishRatePerSecond: number;
-}
-
-export interface BasicConfigOptions {
-  cacheName: string;
-  topicName: string;
+  numberOfTopics: number;
+  numberOfBrowsers: number;
+  numberOfSubscriptionsPerBrowser: number;
+  publishRatePerSecondPerBrowser: number;
+  messageSizeInKb: number;
+  loadTestDurationInSeconds: number;
 }
 
 export interface TopicsLoadGenContext {
