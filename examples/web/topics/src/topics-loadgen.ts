@@ -75,6 +75,8 @@ export class Browser {
       messagePublishCount++;
     }
 
+    // clearInterval(logHistogramsInterval);
+
     addToCSV('', this.topicLoadGenContext.toString(), runId, `${topicsContextCsv}-${browserNum}.csv`);
 
     uploadFiles(runId, fargateId, browserNum);
