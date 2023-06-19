@@ -7,6 +7,7 @@ import {BasicConfigOptions, BrowserConfigOptions, TopicsLoadGenContextImpl} from
 import * as fs from 'fs';
 import {PutObjectCommand, S3Client} from '@aws-sdk/client-s3';
 import {initJSDom} from './utils/jsdom';
+import {start} from 'repl';
 
 const publishHistogram = hdr.build();
 const subscriptionHistogram = hdr.build();
@@ -52,7 +53,6 @@ export class Browser {
     let requestNum = 1;
 
     while (requestNum <= 100) {
-      // const currentTimestamp = Date.now();
       const currentTimestamp = process.hrtime();
       const message = `${currentTimestamp[0]} ${currentTimestamp[1]}: Simulated message ${requestNum}`;
 
@@ -69,34 +69,10 @@ export class Browser {
     this.topicLoadGenContext.totalPublishRequests = publishHistogram.totalCount;
     this.topicLoadGenContext.totalSubscriptionRequests = this.browserConfigOptions.numSubscriptions;
 
-    addToCSV(this.topicLoadGenContext.toString(), topicsContextCsv);
+    addToCSV('', this.topicLoadGenContext.toString(), topicsContextCsv);
 
     console.log(publishHistogram);
     console.log(subscriptionHistogram);
-
-    uploadFileToS3(publishCsv, bucketName, 'publish.csv')
-      .then(() => {
-        console.log(`Uploaded ${publishCsv} to S3`);
-      })
-      .catch(err => {
-        console.error(`Error uploading ${publishCsv} to S3:`, err);
-      });
-
-    uploadFileToS3(publishReceiveCsv, bucketName, 'publish-and-receive.csv')
-      .then(() => {
-        console.log(`Uploaded ${publishReceiveCsv} to S3`);
-      })
-      .catch(err => {
-        console.error(`Error uploading ${publishReceiveCsv} to S3:`, err);
-      });
-
-    uploadFileToS3(topicsContextCsv, bucketName, 'topics-context.csv')
-      .then(() => {
-        console.log(`Uploaded ${topicsContextCsv} to S3`);
-      })
-      .catch(err => {
-        console.error(`Error uploading ${topicsContextCsv} to S3:`, err);
-      });
   }
 
   async publishToTopic(topicClient: TopicClient, message: string) {
@@ -114,7 +90,7 @@ export class Browser {
     const elapsedTime = endTime[0] * 1000 + endTime[1] / 1000000; // Convert to milliseconds
 
     publishHistogram.recordValue(elapsedTime);
-    addToCSV(elapsedTime.toString(), publishCsv);
+    addToCSV(getTimestamp(endTime), elapsedTime.toString(), publishCsv);
 
     if (response instanceof TopicPublish.Success) {
       this.topicLoadGenContext.numPublishSuccess += 1;
@@ -177,22 +153,27 @@ export class Browser {
 function handleItem(item: TopicItem) {
   console.log('Item received from topic subscription; %s', item);
 
-  const timestamps = item.valueString().split(':')[0].split(' ');
-  const startTimeSec = parseInt(timestamps[0], 10);
-  const startTimeNanosec = parseInt(timestamps[1], 10);
-  const endTime = process.hrtime([startTimeSec, startTimeNanosec]);
+  const [startTimeSec, startTimeNanosec] = item.valueString().split(':')[0].split(' ');
+  const endTime = process.hrtime([parseInt(startTimeSec), parseInt(startTimeNanosec)]);
   const elapsedTime = endTime[0] * 1000 + endTime[1] / 1000000; // Convert to milliseconds
   subscriptionHistogram.recordValue(elapsedTime);
-  addToCSV(elapsedTime.toString(), publishReceiveCsv);
+  addToCSV(getTimestamp(endTime), elapsedTime.toString(), publishReceiveCsv);
 }
 
 function handleError(error: TopicSubscribe.Error) {
   console.log(`Error received from topic subscription; ${error.toString()}`);
 }
 
-function addToCSV(data: string, filePath: string): void {
+function addToCSV(timestamp: string, data: string, filePath: string): void {
   try {
-    fs.writeFileSync(filePath, data + '\n', {flag: 'a'});
+    const line = timestamp !== '' ? timestamp + '\t' + data : data;
+
+    if (timestamp !== '' && !fs.existsSync(filePath)) {
+      const headers = 'Timestamp\tElapsedTime';
+      fs.writeFileSync(filePath, headers + '\n');
+    }
+
+    fs.writeFileSync(filePath, line + '\n', {flag: 'a'});
   } catch (err) {
     console.error('Error appending to CSV file:', err);
   }
@@ -203,6 +184,12 @@ function deleteCsvIfExists(filePath: string) {
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath);
   }
+}
+
+function getTimestamp(hrTime: [number, number]) {
+  const elapsedMillis = hrTime[0] * 1000 + hrTime[1] / 1000000;
+  const currentTime = Date.now();
+  return new Date(currentTime - elapsedMillis).toUTCString();
 }
 
 async function uploadFileToS3(filePath: string, bucketName: string, key: string): Promise<void> {
@@ -252,6 +239,29 @@ for (let i = 0; i < browserConfig.numberOfBrowserInstances; i++) {
     .startSimulating()
     .then(() => {
       console.log('success!!');
+      uploadFileToS3(publishCsv, bucketName, 'publish.csv')
+        .then(() => {
+          console.log(`Uploaded ${publishCsv} to S3`);
+        })
+        .catch(err => {
+          console.error(`Error uploading ${publishCsv} to S3:`, err);
+        });
+
+      uploadFileToS3(publishReceiveCsv, bucketName, 'publish-and-receive.csv')
+        .then(() => {
+          console.log(`Uploaded ${publishReceiveCsv} to S3`);
+        })
+        .catch(err => {
+          console.error(`Error uploading ${publishReceiveCsv} to S3:`, err);
+        });
+
+      uploadFileToS3(topicsContextCsv, bucketName, 'topics-context.csv')
+        .then(() => {
+          console.log(`Uploaded ${topicsContextCsv} to S3`);
+        })
+        .catch(err => {
+          console.error(`Error uploading ${topicsContextCsv} to S3:`, err);
+        });
     })
     .catch((e: Error) => {
       console.error(`Uncaught exception while running topics-loadgen: ${e.message}`);
