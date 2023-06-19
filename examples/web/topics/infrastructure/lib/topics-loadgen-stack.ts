@@ -5,7 +5,7 @@ import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as path from 'path';
 import {Platform} from 'aws-cdk-lib/aws-ecr-assets';
-import {aws_s3} from 'aws-cdk-lib';
+import {Bucket} from 'aws-cdk-lib/aws-s3';
 
 export class TopicsLoadGenStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -24,7 +24,9 @@ export class TopicsLoadGenStack extends cdk.Stack {
       platform: Platform.LINUX_AMD64,
     });
 
-    const topicsLoadGenTestBucket = new aws_s3.Bucket(this, 'topics-loadgen-test-bucket', {});
+    const topicsLoadGenTestBucket = new Bucket(this, 'topics-loadgen-test-bucket', {
+      bucketName: 'topics-loadgen-test-bucket',
+    });
 
     const topicsLoadGenTaskRole = new iam.Role(this, 'topics-loadgen-test-task-role', {
       assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),

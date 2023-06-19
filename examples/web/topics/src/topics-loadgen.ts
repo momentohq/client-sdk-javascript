@@ -5,6 +5,7 @@ import * as hdr from 'hdr-histogram-js';
 
 import {BasicConfigOptions, BrowserConfigOptions, TopicsLoadGenContextImpl} from './utils/config';
 import * as fs from 'fs';
+import {PutObjectCommand, S3Client} from '@aws-sdk/client-s3';
 import {initJSDom} from './utils/jsdom';
 
 const publishHistogram = hdr.build();
@@ -12,6 +13,7 @@ const subscriptionHistogram = hdr.build();
 const publishCsv = 'publish.csv';
 const publishReceiveCsv = 'publish-and-receive.csv';
 const topicsContextCsv = 'topics-context.csv';
+const bucketName = 'topics-loadgen-test-bucket';
 
 export class Browser {
   private browserConfigOptions: BrowserConfigOptions;
@@ -50,9 +52,9 @@ export class Browser {
     let requestNum = 1;
 
     while (requestNum <= 100) {
-      console.log(`Issuing Publishing request ${requestNum}`);
-      const currentTimestamp = Date.now();
-      const message = `${currentTimestamp}: Simulated message ${requestNum}`;
+      // const currentTimestamp = Date.now();
+      const currentTimestamp = process.hrtime();
+      const message = `${currentTimestamp[0]} ${currentTimestamp[1]}: Simulated message ${requestNum}`;
 
       const response = this.publishToTopic(this.topicClient, message);
       publishResponses.push(response);
@@ -71,10 +73,33 @@ export class Browser {
 
     console.log(publishHistogram);
     console.log(subscriptionHistogram);
+
+    uploadFileToS3(publishCsv, bucketName, 'publish.csv')
+      .then(() => {
+        console.log(`Uploaded ${publishCsv} to S3`);
+      })
+      .catch(err => {
+        console.error(`Error uploading ${publishCsv} to S3:`, err);
+      });
+
+    uploadFileToS3(publishReceiveCsv, bucketName, 'publish-and-receive.csv')
+      .then(() => {
+        console.log(`Uploaded ${publishReceiveCsv} to S3`);
+      })
+      .catch(err => {
+        console.error(`Error uploading ${publishReceiveCsv} to S3:`, err);
+      });
+
+    uploadFileToS3(topicsContextCsv, bucketName, 'topics-context.csv')
+      .then(() => {
+        console.log(`Uploaded ${topicsContextCsv} to S3`);
+      })
+      .catch(err => {
+        console.error(`Error uploading ${topicsContextCsv} to S3:`, err);
+      });
   }
 
   async publishToTopic(topicClient: TopicClient, message: string) {
-    // const connectionsBefore = await this.getOpenTcpConnections();
     console.log(`Beginning to publish ${message} to topic ${this.basicConfigOptions.topicName}`);
 
     const startTime = process.hrtime();
@@ -151,11 +176,12 @@ export class Browser {
 
 function handleItem(item: TopicItem) {
   console.log('Item received from topic subscription; %s', item);
-  const timestamp = item.valueString().split(':')[0].trim();
-  const startTime = parseInt(timestamp, 10);
-  const currentTime = Date.now();
 
-  const elapsedTime = currentTime - startTime;
+  const timestamps = item.valueString().split(':')[0].split(' ');
+  const startTimeSec = parseInt(timestamps[0], 10);
+  const startTimeNanosec = parseInt(timestamps[1], 10);
+  const endTime = process.hrtime([startTimeSec, startTimeNanosec]);
+  const elapsedTime = endTime[0] * 1000 + endTime[1] / 1000000; // Convert to milliseconds
   subscriptionHistogram.recordValue(elapsedTime);
   addToCSV(elapsedTime.toString(), publishReceiveCsv);
 }
@@ -176,6 +202,27 @@ function deleteCsvIfExists(filePath: string) {
   // Delete existing CSV file if it exists
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath);
+  }
+}
+
+async function uploadFileToS3(filePath: string, bucketName: string, key: string): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call
+  const s3: S3Client = new S3Client({region: 'us-west-2'});
+  const fileContent = fs.readFileSync(filePath);
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call
+  const command = new PutObjectCommand({
+    Bucket: bucketName,
+    Key: key,
+    Body: fileContent,
+  });
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+    await s3.send(command);
+    console.log('File uploaded to s3');
+  } catch (err) {
+    console.error(err);
   }
 }
 
