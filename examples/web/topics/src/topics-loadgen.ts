@@ -77,7 +77,7 @@ export class Browser {
 
     addToCSV('', this.topicLoadGenContext.toString(), runId, `${topicsContextCsv}-${browserNum}.csv`);
 
-    // uploadFiles(runId, fargateId, browserNum);
+    uploadFiles(runId, fargateId, browserNum);
   }
 
   async publishToTopic(topicClient: TopicClient, message: string, browserNum: number) {
