@@ -1,12 +1,37 @@
-export interface BrowserConfigOptions {
+export interface TopicsLoadGenConfigOptions {
   numberOfTopics: number;
   numberOfBrowsers: number;
   numberOfSubscriptionsPerBrowser: number;
   publishRatePerSecondPerBrowser: number;
   messageSizeInKb: number;
   loadTestDurationInSeconds: number;
+
+  toString(): string;
 }
 
+export class TopicsLoadGenConfigOptionsImpl implements TopicsLoadGenConfigOptions {
+  numberOfTopics: number;
+  numberOfBrowsers: number;
+  numberOfSubscriptionsPerBrowser: number;
+  publishRatePerSecondPerBrowser: number;
+  messageSizeInKb: number;
+  loadTestDurationInSeconds: number;
+
+  constructor(config: TopicsLoadGenConfigOptions) {
+    Object.assign(this, config);
+  }
+
+  toString(): string {
+    return `TopicsLoadGenConfigOptions {
+      numberOfTopics: ${this.numberOfTopics},
+      numberOfBrowsers: ${this.numberOfBrowsers},
+      numberOfSubscriptionsPerBrowser: ${this.numberOfSubscriptionsPerBrowser},
+      publishRatePerSecondPerBrowser: ${this.publishRatePerSecondPerBrowser},
+      messageSizeInKb: ${this.messageSizeInKb},
+      loadTestDurationInSeconds: ${this.loadTestDurationInSeconds}
+    }`;
+  }
+}
 export interface TopicsLoadGenContext {
   totalSubscriptionRequests: number;
   totalPublishRequests: number;

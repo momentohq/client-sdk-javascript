@@ -3,7 +3,7 @@ import {ensureCacheExists} from './utils/cache';
 import {delay, getTopicClient} from './utils/topics';
 import * as hdr from 'hdr-histogram-js';
 
-import {BrowserConfigOptions, TopicsLoadGenContextImpl} from './utils/config';
+import {TopicsLoadGenConfigOptions, TopicsLoadGenConfigOptionsImpl, TopicsLoadGenContextImpl} from './utils/config';
 import * as fs from 'fs';
 import {PutObjectCommand, S3Client} from '@aws-sdk/client-s3';
 import {initJSDom} from './utils/jsdom';
@@ -16,12 +16,12 @@ const subscriptionHistogram = hdr.build();
 const publishCsv = 'publish';
 const publishReceiveCsv = 'publish-and-receive';
 const topicsContextCsv = 'topics-context';
+const topicsLoadgenConfigCsv = 'topics-loadgen-config';
 const bucketName = 'topics-loadgen-test-bucket';
 const cacheName = 'momento-topics-loadgen';
-const topics = Array.from({length: 5}, (_, topicNum) => `topic-${topicNum}`);
 
 export class Browser {
-  private browserConfigOptions: BrowserConfigOptions;
+  private topicsLoadGenConfigOptions: TopicsLoadGenConfigOptions;
   private readonly topicClient: TopicClient;
 
   private subscriptionResponse: TopicSubscribe.Response;
@@ -32,8 +32,13 @@ export class Browser {
   private readonly numMessagesToPublish: number;
   private readonly runId: string;
 
-  constructor(browserConfigOptions: BrowserConfigOptions, runId: string, numMessagesToPublish: number) {
-    this.browserConfigOptions = browserConfigOptions;
+  constructor(
+    topicsLoadGenConfigOptions: TopicsLoadGenConfigOptions,
+    runId: string,
+    numMessagesToPublish: number,
+    topics: string[]
+  ) {
+    this.topicsLoadGenConfigOptions = topicsLoadGenConfigOptions;
     this.topicClient = getTopicClient();
 
     this.topicName = topics[Math.floor(Math.random() * topics.length)];
@@ -46,15 +51,11 @@ export class Browser {
   async startSimulating(runId: string, fargateId: string, browserNum: number): Promise<void> {
     await ensureCacheExists(cacheName);
 
-    deleteCsvIfExists(`data/${this.runId}/${publishCsv}-${browserNum}`);
-    deleteCsvIfExists(`data/${this.runId}/${publishReceiveCsv}-${browserNum}.csv`);
-    deleteCsvIfExists(`data/${this.runId}/${topicsContextCsv}-${browserNum}.csv`);
-
     // Subscribe to the topic to receive published values
     this.subscriptionResponse = await this.subscribeToTopic();
 
     // create payload of `messageSizeInKb`
-    const desiredSizeInBytes = this.browserConfigOptions.messageSizeInKb * 1024;
+    const desiredSizeInBytes = this.topicsLoadGenConfigOptions.messageSizeInKb * 1024;
     const character = 'a';
 
     const characterArray: string[] = [];
@@ -62,7 +63,7 @@ export class Browser {
       characterArray.push(character);
     }
 
-    const interval = 1000 / this.browserConfigOptions.publishRatePerSecondPerBrowser;
+    const interval = 1000 / this.topicsLoadGenConfigOptions.publishRatePerSecondPerBrowser;
 
     let messagePublishCount = 0;
     while (messagePublishCount < this.numMessagesToPublish) {
@@ -75,15 +76,12 @@ export class Browser {
       messagePublishCount++;
     }
 
-    // clearInterval(logHistogramsInterval);
-
     addToCSV('', this.topicLoadGenContext.toString(), runId, `${topicsContextCsv}-${browserNum}.csv`);
 
     uploadFiles(runId, fargateId, browserNum);
   }
 
   async publishToTopic(topicClient: TopicClient, message: string, browserNum: number) {
-    // console.log(`Beginning to publish ${message} to topic ${this.topicName}`);
     this.topicLoadGenContext.totalPublishRequests += 1;
 
     const startTime = process.hrtime();
@@ -112,7 +110,6 @@ export class Browser {
   }
 
   async subscribeToTopic() {
-    // console.log(`Subscribing to topic ${this.topicName} in cache ${cacheName}`);
     const subscribeResponse = await this.topicClient.subscribe(cacheName, this.topicName, {
       onError: e => this.handleError(e),
       onItem: item => this.handleItem(item),
@@ -120,11 +117,7 @@ export class Browser {
 
     this.topicLoadGenContext.totalSubscriptionRequests += 1;
     if (subscribeResponse instanceof TopicSubscribe.Subscription) {
-      // console.log(`Successfully subscribed to topic ${this.topicName}`);
-      // Wait for published values to be received.
-      // setTimeout(() => {
-      //   console.log('Waiting for the published values');
-      // }, 120000);
+      console.log(`Subscriped to topic ${this.topicName}`);
     } else if (subscribeResponse instanceof TopicSubscribe.Error) {
       console.log(`Error subscribing to topic ${this.topicName}`);
       if (subscribeResponse.errorCode().includes('UNAVAILABLE')) {
@@ -149,10 +142,8 @@ export class Browser {
   }
 
   handleItem(item: TopicItem) {
-    // console.log('Item received from topic subscription; %s', item);
     this.topicLoadGenContext.numMessagesReceived++;
 
-    // console.log(`Got an item: ${item.valueString()}`);
     const splitItems = item.valueString().split(':');
     const browserNum = splitItems[1].trim();
     const [startTimeSec, startTimeNanosec] = splitItems[0].split(' ');
@@ -222,13 +213,6 @@ function addToCSV(timestamp: string, data: string, runId: string, filePath: stri
   }
 }
 
-function deleteCsvIfExists(filePath: string) {
-  // Delete existing CSV file if it exists
-  if (fs.existsSync(filePath)) {
-    fs.unlinkSync(filePath);
-  }
-}
-
 function getTimestamp(hrTime: [number, number]): string {
   const elapsedMillis = hrTime[0] * 1000 + hrTime[1] / 1000000;
   const currentTime = Date.now();
@@ -269,25 +253,25 @@ async function main(): Promise<void> {
     fs.mkdirSync(runIdDataDir, {recursive: true});
   }
 
-  const browserConfigEnv = process.env.BROWSER_CONFIG;
-  if (!browserConfigEnv) {
-    throw new Error('Missing environment variable(s). Please set BROWSER_CONFIG.');
+  const topicsLoadGenConfigEnv = process.env.TOPICS_LOADGEN_CONFIG;
+  if (!topicsLoadGenConfigEnv) {
+    throw new Error('Missing environment variable(s). Please set TOPICS_LOADGEN_CONFIG.');
   }
-  let browserConfig: BrowserConfigOptions;
+  let topicsLoadgenConfig: TopicsLoadGenConfigOptions;
   try {
-    browserConfig = JSON.parse(browserConfigEnv) as BrowserConfigOptions;
+    topicsLoadgenConfig = JSON.parse(topicsLoadGenConfigEnv) as TopicsLoadGenConfigOptions;
   } catch (error) {
     throw new Error('Error parsing JSON configuration');
   }
 
   const numRequestsToIssuePerBrowser =
-    browserConfig.loadTestDurationInSeconds / browserConfig.publishRatePerSecondPerBrowser;
-  // const programStartTimeInMilliseconds = Date.now();
+    topicsLoadgenConfig.loadTestDurationInSeconds / topicsLoadgenConfig.publishRatePerSecondPerBrowser;
 
-  // const browserInstances: Browser[] = [];
-  const browserSimulationPromises = [];
+  const topicsLoadGenSimulationPromises = [];
 
   const fargateId: string = v4();
+
+  const topics = Array.from({length: topicsLoadgenConfig.numberOfTopics}, (_, topicNum) => `topic-${topicNum}`);
 
   let logPeriod = 1;
   // log histogram stats every 30 sec
@@ -301,10 +285,9 @@ async function main(): Promise<void> {
   };
   const logHistogramsInterval = setInterval(logHistograms, 20_000);
 
-  for (let i = 0; i < browserConfig.numberOfBrowsers; i++) {
-    const browser = new Browser(browserConfig, runId, numRequestsToIssuePerBrowser);
-    // browserInstances.push(browser);
-    browserSimulationPromises.push(
+  for (let i = 0; i < topicsLoadgenConfig.numberOfBrowsers; i++) {
+    const browser = new Browser(topicsLoadgenConfig, runId, numRequestsToIssuePerBrowser, topics);
+    topicsLoadGenSimulationPromises.push(
       browser
         .startSimulating(runId, fargateId, i)
         .then(() => {
@@ -317,10 +300,24 @@ async function main(): Promise<void> {
         })
     );
   }
-  await Promise.all(browserSimulationPromises);
+  await Promise.all(topicsLoadGenSimulationPromises);
 
   clearInterval(logHistogramsInterval);
   logHistograms();
+
+  const loadGenConfig = new TopicsLoadGenConfigOptionsImpl(topicsLoadgenConfig);
+  addToCSV('', loadGenConfig.toString(), runId, `${topicsLoadgenConfigCsv}.csv`);
+  uploadFileToS3(
+    path.join(path.join('data', runId), `${topicsLoadgenConfigCsv}.csv`),
+    bucketName,
+    `${runId}/${fargateId}-${topicsLoadgenConfigCsv}.csv`
+  )
+    .then(() => {
+      console.log(`Uploaded ${topicsLoadgenConfigCsv}.csv to S3`);
+    })
+    .catch(err => {
+      console.error(`Error uploading ${topicsLoadgenConfigCsv}.csv to S3:`, err);
+    });
 }
 
 main().catch(e => {
