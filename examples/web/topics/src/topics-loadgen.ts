@@ -166,7 +166,12 @@ export class Browser {
 }
 
 function uploadFiles(runId: string, fargateContainerId: string, browserNum: number) {
-  uploadFileToS3(publishCsv, bucketName, `${runId}/${fargateContainerId}-${publishCsv}-${browserNum}.csv`)
+  const runDataDir = path.join('data', runId);
+  uploadFileToS3(
+    path.join(runDataDir, `${publishCsv}-${browserNum}.csv`),
+    bucketName,
+    `${runId}/${fargateContainerId}-${publishCsv}-${browserNum}.csv`
+  )
     .then(() => {
       console.log(`Uploaded ${publishCsv}-${browserNum}.csv to S3`);
     })
@@ -174,7 +179,11 @@ function uploadFiles(runId: string, fargateContainerId: string, browserNum: numb
       console.error(`Error uploading ${publishCsv}-${browserNum}.csv to S3:`, err);
     });
 
-  uploadFileToS3(publishReceiveCsv, bucketName, `${runId}/${fargateContainerId}-${publishReceiveCsv}-${browserNum}.csv`)
+  uploadFileToS3(
+    path.join(runDataDir, `${publishReceiveCsv}-${browserNum}.csv`),
+    bucketName,
+    `${runId}/${fargateContainerId}-${publishReceiveCsv}-${browserNum}.csv`
+  )
     .then(() => {
       console.log(`Uploaded ${publishReceiveCsv}-${browserNum}.csv to S3`);
     })
@@ -182,7 +191,11 @@ function uploadFiles(runId: string, fargateContainerId: string, browserNum: numb
       console.error(`Error uploading ${publishReceiveCsv}-${browserNum}.csv to S3:`, err);
     });
 
-  uploadFileToS3(topicsContextCsv, bucketName, `${runId}/${fargateContainerId}-${topicsContextCsv}-${browserNum}.csv`)
+  uploadFileToS3(
+    path.join(runDataDir, `${topicsContextCsv}-${browserNum}.csv`),
+    bucketName,
+    `${runId}/${fargateContainerId}-${topicsContextCsv}-${browserNum}.csv`
+  )
     .then(() => {
       console.log(`Uploaded ${topicsContextCsv}-${browserNum}.csv to S3`);
     })
@@ -243,17 +256,6 @@ async function uploadFileToS3(filePath: string, bucketName: string, key: string)
 
 async function main(): Promise<void> {
   initJSDom();
-  // export BROWSER_CONFIG='{"numberOfBrowserInstances": 1, "publishRatePerSecond": 10}'
-  const browserConfigEnv = process.env.BROWSER_CONFIG;
-  if (!browserConfigEnv) {
-    throw new Error('Missing environment variable(s). Please set BROWSER_CONFIG.');
-  }
-  let browserConfig: BrowserConfigOptions;
-  try {
-    browserConfig = JSON.parse(browserConfigEnv) as BrowserConfigOptions;
-  } catch (error) {
-    throw new Error('Error parsing JSON configuration');
-  }
 
   const runId = process.env.LOADTEST_RUN_ID;
   if (runId === undefined) {
@@ -263,6 +265,17 @@ async function main(): Promise<void> {
   const runIdDataDir = path.join('data', runId);
   if (!fs.existsSync(runIdDataDir)) {
     fs.mkdirSync(runIdDataDir, {recursive: true});
+  }
+
+  const browserConfigEnv = process.env.BROWSER_CONFIG;
+  if (!browserConfigEnv) {
+    throw new Error('Missing environment variable(s). Please set BROWSER_CONFIG.');
+  }
+  let browserConfig: BrowserConfigOptions;
+  try {
+    browserConfig = JSON.parse(browserConfigEnv) as BrowserConfigOptions;
+  } catch (error) {
+    throw new Error('Error parsing JSON configuration');
   }
 
   const numRequestsToIssuePerBrowser =
