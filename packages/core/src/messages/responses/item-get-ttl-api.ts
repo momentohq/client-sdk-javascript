@@ -19,9 +19,9 @@ import {
  * @example
  * For example:
  * ```
- * if (response instanceof ItemTtl.Error) {
+ * if (response instanceof ItemGetTtl.Error) {
  *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `ItemType.Error` in this block, so you will have access to the properties
+ *   // `ItemGetTtl.Error` in this block, so you will have access to the properties
  *   // of the Error class; e.g. `response.errorCode()`.
  * }
  * ```
