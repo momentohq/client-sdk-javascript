@@ -35,9 +35,9 @@ export class TopicsLoadGenStack extends cdk.Stack {
     topicsLoadGenTestBucket.grantWrite(topicsLoadGenTaskRole);
 
     const loadGenTestDefinition = new ecs.FargateTaskDefinition(this, 'topics-loadgen-test-task-def', {
-      memoryLimitMiB: 1024,
+      memoryLimitMiB: 4096,
       taskRole: topicsLoadGenTaskRole,
-      cpu: 512,
+      cpu: 2048,
       runtimePlatform: {
         operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
         cpuArchitecture: ecs.CpuArchitecture.X86_64,
