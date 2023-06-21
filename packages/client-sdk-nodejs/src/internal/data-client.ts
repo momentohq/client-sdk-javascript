@@ -43,6 +43,7 @@ import {
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
   ItemGetType,
+  ItemGetTtl,
   CollectionTtl,
   ItemType,
   CredentialProvider,
@@ -2676,6 +2677,45 @@ export class DataClient implements IDataClient {
             );
           } else {
             resolve(new ItemGetType.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+  public async itemGetTtl(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<ItemGetTtl.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new ItemGetType.Error(normalizeSdkError(err as Error));
+    }
+    return await this.sendItemGetTtl(cacheName, this.convert(key));
+  }
+
+  private async sendItemGetTtl(
+    cacheName: string,
+    key: Uint8Array
+  ): Promise<ItemGetType.Response> {
+    const request = new grpcCache._ItemGetTtlRequest({
+      cache_key: key,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().ItemGetTtl(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new ItemGetTtl.Miss());
+          } else if (resp?.found) {
+            resolve(new ItemGetTtl.Hit(resp.found.remaining_ttl_millis));
+          } else {
+            resolve(new ItemGetTtl.Error(cacheServiceErrorMapper(err)));
           }
         }
       );

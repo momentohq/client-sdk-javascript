@@ -35,6 +35,7 @@ import {
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   ItemGetType,
+  ItemGetTtl,
 } from '../index';
 import {
   ScalarCallOptions,
@@ -270,4 +271,8 @@ export interface ICacheClient extends IControlClient, IPingClient {
     cacheName: string,
     key: string | Uint8Array
   ): Promise<ItemGetType.Response>;
+  itemGetTtl(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<ItemGetTtl.Response>;
 }

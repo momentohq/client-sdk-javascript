@@ -44,6 +44,7 @@ import {
   CacheSortedSetRemoveElements,
   SortedSetOrder,
   ItemGetType,
+  ItemGetTtl,
 } from '../../../index';
 import {ListFetchCallOptions, ListRetainCallOptions} from '../../../utils';
 import {
@@ -1162,6 +1163,23 @@ export abstract class AbstractCacheClient implements ICacheClient {
   ): Promise<ItemGetType.Response> {
     const client = this.getNextDataClient();
     return await client.itemGetType(cacheName, key);
+  }
+
+  /**
+   * Return the remaining ttl of the key in the cache in milliseconds.
+   * @param {string} cacheName - The cache containing the key.
+   * @param {string} key - The key for which the ttl remaining is requested.
+   * @returns {Promise<ItemGetType.Response>}
+   * {@link ItemGetType.Hit} containing ttl remaining of key when found.
+   * {@link ItemGetType.Miss} when the key does not exist.
+   * {@link ItemGetType.Error} on failure.
+   */
+  public async itemGetTtl(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<ItemGetTtl.Response> {
+    const client = this.getNextDataClient();
+    return await client.itemGetTtl(cacheName, key);
   }
 
   protected getNextDataClient(): IDataClient {

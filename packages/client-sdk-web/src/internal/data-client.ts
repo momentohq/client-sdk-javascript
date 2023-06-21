@@ -36,6 +36,7 @@ import {
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
   ItemGetType,
+  ItemGetTtl,
   CollectionTtl,
   ItemType,
   CredentialProvider,
@@ -64,6 +65,7 @@ import {
   _DictionarySetRequest,
   _GetRequest,
   _IncrementRequest,
+  _ItemGetTtlRequest,
   _ItemGetTypeRequest,
   _ItemGetTypeResponse,
   _ListConcatenateBackRequest,
@@ -2599,6 +2601,46 @@ export class DataClient<
             resolve(new ItemGetType.Miss());
           } else {
             resolve(new ItemGetType.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async itemGetTtl(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<ItemGetTtl.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new ItemGetTtl.Error(normalizeSdkError(err as Error));
+    }
+    return await this.sendItemGetTtl(cacheName, convertToB64String(key));
+  }
+
+  private async sendItemGetTtl(
+    cacheName: string,
+    key: string
+  ): Promise<ItemGetTtl.Response> {
+    const request = new _ItemGetTtlRequest();
+    request.setCacheKey(key);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.itemGetTtl(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          const rsp = resp.getFound();
+          if (rsp) {
+            resolve(new ItemGetTtl.Hit(rsp.getRemainingTtlMillis()));
+          } else if (resp?.getMissing()) {
+            resolve(new ItemGetTtl.Miss());
+          } else {
+            resolve(new ItemGetTtl.Error(cacheServiceErrorMapper(err)));
           }
         }
       );

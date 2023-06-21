@@ -35,6 +35,7 @@ import {
   CollectionTtl,
   SortedSetOrder,
   ItemGetType,
+  ItemGetTtl,
 } from '../../../index';
 
 export interface IDataClient {
@@ -242,4 +243,8 @@ export interface IDataClient {
     cacheName: string,
     key: string | Uint8Array
   ): Promise<ItemGetType.Response>;
+  itemGetTtl(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<ItemGetTtl.Response>;
 }
