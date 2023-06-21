@@ -92,7 +92,13 @@ export class Browser {
     const endTime = process.hrtime(startTime);
     const elapsedTime = endTime[0] * 1000 + endTime[1] / 1000000; // Convert to milliseconds
 
-    publishHistogram.recordValue(elapsedTime);
+    if (elapsedTime < 0) {
+      console.log(`Negative value detected while adding to publish histogram: ${elapsedTime}`);
+    } else {
+      console.log(`Recording value to publish histogram: ${elapsedTime}`);
+      publishHistogram.recordValue(elapsedTime);
+    }
+
     addToCSV(getTimestamp(endTime), elapsedTime.toString(), this.runId, `${publishCsv}-${browserNum}.csv`);
 
     if (response instanceof TopicPublish.Success) {
@@ -150,7 +156,14 @@ export class Browser {
     const [startTimeSec, startTimeNanosec] = splitItems[0].split(' ');
     const endTime = process.hrtime([parseInt(startTimeSec), parseInt(startTimeNanosec)]);
     const elapsedTime = endTime[0] * 1000 + endTime[1] / 1000000; // Convert to milliseconds
-    subscriptionHistogram.recordValue(elapsedTime);
+
+    if (elapsedTime < 0) {
+      console.log(`Negative value detected while adding to receive histogram: ${elapsedTime}`);
+    } else {
+      console.log(`Recording value to receive histogram: ${elapsedTime}`);
+      subscriptionHistogram.recordValue(elapsedTime);
+    }
+
     addToCSV(getTimestamp(endTime), elapsedTime.toString(), this.runId, `${publishReceiveCsv}-${browserNum}.csv`);
   }
 
@@ -321,14 +334,14 @@ async function main(): Promise<void> {
     });
 
   const finalHistogramData = `
-Publish Histogram:
+  Publish Histogram:
 
-${publishHistogram.toString()}
+  ${publishHistogram.toString()}
 
-Receive Histogram:
-${subscriptionHistogram.toString()}
-
+  Receive Histogram:
+  ${subscriptionHistogram.toString()}
   `;
+
   addToCSV('', finalHistogramData, runId, `${finalHistogramDataCsv}.txt`);
   uploadFileToS3(
     path.join(path.join('data', runId), `${finalHistogramDataCsv}.txt`),
