@@ -1169,7 +1169,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * Return the remaining ttl of the key in the cache in milliseconds.
    * @param {string} cacheName - The cache containing the key.
    * @param {string} key - The key for which the ttl remaining is requested.
-   * @returns {Promise<ItemGetType.Response>}
+   * @returns {Promise<ItemGetTtl.Response>}
    * {@link ItemGetType.Hit} containing ttl remaining of key when found.
    * {@link ItemGetType.Miss} when the key does not exist.
    * {@link ItemGetType.Error} on failure.
