@@ -17,6 +17,7 @@ const publishCsv = 'publish';
 const publishReceiveCsv = 'publish-and-receive';
 const topicsContextCsv = 'topics-context';
 const topicsLoadgenConfigCsv = 'topics-loadgen-config';
+const finalHistogramDataCsv = 'topics-loadgen-final-histogram-data';
 const bucketName = 'topics-loadgen-test-bucket';
 const cacheName = 'momento-topics-loadgen';
 
@@ -306,17 +307,39 @@ async function main(): Promise<void> {
   logHistograms();
 
   const loadGenConfig = new TopicsLoadGenConfigOptionsImpl(topicsLoadgenConfig);
-  addToCSV('', loadGenConfig.toString(), runId, `${topicsLoadgenConfigCsv}.csv`);
+  addToCSV('', loadGenConfig.toString(), runId, `${topicsLoadgenConfigCsv}.txt`);
   uploadFileToS3(
-    path.join(path.join('data', runId), `${topicsLoadgenConfigCsv}.csv`),
+    path.join(path.join('data', runId), `${topicsLoadgenConfigCsv}.txt`),
     bucketName,
-    `${runId}/${fargateId}-${topicsLoadgenConfigCsv}.csv`
+    `${runId}/${fargateId}-${topicsLoadgenConfigCsv}.txt`
   )
     .then(() => {
-      console.log(`Uploaded ${topicsLoadgenConfigCsv}.csv to S3`);
+      console.log(`Uploaded ${topicsLoadgenConfigCsv}.txt to S3`);
     })
     .catch(err => {
-      console.error(`Error uploading ${topicsLoadgenConfigCsv}.csv to S3:`, err);
+      console.error(`Error uploading ${topicsLoadgenConfigCsv}.txt to S3:`, err);
+    });
+
+  const finalHistogramData = `
+Publish Histogram:
+
+${publishHistogram.toString()}
+
+Receive Histogram:
+${subscriptionHistogram.toString()}
+
+  `;
+  addToCSV('', finalHistogramData, runId, `${finalHistogramDataCsv}.txt`);
+  uploadFileToS3(
+    path.join(path.join('data', runId), `${finalHistogramDataCsv}.txt`),
+    bucketName,
+    `${runId}/${fargateId}-${finalHistogramDataCsv}.txt`
+  )
+    .then(() => {
+      console.log(`Uploaded ${finalHistogramDataCsv}.txt to S3`);
+    })
+    .catch(err => {
+      console.error(`Error uploading ${finalHistogramDataCsv}.txt to S3:`, err);
     });
 }
 
