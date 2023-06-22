@@ -13,7 +13,7 @@ export class TokenVendingMachineStack extends cdk.Stack {
     const momentoAuthTokenParam = new cdk.CfnParameter(this, 'MomentoAuthTokenParam', {
       type: 'String',
       description:
-        'The Momento Auth Token that will be used to vend browser tokens. Will be stored in Secrets Manager.',
+        'The Momento Auth Token that will be used to vend browser tokens. Generated tokens will be stored in Secrets Manager for ongoing access later.',
       noEcho: true,
     });
 
@@ -24,7 +24,7 @@ export class TokenVendingMachineStack extends cdk.Stack {
 
     const tvmLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoTokenVendingMachine', {
       functionName: 'MomentoTokenVendingMachine',
-      runtime: lambda.Runtime.NODEJS_16_X,
+      runtime: lambda.Runtime.NODEJS_18_X,
       entry: path.join(__dirname, '../../lambda/handler.ts'),
       projectRoot: path.join(__dirname, '../../lambda'),
       depsLockFilePath: path.join(__dirname, '../../lambda/package-lock.json'),
