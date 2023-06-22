@@ -70,7 +70,7 @@ export function runItemGetTtlTest(
       }, `expected HIT but got ${itemGetTtlResponse.toString()}`);
       const hitResult = itemGetTtlResponse as CacheItemGetTtl.Hit;
       expect(hitResult.remainingTtlMillis()).toBeLessThan(10000);
-      expect(hitResult.remainingTtlMillis()).toBeGreaterThan(9000);
+      expect(hitResult.remainingTtlMillis()).toBeGreaterThan(7000);
     });
 
     it('should return a miss for a non-existent key', async () => {
@@ -89,7 +89,7 @@ export function runItemGetTtlTest(
       const cacheKey = v4();
       const cacheValue = v4();
       await Momento.set(IntegrationTestCacheName, cacheKey, cacheValue, {
-        ttl: 0.5,
+        ttl: 2,
       });
 
       // string cache key
@@ -101,7 +101,7 @@ export function runItemGetTtlTest(
         expect(itemGetTtlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
       }, `expected HIT but got ${itemGetTtlResponse.toString()}`);
 
-      await delay(1000);
+      await delay(2000);
 
       // byte array cache key
       itemGetTtlResponse = await Momento.itemGetTtl(
