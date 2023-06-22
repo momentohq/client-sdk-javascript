@@ -54,7 +54,7 @@ export class ControlClient<
     });
     this.clientWrapper = new control.ScsControlClient(
       // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
-      `https://${getWebControlEndpoint(props.credentialProvider)}`,
+      getWebControlEndpoint(props.credentialProvider),
       null,
       {}
     );
