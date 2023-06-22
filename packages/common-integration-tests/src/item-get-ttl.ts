@@ -19,7 +19,7 @@ export function runItemGetTtlTest(
       const cacheKey = v4();
       const cacheValue = v4();
       await Momento.set(IntegrationTestCacheName, cacheKey, cacheValue, {
-        ttl: 10000,
+        ttl: 10,
       });
 
       // string cache key
@@ -31,7 +31,8 @@ export function runItemGetTtlTest(
         expect(itemGetTtlResponse).toBeInstanceOf(ItemGetTtl.Hit);
       }, `expected HIT but got ${itemGetTtlResponse.toString()}`);
       let hitResult = itemGetTtlResponse as ItemGetTtl.Hit;
-      expect(hitResult.itemTtlMillis()).toEqual(10000);
+      expect(hitResult.itemTtlMillis()).toBeLessThan(10000);
+      expect(hitResult.itemTtlMillis()).toBeGreaterThan(90000);
 
       // byte array cache key
       itemGetTtlResponse = await Momento.itemGetType(
@@ -42,7 +43,8 @@ export function runItemGetTtlTest(
         expect(itemGetTtlResponse).toBeInstanceOf(ItemGetTtl.Hit);
       }, `expected HIT but got ${itemGetTtlResponse.toString()}`);
       hitResult = itemGetTtlResponse as ItemGetTtl.Hit;
-      expect(hitResult.itemTtlMillis()).toEqual(10000);
+      expect(hitResult.itemTtlMillis()).toBeLessThan(10000);
+      expect(hitResult.itemTtlMillis()).toBeGreaterThan(90000);
     });
   });
 }
