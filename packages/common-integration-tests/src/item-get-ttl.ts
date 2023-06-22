@@ -5,7 +5,7 @@ import {
   expectWithMessage,
 } from './common-int-test-utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
-import {ItemGetTtl} from '@gomomento/sdk-core';
+import {CacheItemGetTtl} from '@gomomento/sdk-core';
 export function runItemGetTtlTest(
   Momento: ICacheClient,
   IntegrationTestCacheName: string
@@ -28,11 +28,11 @@ export function runItemGetTtlTest(
         cacheKey
       );
       expectWithMessage(() => {
-        expect(itemGetTtlResponse).toBeInstanceOf(ItemGetTtl.Hit);
+        expect(itemGetTtlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
       }, `expected HIT but got ${itemGetTtlResponse.toString()}`);
-      let hitResult = itemGetTtlResponse as ItemGetTtl.Hit;
-      expect(hitResult.itemTtlMillis()).toBeLessThan(10000);
-      expect(hitResult.itemTtlMillis()).toBeGreaterThan(9000);
+      let hitResult = itemGetTtlResponse as CacheItemGetTtl.Hit;
+      expect(hitResult.remainingTtlMillis()).toBeLessThan(10000);
+      expect(hitResult.remainingTtlMillis()).toBeGreaterThan(9000);
 
       // byte array cache key
       itemGetTtlResponse = await Momento.itemGetTtl(
@@ -40,11 +40,11 @@ export function runItemGetTtlTest(
         new TextEncoder().encode(cacheKey)
       );
       expectWithMessage(() => {
-        expect(itemGetTtlResponse).toBeInstanceOf(ItemGetTtl.Hit);
+        expect(itemGetTtlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
       }, `expected HIT but got ${itemGetTtlResponse.toString()}`);
-      hitResult = itemGetTtlResponse as ItemGetTtl.Hit;
-      expect(hitResult.itemTtlMillis()).toBeLessThan(10000);
-      expect(hitResult.itemTtlMillis()).toBeGreaterThan(9000);
+      hitResult = itemGetTtlResponse as CacheItemGetTtl.Hit;
+      expect(hitResult.remainingTtlMillis()).toBeLessThan(10000);
+      expect(hitResult.remainingTtlMillis()).toBeGreaterThan(9000);
     });
   });
 }

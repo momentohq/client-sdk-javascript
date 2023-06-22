@@ -43,8 +43,8 @@ import {
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
   SortedSetOrder,
-  ItemGetType,
-  ItemGetTtl,
+  CacheItemGetTtl,
+  CacheItemGetType,
 } from '../../../index';
 import {ListFetchCallOptions, ListRetainCallOptions} from '../../../utils';
 import {
@@ -1152,15 +1152,15 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * Return the type of the key in the cache
    * @param {string} cacheName - The cache containing the key.
    * @param {string} key - The key for which type is requested.
-   * @returns {Promise<ItemGetType.Response>}
-   * {@link ItemGetType.Hit} containing type of key when found.
-   * {@link ItemGetType.Miss} when the key does not exist.
-   * {@link ItemGetType.Error} on failure.
+   * @returns {Promise<CacheItemGetType.Response>}
+   * {@link CacheItemGetType.Hit} containing type of key when found.
+   * {@link CacheItemGetType.Miss} when the key does not exist.
+   * {@link CacheItemGetType.Error} on failure.
    */
   public async itemGetType(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<ItemGetType.Response> {
+  ): Promise<CacheItemGetType.Response> {
     const client = this.getNextDataClient();
     return await client.itemGetType(cacheName, key);
   }
@@ -1169,15 +1169,15 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * Return the remaining ttl of the key in the cache in milliseconds.
    * @param {string} cacheName - The cache containing the key.
    * @param {string} key - The key for which the ttl remaining is requested.
-   * @returns {Promise<ItemGetTtl.Response>}
-   * {@link ItemGetType.Hit} containing ttl remaining of key when found.
-   * {@link ItemGetType.Miss} when the key does not exist.
-   * {@link ItemGetType.Error} on failure.
+   * @returns {Promise<CacheItemGetTtl.Response>}
+   * {@link CacheItemGetTtl.Hit} containing ttl remaining of key when found.
+   * {@link CacheItemGetTtl.Miss} when the key does not exist.
+   * {@link CacheItemGetTtl.Error} on failure.
    */
   public async itemGetTtl(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<ItemGetTtl.Response> {
+  ): Promise<CacheItemGetTtl.Response> {
     const client = this.getNextDataClient();
     return await client.itemGetTtl(cacheName, key);
   }

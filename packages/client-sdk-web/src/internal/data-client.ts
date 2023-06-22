@@ -35,8 +35,8 @@ import {
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
-  ItemGetType,
-  ItemGetTtl,
+  CacheItemGetType,
+  CacheItemGetTtl,
   CollectionTtl,
   ItemType,
   CredentialProvider,
@@ -2569,11 +2569,11 @@ export class DataClient<
   public async itemGetType(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<ItemGetType.Response> {
+  ): Promise<CacheItemGetType.Response> {
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new ItemGetType.Error(normalizeSdkError(err as Error));
+      return new CacheItemGetType.Error(normalizeSdkError(err as Error));
     }
     return await this.sendItemGetType(cacheName, convertToB64String(key));
   }
@@ -2581,7 +2581,7 @@ export class DataClient<
   private async sendItemGetType(
     cacheName: string,
     key: string
-  ): Promise<ItemGetType.Response> {
+  ): Promise<CacheItemGetType.Response> {
     const request = new _ItemGetTypeRequest();
     request.setCacheKey(key);
 
@@ -2596,11 +2596,13 @@ export class DataClient<
           const theType = resp.getFound();
           if (theType) {
             const found = theType.getItemType();
-            resolve(new ItemGetType.Hit(this.convertItemTypeResult(found)));
+            resolve(
+              new CacheItemGetType.Hit(this.convertItemTypeResult(found))
+            );
           } else if (resp?.getMissing()) {
-            resolve(new ItemGetType.Miss());
+            resolve(new CacheItemGetType.Miss());
           } else {
-            resolve(new ItemGetType.Error(cacheServiceErrorMapper(err)));
+            resolve(new CacheItemGetType.Error(cacheServiceErrorMapper(err)));
           }
         }
       );
@@ -2610,11 +2612,11 @@ export class DataClient<
   public async itemGetTtl(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<ItemGetTtl.Response> {
+  ): Promise<CacheItemGetTtl.Response> {
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new ItemGetTtl.Error(normalizeSdkError(err as Error));
+      return new CacheItemGetTtl.Error(normalizeSdkError(err as Error));
     }
     return await this.sendItemGetTtl(cacheName, convertToB64String(key));
   }
@@ -2622,7 +2624,7 @@ export class DataClient<
   private async sendItemGetTtl(
     cacheName: string,
     key: string
-  ): Promise<ItemGetTtl.Response> {
+  ): Promise<CacheItemGetTtl.Response> {
     const request = new _ItemGetTtlRequest();
     request.setCacheKey(key);
 
@@ -2636,11 +2638,11 @@ export class DataClient<
         (err, resp) => {
           const rsp = resp.getFound();
           if (rsp) {
-            resolve(new ItemGetTtl.Hit(rsp.getRemainingTtlMillis()));
+            resolve(new CacheItemGetTtl.Hit(rsp.getRemainingTtlMillis()));
           } else if (resp?.getMissing()) {
-            resolve(new ItemGetTtl.Miss());
+            resolve(new CacheItemGetTtl.Miss());
           } else {
-            resolve(new ItemGetTtl.Error(cacheServiceErrorMapper(err)));
+            resolve(new CacheItemGetTtl.Error(cacheServiceErrorMapper(err)));
           }
         }
       );

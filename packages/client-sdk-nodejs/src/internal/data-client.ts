@@ -42,8 +42,8 @@ import {
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
-  ItemGetType,
-  ItemGetTtl,
+  CacheItemGetType,
+  CacheItemGetTtl,
   CollectionTtl,
   ItemType,
   CredentialProvider,
@@ -2642,11 +2642,11 @@ export class DataClient implements IDataClient {
   public async itemGetType(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<ItemGetType.Response> {
+  ): Promise<CacheItemGetType.Response> {
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new ItemGetType.Error(normalizeSdkError(err as Error));
+      return new CacheItemGetType.Error(normalizeSdkError(err as Error));
     }
     return await this.sendItemGetType(cacheName, this.convert(key));
   }
@@ -2654,7 +2654,7 @@ export class DataClient implements IDataClient {
   private async sendItemGetType(
     cacheName: string,
     key: Uint8Array
-  ): Promise<ItemGetType.Response> {
+  ): Promise<CacheItemGetType.Response> {
     const request = new grpcCache._ItemGetTypeRequest({
       cache_key: key,
     });
@@ -2668,15 +2668,15 @@ export class DataClient implements IDataClient {
         },
         (err, resp) => {
           if (resp?.missing) {
-            resolve(new ItemGetType.Miss());
+            resolve(new CacheItemGetType.Miss());
           } else if (resp?.found) {
             resolve(
-              new ItemGetType.Hit(
+              new CacheItemGetType.Hit(
                 this.convertItemTypeResult(resp.found.item_type)
               )
             );
           } else {
-            resolve(new ItemGetType.Error(cacheServiceErrorMapper(err)));
+            resolve(new CacheItemGetType.Error(cacheServiceErrorMapper(err)));
           }
         }
       );
@@ -2685,11 +2685,11 @@ export class DataClient implements IDataClient {
   public async itemGetTtl(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<ItemGetTtl.Response> {
+  ): Promise<CacheItemGetTtl.Response> {
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new ItemGetType.Error(normalizeSdkError(err as Error));
+      return new CacheItemGetTtl.Error(normalizeSdkError(err as Error));
     }
     return await this.sendItemGetTtl(cacheName, this.convert(key));
   }
@@ -2697,7 +2697,7 @@ export class DataClient implements IDataClient {
   private async sendItemGetTtl(
     cacheName: string,
     key: Uint8Array
-  ): Promise<ItemGetType.Response> {
+  ): Promise<CacheItemGetTtl.Response> {
     const request = new grpcCache._ItemGetTtlRequest({
       cache_key: key,
     });
@@ -2711,11 +2711,11 @@ export class DataClient implements IDataClient {
         },
         (err, resp) => {
           if (resp?.missing) {
-            resolve(new ItemGetTtl.Miss());
+            resolve(new CacheItemGetTtl.Miss());
           } else if (resp?.found) {
-            resolve(new ItemGetTtl.Hit(resp.found.remaining_ttl_millis));
+            resolve(new CacheItemGetTtl.Hit(resp.found.remaining_ttl_millis));
           } else {
-            resolve(new ItemGetTtl.Error(cacheServiceErrorMapper(err)));
+            resolve(new CacheItemGetTtl.Error(cacheServiceErrorMapper(err)));
           }
         }
       );

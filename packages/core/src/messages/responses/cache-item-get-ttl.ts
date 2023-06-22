@@ -30,19 +30,19 @@ import {
 export abstract class Response extends ResponseBase {}
 
 class _Hit extends Response {
-  private readonly remainingTtlMillis: number;
+  private readonly ttlMillis: number;
 
   constructor(itemTTLMillisRemaining: number) {
     super();
-    this.remainingTtlMillis = itemTTLMillisRemaining;
+    this.ttlMillis = itemTTLMillisRemaining;
   }
 
   /**
    * Returns the remaining ttl in milliseconds for object stored at passed key.
    * @returns string
    */
-  public itemTtlMillis(): number {
-    return this.remainingTtlMillis;
+  public remainingTtlMillis(): number {
+    return this.ttlMillis;
   }
 }
 

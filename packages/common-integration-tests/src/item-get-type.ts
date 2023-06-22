@@ -5,7 +5,7 @@ import {
   expectWithMessage,
 } from './common-int-test-utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
-import {ItemGetType} from '@gomomento/sdk-core';
+import {CacheItemGetType} from '@gomomento/sdk-core';
 import {ItemType} from '@gomomento/sdk-core/dist/src/utils';
 export function runItemGetTypeTest(
   Momento: ICacheClient,
@@ -27,9 +27,9 @@ export function runItemGetTypeTest(
         cacheKey
       );
       expectWithMessage(() => {
-        expect(itemGetTypeResponse).toBeInstanceOf(ItemGetType.Hit);
+        expect(itemGetTypeResponse).toBeInstanceOf(CacheItemGetType.Hit);
       }, `expected HIT but got ${itemGetTypeResponse.toString()}`);
-      let hitResult = itemGetTypeResponse as ItemGetType.Hit;
+      let hitResult = itemGetTypeResponse as CacheItemGetType.Hit;
       expect(hitResult.itemType()).toEqual(ItemType.SCALAR);
 
       // byte array cache key
@@ -38,9 +38,9 @@ export function runItemGetTypeTest(
         new TextEncoder().encode(cacheKey)
       );
       expectWithMessage(() => {
-        expect(itemGetTypeResponse).toBeInstanceOf(ItemGetType.Hit);
+        expect(itemGetTypeResponse).toBeInstanceOf(CacheItemGetType.Hit);
       }, `expected HIT but got ${itemGetTypeResponse.toString()}`);
-      hitResult = itemGetTypeResponse as ItemGetType.Hit;
+      hitResult = itemGetTypeResponse as CacheItemGetType.Hit;
       expect(hitResult.itemType()).toEqual(ItemType.SCALAR);
     });
 
@@ -59,9 +59,9 @@ export function runItemGetTypeTest(
         cacheKey
       );
       expectWithMessage(() => {
-        expect(itemGetTypeResponse).toBeInstanceOf(ItemGetType.Hit);
+        expect(itemGetTypeResponse).toBeInstanceOf(CacheItemGetType.Hit);
       }, `expected HIT but got ${itemGetTypeResponse.toString()}`);
-      let hitResult = itemGetTypeResponse as ItemGetType.Hit;
+      let hitResult = itemGetTypeResponse as CacheItemGetType.Hit;
       expect(hitResult.itemType()).toEqual(ItemType.DICTIONARY);
 
       // byte array cache key
@@ -70,9 +70,9 @@ export function runItemGetTypeTest(
         new TextEncoder().encode(cacheKey)
       );
       expectWithMessage(() => {
-        expect(itemGetTypeResponse).toBeInstanceOf(ItemGetType.Hit);
+        expect(itemGetTypeResponse).toBeInstanceOf(CacheItemGetType.Hit);
       }, `expected HIT but got ${itemGetTypeResponse.toString()}`);
-      hitResult = itemGetTypeResponse as ItemGetType.Hit;
+      hitResult = itemGetTypeResponse as CacheItemGetType.Hit;
       expect(hitResult.itemType()).toEqual(ItemType.DICTIONARY);
     });
 
@@ -86,9 +86,9 @@ export function runItemGetTypeTest(
         cacheKey
       );
       expectWithMessage(() => {
-        expect(itemGetTypeResponse).toBeInstanceOf(ItemGetType.Hit);
+        expect(itemGetTypeResponse).toBeInstanceOf(CacheItemGetType.Hit);
       }, `expected HIT but got ${itemGetTypeResponse.toString()}`);
-      let hitResult = itemGetTypeResponse as ItemGetType.Hit;
+      let hitResult = itemGetTypeResponse as CacheItemGetType.Hit;
       expect(hitResult.itemType()).toEqual(ItemType.LIST);
 
       // byte array cache key
@@ -97,9 +97,9 @@ export function runItemGetTypeTest(
         new TextEncoder().encode(cacheKey)
       );
       expectWithMessage(() => {
-        expect(itemGetTypeResponse).toBeInstanceOf(ItemGetType.Hit);
+        expect(itemGetTypeResponse).toBeInstanceOf(CacheItemGetType.Hit);
       }, `expected HIT but got ${itemGetTypeResponse.toString()}`);
-      hitResult = itemGetTypeResponse as ItemGetType.Hit;
+      hitResult = itemGetTypeResponse as CacheItemGetType.Hit;
       expect(hitResult.itemType()).toEqual(ItemType.LIST);
     });
 
@@ -113,9 +113,9 @@ export function runItemGetTypeTest(
         cacheKey
       );
       expectWithMessage(() => {
-        expect(itemGetTypeResponse).toBeInstanceOf(ItemGetType.Hit);
+        expect(itemGetTypeResponse).toBeInstanceOf(CacheItemGetType.Hit);
       }, `expected HIT but got ${itemGetTypeResponse.toString()}`);
-      let hitResult = itemGetTypeResponse as ItemGetType.Hit;
+      let hitResult = itemGetTypeResponse as CacheItemGetType.Hit;
       expect(hitResult.itemType()).toEqual(ItemType.SET);
 
       // byte array cache key
@@ -124,9 +124,9 @@ export function runItemGetTypeTest(
         new TextEncoder().encode(cacheKey)
       );
       expectWithMessage(() => {
-        expect(itemGetTypeResponse).toBeInstanceOf(ItemGetType.Hit);
+        expect(itemGetTypeResponse).toBeInstanceOf(CacheItemGetType.Hit);
       }, `expected HIT but got ${itemGetTypeResponse.toString()}`);
-      hitResult = itemGetTypeResponse as ItemGetType.Hit;
+      hitResult = itemGetTypeResponse as CacheItemGetType.Hit;
       expect(hitResult.itemType()).toEqual(ItemType.SET);
     });
 
@@ -145,9 +145,9 @@ export function runItemGetTypeTest(
         cacheKey
       );
       expectWithMessage(() => {
-        expect(itemGetTypeResponse).toBeInstanceOf(ItemGetType.Hit);
+        expect(itemGetTypeResponse).toBeInstanceOf(CacheItemGetType.Hit);
       }, `expected HIT but got ${itemGetTypeResponse.toString()}`);
-      let hitResult = itemGetTypeResponse as ItemGetType.Hit;
+      let hitResult = itemGetTypeResponse as CacheItemGetType.Hit;
       expect(hitResult.itemType()).toEqual(ItemType.SORTED_SET);
 
       // byte array cache key
@@ -156,9 +156,9 @@ export function runItemGetTypeTest(
         new TextEncoder().encode(cacheKey)
       );
       expectWithMessage(() => {
-        expect(itemGetTypeResponse).toBeInstanceOf(ItemGetType.Hit);
+        expect(itemGetTypeResponse).toBeInstanceOf(CacheItemGetType.Hit);
       }, `expected HIT but got ${itemGetTypeResponse.toString()}`);
-      hitResult = itemGetTypeResponse as ItemGetType.Hit;
+      hitResult = itemGetTypeResponse as CacheItemGetType.Hit;
       expect(hitResult.itemType()).toEqual(ItemType.SORTED_SET);
     });
   });
