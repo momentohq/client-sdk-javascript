@@ -61,14 +61,14 @@ export function runItemGetTtlTest(
       );
 
       // string cache key
-      let itemGetTtlResponse = await Momento.itemGetTtl(
+      const itemGetTtlResponse = await Momento.itemGetTtl(
         IntegrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
         expect(itemGetTtlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
       }, `expected HIT but got ${itemGetTtlResponse.toString()}`);
-      let hitResult = itemGetTtlResponse as CacheItemGetTtl.Hit;
+      const hitResult = itemGetTtlResponse as CacheItemGetTtl.Hit;
       expect(hitResult.remainingTtlMillis()).toBeLessThan(10000);
       expect(hitResult.remainingTtlMillis()).toBeGreaterThan(9000);
     });
