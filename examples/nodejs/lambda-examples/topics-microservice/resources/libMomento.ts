@@ -26,6 +26,6 @@ export class PublishingWrapper {
       return "success";
     } else if (setResponse instanceof TopicPublish.Error) {
        throw new Error(`Data failed to be published to Momento topics. key=${valueToPublish} err=${setResponse.message()}`);
-
     }
+    return "error";
   }}

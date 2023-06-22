@@ -11,6 +11,10 @@ import {
   GetSecretValueCommandOutput,
 } from '@aws-sdk/client-secrets-manager';
 
+// Import configurations for region and secrets name info.
+// @ts-ignore
+import config from './config.json';
+
 /* A function that gets the Momento auth token stored in AWS Secrets Manager.
 The secret was stored as a plaintext format in Secrets Manager to avoid parsing JSON.
 
@@ -23,7 +27,7 @@ would have to do that in an out of band process, like a customer Lambda Function
 */
 export async function GetToken(
   secretName: string,
-  regionName: string = "us-west-2"
+  regionName: string
 ): Promise<string> {
   try {
     // Get connection client to AWS Secrets Manager.
@@ -47,11 +51,10 @@ export async function GetToken(
 /* This function calls to the GetToken function, uses the Momento auth token to create a
  Momento client connection to Momento Cache and returns that object for later use. */
 export async function CreateCacheClient(
-  ttl:number = 600,
-  tokenName:string = "Momento_Auth_Token",
+  ttl:number = 600
   ): Promise<CacheClient> {
   // Call the Get Token function to get a Momento auth token from AWS Secrets Manager.
-  const token: string = await GetToken(tokenName);
+  const token: string = await GetToken(config.secretname, config.region);
   // Get a new cache connection with the token and set a default TTL for the connection.
   return new CacheClient({
     configuration: Configurations.Laptop.latest(),
@@ -60,11 +63,9 @@ export async function CreateCacheClient(
   });
 }
 
-export async function CreateTopicClient(
-  tokenName:string = "Momento_Auth_Token",
-): Promise<TopicClient> {
+export async function CreateTopicClient(): Promise<TopicClient> {
   // Call the Get Token function to get a Momento auth token from AWS Secrets Manager.
-  const token: string = await GetToken(tokenName);
+  const token: string = await GetToken(config.secretname, config.region);
   // Get a new cache connection with the token and set a default TTL for the connection.
   return new TopicClient({
     configuration: Configurations.Laptop.latest(),
