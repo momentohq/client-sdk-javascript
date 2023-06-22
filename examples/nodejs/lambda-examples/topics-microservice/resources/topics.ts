@@ -16,7 +16,14 @@ const buildResponseBody = (status: any, body: any, headers = {}) => {
 export const handler = async (event: APIGatewayEvent): Promise<any> => {
   try {
     let client = await CreateTopicClient();
-    console.log(config.topicName);
+    //console.log(config.topicName);
+
+    const queryStringParameters = event.queryStringParameters;
+    console.log('Query string parameters:', queryStringParameters);
+
+    const myParam: string = queryStringParameters ? queryStringParameters['topicName'] : null;
+    console.log('myParam:', myParam);
+
     // init the publishing wrapper class.
     const wrapper = new PublishingWrapper({
       client: client,
