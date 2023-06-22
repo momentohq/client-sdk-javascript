@@ -30,6 +30,6 @@
     "typescript": "4.4.3"
   },
   "dependencies": {
-    "@gomomento/sdk": "1.25.0"
+    "@gomomento/sdk": "1.25.1"
   }
 }
