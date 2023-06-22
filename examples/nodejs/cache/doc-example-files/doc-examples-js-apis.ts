@@ -25,7 +25,7 @@ import {
   GenerateAuthToken,
   RefreshAuthToken,
   CacheIncrement,
-  ItemGetType,
+  CacheItemGetType,
   CacheSetIfNotExists,
   CacheListFetch,
   CacheListConcatenateBack,
@@ -231,11 +231,11 @@ async function example_API_Increment(cacheClient: CacheClient) {
 
 async function example_API_ItemGetType(cacheClient: CacheClient) {
   const result = await cacheClient.itemGetType('test-cache', 'test-key');
-  if (result instanceof ItemGetType.Hit) {
+  if (result instanceof CacheItemGetType.Hit) {
     console.log(`Item type retrieved successfully: ${ItemType[result.itemType()]}`);
-  } else if (result instanceof ItemGetType.Miss) {
+  } else if (result instanceof CacheItemGetType.Miss) {
     console.log("Key 'test-key' was not found in cache 'test-cache'");
-  } else if (result instanceof ItemGetType.Error) {
+  } else if (result instanceof CacheItemGetType.Error) {
     throw new Error(
       `An error occurred while attempting to get the type of key 'test-key' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
     );
