@@ -36,6 +36,16 @@ export abstract class CredentialProvider {
    */
   abstract getCacheEndpoint(): string;
 
+  /**
+   * @returns {boolean} true if the cache endpoint was manually overridden at construction time; false otherwise
+   */
+  abstract isCacheEndpointOverridden(): boolean;
+
+  /**
+   * @returns {boolean} true if the control endpoint was manually overridden at construction time; false otherwise
+   */
+  abstract isControlEndpointOverridden(): boolean;
+
   static fromEnvironmentVariable(
     props: EnvMomentoTokenProviderProps
   ): CredentialProvider {
@@ -55,6 +65,9 @@ abstract class CredentialProviderBase implements CredentialProvider {
   abstract getCacheEndpoint(): string;
 
   abstract getControlEndpoint(): string;
+
+  abstract isCacheEndpointOverridden(): boolean;
+  abstract isControlEndpointOverridden(): boolean;
 
   valueOf(): object {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -81,6 +94,8 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
   private readonly authToken: string;
   private readonly controlEndpoint: string;
   private readonly cacheEndpoint: string;
+  private readonly controlEndpointOverridden: boolean;
+  private readonly cacheEndpointOverridden: boolean;
 
   /**
    * @param {StringMomentoTokenProviderProps} props configuration options for the token provider
@@ -89,6 +104,7 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
     super();
     const decodedToken = decodeAuthToken(props.authToken);
     this.authToken = decodedToken.authToken;
+    this.controlEndpointOverridden = props.controlEndpoint !== undefined;
     const controlEndpoint =
       props.controlEndpoint ?? decodedToken.controlEndpoint;
     if (controlEndpoint === undefined) {
@@ -96,6 +112,7 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
         'Malformed token; unable to determine control endpoint.  Depending on the type of token you are using, you may need to specify the controlEndpoint explicitly.'
       );
     }
+    this.cacheEndpointOverridden = props.cacheEndpoint !== undefined;
     const cacheEndpoint = props.cacheEndpoint ?? decodedToken.cacheEndpoint;
     if (cacheEndpoint === undefined) {
       throw new Error(
@@ -117,6 +134,14 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
 
   getControlEndpoint(): string {
     return this.controlEndpoint;
+  }
+
+  isControlEndpointOverridden(): boolean {
+    return this.controlEndpointOverridden;
+  }
+
+  isCacheEndpointOverridden(): boolean {
+    return this.cacheEndpointOverridden;
   }
 }
 

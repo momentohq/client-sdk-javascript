@@ -35,7 +35,8 @@ import {
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
-  ItemGetType,
+  CacheItemGetType,
+  CacheItemGetTtl,
   CollectionTtl,
   ItemType,
   CredentialProvider,
@@ -64,6 +65,7 @@ import {
   _DictionarySetRequest,
   _GetRequest,
   _IncrementRequest,
+  _ItemGetTtlRequest,
   _ItemGetTypeRequest,
   _ItemGetTypeResponse,
   _ListConcatenateBackRequest,
@@ -156,7 +158,7 @@ export class DataClient<
     });
     this.clientWrapper = new cache.ScsClient(
       // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
-      `https://${getWebCacheEndpoint(props.credentialProvider)}`,
+      getWebCacheEndpoint(props.credentialProvider),
       null,
       {}
     );
@@ -2567,11 +2569,11 @@ export class DataClient<
   public async itemGetType(
     cacheName: string,
     key: string | Uint8Array
-  ): Promise<ItemGetType.Response> {
+  ): Promise<CacheItemGetType.Response> {
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new ItemGetType.Error(normalizeSdkError(err as Error));
+      return new CacheItemGetType.Error(normalizeSdkError(err as Error));
     }
     return await this.sendItemGetType(cacheName, convertToB64String(key));
   }
@@ -2579,7 +2581,7 @@ export class DataClient<
   private async sendItemGetType(
     cacheName: string,
     key: string
-  ): Promise<ItemGetType.Response> {
+  ): Promise<CacheItemGetType.Response> {
     const request = new _ItemGetTypeRequest();
     request.setCacheKey(key);
 
@@ -2594,11 +2596,53 @@ export class DataClient<
           const theType = resp.getFound();
           if (theType) {
             const found = theType.getItemType();
-            resolve(new ItemGetType.Hit(this.convertItemTypeResult(found)));
+            resolve(
+              new CacheItemGetType.Hit(this.convertItemTypeResult(found))
+            );
           } else if (resp?.getMissing()) {
-            resolve(new ItemGetType.Miss());
+            resolve(new CacheItemGetType.Miss());
           } else {
-            resolve(new ItemGetType.Error(cacheServiceErrorMapper(err)));
+            resolve(new CacheItemGetType.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async itemGetTtl(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<CacheItemGetTtl.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new CacheItemGetTtl.Error(normalizeSdkError(err as Error));
+    }
+    return await this.sendItemGetTtl(cacheName, convertToB64String(key));
+  }
+
+  private async sendItemGetTtl(
+    cacheName: string,
+    key: string
+  ): Promise<CacheItemGetTtl.Response> {
+    const request = new _ItemGetTtlRequest();
+    request.setCacheKey(key);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.itemGetTtl(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          const rsp = resp.getFound();
+          if (rsp) {
+            resolve(new CacheItemGetTtl.Hit(rsp.getRemainingTtlMillis()));
+          } else if (resp?.getMissing()) {
+            resolve(new CacheItemGetTtl.Miss());
+          } else {
+            resolve(new CacheItemGetTtl.Error(cacheServiceErrorMapper(err)));
           }
         }
       );

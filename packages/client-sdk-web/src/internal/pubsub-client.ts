@@ -54,7 +54,7 @@ export class PubsubClient<
 
     this.client = new pubsub.PubsubClient(
       // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
-      `https://${getWebCacheEndpoint(props.credentialProvider)}`,
+      getWebCacheEndpoint(props.credentialProvider),
       null,
       {}
     );

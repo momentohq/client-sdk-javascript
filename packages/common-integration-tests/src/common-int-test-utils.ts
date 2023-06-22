@@ -1,5 +1,6 @@
 import {
   CollectionTtl,
+  CreateCache,
   DeleteCache,
   MomentoErrorCode,
 } from '@gomomento/sdk-core';
@@ -10,20 +11,45 @@ import {
 } from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
 import {v4} from 'uuid';
 
+export function isLocalhostDevelopmentMode(): boolean {
+  const useLocalhost = process.env.MOMENTO_SDK_TESTS_USE_LOCALHOST;
+  return useLocalhost !== undefined;
+}
 export function testCacheName(): string {
-  const name = process.env.TEST_CACHE_NAME || 'js-integration-test-default';
-  return name + v4();
+  return process.env.TEST_CACHE_NAME || `js-integration-test-default-${v4()}`;
 }
 
 export const deleteCacheIfExists = async (
   client: ICacheClient,
   cacheName: string
 ) => {
+  if (isLocalhostDevelopmentMode()) {
+    console.log(
+      `LOCALHOST DEVELOPMENT MODE: skipping delete cache command for cache '${cacheName}`
+    );
+    return;
+  }
   const deleteResponse = await client.deleteCache(cacheName);
   if (deleteResponse instanceof DeleteCache.Error) {
     if (deleteResponse.errorCode() !== MomentoErrorCode.NOT_FOUND_ERROR) {
       throw deleteResponse.innerException();
     }
+  }
+};
+
+export const createCacheIfNotExists = async (
+  client: ICacheClient,
+  cacheName: string
+) => {
+  if (isLocalhostDevelopmentMode()) {
+    console.log(
+      `LOCALHOST DEVELOPMENT MODE: skipping create cache command for cache '${cacheName}`
+    );
+    return;
+  }
+  const createResponse = await client.createCache(cacheName);
+  if (createResponse instanceof CreateCache.Error) {
+    throw createResponse.innerException();
   }
 };
 
@@ -33,7 +59,7 @@ export async function WithCache(
   block: () => Promise<void>
 ) {
   await deleteCacheIfExists(client, cacheName);
-  await client.createCache(cacheName);
+  await createCacheIfNotExists(client, cacheName);
   try {
     await block();
   } finally {

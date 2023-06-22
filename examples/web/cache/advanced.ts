@@ -11,13 +11,7 @@ import {
   CredentialProvider,
 } from '@gomomento/sdk-web';
 import {range} from './utils/collections';
-
-// Because we're not running in a browser, we need to explicitly make
-// XMLHttpRequest available.
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-global.XMLHttpRequest = require('xhr2');
+import {initJSDom} from './utils/jsdom';
 
 const cacheName = 'cache';
 const cacheKey = 'key';
@@ -37,6 +31,9 @@ const momento = new CacheClient({
 });
 
 async function main() {
+  // Because the Momento Web SDK is intended for use in a browser, we use the JSDom library to set up an environment
+  // that will allow us to use it in a node.js program.
+  initJSDom();
   await createCacheExample();
   await listCachesExample();
   await setGetDeleteExample();

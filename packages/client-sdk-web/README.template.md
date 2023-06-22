@@ -10,7 +10,7 @@ node.js server-side applications, check out the [Momento Node.js SDK](../client-
 ## Usage
 
 ```javascript
-{% include "./examples/web/readme.ts" %}
+{% include "./examples/web/cache/readme.ts" %}
 ```
 
 ## Getting Started and Documentation

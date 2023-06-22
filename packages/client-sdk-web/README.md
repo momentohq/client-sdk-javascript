@@ -27,12 +27,12 @@ node.js server-side applications, check out the [Momento Node.js SDK](../client-
 ## Usage
 
 ```javascript
-/* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/ban-ts-comment */
 import {CacheGet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk-web';
-// @ts-ignore
-// This global is required in order to use the Web SDK outside of a browser
-global.XMLHttpRequest = require('xhr2');
+import {initJSDom} from './utils/jsdom';
 async function main() {
+  // Because the Momento Web SDK is intended for use in a browser, we use the JSDom library to set up an environment
+  // that will allow us to use it in a node.js program.
+  initJSDom();
   const cacheClient = new CacheClient({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
