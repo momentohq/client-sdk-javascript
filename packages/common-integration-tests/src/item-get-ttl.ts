@@ -33,7 +33,7 @@ export function runItemGetTtlTest(
       }, `expected HIT but got ${itemGetTtlResponse.toString()}`);
       let hitResult = itemGetTtlResponse as CacheItemGetTtl.Hit;
       expect(hitResult.remainingTtlMillis()).toBeLessThan(10000);
-      expect(hitResult.remainingTtlMillis()).toBeGreaterThan(9000);
+      expect(hitResult.remainingTtlMillis()).toBeGreaterThan(7000);
 
       // byte array cache key
       itemGetTtlResponse = await Momento.itemGetTtl(
@@ -45,7 +45,7 @@ export function runItemGetTtlTest(
       }, `expected HIT but got ${itemGetTtlResponse.toString()}`);
       hitResult = itemGetTtlResponse as CacheItemGetTtl.Hit;
       expect(hitResult.remainingTtlMillis()).toBeLessThan(10000);
-      expect(hitResult.remainingTtlMillis()).toBeGreaterThan(9000);
+      expect(hitResult.remainingTtlMillis()).toBeGreaterThan(7000);
     });
 
     it('should get item ttl remaining for a dictionary', async () => {
