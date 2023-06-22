@@ -32,7 +32,7 @@ export function runItemGetTtlTest(
       }, `expected HIT but got ${itemGetTtlResponse.toString()}`);
       let hitResult = itemGetTtlResponse as ItemGetTtl.Hit;
       expect(hitResult.itemTtlMillis()).toBeLessThan(10000);
-      expect(hitResult.itemTtlMillis()).toBeGreaterThan(90000);
+      expect(hitResult.itemTtlMillis()).toBeGreaterThan(9000);
 
       // byte array cache key
       itemGetTtlResponse = await Momento.itemGetType(
@@ -44,7 +44,7 @@ export function runItemGetTtlTest(
       }, `expected HIT but got ${itemGetTtlResponse.toString()}`);
       hitResult = itemGetTtlResponse as ItemGetTtl.Hit;
       expect(hitResult.itemTtlMillis()).toBeLessThan(10000);
-      expect(hitResult.itemTtlMillis()).toBeGreaterThan(90000);
+      expect(hitResult.itemTtlMillis()).toBeGreaterThan(9000);
     });
   });
 }
