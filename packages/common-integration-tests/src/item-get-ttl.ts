@@ -35,7 +35,7 @@ export function runItemGetTtlTest(
       expect(hitResult.itemTtlMillis()).toBeGreaterThan(9000);
 
       // byte array cache key
-      itemGetTtlResponse = await Momento.itemGetType(
+      itemGetTtlResponse = await Momento.itemGetTtl(
         IntegrationTestCacheName,
         new TextEncoder().encode(cacheKey)
       );
