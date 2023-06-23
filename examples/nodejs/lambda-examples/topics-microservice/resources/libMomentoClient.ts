@@ -49,7 +49,9 @@ export async function GetToken(
 }
 
 /* This function calls to the GetToken function, uses the Momento auth token to create a
- Momento client connection to Momento Cache and returns that object for later use. */
+ Momento client connection to Momento Cache and returns that object for later use.
+
+ It requires two values (secretname and region) from the local config.json file in the same directory. */
 export async function CreateCacheClient(
   ttl:number = 600
   ): Promise<CacheClient> {
@@ -63,6 +65,10 @@ export async function CreateCacheClient(
   });
 }
 
+/* This function calls to the GetToken function, uses the Momento auth token to create a
+ Momento topics client connection to Momento Topics and returns that object for later use.
+
+ It requires two values (secretname and region) from the local config.json file in the same directory. */
 export async function CreateTopicClient(): Promise<TopicClient> {
   // Call the Get Token function to get a Momento auth token from AWS Secrets Manager.
   const token: string = await GetToken(config.secretname, config.region);
