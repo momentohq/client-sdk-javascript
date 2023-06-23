@@ -15,27 +15,24 @@ const buildResponseBody = (status: number, body: string, headers = {}) => {
 
 export const handler = async (event: APIGatewayEvent): Promise<any> => {
   try {
-    // Get the query string values from the event.
-    const queryStringParameters = event.queryStringParameters;
 
-    const qsTopicName: string = queryStringParameters ? queryStringParameters['topicName'] : null;
-    console.log('myParam:', qsTopicName);
+    const body = event.body ? JSON.parse(event.body) : {};
 
-    if (qsTopicName == null) || (qsValue == null) {
-      return buildResponseBody(200, "Both querystring values are not present.", "");
-    }
+    console.log('This is the body topic name: ', body.topicName);
+    console.log('This is the body topic value: ', body.topicValue);
 
+    // Get the Momento Topics client.
     let client = await CreateTopicClient();
 
-    // init the publishing wrapper class.
+    // Init the publishing wrapper class.
     const wrapper = new PublishingWrapper({
       client: client,
       cacheName: config.cacheName, //get the cache from the config.json.
-      topicName: qsTopicName // The topic name from the query string.
+      topicName: body.topicName // The topic name from the query string.
     });
     try {
       // Call the publishItem function
-      const ret = await wrapper.publishItem("how dare you!");
+      const ret = await wrapper.publishItem(body.topicValue);
       console.log(ret);
       return {
         statusCode: 200,

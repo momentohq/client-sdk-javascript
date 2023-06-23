@@ -1,6 +1,5 @@
 import {App, aws_secretsmanager, Duration, Stack} from 'aws-cdk-lib';
-//import { Construct } from 'constructs';
-import {RestApi, LambdaIntegration, Method, MethodOptions} from 'aws-cdk-lib/aws-apigateway';
+import {RestApi, LambdaIntegration, Model, JsonSchemaType, RequestValidator} from 'aws-cdk-lib/aws-apigateway';
 import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { join } from 'path';
@@ -36,21 +35,52 @@ export class TopicsMicroserviceStack extends Stack {
     // Grant read access for that secret to the Lambda function.
     secret.grantRead(serviceLambda);
 
+
+
+    // Define the API Gateaway integration
     const api = new RestApi(this, "topics-api", {
       restApiName: "Topics Service",
       description: "This service takes in data to write to Momento Topics."
     });
 
+    // Define the API Gateway request validator
+    const requestValidator = new RequestValidator(this, 'RequestValidator', {
+      restApi: api,
+      validateRequestBody: true,
+      validateRequestParameters: false,
+    });
+
     const svcLambdaIntegration = new LambdaIntegration(serviceLambda);
 
-    const options: MethodOptions = {
+    const topicsModel: Model = api.addModel('TopicsModel', {
+      schema: {
+        type: JsonSchemaType.OBJECT,
+        properties: {
+          topicValue: {
+            type: JsonSchemaType.STRING
+          },
+          topicName: {
+            type: JsonSchemaType.STRING
+          }
+        },
+        required: ['topicName', 'topicValue']
+      },
+      contentType: 'application/json'
+    });
+
+/*    const options: MethodOptions = {
       requestParameters: {
         'method.request.querystring.topicName': true,
-        'method.request.querystring.topicValue': true,
+        'method.request.querystring.topicValue': true
       }
-    }
+    }*/
 
-    api.root.addMethod("POST", svcLambdaIntegration, options); // POST /
+    const topicsResource = api.root.addResource('topics');
+
+    topicsResource.addMethod("POST", svcLambdaIntegration, {
+      requestModels: { 'application/json': topicsModel },
+      requestValidator: requestValidator,
+    });
   }
 }
 

@@ -1,6 +1,4 @@
 {
   "region": "us-west-2",
-  "secretname": "Momento_Auth_Token",
-  "cacheName": "mycache",
-  "topicName": "myTopic"
+  "secretname": "Momento_Auth_Token"
 }
