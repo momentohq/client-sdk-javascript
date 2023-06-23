@@ -5,7 +5,7 @@ import {PublishingWrapper} from "./libMomento";
 // @ts-ignore
 import config from './config.json';
 
-const buildResponseBody = (status: any, body: any, headers = {}) => {
+const buildResponseBody = (status: number, body: string, headers = {}) => {
   return {
     statusCode: status,
     headers,
@@ -15,20 +15,23 @@ const buildResponseBody = (status: any, body: any, headers = {}) => {
 
 export const handler = async (event: APIGatewayEvent): Promise<any> => {
   try {
-    let client = await CreateTopicClient();
-    //console.log(config.topicName);
-
+    // Get the query string values from the event.
     const queryStringParameters = event.queryStringParameters;
-    console.log('Query string parameters:', queryStringParameters);
 
-    const myParam: string = queryStringParameters ? queryStringParameters['topicName'] : null;
-    console.log('myParam:', myParam);
+    const qsTopicName: string = queryStringParameters ? queryStringParameters['topicName'] : null;
+    console.log('myParam:', qsTopicName);
+
+    if (qsTopicName == null) || (qsValue == null) {
+      return buildResponseBody(200, "Both querystring values are not present.", "");
+    }
+
+    let client = await CreateTopicClient();
 
     // init the publishing wrapper class.
     const wrapper = new PublishingWrapper({
       client: client,
-      cacheName: config.cacheName, //get the cache and topic name from the config.json.
-      topicName: config.topicName
+      cacheName: config.cacheName, //get the cache from the config.json.
+      topicName: qsTopicName // The topic name from the query string.
     });
     try {
       // Call the publishItem function
