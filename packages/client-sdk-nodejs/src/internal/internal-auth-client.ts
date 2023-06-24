@@ -24,10 +24,18 @@ import {
   CachePermission,
   TopicRole,
   CacheRole,
+  Any,
+  CacheName,
+  TopicName,
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {AuthClientProps} from '../auth-client-props';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {
+  normalizeSdkError,
+  InvalidArgumentError,
+} from '@gomomento/sdk-core/dist/src/errors';
+
+const MAX_PERMISSIONS_PER_TOKEN = 100;
 
 export class InternalAuthClient implements IAuthClient {
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
@@ -53,9 +61,15 @@ export class InternalAuthClient implements IAuthClient {
       ChannelCredentials.createSsl()
     );
 
+    let permissions;
+    try {
+      permissions = permissionsFromScope(scope);
+    } catch (err) {
+      return new GenerateAuthToken.Error(normalizeSdkError(err as Error));
+    }
     const request = new grpcAuth._GenerateApiTokenRequest({
       auth_token: this.creds.getAuthToken(),
-      permissions: permissionsFromScope(scope),
+      permissions: permissions,
     });
 
     if (expiresIn.doesExpire()) {
@@ -139,6 +153,7 @@ export function permissionsFromScope(
       grpcAuth._GenerateApiTokenRequest.SuperUserPermissions.SuperUser;
     return result;
   } else if (scope instanceof Permissions) {
+    validateExplicitPermissions(scope.permissions);
     const explicitPermissions =
       new grpcAuth._GenerateApiTokenRequest.ExplicitPermissions();
     explicitPermissions.permissions = scope.permissions.map(p =>
@@ -169,39 +184,155 @@ function tokenPermissionToGrpcPermission(
 function topicPermissionToGrpcPermission(
   permission: TopicPermission
 ): grpcAuth._GenerateApiTokenRequest.PermissionsType.TopicPermissions {
+  const grpcPermission =
+    new grpcAuth._GenerateApiTokenRequest.PermissionsType.TopicPermissions();
   switch (permission.topicRole) {
     case TopicRole.None:
       throw new Error('TopicRole.None not yet supported');
     case TopicRole.ReadWrite: {
-      const grpcPermission =
-        new grpcAuth._GenerateApiTokenRequest.PermissionsType.TopicPermissions();
       grpcPermission.role =
         grpcAuth._GenerateApiTokenRequest.TopicRole.TopicReadWrite;
-      return grpcPermission;
+      break;
+    }
+    case TopicRole.ReadOnly: {
+      grpcPermission.role =
+        grpcAuth._GenerateApiTokenRequest.TopicRole.TopicReadOnly;
+      break;
+    }
+    default: {
+      throw new Error(`Unrecognized topic role: ${JSON.stringify(permission)}`);
     }
   }
 
-  throw new Error(
-    `Unrecognized topic permission: ${JSON.stringify(permission)}`
-  );
+  grpcPermission.cache =
+    new grpcAuth._GenerateApiTokenRequest.PermissionsType.CacheResource();
+  if (permission.cache instanceof Any) {
+    const anyCache =
+      new grpcAuth._GenerateApiTokenRequest.PermissionsType.Any();
+    grpcPermission.cache.any = anyCache;
+  } else if (permission.cache instanceof CacheName) {
+    grpcPermission.cache.cache_name = permission.cache.name;
+  } else {
+    throw new Error(
+      `Unrecognized cache specification in topic permission: ${JSON.stringify(
+        permission
+      )}`
+    );
+  }
+
+  grpcPermission.topic =
+    new grpcAuth._GenerateApiTokenRequest.PermissionsType.TopicResource();
+
+  if (permission.topic instanceof Any) {
+    const anyTopic =
+      new grpcAuth._GenerateApiTokenRequest.PermissionsType.Any();
+    grpcPermission.topic.any = anyTopic;
+  } else if (permission.topic instanceof TopicName) {
+    grpcPermission.topic.topic_name = permission.topic.name;
+  } else {
+    throw new Error(
+      `Unrecognized topic specification in topic permission: ${JSON.stringify(
+        permission
+      )}`
+    );
+  }
+  return grpcPermission;
 }
 
 function cachePermissionToGrpcPermission(
   permission: CachePermission
 ): grpcAuth._GenerateApiTokenRequest.PermissionsType.CachePermissions {
+  const grpcPermission =
+    new grpcAuth._GenerateApiTokenRequest.PermissionsType.CachePermissions();
   switch (permission.cacheRole) {
     case CacheRole.None:
       throw new Error('CacheRole.None not yet supported');
     case CacheRole.ReadWrite: {
-      const grpcPermission =
-        new grpcAuth._GenerateApiTokenRequest.PermissionsType.CachePermissions();
       grpcPermission.role =
         grpcAuth._GenerateApiTokenRequest.CacheRole.CacheReadWrite;
-      return grpcPermission;
+      break;
+    }
+    case CacheRole.ReadOnly: {
+      grpcPermission.role =
+        grpcAuth._GenerateApiTokenRequest.CacheRole.CacheReadOnly;
+      break;
+    }
+    default: {
+      throw new Error(`Unrecognized cache role: ${JSON.stringify(permission)}`);
     }
   }
 
-  throw new Error(
-    `Unrecognized cache permission: ${JSON.stringify(permission)}`
-  );
+  grpcPermission.cache =
+    new grpcAuth._GenerateApiTokenRequest.PermissionsType.CacheResource();
+  if (permission.cache instanceof Any) {
+    const anyCache =
+      new grpcAuth._GenerateApiTokenRequest.PermissionsType.Any();
+    grpcPermission.cache.any = anyCache;
+  } else if (permission.cache instanceof CacheName) {
+    grpcPermission.cache.cache_name = permission.cache.name;
+  } else {
+    throw new Error(
+      `Unrecognized cache specification in cache permission: ${JSON.stringify(
+        permission
+      )}`
+    );
+  }
+  return grpcPermission;
+}
+
+interface ResourceToPermissionMap {
+  [resource: string]: Permission;
+}
+
+function validateExplicitPermissions(permissions: Array<Permission>) {
+  if (!permissions || permissions.length < 1) {
+    throw new InvalidArgumentError('At least 1 permission must be specified.');
+  }
+  if (permissions.length > MAX_PERMISSIONS_PER_TOKEN) {
+    throw new InvalidArgumentError(
+      `A token cannot have more than ${MAX_PERMISSIONS_PER_TOKEN} permissions, ${permissions.length} permissions were provided.`
+    );
+  }
+
+  const cachePermissionMap: ResourceToPermissionMap = {};
+
+  function groupByCache(permission: CachePermission) {
+    const key = JSON.stringify(permission.cache);
+    const entry = cachePermissionMap[key];
+    if (entry instanceof CachePermission) {
+      // Cannot add multiple permissions for the same resource.
+      throw new InvalidArgumentError(
+        `Cache ${key} cannot have multiple permissions [${permission.cacheRole}, ${entry.cacheRole}]`
+      );
+    } else {
+      cachePermissionMap[key] = permission;
+    }
+  }
+  (
+    permissions.filter(
+      p => p instanceof CachePermission
+    ) as Array<CachePermission>
+  ).forEach(groupByCache);
+
+  const topicPermissionMap: ResourceToPermissionMap = {};
+
+  function groupByTopic(permission: TopicPermission) {
+    const key = `{ cache: ${JSON.stringify(
+      permission.cache
+    )}, topic: ${JSON.stringify(permission.topic)}}`;
+    const entry = topicPermissionMap[key];
+    if (entry instanceof TopicPermission) {
+      // Cannot add multiple permissions for the same resource.
+      throw new InvalidArgumentError(
+        `Topic ${key} cannot have multiple roles [${permission.topicRole}, ${entry.topicRole}]`
+      );
+    } else {
+      topicPermissionMap[key] = permission;
+    }
+  }
+  (
+    permissions.filter(
+      p => p instanceof TopicPermission
+    ) as Array<TopicPermission>
+  ).forEach(groupByTopic);
 }
