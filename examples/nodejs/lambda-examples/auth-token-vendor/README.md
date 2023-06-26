@@ -1,4 +1,8 @@
-# Welcome to your CDK TypeScript project
+# Welcome to the Momento auth token vendor microservice.
+
+This microservice is deployed using AWS CDK to deploy resources to AWS using AWS API Gateway, AWS Lambda, and Momento Cache or Momento Token. The Lambda function will take in
+
+Configure `resources/config.json` with the AWS region name you want this service name deployed in.
 
 This is a blank project for CDK development with TypeScript.
 
