@@ -1,7 +1,7 @@
 import {InternalSuperUserPermissions} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
   AllDataReadWrite,
-  Any,
+  All,
   CacheName,
   CachePermission,
   CacheRole,
@@ -33,11 +33,11 @@ describe('internal auth client', () => {
       topicPermissions.role = _GenerateApiTokenRequest.TopicRole.TopicReadWrite;
       topicPermissions.cache =
         new _GenerateApiTokenRequest.PermissionsType.CacheResource({
-          any: new _GenerateApiTokenRequest.PermissionsType.Any(),
+          all: new _GenerateApiTokenRequest.PermissionsType.All(),
         });
       topicPermissions.topic =
         new _GenerateApiTokenRequest.PermissionsType.TopicResource({
-          any: new _GenerateApiTokenRequest.PermissionsType.Any(),
+          all: new _GenerateApiTokenRequest.PermissionsType.All(),
         });
       const topicPermissionType =
         new _GenerateApiTokenRequest.PermissionsType();
@@ -48,7 +48,7 @@ describe('internal auth client', () => {
       cachePermissions.role = _GenerateApiTokenRequest.CacheRole.CacheReadWrite;
       cachePermissions.cache =
         new _GenerateApiTokenRequest.PermissionsType.CacheResource({
-          any: new _GenerateApiTokenRequest.PermissionsType.Any(),
+          all: new _GenerateApiTokenRequest.PermissionsType.All(),
         });
       const cachePermissionType =
         new _GenerateApiTokenRequest.PermissionsType();
@@ -72,7 +72,7 @@ describe('internal auth client', () => {
       readAnyCache.role = _GenerateApiTokenRequest.CacheRole.CacheReadOnly;
       readAnyCache.cache =
         new _GenerateApiTokenRequest.PermissionsType.CacheResource({
-          any: new _GenerateApiTokenRequest.PermissionsType.Any(),
+          all: new _GenerateApiTokenRequest.PermissionsType.All(),
         });
       const readAnyCachePermission =
         new _GenerateApiTokenRequest.PermissionsType();
@@ -94,11 +94,11 @@ describe('internal auth client', () => {
       readAnyTopic.role = _GenerateApiTokenRequest.TopicRole.TopicReadOnly;
       readAnyTopic.cache =
         new _GenerateApiTokenRequest.PermissionsType.CacheResource({
-          any: new _GenerateApiTokenRequest.PermissionsType.Any(),
+          all: new _GenerateApiTokenRequest.PermissionsType.All(),
         });
       readAnyTopic.topic =
         new _GenerateApiTokenRequest.PermissionsType.TopicResource({
-          any: new _GenerateApiTokenRequest.PermissionsType.Any(),
+          all: new _GenerateApiTokenRequest.PermissionsType.All(),
         });
       const readAnyTopicPermission =
         new _GenerateApiTokenRequest.PermissionsType();
@@ -114,7 +114,7 @@ describe('internal auth client', () => {
         });
       readWriteAnyTopicInCacheFoo.topic =
         new _GenerateApiTokenRequest.PermissionsType.TopicResource({
-          any: new _GenerateApiTokenRequest.PermissionsType.Any(),
+          all: new _GenerateApiTokenRequest.PermissionsType.All(),
         });
       const readWriteAnyTopicInCacheFooPermission =
         new _GenerateApiTokenRequest.PermissionsType();
@@ -127,7 +127,7 @@ describe('internal auth client', () => {
         _GenerateApiTokenRequest.TopicRole.TopicReadWrite;
       readWriteTopicBarInAnyCache.cache =
         new _GenerateApiTokenRequest.PermissionsType.CacheResource({
-          any: new _GenerateApiTokenRequest.PermissionsType.Any(),
+          all: new _GenerateApiTokenRequest.PermissionsType.All(),
         });
       readWriteTopicBarInAnyCache.topic =
         new _GenerateApiTokenRequest.PermissionsType.TopicResource({
@@ -169,17 +169,17 @@ describe('internal auth client', () => {
       const grpcPermissions = new _GenerateApiTokenRequest.Permissions();
       grpcPermissions.explicit = explicitPermissions;
       const cacheAndTopicPermissions: Permissions = new Permissions([
-        new CachePermission(CacheRole.ReadOnly, new Any()),
+        new CachePermission(CacheRole.ReadOnly, new All()),
         new CachePermission(CacheRole.ReadWrite, new CacheName('foo')),
-        new TopicPermission(TopicRole.ReadOnly, new Any(), new Any()),
+        new TopicPermission(TopicRole.ReadOnly, new All(), new All()),
         new TopicPermission(
           TopicRole.ReadWrite,
           new CacheName('foo'),
-          new Any()
+          new All()
         ),
         new TopicPermission(
           TopicRole.ReadWrite,
-          new Any(),
+          new All(),
           new TopicName('bar')
         ),
         new TopicPermission(
@@ -226,8 +226,8 @@ describe('internal auth client', () => {
 
     it('validate explicit permissions - duplicate cache permissions any cache', () => {
       const dupPermissions: Permissions = new Permissions([
-        new CachePermission(CacheRole.ReadOnly, new Any()),
-        new CachePermission(CacheRole.ReadWrite, new Any()),
+        new CachePermission(CacheRole.ReadOnly, new All()),
+        new CachePermission(CacheRole.ReadWrite, new All()),
       ]);
       expect(() => permissionsFromScope(dupPermissions)).toThrow(
         InvalidArgumentError
@@ -246,8 +246,8 @@ describe('internal auth client', () => {
 
     it('validate explicit permissions - duplicate topic permissions any', () => {
       const dupPermissions: Permissions = new Permissions([
-        new TopicPermission(TopicRole.ReadOnly, new Any(), new Any()),
-        new TopicPermission(TopicRole.ReadWrite, new Any(), new Any()),
+        new TopicPermission(TopicRole.ReadOnly, new All(), new All()),
+        new TopicPermission(TopicRole.ReadWrite, new All(), new All()),
       ]);
       expect(() => permissionsFromScope(dupPermissions)).toThrow(
         InvalidArgumentError

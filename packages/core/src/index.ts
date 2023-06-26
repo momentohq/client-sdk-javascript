@@ -115,7 +115,7 @@ export {
   Permissions,
   AllDataReadWrite,
   TokenScope,
-  Any,
+  All,
   CacheName,
   TopicName,
 } from './auth/tokens/token-scope';

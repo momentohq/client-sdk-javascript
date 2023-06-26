@@ -4,14 +4,14 @@ export enum CacheRole {
   ReadOnly = 'readonly',
 }
 
-export class Any {}
+export class All {}
 export class CacheName {
   name: string;
   constructor(name: string) {
     this.name = name;
   }
 }
-export type CacheResource = Any | CacheName;
+export type CacheResource = All | CacheName;
 
 export class CachePermission {
   cacheRole: CacheRole;
@@ -22,7 +22,7 @@ export class CachePermission {
     if (cache) {
       this.cache = cache;
     } else {
-      this.cache = new Any();
+      this.cache = new All();
     }
   }
 }
@@ -39,7 +39,7 @@ export class TopicName {
     this.name = name;
   }
 }
-export type TopicResource = Any | TopicName;
+export type TopicResource = All | TopicName;
 
 export class TopicPermission {
   topicRole: TopicRole;
@@ -54,12 +54,12 @@ export class TopicPermission {
     if (cache) {
       this.cache = cache;
     } else {
-      this.cache = new Any();
+      this.cache = new All();
     }
     if (topic) {
       this.topic = topic;
     } else {
-      this.topic = new Any();
+      this.topic = new All();
     }
   }
 }
@@ -75,8 +75,8 @@ export class Permissions {
 }
 
 export const AllDataReadWrite: Permissions = new Permissions([
-  new CachePermission(CacheRole.ReadWrite, new Any()),
-  new TopicPermission(TopicRole.ReadWrite, new Any(), new Any()),
+  new CachePermission(CacheRole.ReadWrite, new All()),
+  new TopicPermission(TopicRole.ReadWrite, new All(), new All()),
 ]);
 
 export abstract class PredefinedScope {}

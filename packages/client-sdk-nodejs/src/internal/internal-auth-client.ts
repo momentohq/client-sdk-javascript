@@ -24,7 +24,7 @@ import {
   CachePermission,
   TopicRole,
   CacheRole,
-  Any,
+  All,
   CacheName,
   TopicName,
 } from '@gomomento/sdk-core';
@@ -206,10 +206,9 @@ function topicPermissionToGrpcPermission(
 
   grpcPermission.cache =
     new grpcAuth._GenerateApiTokenRequest.PermissionsType.CacheResource();
-  if (permission.cache instanceof Any) {
-    const anyCache =
-      new grpcAuth._GenerateApiTokenRequest.PermissionsType.Any();
-    grpcPermission.cache.any = anyCache;
+  if (permission.cache instanceof All) {
+    grpcPermission.cache.all =
+      new grpcAuth._GenerateApiTokenRequest.PermissionsType.All();
   } else if (permission.cache instanceof CacheName) {
     grpcPermission.cache.cache_name = permission.cache.name;
   } else {
@@ -223,10 +222,9 @@ function topicPermissionToGrpcPermission(
   grpcPermission.topic =
     new grpcAuth._GenerateApiTokenRequest.PermissionsType.TopicResource();
 
-  if (permission.topic instanceof Any) {
-    const anyTopic =
-      new grpcAuth._GenerateApiTokenRequest.PermissionsType.Any();
-    grpcPermission.topic.any = anyTopic;
+  if (permission.topic instanceof All) {
+    grpcPermission.topic.all =
+      new grpcAuth._GenerateApiTokenRequest.PermissionsType.All();
   } else if (permission.topic instanceof TopicName) {
     grpcPermission.topic.topic_name = permission.topic.name;
   } else {
@@ -264,10 +262,9 @@ function cachePermissionToGrpcPermission(
 
   grpcPermission.cache =
     new grpcAuth._GenerateApiTokenRequest.PermissionsType.CacheResource();
-  if (permission.cache instanceof Any) {
-    const anyCache =
-      new grpcAuth._GenerateApiTokenRequest.PermissionsType.Any();
-    grpcPermission.cache.any = anyCache;
+  if (permission.cache instanceof All) {
+    grpcPermission.cache.all =
+      new grpcAuth._GenerateApiTokenRequest.PermissionsType.All();
   } else if (permission.cache instanceof CacheName) {
     grpcPermission.cache.cache_name = permission.cache.name;
   } else {
