@@ -8,11 +8,6 @@ import config from './config.json';
 export const handler = async (event: APIGatewayEvent): Promise<any> => {
   try {
 
-/*    const body = event.body ? JSON.parse(event.body) : {};
-
-    console.log('This is the body topic name: ', body.topicName);
-    console.log('This is the body topic value: ', body.topicValue);*/
-
     // Get the Momento AuthClient.
     let client = await CreateAuthClient();
 
@@ -52,7 +47,12 @@ async function genToken(client: AuthClient):Promise<string>{
     console.log(`Auth token starts with: ${generateTokenResponse.authToken.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${generateTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${generateTokenResponse.expiresAt.epoch()}`);
-    return generateTokenResponse.authToken;
+    const retVal: object = {
+      "authToken": generateTokenResponse.authToken,
+      "expires": generateTokenResponse.expiresAt.epoch(),
+      "refreshToken": generateTokenResponse.refreshToken,
+    };
+    return JSON.stringify(retVal);
   }
   return "fail";
 
