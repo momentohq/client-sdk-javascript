@@ -55,22 +55,6 @@ export class AuthTokenVendorStack extends Stack {
 
     const svcLambdaIntegration = new LambdaIntegration(serviceLambda);
 
-/*    const authTokenModel: Model = api.addModel('AuthTokenModel', {
-      schema: {
-        type: JsonSchemaType.OBJECT,
-        properties: {
-          topicValue: {
-            type: JsonSchemaType.STRING
-          },
-          topicName: {
-            type: JsonSchemaType.STRING
-          }
-        },
-        required: ['topicName', 'topicValue']
-      },
-      contentType: 'application/json'
-    });*/
-
     const topicsResource = api.root.addResource('auth-token');
 
     topicsResource.addMethod("POST", svcLambdaIntegration);
