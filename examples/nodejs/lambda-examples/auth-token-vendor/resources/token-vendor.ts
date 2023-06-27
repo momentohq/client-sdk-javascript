@@ -5,11 +5,15 @@ import { AuthClient, GenerateAuthToken, AllDataReadWrite, ExpiresIn } from '@gom
 // @ts-ignore
 import config from './config.json';
 
+let client: AuthClient;
+
 export const handler = async (event: APIGatewayEvent): Promise<any> => {
   try {
 
     // Get the Momento AuthClient.
-    let client = await CreateAuthClient();
+    if (!client) {
+      client = await CreateAuthClient();
+    }
 
     try {
       const ret = await genToken(client)
