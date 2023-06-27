@@ -1,7 +1,7 @@
 import { APIGatewayEvent} from "aws-lambda";
 import {CreateAuthClient} from './libMomentoClient';
 import { AuthClient, GenerateAuthToken, AllDataReadWrite, ExpiresIn } from '@gomomento/sdk';
-// Import configurations for region and secrets name info.
+// Import configurations info.
 // @ts-ignore
 import config from './config.json';
 
@@ -12,9 +12,6 @@ export const handler = async (event: APIGatewayEvent): Promise<any> => {
     let client = await CreateAuthClient();
 
     try {
-      // Call the publishItem function
-      //let ret = "test";
-
       const ret = await genToken(client)
       console.log(ret);
       if (ret == "fail") {
@@ -24,11 +21,7 @@ export const handler = async (event: APIGatewayEvent): Promise<any> => {
       }
     } catch (err){
       console.error(err);
-      return {
-        statusCode: 500,
-        headers: {},
-        body: "Failed to set topic value.",
-      };
+      return buildResponseBody( 500,"Failed to set topic value.");
     }
   } catch (err) {
     console.error(err);
@@ -42,11 +35,6 @@ async function genToken(client: AuthClient):Promise<string>{
     ExpiresIn.minutes(30)
   );
   if (generateTokenResponse instanceof GenerateAuthToken.Success) {
-    console.log('Generated an auth token with AllDataReadWrite scope!');
-    // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`Auth token starts with: ${generateTokenResponse.authToken.substring(0, 10)}`);
-    console.log(`Refresh token starts with: ${generateTokenResponse.refreshToken.substring(0, 10)}`);
-    console.log(`Expires At: ${generateTokenResponse.expiresAt.epoch()}`);
     const retVal: object = {
       "authToken": generateTokenResponse.authToken,
       "expires": generateTokenResponse.expiresAt.epoch(),
