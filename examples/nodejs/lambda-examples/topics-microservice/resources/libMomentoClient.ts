@@ -11,10 +11,6 @@ import {
   GetSecretValueCommandOutput,
 } from '@aws-sdk/client-secrets-manager';
 
-// Import configurations for region and secrets name info.
-// @ts-ignore
-import config from './config.json';
-
 /* A function that gets the Momento auth token stored in AWS Secrets Manager.
 The secret was stored as a plaintext format in Secrets Manager to avoid parsing JSON.
 
@@ -53,10 +49,12 @@ export async function GetToken(
 
  It requires two values (secretname and region) from the local config.json file in the same directory. */
 export async function CreateCacheClient(
+  secretname: string,
+  region: string,
   ttl:number = 600
   ): Promise<CacheClient> {
   // Call the Get Token function to get a Momento auth token from AWS Secrets Manager.
-  const token: string = await GetToken(config.secretname, config.region);
+  const token: string = await GetToken(secretname, region);
   // Get a new cache connection with the token and set a default TTL for the connection.
   return new CacheClient({
     configuration: Configurations.Laptop.latest(),
@@ -68,10 +66,10 @@ export async function CreateCacheClient(
 /* This function calls to the GetToken function, uses the Momento auth token to create a
  Momento topics client connection to Momento Topics and returns that object for later use.
 
- It requires two values (secretname and region) from the local config.json file in the same directory. */
-export async function CreateTopicClient(): Promise<TopicClient> {
+It requires two values (secretname and region) */
+export async function CreateTopicClient(secretName: string, region: string): Promise<TopicClient> {
   // Call the Get Token function to get a Momento auth token from AWS Secrets Manager.
-  const token: string = await GetToken(config.secretname, config.region);
+  const token: string = await GetToken(secretName, region);
   // Get a new cache connection with the token and set a default TTL for the connection.
   return new TopicClient({
     configuration: Configurations.Laptop.latest(),

@@ -11,6 +11,9 @@ export class TopicsMicroserviceStack extends Stack {
     const nodeJsFunctionProps: NodejsFunctionProps = {
       environment: {
         "RUNTIME": "AWS",
+        "REGION": "us-west-2",
+        "SECRETNAME": "Momento_Auth_Token",
+        "CACHENAME": "default-cache"
       },
       bundling: {
         externalModules: [
