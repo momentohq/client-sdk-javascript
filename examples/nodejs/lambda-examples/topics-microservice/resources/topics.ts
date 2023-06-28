@@ -39,6 +39,7 @@ export const handler = async (event: APIGatewayEvent): Promise<any> => {
   }
 };
 
+// this function is for getting and validating environment variables in the Lambda function configurations.
 function getEnvVar(envVarName: string): string {
   const val = process.env[envVarName];
   console.log(`Looking for env var" ${val}`);

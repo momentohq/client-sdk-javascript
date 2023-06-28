@@ -22,7 +22,7 @@ export class TopicsMicroserviceStack extends Stack {
       },
       depsLockFilePath: join(__dirname, '..', 'package-lock.json'),
       runtime: Runtime.NODEJS_18_X,
-      memorySize: 128, // Increase memory to help with response times
+      memorySize: 1024, // Increase memory to help with response times
       timeout: Duration.seconds(10) // Make timeout longer for bootstrap api
     }
 
