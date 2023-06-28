@@ -6,15 +6,15 @@ import {
   TopicItem,
   UnknownError,
 } from '@gomomento/sdk-core';
-import {Request, UnaryResponse, RpcError, StatusCode} from 'grpc-web';
+import {Request, RpcError, StatusCode, UnaryResponse} from 'grpc-web';
 import {TopicClientProps} from '../topic-client-props';
 import {truncateString} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {TopicPublish, TopicSubscribe} from '../index';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   AbstractPubsubClient,
-  SendSubscribeOptions,
   PrepareSubscribeCallbackOptions,
+  SendSubscribeOptions,
 } from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/AbstractPubsubClient';
 import {
   convertToB64String,
@@ -38,6 +38,8 @@ export class PubsubClient<
 
   private static readonly RST_STREAM_NO_ERROR_MESSAGE =
     'Received RST_STREAM with code 0';
+  private static readonly BROWSER_DISCONNECT =
+    'Http response at 400 or 500 level, http status code: 0';
 
   constructor(props: TopicClientProps) {
     super();
@@ -144,7 +146,11 @@ export class PubsubClient<
       const prepareCallbackOptions: PrepareSubscribeCallbackOptions = {
         ...options,
         restartedDueToError: false,
-        firstMessage: true,
+        // We call subscribe send on retryable errors. All retry-able errors happen
+        // after the first message. Here we can check if there has been a message that
+        // has already been sent from this stream by checking to see if there is a resumable
+        // sequence number. If there is one, we know that this isn't the first message.
+        firstMessage: !options.subscriptionState.resumeAtTopicSequenceNumber,
         resolve,
       };
       call.on('data', this.prepareDataCallback(prepareCallbackOptions));
@@ -217,13 +223,22 @@ export class PubsubClient<
       }
 
       const serviceError = err as unknown as RpcError;
+      const isBrowserDisconnect =
+        serviceError.code === StatusCode.UNKNOWN &&
+        serviceError.message === PubsubClient.BROWSER_DISCONNECT;
       const isRstStreamNoError =
         serviceError.code === StatusCode.INTERNAL &&
         serviceError.message === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE;
+      const shouldReconnectSubscription =
+        isBrowserDisconnect || isRstStreamNoError;
       const momentoError = new TopicSubscribe.Error(
         cacheServiceErrorMapper(serviceError)
       );
-      this.handleSubscribeError(options, momentoError, isRstStreamNoError);
+      this.handleSubscribeError(
+        options,
+        momentoError,
+        shouldReconnectSubscription
+      );
     };
   }
 }
