@@ -109,8 +109,10 @@ export {
 export {
   CacheRole,
   CachePermission,
+  CachePermissionOptions,
   TopicRole,
   TopicPermission,
+  TopicPermissionOptions,
   Permission,
   Permissions,
   AllDataReadWrite,
@@ -118,6 +120,8 @@ export {
   All,
   CacheName,
   TopicName,
+  CacheSelector,
+  TopicSelector,
 } from './auth/tokens/token-scope';
 
 export {

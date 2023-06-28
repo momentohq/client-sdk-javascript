@@ -11,19 +11,22 @@ export class CacheName {
     this.name = name;
   }
 }
-export type CacheResource = All | CacheName;
+export type CacheSelector = All | CacheName;
+
+export interface CachePermissionOptions {
+  /**
+   * Scope the token permissions to specific caches
+   */
+  cache?: CacheSelector;
+}
 
 export class CachePermission {
   cacheRole: CacheRole;
-  cache: CacheResource;
+  cache: CacheSelector;
 
-  constructor(cacheRole: CacheRole, cache?: CacheResource) {
+  constructor(cacheRole: CacheRole, options?: CachePermissionOptions) {
     this.cacheRole = cacheRole;
-    if (cache) {
-      this.cache = cache;
-    } else {
-      this.cache = new All();
-    }
+    this.cache = options?.cache ?? new All();
   }
 }
 
@@ -39,28 +42,27 @@ export class TopicName {
     this.name = name;
   }
 }
-export type TopicResource = All | TopicName;
+export type TopicSelector = All | TopicName;
+
+export interface TopicPermissionOptions {
+  /**
+   * Scope the token permissions to specific caches
+   */
+  cache?: CacheSelector;
+  /**
+   * Scope the token permissions to specific topics
+   */
+  topic?: TopicSelector;
+}
 
 export class TopicPermission {
   topicRole: TopicRole;
-  cache: CacheResource;
-  topic: TopicResource;
-  constructor(
-    topicRole: TopicRole,
-    cache?: CacheResource,
-    topic?: TopicResource
-  ) {
+  cache: CacheSelector;
+  topic: TopicSelector;
+  constructor(topicRole: TopicRole, options?: TopicPermissionOptions) {
     this.topicRole = topicRole;
-    if (cache) {
-      this.cache = cache;
-    } else {
-      this.cache = new All();
-    }
-    if (topic) {
-      this.topic = topic;
-    } else {
-      this.topic = new All();
-    }
+    this.cache = options?.cache ?? new All();
+    this.topic = options?.topic ?? new All();
   }
 }
 
@@ -75,8 +77,11 @@ export class Permissions {
 }
 
 export const AllDataReadWrite: Permissions = new Permissions([
-  new CachePermission(CacheRole.ReadWrite, new All()),
-  new TopicPermission(TopicRole.ReadWrite, new All(), new All()),
+  new CachePermission(CacheRole.ReadWrite, {cache: new All()}),
+  new TopicPermission(TopicRole.ReadWrite, {
+    cache: new All(),
+    topic: new All(),
+  }),
 ]);
 
 export abstract class PredefinedScope {}
