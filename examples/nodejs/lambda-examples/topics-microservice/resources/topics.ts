@@ -1,9 +1,6 @@
 import { APIGatewayEvent } from "aws-lambda";
 import {CreateTopicClient} from './libMomentoClient';
 import {PublishingWrapper} from "./libMomento";
-// Import configurations for region and secrets name info.
-// @ts-ignore
-//import config from './config.json';
 import {TopicClient} from "@gomomento/sdk";
 
 let client: TopicClient | undefined;
@@ -21,12 +18,12 @@ export const handler = async (event: APIGatewayEvent): Promise<any> => {
     const body = event.body ? JSON.parse(event.body) : {};
 
     // Only go get the Momento Topics client if it doesn't exist yet. If it does, just reuse the existing one to speed up execution.
-    client = client || await CreateTopicClient(getEnvVar("secretName"), getEnvVar("region"));
+    client = client || await CreateTopicClient(getEnvVar("SECRETNAME"), getEnvVar("REGION"));
 
     // Init the publishing wrapper class.
     const wrapper = new PublishingWrapper({
       client: client,
-      cacheName: getEnvVar("cacheName"), // Cache name from env vars
+      cacheName: getEnvVar("CACHENAME"), // Cache name from env vars
       topicName: body.topicName // The topic name from the body of the call to APIG.
     });
 
@@ -44,6 +41,7 @@ export const handler = async (event: APIGatewayEvent): Promise<any> => {
 
 function getEnvVar(envVarName: string): string {
   const val = process.env[envVarName];
+  console.log(`Looking for env var" ${val}`);
   if (val === undefined) {
     throw new Error(`Missing required env var: ${envVarName}`);
   }
