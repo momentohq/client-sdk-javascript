@@ -7,8 +7,6 @@ import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, ServiceError} from '@grpc/grpc-js';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {version} from '../../package.json';
-import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
-import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {TopicClientProps} from '../topic-client-props';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {
@@ -28,14 +26,12 @@ import {
 import {TopicConfiguration} from '../config/topic-configuration';
 
 export class PubsubClient extends AbstractPubsubClient {
-  private readonly clientWrapper: GrpcClientWrapper<grpcPubsub.PubsubClient>;
+  private readonly client: grpcPubsub.PubsubClient;
   private readonly configuration: TopicConfiguration;
   protected readonly credentialProvider: CredentialProvider;
   private readonly unaryRequestTimeoutMs: number;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   private static readonly DEFAULT_MAX_SESSION_MEMORY_MB: number = 256;
-  // 4 minutes.  We want to remain comfortably underneath the idle timeout for AWS NLB, which is 350s.
-  private static readonly DEFAULT_MAX_IDLE_MILLIS: number = 4 * 60 * 1_000;
   protected readonly logger: MomentoLogger;
   private readonly unaryInterceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
@@ -56,26 +52,21 @@ export class PubsubClient extends AbstractPubsubClient {
       `Creating topic client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
     );
 
-    this.clientWrapper = new IdleGrpcClientWrapper({
-      clientFactoryFn: () =>
-        new grpcPubsub.PubsubClient(
-          this.credentialProvider.getCacheEndpoint(),
-          ChannelCredentials.createSsl(),
-          {
-            // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
-            // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
-            'grpc-node.max_session_memory':
-              PubsubClient.DEFAULT_MAX_SESSION_MEMORY_MB,
-            // This flag controls whether channels use a shared global pool of subchannels, or whether
-            // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
-            // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
-            // than one grpc client.
-            'grpc.use_local_subchannel_pool': 1,
-          }
-        ),
-      loggerFactory: this.configuration.getLoggerFactory(),
-      maxIdleMillis: PubsubClient.DEFAULT_MAX_IDLE_MILLIS,
-    });
+    this.client = new grpcPubsub.PubsubClient(
+      this.credentialProvider.getCacheEndpoint(),
+      ChannelCredentials.createSsl(),
+      {
+        // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
+        // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
+        'grpc-node.max_session_memory':
+          PubsubClient.DEFAULT_MAX_SESSION_MEMORY_MB,
+        // This flag controls whether channels use a shared global pool of subchannels, or whether
+        // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
+        // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
+        // than one grpc client.
+        'grpc.use_local_subchannel_pool': 1,
+      }
+    );
 
     const headers: Header[] = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
@@ -115,7 +106,7 @@ export class PubsubClient extends AbstractPubsubClient {
     });
 
     return await new Promise(resolve => {
-      this.clientWrapper.getClient().Publish(
+      this.client.Publish(
         request,
         {
           interceptors: this.unaryInterceptors,
@@ -154,7 +145,10 @@ export class PubsubClient extends AbstractPubsubClient {
         options.subscriptionState.resumeAtTopicSequenceNumber,
     });
 
-    const call = this.clientWrapper.getClient().Subscribe(request, {
+    // const call = this.clientWrapper.getClient().Subscribe(request, {
+    //   interceptors: this.streamingInterceptors,
+    // });
+    const call = this.client.Subscribe(request, {
       interceptors: this.streamingInterceptors,
     });
     options.subscriptionState.setSubscribed();
