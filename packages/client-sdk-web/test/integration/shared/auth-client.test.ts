@@ -6,6 +6,7 @@ const {
   legacyTokenAuthClient,
   authTokenAuthClientFactory,
   cacheClientFactory,
+  topicClientFactory,
   cacheName,
 } = SetupAuthClientIntegrationTest();
 
@@ -14,5 +15,6 @@ runAuthClientTests(
   legacyTokenAuthClient,
   authTokenAuthClientFactory,
   cacheClientFactory,
+  topicClientFactory,
   cacheName
 );

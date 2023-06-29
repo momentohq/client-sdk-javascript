@@ -83,6 +83,7 @@ export function SetupAuthClientIntegrationTest(): {
   legacyTokenAuthClient: AuthClient;
   authTokenAuthClientFactory: (authToken: string) => AuthClient;
   cacheClientFactory: (token: string) => ICacheClient;
+  topicClientFactory: (token: string) => ITopicClient;
   cacheName: string;
 } {
   const cacheName = testCacheName();
@@ -134,6 +135,13 @@ export function SetupAuthClientIntegrationTest(): {
         }),
         configuration: Configurations.Laptop.v1(),
         defaultTtlSeconds: 60,
+      }),
+    topicClientFactory: authToken =>
+      new TopicClient({
+        credentialProvider: CredentialProvider.fromString({
+          authToken: authToken,
+        }),
+        configuration: Configurations.Laptop.latest(),
       }),
     cacheName: cacheName,
   };
