@@ -1,6 +1,6 @@
 # Welcome to client-sdk-nodejs contributing guide :wave:
 
-Thank you for taking your time to contribute to our Node.js SDK!
+Thank you for taking your time to contribute to our JavaScript SDKs!
 <br/>
 This guide will provide you information to start your own development and testing.
 <br/>
@@ -10,58 +10,53 @@ Happy coding :dancer:
 ## Requirements :coffee:
 
 - Node version [16 or higher](https://nodejs.org/en/download/) is required
-- A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
+- A Momento Auth Token is required, you can generate one using the [Momento Console](https://console.gomomento.com)
 
 <br/>
 
-## First-time setup :wrench:
+## Repository Layout
 
-```
-# Install dependencies
-npm install
-```
+This repo contains the source code for two different Momento SDKs: the Node.js SDK, and the Momento Web SDK (for use in browsers). The Node.js SDK uses the `grpc-js` library and communicates with the server via grpc. The Web SDK uses the `grpc-web` library, which requires a server that supports grpc-web. It is capable of communicating via HTTP/1.1 and works in most browsers, where we cannot establish and manage a long-lived TCP connection directly.
 
-<br />
+This repo contains four TypeScript packages, which all reside in the `packages` directory:
+
+- `core`: contains common code that is used by both the Node.js and Web SDKs. The bulk of the code is the definition of the Momento API response types.
+- `common-integration-tests`: contains source code for integration tests that can be run against both the Node.js and Web SDKs.
+- `client-sdk-nodejs`: the source for the Node.js SDK. Has a dependency on `core` and `common-integration-tests`.
+- `client-sdk-web`: the source code for the Web SDK. Has a dependency on `core` and `common-integration-tests`.
+
 
 ## Build :computer:
 
-```
-npm run build
-```
-
-<br/>
-
-## Linting :flashlight:
+The easiest way to do your initial build of all the packages is to run:
 
 ```
-npm run lint
+./scripts/build-all-packages.sh
 ```
 
-<br/>
+From that point you can change directories into any of the `package` subdirs to work on an individual package. Take a look at the `scripts` section of the `package.json` in each package directory to see what build commands are available. They all support `npm run build` to compile the code. 
 
-## Tests :zap:
+## Running tests
 
-### Run unit tests
+Most packages.json files have script targets like `unit-test` and `integration-test` that show how the tests will get run in CI. You can use these as an example to set up a command to run the tests you want to run locally. Most will require a little tweaking in order to run just the things you're interested in and deal with other constraints.
 
-```
-npm run unit-test
-```
-
-### Run integration tests
+For example you will probably need to limit Jest `maxWorkers` to avoid throttling errors due to concurrency, and you will want to skip the auth tests unless you have a session token, etc. So here is an example command you might use to run all of the integration tests other than the auth tests:
 
 ```
-export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
-npm run integration-test
+TEST_AUTH_TOKEN=<your_token_here> npx jest integration --maxWorkers 1 --testPathIgnorePatterns auth-client-test.ts
 ```
 
-### Run all tests
+Or, if you only want to run the dictionary tests:
 
 ```
-export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
-npm run test
+TEST_AUTH_TOKEN=<your_token_here> npx jest dictionary
 ```
+
+**NOTE**: if you make changes in the `core` or `common-integration-tests` packages, you will need to build your changes before the SDK packages can pick them up. You can do this via `npm run build` in the shared package directory, or `./scripts/build-all-packages.sh` from the root dir.
 
 ### Run auth integration tests
+
+In either the `client-sdk-nodejs` or `client-sdk-web` directories:
 
 ```
 export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>

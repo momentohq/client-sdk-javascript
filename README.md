@@ -11,6 +11,8 @@
 Momento Cache is a fast, simple, pay-as-you-go caching solution without any of the operational overhead
 required by traditional caching solutions.  This repo contains the source code for the Momento JavaScript client libraries.
 
+To get started with Momento you will need a Momento Auth Token. You can get one from the [Momento Console](https://console.gomomento.com).
+
 * Website: [https://www.gomomento.com/](https://www.gomomento.com/)
 * Momento Documentation: [https://docs.momentohq.com/](https://docs.momentohq.com/)
 * Getting Started: [https://docs.momentohq.com/getting-started](https://docs.momentohq.com/getting-started)
