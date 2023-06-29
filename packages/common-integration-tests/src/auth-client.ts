@@ -9,11 +9,24 @@ import {
   MomentoErrorCode,
   RefreshAuthToken,
   TokenScope,
+  Permissions,
+  CachePermission,
+  TopicPermission,
+  CacheName,
+  CacheRole,
+  TopicRole,
+  TopicPublish,
+  TopicSubscribe,
+  SubscribeCallOptions,
 } from '@gomomento/sdk-core';
-import {IAuthClient} from '@gomomento/sdk-core/dist/src/clients/IAuthClient';
 import {expectWithMessage} from './common-int-test-utils';
 import {InternalSuperUserPermissions} from '@gomomento/sdk-core/dist/src/internal/utils/auth';
-import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
+import {
+  IAuthClient,
+  ICacheClient,
+  ITopicClient,
+} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {v4} from 'uuid';
 
 const SUPER_USER_PERMISSIONS: TokenScope = new InternalSuperUserPermissions();
 
@@ -22,6 +35,7 @@ export function runAuthClientTests(
   legacyTokenAuthClient: IAuthClient,
   authTokenAuthClientFactory: (authToken: string) => IAuthClient,
   cacheClientFactory: (token: string) => ICacheClient,
+  topicClientFactory: (token: string) => ITopicClient,
   cacheName: string
 ) {
   describe('generate auth token using session token credentials', () => {
@@ -308,6 +322,184 @@ export function runAuthClientTests(
         'habanero'
       );
       expect(getResponse).toBeInstanceOf(CacheGet.Miss);
+    });
+  });
+
+  describe('Fine grained authorization scenarios', () => {
+    const FGA_CACHE_1 = 'fga-' + v4();
+    const FGA_CACHE_2 = 'fga-' + v4();
+    const FGA_TOPIC_1 = 'topic-1';
+    const FGA_TOPIC_2 = 'topic-2';
+    const FGA_CACHE_1_KEY = 'foo';
+    const FGA_CACHE_1_VALUE = 'FOO';
+    const FGA_CACHE_2_KEY = 'bar';
+    const FGA_CACHE_2_VALUE = 'BAR';
+    let superUserCacheClient: ICacheClient;
+    let superUserTopicClient: ITopicClient;
+
+    const trivialHandlers: SubscribeCallOptions = {
+      onError: () => {
+        return;
+      },
+      onItem: () => {
+        return;
+      },
+    };
+
+    // Setup 2 caches, and 2 topics on the first cache.
+    beforeAll(async () => {
+      const superUserTokenResponse =
+        await sessionTokenAuthClient.generateAuthToken(
+          SUPER_USER_PERMISSIONS,
+          ExpiresIn.seconds(600)
+        );
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      const superUserToken = (
+        superUserTokenResponse as GenerateAuthToken.Success
+      ).authToken;
+      superUserCacheClient = cacheClientFactory(superUserToken);
+      expect(
+        await superUserCacheClient.createCache(FGA_CACHE_1)
+      ).toBeInstanceOf(CreateCache.Success);
+      expect(
+        await superUserCacheClient.createCache(FGA_CACHE_2)
+      ).toBeInstanceOf(CreateCache.Success);
+      expect(
+        await superUserCacheClient.set(FGA_CACHE_1, 'foo', 'FOO', {ttl: 600})
+      ).toBeInstanceOf(CacheSet.Success);
+      expect(
+        await superUserCacheClient.set(FGA_CACHE_2, 'bar', 'BAR', {ttl: 600})
+      ).toBeInstanceOf(CacheSet.Success);
+      superUserTopicClient = topicClientFactory(superUserToken);
+      expect(
+        await superUserTopicClient.publish(
+          FGA_CACHE_1,
+          FGA_TOPIC_1,
+          'it is a nice day today!'
+        )
+      ).toBeInstanceOf(TopicPublish.Success);
+      expect(
+        await superUserTopicClient.publish(
+          FGA_CACHE_1,
+          FGA_TOPIC_2,
+          'This weird trick will make you a better developer...'
+        )
+      ).toBeInstanceOf(TopicPublish.Success);
+    });
+    it('can only read all caches', async () => {
+      const readAllCachesTokenResponse =
+        await sessionTokenAuthClient.generateAuthToken(
+          new Permissions([new CachePermission(CacheRole.ReadOnly)]),
+          ExpiresIn.seconds(10)
+        );
+      expect(readAllCachesTokenResponse).toBeInstanceOf(
+        GenerateAuthToken.Success
+      );
+      const readAllCachesToken = (
+        readAllCachesTokenResponse as GenerateAuthToken.Success
+      ).authToken;
+      const cacheClient = cacheClientFactory(readAllCachesToken);
+      // 1. Sets should fail
+      // TODO - add exact error code and message match once mr2rs changes are ready
+      const setError1 = await cacheClient.set(FGA_CACHE_1, 'homer', 'simpson');
+      expect(setError1).toBeInstanceOf(CacheSet.Error);
+      const setError2 = await cacheClient.set(FGA_CACHE_2, 'oye', 'caramba', {
+        ttl: 30,
+      });
+      expect(setError2).toBeInstanceOf(CacheSet.Error);
+
+      // 2. Gets for existing keys should succeed with hits
+      const hitResp1 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
+      expect(hitResp1).toBeInstanceOf(CacheGet.Hit);
+      expect(hitResp1).toHaveProperty('valueString', FGA_CACHE_1_VALUE);
+      const hitResp2 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
+      expect(hitResp2).toBeInstanceOf(CacheGet.Hit);
+      expect(hitResp2).toHaveProperty('valueString', FGA_CACHE_2_VALUE);
+
+      // 3. Gets for non-existing keys return misses
+      const missResp1 = await cacheClient.get(FGA_CACHE_1, 'i-exist-not');
+      expect(missResp1).toBeInstanceOf(CacheGet.Miss);
+      const missResp2 = await cacheClient.get(FGA_CACHE_2, 'i-exist-not');
+      expect(missResp2).toBeInstanceOf(CacheGet.Miss);
+
+      const topicClient = topicClientFactory(readAllCachesToken);
+      // TODO add checks for error code and error message once mr2rs changes are ready
+      expect(
+        await topicClient.publish(FGA_CACHE_1, FGA_TOPIC_1, 'breaking news!')
+      ).toBeInstanceOf(TopicPublish.Error);
+
+      const subscribeResponse = await topicClient.subscribe(
+        FGA_CACHE_1,
+        FGA_TOPIC_1,
+        trivialHandlers
+      );
+      expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Error);
+    });
+    it('can read/write cache foo and all topics in cache bar', async () => {
+      const tokenResponse = await sessionTokenAuthClient.generateAuthToken(
+        new Permissions([
+          new CachePermission(CacheRole.ReadWrite, {
+            cache: new CacheName(FGA_CACHE_1),
+          }),
+          new TopicPermission(TopicRole.ReadWrite, {
+            cache: new CacheName(FGA_CACHE_2),
+          }),
+        ]),
+        ExpiresIn.seconds(10)
+      );
+      expect(tokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      const token = (tokenResponse as GenerateAuthToken.Success).authToken;
+      const cacheClient = cacheClientFactory(token);
+
+      // Read/Write on cache `foo` is allowed
+      const setResp = await cacheClient.set(FGA_CACHE_1, 'ned', 'flanders');
+      expect(setResp).toBeInstanceOf(CacheSet.Success);
+
+      const hitResp1 = await cacheClient.get(FGA_CACHE_1, 'ned');
+      expect(hitResp1).toBeInstanceOf(CacheGet.Hit);
+      expect(hitResp1).toHaveProperty('valueString', 'flanders');
+
+      // Read/Write on cache `bar` is not allowed
+      // TODO add checks for error code and error message once mr2rs changes are ready
+      expect(
+        await cacheClient.set(FGA_CACHE_2, 'flaming', 'mo')
+      ).toBeInstanceOf(CacheSet.Error);
+      expect(await cacheClient.get(FGA_CACHE_2, 'flaming')).toBeInstanceOf(
+        CacheGet.Error
+      );
+
+      const topicClient = topicClientFactory(token);
+
+      // TODO add checks for error code and error message once mr2rs changes are ready
+      expect(
+        await topicClient.publish(FGA_CACHE_1, FGA_TOPIC_1, 'breaking news!')
+      ).toBeInstanceOf(TopicPublish.Error);
+      const subscribeError = await topicClient.subscribe(
+        FGA_CACHE_1,
+        FGA_TOPIC_1,
+        trivialHandlers
+      );
+      expect(subscribeError).toBeInstanceOf(TopicSubscribe.Error);
+
+      expect(
+        await topicClient.publish(FGA_CACHE_2, FGA_TOPIC_2, 'breaking news!')
+      ).toBeInstanceOf(TopicPublish.Success);
+      const subscribeResponse = await topicClient.subscribe(
+        FGA_CACHE_2,
+        FGA_TOPIC_2,
+        trivialHandlers
+      );
+      expectWithMessage(() => {
+        expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
+      }, `expected SUBSCRIPTION but got ${subscribeResponse.toString()}`);
+    });
+    afterAll(async () => {
+      expect(
+        await superUserCacheClient.deleteCache(FGA_CACHE_1)
+      ).toBeInstanceOf(DeleteCache.Success);
+      expect(
+        await superUserCacheClient.deleteCache(FGA_CACHE_2)
+      ).toBeInstanceOf(DeleteCache.Success);
     });
   });
 }

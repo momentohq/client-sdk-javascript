@@ -12,6 +12,7 @@ import {
   TopicClient,
 } from '../../src';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
+import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 const deleteCacheIfExists = async (momento: CacheClient, cacheName: string) => {
   const deleteResponse = await momento.deleteCache(cacheName);
   if (deleteResponse instanceof DeleteCache.Error) {
@@ -100,6 +101,7 @@ export function SetupAuthClientIntegrationTest(): {
   legacyTokenAuthClient: AuthClient;
   authTokenAuthClientFactory: (authToken: string) => AuthClient;
   cacheClientFactory: (token: string) => ICacheClient;
+  topicClientFactory: (token: string) => ITopicClient;
   cacheName: string;
 } {
   const cacheName = testCacheName();
@@ -145,7 +147,6 @@ export function SetupAuthClientIntegrationTest(): {
         }),
       });
     },
-
     cacheClientFactory: authToken =>
       new CacheClient({
         credentialProvider: CredentialProvider.fromString({
@@ -153,6 +154,13 @@ export function SetupAuthClientIntegrationTest(): {
         }),
         configuration: Configurations.Laptop.latest(),
         defaultTtlSeconds: 60,
+      }),
+    topicClientFactory: authToken =>
+      new TopicClient({
+        credentialProvider: CredentialProvider.fromString({
+          authToken: authToken,
+        }),
+        configuration: Configurations.Laptop.latest(),
       }),
     cacheName: cacheName,
   };
