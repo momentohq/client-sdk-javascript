@@ -4,7 +4,8 @@ This example create an API Gateway configuration and deploys an AWS Lambda funct
 
 ## Prerequisites
 - An AWS account
-- An existing [Momento auth token](https://docs.momentohq.com/develop/integrations/aws-secrets-manager) stored in AWS Secrets Manager as text.
+- A Momento auth token from the [Momento console](https://console.gomomento.com).
+- The Momento auth token [stored in AWS Secrets Manager](https://docs.momentohq.com/develop/integrations/aws-secrets-manager) as text.
 - AWS CDK command line tool installed
 - Node.js installed
 
