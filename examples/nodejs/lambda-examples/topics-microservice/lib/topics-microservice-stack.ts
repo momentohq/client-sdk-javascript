@@ -8,12 +8,18 @@ export class TopicsMicroserviceStack extends Stack {
   constructor(app: App, id: string) {
     super(app, id);
 
+    // These three value you will need to change for your own deployment
+    const region = "us-west-2";
+    const secretName = "Momento_Auth_Token";
+    const cachName = "default-cache";
+
+    // Set up Lambda function configurations.
     const nodeJsFunctionProps: NodejsFunctionProps = {
       environment: {
         "RUNTIME": "AWS",
-        "REGION": "us-west-2",
-        "SECRETNAME": "Momento_Auth_Token",
-        "CACHENAME": "default-cache"
+        "REGION": region,
+        "SECRETNAME": secretName,
+        "CACHENAME": cachName
       },
       bundling: {
         externalModules: [
@@ -33,7 +39,11 @@ export class TopicsMicroserviceStack extends Stack {
     });
 
     // Get the ARN for the existing secret the Lambda function will be using.
-    let secret = aws_secretsmanager.Secret.fromSecretNameV2(this, "Momento_Auth_Token", "Momento_Auth_Token");
+    let secret = aws_secretsmanager.Secret.fromSecretNameV2(
+      this,
+      "Momento_Authentication_Token",
+      secretName
+    );
 
     // Grant read access for that secret to the Lambda function.
     secret.grantRead(serviceLambda);
@@ -71,13 +81,6 @@ export class TopicsMicroserviceStack extends Stack {
       contentType: 'application/json'
     });
 
-/*    const options: MethodOptions = {
-      requestParameters: {
-        'method.request.querystring.topicName': true,
-        'method.request.querystring.topicValue': true
-      }
-    }*/
-
     const topicsResource = api.root.addResource('topics');
 
     topicsResource.addMethod("POST", svcLambdaIntegration, {
@@ -86,11 +89,3 @@ export class TopicsMicroserviceStack extends Stack {
     });
   }
 }
-
-
-/*
-- Create Lambda function
-- Create API gateway POST method
-
-
- */

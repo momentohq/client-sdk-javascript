@@ -29,9 +29,11 @@ export const handler = async (event: APIGatewayEvent): Promise<any> => {
 
     // Call the publishItem function
     const ret = await wrapper.publishItem(body.topicValue);
-
-    return buildResponseBody( 200, ret);
-
+    if (ret == "success") {
+      return buildResponseBody(200, "Item published to topic.");
+    } else {
+      return buildResponseBody(200, "Failed to publish item to topic.");
+    }
   } catch (err) {
     console.error(err);
     const errorMsg = err instanceof PublishingWrapper ? 'Failed to set topic value. ' : 'Unknown server error from topics.ts, ';
@@ -42,7 +44,7 @@ export const handler = async (event: APIGatewayEvent): Promise<any> => {
 // this function is for getting and validating environment variables in the Lambda function configurations.
 function getEnvVar(envVarName: string): string {
   const val = process.env[envVarName];
-  console.log(`Looking for env var" ${val}`);
+  console.log(`Looking for env var ${val}`);
   if (val === undefined) {
     throw new Error(`Missing required env var: ${envVarName}`);
   }
