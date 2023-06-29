@@ -319,17 +319,6 @@ export function runAuthClientTests(
     });
 
     it('can set values in an existing cache', async () => {
-      const generateResponse = await sessionTokenAuthClient.generateAuthToken(
-        SUPER_USER_PERMISSIONS,
-        ExpiresIn.seconds(60)
-      );
-      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Success);
-      const superUserToken = (
-        generateResponse as GenerateAuthToken.Success
-      ).authToken;
-      const superUserClient = cacheClientFactory(superUserToken);
-      const listCachesResponse = await superUserClient.listCaches();
-      console.log('listCachesResponse', listCachesResponse);
       const setResponse = await allDataReadWriteClient.set(
         cacheName,
         'foo',

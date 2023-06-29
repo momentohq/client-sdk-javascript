@@ -52,6 +52,21 @@ function momentoClientForTesting(): CacheClient {
   return new CacheClient(IntegrationTestCacheClientProps);
 }
 
+function momentoClientForTestingWithSessionToken(): CacheClient {
+  const credentialProvider = CredentialProvider.fromEnvironmentVariable({
+    environmentVariableName: 'TEST_SESSION_TOKEN',
+    // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
+    // steal them from the auth-token-based creds provider.
+    cacheEndpoint: credsProvider.getCacheEndpoint(),
+    controlEndpoint: credsProvider.getControlEndpoint(),
+  });
+  return new CacheClient({
+    configuration: Configurations.Laptop.latest(),
+    credentialProvider: credentialProvider,
+    defaultTtlSeconds: 1111,
+  });
+}
+
 function momentoTopicClientForTesting(): TopicClient {
   return new TopicClient({
     configuration: IntegrationTestCacheClientProps.configuration,
@@ -109,7 +124,7 @@ export function SetupAuthClientIntegrationTest(): {
 
   beforeAll(async () => {
     // Use a fresh client to avoid test interference with setup.
-    const momento = momentoClientForTesting();
+    const momento = momentoClientForTestingWithSessionToken();
     await deleteCacheIfExists(momento, cacheName);
     const createResponse = await momento.createCache(cacheName);
     if (createResponse instanceof CreateCache.Error) {
@@ -119,7 +134,7 @@ export function SetupAuthClientIntegrationTest(): {
 
   afterAll(async () => {
     // Use a fresh client to avoid test interference with teardown.
-    const momento = momentoClientForTesting();
+    const momento = momentoClientForTestingWithSessionToken();
     const deleteResponse = await momento.deleteCache(cacheName);
     if (deleteResponse instanceof DeleteCache.Error) {
       throw deleteResponse.innerException();
