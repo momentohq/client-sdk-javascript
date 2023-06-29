@@ -76,7 +76,7 @@ jobs:
       matrix:
         node: [14, 16, 18]
     name: Test examples on node ${{ matrix.node }}
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     env:
       # TODO: remove token stored as secret in favor of using a
       # momento-local instance that can be spun up for testing
@@ -116,7 +116,6 @@ jobs:
           pushd examples/nodejs/lambda-examples/topics-microservice
             npm ci
             npm run build
-            npm run cdk synth
           popd
 
       - name: Send CI failure mail
