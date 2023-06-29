@@ -116,6 +116,7 @@ jobs:
           pushd examples/nodejs/lambda-examples/topics-microservice
             npm ci
             npm run build
+            npm run cdk synth
           popd
 
       - name: Send CI failure mail
