@@ -64,12 +64,6 @@ export TEST_SESSION_TOKEN=<YOUR_SESSION_TOKEN>
 npm run integration-test-auth
 ```
 
-How do I get a session token?
-
-Visit the [preprod console](https://momento-console-preview.vercel.app/caches), once logged in, 
-inspect the webpage, navigate to the `Storage` tab and and under `Local Storage`,
-copy your `momento_session_token` :tada:
-
 ### Limit the test concurrency
 
 By default, jest runs tests concurrently. Sometimes if you allow too many tests to run concurrently you
