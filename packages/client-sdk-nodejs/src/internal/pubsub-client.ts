@@ -145,9 +145,6 @@ export class PubsubClient extends AbstractPubsubClient {
         options.subscriptionState.resumeAtTopicSequenceNumber,
     });
 
-    // const call = this.clientWrapper.getClient().Subscribe(request, {
-    //   interceptors: this.streamingInterceptors,
-    // });
     const call = this.client.Subscribe(request, {
       interceptors: this.streamingInterceptors,
     });
