@@ -113,6 +113,10 @@ jobs:
             npm ci
             npm run build
           popd
+          pushd examples/nodejs/lambda-examples/topics-microservice
+            npm ci
+            npm run build
+          popd
 
       - name: Send CI failure mail
         if: ${{ steps.validation.outcome == 'failure' }}
