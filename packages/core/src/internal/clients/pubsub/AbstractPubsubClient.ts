@@ -134,6 +134,7 @@ export abstract class AbstractPubsubClient implements IPubsubClient {
     options: PrepareSubscribeCallbackOptions
   ): () => void {
     return () => {
+      this.logger.trace('prepare end callback', options);
       // We want to restart on stream end, except if:
       // 1. The stream was cancelled by the caller.
       // 2. The stream was restarted following an error.
@@ -160,9 +161,11 @@ export abstract class AbstractPubsubClient implements IPubsubClient {
       // because we should have already returned the subscription object to the user.
       this.sendSubscribe(options)
         .then(() => {
+          this.logger.trace('send subscribe error callback then', options);
           return;
         })
         .catch(() => {
+          this.logger.trace('send subscribe error callback error', options);
           return;
         });
     };
@@ -173,22 +176,11 @@ export abstract class AbstractPubsubClient implements IPubsubClient {
     momentoError: TopicSubscribe.Error,
     isRstStreamNoError: boolean
   ): void {
-    // When the first message is an error, an irrecoverable error has happened,
-    // eg the cache does not exist. The user should not receive a subscription
-    // object but an error.
-    if (options.firstMessage) {
-      this.logger.trace(
-        'Received subscription stream error; topic: %s',
-        truncateString(options.topicName)
-      );
-
-      options.resolve(momentoError);
-      options.subscription.unsubscribe();
-      return;
-    }
-
     // The service cuts the stream after a period of time.
     // Transparently restart the stream instead of propagating an error.
+    // We check this before checking for first message to ensure that if a stream
+    // was already connected, attempts to reconnect and has an error, we want to
+    // keep trying to reconnect rather than severing the stream completely
     if (isRstStreamNoError) {
       this.logger.trace(
         'Server closed stream due to idle activity. Restarting.'
@@ -206,6 +198,20 @@ export abstract class AbstractPubsubClient implements IPubsubClient {
       return;
     }
 
+    // When the first message is an error, an irrecoverable error has happened,
+    // eg the cache does not exist. The user should not receive a subscription
+    // object but an error.
+    if (options.firstMessage) {
+      this.logger.trace(
+        'Received subscription stream error; topic: %s',
+        truncateString(options.topicName)
+      );
+
+      options.resolve(momentoError);
+      options.subscription.unsubscribe();
+      return;
+    }
+
     // Another special case is when the cache is not found.
     // This happens here if the user deletes the cache in the middle of
     // a subscription.
@@ -218,6 +224,10 @@ export abstract class AbstractPubsubClient implements IPubsubClient {
       options.onError(momentoError, options.subscription);
       return;
     } else {
+      this.logger.trace(
+        'Stream encountered unknown error on topic: %s',
+        options.topicName
+      );
       options.onError(momentoError, options.subscription);
     }
   }

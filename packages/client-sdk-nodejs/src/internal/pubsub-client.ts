@@ -71,6 +71,20 @@ export class PubsubClient extends AbstractPubsubClient {
             // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
             // than one grpc client.
             'grpc.use_local_subchannel_pool': 1,
+            // This flag allows grpc to try and send keepalives to the server
+            // which helps it detect if its able to or unable to reach the server.
+            // This lets streams recover after network outages.
+            'grpc.keepalive_permit_without_calls': 1,
+            'grpc.http2.min_ping_interval_without_data_ms': 1000,
+            // reconnect
+            'grpc.initial_reconnect_backoff_ms': 3000,
+            'grpc.min_reconnect_backoff_ms': 1000,
+            'grpc.max_reconnect_backoff_ms': 10000,
+            // additional keepalive parameters
+            // 'grpc.http2.min_time_between_pings_ms': 5 * 60000, // grpc default
+            // 'grpc.http2.max_pings_without_data': 0,
+            // 'grpc.keepalive_time_ms': 10 * 60000,
+            // 'grpc.keepalive_timeout_ms': 10000,
           }
         ),
       loggerFactory: this.configuration.getLoggerFactory(),
@@ -153,8 +167,9 @@ export class PubsubClient extends AbstractPubsubClient {
       resume_at_topic_sequence_number:
         options.subscriptionState.resumeAtTopicSequenceNumber,
     });
+    const client = this.clientWrapper.getClient();
 
-    const call = this.clientWrapper.getClient().Subscribe(request, {
+    const call = client.Subscribe(request, {
       interceptors: this.streamingInterceptors,
     });
     options.subscriptionState.setSubscribed();
@@ -171,7 +186,7 @@ export class PubsubClient extends AbstractPubsubClient {
       const prepareCallbackOptions: PrepareSubscribeCallbackOptions = {
         ...options,
         restartedDueToError: false,
-        firstMessage: true,
+        firstMessage: !options.subscriptionState.lastTopicSequenceNumber,
         resolve,
       };
       call.on('data', this.prepareDataCallback(prepareCallbackOptions));

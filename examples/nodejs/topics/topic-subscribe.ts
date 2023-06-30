@@ -5,8 +5,38 @@ import {
   Configurations,
   CredentialProvider,
   TopicConfigurations,
+  MomentoLogger,
+  MomentoLoggerFactory,
 } from '@gomomento/sdk';
 import {ensureCacheExists} from './utils/cache';
+
+class Logger implements MomentoLogger {
+  debug(msg: string, ...args: unknown[]): void {
+    console.log(msg, ...args);
+  }
+
+  error(msg: string, ...args: unknown[]): void {
+    console.log(msg, ...args);
+  }
+
+  info(msg: string, ...args: unknown[]): void {
+    console.log(msg, ...args);
+  }
+
+  trace(msg: string, ...args: unknown[]): void {
+    console.log(msg, ...args);
+  }
+
+  warn(msg: string, ...args: unknown[]): void {
+    console.log(msg, ...args);
+  }
+}
+
+class LoggerFactory implements MomentoLoggerFactory {
+  getLogger(loggerName: any): MomentoLogger {
+    return new Logger();
+  }
+}
 
 async function main() {
   const clargs = process.argv.slice(2);
@@ -16,7 +46,7 @@ async function main() {
   }
   const [cacheName, topicName] = clargs;
   const momento = new TopicClient({
-    configuration: TopicConfigurations.Default.latest(),
+    configuration: TopicConfigurations.Default.latest(new LoggerFactory()),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_AUTH_TOKEN',
     }),
@@ -43,7 +73,7 @@ async function main() {
   const sleep = (seconds: number) => new Promise(r => setTimeout(r, seconds * 1000));
 
   // Wait a couple minutes to receive some items, then unsubscribe to finish the example.
-  await sleep(120);
+  await sleep(120000);
 
   if (response instanceof TopicSubscribe.Subscription) {
     console.log('Unsubscribing from topic subscription. Restart the example to subscribe again.');
