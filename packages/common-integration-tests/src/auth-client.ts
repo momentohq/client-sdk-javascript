@@ -386,6 +386,7 @@ export function runAuthClientTests(
         )
       ).toBeInstanceOf(TopicPublish.Success);
     });
+
     it('can only read all caches', async () => {
       const readAllCachesTokenResponse =
         await sessionTokenAuthClient.generateAuthToken(
@@ -435,14 +436,15 @@ export function runAuthClientTests(
       );
       expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Error);
     });
+
     it('can read/write cache foo and all topics in cache bar', async () => {
       const tokenResponse = await sessionTokenAuthClient.generateAuthToken(
         new Permissions([
           new CachePermission(CacheRole.ReadWrite, {
-            cache: new CacheName(FGA_CACHE_1),
+            cache: {name: FGA_CACHE_1},
           }),
           new TopicPermission(TopicRole.ReadWrite, {
-            cache: new CacheName(FGA_CACHE_2),
+            cache: {name: FGA_CACHE_1},
           }),
         ]),
         ExpiresIn.seconds(10)
@@ -493,6 +495,7 @@ export function runAuthClientTests(
         expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
       }, `expected SUBSCRIPTION but got ${subscribeResponse.toString()}`);
     });
+    
     afterAll(async () => {
       expect(
         await superUserCacheClient.deleteCache(FGA_CACHE_1)
