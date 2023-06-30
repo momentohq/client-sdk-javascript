@@ -250,6 +250,7 @@ export class PubsubClient extends AbstractPubsubClient {
     options: PrepareSubscribeCallbackOptions
   ): (err: Error) => void {
     return (err: Error) => {
+      this.logger.error('inside error callback', err);
       // When the caller unsubscribes, we may get a follow on error, which we ignore.
       if (!options.subscriptionState.isSubscribed) {
         return;
