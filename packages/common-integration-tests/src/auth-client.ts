@@ -1,7 +1,5 @@
 import {
   AllDataReadWrite,
-  CacheGet,
-  CacheSet,
   CreateCache,
   DeleteCache,
   ExpiresIn,
@@ -9,6 +7,8 @@ import {
   MomentoErrorCode,
   RefreshAuthToken,
   TokenScope,
+  CacheSet,
+  CacheGet,
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/clients/IAuthClient';
 import {expectWithMessage} from './common-int-test-utils';
@@ -138,6 +138,29 @@ export function runAuthClientTests(
       );
       expect(refreshResponse).toBeInstanceOf(RefreshAuthToken.Error);
       expect((refreshResponse as RefreshAuthToken.Error).errorCode()).toEqual(
+        MomentoErrorCode.AUTHENTICATION_ERROR
+      );
+    });
+
+    it("expired token can't create cache", async () => {
+      const generateResponse = await sessionTokenAuthClient.generateAuthToken(
+        SUPER_USER_PERMISSIONS,
+        ExpiresIn.seconds(1)
+      );
+      const generateSuccessRst = generateResponse as GenerateAuthToken.Success;
+
+      // Wait 1sec for the token to expire
+      await delay(1000);
+
+      const cacheClient = cacheClientFactory(generateSuccessRst.authToken);
+
+      const createCacheRst = await cacheClient.createCache(
+        'cache-should-fail-to-create'
+      );
+
+      expect(createCacheRst).toBeInstanceOf(CreateCache.Error);
+      const createCacheErrorRst = createCacheRst as CreateCache.Error;
+      expect(createCacheErrorRst.errorCode()).toEqual(
         MomentoErrorCode.AUTHENTICATION_ERROR
       );
     });
@@ -294,12 +317,14 @@ export function runAuthClientTests(
       );
       expect(deleteCacheError.message()).toContain('Insufficient permissions');
     });
+
     it('can set values in an existing cache', async () => {
       const setResponse = await allDataReadWriteClient.set(
         cacheName,
         'foo',
         'FOO'
       );
+      console.log('setResponse', setResponse);
       expect(setResponse).toBeInstanceOf(CacheSet.Success);
     });
     it('can get values from an existing cache', async () => {
@@ -307,6 +332,7 @@ export function runAuthClientTests(
         cacheName,
         'habanero'
       );
+      console.log('getResponse', getResponse);
       expect(getResponse).toBeInstanceOf(CacheGet.Miss);
     });
   });
