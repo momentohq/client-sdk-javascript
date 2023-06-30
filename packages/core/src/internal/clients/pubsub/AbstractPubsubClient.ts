@@ -173,19 +173,12 @@ export abstract class AbstractPubsubClient implements IPubsubClient {
     momentoError: TopicSubscribe.Error,
     isRstStreamNoError: boolean
   ): void {
-    // When the first message is an error, an irrecoverable error has happened,
-    // eg the cache does not exist. The user should not receive a subscription
-    // object but an error.
-    if (options.firstMessage) {
-      this.logger.trace(
-        'Received subscription stream error; topic: %s',
-        truncateString(options.topicName)
-      );
-
-      options.resolve(momentoError);
-      options.subscription.unsubscribe();
-      return;
-    }
+    this.logger.trace(
+      'handling subscriber error',
+      options,
+      momentoError,
+      isRstStreamNoError
+    );
 
     // The service cuts the stream after a period of time.
     // Transparently restart the stream instead of propagating an error.
@@ -203,6 +196,20 @@ export abstract class AbstractPubsubClient implements IPubsubClient {
           return;
         });
       options.restartedDueToError = true;
+      return;
+    }
+
+    // When the first message is an error, an irrecoverable error has happened,
+    // eg the cache does not exist. The user should not receive a subscription
+    // object but an error.
+    if (options.firstMessage) {
+      this.logger.trace(
+        'Received subscription stream error; topic: %s',
+        truncateString(options.topicName)
+      );
+
+      options.resolve(momentoError);
+      options.subscription.unsubscribe();
       return;
     }
 

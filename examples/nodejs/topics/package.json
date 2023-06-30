@@ -27,6 +27,7 @@
     "typescript": "4.4.3"
   },
   "dependencies": {
-    "@gomomento/sdk": "1.26.2"
+    "@gomomento/sdk": "file:../../../packages/client-sdk-nodejs/gomomento-sdk-0.0.1.tgz",
+    "@gomomento/sdk-core": "file:../../../packages/core/gomomento-sdk-core-0.0.1.tgz"
   }
 }
