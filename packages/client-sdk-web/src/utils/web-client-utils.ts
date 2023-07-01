@@ -20,11 +20,24 @@ export function createCallMetadata(
 export function getWebControlEndpoint(
   credentialProvider: CredentialProvider
 ): string {
-  return `web.${credentialProvider.getControlEndpoint()}`;
+  if (credentialProvider.isControlEndpointOverridden()) {
+    return withProtocolPrefix(credentialProvider.getControlEndpoint());
+  }
+  return withProtocolPrefix(`web.${credentialProvider.getControlEndpoint()}`);
 }
 
 export function getWebCacheEndpoint(
   credentialProvider: CredentialProvider
 ): string {
-  return `web.${credentialProvider.getCacheEndpoint()}`;
+  if (credentialProvider.isCacheEndpointOverridden()) {
+    return withProtocolPrefix(credentialProvider.getCacheEndpoint());
+  }
+  return withProtocolPrefix(`web.${credentialProvider.getCacheEndpoint()}`);
+}
+
+function withProtocolPrefix(endpoint: string): string {
+  if (endpoint.match(/^http(?:s)?:\/\//)) {
+    return endpoint;
+  }
+  return `https://${endpoint}`;
 }

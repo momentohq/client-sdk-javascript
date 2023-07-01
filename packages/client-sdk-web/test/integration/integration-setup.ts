@@ -1,6 +1,8 @@
 import {
   deleteCacheIfExists,
   testCacheName,
+  isLocalhostDevelopmentMode,
+  createCacheIfNotExists,
 } from '@gomomento/common-integration-tests';
 import {
   CreateCache,
@@ -18,13 +20,28 @@ import {
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 
-const credsProvider = CredentialProvider.fromEnvironmentVariable({
-  environmentVariableName: 'TEST_AUTH_TOKEN',
-});
+let _credsProvider: CredentialProvider | undefined = undefined;
+
+function credsProvider(): CredentialProvider {
+  if (_credsProvider === undefined) {
+    if (isLocalhostDevelopmentMode()) {
+      _credsProvider = CredentialProvider.fromEnvironmentVariable({
+        environmentVariableName: 'TEST_AUTH_TOKEN',
+        controlEndpoint: 'https://no-controlplane-requests-allowed:9001',
+        cacheEndpoint: 'https://localhost:9001',
+      });
+    } else {
+      _credsProvider = CredentialProvider.fromEnvironmentVariable({
+        environmentVariableName: 'TEST_AUTH_TOKEN',
+      });
+    }
+  }
+  return _credsProvider;
+}
 
 export const IntegrationTestCacheClientProps: CacheClientProps = {
   configuration: Configurations.Laptop.latest(),
-  credentialProvider: credsProvider,
+  credentialProvider: credsProvider(),
   defaultTtlSeconds: 1111,
 };
 
@@ -32,10 +49,25 @@ function momentoClientForTesting(): CacheClient {
   return new CacheClient(IntegrationTestCacheClientProps);
 }
 
+function momentoClientForTestingWithSessionToken(): CacheClient {
+  const credentialProvider = CredentialProvider.fromEnvironmentVariable({
+    environmentVariableName: 'TEST_SESSION_TOKEN',
+    // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
+    // steal them from the auth-token-based creds provider.
+    cacheEndpoint: credsProvider().getCacheEndpoint(),
+    controlEndpoint: credsProvider().getControlEndpoint(),
+  });
+  return new CacheClient({
+    configuration: Configurations.Laptop.latest(),
+    credentialProvider: credentialProvider,
+    defaultTtlSeconds: 1111,
+  });
+}
+
 function momentoTopicClientForTesting(): TopicClient {
   return new TopicClient({
     configuration: TopicConfigurations.Default.latest(),
-    credentialProvider: credsProvider,
+    credentialProvider: credsProvider(),
   });
 }
 
@@ -49,10 +81,7 @@ export function SetupIntegrationTest(): {
     // Use a fresh client to avoid test interference with setup.
     const momento = momentoClientForTesting();
     await deleteCacheIfExists(momento, cacheName);
-    const createResponse = await momento.createCache(cacheName);
-    if (createResponse instanceof CreateCache.Error) {
-      throw createResponse.innerException();
-    }
+    await createCacheIfNotExists(momento, cacheName);
   });
 
   afterAll(async () => {
@@ -90,7 +119,7 @@ export function SetupAuthClientIntegrationTest(): {
 
   beforeAll(async () => {
     // Use a fresh client to avoid test interference with setup.
-    const momento = momentoClientForTesting();
+    const momento = momentoClientForTestingWithSessionToken();
     await deleteCacheIfExists(momento, cacheName);
     const createResponse = await momento.createCache(cacheName);
     if (createResponse instanceof CreateCache.Error) {
@@ -100,7 +129,7 @@ export function SetupAuthClientIntegrationTest(): {
 
   afterAll(async () => {
     // Use a fresh client to avoid test interference with teardown.
-    const momento = momentoClientForTesting();
+    const momento = momentoClientForTestingWithSessionToken();
     const deleteResponse = await momento.deleteCache(cacheName);
     if (deleteResponse instanceof DeleteCache.Error) {
       throw deleteResponse.innerException();
@@ -112,9 +141,9 @@ export function SetupAuthClientIntegrationTest(): {
       credentialProvider: CredentialProvider.fromEnvironmentVariable({
         environmentVariableName: 'TEST_SESSION_TOKEN',
         // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
-        // steal them from the auth-token-based creds provider.
-        cacheEndpoint: credsProvider.getCacheEndpoint(),
-        controlEndpoint: credsProvider.getControlEndpoint(),
+        // steal them from the auth-token-based creds provider.`
+        cacheEndpoint: credsProvider().getCacheEndpoint(),
+        controlEndpoint: credsProvider().getControlEndpoint(),
       }),
     }),
     legacyTokenAuthClient: new AuthClient({

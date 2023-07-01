@@ -9,6 +9,7 @@ echo "building package: ${1}"
 
 pushd ${ROOT_DIR}/packages/${1}
     npm ci
+    npm run format
     npm run build
     npm run lint
 popd

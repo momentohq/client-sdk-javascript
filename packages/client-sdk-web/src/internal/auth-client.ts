@@ -44,7 +44,7 @@ export class InternalWebGrpcAuthClient<
     this.clientMetadataProvider = new ClientMetadataProvider({});
     this.authClient = new auth.AuthClient(
       // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
-      `https://${getWebControlEndpoint(this.creds)}`,
+      getWebControlEndpoint(this.creds),
       null,
       {}
     );

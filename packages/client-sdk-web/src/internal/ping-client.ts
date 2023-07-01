@@ -26,12 +26,7 @@ export class PingClient<
   constructor(props: PingClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.clientMetadataProvider = new ClientMetadataProvider({});
-    this.clientWrapper = new ping.PingClient(
-      // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
-      `https://${props.endpoint}`,
-      null,
-      {}
-    );
+    this.clientWrapper = new ping.PingClient(props.endpoint, null, {});
   }
 
   public async ping(): Promise<void> {

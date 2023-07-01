@@ -51,6 +51,8 @@ describe('StringMomentoTokenProvider', () => {
     expect(legacyAuthProvider.getAuthToken()).toEqual(fakeTestLegacyToken);
     expect(legacyAuthProvider.getControlEndpoint()).toEqual('foo');
     expect(legacyAuthProvider.getCacheEndpoint()).toEqual(testCacheEndpoint);
+    expect(legacyAuthProvider.isCacheEndpointOverridden()).toEqual(false);
+    expect(legacyAuthProvider.isControlEndpointOverridden()).toEqual(true);
 
     const v1AuthProvider = CredentialProvider.fromString({
       authToken: base64EncodedFakeV1AuthToken,
@@ -61,6 +63,8 @@ describe('StringMomentoTokenProvider', () => {
     expect(v1AuthProvider.getCacheEndpoint()).toEqual(
       `cache.${decodedV1Token.endpoint}`
     );
+    expect(v1AuthProvider.isCacheEndpointOverridden()).toEqual(false);
+    expect(v1AuthProvider.isControlEndpointOverridden()).toEqual(true);
   });
 
   it('supports overriding cache endpoint', () => {
@@ -73,6 +77,8 @@ describe('StringMomentoTokenProvider', () => {
       testControlEndpoint
     );
     expect(legacyAuthProvider.getCacheEndpoint()).toEqual('foo');
+    expect(legacyAuthProvider.isCacheEndpointOverridden()).toEqual(true);
+    expect(legacyAuthProvider.isControlEndpointOverridden()).toEqual(false);
 
     const v1AuthProvider = CredentialProvider.fromString({
       authToken: base64EncodedFakeV1AuthToken,
@@ -83,6 +89,8 @@ describe('StringMomentoTokenProvider', () => {
       `control.${decodedV1Token.endpoint}`
     );
     expect(v1AuthProvider.getCacheEndpoint()).toEqual('foo');
+    expect(v1AuthProvider.isCacheEndpointOverridden()).toEqual(true);
+    expect(v1AuthProvider.isControlEndpointOverridden()).toEqual(false);
   });
 
   it('parses a session token with endpoint overrides', () => {
