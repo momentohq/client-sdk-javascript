@@ -25,8 +25,8 @@ import {
   TopicRole,
   CacheRole,
   All,
-  CacheName,
-  TopicName,
+  isCacheName,
+  isTopicName,
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {AuthClientProps} from '../auth-client-props';
@@ -201,7 +201,12 @@ function topicPermissionToGrpcPermission(
   if (permission.cache instanceof All) {
     grpcPermission.all_caches =
       new grpcAuth._GenerateApiTokenRequest.PermissionsType.All();
-  } else if (permission.cache instanceof CacheName) {
+  } else if (typeof permission.cache === 'string') {
+    grpcPermission.cache_selector =
+      new grpcAuth._GenerateApiTokenRequest.PermissionsType.CacheSelector({
+        cache_name: permission.cache,
+      });
+  } else if (isCacheName(permission.cache)) {
     grpcPermission.cache_selector =
       new grpcAuth._GenerateApiTokenRequest.PermissionsType.CacheSelector({
         cache_name: permission.cache.name,
@@ -217,7 +222,12 @@ function topicPermissionToGrpcPermission(
   if (permission.topic instanceof All) {
     grpcPermission.all_topics =
       new grpcAuth._GenerateApiTokenRequest.PermissionsType.All();
-  } else if (permission.topic instanceof TopicName) {
+  } else if (typeof permission.topic === 'string') {
+    grpcPermission.topic_selector =
+      new grpcAuth._GenerateApiTokenRequest.PermissionsType.TopicSelector({
+        topic_name: permission.topic,
+      });
+  } else if (isTopicName(permission.topic)) {
     grpcPermission.topic_selector =
       new grpcAuth._GenerateApiTokenRequest.PermissionsType.TopicSelector({
         topic_name: permission.topic.name,
@@ -258,7 +268,12 @@ function cachePermissionToGrpcPermission(
   if (permission.cache instanceof All) {
     grpcPermission.all_caches =
       new grpcAuth._GenerateApiTokenRequest.PermissionsType.All();
-  } else if (permission.cache instanceof CacheName) {
+  } else if (typeof permission.cache === 'string') {
+    grpcPermission.cache_selector =
+      new grpcAuth._GenerateApiTokenRequest.PermissionsType.CacheSelector({
+        cache_name: permission.cache,
+      });
+  } else if (isCacheName(permission.cache)) {
     grpcPermission.cache_selector =
       new grpcAuth._GenerateApiTokenRequest.PermissionsType.CacheSelector({
         cache_name: permission.cache.name,

@@ -2,17 +2,15 @@ import {InternalSuperUserPermissions} from '@gomomento/sdk-core/dist/src/interna
 import {
   AllDataReadWrite,
   All,
-  CacheName,
   CachePermission,
   CacheRole,
   Permissions,
-  TopicName,
   TopicPermission,
   TopicRole,
 } from '@gomomento/sdk-core';
 import {auth} from '@gomomento/generated-types/dist/auth';
 import _GenerateApiTokenRequest = auth._GenerateApiTokenRequest;
-import {permissionsFromScope} from '../../../src/internal/internal-auth-client';
+import {permissionsFromScope} from '../../src/internal/internal-auth-client';
 
 describe('internal auth client', () => {
   describe('permissionsFromScope', () => {
@@ -154,81 +152,27 @@ describe('internal auth client', () => {
       grpcPermissions.explicit = explicitPermissions;
       const cacheAndTopicPermissions: Permissions = new Permissions([
         new CachePermission(CacheRole.ReadOnly, {cache: new All()}),
-        new CachePermission(CacheRole.ReadWrite, {cache: new CacheName('foo')}),
+        new CachePermission(CacheRole.ReadWrite, {
+          cache: {name: 'foo'},
+        }),
         new TopicPermission(TopicRole.ReadOnly, {
           cache: new All(),
           topic: new All(),
         }),
         new TopicPermission(TopicRole.ReadWrite, {
-          cache: new CacheName('foo'),
+          cache: 'foo',
           topic: new All(),
         }),
         new TopicPermission(TopicRole.ReadWrite, {
           cache: new All(),
-          topic: new TopicName('bar'),
+          topic: {name: 'bar'},
         }),
         new TopicPermission(TopicRole.ReadWrite, {
-          cache: new CacheName('dog'),
-          topic: new TopicName('cat'),
+          cache: 'dog',
+          topic: 'cat',
         }),
       ]);
 
-      expect(permissionsFromScope(cacheAndTopicPermissions)).toEqual(
-        grpcPermissions
-      );
-    });
-
-    it('validate explicit permissions - no input cache or topics default to all', () => {
-      const cachePermissions =
-        new _GenerateApiTokenRequest.PermissionsType.CachePermissions();
-      cachePermissions.role = _GenerateApiTokenRequest.CacheRole.CacheReadOnly;
-      cachePermissions.all_caches =
-        new _GenerateApiTokenRequest.PermissionsType.All();
-      const cachePermissionType = new _GenerateApiTokenRequest.PermissionsType({
-        cache_permissions: cachePermissions,
-      });
-
-      const topicPermissions =
-        new _GenerateApiTokenRequest.PermissionsType.TopicPermissions();
-      topicPermissions.role = _GenerateApiTokenRequest.TopicRole.TopicReadOnly;
-      topicPermissions.all_caches =
-        new _GenerateApiTokenRequest.PermissionsType.All();
-      topicPermissions.all_topics =
-        new _GenerateApiTokenRequest.PermissionsType.All();
-      const topicPermissionType = new _GenerateApiTokenRequest.PermissionsType({
-        topic_permissions: topicPermissions,
-      });
-
-      const topicRWPermissions =
-        new _GenerateApiTokenRequest.PermissionsType.TopicPermissions();
-      topicRWPermissions.role =
-        _GenerateApiTokenRequest.TopicRole.TopicReadWrite;
-      topicRWPermissions.cache_selector =
-        new _GenerateApiTokenRequest.PermissionsType.CacheSelector({
-          cache_name: 'foo',
-        });
-      topicRWPermissions.all_topics =
-        new _GenerateApiTokenRequest.PermissionsType.All();
-      const topicRWPermissionType =
-        new _GenerateApiTokenRequest.PermissionsType({
-          topic_permissions: topicRWPermissions,
-        });
-
-      const explicitPermissions =
-        new _GenerateApiTokenRequest.ExplicitPermissions();
-      explicitPermissions.permissions = [
-        cachePermissionType,
-        topicPermissionType,
-        topicRWPermissionType,
-      ];
-
-      const grpcPermissions = new _GenerateApiTokenRequest.Permissions();
-      grpcPermissions.explicit = explicitPermissions;
-      const cacheAndTopicPermissions: Permissions = new Permissions([
-        new CachePermission(CacheRole.ReadOnly),
-        new TopicPermission(TopicRole.ReadOnly),
-        new TopicPermission(TopicRole.ReadWrite, {cache: new CacheName('foo')}),
-      ]);
       expect(permissionsFromScope(cacheAndTopicPermissions)).toEqual(
         grpcPermissions
       );

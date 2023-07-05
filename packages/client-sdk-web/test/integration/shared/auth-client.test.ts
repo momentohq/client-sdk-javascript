@@ -4,6 +4,8 @@ import {SetupAuthClientIntegrationTest} from '../integration-setup';
 const {
   sessionTokenAuthClient,
   legacyTokenAuthClient,
+  sessionTokenCacheClient,
+  sessionTokenTopicClient,
   authTokenAuthClientFactory,
   cacheClientFactory,
   topicClientFactory,
@@ -13,6 +15,8 @@ const {
 runAuthClientTests(
   sessionTokenAuthClient,
   legacyTokenAuthClient,
+  sessionTokenCacheClient,
+  sessionTokenTopicClient,
   authTokenAuthClientFactory,
   cacheClientFactory,
   topicClientFactory,

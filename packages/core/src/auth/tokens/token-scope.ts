@@ -5,13 +5,13 @@ export enum CacheRole {
 }
 
 export class All {}
-export class CacheName {
+export interface CacheName {
   name: string;
-  constructor(name: string) {
-    this.name = name;
-  }
 }
-export type CacheSelector = All | CacheName;
+export function isCacheName(cache: CacheName | All): cache is CacheName {
+  return 'name' in cache;
+}
+export type CacheSelector = All | CacheName | string;
 
 export interface CachePermissionOptions {
   /**
@@ -36,13 +36,13 @@ export enum TopicRole {
   ReadOnly = 'readonly',
 }
 
-export class TopicName {
+export interface TopicName {
   name: string;
-  constructor(name: string) {
-    this.name = name;
-  }
 }
-export type TopicSelector = All | TopicName;
+export function isTopicName(topic: TopicName | All): topic is TopicName {
+  return 'name' in topic;
+}
+export type TopicSelector = All | TopicName | string;
 
 export interface TopicPermissionOptions {
   /**
@@ -77,11 +77,8 @@ export class Permissions {
 }
 
 export const AllDataReadWrite: Permissions = new Permissions([
-  new CachePermission(CacheRole.ReadWrite, {cache: new All()}),
-  new TopicPermission(TopicRole.ReadWrite, {
-    cache: new All(),
-    topic: new All(),
-  }),
+  new CachePermission(CacheRole.ReadWrite),
+  new TopicPermission(TopicRole.ReadWrite),
 ]);
 
 export abstract class PredefinedScope {}

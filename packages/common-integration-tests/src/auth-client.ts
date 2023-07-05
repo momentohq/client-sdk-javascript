@@ -32,6 +32,8 @@ const SUPER_USER_PERMISSIONS: TokenScope = new InternalSuperUserPermissions();
 export function runAuthClientTests(
   sessionTokenAuthClient: IAuthClient,
   legacyTokenAuthClient: IAuthClient,
+  sessionTokenCacheClient: ICacheClient,
+  sessionTokenTopicClient: ITopicClient,
   authTokenAuthClientFactory: (authToken: string) => IAuthClient,
   cacheClientFactory: (token: string) => ICacheClient,
   topicClientFactory: (token: string) => ITopicClient,
@@ -359,8 +361,6 @@ export function runAuthClientTests(
     const FGA_CACHE_1_VALUE = 'FOO';
     const FGA_CACHE_2_KEY = 'bar';
     const FGA_CACHE_2_VALUE = 'BAR';
-    let superUserCacheClient: ICacheClient;
-    let superUserTopicClient: ITopicClient;
 
     const trivialHandlers: SubscribeCallOptions = {
       onError: () => {
@@ -373,38 +373,27 @@ export function runAuthClientTests(
 
     // Setup 2 caches, and 2 topics on the first cache.
     beforeAll(async () => {
-      const superUserTokenResponse =
-        await sessionTokenAuthClient.generateAuthToken(
-          SUPER_USER_PERMISSIONS,
-          ExpiresIn.seconds(600)
-        );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
-      const superUserToken = (
-        superUserTokenResponse as GenerateAuthToken.Success
-      ).authToken;
-      superUserCacheClient = cacheClientFactory(superUserToken);
       expect(
-        await superUserCacheClient.createCache(FGA_CACHE_1)
+        await sessionTokenCacheClient.createCache(FGA_CACHE_1)
       ).toBeInstanceOf(CreateCache.Success);
       expect(
-        await superUserCacheClient.createCache(FGA_CACHE_2)
+        await sessionTokenCacheClient.createCache(FGA_CACHE_2)
       ).toBeInstanceOf(CreateCache.Success);
       expect(
-        await superUserCacheClient.set(FGA_CACHE_1, 'foo', 'FOO', {ttl: 600})
+        await sessionTokenCacheClient.set(FGA_CACHE_1, 'foo', 'FOO', {ttl: 600})
       ).toBeInstanceOf(CacheSet.Success);
       expect(
-        await superUserCacheClient.set(FGA_CACHE_2, 'bar', 'BAR', {ttl: 600})
+        await sessionTokenCacheClient.set(FGA_CACHE_2, 'bar', 'BAR', {ttl: 600})
       ).toBeInstanceOf(CacheSet.Success);
-      superUserTopicClient = topicClientFactory(superUserToken);
       expect(
-        await superUserTopicClient.publish(
+        await sessionTokenTopicClient.publish(
           FGA_CACHE_1,
           FGA_TOPIC_1,
           'it is a nice day today!'
         )
       ).toBeInstanceOf(TopicPublish.Success);
       expect(
-        await superUserTopicClient.publish(
+        await sessionTokenTopicClient.publish(
           FGA_CACHE_1,
           FGA_TOPIC_2,
           'This weird trick will make you a better developer...'
@@ -426,13 +415,20 @@ export function runAuthClientTests(
       ).authToken;
       const cacheClient = cacheClientFactory(readAllCachesToken);
       // 1. Sets should fail
-      // TODO - add exact error code and message match once mr2rs changes are ready
       const setError1 = await cacheClient.set(FGA_CACHE_1, 'homer', 'simpson');
       expect(setError1).toBeInstanceOf(CacheSet.Error);
+      expect(setError1).toHaveProperty(
+        'errorCode',
+        MomentoErrorCode.PERMISSION_ERROR
+      );
       const setError2 = await cacheClient.set(FGA_CACHE_2, 'oye', 'caramba', {
         ttl: 30,
       });
       expect(setError2).toBeInstanceOf(CacheSet.Error);
+      expect(setError2).toHaveProperty(
+        'errorCode',
+        MomentoErrorCode.PERMISSION_ERROR
+      );
 
       // 2. Gets for existing keys should succeed with hits
       const hitResp1 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
@@ -449,17 +445,27 @@ export function runAuthClientTests(
       expect(missResp2).toBeInstanceOf(CacheGet.Miss);
 
       const topicClient = topicClientFactory(readAllCachesToken);
-      // TODO add checks for error code and error message once mr2rs changes are ready
-      expect(
-        await topicClient.publish(FGA_CACHE_1, FGA_TOPIC_1, 'breaking news!')
-      ).toBeInstanceOf(TopicPublish.Error);
+      const pubResp = await topicClient.publish(
+        FGA_CACHE_1,
+        FGA_TOPIC_1,
+        'breaking news!'
+      );
+      expect(pubResp).toBeInstanceOf(TopicPublish.Error);
+      expect(pubResp).toHaveProperty(
+        'errorCode',
+        MomentoErrorCode.PERMISSION_ERROR
+      );
 
-      const subscribeResponse = await topicClient.subscribe(
+      const subResp = await topicClient.subscribe(
         FGA_CACHE_1,
         FGA_TOPIC_1,
         trivialHandlers
       );
-      expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Error);
+      expect(subResp).toBeInstanceOf(TopicSubscribe.Error);
+      expect(subResp).toHaveProperty(
+        'errorCode',
+        MomentoErrorCode.PERMISSION_ERROR
+      );
     });
 
     it('can read/write cache foo and all topics in cache bar', async () => {
@@ -482,32 +488,48 @@ export function runAuthClientTests(
       const setResp = await cacheClient.set(FGA_CACHE_1, 'ned', 'flanders');
       expect(setResp).toBeInstanceOf(CacheSet.Success);
 
-      const hitResp1 = await cacheClient.get(FGA_CACHE_1, 'ned');
-      expect(hitResp1).toBeInstanceOf(CacheGet.Hit);
-      expect(hitResp1).toHaveProperty('valueString', 'flanders');
+      const hitResp = await cacheClient.get(FGA_CACHE_1, 'ned');
+      expect(hitResp).toBeInstanceOf(CacheGet.Hit);
+      expect(hitResp).toHaveProperty('valueString', 'flanders');
 
       // Read/Write on cache `bar` is not allowed
-      // TODO add checks for error code and error message once mr2rs changes are ready
-      expect(
-        await cacheClient.set(FGA_CACHE_2, 'flaming', 'mo')
-      ).toBeInstanceOf(CacheSet.Error);
-      expect(await cacheClient.get(FGA_CACHE_2, 'flaming')).toBeInstanceOf(
-        CacheGet.Error
+      const setResp1 = await cacheClient.set(FGA_CACHE_2, 'flaming', 'mo');
+      expect(setResp1).toBeInstanceOf(CacheSet.Error);
+      expect(setResp1).toHaveProperty(
+        'errorCode',
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      const getResp1 = await cacheClient.get(FGA_CACHE_2, 'flaming');
+      expect(getResp1).toBeInstanceOf(CacheGet.Error);
+      expect(getResp1).toHaveProperty(
+        'errorCode',
+        MomentoErrorCode.PERMISSION_ERROR
       );
 
       const topicClient = topicClientFactory(token);
-
-      // TODO add checks for error code and error message once mr2rs changes are ready
-      expect(
-        await topicClient.publish(FGA_CACHE_1, FGA_TOPIC_1, 'breaking news!')
-      ).toBeInstanceOf(TopicPublish.Error);
-      const subscribeError = await topicClient.subscribe(
+      // Read/Write on topics in cache foo not allowed
+      const pubResp = await topicClient.publish(
+        FGA_CACHE_1,
+        FGA_TOPIC_1,
+        'breaking news!'
+      );
+      expect(pubResp).toBeInstanceOf(TopicPublish.Error);
+      expect(pubResp).toHaveProperty(
+        'errorCode',
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      const subResp = await topicClient.subscribe(
         FGA_CACHE_1,
         FGA_TOPIC_1,
         trivialHandlers
       );
-      expect(subscribeError).toBeInstanceOf(TopicSubscribe.Error);
+      expect(subResp).toBeInstanceOf(TopicSubscribe.Error);
+      expect(subResp).toHaveProperty(
+        'errorCode',
+        MomentoErrorCode.PERMISSION_ERROR
+      );
 
+      // Read/Write on topics in cache bar is allowed
       expect(
         await topicClient.publish(FGA_CACHE_2, FGA_TOPIC_2, 'breaking news!')
       ).toBeInstanceOf(TopicPublish.Success);
@@ -523,10 +545,10 @@ export function runAuthClientTests(
 
     afterAll(async () => {
       expect(
-        await superUserCacheClient.deleteCache(FGA_CACHE_1)
+        await sessionTokenCacheClient.deleteCache(FGA_CACHE_1)
       ).toBeInstanceOf(DeleteCache.Success);
       expect(
-        await superUserCacheClient.deleteCache(FGA_CACHE_2)
+        await sessionTokenCacheClient.deleteCache(FGA_CACHE_2)
       ).toBeInstanceOf(DeleteCache.Success);
     });
   });

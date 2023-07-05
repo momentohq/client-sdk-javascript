@@ -120,7 +120,9 @@ export {
   TokenScope,
   All,
   CacheName,
+  isCacheName,
   TopicName,
+  isTopicName,
   CacheSelector,
   TopicSelector,
 } from './auth/tokens/token-scope';
