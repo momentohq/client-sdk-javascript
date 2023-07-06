@@ -389,7 +389,7 @@ export function runAuthClientTests(
       const readAllCachesTokenResponse =
         await sessionTokenAuthClient.generateAuthToken(
           new Permissions([new CachePermission(CacheRole.ReadOnly)]),
-          ExpiresIn.seconds(10)
+          ExpiresIn.seconds(60)
         );
       expect(readAllCachesTokenResponse).toBeInstanceOf(
         GenerateAuthToken.Success
@@ -399,20 +399,19 @@ export function runAuthClientTests(
       ).authToken;
       const cacheClient = cacheClientFactory(readAllCachesToken);
       // 1. Sets should fail
-      const setError1 = await cacheClient.set(FGA_CACHE_1, 'homer', 'simpson');
-      expect(setError1).toBeInstanceOf(CacheSet.Error);
-      expect(setError1).toHaveProperty(
-        'errorCode',
-        MomentoErrorCode.PERMISSION_ERROR
-      );
-      const setError2 = await cacheClient.set(FGA_CACHE_2, 'oye', 'caramba', {
+      const setResp1 = await cacheClient.set(FGA_CACHE_1, 'homer', 'simpson');
+      expect(setResp1).toBeInstanceOf(CacheSet.Error);
+      const setError1 = setResp1 as CacheSet.Error;
+      expect(setError1.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(setError1.message()).toContain('Insufficient permissions');
+
+      const setResp2 = await cacheClient.set(FGA_CACHE_2, 'oye', 'caramba', {
         ttl: 30,
       });
-      expect(setError2).toBeInstanceOf(CacheSet.Error);
-      expect(setError2).toHaveProperty(
-        'errorCode',
-        MomentoErrorCode.PERMISSION_ERROR
-      );
+      expect(setResp2).toBeInstanceOf(CacheSet.Error);
+      const setError2 = setResp2 as CacheSet.Error;
+      expect(setError2.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(setError2.message()).toContain('Insufficient permissions');
 
       // 2. Gets for existing keys should succeed with hits
       const hitResp1 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
@@ -435,10 +434,9 @@ export function runAuthClientTests(
         'There is a werewolf in the City Watch!!!!!'
       );
       expect(pubResp).toBeInstanceOf(TopicPublish.Error);
-      expect(pubResp).toHaveProperty(
-        'errorCode',
-        MomentoErrorCode.PERMISSION_ERROR
-      );
+      const pubError = pubResp as TopicPublish.Error;
+      expect(pubError.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(pubError.message()).toContain('Insufficient permissions');
 
       const subResp = await topicClient.subscribe(
         FGA_CACHE_1,
@@ -446,17 +444,16 @@ export function runAuthClientTests(
         trivialHandlers
       );
       expect(subResp).toBeInstanceOf(TopicSubscribe.Error);
-      expect(subResp).toHaveProperty(
-        'errorCode',
-        MomentoErrorCode.PERMISSION_ERROR
-      );
+      const subError = subResp as TopicSubscribe.Error;
+      expect(subError.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(subError.message()).toContain('Insufficient permissions');
     });
 
     it('can only read all topics', async () => {
       const readAllTopicsTokenResponse =
         await sessionTokenAuthClient.generateAuthToken(
           new Permissions([new TopicPermission(TopicRole.ReadOnly)]),
-          ExpiresIn.seconds(10)
+          ExpiresIn.seconds(60)
         );
       expect(readAllTopicsTokenResponse).toBeInstanceOf(
         GenerateAuthToken.Success
@@ -468,25 +465,30 @@ export function runAuthClientTests(
       // Sets should fail
       const setResp1 = await cacheClient.set(FGA_CACHE_1, 'homer', 'simpson');
       expect(setResp1).toBeInstanceOf(CacheSet.Error);
-      expect(setResp1).toHaveProperty(
-        'errorCode',
-        MomentoErrorCode.PERMISSION_ERROR
-      );
+      const setError1 = setResp1 as CacheSet.Error;
+      expect(setError1.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(setError1.message()).toContain('Insufficient permissions');
+
       const setResp2 = await cacheClient.set(FGA_CACHE_2, 'oye', 'caramba', {
         ttl: 30,
       });
       expect(setResp2).toBeInstanceOf(CacheSet.Error);
-      expect(setResp2).toHaveProperty(
-        'errorCode',
-        MomentoErrorCode.PERMISSION_ERROR
-      );
+      const setError2 = setResp2 as CacheSet.Error;
+      expect(setError2.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(setError2.message()).toContain('Insufficient permissions');
 
       // Gets should fail
       const getResp1 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
       expect(getResp1).toBeInstanceOf(CacheGet.Error);
-      expect(getResp1).toHaveProperty('valueString', FGA_CACHE_1_VALUE);
+      const getError1 = getResp1 as CacheGet.Error;
+      expect(getError1.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(getError1.message()).toContain('Insufficient permissions');
+
       const getResp2 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
       expect(getResp2).toBeInstanceOf(CacheGet.Error);
+      const getError2 = getResp2 as CacheGet.Error;
+      expect(getError2.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(getError2.message()).toContain('Insufficient permissions');
 
       const topicClient = topicClientFactory(readAllTopicsToken);
       // Publish should fail
@@ -496,10 +498,9 @@ export function runAuthClientTests(
         'The Truth Shall Make Ye Fret'
       );
       expect(pubResp).toBeInstanceOf(TopicPublish.Error);
-      expect(pubResp).toHaveProperty(
-        'errorCode',
-        MomentoErrorCode.PERMISSION_ERROR
-      );
+      const pubError = pubResp as TopicPublish.Error;
+      expect(pubError.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(pubError.message()).toContain('Insufficient permissions');
 
       // Subscribe should succeed
       const subResp = await topicClient.subscribe(
@@ -520,7 +521,7 @@ export function runAuthClientTests(
             cache: {name: FGA_CACHE_2},
           }),
         ]),
-        ExpiresIn.seconds(10)
+        ExpiresIn.seconds(60)
       );
       expect(tokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
       const token = (tokenResponse as GenerateAuthToken.Success).authToken;
@@ -537,16 +538,15 @@ export function runAuthClientTests(
       // Read/Write on cache FGA_CACHE_2 is not allowed
       const setResp1 = await cacheClient.set(FGA_CACHE_2, 'flaming', 'mo');
       expect(setResp1).toBeInstanceOf(CacheSet.Error);
-      expect(setResp1).toHaveProperty(
-        'errorCode',
-        MomentoErrorCode.PERMISSION_ERROR
-      );
+      const setError1 = setResp1 as CacheSet.Error;
+      expect(setError1.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(setError1.message()).toContain('Insufficient permissions');
+
       const getResp1 = await cacheClient.get(FGA_CACHE_2, 'flaming');
       expect(getResp1).toBeInstanceOf(CacheGet.Error);
-      expect(getResp1).toHaveProperty(
-        'errorCode',
-        MomentoErrorCode.PERMISSION_ERROR
-      );
+      const getError1 = getResp1 as CacheGet.Error;
+      expect(getError1.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(getError1.message()).toContain('Insufficient permissions');
 
       const topicClient = topicClientFactory(token);
       // Read/Write on topics in cache FGA_CACHE_1 is not allowed
@@ -556,20 +556,19 @@ export function runAuthClientTests(
         'Flying lizard seen over Manhattan!'
       );
       expect(pubResp).toBeInstanceOf(TopicPublish.Error);
-      expect(pubResp).toHaveProperty(
-        'errorCode',
-        MomentoErrorCode.PERMISSION_ERROR
-      );
+      const pubError = pubResp as TopicPublish.Error;
+      expect(pubError.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(pubError.message()).toContain('Insufficient permissions');
+
       const subResp = await topicClient.subscribe(
         FGA_CACHE_1,
         'breaking news!',
         trivialHandlers
       );
       expect(subResp).toBeInstanceOf(TopicSubscribe.Error);
-      expect(subResp).toHaveProperty(
-        'errorCode',
-        MomentoErrorCode.PERMISSION_ERROR
-      );
+      const subError = subResp as TopicSubscribe.Error;
+      expect(subError.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(subError.message()).toContain('Insufficient permissions');
 
       // Read/Write on topics in cache FGA_CACHE_2 is allowed
       expect(
