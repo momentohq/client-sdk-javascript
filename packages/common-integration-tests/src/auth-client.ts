@@ -385,6 +385,73 @@ export function runAuthClientTests(
       ).toBeInstanceOf(CacheSet.Success);
     });
 
+    it('cannot create token with empty permission list', async () => {
+      const tokenResponse = await sessionTokenAuthClient.generateAuthToken(
+        new Permissions([]),
+        ExpiresIn.seconds(60)
+      );
+      expect(tokenResponse).toBeInstanceOf(GenerateAuthToken.Error);
+      const tokenError = tokenResponse as GenerateAuthToken.Error;
+      expect(tokenError.errorCode()).toEqual(
+        MomentoErrorCode.INVALID_ARGUMENT_ERROR
+      );
+    });
+
+    it('cannot create token with duplicate/conflicting cache permissions - all caches', async () => {
+      const tokenResponse = await sessionTokenAuthClient.generateAuthToken(
+        new Permissions([
+          new CachePermission(CacheRole.ReadOnly),
+          new CachePermission(CacheRole.ReadWrite),
+        ]),
+        ExpiresIn.seconds(60)
+      );
+      expect(tokenResponse).toBeInstanceOf(GenerateAuthToken.Error);
+      const tokenError = tokenResponse as GenerateAuthToken.Error;
+      expect(tokenError.errorCode()).toEqual(
+        MomentoErrorCode.INVALID_ARGUMENT_ERROR
+      );
+    });
+
+    it('cannot create token with duplicate/conflicting cache permissions - cache name', async () => {
+      const tokenResponse = await sessionTokenAuthClient.generateAuthToken(
+        new Permissions([
+          new CachePermission(CacheRole.ReadOnly, {
+            cache: {name: 'i-am-groot'},
+          }),
+          new CachePermission(CacheRole.ReadWrite, {
+            cache: {name: 'i-am-groot'},
+          }),
+        ]),
+        ExpiresIn.seconds(60)
+      );
+      expect(tokenResponse).toBeInstanceOf(GenerateAuthToken.Error);
+      const tokenError = tokenResponse as GenerateAuthToken.Error;
+      expect(tokenError.errorCode()).toEqual(
+        MomentoErrorCode.INVALID_ARGUMENT_ERROR
+      );
+    });
+
+    it('cannot create token with duplicate/conflicting topic permissions - cache + topic name', async () => {
+      const tokenResponse = await sessionTokenAuthClient.generateAuthToken(
+        new Permissions([
+          new TopicPermission(TopicRole.ReadOnly, {
+            cache: {name: 'i-am-groot'},
+            topic: {name: 'rocket-raccoon'},
+          }),
+          new TopicPermission(TopicRole.ReadWrite, {
+            cache: {name: 'i-am-groot'},
+            topic: {name: 'rocket-raccoon'},
+          }),
+        ]),
+        ExpiresIn.seconds(60)
+      );
+      expect(tokenResponse).toBeInstanceOf(GenerateAuthToken.Error);
+      const tokenError = tokenResponse as GenerateAuthToken.Error;
+      expect(tokenError.errorCode()).toEqual(
+        MomentoErrorCode.INVALID_ARGUMENT_ERROR
+      );
+    });
+
     it('can only read all caches', async () => {
       const readAllCachesTokenResponse =
         await sessionTokenAuthClient.generateAuthToken(
