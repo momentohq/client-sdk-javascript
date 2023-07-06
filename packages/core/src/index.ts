@@ -118,13 +118,14 @@ export {
   Permissions,
   AllDataReadWrite,
   TokenScope,
-  All,
   CacheName,
   isCacheName,
   TopicName,
   isTopicName,
   CacheSelector,
   TopicSelector,
+  AllCaches,
+  AllTopics,
 } from './auth/tokens/token-scope';
 
 export {

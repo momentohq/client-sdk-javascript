@@ -1,7 +1,8 @@
 import {InternalSuperUserPermissions} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
   AllDataReadWrite,
-  All,
+  AllCaches,
+  AllTopics,
   CachePermission,
   CacheRole,
   Permissions,
@@ -151,20 +152,20 @@ describe('internal auth client', () => {
       const grpcPermissions = new _GenerateApiTokenRequest.Permissions();
       grpcPermissions.explicit = explicitPermissions;
       const cacheAndTopicPermissions: Permissions = new Permissions([
-        new CachePermission(CacheRole.ReadOnly, {cache: new All()}),
+        new CachePermission(CacheRole.ReadOnly, {cache: AllCaches}),
         new CachePermission(CacheRole.ReadWrite, {
           cache: {name: 'foo'},
         }),
         new TopicPermission(TopicRole.ReadOnly, {
-          cache: new All(),
-          topic: new All(),
+          cache: AllCaches,
+          topic: AllTopics,
         }),
         new TopicPermission(TopicRole.ReadWrite, {
           cache: 'foo',
-          topic: new All(),
+          topic: AllTopics,
         }),
         new TopicPermission(TopicRole.ReadWrite, {
-          cache: new All(),
+          cache: AllCaches,
           topic: {name: 'bar'},
         }),
         new TopicPermission(TopicRole.ReadWrite, {

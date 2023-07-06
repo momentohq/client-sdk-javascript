@@ -355,8 +355,6 @@ export function runAuthClientTests(
   describe('Fine grained authorization scenarios', () => {
     const FGA_CACHE_1 = 'fga-' + v4();
     const FGA_CACHE_2 = 'fga-' + v4();
-    const FGA_TOPIC_1 = 'topic-1';
-    const FGA_TOPIC_2 = 'topic-2';
     const FGA_CACHE_1_KEY = 'foo';
     const FGA_CACHE_1_VALUE = 'FOO';
     const FGA_CACHE_2_KEY = 'bar';
@@ -371,7 +369,7 @@ export function runAuthClientTests(
       },
     };
 
-    // Setup 2 caches, and 2 topics on the first cache.
+    // Setup 2 caches
     beforeAll(async () => {
       expect(
         await sessionTokenCacheClient.createCache(FGA_CACHE_1)
@@ -385,20 +383,6 @@ export function runAuthClientTests(
       expect(
         await sessionTokenCacheClient.set(FGA_CACHE_2, 'bar', 'BAR', {ttl: 600})
       ).toBeInstanceOf(CacheSet.Success);
-      expect(
-        await sessionTokenTopicClient.publish(
-          FGA_CACHE_1,
-          FGA_TOPIC_1,
-          'it is a nice day today!'
-        )
-      ).toBeInstanceOf(TopicPublish.Success);
-      expect(
-        await sessionTokenTopicClient.publish(
-          FGA_CACHE_1,
-          FGA_TOPIC_2,
-          'This weird trick will make you a better developer...'
-        )
-      ).toBeInstanceOf(TopicPublish.Success);
     });
 
     it('can only read all caches', async () => {
@@ -447,8 +431,8 @@ export function runAuthClientTests(
       const topicClient = topicClientFactory(readAllCachesToken);
       const pubResp = await topicClient.publish(
         FGA_CACHE_1,
-        FGA_TOPIC_1,
-        'breaking news!'
+        'Ankh-Morpork Inquirer',
+        'There is a werewolf in the City Watch!!!!!'
       );
       expect(pubResp).toBeInstanceOf(TopicPublish.Error);
       expect(pubResp).toHaveProperty(
@@ -458,7 +442,7 @@ export function runAuthClientTests(
 
       const subResp = await topicClient.subscribe(
         FGA_CACHE_1,
-        FGA_TOPIC_1,
+        'Ankh-Morpork Inquirer',
         trivialHandlers
       );
       expect(subResp).toBeInstanceOf(TopicSubscribe.Error);
@@ -468,14 +452,72 @@ export function runAuthClientTests(
       );
     });
 
-    it('can read/write cache foo and all topics in cache bar', async () => {
+    it('can only read all topics', async () => {
+      const readAllTopicsTokenResponse =
+        await sessionTokenAuthClient.generateAuthToken(
+          new Permissions([new TopicPermission(TopicRole.ReadOnly)]),
+          ExpiresIn.seconds(10)
+        );
+      expect(readAllTopicsTokenResponse).toBeInstanceOf(
+        GenerateAuthToken.Success
+      );
+      const readAllTopicsToken = (
+        readAllTopicsTokenResponse as GenerateAuthToken.Success
+      ).authToken;
+      const cacheClient = cacheClientFactory(readAllTopicsToken);
+      // Sets should fail
+      const setResp1 = await cacheClient.set(FGA_CACHE_1, 'homer', 'simpson');
+      expect(setResp1).toBeInstanceOf(CacheSet.Error);
+      expect(setResp1).toHaveProperty(
+        'errorCode',
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      const setResp2 = await cacheClient.set(FGA_CACHE_2, 'oye', 'caramba', {
+        ttl: 30,
+      });
+      expect(setResp2).toBeInstanceOf(CacheSet.Error);
+      expect(setResp2).toHaveProperty(
+        'errorCode',
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+
+      // Gets should fail
+      const getResp1 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
+      expect(getResp1).toBeInstanceOf(CacheGet.Error);
+      expect(getResp1).toHaveProperty('valueString', FGA_CACHE_1_VALUE);
+      const getResp2 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
+      expect(getResp2).toBeInstanceOf(CacheGet.Error);
+
+      const topicClient = topicClientFactory(readAllTopicsToken);
+      // Publish should fail
+      const pubResp = await topicClient.publish(
+        FGA_CACHE_1,
+        'The Ankh-Morpork Times',
+        'The Truth Shall Make Ye Fret'
+      );
+      expect(pubResp).toBeInstanceOf(TopicPublish.Error);
+      expect(pubResp).toHaveProperty(
+        'errorCode',
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+
+      // Subscribe should succeed
+      const subResp = await topicClient.subscribe(
+        FGA_CACHE_1,
+        'The Ankh-Morpork Times',
+        trivialHandlers
+      );
+      expect(subResp).toBeInstanceOf(TopicSubscribe.Subscription);
+    });
+
+    it('can read/write cache FGA_CACHE_1 and read/write all topics in cache FGA_CACHE_2', async () => {
       const tokenResponse = await sessionTokenAuthClient.generateAuthToken(
         new Permissions([
           new CachePermission(CacheRole.ReadWrite, {
             cache: {name: FGA_CACHE_1},
           }),
           new TopicPermission(TopicRole.ReadWrite, {
-            cache: {name: FGA_CACHE_1},
+            cache: {name: FGA_CACHE_2},
           }),
         ]),
         ExpiresIn.seconds(10)
@@ -484,7 +526,7 @@ export function runAuthClientTests(
       const token = (tokenResponse as GenerateAuthToken.Success).authToken;
       const cacheClient = cacheClientFactory(token);
 
-      // Read/Write on cache `foo` is allowed
+      // Read/Write on cache FGA_CACHE_1 is allowed
       const setResp = await cacheClient.set(FGA_CACHE_1, 'ned', 'flanders');
       expect(setResp).toBeInstanceOf(CacheSet.Success);
 
@@ -492,7 +534,7 @@ export function runAuthClientTests(
       expect(hitResp).toBeInstanceOf(CacheGet.Hit);
       expect(hitResp).toHaveProperty('valueString', 'flanders');
 
-      // Read/Write on cache `bar` is not allowed
+      // Read/Write on cache FGA_CACHE_2 is not allowed
       const setResp1 = await cacheClient.set(FGA_CACHE_2, 'flaming', 'mo');
       expect(setResp1).toBeInstanceOf(CacheSet.Error);
       expect(setResp1).toHaveProperty(
@@ -507,11 +549,11 @@ export function runAuthClientTests(
       );
 
       const topicClient = topicClientFactory(token);
-      // Read/Write on topics in cache foo not allowed
+      // Read/Write on topics in cache FGA_CACHE_1 is not allowed
       const pubResp = await topicClient.publish(
         FGA_CACHE_1,
-        FGA_TOPIC_1,
-        'breaking news!'
+        'breaking news!',
+        'Flying lizard seen over Manhattan!'
       );
       expect(pubResp).toBeInstanceOf(TopicPublish.Error);
       expect(pubResp).toHaveProperty(
@@ -520,7 +562,7 @@ export function runAuthClientTests(
       );
       const subResp = await topicClient.subscribe(
         FGA_CACHE_1,
-        FGA_TOPIC_1,
+        'breaking news!',
         trivialHandlers
       );
       expect(subResp).toBeInstanceOf(TopicSubscribe.Error);
@@ -529,13 +571,13 @@ export function runAuthClientTests(
         MomentoErrorCode.PERMISSION_ERROR
       );
 
-      // Read/Write on topics in cache bar is allowed
+      // Read/Write on topics in cache FGA_CACHE_2 is allowed
       expect(
-        await topicClient.publish(FGA_CACHE_2, FGA_TOPIC_2, 'breaking news!')
+        await topicClient.publish(FGA_CACHE_2, 'breaking news!', 'UFOs spotted')
       ).toBeInstanceOf(TopicPublish.Success);
       const subscribeResponse = await topicClient.subscribe(
         FGA_CACHE_2,
-        FGA_TOPIC_2,
+        'breaking news!',
         trivialHandlers
       );
       expectWithMessage(() => {

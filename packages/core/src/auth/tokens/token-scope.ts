@@ -4,7 +4,10 @@ export enum CacheRole {
   ReadOnly = 'readonly',
 }
 
-export class All {}
+class All {}
+export const AllCaches = new All();
+export const AllTopics = new All();
+
 export interface CacheName {
   name: string;
 }
@@ -26,7 +29,7 @@ export class CachePermission {
 
   constructor(cacheRole: CacheRole, options?: CachePermissionOptions) {
     this.cacheRole = cacheRole;
-    this.cache = options?.cache ?? new All();
+    this.cache = options?.cache ?? AllCaches;
   }
 }
 
@@ -61,8 +64,8 @@ export class TopicPermission {
   topic: TopicSelector;
   constructor(topicRole: TopicRole, options?: TopicPermissionOptions) {
     this.topicRole = topicRole;
-    this.cache = options?.cache ?? new All();
-    this.topic = options?.topic ?? new All();
+    this.cache = options?.cache ?? AllCaches;
+    this.topic = options?.topic ?? AllTopics;
   }
 }
 

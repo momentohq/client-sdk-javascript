@@ -24,7 +24,8 @@ import {
   CachePermission,
   TopicRole,
   CacheRole,
-  All,
+  AllCaches,
+  AllTopics,
   isCacheName,
   isTopicName,
 } from '@gomomento/sdk-core';
@@ -198,7 +199,7 @@ function topicPermissionToGrpcPermission(
     }
   }
 
-  if (permission.cache instanceof All) {
+  if (permission.cache === AllCaches) {
     grpcPermission.all_caches =
       new grpcAuth._GenerateApiTokenRequest.PermissionsType.All();
   } else if (typeof permission.cache === 'string') {
@@ -219,7 +220,7 @@ function topicPermissionToGrpcPermission(
     );
   }
 
-  if (permission.topic instanceof All) {
+  if (permission.topic === AllTopics) {
     grpcPermission.all_topics =
       new grpcAuth._GenerateApiTokenRequest.PermissionsType.All();
   } else if (typeof permission.topic === 'string') {
@@ -265,7 +266,7 @@ function cachePermissionToGrpcPermission(
     }
   }
 
-  if (permission.cache instanceof All) {
+  if (permission.cache === AllCaches) {
     grpcPermission.all_caches =
       new grpcAuth._GenerateApiTokenRequest.PermissionsType.All();
   } else if (typeof permission.cache === 'string') {
