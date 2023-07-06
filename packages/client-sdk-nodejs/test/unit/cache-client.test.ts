@@ -7,9 +7,13 @@ import {
   StringMomentoTokenProvider,
 } from '../../src';
 import {SimpleCacheClientProps} from '../../src/cache-client-props';
+
+// This auth token is syntactically correct but not actually valid; it won't work with the real Momento Servers.
+// Used only for unit testing the constructors etc.
+const fakeAuthTokenForTesting =
+  'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzcXVpcnJlbCIsImNwIjoiY29udHJvbCBwbGFuZSBlbmRwb2ludCIsImMiOiJkYXRhIHBsYW5lIGVuZHBvaW50In0.zsTsEXFawetTCZI';
 const credentialProvider = new StringMomentoTokenProvider({
-  authToken:
-    'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzcXVpcnJlbCIsImNwIjoiY29udHJvbCBwbGFuZSBlbmRwb2ludCIsImMiOiJkYXRhIHBsYW5lIGVuZHBvaW50In0.zsTsEXFawetTCZI',
+  authToken: fakeAuthTokenForTesting,
 });
 const configuration = Configurations.Laptop.latest();
 
