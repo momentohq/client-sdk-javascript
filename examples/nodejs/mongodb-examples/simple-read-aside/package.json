@@ -1,5 +1,5 @@
 {
-  "name": "momento-mongodb-read-aside",
+  "name": "example-momento-mongodb-read-aside",
   "version": "0.1.0",
   "author": "NoSQLKnowHow",
   "description": "A quick example of using Momento Cache as a read-aside cache with MongoDB.",
