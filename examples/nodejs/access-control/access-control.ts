@@ -7,11 +7,8 @@ import {
   CredentialProvider,
   DeleteCache,
   AuthClient,
-  AllDataReadWrite,
   ExpiresIn,
   GenerateAuthToken,
-  ListCaches,
-  RefreshAuthToken,
   TokenScope,
   Permissions,
   CachePermission,
@@ -22,7 +19,7 @@ import {
   AllTopics,
 } from '@gomomento/sdk';
 
-async function example_API_CreateCache(cacheClient: CacheClient, cacheName: string) {
+async function createCache(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.createCache(cacheName);
   if (result instanceof CreateCache.Success) {
     console.log(`Cache ${cacheName} created`);
@@ -35,7 +32,7 @@ async function example_API_CreateCache(cacheClient: CacheClient, cacheName: stri
   }
 }
 
-async function example_API_DeleteCache(cacheClient: CacheClient, cacheName: string) {
+async function deleteCache(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.deleteCache(cacheName);
   if (result instanceof DeleteCache.Success) {
     console.log(`Cache ${cacheName} deleted`);
@@ -46,7 +43,7 @@ async function example_API_DeleteCache(cacheClient: CacheClient, cacheName: stri
   }
 }
 
-async function example_API_Set(cacheClient: CacheClient, cacheName: string, key: string, value: string) {
+async function set(cacheClient: CacheClient, cacheName: string, key: string, value: string) {
   const result = await cacheClient.set(cacheName, key, value);
   if (result instanceof CacheSet.Success) {
     console.log(`Key ${key} stored successfully in ${cacheName}`);
@@ -57,7 +54,7 @@ async function example_API_Set(cacheClient: CacheClient, cacheName: string, key:
   }
 }
 
-async function example_API_Get(cacheClient: CacheClient, cacheName: string, key: string) {
+async function get(cacheClient: CacheClient, cacheName: string, key: string) {
   const result = await cacheClient.get(cacheName, key);
   if (result instanceof CacheGet.Hit) {
     console.log(`Retrieved value for key ${key} in cache ${cacheName}: ${result.valueString()}`);
@@ -75,8 +72,8 @@ async function generateAuthToken(authClient: AuthClient, scope: TokenScope, dura
   if (generateTokenResponse instanceof GenerateAuthToken.Success) {
     console.log(`Generated an auth token with ${scope} scope at time ${Date.now()/1000}!`);
     console.log('Logging only a substring of the tokens, because logging security credentials is not advisable:');
-    console.log(`Auth token: ${generateTokenResponse.authToken.substring(0,10)}`);
-    console.log(`Refresh token: ${generateTokenResponse.refreshToken.substring(0,10)}`);
+    console.log(`Auth token starts with: ${generateTokenResponse.authToken.substring(0,10)}`);
+    console.log(`Refresh token starts with: ${generateTokenResponse.refreshToken.substring(0,10)}`);
     console.log(`Expires At: ${generateTokenResponse.expiresAt.epoch()}`);
     return [generateTokenResponse.authToken, generateTokenResponse.refreshToken];
   } else {
@@ -102,33 +99,35 @@ async function main() {
 
   // Set up a cache
   const CACHE_OPEN_DOOR = 'open-door';
-  await example_API_CreateCache(mainCacheClient, CACHE_OPEN_DOOR);
-  await example_API_Set(mainCacheClient, CACHE_OPEN_DOOR, 'hello', 'world');
+  const tokenValidForSeconds = 600;
 
-  // Create a token valid for 60 seconds that can only read a specific cache 'open-door'
+  await createCache(mainCacheClient, CACHE_OPEN_DOOR);
+  await set(mainCacheClient, CACHE_OPEN_DOOR, 'hello', 'world');
+
+  // Create a token valid for 600 seconds that can only read a specific cache 'open-door'
   let oneCacheReadOnlyPermissions = new Permissions([
     new CachePermission(CacheRole.ReadOnly, {
       cache: {name: CACHE_OPEN_DOOR},
     }),
   ]);
   
-  const [scopedToken, scopedRefreshToken] =  await generateAuthToken(mainAuthClient, oneCacheReadOnlyPermissions, 60);
+  const [scopedToken, scopedRefreshToken] =  await generateAuthToken(mainAuthClient, oneCacheReadOnlyPermissions, tokenValidForSeconds);
   const scopedTokenCacheClient = new CacheClient({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromString({authToken: scopedToken}),
-    defaultTtlSeconds: 60,
+    defaultTtlSeconds: 600,
   });
 
-  await example_API_Get(scopedTokenCacheClient, CACHE_OPEN_DOOR, 'goodbye');
-  await example_API_Get(scopedTokenCacheClient, CACHE_OPEN_DOOR, 'hello');
+  await get(scopedTokenCacheClient, CACHE_OPEN_DOOR, 'goodbye');
+  await get(scopedTokenCacheClient, CACHE_OPEN_DOOR, 'hello');
   try {
-    await example_API_Set(scopedTokenCacheClient, CACHE_OPEN_DOOR, 'hello', 'world');
+    await set(scopedTokenCacheClient, CACHE_OPEN_DOOR, 'hello', 'world');
   } catch(error) {
     console.log(`Caught expected permissions error - Writes not allowed with a read-only token ${error}`);
   }
 
   // Clean up caches created
-  await example_API_DeleteCache(mainCacheClient, CACHE_OPEN_DOOR);
+  await deleteCache(mainCacheClient, CACHE_OPEN_DOOR);
 
   // Scoped tokens with other possible permissions
 
@@ -137,13 +136,12 @@ async function main() {
   // - Read and write topic 'highlights' within a specific cache 'the-great-wall'
   // - Read all caches
   // - Read all topics across all caches
-  const tokenValidForSeconds = 60;
   let permissions = new Permissions([
     new CachePermission(CacheRole.ReadWrite, {
       cache: {name: CACHE_OPEN_DOOR},
     }),
     new TopicPermission(TopicRole.ReadWrite, {
-      cache: {name: 'the-great-wall'},
+      cache: 'the-great-wall', // Shorthand syntax for {name: 'the-great-wall'}
       topic: {name: 'highlights'}
     }),
     new CachePermission(CacheRole.ReadOnly, {
