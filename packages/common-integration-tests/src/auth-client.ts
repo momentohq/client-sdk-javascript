@@ -414,12 +414,15 @@ export function runAuthClientTests(
       expect(setError2.message()).toContain('Insufficient permissions');
 
       // 2. Gets for existing keys should succeed with hits
-      const hitResp1 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
-      expect(hitResp1).toBeInstanceOf(CacheGet.Hit);
-      expect(hitResp1).toHaveProperty('valueString', FGA_CACHE_1_VALUE);
-      const hitResp2 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
-      expect(hitResp2).toBeInstanceOf(CacheGet.Hit);
-      expect(hitResp2).toHaveProperty('valueString', FGA_CACHE_2_VALUE);
+      const getResp1 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
+      expect(getResp1).toBeInstanceOf(CacheGet.Hit);
+      const hitResp1 = getResp1 as CacheGet.Hit;
+      expect(hitResp1.valueString()).toEqual(FGA_CACHE_1_VALUE);
+
+      const getResp2 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
+      expect(getResp2).toBeInstanceOf(CacheGet.Hit);
+      const hitResp2 = getResp2 as CacheGet.Hit;
+      expect(hitResp2.valueString()).toEqual(FGA_CACHE_2_VALUE);
 
       // 3. Gets for non-existing keys return misses
       const missResp1 = await cacheClient.get(FGA_CACHE_1, 'i-exist-not');
@@ -528,25 +531,26 @@ export function runAuthClientTests(
       const cacheClient = cacheClientFactory(token);
 
       // Read/Write on cache FGA_CACHE_1 is allowed
-      const setResp = await cacheClient.set(FGA_CACHE_1, 'ned', 'flanders');
-      expect(setResp).toBeInstanceOf(CacheSet.Success);
+      const setResp1 = await cacheClient.set(FGA_CACHE_1, 'ned', 'flanders');
+      expect(setResp1).toBeInstanceOf(CacheSet.Success);
 
-      const hitResp = await cacheClient.get(FGA_CACHE_1, 'ned');
-      expect(hitResp).toBeInstanceOf(CacheGet.Hit);
-      expect(hitResp).toHaveProperty('valueString', 'flanders');
+      const getResp1 = await cacheClient.get(FGA_CACHE_1, 'ned');
+      expect(getResp1).toBeInstanceOf(CacheGet.Hit);
+      const hitResp1 = getResp1 as CacheGet.Hit;
+      expect(hitResp1.valueString()).toEqual('flanders');
 
       // Read/Write on cache FGA_CACHE_2 is not allowed
-      const setResp1 = await cacheClient.set(FGA_CACHE_2, 'flaming', 'mo');
-      expect(setResp1).toBeInstanceOf(CacheSet.Error);
-      const setError1 = setResp1 as CacheSet.Error;
-      expect(setError1.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
-      expect(setError1.message()).toContain('Insufficient permissions');
+      const setResp2 = await cacheClient.set(FGA_CACHE_2, 'flaming', 'mo');
+      expect(setResp2).toBeInstanceOf(CacheSet.Error);
+      const setError2 = setResp2 as CacheSet.Error;
+      expect(setError2.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(setError2.message()).toContain('Insufficient permissions');
 
-      const getResp1 = await cacheClient.get(FGA_CACHE_2, 'flaming');
-      expect(getResp1).toBeInstanceOf(CacheGet.Error);
-      const getError1 = getResp1 as CacheGet.Error;
-      expect(getError1.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
-      expect(getError1.message()).toContain('Insufficient permissions');
+      const getResp2 = await cacheClient.get(FGA_CACHE_2, 'flaming');
+      expect(getResp2).toBeInstanceOf(CacheGet.Error);
+      const getError2 = getResp2 as CacheGet.Error;
+      expect(getError2.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(getError2.message()).toContain('Insufficient permissions');
 
       const topicClient = topicClientFactory(token);
       // Read/Write on topics in cache FGA_CACHE_1 is not allowed
