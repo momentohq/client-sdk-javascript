@@ -8,17 +8,33 @@
 
 # Node.js Client SDK
 
+_Read this in other languages_: Coming Soon
+
+<br>
+
 ## Example Requirements
 
 - Node version 14 or higher is required
-- A Momento Auth Token is required, you can generate one using the [Momento Console](https://console.gomomento.com)
+- A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
 
-## Examples
+To run any of the examples you will need to install the dependencies once first:
 
-This directory contains several subdirectories with different types of example projects:
+```bash
+npm install
+```
 
-- [Cache Examples](./cache) - How to use Momento Cache
-- [Topic Examples](./topics) - How to use Momento Topics (aka PubSub)
-- [Observability](./observability) - How to configure logging, metrics and traces
-- [Load Generator](./load-gen) - An example load generator for observing Momento performance
-- [Access Control](./access-control) - How to implement access control using Momento API tokens
+## Running the Example
+
+This example demonstrates creating and using Momento API tokens with different permissions
+
+```bash
+# Run example code
+MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run access-control
+```
+
+Example Code: [access-control.ts](access-control.ts)
+
+If you have questions or need help experimenting further, please reach out to us!
+
+
+
