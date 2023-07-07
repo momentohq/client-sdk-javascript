@@ -642,17 +642,20 @@ export function runAuthClientTests(
       expect(subError.message()).toContain('Insufficient permissions');
 
       // Read/Write on topics in cache FGA_CACHE_2 is allowed
-      expect(
-        await topicClient.publish(FGA_CACHE_2, 'breaking news!', 'UFOs spotted')
-      ).toBeInstanceOf(TopicPublish.Success);
-      const subscribeResponse = await topicClient.subscribe(
+      const pubResp1 = await topicClient.publish(
+        FGA_CACHE_2,
+        'breaking news!',
+        'UFOs spotted'
+      );
+      expect(pubResp1).toBeInstanceOf(TopicPublish.Success);
+      const subResp1 = await topicClient.subscribe(
         FGA_CACHE_2,
         'breaking news!',
         trivialHandlers
       );
       expectWithMessage(() => {
-        expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
-      }, `expected SUBSCRIPTION but got ${subscribeResponse.toString()}`);
+        expect(subResp1).toBeInstanceOf(TopicSubscribe.Subscription);
+      }, `expected SUBSCRIPTION but got ${subResp1.toString()}`);
     });
 
     afterAll(async () => {
