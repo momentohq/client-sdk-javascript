@@ -207,6 +207,7 @@ function topicPermissionToGrpcPermission(
     grpcPermission.setCacheSelector(cacheSelector);
   } else if (isCacheName(permission.cache)) {
     cacheSelector.setCacheName(permission.cache.name);
+    grpcPermission.setCacheSelector(cacheSelector);
   } else {
     throw new Error(
       `Unrecognized cache specification in topic permission: ${JSON.stringify(
