@@ -147,14 +147,14 @@ async function main() {
     new CachePermission(CacheRole.ReadWrite, {
       cache: {name: CACHE_OPEN_DOOR},
     }),
-    new TopicPermission(TopicRole.ReadWrite, {
+    new TopicPermission(TopicRole.PublishSubscribe, {
       cache: 'the-great-wall', // Shorthand syntax for {name: 'the-great-wall'}
       topic: {name: 'highlights'},
     }),
     new CachePermission(CacheRole.ReadOnly, {
       cache: AllCaches,
     }),
-    new TopicPermission(TopicRole.ReadOnly, {
+    new TopicPermission(TopicRole.SubscribeOnly, {
       cache: AllCaches,
       topic: AllTopics,
     }),

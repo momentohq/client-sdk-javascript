@@ -23,20 +23,25 @@ export interface CachePermissionOptions {
   cache?: CacheSelector;
 }
 
-export class CachePermission {
-  cacheRole: CacheRole;
+export interface CachePermission {
+  role: CacheRole;
   cache: CacheSelector;
-
-  constructor(cacheRole: CacheRole, options?: CachePermissionOptions) {
-    this.cacheRole = cacheRole;
-    this.cache = options?.cache ?? AllCaches;
-  }
 }
+
+// export class CachePermission {
+//   cacheRole: CacheRole;
+//   cache: CacheSelector;
+//
+//   constructor(cacheRole: CacheRole, options?: CachePermissionOptions) {
+//     this.cacheRole = cacheRole;
+//     this.cache = options?.cache ?? AllCaches;
+//   }
+// }
 
 export enum TopicRole {
   None = 'none',
-  ReadWrite = 'readwrite',
-  ReadOnly = 'readonly',
+  PublishSubscribe = 'readwrite',
+  SubscribeOnly = 'readonly',
 }
 
 export interface TopicName {
@@ -58,31 +63,43 @@ export interface TopicPermissionOptions {
   topic?: TopicSelector;
 }
 
-export class TopicPermission {
-  topicRole: TopicRole;
+// export class TopicPermission {
+//   topicRole: TopicRole;
+//   cache: CacheSelector;
+//   topic: TopicSelector;
+//   constructor(topicRole: TopicRole, options?: TopicPermissionOptions) {
+//     this.topicRole = topicRole;
+//     this.cache = options?.cache ?? AllCaches;
+//     this.topic = options?.topic ?? AllTopics;
+//   }
+// }
+
+export interface TopicPermission {
+  role: TopicRole;
   cache: CacheSelector;
   topic: TopicSelector;
-  constructor(topicRole: TopicRole, options?: TopicPermissionOptions) {
-    this.topicRole = topicRole;
-    this.cache = options?.cache ?? AllCaches;
-    this.topic = options?.topic ?? AllTopics;
-  }
 }
 
 export type Permission = CachePermission | TopicPermission;
 
-export class Permissions {
-  permissions: Array<Permission>;
+// export class Permissions {
+//   permissions: Array<Permission>;
+//
+//   constructor(permissions: Array<Permission>) {
+//     this.permissions = permissions;
+//   }
+// }
 
-  constructor(permissions: Array<Permission>) {
-    this.permissions = permissions;
-  }
+export interface Permissions {
+  permissions: Array<Permission>;
 }
 
-export const AllDataReadWrite: Permissions = new Permissions([
-  new CachePermission(CacheRole.ReadWrite),
-  new TopicPermission(TopicRole.ReadWrite),
-]);
+export const AllDataReadWrite: Permissions = {
+  permissions: [
+    {role: CacheRole.ReadWrite, cache: AllCaches},
+    {role: TopicRole.PublishSubscribe, cache: AllCaches, topic: AllTopics},
+  ],
+};
 
 export abstract class PredefinedScope {}
 
@@ -90,3 +107,4 @@ export type TokenScope =
   | typeof AllDataReadWrite
   | Permissions
   | PredefinedScope;
+

@@ -182,11 +182,11 @@ function topicPermissionToGrpcPermission(
   switch (permission.topicRole) {
     case TopicRole.None:
       throw new Error('TopicRole.None not yet supported');
-    case TopicRole.ReadWrite: {
+    case TopicRole.PublishSubscribe: {
       grpcPermission.setRole(_GenerateApiTokenRequest.TopicRole.TOPICREADWRITE);
       break;
     }
-    case TopicRole.ReadOnly: {
+    case TopicRole.SubscribeOnly: {
       grpcPermission.setRole(_GenerateApiTokenRequest.TopicRole.TOPICREADONLY);
       break;
     }

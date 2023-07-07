@@ -128,6 +128,8 @@ export {
   AllTopics,
 } from './auth/tokens/token-scope';
 
+export * as TokenScopes from './auth/tokens/token-scopes';
+
 export {
   ExpiresIn,
   ExpiresAt,

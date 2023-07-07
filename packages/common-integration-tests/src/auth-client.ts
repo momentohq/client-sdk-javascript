@@ -434,11 +434,11 @@ export function runAuthClientTests(
     it('cannot create token with duplicate/conflicting topic permissions - cache + topic name', async () => {
       const tokenResponse = await sessionTokenAuthClient.generateAuthToken(
         new Permissions([
-          new TopicPermission(TopicRole.ReadOnly, {
+          new TopicPermission(TopicRole.SubscribeOnly, {
             cache: {name: 'i-am-groot'},
             topic: {name: 'rocket-raccoon'},
           }),
-          new TopicPermission(TopicRole.ReadWrite, {
+          new TopicPermission(TopicRole.PublishSubscribe, {
             cache: {name: 'i-am-groot'},
             topic: {name: 'rocket-raccoon'},
           }),
@@ -522,7 +522,7 @@ export function runAuthClientTests(
     it('can only read all topics', async () => {
       const readAllTopicsTokenResponse =
         await sessionTokenAuthClient.generateAuthToken(
-          new Permissions([new TopicPermission(TopicRole.ReadOnly)]),
+          new Permissions([new TopicPermission(TopicRole.SubscribeOnly)]),
           ExpiresIn.seconds(60)
         );
       expect(readAllTopicsTokenResponse).toBeInstanceOf(
@@ -587,7 +587,7 @@ export function runAuthClientTests(
           new CachePermission(CacheRole.ReadWrite, {
             cache: {name: FGA_CACHE_1},
           }),
-          new TopicPermission(TopicRole.ReadWrite, {
+          new TopicPermission(TopicRole.PublishSubscribe, {
             cache: {name: FGA_CACHE_2},
           }),
         ]),

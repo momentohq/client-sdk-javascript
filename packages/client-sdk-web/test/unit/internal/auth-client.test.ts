@@ -182,19 +182,19 @@ describe('internal auth client', () => {
         new CachePermission(CacheRole.ReadWrite, {
           cache: {name: 'foo'},
         }),
-        new TopicPermission(TopicRole.ReadOnly, {
+        new TopicPermission(TopicRole.SubscribeOnly, {
           cache: AllCaches,
           topic: AllTopics,
         }),
-        new TopicPermission(TopicRole.ReadWrite, {
+        new TopicPermission(TopicRole.PublishSubscribe, {
           cache: 'foo',
           topic: AllTopics,
         }),
-        new TopicPermission(TopicRole.ReadWrite, {
+        new TopicPermission(TopicRole.PublishSubscribe, {
           cache: AllCaches,
           topic: {name: 'bar'},
         }),
-        new TopicPermission(TopicRole.ReadWrite, {
+        new TopicPermission(TopicRole.PublishSubscribe, {
           cache: 'dog',
           topic: 'cat',
         }),
