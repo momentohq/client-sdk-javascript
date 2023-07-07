@@ -1,17 +1,15 @@
 import {InternalSuperUserPermissions} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
-  AllDataReadWrite,
   AllCaches,
+  AllDataReadWrite,
   AllTopics,
-  CachePermission,
   CacheRole,
   Permissions,
-  TopicPermission,
   TopicRole,
 } from '@gomomento/sdk-core';
 import {auth} from '@gomomento/generated-types/dist/auth';
-import _GenerateApiTokenRequest = auth._GenerateApiTokenRequest;
 import {permissionsFromScope} from '../../src/internal/internal-auth-client';
+import _GenerateApiTokenRequest = auth._GenerateApiTokenRequest;
 
 describe('internal auth client', () => {
   describe('permissionsFromScope', () => {
@@ -151,28 +149,20 @@ describe('internal auth client', () => {
 
       const grpcPermissions = new _GenerateApiTokenRequest.Permissions();
       grpcPermissions.explicit = explicitPermissions;
-      const cacheAndTopicPermissions: Permissions = new Permissions([
-        new CachePermission(CacheRole.ReadOnly, {cache: AllCaches}),
-        new CachePermission(CacheRole.ReadWrite, {
-          cache: {name: 'foo'},
-        }),
-        new TopicPermission(TopicRole.SubscribeOnly, {
-          cache: AllCaches,
-          topic: AllTopics,
-        }),
-        new TopicPermission(TopicRole.PublishSubscribe, {
-          cache: 'foo',
-          topic: AllTopics,
-        }),
-        new TopicPermission(TopicRole.PublishSubscribe, {
-          cache: AllCaches,
-          topic: {name: 'bar'},
-        }),
-        new TopicPermission(TopicRole.PublishSubscribe, {
-          cache: 'dog',
-          topic: 'cat',
-        }),
-      ]);
+      const cacheAndTopicPermissions: Permissions = {
+        permissions: [
+          {role: CacheRole.ReadOnly, cache: AllCaches},
+          {role: CacheRole.ReadWrite, cache: {name: 'foo'}},
+          {role: TopicRole.SubscribeOnly, cache: AllCaches, topic: AllTopics},
+          {role: TopicRole.PublishSubscribe, cache: 'foo', topic: AllTopics},
+          {
+            role: TopicRole.PublishSubscribe,
+            cache: AllCaches,
+            topic: {name: 'bar'},
+          },
+          {role: TopicRole.PublishSubscribe, cache: 'dog', topic: 'cat'},
+        ],
+      };
 
       expect(permissionsFromScope(cacheAndTopicPermissions)).toEqual(
         grpcPermissions

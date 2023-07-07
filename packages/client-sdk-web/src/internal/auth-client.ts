@@ -13,7 +13,6 @@ import {
   ExpiresAt,
   ExpiresIn,
   TokenScope,
-  Permissions,
   Permission,
   TopicPermission,
   CachePermission,
@@ -33,6 +32,14 @@ import {
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {getWebControlEndpoint} from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
+import {
+  asCachePermission,
+  asPermissionsObject,
+  asTopicPermission,
+  isCachePermission,
+  isPermissionsObject,
+  isTopicPermission,
+} from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
 
 export class InternalWebGrpcAuthClient<
   REQ extends Request<REQ, RESP>,
@@ -145,11 +152,12 @@ export function permissionsFromScope(
       _GenerateApiTokenRequest.SuperUserPermissions.SUPERUSER
     );
     return result;
-  } else if (scope instanceof Permissions) {
+  } else if (isPermissionsObject(scope)) {
+    const scopePermissions = asPermissionsObject(scope);
     const explicitPermissions =
       new _GenerateApiTokenRequest.ExplicitPermissions();
     explicitPermissions.setPermissionsList(
-      scope.permissions.map(p => tokenPermissionToGrpcPermission(p))
+      scopePermissions.permissions.map(p => tokenPermissionToGrpcPermission(p))
     );
     result.setExplicit(explicitPermissions);
     return result;
@@ -161,11 +169,15 @@ function tokenPermissionToGrpcPermission(
   permission: Permission
 ): _GenerateApiTokenRequest.PermissionsType {
   const result = new _GenerateApiTokenRequest.PermissionsType();
-  if (permission instanceof TopicPermission) {
-    result.setTopicPermissions(topicPermissionToGrpcPermission(permission));
+  if (isTopicPermission(permission)) {
+    result.setTopicPermissions(
+      topicPermissionToGrpcPermission(asTopicPermission(permission))
+    );
     return result;
-  } else if (permission instanceof CachePermission) {
-    result.setCachePermissions(cachePermissionToGrpcPermission(permission));
+  } else if (isCachePermission(permission)) {
+    result.setCachePermissions(
+      cachePermissionToGrpcPermission(asCachePermission(permission))
+    );
     return result;
   }
   throw new Error(
@@ -179,9 +191,7 @@ function topicPermissionToGrpcPermission(
   const grpcPermission =
     new _GenerateApiTokenRequest.PermissionsType.TopicPermissions();
 
-  switch (permission.topicRole) {
-    case TopicRole.None:
-      throw new Error('TopicRole.None not yet supported');
+  switch (permission.role) {
     case TopicRole.PublishSubscribe: {
       grpcPermission.setRole(_GenerateApiTokenRequest.TopicRole.TOPICREADWRITE);
       break;
@@ -246,9 +256,7 @@ function cachePermissionToGrpcPermission(
   const grpcPermission =
     new _GenerateApiTokenRequest.PermissionsType.CachePermissions();
 
-  switch (permission.cacheRole) {
-    case CacheRole.None:
-      throw new Error('CacheRole.None not yet supported');
+  switch (permission.role) {
     case CacheRole.ReadWrite: {
       grpcPermission.setRole(_GenerateApiTokenRequest.CacheRole.CACHEREADWRITE);
       break;
