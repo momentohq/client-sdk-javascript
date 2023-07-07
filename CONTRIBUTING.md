@@ -25,6 +25,19 @@ This repo contains four TypeScript packages, which all reside in the `packages` 
 - `client-sdk-nodejs`: the source for the Node.js SDK. Has a dependency on `core` and `common-integration-tests`.
 - `client-sdk-web`: the source code for the Web SDK. Has a dependency on `core` and `common-integration-tests`.
 
+## Examples
+
+All examples are in subdirectories of `examples/web` and `examples/nodejs`. We have different directories for different examples in order to keep the `package.json` files to a minimum for users who may be copying things from them. e.g., when we have examples that use CDK or the AWS SDK, we don't want users to think they need those deps for a basic momento project, so we put them in their own directory with their own package.json.
+
+All examples specify an explicit dependency on a released version of the SDK. We use dependabot to detect when there are new SDK releases and automatically file a PR to update the examples; this ensures that our CI is testing the actual packages from npm.js.
+
+When you are adding a new examples directory, add it to the dependabot config here:
+
+https://github.com/momentohq/client-sdk-javascript/blob/c906f5c31b81d01696f8c162477976dd64201081/.github/dependabot.yml#L8-L48
+
+We also run basic CI against the examples when PRs are submitted. When you are adding a new examples directory, add it to the PR checks here:
+
+https://github.com/momentohq/client-sdk-javascript/blob/c906f5c31b81d01696f8c162477976dd64201081/.github/workflows/build.yml#L105-L126
 
 ## Build :computer:
 
