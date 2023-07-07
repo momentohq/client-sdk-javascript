@@ -1,8 +1,18 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## About
+
+This is an example project showing how Momento topics and secure tokens can be used within a nextjs application.
+
+## Prerequisites
+
+In order for this project to run, a Momento auth token is required. Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining a server side token.
 
 ## Getting Started
 
-Create a new file `.env.local` and add a `MOMENTO_AUTH_TOKEN` to it.
+First, create a new file called `.env.local` that looks like 
+
+```
+MOMENTO_AUTH_TOKEN=<Put your token here>
+```
 
 Then, run the development server:
 
@@ -15,10 +25,6 @@ pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
 ## Learn More
 
