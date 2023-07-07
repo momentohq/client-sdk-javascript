@@ -67,24 +67,25 @@ async function get(cacheClient: CacheClient, cacheName: string, key: string) {
   }
 }
 
-async function generateAuthToken(authClient: AuthClient, scope: TokenScope, durationSeconds: number) : Promise<[string, string]> {
+async function generateAuthToken(
+  authClient: AuthClient,
+  scope: TokenScope,
+  durationSeconds: number
+): Promise<[string, string]> {
   const generateTokenResponse = await authClient.generateAuthToken(scope, ExpiresIn.seconds(durationSeconds));
   if (generateTokenResponse instanceof GenerateAuthToken.Success) {
-    console.log(`Generated an auth token with ${scope} scope at time ${Date.now()/1000}!`);
+    console.log(`Generated an auth token with ${scope.toString()} scope at time ${Date.now() / 1000}!`);
     console.log('Logging only a substring of the tokens, because logging security credentials is not advisable:');
-    console.log(`Auth token starts with: ${generateTokenResponse.authToken.substring(0,10)}`);
-    console.log(`Refresh token starts with: ${generateTokenResponse.refreshToken.substring(0,10)}`);
+    console.log(`Auth token starts with: ${generateTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`Refresh token starts with: ${generateTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${generateTokenResponse.expiresAt.epoch()}`);
     return [generateTokenResponse.authToken, generateTokenResponse.refreshToken];
   } else {
-    throw new Error(`Failed to generate auth token: ${generateTokenResponse}`);
+    throw new Error(`Failed to generate auth token: ${generateTokenResponse.toString()}`);
   }
 }
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
 async function main() {
-
   const mainCredsProvider = CredentialProvider.fromEnvironmentVariable({
     environmentVariableName: 'MOMENTO_AUTH_TOKEN',
   });
@@ -105,13 +106,17 @@ async function main() {
   await set(mainCacheClient, CACHE_OPEN_DOOR, 'hello', 'world');
 
   // Create a token valid for 600 seconds that can only read a specific cache 'open-door'
-  let oneCacheReadOnlyPermissions = new Permissions([
+  const oneCacheReadOnlyPermissions = new Permissions([
     new CachePermission(CacheRole.ReadOnly, {
       cache: {name: CACHE_OPEN_DOOR},
     }),
   ]);
-  
-  const [scopedToken, scopedRefreshToken] =  await generateAuthToken(mainAuthClient, oneCacheReadOnlyPermissions, tokenValidForSeconds);
+
+  const [scopedToken, _scopedRefreshToken] = await generateAuthToken(
+    mainAuthClient,
+    oneCacheReadOnlyPermissions,
+    tokenValidForSeconds
+  );
   const scopedTokenCacheClient = new CacheClient({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromString({authToken: scopedToken}),
@@ -122,8 +127,10 @@ async function main() {
   await get(scopedTokenCacheClient, CACHE_OPEN_DOOR, 'hello');
   try {
     await set(scopedTokenCacheClient, CACHE_OPEN_DOOR, 'hello', 'world');
-  } catch(error) {
-    console.log(`Caught expected permissions error - Writes not allowed with a read-only token ${error}`);
+  } catch (ex) {
+    console.log(
+      `Caught expected permissions error - Writes not allowed with a read-only token ${(ex as Error).toString()}`
+    );
   }
 
   // Clean up caches created
@@ -131,29 +138,33 @@ async function main() {
 
   // Scoped tokens with other possible permissions
 
-  // Create a token that can 
+  // Create a token that can
   // - Read and write cache CACHE_OPEN_DOOR
   // - Read and write topic 'highlights' within a specific cache 'the-great-wall'
   // - Read all caches
   // - Read all topics across all caches
-  let permissions = new Permissions([
+  const permissions = new Permissions([
     new CachePermission(CacheRole.ReadWrite, {
       cache: {name: CACHE_OPEN_DOOR},
     }),
     new TopicPermission(TopicRole.ReadWrite, {
       cache: 'the-great-wall', // Shorthand syntax for {name: 'the-great-wall'}
-      topic: {name: 'highlights'}
+      topic: {name: 'highlights'},
     }),
     new CachePermission(CacheRole.ReadOnly, {
-      cache: AllCaches
+      cache: AllCaches,
     }),
     new TopicPermission(TopicRole.ReadOnly, {
       cache: AllCaches,
-      topic: AllTopics
+      topic: AllTopics,
     }),
   ]);
 
-  const [scopedToken1, scopedRefreshToken1] =  await generateAuthToken(mainAuthClient, permissions, tokenValidForSeconds);
+  const [_scopedToken1, _scopedRefreshToken1] = await generateAuthToken(
+    mainAuthClient,
+    permissions,
+    tokenValidForSeconds
+  );
   // Do something with the token.
 }
 
