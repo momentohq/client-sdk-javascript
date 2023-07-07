@@ -105,7 +105,8 @@ function isEmpty(str: string): boolean {
 
 export function isBase64(str: string): boolean {
   try {
-    return encodeToBase64(decodeFromBase64(str)) === str;
+    const encoded = encodeToBase64(decodeFromBase64(str));
+    return encoded === str;
   } catch (e) {
     return false;
   }

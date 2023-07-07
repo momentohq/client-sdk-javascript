@@ -3,6 +3,7 @@ import jwtDecode from 'jwt-decode';
 import {isBase64} from './validators';
 import {decodeFromBase64} from './string';
 import {PredefinedScope} from '../../auth/tokens/token-scope';
+import {error} from 'console';
 
 export interface LegacyClaims {
   /**
@@ -51,6 +52,7 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
       const base64DecodedToken = JSON.parse(
         decodeFromBase64(token)
       ) as Base64DecodedV1Token;
+      error('test', base64DecodedToken);
       if (!base64DecodedToken.endpoint || !base64DecodedToken.api_key) {
         throw new InvalidArgumentError('failed to parse token');
       }

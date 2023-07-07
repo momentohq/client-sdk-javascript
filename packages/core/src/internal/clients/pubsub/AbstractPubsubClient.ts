@@ -176,6 +176,7 @@ export abstract class AbstractPubsubClient implements IPubsubClient {
     momentoError: TopicSubscribe.Error,
     isRstStreamNoError: boolean
   ): void {
+    this.logger.info('handling subscriber error', momentoError);
     // The service cuts the stream after a period of time.
     // Transparently restart the stream instead of propagating an error.
     // We check this before checking for first message to ensure that if a stream

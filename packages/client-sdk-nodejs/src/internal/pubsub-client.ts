@@ -199,6 +199,7 @@ export class PubsubClient extends AbstractPubsubClient {
     options: PrepareSubscribeCallbackOptions
   ): (resp: grpcPubsub._SubscriptionItem) => void {
     return (resp: grpcPubsub._SubscriptionItem) => {
+      this.logger.info('inside data callback', resp);
       if (options.firstMessage) {
         options.resolve(options.subscription);
       }

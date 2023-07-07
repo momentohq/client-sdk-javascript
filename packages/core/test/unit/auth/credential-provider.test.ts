@@ -30,6 +30,16 @@ describe('StringMomentoTokenProvider', () => {
     expect(authProvider.getCacheEndpoint()).toEqual(testCacheEndpoint);
   });
 
+  it('should work', () => {
+    CredentialProvider.fromString({
+      authToken:
+        'eyJlbmRwb2ludCI6ImNlbGwtYWxwaGEtZGV2LnByZXByb2QuYS5tb21lbnRvaHEuY29tIiwiYXBpX2tleSI6ImV5SmhiR2NpT2lKSVV6STFOaUo5LmV5SnpkV0lpT2lKdGMzUkFiVzl0Wlc1MGIyaHhMbU52YlNJc0luWmxjaUk2TVN3aWNDSTZJa05CUVQwaWZRLmZCLWNaQk5IUk14ZTUtemVBNy13bS1DZ200YWNzODVKWXhjY2V6emdoMFUifQ==',
+    });
+    // expect(authProvider.getAuthToken()).toEqual(fakeTestLegacyToken);
+    // expect(authProvider.getControlEndpoint()).toEqual(testControlEndpoint);
+    // expect(authProvider.getCacheEndpoint()).toEqual(testCacheEndpoint);
+  });
+
   it('parses a valid v1 auth token', () => {
     const authProvider = CredentialProvider.fromString({
       authToken: base64EncodedFakeV1AuthToken,
