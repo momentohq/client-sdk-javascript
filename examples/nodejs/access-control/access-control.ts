@@ -10,9 +10,7 @@ import {
   ExpiresIn,
   GenerateAuthToken,
   TokenScope,
-  Permissions,
-  CachePermission,
-  TopicPermission,
+  TokenScopes,
   CacheRole,
   TopicRole,
   AllCaches,
@@ -103,62 +101,57 @@ async function main() {
   const tokenValidForSeconds = 600;
 
   await createCache(mainCacheClient, CACHE_OPEN_DOOR);
-  await set(mainCacheClient, CACHE_OPEN_DOOR, 'hello', 'world');
-
-  // Create a token valid for 600 seconds that can only read a specific cache 'open-door'
-  const oneCacheReadOnlyPermissions = new Permissions([
-    new CachePermission(CacheRole.ReadOnly, {
-      cache: {name: CACHE_OPEN_DOOR},
-    }),
-  ]);
-
-  const [scopedToken, _scopedRefreshToken] = await generateAuthToken(
-    mainAuthClient,
-    oneCacheReadOnlyPermissions,
-    tokenValidForSeconds
-  );
-  const scopedTokenCacheClient = new CacheClient({
-    configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromString({authToken: scopedToken}),
-    defaultTtlSeconds: 600,
-  });
-
-  await get(scopedTokenCacheClient, CACHE_OPEN_DOOR, 'goodbye');
-  await get(scopedTokenCacheClient, CACHE_OPEN_DOOR, 'hello');
   try {
-    await set(scopedTokenCacheClient, CACHE_OPEN_DOOR, 'hello', 'world');
-  } catch (ex) {
-    console.log(
-      `Caught expected permissions error - Writes not allowed with a read-only token ${(ex as Error).toString()}`
+    await set(mainCacheClient, CACHE_OPEN_DOOR, 'hello', 'world');
+
+    // Create a token valid for 600 seconds that can only read a specific cache 'open-door'
+    const [scopedToken, _scopedRefreshToken] = await generateAuthToken(
+      mainAuthClient,
+      TokenScopes.cacheReadOnly(CACHE_OPEN_DOOR),
+      tokenValidForSeconds
     );
+    const scopedTokenCacheClient = new CacheClient({
+      configuration: Configurations.Laptop.v1(),
+      credentialProvider: CredentialProvider.fromString({authToken: scopedToken}),
+      defaultTtlSeconds: 600,
+    });
+
+    await get(scopedTokenCacheClient, CACHE_OPEN_DOOR, 'goodbye');
+    await get(scopedTokenCacheClient, CACHE_OPEN_DOOR, 'hello');
+    try {
+      await set(scopedTokenCacheClient, CACHE_OPEN_DOOR, 'hello', 'world');
+    } catch (ex) {
+      console.log(
+        `Caught expected permissions error - Writes not allowed with a read-only token ${(ex as Error).toString()}`
+      );
+    }
+  } finally {
+    // Clean up caches created
+    await deleteCache(mainCacheClient, CACHE_OPEN_DOOR);
   }
-
-  // Clean up caches created
-  await deleteCache(mainCacheClient, CACHE_OPEN_DOOR);
-
-  // Scoped tokens with other possible permissions
 
   // Create a token that can
   // - Read and write cache CACHE_OPEN_DOOR
-  // - Read and write topic 'highlights' within a specific cache 'the-great-wall'
   // - Read all caches
+  // - Read and write topic 'highlights' within a specific cache 'the-great-wall'
   // - Read all topics across all caches
-  const permissions = new Permissions([
-    new CachePermission(CacheRole.ReadWrite, {
-      cache: {name: CACHE_OPEN_DOOR},
-    }),
-    new TopicPermission(TopicRole.PublishSubscribe, {
-      cache: 'the-great-wall', // Shorthand syntax for {name: 'the-great-wall'}
-      topic: {name: 'highlights'},
-    }),
-    new CachePermission(CacheRole.ReadOnly, {
-      cache: AllCaches,
-    }),
-    new TopicPermission(TopicRole.SubscribeOnly, {
-      cache: AllCaches,
-      topic: AllTopics,
-    }),
-  ]);
+
+  const permissions = {
+    permissions: [
+      {role: CacheRole.ReadWrite, cache: {name: CACHE_OPEN_DOOR}},
+      {role: CacheRole.ReadOnly, cache: AllCaches},
+      {
+        role: TopicRole.PublishSubscribe,
+        cache: 'the-great-wall', // Shorthand syntax for cache: {name: 'the-great-wall'}
+        topic: 'highlights',
+      },
+      {
+        role: TopicRole.SubscribeOnly,
+        cache: AllCaches,
+        topic: AllTopics,
+      },
+    ],
+  };
 
   const [_scopedToken1, _scopedRefreshToken1] = await generateAuthToken(
     mainAuthClient,

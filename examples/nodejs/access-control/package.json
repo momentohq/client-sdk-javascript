@@ -7,6 +7,7 @@
     "prebuild": "eslint . --ext .ts",
     "build": "tsc",
     "access-control": "tsc && node dist/access-control.js",
+    "validate-examples": "tsc && node dist/access-control.js",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix"
   },

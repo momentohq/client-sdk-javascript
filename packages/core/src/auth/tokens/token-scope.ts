@@ -15,15 +15,11 @@ export function isCacheName(cache: CacheName | All): cache is CacheName {
 }
 export type CacheSelector = All | CacheName | string;
 
-export interface CachePermissionOptions {
-  /**
-   * Scope the token permissions to specific caches
-   */
-  cache?: CacheSelector;
-}
-
 export interface CachePermission {
   role: CacheRole;
+  /**
+   * Scope the token permissions to select caches
+   */
   cache: CacheSelector;
 }
 
@@ -53,20 +49,15 @@ export function isTopicName(topic: TopicName | All): topic is TopicName {
 }
 export type TopicSelector = All | TopicName | string;
 
-export interface TopicPermissionOptions {
-  /**
-   * Scope the token permissions to specific caches
-   */
-  cache?: CacheSelector;
-  /**
-   * Scope the token permissions to specific topics
-   */
-  topic?: TopicSelector;
-}
-
 export interface TopicPermission {
   role: TopicRole;
+  /**
+   * Scope the token permissions to select caches
+   */
   cache: CacheSelector;
+  /**
+   * Scope the token permissions to select topics
+   */
   topic: TopicSelector;
 }
 

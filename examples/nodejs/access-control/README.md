@@ -15,7 +15,7 @@ _Read this in other languages_: Coming Soon
 ## Example Requirements
 
 - Node version 14 or higher is required
-- A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
+- A Momento auth token is required, you can generate one using the [Momento Console](https://console.gomomento.com)
 
 To run any of the examples you will need to install the dependencies once first:
 

@@ -110,10 +110,8 @@ export {
 export {
   CacheRole,
   CachePermission,
-  CachePermissionOptions,
   TopicRole,
   TopicPermission,
-  TopicPermissionOptions,
   Permission,
   Permissions,
   AllDataReadWrite,
