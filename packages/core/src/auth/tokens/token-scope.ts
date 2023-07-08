@@ -37,8 +37,8 @@ export function asCachePermission(p: Permission): CachePermission {
 }
 
 export enum TopicRole {
-  PublishSubscribe = 'readwrite',
-  SubscribeOnly = 'readonly',
+  PublishSubscribe = 'publishsubscribe',
+  SubscribeOnly = 'subscribeonly',
 }
 
 export interface TopicName {
