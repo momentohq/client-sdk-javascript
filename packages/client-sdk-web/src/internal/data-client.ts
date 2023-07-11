@@ -35,6 +35,8 @@ import {
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  CacheSortedSetLength,
+  CacheSortedSetLengthByScore,
   CacheItemGetType,
   CacheItemGetTtl,
   CollectionTtl,
@@ -91,6 +93,8 @@ import {
   _SortedSetIncrementRequest,
   _SortedSetPutRequest,
   _SortedSetRemoveRequest,
+  _SortedSetLengthRequest,
+  _SortedSetLengthByScoreRequest,
   _Unbounded,
   ECacheResult,
 } from '@gomomento/generated-types-webtext/dist/cacheclient_pb';
@@ -2560,6 +2564,161 @@ export class DataClient<
             );
           } else {
             resolve(new CacheSortedSetRemoveElements.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async sortedSetLength(
+    cacheName: string,
+    sortedSetName: string
+  ): Promise<CacheSortedSetLength.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+    } catch (err) {
+      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'sortedSetLength' request");
+
+    const result = await this.sendSortedSetLength(
+      cacheName,
+      convertToB64String(sortedSetName)
+    );
+
+    this.logger.trace(
+      "'sortedSetLength' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendSortedSetLength(
+    cacheName: string,
+    sortedSetName: string
+  ): Promise<CacheSortedSetLength.Response> {
+    const request = new _SortedSetLengthRequest();
+    request.setSetName(sortedSetName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.sortedSetLength(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp?.getMissing()) {
+            resolve(new CacheSortedSetLength.Miss());
+          } else if (resp?.getFound()) {
+            const len = resp.getFound()?.getLength();
+            if (!len) {
+              resolve(new CacheSortedSetLength.Miss());
+            } else {
+              resolve(new CacheSortedSetLength.Hit(len));
+            }
+          } else {
+            resolve(
+              new CacheSortedSetLength.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async sortedSetLengthByScore(
+    cacheName: string,
+    sortedSetName: string,
+    minScore?: number,
+    minScoreInclusive?: boolean,
+    maxScore?: number,
+    maxScoreInclusive?: boolean
+  ): Promise<CacheSortedSetLengthByScore.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+      validateSortedSetScores(minScore, maxScore);
+    } catch (err) {
+      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      "Issuing 'sortedSetLengthByScore' request; minScore: %s (inclusive: %s), maxScore: %s (inclusive: %s)",
+      minScore?.toString() ?? 'null',
+      minScoreInclusive?.toString() ?? 'null',
+      maxScore?.toString() ?? 'null',
+      maxScoreInclusive?.toString() ?? 'null'
+    );
+
+    const result = await this.sendSortedSetLengthByScore(
+      cacheName,
+      convertToB64String(sortedSetName),
+      minScore,
+      minScoreInclusive,
+      maxScore,
+      maxScoreInclusive
+    );
+
+    this.logger.trace(
+      "'sortedSetLengthByScore' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendSortedSetLengthByScore(
+    cacheName: string,
+    sortedSetName: string,
+    minScore?: number,
+    minScoreInclusive?: boolean,
+    maxScore?: number,
+    maxScoreInclusive?: boolean
+  ): Promise<CacheSortedSetLengthByScore.Response> {
+    const request = new _SortedSetLengthByScoreRequest();
+    request.setSetName(sortedSetName);
+
+    if (minScore && minScoreInclusive) {
+      request.setInclusiveMin(minScore);
+    } else if (minScore && !minScoreInclusive) {
+      request.setExclusiveMin(minScore);
+    } else {
+      request.setUnboundedMin(new _Unbounded());
+    }
+
+    if (maxScore && maxScoreInclusive) {
+      request.setInclusiveMax(maxScore);
+    } else if (maxScore && !maxScoreInclusive) {
+      request.setExclusiveMax(maxScore);
+    } else {
+      request.setUnboundedMax(new _Unbounded());
+    }
+
+    return await new Promise(resolve => {
+      this.clientWrapper.sortedSetLengthByScore(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp?.getMissing()) {
+            resolve(new CacheSortedSetLengthByScore.Miss());
+          } else if (resp?.getFound()) {
+            const len = resp.getFound()?.getLength();
+            if (!len) {
+              resolve(new CacheSortedSetLengthByScore.Miss());
+            } else {
+              resolve(new CacheSortedSetLengthByScore.Hit(len));
+            }
+          } else {
+            resolve(
+              new CacheSortedSetLengthByScore.Error(
+                cacheServiceErrorMapper(err)
+              )
+            );
           }
         }
       );

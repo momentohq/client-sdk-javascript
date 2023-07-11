@@ -42,6 +42,8 @@ import {
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  CacheSortedSetLength,
+  CacheSortedSetLengthByScore,
   SortedSetOrder,
   CacheItemGetTtl,
   CacheItemGetType,
@@ -1145,6 +1147,55 @@ export abstract class AbstractCacheClient implements ICacheClient {
       cacheName,
       sortedSetName,
       values
+    );
+  }
+
+  /**
+   * Fetch length (number of items) of sorted set
+   * @param {string} cacheName - The cache containing the sorted set.
+   * @param {string} sortedSetName - The sorted set to remove from.
+   * @returns {Promise<CacheSortedSetLength.Response>}
+   * {@link CacheSortedSetLength.Hit} containing the length if the sorted set exists.
+   * {@link CacheSortedSetLength.Miss} if the sorted set does not exist.
+   * {@link CacheSortedSetLength.Error} on failure.
+   */
+  public async sortedSetLength(
+    cacheName: string,
+    sortedSetName: string
+  ): Promise<CacheSortedSetLength.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetLength(cacheName, sortedSetName);
+  }
+
+  /**
+   * Fetch length (number of items) of sorted set by score
+   * @param {string} cacheName - The cache containing the sorted set.
+   * @param {string} sortedSetName - The sorted set to remove from.
+   * @param {number} minScore - The lower bound on the score range to search in.
+   * @param {boolean} minScoreInclusive - Whether the lower bound is inclusive or exclusive.
+   * @param {number} maxScore - The upper bound on the score range to search in.
+   * @param {boolean} maxScoreInclusive - Whether the upper bound is inclusive or exclusive.
+   * @returns {Promise<CacheSortedSetLengthByScore.Response>}
+   * {@link CacheSortedSetLengthByScore.Hit} containing the length if the sorted set exists.
+   * {@link CacheSortedSetLengthByScore.Miss} if the sorted set does not exist.
+   * {@link CacheSortedSetLengthByScore.Error} on failure.
+   */
+  public async sortedSetLengthByScore(
+    cacheName: string,
+    sortedSetName: string,
+    minScore?: number,
+    minScoreInclusive?: boolean,
+    maxScore?: number,
+    maxScoreInclusive?: boolean
+  ): Promise<CacheSortedSetLengthByScore.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetLengthByScore(
+      cacheName,
+      sortedSetName,
+      minScore,
+      minScoreInclusive,
+      maxScore,
+      maxScoreInclusive
     );
   }
 
