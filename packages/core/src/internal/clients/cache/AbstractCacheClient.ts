@@ -1153,7 +1153,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
   /**
    * Fetch length (number of items) of sorted set
    * @param {string} cacheName - The cache containing the sorted set.
-   * @param {string} sortedSetName - The sorted set to remove from.
+   * @param {string} sortedSetName - The sorted set name.
    * @returns {Promise<CacheSortedSetLength.Response>}
    * {@link CacheSortedSetLength.Hit} containing the length if the sorted set exists.
    * {@link CacheSortedSetLength.Miss} if the sorted set does not exist.
@@ -1168,13 +1168,11 @@ export abstract class AbstractCacheClient implements ICacheClient {
   }
 
   /**
-   * Fetch length (number of items) of sorted set by score
+   * Fetch length (number of items) of sorted set within the provided score range
    * @param {string} cacheName - The cache containing the sorted set.
-   * @param {string} sortedSetName - The sorted set to remove from.
+   * @param {string} sortedSetName - The sorted set name.
    * @param {number} minScore - The lower bound on the score range to search in.
-   * @param {boolean} minScoreInclusive - Whether the lower bound is inclusive or exclusive.
    * @param {number} maxScore - The upper bound on the score range to search in.
-   * @param {boolean} maxScoreInclusive - Whether the upper bound is inclusive or exclusive.
    * @returns {Promise<CacheSortedSetLengthByScore.Response>}
    * {@link CacheSortedSetLengthByScore.Hit} containing the length if the sorted set exists.
    * {@link CacheSortedSetLengthByScore.Miss} if the sorted set does not exist.
