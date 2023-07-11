@@ -34,6 +34,8 @@ import {
   CacheSortedSetGetScores,
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
+  CacheSortedSetLength,
+  CacheSortedSetLengthByScore,
   CacheItemGetType,
   CacheItemGetTtl,
 } from '../index';
@@ -267,6 +269,18 @@ export interface ICacheClient extends IControlClient, IPingClient {
     sortedSetName: string,
     values: string[] | Uint8Array[]
   ): Promise<CacheSortedSetRemoveElement.Response>;
+  sortedSetLength(
+    cacheName: string,
+    sortedSetName: string
+  ): Promise<CacheSortedSetLength.Response>;
+  sortedSetLengthByScore(
+    cacheName: string,
+    sortedSetName: string,
+    minScore?: number,
+    minScoreInclusive?: boolean,
+    maxScore?: number,
+    maxScoreInclusive?: boolean
+  ): Promise<CacheSortedSetLengthByScore.Response>;
   itemGetType(
     cacheName: string,
     key: string | Uint8Array
