@@ -787,13 +787,13 @@ function example_API_InstantiateTopicClient() {
 
 async function example_API_GenerateAuthToken(authClient: AuthClient) {
   // Generate a token that allows all data plane APIs on all caches and topics.
-  const AllDataRWTokenResponse = await authClient.generateAuthToken(AllDataReadWrite, ExpiresIn.minutes(30));
-  if (AllDataRWTokenResponse instanceof GenerateAuthToken.Success) {
+  const allDataRWTokenResponse = await authClient.generateAuthToken(AllDataReadWrite, ExpiresIn.minutes(30));
+  if (allDataRWTokenResponse instanceof GenerateAuthToken.Success) {
     console.log('Generated an auth token with AllDataReadWrite scope!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`Auth token starts with: ${AllDataRWTokenResponse.authToken.substring(0, 10)}`);
-    console.log(`Refresh token starts with: ${AllDataRWTokenResponse.refreshToken.substring(0, 10)}`);
-    console.log(`Expires At: ${AllDataRWTokenResponse.expiresAt.epoch()}`);
+    console.log(`Auth token starts with: ${allDataRWTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`Refresh token starts with: ${allDataRWTokenResponse.refreshToken.substring(0, 10)}`);
+    console.log(`Expires At: ${allDataRWTokenResponse.expiresAt.epoch()}`);
   }
 
   // Generate a token that can only call read-only data plane APIs on a specific cache foo. No topic apis (publish/subscribe) are allowed.
