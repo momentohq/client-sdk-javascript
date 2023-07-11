@@ -22,6 +22,11 @@ import {
   AuthClient,
   AllDataReadWrite,
   ExpiresIn,
+  TokenScopes,
+  AllCaches,
+  AllTopics,
+  CacheRole,
+  TopicRole,
   GenerateAuthToken,
   RefreshAuthToken,
   CacheIncrement,
@@ -781,13 +786,93 @@ function example_API_InstantiateTopicClient() {
 }
 
 async function example_API_GenerateAuthToken(authClient: AuthClient) {
-  const generateTokenResponse = await authClient.generateAuthToken(AllDataReadWrite, ExpiresIn.minutes(30));
-  if (generateTokenResponse instanceof GenerateAuthToken.Success) {
+  // Generate a token that allows all data plane APIs on all caches and topics.
+  const AllDataRWTokenResponse = await authClient.generateAuthToken(AllDataReadWrite, ExpiresIn.minutes(30));
+  if (AllDataRWTokenResponse instanceof GenerateAuthToken.Success) {
     console.log('Generated an auth token with AllDataReadWrite scope!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`Auth token starts with: ${generateTokenResponse.authToken.substring(0, 10)}`);
-    console.log(`Refresh token starts with: ${generateTokenResponse.refreshToken.substring(0, 10)}`);
-    console.log(`Expires At: ${generateTokenResponse.expiresAt.epoch()}`);
+    console.log(`Auth token starts with: ${AllDataRWTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`Refresh token starts with: ${AllDataRWTokenResponse.refreshToken.substring(0, 10)}`);
+    console.log(`Expires At: ${AllDataRWTokenResponse.expiresAt.epoch()}`);
+  }
+
+  // Generate a token that can only call read-only data plane APIs on a specific cache foo. No topic apis (publish/subscribe) are allowed.
+  const singleCacheROTokenResponse = await authClient.generateAuthToken(
+    TokenScopes.cacheReadOnly('foo'),
+    ExpiresIn.minutes(30)
+  );
+  if (singleCacheROTokenResponse instanceof GenerateAuthToken.Success) {
+    console.log('Generated an auth token with read-only access to cache foo!');
+    // logging only a substring of the tokens, because logging security credentials is not advisable :)
+    console.log(`Auth token starts with: ${singleCacheROTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`Refresh token starts with: ${singleCacheROTokenResponse.refreshToken.substring(0, 10)}`);
+    console.log(`Expires At: ${singleCacheROTokenResponse.expiresAt.epoch()}`);
+  }
+
+  // Generate a token that can call all data plane APIs on all caches. No topic apis (publish/subscribe) are allowed.
+  const allCachesRWTokenResponse = await authClient.generateAuthToken(
+    TokenScopes.cacheReadWrite(AllCaches),
+    ExpiresIn.minutes(30)
+  );
+  if (allCachesRWTokenResponse instanceof GenerateAuthToken.Success) {
+    console.log('Generated an auth token with read-write access to all caches!');
+    // logging only a substring of the tokens, because logging security credentials is not advisable :)
+    console.log(`Auth token starts with: ${allCachesRWTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`Refresh token starts with: ${allCachesRWTokenResponse.refreshToken.substring(0, 10)}`);
+    console.log(`Expires At: ${allCachesRWTokenResponse.expiresAt.epoch()}`);
+  }
+
+  // Generate a token that can call publish and subscribe on all topics within cache bar
+  const singleCacheAllTopicsRWTokenResponse = await authClient.generateAuthToken(
+    TokenScopes.topicPublishSubscribe({name: 'bar'}, AllTopics),
+    ExpiresIn.minutes(30)
+  );
+  if (singleCacheAllTopicsRWTokenResponse instanceof GenerateAuthToken.Success) {
+    console.log('Generated an auth token with publish-subscribe access to all topics within cache bar!');
+    // logging only a substring of the tokens, because logging security credentials is not advisable :)
+    console.log(`Auth token starts with: ${singleCacheAllTopicsRWTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`Refresh token starts with: ${singleCacheAllTopicsRWTokenResponse.refreshToken.substring(0, 10)}`);
+    console.log(`Expires At: ${singleCacheAllTopicsRWTokenResponse.expiresAt.epoch()}`);
+  }
+
+  // Generate a token that can only call subscribe on topic where_is_mo within cache mo_nuts
+  const oneCacheOneTopicRWTokenResponse = await authClient.generateAuthToken(
+    TokenScopes.topicSubscribeOnly('mo_nuts', 'where_is_mo'),
+    ExpiresIn.minutes(30)
+  );
+  if (oneCacheOneTopicRWTokenResponse instanceof GenerateAuthToken.Success) {
+    console.log('Generated an auth token with subscribe-only access to topic where_is_mo within cache mo_nuts!');
+    // logging only a substring of the tokens, because logging security credentials is not advisable :)
+    console.log(`Auth token starts with: ${oneCacheOneTopicRWTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`Refresh token starts with: ${oneCacheOneTopicRWTokenResponse.refreshToken.substring(0, 10)}`);
+    console.log(`Expires At: ${oneCacheOneTopicRWTokenResponse.expiresAt.epoch()}`);
+  }
+
+  // Generate a token with multiple permissions
+  const permissions = {
+    permissions: [
+      {role: CacheRole.ReadWrite, cache: {name: 'acorns'}},
+      {role: CacheRole.ReadOnly, cache: AllCaches},
+      {
+        role: TopicRole.PublishSubscribe,
+        cache: 'walnuts', // Shorthand syntax for cache: {name: "walnuts"}
+        topic: "mo's_favorites", // Shorthand syntax for topic: {name: "mo's_favorites"}
+      },
+      {
+        role: TopicRole.SubscribeOnly,
+        cache: AllCaches,
+        topic: AllTopics,
+      },
+    ],
+  };
+
+  const multiplePermsTokenResponse = await authClient.generateAuthToken(permissions, ExpiresIn.minutes(30));
+  if (multiplePermsTokenResponse instanceof GenerateAuthToken.Success) {
+    console.log('Generated an auth token with multiple cache and topic permissions!');
+    // logging only a substring of the tokens, because logging security credentials is not advisable :)
+    console.log(`Auth token starts with: ${multiplePermsTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`Refresh token starts with: ${multiplePermsTokenResponse.refreshToken.substring(0, 10)}`);
+    console.log(`Expires At: ${multiplePermsTokenResponse.expiresAt.epoch()}`);
   }
 }
 
