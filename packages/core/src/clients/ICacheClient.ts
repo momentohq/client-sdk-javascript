@@ -277,9 +277,7 @@ export interface ICacheClient extends IControlClient, IPingClient {
     cacheName: string,
     sortedSetName: string,
     minScore?: number,
-    minScoreInclusive?: boolean,
-    maxScore?: number,
-    maxScoreInclusive?: boolean
+    maxScore?: number
   ): Promise<CacheSortedSetLengthByScore.Response>;
   itemGetType(
     cacheName: string,

@@ -2629,9 +2629,7 @@ export class DataClient implements IDataClient {
     cacheName: string,
     sortedSetName: string,
     minScore?: number,
-    minScoreInclusive?: boolean,
-    maxScore?: number,
-    maxScoreInclusive?: boolean
+    maxScore?: number
   ): Promise<CacheSortedSetLengthByScore.Response> {
     try {
       validateCacheName(cacheName);
@@ -2642,20 +2640,16 @@ export class DataClient implements IDataClient {
     }
 
     this.logger.trace(
-      "Issuing 'sortedSetLengthByScore' request; minScore: %s (inclusive: %s), maxScore: %s (inclusive: %s)",
+      "Issuing 'sortedSetLengthByScore' request; minScore: %s, maxScore: %s",
       minScore?.toString() ?? 'null',
-      minScoreInclusive?.toString() ?? 'null',
-      maxScore?.toString() ?? 'null',
-      maxScoreInclusive?.toString() ?? 'null'
+      maxScore?.toString() ?? 'null'
     );
 
     const result = await this.sendSortedSetLengthByScore(
       cacheName,
       this.convert(sortedSetName),
       minScore,
-      minScoreInclusive,
-      maxScore,
-      maxScoreInclusive
+      maxScore
     );
 
     this.logger.trace(
@@ -2669,26 +2663,20 @@ export class DataClient implements IDataClient {
     cacheName: string,
     sortedSetName: Uint8Array,
     minScore?: number,
-    minScoreInclusive?: boolean,
-    maxScore?: number,
-    maxScoreInclusive?: boolean
+    maxScore?: number
   ): Promise<CacheSortedSetLengthByScore.Response> {
     const request = new grpcCache._SortedSetLengthByScoreRequest({
       set_name: sortedSetName,
     });
 
-    if (minScore && minScoreInclusive) {
+    if (minScore) {
       request.inclusive_min = minScore;
-    } else if (minScore && !minScoreInclusive) {
-      request.exclusive_min = minScore;
     } else {
       request.unbounded_min = new grpcCache._Unbounded();
     }
 
-    if (maxScore && maxScoreInclusive) {
+    if (maxScore) {
       request.inclusive_max = maxScore;
-    } else if (maxScore && !maxScoreInclusive) {
-      request.exclusive_max = maxScore;
     } else {
       request.unbounded_max = new grpcCache._Unbounded();
     }

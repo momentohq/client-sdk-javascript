@@ -1184,18 +1184,14 @@ export abstract class AbstractCacheClient implements ICacheClient {
     cacheName: string,
     sortedSetName: string,
     minScore?: number,
-    minScoreInclusive?: boolean,
-    maxScore?: number,
-    maxScoreInclusive?: boolean
+    maxScore?: number
   ): Promise<CacheSortedSetLengthByScore.Response> {
     const client = this.getNextDataClient();
     return await client.sortedSetLengthByScore(
       cacheName,
       sortedSetName,
       minScore,
-      minScoreInclusive,
-      maxScore,
-      maxScoreInclusive
+      maxScore
     );
   }
 

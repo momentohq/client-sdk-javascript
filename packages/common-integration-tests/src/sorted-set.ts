@@ -2133,58 +2133,17 @@ export function runSortedSetTests(
         );
 
         const lowerBound = 42;
-        const inclusiveLowerBound = true;
         const upperBound = undefined;
-        const inclusiveUpperBound = undefined;
         const result = await Momento.sortedSetLengthByScore(
           IntegrationTestCacheName,
           sortedSetName,
           lowerBound,
-          inclusiveLowerBound,
-          upperBound,
-          inclusiveUpperBound
+          upperBound
         );
         expectWithMessage(() => {
           expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
         }, `expected HIT but got ${result.toString()}`);
         expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(7);
-      });
-
-      it('gets the length for scores above an exclusive lower bound', async () => {
-        const sortedSetName = v4();
-        const setValues = {
-          foo: 42,
-          bar: 42,
-          baz: 42,
-          apple: 1,
-          banana: 1,
-          water: 555,
-          air: 555,
-          earth: 555,
-          fire: 555,
-        };
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
-          sortedSetName,
-          setValues
-        );
-
-        const lowerBound = 42;
-        const inclusiveLowerBound = false;
-        const upperBound = undefined;
-        const inclusiveUpperBound = undefined;
-        const result = await Momento.sortedSetLengthByScore(
-          IntegrationTestCacheName,
-          sortedSetName,
-          lowerBound,
-          inclusiveLowerBound,
-          upperBound,
-          inclusiveUpperBound
-        );
-        expectWithMessage(() => {
-          expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
-        }, `expected HIT but got ${result.toString()}`);
-        expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(4);
       });
 
       it('gets the length for scores below an inclusive upper bound', async () => {
@@ -2207,16 +2166,12 @@ export function runSortedSetTests(
         );
 
         const lowerBound = undefined;
-        const inclusiveLowerBound = undefined;
         const upperBound = 555;
-        const inclusiveUpperBound = true;
         const result = await Momento.sortedSetLengthByScore(
           IntegrationTestCacheName,
           sortedSetName,
           lowerBound,
-          inclusiveLowerBound,
-          upperBound,
-          inclusiveUpperBound
+          upperBound
         );
         expectWithMessage(() => {
           expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
@@ -2224,44 +2179,7 @@ export function runSortedSetTests(
         expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(9);
       });
 
-      it('gets the length for scores below an exclusive upper bound', async () => {
-        const sortedSetName = v4();
-        const setValues = {
-          foo: 42,
-          bar: 42,
-          baz: 42,
-          apple: 1,
-          banana: 1,
-          water: 555,
-          air: 555,
-          earth: 555,
-          fire: 555,
-        };
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
-          sortedSetName,
-          setValues
-        );
-
-        const lowerBound = undefined;
-        const inclusiveLowerBound = undefined;
-        const upperBound = 555;
-        const inclusiveUpperBound = false;
-        const result = await Momento.sortedSetLengthByScore(
-          IntegrationTestCacheName,
-          sortedSetName,
-          lowerBound,
-          inclusiveLowerBound,
-          upperBound,
-          inclusiveUpperBound
-        );
-        expectWithMessage(() => {
-          expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
-        }, `expected HIT but got ${result.toString()}`);
-        expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(5);
-      });
-
-      it('gets the length for scores within exclusive lower and upper bound', async () => {
+      it('gets the length for scores within inclusive lower and upper bound', async () => {
         const sortedSetName = v4();
         const setValues = {
           foo: 42,
@@ -2281,21 +2199,17 @@ export function runSortedSetTests(
         );
 
         const lowerBound = 1;
-        const inclusiveLowerBound = false;
-        const upperBound = 555;
-        const inclusiveUpperBound = false;
+        const upperBound = 42;
         const result = await Momento.sortedSetLengthByScore(
           IntegrationTestCacheName,
           sortedSetName,
           lowerBound,
-          inclusiveLowerBound,
-          upperBound,
-          inclusiveUpperBound
+          upperBound
         );
         expectWithMessage(() => {
           expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
         }, `expected HIT but got ${result.toString()}`);
-        expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(3);
+        expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(5);
       });
     });
 

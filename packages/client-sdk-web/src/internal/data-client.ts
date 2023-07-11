@@ -2633,9 +2633,7 @@ export class DataClient<
     cacheName: string,
     sortedSetName: string,
     minScore?: number,
-    minScoreInclusive?: boolean,
-    maxScore?: number,
-    maxScoreInclusive?: boolean
+    maxScore?: number
   ): Promise<CacheSortedSetLengthByScore.Response> {
     try {
       validateCacheName(cacheName);
@@ -2646,20 +2644,16 @@ export class DataClient<
     }
 
     this.logger.trace(
-      "Issuing 'sortedSetLengthByScore' request; minScore: %s (inclusive: %s), maxScore: %s (inclusive: %s)",
+      "Issuing 'sortedSetLengthByScore' request; minScore: %s, maxScore: %s",
       minScore?.toString() ?? 'null',
-      minScoreInclusive?.toString() ?? 'null',
-      maxScore?.toString() ?? 'null',
-      maxScoreInclusive?.toString() ?? 'null'
+      maxScore?.toString() ?? 'null'
     );
 
     const result = await this.sendSortedSetLengthByScore(
       cacheName,
       convertToB64String(sortedSetName),
       minScore,
-      minScoreInclusive,
-      maxScore,
-      maxScoreInclusive
+      maxScore
     );
 
     this.logger.trace(
@@ -2673,25 +2667,19 @@ export class DataClient<
     cacheName: string,
     sortedSetName: string,
     minScore?: number,
-    minScoreInclusive?: boolean,
-    maxScore?: number,
-    maxScoreInclusive?: boolean
+    maxScore?: number
   ): Promise<CacheSortedSetLengthByScore.Response> {
     const request = new _SortedSetLengthByScoreRequest();
     request.setSetName(sortedSetName);
 
-    if (minScore && minScoreInclusive) {
+    if (minScore) {
       request.setInclusiveMin(minScore);
-    } else if (minScore && !minScoreInclusive) {
-      request.setExclusiveMin(minScore);
     } else {
       request.setUnboundedMin(new _Unbounded());
     }
 
-    if (maxScore && maxScoreInclusive) {
+    if (maxScore) {
       request.setInclusiveMax(maxScore);
-    } else if (maxScore && !maxScoreInclusive) {
-      request.setExclusiveMax(maxScore);
     } else {
       request.setUnboundedMax(new _Unbounded());
     }
