@@ -2132,13 +2132,13 @@ export function runSortedSetTests(
           setValues
         );
 
-        const lowerBound = 42;
-        const upperBound = undefined;
+        const scoreRange = {
+          minScore: 42,
+        };
         const result = await Momento.sortedSetLengthByScore(
           IntegrationTestCacheName,
           sortedSetName,
-          lowerBound,
-          upperBound
+          scoreRange
         );
         expectWithMessage(() => {
           expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
@@ -2165,18 +2165,18 @@ export function runSortedSetTests(
           setValues
         );
 
-        const lowerBound = undefined;
-        const upperBound = 555;
+        const scoreRange = {
+          maxScore: 42,
+        };
         const result = await Momento.sortedSetLengthByScore(
           IntegrationTestCacheName,
           sortedSetName,
-          lowerBound,
-          upperBound
+          scoreRange
         );
         expectWithMessage(() => {
           expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
         }, `expected HIT but got ${result.toString()}`);
-        expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(9);
+        expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(5);
       });
 
       it('gets the length for scores within inclusive lower and upper bound', async () => {
@@ -2198,13 +2198,14 @@ export function runSortedSetTests(
           setValues
         );
 
-        const lowerBound = 1;
-        const upperBound = 42;
+        const scoreRange = {
+          minScore: 1,
+          maxScore: 42,
+        };
         const result = await Momento.sortedSetLengthByScore(
           IntegrationTestCacheName,
           sortedSetName,
-          lowerBound,
-          upperBound
+          scoreRange
         );
         expectWithMessage(() => {
           expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);

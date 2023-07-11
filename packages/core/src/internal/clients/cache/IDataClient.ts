@@ -248,8 +248,10 @@ export interface IDataClient {
   sortedSetLengthByScore(
     cacheName: string,
     sortedSetName: string,
-    minScore?: number,
-    maxScore?: number
+    scoreRange?: {
+      minScore?: number;
+      maxScore?: number;
+    }
   ): Promise<CacheSortedSetLengthByScore.Response>;
   itemGetType(
     cacheName: string,
