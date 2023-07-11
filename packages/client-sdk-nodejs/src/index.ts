@@ -102,6 +102,13 @@ import {
   Permissions,
   AllDataReadWrite,
   TokenScope,
+  TokenScopes,
+  CacheName,
+  TopicName,
+  CacheSelector,
+  TopicSelector,
+  AllCaches,
+  AllTopics,
 } from '@gomomento/sdk-core';
 
 import {Configuration, CacheConfiguration} from './config/configuration';
@@ -177,6 +184,13 @@ export {
   Permissions,
   AllDataReadWrite,
   TokenScope,
+  TokenScopes,
+  CacheName,
+  TopicName,
+  CacheSelector,
+  TopicSelector,
+  AllCaches,
+  AllTopics,
   // CacheClient response types
   CacheGet,
   CacheListConcatenateBack,

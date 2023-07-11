@@ -1,43 +1,112 @@
 export enum CacheRole {
-  None = 'none',
   ReadWrite = 'readwrite',
+  ReadOnly = 'readonly',
 }
 
-export class CachePermission {
-  cacheRole: CacheRole;
+class All {}
+export const AllCaches = new All();
+export const AllTopics = new All();
 
-  constructor(cacheRole: CacheRole) {
-    this.cacheRole = cacheRole;
+export interface CacheName {
+  name: string;
+}
+export function isCacheName(cache: CacheName | All): cache is CacheName {
+  return 'name' in cache;
+}
+export type CacheSelector = All | CacheName | string;
+
+export interface CachePermission {
+  role: CacheRole;
+  /**
+   * Scope the token permissions to select caches
+   */
+  cache: CacheSelector;
+}
+
+export function isCachePermission(p: Permission): boolean {
+  return 'role' in p && 'cache' in p && !('topic' in p);
+}
+
+export function asCachePermission(p: Permission): CachePermission {
+  if (!isCachePermission(p)) {
+    throw new Error(
+      `permission is not a CachePermission object: ${JSON.stringify(p)}`
+    );
   }
+  return p as CachePermission;
 }
 
 export enum TopicRole {
-  None = 'none',
-  ReadWrite = 'readwrite',
+  PublishSubscribe = 'publishsubscribe',
+  SubscribeOnly = 'subscribeonly',
 }
 
-export class TopicPermission {
-  topicRole: TopicRole;
+export interface TopicName {
+  name: string;
+}
+export function isTopicName(topic: TopicName | All): topic is TopicName {
+  return 'name' in topic;
+}
+export type TopicSelector = All | TopicName | string;
 
-  constructor(topicRole: TopicRole) {
-    this.topicRole = topicRole;
+export interface TopicPermission {
+  role: TopicRole;
+  /**
+   * Scope the token permissions to select caches
+   */
+  cache: CacheSelector;
+  /**
+   * Scope the token permissions to select topics
+   */
+  topic: TopicSelector;
+}
+
+export function isTopicPermission(p: Permission): boolean {
+  return 'role' in p && 'cache' in p && 'topic' in p;
+}
+
+export function asTopicPermission(p: Permission): TopicPermission {
+  if (!isTopicPermission(p)) {
+    throw new Error(
+      `permission is not a TopicPermission object: ${JSON.stringify(p)}`
+    );
   }
+  return p as TopicPermission;
 }
 
 export type Permission = CachePermission | TopicPermission;
 
-export class Permissions {
+export interface Permissions {
   permissions: Array<Permission>;
-
-  constructor(permissions: Array<Permission>) {
-    this.permissions = permissions;
-  }
 }
 
-export const AllDataReadWrite: Permissions = new Permissions([
-  new CachePermission(CacheRole.ReadWrite),
-  new TopicPermission(TopicRole.ReadWrite),
-]);
+export const AllDataReadWrite: Permissions = {
+  permissions: [
+    {role: CacheRole.ReadWrite, cache: AllCaches},
+    {role: TopicRole.PublishSubscribe, cache: AllCaches, topic: AllTopics},
+  ],
+};
+
+function isPermissionObject(p: Permission): boolean {
+  return isCachePermission(p) || isTopicPermission(p);
+}
+
+export function isPermissionsObject(scope: TokenScope): boolean {
+  if (!('permissions' in scope)) {
+    return false;
+  }
+  const permissions = scope.permissions;
+  return permissions.every(p => isPermissionObject(p));
+}
+
+export function asPermissionsObject(scope: TokenScope): Permissions {
+  if (!isPermissionsObject(scope)) {
+    throw new Error(
+      `Token scope is not a Permissions object: ${JSON.stringify(scope)}`
+    );
+  }
+  return scope as Permissions;
+}
 
 export abstract class PredefinedScope {}
 

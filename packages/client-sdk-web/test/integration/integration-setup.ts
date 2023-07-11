@@ -39,6 +39,14 @@ function credsProvider(): CredentialProvider {
   return _credsProvider;
 }
 
+const sessionCredsProvider = CredentialProvider.fromEnvironmentVariable({
+  environmentVariableName: 'TEST_SESSION_TOKEN',
+  // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
+  // steal them from the auth-token-based creds provider.
+  cacheEndpoint: credsProvider().getCacheEndpoint(),
+  controlEndpoint: credsProvider().getControlEndpoint(),
+});
+
 export const IntegrationTestCacheClientProps: CacheClientProps = {
   configuration: Configurations.Laptop.latest(),
   credentialProvider: credsProvider(),
@@ -49,10 +57,25 @@ function momentoClientForTesting(): CacheClient {
   return new CacheClient(IntegrationTestCacheClientProps);
 }
 
+function momentoClientForTestingWithSessionToken(): CacheClient {
+  return new CacheClient({
+    configuration: Configurations.Laptop.latest(),
+    credentialProvider: sessionCredsProvider,
+    defaultTtlSeconds: 1111,
+  });
+}
+
 function momentoTopicClientForTesting(): TopicClient {
   return new TopicClient({
     configuration: TopicConfigurations.Default.latest(),
     credentialProvider: credsProvider(),
+  });
+}
+
+function momentoTopicClientForTestingWithSessionToken(): TopicClient {
+  return new TopicClient({
+    configuration: IntegrationTestCacheClientProps.configuration,
+    credentialProvider: sessionCredsProvider,
   });
 }
 
@@ -95,15 +118,18 @@ export function SetupTopicIntegrationTest(): {
 export function SetupAuthClientIntegrationTest(): {
   sessionTokenAuthClient: AuthClient;
   legacyTokenAuthClient: AuthClient;
+  sessionTokenCacheClient: CacheClient;
+  sessionTokenTopicClient: TopicClient;
   authTokenAuthClientFactory: (authToken: string) => AuthClient;
   cacheClientFactory: (token: string) => ICacheClient;
+  topicClientFactory: (token: string) => ITopicClient;
   cacheName: string;
 } {
   const cacheName = testCacheName();
 
   beforeAll(async () => {
     // Use a fresh client to avoid test interference with setup.
-    const momento = momentoClientForTesting();
+    const momento = momentoClientForTestingWithSessionToken();
     await deleteCacheIfExists(momento, cacheName);
     const createResponse = await momento.createCache(cacheName);
     if (createResponse instanceof CreateCache.Error) {
@@ -113,7 +139,7 @@ export function SetupAuthClientIntegrationTest(): {
 
   afterAll(async () => {
     // Use a fresh client to avoid test interference with teardown.
-    const momento = momentoClientForTesting();
+    const momento = momentoClientForTestingWithSessionToken();
     const deleteResponse = await momento.deleteCache(cacheName);
     if (deleteResponse instanceof DeleteCache.Error) {
       throw deleteResponse.innerException();
@@ -122,19 +148,15 @@ export function SetupAuthClientIntegrationTest(): {
 
   return {
     sessionTokenAuthClient: new AuthClient({
-      credentialProvider: CredentialProvider.fromEnvironmentVariable({
-        environmentVariableName: 'TEST_SESSION_TOKEN',
-        // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
-        // steal them from the auth-token-based creds provider.`
-        cacheEndpoint: credsProvider().getCacheEndpoint(),
-        controlEndpoint: credsProvider().getControlEndpoint(),
-      }),
+      credentialProvider: sessionCredsProvider,
     }),
     legacyTokenAuthClient: new AuthClient({
       credentialProvider: CredentialProvider.fromEnvironmentVariable({
         environmentVariableName: 'TEST_LEGACY_AUTH_TOKEN',
       }),
     }),
+    sessionTokenCacheClient: momentoClientForTestingWithSessionToken(),
+    sessionTokenTopicClient: momentoTopicClientForTestingWithSessionToken(),
     authTokenAuthClientFactory: authToken =>
       new AuthClient({
         credentialProvider: CredentialProvider.fromString({
@@ -148,6 +170,13 @@ export function SetupAuthClientIntegrationTest(): {
         }),
         configuration: Configurations.Laptop.v1(),
         defaultTtlSeconds: 60,
+      }),
+    topicClientFactory: authToken =>
+      new TopicClient({
+        credentialProvider: CredentialProvider.fromString({
+          authToken: authToken,
+        }),
+        configuration: Configurations.Laptop.latest(),
       }),
     cacheName: cacheName,
   };

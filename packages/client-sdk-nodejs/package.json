@@ -32,7 +32,7 @@
     "@types/jest": "^27.0.2",
     "@types/node": "14.18.3",
     "@types/uuid": "^8.3.1",
-    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.9",
     "@typescript-eslint/parser": "^5.0.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
@@ -50,9 +50,9 @@
     "uuid": "8.3.2"
   },
   "dependencies": {
-    "@gomomento/generated-types": "0.62.1",
+    "@gomomento/generated-types": "0.68.0",
     "@gomomento/sdk-core": "file:../core",
-    "@grpc/grpc-js": "1.8.14",
+    "@grpc/grpc-js": "1.8.17",
     "google-protobuf": "3.21.2",
     "jwt-decode": "3.1.2"
   },
