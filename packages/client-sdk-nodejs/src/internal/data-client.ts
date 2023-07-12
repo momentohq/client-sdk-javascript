@@ -2628,30 +2628,28 @@ export class DataClient implements IDataClient {
   public async sortedSetLengthByScore(
     cacheName: string,
     sortedSetName: string,
-    scoreRange?: {
-      minScore?: number;
-      maxScore?: number;
-    }
+    minScore?: number,
+    maxScore?: number
   ): Promise<CacheSortedSetLengthByScore.Response> {
     try {
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
-      if (scoreRange)
-        validateSortedSetScores(scoreRange.minScore, scoreRange.maxScore);
+      validateSortedSetScores(minScore, maxScore);
     } catch (err) {
       return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
     }
 
     this.logger.trace(
       "Issuing 'sortedSetLengthByScore' request; minScore: %s, maxScore: %s",
-      scoreRange?.minScore?.toString() ?? 'null',
-      scoreRange?.maxScore?.toString() ?? 'null'
+      minScore?.toString() ?? 'null',
+      maxScore?.toString() ?? 'null'
     );
 
     const result = await this.sendSortedSetLengthByScore(
       cacheName,
       this.convert(sortedSetName),
-      scoreRange
+      minScore,
+      maxScore
     );
 
     this.logger.trace(
@@ -2664,25 +2662,23 @@ export class DataClient implements IDataClient {
   private async sendSortedSetLengthByScore(
     cacheName: string,
     sortedSetName: Uint8Array,
-    scoreRange?: {
-      minScore?: number;
-      maxScore?: number;
-    }
+    minScore?: number,
+    maxScore?: number
   ): Promise<CacheSortedSetLengthByScore.Response> {
     const request = new grpcCache._SortedSetLengthByScoreRequest({
       set_name: sortedSetName,
     });
 
-    if (scoreRange?.minScore) {
-      request.inclusive_min = scoreRange.minScore;
-    } else {
+    if (minScore === undefined) {
       request.unbounded_min = new grpcCache._Unbounded();
+    } else {
+      request.inclusive_min = minScore;
     }
 
-    if (scoreRange?.maxScore) {
-      request.inclusive_max = scoreRange.maxScore;
-    } else {
+    if (maxScore === undefined) {
       request.unbounded_max = new grpcCache._Unbounded();
+    } else {
+      request.inclusive_max = maxScore;
     }
 
     const metadata = this.createMetadata(cacheName);

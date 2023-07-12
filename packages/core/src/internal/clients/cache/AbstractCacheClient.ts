@@ -65,6 +65,7 @@ import {
   SortedSetPutElementsOptions,
   SortedSetFetchByScoreOptions,
   SortedSetIncrementOptions,
+  SortedSetLengthByScoreOptions,
 } from '../../../clients/ICacheClient';
 import {IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
@@ -1171,9 +1172,9 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * Fetch length (number of items) of sorted set within the provided score range
    * @param {string} cacheName - The cache containing the sorted set.
    * @param {string} sortedSetName - The sorted set name.
-   * @param {Object} scoreRange - Optional parameter for specifying the score range to search in.
-   * @param {number} scoreRange.minScore - The lower bound on the score range to search in.
-   * @param {number} scoreRange.maxScore - The upper bound on the score range to search in.
+   * @param {SortedSetLengthByScoreOptions} options - Optional parameter for specifying the score range to search in.
+   * @param {number} [options.minScore] - The lower bound on the score range to search in.
+   * @param {number} [options.maxScore] - The upper bound on the score range to search in.
    * @returns {Promise<CacheSortedSetLengthByScore.Response>}
    * {@link CacheSortedSetLengthByScore.Hit} containing the length if the sorted set exists.
    * {@link CacheSortedSetLengthByScore.Miss} if the sorted set does not exist.
@@ -1182,16 +1183,14 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async sortedSetLengthByScore(
     cacheName: string,
     sortedSetName: string,
-    scoreRange?: {
-      minScore?: number;
-      maxScore?: number;
-    }
+    options?: SortedSetLengthByScoreOptions
   ): Promise<CacheSortedSetLengthByScore.Response> {
     const client = this.getNextDataClient();
     return await client.sortedSetLengthByScore(
       cacheName,
       sortedSetName,
-      scoreRange
+      options?.minScore,
+      options?.maxScore
     );
   }
 

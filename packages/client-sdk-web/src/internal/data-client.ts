@@ -2632,30 +2632,28 @@ export class DataClient<
   public async sortedSetLengthByScore(
     cacheName: string,
     sortedSetName: string,
-    scoreRange?: {
-      minScore?: number;
-      maxScore?: number;
-    }
+    minScore?: number,
+    maxScore?: number
   ): Promise<CacheSortedSetLengthByScore.Response> {
     try {
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
-      if (scoreRange)
-        validateSortedSetScores(scoreRange.minScore, scoreRange.maxScore);
+      validateSortedSetScores(minScore, maxScore);
     } catch (err) {
       return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
     }
 
     this.logger.trace(
       "Issuing 'sortedSetLengthByScore' request; minScore: %s, maxScore: %s",
-      scoreRange?.minScore?.toString() ?? 'null',
-      scoreRange?.maxScore?.toString() ?? 'null'
+      minScore?.toString() ?? 'null',
+      maxScore?.toString() ?? 'null'
     );
 
     const result = await this.sendSortedSetLengthByScore(
       cacheName,
       convertToB64String(sortedSetName),
-      scoreRange
+      minScore,
+      maxScore
     );
 
     this.logger.trace(
@@ -2668,24 +2666,22 @@ export class DataClient<
   private async sendSortedSetLengthByScore(
     cacheName: string,
     sortedSetName: string,
-    scoreRange?: {
-      minScore?: number;
-      maxScore?: number;
-    }
+    minScore?: number,
+    maxScore?: number
   ): Promise<CacheSortedSetLengthByScore.Response> {
     const request = new _SortedSetLengthByScoreRequest();
     request.setSetName(sortedSetName);
 
-    if (scoreRange?.minScore) {
-      request.setInclusiveMin(scoreRange.minScore);
-    } else {
+    if (minScore === undefined) {
       request.setUnboundedMin(new _Unbounded());
+    } else {
+      request.setInclusiveMin(minScore);
     }
 
-    if (scoreRange?.maxScore) {
-      request.setInclusiveMax(scoreRange.maxScore);
-    } else {
+    if (maxScore === undefined) {
       request.setUnboundedMax(new _Unbounded());
+    } else {
+      request.setInclusiveMax(maxScore);
     }
 
     return await new Promise(resolve => {

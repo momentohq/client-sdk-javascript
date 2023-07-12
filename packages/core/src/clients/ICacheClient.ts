@@ -48,6 +48,7 @@ import {
   CollectionCallOptions,
   SortedSetFetchByRankCallOptions,
   SortedSetFetchByScoreCallOptions,
+  SortedSetLengthByScoreCallOptions,
 } from '../utils';
 import {IControlClient, IPingClient} from '../internal/clients';
 
@@ -69,6 +70,7 @@ export type SortedSetPutElementsOptions = CollectionCallOptions;
 export type SortedSetFetchByRankOptions = SortedSetFetchByRankCallOptions;
 export type SortedSetFetchByScoreOptions = SortedSetFetchByScoreCallOptions;
 export type SortedSetIncrementOptions = CollectionCallOptions;
+export type SortedSetLengthByScoreOptions = SortedSetLengthByScoreCallOptions;
 
 export interface ICacheClient extends IControlClient, IPingClient {
   get(cacheName: string, key: string | Uint8Array): Promise<CacheGet.Response>;
@@ -276,10 +278,7 @@ export interface ICacheClient extends IControlClient, IPingClient {
   sortedSetLengthByScore(
     cacheName: string,
     sortedSetName: string,
-    scoreRange?: {
-      minScore?: number;
-      maxScore?: number;
-    }
+    options?: SortedSetLengthByScoreOptions
   ): Promise<CacheSortedSetLengthByScore.Response>;
   itemGetType(
     cacheName: string,
