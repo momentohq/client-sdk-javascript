@@ -42,6 +42,8 @@ import {
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  CacheSortedSetLength,
+  CacheSortedSetLengthByScore,
   SortedSetOrder,
   CacheItemGetTtl,
   CacheItemGetType,
@@ -63,6 +65,7 @@ import {
   SortedSetPutElementsOptions,
   SortedSetFetchByScoreOptions,
   SortedSetIncrementOptions,
+  SortedSetLengthByScoreOptions,
 } from '../../../clients/ICacheClient';
 import {IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
@@ -1145,6 +1148,49 @@ export abstract class AbstractCacheClient implements ICacheClient {
       cacheName,
       sortedSetName,
       values
+    );
+  }
+
+  /**
+   * Fetch length (number of items) of sorted set
+   * @param {string} cacheName - The cache containing the sorted set.
+   * @param {string} sortedSetName - The sorted set name.
+   * @returns {Promise<CacheSortedSetLength.Response>}
+   * {@link CacheSortedSetLength.Hit} containing the length if the sorted set exists.
+   * {@link CacheSortedSetLength.Miss} if the sorted set does not exist.
+   * {@link CacheSortedSetLength.Error} on failure.
+   */
+  public async sortedSetLength(
+    cacheName: string,
+    sortedSetName: string
+  ): Promise<CacheSortedSetLength.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetLength(cacheName, sortedSetName);
+  }
+
+  /**
+   * Fetch length (number of items) of sorted set within the provided score range
+   * @param {string} cacheName - The cache containing the sorted set.
+   * @param {string} sortedSetName - The sorted set name.
+   * @param {SortedSetLengthByScoreOptions} options - Optional parameter for specifying the score range to search in.
+   * @param {number} [options.minScore] - The lower bound on the score range to search in.
+   * @param {number} [options.maxScore] - The upper bound on the score range to search in.
+   * @returns {Promise<CacheSortedSetLengthByScore.Response>}
+   * {@link CacheSortedSetLengthByScore.Hit} containing the length if the sorted set exists.
+   * {@link CacheSortedSetLengthByScore.Miss} if the sorted set does not exist.
+   * {@link CacheSortedSetLengthByScore.Error} on failure.
+   */
+  public async sortedSetLengthByScore(
+    cacheName: string,
+    sortedSetName: string,
+    options?: SortedSetLengthByScoreOptions
+  ): Promise<CacheSortedSetLengthByScore.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetLengthByScore(
+      cacheName,
+      sortedSetName,
+      options?.minScore,
+      options?.maxScore
     );
   }
 

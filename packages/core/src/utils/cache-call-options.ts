@@ -85,6 +85,19 @@ export interface SortedSetFetchByScoreCallOptions {
   count?: number;
 }
 
+export interface SortedSetLengthByScoreCallOptions {
+  /**
+   * The minimum score of the elements to include when counting number of items in the set, inclusive.
+   * If the minimum score is not specified, the range extends to the lowest score.
+   */
+  minScore?: number;
+  /**
+   * The maximum score of the elements to include when counting number of items in the set, inclusive.
+   * If the maximum score is not specified, the range extends to the highest score.
+   */
+  maxScore?: number;
+}
+
 export interface ListRetainCallOptions extends CollectionCallOptions {
   /**
    * Starting inclusive index of operation.

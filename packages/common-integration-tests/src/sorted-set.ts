@@ -10,6 +10,8 @@ import {
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  CacheSortedSetLength,
+  CacheSortedSetLengthByScore,
   CollectionTtl,
   MomentoErrorCode,
   SortedSetOrder,
@@ -1993,6 +1995,292 @@ export function runSortedSetTests(
           {value: uint8ArrayForTest('foo'), score: 42},
           {value: uint8ArrayForTest('bar'), score: 84},
         ]);
+      });
+    });
+
+    describe('#sortedSetLength', () => {
+      const responder = (props: ValidateSortedSetProps) => {
+        return Momento.sortedSetLength(props.cacheName, props.sortedSetName);
+      };
+
+      itBehavesLikeItValidates(responder);
+      itBehavesLikeItMissesWhenSortedSetDoesNotExist(responder);
+
+      it('returns the length if the sorted set exists', async () => {
+        const sortedSetName = v4();
+        const setValues = {foo: 42, bar: 84, baz: 90210};
+        const numElements = Object.keys(setValues).length;
+        await Momento.sortedSetPutElements(
+          IntegrationTestCacheName,
+          sortedSetName,
+          setValues
+        );
+
+        const result = await Momento.sortedSetLength(
+          IntegrationTestCacheName,
+          sortedSetName
+        );
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetLength.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        expect((result as CacheSortedSetLength.Hit).length()).toEqual(
+          numElements
+        );
+      });
+    });
+
+    describe('#sortedSetLengthByScore', () => {
+      const responder = (props: ValidateSortedSetProps) => {
+        return Momento.sortedSetLength(props.cacheName, props.sortedSetName);
+      };
+
+      itBehavesLikeItValidates(responder);
+      itBehavesLikeItMissesWhenSortedSetDoesNotExist(responder);
+
+      it('gets the length when each score has only one element', async () => {
+        const sortedSetName = v4();
+        const setValues = {foo: 42, bar: 84, baz: 90210};
+        const numElements = Object.keys(setValues).length;
+        await Momento.sortedSetPutElements(
+          IntegrationTestCacheName,
+          sortedSetName,
+          setValues
+        );
+
+        const result = await Momento.sortedSetLengthByScore(
+          IntegrationTestCacheName,
+          sortedSetName
+        );
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(
+          numElements
+        );
+      });
+
+      it('gets the length when only one score has multiple elements', async () => {
+        const sortedSetName = v4();
+        const setValues = {foo: 42, bar: 42, baz: 42};
+        const numElements = Object.keys(setValues).length;
+        await Momento.sortedSetPutElements(
+          IntegrationTestCacheName,
+          sortedSetName,
+          setValues
+        );
+
+        const result = await Momento.sortedSetLengthByScore(
+          IntegrationTestCacheName,
+          sortedSetName
+        );
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(
+          numElements
+        );
+      });
+
+      it('gets the length when multiple scores have varying number of elements', async () => {
+        const sortedSetName = v4();
+        const setValues = {
+          foo: 42,
+          bar: 42,
+          baz: 42,
+          apple: 1,
+          banana: 1,
+          water: 555,
+          air: 555,
+          earth: 555,
+          fire: 555,
+        };
+        const numElements = Object.keys(setValues).length;
+        await Momento.sortedSetPutElements(
+          IntegrationTestCacheName,
+          sortedSetName,
+          setValues
+        );
+
+        const result = await Momento.sortedSetLengthByScore(
+          IntegrationTestCacheName,
+          sortedSetName
+        );
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(
+          numElements
+        );
+      });
+
+      it('gets the length for scores between a lower bound and undefined upper bound', async () => {
+        const sortedSetName = v4();
+        const setValues = {
+          foo: 42,
+          bar: 42,
+          baz: 42,
+          apple: 1,
+          banana: 1,
+          water: 555,
+          air: 555,
+          earth: 555,
+          fire: 555,
+        };
+        await Momento.sortedSetPutElements(
+          IntegrationTestCacheName,
+          sortedSetName,
+          setValues
+        );
+
+        const scoreRange = {
+          minScore: 42,
+          maxScore: undefined,
+        };
+        const result = await Momento.sortedSetLengthByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          scoreRange
+        );
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(7);
+      });
+
+      it('gets the length for scores between undefined lower bound and an upper bound', async () => {
+        const sortedSetName = v4();
+        const setValues = {
+          foo: 42,
+          bar: 42,
+          baz: 42,
+          apple: 1,
+          banana: 1,
+          water: 555,
+          air: 555,
+          earth: 555,
+          fire: 555,
+        };
+        await Momento.sortedSetPutElements(
+          IntegrationTestCacheName,
+          sortedSetName,
+          setValues
+        );
+
+        const scoreRange = {
+          minScore: undefined,
+          maxScore: 42,
+        };
+        const result = await Momento.sortedSetLengthByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          scoreRange
+        );
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(5);
+      });
+
+      it('gets the length for scores between zero lower bound and an upper bound', async () => {
+        const sortedSetName = v4();
+        const setValues = {
+          foo: 42,
+          bar: 42,
+          baz: 42,
+          apple: 1,
+          banana: 1,
+          water: 555,
+          air: 555,
+          earth: 555,
+          fire: 555,
+        };
+        await Momento.sortedSetPutElements(
+          IntegrationTestCacheName,
+          sortedSetName,
+          setValues
+        );
+
+        const scoreRange = {
+          minScore: 0,
+          maxScore: 100,
+        };
+        const result = await Momento.sortedSetLengthByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          scoreRange
+        );
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(5);
+      });
+
+      it('gets the length for scores between a lower bound and a zero upper bound', async () => {
+        const sortedSetName = v4();
+        const setValues = {
+          foo: -42,
+          bar: -42,
+          baz: -42,
+          apple: -1,
+          banana: -1,
+          water: -555,
+          air: -555,
+          earth: -555,
+          fire: -555,
+        };
+        await Momento.sortedSetPutElements(
+          IntegrationTestCacheName,
+          sortedSetName,
+          setValues
+        );
+
+        const scoreRange = {
+          minScore: -100,
+          maxScore: 0,
+        };
+        const result = await Momento.sortedSetLengthByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          scoreRange
+        );
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(5);
+      });
+
+      it('gets the length for scores between lower and upper bound', async () => {
+        const sortedSetName = v4();
+        const setValues = {
+          foo: 42,
+          bar: 42,
+          baz: 42,
+          apple: 1,
+          banana: 1,
+          water: 555,
+          air: 555,
+          earth: 555,
+          fire: 555,
+        };
+        await Momento.sortedSetPutElements(
+          IntegrationTestCacheName,
+          sortedSetName,
+          setValues
+        );
+
+        const scoreRange = {
+          minScore: 1,
+          maxScore: 42,
+        };
+        const result = await Momento.sortedSetLengthByScore(
+          IntegrationTestCacheName,
+          sortedSetName,
+          scoreRange
+        );
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(5);
       });
     });
 
