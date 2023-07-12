@@ -43,6 +43,8 @@ import * as CacheSortedSetGetScores from './messages/responses/cache-sorted-set-
 import * as CacheSortedSetIncrementScore from './messages/responses/cache-sorted-set-increment-score';
 import * as CacheSortedSetRemoveElement from './messages/responses/cache-sorted-set-remove-element';
 import * as CacheSortedSetRemoveElements from './messages/responses/cache-sorted-set-remove-elements';
+import * as CacheSortedSetLength from './messages/responses/cache-sorted-set-length';
+import * as CacheSortedSetLengthByScore from './messages/responses/cache-sorted-set-length-by-score';
 import * as CacheItemGetType from './messages/responses/cache-item-get-type';
 import * as CacheItemGetTtl from './messages/responses/cache-item-get-ttl';
 
@@ -183,6 +185,8 @@ export {
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  CacheSortedSetLength,
+  CacheSortedSetLengthByScore,
   CacheItemGetType,
   CacheItemGetTtl,
   CacheInfo,

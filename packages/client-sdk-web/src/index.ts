@@ -49,6 +49,8 @@ import * as CacheSortedSetGetScores from '@gomomento/sdk-core/dist/src/messages/
 import * as CacheSortedSetIncrementScore from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-increment-score';
 import * as CacheSortedSetRemoveElement from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-remove-element';
 import * as CacheSortedSetRemoveElements from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-remove-elements';
+import * as CacheSortedSetLength from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-length';
+import * as CacheSortedSetLengthByScore from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-length-by-score';
 import * as CacheItemGetType from '@gomomento/sdk-core/dist/src/messages/responses/cache-item-get-type';
 import * as CacheItemGetTtl from '@gomomento/sdk-core/dist/src/messages/responses/cache-item-get-ttl';
 
@@ -183,6 +185,8 @@ export {
   CacheSortedSetIncrementScore,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  CacheSortedSetLength,
+  CacheSortedSetLengthByScore,
   CacheItemGetType,
   CacheItemGetTtl,
   TopicConfigurations,
