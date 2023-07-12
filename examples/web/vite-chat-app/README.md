@@ -14,6 +14,13 @@ First, install all dependencies
 npm install
 ```
 
+Then, edit the `.env.development` file with your token vending machine url and your cache name
+
+```
+VITE_TOKEN_VENDING_MACHINE_URL="https://..."
+VITE_MOMENTO_CACHE_NAME="my-cache"
+```
+
 Then, run the development server:
 
 ```bash
@@ -24,4 +31,4 @@ yarn dev
 pnpm dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) with your browser to see the result
+Open [http://localhost:5173](http://localhost:5173) with your browser to see the result.
