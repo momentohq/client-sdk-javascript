@@ -849,21 +849,27 @@ async function example_API_GenerateAuthToken(authClient: AuthClient) {
   }
 
   // Generate a token with multiple permissions
+  const cachePermission1 = {
+    role: CacheRole.ReadWrite, // Managed role that grants access to read as well as write apis on caches
+    cache: 'acorns', // Scopes the access to a single cache named 'acorns'
+  };
+  const cachePermission2 = {
+    role: CacheRole.ReadOnly, // Managed role that grants access to only read data apis on caches
+    cache: AllCaches, // Built-in value for access to all caches in the account
+  };
+  const topicPermission1 = {
+    role: TopicRole.PublishSubscribe, // Managed role that grants access to subscribe as well as publish apis
+    cache: 'walnuts', // Scopes the access to a single cache named 'walnuts'
+    topic: 'mo_favorites', // Scopes the access to a single topic named 'mo_favorites' within cache 'walnuts'
+  };
+  const topicPermission2 = {
+    role: TopicRole.SubscribeOnly, // Managed role that grants access to only subscribe api
+    cache: AllCaches, // Built-in value for all cache(s) in the account.
+    topic: AllTopics, // Built-in value for access to all topics in the listed cache(s).
+  };
+
   const permissions = {
-    permissions: [
-      {role: CacheRole.ReadWrite, cache: {name: 'acorns'}},
-      {role: CacheRole.ReadOnly, cache: AllCaches},
-      {
-        role: TopicRole.PublishSubscribe,
-        cache: 'walnuts', // Shorthand syntax for cache: {name: "walnuts"}
-        topic: "mo's_favorites", // Shorthand syntax for topic: {name: "mo's_favorites"}
-      },
-      {
-        role: TopicRole.SubscribeOnly,
-        cache: AllCaches,
-        topic: AllTopics,
-      },
-    ],
+    permissions: [cachePermission1, cachePermission2, topicPermission1, topicPermission2],
   };
 
   const multiplePermsTokenResponse = await authClient.generateAuthToken(permissions, ExpiresIn.minutes(30));
