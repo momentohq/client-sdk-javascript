@@ -794,6 +794,10 @@ async function example_API_GenerateAuthToken(authClient: AuthClient) {
     console.log(`Auth token starts with: ${allDataRWTokenResponse.authToken.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${allDataRWTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${allDataRWTokenResponse.expiresAt.epoch()}`);
+  } else if (allDataRWTokenResponse instanceof GenerateAuthToken.Error) {
+    throw new Error(
+      `An error occurred while attempting to call generateAuthToken with AllDataReadWrite scope: ${allDataRWTokenResponse.errorCode()}: ${allDataRWTokenResponse.toString()}`
+    );
   }
 
   // Generate a token that can only call read-only data plane APIs on a specific cache foo. No topic apis (publish/subscribe) are allowed.
@@ -807,6 +811,10 @@ async function example_API_GenerateAuthToken(authClient: AuthClient) {
     console.log(`Auth token starts with: ${singleCacheROTokenResponse.authToken.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${singleCacheROTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${singleCacheROTokenResponse.expiresAt.epoch()}`);
+  } else if (singleCacheROTokenResponse instanceof GenerateAuthToken.Error) {
+    throw new Error(
+      `An error occurred while attempting to call generateAuthToken with single cache read-only scope: ${singleCacheROTokenResponse.errorCode()}: ${singleCacheROTokenResponse.toString()}`
+    );
   }
 
   // Generate a token that can call all data plane APIs on all caches. No topic apis (publish/subscribe) are allowed.
@@ -820,6 +828,10 @@ async function example_API_GenerateAuthToken(authClient: AuthClient) {
     console.log(`Auth token starts with: ${allCachesRWTokenResponse.authToken.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${allCachesRWTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${allCachesRWTokenResponse.expiresAt.epoch()}`);
+  } else if (allCachesRWTokenResponse instanceof GenerateAuthToken.Error) {
+    throw new Error(
+      `An error occurred while attempting to call generateAuthToken with all caches read-write scope: ${allCachesRWTokenResponse.errorCode()}: ${allCachesRWTokenResponse.toString()}`
+    );
   }
 
   // Generate a token that can call publish and subscribe on all topics within cache bar
@@ -833,6 +845,10 @@ async function example_API_GenerateAuthToken(authClient: AuthClient) {
     console.log(`Auth token starts with: ${singleCacheAllTopicsRWTokenResponse.authToken.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${singleCacheAllTopicsRWTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${singleCacheAllTopicsRWTokenResponse.expiresAt.epoch()}`);
+  } else if (singleCacheAllTopicsRWTokenResponse instanceof GenerateAuthToken.Error) {
+    throw new Error(
+      `An error occurred while attempting to call generateAuthToken with read-write scope for all topics in a single cache: ${singleCacheAllTopicsRWTokenResponse.errorCode()}: ${singleCacheAllTopicsRWTokenResponse.toString()}`
+    );
   }
 
   // Generate a token that can only call subscribe on topic where_is_mo within cache mo_nuts
@@ -846,6 +862,10 @@ async function example_API_GenerateAuthToken(authClient: AuthClient) {
     console.log(`Auth token starts with: ${oneCacheOneTopicRWTokenResponse.authToken.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${oneCacheOneTopicRWTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${oneCacheOneTopicRWTokenResponse.expiresAt.epoch()}`);
+  } else if (oneCacheOneTopicRWTokenResponse instanceof GenerateAuthToken.Error) {
+    throw new Error(
+      `An error occurred while attempting to call generateAuthToken with read-write scope for single topic in a single cache: ${oneCacheOneTopicRWTokenResponse.errorCode()}: ${oneCacheOneTopicRWTokenResponse.toString()}`
+    );
   }
 
   // Generate a token with multiple permissions
@@ -879,6 +899,10 @@ async function example_API_GenerateAuthToken(authClient: AuthClient) {
     console.log(`Auth token starts with: ${multiplePermsTokenResponse.authToken.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${multiplePermsTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${multiplePermsTokenResponse.expiresAt.epoch()}`);
+  } else if (multiplePermsTokenResponse instanceof GenerateAuthToken.Error) {
+    throw new Error(
+      `An error occurred while attempting to call generateAuthToken with multiple permissions: ${multiplePermsTokenResponse.errorCode()}: ${multiplePermsTokenResponse.toString()}`
+    );
   }
 }
 
