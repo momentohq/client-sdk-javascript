@@ -36,6 +36,10 @@
     "prefer-arrow-callback": "error",
     "no-trailing-spaces": "error",
     "quotes": ["warn", "single", {"avoidEscape": true}],
+    "@typescript-eslint/no-unsafe-call": 0,
+    "@typescript-eslint/no-unsafe-assignment": 0,
+    "@typescript-eslint/no-unsafe-member-access": 0,
+    "node/no-extraneous-import": 0,
     "no-restricted-properties": [
       "error",
       {

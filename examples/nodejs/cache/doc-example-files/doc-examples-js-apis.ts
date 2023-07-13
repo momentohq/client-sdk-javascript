@@ -67,6 +67,12 @@ import {
   TopicConfigurations,
 } from '@gomomento/sdk';
 
+import {ApolloServer} from '@apollo/server';
+import {KeyvAdapter} from '@apollo/utils.keyvadapter';
+import responseCachePlugin from '@apollo/server-plugin-response-cache';
+import Keyv from 'keyv';
+import KeyvMomento from '@gomomento-poc/node-keyv-adaptor';
+import {startStandaloneServer} from '@apollo/server/standalone';
 function retrieveAuthTokenFromYourSecretsManager(): string {
   // this is not a valid API key but conforms to the syntax requirements.
   const fakeTestV1ApiKey =
@@ -850,6 +856,57 @@ async function example_API_TopicSubscribe(topicClient: TopicClient) {
   }
 }
 
+async function example_useKeyv(cacheClient: CacheClient) {
+  const keyv: Keyv<string> = new Keyv({
+    store: new KeyvMomento(cacheClient, 'default-cache'),
+  });
+  await keyv.set('foo', 'bar');
+}
+
+async function example_useApollo(cacheClient: CacheClient) {
+  const server = new ApolloServer({
+    plugins: [responseCachePlugin()],
+    cache: new KeyvAdapter(
+      new Keyv({
+        store: new KeyvMomento(cacheClient, 'default-cache'),
+      })
+    ),
+    typeDefs: `#graphql
+  enum CacheControlScope {
+    PUBLIC
+    PRIVATE
+  }
+
+  directive @cacheControl(
+    maxAge: Int
+    scope: CacheControlScope
+    inheritMaxAge: Boolean
+  ) on FIELD_DEFINITION | OBJECT | INTERFACE | UNION
+
+  type Book @cacheControl(maxAge: 60) {
+    title: String
+    author: String
+  }
+
+  type Query {
+    books: [Book]
+  }
+
+  type Query {
+    book(title: String!): Book
+  }
+`,
+    resolvers: {},
+  });
+  const {url} = await startStandaloneServer(server, {
+    listen: {port: 4000},
+  });
+
+  console.log(`🚀  Server ready at: ${url}`);
+
+  await server.stop();
+}
+
 async function main() {
   const originalAuthToken = process.env['MOMENTO_AUTH_TOKEN'];
   process.env['MOMENTO_AUTH_TOKEN'] = retrieveAuthTokenFromYourSecretsManager();
@@ -924,6 +981,10 @@ async function main() {
   await example_API_SortedSetIncrementScore(cacheClient);
   await example_API_SortedSetRemoveElement(cacheClient);
   await example_API_SortedSetRemoveElements(cacheClient);
+
+  // 3rd party integrations
+  await example_useKeyv(cacheClient);
+  await example_useApollo(cacheClient);
 
   example_API_InstantiateAuthClient();
   const authClient = new AuthClient({
