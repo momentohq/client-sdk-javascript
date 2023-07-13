@@ -53,6 +53,8 @@ import * as CacheSortedSetLength from '@gomomento/sdk-core/dist/src/messages/res
 import * as CacheSortedSetLengthByScore from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-length-by-score';
 import * as CacheItemGetType from '@gomomento/sdk-core/dist/src/messages/responses/cache-item-get-type';
 import * as CacheItemGetTtl from '@gomomento/sdk-core/dist/src/messages/responses/cache-item-get-ttl';
+import * as CacheKeyExists from '@gomomento/sdk-core/dist/src/messages/responses/cache-key-exists';
+import * as CacheKeysExist from '@gomomento/sdk-core/dist/src/messages/responses/cache-keys-exist';
 
 // TopicClient Response Types
 import * as TopicPublish from '@gomomento/sdk-core/dist/src/messages/responses/topic-publish';
@@ -242,6 +244,8 @@ export {
   CacheSortedSetLengthByScore,
   CacheItemGetType,
   CacheItemGetTtl,
+  CacheKeyExists,
+  CacheKeysExist,
   // TopicClient
   TopicConfigurations,
   TopicConfiguration,

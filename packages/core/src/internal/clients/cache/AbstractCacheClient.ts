@@ -47,6 +47,8 @@ import {
   SortedSetOrder,
   CacheItemGetTtl,
   CacheItemGetType,
+  CacheKeyExists,
+  CacheKeysExist,
 } from '../../../index';
 import {ListFetchCallOptions, ListRetainCallOptions} from '../../../utils';
 import {
@@ -1226,6 +1228,38 @@ export abstract class AbstractCacheClient implements ICacheClient {
   ): Promise<CacheItemGetTtl.Response> {
     const client = this.getNextDataClient();
     return await client.itemGetTtl(cacheName, key);
+  }
+
+  /**
+   * Check if the provided key exists in the cache
+   * @param {string} cacheName - The cache to look in.
+   * @param {string | Uint8Array} key - The key to look up.
+   * @returns {Promise<CacheKeyExists.Response>}
+   * {@link CacheKeyExists.Success} if key is found? or if key is checked?
+   * {@link CacheKeyExists.Error} on failure.
+   */
+  public async keyExists(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<CacheKeyExists.Response> {
+    const client = this.getNextDataClient();
+    return await client.keyExists(cacheName, key);
+  }
+
+  /**
+   * Check if the provided keys exist in the cache
+   * @param {string} cacheName - The cache to look in.
+   * @param {string[] | Uint8Array[]} keys - The keys to look up.
+   * @returns {Promise<CacheKeysExist.Response>}
+   * {@link CacheKeysExist.Success} if at least one key is found? if all keys checked?
+   * {@link CacheKeysExist.Error} on failure.
+   */
+  public async keysExist(
+    cacheName: string,
+    keys: string[] | Uint8Array[]
+  ): Promise<CacheKeyExists.Response> {
+    const client = this.getNextDataClient();
+    return await client.keysExist(cacheName, keys);
   }
 
   protected getNextDataClient(): IDataClient {

@@ -39,6 +39,8 @@ import {
   CacheSortedSetLengthByScore,
   CacheItemGetType,
   CacheItemGetTtl,
+  CacheKeyExists,
+  CacheKeysExist,
   CollectionTtl,
   ItemType,
   CredentialProvider,
@@ -95,6 +97,7 @@ import {
   _SortedSetRemoveRequest,
   _SortedSetLengthRequest,
   _SortedSetLengthByScoreRequest,
+  _KeysExistRequest,
   _Unbounded,
   ECacheResult,
 } from '@gomomento/generated-types-webtext/dist/cacheclient_pb';
@@ -2790,6 +2793,101 @@ export class DataClient<
             resolve(new CacheItemGetTtl.Miss());
           } else {
             resolve(new CacheItemGetTtl.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async keyExists(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<CacheKeyExists.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new CacheKeyExists.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'keyExists' request");
+
+    const result = await this.sendKeyExists(cacheName, convertToB64String(key));
+
+    this.logger.trace(
+      "'keyExists' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendKeyExists(
+    cacheName: string,
+    key: string
+  ): Promise<CacheKeyExists.Response> {
+    const request = new _KeysExistRequest();
+    request.setCacheKeysList([key]);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.keysExist(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheKeyExists.Success(resp.getExistsList()));
+          } else {
+            resolve(new CacheKeyExists.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async keysExist(
+    cacheName: string,
+    keys: string[] | Uint8Array[]
+  ): Promise<CacheKeysExist.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new CacheKeysExist.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'keysExist' request");
+
+    const result = await this.sendKeysExist(
+      cacheName,
+      this.convertArrayToB64Strings(keys)
+    );
+
+    this.logger.trace(
+      "'keyExists' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendKeysExist(
+    cacheName: string,
+    keys: string[]
+  ): Promise<CacheKeysExist.Response> {
+    const request = new _KeysExistRequest();
+    request.setCacheKeysList(keys);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.keysExist(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheKeysExist.Success(resp.getExistsList()));
+          } else {
+            resolve(new CacheKeysExist.Error(cacheServiceErrorMapper(err)));
           }
         }
       );

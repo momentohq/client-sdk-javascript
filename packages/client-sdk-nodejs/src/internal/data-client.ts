@@ -46,6 +46,8 @@ import {
   CacheSortedSetLengthByScore,
   CacheItemGetType,
   CacheItemGetTtl,
+  CacheKeyExists,
+  CacheKeysExist,
   CollectionTtl,
   ItemType,
   CredentialProvider,
@@ -2863,6 +2865,100 @@ export class DataClient implements IDataClient {
             resolve(new CacheItemGetTtl.Hit(resp.found.remaining_ttl_millis));
           } else {
             resolve(new CacheItemGetTtl.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async keyExists(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<CacheKeyExists.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new CacheKeyExists.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'keyExists' request");
+
+    const result = await this.sendKeyExists(cacheName, this.convert(key));
+
+    this.logger.trace(
+      "'keyExists' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendKeyExists(
+    cacheName: string,
+    key: Uint8Array
+  ): Promise<CacheKeyExists.Response> {
+    const request = new grpcCache._KeysExistRequest({
+      cache_keys: [key],
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().KeysExist(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheKeyExists.Success(resp.exists));
+          } else {
+            resolve(new CacheKeyExists.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async keysExist(
+    cacheName: string,
+    keys: string[] | Uint8Array[]
+  ): Promise<CacheKeysExist.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new CacheKeysExist.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'keysExist' request");
+
+    const result = await this.sendKeysExist(cacheName, this.convertArray(keys));
+
+    this.logger.trace(
+      "'keyExists' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendKeysExist(
+    cacheName: string,
+    keys: Uint8Array[]
+  ): Promise<CacheKeysExist.Response> {
+    const request = new grpcCache._KeysExistRequest({
+      cache_keys: keys,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().KeysExist(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheKeysExist.Success(resp.exists));
+          } else {
+            resolve(new CacheKeysExist.Error(cacheServiceErrorMapper(err)));
           }
         }
       );

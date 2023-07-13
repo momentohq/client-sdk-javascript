@@ -38,6 +38,8 @@ import {
   SortedSetOrder,
   CacheItemGetType,
   CacheItemGetTtl,
+  CacheKeyExists,
+  CacheKeysExist,
 } from '../../../index';
 
 export interface IDataClient {
@@ -259,4 +261,12 @@ export interface IDataClient {
     cacheName: string,
     key: string | Uint8Array
   ): Promise<CacheItemGetTtl.Response>;
+  keyExists(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<CacheKeyExists.Response>;
+  keysExist(
+    cacheName: string,
+    keys: string[] | Uint8Array[]
+  ): Promise<CacheKeysExist.Response>;
 }

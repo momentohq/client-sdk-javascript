@@ -38,6 +38,8 @@ import {
   CacheSortedSetLengthByScore,
   CacheItemGetType,
   CacheItemGetTtl,
+  CacheKeyExists,
+  CacheKeysExist,
 } from '../index';
 import {
   ScalarCallOptions,
@@ -288,4 +290,12 @@ export interface ICacheClient extends IControlClient, IPingClient {
     cacheName: string,
     key: string | Uint8Array
   ): Promise<CacheItemGetTtl.Response>;
+  keyExists(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<CacheKeyExists.Response>;
+  keysExist(
+    cacheName: string,
+    keys: string[] | Uint8Array[]
+  ): Promise<CacheKeysExist.Response>;
 }

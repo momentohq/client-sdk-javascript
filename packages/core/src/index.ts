@@ -47,6 +47,8 @@ import * as CacheSortedSetLength from './messages/responses/cache-sorted-set-len
 import * as CacheSortedSetLengthByScore from './messages/responses/cache-sorted-set-length-by-score';
 import * as CacheItemGetType from './messages/responses/cache-item-get-type';
 import * as CacheItemGetTtl from './messages/responses/cache-item-get-ttl';
+import * as CacheKeyExists from './messages/responses/cache-key-exists';
+import * as CacheKeysExist from './messages/responses/cache-keys-exist';
 
 // TopicClient Response Types
 import * as TopicPublish from './messages/responses/topic-publish';
@@ -189,6 +191,8 @@ export {
   CacheSortedSetLengthByScore,
   CacheItemGetType,
   CacheItemGetTtl,
+  CacheKeyExists,
+  CacheKeysExist,
   CacheInfo,
   // TopicClient Response Types
   TopicPublish,
