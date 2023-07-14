@@ -34,7 +34,7 @@
     "@apollo/utils.keyvadapter": "^3.0.0",
     "@gomomento-poc/node-keyv-adaptor": "^0.2.0",
     "keyv": "^4.5.2",
-    "@apollo/server": "^4.7.5"
+    "@apollo/server": "^4.7.5",
     "@gomomento/sdk": "1.27.2"
   }
 }
