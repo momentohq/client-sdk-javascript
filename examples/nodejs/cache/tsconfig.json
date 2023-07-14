@@ -24,7 +24,7 @@
     "typeRoots": [
       "./node_modules/@types"
     ],
-    "exclude": ["node_modules", "dist"],
     "outDir": "./dist"
-  }
+  },
+  "exclude": ["node_modules", "dist"],
 }
