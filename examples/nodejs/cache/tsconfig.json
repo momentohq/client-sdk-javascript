@@ -5,6 +5,7 @@
     "lib": [
       "es2021",
     ],
+
     "declaration": true,
     "strict": true,
     "esModuleInterop": true,
@@ -23,6 +24,7 @@
     "typeRoots": [
       "./node_modules/@types"
     ],
+    "exclude": ["node_modules", "dist"],
     "outDir": "./dist"
   }
 }
