@@ -13,13 +13,13 @@ class MomentoFetcher {
 	private readonly baseurl: string;
 	constructor(token: string, endpoint: string) {
 		this.apiToken = token;
-		this.baseurl = `https://api.cache.${endpoint}/cache`;
+		this.baseurl = `${endpoint}/cache`;
 	}
 
 	async get(cacheName: string, key: string) {
 		const resp = await fetch(`${this.baseurl}/${cacheName}?key=${key}&auth_token=${this.apiToken}`);
 		if (resp.status < 300) {
-			console.log("successfully retrieved item from cache")
+			console.log(`successfully retrieved ${key} from cache`)
 		} else {
 			throw new Error("failed to retrieve item from cache")
 		}
