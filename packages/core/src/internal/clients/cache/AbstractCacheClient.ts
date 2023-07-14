@@ -1257,7 +1257,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async keysExist(
     cacheName: string,
     keys: string[] | Uint8Array[]
-  ): Promise<CacheKeyExists.Response> {
+  ): Promise<CacheKeysExist.Response> {
     const client = this.getNextDataClient();
     return await client.keysExist(cacheName, keys);
   }

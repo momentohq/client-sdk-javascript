@@ -2933,7 +2933,7 @@ export class DataClient implements IDataClient {
     const result = await this.sendKeysExist(cacheName, this.convertArray(keys));
 
     this.logger.trace(
-      "'keyExists' request result: %s",
+      "'keysExist' request result: %s",
       truncateString(result.toString())
     );
     return result;

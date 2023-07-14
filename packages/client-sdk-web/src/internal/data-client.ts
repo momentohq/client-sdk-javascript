@@ -2863,7 +2863,7 @@ export class DataClient<
     );
 
     this.logger.trace(
-      "'keyExists' request result: %s",
+      "'keysExist' request result: %s",
       truncateString(result.toString())
     );
     return result;
