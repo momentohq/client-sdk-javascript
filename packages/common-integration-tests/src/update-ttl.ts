@@ -9,7 +9,6 @@ import {
   CacheUpdateTtl,
   CacheDecreaseTtl,
   CacheIncreaseTtl,
-  CacheGet,
   CacheItemGetTtl,
 } from '@gomomento/sdk-core';
 export function runUpdateTtlTest(
@@ -39,30 +38,26 @@ export function runUpdateTtlTest(
         ttl: 10,
       });
 
-      const simpleGet = await Momento.get(IntegrationTestCacheName, cacheKey);
-      expectWithMessage(() => {
-        expect(simpleGet).toBeInstanceOf(CacheGet.Hit);
-      }, `expected HIT but got ${simpleGet.toString()}`);
-
-      const simpleGetTtl = await Momento.itemGetTtl(
-        IntegrationTestCacheName,
-        cacheKey
-      );
-      expectWithMessage(() => {
-        expect(simpleGetTtl).toBeInstanceOf(CacheItemGetTtl.Hit);
-      }, `expected HIT but got ${simpleGetTtl.toString()}`);
-      const ttlResult = simpleGetTtl as CacheItemGetTtl.Hit;
-      console.log('\nTtl result:', ttlResult);
-
       const response = await Momento.updateTtl(
         IntegrationTestCacheName,
         cacheKey,
         20000
       );
-
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(CacheUpdateTtl.Set);
       }, `expected SET but got ${response.toString()}`);
+
+      const ttlResponse = await Momento.itemGetTtl(
+        IntegrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(ttlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+      }, `expected HIT but got ${ttlResponse.toString()}`);
+      const ttlResult = ttlResponse as CacheItemGetTtl.Hit;
+      console.log('\nTtl result:', ttlResult);
+      expect(ttlResult.remainingTtlMillis()).toBeLessThan(20000);
+      expect(ttlResult.remainingTtlMillis()).toBeGreaterThan(15000);
     });
 
     it('should Error if given a TTL below 0', async () => {
@@ -111,10 +106,21 @@ export function runUpdateTtlTest(
         cacheKey,
         20000
       );
-
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(CacheIncreaseTtl.Set);
       }, `expected SET but got ${response.toString()}`);
+
+      const ttlResponse = await Momento.itemGetTtl(
+        IntegrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(ttlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+      }, `expected HIT but got ${ttlResponse.toString()}`);
+      const ttlResult = ttlResponse as CacheItemGetTtl.Hit;
+      console.log('\nTtl result:', ttlResult);
+      expect(ttlResult.remainingTtlMillis()).toBeLessThan(20000);
+      expect(ttlResult.remainingTtlMillis()).toBeGreaterThan(15000);
     });
 
     it('should Error if given a TTL below 0', async () => {
@@ -163,10 +169,21 @@ export function runUpdateTtlTest(
         cacheKey,
         5000
       );
-
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(CacheDecreaseTtl.Set);
       }, `expected SET but got ${response.toString()}`);
+
+      const ttlResponse = await Momento.itemGetTtl(
+        IntegrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(ttlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+      }, `expected HIT but got ${ttlResponse.toString()}`);
+      const ttlResult = ttlResponse as CacheItemGetTtl.Hit;
+      console.log('\nTtl result:', ttlResult);
+      expect(ttlResult.remainingTtlMillis()).toBeLessThan(5000);
+      expect(ttlResult.remainingTtlMillis()).toBeGreaterThan(0);
     });
 
     it('should Error if given a TTL below 0', async () => {
