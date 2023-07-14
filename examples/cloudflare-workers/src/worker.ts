@@ -21,7 +21,7 @@ class MomentoFetcher {
 		if (resp.status < 300) {
 			console.log(`successfully retrieved ${key} from cache`)
 		} else {
-			throw new Error("failed to retrieve item from cache")
+			throw new Error(`failed to retrieve item from cache: ${cacheName}`)
 		}
 		
 		return await resp.text();
@@ -36,7 +36,7 @@ class MomentoFetcher {
 		if (resp.status < 300) {
 			console.log(`successfully set ${key} into cache`);
 		} else {
-			throw new Error(`failed to set item into cache message: ${resp.statusText} status: ${resp.status}`);
+			throw new Error(`failed to set item into cache message: ${resp.statusText} status: ${resp.status} cache: ${cacheName}`);
 		}
 
 		return;
@@ -49,7 +49,7 @@ class MomentoFetcher {
 		if (resp.status < 300) {
 			console.log(`successfully deleted ${key} from cache`);
 		} else {
-			throw new Error(`failed to delete ${key} from cache. Message: ${resp.statusText}; Status: ${resp.status}`);
+			throw new Error(`failed to delete ${key} from cache. Message: ${resp.statusText}; Status: ${resp.status} cache: ${cacheName}`);
 		}
 
 		return resp;
