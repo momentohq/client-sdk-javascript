@@ -46,14 +46,11 @@ import {
   CacheSortedSetLengthByScore,
   CacheItemGetType,
   CacheItemGetTtl,
-<<<<<<< HEAD
   CacheKeyExists,
   CacheKeysExist,
-=======
   CacheUpdateTtl,
   CacheIncreaseTtl,
   CacheDecreaseTtl,
->>>>>>> ebcfbb9 (feat: implementation of update/increase/decrease ttl endpoints)
   CollectionTtl,
   ItemType,
   CredentialProvider,

@@ -2916,11 +2916,7 @@ export class DataClient<
       ttlMilliseconds?.toString() ?? 'null'
     );
 
-    const result = await this.sendUpdateTtl(
-      cacheName,
-      this.convertToUint8Array(key),
-      ttlMilliseconds
-    );
+    const result = await this.sendUpdateTtl(cacheName, key, ttlMilliseconds);
 
     this.logger.trace(
       "'updateTtl' request result: %s",
@@ -2931,7 +2927,7 @@ export class DataClient<
 
   private async sendUpdateTtl(
     cacheName: string,
-    key: Uint8Array,
+    key: string | Uint8Array,
     ttlMilliseconds: number
   ): Promise<CacheUpdateTtl.Response> {
     const request = new _UpdateTtlRequest();
@@ -2975,11 +2971,7 @@ export class DataClient<
       ttlMilliseconds?.toString() ?? 'null'
     );
 
-    const result = await this.sendIncreaseTtl(
-      cacheName,
-      this.convertToUint8Array(key),
-      ttlMilliseconds
-    );
+    const result = await this.sendIncreaseTtl(cacheName, key, ttlMilliseconds);
 
     this.logger.trace(
       "'increaseTtl' request result: %s",
@@ -2990,7 +2982,7 @@ export class DataClient<
 
   private async sendIncreaseTtl(
     cacheName: string,
-    key: Uint8Array,
+    key: string | Uint8Array,
     ttlMilliseconds: number
   ): Promise<CacheIncreaseTtl.Response> {
     const request = new _UpdateTtlRequest();
@@ -3034,11 +3026,7 @@ export class DataClient<
       ttlMilliseconds?.toString() ?? 'null'
     );
 
-    const result = await this.sendDecreaseTtl(
-      cacheName,
-      this.convertToUint8Array(key),
-      ttlMilliseconds
-    );
+    const result = await this.sendDecreaseTtl(cacheName, key, ttlMilliseconds);
 
     this.logger.trace(
       "'decreaseTtl' request result: %s",
@@ -3049,7 +3037,7 @@ export class DataClient<
 
   private async sendDecreaseTtl(
     cacheName: string,
-    key: Uint8Array,
+    key: string | Uint8Array,
     ttlMilliseconds: number
   ): Promise<CacheDecreaseTtl.Response> {
     const request = new _UpdateTtlRequest();

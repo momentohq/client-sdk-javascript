@@ -9,3 +9,4 @@ export * from './sorted-set';
 export * from './item-get-type';
 export * from './topic-client';
 export * from './keys-exist';
+export * from './update-ttl';
