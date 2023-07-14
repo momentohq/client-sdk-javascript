@@ -47,8 +47,14 @@ import * as CacheSortedSetLength from './messages/responses/cache-sorted-set-len
 import * as CacheSortedSetLengthByScore from './messages/responses/cache-sorted-set-length-by-score';
 import * as CacheItemGetType from './messages/responses/cache-item-get-type';
 import * as CacheItemGetTtl from './messages/responses/cache-item-get-ttl';
+<<<<<<< HEAD
 import * as CacheKeyExists from './messages/responses/cache-key-exists';
 import * as CacheKeysExist from './messages/responses/cache-keys-exist';
+=======
+import * as CacheUpdateTtl from './messages/responses/cache-ttl-update';
+import * as CacheIncreaseTtl from './messages/responses/cache-ttl-increase';
+import * as CacheDecreaseTtl from './messages/responses/cache-ttl-decrease';
+>>>>>>> ebcfbb9 (feat: implementation of update/increase/decrease ttl endpoints)
 
 // TopicClient Response Types
 import * as TopicPublish from './messages/responses/topic-publish';
@@ -191,8 +197,14 @@ export {
   CacheSortedSetLengthByScore,
   CacheItemGetType,
   CacheItemGetTtl,
+<<<<<<< HEAD
   CacheKeyExists,
   CacheKeysExist,
+=======
+  CacheUpdateTtl,
+  CacheIncreaseTtl,
+  CacheDecreaseTtl,
+>>>>>>> ebcfbb9 (feat: implementation of update/increase/decrease ttl endpoints)
   CacheInfo,
   // TopicClient Response Types
   TopicPublish,
