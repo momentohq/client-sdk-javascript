@@ -2,12 +2,18 @@ import {CacheClient, Configurations, CredentialProvider, CacheGet, CacheSet, Cre
 
 import {SecretsManagerClient, GetSecretValueCommand} from '@aws-sdk/client-secrets-manager';
 
-/* A function that gets the Momento_Auth_Token stored in AWS Secrets Manager.
-The secret was stored as a plaintext format in Secrets Manager to avoid parsing JSON.
-You don't have to store the Momento auth token in something like AWS Secrets Manager,
-but it is best practice. You could pass the Momento auth token in from an environment variable.
-*/
-async function getToken(secretName: string, regionName = 'us-west-2'): Promise<string> {
+async function example_CreateCacheClientUsingAwsSecretsManager(
+  ttl = 600,
+  secretName = 'MOMENTO_AUTH_TOKEN',
+  regionName = 'us-west-2'
+): Promise<CacheClient> {
+  let secret;
+
+  /* Try-catch block that gets the Momento_Auth_Token stored in AWS Secrets Manager.
+  The secret was stored as a plaintext format in Secrets Manager to avoid parsing JSON.
+  You don't have to store the Momento auth token in something like AWS Secrets Manager,
+  but it is best practice. You could pass the Momento auth token in from an environment variable.
+  */
   try {
     const client = new SecretsManagerClient({region: regionName});
     const response = await client.send(
@@ -16,22 +22,18 @@ async function getToken(secretName: string, regionName = 'us-west-2'): Promise<s
         VersionStage: 'AWSCURRENT',
       })
     );
-    return response.SecretString || '';
+    secret = response.SecretString || '';
   } catch (error) {
     console.error(`Error fetching secret value for "${secretName}":`, (error as Error).message);
     // For a list of exceptions thrown, see
     // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
     throw error;
   }
-}
 
-// Function that calls to the GetToken function and then gets a client connection
-// object from Momento Cache and returns that for later use.
-async function createCacheClient(ttl = 600, tokenName = 'MOMENTO_AUTH_TOKEN'): Promise<CacheClient> {
-  const token: string = await getToken(tokenName);
+  // Gets a client connection object from Momento Cache and returns that for later use.
   return new CacheClient({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromString({authToken: token}),
+    credentialProvider: CredentialProvider.fromString({authToken: secret}),
     defaultTtlSeconds: ttl,
   });
 }
@@ -75,16 +77,15 @@ async function readFromCache(client: CacheClient, cacheName: string, key: string
 }
 
 // Call the various functions
-async function run() {
-  // Defines name of cache to use.
+async function main() {
   const CACHE_NAME = 'demo-cache2';
-  const cacheClient = await createCacheClient();
+  const cacheClient = await example_CreateCacheClientUsingAwsSecretsManager();
 
   await createCache(cacheClient, CACHE_NAME);
   await writeToCache(cacheClient, CACHE_NAME, 'code', '12345');
   await readFromCache(cacheClient, CACHE_NAME, 'code');
 }
 
-run().catch(e => {
+main().catch(e => {
   throw e;
 });
