@@ -32,7 +32,7 @@ export const handler = async (event: APIGatewayEvent): Promise<any> => {
     if (ret == "success") {
       return buildResponseBody(200, "Item published to topic.");
     } else {
-      return buildResponseBody(200, "Failed to publish item to topic.");
+      return buildResponseBody(500, "Failed to publish item to topic.");
     }
   } catch (err) {
     console.error(err);

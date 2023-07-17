@@ -20,6 +20,13 @@ updates:
       - dependency-name: "@gomomento/sdk"
 
   - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/examples/nodejs/mongodb-examples/simple-read-aside" # Location of package manifests
+    schedule:
+      interval: "daily"
+    allow:
+      - dependency-name: "@gomomento/sdk"
+
+  - package-ecosystem: "npm" # See documentation for possible values
     directory: "/examples/nodejs/topics" # Location of package manifests
     schedule:
       interval: "daily"
