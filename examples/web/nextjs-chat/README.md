@@ -1,6 +1,6 @@
 ## About
 
-This is an example project showing how Momento topics and secure tokens can be used within a nextjs application.
+This is an example project showing how Momento topics and secure tokens can be used within a nextjs application. A deployed example can be found [here](https://momento-nextjs-chat.vercel.app).
 
 ## Prerequisites
 
