@@ -40,6 +40,9 @@ import {
   CacheItemGetTtl,
   CacheKeyExists,
   CacheKeysExist,
+  CacheUpdateTtl,
+  CacheIncreaseTtl,
+  CacheDecreaseTtl,
 } from '../../../index';
 
 export interface IDataClient {
@@ -269,4 +272,19 @@ export interface IDataClient {
     cacheName: string,
     keys: string[] | Uint8Array[]
   ): Promise<CacheKeysExist.Response>;
+  updateTtl(
+    cacheName: string,
+    key: string | Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheUpdateTtl.Response>;
+  increaseTtl(
+    cacheName: string,
+    key: string | Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheIncreaseTtl.Response>;
+  decreaseTtl(
+    cacheName: string,
+    key: string | Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheDecreaseTtl.Response>;
 }

@@ -49,6 +49,9 @@ import {
   CacheItemGetType,
   CacheKeyExists,
   CacheKeysExist,
+  CacheUpdateTtl,
+  CacheIncreaseTtl,
+  CacheDecreaseTtl,
 } from '../../../index';
 import {ListFetchCallOptions, ListRetainCallOptions} from '../../../utils';
 import {
@@ -1260,6 +1263,65 @@ export abstract class AbstractCacheClient implements ICacheClient {
   ): Promise<CacheKeysExist.Response> {
     const client = this.getNextDataClient();
     return await client.keysExist(cacheName, keys);
+  }
+
+  /**
+   * Update the ttl of the key in the cache in milliseconds.
+   * @param {string} cacheName - The cache containing the key.
+   * @param {string} key - The key for which the ttl remaining is requested.
+   * @param {number} ttlMilliseconds - The ttl in milliseconds that should overwrite the current ttl.
+   * @returns {Promise<CacheUpdateTtl.Response>}
+   * {@link CacheUpdateTtl.Set} when the ttl was successfully overwritten.
+   * {@link CacheUpdateTtl.Miss} when the key does not exist.
+   * {@link CacheUpdateTtl.Error} on failure.
+   */
+  public async updateTtl(
+    cacheName: string,
+    key: string | Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheUpdateTtl.Response> {
+    const client = this.getNextDataClient();
+    return await client.updateTtl(cacheName, key, ttlMilliseconds);
+  }
+
+  /**
+   * Increase the ttl of the key in the cache in milliseconds.
+   * @param {string} cacheName - The cache containing the key.
+   * @param {string} key - The key for which the ttl remaining is requested.
+   * @param {number} ttlMilliseconds - The ttl in milliseconds that should
+   * overwrite the current ttl. Should be greater than the current ttl.
+   * @returns {Promise<CacheIncreaseTtl.Response>}
+   * {@link CacheIncreaseTtl.Set} when the ttl was successfully increased.
+   * {@link CacheIncreaseTtl.Miss} when the key does not exist.
+   * {@link CacheIncreaseTtl.Error} on failure.
+   */
+  public async increaseTtl(
+    cacheName: string,
+    key: string | Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheIncreaseTtl.Response> {
+    const client = this.getNextDataClient();
+    return await client.increaseTtl(cacheName, key, ttlMilliseconds);
+  }
+
+  /**
+   * Decrease the ttl of the key in the cache in milliseconds.
+   * @param {string} cacheName - The cache containing the key.
+   * @param {string} key - The key for which the ttl remaining is requested.
+   * @param {number} ttlMilliseconds - The ttl in milliseconds that should
+   * overwrite the current ttl. Should be less than the current ttl.
+   * @returns {Promise<CacheDecreaseTtl.Response>}
+   * {@link CacheDecreaseTtl.Set} when the ttl was successfully decreased.
+   * {@link CacheDecreaseTtl.Miss} when the key does not exist.
+   * {@link CacheDecreaseTtl.Error} on failure.
+   */
+  public async decreaseTtl(
+    cacheName: string,
+    key: string | Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheDecreaseTtl.Response> {
+    const client = this.getNextDataClient();
+    return await client.decreaseTtl(cacheName, key, ttlMilliseconds);
   }
 
   protected getNextDataClient(): IDataClient {
