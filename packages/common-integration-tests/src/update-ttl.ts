@@ -95,7 +95,7 @@ export function runUpdateTtlTest(
       }, `expected MISS but got ${response.toString()}`);
     });
 
-    it('should Set the new TTL for a key that exists in the cache', async () => {
+    it('should Set the new TTL for a key that exists in the cache and new TTL is greater than current TTL', async () => {
       const cacheKey = v4();
       await Momento.set(IntegrationTestCacheName, cacheKey, cacheKey, {
         ttl: 10,
@@ -121,6 +121,22 @@ export function runUpdateTtlTest(
       console.log('\nTtl result:', ttlResult);
       expect(ttlResult.remainingTtlMillis()).toBeLessThan(20000);
       expect(ttlResult.remainingTtlMillis()).toBeGreaterThan(15000);
+    });
+
+    it('should Error if given TTL is less than current TTL', async () => {
+      const cacheKey = v4();
+      await Momento.set(IntegrationTestCacheName, cacheKey, cacheKey, {
+        ttl: 10,
+      });
+
+      const response = await Momento.increaseTtl(
+        IntegrationTestCacheName,
+        cacheKey,
+        5000
+      );
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(CacheIncreaseTtl.Error);
+      }, `expected ERROR but got ${response.toString()}`);
     });
 
     it('should Error if given a TTL below 0', async () => {
@@ -158,7 +174,7 @@ export function runUpdateTtlTest(
       }, `expected MISS but got ${response.toString()}`);
     });
 
-    it('should Set the new TTL for a key that exists in the cache', async () => {
+    it('should Set the new TTL for a key that exists in the cache and new TTL is less than current TTL', async () => {
       const cacheKey = v4();
       await Momento.set(IntegrationTestCacheName, cacheKey, cacheKey, {
         ttl: 10,
@@ -184,6 +200,22 @@ export function runUpdateTtlTest(
       console.log('\nTtl result:', ttlResult);
       expect(ttlResult.remainingTtlMillis()).toBeLessThan(5000);
       expect(ttlResult.remainingTtlMillis()).toBeGreaterThan(0);
+    });
+
+    it('should Error if given TTL is greater than current TTL', async () => {
+      const cacheKey = v4();
+      await Momento.set(IntegrationTestCacheName, cacheKey, cacheKey, {
+        ttl: 10,
+      });
+
+      const response = await Momento.decreaseTtl(
+        IntegrationTestCacheName,
+        cacheKey,
+        20000
+      );
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(CacheDecreaseTtl.Error);
+      }, `expected ERROR but got ${response.toString()}`);
     });
 
     it('should Error if given a TTL below 0', async () => {

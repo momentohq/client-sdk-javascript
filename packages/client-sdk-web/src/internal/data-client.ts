@@ -2916,7 +2916,11 @@ export class DataClient<
       ttlMilliseconds?.toString() ?? 'null'
     );
 
-    const result = await this.sendUpdateTtl(cacheName, convertToB64String(key), ttlMilliseconds);
+    const result = await this.sendUpdateTtl(
+      cacheName,
+      convertToB64String(key),
+      ttlMilliseconds
+    );
 
     this.logger.trace(
       "'updateTtl' request result: %s",
@@ -2971,7 +2975,11 @@ export class DataClient<
       ttlMilliseconds?.toString() ?? 'null'
     );
 
-    const result = await this.sendIncreaseTtl(cacheName, convertToB64String(key), ttlMilliseconds);
+    const result = await this.sendIncreaseTtl(
+      cacheName,
+      convertToB64String(key),
+      ttlMilliseconds
+    );
 
     this.logger.trace(
       "'increaseTtl' request result: %s",
@@ -3026,7 +3034,11 @@ export class DataClient<
       ttlMilliseconds?.toString() ?? 'null'
     );
 
-    const result = await this.sendDecreaseTtl(cacheName, convertToB64String(key), ttlMilliseconds);
+    const result = await this.sendDecreaseTtl(
+      cacheName,
+      convertToB64String(key),
+      ttlMilliseconds
+    );
 
     this.logger.trace(
       "'decreaseTtl' request result: %s",
