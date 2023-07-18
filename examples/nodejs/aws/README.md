@@ -8,9 +8,6 @@
 
 # Node.js Client SDK
 
-_Read this in other languages_: [日本語](README.ja.md)
-
-<br>
 
 ## Example Requirements
 
@@ -23,43 +20,16 @@ To run any of the examples you will need to install the dependencies once first:
 npm install
 ```
 
-## Running the Basic Example
+## Running the AWS Secrets Manager Example
 
-This example demonstrates a basic set and get from a cache.
-
-```bash
-# Run example code
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run basic
-```
-
-Example Code: [basic.ts](basic.ts)
-
-## Running the Advanced Example
-
-This example demonstrates several slightly more advanced concepts, including:
-
-* creating and listing caches
-* deleting a key
-* issuing multiple concurrent get requests
-* using the Middleware API to wrap requests
+This example demonstrates how to retrieve a Momento auth token stored as a secret in AWS Secrets Manager and use it to create a cache.
 
 ```bash
 # Run example code
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run advanced
+MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run secrets-example
 ```
 
-Example Code: [advanced.ts](advanced.ts)
-
-## Running the Dictionary Example
-
-This example demonstrates how to use the dictionary data type.
-
-```bash
-# Run example code
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run dictionary
-```
-
-Example Code: [dictionary.ts](dictionary.ts)
+[Example Code](examples/nodejs/aws/doc-example-files/doc-examples-js-aws-secrets.ts)
 
 If you have questions or need help experimenting further, please reach out to us!
 
