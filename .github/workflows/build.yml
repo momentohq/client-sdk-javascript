@@ -129,6 +129,11 @@ jobs:
             npm run build
             npm run validate-examples
           popd
+          pushd examples/nodejs/aws
+            npm ci
+            npm run build
+            npm run secrets-example
+          popd
 
       - name: Send CI failure mail
         if: ${{ steps.validation.outcome == 'failure' }}
