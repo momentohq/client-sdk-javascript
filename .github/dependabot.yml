@@ -53,7 +53,6 @@ updates:
       interval: "daily"
     allow:
       - dependency-name: "@gomomento/sdk"
-      - dependency-name: "@aws-sdk/client-secrets-manager"
 
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/examples/web" # Location of package manifests

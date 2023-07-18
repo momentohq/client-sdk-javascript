@@ -132,7 +132,6 @@ jobs:
           pushd examples/nodejs/aws
             npm ci
             npm run build
-            npm run secrets-example
           popd
 
       - name: Send CI failure mail
