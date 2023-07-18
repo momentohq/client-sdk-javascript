@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "eslint . --ext .ts",
     "build": "tsc",
-    "secrets-example": "tsc && node dist/doc-example-files/doc-examples-js-aws-secrets.js",
+    "secrets-example": "tsc && node dist/doc-examples-js-aws-secrets.js",
     "test": "jest",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix"
