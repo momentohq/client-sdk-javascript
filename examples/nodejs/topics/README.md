@@ -15,7 +15,7 @@ _Read this in other languages_: [日本語](README.ja.md)
 ## Example Requirements
 
 - Node version 14 or higher is required
-- A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
+- To get started with Momento you will need a Momento Auth Token. You can get one from the [Momento Console](https://console.gomomento.com).
 
 This directory contains a project that illustrates how to use Momento topics (aka PubSub).
 
