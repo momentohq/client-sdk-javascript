@@ -76,6 +76,28 @@ export function runUpdateTtlTest(
         expect(response).toBeInstanceOf(CacheUpdateTtl.Error);
       }, `expected ERROR but got ${response.toString()}`);
     });
+
+    it('should support happy path for updateTTL via curried cache via ICache interface', async () => {
+      const cacheKey = v4();
+      const cache = Momento.cache(IntegrationTestCacheName);
+      await cache.set(cacheKey, cacheKey, {
+        ttl: 10,
+      });
+
+      const response = await cache.updateTtl(cacheKey, 20000);
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(CacheUpdateTtl.Set);
+      }, `expected SET but got ${response.toString()}`);
+
+      const ttlResponse = await cache.itemGetTtl(cacheKey);
+      expectWithMessage(() => {
+        expect(ttlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+      }, `expected HIT but got ${ttlResponse.toString()}`);
+      const ttlResult = ttlResponse as CacheItemGetTtl.Hit;
+      console.log('\nTtl result:', ttlResult);
+      expect(ttlResult.remainingTtlMillis()).toBeLessThan(20000);
+      expect(ttlResult.remainingTtlMillis()).toBeGreaterThan(15000);
+    });
   });
 
   describe('#increaseTTL', () => {
@@ -155,6 +177,28 @@ export function runUpdateTtlTest(
         expect(response).toBeInstanceOf(CacheIncreaseTtl.Error);
       }, `expected ERROR but got ${response.toString()}`);
     });
+
+    it('should support happy path for increaseTTL via curried cache via ICache interface', async () => {
+      const cacheKey = v4();
+      const cache = Momento.cache(IntegrationTestCacheName);
+      await cache.set(cacheKey, cacheKey, {
+        ttl: 10,
+      });
+
+      const response = await cache.increaseTtl(cacheKey, 20000);
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(CacheIncreaseTtl.Set);
+      }, `expected SET but got ${response.toString()}`);
+
+      const ttlResponse = await cache.itemGetTtl(cacheKey);
+      expectWithMessage(() => {
+        expect(ttlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+      }, `expected HIT but got ${ttlResponse.toString()}`);
+      const ttlResult = ttlResponse as CacheItemGetTtl.Hit;
+      console.log('\nTtl result:', ttlResult);
+      expect(ttlResult.remainingTtlMillis()).toBeLessThan(20000);
+      expect(ttlResult.remainingTtlMillis()).toBeGreaterThan(15000);
+    });
   });
 
   describe('#decreaseTTL', () => {
@@ -233,6 +277,28 @@ export function runUpdateTtlTest(
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(CacheDecreaseTtl.Error);
       }, `expected ERROR but got ${response.toString()}`);
+    });
+
+    it('should support happy path for decreaseTTL via curried cache via ICache interface', async () => {
+      const cacheKey = v4();
+      const cache = Momento.cache(IntegrationTestCacheName);
+      await cache.set(cacheKey, cacheKey, {
+        ttl: 10,
+      });
+
+      const response = await cache.decreaseTtl(cacheKey, 5000);
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(CacheDecreaseTtl.Set);
+      }, `expected SET but got ${response.toString()}`);
+
+      const ttlResponse = await cache.itemGetTtl(cacheKey);
+      expectWithMessage(() => {
+        expect(ttlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+      }, `expected HIT but got ${ttlResponse.toString()}`);
+      const ttlResult = ttlResponse as CacheItemGetTtl.Hit;
+      console.log('\nTtl result:', ttlResult);
+      expect(ttlResult.remainingTtlMillis()).toBeLessThan(5000);
+      expect(ttlResult.remainingTtlMillis()).toBeGreaterThan(0);
     });
   });
 }

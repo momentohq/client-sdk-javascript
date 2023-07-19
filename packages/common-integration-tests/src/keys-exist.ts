@@ -60,6 +60,21 @@ export function runKeysExistTest(
       const success = response as CacheKeyExists.Success;
       expect(success.exists()).toEqual(true);
     });
+
+    it('should support happy path for keyExists via curried cache via ICache interface', async () => {
+      const cacheKey = v4();
+      const cache = Momento.cache(IntegrationTestCacheName);
+      await cache.set(cacheKey, cacheKey);
+
+      const response = await cache.keyExists(cacheKey);
+
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(CacheKeyExists.Success);
+      }, `expected SUCCESS but got ${response.toString()}`);
+
+      const success = response as CacheKeyExists.Success;
+      expect(success.exists()).toEqual(true);
+    });
   });
 
   describe('#keysExist', () => {
@@ -121,6 +136,22 @@ export function runKeysExistTest(
 
       const successOrdering3 = responseOrdering3 as CacheKeyExists.Success;
       expect(successOrdering3.exists()).toEqual([false, false]);
+    });
+
+    it('should support happy path for keysExist via curried cache via ICache interface', async () => {
+      const cacheKey1 = v4();
+      const cacheKey2 = v4();
+      const cache = Momento.cache(IntegrationTestCacheName);
+      await cache.set(cacheKey1, cacheKey1);
+
+      const response = await cache.keysExist([cacheKey1, cacheKey2]);
+
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(CacheKeysExist.Success);
+      }, `expected SUCCESS but got ${response.toString()}`);
+
+      const success = response as CacheKeysExist.Success;
+      expect(success.exists()).toEqual([true, false]);
     });
   });
 }
