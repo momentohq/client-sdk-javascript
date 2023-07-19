@@ -4,4 +4,4 @@ compatibility_date = "2023-07-10"
 
 # [vars]
 # MOMENTO_REST_ENDPOINT = "REPLACE ME"
-# MOMENTO_CACHE_NAME = "w00t"
+# MOMENTO_CACHE_NAME = "REPLACE ME"
