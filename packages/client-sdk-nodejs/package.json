@@ -18,11 +18,12 @@
     "integration-test-auth": "jest auth-client.test.ts",
     "unit-test": "jest unit",
     "integration-test": "jest integration --testPathIgnorePatterns auth-client.test.ts",
-    "build-and-run-tests": "cd ../common-integration-tests && npm run build && cd - && jest --testPathIgnorePatterns auth-client.test.ts",
+    "build-deps": "cd ../core && npm run build && cd - && cd ../common-integration-tests && npm run build && cd -",
+    "build-and-run-tests": "npm run build-deps && jest --testPathIgnorePatterns auth-client.test.ts --maxWorkers 1",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
-    "build": "cd ../core && npm run build && cd - && rm -rf dist && tsc && mkdir -p dist/src/internal/vendor && cp -r ../client-sdk-nodejs/src/internal/vendor/printf dist/src/internal/vendor/printf"
+    "build": "rm -rf dist && tsc && mkdir -p dist/src/internal/vendor && cp -r ../client-sdk-nodejs/src/internal/vendor/printf dist/src/internal/vendor/printf"
   },
   "author": "",
   "license": "Apache-2.0",
