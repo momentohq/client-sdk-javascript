@@ -21,6 +21,7 @@ import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 
 let _credsProvider: CredentialProvider | undefined = undefined;
+let _sessionCredsProvider: CredentialProvider | undefined = undefined;
 
 function credsProvider(): CredentialProvider {
   if (_credsProvider === undefined) {
@@ -39,13 +40,18 @@ function credsProvider(): CredentialProvider {
   return _credsProvider;
 }
 
-const sessionCredsProvider = CredentialProvider.fromEnvironmentVariable({
-  environmentVariableName: 'TEST_SESSION_TOKEN',
-  // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
-  // steal them from the auth-token-based creds provider.
-  cacheEndpoint: credsProvider().getCacheEndpoint(),
-  controlEndpoint: credsProvider().getControlEndpoint(),
-});
+function sessionCredsProvider(): CredentialProvider {
+  if (_sessionCredsProvider === undefined) {
+    _sessionCredsProvider = CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'TEST_SESSION_TOKEN',
+      // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
+      // steal them from the auth-token-based creds provider.
+      cacheEndpoint: credsProvider().getCacheEndpoint(),
+      controlEndpoint: credsProvider().getControlEndpoint(),
+    });
+  }
+  return _sessionCredsProvider;
+}
 
 export const IntegrationTestCacheClientProps: CacheClientProps = {
   configuration: Configurations.Laptop.latest(),
@@ -60,7 +66,7 @@ function momentoClientForTesting(): CacheClient {
 function momentoClientForTestingWithSessionToken(): CacheClient {
   return new CacheClient({
     configuration: Configurations.Laptop.latest(),
-    credentialProvider: sessionCredsProvider,
+    credentialProvider: sessionCredsProvider(),
     defaultTtlSeconds: 1111,
   });
 }
@@ -75,7 +81,7 @@ function momentoTopicClientForTesting(): TopicClient {
 function momentoTopicClientForTestingWithSessionToken(): TopicClient {
   return new TopicClient({
     configuration: IntegrationTestCacheClientProps.configuration,
-    credentialProvider: sessionCredsProvider,
+    credentialProvider: sessionCredsProvider(),
   });
 }
 
@@ -148,7 +154,7 @@ export function SetupAuthClientIntegrationTest(): {
 
   return {
     sessionTokenAuthClient: new AuthClient({
-      credentialProvider: sessionCredsProvider,
+      credentialProvider: sessionCredsProvider(),
     }),
     legacyTokenAuthClient: new AuthClient({
       credentialProvider: CredentialProvider.fromEnvironmentVariable({
