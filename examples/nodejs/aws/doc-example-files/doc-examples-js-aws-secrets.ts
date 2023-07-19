@@ -2,7 +2,7 @@ import {CacheClient, Configurations, CredentialProvider, CacheGet, CacheSet, Cre
 
 import {SecretsManagerClient, GetSecretValueCommand} from '@aws-sdk/client-secrets-manager';
 
-async function example_CreateCacheClientUsingAwsSecretsManager(
+async function example_API_retrieveAuthTokenFromSecretsManager(
   ttl = 600,
   secretName = 'MOMENTO_AUTH_TOKEN',
   regionName = 'us-west-2'
@@ -79,7 +79,7 @@ async function readFromCache(client: CacheClient, cacheName: string, key: string
 // Call the various functions
 async function main() {
   const CACHE_NAME = 'demo-cache2';
-  const cacheClient = await example_CreateCacheClientUsingAwsSecretsManager();
+  const cacheClient = await example_API_retrieveAuthTokenFromSecretsManager();
 
   await createCache(cacheClient, CACHE_NAME);
   await writeToCache(cacheClient, CACHE_NAME, 'code', '12345');
