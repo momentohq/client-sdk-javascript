@@ -2,10 +2,6 @@ name = "momento-cloudflare-worker-http"
 main = "src/worker.ts"
 compatibility_date = "2023-07-10"
 
-# Variable bindings. These are arbitrary, plaintext strings (similar to environment variables)
-# Note: Use secrets to store sensitive data.
-# Docs: https://developers.cloudflare.com/workers/platform/environment-variables
 # [vars]
-# MOMENTO_AUTH_TOKEN = "REPLACE ME"
 # MOMENTO_REST_ENDPOINT = "REPLACE ME"
 # MOMENTO_CACHE_NAME = "REPLACE ME"

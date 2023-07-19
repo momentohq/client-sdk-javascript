@@ -16,7 +16,8 @@ npm install
 
 2. Create a Momento cache inside of the [console](https://console.gomomento.com)
 3. Create a [token for your cache](https://console.gomomento.com/tokens)
-4. Copy the `Auth Token`, `Rest Endpoint`, and cache name to the `wranger.toml` file
+4. Copy the `Rest Endpoint`, and cache name to the `wranger.toml` file
+5. Copy the `Auth Token` to the `.dev.vars` files
 5. Start the development server
 
 ```bash
