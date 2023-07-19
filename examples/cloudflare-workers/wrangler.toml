@@ -3,5 +3,5 @@ main = "src/worker.ts"
 compatibility_date = "2023-07-10"
 
 # [vars]
-# MOMENTO_REST_ENDPOINT = "https://api.cache.cell-4-us-west-2-1.prod.a.momentohq.com"
+# MOMENTO_REST_ENDPOINT = "REPLACE ME"
 # MOMENTO_CACHE_NAME = "w00t"
