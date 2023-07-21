@@ -21,7 +21,7 @@ import {AllDataReadWrite, TopicRole, CacheRole, ExpiresIn, TokenScope, AllTopics
  *      ]
  *    };
  * 
- * More information here: https://github.com/momentohq/client-sdk-javascript/blob/62a34741059cb08c8dfff4e7011be29facab8d80/packages/core/src/auth/tokens/token-scope.ts
+ * More information here: https://docs.momentohq.com/develop/api-reference/auth-tokens#tokenscope-objects
  */
 export const tokenPermissions: TokenScope = {
   permissions: [
@@ -39,6 +39,6 @@ export const tokenPermissions: TokenScope = {
 /**
  * Set the TTL for your tokens in terms of seconds, minutes, hours,  
  * days, or using epoch format. You may also set tokens to never expire.
- * More information here: https://github.com/momentohq/client-sdk-javascript/blob/62a34741059cb08c8dfff4e7011be29facab8d80/packages/core/src/utils/expiration.ts#L17
+ * More information here: https://docs.momentohq.com/develop/api-reference/auth-tokens#generateauthtoken-api
  */
 export const tokenExpiresIn: ExpiresIn = ExpiresIn.hours(1);
