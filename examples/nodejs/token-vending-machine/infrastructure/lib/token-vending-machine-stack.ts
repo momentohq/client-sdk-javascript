@@ -10,7 +10,7 @@ export class TokenVendingMachineStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const momentoAuthTokenParam = new cdk.CfnParameter(this, 'MomentoAuthTokenParam', {
+    const momentoAuthTokenParam = new cdk.CfnParameter(this, 'MomentoAuthToken', {
       type: 'String',
       description:
         'The Momento Auth Token that will be used to vend browser tokens. Generated tokens will be stored in Secrets Manager for ongoing access later.',

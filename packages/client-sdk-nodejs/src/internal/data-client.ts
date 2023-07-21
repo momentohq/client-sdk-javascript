@@ -46,6 +46,11 @@ import {
   CacheSortedSetLengthByScore,
   CacheItemGetType,
   CacheItemGetTtl,
+  CacheKeyExists,
+  CacheKeysExist,
+  CacheUpdateTtl,
+  CacheIncreaseTtl,
+  CacheDecreaseTtl,
   CollectionTtl,
   ItemType,
   CredentialProvider,
@@ -75,6 +80,7 @@ import {
   validateSortedSetOffset,
   validateSortedSetRanks,
   validateSortedSetScores,
+  validateValidForSeconds,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
   _DictionaryGetResponsePart,
@@ -2863,6 +2869,280 @@ export class DataClient implements IDataClient {
             resolve(new CacheItemGetTtl.Hit(resp.found.remaining_ttl_millis));
           } else {
             resolve(new CacheItemGetTtl.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async keyExists(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<CacheKeyExists.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new CacheKeyExists.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'keyExists' request");
+
+    const result = await this.sendKeyExists(cacheName, this.convert(key));
+
+    this.logger.trace(
+      "'keyExists' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendKeyExists(
+    cacheName: string,
+    key: Uint8Array
+  ): Promise<CacheKeyExists.Response> {
+    const request = new grpcCache._KeysExistRequest({
+      cache_keys: [key],
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().KeysExist(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheKeyExists.Success(resp.exists));
+          } else {
+            resolve(new CacheKeyExists.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async updateTtl(
+    cacheName: string,
+    key: string | Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheUpdateTtl.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateValidForSeconds(ttlMilliseconds);
+    } catch (err) {
+      return new CacheUpdateTtl.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      "Issuing 'updateTtl' request; ttlMilliseconds: %s",
+      ttlMilliseconds?.toString() ?? 'null'
+    );
+
+    const result = await this.sendUpdateTtl(
+      cacheName,
+      this.convert(key),
+      ttlMilliseconds
+    );
+
+    this.logger.trace(
+      "'updateTtl' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendUpdateTtl(
+    cacheName: string,
+    key: Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheUpdateTtl.Response> {
+    const request = new grpcCache._UpdateTtlRequest({
+      cache_key: key,
+      overwrite_to_milliseconds: ttlMilliseconds,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().UpdateTtl(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheUpdateTtl.Miss());
+          } else if (resp?.set) {
+            resolve(new CacheUpdateTtl.Set());
+          } else {
+            resolve(new CacheUpdateTtl.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async keysExist(
+    cacheName: string,
+    keys: string[] | Uint8Array[]
+  ): Promise<CacheKeysExist.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new CacheKeysExist.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'keysExist' request");
+
+    const result = await this.sendKeysExist(cacheName, this.convertArray(keys));
+
+    this.logger.trace(
+      "'keysExist' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendKeysExist(
+    cacheName: string,
+    keys: Uint8Array[]
+  ): Promise<CacheKeysExist.Response> {
+    const request = new grpcCache._KeysExistRequest({
+      cache_keys: keys,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().KeysExist(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheKeysExist.Success(resp.exists));
+          } else {
+            resolve(new CacheKeysExist.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async increaseTtl(
+    cacheName: string,
+    key: string | Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheIncreaseTtl.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateValidForSeconds(ttlMilliseconds);
+    } catch (err) {
+      return new CacheIncreaseTtl.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      "Issuing 'increaseTtl' request; ttlMilliseconds: %s",
+      ttlMilliseconds?.toString() ?? 'null'
+    );
+
+    const result = await this.sendIncreaseTtl(
+      cacheName,
+      this.convert(key),
+      ttlMilliseconds
+    );
+
+    this.logger.trace(
+      "'increaseTtl' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendIncreaseTtl(
+    cacheName: string,
+    key: Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheIncreaseTtl.Response> {
+    const request = new grpcCache._UpdateTtlRequest({
+      cache_key: key,
+      increase_to_milliseconds: ttlMilliseconds,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().UpdateTtl(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheIncreaseTtl.Miss());
+          } else if (resp?.set) {
+            resolve(new CacheIncreaseTtl.Set());
+          } else {
+            resolve(new CacheIncreaseTtl.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async decreaseTtl(
+    cacheName: string,
+    key: string | Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheDecreaseTtl.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateValidForSeconds(ttlMilliseconds);
+    } catch (err) {
+      return new CacheDecreaseTtl.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      "Issuing 'decreaseTtl' request; ttlMilliseconds: %s",
+      ttlMilliseconds?.toString() ?? 'null'
+    );
+
+    const result = await this.sendDecreaseTtl(
+      cacheName,
+      this.convert(key),
+      ttlMilliseconds
+    );
+
+    this.logger.trace(
+      "'decreaseTtl' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendDecreaseTtl(
+    cacheName: string,
+    key: Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheDecreaseTtl.Response> {
+    const request = new grpcCache._UpdateTtlRequest({
+      cache_key: key,
+      decrease_to_milliseconds: ttlMilliseconds,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().UpdateTtl(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheDecreaseTtl.Miss());
+          } else if (resp?.set) {
+            resolve(new CacheDecreaseTtl.Set());
+          } else {
+            resolve(new CacheDecreaseTtl.Error(cacheServiceErrorMapper(err)));
           }
         }
       );

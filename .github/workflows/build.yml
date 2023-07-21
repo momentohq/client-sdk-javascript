@@ -124,10 +124,18 @@ jobs:
             npm ci
             npm run build
           popd
+          pushd examples/nodejs/mongodb-examples/simple-read-aside
+            npm ci
+            npm run build
+          popd
           pushd examples/nodejs/access-control
             npm ci
             npm run build
             npm run validate-examples
+          popd
+          pushd examples/nodejs/aws
+            npm ci
+            npm run build
           popd
 
       - name: Send CI failure mail

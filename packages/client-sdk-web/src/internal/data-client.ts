@@ -39,6 +39,11 @@ import {
   CacheSortedSetLengthByScore,
   CacheItemGetType,
   CacheItemGetTtl,
+  CacheKeyExists,
+  CacheKeysExist,
+  CacheUpdateTtl,
+  CacheIncreaseTtl,
+  CacheDecreaseTtl,
   CollectionTtl,
   ItemType,
   CredentialProvider,
@@ -95,8 +100,10 @@ import {
   _SortedSetRemoveRequest,
   _SortedSetLengthRequest,
   _SortedSetLengthByScoreRequest,
+  _KeysExistRequest,
   _Unbounded,
   ECacheResult,
+  _UpdateTtlRequest,
 } from '@gomomento/generated-types-webtext/dist/cacheclient_pb';
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {
@@ -111,6 +118,7 @@ import {
   validateSortedSetOffset,
   validateSortedSetRanks,
   validateSortedSetScores,
+  validateValidForSeconds,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
@@ -2790,6 +2798,278 @@ export class DataClient<
             resolve(new CacheItemGetTtl.Miss());
           } else {
             resolve(new CacheItemGetTtl.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async keyExists(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<CacheKeyExists.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new CacheKeyExists.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'keyExists' request");
+
+    const result = await this.sendKeyExists(cacheName, convertToB64String(key));
+
+    this.logger.trace(
+      "'keyExists' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendKeyExists(
+    cacheName: string,
+    key: string
+  ): Promise<CacheKeyExists.Response> {
+    const request = new _KeysExistRequest();
+    request.setCacheKeysList([key]);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.keysExist(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheKeyExists.Success(resp.getExistsList()));
+          } else {
+            resolve(new CacheKeyExists.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async keysExist(
+    cacheName: string,
+    keys: string[] | Uint8Array[]
+  ): Promise<CacheKeysExist.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return new CacheKeysExist.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace("Issuing 'keysExist' request");
+
+    const result = await this.sendKeysExist(
+      cacheName,
+      this.convertArrayToB64Strings(keys)
+    );
+
+    this.logger.trace(
+      "'keysExist' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendKeysExist(
+    cacheName: string,
+    keys: string[]
+  ): Promise<CacheKeysExist.Response> {
+    const request = new _KeysExistRequest();
+    request.setCacheKeysList(keys);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.keysExist(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheKeysExist.Success(resp.getExistsList()));
+          } else {
+            resolve(new CacheKeysExist.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async updateTtl(
+    cacheName: string,
+    key: string | Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheUpdateTtl.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateValidForSeconds(ttlMilliseconds);
+    } catch (err) {
+      return new CacheUpdateTtl.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      "Issuing 'updateTtl' request; ttlMilliseconds: %s",
+      ttlMilliseconds?.toString() ?? 'null'
+    );
+
+    const result = await this.sendUpdateTtl(
+      cacheName,
+      convertToB64String(key),
+      ttlMilliseconds
+    );
+
+    this.logger.trace(
+      "'updateTtl' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendUpdateTtl(
+    cacheName: string,
+    key: string | Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheUpdateTtl.Response> {
+    const request = new _UpdateTtlRequest();
+    request.setCacheKey(key);
+    request.setOverwriteToMilliseconds(ttlMilliseconds);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.updateTtl(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp?.getMissing()) {
+            resolve(new CacheUpdateTtl.Miss());
+          } else if (resp?.getSet()) {
+            resolve(new CacheUpdateTtl.Set());
+          } else {
+            resolve(new CacheUpdateTtl.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async increaseTtl(
+    cacheName: string,
+    key: string | Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheIncreaseTtl.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateValidForSeconds(ttlMilliseconds);
+    } catch (err) {
+      return new CacheIncreaseTtl.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      "Issuing 'increaseTtl' request; ttlMilliseconds: %s",
+      ttlMilliseconds?.toString() ?? 'null'
+    );
+
+    const result = await this.sendIncreaseTtl(
+      cacheName,
+      convertToB64String(key),
+      ttlMilliseconds
+    );
+
+    this.logger.trace(
+      "'increaseTtl' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendIncreaseTtl(
+    cacheName: string,
+    key: string | Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheIncreaseTtl.Response> {
+    const request = new _UpdateTtlRequest();
+    request.setCacheKey(key);
+    request.setIncreaseToMilliseconds(ttlMilliseconds);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.updateTtl(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp?.getMissing()) {
+            resolve(new CacheIncreaseTtl.Miss());
+          } else if (resp?.getSet()) {
+            resolve(new CacheIncreaseTtl.Set());
+          } else {
+            resolve(new CacheIncreaseTtl.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async decreaseTtl(
+    cacheName: string,
+    key: string | Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheDecreaseTtl.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateValidForSeconds(ttlMilliseconds);
+    } catch (err) {
+      return new CacheDecreaseTtl.Error(normalizeSdkError(err as Error));
+    }
+
+    this.logger.trace(
+      "Issuing 'decreaseTtl' request; ttlMilliseconds: %s",
+      ttlMilliseconds?.toString() ?? 'null'
+    );
+
+    const result = await this.sendDecreaseTtl(
+      cacheName,
+      convertToB64String(key),
+      ttlMilliseconds
+    );
+
+    this.logger.trace(
+      "'decreaseTtl' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendDecreaseTtl(
+    cacheName: string,
+    key: string | Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheDecreaseTtl.Response> {
+    const request = new _UpdateTtlRequest();
+    request.setCacheKey(key);
+    request.setDecreaseToMilliseconds(ttlMilliseconds);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.updateTtl(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp?.getMissing()) {
+            resolve(new CacheDecreaseTtl.Miss());
+          } else if (resp?.getSet()) {
+            resolve(new CacheDecreaseTtl.Set());
+          } else {
+            resolve(new CacheDecreaseTtl.Error(cacheServiceErrorMapper(err)));
           }
         }
       );
