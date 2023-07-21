@@ -21,7 +21,20 @@ This repo contains an example Token Vending Machine application, built using AWS
 
 The primary use for the Token Vending Machine is to provide temporary, restricted scope Momento Auth tokens. These tokens can be used by browsers that are running apps written against the [Momento Web SDK](https://github.com/momentohq/client-sdk-javascript/tree/main/packages/client-sdk-web). For example, you can create a browser-based chat application that allows pub/sub communication between your users via [Momento Topics](https://docs.momentohq.com/introduction/momento-topics); each browser will need a Momento auth token in order to communicate with the Momento Topics server, and the Token Vending Machine can provide those tokens.
 
+## Configuring the Token Vending Machine App
+
+Before you deploy the token vending machine, you will need to configure the scope of permissions and the expiry duration for the tokens that it will vend. For example, you can restrict the permissions for these browser tokens so that they have read-only access or read-write access, and you can also restrict them to specific caches or topics.
+
+These two required variables live in the [lambda/config.ts](./lambda/config.ts) file.
+
 ## Deploying the Token Vending Machine App
+
+First make sure to start Docker and install the dependencies in the `lambda` directory, which is where the AWS Lambda code lives.
+
+```bash
+cd lambda
+npm install
+```
 
 The source code for the CDK application lives in the `infrastructure` directory.
 To build and deploy it you will first need to install the dependencies:

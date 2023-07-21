@@ -46,11 +46,11 @@ async function getNewWebClients(): Promise<MomentoClients> {
   const fetchResp = await fetch(import.meta.env.VITE_TOKEN_VENDING_MACHINE_URL, {
     cache: "no-store",
   });
-  const token = await fetchResp.text();
+  const token = await fetchResp.json();
   const topicClient = new TopicClient({
     configuration: Configurations.Browser.v1(),
     credentialProvider: CredentialProvider.fromString({
-      authToken: token,
+      authToken: token.authToken,
     }),
   });
   webTopicClient = topicClient;
@@ -90,8 +90,7 @@ export async function subscribeToTopic(
   ) => Promise<void>,
 ) {
   onErrorCb = onError;
-    onItemCb = onItem;
-    console.log("here", webTopicClient)
+  onItemCb = onItem;
   const topicClient = await getWebTopicClient();
   const resp = await topicClient.subscribe(cacheName, topicName, {
     onItem: onItemCb,
