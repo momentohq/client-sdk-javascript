@@ -1,6 +1,7 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {GetSecretValueCommand, SecretsManagerClient} from '@aws-sdk/client-secrets-manager';
-import {AllDataReadWrite, AuthClient, CredentialProvider, ExpiresIn, GenerateAuthToken} from '@gomomento/sdk';
+import {AuthClient, CredentialProvider, GenerateAuthToken} from '@gomomento/sdk';
+import {tokenPermissions, tokenExpiresIn} from './config';
 
 const _secretsClient = new SecretsManagerClient({});
 const _cachedSecrets = new Map<string, string>();
@@ -15,6 +16,10 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     const vendedAuthToken = await vendAuthToken(vendorAuthTokenSecretName);
     return {
       statusCode: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      },
       body: JSON.stringify(vendedAuthToken),
     };
   } catch (err) {
@@ -35,7 +40,7 @@ interface VendedAuthToken {
 
 async function vendAuthToken(vendorAuthTokenSecretName: string): Promise<VendedAuthToken> {
   const momentoAuthClient = await getMomentoAuthClient(vendorAuthTokenSecretName);
-  const generateTokenResponse = await momentoAuthClient.generateAuthToken(AllDataReadWrite, ExpiresIn.hours(1));
+  const generateTokenResponse = await momentoAuthClient.generateAuthToken(tokenPermissions, tokenExpiresIn);
   if (generateTokenResponse instanceof GenerateAuthToken.Success) {
     return {
       authToken: generateTokenResponse.authToken,
