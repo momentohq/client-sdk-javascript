@@ -98,7 +98,7 @@ export default function Home() {
   return (
     <ChatRoom
       topicName={topic}
-      cacheName={import.meta.env.MOMENTO_CACHE_NAME}
+      cacheName={import.meta.env.VITE_MOMENTO_CACHE_NAME}
       username={username}
       onLeave={leaveChatRoom}
     />
