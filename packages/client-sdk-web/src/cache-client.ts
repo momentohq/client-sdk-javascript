@@ -31,7 +31,7 @@ function createDataClient(props: CacheClientProps): IDataClient {
   return new DataClient({
     configuration: props.configuration,
     credentialProvider: props.credentialProvider,
-    defaultTtlSeconds: 60,
+    defaultTtlSeconds: props.defaultTtlSeconds,
   });
 }
 
