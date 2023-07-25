@@ -6,6 +6,7 @@ import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as apig from 'aws-cdk-lib/aws-apigateway';
 import * as secrets from 'aws-cdk-lib/aws-secretsmanager';
 import * as config from '../../lambda/config';
+import * as cognito from 'aws-cdk-lib/aws-cognito';
 
 export class TokenVendingMachineStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -66,6 +67,27 @@ export class TokenVendingMachineStack extends cdk.Stack {
       });
 
       api.root.addMethod('GET', tvmIntegration, {
+        authorizer: authorizer,
+      });
+    }
+    else if (config.authenticationMethod === "amazon-cognito") {
+      const userPool = new cognito.UserPool(this, 'MomentoTokenVendingMachineUserPool', {
+        userPoolName: 'MomentoTokenVendingMachineUserPool',
+        signInAliases: {
+          username: true
+        },
+        passwordPolicy: {
+          minLength: 8,
+          requireSymbols: true,
+        }
+      });
+
+      const authorizer = new apig.CognitoUserPoolsAuthorizer(this, 'MomentoTokenVendingMachineTokenAuthorizer', {
+        cognitoUserPools: [userPool],
+      });
+
+      api.root.addMethod('GET', tvmIntegration, {
+        authorizationType: apig.AuthorizationType.COGNITO,
         authorizer: authorizer,
       });
     }

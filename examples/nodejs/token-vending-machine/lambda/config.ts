@@ -53,5 +53,8 @@ export const tokenExpiresIn: ExpiresIn = ExpiresIn.hours(1);
  *    - "open": no authentication
  *    - "lambda-authorizer": uses a Lambda Authorizer attached to the API Gateway endpoint
  *    - "amazon-cognito": uses an Amazon Cognito user pool as an authorizer
+ * 
+ * When using Amazon Cognito, you'll need to first sign into Cognito to get an ID
+ * token that you'll include in your requests to the Token Vending Machine API. 
  */
-export const authenticationMethod: string = "lambda-authorizer";
+export const authenticationMethod: string = "open";

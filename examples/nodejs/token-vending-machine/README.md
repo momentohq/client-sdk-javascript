@@ -25,7 +25,7 @@ The primary use for the Token Vending Machine is to provide temporary, restricte
 
 Before you deploy the Token Vending Machine, you will need to configure the scope of permissions and the expiry duration for the tokens that it will vend. For example, you can restrict the permissions for these browser tokens so that they have read-only access or read-write access, and you can also restrict them to specific caches or topics.
 
-You will also need to specify the authentication method for the Token Vending Machine's API Gateway Endpoint. You may choose to leave it open, allowing the API Gateway URL to be publicly accessible, or you may choose to use Lambda Authorizer or Amazon Cognito as an authenticator. Basic examples for each of these methods is provided (link TBA).
+You will also need to specify the authentication method for the Token Vending Machine's API Gateway Endpoint. You may choose to leave it open, allowing the API Gateway URL to be publicly accessible, or you may choose to use Lambda Authorizer or Amazon Cognito as an authenticator. Basic examples for each of these methods is provided in the [Lambda Authorizer handler](./lambda/authorizer/authorizer.ts) and [CDK definition](./infrastructure/lib/token-vending-machine-stack.ts) files.
 
 These three required configuration variables live in the [lambda/config.ts](./lambda/config.ts) file.
 
