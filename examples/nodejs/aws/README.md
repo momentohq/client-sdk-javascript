@@ -29,7 +29,7 @@ This example demonstrates how to retrieve a Momento auth token stored as a secre
 MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run secrets-example
 ```
 
-[Example Code](examples/nodejs/aws/doc-example-files/doc-examples-js-aws-secrets.ts)
+[Example Code](doc-example-files/doc-examples-js-aws-secrets.ts)
 
 If you have questions or need help experimenting further, please reach out to us!
 
