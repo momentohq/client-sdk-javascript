@@ -64,4 +64,11 @@ Example Code: [dictionary.ts](dictionary.ts)
 If you have questions or need help experimenting further, please reach out to us!
 
 
+## Docker Load Gen
 
+```bash
+export MOMENTO_AUTH_TOKEN=<token>
+export MOMENTO_CACHE_NAME=<your cache>
+docker build -t bytes-gen --build-arg token=$MOMENTO_AUTH_TOKEN --build-arg cache=$MOMENTO_CACHE_NAME .
+docker run -d bytes-gen
+```
