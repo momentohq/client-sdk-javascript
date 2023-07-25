@@ -1,7 +1,7 @@
 {
-  "name": "momento-token-vending-machine-lambda-function",
+  "name": "momento-token-vending-machine-lambda-authorizer",
   "version": "1.0.0",
-  "description": "Momento token vending machine AWS Lambda function",
+  "description": "Momento token vending machine API Gateway Lambda authorizer for the Lambda function",
   "main": "index.ts",
   "scripts": {
     "prebuild": "eslint . --ext .ts",

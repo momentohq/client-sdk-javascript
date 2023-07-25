@@ -46,3 +46,12 @@ export const tokenPermissions: TokenScope = {
  * More information here: https://docs.momentohq.com/develop/api-reference/auth-tokens#generateauthtoken-api
  */
 export const tokenExpiresIn: ExpiresIn = ExpiresIn.hours(1);
+
+/**
+ * Set the authentication method for the token vending machine to protect against
+ * unauthorized users. The options provided correspond to the example authorizers:
+ *    - "open": no authentication
+ *    - "lambda-authorizer": uses a Lambda Authorizer attached to the API Gateway endpoint
+ *    - "amazon-cognito": uses an Amazon Cognito user pool as an authorizer
+ */
+export const authenticationMethod: string = "lambda-authorizer";
