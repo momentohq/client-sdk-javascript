@@ -17,7 +17,10 @@ import {
  * 
  * TokenScopes provides several functions that will return the permissions you
  * request for a given cache and topic name.
- *    export const tokenPermissions: TokenScope = TokenScopes.topicPublishSubscribe(AllCaches | "your-cache-name", AllTopics);
+ *    export const tokenPermissions: TokenScope = TokenScopes.topicPublishSubscribe("your-cache-name", AllTopics);
+ * 
+ * You can also set it to subscribe to all caches if you prefer:
+ *    export const tokenPermissions: TokenScope = TokenScopes.topicPublishSubscribe(AllCaches, AllTopics);
  * 
  * You may also provide a bespoke list of permissions for each cache and topic that you have:
  *    export const tokenPermissions: TokenScope =  {
