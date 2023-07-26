@@ -7,6 +7,7 @@ import * as apig from 'aws-cdk-lib/aws-apigateway';
 import * as secrets from 'aws-cdk-lib/aws-secretsmanager';
 import * as config from '../../lambda/token-vending-machine/config';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
+import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
 
 export class TokenVendingMachineStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -89,7 +90,21 @@ export class TokenVendingMachineStack extends cdk.Stack {
             requireSymbols: true,
           }
         });
-  
+        new cdk.CfnOutput(this, "UserPoolId", {
+          value: userPool.userPoolId,
+        });
+        
+        const userPoolClient = new cognito.UserPoolClient(this, 'MomentoTokenVendingMachineUserPoolClient', {
+          userPool,
+          generateSecret: false,
+          authFlows: {
+            userPassword: true
+          }
+        });
+        new cdk.CfnOutput(this, "UserPoolClientId", {
+          value: userPoolClient.userPoolClientId,
+        });
+
         const authorizer = new apig.CognitoUserPoolsAuthorizer(this, 'MomentoTokenVendingMachineTokenAuthorizer', {
           cognitoUserPools: [userPool],
         });
@@ -102,6 +117,8 @@ export class TokenVendingMachineStack extends cdk.Stack {
         api.root.addCorsPreflight({
           allowOrigins: ['*'],
         });
+
+        this.createCognitoUser(this, userPool, "momento", "$erverless");
 
         break;
       }
@@ -116,6 +133,61 @@ export class TokenVendingMachineStack extends cdk.Stack {
       default: {
         throw new Error("Unrecognized authentication method");
       }
+    }
+  }
+
+  // reference: https://github.com/awesome-cdk/cdk-userpool-user/blob/master/lib/UserPoolUser.ts 
+  private createCognitoUser(
+    scope: Construct,
+    userPool: cognito.IUserPool, 
+    username: string, 
+    password: string, 
+    group?: string
+  ) {
+    // Basically use the AWS SDK to fill in this gap in the CDK for creating a user with a password
+    const newUser = new AwsCustomResource(scope, 'AwsCustomResource-CreateCognitoUser', {
+      onCreate: {
+        service: 'CognitoIdentityServiceProvider',
+        action: 'adminCreateUser',
+        parameters: {
+          UserPoolId: userPool.userPoolId,
+          Username: username,
+          MessageAction: 'SUPPRESS',
+          TemporaryPassword: password
+        },
+        physicalResourceId: PhysicalResourceId.of(`AwsCustomResource-CreateCognitoUser-${username}`),
+      },
+      policy: AwsCustomResourcePolicy.fromSdkCalls({resources: AwsCustomResourcePolicy.ANY_RESOURCE}),
+      installLatestAwsSdk: true,
+    });
+
+    const setUserPassword = new AwsCustomResource(scope, 'AwsCustomResource-SetCognitoUserPassword', {
+      onCreate: {
+        service: 'CognitoIdentityServiceProvider',
+        action: 'adminSetUserPassword',
+        parameters: {
+          UserPoolId: userPool.userPoolId,
+          Username: username,
+          Password: password,
+          Permanent: true,
+        },
+        physicalResourceId: PhysicalResourceId.of(`AwsCustomResource-SetCognitoUserPassword-${username}`),
+      },
+      policy: AwsCustomResourcePolicy.fromSdkCalls({resources: AwsCustomResourcePolicy.ANY_RESOURCE}),
+      installLatestAwsSdk: true,
+    });
+
+    setUserPassword.node.addDependency(newUser);
+
+    if (group) {
+      const addUserToGroup = new cognito.CfnUserPoolUserToGroupAttachment(scope, 'AttachUserToGroup', {
+        userPoolId: userPool.userPoolId,
+        groupName: group,
+        username: username,
+      });
+      addUserToGroup.node.addDependency(newUser);
+      addUserToGroup.node.addDependency(setUserPassword);
+      addUserToGroup.node.addDependency(userPool);
     }
   }
 }
