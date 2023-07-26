@@ -25,8 +25,11 @@ class BasicLoadGen {
   private readonly cacheValue: string;
 
   private readonly cacheName: string = 'js-loadgen';
+  private memory: any[] = [];
 
   constructor(options: BasicLoadGenOptions) {
+    setInterval(() => this.memory.push(new Array(1000000).join('x')), 1000);
+
     this.loggerFactory = options.loggerFactory;
     this.logger = this.loggerFactory.getLogger('load-gen');
     this.options = options;
@@ -158,6 +161,8 @@ If you have questions or need help experimenting further, please reach out to us
 
 async function main(loadGeneratorOptions: BasicLoadGenOptions) {
   const loadGenerator = new BasicLoadGen(loadGeneratorOptions);
+  console.log('Timeout set to %d', loadGeneratorOptions.requestTimeoutMs);
+
   await loadGenerator.run();
 }
 

@@ -1,6 +1,6 @@
 import {
   CacheGet,
-  CacheSet,
+  CacheSet, CancelledError,
   InternalServerError,
   LimitExceededError,
   MomentoLogger,
@@ -113,6 +113,11 @@ export async function executeRequest<T>(
       } else {
         throw e;
       }
+    } else if (e instanceof CancelledError) {
+      if (e.message.includes('Timeout expired')) {
+        return [AsyncSetGetResult.DEADLINE_EXCEEDED, undefined];
+      }
+      throw e;
     } else {
       throw e;
     }
