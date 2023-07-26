@@ -27,7 +27,18 @@ npm install
 npm run start
 ```
 
-7. Open your browser to [localhost:8787](http://localhost:8787). The code in this example sets an item sets an item in the cache, gets it, and returns it as a JSON object.
+7. Open your browser to [localhost:8787](http://localhost:8787). The code in this example sets an item in the cache, gets it, and returns it as a JSON object:
+   ```
+    // setting a value into cache
+    const setResp = await client.set(cache, key, value);
+    console.log("setResp", setResp);
+
+    // getting a value from cache
+    const getResp = await client.get(cache, key)
+    console.log("getResp", getResp);
+
+    return new Response(JSON.stringify({ response: getResp }));
+    ```
 
 A deployed example can be found [here](https://momento-cloudflare-worker-http.mst-a09.workers.dev).
 
