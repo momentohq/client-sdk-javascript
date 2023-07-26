@@ -27,9 +27,9 @@ export class TokenVendingMachineStack extends cdk.Stack {
     const tvmLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoTokenVendingMachine', {
       functionName: 'MomentoTokenVendingMachine',
       runtime: lambda.Runtime.NODEJS_18_X,
-      entry: path.join(__dirname, '../../lambda/handler.ts'),
-      projectRoot: path.join(__dirname, '../../lambda'),
-      depsLockFilePath: path.join(__dirname, '../../lambda/package-lock.json'),
+      entry: path.join(__dirname, '../../lambda/token-vending-machine/handler.ts'),
+      projectRoot: path.join(__dirname, '../../lambda/token-vending-machine'),
+      depsLockFilePath: path.join(__dirname, '../../lambda/token-vending-machine/package-lock.json'),
       handler: 'handler',
       timeout: cdk.Duration.seconds(30),
       memorySize: 128,
@@ -69,6 +69,18 @@ export class TokenVendingMachineStack extends cdk.Stack {
   
         api.root.addMethod('GET', tvmIntegration, {
           authorizer: authorizer,
+          methodResponses: [
+            { 
+              statusCode: '200',
+              responseParameters: {
+                'method.response.header.Access-Control-Allow-Origin': true
+              }
+            }
+          ],
+          requestParameters: {
+            'method.request.header.username': true,
+            'method.request.header.password': true,
+          }
         });
 
         break;
@@ -92,6 +104,14 @@ export class TokenVendingMachineStack extends cdk.Stack {
         api.root.addMethod('GET', tvmIntegration, {
           authorizationType: apig.AuthorizationType.COGNITO,
           authorizer: authorizer,
+          methodResponses: [
+            { 
+              statusCode: '200',
+              responseParameters: {
+                'method.response.header.Access-Control-Allow-Origin': true
+              }
+            }
+          ],
         });
 
         break;
