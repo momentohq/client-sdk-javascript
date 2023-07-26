@@ -10,6 +10,9 @@ import {AllDataReadWrite, TopicRole, CacheRole, ExpiresIn, TokenScope, AllTopics
  * request for a given cache and topic name.
  *    export const tokenPermissions: TokenScope = TokenScopes.topicPublishSubscribe("default-cache", AllTopics);
  * 
+ * You can also set it to subscribe to all caches if you prefer:
+ *    export const tokenPermissions: TokenScope = TokenScopes.topicPublishSubscribe(AllCaches, AllTopics);
+ * 
  * You may also provide a bespoke list of permissions for each cache and topic that you have:
  *    export const tokenPermissions: TokenScope =  {
  *      permissions: [
@@ -49,12 +52,14 @@ export const tokenExpiresIn: ExpiresIn = ExpiresIn.hours(1);
 
 /**
  * Set the authentication method for the token vending machine to protect against
- * unauthorized users. The options provided correspond to the example authorizers:
- *    - "open": no authentication
- *    - "lambda-authorizer": uses a Lambda Authorizer attached to the API Gateway endpoint
- *    - "amazon-cognito": uses an Amazon Cognito user pool as an authorizer
+ * unauthorized users. The available options are provided below.
  * 
- * When using Amazon Cognito, you'll need to first sign into Cognito to get an ID
+ * Note: when using Amazon Cognito, you'll need to first sign into Cognito to get an ID
  * token that you'll include in your requests to the Token Vending Machine API. 
  */
-export const authenticationMethod: string = "open";
+export enum AuthenticationMethod {
+  Open,             // no authentication
+  LambdaAuthorizer, // use Lambda Authorizer attached to API Gateway
+  AmazonCognito,    // use Cognito user pool authorizer attached to API Gateway
+}
+export const authenticationMethod: AuthenticationMethod = AuthenticationMethod.Open;

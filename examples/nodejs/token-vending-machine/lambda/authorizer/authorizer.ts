@@ -12,10 +12,24 @@ export const handler = async (event: APIGatewayRequestAuthorizerEvent): Promise<
   const principalId = "momento-user";
 
   const headers = event.headers;
+  if (!headers) {
+    console.log("No headers provided!");
+    throw new Error("Unauthorized");
+  }
+
+  if (headers && (!('username' in headers) || !('password' in headers))) {
+    console.log("Expecting both 'username' and 'password' headers, at least one missing");
+    throw new Error("Unauthorized");
+  }
+
   if (headers && headers['username'] === mockUsername && headers['password'] === mockPassword) {
+    console.log("Headers 'username' and 'password' had expected values, allowing access!")
     return generatePolicy(principalId, "Allow", event.methodArn);
   }
-  return generatePolicy(principalId, "Deny", event.methodArn);
+  else {
+    console.log("Headers 'username' and 'password' did not have expected values, denying access");
+    return generatePolicy(principalId, "Deny", event.methodArn);
+  }
 };
 
 // Helper function to generate a response from Authorizer to API Gateway.

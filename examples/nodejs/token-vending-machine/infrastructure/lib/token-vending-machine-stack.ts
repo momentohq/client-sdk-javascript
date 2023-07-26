@@ -5,7 +5,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as apig from 'aws-cdk-lib/aws-apigateway';
 import * as secrets from 'aws-cdk-lib/aws-secretsmanager';
-import * as config from '../../lambda/config';
+import * as config from '../../lambda/token-vending-machine/config';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 
 export class TokenVendingMachineStack extends cdk.Stack {
@@ -48,48 +48,61 @@ export class TokenVendingMachineStack extends cdk.Stack {
       requestTemplates: {'application/json': '{ "statusCode": "200" }'},
     });
 
-    if (config.authenticationMethod === "lambda-authorizer") {
-      const authLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoTokenVendingMachineAuthorizer', {
-        functionName: 'MomentoTokenVendingMachineAuthorizer',
-        runtime: lambda.Runtime.NODEJS_18_X,
-        entry: path.join(__dirname, '../../lambda/authorizer/authorizer.ts'),
-        projectRoot: path.join(__dirname, '../../lambda/authorizer'),
-        depsLockFilePath: path.join(__dirname, '../../lambda/authorizer/package-lock.json'),
-        handler: 'handler',
-        timeout: cdk.Duration.seconds(30),
-        memorySize: 128,
-      });
+    switch (config.authenticationMethod) {
+      case config.AuthenticationMethod.LambdaAuthorizer: {
+        const authLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoTokenVendingMachineAuthorizer', {
+          functionName: 'MomentoTokenVendingMachineAuthorizer',
+          runtime: lambda.Runtime.NODEJS_18_X,
+          entry: path.join(__dirname, '../../lambda/authorizer/authorizer.ts'),
+          projectRoot: path.join(__dirname, '../../lambda/authorizer'),
+          depsLockFilePath: path.join(__dirname, '../../lambda/authorizer/package-lock.json'),
+          handler: 'handler',
+          timeout: cdk.Duration.seconds(30),
+          memorySize: 128,
+        });
+  
+        const authorizer = new apig.RequestAuthorizer(this, 'MomentoTokenVendingMachineTokenAuthorizer', {
+          handler: authLambda,
+          identitySources: [apig.IdentitySource.header('username'), apig.IdentitySource.header('password')],
+          resultsCacheTtl: cdk.Duration.seconds(5),
+        });
+  
+        api.root.addMethod('GET', tvmIntegration, {
+          authorizer: authorizer,
+        });
 
-      const authorizer = new apig.RequestAuthorizer(this, 'MomentoTokenVendingMachineTokenAuthorizer', {
-        handler: authLambda,
-        identitySources: [apig.IdentitySource.header('username'), apig.IdentitySource.header('password')],
-        resultsCacheTtl: cdk.Duration.seconds(5),
-      });
+        break;
+      }
+      case config.AuthenticationMethod.AmazonCognito: {
+        const userPool = new cognito.UserPool(this, 'MomentoTokenVendingMachineUserPool', {
+          userPoolName: 'MomentoTokenVendingMachineUserPool',
+          signInAliases: {
+            username: true
+          },
+          passwordPolicy: {
+            minLength: 8,
+            requireSymbols: true,
+          }
+        });
+  
+        const authorizer = new apig.CognitoUserPoolsAuthorizer(this, 'MomentoTokenVendingMachineTokenAuthorizer', {
+          cognitoUserPools: [userPool],
+        });
+  
+        api.root.addMethod('GET', tvmIntegration, {
+          authorizationType: apig.AuthorizationType.COGNITO,
+          authorizer: authorizer,
+        });
 
-      api.root.addMethod('GET', tvmIntegration, {
-        authorizer: authorizer,
-      });
-    }
-    else if (config.authenticationMethod === "amazon-cognito") {
-      const userPool = new cognito.UserPool(this, 'MomentoTokenVendingMachineUserPool', {
-        userPoolName: 'MomentoTokenVendingMachineUserPool',
-        signInAliases: {
-          username: true
-        },
-        passwordPolicy: {
-          minLength: 8,
-          requireSymbols: true,
-        }
-      });
-
-      const authorizer = new apig.CognitoUserPoolsAuthorizer(this, 'MomentoTokenVendingMachineTokenAuthorizer', {
-        cognitoUserPools: [userPool],
-      });
-
-      api.root.addMethod('GET', tvmIntegration, {
-        authorizationType: apig.AuthorizationType.COGNITO,
-        authorizer: authorizer,
-      });
+        break;
+      }
+      case config.AuthenticationMethod.Open: {
+        console.log("Warning: no authentication method provided, the Token Vending Machine URL will be publicly accessible");
+        break;
+      }
+      default: {
+        throw new Error("Unrecognized authentication method");
+      }
     }
   }
 }
