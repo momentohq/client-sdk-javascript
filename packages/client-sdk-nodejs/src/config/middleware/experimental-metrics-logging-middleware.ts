@@ -18,7 +18,7 @@ class ExperimentalMetricsLoggingMiddlewareRequestHandler extends ExperimentalMet
 
 /**
  * This middleware enables per-request client-side metrics.  Metrics for each
- * request will be written to a CSV file; this file can be analyzed or shared
+ * request will be written to logs; the log data can be analyzed or shared
  * with Momento to diagnose performance issues.
  *
  * The metrics format is currently considered experimental; in a future release,
@@ -28,9 +28,10 @@ class ExperimentalMetricsLoggingMiddlewareRequestHandler extends ExperimentalMet
  * WARNING: enabling this middleware may have minor performance implications,
  * so enable with caution.
  *
- * WARNING: depending on your request volume, the CSV file size may grow quickly;
- * neither sampling nor file compression / rotation are included at this time
- * (though they may be added in the future).
+ * WARNING: depending on your request volume, this middleware will produce a high
+ * volume of log output. If you are writing logs directly to local disk, be aware
+ * of disk usage and make sure you have log rotation / compression enabled via a
+ * tool such as `logrotate`.
  *
  * See `advanced.ts` in the examples directory for an example of how to set up
  * your {Configuration} to enable this middleware.
