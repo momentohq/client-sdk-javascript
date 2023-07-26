@@ -69,18 +69,11 @@ export class TokenVendingMachineStack extends cdk.Stack {
   
         api.root.addMethod('GET', tvmIntegration, {
           authorizer: authorizer,
-          methodResponses: [
-            { 
-              statusCode: '200',
-              responseParameters: {
-                'method.response.header.Access-Control-Allow-Origin': true
-              }
-            }
-          ],
-          requestParameters: {
-            'method.request.header.username': true,
-            'method.request.header.password': true,
-          }
+        });
+
+        api.root.addCorsPreflight({
+          allowOrigins: ['*'],
+          allowHeaders: ['username', 'password']
         });
 
         break;
@@ -104,20 +97,20 @@ export class TokenVendingMachineStack extends cdk.Stack {
         api.root.addMethod('GET', tvmIntegration, {
           authorizationType: apig.AuthorizationType.COGNITO,
           authorizer: authorizer,
-          methodResponses: [
-            { 
-              statusCode: '200',
-              responseParameters: {
-                'method.response.header.Access-Control-Allow-Origin': true
-              }
-            }
-          ],
+        });
+
+        api.root.addCorsPreflight({
+          allowOrigins: ['*'],
         });
 
         break;
       }
       case config.AuthenticationMethod.Open: {
         console.log("Warning: no authentication method provided, the Token Vending Machine URL will be publicly accessible");
+        api.root.addMethod('GET', tvmIntegration);
+        api.root.addCorsPreflight({
+          allowOrigins: ['*'],
+        });
         break;
       }
       default: {
