@@ -24,6 +24,23 @@ VITE_TOKEN_VENDING_MACHINE_URL="https://..."
 VITE_MOMENTO_CACHE_NAME="my-cache"
 ```
 
+Additionally, if you deployed your Token Vending Machine with the Lambda Authorizer authentication method, you'll need to include these variables in your `.env.development` file:
+
+```
+VITE_TOKEN_VENDING_MACHINE_USERNAME="username"
+VITE_TOKEN_VENDING_MACHINE_PASSWORD="password"
+```
+
+If instead you deployed your Token Vending Machine with the Amazon Cognito authentication method, you'll need to include these variables in your `.env.development` file:
+
+```
+VITE_TOKEN_VENDING_MACHINE_USERNAME="username"
+VITE_TOKEN_VENDING_MACHINE_PASSWORD="password"
+VITE_TOKEN_VENDING_MACHINE_CLIENT_ID="cdk-generated-client-id"
+VITE_TOKEN_VENDING_MACHINE_AWS_REGION="your-aws-region"
+```
+
+
 Then, run the development server:
 
 ```bash

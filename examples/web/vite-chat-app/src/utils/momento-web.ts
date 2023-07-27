@@ -7,6 +7,7 @@ import {
   TopicPublish,
   TopicSubscribe,
 } from "@gomomento/sdk-web";
+import { CognitoIdentityProviderClient, InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider";
 
 export enum EventTypes {
   MESSAGE = "message",
@@ -42,10 +43,56 @@ type MomentoClients = {
 
 async function getNewWebClients(): Promise<MomentoClients> {
   webTopicClient = undefined;
-  // we don't want to cache the token, since it will expire in 5 min
-  const fetchResp = await fetch(import.meta.env.VITE_TOKEN_VENDING_MACHINE_URL, {
-    cache: "no-store",
-  });
+  let fetchResp;
+
+  if (import.meta.env.VITE_TOKEN_VENDING_MACHINE_CLIENT_ID 
+    && import.meta.env.VITE_TOKEN_VENDING_MACHINE_AWS_REGION
+    && import.meta.env.VITE_TOKEN_VENDING_MACHINE_USERNAME
+    && import.meta.env.VITE_TOKEN_VENDING_MACHINE_PASSWORD
+    ) {
+    // use Cognito flow: sign into Cognito, get ID token, pass ID token as Authorization token to TVM
+    const cognitoClient = new CognitoIdentityProviderClient({
+      "region": import.meta.env.VITE_TOKEN_VENDING_MACHINE_AWS_REGION,
+    });
+    const input = {
+      AuthFlow: "USER_PASSWORD_AUTH",
+      AuthParameters: { 
+        "USERNAME": import.meta.env.VITE_TOKEN_VENDING_MACHINE_USERNAME,
+        "PASSWORD": import.meta.env.VITE_TOKEN_VENDING_MACHINE_PASSWORD,
+      },
+      ClientId: import.meta.env.VITE_TOKEN_VENDING_MACHINE_CLIENT_ID, 
+    };
+    const command = new InitiateAuthCommand(input);
+    const response = await cognitoClient.send(command);
+    const IdToken = response.AuthenticationResult?.IdToken;
+    if (!IdToken) {
+      throw new Error("Cognito sign in failed");
+    }
+
+    fetchResp = await fetch(import.meta.env.VITE_TOKEN_VENDING_MACHINE_URL, {
+      cache: "no-store",  // don't cache the token since it will expire in 5 min
+      headers: {
+        Authorization: `Bearer ${IdToken}`
+      }
+    });
+  }
+  else if (import.meta.env.VITE_TOKEN_VENDING_MACHINE_USERNAME
+    && import.meta.env.VITE_TOKEN_VENDING_MACHINE_PASSWORD) {
+      // use Lambda Authorizer flow
+      fetchResp = await fetch(import.meta.env.VITE_TOKEN_VENDING_MACHINE_URL, {
+        cache: "no-store",  // don't cache the token since it will expire in 5 min
+        headers: {
+          username: import.meta.env.VITE_TOKEN_VENDING_MACHINE_USERNAME,
+          password: import.meta.env.VITE_TOKEN_VENDING_MACHINE_PASSWORD
+        }
+      });
+    }
+  else {
+    fetchResp = await fetch(import.meta.env.VITE_TOKEN_VENDING_MACHINE_URL, {
+      cache: "no-store",  // don't cache the token since it will expire in 5 min
+    });
+  }
+  
   const token = await fetchResp.json();
   const topicClient = new TopicClient({
     configuration: Configurations.Browser.v1(),
