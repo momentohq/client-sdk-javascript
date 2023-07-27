@@ -16,7 +16,7 @@ export const revalidate = 0;
 export async function GET(_request: Request) {
   const generateAuthTokenResponse = await authClient.generateAuthToken(
     AllDataReadWrite,
-    ExpiresIn.minutes(5),
+    ExpiresIn.minutes(30),
   );
 
   if (generateAuthTokenResponse instanceof GenerateAuthToken.Success) {
