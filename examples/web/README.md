@@ -18,3 +18,5 @@
 This directory contains several subdirectories with different types of example projects:
 
 - [Cache Examples](./cache) - How to use Momento Cache
+- [Next.js Chat](./nextjs-chat) - How to use Momento topics and secure tokens within a Next.js application
+- [Vite Chat](./vite-chat-app) - How to use Momento topics and secure tokens within a static web application
