@@ -1,16 +1,11 @@
 {
-  "name": "momento-nodejs-example",
+  "name": "momento-token-vending-machine-lambda-authorizer",
   "version": "1.0.0",
-  "description": "Getting started with Momento sdk",
+  "description": "Momento token vending machine API Gateway Lambda authorizer for the Lambda function",
   "main": "index.ts",
   "scripts": {
     "prebuild": "eslint . --ext .ts",
     "build": "tsc",
-    "basic": "tsc && node dist/basic.js",
-    "advanced": "tsc && node dist/advanced.js",
-    "dictionary": "tsc && node dist/dictionary.js",
-    "doc-examples": "tsc && node dist/doc-example-files/doc-examples-js-apis.js",
-    "validate-examples": "tsc && node dist/readme.js && node dist/basic.js && node dist/advanced.js && node dist/dictionary.js && node dist/doc-example-files/doc-examples-js-apis.js && node dist/doc-example-files/cheat-sheet-main.js",
     "test": "jest",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix"
