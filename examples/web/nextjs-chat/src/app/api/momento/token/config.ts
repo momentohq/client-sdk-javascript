@@ -46,4 +46,4 @@ export const tokenPermissions: TokenScope = TokenScopes.topicPublishSubscribe(Al
  * days, or using epoch format. You may also set tokens to never expire.
  * More information here: https://docs.momentohq.com/develop/api-reference/auth-tokens#generateauthtoken-api
  */
-export const tokenExpiresIn: ExpiresIn = ExpiresIn.minutes(5);
+export const tokenExpiresIn: ExpiresIn = ExpiresIn.minutes(30);
