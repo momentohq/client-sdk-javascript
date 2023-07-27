@@ -1,20 +1,23 @@
 ## About
 
-This is an example project showing how Momento topics and secure tokens can be used within a static web application.
+This example project is a browser-based chat application that allows pub/sub communication between your users via [Momento Topics](https://docs.momentohq.com/introduction/momento-topics). Each browser will need a Momento auth token in order to communicate with the Momento Topics server, and Momento's [Token Vending Machine application](https://github.com/momentohq/client-sdk-javascript/tree/main/examples/nodejs/token-vending-machine) can provide those tokens, which can be scoped to provide permissions to only the necessary caches and topics.
 
 ## Prerequisites
 
-In order for this project to run, a Momento cache is needed, as well as a [token vending machine](https://github.com/momentohq/client-sdk-javascript/tree/main/examples/nodejs/token-vending-machine). This is just a url that can be called to vend short lived Momento auth tokens for the browser.
+In order for this project to run, you will need:
+
+- A deployed [Token Vending Machine](https://github.com/momentohq/client-sdk-javascript/tree/main/examples/nodejs/token-vending-machine).
+- A Momento cache, which you can create in the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on creating a cache.
 
 ## Getting Started
 
-First, install all dependencies
+First, install all dependencies:
 
 ```
 npm install
 ```
 
-Then, edit the `.env.development` file with your token vending machine url and your cache name
+Then, edit the `.env.development` file with your token vending machine url and your cache name:
 
 ```
 VITE_TOKEN_VENDING_MACHINE_URL="https://..."
