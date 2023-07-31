@@ -82,6 +82,8 @@ jobs:
     strategy:
       matrix:
         node: [14, 16, 18]
+      fail-fast: true
+      max-parallel: 1
     name: Test examples on node ${{ matrix.node }}
     runs-on: macos-latest
     env:
@@ -153,6 +155,8 @@ jobs:
     strategy:
       matrix:
         node: [ 16, 18 ]
+      fail-fast: true
+      max-parallel: 1
     name: Test web examples on node ${{ matrix.node }}
     runs-on: macos-latest
     env:
