@@ -45,52 +45,25 @@ async function getNewWebClients(): Promise<MomentoClients> {
   webTopicClient = undefined;
   let fetchResp;
 
-  if (import.meta.env.VITE_TOKEN_VENDING_MACHINE_CLIENT_ID 
-    && import.meta.env.VITE_TOKEN_VENDING_MACHINE_AWS_REGION
-    && import.meta.env.VITE_TOKEN_VENDING_MACHINE_USERNAME
-    && import.meta.env.VITE_TOKEN_VENDING_MACHINE_PASSWORD
-    ) {
-    // use Cognito flow: sign into Cognito, get ID token, pass ID token as Authorization token to TVM
-    const cognitoClient = new CognitoIdentityProviderClient({
-      "region": import.meta.env.VITE_TOKEN_VENDING_MACHINE_AWS_REGION,
-    });
-    const input = {
-      AuthFlow: "USER_PASSWORD_AUTH",
-      AuthParameters: { 
-        "USERNAME": import.meta.env.VITE_TOKEN_VENDING_MACHINE_USERNAME,
-        "PASSWORD": import.meta.env.VITE_TOKEN_VENDING_MACHINE_PASSWORD,
-      },
-      ClientId: import.meta.env.VITE_TOKEN_VENDING_MACHINE_CLIENT_ID, 
-    };
-    const command = new InitiateAuthCommand(input);
-    const response = await cognitoClient.send(command);
-    const IdToken = response.AuthenticationResult?.IdToken;
-    if (!IdToken) {
-      throw new Error("Cognito sign in failed");
-    }
+  const token_vending_machine_auth = String(import.meta.env.VITE_TOKEN_VENDING_MACHINE_AUTH_TYPE)
 
-    fetchResp = await fetch(import.meta.env.VITE_TOKEN_VENDING_MACHINE_URL, {
-      cache: "no-store",  // don't cache the token since it will expire in 5 min
-      headers: {
-        Authorization: `Bearer ${IdToken}`
-      }
-    });
-  }
-  else if (import.meta.env.VITE_TOKEN_VENDING_MACHINE_USERNAME
-    && import.meta.env.VITE_TOKEN_VENDING_MACHINE_PASSWORD) {
-      // use Lambda Authorizer flow
-      fetchResp = await fetch(import.meta.env.VITE_TOKEN_VENDING_MACHINE_URL, {
-        cache: "no-store",  // don't cache the token since it will expire in 5 min
-        headers: {
-          username: import.meta.env.VITE_TOKEN_VENDING_MACHINE_USERNAME,
-          password: import.meta.env.VITE_TOKEN_VENDING_MACHINE_PASSWORD
-        }
-      });
+  
+  switch (token_vending_machine_auth) {
+    case "cognito": {
+      fetchResp = await fetchTokenWithCognitoAuth();
+      break;
     }
-  else {
-    fetchResp = await fetch(import.meta.env.VITE_TOKEN_VENDING_MACHINE_URL, {
-      cache: "no-store",  // don't cache the token since it will expire in 5 min
-    });
+    case "lambda": {
+      fetchResp = await fetchTokenWithLambdaAuth();
+      break;
+    }
+    case "open": {
+      fetchResp = await fetchTokenWithOpenAuth();
+      break;
+    }
+    default: {
+      throw new Error(`Unrecognized token vending machine auth type ${token_vending_machine_auth}`);
+    }
   }
   
   const token = await fetchResp.json();
@@ -111,6 +84,52 @@ export const clearCurrentClient = () => {
   subscription = undefined;
   webTopicClient = undefined;
 };
+
+async function fetchTokenWithOpenAuth() {
+  return await fetch(import.meta.env.VITE_TOKEN_VENDING_MACHINE_URL, {
+    cache: "no-store",  // don't cache the token since it will expire in 5 min
+  });
+}
+
+async function fetchTokenWithLambdaAuth() {
+  return await fetch(import.meta.env.VITE_TOKEN_VENDING_MACHINE_URL, {
+    cache: "no-store",  // don't cache the token since it will expire in 5 min
+    headers: {
+      username: import.meta.env.VITE_TOKEN_VENDING_MACHINE_USERNAME,
+      password: import.meta.env.VITE_TOKEN_VENDING_MACHINE_PASSWORD
+    }
+  });
+}
+
+async function fetchTokenWithCognitoAuth() {
+  // Cognito auth flow: sign into Cognito, get ID token, pass ID token as 
+  // the Authorization token to the token vending machine
+  const cognitoClient = new CognitoIdentityProviderClient({
+    "region": import.meta.env.VITE_TOKEN_VENDING_MACHINE_AWS_REGION,
+  });
+  const input = {
+    AuthFlow: "USER_PASSWORD_AUTH",
+    AuthParameters: { 
+      "USERNAME": import.meta.env.VITE_TOKEN_VENDING_MACHINE_USERNAME,
+      "PASSWORD": import.meta.env.VITE_TOKEN_VENDING_MACHINE_PASSWORD,
+    },
+    ClientId: import.meta.env.VITE_TOKEN_VENDING_MACHINE_CLIENT_ID, 
+  };
+  const command = new InitiateAuthCommand(input);
+  const response = await cognitoClient.send(command);
+  const IdToken = response.AuthenticationResult?.IdToken;
+  if (!IdToken) {
+    throw new Error("Cognito sign in failed");
+  }
+
+  // Make the actual API call to the token vending machine here
+  return await fetch(import.meta.env.VITE_TOKEN_VENDING_MACHINE_URL, {
+    cache: "no-store",  // don't cache the token since it will expire in 5 min
+    headers: {
+      Authorization: `Bearer ${IdToken}`
+    }
+  });
+}
 
 async function getWebTopicClient(): Promise<TopicClient> {
   if (webTopicClient) {
