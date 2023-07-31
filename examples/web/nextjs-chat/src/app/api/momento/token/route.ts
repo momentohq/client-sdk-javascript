@@ -1,10 +1,9 @@
 import {
-  AllDataReadWrite,
   AuthClient,
   CredentialProvider,
-  ExpiresIn,
   GenerateAuthToken,
 } from "@gomomento/sdk";
+import { tokenPermissions, tokenExpiresIn } from "./config";
 
 const authClient = new AuthClient({
   credentialProvider: CredentialProvider.fromString({
@@ -15,8 +14,8 @@ const authClient = new AuthClient({
 export const revalidate = 0;
 export async function GET(_request: Request) {
   const generateAuthTokenResponse = await authClient.generateAuthToken(
-    AllDataReadWrite,
-    ExpiresIn.minutes(30),
+    tokenPermissions,
+    tokenExpiresIn,
   );
 
   if (generateAuthTokenResponse instanceof GenerateAuthToken.Success) {
