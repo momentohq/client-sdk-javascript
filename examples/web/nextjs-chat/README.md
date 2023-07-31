@@ -18,6 +18,10 @@ First, create a new file called `.env.local` that looks like:
 MOMENTO_AUTH_TOKEN=<Put your token here>
 ```
 
+Second, go to the [config.ts file](./src/app/api/momento/token/config.ts) and configure the scope of permissions and the expiry duration for the tokens that the nextjs app will use to talk to the Momento service. 
+
+For example, you can restrict the permissions for these browser tokens so that they have read-only access or read-write access, and you can also restrict them to specific caches or topics.
+
 Then, run the development server:
 
 ```bash
