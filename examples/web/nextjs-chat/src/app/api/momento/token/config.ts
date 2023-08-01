@@ -47,3 +47,15 @@ export const tokenPermissions: TokenScope = TokenScopes.topicPublishSubscribe(Al
  * More information here: https://docs.momentohq.com/develop/api-reference/auth-tokens#generateauthtoken-api
  */
 export const tokenExpiresIn: ExpiresIn = ExpiresIn.minutes(30);
+
+/**
+ * Third, set the authentication method for requesting Momento tokens to protect against
+ * unauthorized requests. The available options are provided below.
+ */
+export enum AuthenticationMethod {
+  Open,         // no authentication
+  Credentials,  // use a basic username and password login
+  Email,        // use an email provider to send a "magic link"
+  OAuth,        // use an OAuth provider
+}
+export const authenticationMethod: AuthenticationMethod = AuthenticationMethod.Credentials;
