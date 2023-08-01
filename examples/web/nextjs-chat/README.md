@@ -8,7 +8,7 @@ A version of this project has been deployed on [Vercel](https://momento-nextjs-c
 
 ## Prerequisites
 
-You will need a Momento auth token which you can generate in the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining a server side token.
+You will need a Momento auth token and a cache, both of which you can create in the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining a server side token and creating a cache.
 
 ## Getting Started
 
@@ -16,6 +16,7 @@ First, create a new file called `.env.local` that looks like:
 
 ```
 MOMENTO_AUTH_TOKEN=<Put your token here>
+NEXT_PUBLIC_MOMENTO_CACHE_NAME=<Put your cache name here>
 ```
 
 Second, go to the [config.ts file](./src/app/api/momento/token/config.ts) and configure the scope of permissions and the expiry duration for the tokens that the nextjs app will use to talk to the Momento service. 
