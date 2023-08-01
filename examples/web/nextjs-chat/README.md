@@ -21,6 +21,8 @@ NEXT_PUBLIC_MOMENTO_CACHE_NAME=<Put your cache name here>
 
 Second, go to the [config.ts file](./src/app/api/momento/token/config.ts) and configure the scope of permissions and the expiry duration for the tokens that the nextjs app will use to talk to the Momento service. 
 
+You may also configure the authentication method in the [config.ts file](./src/app/api/momento/token/config.ts). The default setting is "open", meaning there is no authentication. An example for the "credentials" option involves a basic check of a username and password is provided in the [token/route.ts file](./src/app/api/momento/token/route.ts). Additional auth methods can be set up using a library such as [NextAuth.js](https://next-auth.js.org/).
+
 For example, you can restrict the permissions for these browser tokens so that they have read-only access or read-write access, and you can also restrict them to specific caches or topics.
 
 Then, run the development server:

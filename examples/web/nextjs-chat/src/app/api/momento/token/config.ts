@@ -55,7 +55,6 @@ export const tokenExpiresIn: ExpiresIn = ExpiresIn.minutes(30);
 export enum AuthenticationMethod {
   Open,         // no authentication
   Credentials,  // use a basic username and password login
-  Email,        // use an email provider to send a "magic link"
-  OAuth,        // use an OAuth provider
+  // OAuth,     // use an OAuth provider using a library such as NextAuth.js
 }
-export const authenticationMethod: AuthenticationMethod = AuthenticationMethod.Credentials;
+export const authenticationMethod: AuthenticationMethod = AuthenticationMethod.Open;
