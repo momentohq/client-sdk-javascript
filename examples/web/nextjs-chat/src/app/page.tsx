@@ -1,26 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { clearCurrentClient, listCaches } from "@/utils/momento-web";
+import { useState } from "react";
+import { clearCurrentClient } from "@/utils/momento-web";
 import ChatRoom from "@/app/pages/chat-room";
 
 export default function Home() {
+  const cacheName = String(process.env.NEXT_PUBLIC_MOMENTO_CACHE_NAME);
+
   const [topic, setTopic] = useState("");
-  const [cacheName, setCacheName] = useState("");
   const [username, setUsername] = useState("");
-  const [caches, setCaches] = useState<string[]>([]);
   const [chatRoomSelected, setChatRoomSelected] = useState(false);
   const [usernameSelected, setUsernameSelected] = useState(false);
-
-  useEffect(() => {
-    listCaches().then((c) => setCaches(c));
-  }, []);
 
   const leaveChatRoom = () => {
     clearCurrentClient();
     setChatRoomSelected(false);
     setUsernameSelected(false);
-    setCacheName("");
     setTopic("");
     setUsername("");
   };
@@ -32,25 +27,6 @@ export default function Home() {
           "flex h-full justify-center items-center flex-col bg-slate-300"
         }
       >
-        <div className={"w-48"}>
-          <label
-            htmlFor={"caches-list"}
-            className={"block mb-2 text-sm font-medium text-gray-900"}
-          >
-            Select a cache to use
-          </label>
-          <select
-            className="py-3 px-4 pr-9 block w-full border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500"
-            value={cacheName}
-            onChange={(e) => setCacheName(e.target.value)}
-            id={"caches-list"}
-          >
-            <option key={"none"} />
-            {caches.map((cache) => {
-              return <option key={cache}>{cache}</option>;
-            })}
-          </select>
-        </div>
         <div className={"h-8"} />
         <div className={"w-48"}>
           <input
