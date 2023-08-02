@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { clearCurrentClient } from "@/utils/momento-web";
 import ChatRoom from "@/app/pages/chat-room";
-import { useSession, signIn } from 'next-auth/react';
+import { useSession, signIn, signOut } from 'next-auth/react';
 
 export default function Home() {
   const cacheName = String(process.env.NEXT_PUBLIC_MOMENTO_CACHE_NAME);
@@ -21,6 +21,7 @@ export default function Home() {
     setUsernameSelected(false);
     setTopic("");
     setUsername("");
+    signOut();
   };
 
   if (authMethod === "credentials" && status !== 'authenticated') {
@@ -30,7 +31,9 @@ export default function Home() {
           "flex h-full justify-center items-center flex-col bg-slate-300"
         }
       >
-        Please sign in <br />
+        <p className={"w-80 text-center my-2"}>
+        This app was configured to allow only authenticated users. Please sign in.
+        </p>
         <button 
           onClick={() => signIn()}
           className={
@@ -50,6 +53,10 @@ export default function Home() {
           "flex h-full justify-center items-center flex-col bg-slate-300"
         }
       >
+        <p className={"w-80 text-center my-2"}>
+          Please enter the name of the chat room you'd like to join. 
+          If it doesn't exist, it will be created using Momento Topics.
+        </p>
         <div className={"h-8"} />
         <div className={"w-48"}>
           <input
@@ -85,6 +92,7 @@ export default function Home() {
         <div className={"w-72 text-center"}>
           <div>
             Welcome to the <span className={"italic"}>{topic}</span> chat room!
+            What would you like to be called?
           </div>
         </div>
         <div className={"h-4"} />
