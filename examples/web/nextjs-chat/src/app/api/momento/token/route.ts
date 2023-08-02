@@ -4,6 +4,8 @@ import {
   GenerateAuthToken,
 } from "@gomomento/sdk";
 import { tokenPermissions, tokenExpiresIn, authenticationMethod, AuthenticationMethod } from "./config";
+import { authOptions } from '../../auth/[...nextauth]/route';
+import { getServerSession } from 'next-auth';
 
 const authClient = new AuthClient({
   credentialProvider: CredentialProvider.fromString({
@@ -45,15 +47,10 @@ async function fetchTokenWithOpenAuth() {
 }
 
 async function fetchTokenWithAuthCredentials() {
-  const envUsername = String(process.env.MOMENTO_AUTH_USERNAME);
-  const envPassword = String(process.env.MOMENTO_AUTH_PASSWORD);
+  const session = await getServerSession(authOptions);
 
-  if (!envUsername || !envPassword) {
-    throw new Error("Username and/or password not detected in environment variables");
-  }
-
-  if (envUsername !== "momento" || envPassword !== "\$erverless") {
-    throw new Error("Username and/or password does not match expected values");
+  if (!session) {
+    throw new Error("Unauthorized to request Momento token");
   }
 
   return await authClient.generateAuthToken(

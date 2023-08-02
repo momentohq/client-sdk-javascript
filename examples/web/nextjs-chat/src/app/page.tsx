@@ -3,9 +3,12 @@
 import { useState } from "react";
 import { clearCurrentClient } from "@/utils/momento-web";
 import ChatRoom from "@/app/pages/chat-room";
+import { useSession, signIn } from 'next-auth/react';
 
 export default function Home() {
   const cacheName = String(process.env.NEXT_PUBLIC_MOMENTO_CACHE_NAME);
+  const authMethod = String(process.env.NEXT_PUBLIC_AUTH_METHOD);
+  const { data: session, status } = useSession();
 
   const [topic, setTopic] = useState("");
   const [username, setUsername] = useState("");
@@ -19,6 +22,26 @@ export default function Home() {
     setTopic("");
     setUsername("");
   };
+
+  if (authMethod === "credentials" && status !== 'authenticated') {
+    return (
+      <div
+        className={
+          "flex h-full justify-center items-center flex-col bg-slate-300"
+        }
+      >
+        Please sign in <br />
+        <button 
+          onClick={() => signIn()}
+          className={
+            "disabled:bg-slate-50 disabled:brightness-75 disabled:cursor-default rounded-2xl hover:cursor-pointer w-24 bg-emerald-400 p-2 hover:brightness-75"
+          } 
+        >
+          Sign in
+        </button>
+      </div>
+    );
+  }
 
   if (!chatRoomSelected || !cacheName) {
     return (
