@@ -62,13 +62,17 @@ The username and password you provide here should match what was hardcoded into 
 If you deployed your Token Vending Machine with the Amazon Cognito ("cognito") authentication method, you'll need to include these variables in your `.env.development` file:
 
 ```
-VITE_TOKEN_VENDING_MACHINE_USERNAME=<username>
-VITE_TOKEN_VENDING_MACHINE_PASSWORD=<password>
 VITE_TOKEN_VENDING_MACHINE_CLIENT_ID=<cdk-generated-client-id>
 VITE_TOKEN_VENDING_MACHINE_AWS_REGION=<your-aws-region>
+
+VITE_TOKEN_VENDING_MACHINE_USERNAME_READONLY=<readonly-user-username>
+VITE_TOKEN_VENDING_MACHINE_PASSWORD_READONLY=<readonly-user-password>
+
+VITE_TOKEN_VENDING_MACHINE_USERNAME_READWRITE=<readwrite-user-username>
+VITE_TOKEN_VENDING_MACHINE_PASSWORD_READWRITE=<readwrite-user-password>
 ```
 
-The username and password you provide should match what was hardcoded into the Token Vending Machine deployment ([Cognito user creation line linked here](https://github.com/momentohq/client-sdk-javascript/blob/80ab1fbad6b73679afabf4f6fa0fcc9d22e7259a/examples/nodejs/token-vending-machine/infrastructure/lib/token-vending-machine-stack.ts#L121)). 
+The usernames and passwords you provide should match what was hardcoded into the Token Vending Machine deployment ([Cognito user creation lines linked here](https://github.com/momentohq/client-sdk-javascript/blob/main/examples/nodejs/token-vending-machine/infrastructure/lib/token-vending-machine-stack.ts#L134)). 
 The AWS region should match the region that you deployed the Token Vending Machine to.
 The client ID should be the string that's printed out after you deploy the CDK stack:
 

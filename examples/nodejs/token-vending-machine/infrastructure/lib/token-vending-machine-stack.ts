@@ -128,6 +128,7 @@ export class TokenVendingMachineStack extends cdk.Stack {
 
         api.root.addCorsPreflight({
           allowOrigins: ['*'],
+          allowHeaders: ['usergroup', 'cachename', 'authorization']
         });
 
         this.createCognitoUser(this, userPool, "momento", "$erverless", userPoolReadWriteGroup.groupName);
