@@ -1,10 +1,11 @@
 import {
-  AllDataReadWrite,
   AuthClient,
   CredentialProvider,
-  ExpiresIn,
   GenerateAuthToken,
 } from "@gomomento/sdk";
+import { tokenPermissions, tokenExpiresIn, authenticationMethod, AuthenticationMethod } from "./config";
+import { authOptions } from '../../auth/[...nextauth]/route';
+import { getServerSession } from 'next-auth';
 
 const authClient = new AuthClient({
   credentialProvider: CredentialProvider.fromString({
@@ -14,10 +15,17 @@ const authClient = new AuthClient({
 
 export const revalidate = 0;
 export async function GET(_request: Request) {
-  const generateAuthTokenResponse = await authClient.generateAuthToken(
-    AllDataReadWrite,
-    ExpiresIn.minutes(5),
-  );
+  let generateAuthTokenResponse;
+  switch (authenticationMethod) {
+    case AuthenticationMethod.Open:
+      generateAuthTokenResponse = await fetchTokenWithOpenAuth();
+      break;
+    case AuthenticationMethod.Credentials:
+      generateAuthTokenResponse = await fetchTokenWithAuthCredentials();
+      break;
+    default:
+      throw new Error("Unimplemented authentication method");
+  }
 
   if (generateAuthTokenResponse instanceof GenerateAuthToken.Success) {
     return new Response(generateAuthTokenResponse.authToken, {
@@ -29,4 +37,24 @@ export async function GET(_request: Request) {
     throw new Error(generateAuthTokenResponse.message());
   }
   throw new Error("Unable to get token from momento");
+}
+
+async function fetchTokenWithOpenAuth() {
+  return await authClient.generateAuthToken(
+    tokenPermissions,
+    tokenExpiresIn,
+  );
+}
+
+async function fetchTokenWithAuthCredentials() {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    throw new Error("Unauthorized to request Momento token");
+  }
+
+  return await authClient.generateAuthToken(
+    tokenPermissions,
+    tokenExpiresIn,
+  );
 }

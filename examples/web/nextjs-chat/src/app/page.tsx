@@ -1,29 +1,50 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { clearCurrentClient, listCaches } from "@/utils/momento-web";
+import { useState } from "react";
+import { clearCurrentClient } from "@/utils/momento-web";
 import ChatRoom from "@/app/pages/chat-room";
+import { useSession, signIn, signOut } from 'next-auth/react';
 
 export default function Home() {
+  const cacheName = String(process.env.NEXT_PUBLIC_MOMENTO_CACHE_NAME);
+  const authMethod = String(process.env.NEXT_PUBLIC_AUTH_METHOD);
+  const { data: session, status } = useSession();
+
   const [topic, setTopic] = useState("");
-  const [cacheName, setCacheName] = useState("");
   const [username, setUsername] = useState("");
-  const [caches, setCaches] = useState<string[]>([]);
   const [chatRoomSelected, setChatRoomSelected] = useState(false);
   const [usernameSelected, setUsernameSelected] = useState(false);
-
-  useEffect(() => {
-    listCaches().then((c) => setCaches(c));
-  }, []);
 
   const leaveChatRoom = () => {
     clearCurrentClient();
     setChatRoomSelected(false);
     setUsernameSelected(false);
-    setCacheName("");
     setTopic("");
     setUsername("");
+    signOut();
   };
+
+  if (authMethod === "credentials" && status !== 'authenticated') {
+    return (
+      <div
+        className={
+          "flex h-full justify-center items-center flex-col bg-slate-300"
+        }
+      >
+        <p className={"w-80 text-center my-2"}>
+        This app was configured to allow only authenticated users. Please sign in.
+        </p>
+        <button 
+          onClick={() => signIn()}
+          className={
+            "disabled:bg-slate-50 disabled:brightness-75 disabled:cursor-default rounded-2xl hover:cursor-pointer w-24 bg-emerald-400 p-2 hover:brightness-75"
+          } 
+        >
+          Sign in
+        </button>
+      </div>
+    );
+  }
 
   if (!chatRoomSelected || !cacheName) {
     return (
@@ -32,25 +53,10 @@ export default function Home() {
           "flex h-full justify-center items-center flex-col bg-slate-300"
         }
       >
-        <div className={"w-48"}>
-          <label
-            htmlFor={"caches-list"}
-            className={"block mb-2 text-sm font-medium text-gray-900"}
-          >
-            Select a cache to use
-          </label>
-          <select
-            className="py-3 px-4 pr-9 block w-full border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500"
-            value={cacheName}
-            onChange={(e) => setCacheName(e.target.value)}
-            id={"caches-list"}
-          >
-            <option key={"none"} />
-            {caches.map((cache) => {
-              return <option key={cache}>{cache}</option>;
-            })}
-          </select>
-        </div>
+        <p className={"w-80 text-center my-2"}>
+          Please enter the name of the chat room you'd like to join. 
+          If it doesn't exist, it will be created using Momento Topics.
+        </p>
         <div className={"h-8"} />
         <div className={"w-48"}>
           <input
@@ -86,6 +92,7 @@ export default function Home() {
         <div className={"w-72 text-center"}>
           <div>
             Welcome to the <span className={"italic"}>{topic}</span> chat room!
+            What would you like to be called?
           </div>
         </div>
         <div className={"h-4"} />

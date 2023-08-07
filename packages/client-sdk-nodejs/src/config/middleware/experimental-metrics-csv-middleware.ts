@@ -1,147 +1,24 @@
-import {Middleware, MiddlewareRequestHandler} from './middleware';
-import {Metadata, StatusObject} from '@grpc/grpc-js';
-import {Message} from 'google-protobuf';
 import * as fs from 'fs';
 import {MomentoLogger, MomentoLoggerFactory} from '../../';
+import {
+  ExperimentalMetricsMiddleware,
+  ExperimentalMetricsMiddlewareRequestHandler,
+  ExperimentalRequestMetrics,
+} from './impl/experimental-metrics-middleware';
 
-function headerFields(): Array<string> {
-  return [
-    'numActiveRequestsAtStart',
-    'numActiveRequestsAtFinish',
-    'requestType',
-    'status',
-    'startTime',
-    'requestBodyTime',
-    'endTime',
-    'duration',
-    'requestSize',
-    'responseSize',
-  ];
-}
-
-interface RequestMetrics {
-  /**
-   * number of requests active at the start of the request
-   */
-  numActiveRequestsAtStart: number;
-  /**
-   * number of requests active at the finish of the request (including the request itself)
-   */
-  numActiveRequestsAtFinish: number;
-  /**
-   * The generated grpc object type of the request
-   */
-  requestType: string;
-  /**
-   * The grpc status code of the response
-   */
-  status: number;
-  /**
-   * The time the request started (millis since epoch)
-   */
-  startTime: number;
-  /**
-   * The time the body of the request was available to the grpc library (millis since epoch)
-   */
-  requestBodyTime: number;
-  /**
-   * The time the request completed (millis since epoch)
-   */
-  endTime: number;
-  /**
-   * The duration of the request (in millis)
-   */
-  duration: number;
-  /**
-   * The size of the request body in bytes
-   */
-  requestSize: number;
-  /**
-   * The size of the response body in bytes
-   */
-  responseSize: number;
-}
-
-class ExperimentalMetricsCsvMiddlewareRequestHandler
-  implements MiddlewareRequestHandler
-{
-  private readonly logger: MomentoLogger;
+class ExperimentalMetricsCsvMiddlewareRequestHandler extends ExperimentalMetricsMiddlewareRequestHandler {
   private readonly csvPath: string;
-  private readonly numActiveRequestsAtStart: number;
-  private readonly startTime: number;
-  private requestBodyTime: number;
-  private requestType: string;
-  private requestSize: number;
-  private responseStatusCode: number;
-  private responseSize: number;
 
-  private receivedResponseBody: boolean;
-  private receivedResponseStatus: boolean;
-
-  constructor(logger: MomentoLogger, csvPath: string) {
-    this.logger = logger;
+  constructor(
+    parent: ExperimentalMetricsMiddleware,
+    logger: MomentoLogger,
+    csvPath: string
+  ) {
+    super(parent, logger);
     this.csvPath = csvPath;
-    this.numActiveRequestsAtStart =
-      ++ExperimentalMetricsCsvMiddleware.numActiveRequests;
-    this.startTime = new Date().getTime();
-
-    this.receivedResponseBody = false;
-    this.receivedResponseStatus = false;
   }
 
-  onRequestBody(request: Message): Promise<Message> {
-    this.requestSize = request.serializeBinary().length;
-    this.requestType = request.constructor.name;
-    this.requestBodyTime = new Date().getTime();
-    return Promise.resolve(request);
-  }
-
-  onRequestMetadata(metadata: Metadata): Promise<Metadata> {
-    return Promise.resolve(metadata);
-  }
-
-  onResponseBody(response: Message | null): Promise<Message | null> {
-    if (response !== null) {
-      this.responseSize = response.serializeBinary().length;
-    } else {
-      this.responseSize = 0;
-    }
-    this.receivedResponseBody = true;
-    if (this.done()) this.recordMetrics();
-    return Promise.resolve(response);
-  }
-
-  onResponseMetadata(metadata: Metadata): Promise<Metadata> {
-    return Promise.resolve(metadata);
-  }
-
-  onResponseStatus(status: StatusObject): Promise<StatusObject> {
-    this.receivedResponseStatus = true;
-    this.responseStatusCode = status.code;
-    if (this.done()) this.recordMetrics();
-    return Promise.resolve(status);
-  }
-
-  private done(): boolean {
-    return this.receivedResponseBody && this.receivedResponseStatus;
-  }
-
-  private recordMetrics(): void {
-    const endTime = new Date().getTime();
-    const metrics: RequestMetrics = {
-      numActiveRequestsAtStart: this.numActiveRequestsAtStart,
-      numActiveRequestsAtFinish:
-        ExperimentalMetricsCsvMiddleware.numActiveRequests,
-      requestType: this.requestType,
-      status: this.responseStatusCode,
-      startTime: this.startTime,
-      requestBodyTime: this.requestBodyTime,
-      endTime: endTime,
-      duration: endTime - this.startTime,
-      requestSize: this.requestSize,
-      responseSize: this.responseSize,
-    };
-
+  async emitMetrics(metrics: ExperimentalRequestMetrics): Promise<void> {
     const csvRow = [
       metrics.numActiveRequestsAtStart,
       metrics.numActiveRequestsAtFinish,
@@ -154,7 +31,9 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
       metrics.requestSize,
       metrics.responseSize,
     ].join(',');
-    fs.appendFile(this.csvPath, `${csvRow}\n`, err => {
+    try {
+      await fs.promises.appendFile(this.csvPath, `${csvRow}\n`);
+    } catch (err) {
       if (err !== null) {
         this.logger.error(
           'Error writing to metrics csv file at path: %s : %s',
@@ -162,8 +41,7 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
           err
         );
       }
-    });
-    ExperimentalMetricsCsvMiddleware.numActiveRequests--;
+    }
   }
 }
 
@@ -186,22 +64,18 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler
  * See `advanced.ts` in the examples directory for an example of how to set up
  * your {Configuration} to enable this middleware.
  */
-export class ExperimentalMetricsCsvMiddleware implements Middleware {
+export class ExperimentalMetricsCsvMiddleware extends ExperimentalMetricsMiddleware {
   static numActiveRequests = 0;
-  private readonly logger: MomentoLogger;
 
   private readonly csvPath: string;
 
   constructor(csvPath: string, loggerFactory: MomentoLoggerFactory) {
-    this.csvPath = csvPath;
-    this.logger = loggerFactory.getLogger(this);
-    fs.writeFileSync(this.csvPath, `${headerFields().join(',')}\n`);
-  }
-
-  onNewRequest(): MiddlewareRequestHandler {
-    return new ExperimentalMetricsCsvMiddlewareRequestHandler(
-      this.logger,
-      this.csvPath
+    super(
+      loggerFactory,
+      (p, l) =>
+        new ExperimentalMetricsCsvMiddlewareRequestHandler(p, l, csvPath)
     );
+    this.csvPath = csvPath;
+    fs.writeFileSync(this.csvPath, `${this.fieldNames().join(',')}\n`);
   }
 }
