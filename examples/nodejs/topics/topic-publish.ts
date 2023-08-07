@@ -1,4 +1,4 @@
-import {TopicClient, TopicPublish, Configurations, CredentialProvider, TopicConfigurations} from '@gomomento/sdk';
+import {TopicClient, TopicPublish, CredentialProvider, TopicConfigurations} from '@gomomento/sdk';
 
 import {ensureCacheExists} from './utils/cache';
 
