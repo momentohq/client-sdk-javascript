@@ -1,11 +1,4 @@
-import {
-  TopicClient,
-  TopicItem,
-  TopicSubscribe,
-  Configurations,
-  CredentialProvider,
-  TopicConfigurations,
-} from '@gomomento/sdk';
+import {TopicClient, TopicItem, TopicSubscribe, CredentialProvider, TopicConfigurations} from '@gomomento/sdk';
 import {ensureCacheExists} from './utils/cache';
 
 async function main() {
