@@ -113,7 +113,6 @@ async function fetchTokenWithCognitoAuth(selectedUser?: string) {
   }
 
   let userCredentials = {};
-  console.log("selectedUser", selectedUser);
   if (selectedUser === "ReadWrite") {
     userCredentials = { 
       "USERNAME": import.meta.env.VITE_TOKEN_VENDING_MACHINE_USERNAME_READWRITE,
@@ -140,7 +139,6 @@ async function fetchTokenWithCognitoAuth(selectedUser?: string) {
   }
 
   const decodedToken: any = jwt_decode(IdToken);
-  console.log("decoded token:", decodedToken);
   const userCognitoGroup = decodedToken['cognito:groups'][0];
   
   // Make the actual API call to the token vending machine here

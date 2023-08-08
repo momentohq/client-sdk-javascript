@@ -5,7 +5,7 @@ import ChatRoom from "./components/chat-room";
 export default function Home() {
   const [topic, setTopic] = useState("");
   const [username, setUsername] = useState("");
-  const [cognitoUser, setCognitoUser] = useState("");
+  const [cognitoUser, setCognitoUser] = useState("ReadOnly");  
   const [chatRoomSelected, setChatRoomSelected] = useState(false);
   const [usernameSelected, setUsernameSelected] = useState(false);
   const [cognitoUserSelected, setCognitoUserSelected] = useState(false);
@@ -17,7 +17,7 @@ export default function Home() {
     setCognitoUserSelected(false);
     setTopic("");
     setUsername("");
-    setCognitoUser("");
+    setCognitoUser(""); 
   };
 
   if (!import.meta.env.VITE_MOMENTO_CACHE_NAME) {

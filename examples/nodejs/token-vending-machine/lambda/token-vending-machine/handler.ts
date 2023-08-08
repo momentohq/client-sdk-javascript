@@ -44,21 +44,8 @@ async function vendAuthToken(vendorAuthTokenSecretName: string, headers: APIGate
 
   let generateTokenResponse;
   if (authenticationMethod === AuthenticationMethod.AmazonCognito) {
-    if (!("cachename" in headers) || !("usergroup" in headers)) {
-      throw new Error("Could not find expected headers 'cachename' and 'usergroup'");
-    }
-
-    let newTokenPermissions;
-    if (headers["cachename"] && headers["usergroup"] === 'ReadWriteUserGroup') {
-        newTokenPermissions = TokenScopes.topicPublishSubscribe(headers["cachename"], AllTopics);
-    }
-    else if (headers["cachename"] && headers["usergroup"] === 'ReadOnlyUserGroup') {
-        newTokenPermissions = TokenScopes.topicSubscribeOnly(headers["cachename"], AllTopics);
-    }
-    else {
-      throw new Error(`Unrecognized Cognito user group: ${headers["usergroup"]}`);
-    }
-    generateTokenResponse = await momentoAuthClient.generateAuthToken(newTokenPermissions, tokenExpiresIn);
+    const cognitoUserTokenPermissions = determineCognitoUserTokenScope(headers);
+    generateTokenResponse = await momentoAuthClient.generateAuthToken(cognitoUserTokenPermissions, tokenExpiresIn);
   }
   else {
     generateTokenResponse = await momentoAuthClient.generateAuthToken(tokenPermissions, tokenExpiresIn);
@@ -71,6 +58,22 @@ async function vendAuthToken(vendorAuthTokenSecretName: string, headers: APIGate
     };
   } else {
     throw new Error(`An error occurred while attempting to generate the token: ${generateTokenResponse.toString()}`);
+  }
+}
+
+function determineCognitoUserTokenScope(headers: APIGatewayProxyEventHeaders) {
+  if (!("cachename" in headers) || !("usergroup" in headers)) {
+    throw new Error("Could not find expected headers 'cachename' and 'usergroup'");
+  }
+
+  if (headers["cachename"] && headers["usergroup"] === 'ReadWriteUserGroup') {
+    return TokenScopes.topicPublishSubscribe(headers["cachename"], AllTopics);
+  }
+  else if (headers["cachename"] && headers["usergroup"] === 'ReadOnlyUserGroup') {
+      return TokenScopes.topicSubscribeOnly(headers["cachename"], AllTopics);
+  }
+  else {
+    throw new Error(`Unrecognized Cognito user group: ${headers["usergroup"]}`);
   }
 }
 
