@@ -1,8 +1,13 @@
-# Using Momento inside a Cloudflare Worker
+# Using Momento inside a Cloudflare Worker through it's HTTP API
 
 This example uses
 [Wrangler](https://developers.cloudflare.com/workers/wrangler/) to create a
-typescript worker
+typescript worker and interacts with Momento using its HTTP API.
+
+The HTTP APIs is lighter-weight than the Web SDK; you don't need to add any dependencies, you can just use the standard `fetch` HTTP
+client methods. However, it only provides a basic subset of all of the Momento APIs, such as `get`, `set`, and `delete`.
+
+To use Momento's Web SDK instead, click [here](../web-sdk).
 
 ## How to use
 
@@ -10,7 +15,7 @@ typescript worker
 
 ```bash
 git clone https://github.com/momentohq/client-sdk-javascript.git
-cd client-sdk-javascript/examples/cloudflare-workers/http
+cd client-sdk-javascript/examples/cloudflare-workers/http-api
 npm install
 ```
 
