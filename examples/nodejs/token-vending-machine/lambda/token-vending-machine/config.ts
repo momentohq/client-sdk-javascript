@@ -62,4 +62,4 @@ export enum AuthenticationMethod {
   LambdaAuthorizer, // use Lambda Authorizer attached to API Gateway
   AmazonCognito,    // use Cognito user pool authorizer attached to API Gateway
 }
-export const authenticationMethod: AuthenticationMethod = AuthenticationMethod.AmazonCognito;
+export const authenticationMethod: AuthenticationMethod = AuthenticationMethod.Open;
