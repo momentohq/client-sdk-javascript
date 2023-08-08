@@ -30,10 +30,10 @@ npm run start
 7. Open your browser to [localhost:8787](http://localhost:8787). The code in this example sets an item in the cache, gets it, and returns it as a JSON object:
    ```
     // setting a value into cache
-    const setResp = await client.set(cache, key, value);
+    await client.set(cache, key, value);
 
     // getting a value from cache
-    const getResp = await client.get(cache, key)
+    const getResponse = await client.get(cache, key)
 
 		return new Response(JSON.stringify({ response: getResponse.toString() }));
     ```
