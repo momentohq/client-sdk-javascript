@@ -10,7 +10,7 @@ typescript worker
 
 ```bash
 git clone https://github.com/momentohq/client-sdk-javascript.git
-cd client-sdk-javascript/examples/cloudflare-workers
+cd client-sdk-javascript/examples/cloudflare-workers/http
 npm install
 ```
 
