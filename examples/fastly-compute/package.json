@@ -1,0 +1,33 @@
+{
+  "name": "compute-starter-kit-typescript",
+  "version": "0.2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fastly/compute-starter-kit-typescript.git"
+  },
+  "author": "oss@fastly.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fastly/compute-starter-kit-typescript/issues"
+  },
+  "homepage": "https://developer.fastly.com/solutions/starters/compute-starter-kit-typescript",
+  "engines": {
+    "node": "^16 || >=18"
+  },
+  "devDependencies": {
+    "@types/promise-polyfill": "^6.0.4",
+    "typescript": "^5.0.2"
+  },
+  "dependencies": {
+    "@fastly/js-compute": "^3.0.0",
+    "@gomomento/sdk-web": "^1.30.0",
+    "promise-polyfill": "^8.3.0",
+    "xhr4sw": "^0.0.5"
+  },
+  "scripts": {
+    "prebuild": "tsc",
+    "build": "js-compute-runtime build/index.js bin/main.wasm",
+    "deploy": "fastly compute publish"
+  }
+}

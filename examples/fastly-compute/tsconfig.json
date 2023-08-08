@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "ES2022",
+    "target": "ES2022",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "lib": ["ES2022"],
+    "rootDir": "src",
+    "outDir": "build",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": false,
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "./src/**/*.js",
+    "./src/**/*.ts",
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

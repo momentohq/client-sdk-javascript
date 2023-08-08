@@ -1,0 +1,12 @@
+# This file describes a Fastly Compute@Edge package. To learn more visit:
+# https://developer.fastly.com/reference/fastly-toml/
+
+authors = ["<oss@fastly.com>"]
+description = "A basic starter kit that demonstrates routing, simple synthetic responses and overriding caching rules."
+language = "javascript"
+manifest_version = 3
+name = "Default starter for TypeScript"
+service_id = "452LCl2gJBqaQ41Eb01Vr5"
+
+[scripts]
+  build = "npm run build"
