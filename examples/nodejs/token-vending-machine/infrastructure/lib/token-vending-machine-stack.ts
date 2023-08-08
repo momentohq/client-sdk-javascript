@@ -105,6 +105,18 @@ export class TokenVendingMachineStack extends cdk.Stack {
           value: userPoolClient.userPoolClientId,
         });
 
+        const userPoolReadOnlyGroup = new cognito.CfnUserPoolGroup(this, 'ReadOnlyUserGroup', {
+          userPoolId: userPool.userPoolId,
+          groupName: 'ReadOnlyUserGroup',
+          description: 'Group for users who can only subscribe to Momento Topics, not publish',
+        });
+
+        const userPoolReadWriteGroup = new cognito.CfnUserPoolGroup(this, 'ReadWriteUserGroup', {
+          userPoolId: userPool.userPoolId,
+          groupName: 'ReadWriteUserGroup',
+          description: 'Group for users who can only subscribe and publish messages to Momento Topics',
+        });
+
         const authorizer = new apig.CognitoUserPoolsAuthorizer(this, 'MomentoTokenVendingMachineTokenAuthorizer', {
           cognitoUserPools: [userPool],
         });
@@ -116,9 +128,11 @@ export class TokenVendingMachineStack extends cdk.Stack {
 
         api.root.addCorsPreflight({
           allowOrigins: ['*'],
+          allowHeaders: ['usergroup', 'cachename', 'authorization']
         });
 
-        this.createCognitoUser(this, userPool, "momento", "$erverless");
+        this.createCognitoUser(this, userPool, "momento", "$erverless", userPoolReadWriteGroup.groupName);
+        this.createCognitoUser(this, userPool, "serverless", "momento!", userPoolReadOnlyGroup.groupName);
 
         break;
       }
@@ -145,7 +159,7 @@ export class TokenVendingMachineStack extends cdk.Stack {
     group?: string
   ) {
     // Basically use the AWS SDK to fill in this gap in the CDK for creating a user with a password
-    const newUser = new AwsCustomResource(scope, 'AwsCustomResource-CreateCognitoUser', {
+    const newUser = new AwsCustomResource(scope, `AwsCustomResource-CreateCognitoUser-${username}`, {
       onCreate: {
         service: 'CognitoIdentityServiceProvider',
         action: 'adminCreateUser',
@@ -161,7 +175,7 @@ export class TokenVendingMachineStack extends cdk.Stack {
       installLatestAwsSdk: true,
     });
 
-    const setUserPassword = new AwsCustomResource(scope, 'AwsCustomResource-SetCognitoUserPassword', {
+    const setUserPassword = new AwsCustomResource(scope, `AwsCustomResource-SetCognitoUserPassword-${username}`, {
       onCreate: {
         service: 'CognitoIdentityServiceProvider',
         action: 'adminSetUserPassword',
@@ -180,7 +194,7 @@ export class TokenVendingMachineStack extends cdk.Stack {
     setUserPassword.node.addDependency(newUser);
 
     if (group) {
-      const addUserToGroup = new cognito.CfnUserPoolUserToGroupAttachment(scope, 'AttachUserToGroup', {
+      const addUserToGroup = new cognito.CfnUserPoolUserToGroupAttachment(scope, `AttachUserToGroup-${username}`, {
         userPoolId: userPool.userPoolId,
         groupName: group,
         username: username,
