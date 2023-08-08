@@ -46,7 +46,7 @@ If you would like to deploy this example to your own Cloudflare worker, make sur
 
 ```shell
 
-npx secret put MOMENTO_AUTH_TOKEN
+npx wrangler secret put MOMENTO_AUTH_TOKEN
 > Enter a secret value: **************************
 > 🌀 Creating the secret for the Worker "momento-cloudflare-worker-http"
 > ✨ Success! Uploaded secret MOMENTO_AUTH_TOKEN
