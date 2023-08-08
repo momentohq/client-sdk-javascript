@@ -7,7 +7,6 @@ function main() {
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_AUTH_TOKEN',
     }),
-    defaultTtlSeconds: 60,
   });
 }
 
