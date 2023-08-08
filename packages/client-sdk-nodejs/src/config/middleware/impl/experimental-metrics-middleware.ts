@@ -57,6 +57,10 @@ export interface ExperimentalRequestMetrics {
    * The size of the response body in bytes
    */
   responseSize: number;
+  /**
+   * Indicates ID of the data client as there could be multiple
+   */
+  clientID: string;
 }
 
 export abstract class ExperimentalMetricsMiddlewareRequestHandler
@@ -79,7 +83,6 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
   constructor(parent: ExperimentalMetricsMiddleware, logger: MomentoLogger) {
     this.parent = parent;
     this.logger = logger;
-
     this.numActiveRequestsAtStart = parent.incrementActiveRequestCount();
     this.startTime = new Date().getTime();
 
@@ -139,6 +142,10 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
       duration: endTime - this.startTime,
       requestSize: this.requestSize,
       responseSize: this.responseSize,
+      clientID:
+        this.parent.getClientID() === null
+          ? 'undefined'
+          : this.parent.getClientID(),
     };
     this.emitMetrics(metrics).catch(e =>
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -165,6 +172,7 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
  */
 export abstract class ExperimentalMetricsMiddleware implements Middleware {
   private numActiveRequests = 0;
+  private clientID: string;
   private readonly logger: MomentoLogger;
   private readonly requestHandlerFactoryFn: (
     parent: ExperimentalMetricsMiddleware,
@@ -188,6 +196,14 @@ export abstract class ExperimentalMetricsMiddleware implements Middleware {
 
   incrementActiveRequestCount(): number {
     return ++this.numActiveRequests;
+  }
+
+  getClientID(): string {
+    return this.clientID;
+  }
+
+  setClientID(clientID: string) {
+    this.clientID = clientID;
   }
 
   activeRequestCount(): number {

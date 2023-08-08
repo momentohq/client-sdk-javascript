@@ -6,11 +6,13 @@ import {
   RevokeSigningKey,
   CacheFlush,
   MomentoLogger,
+  Middleware,
 } from '.';
 import {CacheClientProps} from './cache-client-props';
 import {range} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {AbstractCacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/AbstractCacheClient';
+import {ExperimentalMetricsLoggingMiddleware} from './config/middleware/experimental-metrics-logging-middleware';
 
 /**
  * Momento Cache Client.
@@ -42,7 +44,28 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
     // default for the short-term, based on load testing results captured in:
     // https://github.com/momentohq/oncall-tracker/issues/186
     const numClients = 6;
-    const dataClients = range(numClients).map(() => new DataClient(props));
+    const dataClients = range(numClients).map((_, clientID) => {
+      const perDataClientMiddlewares: Middleware[] = [];
+
+      props.configuration.getMiddlewares().forEach(middleware => {
+        if (middleware instanceof ExperimentalMetricsLoggingMiddleware) {
+          const newMiddleware = new ExperimentalMetricsLoggingMiddleware(
+            props.configuration.getLoggerFactory()
+          );
+          newMiddleware.setClientID(String(clientID));
+          perDataClientMiddlewares.push(newMiddleware);
+        } else {
+          perDataClientMiddlewares.push(middleware); // Preserve other middlewares as-is
+        }
+      });
+
+      props.configuration = props.configuration.withMiddlewares(
+        perDataClientMiddlewares
+      );
+
+      return new DataClient(props);
+    });
+
     super(controlClient, dataClients);
 
     this.notYetAbstractedControlClient = controlClient;
