@@ -20,7 +20,7 @@ export class SimpleGetStack extends cdk.Stack {
       secretStringValue: new cdk.SecretValue(momentoAuthTokenParam.valueAsString),
     });
 
-    const tvmLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoSimpleGet', {
+    const getLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoSimpleGet', {
       functionName: 'MomentoSimpleGet',
       runtime: lambda.Runtime.NODEJS_18_X,
       entry: path.join(__dirname, '../../lambda/simple-get/handler.ts'),
@@ -34,6 +34,6 @@ export class SimpleGetStack extends cdk.Stack {
       },
     });
 
-    authTokenSecret.grantRead(tvmLambda);
+    authTokenSecret.grantRead(getLambda);
   }
 }

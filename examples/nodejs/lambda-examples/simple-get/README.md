@@ -19,7 +19,7 @@ The primary use is to provide a base for testing Momento performance in a lambda
 - Node version 14 or higher is required
 - To get started with Momento you will need a Momento Auth Token. You can get one from the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining an auth token.
 
-## Deploying the Token Vending Machine App
+## Deploying the Simple Get Lambda
 
 First make sure to start Docker and install the dependencies in the `lambda` directory, which is where the AWS Lambda code lives.
 
@@ -48,5 +48,18 @@ npm run cdk -- deploy --parameters MomentoAuthToken=<YOUR_MOMENTO_AUTH_TOKEN>
 
 The lambda does not set up a way to access itself externally, so to run it, you will have to go to MomentoSimpleGet in AWS Lambda and run a test.
 
+The lambda is set up to make get calls for the key 'key' in the cache 'cache' by default. It does not create a cache or write anything to that key. While it still may give useful latency information if it can't find a cache or key, creating them will let you test in a more realistic way.
 
+If you have the [Momento CLI](https://github.com/momentohq/momento-cli) installed, you can create a cache like this:
 
+```commandline
+momento cache create cache
+```
+
+You can then set a value for the key:
+
+```commandline
+momento cache set key value
+```
+
+You can edit [handler.ts](lambda/simple-get/handler.ts) to change the cache and key the lambda looks for.
