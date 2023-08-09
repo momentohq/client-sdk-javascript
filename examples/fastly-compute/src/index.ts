@@ -14,39 +14,56 @@ addEventListener("fetch", (event) => {
 });
 
 async function handleRequest(event: FetchEvent) {
-	const key = "hello";
-	const value = "hello-momento";
 
-	// Set these values
-	const cache = "";
-	const apiKey = "";
-	const endpoint = "";
-
+	// Testing basic fetch call
+	
 	const backend = new Backend({
-		name: 'momento_service',
-		target: endpoint,
+		name: 'google',
+		target: "google.com",
 		useSSL: true,
 	});
 
-	const client = new MomentoFetcher(
-		apiKey, 
-		endpoint,
-		backend
-	);
+	const resp = await fetch("https://www.google.com", {backend: backend.toString()});
+	console.log("google response:", resp.status, resp.statusText);
+	return new Response(await resp.text(), {
+		status: 200,
+		headers: new Headers({ "Content-Type": "text/html; charset=utf-8" }),
+	});
+
+
+	// const key = "hello";
+	// const value = "hello-momento";
+
+	// Set these values
+	// const cache = "";
+	// const apiKey = "";
+	// const endpoint = "";
+
+	// const backend = new Backend({
+	// 	name: 'momento_service',
+	// 	target: endpoint,
+	// 	useSSL: true,
+	// });
+
+	// const client = new MomentoFetcher(
+	// 	apiKey, 
+	// 	endpoint,
+	// 	backend
+	// );
 	
-	// setting a value into cache
-	const setResp = await client.set(cache, key, value);
-	console.log("setResp", setResp.text);
+	// // setting a value into cache
+	// const setResp = await client.set(cache, key, value);
+	// console.log("setResp", setResp.text);
 
-	// getting a value from cache
-	const getResp = await client.get(cache, key);
-	console.log("getResp", getResp);
+	// // getting a value from cache
+	// const getResp = await client.get(cache, key);
+	// console.log("getResp", getResp);
 
-	// deleting a value from cache
-	const deleteResp = await client.delete(cache, key);
-	console.log("deleteResp", deleteResp);
+	// // deleting a value from cache
+	// const deleteResp = await client.delete(cache, key);
+	// console.log("deleteResp", deleteResp);
 
-	return new Response(JSON.stringify({ response: getResp }));
+	// return new Response(JSON.stringify({ response: getResp }));
 }
 
 class MomentoFetcher {
