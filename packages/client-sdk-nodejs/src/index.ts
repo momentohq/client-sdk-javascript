@@ -1,5 +1,6 @@
 process.env.GRPC_VERBOSITY = 'DEBUG';
-process.env.GRPC_TRACE = 'dns_resolver,resolving_load_balancer,index';
+process.env.GRPC_TRACE =
+  'dns_resolver,resolving_load_balancer,connectivity_state,index';
 
 import {CacheClient, SimpleCacheClient} from './cache-client';
 import {TopicClient} from './topic-client';
