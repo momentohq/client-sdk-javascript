@@ -17,7 +17,7 @@ export default function Home() {
     setCognitoUserSelected(false);
     setTopic("");
     setUsername("");
-    setCognitoUser(""); 
+    setCognitoUser("ReadOnly"); 
   };
 
   if (!import.meta.env.VITE_MOMENTO_CACHE_NAME) {
