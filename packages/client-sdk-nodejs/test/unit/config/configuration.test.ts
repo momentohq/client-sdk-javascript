@@ -16,6 +16,7 @@ describe('configuration.ts', () => {
   const testGrpcConfiguration = new StaticGrpcConfiguration({
     deadlineMillis: 90210,
     maxSessionMemoryMb: 90211,
+    numClients: 6,
   });
   const testMaxIdleMillis = 90212;
   const testTransportStrategy = new StaticTransportStrategy({
@@ -52,6 +53,7 @@ describe('configuration.ts', () => {
     const newGrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: 5000,
       maxSessionMemoryMb: 5001,
+      numClients: 6,
     });
     const newMaxIdleMillis = 5002;
     const newTransportStrategy = new StaticTransportStrategy({
@@ -77,6 +79,7 @@ describe('configuration.ts', () => {
       grpcConfiguration: new StaticGrpcConfiguration({
         deadlineMillis: newClientTimeoutMillis,
         maxSessionMemoryMb: testGrpcConfiguration.getMaxSessionMemoryMb(),
+        numClients: testGrpcConfiguration.getNumClients(),
       }),
       maxIdleMillis: testMaxIdleMillis,
     });
@@ -104,6 +107,11 @@ describe('configuration.ts', () => {
   it('should make v1 inregion low latency config available via latest alias', () => {
     expect(Configurations.InRegion.LowLatency.latest()).toEqual(
       Configurations.InRegion.LowLatency.v1()
+    );
+  });
+  it('should make v1 inregion lambda config available via latest alias', () => {
+    expect(Configurations.InRegion.Lambda.latest()).toEqual(
+      Configurations.InRegion.Lambda.v1()
     );
   });
 });

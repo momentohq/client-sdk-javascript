@@ -61,9 +61,11 @@ export interface TransportStrategyProps {
 export class StaticGrpcConfiguration implements GrpcConfiguration {
   private readonly deadlineMillis: number;
   private readonly maxSessionMemoryMb: number;
+  private readonly numClients: number;
   constructor(props: GrpcConfigurationProps) {
     this.deadlineMillis = props.deadlineMillis;
     this.maxSessionMemoryMb = props.maxSessionMemoryMb;
+    this.numClients = props.numClients;
   }
 
   getDeadlineMillis(): number {
@@ -78,6 +80,7 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
     return new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
       maxSessionMemoryMb: this.maxSessionMemoryMb,
+      numClients: this.numClients,
     });
   }
 
@@ -85,6 +88,19 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
     return new StaticGrpcConfiguration({
       deadlineMillis: this.deadlineMillis,
       maxSessionMemoryMb: maxSessionMemoryMb,
+      numClients: this.numClients,
+    });
+  }
+
+  getNumClients(): number {
+    return this.numClients;
+  }
+
+  withNumClients(numClients: number): GrpcConfiguration {
+    return new StaticGrpcConfiguration({
+      deadlineMillis: this.deadlineMillis,
+      maxSessionMemoryMb: this.maxSessionMemoryMb,
+      numClients: numClients,
     });
   }
 }

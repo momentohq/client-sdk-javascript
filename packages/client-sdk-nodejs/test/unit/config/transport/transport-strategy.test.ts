@@ -6,9 +6,11 @@ import {
 describe('StaticGrpcConfiguration', () => {
   const testDeadlineMillis = 90210;
   const testMaxSessionMemoryMb = 90211;
+  const testNumClients = 6;
   const testGrpcConfiguration = new StaticGrpcConfiguration({
     deadlineMillis: testDeadlineMillis,
     maxSessionMemoryMb: testMaxSessionMemoryMb,
+    numClients: testNumClients,
   });
 
   it('should support overriding deadline millis', () => {
@@ -39,9 +41,11 @@ describe('StaticGrpcConfiguration', () => {
 describe('StaticTransportStrategy', () => {
   const testDeadlineMillis = 90210;
   const testMaxSessionMemoryMb = 90211;
+  const testNumClients = 6;
   const testGrpcConfiguration = new StaticGrpcConfiguration({
     deadlineMillis: testDeadlineMillis,
     maxSessionMemoryMb: testMaxSessionMemoryMb,
+    numClients: testNumClients,
   });
 
   const testMaxIdleMillis = 90212;
@@ -56,6 +60,7 @@ describe('StaticTransportStrategy', () => {
     const newGrpcConfig = new StaticGrpcConfiguration({
       deadlineMillis: newDeadlineMillis,
       maxSessionMemoryMb: newMaxSessionMemoryMb,
+      numClients: testNumClients,
     });
     const strategyWithNewGrpcConfig =
       testTransportStrategy.withGrpcConfig(newGrpcConfig);
@@ -82,6 +87,7 @@ describe('StaticTransportStrategy', () => {
     const expectedGrpcConfig = new StaticGrpcConfiguration({
       deadlineMillis: newClientTimeout,
       maxSessionMemoryMb: testMaxSessionMemoryMb,
+      numClients: testNumClients,
     });
     const strategyWithNewClientTimeout =
       testTransportStrategy.withClientTimeoutMillis(newClientTimeout);
