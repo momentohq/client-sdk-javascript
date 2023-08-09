@@ -16,14 +16,10 @@
     "node": "^16 || >=18"
   },
   "devDependencies": {
-    "@types/promise-polyfill": "^6.0.4",
     "typescript": "^5.0.2"
   },
   "dependencies": {
-    "@fastly/js-compute": "^3.0.0",
-    "@gomomento/sdk-web": "^1.30.0",
-    "promise-polyfill": "^8.3.0",
-    "xhr4sw": "^0.0.5"
+    "@fastly/js-compute": "^3.0.0"
   },
   "scripts": {
     "prebuild": "tsc",
