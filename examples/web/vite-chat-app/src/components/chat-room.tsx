@@ -133,6 +133,7 @@ export default function ChatRoom(props: Props) {
       </div>
       <div className={"w-full flex "}>
         <input
+          disabled={props.selectedUser === "ReadOnly"}
           placeholder={"chat"}
           onKeyDown={onEnterClicked}
           className={"border-2 rounded-2xl p-2 w-full"}

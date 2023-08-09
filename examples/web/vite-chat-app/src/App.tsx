@@ -37,7 +37,9 @@ export default function Home() {
             className={"block mb-2 text-sm font-medium text-gray-900 text-center"}
           >
             This app was configured to allow only authenticated users. <br />
-            Please select an existing Cognito user to continue.
+            This dropdown menu would be a sign-in portal in non-demo applications. 
+            <br /><br />
+            Please select an existing Cognito user to continue the demo.
           </label>
           <select
             className="my-2 py-3 px-4 pr-9 block w-80 border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500"
