@@ -6,7 +6,7 @@ description = "A basic starter kit that demonstrates routing, simple synthetic r
 language = "javascript"
 manifest_version = 3
 name = "Default starter for TypeScript"
-service_id = "452LCl2gJBqaQ41Eb01Vr5"
+service_id = "<your-service-id>"
 
 [scripts]
   build = "npm run build"
