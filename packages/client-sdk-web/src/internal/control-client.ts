@@ -7,6 +7,9 @@ import {
   MomentoLogger,
   CacheFlush,
   CacheInfo,
+  CreateIndex,
+  ListIndexes,
+  DeleteIndex,
 } from '..';
 import {Configuration} from '../config/configuration';
 import {Request, StatusCode, UnaryResponse} from 'grpc-web';
@@ -15,11 +18,21 @@ import {
   _DeleteCacheRequest,
   _ListCachesRequest,
   _FlushCacheRequest,
+  _CreateIndexRequest,
+  _ListIndexesRequest,
+  _DeleteIndexRequest,
 } from '@gomomento/generated-types-webtext/dist/controlclient_pb';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-import {IControlClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {
+  IControlClient,
+  IVectorControlClient,
+} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
-import {validateCacheName} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {
+  validateCacheName,
+  validateIndexName,
+  validateNumDimensions,
+} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {getWebControlEndpoint} from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {
@@ -35,7 +48,7 @@ export interface ControlClientProps {
 export class ControlClient<
   REQ extends Request<REQ, RESP>,
   RESP extends UnaryResponse<REQ, RESP>
-> implements IControlClient
+> implements IControlClient, IVectorControlClient
 {
   private readonly clientWrapper: control.ScsControlClient;
   private readonly logger: MomentoLogger;
@@ -153,7 +166,7 @@ export class ControlClient<
   public async listCaches(): Promise<ListCaches.Response> {
     const request = new _ListCachesRequest();
     request.setNextToken('');
-    this.logger.debug("Issuing 'listCaches' request");
+    this.logger.debug("Issuing 'listIndexes' request");
     return await new Promise<ListCaches.Response>(resolve => {
       this.clientWrapper.listCaches(
         request,
@@ -183,6 +196,89 @@ export class ControlClient<
               return new CacheInfo(cacheName, topicLimits, cacheLimits);
             });
             resolve(new ListCaches.Success(caches));
+          }
+        }
+      );
+    });
+  }
+
+  public async createIndex(
+    indexName: string,
+    numDimensions: number
+  ): Promise<CreateIndex.Response> {
+    try {
+      validateIndexName(indexName);
+      validateNumDimensions(numDimensions);
+    } catch (err) {
+      return new CreateIndex.Error(normalizeSdkError(err as Error));
+    }
+    const request = new _CreateIndexRequest();
+    // TODO: validate name and num dimensions
+    request.setIndexName(indexName);
+    request.setNumDimensions(numDimensions);
+    this.logger.debug("Issuing 'createIndex' request");
+    return await new Promise<CreateIndex.Response>(resolve => {
+      this.clientWrapper.createIndex(
+        request,
+        this.clientMetadataProvider.createClientMetadata(),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        (err, resp) => {
+          if (err) {
+            if (err.code === StatusCode.ALREADY_EXISTS) {
+              resolve(new CreateIndex.AlreadyExists());
+            } else {
+              resolve(new CreateIndex.Error(cacheServiceErrorMapper(err)));
+            }
+          } else {
+            resolve(new CreateIndex.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async listIndexes(): Promise<ListIndexes.Response> {
+    const request = new _ListIndexesRequest();
+    request.setNextToken('');
+    this.logger.debug("Issuing 'listIndexes' request");
+    return await new Promise<ListIndexes.Response>(resolve => {
+      this.clientWrapper.listIndexes(
+        request,
+        this.clientMetadataProvider.createClientMetadata(),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        (err, resp) => {
+          if (err) {
+            resolve(new ListIndexes.Error(cacheServiceErrorMapper(err)));
+          } else {
+            const caches = resp
+              .getIndexesList()
+              .map(index => index.getIndexName());
+            resolve(new ListIndexes.Success(caches));
+          }
+        }
+      );
+    });
+  }
+
+  public async deleteIndex(indexName: string) {
+    const request = new _DeleteIndexRequest();
+    try {
+      validateIndexName(indexName);
+    } catch (err) {
+      return new CreateIndex.Error(normalizeSdkError(err as Error));
+    }
+    request.setIndexName(indexName);
+    this.logger.debug("Issuing 'deleteIndex' request");
+    return await new Promise<DeleteIndex.Response>(resolve => {
+      this.clientWrapper.deleteIndex(
+        request,
+        this.clientMetadataProvider.createClientMetadata(),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        (err, resp) => {
+          if (err) {
+            resolve(new DeleteIndex.Error(cacheServiceErrorMapper(err)));
+          } else {
+            resolve(new DeleteIndex.Success());
           }
         }
       );

@@ -1,6 +1,7 @@
 import {CacheClient} from './cache-client';
 import {AuthClient} from './auth-client';
 import {TopicClient} from './topic-client';
+import {PreviewVectorClient} from './preview-vector-client';
 import * as Configurations from './config/configurations';
 import * as TopicConfigurations from './config/topic-configurations';
 
@@ -119,6 +120,11 @@ import {
   TopicClientConfiguration,
 } from './config/topic-configuration';
 
+// VectorClient Response Types
+import * as CreateIndex from '@gomomento/sdk-core/dist/src/messages/responses/create-index';
+import * as ListIndexes from '@gomomento/sdk-core/dist/src/messages/responses/list-indexes';
+import * as DeleteIndex from '@gomomento/sdk-core/dist/src/messages/responses/delete-index';
+
 export {
   DefaultMomentoLoggerFactory,
   DefaultMomentoLogger,
@@ -134,6 +140,7 @@ export {
   Configurations,
   CacheClient,
   AuthClient,
+  PreviewVectorClient,
   CacheInfo,
   CredentialProvider,
   StringMomentoTokenProvider,
@@ -169,6 +176,9 @@ export {
   CreateSigningKey,
   ListSigningKeys,
   RevokeSigningKey,
+  CreateIndex,
+  ListIndexes,
+  DeleteIndex,
   CacheSetFetch,
   CacheDictionaryFetch,
   CacheDictionarySetField,

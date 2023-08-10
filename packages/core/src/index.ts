@@ -63,6 +63,11 @@ import {TopicItem} from './messages/responses/topic-item';
 import * as GenerateAuthToken from './messages/responses/generate-auth-token';
 import * as RefreshAuthToken from './messages/responses/refresh-auth-token';
 
+// VectorClient Response Types
+import * as CreateIndex from './messages/responses/create-index';
+import * as ListIndexes from './messages/responses/list-indexes';
+import * as DeleteIndex from './messages/responses/delete-index';
+
 import {CacheInfo} from './messages/cache-info';
 import {
   SubscribeCallOptions,
@@ -77,7 +82,7 @@ import {
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
-} from './auth/credential-provider';
+} from './auth';
 
 import {
   MomentoErrorCode,
@@ -210,6 +215,10 @@ export {
   // AuthClient Response Types
   GenerateAuthToken,
   RefreshAuthToken,
+  // VectorClient Response Types
+  CreateIndex,
+  ListIndexes,
+  DeleteIndex,
   // Errors
   MomentoErrorCode,
   SdkError,
