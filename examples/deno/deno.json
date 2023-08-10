@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window"],
+    "strict": true
+  },
+  "lint": {
+    "include": ["*.ts"],
+    "exclude": []
+  },
+  "fmt": {
+    "useTabs": true,
+    "lineWidth": 80,
+    "indentWidth": 4,
+    "semiColons": false,
+    "singleQuote": true,
+    "proseWrap": "preserve",
+    "include": ["*.ts"]
+  },
+  "lock": false,
+  "nodeModulesDir": true,
+  "tasks": {
+    "start": "deno run --allow-read --allow-env --allow-net index.ts"
+  },
+  "imports": {
+    "http": "https://deno.land/std@0.198.0/http/server.ts",
+    "momento": "npm:@gomomento/sdk-web@1.30.0",
+    "xhr4sw": "npm:xhr4sw@0.0.5",
+    "dotenv": "https://deno.land/std/dotenv/mod.ts"
+
+  }
+}
