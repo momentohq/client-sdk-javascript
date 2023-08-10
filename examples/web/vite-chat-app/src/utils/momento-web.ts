@@ -203,7 +203,12 @@ async function publish(cacheName: string, topicName: string, message: string) {
       clearCurrentClient();
       await subscribeToTopic(cacheName, topicName, onItemCb, onErrorCb);
       await publish(cacheName, topicName, message);
-    } else {
+    } 
+    else if (resp.errorCode() === MomentoErrorCode.PERMISSION_ERROR) {
+      console.log("User is not allowed to publish to topic", resp);
+      alert("You have entered the chat room as a read-only user!");
+    }
+    else {
       console.error("failed to publish to topic", resp);
     }
   }
