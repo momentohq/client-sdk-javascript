@@ -2,8 +2,14 @@
 
 This example uses
 [Wrangler](https://developers.cloudflare.com/workers/wrangler/) to create a
-typescript worker and interacts with Momento using its Web SDK. To use Momento's HTTP API
-instead, click [here](../http-api)
+typescript worker and interacts with Momento using its Web SDK.
+
+The Web SDK is heavier-weight than using Momento's HTTP API; you need to add a dependency on the SDK.
+However, it supports the full Momento API (including collections like Dictionaries and SortedSets, plus the ability to publish to Momento Topics).
+It also has a complete TypeScript/JavaScript API that makes it simpler to write code to interact with Momento. This can save you time
+and effort when developing your Worker.
+
+To use Momento's HTTP API instead, click [here](../http-api)
 
 ## How to use
 

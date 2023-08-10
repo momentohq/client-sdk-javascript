@@ -22,10 +22,10 @@ This directory contains subdirectories for two types of example projects to use 
 
 There are a few reasons why you might choose one over the other when interacting with Momento within a Cloudflare Worker.
 
-- The HTTP APIs is more flexible. You can use it to interact with Momento, regardless of the programming language or framework
-you're using. This makes it a good choice if you need to integrate with a wide variety of services.
-- The Web SDK is more convenient. They provide a higher level of abstraction, which can make it easier to interact with Momento.
-- Using the HTTP API might be more efficient and can be optimized for exactly what you need, leading to performance benefits.
-They don't require the overhead of loading and initializing a web SDK. This can be important if you're running a high-traffic Worker.
-- Web SDKs are easier to use. They provide a lot of built-in functionality, such as error handling, observability, authentication, etc.
-This can save you time and effort when developing your Worker.
+- The HTTP APIs is lighter-weight; you don't need to add any dependencies, you can just use the standard `fetch` HTTP
+client methods. However, it only provides a basic subset of all of the Momento APIs, such as `get`, `set`, and `delete`.
+
+- The Web SDK is heavier-weight; you need to add a dependency on the SDK. However, it supports the full Momento API
+(including collections like Dictionaries and SortedSets, plus the ability to publish to Momento Topics). It also has a
+complete TypeScript/JavaScript API that makes it simpler to write code to interact with Momento. This can save you time
+and effort when developing your Worker.
