@@ -6,7 +6,7 @@ import {
 describe('StaticGrpcConfiguration', () => {
   const testDeadlineMillis = 90210;
   const testMaxSessionMemoryMb = 90211;
-  const testNumClients = 6;
+  const testNumClients = 4;
   const testGrpcConfiguration = new StaticGrpcConfiguration({
     deadlineMillis: testDeadlineMillis,
     maxSessionMemoryMb: testMaxSessionMemoryMb,
@@ -36,12 +36,22 @@ describe('StaticGrpcConfiguration', () => {
       newMaxSessionMemory
     );
   });
+
+  it('should support overriding num clients', () => {
+    const newNumClients = 9;
+    const configWithNewDeadline =
+      testGrpcConfiguration.withNumClients(newNumClients);
+    expect(configWithNewDeadline.getNumClients()).toEqual(newNumClients);
+    expect(configWithNewDeadline.getMaxSessionMemoryMb()).toEqual(
+      testMaxSessionMemoryMb
+    );
+  });
 });
 
 describe('StaticTransportStrategy', () => {
   const testDeadlineMillis = 90210;
   const testMaxSessionMemoryMb = 90211;
-  const testNumClients = 6;
+  const testNumClients = 5;
   const testGrpcConfiguration = new StaticGrpcConfiguration({
     deadlineMillis: testDeadlineMillis,
     maxSessionMemoryMb: testMaxSessionMemoryMb,

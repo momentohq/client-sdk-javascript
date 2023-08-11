@@ -14,7 +14,7 @@ export interface GrpcConfigurationProps {
    * The number of internal clients a cache client will create to communicate with Momento. More of them allows
    * more concurrent requests, at the cost of more open connections and the latency of setting up each client.
    */
-  numClients: number;
+  numClients?: number;
 }
 
 /**

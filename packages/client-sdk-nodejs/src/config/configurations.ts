@@ -59,13 +59,41 @@ export class Laptop extends CacheConfiguration {
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
       maxSessionMemoryMb: defaultMaxSessionMemoryMb,
-      numClients: 6,
     });
     const transportStrategy: TransportStrategy = new StaticTransportStrategy({
       grpcConfiguration: grpcConfig,
       maxIdleMillis: defaultMaxIdleMillis,
     });
     return new Laptop({
+      loggerFactory: loggerFactory,
+      retryStrategy: defaultRetryStrategy(loggerFactory),
+      transportStrategy: transportStrategy,
+      middlewares: defaultMiddlewares,
+    });
+  }
+}
+
+export class Lambda extends CacheConfiguration {
+  /**
+   * Provides the latest recommended configuration for a lambda environment.  NOTE: this configuration may
+   * change in future releases to take advantage of improvements we identify for default configurations.
+   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]
+   * @returns {CacheConfiguration}
+   */
+  static latest(
+    loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
+  ): CacheConfiguration {
+    const deadlineMillis = 1100;
+    const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
+      deadlineMillis: deadlineMillis,
+      maxSessionMemoryMb: defaultMaxSessionMemoryMb,
+      numClients: 1,
+    });
+    const transportStrategy: TransportStrategy = new StaticTransportStrategy({
+      grpcConfiguration: grpcConfig,
+      maxIdleMillis: defaultMaxIdleMillis,
+    });
+    return new Lambda({
       loggerFactory: loggerFactory,
       retryStrategy: defaultRetryStrategy(loggerFactory),
       transportStrategy: transportStrategy,
@@ -100,7 +128,6 @@ class InRegionDefault extends CacheConfiguration {
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
       maxSessionMemoryMb: defaultMaxSessionMemoryMb,
-      numClients: 6,
     });
     const transportStrategy: TransportStrategy = new StaticTransportStrategy({
       grpcConfiguration: grpcConfig,
@@ -142,54 +169,12 @@ class InRegionLowLatency extends CacheConfiguration {
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
       maxSessionMemoryMb: defaultMaxSessionMemoryMb,
-      numClients: 6,
     });
     const transportStrategy: TransportStrategy = new StaticTransportStrategy({
       grpcConfiguration: grpcConfig,
       maxIdleMillis: defaultMaxIdleMillis,
     });
     return new InRegionDefault({
-      loggerFactory: loggerFactory,
-      retryStrategy: defaultRetryStrategy(loggerFactory),
-      transportStrategy: transportStrategy,
-      middlewares: defaultMiddlewares,
-    });
-  }
-}
-
-class InRegionLambda extends CacheConfiguration {
-  /**
-   * Provides the latest recommended configuration for a in-region lambda environment.  NOTE: this configuration may
-   * change in future releases to take advantage of improvements we identify for default configurations.
-   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]
-   * @returns {CacheConfiguration}
-   */
-  static latest(
-    loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
-  ): CacheConfiguration {
-    return InRegionLambda.v1(loggerFactory);
-  }
-
-  /**
-   * Provides v1 recommended configuration for an in-region lambda environment.  This configuration is guaranteed not
-   * to change in future releases of the Momento node.js SDK.
-   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]
-   * @returns {CacheConfiguration}
-   */
-  static v1(
-    loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
-  ): CacheConfiguration {
-    const deadlineMillis = 1100;
-    const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
-      deadlineMillis: deadlineMillis,
-      maxSessionMemoryMb: defaultMaxSessionMemoryMb,
-      numClients: 1,
-    });
-    const transportStrategy: TransportStrategy = new StaticTransportStrategy({
-      grpcConfiguration: grpcConfig,
-      maxIdleMillis: defaultMaxIdleMillis,
-    });
-    return new InRegionLambda({
       loggerFactory: loggerFactory,
       retryStrategy: defaultRetryStrategy(loggerFactory),
       transportStrategy: transportStrategy,
@@ -219,9 +204,4 @@ export class InRegion {
    * @type {InRegionLowLatency}
    */
   static LowLatency = InRegionLowLatency;
-
-  /**
-   * This config prioritizes quick setup time and consistent latency for use in lambdas.
-   */
-  static Lambda = InRegionLambda;
 }
