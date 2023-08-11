@@ -14,6 +14,7 @@ type Props = {
   topicName: string;
   cacheName: string;
   username: string;
+  selectedUser: string;
   onLeave: () => void;
 };
 
@@ -61,7 +62,7 @@ export default function ChatRoom(props: Props) {
   };
 
   useEffect(() => {
-    subscribeToTopic(props.cacheName, props.topicName, onItem, onError)
+    subscribeToTopic(props.cacheName, props.topicName, onItem, onError, props.selectedUser)
       .then(async () => {
         console.log("successfully subscribed");
         await userJoined(props.cacheName, props.topicName, props.username);
@@ -132,6 +133,7 @@ export default function ChatRoom(props: Props) {
       </div>
       <div className={"w-full flex "}>
         <input
+          disabled={props.selectedUser === "ReadOnly"}
           placeholder={"chat"}
           onKeyDown={onEnterClicked}
           className={"border-2 rounded-2xl p-2 w-full"}

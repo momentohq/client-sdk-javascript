@@ -23,7 +23,6 @@ class MomentoFetcher {
 		} else {
 			throw new Error(`failed to retrieve item from cache: ${cacheName}`)
 		}
-
 		return await resp.text();
 	}
 

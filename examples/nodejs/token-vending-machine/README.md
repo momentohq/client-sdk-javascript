@@ -32,7 +32,7 @@ These three required configuration variables live in the [config.ts](./lambda/to
 First make sure to start Docker and install the dependencies in the `lambda` directory, which is where the AWS Lambda code lives.
 
 ```bash
-cd lambda
+cd lambda/token-vending-machine
 npm install
 ```
 
