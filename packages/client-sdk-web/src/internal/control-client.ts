@@ -213,7 +213,6 @@ export class ControlClient<
       return new CreateIndex.Error(normalizeSdkError(err as Error));
     }
     const request = new _CreateIndexRequest();
-    // TODO: validate name and num dimensions
     request.setIndexName(indexName);
     request.setNumDimensions(numDimensions);
     this.logger.debug("Issuing 'createIndex' request");

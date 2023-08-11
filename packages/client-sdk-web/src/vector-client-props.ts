@@ -2,7 +2,7 @@ import {CredentialProvider, Configuration} from '.';
 
 export interface VectorClientProps {
   /**
-   * Configuration settings for the cache client
+   * Configuration settings for the vector client
    */
   configuration: Configuration;
   /**
