@@ -166,7 +166,7 @@ export class ControlClient<
   public async listCaches(): Promise<ListCaches.Response> {
     const request = new _ListCachesRequest();
     request.setNextToken('');
-    this.logger.debug("Issuing 'listIndexes' request");
+    this.logger.debug("Issuing 'listCaches' request");
     return await new Promise<ListCaches.Response>(resolve => {
       this.clientWrapper.listCaches(
         request,
