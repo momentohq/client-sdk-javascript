@@ -34,15 +34,10 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
       credentialProvider: props.credentialProvider,
     });
 
-    // For high load, we get better performance with multiple clients.  Here we
-    // are setting a default, hard-coded value for the number of clients to use,
-    // because we haven't yet designed the API for users to use to configure
-    // tunables:
-    // https://github.com/momentohq/dev-eco-issue-tracker/issues/85
-    // The choice of 6 as the initial value is a rough guess at a reasonable
-    // default for the short-term, based on load testing results captured in:
-    // https://github.com/momentohq/oncall-tracker/issues/186
-    const numClients = 6;
+    const numClients = props.configuration
+      .getTransportStrategy()
+      .getGrpcConfig()
+      .getNumClients();
     const dataClients = range(numClients).map(() => new DataClient(props));
     super(controlClient, dataClients);
 
