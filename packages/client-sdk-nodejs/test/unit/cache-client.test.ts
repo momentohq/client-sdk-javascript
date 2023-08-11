@@ -7,6 +7,7 @@ import {
   StringMomentoTokenProvider,
 } from '../../src';
 import {SimpleCacheClientProps} from '../../src/cache-client-props';
+import {CacheSet, ServerUnavailableError} from '@gomomento/sdk-core';
 
 // This auth token is syntactically correct but not actually valid; it won't work with the real Momento Servers.
 // Used only for unit testing the constructors etc.
@@ -59,6 +60,20 @@ describe('CacheClient', () => {
       if (!(e instanceof InvalidArgumentError)) {
         fail(new Error('Expected InvalidArgumentError to be thrown!'));
       }
+    }
+  });
+  it('createWithEagerConnections returns a client even if it cannot connect', async () => {
+    const momento = await CacheClient.createWithEagerConnections({
+      configuration: configuration,
+      credentialProvider: credentialProvider,
+      defaultTtlSeconds: 100,
+    });
+    const setResponse = await momento.set('cache', 'key', 'value');
+    expect(setResponse).toBeInstanceOf(CacheSet.Error);
+    if (setResponse instanceof CacheSet.Error) {
+      expect(setResponse.innerException()).toBeInstanceOf(
+        ServerUnavailableError
+      );
     }
   });
 });

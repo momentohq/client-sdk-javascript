@@ -93,6 +93,7 @@ import _Unbounded = cache_client._Unbounded;
 import ECacheResult = cache_client.ECacheResult;
 import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
 
 export class DataClient implements IDataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -157,6 +158,69 @@ export class DataClient implements IDataClient {
       this.configuration.getLoggerFactory(),
       this.configuration.getMiddlewares()
     );
+  }
+  public connect(): Promise<void> {
+    const deadline = new Date();
+    deadline.setSeconds(deadline.getSeconds() + 10);
+
+    return this.connectWithinDeadline(deadline);
+  }
+
+  private connectWithinDeadline(deadline: Date): Promise<void> {
+    return new Promise((resolve, reject) => {
+      // Get the current state and initiate a connection
+      const currentState = this.clientWrapper
+        .getClient()
+        .getChannel()
+        .getConnectivityState(true);
+
+      this.logger.debug(`Client connectivity state: ${currentState}`);
+
+      if (currentState === ConnectivityState.READY) {
+        resolve();
+        return;
+      }
+
+      const now = new Date();
+
+      if (now >= deadline) {
+        this.logger.error('Unable to connect to Momento: deadline exceeded.');
+        resolve();
+        return;
+      }
+
+      this.clientWrapper
+        .getClient()
+        .getChannel()
+        .watchConnectivityState(currentState, deadline, (error?: Error) => {
+          if (error) {
+            this.logger.error(
+              `Unable to connect to Momento: ${error.name}. Please contact Momento if this persists.`
+            );
+            resolve();
+            return;
+          }
+
+          const newState = this.clientWrapper
+            .getClient()
+            .getChannel()
+            .getConnectivityState(false);
+
+          if (newState === ConnectivityState.READY) {
+            this.logger.debug(`Connected! Current state: ${newState}`);
+            resolve();
+          } else if (newState === ConnectivityState.CONNECTING) {
+            // The connection goes through the CONNECTING state before becoming READY,
+            // so we must watch it twice.
+            this.connectWithinDeadline(deadline).then(resolve).catch(reject);
+          } else {
+            this.logger.error(
+              `Unable to connect to Momento: Unexpected connection state: ${newState}. Please contact Momento if this persists.`
+            );
+            resolve();
+          }
+        });
+    });
   }
 
   public getEndpoint(): string {
