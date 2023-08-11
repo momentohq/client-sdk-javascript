@@ -7,6 +7,7 @@ import {
   StringMomentoTokenProvider,
 } from '../../src';
 import {SimpleCacheClientProps} from '../../src/cache-client-props';
+import {CacheSet, ServerUnavailableError} from '@gomomento/sdk-core';
 
 // This auth token is syntactically correct but not actually valid; it won't work with the real Momento Servers.
 // Used only for unit testing the constructors etc.
@@ -29,7 +30,7 @@ describe('CacheClient', () => {
 
   it('cannot create/get cache with invalid name', async () => {
     const invalidCacheNames = ['', '    '];
-    const momento = new CacheClient({
+    const momento = await CacheClient.create({
       configuration: configuration,
       credentialProvider: credentialProvider,
       defaultTtlSeconds: 100,
@@ -44,12 +45,12 @@ describe('CacheClient', () => {
       }
     }
   });
-  it('cannot create a client with an invalid request timeout', () => {
+  it('cannot create a client with an invalid request timeout', async () => {
     try {
       const invalidTimeoutConfig = configuration.withTransportStrategy(
         configuration.getTransportStrategy().withClientTimeoutMillis(-1)
       );
-      new CacheClient({
+      await CacheClient.create({
         configuration: invalidTimeoutConfig,
         credentialProvider: credentialProvider,
         defaultTtlSeconds: 100,
@@ -59,6 +60,21 @@ describe('CacheClient', () => {
       if (!(e instanceof InvalidArgumentError)) {
         fail(new Error('Expected InvalidArgumentError to be thrown!'));
       }
+    }
+  });
+  it('createWithEagerConnection returns a client even if it cannot connect', async () => {
+    const momento = await CacheClient.create({
+      configuration: configuration,
+      credentialProvider: credentialProvider,
+      defaultTtlSeconds: 100,
+      eagerConnectTimeout: 1000,
+    });
+    const setResponse = await momento.set('cache', 'key', 'value');
+    expect(setResponse).toBeInstanceOf(CacheSet.Error);
+    if (setResponse instanceof CacheSet.Error) {
+      expect(setResponse.innerException()).toBeInstanceOf(
+        ServerUnavailableError
+      );
     }
   });
 });

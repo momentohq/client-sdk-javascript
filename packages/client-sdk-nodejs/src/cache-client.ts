@@ -7,7 +7,7 @@ import {
   CacheFlush,
   MomentoLogger,
 } from '.';
-import {CacheClientProps} from './cache-client-props';
+import {CacheClientProps, EagerCacheClientProps} from './cache-client-props';
 import {range} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {AbstractCacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/AbstractCacheClient';
@@ -26,6 +26,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
 
   /**
    * Creates an instance of CacheClient.
+   * @param {CacheClientProps} props configuration and credentials for creating a CacheClient.
    */
   constructor(props: CacheClientProps) {
     const controlClient = new ControlClient({
@@ -49,6 +50,27 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
 
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.logger.info('Creating Momento CacheClient');
+  }
+
+  /**
+   * Creates a new instance of CacheClient. If eagerConnectTimeout is present in the given props, the client will
+   * eagerly create its connection to Momento. It will wait until the connection is established, or until the timout
+   * runs out. It the timeout runs out, the client will be valid to use, but it may still be connecting in the background.
+   * @param {EagerCacheClientProps} props configuration and credentials for creating a CacheClient.
+   */
+  static async create(props: EagerCacheClientProps): Promise<CacheClient> {
+    const client = new CacheClient(props);
+    if (
+      props.eagerConnectTimeout !== null &&
+      props.eagerConnectTimeout !== undefined
+    ) {
+      await Promise.all(
+        client.dataClients.map(dc =>
+          (dc as DataClient).connect(props.eagerConnectTimeout)
+        )
+      );
+    }
+    return client;
   }
 
   /**

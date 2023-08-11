@@ -16,6 +16,17 @@ export interface CacheClientProps {
   defaultTtlSeconds: number;
 }
 
+export interface EagerCacheClientProps extends CacheClientProps {
+  /**
+   * The time in seconds to wait for a client to establish a connection to Momento.
+   *
+   * If present, the client will eagerly create its connection to Momento at construction. It will wait until the
+   * connection is established, or until the timout runs out. It the timeout runs out, the client will be valid to use,
+   * but it may still be connecting in the background.
+   */
+  eagerConnectTimeout?: number;
+}
+
 /**
  * @deprecated use {CacheClientProps} instead
  */
