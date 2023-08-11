@@ -7,7 +7,7 @@ import {
   CacheFlush,
   MomentoLogger,
 } from '.';
-import {CacheClientProps} from './cache-client-props';
+import {CacheClientProps, EagerCacheClientProps} from './cache-client-props';
 import {range} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {AbstractCacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/AbstractCacheClient';
@@ -26,6 +26,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
 
   /**
    * Creates an instance of CacheClient.
+   * @param {CacheClientProps} props configuration and credentials for creating a CacheClient.
    */
   constructor(props: CacheClientProps) {
     const controlClient = new ControlClient({
@@ -52,20 +53,23 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
   }
 
   /**
-   * Creates a new instance of CacheClient that eagerly creates its connections to Momento. By default, connections are
-   * created lazily when the client is first used. If connections cannot be established, an error will be logged and
-   * execution will resume.
-   * @param {CacheClientProps} props configuration and credentials for creating a CacheClient.
-   * @param {number} timeoutSeconds how long to wait for the connections.
+   * Creates a new instance of CacheClient. If eagerConnectTimeout is present in the given props, the client will
+   * eagerly create its connection to Momento. It will wait until the connection is established, or until the timout
+   * runs out. It the timeout runs out, the client will be valid to use, but it may still be connecting in the background.
+   * @param {EagerCacheClientProps} props configuration and credentials for creating a CacheClient.
    */
-  static async createWithEagerConnections(
-    props: CacheClientProps,
-    timeoutSeconds = 10
-  ): Promise<CacheClient> {
+  static async create(props: EagerCacheClientProps): Promise<CacheClient> {
     const client = new CacheClient(props);
-    await Promise.all(
-      client.dataClients.map(dc => (dc as DataClient).connect(timeoutSeconds))
-    );
+    if (
+      props.eagerConnectTimeout !== null &&
+      props.eagerConnectTimeout !== undefined
+    ) {
+      await Promise.all(
+        client.dataClients.map(dc =>
+          (dc as DataClient).connect(props.eagerConnectTimeout)
+        )
+      );
+    }
     return client;
   }
 

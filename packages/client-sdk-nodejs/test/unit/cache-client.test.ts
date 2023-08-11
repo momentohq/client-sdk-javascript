@@ -30,7 +30,7 @@ describe('CacheClient', () => {
 
   it('cannot create/get cache with invalid name', async () => {
     const invalidCacheNames = ['', '    '];
-    const momento = new CacheClient({
+    const momento = await CacheClient.create({
       configuration: configuration,
       credentialProvider: credentialProvider,
       defaultTtlSeconds: 100,
@@ -45,12 +45,12 @@ describe('CacheClient', () => {
       }
     }
   });
-  it('cannot create a client with an invalid request timeout', () => {
+  it('cannot create a client with an invalid request timeout', async () => {
     try {
       const invalidTimeoutConfig = configuration.withTransportStrategy(
         configuration.getTransportStrategy().withClientTimeoutMillis(-1)
       );
-      new CacheClient({
+      await CacheClient.create({
         configuration: invalidTimeoutConfig,
         credentialProvider: credentialProvider,
         defaultTtlSeconds: 100,
@@ -62,11 +62,12 @@ describe('CacheClient', () => {
       }
     }
   });
-  it('createWithEagerConnections returns a client even if it cannot connect', async () => {
-    const momento = await CacheClient.createWithEagerConnections({
+  it('createWithEagerConnection returns a client even if it cannot connect', async () => {
+    const momento = await CacheClient.create({
       configuration: configuration,
       credentialProvider: credentialProvider,
       defaultTtlSeconds: 100,
+      eagerConnectTimeout: 1000,
     });
     const setResponse = await momento.set('cache', 'key', 'value');
     expect(setResponse).toBeInstanceOf(CacheSet.Error);
