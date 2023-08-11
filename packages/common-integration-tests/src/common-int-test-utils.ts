@@ -22,7 +22,7 @@ export function testCacheName(): string {
 }
 
 export function testIndexName(): string {
-  return `${v4()}`;
+  return v4();
 }
 
 export const deleteCacheIfExists = async (
@@ -211,7 +211,7 @@ export function ItBehavesLikeItValidatesNumDimensions(
 ) {
   it('validates its numDimensions', async () => {
     const response = await getResponse({
-      indexName: `${v4()}`,
+      indexName: v4(),
       numDimensions: 0,
     });
     expect((response as IResponseError).errorCode()).toEqual(
