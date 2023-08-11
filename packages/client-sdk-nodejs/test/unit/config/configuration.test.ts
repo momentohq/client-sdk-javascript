@@ -16,6 +16,7 @@ describe('configuration.ts', () => {
   const testGrpcConfiguration = new StaticGrpcConfiguration({
     deadlineMillis: 90210,
     maxSessionMemoryMb: 90211,
+    numClients: 2,
   });
   const testMaxIdleMillis = 90212;
   const testTransportStrategy = new StaticTransportStrategy({
@@ -52,6 +53,7 @@ describe('configuration.ts', () => {
     const newGrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: 5000,
       maxSessionMemoryMb: 5001,
+      numClients: 3,
     });
     const newMaxIdleMillis = 5002;
     const newTransportStrategy = new StaticTransportStrategy({
@@ -77,6 +79,7 @@ describe('configuration.ts', () => {
       grpcConfiguration: new StaticGrpcConfiguration({
         deadlineMillis: newClientTimeoutMillis,
         maxSessionMemoryMb: testGrpcConfiguration.getMaxSessionMemoryMb(),
+        numClients: testGrpcConfiguration.getNumClients(),
       }),
       maxIdleMillis: testMaxIdleMillis,
     });

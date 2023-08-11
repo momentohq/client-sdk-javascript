@@ -8,6 +8,7 @@ import {
   TopicSubscribe,
 } from "@gomomento/sdk-web";
 import { CognitoIdentityProviderClient, InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider";
+import jwt_decode from "jwt-decode";
 
 export enum EventTypes {
   MESSAGE = "message",
@@ -41,16 +42,15 @@ type MomentoClients = {
   topicClient: TopicClient;
 };
 
-async function getNewWebClients(): Promise<MomentoClients> {
+async function getNewWebClients(selectedUser?: string): Promise<MomentoClients> {
   webTopicClient = undefined;
   let fetchResp;
 
   const token_vending_machine_auth = String(import.meta.env.VITE_TOKEN_VENDING_MACHINE_AUTH_TYPE)
 
-  
   switch (token_vending_machine_auth) {
     case "cognito": {
-      fetchResp = await fetchTokenWithCognitoAuth();
+      fetchResp = await fetchTokenWithCognitoAuth(selectedUser);
       break;
     }
     case "lambda": {
@@ -101,18 +101,34 @@ async function fetchTokenWithLambdaAuth() {
   });
 }
 
-async function fetchTokenWithCognitoAuth() {
+async function fetchTokenWithCognitoAuth(selectedUser?: string) {
   // Cognito auth flow: sign into Cognito, get ID token, pass ID token as 
   // the Authorization token to the token vending machine
   const cognitoClient = new CognitoIdentityProviderClient({
     "region": import.meta.env.VITE_TOKEN_VENDING_MACHINE_AWS_REGION,
   });
+
+  if (!selectedUser) {
+    throw new Error("Cognito user wasn't selected!");
+  }
+
+  let userCredentials = {};
+  if (selectedUser === "ReadWrite") {
+    userCredentials = { 
+      "USERNAME": import.meta.env.VITE_TOKEN_VENDING_MACHINE_USERNAME_READWRITE,
+      "PASSWORD": import.meta.env.VITE_TOKEN_VENDING_MACHINE_PASSWORD_READWRITE,
+    };
+  }
+  else {
+    userCredentials = { 
+      "USERNAME": import.meta.env.VITE_TOKEN_VENDING_MACHINE_USERNAME_READONLY,
+      "PASSWORD": import.meta.env.VITE_TOKEN_VENDING_MACHINE_PASSWORD_READONLY,
+    };
+  }
+
   const input = {
     AuthFlow: "USER_PASSWORD_AUTH",
-    AuthParameters: { 
-      "USERNAME": import.meta.env.VITE_TOKEN_VENDING_MACHINE_USERNAME,
-      "PASSWORD": import.meta.env.VITE_TOKEN_VENDING_MACHINE_PASSWORD,
-    },
+    AuthParameters: userCredentials,
     ClientId: import.meta.env.VITE_TOKEN_VENDING_MACHINE_CLIENT_ID, 
   };
   const command = new InitiateAuthCommand(input);
@@ -122,21 +138,26 @@ async function fetchTokenWithCognitoAuth() {
     throw new Error("Cognito sign in failed");
   }
 
+  const decodedToken: any = jwt_decode(IdToken);
+  const userCognitoGroup = decodedToken['cognito:groups'][0];
+  
   // Make the actual API call to the token vending machine here
   return await fetch(import.meta.env.VITE_TOKEN_VENDING_MACHINE_URL, {
     cache: "no-store",  // don't cache the token since it will expire in 5 min
     headers: {
-      Authorization: `Bearer ${IdToken}`
+      Authorization: `Bearer ${IdToken}`,
+      usergroup: userCognitoGroup,
+      cachename: import.meta.env.VITE_MOMENTO_CACHE_NAME
     }
   });
 }
 
-async function getWebTopicClient(): Promise<TopicClient> {
+async function getWebTopicClient(selectedUser?: string): Promise<TopicClient> {
   if (webTopicClient) {
     return webTopicClient;
   }
 
-  const clients = await getNewWebClients();
+  const clients = await getNewWebClients(selectedUser);
   return clients.topicClient;
 }
 
@@ -154,10 +175,11 @@ export async function subscribeToTopic(
     error: TopicSubscribe.Error,
     subscription: TopicSubscribe.Subscription,
   ) => Promise<void>,
+  selectedUser?: string
 ) {
   onErrorCb = onError;
   onItemCb = onItem;
-  const topicClient = await getWebTopicClient();
+  const topicClient = await getWebTopicClient(selectedUser);
   const resp = await topicClient.subscribe(cacheName, topicName, {
     onItem: onItemCb,
     onError: onErrorCb,
@@ -181,7 +203,12 @@ async function publish(cacheName: string, topicName: string, message: string) {
       clearCurrentClient();
       await subscribeToTopic(cacheName, topicName, onItemCb, onErrorCb);
       await publish(cacheName, topicName, message);
-    } else {
+    } 
+    else if (resp.errorCode() === MomentoErrorCode.PERMISSION_ERROR) {
+      console.log("User is not allowed to publish to topic", resp);
+      alert("You have entered the chat room as a read-only user!");
+    }
+    else {
       console.error("failed to publish to topic", resp);
     }
   }

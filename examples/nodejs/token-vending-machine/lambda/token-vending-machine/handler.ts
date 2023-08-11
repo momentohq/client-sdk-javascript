@@ -1,7 +1,7 @@
-import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
+import {APIGatewayProxyEvent, APIGatewayProxyEventHeaders, APIGatewayProxyResult} from 'aws-lambda';
 import {GetSecretValueCommand, SecretsManagerClient} from '@aws-sdk/client-secrets-manager';
-import {AuthClient, CredentialProvider, GenerateAuthToken} from '@gomomento/sdk';
-import {tokenPermissions, tokenExpiresIn} from './config';
+import {AllTopics, AuthClient, CredentialProvider, GenerateAuthToken, TokenScopes} from '@gomomento/sdk';
+import {tokenPermissions, tokenExpiresIn, authenticationMethod, AuthenticationMethod} from './config';
 
 const _secretsClient = new SecretsManagerClient({});
 const _cachedSecrets = new Map<string, string>();
@@ -13,7 +13,8 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     if (vendorAuthTokenSecretName === undefined) {
       throw new Error("Missing required env var 'MOMENTO_AUTH_TOKEN_SECRET_NAME");
     }
-    const vendedAuthToken = await vendAuthToken(vendorAuthTokenSecretName);
+    console.log("headers in handler:", event.headers);
+    const vendedAuthToken = await vendAuthToken(vendorAuthTokenSecretName, event.headers);
     return {
       statusCode: 200,
       headers: {
@@ -38,9 +39,18 @@ interface VendedAuthToken {
   expiresAt: number;
 }
 
-async function vendAuthToken(vendorAuthTokenSecretName: string): Promise<VendedAuthToken> {
+async function vendAuthToken(vendorAuthTokenSecretName: string, headers: APIGatewayProxyEventHeaders): Promise<VendedAuthToken> {
   const momentoAuthClient = await getMomentoAuthClient(vendorAuthTokenSecretName);
-  const generateTokenResponse = await momentoAuthClient.generateAuthToken(tokenPermissions, tokenExpiresIn);
+
+  let generateTokenResponse;
+  if (authenticationMethod === AuthenticationMethod.AmazonCognito) {
+    const cognitoUserTokenPermissions = determineCognitoUserTokenScope(headers);
+    generateTokenResponse = await momentoAuthClient.generateAuthToken(cognitoUserTokenPermissions, tokenExpiresIn);
+  }
+  else {
+    generateTokenResponse = await momentoAuthClient.generateAuthToken(tokenPermissions, tokenExpiresIn);
+  }
+
   if (generateTokenResponse instanceof GenerateAuthToken.Success) {
     return {
       authToken: generateTokenResponse.authToken,
@@ -48,6 +58,22 @@ async function vendAuthToken(vendorAuthTokenSecretName: string): Promise<VendedA
     };
   } else {
     throw new Error(`An error occurred while attempting to generate the token: ${generateTokenResponse.toString()}`);
+  }
+}
+
+function determineCognitoUserTokenScope(headers: APIGatewayProxyEventHeaders) {
+  if (!("cachename" in headers) || !("usergroup" in headers)) {
+    throw new Error("Could not find expected headers 'cachename' and 'usergroup'");
+  }
+
+  if (headers["cachename"] && headers["usergroup"] === 'ReadWriteUserGroup') {
+    return TokenScopes.topicPublishSubscribe(headers["cachename"], AllTopics);
+  }
+  else if (headers["cachename"] && headers["usergroup"] === 'ReadOnlyUserGroup') {
+      return TokenScopes.topicSubscribeOnly(headers["cachename"], AllTopics);
+  }
+  else {
+    throw new Error(`Unrecognized Cognito user group: ${headers["usergroup"]}`);
   }
 }
 

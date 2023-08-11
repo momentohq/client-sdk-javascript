@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import {
   CacheGet,
   CreateCache,
@@ -105,7 +107,7 @@ async function main() {
     await set(mainCacheClient, CACHE_OPEN_DOOR, 'hello', 'world');
 
     // Create a token valid for 600 seconds that can only read a specific cache 'open-door'
-    const [scopedToken, _scopedRefreshToken] = await generateAuthToken(
+    const [scopedToken, scopedRefreshToken] = await generateAuthToken(
       mainAuthClient,
       TokenScopes.cacheReadOnly(CACHE_OPEN_DOOR),
       tokenValidForSeconds
@@ -153,7 +155,7 @@ async function main() {
     ],
   };
 
-  const [_scopedToken1, _scopedRefreshToken1] = await generateAuthToken(
+  const [scopedToken1, scopedRefreshToken1] = await generateAuthToken(
     mainAuthClient,
     permissions,
     tokenValidForSeconds

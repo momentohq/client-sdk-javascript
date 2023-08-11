@@ -1,0 +1,6 @@
+name = "momento-cloudflare-worker-web"
+main = "src/worker.ts"
+compatibility_date = "2023-07-10"
+
+# [vars]
+# MOMENTO_CACHE_NAME = "REPLACE ME"
