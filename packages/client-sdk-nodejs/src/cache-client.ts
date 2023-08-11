@@ -55,13 +55,16 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
    * Creates a new instance of CacheClient that eagerly creates its connections to Momento. By default, connections are
    * created lazily when the client is first used. If connections cannot be established, an error will be logged and
    * execution will resume.
+   * @param {CacheClientProps} props configuration and credentials for creating a CacheClient.
+   * @param {number} timeoutSeconds how long to wait for the connections.
    */
   static async createWithEagerConnections(
-    props: CacheClientProps
+    props: CacheClientProps,
+    timeoutSeconds = 10
   ): Promise<CacheClient> {
     const client = new CacheClient(props);
     await Promise.all(
-      client.dataClients.map(dc => (dc as DataClient).connect())
+      client.dataClients.map(dc => (dc as DataClient).connect(timeoutSeconds))
     );
     return client;
   }

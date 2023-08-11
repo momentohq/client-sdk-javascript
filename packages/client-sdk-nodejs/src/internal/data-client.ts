@@ -159,9 +159,9 @@ export class DataClient implements IDataClient {
       this.configuration.getMiddlewares()
     );
   }
-  public connect(): Promise<void> {
+  public connect(timeoutSeconds = 10): Promise<void> {
     const deadline = new Date();
-    deadline.setSeconds(deadline.getSeconds() + 10);
+    deadline.setSeconds(deadline.getSeconds() + timeoutSeconds);
 
     return this.connectWithinDeadline(deadline);
   }
