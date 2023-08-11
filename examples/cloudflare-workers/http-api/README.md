@@ -1,4 +1,4 @@
-# Using Momento inside a Cloudflare Worker through it's HTTP API
+# Using Momento inside a Cloudflare Worker through the HTTP API
 
 This example uses
 [Wrangler](https://developers.cloudflare.com/workers/wrangler/) to create a
