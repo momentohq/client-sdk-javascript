@@ -93,13 +93,6 @@ function momentoVectorClientForTesting(): PreviewVectorClient {
   });
 }
 
-// function momentoVectorClientForTestingWithSessionToken(): PreviewVectorClient {
-//   return new PreviewVectorClient({
-//     configuration: Configurations.Laptop.latest(),
-//     credentialProvider: sessionCredsProvider(),
-//   });
-// }
-
 export function SetupIntegrationTest(): {
   Momento: CacheClient;
   IntegrationTestCacheName: string;
