@@ -19,7 +19,7 @@ export class TopicClient extends AbstractTopicClient {
   constructor(props: TopicClientProps) {
     super();
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    this.logger.info('Creating Momento CacheClient');
+    this.logger.info('Creating Momento TopicClient');
 
     this.client = new PubsubClient(props);
   }
