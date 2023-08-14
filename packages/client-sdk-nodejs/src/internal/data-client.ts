@@ -16,6 +16,7 @@ import {
   CacheDictionaryRemoveFields,
   CacheDictionarySetField,
   CacheDictionarySetFields,
+  CacheDictionaryLength,
   CacheGet,
   CacheIncrement,
   CacheListConcatenateBack,
@@ -1743,6 +1744,64 @@ export class DataClient implements IDataClient {
               new CacheDictionaryRemoveFields.Error(
                 cacheServiceErrorMapper(err)
               )
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async dictionaryLength(
+    cacheName: string,
+    dictionaryName: string
+  ): Promise<CacheDictionaryLength.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+    } catch (err) {
+      return new CacheDictionaryLength.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.trace(
+      `Issuing 'dictionaryLength' request; dictionaryName: ${dictionaryName}`
+    );
+    const result = await this.sendDictionaryLength(
+      cacheName,
+      this.convert(dictionaryName)
+    );
+    this.logger.trace(
+      `'dictionaryLength' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendDictionaryLength(
+    cacheName: string,
+    dictionaryName: Uint8Array
+  ): Promise<CacheDictionaryLength.Response> {
+    const request = new grpcCache._DictionaryLengthRequest({
+      dictionary_name: dictionaryName,
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().DictionaryLength(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheDictionaryLength.Miss());
+          } else if (resp?.found) {
+            if (!resp.found.length) {
+              resolve(new CacheDictionaryLength.Miss());
+            } else {
+              resolve(new CacheDictionaryLength.Hit(resp.found.length));
+            }
+          } else {
+            resolve(
+              new CacheDictionaryLength.Error(cacheServiceErrorMapper(err))
             );
           }
         }
