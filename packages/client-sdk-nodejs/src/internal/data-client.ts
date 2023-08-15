@@ -989,13 +989,7 @@ export class DataClient implements IDataClient {
           if (resp?.missing) {
             resolve(new CacheListLength.Miss());
           } else if (resp?.found) {
-            // Unlike listFetch, listLength will return found if there is no list,
-            // but there will be no length.
-            if (!resp.found.length) {
-              resolve(new CacheListLength.Miss());
-            } else {
-              resolve(new CacheListLength.Hit(resp.found.length));
-            }
+            resolve(new CacheListLength.Hit(resp.found.length));
           } else {
             resolve(new CacheListLength.Error(cacheServiceErrorMapper(err)));
           }
@@ -1794,11 +1788,7 @@ export class DataClient implements IDataClient {
           if (resp?.missing) {
             resolve(new CacheDictionaryLength.Miss());
           } else if (resp?.found) {
-            if (!resp.found.length) {
-              resolve(new CacheDictionaryLength.Miss());
-            } else {
-              resolve(new CacheDictionaryLength.Hit(resp.found.length));
-            }
+            resolve(new CacheDictionaryLength.Hit(resp.found.length));
           } else {
             resolve(
               new CacheDictionaryLength.Error(cacheServiceErrorMapper(err))
