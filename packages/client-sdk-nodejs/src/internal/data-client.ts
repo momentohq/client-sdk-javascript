@@ -64,7 +64,10 @@ import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {CacheClientProps} from '../cache-client-props';
-import {Middleware} from '../config/middleware/middleware';
+import {
+  Middleware,
+  MiddlewareRequestHandlerContext,
+} from '../config/middleware/middleware';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 import {Configuration} from '../config/configuration';
@@ -108,8 +111,9 @@ export class DataClient implements IDataClient {
 
   /**
    * @param {CacheClientProps} props
+   * @param dataClientID
    */
-  constructor(props: CacheClientProps) {
+  constructor(props: CacheClientProps, dataClientID: number) {
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
@@ -154,9 +158,20 @@ export class DataClient implements IDataClient {
 
     this.textEncoder = new TextEncoder();
     this.defaultTtlSeconds = props.defaultTtlSeconds;
+
+    let context = this.configuration.getMiddlewareRequestHandlerContext();
+    if (context === undefined) {
+      context = {};
+    }
+    // we intercept the per-request context to pad a clientID that will be used for debugging
+    context['dataClientID'] = dataClientID;
+    this.configuration =
+      this.configuration.withMiddlewareRequestHandlerContext(context);
+
     this.interceptors = this.initializeInterceptors(
       this.configuration.getLoggerFactory(),
-      this.configuration.getMiddlewares()
+      this.configuration.getMiddlewares(),
+      context
     );
   }
   public connect(timeoutSeconds = 10): Promise<void> {
@@ -2788,14 +2803,19 @@ export class DataClient implements IDataClient {
 
   private initializeInterceptors(
     loggerFactory: MomentoLoggerFactory,
-    middlewares: Middleware[]
+    middlewares: Middleware[],
+    middlewareRequestContext: MiddlewareRequestHandlerContext
   ): Interceptor[] {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
       new Header('Agent', `nodejs:${version}`),
     ];
     return [
-      middlewaresInterceptor(loggerFactory, middlewares),
+      middlewaresInterceptor(
+        loggerFactory,
+        middlewares,
+        middlewareRequestContext
+      ),
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
       ClientTimeoutInterceptor(this.requestTimeoutMs),
       ...createRetryInterceptorIfEnabled(
