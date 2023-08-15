@@ -2,8 +2,6 @@ import {Metadata, StatusObject} from '@grpc/grpc-js';
 import {Message} from 'google-protobuf';
 
 export interface MiddlewareRequestHandler {
-  context?: MiddlewareRequestHandlerContext;
-
   onRequestMetadata(metadata: Metadata): Promise<Metadata>;
   onRequestBody(request: Message): Promise<Message>;
 

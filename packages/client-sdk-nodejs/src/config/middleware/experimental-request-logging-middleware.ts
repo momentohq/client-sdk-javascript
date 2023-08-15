@@ -1,8 +1,4 @@
-import {
-  Middleware,
-  MiddlewareRequestHandler,
-  MiddlewareRequestHandlerContext,
-} from './middleware';
+import {Middleware, MiddlewareRequestHandler} from './middleware';
 import {Metadata, StatusObject} from '@grpc/grpc-js';
 import {Message} from 'google-protobuf';
 import {MomentoLogger, MomentoLoggerFactory} from '../../';
@@ -12,7 +8,6 @@ class ExperimentalLoggingMiddlewareRequestHandler
 {
   private readonly logger: MomentoLogger;
   private readonly requestId: string;
-  context?: MiddlewareRequestHandlerContext;
   constructor(logger: MomentoLogger, requestId: string) {
     this.logger = logger;
     this.requestId = requestId;
