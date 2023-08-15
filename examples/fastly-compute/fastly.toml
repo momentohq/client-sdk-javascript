@@ -1,12 +1,24 @@
 # This file describes a Fastly Compute@Edge package. To learn more visit:
 # https://developer.fastly.com/reference/fastly-toml/
 
-authors = ["<oss@fastly.com>"]
+authors = ["anita@momentohq.com"]
 description = "A basic starter kit that demonstrates routing, simple synthetic responses and overriding caching rules."
 language = "javascript"
 manifest_version = 3
-name = "Default starter for TypeScript"
-service_id = "<your-service-id>"
+name = "fastly momento example"
+service_id = "452LCl2gJBqaQ41Eb01Vr5"
+
+[local_server]
+
+  [local_server.backends]
+
+    [local_server.backends.aws_us_west_2_http]
+      url = "https://api.cache.cell-4-us-west-2-1.prod.a.momentohq.com"
+
+  [local_server.config_stores]
+    [local_server.config_stores.secrets]
+      file = "secrets.json"
+      format = "json"
 
 [scripts]
   build = "npm run build"
