@@ -21,18 +21,39 @@ This example shows how to use the Momento HTTP API inside of a [Fastly Compute@E
   npm install
   ```
 
-5. Start a local server to check that it's running at http://127.0.0.1:7676 
+5. Create a `secrets.json` file with the following contents:
+  ```
+  {
+      "MOMENTO_HTTP_ENDPOINT": "api.cache.cell-4-us-west-2-1.prod.a.momentohq.com",
+      "MOMENTO_BACKEND": "aws_us_west_2_http",
+      "MOMENTO_CACHE": "<YOUR-CACHE>",
+      "MOMENTO_TOKEN": "<ADD-YOUR-TOKEN-WITH-RW-ACCESS-TO-THE-CACHE>
+  }
+  ```
+
+  You can change the name of your backend ("MOMENTO_BACKEND" variable) to anything you want, just make sure your HTTP endpoint corresponds to the region that your cache is in. You will also want to make sure the contents of your `secrets.json` file match what's under the `local` and `setup` headers in the `fastly.toml` file. 
+
+  More information about the `fastly.toml` can be [found here](https://developer.fastly.com/reference/compute/fastly-toml/).
+
+6. Start a local server to check that it's running at http://127.0.0.1:7676 
   ```
   fastly compute serve
   ```
 
-6. Then follow [instructions for deploying to Fastly](https://developer.fastly.com/learning/compute/#deploy-to-a-fastly-service):
+  The localhost server will use the information supplied under the `local` heading of your `fastly.toml` file to set up the appropriate backend and config store.
+
+7. Deploy the service to Fastly, making sure to enter "yes" and/or "enter" for each command line prompt:
   ```
-  fastly compute deploy
+  fastly compute publish
   ```
 
-  You may need to add your Fastly service ID to the `fastly.toml` file.
-  If you want to see logs from your deployed worker, follow [instructions for turning on log tailing](https://developer.fastly.com/learning/compute/testing/#live-log-monitoring-in-your-console):
+  Fastly will use the information supplied under the `setup` heading of your `fastly.toml` file to set up the appropriate backend and config store.
+  More information about deploying to Fastly can be [found here](https://developer.fastly.com/learning/compute/#deploy-to-a-fastly-service):
+
+
+8. If you want to see logs from your deployed worker, run this:
   ```
   fastly log-tail
   ```
+
+  More information about logging and monitoring your Fastly instance can be [found here](https://developer.fastly.com/learning/compute/testing/#live-log-monitoring-in-your-console).

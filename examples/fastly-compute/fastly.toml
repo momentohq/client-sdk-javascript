@@ -1,12 +1,12 @@
 # This file describes a Fastly Compute@Edge package. To learn more visit:
 # https://developer.fastly.com/reference/fastly-toml/
 
-authors = ["anita@momentohq.com"]
-description = "A basic starter kit that demonstrates routing, simple synthetic responses and overriding caching rules."
+authors = ["anita@momentohq.com", "rmk@momentohq.com"]
+description = "Basic example for showing how Momento HTTP API can be used inside of Fastly Compute@Edge"
 language = "javascript"
 manifest_version = 3
-name = "fastly momento example"
-service_id = "452LCl2gJBqaQ41Eb01Vr5"
+name = "fastly_momento_example"
+service_id = "qPLR40Bd2TUaxNDyI8kgs1"
 
 [local_server]
 
@@ -16,9 +16,36 @@ service_id = "452LCl2gJBqaQ41Eb01Vr5"
       url = "https://api.cache.cell-4-us-west-2-1.prod.a.momentohq.com"
 
   [local_server.config_stores]
+
     [local_server.config_stores.secrets]
       file = "secrets.json"
       format = "json"
 
 [scripts]
   build = "npm run build"
+
+[setup]
+
+  [setup.backends]
+
+    [setup.backends.aws_us_west_2_http]
+      address = "api.cache.cell-4-us-west-2-1.prod.a.momentohq.com"
+      port = 443
+
+  [setup.config_stores]
+
+    [setup.config_stores.secrets]
+
+      [setup.config_stores.secrets.items]
+
+        [setup.config_stores.secrets.items.MOMENTO_BACKEND]
+          value = "aws_us_west_2_http"
+
+        [setup.config_stores.secrets.items.MOMENTO_CACHE]
+          value = "<YOUR-CACHE-NAME>"
+
+        [setup.config_stores.secrets.items.MOMENTO_HTTP_ENDPOINT]
+          value = "api.cache.cell-4-us-west-2-1.prod.a.momentohq.com"
+
+        [setup.config_stores.secrets.items.MOMENTO_TOKEN]
+          value = "<YOUR-MOMENTO-AUTH-TOKEN>"
