@@ -32,7 +32,7 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler extends ExperimentalMetrics
       metrics.duration,
       metrics.requestSize,
       metrics.responseSize,
-      metrics.clientID,
+      metrics.dataClientID,
     ].join(',');
     try {
       await fs.promises.appendFile(this.csvPath, `${csvRow}\n`);

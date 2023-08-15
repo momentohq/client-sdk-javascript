@@ -18,7 +18,7 @@ const FIELD_NAMES: Array<string> = [
   'duration',
   'requestSize',
   'responseSize',
-  'clientID',
+  'dataClientID',
 ];
 
 export interface ExperimentalRequestMetrics {
@@ -62,7 +62,10 @@ export interface ExperimentalRequestMetrics {
    * The size of the response body in bytes
    */
   responseSize: number;
-  clientID: number;
+  /**
+   * The ID of the specific dataClient that made the request
+   */
+  dataClientID: number;
 }
 
 export abstract class ExperimentalMetricsMiddlewareRequestHandler
@@ -70,7 +73,7 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
 {
   private readonly parent: ExperimentalMetricsMiddleware;
   protected readonly logger: MomentoLogger;
-  private readonly clientID: number;
+  private readonly dataClientID: number;
 
   private readonly numActiveRequestsAtStart: number;
   private readonly startTime: number;
@@ -90,7 +93,7 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
   ) {
     this.parent = parent;
     this.logger = logger;
-    this.clientID = context['dataClientID'] as number;
+    this.dataClientID = context['dataClientID'] as number;
 
     this.numActiveRequestsAtStart = parent.incrementActiveRequestCount();
     this.startTime = new Date().getTime();
@@ -151,7 +154,7 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
       duration: endTime - this.startTime,
       requestSize: this.requestSize,
       responseSize: this.responseSize,
-      clientID: this.clientID,
+      dataClientID: this.dataClientID,
     };
     this.emitMetrics(metrics).catch(e =>
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
