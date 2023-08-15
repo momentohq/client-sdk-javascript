@@ -13,7 +13,7 @@ To use Momento's HTTP API instead, click [here](../http-api)
 
 ## How to use
 
-1. Clone and install the example:
+- First, clone the example and install its dependencies:
 
 ```bash
 git clone https://github.com/momentohq/client-sdk-javascript.git
@@ -21,20 +21,26 @@ cd client-sdk-javascript/examples/cloudflare-workers/web-sdk
 npm install
 ```
 
-1. Create a cache inside of the [Momento console](https://console.gomomento.com/caches).
-1. Generate a [token for your cache](https://console.gomomento.com/tokens), making sure to choose the same AWS region you used to create the cache. You'll want to use a `Fine-Grained Access Token` with read/write permissions for the cache you created.
+- Next, if you don't have one already, create a cache inside the [Momento console](https://console.gomomento.com/caches).
+
+- Cloudflare uses a file called wrangler.toml to configure the development and publishing of a worker. More information about Cloudflare configuration can be found [on their website](https://developers.cloudflare.com/workers/wrangler/configuration/). In the example directory, update the `wrangler.toml` file and set the `MOMENTO_CACHE` environment variable to match the name of the cache you created earlier.
+
+
+### Setting up Momento Authentication
+- In the Momento console, generate a [token for your cache](https://console.gomomento.com/tokens), making sure to choose the same AWS region you used to create the cache. You'll want to use a `Fine-Grained Access Token` with read/write permissions for the cache you created.
    ![Console Token Screen](https://assets.website-files.com/628fadb065a50abf13a11485/64b97cb50a7e1d8d752ae539_3fU8mYh6gAhMwUYzrLOEiEXQc-KO79zANMtiH141Js2tZydZ7sFxZtr5TWLcC3OzFJTIEMZQOkLtWtBOOTEOEXmpinv1Ah3AC_LdkovI3FU7iUGY_N35cB0op1PXTNHAW0kZ-9wZ6qrCol5wrz_nuA.png)
-1. Copy the `Auth Token` value from the token generation screen for use in the next two steps.
+- Copy the `Auth Token` value from the token generation screen for use in the next two steps.
    ![Token generation results](https://assets.website-files.com/628fadb065a50abf13a11485/64b97cb50d9a0db6b03c40e8_JZLnsjtwN5RaGx83NX424WKmvauAuqcUD3YeWLx2LFFIwLiXHupq1XF3MOyggObfaC8LE1fQUN4b-9nDTOwGYUHugfZYqYTK92HybD2X1OsuRF-DxmJKekTWgV0SY0LzWpE9vvA0To8sGmNXkG-geQ.png)
-1. Cloudflare uses a file called wrangler.toml to configure the development and publishing of a worker. More information about Cloudflare configuration can be found [on their website](https://developers.cloudflare.com/workers/wrangler/configuration/). In the example directory, update the `wrangler.toml` file with the cache name.
-1. Update the `.dev.vars` file in the example directory with the Momento auth token. Since this is a secret token, we don’t store it as an environment variable, instead storing it as a Cloudflare secret.
-1. Start the development server:
+- Update the `.dev.vars` file in the example directory with the Momento auth token. Since this is a secret token, we don’t store it as an environment variable, instead storing it as a Cloudflare secret.
+- Start the development server:
+
+### Running locally
 
 ```bash
 npm run start
 ```
 
-7. Open your browser to [localhost:8787](http://localhost:8787). The code in this example sets an item in the cache, gets it, and returns it as a JSON object:
+- Open your browser to [localhost:8787](http://localhost:8787). The code in this example sets an item in the cache, gets it, and returns it as a JSON object:
    ```
     // setting a value into cache
     await client.set(cache, key, value);
@@ -47,7 +53,9 @@ npm run start
 
 A deployed example can be found [here](https://momento-cloudflare-worker-web.pratik-37c.workers.dev/).
 
-If you would like to deploy this example to your own Cloudflare worker, make sure you add the MOMENTO_AUTH_TOKEN as a secret inside of your Cloudflare account:
+### Deploying to CloudFlare
+
+If you would like to deploy this example to your own Cloudflare worker, make sure you add the MOMENTO_AUTH_TOKEN as a secret inside your Cloudflare account:
 
 ```shell
 
