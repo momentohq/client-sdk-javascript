@@ -5,6 +5,7 @@ import {
   ExperimentalMetricsMiddlewareRequestHandler,
   ExperimentalRequestMetrics,
 } from './impl/experimental-metrics-middleware';
+import {MiddlewareRequestHandlerContext} from './middleware';
 
 class ExperimentalMetricsCsvMiddlewareRequestHandler extends ExperimentalMetricsMiddlewareRequestHandler {
   private readonly csvPath: string;
@@ -12,9 +13,10 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler extends ExperimentalMetrics
   constructor(
     parent: ExperimentalMetricsMiddleware,
     logger: MomentoLogger,
+    context: MiddlewareRequestHandlerContext,
     csvPath: string
   ) {
-    super(parent, logger);
+    super(parent, logger, context);
     this.csvPath = csvPath;
   }
 
@@ -30,6 +32,7 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler extends ExperimentalMetrics
       metrics.duration,
       metrics.requestSize,
       metrics.responseSize,
+      metrics.connectionID,
     ].join(',');
     try {
       await fs.promises.appendFile(this.csvPath, `${csvRow}\n`);
@@ -72,8 +75,8 @@ export class ExperimentalMetricsCsvMiddleware extends ExperimentalMetricsMiddlew
   constructor(csvPath: string, loggerFactory: MomentoLoggerFactory) {
     super(
       loggerFactory,
-      (p, l) =>
-        new ExperimentalMetricsCsvMiddlewareRequestHandler(p, l, csvPath)
+      (p, l, c) =>
+        new ExperimentalMetricsCsvMiddlewareRequestHandler(p, l, c, csvPath)
     );
     this.csvPath = csvPath;
     fs.writeFileSync(this.csvPath, `${this.fieldNames().join(',')}\n`);
