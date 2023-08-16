@@ -30,6 +30,6 @@
     "typescript": "4.4.3"
   },
   "dependencies": {
-    "@gomomento/sdk": "file:../../../packages/client-sdk-nodejs"
+    "@gomomento/sdk": "1.28.0"
   }
 }
