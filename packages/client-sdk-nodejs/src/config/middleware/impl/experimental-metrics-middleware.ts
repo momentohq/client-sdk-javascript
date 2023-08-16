@@ -6,7 +6,7 @@ import {
 import {Metadata, StatusObject} from '@grpc/grpc-js';
 import {Message} from 'google-protobuf';
 import {MomentoLogger, MomentoLoggerFactory} from '@gomomento/sdk-core';
-import {DATA_CLIENT_ID_KEY} from '../../../internal/data-client';
+import {CONNECTION_ID_KEY} from '../../../internal/data-client';
 
 const FIELD_NAMES: Array<string> = [
   'numActiveRequestsAtStart',
@@ -74,7 +74,7 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
 {
   private readonly parent: ExperimentalMetricsMiddleware;
   protected readonly logger: MomentoLogger;
-  private readonly dataClientID: string;
+  private readonly connectionID: string;
 
   private readonly numActiveRequestsAtStart: number;
   private readonly startTime: number;
@@ -94,7 +94,7 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
   ) {
     this.parent = parent;
     this.logger = logger;
-    this.dataClientID = context[DATA_CLIENT_ID_KEY];
+    this.connectionID = context[CONNECTION_ID_KEY];
 
     this.numActiveRequestsAtStart = parent.incrementActiveRequestCount();
     this.startTime = new Date().getTime();
@@ -155,7 +155,7 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
       duration: endTime - this.startTime,
       requestSize: this.requestSize,
       responseSize: this.responseSize,
-      connectionID: this.dataClientID,
+      connectionID: this.connectionID,
     };
     this.emitMetrics(metrics).catch(e =>
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions

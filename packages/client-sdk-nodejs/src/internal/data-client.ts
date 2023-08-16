@@ -98,7 +98,7 @@ import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
 
-export const DATA_CLIENT_ID_KEY = Symbol('dataClientID');
+export const CONNECTION_ID_KEY = Symbol('connectionID');
 
 export class DataClient implements IDataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
@@ -164,7 +164,7 @@ export class DataClient implements IDataClient {
     // this context object is currently internal only but can be extended in the Configuration object is we wants clients
     // to be able to set it.
     const context: MiddlewareRequestHandlerContext = {};
-    context[DATA_CLIENT_ID_KEY] = dataClientID;
+    context[CONNECTION_ID_KEY] = dataClientID;
     this.interceptors = this.initializeInterceptors(
       this.configuration.getLoggerFactory(),
       this.configuration.getMiddlewares(),
