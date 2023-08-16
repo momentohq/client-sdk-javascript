@@ -29,7 +29,7 @@
     "typescript": "4.4.3"
   },
   "dependencies": {
-    "@gomomento/sdk": "1.28.0",
+    "@gomomento/sdk": "1.31.0",
     "@grpc/grpc-js": "1.8.17",
     "@opentelemetry/api": "1.4.1",
     "@opentelemetry/exporter-prometheus": "0.39.1",
