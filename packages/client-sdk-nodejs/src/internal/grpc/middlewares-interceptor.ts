@@ -11,16 +11,20 @@ import {NextCall} from '@grpc/grpc-js/build/src/client-interceptors';
 import {
   Middleware,
   MiddlewareRequestHandler,
+  MiddlewareRequestHandlerContext,
 } from '../../config/middleware/middleware';
 import {Message} from 'google-protobuf';
 import {MomentoLoggerFactory} from '../../';
 
 export function middlewaresInterceptor(
   loggerFactory: MomentoLoggerFactory,
-  middlewares: Middleware[]
+  middlewares: Middleware[],
+  middlewareRequestContext: MiddlewareRequestHandlerContext
 ): Interceptor {
   return (options: InterceptorOptions, nextCall: NextCall) => {
-    const middlewareRequestHandlers = middlewares.map(m => m.onNewRequest());
+    const middlewareRequestHandlers = middlewares.map(m =>
+      m.onNewRequest(middlewareRequestContext)
+    );
     // create a copy of the handlers and reverse it, because for the response life cycle actions we should call
     // the middlewares in the opposite order.
     const reversedMiddlewareRequestHandlers = [

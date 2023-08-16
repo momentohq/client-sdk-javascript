@@ -4,10 +4,15 @@ import {
   ExperimentalMetricsMiddlewareRequestHandler,
   ExperimentalRequestMetrics,
 } from './impl/experimental-metrics-middleware';
+import {MiddlewareRequestHandlerContext} from './middleware';
 
 class ExperimentalMetricsLoggingMiddlewareRequestHandler extends ExperimentalMetricsMiddlewareRequestHandler {
-  constructor(parent: ExperimentalMetricsMiddleware, logger: MomentoLogger) {
-    super(parent, logger);
+  constructor(
+    parent: ExperimentalMetricsMiddleware,
+    logger: MomentoLogger,
+    context: MiddlewareRequestHandlerContext
+  ) {
+    super(parent, logger, context);
   }
 
   emitMetrics(metrics: ExperimentalRequestMetrics): Promise<void> {
@@ -42,7 +47,8 @@ export class ExperimentalMetricsLoggingMiddleware extends ExperimentalMetricsMid
   constructor(loggerFactory: MomentoLoggerFactory) {
     super(
       loggerFactory,
-      (p, l) => new ExperimentalMetricsLoggingMiddlewareRequestHandler(p, l)
+      (p, l, c) =>
+        new ExperimentalMetricsLoggingMiddlewareRequestHandler(p, l, c)
     );
   }
 }

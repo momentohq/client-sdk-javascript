@@ -1,7 +1,12 @@
-import {Middleware, MiddlewareRequestHandler} from '../middleware';
+import {
+  Middleware,
+  MiddlewareRequestHandler,
+  MiddlewareRequestHandlerContext,
+} from '../middleware';
 import {Metadata, StatusObject} from '@grpc/grpc-js';
 import {Message} from 'google-protobuf';
 import {MomentoLogger, MomentoLoggerFactory} from '@gomomento/sdk-core';
+import {CONNECTION_ID_KEY} from '../../../internal/data-client';
 
 const FIELD_NAMES: Array<string> = [
   'numActiveRequestsAtStart',
@@ -14,6 +19,7 @@ const FIELD_NAMES: Array<string> = [
   'duration',
   'requestSize',
   'responseSize',
+  'connectionID',
 ];
 
 export interface ExperimentalRequestMetrics {
@@ -57,6 +63,10 @@ export interface ExperimentalRequestMetrics {
    * The size of the response body in bytes
    */
   responseSize: number;
+  /**
+   * The ID of the specific connection that made the request
+   */
+  connectionID: string;
 }
 
 export abstract class ExperimentalMetricsMiddlewareRequestHandler
@@ -64,6 +74,7 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
 {
   private readonly parent: ExperimentalMetricsMiddleware;
   protected readonly logger: MomentoLogger;
+  private readonly connectionID: string;
 
   private readonly numActiveRequestsAtStart: number;
   private readonly startTime: number;
@@ -76,9 +87,14 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
   private receivedResponseBody: boolean;
   private receivedResponseStatus: boolean;
 
-  constructor(parent: ExperimentalMetricsMiddleware, logger: MomentoLogger) {
+  constructor(
+    parent: ExperimentalMetricsMiddleware,
+    logger: MomentoLogger,
+    context: MiddlewareRequestHandlerContext
+  ) {
     this.parent = parent;
     this.logger = logger;
+    this.connectionID = context[CONNECTION_ID_KEY];
 
     this.numActiveRequestsAtStart = parent.incrementActiveRequestCount();
     this.startTime = new Date().getTime();
@@ -139,6 +155,7 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
       duration: endTime - this.startTime,
       requestSize: this.requestSize,
       responseSize: this.responseSize,
+      connectionID: this.connectionID,
     };
     this.emitMetrics(metrics).catch(e =>
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -166,16 +183,19 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
 export abstract class ExperimentalMetricsMiddleware implements Middleware {
   private numActiveRequests = 0;
   private readonly logger: MomentoLogger;
+
   private readonly requestHandlerFactoryFn: (
     parent: ExperimentalMetricsMiddleware,
-    logger: MomentoLogger
+    logger: MomentoLogger,
+    context: MiddlewareRequestHandlerContext
   ) => MiddlewareRequestHandler;
 
   constructor(
     loggerFactory: MomentoLoggerFactory,
     requestHandlerFactoryFn: (
       parent: ExperimentalMetricsMiddleware,
-      logger: MomentoLogger
+      logger: MomentoLogger,
+      context: MiddlewareRequestHandlerContext
     ) => MiddlewareRequestHandler
   ) {
     this.logger = loggerFactory.getLogger(this);
@@ -198,7 +218,9 @@ export abstract class ExperimentalMetricsMiddleware implements Middleware {
     --this.numActiveRequests;
   }
 
-  onNewRequest(): MiddlewareRequestHandler {
-    return this.requestHandlerFactoryFn(this, this.logger);
+  onNewRequest(
+    context: MiddlewareRequestHandlerContext
+  ): MiddlewareRequestHandler {
+    return this.requestHandlerFactoryFn(this, this.logger, context);
   }
 }

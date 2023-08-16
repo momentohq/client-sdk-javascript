@@ -20,7 +20,8 @@
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
-    "build": "tsc"
+    "build": "tsc",
+    "build-without-local-core": "tsc"
   },
   "author": "",
   "license": "Apache-2.0",
