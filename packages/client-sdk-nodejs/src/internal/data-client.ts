@@ -98,6 +98,8 @@ import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
 
+export const DATA_CLIENT_ID_KEY = Symbol('dataClientID');
+
 export class DataClient implements IDataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
   private readonly textEncoder: TextEncoder;
@@ -113,7 +115,7 @@ export class DataClient implements IDataClient {
    * @param {CacheClientProps} props
    * @param dataClientID
    */
-  constructor(props: CacheClientProps, dataClientID: number) {
+  constructor(props: CacheClientProps, dataClientID: string) {
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
@@ -159,15 +161,10 @@ export class DataClient implements IDataClient {
     this.textEncoder = new TextEncoder();
     this.defaultTtlSeconds = props.defaultTtlSeconds;
 
-    let context = this.configuration.getMiddlewareRequestHandlerContext();
-    if (context === undefined) {
-      context = {};
-    }
-    // we intercept the per-request context to pad a clientID that will be used for debugging
-    context['dataClientID'] = dataClientID;
-    this.configuration =
-      this.configuration.withMiddlewareRequestHandlerContext(context);
-
+    // this context object is currently internal only but can be extended in the Configuration object is we wants clients
+    // to be able to set it.
+    const context: MiddlewareRequestHandlerContext = {};
+    context[DATA_CLIENT_ID_KEY] = dataClientID;
     this.interceptors = this.initializeInterceptors(
       this.configuration.getLoggerFactory(),
       this.configuration.getMiddlewares(),

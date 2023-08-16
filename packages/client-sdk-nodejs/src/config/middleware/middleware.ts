@@ -11,7 +11,7 @@ export interface MiddlewareRequestHandler {
 }
 
 export interface MiddlewareRequestHandlerContext {
-  [key: string]: string | number | boolean;
+  [key: symbol]: string;
 }
 
 /**

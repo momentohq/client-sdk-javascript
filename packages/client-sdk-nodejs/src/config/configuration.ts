@@ -1,8 +1,5 @@
 import {RetryStrategy} from './retry/retry-strategy';
-import {
-  Middleware,
-  MiddlewareRequestHandlerContext,
-} from './middleware/middleware';
+import {Middleware} from './middleware/middleware';
 import {MomentoLoggerFactory} from '../';
 import {TransportStrategy} from './transport';
 
@@ -23,10 +20,6 @@ export interface ConfigurationProps {
    * Configures middleware functions that will wrap each request
    */
   middlewares: Middleware[];
-  /**
-   * Configures context available to each unique request handler of the middleware
-   */
-  middlewareRequestHandlerContext?: MiddlewareRequestHandlerContext;
 }
 
 /**
@@ -85,33 +78,6 @@ export interface Configuration {
   addMiddleware(middleware: Middleware): Configuration;
 
   /**
-   * Copy constructor for overriding MiddlewareRequestHandlerContext
-   * @param {MiddlewareRequestHandlerContext} context
-   * @returns {Configuration} a new Configuration object with the specified MiddlewareRequestHandlerContext
-   */
-  withMiddlewareRequestHandlerContext(
-    context: MiddlewareRequestHandlerContext
-  ): Configuration;
-
-  /**
-   * Copy constructor that adds a single middleware request context to the existing context
-   * @param {string} key the key for the context
-   * @param value the value for the context that can be a string, number, or boolean
-   * @returns {Configuration} a new Configuration object with the specified Middleware appended to the list of existing Middlewares
-   */
-  addToMiddlewareRequestHandlerContext(
-    key: string,
-    value: string | number | boolean
-  ): Configuration;
-
-  /**
-   * @returns {MiddlewareRequestHandlerContext} the middleware request handler context. Can be undefined
-   * */
-  getMiddlewareRequestHandlerContext():
-    | MiddlewareRequestHandlerContext
-    | undefined;
-
-  /**
    * Convenience copy constructor that updates the client-side timeout setting in the TransportStrategy
    * @param {number} clientTimeoutMillis
    * @returns {Configuration} a new Configuration object with its TransportStrategy updated to use the specified client timeout
@@ -124,15 +90,12 @@ export class CacheConfiguration implements Configuration {
   private readonly retryStrategy: RetryStrategy;
   private readonly transportStrategy: TransportStrategy;
   private readonly middlewares: Middleware[];
-  private middlewareRequestHandlerContext?: MiddlewareRequestHandlerContext;
 
   constructor(props: ConfigurationProps) {
     this.loggerFactory = props.loggerFactory;
     this.retryStrategy = props.retryStrategy;
     this.transportStrategy = props.transportStrategy;
     this.middlewares = props.middlewares;
-    this.middlewareRequestHandlerContext =
-      props.middlewareRequestHandlerContext;
   }
 
   getLoggerFactory(): MomentoLoggerFactory {
@@ -149,7 +112,6 @@ export class CacheConfiguration implements Configuration {
       retryStrategy: retryStrategy,
       transportStrategy: this.transportStrategy,
       middlewares: this.middlewares,
-      middlewareRequestHandlerContext: this.middlewareRequestHandlerContext,
     });
   }
 
@@ -176,42 +138,6 @@ export class CacheConfiguration implements Configuration {
       retryStrategy: this.retryStrategy,
       transportStrategy: this.transportStrategy,
       middlewares: middlewares,
-      middlewareRequestHandlerContext: this.middlewareRequestHandlerContext,
-    });
-  }
-
-  withMiddlewareRequestHandlerContext(
-    context: MiddlewareRequestHandlerContext
-  ): Configuration {
-    return new CacheConfiguration({
-      loggerFactory: this.loggerFactory,
-      retryStrategy: this.retryStrategy,
-      transportStrategy: this.transportStrategy,
-      middlewares: this.middlewares,
-      middlewareRequestHandlerContext: context,
-    });
-  }
-
-  getMiddlewareRequestHandlerContext():
-    | MiddlewareRequestHandlerContext
-    | undefined {
-    return this.middlewareRequestHandlerContext;
-  }
-
-  addToMiddlewareRequestHandlerContext(
-    key: string,
-    value: string | number | boolean
-  ): Configuration {
-    if (this.middlewareRequestHandlerContext === undefined) {
-      this.middlewareRequestHandlerContext = {};
-    }
-    this.middlewareRequestHandlerContext[key] = value;
-    return new CacheConfiguration({
-      loggerFactory: this.loggerFactory,
-      retryStrategy: this.retryStrategy,
-      transportStrategy: this.transportStrategy,
-      middlewares: this.middlewares,
-      middlewareRequestHandlerContext: this.middlewareRequestHandlerContext,
     });
   }
 
@@ -221,7 +147,6 @@ export class CacheConfiguration implements Configuration {
       retryStrategy: this.retryStrategy,
       transportStrategy: this.transportStrategy,
       middlewares: [middleware, ...this.middlewares],
-      middlewareRequestHandlerContext: this.middlewareRequestHandlerContext,
     });
   }
 
@@ -232,7 +157,6 @@ export class CacheConfiguration implements Configuration {
       transportStrategy:
         this.transportStrategy.withClientTimeoutMillis(clientTimeout),
       middlewares: this.middlewares,
-      middlewareRequestHandlerContext: this.middlewareRequestHandlerContext,
     });
   }
 }

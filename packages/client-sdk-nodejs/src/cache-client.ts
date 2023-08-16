@@ -39,7 +39,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
       .getGrpcConfig()
       .getNumClients();
     const dataClients = range(numClients).map(
-      (_, id) => new DataClient(props, id)
+      (_, id) => new DataClient(props, String(id))
     );
     super(controlClient, dataClients);
 
