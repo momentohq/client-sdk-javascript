@@ -34,6 +34,7 @@ async function handleRequest(event: FetchEvent) {
   console.log('Connected to the Fastly Config Store');
 
   // Get all required information from the Config Store
+  // Note: for production environments, the Momento auth token should be saved in a Fastly Secret Store
   const authToken = secrets.get('MOMENTO_TOKEN');
   if (!authToken) {
     return new Response('Missing required env var MOMENTO_TOKEN', {
