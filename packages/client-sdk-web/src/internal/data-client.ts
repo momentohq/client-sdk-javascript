@@ -51,6 +51,7 @@ import {
   MomentoLogger,
   SortedSetOrder,
   UnknownError,
+  CacheDictionaryLength,
 } from '..';
 import {Configuration} from '../config/configuration';
 import {Request, UnaryResponse} from 'grpc-web';
@@ -104,6 +105,7 @@ import {
   _Unbounded,
   ECacheResult,
   _UpdateTtlRequest,
+  _DictionaryLengthRequest,
 } from '@gomomento/generated-types-webtext/dist/cacheclient_pb';
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {
@@ -1809,6 +1811,63 @@ export class DataClient<
               new CacheDictionaryRemoveFields.Error(
                 cacheServiceErrorMapper(err)
               )
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async dictionaryLength(
+    cacheName: string,
+    dictionaryName: string
+  ): Promise<CacheDictionaryLength.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+    } catch (err) {
+      return new CacheDictionaryLength.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.trace(
+      `Issuing 'dictionaryLength' request; dictionaryName: ${dictionaryName}`
+    );
+    const result = await this.sendDictionaryLength(
+      cacheName,
+      convertToB64String(dictionaryName)
+    );
+    this.logger.trace(
+      `'dictionaryLength' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendDictionaryLength(
+    cacheName: string,
+    dictionaryName: string
+  ): Promise<CacheDictionaryLength.Response> {
+    const request = new _DictionaryLengthRequest();
+    request.setDictionaryName(dictionaryName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.dictionaryLength(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp?.getMissing()) {
+            resolve(new CacheDictionaryLength.Miss());
+          } else if (resp?.getFound()) {
+            const len = resp.getFound()?.getLength();
+            if (!len) {
+              resolve(new CacheDictionaryLength.Miss());
+            } else {
+              resolve(new CacheDictionaryLength.Hit(len));
+            }
+          } else {
+            resolve(
+              new CacheDictionaryLength.Error(cacheServiceErrorMapper(err))
             );
           }
         }

@@ -26,6 +26,7 @@ import {
   CacheDictionaryIncrement,
   CacheDictionaryRemoveField,
   CacheDictionaryRemoveFields,
+  CacheDictionaryLength,
   CacheSortedSetFetch,
   CacheSortedSetPutElement,
   CacheSortedSetPutElements,
@@ -221,6 +222,10 @@ export interface ICacheClient extends IControlClient, IPingClient {
     dictionaryName: string,
     fields: string[] | Uint8Array[]
   ): Promise<CacheDictionaryRemoveFields.Response>;
+  dictionaryLength(
+    cacheName: string,
+    dictionaryName: string
+  ): Promise<CacheDictionaryLength.Response>;
   sortedSetFetchByRank(
     cacheName: string,
     sortedSetName: string,
