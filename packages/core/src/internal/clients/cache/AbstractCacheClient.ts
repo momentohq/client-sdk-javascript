@@ -33,6 +33,7 @@ import {
   CacheDictionaryFetch,
   CacheDictionaryRemoveField,
   CacheDictionaryRemoveFields,
+  CacheDictionaryLength,
   CacheSortedSetFetch,
   CacheSortedSetPutElement,
   CacheSortedSetPutElements,
@@ -879,6 +880,24 @@ export abstract class AbstractCacheClient implements ICacheClient {
       amount,
       options?.ttl
     );
+  }
+
+  /**
+   * Gets the number of elements in the given dictionary.
+   *
+   * @param {string} cacheName - The cache containing the dictionary.
+   * @param {string} dictionaryName - The dictionary to get the length of.
+   * @returns {Promise<CacheDictionaryLength.Response>} -
+   * {@link CacheDictionaryLength.Hit} containing the length if the dictionary exists.
+   * {@link CacheDictionaryLength.Miss} if the dictionary does not exist.
+   * {@link CacheDictionaryLength.Error} on failure.
+   */
+  public async dictionaryLength(
+    cacheName: string,
+    dictionaryName: string
+  ): Promise<CacheDictionaryLength.Response> {
+    const client = this.getNextDataClient();
+    return await client.dictionaryLength(cacheName, dictionaryName);
   }
 
   /**

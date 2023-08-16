@@ -34,6 +34,7 @@ import * as CacheDictionaryGetFields from '@gomomento/sdk-core/dist/src/messages
 import * as CacheDictionaryRemoveField from '@gomomento/sdk-core/dist/src/messages/responses/cache-dictionary-remove-field';
 import * as CacheDictionaryRemoveFields from '@gomomento/sdk-core/dist/src/messages/responses/cache-dictionary-remove-fields';
 import * as CacheDictionaryIncrement from '@gomomento/sdk-core/dist/src/messages/responses/cache-dictionary-increment';
+import * as CacheDictionaryLength from '@gomomento/sdk-core/dist/src/messages/responses/cache-dictionary-length';
 import * as CacheSetAddElements from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-add-elements';
 import * as CacheSetAddElement from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-add-element';
 import * as CacheSetRemoveElements from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-remove-elements';
@@ -230,6 +231,7 @@ export {
   CacheDictionaryRemoveField,
   CacheDictionaryRemoveFields,
   CacheDictionaryIncrement,
+  CacheDictionaryLength,
   CacheSetAddElements,
   CacheSetAddElement,
   CacheSetRemoveElements,

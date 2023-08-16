@@ -11,6 +11,7 @@ import {
   CacheDictionaryGetField,
   CacheDictionaryGetFields,
   CacheDictionaryIncrement,
+  CacheDictionaryLength,
 } from '@gomomento/sdk-core';
 import {
   ValidateCacheProps,
@@ -1464,6 +1465,46 @@ export function runDictionaryTests(
         if (getResponse instanceof CacheDictionaryGetField.Hit) {
           expect(getResponse.valueString()).toEqual(value2);
         }
+      });
+    });
+
+    describe('#dictionaryLength', () => {
+      itBehavesLikeItValidates((props: ValidateDictionaryProps) => {
+        return Momento.dictionaryLength(props.cacheName, props.dictionaryName);
+      });
+
+      it('returns a miss if the dictionary does not exist', async () => {
+        const resp = await Momento.dictionaryLength(
+          IntegrationTestCacheName,
+          v4()
+        );
+        expect(resp).toBeInstanceOf(CacheDictionaryLength.Miss);
+      });
+
+      it('returns the length if the dictionary exists', async () => {
+        const dictionaryName = v4();
+        const field1 = v4();
+        const value1 = uint8ArrayForTest(v4());
+        const field2 = v4();
+        const value2 = uint8ArrayForTest(v4());
+        await Momento.dictionarySetFields(
+          IntegrationTestCacheName,
+          dictionaryName,
+          new Map([
+            [field1, value1],
+            [field2, value2],
+          ]),
+          {ttl: CollectionTtl.of(10)}
+        );
+
+        const resp = await Momento.dictionaryLength(
+          IntegrationTestCacheName,
+          dictionaryName
+        );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryLength.Hit);
+        }, `expected a HIT but got ${resp.toString()}`);
+        expect((resp as CacheDictionaryLength.Hit).length()).toEqual(2);
       });
     });
   });
