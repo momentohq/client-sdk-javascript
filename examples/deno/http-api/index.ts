@@ -83,8 +83,20 @@ class MomentoFetcher {
 
 export const handler = async (_request: Request): Promise<Response> => {
 	const cacheName = env['MOMENTO_CACHE_NAME']
+	if (!cacheName) {
+		throw new Error("Missing environment variable MOMENTO_CACHE_NAME")
+	}
+
 	const authToken = env['MOMENTO_AUTH_TOKEN']
+	if (!authToken) {
+		throw new Error("Missing environment variable MOMENTO_AUTH_TOKEN")
+	}
+
 	const endpoint = env['MOMENTO_HTTP_ENDPOINT']
+	if (!endpoint) {
+		throw new Error("Missing environment variable MOMENTO_HTTP_ENDPOINT")
+	}
+
 	const key = 'foo'
 	const value = 'FOO'
 

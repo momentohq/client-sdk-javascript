@@ -22,15 +22,23 @@ export const handler = async (_request: Request): Promise<Response> => {
 		value: XMLHttpRequestPolyfill,
 	})
 
+	const cacheName = env['MOMENTO_CACHE_NAME']
+	if (!cacheName) {
+		throw new Error("Missing environment variable MOMENTO_CACHE_NAME")
+	}
+
+	const authToken = env['MOMENTO_AUTH_TOKEN']
+	if (!authToken) {
+		throw new Error("Missing environment variable MOMENTO_AUTH_TOKEN")
+	}
+
 	const momento = new CacheClient({
 		configuration: Configurations.Browser.v1(),
 		credentialProvider: CredentialProvider.fromString({
-			authToken: env['MOMENTO_AUTH_TOKEN'],
+			authToken: authToken,
 		}),
 		defaultTtlSeconds: 60,
 	})
-
-	const cacheName = env['MOMENTO_CACHE_NAME']
 
 	console.log('Storing key=foo, value=FOO')
 	const setResponse = await momento.set(cacheName, 'foo', 'FOO')
