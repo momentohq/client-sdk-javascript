@@ -4,11 +4,7 @@
   "description": "Momento token vending machine AWS Lambda function",
   "main": "index.ts",
   "scripts": {
-    "prebuild": "eslint . --ext .ts",
-    "build": "tsc",
-    "test": "jest",
-    "lint": "eslint . --ext .ts",
-    "format": "eslint . --ext .ts --fix"
+    "build": "tsc"
   },
   "author": "",
   "license": "ISC",
