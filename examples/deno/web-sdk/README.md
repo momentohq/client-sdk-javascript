@@ -2,6 +2,8 @@
 
 This example shows how to use Momento Cache via the Momento Web SDK inside of a [Deno](https://deno.land/) runtime.
 
+The Web SDK supports the full Momento API (including collections like Dictionaries and SortedSets, plus the ability to publish to Momento Topics). It also has a complete TypeScript/JavaScript API that makes it simpler to write code to interact with Momento. This can save you time and effort when developing your Worker. 
+
 ## Getting Started
 
 1. [Install deno](https://deno.land/manual@v1.36.1/getting_started/installation) using your preferred method.

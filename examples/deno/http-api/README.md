@@ -1,6 +1,8 @@
 # Using Momento Cache and HTTP API Inside a Deno Runtime
 
-This example shows how to use Momento Cache via the Momento HTTP API inside of a [Deno](https://deno.land/) runtime.
+This example shows how to use Momento Cache via the Momento HTTP API inside of a [Deno](https://deno.land/) runtime. 
+
+The HTTP API is lightweight in that you won't need any additional dependencies beyond what Deno requires and you can use the standard `fetch` HTTP client methods. However, it only provides a basic subset of all of the Momento APIs, such as `get`, `set`, and `delete`, and is currently only available if you use AWS as your cloud provider.
 
 ## Getting Started
 
