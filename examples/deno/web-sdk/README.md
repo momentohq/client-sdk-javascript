@@ -1,6 +1,6 @@
-# Using Momento Inside a Deno Runtime
+# Using Momento Cache and Web SDK Inside a Deno Runtime
 
-This example shows how to use Momento inside of a [Deno](https://deno.land/) runtime.
+This example shows how to use Momento Cache via the Momento Web SDK inside of a [Deno](https://deno.land/) runtime.
 
 ## Getting Started
 
@@ -12,9 +12,10 @@ This example shows how to use Momento inside of a [Deno](https://deno.land/) run
   cd client-sdk-javascript/examples/deno
   ```
 
-3. Create a `.env` file and provide a Momento superuser token. You can create a new one in the [Momento Console](https://console.gomomento.com/) if you do not yet have one.
+3. Create a `.env` file and provide the name of your Momento Cache and a corresponding fine-grained access token. You can create a both a cache and an access token in the [Momento Console](https://console.gomomento.com/). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on creating a cache and auth token.
   ```
   MOMENTO_AUTH_TOKEN="<your-auth-token>"
+  MOMENTO_CACHE_NAME="<your-cache-name>"
   ```
 
 4. Run the program from the terminal then checkout http://localhost:8000 in your browser:
