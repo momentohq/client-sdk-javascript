@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { clearCurrentClient } from "@/utils/momento-web";
 import ChatRoom from "@/app/pages/chat-room";
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { useSession, signIn, signOut } from "next-auth/react";
 
 export default function Home() {
   const cacheName = String(process.env.NEXT_PUBLIC_MOMENTO_CACHE_NAME);
   const authMethod = String(process.env.NEXT_PUBLIC_AUTH_METHOD);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: session, status } = useSession();
 
   const [topic, setTopic] = useState("");
@@ -24,7 +25,7 @@ export default function Home() {
     signOut();
   };
 
-  if (authMethod === "credentials" && status !== 'authenticated') {
+  if (authMethod === "credentials" && status !== "authenticated") {
     return (
       <div
         className={
@@ -32,13 +33,14 @@ export default function Home() {
         }
       >
         <p className={"w-80 text-center my-2"}>
-        This app was configured to allow only authenticated users. Please sign in.
+          This app was configured to allow only authenticated users. Please sign
+          in.
         </p>
-        <button 
+        <button
           onClick={() => signIn()}
           className={
             "disabled:bg-slate-50 disabled:brightness-75 disabled:cursor-default rounded-2xl hover:cursor-pointer w-24 bg-emerald-400 p-2 hover:brightness-75"
-          } 
+          }
         >
           Sign in
         </button>
@@ -54,8 +56,8 @@ export default function Home() {
         }
       >
         <p className={"w-80 text-center my-2"}>
-          Please enter the name of the chat room you'd like to join. 
-          If it doesn't exist, it will be created using Momento Topics.
+          Please enter the name of the chat room you'd like to join. If it
+          doesn't exist, it will be created using Momento Topics.
         </p>
         <div className={"h-8"} />
         <div className={"w-48"}>

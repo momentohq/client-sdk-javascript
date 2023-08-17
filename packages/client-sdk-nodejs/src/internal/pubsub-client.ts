@@ -248,7 +248,7 @@ export class PubsubClient extends AbstractPubsubClient {
     requestTimeoutMs: number
   ): Interceptor[] {
     return [
-      middlewaresInterceptor(configuration.getLoggerFactory(), []),
+      middlewaresInterceptor(configuration.getLoggerFactory(), [], {}),
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
       ClientTimeoutInterceptor(requestTimeoutMs),
     ];

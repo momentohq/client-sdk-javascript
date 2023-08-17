@@ -5,7 +5,7 @@ import ChatRoom from "./components/chat-room";
 export default function Home() {
   const [topic, setTopic] = useState("");
   const [username, setUsername] = useState("");
-  const [cognitoUser, setCognitoUser] = useState("ReadOnly");  
+  const [cognitoUser, setCognitoUser] = useState("ReadOnly");
   const [chatRoomSelected, setChatRoomSelected] = useState(false);
   const [usernameSelected, setUsernameSelected] = useState(false);
   const [cognitoUserSelected, setCognitoUserSelected] = useState(false);
@@ -17,7 +17,7 @@ export default function Home() {
     setCognitoUserSelected(false);
     setTopic("");
     setUsername("");
-    setCognitoUser("ReadOnly"); 
+    setCognitoUser("ReadOnly");
   };
 
   if (!import.meta.env.VITE_MOMENTO_CACHE_NAME) {
@@ -71,7 +71,7 @@ export default function Home() {
         }
       >
         <div className={"w-80 text-center my-2"}>
-          Please enter the name of the chat room you'd like to join. 
+          Please enter the name of the chat room you'd like to join.
           If it doesn't exist, it will be created using Momento Topics.
         </div>
         <div className={"h-8"} />
@@ -140,6 +140,7 @@ export default function Home() {
   return (
     <ChatRoom
       topicName={topic}
+      /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
       cacheName={import.meta.env.VITE_MOMENTO_CACHE_NAME}
       username={username}
       selectedUser={cognitoUser}

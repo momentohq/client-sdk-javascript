@@ -39,6 +39,7 @@ class MomentoFetcher {
 		} else if (getResponse instanceof CacheGet.Miss) {
 			console.log(`cache miss for key ${key}`);
 		} else if (getResponse instanceof CacheGet.Error) {
+			console.log(`Error when getting value from cache! ${getResponse.toString()}`);
 			throw new Error(`Error retrieving key ${key}: ${getResponse.message()}`);
 		}
 
@@ -53,6 +54,7 @@ class MomentoFetcher {
 		if (setResponse instanceof CacheSet.Success) {
 			console.log('Key stored successfully!');
 		} else if (setResponse instanceof CacheSet.Error) {
+			console.log(`Error when setting value in cache! ${setResponse.toString()}`);
 			throw new Error(`Error setting key ${key}: ${setResponse.toString()}`);
 		}
 
@@ -64,6 +66,7 @@ class MomentoFetcher {
 		if (delResponse instanceof CacheDelete.Success) {
 			console.log(`successfully deleted ${key} from cache`);
 		} else if (delResponse instanceof CacheDelete.Error) {
+			console.log(`Error when deleting value from cache! ${delResponse.toString()}`);
 			throw new Error(`failed to delete ${key} from cache. Message: ${delResponse.message()}; cache: ${cacheName}`);
 		}
 
@@ -79,6 +82,7 @@ export interface Env {
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 
+		console.log(`Creating cache client`);
 		const momento = new CacheClient({
 			configuration: Configurations.Laptop.v1(),
 			credentialProvider: CredentialProvider.fromString({
@@ -87,20 +91,19 @@ export default {
 			defaultTtlSeconds: 60,
 		});
 
-		const createCacheResponse = await momento.createCache('cache-web');
-		if (createCacheResponse instanceof CreateCache.AlreadyExists) {
-			console.log('cache already exists');
-		} else if (createCacheResponse instanceof CreateCache.Error) {
-			throw createCacheResponse.innerException();
-		}
+		console.log(`Creating fetcher`);
 
 		const client = new MomentoFetcher(momento);
 		const cache = env.MOMENTO_CACHE_NAME;
 		const key = "key";
 		const value = "value";
 
+		console.log(`Issuing a set`);
+
 		// setting a value into cache
 		await client.set(cache, key, value);
+
+		console.log(`Issuing a get`);
 
 		// getting a value from cache
 		const getResponse = await client.get(cache, key)

@@ -16,6 +16,7 @@ import {
   CacheDictionaryRemoveFields,
   CacheDictionarySetField,
   CacheDictionarySetFields,
+  CacheDictionaryLength,
   CacheGet,
   CacheIncrement,
   CacheListConcatenateBack,
@@ -64,7 +65,10 @@ import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {CacheClientProps} from '../cache-client-props';
-import {Middleware} from '../config/middleware/middleware';
+import {
+  Middleware,
+  MiddlewareRequestHandlerContext,
+} from '../config/middleware/middleware';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 import {Configuration} from '../config/configuration';
@@ -95,6 +99,8 @@ import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
 
+export const CONNECTION_ID_KEY = Symbol('connectionID');
+
 export class DataClient implements IDataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
   private readonly textEncoder: TextEncoder;
@@ -108,8 +114,9 @@ export class DataClient implements IDataClient {
 
   /**
    * @param {CacheClientProps} props
+   * @param dataClientID
    */
-  constructor(props: CacheClientProps) {
+  constructor(props: CacheClientProps, dataClientID: string) {
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
@@ -154,9 +161,15 @@ export class DataClient implements IDataClient {
 
     this.textEncoder = new TextEncoder();
     this.defaultTtlSeconds = props.defaultTtlSeconds;
+
+    // this context object is currently internal only but can be extended in the Configuration object is we wants clients
+    // to be able to set it.
+    const context: MiddlewareRequestHandlerContext = {};
+    context[CONNECTION_ID_KEY] = dataClientID;
     this.interceptors = this.initializeInterceptors(
       this.configuration.getLoggerFactory(),
-      this.configuration.getMiddlewares()
+      this.configuration.getMiddlewares(),
+      context
     );
   }
   public connect(timeoutSeconds = 10): Promise<void> {
@@ -988,13 +1001,7 @@ export class DataClient implements IDataClient {
           if (resp?.missing) {
             resolve(new CacheListLength.Miss());
           } else if (resp?.found) {
-            // Unlike listFetch, listLength will return found if there is no list,
-            // but there will be no length.
-            if (!resp.found.length) {
-              resolve(new CacheListLength.Miss());
-            } else {
-              resolve(new CacheListLength.Hit(resp.found.length));
-            }
+            resolve(new CacheListLength.Hit(resp.found.length));
           } else {
             resolve(new CacheListLength.Error(cacheServiceErrorMapper(err)));
           }
@@ -1743,6 +1750,60 @@ export class DataClient implements IDataClient {
               new CacheDictionaryRemoveFields.Error(
                 cacheServiceErrorMapper(err)
               )
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async dictionaryLength(
+    cacheName: string,
+    dictionaryName: string
+  ): Promise<CacheDictionaryLength.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateDictionaryName(dictionaryName);
+    } catch (err) {
+      return new CacheDictionaryLength.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.trace(
+      `Issuing 'dictionaryLength' request; dictionaryName: ${dictionaryName}`
+    );
+    const result = await this.sendDictionaryLength(
+      cacheName,
+      this.convert(dictionaryName)
+    );
+    this.logger.trace(
+      `'dictionaryLength' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendDictionaryLength(
+    cacheName: string,
+    dictionaryName: Uint8Array
+  ): Promise<CacheDictionaryLength.Response> {
+    const request = new grpcCache._DictionaryLengthRequest({
+      dictionary_name: dictionaryName,
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise(resolve => {
+      this.clientWrapper.getClient().DictionaryLength(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheDictionaryLength.Miss());
+          } else if (resp?.found) {
+            resolve(new CacheDictionaryLength.Hit(resp.found.length));
+          } else {
+            resolve(
+              new CacheDictionaryLength.Error(cacheServiceErrorMapper(err))
             );
           }
         }
@@ -2788,14 +2849,19 @@ export class DataClient implements IDataClient {
 
   private initializeInterceptors(
     loggerFactory: MomentoLoggerFactory,
-    middlewares: Middleware[]
+    middlewares: Middleware[],
+    middlewareRequestContext: MiddlewareRequestHandlerContext
   ): Interceptor[] {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
       new Header('Agent', `nodejs:${version}`),
     ];
     return [
-      middlewaresInterceptor(loggerFactory, middlewares),
+      middlewaresInterceptor(
+        loggerFactory,
+        middlewares,
+        middlewareRequestContext
+      ),
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
       ClientTimeoutInterceptor(this.requestTimeoutMs),
       ...createRetryInterceptorIfEnabled(

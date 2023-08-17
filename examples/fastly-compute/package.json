@@ -1,0 +1,40 @@
+{
+  "name": "compute-starter-kit-typescript",
+  "version": "0.2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fastly/compute-starter-kit-typescript.git"
+  },
+  "author": "oss@fastly.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fastly/compute-starter-kit-typescript/issues"
+  },
+  "homepage": "https://developer.fastly.com/solutions/starters/compute-starter-kit-typescript",
+  "engines": {
+    "node": "^16 || >=18"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.4",
+    "@typescript-eslint/eslint-plugin": "5.30.5",
+    "@typescript-eslint/parser": "^5.0.0",
+    "eslint": "8.19.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "prettier": "2.7.1",
+    "typescript": "^5.0.2"
+  },
+  "dependencies": {
+    "@fastly/js-compute": "^3.0.0"
+  },
+  "scripts": {
+    "prebuild": "tsc",
+    "build": "js-compute-runtime build/index.js bin/main.wasm",
+    "deploy": "fastly compute publish",
+    "lint": "eslint . --ext .ts",
+    "format": "eslint . --ext .ts --fix"
+  }
+}

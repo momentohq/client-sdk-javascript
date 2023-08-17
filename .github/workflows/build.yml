@@ -182,6 +182,14 @@ jobs:
             npm run build
             npm run validate-examples
           popd
+          pushd examples/web/nextjs-chat
+            npm ci
+            npm run build
+          popd
+          pushd examples/web/vite-chat-app
+            npm ci
+            npm run build
+          popd
 
       - name: Send CI failure mail
         if: ${{ steps.validation.outcome == 'failure' }}

@@ -3,9 +3,14 @@ import {
   CredentialProvider,
   GenerateAuthToken,
 } from "@gomomento/sdk";
-import { tokenPermissions, tokenExpiresIn, authenticationMethod, AuthenticationMethod } from "./config";
-import { authOptions } from '../../auth/[...nextauth]/route';
-import { getServerSession } from 'next-auth';
+import {
+  tokenPermissions,
+  tokenExpiresIn,
+  authenticationMethod,
+  AuthenticationMethod,
+} from "./config";
+import { authOptions } from "../../auth/[...nextauth]/route";
+import { getServerSession } from "next-auth";
 
 const authClient = new AuthClient({
   credentialProvider: CredentialProvider.fromString({
@@ -40,10 +45,7 @@ export async function GET(_request: Request) {
 }
 
 async function fetchTokenWithOpenAuth() {
-  return await authClient.generateAuthToken(
-    tokenPermissions,
-    tokenExpiresIn,
-  );
+  return await authClient.generateAuthToken(tokenPermissions, tokenExpiresIn);
 }
 
 async function fetchTokenWithAuthCredentials() {
@@ -53,8 +55,5 @@ async function fetchTokenWithAuthCredentials() {
     throw new Error("Unauthorized to request Momento token");
   }
 
-  return await authClient.generateAuthToken(
-    tokenPermissions,
-    tokenExpiresIn,
-  );
+  return await authClient.generateAuthToken(tokenPermissions, tokenExpiresIn);
 }

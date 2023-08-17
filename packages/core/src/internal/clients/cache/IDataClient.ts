@@ -43,6 +43,7 @@ import {
   CacheUpdateTtl,
   CacheIncreaseTtl,
   CacheDecreaseTtl,
+  CacheDictionaryLength,
 } from '../../../index';
 
 export interface IDataClient {
@@ -185,6 +186,10 @@ export interface IDataClient {
     dictionaryName: string,
     fields: string[] | Uint8Array[]
   ): Promise<CacheDictionaryRemoveFields.Response>;
+  dictionaryLength(
+    cacheName: string,
+    dictionaryName: string
+  ): Promise<CacheDictionaryLength.Response>;
   sortedSetFetchByRank(
     cacheName: string,
     sortedSetName: string,

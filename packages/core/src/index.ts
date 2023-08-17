@@ -28,6 +28,7 @@ import * as CacheDictionaryGetFields from './messages/responses/cache-dictionary
 import * as CacheDictionaryRemoveField from './messages/responses/cache-dictionary-remove-field';
 import * as CacheDictionaryRemoveFields from './messages/responses/cache-dictionary-remove-fields';
 import * as CacheDictionaryIncrement from './messages/responses/cache-dictionary-increment';
+import * as CacheDictionaryLength from './messages/responses/cache-dictionary-length';
 import * as CacheSetAddElements from './messages/responses/cache-set-add-elements';
 import * as CacheSetAddElement from './messages/responses/cache-set-add-element';
 import * as CacheSetRemoveElements from './messages/responses/cache-set-remove-elements';
@@ -177,6 +178,7 @@ export {
   CacheDictionaryRemoveField,
   CacheDictionaryRemoveFields,
   CacheDictionaryIncrement,
+  CacheDictionaryLength,
   CacheSetAddElements,
   CacheSetAddElement,
   CacheSetRemoveElements,

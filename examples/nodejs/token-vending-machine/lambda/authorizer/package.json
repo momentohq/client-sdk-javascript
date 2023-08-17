@@ -4,11 +4,8 @@
   "description": "Momento token vending machine API Gateway Lambda authorizer for the Lambda function",
   "main": "index.ts",
   "scripts": {
-    "prebuild": "eslint . --ext .ts",
     "build": "tsc",
-    "test": "jest",
-    "lint": "eslint . --ext .ts",
-    "format": "eslint . --ext .ts --fix"
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",

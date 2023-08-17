@@ -7,7 +7,7 @@ import * as apig from 'aws-cdk-lib/aws-apigateway';
 import * as secrets from 'aws-cdk-lib/aws-secretsmanager';
 import * as config from '../../lambda/token-vending-machine/config';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
-import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
+import {AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId} from 'aws-cdk-lib/custom-resources';
 
 export class TokenVendingMachineStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -61,20 +61,20 @@ export class TokenVendingMachineStack extends cdk.Stack {
           timeout: cdk.Duration.seconds(30),
           memorySize: 128,
         });
-  
+
         const authorizer = new apig.RequestAuthorizer(this, 'MomentoTokenVendingMachineTokenAuthorizer', {
           handler: authLambda,
           identitySources: [apig.IdentitySource.header('username'), apig.IdentitySource.header('password')],
           resultsCacheTtl: cdk.Duration.seconds(5),
         });
-  
+
         api.root.addMethod('GET', tvmIntegration, {
           authorizer: authorizer,
         });
 
         api.root.addCorsPreflight({
           allowOrigins: ['*'],
-          allowHeaders: ['username', 'password']
+          allowHeaders: ['username', 'password'],
         });
 
         break;
@@ -83,25 +83,25 @@ export class TokenVendingMachineStack extends cdk.Stack {
         const userPool = new cognito.UserPool(this, 'MomentoTokenVendingMachineUserPool', {
           userPoolName: 'MomentoTokenVendingMachineUserPool',
           signInAliases: {
-            username: true
+            username: true,
           },
           passwordPolicy: {
             minLength: 8,
             requireSymbols: true,
-          }
+          },
         });
-        new cdk.CfnOutput(this, "UserPoolId", {
+        new cdk.CfnOutput(this, 'UserPoolId', {
           value: userPool.userPoolId,
         });
-        
+
         const userPoolClient = new cognito.UserPoolClient(this, 'MomentoTokenVendingMachineUserPoolClient', {
           userPool,
           generateSecret: false,
           authFlows: {
-            userPassword: true
-          }
+            userPassword: true,
+          },
         });
-        new cdk.CfnOutput(this, "UserPoolClientId", {
+        new cdk.CfnOutput(this, 'UserPoolClientId', {
           value: userPoolClient.userPoolClientId,
         });
 
@@ -120,7 +120,7 @@ export class TokenVendingMachineStack extends cdk.Stack {
         const authorizer = new apig.CognitoUserPoolsAuthorizer(this, 'MomentoTokenVendingMachineTokenAuthorizer', {
           cognitoUserPools: [userPool],
         });
-  
+
         api.root.addMethod('GET', tvmIntegration, {
           authorizationType: apig.AuthorizationType.COGNITO,
           authorizer: authorizer,
@@ -128,16 +128,18 @@ export class TokenVendingMachineStack extends cdk.Stack {
 
         api.root.addCorsPreflight({
           allowOrigins: ['*'],
-          allowHeaders: ['usergroup', 'cachename', 'authorization']
+          allowHeaders: ['usergroup', 'cachename', 'authorization'],
         });
 
-        this.createCognitoUser(this, userPool, "momento", "$erverless", userPoolReadWriteGroup.groupName);
-        this.createCognitoUser(this, userPool, "serverless", "momento!", userPoolReadOnlyGroup.groupName);
+        this.createCognitoUser(this, userPool, 'momento', '$erverless', userPoolReadWriteGroup.groupName);
+        this.createCognitoUser(this, userPool, 'serverless', 'momento!', userPoolReadOnlyGroup.groupName);
 
         break;
       }
       case config.AuthenticationMethod.Open: {
-        console.log("Warning: no authentication method provided, the Token Vending Machine URL will be publicly accessible");
+        console.log(
+          'Warning: no authentication method provided, the Token Vending Machine URL will be publicly accessible'
+        );
         api.root.addMethod('GET', tvmIntegration);
         api.root.addCorsPreflight({
           allowOrigins: ['*'],
@@ -145,17 +147,17 @@ export class TokenVendingMachineStack extends cdk.Stack {
         break;
       }
       default: {
-        throw new Error("Unrecognized authentication method");
+        throw new Error('Unrecognized authentication method');
       }
     }
   }
 
-  // reference: https://github.com/awesome-cdk/cdk-userpool-user/blob/master/lib/UserPoolUser.ts 
+  // reference: https://github.com/awesome-cdk/cdk-userpool-user/blob/master/lib/UserPoolUser.ts
   private createCognitoUser(
     scope: Construct,
-    userPool: cognito.IUserPool, 
-    username: string, 
-    password: string, 
+    userPool: cognito.IUserPool,
+    username: string,
+    password: string,
     group?: string
   ) {
     // Basically use the AWS SDK to fill in this gap in the CDK for creating a user with a password
@@ -167,7 +169,7 @@ export class TokenVendingMachineStack extends cdk.Stack {
           UserPoolId: userPool.userPoolId,
           Username: username,
           MessageAction: 'SUPPRESS',
-          TemporaryPassword: password
+          TemporaryPassword: password,
         },
         physicalResourceId: PhysicalResourceId.of(`AwsCustomResource-CreateCognitoUser-${username}`),
       },
