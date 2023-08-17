@@ -72,7 +72,7 @@ export async function CreateTopicClient(secretName: string, region: string): Pro
   const token: string = await GetToken(secretName, region);
   // Get a new cache connection with the token and set a default TTL for the connection.
   return new TopicClient({
-    configuration: Configurations.Laptop.latest(),
+    configuration: Configurations.Lambda.latest(),
     credentialProvider: CredentialProvider.fromString({ authToken : token }),
   });
 }
