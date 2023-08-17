@@ -102,11 +102,18 @@ jobs:
 
       - name: Check environment variable
         run: |
-          if [ -z "$MOMENTO_AUTH_TOKEN" ]; then
-            echo "MOMENTO_AUTH_TOKEN is not set!";
-          else
-            echo "MOMENTO_AUTH_TOKEN is set.";
-          fi
+          end_time=$(date -d "5 minutes" +%s)
+          while [[ $(date +%s) -lt $end_time ]]; do
+            if [[ -z "$MOMENTO_AUTH_TOKEN" ]]; then
+              echo "MOMENTO_AUTH_TOKEN is not set. Retrying..."
+              sleep 10 # wait for 10 seconds before checking again
+            else
+              echo "MOMENTO_AUTH_TOKEN is set."
+              exit 0
+            fi
+          done
+          echo "MOMENTO_AUTH_TOKEN was not set after 5 minutes. Exiting with error."
+          exit 1
 
       - name: Install Deps and Build
         id: validation
