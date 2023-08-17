@@ -32,7 +32,7 @@ We will deploy this example using [Deno Deploy](https://deno.com/deploy/docs/get
 
 2. [Create a personal access token](https://dash.deno.com/account#access-tokens) within the Deno Deploy console.
 
-3. Create an empty project in the Deno Deploy console. On the "Projects" page, click on "New Project", then click on the link that says "get started with an empty project using deployctl". The project name should be a couple of strings and a number, such as "lucky-spider-92".
+3. Create an empty project in the Deno Deploy console. On the ["Projects" page](https://dash.deno.com/projects), click on "New Project", then click on the link that says "get started with an empty project using deployctl". The project name should be a couple of strings and a number, such as "lucky-spider-92".
 
 4. Install the `deployctl` tool:
 
