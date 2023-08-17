@@ -102,11 +102,13 @@ jobs:
 
       - name: Check environment variable
         run: |
-          end_time=$(date -d "5 minutes" +%s)
-          while [[ $(date +%s) -lt $end_time ]]; do
+          attempts=0
+          max_attempts=30 # Check every 10 seconds for 5 minutes
+          while [[ $attempts -lt $max_attempts ]]; do
             if [[ -z "$MOMENTO_AUTH_TOKEN" ]]; then
               echo "MOMENTO_AUTH_TOKEN is not set. Retrying..."
               sleep 10 # wait for 10 seconds before checking again
+              ((attempts++))
             else
               echo "MOMENTO_AUTH_TOKEN is set."
               exit 0
