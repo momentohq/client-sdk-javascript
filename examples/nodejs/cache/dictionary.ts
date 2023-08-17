@@ -23,13 +23,15 @@ const credentialsProvider = new EnvMomentoTokenProvider({
 const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory();
 
 const defaultTtl = 60;
-const momento = new CacheClient({
-  configuration: Configurations.Laptop.v1(loggerFactory),
-  credentialProvider: credentialsProvider,
-  defaultTtlSeconds: defaultTtl,
-});
+let momento: CacheClient;
 
 const main = async () => {
+  momento = await CacheClient.create({
+    configuration: Configurations.Laptop.v1(loggerFactory),
+    credentialProvider: credentialsProvider,
+    defaultTtlSeconds: defaultTtl,
+  });
+
   const createCacheResponse = await momento.createCache(cacheName);
   if (createCacheResponse instanceof CreateCache.AlreadyExists) {
     console.log('cache already exists');
