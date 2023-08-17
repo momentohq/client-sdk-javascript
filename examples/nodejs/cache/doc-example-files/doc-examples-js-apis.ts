@@ -104,8 +104,8 @@ function example_API_ConfigurationInRegionLowLatency() {
   Configurations.InRegion.LowLatency.v1();
 }
 
-function example_API_InstantiateCacheClient() {
-  new CacheClient({
+async function example_API_InstantiateCacheClient() {
+  return await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_AUTH_TOKEN',
@@ -977,9 +977,9 @@ async function main() {
   example_API_ConfigurationInRegionDefaultLatest();
   example_API_ConfigurationInRegionLowLatency();
 
-  example_API_InstantiateCacheClient();
+  await example_API_InstantiateCacheClient();
 
-  const cacheClient = new CacheClient({
+  const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_AUTH_TOKEN',
