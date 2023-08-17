@@ -56,7 +56,7 @@ export async function CreateCacheClient(
   // Call the Get Token function to get a Momento auth token from AWS Secrets Manager.
   const token: string = await GetToken(secretname, region);
   // Get a new cache connection with the token and set a default TTL for the connection.
-  return new CacheClient({
+  return await CacheClient.create({
     configuration: Configurations.Laptop.latest(),
     credentialProvider: CredentialProvider.fromString({ authToken : token }),
     defaultTtlSeconds: ttl,
