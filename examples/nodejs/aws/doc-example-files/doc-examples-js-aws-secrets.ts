@@ -31,7 +31,7 @@ async function example_API_retrieveAuthTokenFromSecretsManager(
   }
 
   // Gets a client connection object from Momento Cache and returns that for later use.
-  return new CacheClient({
+  return await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromString({authToken: secret}),
     defaultTtlSeconds: ttl,

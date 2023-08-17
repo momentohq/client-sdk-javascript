@@ -26,15 +26,16 @@ const cacheValue = 'value';
 const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory();
 const logger = loggerFactory.getLogger('AdvancedExample');
 
-const momento = new CacheClient({
-  configuration: Configurations.Laptop.v1(loggerFactory),
-  credentialProvider: CredentialProvider.fromEnvironmentVariable({
-    environmentVariableName: 'MOMENTO_AUTH_TOKEN',
-  }),
-  defaultTtlSeconds: 60,
-});
+let momento: CacheClient;
 
 async function main() {
+  momento = await CacheClient.create({
+    configuration: Configurations.Laptop.v1(loggerFactory),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+    }),
+    defaultTtlSeconds: 60,
+  });
   await createCacheExample();
   await listCachesExample();
   await setGetDeleteExample();
@@ -132,7 +133,7 @@ async function middlewaresExample() {
 
   const metricsCsvPath = './advanced-middlewares-example-metrics.csv';
 
-  const middlewaresExampleClient = new CacheClient({
+  const middlewaresExampleClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(middlewaresExampleloggerFactory).withMiddlewares([
       new ExperimentalRequestLoggingMiddleware(middlewaresExampleloggerFactory),
       new ExperimentalMetricsCsvMiddleware(metricsCsvPath, middlewaresExampleloggerFactory),
