@@ -37,7 +37,7 @@ const authToken = process.env.MOMENTO_AUTH_TOKEN;
 
 //  Momentoをイニシャライズする
 const DEFAULT_TTL = 60; // デフォルトTTLは60秒
-const momento = new CacheClient(authToken, DEFAULT_TTL);
+const momento = await CacheClient.create(authToken, DEFAULT_TTL);
 
 // "myCache"という名のキャッシュを作成する
 const CACHE_NAME = "myCache";
