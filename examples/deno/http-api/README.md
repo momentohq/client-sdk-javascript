@@ -53,3 +53,5 @@ We will deploy this example using [Deno Deploy](https://deno.com/deploy/docs/get
   ```
 
   This command will upload all files from your curent directory, including the `.env` file. If you prefer, you can set [environment variables](https://deno.com/deploy/docs/environment-variables) using the Deno Deploy console instead. More information about using the `deployctl` command can be found [here](https://deno.com/deploy/docs/deployctl).
+
+  Your deployed project will be published to a URL that begins with your project name, such as [https://lucky-spider-92.deno.dev/](https://lucky-spider-92.deno.dev/). This URL can be easily shared with others to show what you've built!
