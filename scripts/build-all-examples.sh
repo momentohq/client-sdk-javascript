@@ -43,7 +43,7 @@ search_for_package_json() {
 
             # Check and run scripts if they are defined
             script_is_defined "${dir}" "format" && npm run format
-            script_is_defined "${dir}" "build" && npm run build
+            npm run build
             script_is_defined "${dir}" "lint" && npm run lint
         popd
 
