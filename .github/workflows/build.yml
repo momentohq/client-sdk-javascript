@@ -100,6 +100,14 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
+      - name: Check environment variable
+        run: |
+          if [ -z "$MOMENTO_AUTH_TOKEN" ]; then
+            echo "MOMENTO_AUTH_TOKEN is not set!";
+          else
+            echo "MOMENTO_AUTH_TOKEN is set.";
+          fi
+
       - name: Install Deps and Build
         id: validation
         continue-on-error: true
