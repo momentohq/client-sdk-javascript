@@ -7,7 +7,6 @@ import {
 	CacheGet,
 	CacheSet,
 	Configurations,
-	CreateCache,
 	CredentialProvider,
 } from 'momento'
 import XMLHttpRequestPolyfill from 'xhr4sw'
