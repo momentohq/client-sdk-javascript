@@ -63,7 +63,6 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
         : EAGER_CONNECITON_DEFAULT_TIMEOUT_SECONDS;
     // client need to explicitly set the value as 0 to disable eager connection.
     if (props.eagerConnectTimeout !== 0) {
-      console.log(`timeout is  ${timeout}`);
       await Promise.all(
         client.dataClients.map(dc => (dc as DataClient).connect(timeout))
       );
