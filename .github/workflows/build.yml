@@ -100,7 +100,12 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Install Deps and Build
+      - name: Build all examples
+        run: |
+          node -v
+          ./scripts/build-all-examples.sh
+
+      - name: Install Deps and Run Required examples
         id: validation
         continue-on-error: true
         run: |
@@ -114,30 +119,10 @@ jobs:
             npm run build
             npm run validate-examples
           popd
-          pushd examples/nodejs/load-gen
-            npm ci
-            npm run build
-          popd
-          pushd examples/nodejs/topics
-            npm ci
-            npm run build
-          popd
-          pushd examples/nodejs/lambda-examples/topics-microservice
-            npm ci
-            npm run build
-          popd
-          pushd examples/nodejs/mongodb-examples/simple-read-aside
-            npm ci
-            npm run build
-          popd
           pushd examples/nodejs/access-control
             npm ci
             npm run build
             npm run validate-examples
-          popd
-          pushd examples/nodejs/aws
-            npm ci
-            npm run build
           popd
 
       - name: Send CI failure mail
