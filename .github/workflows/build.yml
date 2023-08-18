@@ -68,6 +68,11 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
+      - name: Build all examples
+        run: |
+          node -v
+          ./scripts/build-all-examples.sh
+
       - name: Build and test all packages
         run: |
           node -v
@@ -99,11 +104,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-
-      - name: Build all examples
-        run: |
-          node -v
-          ./scripts/build-all-examples.sh
 
       - name: Install Deps and Build
         id: validation
