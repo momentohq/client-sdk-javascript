@@ -61,6 +61,8 @@ export function runCreateDeleteListCacheTests(Momento: ICacheClient) {
           expect(knownCaches.length === 1).toBeTrue();
           const cache = knownCaches[0];
 
+          console.log('cache', cache);
+
           // checking cache limits
           expect(cache.getCacheLimits().getMaxThroughputKbps()).toEqual(0);
           expect(cache.getCacheLimits().getMaxItemSizeKb()).toEqual(0);
