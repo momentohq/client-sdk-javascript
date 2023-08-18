@@ -61,20 +61,18 @@ export function runCreateDeleteListCacheTests(Momento: ICacheClient) {
           expect(knownCaches.length === 1).toBeTrue();
           const cache = knownCaches[0];
 
-          console.log('cache', cache);
-
           // checking cache limits
-          expect(cache.getCacheLimits().getMaxThroughputKbps()).toEqual(0);
-          expect(cache.getCacheLimits().getMaxItemSizeKb()).toEqual(0);
-          expect(cache.getCacheLimits().getMaxTrafficRate()).toEqual(0);
-          expect(cache.getCacheLimits().getMaxTtlSeconds()).toEqual(0);
+          expect(cache.getCacheLimits().getMaxThroughputKbps()).toEqual(1024);
+          expect(cache.getCacheLimits().getMaxItemSizeKb()).toEqual(1024);
+          expect(cache.getCacheLimits().getMaxTrafficRate()).toEqual(100);
+          expect(cache.getCacheLimits().getMaxTtlSeconds()).toEqual(86400);
 
           // checking topic limits
           expect(cache.getTopicLimits().getMaxPublishMessageSizeKb()).toEqual(
-            0
+            100
           );
-          expect(cache.getTopicLimits().getMaxPublishRate()).toEqual(0);
-          expect(cache.getTopicLimits().getMaxSubscriptionCount()).toEqual(0);
+          expect(cache.getTopicLimits().getMaxPublishRate()).toEqual(100);
+          expect(cache.getTopicLimits().getMaxSubscriptionCount()).toEqual(100);
         }
       });
     });
