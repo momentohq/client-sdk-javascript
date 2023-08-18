@@ -24,12 +24,12 @@ export const handler = async (_request: Request): Promise<Response> => {
 
 	const cacheName = env['MOMENTO_CACHE_NAME']
 	if (!cacheName) {
-		throw new Error("Missing environment variable MOMENTO_CACHE_NAME")
+		throw new Error('Missing environment variable MOMENTO_CACHE_NAME')
 	}
 
 	const authToken = env['MOMENTO_AUTH_TOKEN']
 	if (!authToken) {
-		throw new Error("Missing environment variable MOMENTO_AUTH_TOKEN")
+		throw new Error('Missing environment variable MOMENTO_AUTH_TOKEN')
 	}
 
 	const momento = new CacheClient({
@@ -40,15 +40,17 @@ export const handler = async (_request: Request): Promise<Response> => {
 		defaultTtlSeconds: 60,
 	})
 
-	console.log('Storing key=foo, value=FOO')
-	const setResponse = await momento.set(cacheName, 'foo', 'FOO')
+	const key = 'foo'
+	const value = 'FOO'
+
+	const setResponse = await momento.set(cacheName, key, value)
 	if (setResponse instanceof CacheSet.Success) {
 		console.log('Key stored successfully!')
 	} else {
 		console.log(`Error setting key: ${setResponse.toString()}`)
 	}
 
-	const getResponse = await momento.get(cacheName, 'foo')
+	const getResponse = await momento.get(cacheName, key)
 	if (getResponse instanceof CacheGet.Hit) {
 		console.log(`cache hit: ${getResponse.valueString()}`)
 	} else if (getResponse instanceof CacheGet.Miss) {
@@ -57,7 +59,7 @@ export const handler = async (_request: Request): Promise<Response> => {
 		console.log(`Error: ${getResponse.message()}`)
 	}
 
-	const deleteResponse = await momento.delete(cacheName, 'foo')
+	const deleteResponse = await momento.delete(cacheName, key)
 	if (deleteResponse instanceof CacheGet.Hit) {
 		console.log(`cache hit: ${deleteResponse.valueString()}`)
 	} else if (deleteResponse instanceof CacheGet.Miss) {
@@ -66,12 +68,15 @@ export const handler = async (_request: Request): Promise<Response> => {
 		console.log(`Error: ${deleteResponse.message()}`)
 	}
 
-	return new Response(getResponse.body, {
-		status: getResponse.status,
-		headers: {
-			'content-type': 'application/json',
+	return new Response(
+		`Tested the Momento cache using: <br /> Key: ${key} | Value: ${value}`,
+		{
+			status: 200,
+			headers: new Headers({
+				'Content-Type': 'text/html; charset=utf-8',
+			}),
 		},
-	})
+	)
 }
 
 serve(handler)
