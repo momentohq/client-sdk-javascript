@@ -20,6 +20,7 @@ const FIELD_NAMES: Array<string> = [
   'requestSize',
   'responseSize',
   'connectionID',
+  'eventLoopDelay',
 ];
 
 export interface ExperimentalRequestMetrics {
@@ -67,6 +68,11 @@ export interface ExperimentalRequestMetrics {
    * The ID of the specific connection that made the request
    */
   connectionID: string;
+
+  /**
+   * The event loop delay in milliseconds, measured at the start of the call.
+   */
+  eventLoopDelay: number;
 }
 
 export abstract class ExperimentalMetricsMiddlewareRequestHandler
@@ -78,6 +84,7 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
 
   private readonly numActiveRequestsAtStart: number;
   private readonly startTime: number;
+  private eventLoopDelay: number;
   private requestBodyTime: number;
   private requestType: string;
   private requestSize: number;
@@ -101,6 +108,10 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
 
     this.receivedResponseBody = false;
     this.receivedResponseStatus = false;
+
+    setTimeout(() => {
+      this.eventLoopDelay = new Date().getTime() - this.startTime;
+    });
   }
 
   abstract emitMetrics(metrics: ExperimentalRequestMetrics): Promise<void>;
@@ -156,6 +167,7 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
       requestSize: this.requestSize,
       responseSize: this.responseSize,
       connectionID: this.connectionID,
+      eventLoopDelay: this.eventLoopDelay,
     };
     this.emitMetrics(metrics).catch(e =>
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
