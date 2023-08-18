@@ -1,13 +1,47 @@
 import {Metadata, StatusObject} from '@grpc/grpc-js';
 import {Message} from 'google-protobuf';
 
-export interface MiddlewareRequestHandler {
-  onRequestMetadata(metadata: Metadata): Promise<Metadata>;
-  onRequestBody(request: Message): Promise<Message>;
+export class MiddlewareMetadata {
+  readonly _grpcMetadata: Metadata;
+  constructor(metadata: Metadata) {
+    this._grpcMetadata = metadata;
+  }
 
-  onResponseMetadata(metadata: Metadata): Promise<Metadata>;
-  onResponseBody(response: Message | null): Promise<Message | null>;
-  onResponseStatus(status: StatusObject): Promise<StatusObject>;
+  toJsonString(): string {
+    return JSON.stringify(this._grpcMetadata.toJSON());
+  }
+}
+export class MiddlewareStatus {
+  readonly _grpcStatus: StatusObject;
+  constructor(status: StatusObject) {
+    this._grpcStatus = status;
+  }
+
+  code() {
+    return this._grpcStatus.code;
+  }
+}
+
+export class MiddlewareMessage {
+  readonly _grpcMessage: Message;
+  constructor(message: Message) {
+    this._grpcMessage = message;
+  }
+
+  messageLength(): number {
+    return this._grpcMessage.serializeBinary().length;
+  }
+}
+
+export interface MiddlewareRequestHandler {
+  onRequestMetadata(metadata: MiddlewareMetadata): Promise<MiddlewareMetadata>;
+  onRequestBody(request: MiddlewareMessage): Promise<MiddlewareMessage>;
+
+  onResponseMetadata(metadata: MiddlewareMetadata): Promise<MiddlewareMetadata>;
+  onResponseBody(
+    response: MiddlewareMessage | null
+  ): Promise<MiddlewareMessage | null>;
+  onResponseStatus(status: MiddlewareStatus): Promise<MiddlewareStatus>;
 }
 
 export interface MiddlewareRequestHandlerContext {

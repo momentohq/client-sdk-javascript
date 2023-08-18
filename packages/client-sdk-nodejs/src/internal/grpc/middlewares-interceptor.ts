@@ -10,8 +10,11 @@ import {
 import {NextCall} from '@grpc/grpc-js/build/src/client-interceptors';
 import {
   Middleware,
+  MiddlewareMessage,
+  MiddlewareMetadata,
   MiddlewareRequestHandler,
   MiddlewareRequestHandlerContext,
+  MiddlewareStatus,
 } from '../../config/middleware/middleware';
 import {Message} from 'google-protobuf';
 import {MomentoLoggerFactory} from '../../';
@@ -46,7 +49,9 @@ export function middlewaresInterceptor(
               'onResponseMetadata',
               reversedMiddlewareRequestHandlers,
               (h: MiddlewareRequestHandler) => (m: Metadata) =>
-                h.onResponseMetadata(m),
+                h
+                  .onResponseMetadata(new MiddlewareMetadata(m))
+                  .then(m => m._grpcMetadata),
               metadata,
               next
             );
@@ -62,7 +67,9 @@ export function middlewaresInterceptor(
               'onResponseBody',
               reversedMiddlewareRequestHandlers,
               (h: MiddlewareRequestHandler) => (request: Message) =>
-                h.onResponseBody(request),
+                h
+                  .onResponseBody(new MiddlewareMessage(request))
+                  .then(m => m?._grpcMessage),
               message,
               next
             );
@@ -75,7 +82,9 @@ export function middlewaresInterceptor(
               'onResponseStatus',
               reversedMiddlewareRequestHandlers,
               (h: MiddlewareRequestHandler) => (s: StatusObject) =>
-                h.onResponseStatus(s),
+                h
+                  .onResponseStatus(new MiddlewareStatus(s))
+                  .then(s => s._grpcStatus),
               status,
               next
             );
@@ -86,7 +95,9 @@ export function middlewaresInterceptor(
           'onRequestMetadata',
           middlewareRequestHandlers,
           (h: MiddlewareRequestHandler) => (m: Metadata) =>
-            h.onRequestMetadata(m),
+            h
+              .onRequestMetadata(new MiddlewareMetadata(m))
+              .then(m => m._grpcMetadata),
           metadata,
           (m: Metadata) => next(m, newListener)
         );
@@ -99,7 +110,9 @@ export function middlewaresInterceptor(
           middlewareRequestHandlers,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (h: MiddlewareRequestHandler) => (request: any) =>
-            h.onRequestBody(request as Message),
+            h
+              .onRequestBody(new MiddlewareMessage(request as Message))
+              .then(m => m._grpcMessage),
           message,
           next
         );
