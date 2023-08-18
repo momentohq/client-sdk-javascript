@@ -1,9 +1,10 @@
 import {
   Middleware,
+  MiddlewareMessage,
+  MiddlewareMetadata,
   MiddlewareRequestHandler,
+  MiddlewareStatus,
 } from '../../config/middleware/middleware';
-import {Metadata, StatusObject} from '@grpc/grpc-js';
-import {Message} from 'google-protobuf';
 import {MomentoLogger, MomentoLoggerFactory} from '../../';
 
 class InFlightRequestCountMiddlewareRequestHandler
@@ -21,25 +22,29 @@ class InFlightRequestCountMiddlewareRequestHandler
       ++InFlightRequestCountMiddleware.numActiveRequests;
   }
 
-  onRequestBody(request: Message): Promise<Message> {
+  onRequestBody(request: MiddlewareMessage): Promise<MiddlewareMessage> {
     return Promise.resolve(request);
   }
 
-  onRequestMetadata(metadata: Metadata): Promise<Metadata> {
+  onRequestMetadata(metadata: MiddlewareMetadata): Promise<MiddlewareMetadata> {
     return Promise.resolve(metadata);
   }
 
-  onResponseBody(response: Message | null): Promise<Message | null> {
+  onResponseBody(
+    response: MiddlewareMessage | null
+  ): Promise<MiddlewareMessage | null> {
     this.receivedResponseBody = true;
     if (this.done()) this.logStatusInformation();
     return Promise.resolve(response);
   }
 
-  onResponseMetadata(metadata: Metadata): Promise<Metadata> {
+  onResponseMetadata(
+    metadata: MiddlewareMetadata
+  ): Promise<MiddlewareMetadata> {
     return Promise.resolve(metadata);
   }
 
-  onResponseStatus(status: StatusObject): Promise<StatusObject> {
+  onResponseStatus(status: MiddlewareStatus): Promise<MiddlewareStatus> {
     this.receivedResponseStatus = true;
     if (this.done()) this.logStatusInformation();
     return Promise.resolve(status);
