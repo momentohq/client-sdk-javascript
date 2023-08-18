@@ -52,8 +52,9 @@ async function getCacheClient(): Promise<CacheClient> {
   if (_cacheClient === undefined) {
     const momentoAuthToken = await getSecret(authTokenSecretName);
     console.log('Retrieved secret!');
-    _cacheClient = new CacheClient({
-      configuration: Configurations.InRegion.Default.v1().addMiddleware(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
+    _cacheClient = await CacheClient.create({
+      configuration: Configurations.Lambda.latest().addMiddleware(
         new ExperimentalMetricsLoggingMiddleware(new DefaultMomentoLoggerFactory())
       ),
       credentialProvider: CredentialProvider.fromString({authToken: momentoAuthToken}),

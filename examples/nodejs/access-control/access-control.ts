@@ -92,7 +92,7 @@ async function main() {
   const mainAuthClient = new AuthClient({
     credentialProvider: mainCredsProvider,
   });
-  const mainCacheClient = new CacheClient({
+  const mainCacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: mainCredsProvider,
     defaultTtlSeconds: 60,
@@ -112,7 +112,7 @@ async function main() {
       TokenScopes.cacheReadOnly(CACHE_OPEN_DOOR),
       tokenValidForSeconds
     );
-    const scopedTokenCacheClient = new CacheClient({
+    const scopedTokenCacheClient = await CacheClient.create({
       configuration: Configurations.Laptop.v1(),
       credentialProvider: CredentialProvider.fromString({authToken: scopedToken}),
       defaultTtlSeconds: 600,
