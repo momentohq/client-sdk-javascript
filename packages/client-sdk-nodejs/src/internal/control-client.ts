@@ -176,15 +176,16 @@ export class ControlClient {
               const cacheName = cache.cache_name;
               const topicLimits = new TopicLimits({
                 maxPublishMessageSizeKb:
-                  cache.topic_limits.max_publish_message_size_kb,
-                maxSubscriptionCount: cache.topic_limits.max_subscription_count,
-                maxPublishRate: cache.topic_limits.max_publish_rate,
+                  cache.topic_limits?.max_publish_message_size_kb || 0,
+                maxSubscriptionCount:
+                  cache.topic_limits?.max_subscription_count || 0,
+                maxPublishRate: cache.topic_limits?.max_publish_rate || 0,
               });
               const cacheLimits = new CacheLimits({
-                maxTtlSeconds: cache.cache_limits.max_ttl_seconds,
-                maxItemSizeKb: cache.cache_limits.max_item_size_kb,
-                maxThroughputKbps: cache.cache_limits.max_throughput_kbps,
-                maxTrafficRate: cache.cache_limits.max_traffic_rate,
+                maxTtlSeconds: cache.cache_limits?.max_ttl_seconds || 0,
+                maxItemSizeKb: cache.cache_limits?.max_item_size_kb || 0,
+                maxThroughputKbps: cache.cache_limits?.max_throughput_kbps || 0,
+                maxTrafficRate: cache.cache_limits?.max_traffic_rate || 0,
               });
               return new CacheInfo(cacheName, topicLimits, cacheLimits);
             });
