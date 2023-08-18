@@ -48,12 +48,10 @@ export function middlewaresInterceptor(
             applyMiddlewareHandlers(
               'onResponseMetadata',
               reversedMiddlewareRequestHandlers,
-              (h: MiddlewareRequestHandler) => (m: Metadata) =>
-                h
-                  .onResponseMetadata(new MiddlewareMetadata(m))
-                  .then(m => m._grpcMetadata),
-              metadata,
-              next
+              (h: MiddlewareRequestHandler) => (m: MiddlewareMetadata) =>
+                h.onResponseMetadata(m),
+              new MiddlewareMetadata(metadata),
+              (metadata: MiddlewareMetadata) => next(metadata._grpcMetadata)
             );
           },
           onReceiveMessage: function (
@@ -66,12 +64,11 @@ export function middlewaresInterceptor(
             applyMiddlewareHandlers(
               'onResponseBody',
               reversedMiddlewareRequestHandlers,
-              (h: MiddlewareRequestHandler) => (request: Message) =>
-                h
-                  .onResponseBody(new MiddlewareMessage(request))
-                  .then(m => m?._grpcMessage),
-              message,
-              next
+              (h: MiddlewareRequestHandler) =>
+                (request: MiddlewareMessage | null) =>
+                  h.onResponseBody(request),
+              new MiddlewareMessage(message as Message),
+              (msg: MiddlewareMessage | null) => next(msg?._grpcMessage)
             );
           },
           onReceiveStatus: function (
@@ -81,12 +78,10 @@ export function middlewaresInterceptor(
             applyMiddlewareHandlers(
               'onResponseStatus',
               reversedMiddlewareRequestHandlers,
-              (h: MiddlewareRequestHandler) => (s: StatusObject) =>
-                h
-                  .onResponseStatus(new MiddlewareStatus(s))
-                  .then(s => s._grpcStatus),
-              status,
-              next
+              (h: MiddlewareRequestHandler) => (s: MiddlewareStatus) =>
+                h.onResponseStatus(s),
+              new MiddlewareStatus(status),
+              (s: MiddlewareStatus) => next(s._grpcStatus)
             );
           },
         };
@@ -94,12 +89,10 @@ export function middlewaresInterceptor(
         applyMiddlewareHandlers(
           'onRequestMetadata',
           middlewareRequestHandlers,
-          (h: MiddlewareRequestHandler) => (m: Metadata) =>
-            h
-              .onRequestMetadata(new MiddlewareMetadata(m))
-              .then(m => m._grpcMetadata),
-          metadata,
-          (m: Metadata) => next(m, newListener)
+          (h: MiddlewareRequestHandler) => (m: MiddlewareMetadata) =>
+            h.onRequestMetadata(m),
+          new MiddlewareMetadata(metadata),
+          (m: MiddlewareMetadata) => next(m._grpcMetadata, newListener)
         );
       },
       // unfortunately grpc uses `any` in their type defs for these
@@ -108,13 +101,10 @@ export function middlewaresInterceptor(
         applyMiddlewareHandlers(
           'onRequestBody',
           middlewareRequestHandlers,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (h: MiddlewareRequestHandler) => (request: any) =>
-            h
-              .onRequestBody(new MiddlewareMessage(request as Message))
-              .then(m => m._grpcMessage),
-          message,
-          next
+          (h: MiddlewareRequestHandler) => (request: MiddlewareMessage) =>
+            h.onRequestBody(request),
+          new MiddlewareMessage(message as Message),
+          (m: MiddlewareMessage) => next(m._grpcMessage)
         );
       },
     };
