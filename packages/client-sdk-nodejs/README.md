@@ -33,7 +33,7 @@ the [Momento Web SDK](../client-sdk-web).
 import {CacheGet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
 
 async function main() {
-  const cacheClient = new CacheClient({
+  const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_AUTH_TOKEN',

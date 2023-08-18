@@ -202,3 +202,51 @@ jobs:
         if: ${{ steps.validation.outcome == 'failure' }}
         run: exit 1
 
+  test-deno-examples:
+    strategy:
+      matrix:
+        node: [ 16, 18 ]
+      fail-fast: true
+      max-parallel: 1
+    name: Test Deno examples on node ${{ matrix.node }}
+    runs-on: macos-latest
+    env:
+      # TODO: remove token stored as secret in favor of using a
+      # momento-local instance that can be spun up for testing
+      MOMENTO_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v3
+
+      - name: Install Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x # Run with latest stable Deno.
+
+      - name: Check formatting and Build
+        id: validation
+        continue-on-error: true
+        run: |
+          pushd examples/deno/web-sdk
+            deno lint
+            deno fmt --check
+            deno compile index.ts
+          popd
+          pushd examples/deno/http-api
+            deno lint
+            deno fmt --check
+            deno compile index.ts
+          popd
+
+      - name: Send CI failure mail
+        if: ${{ steps.validation.outcome == 'failure' }}
+        uses: momentohq/standards-and-practices/github-actions/error-email-action@gh-actions-v2
+        with:
+          username: ${{secrets.MOMENTO_ROBOT_GMAIL_USERNAME}}
+          password: ${{secrets.MOMENTO_ROBOT_GMAIL_PASSWORD}}
+
+      - name: Flag Job Failure
+        if: ${{ steps.validation.outcome == 'failure' }}
+        run: exit 1
+

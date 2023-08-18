@@ -1,6 +1,10 @@
-import {Middleware, MiddlewareRequestHandler} from './middleware';
-import {Metadata, StatusObject} from '@grpc/grpc-js';
-import {Message} from 'google-protobuf';
+import {
+  Middleware,
+  MiddlewareMessage,
+  MiddlewareMetadata,
+  MiddlewareRequestHandler,
+  MiddlewareStatus,
+} from './middleware';
 import {MomentoLogger, MomentoLoggerFactory} from '../../';
 
 class ExperimentalLoggingMiddlewareRequestHandler
@@ -13,51 +17,54 @@ class ExperimentalLoggingMiddlewareRequestHandler
     this.requestId = requestId;
   }
 
-  onRequestMetadata(metadata: Metadata): Promise<Metadata> {
+  onRequestMetadata(metadata: MiddlewareMetadata): Promise<MiddlewareMetadata> {
     this.logger.debug(
       'Logging middleware: request %s onRequestMetadata: %s',
       this.requestId,
-      JSON.stringify(metadata.toJSON())
+      metadata.toJsonString()
     );
     return Promise.resolve(metadata);
   }
-  onRequestBody(request: Message): Promise<Message> {
+  onRequestBody(request: MiddlewareMessage): Promise<MiddlewareMessage> {
     this.logger.debug(
       'Logging middleware: request %s onRequestBody: request type: %s, request size: %s',
       this.requestId,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       request.constructor.name,
-      request.serializeBinary().length
+      request.messageLength()
     );
     return Promise.resolve(request);
   }
 
-  onResponseMetadata(metadata: Metadata): Promise<Metadata> {
+  onResponseMetadata(
+    metadata: MiddlewareMetadata
+  ): Promise<MiddlewareMetadata> {
     this.logger.debug(
       'Logging middleware: request %s onResponseMetadata: %s',
       this.requestId,
-      JSON.stringify(metadata.toJSON())
+      metadata.toJsonString()
     );
     return Promise.resolve(metadata);
   }
 
-  onResponseBody(response: Message | null): Promise<Message | null> {
+  onResponseBody(
+    response: MiddlewareMessage | null
+  ): Promise<MiddlewareMessage | null> {
     this.logger.debug(
       'Logging middleware: request %s onResponseBody: response type: %s, response size: %s',
       this.requestId,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       response?.constructor?.name ?? 'null',
-      response?.serializeBinary()?.length ?? 0
+      response?.messageLength() ?? 0
     );
     return Promise.resolve(response);
   }
 
-  onResponseStatus(status: StatusObject): Promise<StatusObject> {
+  onResponseStatus(status: MiddlewareStatus): Promise<MiddlewareStatus> {
     this.logger.debug(
       'Logging middleware: request %s onResponseStatus: status code: %s',
       this.requestId,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      status.code
+      status.code()
     );
     return Promise.resolve(status);
   }

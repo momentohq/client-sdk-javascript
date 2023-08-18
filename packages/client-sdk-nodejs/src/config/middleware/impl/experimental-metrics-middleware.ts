@@ -1,10 +1,11 @@
 import {
   Middleware,
+  MiddlewareMessage,
+  MiddlewareMetadata,
   MiddlewareRequestHandler,
   MiddlewareRequestHandlerContext,
+  MiddlewareStatus,
 } from '../middleware';
-import {Metadata, StatusObject} from '@grpc/grpc-js';
-import {Message} from 'google-protobuf';
 import {MomentoLogger, MomentoLoggerFactory} from '@gomomento/sdk-core';
 import {CONNECTION_ID_KEY} from '../../../internal/data-client';
 
@@ -105,20 +106,22 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
 
   abstract emitMetrics(metrics: ExperimentalRequestMetrics): Promise<void>;
 
-  onRequestBody(request: Message): Promise<Message> {
-    this.requestSize = request.serializeBinary().length;
+  onRequestBody(request: MiddlewareMessage): Promise<MiddlewareMessage> {
+    this.requestSize = request.messageLength();
     this.requestType = request.constructor.name;
     this.requestBodyTime = new Date().getTime();
     return Promise.resolve(request);
   }
 
-  onRequestMetadata(metadata: Metadata): Promise<Metadata> {
+  onRequestMetadata(metadata: MiddlewareMetadata): Promise<MiddlewareMetadata> {
     return Promise.resolve(metadata);
   }
 
-  onResponseBody(response: Message | null): Promise<Message | null> {
+  onResponseBody(
+    response: MiddlewareMessage | null
+  ): Promise<MiddlewareMessage | null> {
     if (response !== null) {
-      this.responseSize = response.serializeBinary().length;
+      this.responseSize = response.messageLength();
     } else {
       this.responseSize = 0;
     }
@@ -127,13 +130,15 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
     return Promise.resolve(response);
   }
 
-  onResponseMetadata(metadata: Metadata): Promise<Metadata> {
+  onResponseMetadata(
+    metadata: MiddlewareMetadata
+  ): Promise<MiddlewareMetadata> {
     return Promise.resolve(metadata);
   }
 
-  onResponseStatus(status: StatusObject): Promise<StatusObject> {
+  onResponseStatus(status: MiddlewareStatus): Promise<MiddlewareStatus> {
     this.receivedResponseStatus = true;
-    this.responseStatusCode = status.code;
+    this.responseStatusCode = status.code();
     if (this.done()) this.recordMetrics();
     return Promise.resolve(status);
   }

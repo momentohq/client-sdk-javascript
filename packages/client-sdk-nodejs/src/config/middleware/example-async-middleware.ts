@@ -1,7 +1,11 @@
-import {Middleware, MiddlewareRequestHandler} from './middleware';
+import {
+  Middleware,
+  MiddlewareMessage,
+  MiddlewareMetadata,
+  MiddlewareRequestHandler,
+  MiddlewareStatus,
+} from './middleware';
 
-import {Metadata, StatusObject} from '@grpc/grpc-js';
-import {Message} from 'google-protobuf';
 import {MomentoLogger, MomentoLoggerFactory} from '../..';
 
 class ExampleAsyncMiddlewareRequestHandler implements MiddlewareRequestHandler {
@@ -11,14 +15,16 @@ class ExampleAsyncMiddlewareRequestHandler implements MiddlewareRequestHandler {
     this.logger = logger;
   }
 
-  async onRequestMetadata(metadata: Metadata): Promise<Metadata> {
+  async onRequestMetadata(
+    metadata: MiddlewareMetadata
+  ): Promise<MiddlewareMetadata> {
     this.logger.info('ExampleAsyncMiddleware.onRequestMetadata enter');
     await delay(500);
     this.logger.info('ExampleAsyncMiddleware.onRequestMetadata exit');
     return metadata;
   }
 
-  async onRequestBody(request: Message): Promise<Message> {
+  async onRequestBody(request: MiddlewareMessage): Promise<MiddlewareMessage> {
     this.logger.info('ExampleAsyncMiddleware.onRequestBody enter');
     await delay(500);
     this.logger.info('ExampleAsyncMiddleware.onRequestBody exit');
@@ -26,14 +32,18 @@ class ExampleAsyncMiddlewareRequestHandler implements MiddlewareRequestHandler {
     return request;
   }
 
-  async onResponseMetadata(metadata: Metadata): Promise<Metadata> {
+  async onResponseMetadata(
+    metadata: MiddlewareMetadata
+  ): Promise<MiddlewareMetadata> {
     this.logger.info('ExampleAsyncMiddleware.onResponseMetadata enter');
     await delay(500);
     this.logger.info('ExampleAsyncMiddleware.onResponseMetadata exit');
     return metadata;
   }
 
-  async onResponseBody(response: Message | null): Promise<Message | null> {
+  async onResponseBody(
+    response: MiddlewareMessage | null
+  ): Promise<MiddlewareMessage | null> {
     this.logger.info('ExampleAsyncMiddleware.onResponseBody enter');
     await delay(500);
     this.logger.info('ExampleAsyncMiddleware.onResponseBody exit');
@@ -41,7 +51,7 @@ class ExampleAsyncMiddlewareRequestHandler implements MiddlewareRequestHandler {
     return response;
   }
 
-  async onResponseStatus(status: StatusObject): Promise<StatusObject> {
+  async onResponseStatus(status: MiddlewareStatus): Promise<MiddlewareStatus> {
     this.logger.info('ExampleAsyncMiddleware.onResponseStatus enter');
     await delay(500);
     this.logger.info('ExampleAsyncMiddleware.onResponseStatus exit');
