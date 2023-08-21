@@ -25,7 +25,7 @@ import {ClientMetadataProvider} from './client-metadata-provider';
 import {
   CacheLimits,
   TopicLimits,
-} from '../../../core/dist/src/messages/cache-info';
+} from '@gomomento/sdk-core/dist/src/messages/cache-info';
 
 export interface ControlClientProps {
   configuration: Configuration;
@@ -164,22 +164,22 @@ export class ControlClient<
           } else {
             const caches = resp.getCacheList().map(cache => {
               const cacheName = cache.getCacheName();
-              const topicLimits = new TopicLimits({
+              const topicLimits: TopicLimits = {
                 maxPublishMessageSizeKb:
                   cache.getTopicLimits()?.getMaxPublishMessageSizeKb() || 0,
                 maxSubscriptionCount:
                   cache.getTopicLimits()?.getMaxSubscriptionCount() || 0,
                 maxPublishRate:
                   cache.getTopicLimits()?.getMaxPublishRate() || 0,
-              });
-              const cacheLimits = new CacheLimits({
+              };
+              const cacheLimits: CacheLimits = {
                 maxTtlSeconds: cache.getCacheLimits()?.getMaxTtlSeconds() || 0,
                 maxItemSizeKb: cache.getCacheLimits()?.getMaxItemSizeKb() || 0,
                 maxThroughputKbps:
                   cache.getCacheLimits()?.getMaxThroughputKbps() || 0,
                 maxTrafficRate:
                   cache.getCacheLimits()?.getMaxTrafficRate() || 0,
-              });
+              };
               return new CacheInfo(cacheName, topicLimits, cacheLimits);
             });
             resolve(new ListCaches.Success(caches));
