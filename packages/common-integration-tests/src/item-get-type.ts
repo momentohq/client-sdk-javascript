@@ -161,5 +161,20 @@ export function runItemGetTypeTest(
       hitResult = itemGetTypeResponse as CacheItemGetType.Hit;
       expect(hitResult.itemType()).toEqual(ItemType.SORTED_SET);
     });
+
+    it('should support happy path for itemGetType via curried cache via ICache interface', async () => {
+      const cacheKey = v4();
+
+      const cache = Momento.cache(IntegrationTestCacheName);
+      await cache.dictionarySetField(cacheKey, v4(), v4());
+
+      // string cache key
+      const itemGetTypeResponse = await cache.itemGetType(cacheKey);
+      expectWithMessage(() => {
+        expect(itemGetTypeResponse).toBeInstanceOf(CacheItemGetType.Hit);
+      }, `expected HIT but got ${itemGetTypeResponse.toString()}`);
+      const hitResult = itemGetTypeResponse as CacheItemGetType.Hit;
+      expect(hitResult.itemType()).toEqual(ItemType.DICTIONARY);
+    });
   });
 }

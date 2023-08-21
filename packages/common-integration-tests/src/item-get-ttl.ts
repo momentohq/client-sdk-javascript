@@ -112,5 +112,24 @@ export function runItemGetTtlTest(
         expect(itemGetTtlResponse).toBeInstanceOf(CacheItemGetTtl.Miss);
       }, `expected MISS but got ${itemGetTtlResponse.toString()}`);
     });
+
+    it('should support happy path for itemGetTtl via curried cache via ICache interface', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      await Momento.set(IntegrationTestCacheName, cacheKey, cacheValue, {
+        ttl: 10,
+      });
+
+      const cache = Momento.cache(IntegrationTestCacheName);
+
+      // string cache key
+      const itemGetTtlResponse = await cache.itemGetTtl(cacheKey);
+      expectWithMessage(() => {
+        expect(itemGetTtlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+      }, `expected HIT but got ${itemGetTtlResponse.toString()}`);
+      const hitResult = itemGetTtlResponse as CacheItemGetTtl.Hit;
+      expect(hitResult.remainingTtlMillis()).toBeLessThan(10000);
+      expect(hitResult.remainingTtlMillis()).toBeGreaterThan(7000);
+    });
   });
 }
