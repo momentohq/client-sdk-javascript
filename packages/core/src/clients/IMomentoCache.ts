@@ -43,6 +43,7 @@ import {
   CacheUpdateTtl,
   CacheIncreaseTtl,
   CacheDecreaseTtl,
+  CacheDictionaryLength,
 } from '../index';
 import {
   ScalarCallOptions,
@@ -186,6 +187,9 @@ export interface IMomentoCache {
     dictionaryName: string,
     fields: string[] | Uint8Array[]
   ): Promise<CacheDictionaryRemoveFields.Response>;
+  dictionaryLength(
+    dictionaryName: string
+  ): Promise<CacheDictionaryLength.Response>;
   sortedSetFetchByRank(
     sortedSetName: string,
     options?: SortedSetFetchByRankOptions

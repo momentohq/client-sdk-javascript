@@ -1673,6 +1673,31 @@ export function runDictionaryTests(
         }, `expected a HIT but got ${resp.toString()}`);
         expect((resp as CacheDictionaryLength.Hit).length()).toEqual(2);
       });
+
+      it('should support happy path for dictionaryLength via curried cache via ICache interface', async () => {
+        const dictionaryName = v4();
+        const field1 = v4();
+        const value1 = uint8ArrayForTest(v4());
+        const field2 = v4();
+        const value2 = uint8ArrayForTest(v4());
+
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.dictionarySetFields(
+          dictionaryName,
+          new Map([
+            [field1, value1],
+            [field2, value2],
+          ]),
+          {ttl: CollectionTtl.of(10)}
+        );
+
+        const resp = await cache.dictionaryLength(dictionaryName);
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryLength.Hit);
+        }, `expected a HIT but got ${resp.toString()}`);
+        expect((resp as CacheDictionaryLength.Hit).length()).toEqual(2);
+      });
     });
   });
 }

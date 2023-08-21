@@ -46,6 +46,7 @@ import {
   ICacheClient,
   CacheSortedSetRemoveElements,
   CacheDictionaryGetFields,
+  CacheDictionaryLength,
 } from '../../../index';
 import {
   ScalarCallOptions,
@@ -320,6 +321,13 @@ export class MomentoCache implements IMomentoCache {
       fields
     );
   }
+
+  dictionaryLength(
+    dictionaryName: string
+  ): Promise<CacheDictionaryLength.Response> {
+    return this.cacheClient.dictionaryLength(this.cacheName, dictionaryName);
+  }
+
   sortedSetFetchByRank(
     sortedSetName: string,
     options?: SortedSetFetchByRankOptions
