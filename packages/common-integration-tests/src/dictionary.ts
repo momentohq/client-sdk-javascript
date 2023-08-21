@@ -385,6 +385,20 @@ export function runDictionaryTests(
           expect(response).toBeInstanceOf(CacheDictionaryFetch.Miss);
         }, `expected MISS but got ${response.toString()}`);
       });
+
+      it('should support happy path for dictionaryFetch via curried cache via ICache interface', async () => {
+        const dictionaryName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.dictionarySetFields(dictionaryName, {a: 'A', b: 'B'});
+
+        const response = await cache.dictionaryFetch(dictionaryName);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
+        const hit = response as CacheDictionaryFetch.Hit;
+        expect(hit.valueRecord()).toEqual({a: 'A', b: 'B'});
+      });
     });
 
     describe('#dictionaryGetField', () => {
@@ -426,6 +440,23 @@ export function runDictionaryTests(
         expect((getResponse as CacheDictionaryGetField.Hit).toString()).toEqual(
           `Hit: ${value.substring(0, 32)}...`
         );
+      });
+
+      it('should support happy path for dictionaryGetField via curried cache via ICache interface', async () => {
+        const dictionaryName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.dictionarySetFields(dictionaryName, {
+          a: 'A',
+          b: 'B',
+        });
+
+        const getResponse = await cache.dictionaryGetField(dictionaryName, 'b');
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
+        const hit = getResponse as CacheDictionaryGetField.Hit;
+        expect(hit.valueString()).toEqual('B');
       });
     });
 
@@ -634,6 +665,27 @@ export function runDictionaryTests(
         ]);
         expect(expectedMap).toEqual(hitResponse.valueMapUint8ArrayUint8Array());
       });
+
+      it('should support happy path for dictionaryGetFields via curried cache via ICache interface', async () => {
+        const dictionaryName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.dictionarySetFields(dictionaryName, {
+          a: 'A',
+          b: 'B',
+          c: 'C',
+        });
+
+        const getResponse = await cache.dictionaryGetFields(dictionaryName, [
+          'a',
+          'c',
+        ]);
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
+        const hit = getResponse as CacheDictionaryGetFields.Hit;
+        expect(hit.valueRecord()).toEqual({a: 'A', c: 'C'});
+      });
     });
 
     describe('#dictionaryIncrement', () => {
@@ -839,6 +891,23 @@ export function runDictionaryTests(
           MomentoErrorCode.FAILED_PRECONDITION_ERROR
         );
       });
+
+      it('should support happy path for dictionaryIncrement via curried cache via ICache interface', async () => {
+        const dictionaryName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.dictionarySetFields(dictionaryName, {
+          a: 'A',
+          b: '41',
+        });
+
+        const response = await cache.dictionaryIncrement(dictionaryName, 'b');
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryIncrement.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
+        const success = response as CacheDictionaryIncrement.Success;
+        expect(success.valueNumber()).toEqual(42);
+      });
     });
 
     describe('#dictionaryRemoveField', () => {
@@ -984,6 +1053,30 @@ export function runDictionaryTests(
         expectWithMessage(() => {
           expect(resp).toBeInstanceOf(CacheDictionaryGetField.Miss);
         }, `expected MISS but got ${resp.toString()}`);
+      });
+
+      it('should support happy path for dictionaryRemoveField via curried cache via ICache interface', async () => {
+        const dictionaryName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.dictionarySetFields(dictionaryName, {
+          a: 'A',
+          b: 'B',
+          c: 'C',
+        });
+
+        const response = await cache.dictionaryRemoveField(dictionaryName, 'b');
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryRemoveField.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
+
+        const fetchResponse = await cache.dictionaryFetch(dictionaryName);
+        expectWithMessage(() => {
+          expect(fetchResponse).toBeInstanceOf(CacheDictionaryFetch.Hit);
+        }, `expected HIT but got ${fetchResponse.toString()}`);
+
+        const hit = fetchResponse as CacheDictionaryFetch.Hit;
+        expect(hit.valueRecord()).toEqual({a: 'A', c: 'C'});
       });
     });
 
@@ -1138,6 +1231,34 @@ export function runDictionaryTests(
           expect(resp).toBeInstanceOf(CacheDictionaryGetFields.Miss);
         }, `expected MISS but got ${resp.toString()}`);
       });
+
+      it('should support happy path for dictionaryRemoveFields via curried cache via ICache interface', async () => {
+        const dictionaryName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.dictionarySetFields(dictionaryName, {
+          a: 'A',
+          b: 'B',
+          c: 'C',
+          d: 'D',
+        });
+
+        const response = await cache.dictionaryRemoveFields(dictionaryName, [
+          'b',
+          'd',
+        ]);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionaryRemoveFields.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
+
+        const fetchResponse = await cache.dictionaryFetch(dictionaryName);
+        expectWithMessage(() => {
+          expect(fetchResponse).toBeInstanceOf(CacheDictionaryFetch.Hit);
+        }, `expected HIT but got ${fetchResponse.toString()}`);
+
+        const hit = fetchResponse as CacheDictionaryFetch.Hit;
+        expect(hit.valueRecord()).toEqual({a: 'A', c: 'C'});
+      });
     });
 
     describe('#dictionarySetField', () => {
@@ -1239,6 +1360,29 @@ export function runDictionaryTests(
         expect(
           (getResponse as CacheDictionaryGetField.Hit).valueUint8Array()
         ).toEqual(value);
+      });
+
+      it('should support happy path for dictionarySetField via curried cache via ICache interface', async () => {
+        const dictionaryName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        const response = await cache.dictionarySetField(
+          dictionaryName,
+          'a',
+          'A'
+        );
+
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionarySetField.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
+
+        const fetchResponse = await cache.dictionaryFetch(dictionaryName);
+        expectWithMessage(() => {
+          expect(fetchResponse).toBeInstanceOf(CacheDictionaryFetch.Hit);
+        }, `expected HIT but got ${fetchResponse.toString()}`);
+
+        const hit = fetchResponse as CacheDictionaryFetch.Hit;
+        expect(hit.valueRecord()).toEqual({a: 'A'});
       });
     });
 
@@ -1466,6 +1610,29 @@ export function runDictionaryTests(
           expect(getResponse.valueString()).toEqual(value2);
         }
       });
+
+      it('should support happy path for dictionarySetFields via curried cache via ICache interface', async () => {
+        const dictionaryName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        const response = await cache.dictionarySetFields(dictionaryName, {
+          a: 'A',
+          b: 'B',
+          c: 'C',
+        });
+
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
+
+        const fetchResponse = await cache.dictionaryFetch(dictionaryName);
+        expectWithMessage(() => {
+          expect(fetchResponse).toBeInstanceOf(CacheDictionaryFetch.Hit);
+        }, `expected HIT but got ${fetchResponse.toString()}`);
+
+        const hit = fetchResponse as CacheDictionaryFetch.Hit;
+        expect(hit.valueRecord()).toEqual({a: 'A', b: 'B', c: 'C'});
+      });
     });
 
     describe('#dictionaryLength', () => {
@@ -1501,6 +1668,31 @@ export function runDictionaryTests(
           IntegrationTestCacheName,
           dictionaryName
         );
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheDictionaryLength.Hit);
+        }, `expected a HIT but got ${resp.toString()}`);
+        expect((resp as CacheDictionaryLength.Hit).length()).toEqual(2);
+      });
+
+      it('should support happy path for dictionaryLength via curried cache via ICache interface', async () => {
+        const dictionaryName = v4();
+        const field1 = v4();
+        const value1 = uint8ArrayForTest(v4());
+        const field2 = v4();
+        const value2 = uint8ArrayForTest(v4());
+
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.dictionarySetFields(
+          dictionaryName,
+          new Map([
+            [field1, value1],
+            [field2, value2],
+          ]),
+          {ttl: CollectionTtl.of(10)}
+        );
+
+        const resp = await cache.dictionaryLength(dictionaryName);
         expectWithMessage(() => {
           expect(resp).toBeInstanceOf(CacheDictionaryLength.Hit);
         }, `expected a HIT but got ${resp.toString()}`);

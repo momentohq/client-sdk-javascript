@@ -348,6 +348,23 @@ export function runListTests(
           valueStringExpected
         );
       });
+
+      it('should support happy path for listFetch via curried cache via ICache interface', async () => {
+        const listName = v4();
+
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.listConcatenateFront(listName, ['foo', 'bar']);
+
+        const respFetch = await cache.listFetch(listName);
+        expectWithMessage(() => {
+          expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${respFetch.toString()}`);
+        expect((respFetch as CacheListFetch.Hit).valueList()).toEqual([
+          'foo',
+          'bar',
+        ]);
+      });
     });
 
     describe('#listLength', () => {
@@ -378,6 +395,20 @@ export function runListTests(
           expect(resp).toBeInstanceOf(CacheListLength.Hit);
         }, `expected a HIT but got ${resp.toString()}`);
         expect((resp as CacheListLength.Hit).length()).toEqual(values.length);
+      });
+
+      it('should support happy path for listLength via curried cache via ICache interface', async () => {
+        const listName = v4();
+
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.listConcatenateFront(listName, ['foo', 'bar']);
+
+        const response = await cache.listLength(listName);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheListLength.Hit);
+        }, `expected a HIT but got ${response.toString()}`);
+        expect((response as CacheListLength.Hit).length()).toEqual(2);
       });
     });
 
@@ -419,6 +450,20 @@ export function runListTests(
           poppedBinary
         );
       });
+
+      it('should support happy path for listPopBack via curried cache via ICache interface', async () => {
+        const listName = v4();
+
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.listConcatenateFront(listName, ['foo', 'bar']);
+
+        const response = await cache.listPopBack(listName);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheListPopBack.Hit);
+        }, `expected a HIT but got ${response.toString()}`);
+        expect((response as CacheListPopBack.Hit).valueString()).toEqual('bar');
+      });
     });
 
     describe('#listPopFront', () => {
@@ -459,6 +504,20 @@ export function runListTests(
           poppedBinary
         );
       });
+
+      it('should support happy path for listPopFront via curried cache via ICache interface', async () => {
+        const listName = v4();
+
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.listConcatenateFront(listName, ['foo', 'bar']);
+
+        const response = await cache.listPopFront(listName);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheListPopFront.Hit);
+        }, `expected a HIT but got ${response.toString()}`);
+        expect((response as CacheListPopBack.Hit).valueString()).toEqual('foo');
+      });
     });
 
     describe('#listPushBack', () => {
@@ -488,6 +547,29 @@ export function runListTests(
           expect(resp).toBeInstanceOf(CacheListPushBack.Success);
         }, `expected a SUCCESS but got ${resp.toString()}`);
       });
+
+      it('should support happy path for listPushBack via curried cache via ICache interface', async () => {
+        const listName = v4();
+
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.listConcatenateFront(listName, ['foo', 'bar']);
+
+        const response = await cache.listPushBack(listName, 'baz');
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheListPushBack.Success);
+        }, `expected a SUCCESS but got ${response.toString()}`);
+
+        const fetchResponse = await cache.listFetch(listName);
+        expectWithMessage(() => {
+          expect(fetchResponse).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${fetchResponse.toString()}`);
+        expect((fetchResponse as CacheListFetch.Hit).valueList()).toEqual([
+          'foo',
+          'bar',
+          'baz',
+        ]);
+      });
     });
 
     describe('#listPushFront', () => {
@@ -516,6 +598,29 @@ export function runListTests(
         expectWithMessage(() => {
           expect(resp).toBeInstanceOf(CacheListPushFront.Success);
         }, `expected a SUCCESS but got ${resp.toString()}`);
+      });
+
+      it('should support happy path for listPushFront via curried cache via ICache interface', async () => {
+        const listName = v4();
+
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.listConcatenateFront(listName, ['foo', 'bar']);
+
+        const response = await cache.listPushFront(listName, 'baz');
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheListPushFront.Success);
+        }, `expected a SUCCESS but got ${response.toString()}`);
+
+        const fetchResponse = await cache.listFetch(listName);
+        expectWithMessage(() => {
+          expect(fetchResponse).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${fetchResponse.toString()}`);
+        expect((fetchResponse as CacheListFetch.Hit).valueList()).toEqual([
+          'baz',
+          'foo',
+          'bar',
+        ]);
       });
     });
 
@@ -559,6 +664,28 @@ export function runListTests(
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           expectedValues
         );
+      });
+
+      it('should support happy path for listRemoveValue via curried cache via ICache interface', async () => {
+        const listName = v4();
+
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.listConcatenateFront(listName, ['foo', 'bar', 'baz']);
+
+        const response = await cache.listRemoveValue(listName, 'bar');
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheListRemoveValue.Success);
+        }, `expected a SUCCESS but got ${response.toString()}`);
+
+        const fetchResponse = await cache.listFetch(listName);
+        expectWithMessage(() => {
+          expect(fetchResponse).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${fetchResponse.toString()}`);
+        expect((fetchResponse as CacheListFetch.Hit).valueList()).toEqual([
+          'foo',
+          'baz',
+        ]);
       });
     });
 
@@ -623,6 +750,36 @@ export function runListTests(
         expect((respFetch as CacheListFetch.Hit).valueListUint8Array()).toEqual(
           [valueBytesExpected]
         );
+      });
+
+      it('should support happy path for listRetain via curried cache via ICache interface', async () => {
+        const listName = v4();
+
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.listConcatenateFront(listName, [
+          'foo',
+          'bar',
+          'baz',
+          'bam',
+        ]);
+
+        const response = await cache.listRetain(listName, {
+          startIndex: 1,
+          endIndex: 3,
+        });
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheListRetain.Success);
+        }, `expected a SUCCESS but got ${response.toString()}`);
+
+        const fetchResponse = await cache.listFetch(listName);
+        expectWithMessage(() => {
+          expect(fetchResponse).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${fetchResponse.toString()}`);
+        expect((fetchResponse as CacheListFetch.Hit).valueList()).toEqual([
+          'bar',
+          'baz',
+        ]);
       });
     });
 
@@ -693,6 +850,33 @@ export function runListTests(
           values1.concat(values2)
         );
       });
+
+      it('should support happy path for listConcatenateBack via curried cache via ICache interface', async () => {
+        const listName = v4();
+
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.listConcatenateFront(listName, ['foo', 'bar']);
+
+        const response = await cache.listConcatenateBack(listName, [
+          'baz',
+          'bam',
+        ]);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheListConcatenateBack.Success);
+        }, `expected a SUCCESS but got ${response.toString()}`);
+
+        const fetchResponse = await cache.listFetch(listName);
+        expectWithMessage(() => {
+          expect(fetchResponse).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${fetchResponse.toString()}`);
+        expect((fetchResponse as CacheListFetch.Hit).valueList()).toEqual([
+          'foo',
+          'bar',
+          'baz',
+          'bam',
+        ]);
+      });
     });
 
     describe('#listConcatenateFront', () => {
@@ -761,6 +945,33 @@ export function runListTests(
         expect((respFetch as CacheListFetch.Hit).valueListString()).toEqual(
           values2.concat(values1)
         );
+      });
+
+      it('should support happy path for listConcatenateFront via curried cache via ICache interface', async () => {
+        const listName = v4();
+
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.listConcatenateFront(listName, ['foo', 'bar']);
+
+        const response = await cache.listConcatenateFront(listName, [
+          'baz',
+          'bam',
+        ]);
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheListConcatenateFront.Success);
+        }, `expected a SUCCESS but got ${response.toString()}`);
+
+        const fetchResponse = await cache.listFetch(listName);
+        expectWithMessage(() => {
+          expect(fetchResponse).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${fetchResponse.toString()}`);
+        expect((fetchResponse as CacheListFetch.Hit).valueList()).toEqual([
+          'baz',
+          'bam',
+          'foo',
+          'bar',
+        ]);
       });
     });
   });

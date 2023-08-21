@@ -57,8 +57,20 @@ export function runCreateDeleteListCacheTests(Momento: ICacheClient) {
         }, `expected SUCCESS but got ${listResponse.toString()}`);
         if (listResponse instanceof ListCaches.Success) {
           const caches = listResponse.getCaches();
-          const names = caches.map(c => c.getName());
-          expect(names.includes(cacheName)).toBeTruthy();
+          const knownCaches = caches.filter(c => c.getName() === cacheName);
+          expect(knownCaches.length === 1).toBeTrue();
+          const cache = knownCaches[0];
+
+          // checking cache limits
+          expect(cache.getCacheLimits().maxThroughputKbps).toEqual(1024);
+          expect(cache.getCacheLimits().maxItemSizeKb).toEqual(1024);
+          expect(cache.getCacheLimits().maxTrafficRate).toEqual(100);
+          expect(cache.getCacheLimits().maxTtlSeconds).toEqual(86400);
+
+          // checking topic limits
+          expect(cache.getTopicLimits().maxPublishMessageSizeKb).toEqual(100);
+          expect(cache.getTopicLimits().maxPublishRate).toEqual(100);
+          expect(cache.getTopicLimits().maxSubscriptionCount).toEqual(100);
         }
       });
     });

@@ -22,6 +22,10 @@ import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {validateCacheName} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {getWebControlEndpoint} from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
+import {
+  CacheLimits,
+  TopicLimits,
+} from '@gomomento/sdk-core/dist/src/messages/cache-info';
 
 export interface ControlClientProps {
   configuration: Configuration;
@@ -158,9 +162,26 @@ export class ControlClient<
           if (err) {
             resolve(new ListCaches.Error(cacheServiceErrorMapper(err)));
           } else {
-            const caches = resp
-              .getCacheList()
-              .map(cache => new CacheInfo(cache.getCacheName()));
+            const caches = resp.getCacheList().map(cache => {
+              const cacheName = cache.getCacheName();
+              const topicLimits: TopicLimits = {
+                maxPublishMessageSizeKb:
+                  cache.getTopicLimits()?.getMaxPublishMessageSizeKb() || 0,
+                maxSubscriptionCount:
+                  cache.getTopicLimits()?.getMaxSubscriptionCount() || 0,
+                maxPublishRate:
+                  cache.getTopicLimits()?.getMaxPublishRate() || 0,
+              };
+              const cacheLimits: CacheLimits = {
+                maxTtlSeconds: cache.getCacheLimits()?.getMaxTtlSeconds() || 0,
+                maxItemSizeKb: cache.getCacheLimits()?.getMaxItemSizeKb() || 0,
+                maxThroughputKbps:
+                  cache.getCacheLimits()?.getMaxThroughputKbps() || 0,
+                maxTrafficRate:
+                  cache.getCacheLimits()?.getMaxTrafficRate() || 0,
+              };
+              return new CacheInfo(cacheName, topicLimits, cacheLimits);
+            });
             resolve(new ListCaches.Success(caches));
           }
         }

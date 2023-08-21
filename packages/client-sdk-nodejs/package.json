@@ -18,11 +18,12 @@
     "integration-test-auth": "jest auth-client.test.ts",
     "unit-test": "jest unit",
     "integration-test": "jest integration --testPathIgnorePatterns auth-client.test.ts",
-    "build-and-run-tests": "cd ../common-integration-tests && npm run build && cd - && jest --testPathIgnorePatterns auth-client.test.ts",
+    "build-deps": "cd ../core && npm run build && cd - && cd ../common-integration-tests && npm run build && cd -",
+    "build-and-run-tests": "npm run build-deps && jest --testPathIgnorePatterns auth-client.test.ts --maxWorkers 1",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
-    "build": "cd ../core && npm run build && cd - && rm -rf dist && tsc && mkdir -p dist/src/internal/vendor && cp -r ../client-sdk-nodejs/src/internal/vendor/printf dist/src/internal/vendor/printf",
+    "build": "rm -rf dist && tsc && mkdir -p dist/src/internal/vendor && cp -r ../client-sdk-nodejs/src/internal/vendor/printf dist/src/internal/vendor/printf",
     "build-without-local-core": "rm -rf dist && tsc && mkdir -p dist/src/internal/vendor && cp -r ../client-sdk-nodejs/src/internal/vendor/printf dist/src/internal/vendor/printf"
   },
   "author": "",
@@ -50,7 +51,7 @@
     "uuid": "8.3.2"
   },
   "dependencies": {
-    "@gomomento/generated-types": "0.69.0",
+    "@gomomento/generated-types": "0.73.0",
     "@gomomento/sdk-core": "file:../core",
     "@grpc/grpc-js": "1.9.0",
     "@types/google-protobuf": "3.15.6",

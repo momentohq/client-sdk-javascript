@@ -76,6 +76,8 @@ import {
 import {IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
 import {IPingClient} from './IPingClient';
+import {IMomentoCache} from '../../../clients/IMomentoCache';
+import {MomentoCache} from './momento-cache';
 
 export abstract class AbstractCacheClient implements ICacheClient {
   // making these protected until we fully abstract away the nodejs client
@@ -99,6 +101,10 @@ export abstract class AbstractCacheClient implements ICacheClient {
     // is single-threaded, we don't have to worry about thread safety on this
     // index variable.
     this.nextDataClientIndex = 0;
+  }
+
+  public cache(cacheName: string): IMomentoCache {
+    return new MomentoCache(this, cacheName);
   }
 
   /**

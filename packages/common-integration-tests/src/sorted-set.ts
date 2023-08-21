@@ -631,6 +631,39 @@ export function runSortedSetTests(
           expect(response).toBeInstanceOf(CacheSortedSetFetch.Miss);
         }, `expected MISS but got ${response.toString()}`);
       });
+
+      it('should support happy path for fetchByRank via curried cache via ICache interface', async () => {
+        const sortedSetName = v4();
+
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.sortedSetPutElements(sortedSetName, {
+          bam: 1000,
+          foo: 1,
+          taco: 90210,
+          bar: 2,
+          burrito: 9000,
+          baz: 42,
+          habanero: 68,
+          jalapeno: 1_000_000,
+        });
+
+        const response = await cache.sortedSetFetchByRank(sortedSetName, {
+          startRank: 1,
+          endRank: 5,
+        });
+
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([
+          {value: 'bar', score: 2},
+          {value: 'baz', score: 42},
+          {value: 'habanero', score: 68},
+          {value: 'bam', score: 1000},
+        ]);
+      });
     });
 
     describe('#sortedSetFetchByScore', () => {
@@ -1171,6 +1204,37 @@ export function runSortedSetTests(
           expect(response).toBeInstanceOf(CacheSortedSetFetch.Miss);
         }, `expected MISS but got ${response.toString()}`);
       });
+
+      it('should support happy path for fetchByScore via curried cache via ICache interface', async () => {
+        const sortedSetName = v4();
+
+        const cache = Momento.cache(IntegrationTestCacheName);
+
+        await cache.sortedSetPutElements(sortedSetName, {
+          bam: 1000,
+          foo: 1,
+          taco: 90210,
+          bar: 2,
+          burrito: 9000,
+          baz: 42,
+          habanero: 68,
+          jalapeno: 1_000_000,
+        });
+
+        const response = await cache.sortedSetFetchByScore(sortedSetName, {
+          minScore: 100,
+          maxScore: 10_000,
+        });
+
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([
+          {value: 'bam', score: 1000},
+          {value: 'burrito', score: 9000},
+        ]);
+      });
     });
 
     describe('#sortedSetGetRank', () => {
@@ -1244,6 +1308,23 @@ export function runSortedSetTests(
           expect(result).toBeInstanceOf(CacheSortedSetGetRank.Miss);
         }, `expected MISS but got ${result.toString()}`);
       });
+
+      it('should support happy path for sortedSetGetRank via curried cache via ICache interface', async () => {
+        const sortedSetName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+        await cache.sortedSetPutElements(sortedSetName, {
+          foo: 42,
+          bar: 84,
+          baz: 90210,
+        });
+
+        const result = await cache.sortedSetGetRank(sortedSetName, 'bar');
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetGetRank.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        const hitResult = result as CacheSortedSetGetRank.Hit;
+        expect(hitResult.rank()).toEqual(1);
+      });
     });
 
     describe('#sortedSetGetScore', () => {
@@ -1306,6 +1387,23 @@ export function runSortedSetTests(
           expect(result).toBeInstanceOf(CacheSortedSetGetScore.Miss);
         }, `expected MISS but got ${result.toString()}`);
       });
+
+      it('should support happy path for sortedSetGetScore via curried cache via ICache interface', async () => {
+        const sortedSetName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+        await cache.sortedSetPutElements(sortedSetName, {
+          foo: 42,
+          bar: 84,
+          baz: 90210,
+        });
+
+        const result = await cache.sortedSetGetScore(sortedSetName, 'bar');
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetGetScore.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        const hitResult = result as CacheSortedSetGetScore.Hit;
+        expect(hitResult.score()).toEqual(84);
+      });
     });
 
     describe('#sortedSetGetScores', () => {
@@ -1363,6 +1461,26 @@ export function runSortedSetTests(
         expect(hitResult.valueRecord()).toEqual({
           bar: 84,
         });
+      });
+
+      it('should support happy path for sortedSetGetScores via curried cache via ICache interface', async () => {
+        const sortedSetName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+        await cache.sortedSetPutElements(sortedSetName, {
+          foo: 42,
+          bar: 84,
+          baz: 90210,
+        });
+
+        const result = await cache.sortedSetGetScores(sortedSetName, [
+          'bar',
+          'baz',
+        ]);
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetGetScores.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        const hitResult = result as CacheSortedSetGetScores.Hit;
+        expect(hitResult.valueRecord()).toEqual({bar: 84, baz: 90210});
       });
     });
 
@@ -1597,6 +1715,26 @@ export function runSortedSetTests(
           {value: value, score: 90200},
         ]);
       });
+
+      it('should support happy path for sortedSetIncrementScore via curried cache via ICache interface', async () => {
+        const sortedSetName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+        await cache.sortedSetPutElements(sortedSetName, {
+          foo: 42,
+          bar: 84,
+          baz: 90210,
+        });
+
+        const result = await cache.sortedSetIncrementScore(
+          sortedSetName,
+          'bar'
+        );
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetIncrementScore.Success);
+        }, `expected HIT but got ${result.toString()}`);
+        const success = result as CacheSortedSetIncrementScore.Success;
+        expect(success.score()).toEqual(85);
+      });
     });
 
     describe('#sortedSetRemoveElement', () => {
@@ -1705,6 +1843,30 @@ export function runSortedSetTests(
         expect(hitResponse.valueArray()).toEqual([
           {value: 'foo', score: 21},
           {value: 'bar', score: 42},
+        ]);
+      });
+
+      it('should support happy path for sortedSetRemoveElement via curried cache via ICache interface', async () => {
+        const sortedSetName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+        await cache.sortedSetPutElements(sortedSetName, {
+          foo: 42,
+          bar: 84,
+          baz: 90210,
+        });
+
+        const result = await cache.sortedSetRemoveElement(sortedSetName, 'bar');
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetRemoveElement.Success);
+        }, `expected HIT but got ${result.toString()}`);
+
+        const fetchResult = await cache.sortedSetFetchByRank(sortedSetName);
+        expectWithMessage(() => {
+          expect(fetchResult).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        expect((fetchResult as CacheSortedSetFetch.Hit).valueArray()).toEqual([
+          {value: 'foo', score: 42},
+          {value: 'baz', score: 90210},
         ]);
       });
     });
@@ -1821,6 +1983,32 @@ export function runSortedSetTests(
           {value: 'baz', score: 84},
         ]);
       });
+
+      it('should support happy path for sortedSetRemoveElements via curried cache via ICache interface', async () => {
+        const sortedSetName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+        await cache.sortedSetPutElements(sortedSetName, {
+          foo: 42,
+          bar: 84,
+          baz: 90210,
+        });
+
+        const result = await cache.sortedSetRemoveElements(sortedSetName, [
+          'bar',
+          'baz',
+        ]);
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetRemoveElements.Success);
+        }, `expected HIT but got ${result.toString()}`);
+
+        const fetchResult = await cache.sortedSetFetchByRank(sortedSetName);
+        expectWithMessage(() => {
+          expect(fetchResult).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        expect((fetchResult as CacheSortedSetFetch.Hit).valueArray()).toEqual([
+          {value: 'foo', score: 42},
+        ]);
+      });
     });
 
     describe('#sortedSetPutElement', () => {
@@ -1891,6 +2079,36 @@ export function runSortedSetTests(
         const hitResponse = response as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArrayUint8Elements()).toEqual([
           {value: uint8ArrayForTest('foo'), score: 42},
+        ]);
+      });
+
+      it('should support happy path for sortedSetPutElement via curried cache via ICache interface', async () => {
+        const sortedSetName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+        await cache.sortedSetPutElements(sortedSetName, {
+          foo: 42,
+          bar: 84,
+          baz: 90210,
+        });
+
+        const result = await cache.sortedSetPutElement(
+          sortedSetName,
+          'bam',
+          9000
+        );
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetPutElement.Success);
+        }, `expected HIT but got ${result.toString()}`);
+
+        const fetchResult = await cache.sortedSetFetchByRank(sortedSetName);
+        expectWithMessage(() => {
+          expect(fetchResult).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        expect((fetchResult as CacheSortedSetFetch.Hit).valueArray()).toEqual([
+          {value: 'foo', score: 42},
+          {value: 'bar', score: 84},
+          {value: 'bam', score: 9000},
+          {value: 'baz', score: 90210},
         ]);
       });
     });
@@ -1996,6 +2214,36 @@ export function runSortedSetTests(
           {value: uint8ArrayForTest('bar'), score: 84},
         ]);
       });
+
+      it('should support happy path for sortedSetPutElements via curried cache via ICache interface', async () => {
+        const sortedSetName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+        await cache.sortedSetPutElements(sortedSetName, {
+          foo: 42,
+          bar: 84,
+          baz: 90210,
+        });
+
+        const result = await cache.sortedSetPutElements(sortedSetName, {
+          bam: 9000,
+          taco: 1_000_000,
+        });
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        }, `expected HIT but got ${result.toString()}`);
+
+        const fetchResult = await cache.sortedSetFetchByRank(sortedSetName);
+        expectWithMessage(() => {
+          expect(fetchResult).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        expect((fetchResult as CacheSortedSetFetch.Hit).valueArray()).toEqual([
+          {value: 'foo', score: 42},
+          {value: 'bar', score: 84},
+          {value: 'bam', score: 9000},
+          {value: 'baz', score: 90210},
+          {value: 'taco', score: 1_000_000},
+        ]);
+      });
     });
 
     describe('#sortedSetLength', () => {
@@ -2026,6 +2274,23 @@ export function runSortedSetTests(
         expect((result as CacheSortedSetLength.Hit).length()).toEqual(
           numElements
         );
+      });
+
+      it('should support happy path for sortedSetLength via curried cache via ICache interface', async () => {
+        const sortedSetName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+        await cache.sortedSetPutElements(sortedSetName, {
+          foo: 42,
+          bar: 84,
+          baz: 90210,
+        });
+
+        const result = await cache.sortedSetLength(sortedSetName);
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetLength.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+
+        expect((result as CacheSortedSetLength.Hit).length()).toEqual(3);
       });
     });
 
@@ -2281,6 +2546,26 @@ export function runSortedSetTests(
           expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
         }, `expected HIT but got ${result.toString()}`);
         expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(5);
+      });
+
+      it('should support happy path for sortedSetLengthByScore via curried cache via ICache interface', async () => {
+        const sortedSetName = v4();
+        const cache = Momento.cache(IntegrationTestCacheName);
+        await cache.sortedSetPutElements(sortedSetName, {
+          foo: 42,
+          bar: 84,
+          baz: 90210,
+        });
+
+        const result = await cache.sortedSetLengthByScore(sortedSetName, {
+          minScore: 50,
+          maxScore: 1000,
+        });
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetLengthByScore.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+
+        expect((result as CacheSortedSetLengthByScore.Hit).length()).toEqual(1);
       });
     });
 
