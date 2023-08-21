@@ -1,6 +1,5 @@
 import {GetSecretValueCommand, SecretsManagerClient} from '@aws-sdk/client-secrets-manager';
-import {CacheClient, CacheGet, Configurations, CredentialProvider, DefaultMomentoLoggerFactory} from '@gomomento/sdk';
-import {ExperimentalMetricsLoggingMiddleware} from '@gomomento/sdk/dist/src/config/middleware/experimental-metrics-logging-middleware';
+import {CacheClient, CacheGet, Configurations, CredentialProvider} from '@gomomento/sdk';
 
 const CACHE_NAME = 'cache';
 const KEY = 'key';
@@ -54,9 +53,7 @@ async function getCacheClient(): Promise<CacheClient> {
     console.log('Retrieved secret!');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
     _cacheClient = await CacheClient.create({
-      configuration: Configurations.Lambda.latest().addMiddleware(
-        new ExperimentalMetricsLoggingMiddleware(new DefaultMomentoLoggerFactory())
-      ),
+      configuration: Configurations.Lambda.latest(),
       credentialProvider: CredentialProvider.fromString({authToken: momentoAuthToken}),
       defaultTtlSeconds: 60,
     });
