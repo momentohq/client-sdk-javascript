@@ -29,8 +29,7 @@
     "typescript": "4.4.3"
   },
   "dependencies": {
-    "@gomomento/sdk": "1.28.0",
-    "@grpc/grpc-js": "1.8.17",
+    "@gomomento/sdk": "1.33.0",
     "@opentelemetry/api": "1.4.1",
     "@opentelemetry/exporter-prometheus": "0.39.1",
     "@opentelemetry/exporter-zipkin": "1.13.0",
@@ -41,7 +40,6 @@
     "@opentelemetry/sdk-trace-base": "1.13.0",
     "@opentelemetry/sdk-trace-node": "1.13.0",
     "@opentelemetry/semantic-conventions": "1.13.0",
-    "google-protobuf": "3.21.2",
     "pino": "8.14.1",
     "pino-pretty": "8.1.0",
     "uuidv4": "6.2.13"

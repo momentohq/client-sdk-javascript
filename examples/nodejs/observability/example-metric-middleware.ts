@@ -1,33 +1,36 @@
-import {Metadata, StatusObject} from '@grpc/grpc-js';
 import {Middleware, MiddlewareRequestHandler} from '@gomomento/sdk';
 import {metrics} from '@opentelemetry/api';
 import {Counter} from '@opentelemetry/api/build/src/metrics/Metric';
-import {Message} from 'google-protobuf';
+import {
+  MiddlewareMessage,
+  MiddlewareMetadata,
+  MiddlewareStatus,
+} from '@gomomento/sdk/dist/src/config/middleware/middleware';
 
 class ExampleMetricMiddlewareRequestHandler implements MiddlewareRequestHandler {
   private requestCounter: Counter;
   constructor(requestCounter: Counter) {
     this.requestCounter = requestCounter;
   }
-  onRequestMetadata(metadata: Metadata): Promise<Metadata> {
+  onRequestMetadata(metadata: MiddlewareMetadata): Promise<MiddlewareMetadata> {
     return Promise.resolve(metadata);
   }
 
-  onRequestBody(request: Message): Promise<Message> {
+  onRequestBody(request: MiddlewareMessage): Promise<MiddlewareMessage> {
     const requestType = request.constructor.name;
     this.requestCounter.add(1, {'request.type': requestType});
     return Promise.resolve(request);
   }
 
-  onResponseMetadata(metadata: Metadata): Promise<Metadata> {
+  onResponseMetadata(metadata: MiddlewareMetadata): Promise<MiddlewareMetadata> {
     return Promise.resolve(metadata);
   }
 
-  onResponseBody(response: Message | null): Promise<Message | null> {
+  onResponseBody(response: MiddlewareMessage | null): Promise<MiddlewareMessage | null> {
     return Promise.resolve(response);
   }
 
-  onResponseStatus(status: StatusObject): Promise<StatusObject> {
+  onResponseStatus(status: MiddlewareStatus): Promise<MiddlewareStatus> {
     return Promise.resolve(status);
   }
 }
