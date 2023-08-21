@@ -27,6 +27,10 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {_SigningKey} from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
+import {
+  CacheLimits,
+  TopicLimits,
+} from '@gomomento/sdk-core/dist/src/messages/cache-info';
 
 export interface ControlClientProps {
   configuration: Configuration;
@@ -168,9 +172,23 @@ export class ControlClient {
           if (err || !resp) {
             resolve(new ListCaches.Error(cacheServiceErrorMapper(err)));
           } else {
-            const caches = resp.cache.map(
-              cache => new CacheInfo(cache.cache_name)
-            );
+            const caches = resp.cache.map(cache => {
+              const cacheName = cache.cache_name;
+              const topicLimits: TopicLimits = {
+                maxPublishMessageSizeKb:
+                  cache.topic_limits?.max_publish_message_size_kb || 0,
+                maxSubscriptionCount:
+                  cache.topic_limits?.max_subscription_count || 0,
+                maxPublishRate: cache.topic_limits?.max_publish_rate || 0,
+              };
+              const cacheLimits: CacheLimits = {
+                maxTtlSeconds: cache.cache_limits?.max_ttl_seconds || 0,
+                maxItemSizeKb: cache.cache_limits?.max_item_size_kb || 0,
+                maxThroughputKbps: cache.cache_limits?.max_throughput_kbps || 0,
+                maxTrafficRate: cache.cache_limits?.max_traffic_rate || 0,
+              };
+              return new CacheInfo(cacheName, topicLimits, cacheLimits);
+            });
             resolve(new ListCaches.Success(caches));
           }
         });
