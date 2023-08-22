@@ -10,12 +10,12 @@ import {
 import {CacheClientProps, EagerCacheClientProps} from './cache-client-props';
 import {
   range,
-  validateValidForSeconds,
+  validateTimeout,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {AbstractCacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/AbstractCacheClient';
 
-const EAGER_CONNECITON_DEFAULT_TIMEOUT_SECONDS = 30;
+const EAGER_CONNECTION_DEFAULT_TIMEOUT_SECONDS = 30;
 /**
  * Momento Cache Client.
  *
@@ -63,8 +63,9 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
     const timeout =
       props.eagerConnectTimeout !== undefined
         ? props.eagerConnectTimeout
-        : EAGER_CONNECITON_DEFAULT_TIMEOUT_SECONDS;
-    validateValidForSeconds(timeout);
+        : EAGER_CONNECTION_DEFAULT_TIMEOUT_SECONDS;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    validateTimeout(timeout);
     // client need to explicitly set the value as 0 to disable eager connection.
     if (props.eagerConnectTimeout !== 0) {
       await Promise.all(

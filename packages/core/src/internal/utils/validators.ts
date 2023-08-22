@@ -99,6 +99,12 @@ export function validateValidForSeconds(validForSeconds: number) {
   }
 }
 
+export function validateTimeout(timeout: number) {
+  if (timeout < 0) {
+    throw new InvalidArgumentError('timeout must be positive');
+  }
+}
+
 function isEmpty(str: string): boolean {
   return !str.trim();
 }
