@@ -8,7 +8,10 @@ import {
   MomentoLogger,
 } from '.';
 import {CacheClientProps, EagerCacheClientProps} from './cache-client-props';
-import {range} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {
+  range,
+  validateValidForSeconds,
+} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {AbstractCacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/AbstractCacheClient';
 
@@ -61,6 +64,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
       props.eagerConnectTimeout !== undefined
         ? props.eagerConnectTimeout
         : EAGER_CONNECITON_DEFAULT_TIMEOUT_SECONDS;
+    validateValidForSeconds(timeout);
     // client need to explicitly set the value as 0 to disable eager connection.
     if (props.eagerConnectTimeout !== 0) {
       await Promise.all(
