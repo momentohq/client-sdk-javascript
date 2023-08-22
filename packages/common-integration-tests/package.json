@@ -21,6 +21,7 @@
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
     "build": "tsc",
+    "build-with-deps": "cd ../core && npm run build && cd - && tsc",
     "build-without-local-core": "tsc"
   },
   "author": "",

@@ -6,6 +6,7 @@ import {
   ResponseMiss,
 } from './response-base';
 import {truncateString} from '../../internal/utils';
+import {CacheGet} from '../../index';
 
 const TEXT_DECODER = new TextDecoder();
 
@@ -29,7 +30,14 @@ const TEXT_DECODER = new TextDecoder();
  * }
  * ```
  */
-export abstract class Response extends ResponseBase {}
+export abstract class Response extends ResponseBase {
+  public value(): string | undefined {
+    if (this instanceof CacheGet.Hit) {
+      return (this as CacheGet.Hit).value();
+    }
+    return undefined;
+  }
+}
 
 class _Hit extends Response {
   private readonly body: Uint8Array;
@@ -37,6 +45,15 @@ class _Hit extends Response {
     super();
     this.body = body;
   }
+
+  /**
+   * Returns the data as a utf-8 string, decoded from the underlying byte array.
+   * @returns string
+   */
+  public value(): string {
+    return TEXT_DECODER.decode(this.body);
+  }
+
   /**
    * Returns the data as a utf-8 string, decoded from the underlying byte array.
    * @returns string

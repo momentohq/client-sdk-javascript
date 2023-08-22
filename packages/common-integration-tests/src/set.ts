@@ -547,7 +547,7 @@ export function runSetTests(
     });
   });
 
-  describe('#fetch', () => {
+  describe('#setFetch', () => {
     it('should succeed for string arrays happy path', async () => {
       const setName = v4();
       const addResponse = await Momento.setAddElements(
@@ -621,6 +621,38 @@ export function runSetTests(
       expect((fetchResponse as CacheSetFetch.Hit).valueSet()).toEqual(
         new Set(['foo', 'bar'])
       );
+    });
+
+    it('should support accessing value for CacheSetFetch.Hit without instanceof check', async () => {
+      const setName = v4();
+
+      await Momento.setAddElements(IntegrationTestCacheName, setName, [
+        'foo',
+        'bar',
+      ]);
+
+      let fetchResponse = await Momento.setFetch(
+        IntegrationTestCacheName,
+        setName
+      );
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Hit);
+      }, `expected a HIT but got ${fetchResponse.toString()}`);
+
+      const expectedResult = ['foo', 'bar'];
+
+      expect(fetchResponse.value()).toEqual(expectedResult);
+
+      const hit = fetchResponse as CacheSetFetch.Hit;
+      expect(hit.value()).toEqual(expectedResult);
+      expect(hit.valueArray()).toEqual(expectedResult);
+
+      fetchResponse = await Momento.setFetch(IntegrationTestCacheName, v4());
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Miss);
+      }, `expected a MISS but got ${fetchResponse.toString()}`);
+
+      expect(fetchResponse.value()).toEqual(undefined);
     });
   });
 }

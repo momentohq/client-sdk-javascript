@@ -44,6 +44,7 @@ import {
   CacheIncreaseTtl,
   CacheDecreaseTtl,
   CacheDictionaryLength,
+  CacheDictionaryGetFields,
 } from '../../../index';
 
 export interface IDataClient {
@@ -164,7 +165,7 @@ export interface IDataClient {
     cacheName: string,
     dictionaryName: string,
     fields: string[] | Uint8Array[]
-  ): Promise<CacheDictionaryGetField.Response>;
+  ): Promise<CacheDictionaryGetFields.Response>;
   dictionaryFetch(
     cacheName: string,
     dictionaryName: string

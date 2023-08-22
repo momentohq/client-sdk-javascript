@@ -36,7 +36,14 @@ type CacheSortedSetGetScoreResponseType =
  * }
  * ```
  */
-export abstract class Response extends ResponseBase {}
+export abstract class Response extends ResponseBase {
+  public value(): Record<string, number> | undefined {
+    if (this instanceof Hit) {
+      return (this as Hit).value();
+    }
+    return undefined;
+  }
+}
 
 class _Hit extends Response {
   public _responses: CacheSortedSetGetScoreResponseType[] = [];
@@ -124,6 +131,16 @@ class _Hit extends Response {
    */
   public valueRecord(): Record<string, number> {
     return this.valueRecordString();
+  }
+
+  /**
+   * Returns the data as a Record whose keys and values are utf-8 strings, decoded from the underlying byte arrays.
+   * This can be used in most places where an Object is desired.  This is a convenience alias for
+   * {valueRecordStringString}.
+   * @returns {Record<string, number>}
+   */
+  public value(): Record<string, number> {
+    return this.valueRecord();
   }
 
   public override toString(): string {

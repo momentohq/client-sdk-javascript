@@ -26,7 +26,14 @@ import {SdkError} from '../../errors';
  * }
  * ```
  */
-export abstract class Response extends ResponseBase {}
+export abstract class Response extends ResponseBase {
+  public score(): number | undefined {
+    if (this instanceof Hit) {
+      return (this as Hit).score();
+    }
+    return undefined;
+  }
+}
 
 class _Hit extends Response {
   private readonly _value: Uint8Array;

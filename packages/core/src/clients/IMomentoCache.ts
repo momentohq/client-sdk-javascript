@@ -43,6 +43,7 @@ import {
   CacheUpdateTtl,
   CacheIncreaseTtl,
   CacheDecreaseTtl,
+  CacheDictionaryGetFields,
   CacheDictionaryLength,
 } from '../index';
 import {
@@ -169,7 +170,7 @@ export interface IMomentoCache {
   dictionaryGetFields(
     dictionaryName: string,
     fields: string[] | Uint8Array[]
-  ): Promise<CacheDictionaryGetField.Response>;
+  ): Promise<CacheDictionaryGetFields.Response>;
   dictionaryFetch(
     dictionaryName: string
   ): Promise<CacheDictionaryFetch.Response>;

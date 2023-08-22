@@ -20,22 +20,32 @@ import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
  * }
  * ```
  */
-export abstract class Response extends ResponseBase {}
+export abstract class Response extends ResponseBase {
+  public value(): number | undefined {
+    if (this instanceof Success) {
+      return (this as Success).value();
+    }
+    return undefined;
+  }
+}
 
 class _Success extends Response {
-  private readonly value: number;
+  private readonly _value: number;
 
   constructor(value: number) {
     super();
-    this.value = value;
+    this._value = value;
   }
 
   /**
    * The new value of the element after incrementing.
    * @returns {number}
    */
+  public value(): number {
+    return this._value;
+  }
   public valueNumber(): number {
-    return this.value;
+    return this._value;
   }
 
   public override toString(): string {

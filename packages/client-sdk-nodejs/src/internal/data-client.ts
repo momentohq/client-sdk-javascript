@@ -2514,7 +2514,9 @@ export class DataClient implements IDataClient {
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+      return new CacheSortedSetIncrementScore.Error(
+        normalizeSdkError(err as Error)
+      );
     }
 
     this.logger.trace(
@@ -2570,7 +2572,9 @@ export class DataClient implements IDataClient {
               }
             } else {
               resolve(
-                new CacheDictionaryIncrement.Error(cacheServiceErrorMapper(err))
+                new CacheSortedSetIncrementScore.Error(
+                  cacheServiceErrorMapper(err)
+                )
               );
             }
           }
