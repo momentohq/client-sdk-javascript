@@ -248,9 +248,7 @@ export class ControlClient<
           if (err) {
             resolve(new ListIndexes.Error(cacheServiceErrorMapper(err)));
           } else {
-            const indexes = resp
-              .getIndexesList()
-              .map(index => index.getIndexName());
+            const indexes = resp.getIndexNamesList();
             resolve(new ListIndexes.Success(indexes));
           }
         }
