@@ -238,7 +238,6 @@ export class ControlClient<
 
   public async listIndexes(): Promise<ListIndexes.Response> {
     const request = new _ListIndexesRequest();
-    request.setNextToken('');
     this.logger.debug("Issuing 'listIndexes' request");
     return await new Promise<ListIndexes.Response>(resolve => {
       this.clientWrapper.listIndexes(
@@ -249,10 +248,10 @@ export class ControlClient<
           if (err) {
             resolve(new ListIndexes.Error(cacheServiceErrorMapper(err)));
           } else {
-            const caches = resp
+            const indexes = resp
               .getIndexesList()
               .map(index => index.getIndexName());
-            resolve(new ListIndexes.Success(caches));
+            resolve(new ListIndexes.Success(indexes));
           }
         }
       );
