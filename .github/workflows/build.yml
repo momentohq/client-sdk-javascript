@@ -250,3 +250,33 @@ jobs:
         if: ${{ steps.validation.outcome == 'failure' }}
         run: exit 1
 
+  # https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions#enable-auto-merge-on-a-pull-request
+  dependabot-auto-merge:
+    name: Dependabot Auto Merge
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    # make sure we run all tests/examples and they pass before we try and auto approve/merge the dependabot prs
+    needs: [test-deno-examples, test-web-examples, test-examples, test, verify]
+    if: ${{ github.actor == 'dependabot[bot]' }}
+    steps:
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v1
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Approve a PR
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          # need to have an approver first before dependabot can merge the pr, here we are using the shared
+          # momento github actions bot user
+          GITHUB_TOKEN: ${{secrets.MOMENTO_MACHINE_USER_GITHUB_TOKEN}}
+      - name: Enable auto-merge for Dependabot PRs
+        if: ${{steps.metadata.outputs.update-type != 'version-update:semver-major'}}
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
