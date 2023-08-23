@@ -8,7 +8,11 @@ describe('IMomentoCache', () => {
     );
     const cacheInterface =
       cacheInterfaceSourceFile.getInterface('IMomentoCache');
-    const cacheInterfaceMembers = cacheInterface!
+    if (!cacheInterface) {
+      throw new Error('Unable to get the interface for IMomentoCache');
+    }
+
+    const cacheInterfaceMembers = cacheInterface
       .getMethods()
       .map(m => m.getName())
       .sort();
@@ -19,7 +23,11 @@ describe('IMomentoCache', () => {
     );
     const clientInterface =
       clientInterfaceSourceFile.getInterface('ICacheClient');
-    const clientInterfaceMembers = clientInterface!
+    if (!clientInterface) {
+      throw new Error('Unable to get the interface for ICacheClient');
+    }
+
+    const clientInterfaceMembers = clientInterface
       .getMethods()
       .map(m => m.getName())
       // filter out method names that should only exist on the client
