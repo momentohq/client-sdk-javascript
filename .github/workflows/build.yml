@@ -272,7 +272,7 @@ jobs:
           PR_URL: ${{github.event.pull_request.html_url}}
           # need to have an approver first before dependabot can merge the pr, here we are using the shared
           # momento github actions bot user
-          GITHUB_TOKEN: ${{secrets.MOMENTO_MACHINE_USER_GITHUB_TOKEN}}
+          GH_TOKEN: ${{secrets.MOMENTO_MACHINE_USER_GITHUB_TOKEN}}
       - name: Enable auto-merge for Dependabot PRs
         if: ${{steps.metadata.outputs.update-type != 'version-update:semver-major'}}
         run: gh pr merge --auto --merge "$PR_URL"
