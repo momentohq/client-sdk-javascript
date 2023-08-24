@@ -1,10 +1,10 @@
-import {CredentialProvider, Configuration} from '.';
+import {CredentialProvider, VectorConfiguration} from '.';
 
 export interface VectorClientProps {
   /**
    * Configuration settings for the vector client
    */
-  configuration: Configuration;
+  configuration: VectorConfiguration;
   /**
    * controls how the client will get authentication information for connecting to the Momento service
    */

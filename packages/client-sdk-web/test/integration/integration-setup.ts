@@ -17,6 +17,7 @@ import {
   Configurations,
   AuthClient,
   TopicConfigurations,
+  VectorConfigurations,
 } from '../../src';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
@@ -88,7 +89,7 @@ function momentoTopicClientForTestingWithSessionToken(): TopicClient {
 
 function momentoVectorClientForTesting(): PreviewVectorClient {
   return new PreviewVectorClient({
-    configuration: Configurations.Laptop.latest(),
+    configuration: VectorConfigurations.Laptop.latest(),
     credentialProvider: credsProvider(),
   });
 }
