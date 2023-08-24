@@ -125,26 +125,21 @@ export class ExperimentalMetricsLoggingMiddleware extends ExperimentalMetricsMid
     this.eldMonitor.enable();
     this.elu = performance.eventLoopUtilization();
 
-    setTimeout(() => {
-      setInterval(() => {
-        this.elu = performance.eventLoopUtilization(this.elu);
-        const metrics: StateMetrics = {
-          eventLoopUtilization: this.elu.utilization,
-          eventLoopDelayMean: this.normalizeEld(this.eldMonitor.mean),
-          eventLoopDelayMin: Math.max(
-            0,
-            this.normalizeEld(this.eldMonitor.min)
-          ),
-          eventLoopDelayP50: this.normalizeEld(this.eldMonitor.percentile(50)),
-          eventLoopDelayP75: this.normalizeEld(this.eldMonitor.percentile(75)),
-          eventLoopDelayP90: this.normalizeEld(this.eldMonitor.percentile(90)),
-          eventLoopDelayP95: this.normalizeEld(this.eldMonitor.percentile(95)),
-          eventLoopDelayP99: this.normalizeEld(this.eldMonitor.percentile(99)),
-          eventLoopDelayMax: this.normalizeEld(this.eldMonitor.max),
-        };
-        logger.info(JSON.stringify(metrics));
-        this.eldMonitor.reset();
-      }, this.metricsLogInterval);
+    setInterval(() => {
+      this.elu = performance.eventLoopUtilization(this.elu);
+      const metrics: StateMetrics = {
+        eventLoopUtilization: this.elu.utilization,
+        eventLoopDelayMean: this.normalizeEld(this.eldMonitor.mean),
+        eventLoopDelayMin: Math.max(0, this.normalizeEld(this.eldMonitor.min)),
+        eventLoopDelayP50: this.normalizeEld(this.eldMonitor.percentile(50)),
+        eventLoopDelayP75: this.normalizeEld(this.eldMonitor.percentile(75)),
+        eventLoopDelayP90: this.normalizeEld(this.eldMonitor.percentile(90)),
+        eventLoopDelayP95: this.normalizeEld(this.eldMonitor.percentile(95)),
+        eventLoopDelayP99: this.normalizeEld(this.eldMonitor.percentile(99)),
+        eventLoopDelayMax: this.normalizeEld(this.eldMonitor.max),
+      };
+      logger.info(JSON.stringify(metrics));
+      this.eldMonitor.reset();
     }, this.metricsLogInterval);
   }
 
