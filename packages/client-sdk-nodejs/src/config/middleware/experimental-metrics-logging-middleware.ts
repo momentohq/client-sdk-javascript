@@ -113,6 +113,7 @@ export class ExperimentalMetricsLoggingMiddleware extends ExperimentalMetricsMid
         new ExperimentalMetricsLoggingMiddlewareRequestHandler(p, l, c)
     );
     if (!ExperimentalMetricsLoggingMiddleware.isLoggingStarted) {
+      ExperimentalMetricsLoggingMiddleware.isLoggingStarted = true;
       ExperimentalMetricsLoggingMiddleware.startLogging(this.logger);
     }
   }
