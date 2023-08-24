@@ -50,7 +50,7 @@ class _Hit extends Response {
    * @returns string
    */
   public value(): string {
-    return TEXT_DECODER.decode(this.body);
+    return this.valueString();
   }
 
   /**

@@ -6,7 +6,6 @@ import {
   ResponseMiss,
 } from './response-base';
 import {truncateString} from '../../internal/utils';
-import {CacheGet} from '../../index';
 
 const TEXT_DECODER = new TextDecoder();
 
@@ -32,8 +31,8 @@ const TEXT_DECODER = new TextDecoder();
  */
 export abstract class Response extends ResponseBase {
   public value(): string | undefined {
-    if (this instanceof CacheGet.Hit) {
-      return (this as CacheGet.Hit).value();
+    if (this instanceof Hit) {
+      return (this as Hit).value();
     }
     return undefined;
   }
