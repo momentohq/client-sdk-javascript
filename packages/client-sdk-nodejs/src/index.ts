@@ -1,8 +1,12 @@
 import {CacheClient, SimpleCacheClient} from './cache-client';
 import {TopicClient} from './topic-client';
+import {PreviewVectorClient} from './preview-vector-client';
 import * as Configurations from './config/configurations';
 import * as TopicConfigurations from './config/topic-configurations';
+import * as VectorConfigurations from './config/vector-configurations';
+
 import {TopicClientProps} from './topic-client-props';
+import {VectorConfiguration} from './config/vector-configuration';
 
 // Cache Client Response Types
 import * as CacheGet from '@gomomento/sdk-core/dist/src/messages/responses/cache-get';
@@ -69,6 +73,11 @@ import {TopicItem} from '@gomomento/sdk-core/dist/src/messages/responses/topic-i
 import {AuthClient} from './auth-client';
 import * as GenerateAuthToken from '@gomomento/sdk-core/dist/src/messages/responses/generate-auth-token';
 import * as RefreshAuthToken from '@gomomento/sdk-core/dist/src/messages/responses/refresh-auth-token';
+
+// VectorClient Response Types
+import * as CreateIndex from '@gomomento/sdk-core/dist/src/messages/responses/create-index';
+import * as ListIndexes from '@gomomento/sdk-core/dist/src/messages/responses/list-indexes';
+import * as DeleteIndex from '@gomomento/sdk-core/dist/src/messages/responses/delete-index';
 
 import {
   ICacheClient,
@@ -177,6 +186,9 @@ export {
   Configurations,
   Configuration,
   CacheConfiguration,
+  PreviewVectorClient,
+  VectorConfigurations,
+  VectorConfiguration,
   CacheClient,
   SimpleCacheClient,
   CacheInfo,
@@ -222,6 +234,9 @@ export {
   CreateSigningKey,
   ListSigningKeys,
   RevokeSigningKey,
+  CreateIndex,
+  ListIndexes,
+  DeleteIndex,
   CacheSetFetch,
   CacheDictionaryFetch,
   CacheDictionarySetField,

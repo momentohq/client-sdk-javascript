@@ -16,6 +16,9 @@ import {
   CredentialProvider,
   MomentoLogger,
   CacheInfo,
+  CreateIndex,
+  ListIndexes,
+  DeleteIndex,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -23,6 +26,8 @@ import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {Configuration} from '../config/configuration';
 import {
   validateCacheName,
+  validateIndexName,
+  validateNumDimensions,
   validateTtlMinutes,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
@@ -192,6 +197,92 @@ export class ControlClient {
             resolve(new ListCaches.Success(caches));
           }
         });
+    });
+  }
+
+  public async createIndex(
+    indexName: string,
+    numDimensions: number
+  ): Promise<CreateIndex.Response> {
+    try {
+      validateIndexName(indexName);
+      validateNumDimensions(numDimensions);
+    } catch (err) {
+      return new CreateIndex.Error(normalizeSdkError(err));
+    }
+    this.logger.debug("Issuing 'createIndex' request");
+    const request = new grpcControl._CreateIndexRequest();
+    request.index_name = indexName;
+    request.num_dimensions = numDimensions;
+    return await new Promise<CreateIndex.Response>(resolve => {
+      this.clientWrapper.getClient().CreateIndex(
+        request,
+        {interceptors: this.interceptors},
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        (err, resp) => {
+          if (err) {
+            if (err.code === Status.ALREADY_EXISTS) {
+              resolve(new CreateIndex.AlreadyExists());
+            } else {
+              resolve(new CreateIndex.Error(cacheServiceErrorMapper(err)));
+            }
+          } else {
+            resolve(new CreateIndex.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async listIndexes(): Promise<ListCaches.Response> {
+    const request = new grpcControl._ListIndexesRequest();
+    this.logger.debug("Issuing 'listIndexes' request");
+    return await new Promise<ListIndexes.Response>(resolve => {
+      this.clientWrapper
+        .getClient()
+        .ListIndexes(
+          request,
+          {interceptors: this.interceptors},
+          (err, resp) => {
+            if (err || !resp) {
+              // TODO: `Argument of type 'unknown' is not assignable to parameter of type 'Error'.`
+              //  I don't see how this is different from the other methods here. So, yeah, what?
+              resolve(new ListIndexes.Error(cacheServiceErrorMapper(err)));
+            } else {
+              // TODO: um, what?
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call
+              const indexes = resp.index_names;
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+              resolve(new ListIndexes.Success(indexes));
+            }
+          }
+        );
+    });
+  }
+
+  public async deleteIndex(name: string): Promise<DeleteIndex.Response> {
+    try {
+      validateCacheName(name);
+    } catch (err) {
+      return new DeleteIndex.Error(normalizeSdkError(err as Error));
+    }
+    const request = new grpcControl._DeleteIndexRequest({
+      index_name: name,
+    });
+    this.logger.info(`Deleting index: ${name}`);
+    return await new Promise<DeleteIndex.Response>(resolve => {
+      this.clientWrapper.getClient().DeleteIndex(
+        request,
+        {interceptors: this.interceptors},
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        (err, resp) => {
+          if (err) {
+            resolve(new DeleteIndex.Error(cacheServiceErrorMapper(err)));
+          } else {
+            resolve(new DeleteIndex.Success());
+          }
+        }
+      );
     });
   }
 
