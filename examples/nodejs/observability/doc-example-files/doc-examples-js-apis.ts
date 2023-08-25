@@ -25,4 +25,8 @@ async function main() {
   await example_API_InstantiateCacheClientWithMiddleware();
 }
 
-main();
+main()
+  .then()
+  .catch((error) => {
+    console.error('An unexpected error occurred:', error);
+  });
