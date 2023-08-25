@@ -16,7 +16,7 @@ async function example_API_ListIndexes(vectorClient: PreviewVectorClient) {
   if (result instanceof ListIndexes.Success) {
     console.log(
       `Indexes:\n${result
-        .getIndexes()
+        .getIndexNames()
         .join('\n')}\n\n`
     );
   } else if (result instanceof ListIndexes.Error) {

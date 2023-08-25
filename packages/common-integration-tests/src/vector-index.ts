@@ -56,7 +56,7 @@ export function runVectorIndexTest(Momento: IVectorClient) {
           expect(listResponse).toBeInstanceOf(ListIndexes.Success);
         }, `expected SUCCESS but got ${listResponse.toString()}`);
         if (listResponse instanceof ListIndexes.Success) {
-          const caches = listResponse.getIndexes();
+          const caches = listResponse.getIndexNames();
           expect(caches.includes(indexName)).toBeTruthy();
         }
       });
