@@ -29,7 +29,14 @@ const TEXT_DECODER = new TextDecoder();
  * }
  * ```
  */
-export abstract class Response extends ResponseBase {}
+export abstract class Response extends ResponseBase {
+  public value(): {value: string; score: number}[] | undefined {
+    if (this instanceof Hit) {
+      return (this as Hit).value();
+    }
+    return undefined;
+  }
+}
 
 class _Hit extends Response {
   private readonly elements: _SortedSetElement[];
@@ -75,6 +82,16 @@ class _Hit extends Response {
    * @returns {value: string; score: number}[]
    */
   public valueArray(): {value: string; score: number}[] {
+    return this.valueArrayStringElements();
+  }
+
+  /**
+   * Returns the elements as an array of objects, each containing a `value` and `score` field.
+   * The value is a utf-8 string, decoded from the underlying byte array, and the score is a number.
+   * This is a convenience alias for {valueArrayStringNumber}.
+   * @returns {value: string; score: number}[]
+   */
+  public value(): {value: string; score: number}[] {
     return this.valueArrayStringElements();
   }
 

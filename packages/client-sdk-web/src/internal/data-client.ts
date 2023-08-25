@@ -2361,7 +2361,7 @@ export class DataClient<
               );
             } else {
               resolve(
-                new CacheSortedSetFetch.Error(
+                new CacheSortedSetGetScores.Error(
                   new UnknownError('Unknown sorted set fetch hit response type')
                 )
               );
@@ -2456,7 +2456,9 @@ export class DataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+      return new CacheSortedSetIncrementScore.Error(
+        normalizeSdkError(err as Error)
+      );
     }
 
     this.logger.trace(
@@ -2513,7 +2515,9 @@ export class DataClient<
             }
           } else {
             resolve(
-              new CacheDictionaryIncrement.Error(cacheServiceErrorMapper(err))
+              new CacheSortedSetIncrementScore.Error(
+                cacheServiceErrorMapper(err)
+              )
             );
           }
         }

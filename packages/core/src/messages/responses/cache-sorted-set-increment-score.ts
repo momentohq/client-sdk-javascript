@@ -20,7 +20,14 @@ import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
  * }
  * ```
  */
-export abstract class Response extends ResponseBase {}
+export abstract class Response extends ResponseBase {
+  public score(): number | undefined {
+    if (this instanceof Success) {
+      return (this as Success).score();
+    }
+    return undefined;
+  }
+}
 
 class _Success extends Response {
   private readonly _score: number;
