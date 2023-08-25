@@ -12,7 +12,7 @@ import {CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
 import {ExampleMetricMiddleware} from '../example-metric-middleware';
 
 async function example_API_InstantiateCacheClientWithMiddleware() {
-  return CacheClient.create({
+  await CacheClient.create({
     configuration: Configurations.Laptop.v1().addMiddleware(new ExampleMetricMiddleware()),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_AUTH_TOKEN',

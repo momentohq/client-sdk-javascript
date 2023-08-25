@@ -1,7 +1,7 @@
 import {CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
 import {PinoMomentoLoggerFactory} from './pino-logger';
 
-async function example_observability_CreateCacheClientWithPinoLogger() {
+function example_observability_CreateCacheClientWithPinoLogger() {
   return CacheClient.create({
     configuration: Configurations.Laptop.v1(
       new PinoMomentoLoggerFactory({
