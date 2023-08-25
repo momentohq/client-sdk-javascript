@@ -23,22 +23,22 @@ import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 export abstract class Response extends ResponseBase {}
 
 class _Success extends Response {
-  private readonly indexes: string[];
-  constructor(indexes: string[]) {
+  private readonly indexNames: string[];
+  constructor(indexNames: string[]) {
     super();
-    this.indexes = indexes;
+    this.indexNames = indexNames;
   }
 
   /**
    * An array of index names.
    * @returns {string[]}
    */
-  public getIndexes() {
-    return this.indexes;
+  public getIndexNames() {
+    return this.indexNames;
   }
 
   public override toString() {
-    return super.toString() + ': ' + this.indexes.join(', ');
+    return super.toString() + ': ' + this.indexNames.join(', ');
   }
 }
 
