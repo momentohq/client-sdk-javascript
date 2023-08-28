@@ -18,6 +18,12 @@ export function cacheReadOnly(cacheSelector: CacheSelector): TokenScope {
   };
 }
 
+export function cacheWriteOnly(cacheSelector: CacheSelector): TokenScope {
+  return {
+    permissions: [{role: CacheRole.WriteOnly, cache: cacheSelector}],
+  };
+}
+
 export function topicSubscribeOnly(
   cacheSelector: CacheSelector,
   topicSelector: TopicSelector
@@ -41,6 +47,21 @@ export function topicPublishSubscribe(
     permissions: [
       {
         role: TopicRole.PublishSubscribe,
+        cache: cacheSelector,
+        topic: topicSelector,
+      },
+    ],
+  };
+}
+
+export function topicPublishOnly(
+  cacheSelector: CacheSelector,
+  topicSelector: TopicSelector
+): TokenScope {
+  return {
+    permissions: [
+      {
+        role: TopicRole.PublishOnly,
         cache: cacheSelector,
         topic: topicSelector,
       },
