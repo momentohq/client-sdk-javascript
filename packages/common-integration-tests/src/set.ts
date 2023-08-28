@@ -641,11 +641,11 @@ export function runSetTests(
 
       const expectedResult = ['foo', 'bar'];
 
-      expect(fetchResponse.value()).toEqual(expectedResult);
+      expect(new Set(fetchResponse.value())).toEqual(new Set(expectedResult));
 
       const hit = fetchResponse as CacheSetFetch.Hit;
-      expect(hit.value()).toEqual(expectedResult);
-      expect(hit.valueArray()).toEqual(expectedResult);
+      expect(new Set(hit.value())).toEqual(new Set(expectedResult));
+      expect(new Set(hit.valueArray())).toEqual(new Set(expectedResult));
 
       fetchResponse = await Momento.setFetch(IntegrationTestCacheName, v4());
       expectWithMessage(() => {
