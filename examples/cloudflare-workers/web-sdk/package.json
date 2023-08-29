@@ -13,8 +13,8 @@
     "wrangler": "^3.0.0"
   },
   "dependencies": {
-    "@gomomento/sdk-core": "^1.30.0",
-    "@gomomento/sdk-web": "^1.30.0",
+    "@gomomento/sdk-core": "^1.35.0",
+    "@gomomento/sdk-web": "^1.35.0",
     "xhr4sw": "^0.0.5"
   }
 }
