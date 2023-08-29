@@ -49,7 +49,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
     this.notYetAbstractedControlClient = controlClient;
 
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    this.logger.info('Creating Momento CacheClient');
+    this.logger.debug('Creating Momento CacheClient');
   }
 
   /**
