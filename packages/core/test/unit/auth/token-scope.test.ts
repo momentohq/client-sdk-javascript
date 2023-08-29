@@ -215,6 +215,20 @@ describe('TokenScope', () => {
         permissions: [{role: CacheRole.ReadOnly, cache: {name: 'mycache'}}],
       });
     });
+    it('cacheWriteOnly', () => {
+      let scope: TokenScope = TokenScopes.cacheWriteOnly('mycache');
+      expect(scope).toEqual({
+        permissions: [{role: CacheRole.WriteOnly, cache: 'mycache'}],
+      });
+      scope = TokenScopes.cacheWriteOnly(AllCaches);
+      expect(scope).toEqual({
+        permissions: [{role: CacheRole.WriteOnly, cache: AllCaches}],
+      });
+      scope = TokenScopes.cacheWriteOnly({name: 'mycache'});
+      expect(scope).toEqual({
+        permissions: [{role: CacheRole.WriteOnly, cache: {name: 'mycache'}}],
+      });
+    });
     it('topicSubscribeOnly', () => {
       let scope: TokenScope = TokenScopes.topicSubscribeOnly(
         'mycache',
@@ -239,6 +253,36 @@ describe('TokenScope', () => {
         permissions: [
           {
             role: TopicRole.SubscribeOnly,
+            cache: {name: 'mycache'},
+            topic: {name: 'mytopic'},
+          },
+        ],
+      });
+    });
+    it('topicPublishOnly', () => {
+      let scope: TokenScope = TokenScopes.topicPublishOnly(
+        'mycache',
+        'mytopic'
+      );
+      expect(scope).toEqual({
+        permissions: [
+          {role: TopicRole.PublishOnly, cache: 'mycache', topic: 'mytopic'},
+        ],
+      });
+      scope = TokenScopes.topicPublishOnly(AllCaches, AllTopics);
+      expect(scope).toEqual({
+        permissions: [
+          {role: TopicRole.PublishOnly, cache: AllCaches, topic: AllTopics},
+        ],
+      });
+      scope = TokenScopes.topicPublishOnly(
+        {name: 'mycache'},
+        {name: 'mytopic'}
+      );
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: TopicRole.PublishOnly,
             cache: {name: 'mycache'},
             topic: {name: 'mytopic'},
           },

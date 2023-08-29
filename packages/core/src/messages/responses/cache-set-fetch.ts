@@ -29,7 +29,14 @@ const TEXT_DECODER = new TextDecoder();
  * }
  * ```
  */
-export abstract class Response extends ResponseBase {}
+export abstract class Response extends ResponseBase {
+  public value(): string[] | undefined {
+    if (this instanceof Hit) {
+      return (this as Hit).value();
+    }
+    return undefined;
+  }
+}
 
 class _Hit extends Response {
   private readonly elements: Uint8Array[];
@@ -62,6 +69,16 @@ class _Hit extends Response {
    */
   public valueSetUint8Array(): Set<Uint8Array> {
     return new Set(this.elements);
+  }
+
+  /**
+   * Returns the data as an Array whose values are utf-8 strings, decoded from the underlying byte arrays.
+   * This accessor is provided because Arrays are sometimes easier to work with in TypeScript/JavaScript than Sets are.
+   * This is a convenience alias for {valueArrayString}.
+   * @returns {string[]}
+   */
+  public value(): string[] {
+    return this.valueArrayString();
   }
 
   /**

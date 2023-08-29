@@ -187,7 +187,7 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
  */
 export abstract class ExperimentalMetricsMiddleware implements Middleware {
   private numActiveRequests = 0;
-  private readonly logger: MomentoLogger;
+  protected readonly logger: MomentoLogger;
 
   private readonly requestHandlerFactoryFn: (
     parent: ExperimentalMetricsMiddleware,

@@ -365,6 +365,37 @@ export function runListTests(
           'bar',
         ]);
       });
+
+      it('should support accessing value for CacheListFetch.Hit without instanceof check', async () => {
+        const listName = v4();
+
+        await Momento.listConcatenateFront(IntegrationTestCacheName, listName, [
+          'foo',
+          'bar',
+        ]);
+
+        let fetchResponse = await Momento.listFetch(
+          IntegrationTestCacheName,
+          listName
+        );
+        expectWithMessage(() => {
+          expect(fetchResponse).toBeInstanceOf(CacheListFetch.Hit);
+        }, `expected a HIT but got ${fetchResponse.toString()}`);
+
+        const expectedResult = ['foo', 'bar'];
+
+        expect(fetchResponse.value()).toEqual(expectedResult);
+
+        const hitResponse = fetchResponse as CacheListFetch.Hit;
+        expect(hitResponse.value()).toEqual(expectedResult);
+        expect(hitResponse.valueList()).toEqual(expectedResult);
+
+        fetchResponse = await Momento.listFetch(IntegrationTestCacheName, v4());
+        expectWithMessage(() => {
+          expect(fetchResponse).toBeInstanceOf(CacheListFetch.Miss);
+        }, `expected a MISS but got ${fetchResponse.toString()}`);
+        expect(fetchResponse.value()).toEqual(undefined);
+      });
     });
 
     describe('#listLength', () => {
@@ -464,6 +495,35 @@ export function runListTests(
         }, `expected a HIT but got ${response.toString()}`);
         expect((response as CacheListPopBack.Hit).valueString()).toEqual('bar');
       });
+
+      it('should support accessing value for CacheListPopBack.Hit without instanceof check', async () => {
+        const listName = v4();
+
+        await Momento.listConcatenateFront(IntegrationTestCacheName, listName, [
+          'foo',
+          'bar',
+        ]);
+
+        let popResponse = await Momento.listPopBack(
+          IntegrationTestCacheName,
+          listName
+        );
+        expectWithMessage(() => {
+          expect(popResponse).toBeInstanceOf(CacheListPopBack.Hit);
+        }, `expected a HIT but got ${popResponse.toString()}`);
+
+        expect(popResponse.value()).toEqual('bar');
+
+        const hitResponse = popResponse as CacheListPopBack.Hit;
+        expect(hitResponse.value()).toEqual('bar');
+        expect(hitResponse.valueString()).toEqual('bar');
+
+        popResponse = await Momento.listPopBack(IntegrationTestCacheName, v4());
+        expectWithMessage(() => {
+          expect(popResponse).toBeInstanceOf(CacheListPopBack.Miss);
+        }, `expected a MISS but got ${popResponse.toString()}`);
+        expect(popResponse.value()).toEqual(undefined);
+      });
     });
 
     describe('#listPopFront', () => {
@@ -517,6 +577,38 @@ export function runListTests(
           expect(response).toBeInstanceOf(CacheListPopFront.Hit);
         }, `expected a HIT but got ${response.toString()}`);
         expect((response as CacheListPopBack.Hit).valueString()).toEqual('foo');
+      });
+
+      it('should support accessing value for CacheListPopFront.Hit without instanceof check', async () => {
+        const listName = v4();
+
+        await Momento.listConcatenateFront(IntegrationTestCacheName, listName, [
+          'foo',
+          'bar',
+        ]);
+
+        let popResponse = await Momento.listPopFront(
+          IntegrationTestCacheName,
+          listName
+        );
+        expectWithMessage(() => {
+          expect(popResponse).toBeInstanceOf(CacheListPopFront.Hit);
+        }, `expected a HIT but got ${popResponse.toString()}`);
+
+        expect(popResponse.value()).toEqual('foo');
+
+        const hitResponse = popResponse as CacheListPopBack.Hit;
+        expect(hitResponse.value()).toEqual('foo');
+        expect(hitResponse.valueString()).toEqual('foo');
+
+        popResponse = await Momento.listPopFront(
+          IntegrationTestCacheName,
+          v4()
+        );
+        expectWithMessage(() => {
+          expect(popResponse).toBeInstanceOf(CacheListPopFront.Miss);
+        }, `expected a MISS but got ${popResponse.toString()}`);
+        expect(popResponse.value()).toEqual(undefined);
       });
     });
 

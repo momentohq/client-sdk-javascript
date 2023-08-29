@@ -29,7 +29,14 @@ const TEXT_DECODER = new TextDecoder();
  * }
  * ```
  */
-export abstract class Response extends ResponseBase {}
+export abstract class Response extends ResponseBase {
+  public value(): Record<string, string> | undefined {
+    if (this instanceof Hit) {
+      return (this as Hit).value();
+    }
+    return undefined;
+  }
+}
 
 class _Hit extends Response {
   private readonly items: _DictionaryFieldValuePair[];
@@ -81,6 +88,16 @@ class _Hit extends Response {
       acc.set(TEXT_DECODER.decode(item.field), item.value);
       return acc;
     }, new Map<string, Uint8Array>());
+  }
+
+  /**
+   * Returns the data as a Record whose keys and values are utf-8 strings, decoded from the underlying byte arrays.
+   * This can be used in most places where an Object is desired.  This is a convenience alias for
+   * {valueRecordStringString}.
+   * @returns {Record<string, string>}
+   */
+  public value(): Record<string, string> {
+    return this.valueRecordStringString();
   }
 
   /**
