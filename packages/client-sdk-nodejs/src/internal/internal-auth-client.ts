@@ -28,11 +28,13 @@ import {
   AllTopics,
   isCacheName,
   isTopicName,
+  GenerateDisposableToken,
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {AuthClientProps} from '../auth-client-props';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
+  TemporaryTokenScope,
   asCachePermission,
   asPermissionsObject,
   asTopicPermission,
@@ -146,10 +148,73 @@ export class InternalAuthClient implements IAuthClient {
       );
     });
   }
+
+  public async generateDisposableToken(
+    scope: TemporaryTokenScope,
+    expiresIn: ExpiresIn
+  ): Promise<GenerateDisposableToken.Response> {
+    console.log('TODO: implement generateDisposableToken');
+
+    const authClient = new grpcAuth.AuthClient(
+      this.creds.getControlEndpoint(),
+      ChannelCredentials.createSsl()
+    );
+
+    let permissions;
+    try {
+      permissions = permissionsFromScope(scope);
+    } catch (err) {
+      return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
+    }
+    const request = new grpcAuth._GenerateApiTokenRequest({
+      //TODO: different endpoint?
+      auth_token: this.creds.getAuthToken(),
+      permissions: permissions,
+    });
+
+    if (expiresIn.doesExpire()) {
+      try {
+        validateValidForSeconds(expiresIn.seconds());
+      } catch (err) {
+        return new GenerateDisposableToken.Error(
+          normalizeSdkError(err as Error)
+        );
+      }
+
+      request.expires = new Expires({
+        valid_for_seconds: expiresIn.seconds(),
+      });
+    } else {
+      request.never = new Never();
+    }
+
+    return await new Promise<GenerateDisposableToken.Response>(resolve => {
+      authClient.GenerateApiToken(
+        request,
+        {interceptors: this.interceptors},
+        (err, resp) => {
+          if (err || !resp) {
+            resolve(
+              new GenerateDisposableToken.Error(cacheServiceErrorMapper(err))
+            );
+          } else {
+            resolve(
+              new GenerateDisposableToken.Success(
+                resp.api_key,
+                resp.endpoint,
+                ExpiresAt.fromEpoch(resp.valid_until)
+              )
+            );
+          }
+        }
+      );
+    });
+  }
 }
 
+// TODO: separate function?
 export function permissionsFromScope(
-  scope: TokenScope
+  scope: TokenScope | TemporaryTokenScope
 ): grpcAuth._GenerateApiTokenRequest.Permissions {
   const result = new grpcAuth._GenerateApiTokenRequest.Permissions();
   if (scope instanceof InternalSuperUserPermissions) {

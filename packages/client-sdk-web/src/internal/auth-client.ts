@@ -22,6 +22,7 @@ import {
   isCacheName,
   AllTopics,
   isTopicName,
+  GenerateDisposableToken,
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {AuthClientProps} from '../auth-client-props';
@@ -33,6 +34,7 @@ import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {getWebControlEndpoint} from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {
+  TemporaryTokenScope,
   asCachePermission,
   asPermissionsObject,
   asTopicPermission,
@@ -132,6 +134,63 @@ export class InternalWebGrpcAuthClient<
               new RefreshAuthToken.Success(
                 resp.getApiKey(),
                 resp.getRefreshToken(),
+                resp.getEndpoint(),
+                ExpiresAt.fromEpoch(resp.getValidUntil())
+              )
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async generateDisposableToken(
+    scope: TemporaryTokenScope,
+    expiresIn: ExpiresIn
+  ): Promise<GenerateDisposableToken.Response> {
+    console.log('TODO: implement generateDisposableToken');
+
+    const request = new _GenerateApiTokenRequest();
+    request.setAuthToken(this.creds.getAuthToken());
+
+    let permissions;
+    try {
+      permissions = permissionsFromScope(scope);
+    } catch (err) {
+      return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
+    }
+
+    request.setPermissions(permissions);
+
+    if (expiresIn.doesExpire()) {
+      try {
+        validateValidForSeconds(expiresIn.seconds());
+      } catch (err) {
+        return new GenerateDisposableToken.Error(
+          normalizeSdkError(err as Error)
+        );
+      }
+
+      const grpcExpires = new Expires();
+      grpcExpires.setValidForSeconds(expiresIn.seconds());
+      request.setExpires(grpcExpires);
+    } else {
+      request.setNever(new Never());
+    }
+
+    return await new Promise<GenerateDisposableToken.Response>(resolve => {
+      this.authClient.generateApiToken(
+        request,
+        this.clientMetadataProvider.createClientMetadata(),
+        (err, resp) => {
+          if (err || !resp) {
+            resolve(
+              new GenerateDisposableToken.Error(cacheServiceErrorMapper(err))
+            );
+          } else {
+            resolve(
+              new GenerateDisposableToken.Success(
+                resp.getApiKey(),
                 resp.getEndpoint(),
                 ExpiresAt.fromEpoch(resp.getValidUntil())
               )

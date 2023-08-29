@@ -7,6 +7,7 @@ export enum CacheRole {
 class All {}
 export const AllCaches = new All();
 export const AllTopics = new All();
+export const AllItems = new All();
 
 export interface CacheName {
   name: string;
@@ -116,3 +117,76 @@ export type TokenScope =
   | typeof AllDataReadWrite
   | Permissions
   | PredefinedScope;
+
+export interface CacheItemKey {
+  key: string;
+}
+
+export interface CacheItemKeyPrefix {
+  keyPrefix: string;
+}
+
+export function isCacheItemKey(
+  cacheItem: CacheItemKey | All
+): cacheItem is CacheItemKey {
+  return 'key' in cacheItem;
+}
+
+export function isCacheItemKeyPrefix(
+  cacheItem: CacheItemKeyPrefix | All
+): cacheItem is CacheItemKeyPrefix {
+  return 'keyPrefix' in cacheItem;
+}
+
+export type CacheItemSelector =
+  | All
+  | CacheItemKey
+  | CacheItemKeyPrefix
+  | string;
+
+export interface TemporaryTokenCachePermission extends CachePermission {
+  /**
+   * Scope the token permissions to select cache items
+   */
+  item: CacheItemSelector;
+}
+
+export function isTemporaryTokenCachePermission(p: Permission): boolean {
+  return 'role' in p && 'cache' in p && 'item' in p && !('topic' in p);
+}
+
+export function asTemporaryTokenCachePermission(
+  p: Permission
+): TemporaryTokenCachePermission {
+  if (!isTemporaryTokenCachePermission(p)) {
+    throw new Error(
+      `permission is not a TemporaryTokenCachePermission object: ${JSON.stringify(
+        p
+      )}`
+    );
+  }
+  return p as TemporaryTokenCachePermission;
+}
+
+export type TemporaryTokenScope =
+  | typeof AllDataReadWrite
+  | Permissions
+  | TemporaryTokenCachePermission;
+
+function isTemporaryTokenPermissionObject(p: Permission): boolean {
+  return (
+    isCachePermission(p) ||
+    isTopicPermission(p) ||
+    isTemporaryTokenCachePermission(p)
+  );
+}
+
+export function isTempororayTokenPermissionsObject(
+  scope: TemporaryTokenScope
+): boolean {
+  if (!('permissions' in scope)) {
+    return false;
+  }
+  const permissions = scope.permissions;
+  return permissions.every(p => isTemporaryTokenPermissionObject(p));
+}
