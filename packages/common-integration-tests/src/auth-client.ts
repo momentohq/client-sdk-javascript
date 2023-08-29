@@ -9,6 +9,7 @@ import {
   DeleteCache,
   ExpiresIn,
   GenerateAuthToken,
+  GenerateDisposableToken,
   MomentoErrorCode,
   RefreshAuthToken,
   SubscribeCallOptions,
@@ -662,6 +663,85 @@ export function runAuthClientTests(
       expectWithMessage(() => {
         expect(subResp1).toBeInstanceOf(TopicSubscribe.Subscription);
       }, `expected SUBSCRIPTION but got ${subResp1.toString()}`);
+    });
+
+    it('can only write cache FGA_CACHE_1 and write all topics in cache FGA_CACHE_2', async () => {
+      const tokenResponse =
+        await sessionTokenAuthClient.generateDisposableToken(
+          {
+            permissions: [
+              {role: CacheRole.WriteOnly, cache: FGA_CACHE_1},
+              {
+                role: TopicRole.PublishOnly,
+                cache: FGA_CACHE_2,
+                topic: AllTopics,
+              },
+            ],
+          },
+          ExpiresIn.seconds(60)
+        );
+      expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      const token = (tokenResponse as GenerateDisposableToken.Success)
+        .authToken;
+      const cacheClient = cacheClientFactory(token);
+
+      // Only Write on cache FGA_CACHE_1 is allowed
+      const setResp1 = await cacheClient.set(FGA_CACHE_1, 'ned', 'flanders');
+      expect(setResp1).toBeInstanceOf(CacheSet.Success);
+
+      const getResp1 = await cacheClient.get(FGA_CACHE_1, 'ned');
+      expect(getResp1).toBeInstanceOf(CacheGet.Error);
+
+      // Read/Write on cache FGA_CACHE_2 is not allowed
+      const setResp2 = await cacheClient.set(FGA_CACHE_2, 'flaming', 'mo');
+      expect(setResp2).toBeInstanceOf(CacheSet.Error);
+      const setError2 = setResp2 as CacheSet.Error;
+      expect(setError2.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(setError2.message()).toContain('Insufficient permissions');
+
+      const getResp2 = await cacheClient.get(FGA_CACHE_2, 'flaming');
+      expect(getResp2).toBeInstanceOf(CacheGet.Error);
+      const getError2 = getResp2 as CacheGet.Error;
+      expect(getError2.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(getError2.message()).toContain('Insufficient permissions');
+
+      const topicClient = topicClientFactory(token);
+      // Read/Write on topics in cache FGA_CACHE_1 is not allowed
+      const pubResp = await topicClient.publish(
+        FGA_CACHE_1,
+        'breaking news!',
+        'Flying lizard seen over Manhattan!'
+      );
+      expect(pubResp).toBeInstanceOf(TopicPublish.Error);
+      const pubError = pubResp as TopicPublish.Error;
+      expect(pubError.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(pubError.message()).toContain('Insufficient permissions');
+
+      const subResp = await topicClient.subscribe(
+        FGA_CACHE_1,
+        'breaking news!',
+        trivialHandlers
+      );
+      expect(subResp).toBeInstanceOf(TopicSubscribe.Error);
+      const subError = subResp as TopicSubscribe.Error;
+      expect(subError.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(subError.message()).toContain('Insufficient permissions');
+
+      // Only Write on topics in cache FGA_CACHE_2 is allowed
+      const pubResp1 = await topicClient.publish(
+        FGA_CACHE_2,
+        'breaking news!',
+        'UFOs spotted'
+      );
+      expect(pubResp1).toBeInstanceOf(TopicPublish.Success);
+      const subResp1 = await topicClient.subscribe(
+        FGA_CACHE_2,
+        'breaking news!',
+        trivialHandlers
+      );
+      expectWithMessage(() => {
+        expect(subResp1).toBeInstanceOf(TopicSubscribe.Error);
+      }, `expected ERROR but got ${subResp1.toString()}`);
     });
 
     afterAll(async () => {
