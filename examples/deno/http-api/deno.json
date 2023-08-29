@@ -25,6 +25,5 @@
   "imports": {
     "http": "https://deno.land/std@0.198.0/http/server.ts",
     "dotenv": "https://deno.land/std/dotenv/mod.ts"
-
   }
 }
