@@ -23,11 +23,11 @@ import {
  *    export const tokenPermissions: TokenScope =  {
  *      permissions: [
  *        {
- *          role: CacheRole.ReadWrite | CacheRole.ReadOnly,
+ *          role: CacheRole.ReadWrite | CacheRole.ReadOnly | CacheRole.WriteOnly,
  *          cache: AllCaches | "your-cache-name"
  *        },
  *        {
- *          role: TopicRole.PublishSubscribe | TopicRole.SubscribeOnly,
+ *          role: TopicRole.PublishSubscribe | TopicRole.SubscribeOnly | TopicRole.PublishOnly,
  *          cache: AllCaches | "your-cache-name",
  *          topic: AllTopics | "your-topic-name"
  *        }

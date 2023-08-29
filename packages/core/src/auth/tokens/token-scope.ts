@@ -1,6 +1,7 @@
 export enum CacheRole {
   ReadWrite = 'readwrite',
   ReadOnly = 'readonly',
+  WriteOnly = 'writeonly',
 }
 
 class All {}
@@ -39,6 +40,7 @@ export function asCachePermission(p: Permission): CachePermission {
 export enum TopicRole {
   PublishSubscribe = 'publishsubscribe',
   SubscribeOnly = 'subscribeonly',
+  PublishOnly = 'publishonly',
 }
 
 export interface TopicName {
