@@ -10,60 +10,101 @@ updates:
     schedule:
       interval: "daily"
     allow:
-      - dependency-name: "@gomomento/sdk"
+      - dependency-name: "@gomomento/*"
 
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/examples/nodejs/lambda-examples/topics-microservice" # Location of package manifests
     schedule:
       interval: "daily"
     allow:
-      - dependency-name: "@gomomento/sdk"
+      - dependency-name: "@gomomento/*"
 
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/examples/nodejs/lambda-examples/simple-get/lambda/simple-get" # Location of package manifests
+    schedule:
+      interval: "daily"
+    allow:
+      - dependency-name: "@gomomento/*"
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/examples/nodejs/mongodb-examples/simple-read-aside" # Location of package manifests
     schedule:
       interval: "daily"
     allow:
-      - dependency-name: "@gomomento/sdk"
+      - dependency-name: "@gomomento/*"
 
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/examples/nodejs/topics" # Location of package manifests
     schedule:
       interval: "daily"
     allow:
-      - dependency-name: "@gomomento/sdk"
+      - dependency-name: "@gomomento/*"
 
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/examples/nodejs/load-gen" # Location of package manifests
     schedule:
       interval: "daily"
     allow:
-      - dependency-name: "@gomomento/sdk"
+      - dependency-name: "@gomomento/*"
 
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/examples/nodejs/observability" # Location of package manifests
     schedule:
       interval: "daily"
     allow:
-      - dependency-name: "@gomomento/sdk"
+      - dependency-name: "@gomomento/*"
 
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/examples/nodejs/access-control" # Location of package manifests
     schedule:
       interval: "daily"
     allow:
-      - dependency-name: "@gomomento/sdk"
+      - dependency-name: "@gomomento/*"
 
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/examples/nodejs/aws" # Location of package manifests
     schedule:
       interval: "daily"
     allow:
-      - dependency-name: "@gomomento/sdk"
+      - dependency-name: "@gomomento/*"
 
   - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/examples/web" # Location of package manifests
+    directory: "/examples/nodejs/token-vending-machine/lambda/authorizer" # Location of package manifests
     schedule:
       interval: "daily"
     allow:
-      - dependency-name: "@gomomento/sdk-web"
+      - dependency-name: "@gomomento/*"
+
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/examples/nodejs/token-vending-machine/lambda/token-vending-machine" # Location of package manifests
+    schedule:
+      interval: "daily"
+    allow:
+      - dependency-name: "@gomomento/*"
+
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/examples/web/cache" # Location of package manifests
+    schedule:
+      interval: "daily"
+    allow:
+      - dependency-name: "@gomomento/*"
+
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/examples/web/nextjs-chat" # Location of package manifests
+    schedule:
+      interval: "daily"
+    allow:
+      - dependency-name: "@gomomento/*"
+
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/examples/web/vite-chat-app" # Location of package manifests
+    schedule:
+      interval: "daily"
+    allow:
+      - dependency-name: "@gomomento/*"
+
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/examples/cloudflare-workers/web-sdk" # Location of package manifests
+    schedule:
+      interval: "daily"
+    allow:
+      - dependency-name: "@gomomento/*"
