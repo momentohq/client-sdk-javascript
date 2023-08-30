@@ -1,6 +1,13 @@
 import {permissionsFromScope} from '../../../src/internal/auth-client';
 import {InternalSuperUserPermissions} from '@gomomento/sdk-core/dist/src/internal/utils';
-import {_GenerateApiTokenRequest} from '@gomomento/generated-types-webtext/dist/auth_pb';
+import {
+  ExplicitPermissions,
+  Permissions as TokenPermissions,
+  PermissionsType,
+  SuperUserPermissions,
+  TopicRole as TokenTopicRole,
+  CacheRole as TokenCacheRole,
+} from '@gomomento/generated-types-webtext/dist/permissionmessages_pb';
 import {
   AllCaches,
   AllDataReadWrite,
@@ -13,156 +20,112 @@ import {
 describe('internal auth client', () => {
   describe('permissionsFromScope', () => {
     it('creates expected grpc permissions for InternalSuperUser permissions class', () => {
-      const expectedPermission = new _GenerateApiTokenRequest.Permissions();
-      expectedPermission.setSuperUser(
-        _GenerateApiTokenRequest.SuperUserPermissions.SUPERUSER
-      );
+      const expectedPermission = new TokenPermissions();
+      expectedPermission.setSuperUser(SuperUserPermissions.SUPERUSER);
       expect(permissionsFromScope(new InternalSuperUserPermissions())).toEqual(
         expectedPermission
       );
     });
 
     it('creates expected grpc permissions for AllDataReadWrite', () => {
-      const topicPermissions =
-        new _GenerateApiTokenRequest.PermissionsType.TopicPermissions();
-      topicPermissions.setRole(
-        _GenerateApiTokenRequest.TopicRole.TOPICREADWRITE
-      );
-      topicPermissions.setAllCaches(
-        new _GenerateApiTokenRequest.PermissionsType.All()
-      );
-      topicPermissions.setAllTopics(
-        new _GenerateApiTokenRequest.PermissionsType.All()
-      );
-      const topicPermissionType =
-        new _GenerateApiTokenRequest.PermissionsType();
+      const topicPermissions = new PermissionsType.TopicPermissions();
+      topicPermissions.setRole(TokenTopicRole.TOPICREADWRITE);
+      topicPermissions.setAllCaches(new PermissionsType.All());
+      topicPermissions.setAllTopics(new PermissionsType.All());
+      const topicPermissionType = new PermissionsType();
       topicPermissionType.setTopicPermissions(topicPermissions);
 
-      const cachePermissions =
-        new _GenerateApiTokenRequest.PermissionsType.CachePermissions();
-      cachePermissions.setRole(
-        _GenerateApiTokenRequest.CacheRole.CACHEREADWRITE
-      );
-      cachePermissions.setAllCaches(
-        new _GenerateApiTokenRequest.PermissionsType.All()
-      );
-      const cachePermissionType =
-        new _GenerateApiTokenRequest.PermissionsType();
+      const cachePermissions = new PermissionsType.CachePermissions();
+      cachePermissions.setRole(TokenCacheRole.CACHEREADWRITE);
+      cachePermissions.setAllCaches(new PermissionsType.All());
+      const cachePermissionType = new PermissionsType();
       cachePermissionType.setCachePermissions(cachePermissions);
 
-      const explicitPermissions =
-        new _GenerateApiTokenRequest.ExplicitPermissions();
+      const explicitPermissions = new ExplicitPermissions();
       explicitPermissions.setPermissionsList([
         cachePermissionType,
         topicPermissionType,
       ]);
 
-      const grpcPermissions = new _GenerateApiTokenRequest.Permissions();
+      const grpcPermissions = new TokenPermissions();
       grpcPermissions.setExplicit(explicitPermissions);
       expect(permissionsFromScope(AllDataReadWrite)).toEqual(grpcPermissions);
     });
 
     it('creates expected grpc permissions for cache and topic specific permissions', () => {
-      const readAnyCache =
-        new _GenerateApiTokenRequest.PermissionsType.CachePermissions();
-      readAnyCache.setRole(_GenerateApiTokenRequest.CacheRole.CACHEREADONLY);
-      readAnyCache.setAllCaches(
-        new _GenerateApiTokenRequest.PermissionsType.All()
-      );
+      const readAnyCache = new PermissionsType.CachePermissions();
+      readAnyCache.setRole(TokenCacheRole.CACHEREADONLY);
+      readAnyCache.setAllCaches(new PermissionsType.All());
 
-      const readAnyCachePermission =
-        new _GenerateApiTokenRequest.PermissionsType();
+      const readAnyCachePermission = new PermissionsType();
       readAnyCachePermission.setCachePermissions(readAnyCache);
 
-      const writeCacheFoo =
-        new _GenerateApiTokenRequest.PermissionsType.CachePermissions();
-      writeCacheFoo.setRole(_GenerateApiTokenRequest.CacheRole.CACHEREADWRITE);
-      const writeFooCacheSelector =
-        new _GenerateApiTokenRequest.PermissionsType.CacheSelector();
+      const writeCacheFoo = new PermissionsType.CachePermissions();
+      writeCacheFoo.setRole(TokenCacheRole.CACHEREADWRITE);
+      const writeFooCacheSelector = new PermissionsType.CacheSelector();
       writeFooCacheSelector.setCacheName('foo');
       writeCacheFoo.setCacheSelector(writeFooCacheSelector);
-      const writeCacheFooPermission =
-        new _GenerateApiTokenRequest.PermissionsType();
+      const writeCacheFooPermission = new PermissionsType();
       writeCacheFooPermission.setCachePermissions(writeCacheFoo);
 
-      const readAnyTopic =
-        new _GenerateApiTokenRequest.PermissionsType.TopicPermissions();
-      readAnyTopic.setRole(_GenerateApiTokenRequest.TopicRole.TOPICREADONLY);
-      readAnyTopic.setAllCaches(
-        new _GenerateApiTokenRequest.PermissionsType.All()
-      );
-      readAnyTopic.setAllTopics(
-        new _GenerateApiTokenRequest.PermissionsType.All()
-      );
-      const readAnyTopicPermission =
-        new _GenerateApiTokenRequest.PermissionsType();
+      const readAnyTopic = new PermissionsType.TopicPermissions();
+      readAnyTopic.setRole(TokenTopicRole.TOPICREADONLY);
+      readAnyTopic.setAllCaches(new PermissionsType.All());
+      readAnyTopic.setAllTopics(new PermissionsType.All());
+      const readAnyTopicPermission = new PermissionsType();
       readAnyTopicPermission.setTopicPermissions(readAnyTopic);
 
       const readWriteAnyTopicInCacheFoo =
-        new _GenerateApiTokenRequest.PermissionsType.TopicPermissions();
-      readWriteAnyTopicInCacheFoo.setRole(
-        _GenerateApiTokenRequest.TopicRole.TOPICREADWRITE
-      );
+        new PermissionsType.TopicPermissions();
+      readWriteAnyTopicInCacheFoo.setRole(TokenTopicRole.TOPICREADWRITE);
       const readWriteAnyTopicInCacheFooCacheSelector =
-        new _GenerateApiTokenRequest.PermissionsType.CacheSelector();
+        new PermissionsType.CacheSelector();
       readWriteAnyTopicInCacheFooCacheSelector.setCacheName('foo');
       readWriteAnyTopicInCacheFoo.setCacheSelector(
         readWriteAnyTopicInCacheFooCacheSelector
       );
-      readWriteAnyTopicInCacheFoo.setAllTopics(
-        new _GenerateApiTokenRequest.PermissionsType.All()
-      );
-      const readWriteAnyTopicInCacheFooPermission =
-        new _GenerateApiTokenRequest.PermissionsType();
+      readWriteAnyTopicInCacheFoo.setAllTopics(new PermissionsType.All());
+      const readWriteAnyTopicInCacheFooPermission = new PermissionsType();
       readWriteAnyTopicInCacheFooPermission.setTopicPermissions(
         readWriteAnyTopicInCacheFoo
       );
 
       const readWriteTopicBarInAnyCache =
-        new _GenerateApiTokenRequest.PermissionsType.TopicPermissions();
-      readWriteTopicBarInAnyCache.setRole(
-        _GenerateApiTokenRequest.TopicRole.TOPICREADWRITE
-      );
-      readWriteTopicBarInAnyCache.setAllCaches(
-        new _GenerateApiTokenRequest.PermissionsType.All()
-      );
+        new PermissionsType.TopicPermissions();
+      readWriteTopicBarInAnyCache.setRole(TokenTopicRole.TOPICREADWRITE);
+      readWriteTopicBarInAnyCache.setAllCaches(new PermissionsType.All());
       const readWriteTopicBarInAnyCacheTopicSelector =
-        new _GenerateApiTokenRequest.PermissionsType.TopicSelector();
+        new PermissionsType.TopicSelector();
       readWriteTopicBarInAnyCacheTopicSelector.setTopicName('bar');
       readWriteTopicBarInAnyCache.setTopicSelector(
         readWriteTopicBarInAnyCacheTopicSelector
       );
-      const readWriteTopicBarInAnyCachePermission =
-        new _GenerateApiTokenRequest.PermissionsType();
+      const readWriteTopicBarInAnyCachePermission = new PermissionsType();
       readWriteTopicBarInAnyCachePermission.setTopicPermissions(
         readWriteTopicBarInAnyCache
       );
 
       const readWriteTopicCatInCacheDog =
-        new _GenerateApiTokenRequest.PermissionsType.TopicPermissions();
-      readWriteTopicCatInCacheDog.setRole(
-        _GenerateApiTokenRequest.TopicRole.TOPICREADWRITE
-      );
+        new PermissionsType.TopicPermissions();
+      readWriteTopicCatInCacheDog.setRole(TokenTopicRole.TOPICREADWRITE);
       const readWriteTopicCatInCacheDogCacheSelector =
-        new _GenerateApiTokenRequest.PermissionsType.CacheSelector();
+        new PermissionsType.CacheSelector();
       readWriteTopicCatInCacheDogCacheSelector.setCacheName('dog');
       readWriteTopicCatInCacheDog.setCacheSelector(
         readWriteTopicCatInCacheDogCacheSelector
       );
       const readWriteTopicCatInCacheDogTopicSelector =
-        new _GenerateApiTokenRequest.PermissionsType.TopicSelector();
+        new PermissionsType.TopicSelector();
       readWriteTopicCatInCacheDogTopicSelector.setTopicName('cat');
       readWriteTopicCatInCacheDog.setTopicSelector(
         readWriteTopicCatInCacheDogTopicSelector
       );
-      const readWriteTopicCatInCacheDogPermission =
-        new _GenerateApiTokenRequest.PermissionsType();
+      const readWriteTopicCatInCacheDogPermission = new PermissionsType();
       readWriteTopicCatInCacheDogPermission.setTopicPermissions(
         readWriteTopicCatInCacheDog
       );
 
-      const explicitPermissions =
-        new _GenerateApiTokenRequest.ExplicitPermissions();
+      const explicitPermissions = new ExplicitPermissions();
       explicitPermissions.setPermissionsList([
         readAnyCachePermission,
         writeCacheFooPermission,
@@ -172,7 +135,7 @@ describe('internal auth client', () => {
         readWriteTopicCatInCacheDogPermission,
       ]);
 
-      const grpcPermissions = new _GenerateApiTokenRequest.Permissions();
+      const grpcPermissions = new TokenPermissions();
       grpcPermissions.setExplicit(explicitPermissions);
 
       const cacheAndTopicPermissions: Permissions = {

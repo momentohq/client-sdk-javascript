@@ -1,4 +1,4 @@
-import {auth} from '@gomomento/generated-types-webtext';
+import {auth, token} from '@gomomento/generated-types-webtext';
 import {GenerateAuthToken, RefreshAuthToken} from '..';
 import {Request, UnaryResponse} from 'grpc-web';
 import {
@@ -29,6 +29,7 @@ import {AuthClientProps} from '../auth-client-props';
 import {
   InternalSuperUserPermissions,
   validateValidForSeconds,
+  validateDisposableTokenExpiry,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {getWebControlEndpoint} from '../utils/web-client-utils';
@@ -42,6 +43,15 @@ import {
   isPermissionsObject,
   isTopicPermission,
 } from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
+import {_GenerateDisposableTokenRequest} from '@gomomento/generated-types-webtext/dist/token_pb';
+import {
+  ExplicitPermissions,
+  Permissions,
+  PermissionsType,
+  SuperUserPermissions,
+  TopicRole as TokenTopicRole,
+  CacheRole as TokenCacheRole,
+} from '@gomomento/generated-types-webtext/dist/permissionmessages_pb';
 
 export class InternalWebGrpcAuthClient<
   REQ extends Request<REQ, RESP>,
@@ -148,9 +158,14 @@ export class InternalWebGrpcAuthClient<
     scope: TemporaryTokenScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateDisposableToken.Response> {
-    console.log('TODO: implement generateDisposableToken');
+    const tokenClient = new token.TokenClient(
+      // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
+      getWebControlEndpoint(this.creds),
+      null,
+      {}
+    );
 
-    const request = new _GenerateApiTokenRequest();
+    const request = new _GenerateDisposableTokenRequest();
     request.setAuthToken(this.creds.getAuthToken());
 
     let permissions;
@@ -162,24 +177,18 @@ export class InternalWebGrpcAuthClient<
 
     request.setPermissions(permissions);
 
-    if (expiresIn.doesExpire()) {
-      try {
-        validateValidForSeconds(expiresIn.seconds());
-      } catch (err) {
-        return new GenerateDisposableToken.Error(
-          normalizeSdkError(err as Error)
-        );
-      }
-
-      const grpcExpires = new Expires();
-      grpcExpires.setValidForSeconds(expiresIn.seconds());
-      request.setExpires(grpcExpires);
-    } else {
-      request.setNever(new Never());
+    try {
+      validateDisposableTokenExpiry(expiresIn);
+    } catch (err) {
+      return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
     }
 
+    const grpcExpires = new Expires();
+    grpcExpires.setValidForSeconds(expiresIn.seconds());
+    request.setExpires(grpcExpires);
+
     return await new Promise<GenerateDisposableToken.Response>(resolve => {
-      this.authClient.generateApiToken(
+      tokenClient.generateDisposableToken(
         request,
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
@@ -202,19 +211,14 @@ export class InternalWebGrpcAuthClient<
   }
 }
 
-export function permissionsFromScope(
-  scope: TokenScope
-): _GenerateApiTokenRequest.Permissions {
-  const result = new _GenerateApiTokenRequest.Permissions();
+export function permissionsFromScope(scope: TokenScope): Permissions {
+  const result = new Permissions();
   if (scope instanceof InternalSuperUserPermissions) {
-    result.setSuperUser(
-      _GenerateApiTokenRequest.SuperUserPermissions.SUPERUSER
-    );
+    result.setSuperUser(SuperUserPermissions.SUPERUSER);
     return result;
   } else if (isPermissionsObject(scope)) {
     const scopePermissions = asPermissionsObject(scope);
-    const explicitPermissions =
-      new _GenerateApiTokenRequest.ExplicitPermissions();
+    const explicitPermissions = new ExplicitPermissions();
     explicitPermissions.setPermissionsList(
       scopePermissions.permissions.map(p => tokenPermissionToGrpcPermission(p))
     );
@@ -226,8 +230,8 @@ export function permissionsFromScope(
 
 function tokenPermissionToGrpcPermission(
   permission: Permission
-): _GenerateApiTokenRequest.PermissionsType {
-  const result = new _GenerateApiTokenRequest.PermissionsType();
+): PermissionsType {
+  const result = new PermissionsType();
   if (isTopicPermission(permission)) {
     result.setTopicPermissions(
       topicPermissionToGrpcPermission(asTopicPermission(permission))
@@ -246,17 +250,16 @@ function tokenPermissionToGrpcPermission(
 
 function topicPermissionToGrpcPermission(
   permission: TopicPermission
-): _GenerateApiTokenRequest.PermissionsType.TopicPermissions {
-  const grpcPermission =
-    new _GenerateApiTokenRequest.PermissionsType.TopicPermissions();
+): PermissionsType.TopicPermissions {
+  const grpcPermission = new PermissionsType.TopicPermissions();
 
   switch (permission.role) {
     case TopicRole.PublishSubscribe: {
-      grpcPermission.setRole(_GenerateApiTokenRequest.TopicRole.TOPICREADWRITE);
+      grpcPermission.setRole(TokenTopicRole.TOPICREADWRITE);
       break;
     }
     case TopicRole.SubscribeOnly: {
-      grpcPermission.setRole(_GenerateApiTokenRequest.TopicRole.TOPICREADONLY);
+      grpcPermission.setRole(TokenTopicRole.TOPICREADONLY);
       break;
     }
     default: {
@@ -264,13 +267,10 @@ function topicPermissionToGrpcPermission(
     }
   }
 
-  const cacheSelector =
-    new _GenerateApiTokenRequest.PermissionsType.CacheSelector();
+  const cacheSelector = new PermissionsType.CacheSelector();
 
   if (permission.cache === AllCaches) {
-    grpcPermission.setAllCaches(
-      new _GenerateApiTokenRequest.PermissionsType.All()
-    );
+    grpcPermission.setAllCaches(new PermissionsType.All());
   } else if (typeof permission.cache === 'string') {
     cacheSelector.setCacheName(permission.cache);
     grpcPermission.setCacheSelector(cacheSelector);
@@ -285,13 +285,10 @@ function topicPermissionToGrpcPermission(
     );
   }
 
-  const topicSelector =
-    new _GenerateApiTokenRequest.PermissionsType.TopicSelector();
+  const topicSelector = new PermissionsType.TopicSelector();
 
   if (permission.topic === AllTopics) {
-    grpcPermission.setAllTopics(
-      new _GenerateApiTokenRequest.PermissionsType.All()
-    );
+    grpcPermission.setAllTopics(new PermissionsType.All());
   } else if (typeof permission.topic === 'string') {
     topicSelector.setTopicName(permission.topic);
     grpcPermission.setTopicSelector(topicSelector);
@@ -311,17 +308,16 @@ function topicPermissionToGrpcPermission(
 
 function cachePermissionToGrpcPermission(
   permission: CachePermission
-): _GenerateApiTokenRequest.PermissionsType.CachePermissions {
-  const grpcPermission =
-    new _GenerateApiTokenRequest.PermissionsType.CachePermissions();
+): PermissionsType.CachePermissions {
+  const grpcPermission = new PermissionsType.CachePermissions();
 
   switch (permission.role) {
     case CacheRole.ReadWrite: {
-      grpcPermission.setRole(_GenerateApiTokenRequest.CacheRole.CACHEREADWRITE);
+      grpcPermission.setRole(TokenCacheRole.CACHEREADWRITE);
       break;
     }
     case CacheRole.ReadOnly: {
-      grpcPermission.setRole(_GenerateApiTokenRequest.CacheRole.CACHEREADONLY);
+      grpcPermission.setRole(TokenCacheRole.CACHEREADONLY);
       break;
     }
     default: {
@@ -329,13 +325,10 @@ function cachePermissionToGrpcPermission(
     }
   }
 
-  const cacheSelector =
-    new _GenerateApiTokenRequest.PermissionsType.CacheSelector();
+  const cacheSelector = new PermissionsType.CacheSelector();
 
   if (permission.cache === AllCaches) {
-    grpcPermission.setAllCaches(
-      new _GenerateApiTokenRequest.PermissionsType.All()
-    );
+    grpcPermission.setAllCaches(new PermissionsType.All());
   } else if (typeof permission.cache === 'string') {
     cacheSelector.setCacheName(permission.cache);
     grpcPermission.setCacheSelector(cacheSelector);
