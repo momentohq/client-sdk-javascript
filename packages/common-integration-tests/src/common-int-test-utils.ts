@@ -1,9 +1,10 @@
 import {
   CollectionTtl,
   CreateCache,
+  CreateVectorIndex,
   DeleteCache,
+  DeleteVectorIndex,
   MomentoErrorCode,
-  vector,
 } from '@gomomento/sdk-core';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {
@@ -84,7 +85,7 @@ export const deleteIndexIfExists = async (
     return;
   }
   const deleteResponse = await client.deleteIndex(indexName);
-  if (deleteResponse instanceof vector.DeleteVectorIndex.Error) {
+  if (deleteResponse instanceof DeleteVectorIndex.Error) {
     if (deleteResponse.errorCode() !== MomentoErrorCode.NOT_FOUND_ERROR) {
       throw deleteResponse.innerException();
     }
@@ -102,7 +103,7 @@ export const createIndexIfNotExists = async (
     return;
   }
   const createResponse = await client.createIndex(indexName, 10);
-  if (createResponse instanceof vector.CreateVectorIndex.Error) {
+  if (createResponse instanceof CreateVectorIndex.Error) {
     throw createResponse.innerException();
   }
 };

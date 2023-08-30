@@ -7,7 +7,6 @@ import {
   MomentoLogger,
   CacheFlush,
   CacheInfo,
-  vector,
 } from '..';
 import {Configuration} from '../config/configuration';
 import {Request, StatusCode, UnaryResponse} from 'grpc-web';
@@ -37,6 +36,11 @@ import {
   CacheLimits,
   TopicLimits,
 } from '@gomomento/sdk-core/dist/src/messages/cache-info';
+import {
+  CreateVectorIndex,
+  DeleteVectorIndex,
+  ListVectorIndexes,
+} from '@gomomento/sdk-core';
 
 export interface ControlClientProps {
   configuration: Configuration;
@@ -203,20 +207,18 @@ export class ControlClient<
   public async createIndex(
     indexName: string,
     numDimensions: number
-  ): Promise<vector.CreateVectorIndex.Response> {
+  ): Promise<CreateVectorIndex.Response> {
     try {
       validateIndexName(indexName);
       validateNumDimensions(numDimensions);
     } catch (err) {
-      return new vector.CreateVectorIndex.Error(
-        normalizeSdkError(err as Error)
-      );
+      return new CreateVectorIndex.Error(normalizeSdkError(err as Error));
     }
     const request = new _CreateIndexRequest();
     request.setIndexName(indexName);
     request.setNumDimensions(numDimensions);
     this.logger.debug("Issuing 'createIndex' request");
-    return await new Promise<vector.CreateVectorIndex.Response>(resolve => {
+    return await new Promise<CreateVectorIndex.Response>(resolve => {
       this.clientWrapper.createIndex(
         request,
         this.clientMetadataProvider.createClientMetadata(),
@@ -224,36 +226,34 @@ export class ControlClient<
         (err, resp) => {
           if (err) {
             if (err.code === StatusCode.ALREADY_EXISTS) {
-              resolve(new vector.CreateVectorIndex.AlreadyExists());
+              resolve(new CreateVectorIndex.AlreadyExists());
             } else {
               resolve(
-                new vector.CreateVectorIndex.Error(cacheServiceErrorMapper(err))
+                new CreateVectorIndex.Error(cacheServiceErrorMapper(err))
               );
             }
           } else {
-            resolve(new vector.CreateVectorIndex.Success());
+            resolve(new CreateVectorIndex.Success());
           }
         }
       );
     });
   }
 
-  public async listIndexes(): Promise<vector.ListVectorIndexes.Response> {
+  public async listIndexes(): Promise<ListVectorIndexes.Response> {
     const request = new _ListIndexesRequest();
     this.logger.debug("Issuing 'listIndexes' request");
-    return await new Promise<vector.ListVectorIndexes.Response>(resolve => {
+    return await new Promise<ListVectorIndexes.Response>(resolve => {
       this.clientWrapper.listIndexes(
         request,
         this.clientMetadataProvider.createClientMetadata(),
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
-            resolve(
-              new vector.ListVectorIndexes.Error(cacheServiceErrorMapper(err))
-            );
+            resolve(new ListVectorIndexes.Error(cacheServiceErrorMapper(err)));
           } else {
             const indexes = resp.getIndexNamesList();
-            resolve(new vector.ListVectorIndexes.Success(indexes));
+            resolve(new ListVectorIndexes.Success(indexes));
           }
         }
       );
@@ -265,24 +265,20 @@ export class ControlClient<
     try {
       validateIndexName(indexName);
     } catch (err) {
-      return new vector.CreateVectorIndex.Error(
-        normalizeSdkError(err as Error)
-      );
+      return new CreateVectorIndex.Error(normalizeSdkError(err as Error));
     }
     request.setIndexName(indexName);
     this.logger.debug("Issuing 'deleteIndex' request");
-    return await new Promise<vector.DeleteVectorIndex.Response>(resolve => {
+    return await new Promise<DeleteVectorIndex.Response>(resolve => {
       this.clientWrapper.deleteIndex(
         request,
         this.clientMetadataProvider.createClientMetadata(),
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
-            resolve(
-              new vector.DeleteVectorIndex.Error(cacheServiceErrorMapper(err))
-            );
+            resolve(new DeleteVectorIndex.Error(cacheServiceErrorMapper(err)));
           } else {
-            resolve(new vector.DeleteVectorIndex.Success());
+            resolve(new DeleteVectorIndex.Success());
           }
         }
       );

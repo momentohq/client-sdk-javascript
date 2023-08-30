@@ -65,6 +65,7 @@ import * as RefreshAuthToken from './messages/responses/refresh-auth-token';
 
 // VectorClient Response Types
 export * as vector from './messages/responses/vector';
+export * from './messages/responses/vector';
 
 import {CacheInfo} from './messages/cache-info';
 import {
