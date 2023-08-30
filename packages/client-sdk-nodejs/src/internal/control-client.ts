@@ -268,7 +268,7 @@ export class ControlClient {
 
   public async deleteIndex(name: string): Promise<DeleteVectorIndex.Response> {
     try {
-      validateCacheName(name);
+      validateIndexName(name);
     } catch (err) {
       return new DeleteVectorIndex.Error(normalizeSdkError(err as Error));
     }
