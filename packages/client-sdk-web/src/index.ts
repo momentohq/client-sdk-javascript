@@ -125,6 +125,7 @@ import {VectorConfiguration} from './config/vector-configuration';
 
 // VectorClient Response Types
 export {vector} from '@gomomento/sdk-core';
+export * from '@gomomento/sdk-core/dist/src/messages/responses/vector';
 
 export {
   DefaultMomentoLoggerFactory,
