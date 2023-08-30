@@ -1,10 +1,10 @@
-import {CreateIndex, ListIndexes, DeleteIndex} from '../../../index';
+import {vector} from '../../../index';
 
 export interface IVectorControlClient {
   createIndex(
     indexName: string,
     numDimensions: number
-  ): Promise<CreateIndex.Response>;
-  listIndexes(): Promise<ListIndexes.Response>;
-  deleteIndex(indexName: string): Promise<DeleteIndex.Response>;
+  ): Promise<vector.CreateVectorIndex.Response>;
+  listIndexes(): Promise<vector.ListVectorIndexes.Response>;
+  deleteIndex(indexName: string): Promise<vector.DeleteVectorIndex.Response>;
 }

@@ -1,5 +1,5 @@
-import {SdkError} from '../../errors';
-import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
+import {SdkError} from '../../../errors';
+import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
 
 /**
  * Parent response type for a list indexes request.  The

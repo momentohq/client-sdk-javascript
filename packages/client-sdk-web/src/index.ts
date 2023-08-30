@@ -124,9 +124,7 @@ import {
 import {VectorConfiguration} from './config/vector-configuration';
 
 // VectorClient Response Types
-import * as CreateIndex from '@gomomento/sdk-core/dist/src/messages/responses/create-index';
-import * as ListIndexes from '@gomomento/sdk-core/dist/src/messages/responses/list-indexes';
-import * as DeleteIndex from '@gomomento/sdk-core/dist/src/messages/responses/delete-index';
+export {vector} from '@gomomento/sdk-core';
 
 export {
   DefaultMomentoLoggerFactory,
@@ -181,9 +179,6 @@ export {
   CreateSigningKey,
   ListSigningKeys,
   RevokeSigningKey,
-  CreateIndex,
-  ListIndexes,
-  DeleteIndex,
   CacheSetFetch,
   CacheDictionaryFetch,
   CacheDictionarySetField,

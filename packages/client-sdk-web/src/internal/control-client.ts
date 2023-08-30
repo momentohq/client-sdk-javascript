@@ -7,9 +7,7 @@ import {
   MomentoLogger,
   CacheFlush,
   CacheInfo,
-  CreateIndex,
-  ListIndexes,
-  DeleteIndex,
+  vector,
 } from '..';
 import {Configuration} from '../config/configuration';
 import {Request, StatusCode, UnaryResponse} from 'grpc-web';
@@ -205,18 +203,20 @@ export class ControlClient<
   public async createIndex(
     indexName: string,
     numDimensions: number
-  ): Promise<CreateIndex.Response> {
+  ): Promise<vector.CreateVectorIndex.Response> {
     try {
       validateIndexName(indexName);
       validateNumDimensions(numDimensions);
     } catch (err) {
-      return new CreateIndex.Error(normalizeSdkError(err as Error));
+      return new vector.CreateVectorIndex.Error(
+        normalizeSdkError(err as Error)
+      );
     }
     const request = new _CreateIndexRequest();
     request.setIndexName(indexName);
     request.setNumDimensions(numDimensions);
     this.logger.debug("Issuing 'createIndex' request");
-    return await new Promise<CreateIndex.Response>(resolve => {
+    return await new Promise<vector.CreateVectorIndex.Response>(resolve => {
       this.clientWrapper.createIndex(
         request,
         this.clientMetadataProvider.createClientMetadata(),
@@ -224,32 +224,36 @@ export class ControlClient<
         (err, resp) => {
           if (err) {
             if (err.code === StatusCode.ALREADY_EXISTS) {
-              resolve(new CreateIndex.AlreadyExists());
+              resolve(new vector.CreateVectorIndex.AlreadyExists());
             } else {
-              resolve(new CreateIndex.Error(cacheServiceErrorMapper(err)));
+              resolve(
+                new vector.CreateVectorIndex.Error(cacheServiceErrorMapper(err))
+              );
             }
           } else {
-            resolve(new CreateIndex.Success());
+            resolve(new vector.CreateVectorIndex.Success());
           }
         }
       );
     });
   }
 
-  public async listIndexes(): Promise<ListIndexes.Response> {
+  public async listIndexes(): Promise<vector.ListVectorIndexes.Response> {
     const request = new _ListIndexesRequest();
     this.logger.debug("Issuing 'listIndexes' request");
-    return await new Promise<ListIndexes.Response>(resolve => {
+    return await new Promise<vector.ListVectorIndexes.Response>(resolve => {
       this.clientWrapper.listIndexes(
         request,
         this.clientMetadataProvider.createClientMetadata(),
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
-            resolve(new ListIndexes.Error(cacheServiceErrorMapper(err)));
+            resolve(
+              new vector.ListVectorIndexes.Error(cacheServiceErrorMapper(err))
+            );
           } else {
             const indexes = resp.getIndexNamesList();
-            resolve(new ListIndexes.Success(indexes));
+            resolve(new vector.ListVectorIndexes.Success(indexes));
           }
         }
       );
@@ -261,20 +265,24 @@ export class ControlClient<
     try {
       validateIndexName(indexName);
     } catch (err) {
-      return new CreateIndex.Error(normalizeSdkError(err as Error));
+      return new vector.CreateVectorIndex.Error(
+        normalizeSdkError(err as Error)
+      );
     }
     request.setIndexName(indexName);
     this.logger.debug("Issuing 'deleteIndex' request");
-    return await new Promise<DeleteIndex.Response>(resolve => {
+    return await new Promise<vector.DeleteVectorIndex.Response>(resolve => {
       this.clientWrapper.deleteIndex(
         request,
         this.clientMetadataProvider.createClientMetadata(),
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
-            resolve(new DeleteIndex.Error(cacheServiceErrorMapper(err)));
+            resolve(
+              new vector.DeleteVectorIndex.Error(cacheServiceErrorMapper(err))
+            );
           } else {
-            resolve(new DeleteIndex.Success());
+            resolve(new vector.DeleteVectorIndex.Success());
           }
         }
       );

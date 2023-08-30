@@ -1,6 +1,6 @@
 import {IVectorClient} from '../../../clients/IVectorClient';
 import {IVectorControlClient} from './IVectorControlClient';
-import {CreateIndex, ListIndexes, DeleteIndex} from '../../../index';
+import {vector} from '../../../index';
 
 export abstract class AbstractVectorClient implements IVectorClient {
   protected readonly controlClient: IVectorControlClient;
@@ -14,26 +14,26 @@ export abstract class AbstractVectorClient implements IVectorClient {
    *
    * @param {string} indexName - The vector index to be created.
    * @param {number} numDimensions - Number of dimensions per vector.
-   * @returns {Promise<CreateIndex.Response>} -
-   * {@link CreateIndex.Success} on success.
-   * {@link CreateIndex.AlreadyExists} if the cache already exists.
-   * {@link CreateIndex.Error} on failure.
+   * @returns {Promise<vector.CreateVectorIndex.Response>} -
+   * {@link vector.CreateVectorIndex.Success} on success.
+   * {@link vector.CreateVectorIndex.AlreadyExists} if the cache already exists.
+   * {@link vector.CreateVectorIndex.Error} on failure.
    */
   public async createIndex(
     indexName: string,
     numDimensions: number
-  ): Promise<CreateIndex.Response> {
+  ): Promise<vector.CreateVectorIndex.Response> {
     return await this.controlClient.createIndex(indexName, numDimensions);
   }
 
   /**
    * Lists all vector indexes.
    *
-   * @returns {Promise<ListIndexes.Response>} -
-   * {@link ListIndexes.Success} containing the list on success.
-   * {@link ListIndexes.Error} on error.
+   * @returns {Promise<vector.ListVectorIndexes.Response>} -
+   * {@link vector.ListVectorIndexes.Success} containing the list on success.
+   * {@link vector.ListVectorIndexes.Error} on error.
    */
-  public async listIndexes(): Promise<ListIndexes.Response> {
+  public async listIndexes(): Promise<vector.ListVectorIndexes.Response> {
     return await this.controlClient.listIndexes();
   }
 
@@ -41,11 +41,13 @@ export abstract class AbstractVectorClient implements IVectorClient {
    * Deletes a vector index and all the vectors stored in it.
    *
    * @param {string} indexName - The name of the vector index to delete.
-   * @returns {Promise<DeleteIndex.Response>} -
-   * {@link DeleteIndex.Success} on success.
-   * {@link DeleteIndex.Error} on error.
+   * @returns {Promise<vector.DeleteVectorIndex.Response>} -
+   * {@link vector.DeleteVectorIndex.Success} on success.
+   * {@link vector.DeleteVectorIndex.Error} on error.
    */
-  public async deleteIndex(indexName: string): Promise<DeleteIndex.Response> {
+  public async deleteIndex(
+    indexName: string
+  ): Promise<vector.DeleteVectorIndex.Response> {
     return await this.controlClient.deleteIndex(indexName);
   }
 }
