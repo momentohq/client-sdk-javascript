@@ -75,9 +75,7 @@ import * as GenerateAuthToken from '@gomomento/sdk-core/dist/src/messages/respon
 import * as RefreshAuthToken from '@gomomento/sdk-core/dist/src/messages/responses/refresh-auth-token';
 
 // VectorClient Response Types
-import * as CreateIndex from '@gomomento/sdk-core/dist/src/messages/responses/create-index';
-import * as ListIndexes from '@gomomento/sdk-core/dist/src/messages/responses/list-indexes';
-import * as DeleteIndex from '@gomomento/sdk-core/dist/src/messages/responses/delete-index';
+export * from '@gomomento/sdk-core/dist/src/messages/responses/vector';
 
 import {
   ICacheClient,
@@ -234,9 +232,6 @@ export {
   CreateSigningKey,
   ListSigningKeys,
   RevokeSigningKey,
-  CreateIndex,
-  ListIndexes,
-  DeleteIndex,
   CacheSetFetch,
   CacheDictionaryFetch,
   CacheDictionarySetField,

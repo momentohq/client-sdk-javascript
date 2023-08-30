@@ -16,9 +16,6 @@ import {
   CredentialProvider,
   MomentoLogger,
   CacheInfo,
-  CreateIndex,
-  ListIndexes,
-  DeleteIndex,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -36,6 +33,11 @@ import {
   CacheLimits,
   TopicLimits,
 } from '@gomomento/sdk-core/dist/src/messages/cache-info';
+import {
+  CreateVectorIndex,
+  DeleteVectorIndex,
+  ListVectorIndexes,
+} from '@gomomento/sdk-core';
 
 export interface ControlClientProps {
   configuration: Configuration;
@@ -203,18 +205,18 @@ export class ControlClient {
   public async createIndex(
     indexName: string,
     numDimensions: number
-  ): Promise<CreateIndex.Response> {
+  ): Promise<CreateVectorIndex.Response> {
     try {
       validateIndexName(indexName);
       validateNumDimensions(numDimensions);
     } catch (err) {
-      return new CreateIndex.Error(normalizeSdkError(err));
+      return new CreateVectorIndex.Error(normalizeSdkError(err as Error));
     }
     this.logger.debug("Issuing 'createIndex' request");
     const request = new grpcControl._CreateIndexRequest();
     request.index_name = indexName;
     request.num_dimensions = numDimensions;
-    return await new Promise<CreateIndex.Response>(resolve => {
+    return await new Promise<CreateVectorIndex.Response>(resolve => {
       this.clientWrapper.getClient().CreateIndex(
         request,
         {interceptors: this.interceptors},
@@ -222,12 +224,14 @@ export class ControlClient {
         (err, resp) => {
           if (err) {
             if (err.code === Status.ALREADY_EXISTS) {
-              resolve(new CreateIndex.AlreadyExists());
+              resolve(new CreateVectorIndex.AlreadyExists());
             } else {
-              resolve(new CreateIndex.Error(cacheServiceErrorMapper(err)));
+              resolve(
+                new CreateVectorIndex.Error(cacheServiceErrorMapper(err))
+              );
             }
           } else {
-            resolve(new CreateIndex.Success());
+            resolve(new CreateVectorIndex.Success());
           }
         }
       );
@@ -237,7 +241,7 @@ export class ControlClient {
   public async listIndexes(): Promise<ListCaches.Response> {
     const request = new grpcControl._ListIndexesRequest();
     this.logger.debug("Issuing 'listIndexes' request");
-    return await new Promise<ListIndexes.Response>(resolve => {
+    return await new Promise<ListVectorIndexes.Response>(resolve => {
       this.clientWrapper
         .getClient()
         .ListIndexes(
@@ -247,39 +251,41 @@ export class ControlClient {
             if (err || !resp) {
               // TODO: `Argument of type 'unknown' is not assignable to parameter of type 'Error'.`
               //  I don't see how this is different from the other methods here. So, yeah, what?
-              resolve(new ListIndexes.Error(cacheServiceErrorMapper(err)));
+              resolve(
+                new ListVectorIndexes.Error(cacheServiceErrorMapper(err))
+              );
             } else {
               // TODO: um, what?
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call
               const indexes = resp.index_names;
               // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-              resolve(new ListIndexes.Success(indexes));
+              resolve(new ListVectorIndexes.Success(indexes));
             }
           }
         );
     });
   }
 
-  public async deleteIndex(name: string): Promise<DeleteIndex.Response> {
+  public async deleteIndex(name: string): Promise<DeleteVectorIndex.Response> {
     try {
       validateCacheName(name);
     } catch (err) {
-      return new DeleteIndex.Error(normalizeSdkError(err as Error));
+      return new DeleteVectorIndex.Error(normalizeSdkError(err as Error));
     }
     const request = new grpcControl._DeleteIndexRequest({
       index_name: name,
     });
     this.logger.info(`Deleting index: ${name}`);
-    return await new Promise<DeleteIndex.Response>(resolve => {
+    return await new Promise<DeleteVectorIndex.Response>(resolve => {
       this.clientWrapper.getClient().DeleteIndex(
         request,
         {interceptors: this.interceptors},
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
-            resolve(new DeleteIndex.Error(cacheServiceErrorMapper(err)));
+            resolve(new DeleteVectorIndex.Error(cacheServiceErrorMapper(err)));
           } else {
-            resolve(new DeleteIndex.Success());
+            resolve(new DeleteVectorIndex.Success());
           }
         }
       );
