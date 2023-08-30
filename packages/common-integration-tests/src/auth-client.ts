@@ -666,24 +666,38 @@ export function runAuthClientTests(
     });
 
     it('can only write cache FGA_CACHE_1 and write all topics in cache FGA_CACHE_2', async () => {
-      const tokenResponse =
-        await sessionTokenAuthClient.generateDisposableToken(
-          {
-            permissions: [
-              {role: CacheRole.WriteOnly, cache: FGA_CACHE_1},
-              {
-                role: TopicRole.PublishOnly,
-                cache: FGA_CACHE_2,
-                topic: AllTopics,
-              },
-            ],
-          },
-          ExpiresIn.seconds(60)
+      const superUserTokenResponse =
+        await sessionTokenAuthClient.generateAuthToken(
+          SUPER_USER_PERMISSIONS,
+          ExpiresIn.seconds(10)
         );
-      console.debug('generateDisposableToken response:', tokenResponse.toString());
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+
+      const authClient = authTokenAuthClientFactory(
+        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+      );
+
+      const tokenResponse = await authClient.generateDisposableToken(
+        {
+          permissions: [
+            {role: CacheRole.WriteOnly, cache: FGA_CACHE_1},
+            {
+              role: TopicRole.PublishOnly,
+              cache: FGA_CACHE_2,
+              topic: AllTopics,
+            },
+          ],
+        },
+        ExpiresIn.seconds(60)
+      );
+      console.debug(
+        'generateDisposableToken response:',
+        tokenResponse.toString()
+      );
       expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
 
-      const token = (tokenResponse as GenerateDisposableToken.Success).authToken;
+      const token = (tokenResponse as GenerateDisposableToken.Success)
+        .authToken;
       const cacheClient = cacheClientFactory(token);
 
       // Only Write on cache FGA_CACHE_1 is allowed

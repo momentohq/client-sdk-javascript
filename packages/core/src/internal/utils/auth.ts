@@ -29,6 +29,7 @@ interface TokenAndEndpoints {
   // as undefined; thus we need the types here to be `string | undefined`.
   controlEndpoint: string | undefined;
   cacheEndpoint: string | undefined;
+  tokenEndpoint: string | undefined;
   authToken: string;
 }
 
@@ -57,6 +58,7 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
       return {
         controlEndpoint: `control.${base64DecodedToken.endpoint}`,
         cacheEndpoint: `cache.${base64DecodedToken.endpoint}`,
+        tokenEndpoint: `token.${base64DecodedToken.endpoint}`,
         authToken: base64DecodedToken.api_key,
       };
     } else {
@@ -67,6 +69,7 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
       return {
         controlEndpoint: decodedLegacyToken.cp,
         cacheEndpoint: decodedLegacyToken.c,
+        tokenEndpoint: decodedLegacyToken.c,
         authToken: token,
       };
     }

@@ -32,7 +32,10 @@ import {
   validateDisposableTokenExpiry,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
-import {getWebControlEndpoint} from '../utils/web-client-utils';
+import {
+  getWebControlEndpoint,
+  getWebTokenEndpoint,
+} from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {
   TemporaryTokenScope,
@@ -160,7 +163,7 @@ export class InternalWebGrpcAuthClient<
   ): Promise<GenerateDisposableToken.Response> {
     const tokenClient = new token.TokenClient(
       // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
-      getWebControlEndpoint(this.creds),
+      getWebTokenEndpoint(this.creds),
       null,
       {}
     );

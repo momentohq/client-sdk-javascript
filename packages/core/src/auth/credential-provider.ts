@@ -37,6 +37,11 @@ export abstract class CredentialProvider {
   abstract getCacheEndpoint(): string;
 
   /**
+   * @returns {string} The host which the Momento client will connect to for Momento token operations
+   */
+  abstract getTokenEndpoint(): string;
+
+  /**
    * @returns {boolean} true if the cache endpoint was manually overridden at construction time; false otherwise
    */
   abstract isCacheEndpointOverridden(): boolean;
@@ -66,6 +71,8 @@ abstract class CredentialProviderBase implements CredentialProvider {
 
   abstract getControlEndpoint(): string;
 
+  abstract getTokenEndpoint(): string;
+
   abstract isCacheEndpointOverridden(): boolean;
   abstract isControlEndpointOverridden(): boolean;
 
@@ -94,6 +101,7 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
   private readonly authToken: string;
   private readonly controlEndpoint: string;
   private readonly cacheEndpoint: string;
+  private readonly tokenEndpoint: string;
   private readonly controlEndpointOverridden: boolean;
   private readonly cacheEndpointOverridden: boolean;
 
@@ -122,6 +130,7 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
 
     this.controlEndpoint = controlEndpoint;
     this.cacheEndpoint = cacheEndpoint;
+    this.tokenEndpoint = decodedToken.tokenEndpoint || cacheEndpoint;
   }
 
   getAuthToken(): string {
@@ -134,6 +143,10 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
 
   getControlEndpoint(): string {
     return this.controlEndpoint;
+  }
+
+  getTokenEndpoint(): string {
+    return this.tokenEndpoint;
   }
 
   isControlEndpointOverridden(): boolean {
