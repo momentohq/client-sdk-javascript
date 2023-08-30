@@ -1,4 +1,4 @@
-import {MomentoLoggerFactory} from '../';
+import {MomentoLoggerFactory} from '@gomomento/sdk-core';
 
 export interface TopicConfigurationProps {
   /**

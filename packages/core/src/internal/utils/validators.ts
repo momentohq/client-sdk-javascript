@@ -87,6 +87,18 @@ export function validateTopicName(name: string) {
   }
 }
 
+export function validateIndexName(name: string) {
+  if (isEmpty(name)) {
+    throw new InvalidArgumentError('index name must not be empty');
+  }
+}
+
+export function validateNumDimensions(numDimensions: number) {
+  if (numDimensions <= 0) {
+    throw new InvalidArgumentError('numDimensions must be greater than zero');
+  }
+}
+
 export function validateTtlMinutes(ttlMinutes: number) {
   if (ttlMinutes < 0) {
     throw new InvalidArgumentError('ttlMinutes must be positive');

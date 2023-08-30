@@ -1,8 +1,10 @@
 import {CacheClient} from './cache-client';
 import {AuthClient} from './auth-client';
 import {TopicClient} from './topic-client';
+import {PreviewVectorClient} from './preview-vector-client';
 import * as Configurations from './config/configurations';
 import * as TopicConfigurations from './config/topic-configurations';
+import * as VectorConfigurations from './config/vector-configurations';
 
 // Cache Client Response Types
 import * as CacheGet from '@gomomento/sdk-core/dist/src/messages/responses/cache-get';
@@ -119,6 +121,12 @@ import {
   TopicClientConfiguration,
 } from './config/topic-configuration';
 
+import {VectorConfiguration} from './config/vector-configuration';
+
+// VectorClient Response Types
+export {vector} from '@gomomento/sdk-core';
+export * from '@gomomento/sdk-core/dist/src/messages/responses/vector';
+
 export {
   DefaultMomentoLoggerFactory,
   DefaultMomentoLogger,
@@ -134,6 +142,9 @@ export {
   Configurations,
   CacheClient,
   AuthClient,
+  PreviewVectorClient,
+  VectorConfiguration,
+  VectorConfigurations,
   CacheInfo,
   CredentialProvider,
   StringMomentoTokenProvider,

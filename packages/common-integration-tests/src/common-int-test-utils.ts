@@ -1,7 +1,9 @@
 import {
   CollectionTtl,
   CreateCache,
+  CreateVectorIndex,
   DeleteCache,
+  DeleteVectorIndex,
   MomentoErrorCode,
 } from '@gomomento/sdk-core';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
@@ -10,6 +12,7 @@ import {
   ResponseBase,
 } from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
 import {v4} from 'uuid';
+import {IVectorClient} from '@gomomento/sdk-core/dist/src/clients/IVectorClient';
 
 export function isLocalhostDevelopmentMode(): boolean {
   const useLocalhost = process.env.MOMENTO_SDK_TESTS_USE_LOCALHOST;
@@ -17,6 +20,10 @@ export function isLocalhostDevelopmentMode(): boolean {
 }
 export function testCacheName(): string {
   return process.env.TEST_CACHE_NAME || `js-integration-test-default-${v4()}`;
+}
+
+export function testIndexName(): string {
+  return v4();
 }
 
 export const deleteCacheIfExists = async (
@@ -67,6 +74,54 @@ export async function WithCache(
   }
 }
 
+export const deleteIndexIfExists = async (
+  client: IVectorClient,
+  indexName: string
+) => {
+  if (isLocalhostDevelopmentMode()) {
+    console.log(
+      `LOCALHOST DEVELOPMENT MODE: skipping delete index command for index '${indexName}`
+    );
+    return;
+  }
+  const deleteResponse = await client.deleteIndex(indexName);
+  if (deleteResponse instanceof DeleteVectorIndex.Error) {
+    if (deleteResponse.errorCode() !== MomentoErrorCode.NOT_FOUND_ERROR) {
+      throw deleteResponse.innerException();
+    }
+  }
+};
+
+export const createIndexIfNotExists = async (
+  client: IVectorClient,
+  indexName: string
+) => {
+  if (isLocalhostDevelopmentMode()) {
+    console.log(
+      `LOCALHOST DEVELOPMENT MODE: skipping create index command for index '${indexName}`
+    );
+    return;
+  }
+  const createResponse = await client.createIndex(indexName, 10);
+  if (createResponse instanceof CreateVectorIndex.Error) {
+    throw createResponse.innerException();
+  }
+};
+
+export async function WithIndex(
+  client: IVectorClient,
+  indexName: string,
+  block: () => Promise<void>
+) {
+  await deleteIndexIfExists(client, indexName);
+  await createIndexIfNotExists(client, indexName);
+  try {
+    await block();
+  } finally {
+    await deleteIndexIfExists(client, indexName);
+  }
+}
+
 export interface ValidateCacheProps {
   cacheName: string;
 }
@@ -104,6 +159,11 @@ export interface ValidateTopicProps {
   topicName: string;
 }
 
+export interface ValidateVectorProps {
+  indexName: string;
+  numDimensions: number;
+}
+
 export function ItBehavesLikeItValidatesCacheName(
   getResponse: (props: ValidateCacheProps) => Promise<ResponseBase>
 ) {
@@ -129,6 +189,37 @@ export function ItBehavesLikeItValidatesTopicName(
     );
     expect((response as IResponseError).message()).toEqual(
       'Invalid argument passed to Momento client: topic name must not be empty'
+    );
+  });
+}
+
+export function ItBehavesLikeItValidatesIndexName(
+  getResponse: (props: ValidateVectorProps) => Promise<ResponseBase>
+) {
+  it('validates its index name', async () => {
+    const response = await getResponse({indexName: '   ', numDimensions: 1});
+    expect((response as IResponseError).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    expect((response as IResponseError).message()).toEqual(
+      'Invalid argument passed to Momento client: index name must not be empty'
+    );
+  });
+}
+
+export function ItBehavesLikeItValidatesNumDimensions(
+  getResponse: (props: ValidateVectorProps) => Promise<ResponseBase>
+) {
+  it('validates its numDimensions', async () => {
+    const response = await getResponse({
+      indexName: v4(),
+      numDimensions: 0,
+    });
+    expect((response as IResponseError).errorCode()).toEqual(
+      MomentoErrorCode.INVALID_ARGUMENT_ERROR
+    );
+    expect((response as IResponseError).message()).toEqual(
+      'Invalid argument passed to Momento client: numDimensions must be greater than zero'
     );
   });
 }
