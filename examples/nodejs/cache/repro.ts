@@ -16,10 +16,13 @@ async function main() {
 
   for (let i = 0; i < 1000; i++) {
     const client = clients[i % 2];
-    const createCacheResponse = await client.createCache('cache');
+    const createCacheResponse = await client.createCache(i.toString());
     await client.listCaches();
-    if (createCacheResponse instanceof CreateCache.Success) {
-      await client.deleteCache('cache');
+    if (
+      createCacheResponse instanceof CreateCache.Success ||
+      createCacheResponse instanceof CreateCache.AlreadyExists
+    ) {
+      await client.deleteCache(i.toString());
     }
   }
 }
