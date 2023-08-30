@@ -7,6 +7,7 @@
     "prebuild": "eslint . --ext .ts",
     "build": "tsc",
     "basic": "tsc && node dist/basic.js",
+    "repro": "tsc && node dist/repro.js",
     "advanced": "tsc && node dist/advanced.js",
     "dictionary": "tsc && node dist/dictionary.js",
     "doc-examples": "tsc && node dist/doc-example-files/doc-examples-js-apis.js",
