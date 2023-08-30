@@ -259,6 +259,10 @@ function topicPermissionToGrpcPermission(
       grpcPermission.role = permission_messages.TopicRole.TopicReadOnly;
       break;
     }
+    case TopicRole.PublishOnly: {
+      grpcPermission.role = permission_messages.TopicRole.TopicWriteOnly;
+      break;
+    }
     default: {
       throw new Error(`Unrecognized topic role: ${JSON.stringify(permission)}`);
     }
@@ -318,6 +322,10 @@ function cachePermissionToGrpcPermission(
     }
     case CacheRole.ReadOnly: {
       grpcPermission.role = permission_messages.CacheRole.CacheReadOnly;
+      break;
+    }
+    case CacheRole.WriteOnly: {
+      grpcPermission.role = permission_messages.CacheRole.CacheWriteOnly;
       break;
     }
     default: {

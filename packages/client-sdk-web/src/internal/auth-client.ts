@@ -262,6 +262,10 @@ function topicPermissionToGrpcPermission(
       grpcPermission.setRole(TokenTopicRole.TOPICREADONLY);
       break;
     }
+    case TopicRole.PublishOnly: {
+      grpcPermission.setRole(TokenTopicRole.TOPICWRITEONLY);
+      break;
+    }
     default: {
       throw new Error(`Unrecognized topic role: ${JSON.stringify(permission)}`);
     }
@@ -318,6 +322,10 @@ function cachePermissionToGrpcPermission(
     }
     case CacheRole.ReadOnly: {
       grpcPermission.setRole(TokenCacheRole.CACHEREADONLY);
+      break;
+    }
+    case CacheRole.WriteOnly: {
+      grpcPermission.setRole(TokenCacheRole.CACHEWRITEONLY);
       break;
     }
     default: {

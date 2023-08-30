@@ -680,9 +680,10 @@ export function runAuthClientTests(
           },
           ExpiresIn.seconds(60)
         );
+      console.debug('generateDisposableToken response:', tokenResponse.toString());
       expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
-      const token = (tokenResponse as GenerateDisposableToken.Success)
-        .authToken;
+
+      const token = (tokenResponse as GenerateDisposableToken.Success).authToken;
       const cacheClient = cacheClientFactory(token);
 
       // Only Write on cache FGA_CACHE_1 is allowed
