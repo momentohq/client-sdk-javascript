@@ -23,6 +23,9 @@ import {
   AllTopics,
   isTopicName,
   GenerateDisposableToken,
+  AllItems,
+  isCacheItemKey,
+  isCacheItemKeyPrefix,
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {AuthClientProps} from '../auth-client-props';
@@ -45,6 +48,12 @@ import {
   isCachePermission,
   isPermissionsObject,
   isTopicPermission,
+  asTemporaryTokenCachePermission,
+  isTemporaryTokenPermissionsObject,
+  TemporaryTokenCachePermission,
+  isTemporaryTokenCachePermission,
+  asTemporaryTokenPermissionsObject,
+  PredefinedScope,
 } from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
 import {_GenerateDisposableTokenRequest} from '@gomomento/generated-types-webtext/dist/token_pb';
 import {
@@ -214,10 +223,25 @@ export class InternalWebGrpcAuthClient<
   }
 }
 
-export function permissionsFromScope(scope: TokenScope): Permissions {
+export function permissionsFromScope(
+  scope: TokenScope | TemporaryTokenScope
+): Permissions {
   const result = new Permissions();
   if (scope instanceof InternalSuperUserPermissions) {
     result.setSuperUser(SuperUserPermissions.SUPERUSER);
+    return result;
+  } else if (
+    !(scope instanceof PredefinedScope) &&
+    isTemporaryTokenPermissionsObject(scope)
+  ) {
+    const scopePermissions = asTemporaryTokenPermissionsObject(scope);
+    const explicitPermissions = new ExplicitPermissions();
+    explicitPermissions.setPermissionsList(
+      scopePermissions.permissions.map(p =>
+        temporaryTokenPermissionToGrpcPermission(p)
+      )
+    );
+    result.setExplicit(explicitPermissions);
     return result;
   } else if (isPermissionsObject(scope)) {
     const scopePermissions = asPermissionsObject(scope);
@@ -349,6 +373,85 @@ function cachePermissionToGrpcPermission(
   } else {
     throw new Error(
       `Unrecognized cache specification in cache permission: ${JSON.stringify(
+        permission
+      )}`
+    );
+  }
+
+  return grpcPermission;
+}
+
+function temporaryTokenPermissionToGrpcPermission(
+  permission: TemporaryTokenCachePermission
+): PermissionsType {
+  const result = new PermissionsType();
+  if (isTemporaryTokenCachePermission(permission)) {
+    result.setCachePermissions(
+      temporaryCachePermissionToGrpcPermission(
+        asTemporaryTokenCachePermission(permission)
+      )
+    );
+    return result;
+  }
+  throw new Error(
+    `Unrecognized token permission: ${JSON.stringify(permission)}`
+  );
+}
+
+function temporaryCachePermissionToGrpcPermission(
+  permission: TemporaryTokenCachePermission
+): PermissionsType.CachePermissions {
+  const grpcPermission = new PermissionsType.CachePermissions();
+
+  switch (permission.role) {
+    case CacheRole.ReadWrite: {
+      grpcPermission.setRole(TokenCacheRole.CACHEREADWRITE);
+      break;
+    }
+    case CacheRole.ReadOnly: {
+      grpcPermission.setRole(TokenCacheRole.CACHEREADONLY);
+      break;
+    }
+    case CacheRole.WriteOnly: {
+      grpcPermission.setRole(TokenCacheRole.CACHEWRITEONLY);
+      break;
+    }
+    default: {
+      throw new Error(`Unrecognized cache role: ${JSON.stringify(permission)}`);
+    }
+  }
+
+  const cacheSelector = new PermissionsType.CacheSelector();
+
+  if (permission.cache === AllCaches) {
+    grpcPermission.setAllCaches(new PermissionsType.All());
+  } else if (typeof permission.cache === 'string') {
+    cacheSelector.setCacheName(permission.cache);
+    grpcPermission.setCacheSelector(cacheSelector);
+  } else if (isCacheName(permission.cache)) {
+    cacheSelector.setCacheName(permission.cache.name);
+    grpcPermission.setCacheSelector(cacheSelector);
+  } else {
+    throw new Error(
+      `Unrecognized cache specification in cache permission: ${JSON.stringify(
+        permission
+      )}`
+    );
+  }
+
+  const itemSelector = new PermissionsType.CacheItemSelector();
+
+  if (permission.item === AllItems) {
+    grpcPermission.setAllItems(new PermissionsType.All());
+  } else if (isCacheItemKey(permission.item)) {
+    itemSelector.setKey(permission.item.key);
+    grpcPermission.setItemSelector(itemSelector);
+  } else if (isCacheItemKeyPrefix(permission.item)) {
+    itemSelector.setKeyPrefix(permission.item.keyPrefix);
+    grpcPermission.setItemSelector(itemSelector);
+  } else {
+    throw new Error(
+      `Unrecognized cache item specification in cache permission: ${JSON.stringify(
         permission
       )}`
     );

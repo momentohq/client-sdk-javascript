@@ -30,6 +30,9 @@ import {
   isCacheName,
   isTopicName,
   GenerateDisposableToken,
+  AllItems,
+  isCacheItemKey,
+  isCacheItemKeyPrefix,
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {AuthClientProps} from '../auth-client-props';
@@ -42,8 +45,22 @@ import {
   isCachePermission,
   isPermissionsObject,
   isTopicPermission,
+  PredefinedScope,
+  isTemporaryTokenPermissionsObject,
+  asTemporaryTokenPermissionsObject,
+  TemporaryTokenCachePermission,
+  isTemporaryTokenCachePermission,
+  asTemporaryTokenCachePermission,
 } from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
 import {permission_messages} from '@gomomento/generated-types/dist/permissionmessages';
+
+const textEncoder = new TextEncoder();
+function convert(v: string | Uint8Array): Uint8Array {
+  if (typeof v === 'string') {
+    return textEncoder.encode(v);
+  }
+  return v;
+}
 
 export class InternalAuthClient implements IAuthClient {
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
@@ -218,6 +235,17 @@ export function permissionsFromScope(
   if (scope instanceof InternalSuperUserPermissions) {
     result.super_user = permission_messages.SuperUserPermissions.SuperUser;
     return result;
+  } else if (
+    !(scope instanceof PredefinedScope) &&
+    isTemporaryTokenPermissionsObject(scope)
+  ) {
+    const scopePermissions = asTemporaryTokenPermissionsObject(scope);
+    const explicitPermissions = new permission_messages.ExplicitPermissions();
+    explicitPermissions.permissions = scopePermissions.permissions.map(p =>
+      temporaryTokenPermissionToGrpcPermission(p)
+    );
+    result.explicit = explicitPermissions;
+    return result;
   } else if (isPermissionsObject(scope)) {
     const scopePermissions: Permissions = asPermissionsObject(scope);
     const explicitPermissions = new permission_messages.ExplicitPermissions();
@@ -357,5 +385,87 @@ function cachePermissionToGrpcPermission(
       )}`
     );
   }
+  return grpcPermission;
+}
+
+function temporaryTokenPermissionToGrpcPermission(
+  permission: TemporaryTokenCachePermission
+): permission_messages.PermissionsType {
+  const result = new permission_messages.PermissionsType();
+  if (isTemporaryTokenCachePermission(permission)) {
+    result.cache_permissions = temporaryCachePermissionToGrpcPermission(
+      asTemporaryTokenCachePermission(permission)
+    );
+    return result;
+  }
+  throw new Error(
+    `Unrecognized token permission: ${JSON.stringify(permission)}`
+  );
+}
+
+function temporaryCachePermissionToGrpcPermission(
+  permission: TemporaryTokenCachePermission
+): permission_messages.PermissionsType.CachePermissions {
+  const grpcPermission =
+    new permission_messages.PermissionsType.CachePermissions();
+
+  switch (permission.role) {
+    case CacheRole.ReadWrite: {
+      grpcPermission.role = permission_messages.CacheRole.CacheReadWrite;
+      break;
+    }
+    case CacheRole.ReadOnly: {
+      grpcPermission.role = permission_messages.CacheRole.CacheReadOnly;
+      break;
+    }
+    case CacheRole.WriteOnly: {
+      grpcPermission.role = permission_messages.CacheRole.CacheWriteOnly;
+      break;
+    }
+    default: {
+      throw new Error(`Unrecognized cache role: ${JSON.stringify(permission)}`);
+    }
+  }
+
+  if (permission.cache === AllCaches) {
+    grpcPermission.all_caches = new permission_messages.PermissionsType.All();
+  } else if (typeof permission.cache === 'string') {
+    grpcPermission.cache_selector =
+      new permission_messages.PermissionsType.CacheSelector({
+        cache_name: permission.cache,
+      });
+  } else if (isCacheName(permission.cache)) {
+    grpcPermission.cache_selector =
+      new permission_messages.PermissionsType.CacheSelector({
+        cache_name: permission.cache.name,
+      });
+  } else {
+    throw new Error(
+      `Unrecognized cache specification in cache permission: ${JSON.stringify(
+        permission
+      )}`
+    );
+  }
+
+  if (permission.item === AllItems) {
+    grpcPermission.all_items = new permission_messages.PermissionsType.All();
+  } else if (isCacheItemKey(permission.item)) {
+    grpcPermission.item_selector =
+      new permission_messages.PermissionsType.CacheItemSelector({
+        key: convert(permission.item.key),
+      });
+  } else if (isCacheItemKeyPrefix(permission.item)) {
+    grpcPermission.item_selector =
+      new permission_messages.PermissionsType.CacheItemSelector({
+        key_prefix: convert(permission.item.keyPrefix),
+      });
+  } else {
+    throw new Error(
+      `Unrecognized cache item specification in cache permission: ${JSON.stringify(
+        permission
+      )}`
+    );
+  }
+
   return grpcPermission;
 }

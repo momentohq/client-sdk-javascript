@@ -168,20 +168,20 @@ export function asTemporaryTokenCachePermission(
   return p as TemporaryTokenCachePermission;
 }
 
+export interface TemporaryTokenCachePermissions {
+  permissions: Array<TemporaryTokenCachePermission>;
+}
+
 export type TemporaryTokenScope =
   | typeof AllDataReadWrite
   | Permissions
-  | TemporaryTokenCachePermission;
+  | TemporaryTokenCachePermissions;
 
 function isTemporaryTokenPermissionObject(p: Permission): boolean {
-  return (
-    isCachePermission(p) ||
-    isTopicPermission(p) ||
-    isTemporaryTokenCachePermission(p)
-  );
+  return isTemporaryTokenCachePermission(p);
 }
 
-export function isTempororayTokenPermissionsObject(
+export function isTemporaryTokenPermissionsObject(
   scope: TemporaryTokenScope
 ): boolean {
   if (!('permissions' in scope)) {
@@ -189,4 +189,17 @@ export function isTempororayTokenPermissionsObject(
   }
   const permissions = scope.permissions;
   return permissions.every(p => isTemporaryTokenPermissionObject(p));
+}
+
+export function asTemporaryTokenPermissionsObject(
+  scope: TemporaryTokenScope
+): TemporaryTokenCachePermissions {
+  if (!isTemporaryTokenPermissionsObject(scope)) {
+    throw new Error(
+      `Token scope is not a TemporaryTokenCachePermissions object: ${JSON.stringify(
+        scope
+      )}`
+    );
+  }
+  return scope as TemporaryTokenCachePermissions;
 }
