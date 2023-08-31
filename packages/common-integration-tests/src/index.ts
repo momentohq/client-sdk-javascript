@@ -10,4 +10,4 @@ export * from './item-get-type';
 export * from './topic-client';
 export * from './keys-exist';
 export * from './update-ttl';
-export * from './vector-index';
+export * from './vector-control-plane';
