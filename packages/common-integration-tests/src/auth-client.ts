@@ -384,6 +384,33 @@ export function runAuthClientTests(
       expect(
         await sessionTokenCacheClient.set(FGA_CACHE_2, 'bar', 'BAR', {ttl: 600})
       ).toBeInstanceOf(CacheSet.Success);
+      // Set up additional keys for testing key-level FGAC
+      expect(
+        await sessionTokenCacheClient.set(FGA_CACHE_1, 'pet-cat', 'meow', {
+          ttl: 600,
+        })
+      ).toBeInstanceOf(CacheSet.Success);
+      expect(
+        await sessionTokenCacheClient.set(FGA_CACHE_1, 'pet-dog', 'woof', {
+          ttl: 600,
+        })
+      ).toBeInstanceOf(CacheSet.Success);
+      expect(
+        await sessionTokenCacheClient.set(FGA_CACHE_1, 'cow', 'moo', {ttl: 600})
+      ).toBeInstanceOf(CacheSet.Success);
+      expect(
+        await sessionTokenCacheClient.set(FGA_CACHE_2, 'pet-bird', 'tweet', {
+          ttl: 600,
+        })
+      ).toBeInstanceOf(CacheSet.Success);
+      expect(
+        await sessionTokenCacheClient.set(FGA_CACHE_2, 'pet-fish', 'blub', {
+          ttl: 600,
+        })
+      ).toBeInstanceOf(CacheSet.Success);
+      expect(
+        await sessionTokenCacheClient.set(FGA_CACHE_2, 'cow', 'moo', {ttl: 600})
+      ).toBeInstanceOf(CacheSet.Success);
     });
 
     it('cannot create token with empty permission list', async () => {
@@ -753,6 +780,538 @@ export function runAuthClientTests(
       expectWithMessage(() => {
         expect(subResp1).toBeInstanceOf(TopicSubscribe.Error);
       }, `expected ERROR but got ${subResp1.toString()}`);
+    });
+
+    it('can only read specific keys and key-prefixes from all caches', async () => {
+      const superUserTokenResponse =
+        await sessionTokenAuthClient.generateAuthToken(
+          SUPER_USER_PERMISSIONS,
+          ExpiresIn.seconds(10)
+        );
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+
+      const authClient = authTokenAuthClientFactory(
+        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+      );
+
+      const tokenResponse = await authClient.generateDisposableToken(
+        {
+          permissions: [
+            {role: CacheRole.ReadOnly, cache: AllCaches, item: {key: 'cow'}},
+            {
+              role: CacheRole.ReadOnly,
+              cache: AllCaches,
+              item: {keyPrefix: 'pet'},
+            },
+          ],
+        },
+        ExpiresIn.seconds(60)
+      );
+      expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+
+      const token = (tokenResponse as GenerateDisposableToken.Success)
+        .authToken;
+      const cacheClient = cacheClientFactory(token);
+
+      // 1. Sets should fail
+      const setResp1 = await cacheClient.set(FGA_CACHE_1, 'cow', 'meow');
+      expect(setResp1).toBeInstanceOf(CacheSet.Error);
+      const setError1 = setResp1 as CacheSet.Error;
+      expect(setError1.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(setError1.message()).toContain('Insufficient permissions');
+
+      const setResp2 = await cacheClient.set(FGA_CACHE_2, 'pet-fish', 'woof');
+      expect(setResp2).toBeInstanceOf(CacheSet.Error);
+      const setError2 = setResp2 as CacheSet.Error;
+      expect(setError2.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(setError2.message()).toContain('Insufficient permissions');
+
+      // 2. Gets to a specific key should work for both caches, and not for any other key
+      const getKey1 = await cacheClient.get(FGA_CACHE_1, 'cow');
+      expect(getKey1).toBeInstanceOf(CacheGet.Hit);
+      expect(getKey1.value()).toEqual('moo');
+
+      const getKey2 = await cacheClient.get(FGA_CACHE_2, 'cow');
+      expect(getKey2).toBeInstanceOf(CacheGet.Hit);
+      expect(getKey2.value()).toEqual('moo');
+
+      // TODO: uncomment this test when item-level permissions are enforced
+      // const getKey3 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
+      // expect(getKey3).toBeInstanceOf(CacheGet.Error);
+      // const getKeyError1 = getKey3 as CacheGet.Error;
+      // expect(getKeyError1.errorCode()).toEqual(
+      //   MomentoErrorCode.PERMISSION_ERROR
+      // );
+      // expect(getKeyError1.message()).toContain('Insufficient permissions');
+
+      // TODO: uncomment this test when item-level permissions are enforced
+      // const getKey4 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
+      // expect(getKey4).toBeInstanceOf(CacheGet.Error);
+      // const getKeyError2 = getKey4 as CacheGet.Error;
+      // expect(getKeyError2.errorCode()).toEqual(
+      //   MomentoErrorCode.PERMISSION_ERROR
+      // );
+      // expect(getKeyError2.message()).toContain('Insufficient permissions');
+
+      const getKey5 = await cacheClient.get(FGA_CACHE_1, 'does-not-exist');
+      expect(getKey5).toBeInstanceOf(CacheGet.Miss);
+
+      const getKey6 = await cacheClient.get(FGA_CACHE_2, 'does-not-exist');
+      expect(getKey6).toBeInstanceOf(CacheGet.Miss);
+    });
+
+    it('can only read specific keys and key-prefixes from cache FGA_CACHE_1', async () => {
+      const superUserTokenResponse =
+        await sessionTokenAuthClient.generateAuthToken(
+          SUPER_USER_PERMISSIONS,
+          ExpiresIn.seconds(10)
+        );
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+
+      const authClient = authTokenAuthClientFactory(
+        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+      );
+
+      const tokenResponse = await authClient.generateDisposableToken(
+        {
+          permissions: [
+            {role: CacheRole.ReadOnly, cache: FGA_CACHE_1, item: {key: 'cow'}},
+            {
+              role: CacheRole.ReadOnly,
+              cache: FGA_CACHE_1,
+              item: {keyPrefix: 'pet'},
+            },
+          ],
+        },
+        ExpiresIn.seconds(60)
+      );
+      expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+
+      const token = (tokenResponse as GenerateDisposableToken.Success)
+        .authToken;
+      const cacheClient = cacheClientFactory(token);
+
+      // 1. Sets should fail
+      const setResp1 = await cacheClient.set(FGA_CACHE_1, 'cow', 'meow');
+      expect(setResp1).toBeInstanceOf(CacheSet.Error);
+      const setError1 = setResp1 as CacheSet.Error;
+      expect(setError1.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(setError1.message()).toContain('Insufficient permissions');
+
+      const setResp2 = await cacheClient.set(FGA_CACHE_1, 'pet-fish', 'woof');
+      expect(setResp2).toBeInstanceOf(CacheSet.Error);
+      const setError2 = setResp2 as CacheSet.Error;
+      expect(setError2.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(setError2.message()).toContain('Insufficient permissions');
+
+      const setResp3 = await cacheClient.set(FGA_CACHE_2, 'pet', 'moo');
+      expect(setResp3).toBeInstanceOf(CacheSet.Error);
+      const setError3 = setResp3 as CacheSet.Error;
+      expect(setError3.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(setError3.message()).toContain('Insufficient permissions');
+
+      // 2. Gets to a specific key should work for only FGA_CACHE_1, and not for any other key or cache
+      const getKey1 = await cacheClient.get(FGA_CACHE_1, 'cow');
+      expect(getKey1).toBeInstanceOf(CacheGet.Hit);
+      expect(getKey1.value()).toEqual('moo');
+
+      const getKey2 = await cacheClient.get(FGA_CACHE_2, 'cow');
+      expect(getKey2).toBeInstanceOf(CacheGet.Error);
+      const getKeyError1 = getKey2 as CacheGet.Error;
+      expect(getKeyError1.errorCode()).toEqual(
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      expect(getKeyError1.message()).toContain('Insufficient permissions');
+
+      // TODO: uncomment this test when item-level permissions are enforced
+      // const getKey3 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
+      // expect(getKey3).toBeInstanceOf(CacheGet.Error);
+      // const getKeyError2 = getKey3 as CacheGet.Error;
+      // expect(getKeyError2.errorCode()).toEqual(
+      //   MomentoErrorCode.PERMISSION_ERROR
+      // );
+      // expect(getKeyError2.message()).toContain('Insufficient permissions');
+
+      // TODO: uncomment this test when item-level permissions are enforced
+      // const getKey4 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
+      // expect(getKey4).toBeInstanceOf(CacheGet.Error);
+      // const getKeyError3 = getKey4 as CacheGet.Error;
+      // expect(getKeyError3.errorCode()).toEqual(
+      //   MomentoErrorCode.PERMISSION_ERROR
+      // );
+      // expect(getKeyError3.message()).toContain('Insufficient permissions');
+
+      const getKey5 = await cacheClient.get(FGA_CACHE_1, 'does-not-exist');
+      expect(getKey5).toBeInstanceOf(CacheGet.Miss);
+
+      const getKey6 = await cacheClient.get(FGA_CACHE_2, 'does-not-exist');
+      expect(getKey6).toBeInstanceOf(CacheGet.Error);
+      const getKeyError4 = getKey6 as CacheGet.Error;
+      expect(getKeyError4.errorCode()).toEqual(
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      expect(getKeyError4.message()).toContain('Insufficient permissions');
+    });
+
+    it('can only write specific keys and key-prefixes from all caches', async () => {
+      const superUserTokenResponse =
+        await sessionTokenAuthClient.generateAuthToken(
+          SUPER_USER_PERMISSIONS,
+          ExpiresIn.seconds(10)
+        );
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+
+      const authClient = authTokenAuthClientFactory(
+        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+      );
+
+      const tokenResponse = await authClient.generateDisposableToken(
+        {
+          permissions: [
+            {role: CacheRole.WriteOnly, cache: AllCaches, item: {key: 'cow'}},
+            {
+              role: CacheRole.WriteOnly,
+              cache: AllCaches,
+              item: {keyPrefix: 'pet'},
+            },
+          ],
+        },
+        ExpiresIn.seconds(60)
+      );
+      expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+
+      const token = (tokenResponse as GenerateDisposableToken.Success)
+        .authToken;
+      const cacheClient = cacheClientFactory(token);
+
+      // 1. Sets should pass in both caches
+      const setResp1 = await cacheClient.set(FGA_CACHE_1, 'cow', 'meow');
+      expect(setResp1).toBeInstanceOf(CacheSet.Success);
+
+      const setResp2 = await cacheClient.set(FGA_CACHE_1, 'pet-fish', 'woof');
+      expect(setResp2).toBeInstanceOf(CacheSet.Success);
+
+      const setResp3 = await cacheClient.set(FGA_CACHE_2, 'cow', 'meow');
+      expect(setResp3).toBeInstanceOf(CacheSet.Success);
+
+      const setResp4 = await cacheClient.set(FGA_CACHE_2, 'pet-bird', 'woof');
+      expect(setResp4).toBeInstanceOf(CacheSet.Success);
+
+      // 2. Gets should fail
+      const getKey1 = await cacheClient.get(FGA_CACHE_1, 'cow');
+      expect(getKey1).toBeInstanceOf(CacheGet.Error);
+      const getKeyError1 = getKey1 as CacheGet.Error;
+      expect(getKeyError1.errorCode()).toEqual(
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      expect(getKeyError1.message()).toContain('Insufficient permissions');
+
+      const getKey2 = await cacheClient.get(FGA_CACHE_2, 'pet-fish');
+      expect(getKey2).toBeInstanceOf(CacheGet.Error);
+      const getKeyError2 = getKey2 as CacheGet.Error;
+      expect(getKeyError2.errorCode()).toEqual(
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      expect(getKeyError2.message()).toContain('Insufficient permissions');
+
+      const getKey3 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
+      expect(getKey3).toBeInstanceOf(CacheGet.Error);
+      const getKeyError3 = getKey3 as CacheGet.Error;
+      expect(getKeyError3.errorCode()).toEqual(
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      expect(getKeyError3.message()).toContain('Insufficient permissions');
+
+      const getKey4 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
+      expect(getKey4).toBeInstanceOf(CacheGet.Error);
+      const getKeyError4 = getKey4 as CacheGet.Error;
+      expect(getKeyError4.errorCode()).toEqual(
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      expect(getKeyError4.message()).toContain('Insufficient permissions');
+
+      const getKey5 = await cacheClient.get(FGA_CACHE_1, 'does-not-exist');
+      expect(getKey5).toBeInstanceOf(CacheGet.Error);
+      const getKeyError5 = getKey5 as CacheGet.Error;
+      expect(getKeyError5.errorCode()).toEqual(
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      expect(getKeyError5.message()).toContain('Insufficient permissions');
+
+      const getKey6 = await cacheClient.get(FGA_CACHE_2, 'does-not-exist');
+      expect(getKey6).toBeInstanceOf(CacheGet.Error);
+      const getKeyError6 = getKey6 as CacheGet.Error;
+      expect(getKeyError6.errorCode()).toEqual(
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      expect(getKeyError6.message()).toContain('Insufficient permissions');
+    });
+
+    it('can only write specific keys and key-prefixes from cache FGA_CACHE_1', async () => {
+      const superUserTokenResponse =
+        await sessionTokenAuthClient.generateAuthToken(
+          SUPER_USER_PERMISSIONS,
+          ExpiresIn.seconds(10)
+        );
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+
+      const authClient = authTokenAuthClientFactory(
+        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+      );
+
+      const tokenResponse = await authClient.generateDisposableToken(
+        {
+          permissions: [
+            {role: CacheRole.WriteOnly, cache: FGA_CACHE_1, item: {key: 'cow'}},
+            {
+              role: CacheRole.WriteOnly,
+              cache: FGA_CACHE_1,
+              item: {keyPrefix: 'pet'},
+            },
+          ],
+        },
+        ExpiresIn.seconds(60)
+      );
+      expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+
+      const token = (tokenResponse as GenerateDisposableToken.Success)
+        .authToken;
+      const cacheClient = cacheClientFactory(token);
+
+      // 1. Sets should pass in only FGA_CACHE_1
+      const setResp1 = await cacheClient.set(FGA_CACHE_1, 'cow', 'meow');
+      expect(setResp1).toBeInstanceOf(CacheSet.Success);
+
+      const setResp2 = await cacheClient.set(FGA_CACHE_1, 'pet-fish', 'woof');
+      expect(setResp2).toBeInstanceOf(CacheSet.Success);
+
+      const setResp3 = await cacheClient.set(FGA_CACHE_2, 'cow', 'meow');
+      expect(setResp3).toBeInstanceOf(CacheSet.Error);
+      const setError1 = setResp3 as CacheSet.Error;
+      expect(setError1.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(setError1.message()).toContain('Insufficient permissions');
+
+      const setResp4 = await cacheClient.set(FGA_CACHE_2, 'pet-bird', 'woof');
+      expect(setResp4).toBeInstanceOf(CacheSet.Error);
+      const setError2 = setResp3 as CacheSet.Error;
+      expect(setError2.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(setError2.message()).toContain('Insufficient permissions');
+
+      // 2. Gets should fail
+      const getKey1 = await cacheClient.get(FGA_CACHE_1, 'cow');
+      expect(getKey1).toBeInstanceOf(CacheGet.Error);
+      const getKeyError1 = getKey1 as CacheGet.Error;
+      expect(getKeyError1.errorCode()).toEqual(
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      expect(getKeyError1.message()).toContain('Insufficient permissions');
+
+      const getKey2 = await cacheClient.get(FGA_CACHE_2, 'pet-fish');
+      expect(getKey2).toBeInstanceOf(CacheGet.Error);
+      const getKeyError2 = getKey2 as CacheGet.Error;
+      expect(getKeyError2.errorCode()).toEqual(
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      expect(getKeyError2.message()).toContain('Insufficient permissions');
+
+      const getKey3 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
+      expect(getKey3).toBeInstanceOf(CacheGet.Error);
+      const getKeyError3 = getKey3 as CacheGet.Error;
+      expect(getKeyError3.errorCode()).toEqual(
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      expect(getKeyError3.message()).toContain('Insufficient permissions');
+
+      const getKey4 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
+      expect(getKey4).toBeInstanceOf(CacheGet.Error);
+      const getKeyError4 = getKey4 as CacheGet.Error;
+      expect(getKeyError4.errorCode()).toEqual(
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      expect(getKeyError4.message()).toContain('Insufficient permissions');
+
+      const getKey5 = await cacheClient.get(FGA_CACHE_1, 'does-not-exist');
+      expect(getKey5).toBeInstanceOf(CacheGet.Error);
+      const getKeyError5 = getKey5 as CacheGet.Error;
+      expect(getKeyError5.errorCode()).toEqual(
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      expect(getKeyError5.message()).toContain('Insufficient permissions');
+
+      const getKey6 = await cacheClient.get(FGA_CACHE_2, 'does-not-exist');
+      expect(getKey6).toBeInstanceOf(CacheGet.Error);
+      const getKeyError6 = getKey6 as CacheGet.Error;
+      expect(getKeyError6.errorCode()).toEqual(
+        MomentoErrorCode.PERMISSION_ERROR
+      );
+      expect(getKeyError6.message()).toContain('Insufficient permissions');
+    });
+
+    it('can read and write specific keys and key-prefixes from all caches', async () => {
+      const superUserTokenResponse =
+        await sessionTokenAuthClient.generateAuthToken(
+          SUPER_USER_PERMISSIONS,
+          ExpiresIn.seconds(10)
+        );
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+
+      const authClient = authTokenAuthClientFactory(
+        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+      );
+
+      const tokenResponse = await authClient.generateDisposableToken(
+        {
+          permissions: [
+            {role: CacheRole.ReadWrite, cache: AllCaches, item: {key: 'cow'}},
+            {
+              role: CacheRole.ReadWrite,
+              cache: AllCaches,
+              item: {keyPrefix: 'pet'},
+            },
+          ],
+        },
+        ExpiresIn.seconds(60)
+      );
+      expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+
+      const token = (tokenResponse as GenerateDisposableToken.Success)
+        .authToken;
+      const cacheClient = cacheClientFactory(token);
+
+      // 1. Sets should work in both caches but only for the specified keys and prefixes
+      const setResp1 = await cacheClient.set(FGA_CACHE_1, 'cow', 'meow');
+      expect(setResp1).toBeInstanceOf(CacheSet.Success);
+
+      const setResp2 = await cacheClient.set(FGA_CACHE_1, 'pet-fish', 'woof');
+      expect(setResp2).toBeInstanceOf(CacheSet.Success);
+
+      const setResp3 = await cacheClient.set(FGA_CACHE_2, 'cow', 'meow');
+      expect(setResp3).toBeInstanceOf(CacheSet.Success);
+
+      const setResp4 = await cacheClient.set(FGA_CACHE_2, 'pet-bird', 'woof');
+      expect(setResp4).toBeInstanceOf(CacheSet.Success);
+
+      // 2. Gets to a specific key should work for both caches, and not for any other key
+      const getKey1 = await cacheClient.get(FGA_CACHE_1, 'cow');
+      expect(getKey1).toBeInstanceOf(CacheGet.Hit);
+      expect(getKey1.value()).toEqual('meow');
+
+      const getKey2 = await cacheClient.get(FGA_CACHE_2, 'pet-fish');
+      expect(getKey2).toBeInstanceOf(CacheGet.Hit);
+      expect(getKey2.value()).toEqual('blub');
+
+      // TODO: uncomment this test when item-level permissions are enforced
+      // const getKey3 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
+      // expect(getKey3).toBeInstanceOf(CacheGet.Error);
+      // const getKeyError1 = getKey3 as CacheGet.Error;
+      // expect(getKeyError1.errorCode()).toEqual(
+      //   MomentoErrorCode.PERMISSION_ERROR
+      // );
+      // expect(getKeyError1.message()).toContain('Insufficient permissions');
+
+      // TODO: uncomment this test when item-level permissions are enforced
+      // const getKey4 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
+      // expect(getKey4).toBeInstanceOf(CacheGet.Error);
+      // const getKeyError2 = getKey4 as CacheGet.Error;
+      // expect(getKeyError2.errorCode()).toEqual(
+      //   MomentoErrorCode.PERMISSION_ERROR
+      // );
+      // expect(getKeyError2.message()).toContain('Insufficient permissions');
+
+      const getKey5 = await cacheClient.get(FGA_CACHE_1, 'does-not-exist');
+      expect(getKey5).toBeInstanceOf(CacheGet.Miss);
+
+      const getKey6 = await cacheClient.get(FGA_CACHE_2, 'does-not-exist');
+      expect(getKey6).toBeInstanceOf(CacheGet.Miss);
+    });
+
+    it('can read and write specific keys and key-prefixes from cache FGA_CACHE_1', async () => {
+      const superUserTokenResponse =
+        await sessionTokenAuthClient.generateAuthToken(
+          SUPER_USER_PERMISSIONS,
+          ExpiresIn.seconds(10)
+        );
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+
+      const authClient = authTokenAuthClientFactory(
+        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+      );
+
+      const tokenResponse = await authClient.generateDisposableToken(
+        {
+          permissions: [
+            {role: CacheRole.ReadWrite, cache: FGA_CACHE_1, item: {key: 'cow'}},
+            {
+              role: CacheRole.ReadWrite,
+              cache: FGA_CACHE_1,
+              item: {keyPrefix: 'pet'},
+            },
+          ],
+        },
+        ExpiresIn.seconds(60)
+      );
+      expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+
+      const token = (tokenResponse as GenerateDisposableToken.Success)
+        .authToken;
+      const cacheClient = cacheClientFactory(token);
+      console.debug('ReadWrite disposable token:', token);
+
+      // 1. Sets should work in both caches but only for the specified keys and prefixes
+      const setResp1 = await cacheClient.set(FGA_CACHE_1, 'cow', 'meow');
+      expect(setResp1).toBeInstanceOf(CacheSet.Success);
+
+      const setResp2 = await cacheClient.set(FGA_CACHE_1, 'pet-fish', 'woof');
+      expect(setResp2).toBeInstanceOf(CacheSet.Success);
+
+      const setResp3 = await cacheClient.set(FGA_CACHE_2, 'cow', 'meow');
+      expect(setResp3).toBeInstanceOf(CacheSet.Error);
+      const setError1 = setResp3 as CacheSet.Error;
+      expect(setError1.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(setError1.message()).toContain('Insufficient permissions');
+
+      const setResp4 = await cacheClient.set(FGA_CACHE_2, 'pet-bird', 'woof');
+      expect(setResp4).toBeInstanceOf(CacheSet.Error);
+      const setError2 = setResp4 as CacheSet.Error;
+      expect(setError2.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(setError2.message()).toContain('Insufficient permissions');
+
+      // 2. Gets to a specific key should work for only FGA_CACHE_1, and not for any other key
+      const getKey1 = await cacheClient.get(FGA_CACHE_1, 'cow');
+      expect(getKey1).toBeInstanceOf(CacheGet.Hit);
+      expect(getKey1.value()).toEqual('meow');
+
+      const getKey2 = await cacheClient.get(FGA_CACHE_2, 'pet-fish');
+      expect(getKey2).toBeInstanceOf(CacheGet.Error);
+      const getError1 = getKey2 as CacheGet.Error;
+      expect(getError1.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(getError1.message()).toContain('Insufficient permissions');
+
+      // TODO: uncomment this test when item-level permissions are enforced
+      // const getKey3 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
+      // expect(getKey3).toBeInstanceOf(CacheGet.Error);
+      // const getKeyError1 = getKey3 as CacheGet.Error;
+      // expect(getKeyError1.errorCode()).toEqual(
+      //   MomentoErrorCode.PERMISSION_ERROR
+      // );
+      // expect(getKeyError1.message()).toContain('Insufficient permissions');
+
+      // TODO: uncomment this test when item-level permissions are enforced
+      // const getKey4 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
+      // expect(getKey4).toBeInstanceOf(CacheGet.Error);
+      // const getKeyError2 = getKey4 as CacheGet.Error;
+      // expect(getKeyError2.errorCode()).toEqual(
+      //   MomentoErrorCode.PERMISSION_ERROR
+      // );
+      // expect(getKeyError2.message()).toContain('Insufficient permissions');
+
+      const getKey5 = await cacheClient.get(FGA_CACHE_1, 'does-not-exist');
+      expect(getKey5).toBeInstanceOf(CacheGet.Miss);
+
+      const getKey6 = await cacheClient.get(FGA_CACHE_2, 'does-not-exist');
+      const getError4 = getKey6 as CacheGet.Error;
+      expect(getError4.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expect(getError4.message()).toContain('Insufficient permissions');
     });
 
     afterAll(async () => {
