@@ -690,10 +690,6 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      console.debug(
-        'generateDisposableToken response:',
-        tokenResponse.toString()
-      );
       expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
 
       const token = (tokenResponse as GenerateDisposableToken.Success)

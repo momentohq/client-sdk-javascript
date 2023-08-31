@@ -172,11 +172,6 @@ export class InternalAuthClient implements IAuthClient {
     scope: TemporaryTokenScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateDisposableToken.Response> {
-    console.debug(
-      'Instantiating TokenClient with endpoint:',
-      this.creds.getTokenEndpoint()
-    );
-
     const tokenClient = new token.token.TokenClient(
       this.creds.getTokenEndpoint(),
       ChannelCredentials.createSsl()
