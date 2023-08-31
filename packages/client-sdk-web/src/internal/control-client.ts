@@ -22,7 +22,7 @@ import {
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   IControlClient,
-  IVectorControlClient,
+  IVectorIndexControlClient,
 } from '@gomomento/sdk-core/dist/src/internal/clients';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
@@ -50,7 +50,7 @@ export interface ControlClientProps {
 export class ControlClient<
   REQ extends Request<REQ, RESP>,
   RESP extends UnaryResponse<REQ, RESP>
-> implements IControlClient, IVectorControlClient
+> implements IControlClient, IVectorIndexControlClient
 {
   private readonly clientWrapper: control.ScsControlClient;
   private readonly logger: MomentoLogger;

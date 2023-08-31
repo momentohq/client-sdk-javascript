@@ -2,7 +2,7 @@ import {SdkError} from '../../../errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
 
 /**
- * Parent response type for a CreateVectorIndex request.  The
+ * Parent response type for a VectorDeleteItemBatch request.  The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
@@ -14,7 +14,7 @@ import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
  * @example
  * For example:
  * ```
- * if (response instanceof CreateVectorIndex.Error) {
+ * if (response instanceof VectorDeleteItemBatch.Error) {
  *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
  *   // `CreateIndex.Error` in this block, so you will have access to the properties
  *   // of the Error class; e.g. `response.errorCode()`.
@@ -26,7 +26,7 @@ export abstract class Response extends ResponseBase {}
 class _Success extends Response {}
 
 /**
- * Indicates a Successful CreateVectorIndex request.
+ * Indicates a Successful VectorDeleteItemBatch request.
  */
 export class Success extends ResponseSuccess(_Success) {}
 
@@ -37,7 +37,7 @@ class _Error extends Response {
 }
 
 /**
- * Indicates that an error occurred during the CreateVectorIndex request.
+ * Indicates that an error occurred during the VectorDeleteItemBatch request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:
@@ -47,8 +47,3 @@ class _Error extends Response {
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
 export class Error extends ResponseError(_Error) {}
-
-/**
- * Indicates that the index already exists, so there was nothing to do.
- */
-export class AlreadyExists extends Response {}

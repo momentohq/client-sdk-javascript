@@ -13,11 +13,11 @@ import {CacheClientProps} from '../../src/cache-client-props';
 import {
   CacheClient,
   TopicClient,
-  PreviewVectorClient,
+  PreviewVectorIndexClient,
   Configurations,
   AuthClient,
   TopicConfigurations,
-  VectorConfigurations,
+  VectorIndexConfigurations,
 } from '../../src';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
@@ -87,9 +87,9 @@ function momentoTopicClientForTestingWithSessionToken(): TopicClient {
   });
 }
 
-function momentoVectorClientForTesting(): PreviewVectorClient {
-  return new PreviewVectorClient({
-    configuration: VectorConfigurations.Laptop.latest(),
+function momentoVectorClientForTesting(): PreviewVectorIndexClient {
+  return new PreviewVectorIndexClient({
+    configuration: VectorIndexConfigurations.Laptop.latest(),
     credentialProvider: credsProvider(),
   });
 }
@@ -131,10 +131,10 @@ export function SetupTopicIntegrationTest(): {
 }
 
 export function SetupVectorIntegrationTest(): {
-  Momento: PreviewVectorClient;
+  vectorClient: PreviewVectorIndexClient;
 } {
-  const Momento = momentoVectorClientForTesting();
-  return {Momento};
+  const vectorClient = momentoVectorClientForTesting();
+  return {vectorClient};
 }
 
 export function SetupAuthClientIntegrationTest(): {
