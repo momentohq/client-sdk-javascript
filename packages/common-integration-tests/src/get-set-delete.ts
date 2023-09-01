@@ -3,6 +3,7 @@ import {
   CacheDelete,
   CacheGet,
   CacheIncrement,
+  CacheItemGetTtl,
   CacheSet,
   CacheSetIfNotExists,
   MomentoErrorCode,
@@ -459,6 +460,39 @@ export function runGetSetDeleteTests(
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
       }, `expected STORED but got ${setResponse.toString()}`);
+      const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should set and get remaining ttl from cache greater than expected', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const setResponse = await Momento.setIfNotExists(
+        IntegrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        {ttl: 1000}
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const getTTLResponse = await Momento.itemGetTtl(
+        IntegrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getTTLResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+      }, `expected HIT but got ${getTTLResponse.toString()}`);
+      if (getTTLResponse instanceof CacheItemGetTtl.Hit) {
+        // we sent the ttl as 1000 seconds, so it's reasonable to expect the remaining TTL
+        // will be greater than 950 seconds at least
+        expect(getTTLResponse.remainingTtlMillis()).toBeGreaterThan(950 * 1000);
+      }
       const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
