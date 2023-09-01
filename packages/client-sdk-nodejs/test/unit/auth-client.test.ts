@@ -10,14 +10,7 @@ import {
 import {permissionsFromScope} from '../../src/internal/internal-auth-client';
 import {permission_messages} from '@gomomento/generated-types/dist/permissionmessages';
 import {DisposableTokenCachePermissions} from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
-
-const textEncoder = new TextEncoder();
-function convert(v: string | Uint8Array): Uint8Array {
-  if (typeof v === 'string') {
-    return textEncoder.encode(v);
-  }
-  return v;
-}
+import {convert} from '../../src/internal/utils';
 
 describe('internal auth client', () => {
   describe('permissionsFromScope', () => {

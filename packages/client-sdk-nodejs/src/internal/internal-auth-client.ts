@@ -9,6 +9,7 @@ import {
   InternalSuperUserPermissions,
   validateDisposableTokenExpiry,
   validateValidForSeconds,
+  validateCacheKeyOrPrefix,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import Never = grpcAuth._GenerateApiTokenRequest.Never;
 import Expires = grpcAuth._GenerateApiTokenRequest.Expires;
@@ -53,14 +54,7 @@ import {
   asDisposableTokenCachePermission,
 } from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
 import {permission_messages} from '@gomomento/generated-types/dist/permissionmessages';
-
-const textEncoder = new TextEncoder();
-function convert(v: string | Uint8Array): Uint8Array {
-  if (typeof v === 'string') {
-    return textEncoder.encode(v);
-  }
-  return v;
-}
+import {convert} from './utils';
 
 export class InternalAuthClient implements IAuthClient {
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
@@ -395,11 +389,13 @@ function assignCacheItemSelector(
   if (permission.item === AllItems) {
     grpcPermission.all_items = new permission_messages.PermissionsType.All();
   } else if (isCacheItemKey(permission.item)) {
+    validateCacheKeyOrPrefix(permission.item.key);
     grpcPermission.item_selector =
       new permission_messages.PermissionsType.CacheItemSelector({
         key: convert(permission.item.key),
       });
   } else if (isCacheItemKeyPrefix(permission.item)) {
+    validateCacheKeyOrPrefix(permission.item.keyPrefix);
     grpcPermission.item_selector =
       new permission_messages.PermissionsType.CacheItemSelector({
         key_prefix: convert(permission.item.keyPrefix),

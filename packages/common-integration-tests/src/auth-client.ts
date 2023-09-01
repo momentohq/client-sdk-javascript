@@ -831,7 +831,7 @@ export function runAuthClientTests(
       if (getKey1 instanceof CacheGet.Hit) {
         expect(getKey1.value()).toEqual('moo');
       } else if (getKey1 instanceof CacheGet.Error) {
-        const asError = getKey1 as CacheGet.Error;
+        const asError = getKey1;
         console.debug(asError.errorCode(), asError.message());
       }
       // expect(getKey1).toBeInstanceOf(CacheGet.Hit);

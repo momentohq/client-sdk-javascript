@@ -8,6 +8,12 @@ export function validateCacheName(name: string) {
   }
 }
 
+export function validateCacheKeyOrPrefix(name: string) {
+  if (isEmpty(name)) {
+    throw new InvalidArgumentError('cache key or key prefix must not be empty');
+  }
+}
+
 export function validateSetName(name: string) {
   if (isEmpty(name)) {
     throw new InvalidArgumentError('set name must not be empty');

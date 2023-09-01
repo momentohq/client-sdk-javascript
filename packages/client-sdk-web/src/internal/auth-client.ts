@@ -33,6 +33,7 @@ import {
   InternalSuperUserPermissions,
   validateValidForSeconds,
   validateDisposableTokenExpiry,
+  validateCacheKeyOrPrefix,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
@@ -394,9 +395,11 @@ function assignCacheItemSelector(
   if (permission.item === AllItems) {
     grpcPermission.setAllItems(new PermissionsType.All());
   } else if (isCacheItemKey(permission.item)) {
+    validateCacheKeyOrPrefix(permission.item.key);
     itemSelector.setKey(permission.item.key);
     grpcPermission.setItemSelector(itemSelector);
   } else if (isCacheItemKeyPrefix(permission.item)) {
+    validateCacheKeyOrPrefix(permission.item.keyPrefix);
     itemSelector.setKeyPrefix(permission.item.keyPrefix);
     grpcPermission.setItemSelector(itemSelector);
   } else {
