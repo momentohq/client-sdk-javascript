@@ -38,7 +38,7 @@ import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {AuthClientProps} from '../auth-client-props';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
-  TemporaryTokenScope,
+  DisposableTokenScope,
   asCachePermission,
   asPermissionsObject,
   asTopicPermission,
@@ -46,11 +46,11 @@ import {
   isPermissionsObject,
   isTopicPermission,
   PredefinedScope,
-  isTemporaryTokenPermissionsObject,
-  asTemporaryTokenPermissionsObject,
-  TemporaryTokenCachePermission,
-  isTemporaryTokenCachePermission,
-  asTemporaryTokenCachePermission,
+  isDisposableTokenPermissionsObject,
+  asDisposableTokenPermissionsObject,
+  DisposableTokenCachePermission,
+  isDisposableTokenCachePermission,
+  asDisposableTokenCachePermission,
 } from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
 import {permission_messages} from '@gomomento/generated-types/dist/permissionmessages';
 
@@ -169,7 +169,7 @@ export class InternalAuthClient implements IAuthClient {
   }
 
   public async generateDisposableToken(
-    scope: TemporaryTokenScope,
+    scope: DisposableTokenScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateDisposableToken.Response> {
     const tokenClient = new token.token.TokenClient(
@@ -224,7 +224,7 @@ export class InternalAuthClient implements IAuthClient {
 }
 
 export function permissionsFromScope(
-  scope: TokenScope | TemporaryTokenScope
+  scope: TokenScope | DisposableTokenScope
 ): permission_messages.Permissions {
   const result = new permission_messages.Permissions();
   if (scope instanceof InternalSuperUserPermissions) {
@@ -232,9 +232,9 @@ export function permissionsFromScope(
     return result;
   } else if (
     !(scope instanceof PredefinedScope) &&
-    isTemporaryTokenPermissionsObject(scope)
+    isDisposableTokenPermissionsObject(scope)
   ) {
-    const scopePermissions = asTemporaryTokenPermissionsObject(scope);
+    const scopePermissions = asDisposableTokenPermissionsObject(scope);
     const explicitPermissions = new permission_messages.ExplicitPermissions();
     explicitPermissions.permissions = scopePermissions.permissions.map(p =>
       temporaryTokenPermissionToGrpcPermission(p)
@@ -384,12 +384,12 @@ function cachePermissionToGrpcPermission(
 }
 
 function temporaryTokenPermissionToGrpcPermission(
-  permission: TemporaryTokenCachePermission
+  permission: DisposableTokenCachePermission
 ): permission_messages.PermissionsType {
   const result = new permission_messages.PermissionsType();
-  if (isTemporaryTokenCachePermission(permission)) {
+  if (isDisposableTokenCachePermission(permission)) {
     result.cache_permissions = temporaryCachePermissionToGrpcPermission(
-      asTemporaryTokenCachePermission(permission)
+      asDisposableTokenCachePermission(permission)
     );
     return result;
   }
@@ -399,7 +399,7 @@ function temporaryTokenPermissionToGrpcPermission(
 }
 
 function temporaryCachePermissionToGrpcPermission(
-  permission: TemporaryTokenCachePermission
+  permission: DisposableTokenCachePermission
 ): permission_messages.PermissionsType.CachePermissions {
   const grpcPermission =
     new permission_messages.PermissionsType.CachePermissions();

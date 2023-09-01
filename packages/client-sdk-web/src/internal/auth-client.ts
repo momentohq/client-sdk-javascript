@@ -41,18 +41,18 @@ import {
 } from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {
-  TemporaryTokenScope,
+  DisposableTokenScope,
   asCachePermission,
   asPermissionsObject,
   asTopicPermission,
   isCachePermission,
   isPermissionsObject,
   isTopicPermission,
-  asTemporaryTokenCachePermission,
-  isTemporaryTokenPermissionsObject,
-  TemporaryTokenCachePermission,
-  isTemporaryTokenCachePermission,
-  asTemporaryTokenPermissionsObject,
+  asDisposableTokenCachePermission,
+  isDisposableTokenPermissionsObject,
+  DisposableTokenCachePermission,
+  isDisposableTokenCachePermission,
+  asDisposableTokenPermissionsObject,
   PredefinedScope,
 } from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
 import {_GenerateDisposableTokenRequest} from '@gomomento/generated-types-webtext/dist/token_pb';
@@ -167,7 +167,7 @@ export class InternalWebGrpcAuthClient<
   }
 
   public async generateDisposableToken(
-    scope: TemporaryTokenScope,
+    scope: DisposableTokenScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateDisposableToken.Response> {
     const tokenClient = new token.TokenClient(
@@ -224,7 +224,7 @@ export class InternalWebGrpcAuthClient<
 }
 
 export function permissionsFromScope(
-  scope: TokenScope | TemporaryTokenScope
+  scope: TokenScope | DisposableTokenScope
 ): Permissions {
   const result = new Permissions();
   if (scope instanceof InternalSuperUserPermissions) {
@@ -232,9 +232,9 @@ export function permissionsFromScope(
     return result;
   } else if (
     !(scope instanceof PredefinedScope) &&
-    isTemporaryTokenPermissionsObject(scope)
+    isDisposableTokenPermissionsObject(scope)
   ) {
-    const scopePermissions = asTemporaryTokenPermissionsObject(scope);
+    const scopePermissions = asDisposableTokenPermissionsObject(scope);
     const explicitPermissions = new ExplicitPermissions();
     explicitPermissions.setPermissionsList(
       scopePermissions.permissions.map(p =>
@@ -382,13 +382,13 @@ function cachePermissionToGrpcPermission(
 }
 
 function temporaryTokenPermissionToGrpcPermission(
-  permission: TemporaryTokenCachePermission
+  permission: DisposableTokenCachePermission
 ): PermissionsType {
   const result = new PermissionsType();
-  if (isTemporaryTokenCachePermission(permission)) {
+  if (isDisposableTokenCachePermission(permission)) {
     result.setCachePermissions(
       temporaryCachePermissionToGrpcPermission(
-        asTemporaryTokenCachePermission(permission)
+        asDisposableTokenCachePermission(permission)
       )
     );
     return result;
@@ -399,7 +399,7 @@ function temporaryTokenPermissionToGrpcPermission(
 }
 
 function temporaryCachePermissionToGrpcPermission(
-  permission: TemporaryTokenCachePermission
+  permission: DisposableTokenCachePermission
 ): PermissionsType.CachePermissions {
   const grpcPermission = new PermissionsType.CachePermissions();
 

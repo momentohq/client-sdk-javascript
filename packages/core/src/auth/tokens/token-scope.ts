@@ -144,62 +144,62 @@ export type CacheItemSelector =
   | CacheItemKeyPrefix
   | string;
 
-export interface TemporaryTokenCachePermission extends CachePermission {
+export interface DisposableTokenCachePermission extends CachePermission {
   /**
    * Scope the token permissions to select cache items
    */
   item: CacheItemSelector;
 }
 
-export function isTemporaryTokenCachePermission(p: Permission): boolean {
+export function isDisposableTokenCachePermission(p: Permission): boolean {
   return 'role' in p && 'cache' in p && 'item' in p && !('topic' in p);
 }
 
-export function asTemporaryTokenCachePermission(
+export function asDisposableTokenCachePermission(
   p: Permission
-): TemporaryTokenCachePermission {
-  if (!isTemporaryTokenCachePermission(p)) {
+): DisposableTokenCachePermission {
+  if (!isDisposableTokenCachePermission(p)) {
     throw new Error(
-      `permission is not a TemporaryTokenCachePermission object: ${JSON.stringify(
+      `permission is not a DisposableTokenCachePermission object: ${JSON.stringify(
         p
       )}`
     );
   }
-  return p as TemporaryTokenCachePermission;
+  return p as DisposableTokenCachePermission;
 }
 
-export interface TemporaryTokenCachePermissions {
-  permissions: Array<TemporaryTokenCachePermission>;
+export interface DisposableTokenCachePermissions {
+  permissions: Array<DisposableTokenCachePermission>;
 }
 
-export type TemporaryTokenScope =
+export type DisposableTokenScope =
   | typeof AllDataReadWrite
   | Permissions
-  | TemporaryTokenCachePermissions;
+  | DisposableTokenCachePermissions;
 
-function isTemporaryTokenPermissionObject(p: Permission): boolean {
-  return isTemporaryTokenCachePermission(p);
+function isDisposableTokenPermissionObject(p: Permission): boolean {
+  return isDisposableTokenCachePermission(p);
 }
 
-export function isTemporaryTokenPermissionsObject(
-  scope: TemporaryTokenScope
+export function isDisposableTokenPermissionsObject(
+  scope: DisposableTokenScope
 ): boolean {
   if (!('permissions' in scope)) {
     return false;
   }
   const permissions = scope.permissions;
-  return permissions.every(p => isTemporaryTokenPermissionObject(p));
+  return permissions.every(p => isDisposableTokenPermissionObject(p));
 }
 
-export function asTemporaryTokenPermissionsObject(
-  scope: TemporaryTokenScope
-): TemporaryTokenCachePermissions {
-  if (!isTemporaryTokenPermissionsObject(scope)) {
+export function asDisposableTokenPermissionsObject(
+  scope: DisposableTokenScope
+): DisposableTokenCachePermissions {
+  if (!isDisposableTokenPermissionsObject(scope)) {
     throw new Error(
-      `Token scope is not a TemporaryTokenCachePermissions object: ${JSON.stringify(
+      `Token scope is not a DisposableTokenCachePermissions object: ${JSON.stringify(
         scope
       )}`
     );
   }
-  return scope as TemporaryTokenCachePermissions;
+  return scope as DisposableTokenCachePermissions;
 }

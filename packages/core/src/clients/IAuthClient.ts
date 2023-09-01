@@ -4,7 +4,7 @@ import {
   GenerateDisposableToken,
   RefreshAuthToken,
 } from '../index';
-import {TemporaryTokenScope, TokenScope} from '../auth/tokens/token-scope';
+import {DisposableTokenScope, TokenScope} from '../auth/tokens/token-scope';
 
 export interface IAuthClient {
   generateAuthToken(
@@ -15,7 +15,7 @@ export interface IAuthClient {
   refreshAuthToken(refreshToken: string): Promise<RefreshAuthToken.Response>;
 
   generateDisposableToken(
-    scope: TemporaryTokenScope,
+    scope: DisposableTokenScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateDisposableToken.Response>;
 }

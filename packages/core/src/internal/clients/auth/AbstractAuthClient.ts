@@ -6,7 +6,7 @@ import {
 } from '../../../index';
 import {IAuthClient} from '../../../clients/IAuthClient';
 import {
-  TemporaryTokenScope,
+  DisposableTokenScope,
   TokenScope,
 } from '../../../auth/tokens/token-scope';
 
@@ -57,14 +57,14 @@ export abstract class AbstractAuthClient implements IAuthClient {
   /**
    * Generates a new disposable, fine-grained access token.
    *
-   * @param {TemporaryTokenScope} scope - controls the permissions that the new token will have
+   * @param {DisposableTokenScope} scope - controls the permissions that the new token will have
    * @param {string} expiresIn - How long the token is valid for in epoch timestamp.
    * @returns {Promise<GenerateDisposableToken.Response>} -
    * {@link GenerateDisposableToken.Success} containing the api token, origin and epoch timestamp when token expires.
    * {@link GenerateDisposableToken.Error} on failure.
    */
   public async generateDisposableToken(
-    scope: TemporaryTokenScope,
+    scope: DisposableTokenScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateDisposableToken.Response> {
     return await this.authClient.generateDisposableToken(scope, expiresIn);

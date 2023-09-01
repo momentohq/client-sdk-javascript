@@ -129,7 +129,7 @@ export {
   Permissions,
   AllDataReadWrite,
   TokenScope,
-  TemporaryTokenScope,
+  DisposableTokenScope,
   CacheName,
   isCacheName,
   TopicName,

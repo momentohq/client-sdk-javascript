@@ -9,7 +9,7 @@ import {
 } from '@gomomento/sdk-core';
 import {permissionsFromScope} from '../../src/internal/internal-auth-client';
 import {permission_messages} from '@gomomento/generated-types/dist/permissionmessages';
-import {TemporaryTokenCachePermissions} from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
+import {DisposableTokenCachePermissions} from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
 
 const textEncoder = new TextEncoder();
 function convert(v: string | Uint8Array): Uint8Array {
@@ -310,7 +310,7 @@ describe('internal auth client', () => {
       const grpcPermissions = new permission_messages.Permissions();
       grpcPermissions.explicit = explicitPermissions;
 
-      const cacheAndItemPermissions: TemporaryTokenCachePermissions = {
+      const cacheAndItemPermissions: DisposableTokenCachePermissions = {
         permissions: [
           {
             role: CacheRole.WriteOnly,
@@ -372,7 +372,7 @@ describe('internal auth client', () => {
       const grpcPermissions = new permission_messages.Permissions();
       grpcPermissions.explicit = explicitPermissions;
 
-      const cacheAndItemPermissions: TemporaryTokenCachePermissions = {
+      const cacheAndItemPermissions: DisposableTokenCachePermissions = {
         permissions: [
           {
             role: CacheRole.ReadOnly,
@@ -433,7 +433,7 @@ describe('internal auth client', () => {
       const grpcPermissions = new permission_messages.Permissions();
       grpcPermissions.explicit = explicitPermissions;
 
-      const cacheAndItemPermissions: TemporaryTokenCachePermissions = {
+      const cacheAndItemPermissions: DisposableTokenCachePermissions = {
         permissions: [
           {
             role: CacheRole.ReadWrite,
