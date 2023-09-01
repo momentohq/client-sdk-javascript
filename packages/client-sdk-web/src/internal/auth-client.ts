@@ -337,11 +337,10 @@ function topicPermissionToGrpcPermission(
   return grpcPermission;
 }
 
-function cachePermissionToGrpcPermission(
-  permission: CachePermission
+function assignCacheRole(
+  permission: CachePermission | DisposableTokenCachePermission,
+  grpcPermission: PermissionsType.CachePermissions
 ): PermissionsType.CachePermissions {
-  const grpcPermission = new PermissionsType.CachePermissions();
-
   switch (permission.role) {
     case CacheRole.ReadWrite: {
       grpcPermission.setRole(TokenCacheRole.CACHEREADWRITE);
@@ -359,7 +358,13 @@ function cachePermissionToGrpcPermission(
       throw new Error(`Unrecognized cache role: ${JSON.stringify(permission)}`);
     }
   }
+  return grpcPermission;
+}
 
+function assignCacheSelector(
+  permission: CachePermission | DisposableTokenCachePermission,
+  grpcPermission: PermissionsType.CachePermissions
+): PermissionsType.CachePermissions {
   const cacheSelector = new PermissionsType.CacheSelector();
 
   if (permission.cache === AllCaches) {
@@ -377,7 +382,39 @@ function cachePermissionToGrpcPermission(
       )}`
     );
   }
+  return grpcPermission;
+}
 
+function assignCacheItemSelector(
+  permission: DisposableTokenCachePermission,
+  grpcPermission: PermissionsType.CachePermissions
+): PermissionsType.CachePermissions {
+  const itemSelector = new PermissionsType.CacheItemSelector();
+
+  if (permission.item === AllItems) {
+    grpcPermission.setAllItems(new PermissionsType.All());
+  } else if (isCacheItemKey(permission.item)) {
+    itemSelector.setKey(permission.item.key);
+    grpcPermission.setItemSelector(itemSelector);
+  } else if (isCacheItemKeyPrefix(permission.item)) {
+    itemSelector.setKeyPrefix(permission.item.keyPrefix);
+    grpcPermission.setItemSelector(itemSelector);
+  } else {
+    throw new Error(
+      `Unrecognized cache item specification in cache permission: ${JSON.stringify(
+        permission
+      )}`
+    );
+  }
+  return grpcPermission;
+}
+
+function cachePermissionToGrpcPermission(
+  permission: CachePermission
+): PermissionsType.CachePermissions {
+  let grpcPermission = new PermissionsType.CachePermissions();
+  grpcPermission = assignCacheRole(permission, grpcPermission);
+  grpcPermission = assignCacheSelector(permission, grpcPermission);
   return grpcPermission;
 }
 
@@ -401,61 +438,9 @@ function disposableTokenPermissionToGrpcPermission(
 function disposableCachePermissionToGrpcPermission(
   permission: DisposableTokenCachePermission
 ): PermissionsType.CachePermissions {
-  const grpcPermission = new PermissionsType.CachePermissions();
-
-  switch (permission.role) {
-    case CacheRole.ReadWrite: {
-      grpcPermission.setRole(TokenCacheRole.CACHEREADWRITE);
-      break;
-    }
-    case CacheRole.ReadOnly: {
-      grpcPermission.setRole(TokenCacheRole.CACHEREADONLY);
-      break;
-    }
-    case CacheRole.WriteOnly: {
-      grpcPermission.setRole(TokenCacheRole.CACHEWRITEONLY);
-      break;
-    }
-    default: {
-      throw new Error(`Unrecognized cache role: ${JSON.stringify(permission)}`);
-    }
-  }
-
-  const cacheSelector = new PermissionsType.CacheSelector();
-
-  if (permission.cache === AllCaches) {
-    grpcPermission.setAllCaches(new PermissionsType.All());
-  } else if (typeof permission.cache === 'string') {
-    cacheSelector.setCacheName(permission.cache);
-    grpcPermission.setCacheSelector(cacheSelector);
-  } else if (isCacheName(permission.cache)) {
-    cacheSelector.setCacheName(permission.cache.name);
-    grpcPermission.setCacheSelector(cacheSelector);
-  } else {
-    throw new Error(
-      `Unrecognized cache specification in cache permission: ${JSON.stringify(
-        permission
-      )}`
-    );
-  }
-
-  const itemSelector = new PermissionsType.CacheItemSelector();
-
-  if (permission.item === AllItems) {
-    grpcPermission.setAllItems(new PermissionsType.All());
-  } else if (isCacheItemKey(permission.item)) {
-    itemSelector.setKey(permission.item.key);
-    grpcPermission.setItemSelector(itemSelector);
-  } else if (isCacheItemKeyPrefix(permission.item)) {
-    itemSelector.setKeyPrefix(permission.item.keyPrefix);
-    grpcPermission.setItemSelector(itemSelector);
-  } else {
-    throw new Error(
-      `Unrecognized cache item specification in cache permission: ${JSON.stringify(
-        permission
-      )}`
-    );
-  }
-
+  let grpcPermission = new PermissionsType.CachePermissions();
+  grpcPermission = assignCacheRole(permission, grpcPermission);
+  grpcPermission = assignCacheSelector(permission, grpcPermission);
+  grpcPermission = assignCacheItemSelector(permission, grpcPermission);
   return grpcPermission;
 }

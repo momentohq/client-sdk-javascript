@@ -338,11 +338,10 @@ function topicPermissionToGrpcPermission(
   return grpcPermission;
 }
 
-function cachePermissionToGrpcPermission(
-  permission: CachePermission
+function assignCacheRole(
+  permission: CachePermission | DisposableTokenCachePermission,
+  grpcPermission: permission_messages.PermissionsType.CachePermissions
 ): permission_messages.PermissionsType.CachePermissions {
-  const grpcPermission =
-    new permission_messages.PermissionsType.CachePermissions();
   switch (permission.role) {
     case CacheRole.ReadWrite: {
       grpcPermission.role = permission_messages.CacheRole.CacheReadWrite;
@@ -360,7 +359,13 @@ function cachePermissionToGrpcPermission(
       throw new Error(`Unrecognized cache role: ${JSON.stringify(permission)}`);
     }
   }
+  return grpcPermission;
+}
 
+function assignCacheSelector(
+  permission: CachePermission | DisposableTokenCachePermission,
+  grpcPermission: permission_messages.PermissionsType.CachePermissions
+): permission_messages.PermissionsType.CachePermissions {
   if (permission.cache === AllCaches) {
     grpcPermission.all_caches = new permission_messages.PermissionsType.All();
   } else if (typeof permission.cache === 'string') {
@@ -383,65 +388,10 @@ function cachePermissionToGrpcPermission(
   return grpcPermission;
 }
 
-function disposableTokenPermissionToGrpcPermission(
-  permission: DisposableTokenCachePermission
-): permission_messages.PermissionsType {
-  const result = new permission_messages.PermissionsType();
-  if (isDisposableTokenCachePermission(permission)) {
-    result.cache_permissions = disposableCachePermissionToGrpcPermission(
-      asDisposableTokenCachePermission(permission)
-    );
-    return result;
-  }
-  throw new Error(
-    `Unrecognized token permission: ${JSON.stringify(permission)}`
-  );
-}
-
-function disposableCachePermissionToGrpcPermission(
-  permission: DisposableTokenCachePermission
+function assignCacheItemSelector(
+  permission: DisposableTokenCachePermission,
+  grpcPermission: permission_messages.PermissionsType.CachePermissions
 ): permission_messages.PermissionsType.CachePermissions {
-  const grpcPermission =
-    new permission_messages.PermissionsType.CachePermissions();
-
-  switch (permission.role) {
-    case CacheRole.ReadWrite: {
-      grpcPermission.role = permission_messages.CacheRole.CacheReadWrite;
-      break;
-    }
-    case CacheRole.ReadOnly: {
-      grpcPermission.role = permission_messages.CacheRole.CacheReadOnly;
-      break;
-    }
-    case CacheRole.WriteOnly: {
-      grpcPermission.role = permission_messages.CacheRole.CacheWriteOnly;
-      break;
-    }
-    default: {
-      throw new Error(`Unrecognized cache role: ${JSON.stringify(permission)}`);
-    }
-  }
-
-  if (permission.cache === AllCaches) {
-    grpcPermission.all_caches = new permission_messages.PermissionsType.All();
-  } else if (typeof permission.cache === 'string') {
-    grpcPermission.cache_selector =
-      new permission_messages.PermissionsType.CacheSelector({
-        cache_name: permission.cache,
-      });
-  } else if (isCacheName(permission.cache)) {
-    grpcPermission.cache_selector =
-      new permission_messages.PermissionsType.CacheSelector({
-        cache_name: permission.cache.name,
-      });
-  } else {
-    throw new Error(
-      `Unrecognized cache specification in cache permission: ${JSON.stringify(
-        permission
-      )}`
-    );
-  }
-
   if (permission.item === AllItems) {
     grpcPermission.all_items = new permission_messages.PermissionsType.All();
   } else if (isCacheItemKey(permission.item)) {
@@ -461,6 +411,42 @@ function disposableCachePermissionToGrpcPermission(
       )}`
     );
   }
+  return grpcPermission;
+}
+
+function cachePermissionToGrpcPermission(
+  permission: CachePermission
+): permission_messages.PermissionsType.CachePermissions {
+  let grpcPermission =
+    new permission_messages.PermissionsType.CachePermissions();
+  grpcPermission = assignCacheRole(permission, grpcPermission);
+  grpcPermission = assignCacheSelector(permission, grpcPermission);
+  return grpcPermission;
+}
+
+function disposableTokenPermissionToGrpcPermission(
+  permission: DisposableTokenCachePermission
+): permission_messages.PermissionsType {
+  const result = new permission_messages.PermissionsType();
+  if (isDisposableTokenCachePermission(permission)) {
+    result.cache_permissions = disposableCachePermissionToGrpcPermission(
+      asDisposableTokenCachePermission(permission)
+    );
+    return result;
+  }
+  throw new Error(
+    `Unrecognized token permission: ${JSON.stringify(permission)}`
+  );
+}
+
+function disposableCachePermissionToGrpcPermission(
+  permission: DisposableTokenCachePermission
+): permission_messages.PermissionsType.CachePermissions {
+  let grpcPermission =
+    new permission_messages.PermissionsType.CachePermissions();
+  grpcPermission = assignCacheRole(permission, grpcPermission);
+  grpcPermission = assignCacheSelector(permission, grpcPermission);
+  grpcPermission = assignCacheItemSelector(permission, grpcPermission);
 
   return grpcPermission;
 }
