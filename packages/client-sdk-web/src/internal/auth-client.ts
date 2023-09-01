@@ -238,7 +238,7 @@ export function permissionsFromScope(
     const explicitPermissions = new ExplicitPermissions();
     explicitPermissions.setPermissionsList(
       scopePermissions.permissions.map(p =>
-        temporaryTokenPermissionToGrpcPermission(p)
+        disposableTokenPermissionToGrpcPermission(p)
       )
     );
     result.setExplicit(explicitPermissions);
@@ -381,13 +381,13 @@ function cachePermissionToGrpcPermission(
   return grpcPermission;
 }
 
-function temporaryTokenPermissionToGrpcPermission(
+function disposableTokenPermissionToGrpcPermission(
   permission: DisposableTokenCachePermission
 ): PermissionsType {
   const result = new PermissionsType();
   if (isDisposableTokenCachePermission(permission)) {
     result.setCachePermissions(
-      temporaryCachePermissionToGrpcPermission(
+      disposableCachePermissionToGrpcPermission(
         asDisposableTokenCachePermission(permission)
       )
     );
@@ -398,7 +398,7 @@ function temporaryTokenPermissionToGrpcPermission(
   );
 }
 
-function temporaryCachePermissionToGrpcPermission(
+function disposableCachePermissionToGrpcPermission(
   permission: DisposableTokenCachePermission
 ): PermissionsType.CachePermissions {
   const grpcPermission = new PermissionsType.CachePermissions();
