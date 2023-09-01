@@ -23,6 +23,8 @@ import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {Configuration} from '../config/configuration';
 import {
   validateCacheName,
+  validateIndexName,
+  validateNumDimensions,
   validateTtlMinutes,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
@@ -31,6 +33,11 @@ import {
   CacheLimits,
   TopicLimits,
 } from '@gomomento/sdk-core/dist/src/messages/cache-info';
+import {
+  CreateVectorIndex,
+  DeleteVectorIndex,
+  ListVectorIndexes,
+} from '@gomomento/sdk-core';
 
 export interface ControlClientProps {
   configuration: Configuration;
@@ -192,6 +199,96 @@ export class ControlClient {
             resolve(new ListCaches.Success(caches));
           }
         });
+    });
+  }
+
+  public async createIndex(
+    indexName: string,
+    numDimensions: number
+  ): Promise<CreateVectorIndex.Response> {
+    try {
+      validateIndexName(indexName);
+      validateNumDimensions(numDimensions);
+    } catch (err) {
+      return new CreateVectorIndex.Error(normalizeSdkError(err as Error));
+    }
+    this.logger.debug("Issuing 'createIndex' request");
+    const request = new grpcControl._CreateIndexRequest();
+    request.index_name = indexName;
+    request.num_dimensions = numDimensions;
+    return await new Promise<CreateVectorIndex.Response>(resolve => {
+      this.clientWrapper.getClient().CreateIndex(
+        request,
+        {interceptors: this.interceptors},
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        (err, resp) => {
+          if (err) {
+            if (err.code === Status.ALREADY_EXISTS) {
+              resolve(new CreateVectorIndex.AlreadyExists());
+            } else {
+              resolve(
+                new CreateVectorIndex.Error(cacheServiceErrorMapper(err))
+              );
+            }
+          } else {
+            resolve(new CreateVectorIndex.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async listIndexes(): Promise<ListCaches.Response> {
+    const request = new grpcControl._ListIndexesRequest();
+    this.logger.debug("Issuing 'listIndexes' request");
+    return await new Promise<ListVectorIndexes.Response>(resolve => {
+      this.clientWrapper
+        .getClient()
+        .ListIndexes(
+          request,
+          {interceptors: this.interceptors},
+          (err, resp) => {
+            if (err || !resp) {
+              // TODO: `Argument of type 'unknown' is not assignable to parameter of type 'Error'.`
+              //  I don't see how this is different from the other methods here. So, yeah, what?
+              resolve(
+                new ListVectorIndexes.Error(cacheServiceErrorMapper(err))
+              );
+            } else {
+              // TODO: um, what?
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call
+              const indexes = resp.index_names;
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+              resolve(new ListVectorIndexes.Success(indexes));
+            }
+          }
+        );
+    });
+  }
+
+  public async deleteIndex(name: string): Promise<DeleteVectorIndex.Response> {
+    try {
+      validateIndexName(name);
+    } catch (err) {
+      return new DeleteVectorIndex.Error(normalizeSdkError(err as Error));
+    }
+    const request = new grpcControl._DeleteIndexRequest({
+      index_name: name,
+    });
+    this.logger.info(`Deleting index: ${name}`);
+    return await new Promise<DeleteVectorIndex.Response>(resolve => {
+      this.clientWrapper.getClient().DeleteIndex(
+        request,
+        {interceptors: this.interceptors},
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        (err, resp) => {
+          if (err) {
+            resolve(new DeleteVectorIndex.Error(cacheServiceErrorMapper(err)));
+          } else {
+            resolve(new DeleteVectorIndex.Success());
+          }
+        }
+      );
     });
   }
 
