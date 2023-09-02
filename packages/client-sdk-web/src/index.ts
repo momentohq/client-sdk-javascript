@@ -70,6 +70,7 @@ import {TopicItem} from '@gomomento/sdk-core/dist/src/messages/responses/topic-i
 // AuthClient Response Types
 import * as GenerateAuthToken from '@gomomento/sdk-core/dist/src/messages/responses/generate-auth-token';
 import * as RefreshAuthToken from '@gomomento/sdk-core/dist/src/messages/responses/refresh-auth-token';
+import * as GenerateDisposableToken from '@gomomento/sdk-core/dist/src/messages/responses/generate-disposable-token';
 
 import {
   ICacheClient,
@@ -104,6 +105,8 @@ import {
   AllDataReadWrite,
   TokenScope,
   TokenScopes,
+  DisposableTokenScope,
+  DisposableTokenScopes,
   ExpiresIn,
   ExpiresAt,
   CacheName,
@@ -152,6 +155,8 @@ export {
   AllDataReadWrite,
   TokenScope,
   TokenScopes,
+  DisposableTokenScope,
+  DisposableTokenScopes,
   CacheName,
   TopicName,
   CacheSelector,
@@ -222,6 +227,7 @@ export {
   SubscribeCallOptions,
   GenerateAuthToken,
   RefreshAuthToken,
+  GenerateDisposableToken,
   ExpiresAt,
   ExpiresIn,
   MomentoErrorCode,

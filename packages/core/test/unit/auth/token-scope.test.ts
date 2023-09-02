@@ -186,7 +186,7 @@ describe('TokenScope', () => {
     });
   });
 
-  describe('should support assignment from TopicScope factory functions', () => {
+  describe('should support assignment from TokenScope factory functions', () => {
     it('cacheReadWrite', () => {
       let scope: TokenScope = TokenScopes.cacheReadWrite('mycache');
       expect(scope).toEqual({

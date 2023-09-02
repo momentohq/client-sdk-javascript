@@ -23,7 +23,7 @@ import {
   AllTopics,
   isTopicName,
   GenerateDisposableToken,
-  AllItems,
+  AllCacheItems,
   isCacheItemKey,
   isCacheItemKeyPrefix,
 } from '@gomomento/sdk-core';
@@ -392,7 +392,7 @@ function assignCacheItemSelector(
 ): PermissionsType.CachePermissions {
   const itemSelector = new PermissionsType.CacheItemSelector();
 
-  if (permission.item === AllItems) {
+  if (permission.item === AllCacheItems) {
     grpcPermission.setAllItems(new PermissionsType.All());
   } else if (isCacheItemKey(permission.item)) {
     validateCacheKeyOrPrefix(permission.item.key);

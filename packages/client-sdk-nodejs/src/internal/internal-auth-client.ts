@@ -31,7 +31,7 @@ import {
   isCacheName,
   isTopicName,
   GenerateDisposableToken,
-  AllItems,
+  AllCacheItems,
   isCacheItemKey,
   isCacheItemKeyPrefix,
 } from '@gomomento/sdk-core';
@@ -82,7 +82,7 @@ export class InternalAuthClient implements IAuthClient {
 
     let permissions;
     try {
-      permissions = permissionsFromScope(scope);
+      permissions = permissionsFromTokenScope(scope);
     } catch (err) {
       return new GenerateAuthToken.Error(normalizeSdkError(err as Error));
     }
@@ -182,7 +182,7 @@ export class InternalAuthClient implements IAuthClient {
 
     let permissions;
     try {
-      permissions = permissionsFromScope(scope);
+      permissions = permissionsFromDisposableTokenScope(scope);
     } catch (err) {
       return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
     }
@@ -217,14 +217,33 @@ export class InternalAuthClient implements IAuthClient {
   }
 }
 
-export function permissionsFromScope(
-  scope: TokenScope | DisposableTokenScope
+export function permissionsFromTokenScope(
+  scope: TokenScope
 ): permission_messages.Permissions {
   const result = new permission_messages.Permissions();
   if (scope instanceof InternalSuperUserPermissions) {
     result.super_user = permission_messages.SuperUserPermissions.SuperUser;
     return result;
-  } else if (
+  } else if (isPermissionsObject(scope)) {
+    const scopePermissions: Permissions = asPermissionsObject(scope);
+    const explicitPermissions = new permission_messages.ExplicitPermissions();
+    explicitPermissions.permissions = scopePermissions.permissions.map(p =>
+      tokenPermissionToGrpcPermission(p)
+    );
+    result.explicit = explicitPermissions;
+    return result;
+  }
+  throw new Error(`Unrecognized token scope: ${JSON.stringify(scope)}`);
+}
+
+export function permissionsFromDisposableTokenScope(
+  scope: DisposableTokenScope
+): permission_messages.Permissions {
+  console.log(
+    `PERMISSIONS FROM DISPOSABLE TOKEN SCOPE: ${JSON.stringify(scope)}`
+  );
+  const result = new permission_messages.Permissions();
+  if (
     !(scope instanceof PredefinedScope) &&
     isDisposableTokenPermissionsObject(scope)
   ) {
@@ -386,8 +405,13 @@ function assignCacheItemSelector(
   permission: DisposableTokenCachePermission,
   grpcPermission: permission_messages.PermissionsType.CachePermissions
 ): permission_messages.PermissionsType.CachePermissions {
-  if (permission.item === AllItems) {
+  if (permission.item === AllCacheItems) {
     grpcPermission.all_items = new permission_messages.PermissionsType.All();
+  } else if (typeof permission.item === 'string') {
+    grpcPermission.item_selector =
+      new permission_messages.PermissionsType.CacheItemSelector({
+        key: convert(permission.item),
+      });
   } else if (isCacheItemKey(permission.item)) {
     validateCacheKeyOrPrefix(permission.item.key);
     grpcPermission.item_selector =

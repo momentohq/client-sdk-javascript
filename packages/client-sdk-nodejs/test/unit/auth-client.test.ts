@@ -7,7 +7,10 @@ import {
   Permissions,
   TopicRole,
 } from '@gomomento/sdk-core';
-import {permissionsFromScope} from '../../src/internal/internal-auth-client';
+import {
+  permissionsFromTokenScope,
+  permissionsFromDisposableTokenScope,
+} from '../../src/internal/internal-auth-client';
 import {permission_messages} from '@gomomento/generated-types/dist/permissionmessages';
 import {DisposableTokenCachePermissions} from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
 import {convert} from '../../src/internal/utils';
@@ -18,9 +21,9 @@ describe('internal auth client', () => {
       const expectedPermission = new permission_messages.Permissions();
       expectedPermission.super_user =
         permission_messages.SuperUserPermissions.SuperUser;
-      expect(permissionsFromScope(new InternalSuperUserPermissions())).toEqual(
-        expectedPermission
-      );
+      expect(
+        permissionsFromTokenScope(new InternalSuperUserPermissions())
+      ).toEqual(expectedPermission);
     });
 
     it('creates expected grpc permissions for AllDataReadWrite', () => {
@@ -50,7 +53,9 @@ describe('internal auth client', () => {
 
       const grpcPermissions = new permission_messages.Permissions();
       grpcPermissions.explicit = explicitPermissions;
-      expect(permissionsFromScope(AllDataReadWrite)).toEqual(grpcPermissions);
+      expect(permissionsFromTokenScope(AllDataReadWrite)).toEqual(
+        grpcPermissions
+      );
     });
 
     it('creates expected grpc permissions for cache and topic specific permissions', () => {
@@ -155,7 +160,7 @@ describe('internal auth client', () => {
         ],
       };
 
-      expect(permissionsFromScope(cacheAndTopicPermissions)).toEqual(
+      expect(permissionsFromTokenScope(cacheAndTopicPermissions)).toEqual(
         grpcPermissions
       );
     });
@@ -256,7 +261,7 @@ describe('internal auth client', () => {
         ],
       };
 
-      expect(permissionsFromScope(cacheAndTopicPermissions)).toEqual(
+      expect(permissionsFromTokenScope(cacheAndTopicPermissions)).toEqual(
         grpcPermissions
       );
     });
@@ -318,9 +323,9 @@ describe('internal auth client', () => {
         ],
       };
 
-      expect(permissionsFromScope(cacheAndItemPermissions)).toEqual(
-        grpcPermissions
-      );
+      expect(
+        permissionsFromDisposableTokenScope(cacheAndItemPermissions)
+      ).toEqual(grpcPermissions);
     });
 
     it('creates expected grpc permissions for key-specific, read-only cache permissions', () => {
@@ -379,9 +384,9 @@ describe('internal auth client', () => {
           },
         ],
       };
-      expect(permissionsFromScope(cacheAndItemPermissions)).toEqual(
-        grpcPermissions
-      );
+      expect(
+        permissionsFromDisposableTokenScope(cacheAndItemPermissions)
+      ).toEqual(grpcPermissions);
     });
 
     it('creates expected grpc permissions for key-specific, read-write cache permissions', () => {
@@ -440,9 +445,9 @@ describe('internal auth client', () => {
           },
         ],
       };
-      expect(permissionsFromScope(cacheAndItemPermissions)).toEqual(
-        grpcPermissions
-      );
+      expect(
+        permissionsFromDisposableTokenScope(cacheAndItemPermissions)
+      ).toEqual(grpcPermissions);
     });
   });
 });
