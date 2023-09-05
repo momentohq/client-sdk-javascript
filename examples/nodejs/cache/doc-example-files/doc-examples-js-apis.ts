@@ -929,7 +929,7 @@ async function example_API_RefreshAuthToken(authClient: AuthClient) {
 async function example_API_GenerateDisposableToken(authClient: AuthClient) {
   // Generate a disposable token with read-write access to a specific key in one cache
   const oneKeyOneCacheToken = await authClient.generateDisposableToken(
-    DisposableTokenScopes.cacheKeyReadWrite("squirrels", "mo"), 
+    DisposableTokenScopes.cacheKeyReadWrite('squirrels', 'mo'),
     ExpiresIn.minutes(30)
   );
   if (oneKeyOneCacheToken instanceof GenerateDisposableToken.Success) {
@@ -945,7 +945,7 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
 
   // Generate a disposable token with read-write access to a specific key prefix in all caches
   const keyPrefixAllCachesToken = await authClient.generateDisposableToken(
-    DisposableTokenScopes.cacheKeyPrefixReadWrite(AllCaches, "squirrel"), 
+    DisposableTokenScopes.cacheKeyPrefixReadWrite(AllCaches, 'squirrel'),
     ExpiresIn.minutes(30)
   );
   if (keyPrefixAllCachesToken instanceof GenerateDisposableToken.Success) {
