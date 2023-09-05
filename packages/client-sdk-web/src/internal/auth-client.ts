@@ -37,6 +37,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
+  convertToB64String,
   getWebControlEndpoint,
   getWebTokenEndpoint,
 } from '../utils/web-client-utils';
@@ -196,7 +197,7 @@ export class InternalWebGrpcAuthClient<
       return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
     }
 
-    const grpcExpires = new Expires();
+    const grpcExpires = new _GenerateDisposableTokenRequest.Expires();
     grpcExpires.setValidForSeconds(expiresIn.seconds());
     request.setExpires(grpcExpires);
 
@@ -395,15 +396,15 @@ function assignCacheItemSelector(
   if (permission.item === AllCacheItems) {
     grpcPermission.setAllItems(new PermissionsType.All());
   } else if (typeof permission.item === 'string') {
-    itemSelector.setKey(permission.item);
+    itemSelector.setKey(convertToB64String(permission.item));
     grpcPermission.setItemSelector(itemSelector);
   } else if (isCacheItemKey(permission.item)) {
     validateCacheKeyOrPrefix(permission.item.key);
-    itemSelector.setKey(permission.item.key);
+    itemSelector.setKey(convertToB64String(permission.item.key));
     grpcPermission.setItemSelector(itemSelector);
   } else if (isCacheItemKeyPrefix(permission.item)) {
     validateCacheKeyOrPrefix(permission.item.keyPrefix);
-    itemSelector.setKeyPrefix(permission.item.keyPrefix);
+    itemSelector.setKeyPrefix(convertToB64String(permission.item.keyPrefix));
     grpcPermission.setItemSelector(itemSelector);
   } else {
     throw new Error(
