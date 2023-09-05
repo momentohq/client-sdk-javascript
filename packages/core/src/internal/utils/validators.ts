@@ -1,9 +1,16 @@
 import {InvalidArgumentError} from '../../errors';
+import {ExpiresIn} from '../../utils';
 import {decodeFromBase64, encodeToBase64} from './string';
 
 export function validateCacheName(name: string) {
   if (isEmpty(name)) {
     throw new InvalidArgumentError('cache name must not be empty');
+  }
+}
+
+export function validateCacheKeyOrPrefix(name: string) {
+  if (isEmpty(name)) {
+    throw new InvalidArgumentError('cache key or key prefix must not be empty');
   }
 }
 
@@ -87,6 +94,18 @@ export function validateTopicName(name: string) {
   }
 }
 
+export function validateIndexName(name: string) {
+  if (isEmpty(name)) {
+    throw new InvalidArgumentError('index name must not be empty');
+  }
+}
+
+export function validateNumDimensions(numDimensions: number) {
+  if (numDimensions <= 0) {
+    throw new InvalidArgumentError('numDimensions must be greater than zero');
+  }
+}
+
 export function validateTtlMinutes(ttlMinutes: number) {
   if (ttlMinutes < 0) {
     throw new InvalidArgumentError('ttlMinutes must be positive');
@@ -102,6 +121,21 @@ export function validateValidForSeconds(validForSeconds: number) {
 export function validateTimeout(timeout: number) {
   if (timeout < 0) {
     throw new InvalidArgumentError('timeout must be positive');
+  }
+}
+
+export function validateDisposableTokenExpiry(expiresIn: ExpiresIn) {
+  if (!expiresIn.doesExpire()) {
+    throw new InvalidArgumentError('disposable tokens must have an expiry');
+  }
+  if (expiresIn.seconds() < 0) {
+    throw new InvalidArgumentError('disposable token expiry must be positive');
+  }
+  if (expiresIn.seconds() > 60 * 60) {
+    // 60 seconds * 60 minutes
+    throw new InvalidArgumentError(
+      'disposable tokens must expire within 1 hour'
+    );
   }
 }
 

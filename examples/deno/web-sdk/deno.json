@@ -24,7 +24,7 @@
   },
   "imports": {
     "http": "https://deno.land/std@0.198.0/http/server.ts",
-    "momento": "npm:@gomomento/sdk-web@1.30.0",
+    "momento": "npm:@gomomento/sdk-web@1.35.0",
     "xhr4sw": "npm:xhr4sw@0.0.5",
     "dotenv": "https://deno.land/std/dotenv/mod.ts"
 

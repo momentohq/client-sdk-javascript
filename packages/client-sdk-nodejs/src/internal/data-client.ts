@@ -506,7 +506,7 @@ export class DataClient implements IDataClient {
       );
     }
     this.logger.trace(
-      `Issuing 'setIfNotExists' request; key: ${key.toString()}, field: ${value.toString()}, ttl: ${
+      `Issuing 'setIfNotExists' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
         ttl?.toString() ?? 'null'
       }`
     );
@@ -515,7 +515,7 @@ export class DataClient implements IDataClient {
       cacheName,
       this.convert(key),
       this.convert(value),
-      ttl || this.defaultTtlSeconds * 1000
+      ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
     );
     this.logger.trace(`'setIfNotExists' request result: ${result.toString()}`);
     return result;

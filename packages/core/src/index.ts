@@ -62,6 +62,11 @@ import {TopicItem} from './messages/responses/topic-item';
 // AuthClient Response Types
 import * as GenerateAuthToken from './messages/responses/generate-auth-token';
 import * as RefreshAuthToken from './messages/responses/refresh-auth-token';
+import * as GenerateDisposableToken from './messages/responses/generate-disposable-token';
+
+// VectorClient Response Types
+export * as vector from './messages/responses/vector';
+export * from './messages/responses/vector';
 
 import {CacheInfo} from './messages/cache-info';
 import {
@@ -77,7 +82,7 @@ import {
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
-} from './auth/credential-provider';
+} from './auth';
 
 import {
   MomentoErrorCode,
@@ -124,17 +129,25 @@ export {
   Permissions,
   AllDataReadWrite,
   TokenScope,
+  DisposableTokenScope,
   CacheName,
   isCacheName,
   TopicName,
   isTopicName,
   CacheSelector,
   TopicSelector,
+  CacheItemSelector,
   AllCaches,
   AllTopics,
+  AllCacheItems,
+  CacheItemKey,
+  CacheItemKeyPrefix,
+  isCacheItemKey,
+  isCacheItemKeyPrefix,
 } from './auth/tokens/token-scope';
 
 export * as TokenScopes from './auth/tokens/token-scopes';
+export * as DisposableTokenScopes from './auth/tokens/disposable-token-scopes';
 
 export {
   ExpiresIn,
@@ -210,6 +223,7 @@ export {
   // AuthClient Response Types
   GenerateAuthToken,
   RefreshAuthToken,
+  GenerateDisposableToken,
   // Errors
   MomentoErrorCode,
   SdkError,

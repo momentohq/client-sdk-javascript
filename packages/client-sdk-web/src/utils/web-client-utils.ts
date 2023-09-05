@@ -35,6 +35,12 @@ export function getWebCacheEndpoint(
   return withProtocolPrefix(`web.${credentialProvider.getCacheEndpoint()}`);
 }
 
+export function getWebTokenEndpoint(
+  credentialProvider: CredentialProvider
+): string {
+  return withProtocolPrefix(`web.${credentialProvider.getTokenEndpoint()}`);
+}
+
 function withProtocolPrefix(endpoint: string): string {
   if (endpoint.match(/^http(?:s)?:\/\//)) {
     return endpoint;
