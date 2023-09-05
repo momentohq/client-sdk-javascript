@@ -318,7 +318,7 @@ export class DataClient<
       );
     }
     this.logger.trace(
-      `Issuing 'setIfNotExists' request; key: ${key.toString()}, field: ${field.toString()}, ttl: ${
+      `Issuing 'setIfNotExists' request; key: ${key.toString()}, field: ${field.toString()}, ttlSeconds: ${
         ttl?.toString() ?? 'null'
       }`
     );
@@ -327,7 +327,7 @@ export class DataClient<
       cacheName,
       convertToB64String(key),
       convertToB64String(field),
-      ttl || this.defaultTtlSeconds * 1000
+      ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
     );
     this.logger.trace(`'setIfNotExists' request result: ${result.toString()}`);
     return result;
