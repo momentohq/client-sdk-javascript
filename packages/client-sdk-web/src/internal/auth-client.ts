@@ -394,6 +394,9 @@ function assignCacheItemSelector(
 
   if (permission.item === AllCacheItems) {
     grpcPermission.setAllItems(new PermissionsType.All());
+  } else if (typeof permission.item === 'string') {
+    itemSelector.setKey(permission.item);
+    grpcPermission.setItemSelector(itemSelector);
   } else if (isCacheItemKey(permission.item)) {
     validateCacheKeyOrPrefix(permission.item.key);
     itemSelector.setKey(permission.item.key);
