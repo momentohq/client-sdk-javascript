@@ -176,7 +176,7 @@ export class InternalAuthClient implements IAuthClient {
     } catch (err) {
       return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
     }
-    const expires = new Expires({
+    const expires = new token.token._GenerateDisposableTokenRequest.Expires({
       valid_for_seconds: expiresIn.seconds(),
     });
 
@@ -187,7 +187,7 @@ export class InternalAuthClient implements IAuthClient {
       return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
     }
 
-    const request = token.token._GenerateDisposableTokenRequest.fromObject({
+    const request = new token.token._GenerateDisposableTokenRequest({
       expires: expires,
       auth_token: this.creds.getAuthToken(),
       permissions: permissions,
