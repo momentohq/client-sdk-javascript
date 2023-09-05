@@ -958,6 +958,38 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
       `An error occurred while attempting to call generateAuthToken with disposable token scope: ${keyPrefixAllCachesToken.errorCode()}: ${keyPrefixAllCachesToken.toString()}`
     );
   }
+
+  // Generate a disposable token with read-only access to all topics in one cache
+  const allTopicsOneCacheToken = await authClient.generateDisposableToken(
+    TokenScopes.topicSubscribeOnly("squirrel", AllTopics),
+    ExpiresIn.minutes(30)
+  );
+  if (allTopicsOneCacheToken instanceof GenerateDisposableToken.Success) {
+    console.log('Generated a disposable auth token with access to all topics in the "squirrel" cache!');
+    // logging only a substring of the tokens, because logging security credentials is not advisable :)
+    console.log(`Auth token starts with: ${allTopicsOneCacheToken.authToken.substring(0, 10)}`);
+    console.log(`Expires At: ${allTopicsOneCacheToken.expiresAt.epoch()}`);
+  } else if (allTopicsOneCacheToken instanceof GenerateDisposableToken.Error) {
+    throw new Error(
+      `An error occurred while attempting to call generateAuthToken with disposable token scope: ${allTopicsOneCacheToken.errorCode()}: ${allTopicsOneCacheToken.toString()}`
+    );
+  }
+
+  // Generate a disposable token with write-only access to a single topic in all caches
+  const oneTopicAllCachesToken = await authClient.generateDisposableToken(
+    TokenScopes.topicPublishOnly(AllCaches, "acorn"),
+    ExpiresIn.minutes(30)
+  );
+  if (oneTopicAllCachesToken instanceof GenerateDisposableToken.Success) {
+    console.log('Generated a disposable auth token with access to all topics in the "squirrel" cache!');
+    // logging only a substring of the tokens, because logging security credentials is not advisable :)
+    console.log(`Auth token starts with: ${oneTopicAllCachesToken.authToken.substring(0, 10)}`);
+    console.log(`Expires At: ${oneTopicAllCachesToken.expiresAt.epoch()}`);
+  } else if (oneTopicAllCachesToken instanceof GenerateDisposableToken.Error) {
+    throw new Error(
+      `An error occurred while attempting to call generateAuthToken with disposable token scope: ${oneTopicAllCachesToken.errorCode()}: ${oneTopicAllCachesToken.toString()}`
+    );
+  }
 }
 
 async function example_API_TopicPublish(topicClient: TopicClient) {
