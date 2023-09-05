@@ -4,13 +4,13 @@ import {
   ItBehavesLikeItValidatesNumDimensions,
   testIndexName,
   expectWithMessage,
-  WithIndex,
+  // WithIndex,
 } from './common-int-test-utils';
 import {IVectorClient} from '@gomomento/sdk-core/dist/src/clients/IVectorClient';
 import {
-  CreateVectorIndex,
+  // CreateVectorIndex,
   DeleteVectorIndex,
-  ListVectorIndexes,
+  // ListVectorIndexes,
   MomentoErrorCode,
 } from '@gomomento/sdk-core';
 
