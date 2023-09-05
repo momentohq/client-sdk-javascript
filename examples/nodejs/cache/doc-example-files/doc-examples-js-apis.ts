@@ -961,7 +961,7 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
 
   // Generate a disposable token with read-only access to all topics in one cache
   const allTopicsOneCacheToken = await authClient.generateDisposableToken(
-    TokenScopes.topicSubscribeOnly("squirrel", AllTopics),
+    TokenScopes.topicSubscribeOnly('squirrel', AllTopics),
     ExpiresIn.minutes(30)
   );
   if (allTopicsOneCacheToken instanceof GenerateDisposableToken.Success) {
@@ -977,7 +977,7 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
 
   // Generate a disposable token with write-only access to a single topic in all caches
   const oneTopicAllCachesToken = await authClient.generateDisposableToken(
-    TokenScopes.topicPublishOnly(AllCaches, "acorn"),
+    TokenScopes.topicPublishOnly(AllCaches, 'acorn'),
     ExpiresIn.minutes(30)
   );
   if (oneTopicAllCachesToken instanceof GenerateDisposableToken.Success) {
