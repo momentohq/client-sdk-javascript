@@ -23,12 +23,14 @@ import {
   AllDataReadWrite,
   ExpiresIn,
   TokenScopes,
+  DisposableTokenScopes,
   AllCaches,
   AllTopics,
   CacheRole,
   TopicRole,
   GenerateAuthToken,
   RefreshAuthToken,
+  GenerateDisposableToken,
   CacheIncrement,
   CacheItemGetType,
   CacheSetIfNotExists,
@@ -924,6 +926,40 @@ async function example_API_RefreshAuthToken(authClient: AuthClient) {
   }
 }
 
+async function example_API_GenerateDisposableToken(authClient: AuthClient) {
+  // Generate a disposable token with read-write access to a specific key in one cache
+  const oneKeyOneCacheToken = await authClient.generateDisposableToken(
+    DisposableTokenScopes.cacheKeyReadWrite("squirrels", "mo"), 
+    ExpiresIn.minutes(30)
+  );
+  if (oneKeyOneCacheToken instanceof GenerateDisposableToken.Success) {
+    console.log('Generated a disposable auth token with access to the "mo" key in the "squirrels" cache!');
+    // logging only a substring of the tokens, because logging security credentials is not advisable :)
+    console.log(`Auth token starts with: ${oneKeyOneCacheToken.authToken.substring(0, 10)}`);
+    console.log(`Expires At: ${oneKeyOneCacheToken.expiresAt.epoch()}`);
+  } else if (oneKeyOneCacheToken instanceof GenerateDisposableToken.Error) {
+    throw new Error(
+      `An error occurred while attempting to call generateAuthToken with disposable token scope: ${oneKeyOneCacheToken.errorCode()}: ${oneKeyOneCacheToken.toString()}`
+    );
+  }
+
+  // Generate a disposable token with read-write access to a specific key prefix in all caches
+  const keyPrefixAllCachesToken = await authClient.generateDisposableToken(
+    DisposableTokenScopes.cacheKeyPrefixReadWrite(AllCaches, "squirrel"), 
+    ExpiresIn.minutes(30)
+  );
+  if (keyPrefixAllCachesToken instanceof GenerateDisposableToken.Success) {
+    console.log('Generated a disposable auth token with access to keys prefixed with "squirrel" in all caches!');
+    // logging only a substring of the tokens, because logging security credentials is not advisable :)
+    console.log(`Auth token starts with: ${keyPrefixAllCachesToken.authToken.substring(0, 10)}`);
+    console.log(`Expires At: ${keyPrefixAllCachesToken.expiresAt.epoch()}`);
+  } else if (keyPrefixAllCachesToken instanceof GenerateDisposableToken.Error) {
+    throw new Error(
+      `An error occurred while attempting to call generateAuthToken with disposable token scope: ${keyPrefixAllCachesToken.errorCode()}: ${keyPrefixAllCachesToken.toString()}`
+    );
+  }
+}
+
 async function example_API_TopicPublish(topicClient: TopicClient) {
   const result = await topicClient.publish('test-cache', 'test-topic', 'test-topic-value');
   if (result instanceof TopicPublish.Success) {
@@ -1048,6 +1084,7 @@ async function main() {
   });
   await example_API_GenerateAuthToken(authClient);
   await example_API_RefreshAuthToken(authClient);
+  await example_API_GenerateDisposableToken(authClient);
 
   example_API_InstantiateTopicClient();
   const topicClient = new TopicClient({
