@@ -305,7 +305,7 @@ export async function expectPermissionDeniedForSet(
 ) {
   const setResp = await cacheClient.set(cacheName, key, value);
   expect(setResp).toBeInstanceOf(CacheSet.Error);
-  const setError = setResp as CacheGet.Error;
+  const setError = setResp as CacheSet.Error;
   expect(setError.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
   expect(setError.message()).toContain('Insufficient permissions');
 }
