@@ -73,6 +73,7 @@ import {TopicItem} from '@gomomento/sdk-core/dist/src/messages/responses/topic-i
 import {AuthClient} from './auth-client';
 import * as GenerateAuthToken from '@gomomento/sdk-core/dist/src/messages/responses/generate-auth-token';
 import * as RefreshAuthToken from '@gomomento/sdk-core/dist/src/messages/responses/refresh-auth-token';
+import * as GenerateDisposableToken from '@gomomento/sdk-core/dist/src/messages/responses/generate-disposable-token';
 
 // VectorClient Response Types
 export * from '@gomomento/sdk-core/dist/src/messages/responses/vector';
@@ -118,6 +119,8 @@ import {
   AllDataReadWrite,
   TokenScope,
   TokenScopes,
+  DisposableTokenScope,
+  DisposableTokenScopes,
   CacheName,
   TopicName,
   CacheSelector,
@@ -203,6 +206,8 @@ export {
   AllDataReadWrite,
   TokenScope,
   TokenScopes,
+  DisposableTokenScope,
+  DisposableTokenScopes,
   CacheName,
   TopicName,
   CacheSelector,
@@ -278,6 +283,7 @@ export {
   AuthClient,
   GenerateAuthToken,
   RefreshAuthToken,
+  GenerateDisposableToken,
   ExpiresAt,
   ExpiresIn,
   // Errors

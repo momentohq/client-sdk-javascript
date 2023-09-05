@@ -1,4 +1,6 @@
 import {
+  CacheGet,
+  CacheSet,
   CollectionTtl,
   CreateCache,
   CreateVectorIndex,
@@ -281,4 +283,29 @@ export function expectWithMessage(expected: () => void, message: string) {
     }
     throw new Error(message);
   }
+}
+
+export async function expectPermissionDeniedForGet(
+  cacheClient: ICacheClient,
+  cacheName: string,
+  key: string
+) {
+  const getResp = await cacheClient.get(cacheName, key);
+  expect(getResp).toBeInstanceOf(CacheGet.Error);
+  const getError = getResp as CacheGet.Error;
+  expect(getError.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+  expect(getError.message()).toContain('Insufficient permissions');
+}
+
+export async function expectPermissionDeniedForSet(
+  cacheClient: ICacheClient,
+  cacheName: string,
+  key: string,
+  value: string
+) {
+  const setResp = await cacheClient.set(cacheName, key, value);
+  expect(setResp).toBeInstanceOf(CacheSet.Error);
+  const setError = setResp as CacheSet.Error;
+  expect(setError.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+  expect(setError.message()).toContain('Insufficient permissions');
 }
