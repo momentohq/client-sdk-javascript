@@ -17,6 +17,7 @@ import {
   TopicRole,
 } from '@gomomento/sdk-core';
 import {DisposableTokenCachePermissions} from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
+import {convertToB64String} from '../../../src/utils/web-client-utils';
 
 describe('internal auth client', () => {
   describe('permissionsFromScope', () => {
@@ -259,7 +260,7 @@ describe('internal auth client', () => {
       oneKeyAllCaches.setRole(GrpcCacheRole.CACHEWRITEONLY);
       oneKeyAllCaches.setAllCaches(new PermissionsType.All());
       const itemSelector = new PermissionsType.CacheItemSelector();
-      itemSelector.setKey('specific-key');
+      itemSelector.setKey(convertToB64String('specific-key'));
       oneKeyAllCaches.setItemSelector(itemSelector);
       const oneKeyAllCachesPermissions = new PermissionsType();
       oneKeyAllCachesPermissions.setCachePermissions(oneKeyAllCaches);
@@ -271,7 +272,7 @@ describe('internal auth client', () => {
       cacheSelector.setCacheName('foo');
       keyPrefixOneCache.setCacheSelector(cacheSelector);
       const prefixItemSelector = new PermissionsType.CacheItemSelector();
-      prefixItemSelector.setKeyPrefix('key-prefix');
+      prefixItemSelector.setKeyPrefix(convertToB64String('key-prefix'));
       keyPrefixOneCache.setItemSelector(prefixItemSelector);
       const keyPrefixOneCachePermissions = new PermissionsType();
       keyPrefixOneCachePermissions.setCachePermissions(keyPrefixOneCache);
@@ -311,7 +312,7 @@ describe('internal auth client', () => {
       oneKeyAllCaches.setRole(GrpcCacheRole.CACHEREADONLY);
       oneKeyAllCaches.setAllCaches(new PermissionsType.All());
       const itemSelector = new PermissionsType.CacheItemSelector();
-      itemSelector.setKey('specific-key');
+      itemSelector.setKey(convertToB64String('specific-key'));
       oneKeyAllCaches.setItemSelector(itemSelector);
       const oneKeyAllCachesPermissions = new PermissionsType();
       oneKeyAllCachesPermissions.setCachePermissions(oneKeyAllCaches);
@@ -323,7 +324,7 @@ describe('internal auth client', () => {
       cacheSelector.setCacheName('foo');
       keyPrefixOneCache.setCacheSelector(cacheSelector);
       const prefixItemSelector = new PermissionsType.CacheItemSelector();
-      prefixItemSelector.setKeyPrefix('key-prefix');
+      prefixItemSelector.setKeyPrefix(convertToB64String('key-prefix'));
       keyPrefixOneCache.setItemSelector(prefixItemSelector);
       const keyPrefixOneCachePermissions = new PermissionsType();
       keyPrefixOneCachePermissions.setCachePermissions(keyPrefixOneCache);
@@ -362,7 +363,7 @@ describe('internal auth client', () => {
       oneKeyAllCaches.setRole(GrpcCacheRole.CACHEREADWRITE);
       oneKeyAllCaches.setAllCaches(new PermissionsType.All());
       const itemSelector = new PermissionsType.CacheItemSelector();
-      itemSelector.setKey('specific-key');
+      itemSelector.setKey(convertToB64String('specific-key'));
       oneKeyAllCaches.setItemSelector(itemSelector);
       const oneKeyAllCachesPermissions = new PermissionsType();
       oneKeyAllCachesPermissions.setCachePermissions(oneKeyAllCaches);
@@ -374,7 +375,7 @@ describe('internal auth client', () => {
       cacheSelector.setCacheName('foo');
       keyPrefixOneCache.setCacheSelector(cacheSelector);
       const prefixItemSelector = new PermissionsType.CacheItemSelector();
-      prefixItemSelector.setKeyPrefix('key-prefix');
+      prefixItemSelector.setKeyPrefix(convertToB64String('key-prefix'));
       keyPrefixOneCache.setItemSelector(prefixItemSelector);
       const keyPrefixOneCachePermissions = new PermissionsType();
       keyPrefixOneCachePermissions.setCachePermissions(keyPrefixOneCache);
