@@ -1,26 +1,28 @@
 import {
   ExpiresIn,
-  type TokenScope,
   AllTopics,
   AllCaches,
   TokenScopes,
+  type DisposableTokenScope,
 } from "@gomomento/sdk";
 
 /**
  * First, set the scope of permissions for your tokens.
  *
  * AllDataReadWrite provides read and write permissions to all of your caches:
- *    export const tokenPermissions: TokenScope =  AllDataReadWrite;
+ *    export const tokenPermissions: DisposableTokenScope =  AllDataReadWrite;
  *
  * TokenScopes provides several functions that will return the permissions you
  * request for a given cache and topic name.
- *    export const tokenPermissions: TokenScope = TokenScopes.topicPublishSubscribe("your-cache-name", AllTopics);
+ *    export const tokenPermissions: DisposableTokenScope = TokenScopes.topicPublishSubscribe("your-cache-name", AllTopics);
  *
  * You can also set it to allow subscriptions to topics in all caches if you prefer:
- *    export const tokenPermissions: TokenScope = TokenScopes.topicPublishSubscribe(AllCaches, AllTopics);
+ *    export const tokenPermissions: DisposableTokenScope = TokenScopes.topicPublishSubscribe(AllCaches, AllTopics);
  *
- * You may also provide a bespoke list of permissions for each cache and topic that you have:
- *    export const tokenPermissions: TokenScope =  {
+ * You may also provide a bespoke list of permissions for each cache and topic that you have.
+ * The DisposableTokenScope will accept permissions of the type CachePermission, TopicPermission,
+ * or DisposableTokenCachePermission, as outlined below respectively:
+ *    export const tokenPermissions: DisposableTokenScope =  {
  *      permissions: [
  *        {
  *          role: CacheRole.ReadWrite | CacheRole.ReadOnly | CacheRole.WriteOnly,
@@ -30,21 +32,28 @@ import {
  *          role: TopicRole.PublishSubscribe | TopicRole.SubscribeOnly | TopicRole.PublishOnly,
  *          cache: AllCaches | "your-cache-name",
  *          topic: AllTopics | "your-topic-name"
- *        }
+ *        },
+ *        {
+ *          role: CacheRole.ReadWrite | CacheRole.ReadOnly | CacheRole.WriteOnly,
+ *          cache: AllCaches | "your-cache-name",
+ *          item: AllCacheItems | {key: "MyKey"}
+ *        },
  *      ]
  *    };
  *
- * More information here: https://docs.momentohq.com/develop/api-reference/auth-tokens#tokenscope-objects
+ * This example app generates diposable tokens by default so it uses the DisposableTokenScope
+ * to specify cache and topic permissions.
+ * More information here: https://docs.momentohq.com/develop/api-reference/auth-tokens#disposabletokenscope-objects
  */
-export const tokenPermissions: TokenScope = TokenScopes.topicPublishSubscribe(
-  AllCaches,
-  AllTopics,
-);
+export const tokenPermissions: DisposableTokenScope =
+  TokenScopes.topicPublishSubscribe(AllCaches, AllTopics);
 
 /**
  * Second, set the TTL for your tokens in terms of seconds, minutes, hours,
- * days, or using epoch format. You may also set tokens to never expire.
- * More information here: https://docs.momentohq.com/develop/api-reference/auth-tokens#generateauthtoken-api
+ * days, or using epoch format.
+ * This example app generates disposable tokens by default and disposable
+ * tokens must expire within 1 hour.
+ * More information here: https://docs.momentohq.com/develop/api-reference/auth-tokens#generatedisposabletoken-api
  */
 export const tokenExpiresIn: ExpiresIn = ExpiresIn.minutes(30);
 

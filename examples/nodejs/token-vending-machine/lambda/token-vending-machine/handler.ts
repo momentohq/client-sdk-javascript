@@ -1,6 +1,6 @@
 import {APIGatewayProxyEvent, APIGatewayProxyEventHeaders, APIGatewayProxyResult} from 'aws-lambda';
 import {GetSecretValueCommand, SecretsManagerClient} from '@aws-sdk/client-secrets-manager';
-import {AllTopics, AuthClient, CredentialProvider, GenerateAuthToken, TokenScopes} from '@gomomento/sdk';
+import {AllTopics, AuthClient, CredentialProvider, GenerateDisposableToken, TokenScopes} from '@gomomento/sdk';
 import {tokenPermissions, tokenExpiresIn, authenticationMethod, AuthenticationMethod} from './config';
 
 const _secretsClient = new SecretsManagerClient({});
@@ -45,13 +45,13 @@ async function vendAuthToken(vendorAuthTokenSecretName: string, headers: APIGate
   let generateTokenResponse;
   if (authenticationMethod === AuthenticationMethod.AmazonCognito) {
     const cognitoUserTokenPermissions = determineCognitoUserTokenScope(headers);
-    generateTokenResponse = await momentoAuthClient.generateAuthToken(cognitoUserTokenPermissions, tokenExpiresIn);
+    generateTokenResponse = await momentoAuthClient.generateDisposableToken(cognitoUserTokenPermissions, tokenExpiresIn);
   }
   else {
-    generateTokenResponse = await momentoAuthClient.generateAuthToken(tokenPermissions, tokenExpiresIn);
+    generateTokenResponse = await momentoAuthClient.generateDisposableToken(tokenPermissions, tokenExpiresIn);
   }
 
-  if (generateTokenResponse instanceof GenerateAuthToken.Success) {
+  if (generateTokenResponse instanceof GenerateDisposableToken.Success) {
     return {
       authToken: generateTokenResponse.authToken,
       expiresAt: generateTokenResponse.expiresAt.epoch(),
