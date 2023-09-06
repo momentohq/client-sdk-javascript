@@ -18,33 +18,36 @@ import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
 
 export function runGetSetDeleteTests(
-  Momento: ICacheClient,
-  IntegrationTestCacheName: string
+  cacheClient: ICacheClient,
+  integrationTestCacheName: string
 ) {
   describe('get/set/delete', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-      return Momento.get(props.cacheName, v4());
+      return cacheClient.get(props.cacheName, v4());
     });
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-      return Momento.set(props.cacheName, v4(), v4());
+      return cacheClient.set(props.cacheName, v4(), v4());
     });
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-      return Momento.delete(props.cacheName, v4());
+      return cacheClient.delete(props.cacheName, v4());
     });
 
     it('should set and get string from cache', async () => {
       const cacheKey = v4();
       const cacheValue = v4();
 
-      const setResponse = await Momento.set(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
         cacheKey,
         cacheValue
       );
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSet.Success);
       }, `expected SUCCESS but got ${setResponse.toString()}`);
-      const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
@@ -56,15 +59,18 @@ export function runGetSetDeleteTests(
     it('should set and get bytes from cache', async () => {
       const cacheKey = new TextEncoder().encode(v4());
       const cacheValue = new TextEncoder().encode(v4());
-      const setResponse = await Momento.set(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
         cacheKey,
         cacheValue
       );
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSet.Success);
       }, `expected SUCCESS but got ${setResponse.toString()}`);
-      const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
@@ -74,15 +80,18 @@ export function runGetSetDeleteTests(
       const cacheKey = v4();
       const cacheValue = new TextEncoder().encode(v4());
       const decodedValue = new TextDecoder().decode(cacheValue);
-      const setResponse = await Momento.set(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
         cacheKey,
         cacheValue
       );
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSet.Success);
       }, `expected SUCCESS but got ${setResponse.toString()}`);
-      const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
@@ -94,15 +103,18 @@ export function runGetSetDeleteTests(
     it('should set byte key with string value', async () => {
       const cacheValue = v4();
       const cacheKey = new TextEncoder().encode(v4());
-      const setResponse = await Momento.set(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
         cacheKey,
         cacheValue
       );
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSet.Success);
       }, `expected SUCCESS but got ${setResponse.toString()}`);
-      const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
@@ -114,8 +126,8 @@ export function runGetSetDeleteTests(
     it('should set and get string from cache and returned set value matches string cacheValue', async () => {
       const cacheKey = v4();
       const cacheValue = v4();
-      const setResponse = await Momento.set(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
         cacheKey,
         cacheValue
       );
@@ -127,8 +139,8 @@ export function runGetSetDeleteTests(
     it('should set string key with bytes value and returned set value matches byte cacheValue', async () => {
       const cacheKey = v4();
       const cacheValue = new TextEncoder().encode(v4());
-      const setResponse = await Momento.set(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
         cacheKey,
         cacheValue
       );
@@ -140,26 +152,29 @@ export function runGetSetDeleteTests(
     it('should set and then delete a value in cache', async () => {
       const cacheKey = v4();
       const cacheValue = new TextEncoder().encode(v4());
-      await Momento.set(IntegrationTestCacheName, cacheKey, cacheValue);
-      const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      await cacheClient.set(integrationTestCacheName, cacheKey, cacheValue);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
 
-      const deleteResponse = await Momento.delete(
-        IntegrationTestCacheName,
+      const deleteResponse = await cacheClient.delete(
+        integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
         expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
       }, `expected SUCCESS but got ${deleteResponse.toString()}`);
-      const getMiss = await Momento.get(IntegrationTestCacheName, cacheKey);
+      const getMiss = await cacheClient.get(integrationTestCacheName, cacheKey);
       expect(getMiss).toBeInstanceOf(CacheGet.Miss);
     });
 
     it('should return INVALID_ARGUMENT_ERROR for invalid ttl when set with string key/value', async () => {
-      const setResponse = await Momento.set(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
         v4(),
         v4(),
         {ttl: -1}
@@ -175,8 +190,8 @@ export function runGetSetDeleteTests(
     it('should set string key/value with valid ttl and get successfully', async () => {
       const cacheKey = v4();
       const cacheValue = v4();
-      const setResponse = await Momento.set(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
         cacheKey,
         cacheValue,
         {ttl: 15}
@@ -185,7 +200,10 @@ export function runGetSetDeleteTests(
         expect(setResponse).toBeInstanceOf(CacheSet.Success);
       }, `expected SUCCESS but got ${setResponse.toString()}`);
 
-      const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
       if (getResponse instanceof CacheGet.Hit) {
         expect(getResponse.valueString()).toEqual(cacheValue);
       }
@@ -193,8 +211,8 @@ export function runGetSetDeleteTests(
 
     it('should set with valid ttl and should return miss when ttl is expired', async () => {
       const cacheKey = v4();
-      const setResponse = await Momento.set(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
         cacheKey,
         v4(),
         {ttl: 1}
@@ -204,7 +222,10 @@ export function runGetSetDeleteTests(
       }, `expected SUCCESS but got ${setResponse.toString()}`);
       await sleep(3000);
 
-      const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Miss);
       }, `expected MISS but got ${getResponse.toString()}`);
@@ -214,7 +235,7 @@ export function runGetSetDeleteTests(
       const cacheKey = v4();
       const cacheValue = v4();
 
-      const cache = Momento.cache(IntegrationTestCacheName);
+      const cache = cacheClient.cache(integrationTestCacheName);
       const setResponse = await cache.set(cacheKey, cacheValue);
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSet.Success);
@@ -231,7 +252,7 @@ export function runGetSetDeleteTests(
       expectWithMessage(() => {
         expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
       }, `expected SUCCESS but got ${deleteResponse.toString()}`);
-      const getMiss = await Momento.get(IntegrationTestCacheName, cacheKey);
+      const getMiss = await cacheClient.get(integrationTestCacheName, cacheKey);
       expect(getMiss).toBeInstanceOf(CacheGet.Miss);
     });
 
@@ -239,15 +260,18 @@ export function runGetSetDeleteTests(
       const cacheKey = v4();
       const cacheValue = v4();
 
-      const setResponse = await Momento.set(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
         cacheKey,
         cacheValue
       );
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSet.Success);
       }, `expected SUCCESS but got ${setResponse.toString()}`);
-      let getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      let getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
@@ -258,7 +282,7 @@ export function runGetSetDeleteTests(
       expect(hitResponse.value()).toEqual(cacheValue);
       expect(hitResponse.valueString()).toEqual(cacheValue);
 
-      getResponse = await Momento.get(IntegrationTestCacheName, v4());
+      getResponse = await cacheClient.get(integrationTestCacheName, v4());
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Miss);
       }, `expected MISS but got ${getResponse.toString()}`);
@@ -269,13 +293,13 @@ export function runGetSetDeleteTests(
 
   describe('#increment', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-      return Momento.increment(props.cacheName, v4(), 1);
+      return cacheClient.increment(props.cacheName, v4(), 1);
     });
 
     it('increments from 0 to expected amount with string field', async () => {
       const field = v4();
-      let incrementResponse = await Momento.increment(
-        IntegrationTestCacheName,
+      let incrementResponse = await cacheClient.increment(
+        integrationTestCacheName,
         field,
         1
       );
@@ -285,8 +309,8 @@ export function runGetSetDeleteTests(
       let successResponse = incrementResponse as CacheIncrement.Success;
       expect(successResponse.valueNumber()).toEqual(1);
 
-      incrementResponse = await Momento.increment(
-        IntegrationTestCacheName,
+      incrementResponse = await cacheClient.increment(
+        integrationTestCacheName,
         field,
         41
       );
@@ -297,8 +321,8 @@ export function runGetSetDeleteTests(
       expect(successResponse.valueNumber()).toEqual(42);
       expect(successResponse.toString()).toEqual('Success: value: 42');
 
-      incrementResponse = await Momento.increment(
-        IntegrationTestCacheName,
+      incrementResponse = await cacheClient.increment(
+        integrationTestCacheName,
         field,
         -1042
       );
@@ -308,7 +332,10 @@ export function runGetSetDeleteTests(
       successResponse = incrementResponse as CacheIncrement.Success;
       expect(successResponse.valueNumber()).toEqual(-1000);
 
-      const getResponse = await Momento.get(IntegrationTestCacheName, field);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        field
+      );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
@@ -318,8 +345,8 @@ export function runGetSetDeleteTests(
 
     it('increments from 0 to expected amount with Uint8Array field', async () => {
       const field = new TextEncoder().encode(v4());
-      let incrementResponse = await Momento.increment(
-        IntegrationTestCacheName,
+      let incrementResponse = await cacheClient.increment(
+        integrationTestCacheName,
         field,
         1
       );
@@ -329,8 +356,8 @@ export function runGetSetDeleteTests(
       let successResponse = incrementResponse as CacheIncrement.Success;
       expect(successResponse.valueNumber()).toEqual(1);
 
-      incrementResponse = await Momento.increment(
-        IntegrationTestCacheName,
+      incrementResponse = await cacheClient.increment(
+        integrationTestCacheName,
         field,
         41
       );
@@ -341,8 +368,8 @@ export function runGetSetDeleteTests(
       expect(successResponse.valueNumber()).toEqual(42);
       expect(successResponse.toString()).toEqual('Success: value: 42');
 
-      incrementResponse = await Momento.increment(
-        IntegrationTestCacheName,
+      incrementResponse = await cacheClient.increment(
+        integrationTestCacheName,
         field,
         -1042
       );
@@ -352,7 +379,10 @@ export function runGetSetDeleteTests(
       successResponse = incrementResponse as CacheIncrement.Success;
       expect(successResponse.valueNumber()).toEqual(-1000);
 
-      const getResponse = await Momento.get(IntegrationTestCacheName, field);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        field
+      );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
@@ -363,9 +393,9 @@ export function runGetSetDeleteTests(
     it('increments with setting and resetting field', async () => {
       const field = v4();
 
-      await Momento.set(IntegrationTestCacheName, field, '10');
-      let response = await Momento.increment(
-        IntegrationTestCacheName,
+      await cacheClient.set(integrationTestCacheName, field, '10');
+      let response = await cacheClient.increment(
+        integrationTestCacheName,
         field,
         0
       );
@@ -375,7 +405,11 @@ export function runGetSetDeleteTests(
       let successResponse = response as CacheIncrement.Success;
       expect(successResponse.valueNumber()).toEqual(10);
 
-      response = await Momento.increment(IntegrationTestCacheName, field, 90);
+      response = await cacheClient.increment(
+        integrationTestCacheName,
+        field,
+        90
+      );
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(CacheIncrement.Success);
       }, `expected SUCCESS but got ${response.toString()}`);
@@ -383,8 +417,12 @@ export function runGetSetDeleteTests(
       expect(successResponse.valueNumber()).toEqual(100);
 
       // Reset field
-      await Momento.set(IntegrationTestCacheName, field, '0');
-      response = await Momento.increment(IntegrationTestCacheName, field, 0);
+      await cacheClient.set(integrationTestCacheName, field, '0');
+      response = await cacheClient.increment(
+        integrationTestCacheName,
+        field,
+        0
+      );
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(CacheIncrement.Success);
       }, `expected SUCCESS but got ${response.toString()}`);
@@ -395,9 +433,9 @@ export function runGetSetDeleteTests(
     it('fails with precondition with a bad amount', async () => {
       const field = v4();
 
-      await Momento.set(IntegrationTestCacheName, field, 'abcxyz');
-      const response = await Momento.increment(
-        IntegrationTestCacheName,
+      await cacheClient.set(integrationTestCacheName, field, 'abcxyz');
+      const response = await cacheClient.increment(
+        integrationTestCacheName,
         field,
         1
       );
@@ -412,7 +450,7 @@ export function runGetSetDeleteTests(
 
     it('should support happy path for increment via curried cache via ICache interface', async () => {
       const field = v4();
-      const cache = Momento.cache(IntegrationTestCacheName);
+      const cache = cacheClient.cache(integrationTestCacheName);
 
       await cache.set(field, '10');
       const response = await cache.increment(field, 42);
@@ -426,9 +464,9 @@ export function runGetSetDeleteTests(
     it('should support accessing value for CacheIncrement.Success without instanceof check', async () => {
       const field = v4();
 
-      await Momento.set(IntegrationTestCacheName, field, '10');
-      const response = await Momento.increment(
-        IntegrationTestCacheName,
+      await cacheClient.set(integrationTestCacheName, field, '10');
+      const response = await cacheClient.increment(
+        integrationTestCacheName,
         field,
         42
       );
@@ -446,21 +484,24 @@ export function runGetSetDeleteTests(
 
   describe('#setIfNotExists', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-      return Momento.setIfNotExists(props.cacheName, v4(), v4());
+      return cacheClient.setIfNotExists(props.cacheName, v4(), v4());
     });
 
     it('should set and get string from cache', async () => {
       const cacheKey = v4();
       const cacheValue = v4();
-      const setResponse = await Momento.setIfNotExists(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.setIfNotExists(
+        integrationTestCacheName,
         cacheKey,
         cacheValue
       );
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
       }, `expected STORED but got ${setResponse.toString()}`);
-      const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
@@ -472,8 +513,8 @@ export function runGetSetDeleteTests(
     it('should set and get remaining ttl from cache greater than expected', async () => {
       const cacheKey = v4();
       const cacheValue = v4();
-      const setResponse = await Momento.setIfNotExists(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.setIfNotExists(
+        integrationTestCacheName,
         cacheKey,
         cacheValue,
         {ttl: 1000}
@@ -481,8 +522,8 @@ export function runGetSetDeleteTests(
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
       }, `expected STORED but got ${setResponse.toString()}`);
-      const getTTLResponse = await Momento.itemGetTtl(
-        IntegrationTestCacheName,
+      const getTTLResponse = await cacheClient.itemGetTtl(
+        integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
@@ -493,7 +534,10 @@ export function runGetSetDeleteTests(
         // will be greater than 950 seconds at least
         expect(getTTLResponse.remainingTtlMillis()).toBeGreaterThan(950 * 1000);
       }
-      const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
@@ -506,16 +550,16 @@ export function runGetSetDeleteTests(
       const cacheKey = v4();
       const cacheValueOld = 'value1';
       const cacheValueNew = 'value2';
-      const setResponse = await Momento.setIfNotExists(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.setIfNotExists(
+        integrationTestCacheName,
         cacheKey,
         cacheValueOld
       );
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
       }, `expected STORED but got ${setResponse.toString()}`);
-      const setIfNotExistsResponse = await Momento.setIfNotExists(
-        IntegrationTestCacheName,
+      const setIfNotExistsResponse = await cacheClient.setIfNotExists(
+        integrationTestCacheName,
         cacheKey,
         cacheValueNew
       );
@@ -524,7 +568,10 @@ export function runGetSetDeleteTests(
           CacheSetIfNotExists.NotStored
         );
       }, `expected NOTSTORED but goit ${setIfNotExistsResponse.toString()}`);
-      const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
@@ -536,15 +583,18 @@ export function runGetSetDeleteTests(
     it('should set and get bytes from cache', async () => {
       const cacheKey = new TextEncoder().encode(v4());
       const cacheValue = new TextEncoder().encode(v4());
-      const setResponse = await Momento.setIfNotExists(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.setIfNotExists(
+        integrationTestCacheName,
         cacheKey,
         cacheValue
       );
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
       }, `expected STORED but got ${setResponse.toString()}`);
-      const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
@@ -554,15 +604,18 @@ export function runGetSetDeleteTests(
       const cacheKey = v4();
       const cacheValue = new TextEncoder().encode(v4());
       const decodedValue = new TextDecoder().decode(cacheValue);
-      const setResponse = await Momento.setIfNotExists(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.setIfNotExists(
+        integrationTestCacheName,
         cacheKey,
         cacheValue
       );
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
       }, `expected STORED but got ${setResponse.toString()}`);
-      const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
@@ -574,15 +627,18 @@ export function runGetSetDeleteTests(
     it('should set byte key with string value', async () => {
       const cacheValue = v4();
       const cacheKey = new TextEncoder().encode(v4());
-      const setResponse = await Momento.setIfNotExists(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.setIfNotExists(
+        integrationTestCacheName,
         cacheKey,
         cacheValue
       );
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
       }, `expected STORED but got ${setResponse.toString()}`);
-      const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
@@ -594,8 +650,8 @@ export function runGetSetDeleteTests(
     it('should set and get string from cache and returned set value matches string cacheValue', async () => {
       const cacheKey = v4();
       const cacheValue = v4();
-      const setResponse = await Momento.setIfNotExists(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.setIfNotExists(
+        integrationTestCacheName,
         cacheKey,
         cacheValue
       );
@@ -607,8 +663,8 @@ export function runGetSetDeleteTests(
     it('should set string key with bytes value and returned set value matches byte cacheValue', async () => {
       const cacheKey = v4();
       const cacheValue = new TextEncoder().encode(v4());
-      const setResponse = await Momento.setIfNotExists(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.setIfNotExists(
+        integrationTestCacheName,
         cacheKey,
         cacheValue
       );
@@ -618,8 +674,8 @@ export function runGetSetDeleteTests(
     });
 
     it('should return INVALID_ARGUMENT_ERROR for invalid ttl when set with string key/value', async () => {
-      const setResponse = await Momento.setIfNotExists(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.setIfNotExists(
+        integrationTestCacheName,
         v4(),
         v4(),
         {ttl: -1}
@@ -635,8 +691,8 @@ export function runGetSetDeleteTests(
     it('should set string key/value with valid ttl and get successfully', async () => {
       const cacheKey = v4();
       const cacheValue = v4();
-      const setResponse = await Momento.setIfNotExists(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.setIfNotExists(
+        integrationTestCacheName,
         cacheKey,
         cacheValue,
         {ttl: 15}
@@ -645,7 +701,10 @@ export function runGetSetDeleteTests(
         expect(setResponse).toBeInstanceOf(CacheSetIfNotExists.Stored);
       }, `expected STORED but got ${setResponse.toString()}`);
 
-      const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
       if (getResponse instanceof CacheGet.Hit) {
         expect(getResponse.valueString()).toEqual(cacheValue);
       }
@@ -653,8 +712,8 @@ export function runGetSetDeleteTests(
 
     it('should set with valid ttl and should return miss when ttl is expired', async () => {
       const cacheKey = v4();
-      const setResponse = await Momento.setIfNotExists(
-        IntegrationTestCacheName,
+      const setResponse = await cacheClient.setIfNotExists(
+        integrationTestCacheName,
         cacheKey,
         v4(),
         {ttl: 1}
@@ -664,7 +723,10 @@ export function runGetSetDeleteTests(
       }, `expected STORED but got ${setResponse.toString()}`);
       await sleep(3000);
 
-      const getResponse = await Momento.get(IntegrationTestCacheName, cacheKey);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Miss);
       }, `expected MISS but got ${getResponse.toString()}`);
@@ -673,7 +735,7 @@ export function runGetSetDeleteTests(
     it('should support happy path for setIfNotExists via curried cache via ICache interface', async () => {
       const cacheKey = v4();
       const cacheValue = v4();
-      const cache = Momento.cache(IntegrationTestCacheName);
+      const cache = cacheClient.cache(integrationTestCacheName);
 
       const setResponse = await cache.setIfNotExists(cacheKey, cacheValue);
       expectWithMessage(() => {

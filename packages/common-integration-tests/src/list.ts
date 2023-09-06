@@ -30,8 +30,8 @@ import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
 
 export function runListTests(
-  Momento: ICacheClient,
-  IntegrationTestCacheName: string
+  cacheClient: ICacheClient,
+  integrationTestCacheName: string
 ) {
   describe('lists', () => {
     const itBehavesLikeItValidates = (
@@ -43,7 +43,7 @@ export function runListTests(
 
       it('validates its list name', async () => {
         const response = await getResponse({
-          cacheName: IntegrationTestCacheName,
+          cacheName: integrationTestCacheName,
           listName: '  ',
         });
 
@@ -71,7 +71,7 @@ export function runListTests(
 
         for (const value of values) {
           await addValue({
-            cacheName: IntegrationTestCacheName,
+            cacheName: integrationTestCacheName,
             listName: listName,
             value: value,
             ttl: ttl,
@@ -79,8 +79,8 @@ export function runListTests(
         }
         await sleep(1000);
 
-        const respFetch = await Momento.listFetch(
-          IntegrationTestCacheName,
+        const respFetch = await cacheClient.listFetch(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -96,7 +96,7 @@ export function runListTests(
 
         for (const value of values) {
           await addValue({
-            cacheName: IntegrationTestCacheName,
+            cacheName: integrationTestCacheName,
             listName: listName,
             value: value,
             ttl: ttl,
@@ -106,8 +106,8 @@ export function runListTests(
           await sleep((timeout / 2) * 1000);
         }
 
-        const respFetch = await Momento.listFetch(
-          IntegrationTestCacheName,
+        const respFetch = await cacheClient.listFetch(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -129,7 +129,7 @@ export function runListTests(
         let length = 0;
         for (const value of values) {
           const resp = await addValue({
-            cacheName: IntegrationTestCacheName,
+            cacheName: integrationTestCacheName,
             listName: listName,
             value: value,
           });
@@ -151,14 +151,14 @@ export function runListTests(
 
         for (const value of values) {
           await addValue({
-            cacheName: IntegrationTestCacheName,
+            cacheName: integrationTestCacheName,
             listName: listName,
             value: value,
           });
         }
 
-        const respFetch = await Momento.listFetch(
-          IntegrationTestCacheName,
+        const respFetch = await cacheClient.listFetch(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -175,15 +175,15 @@ export function runListTests(
 
         for (const value of values) {
           await addValue({
-            cacheName: IntegrationTestCacheName,
+            cacheName: integrationTestCacheName,
             listName: listName,
             value: value,
             truncateToSize: 2,
           });
         }
 
-        const respFetch = await Momento.listFetch(
-          IntegrationTestCacheName,
+        const respFetch = await cacheClient.listFetch(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -208,14 +208,14 @@ export function runListTests(
 
         for (const value of values) {
           await addValue({
-            cacheName: IntegrationTestCacheName,
+            cacheName: integrationTestCacheName,
             listName: listName,
             value: value,
           });
         }
 
-        const respFetch = await Momento.listFetch(
-          IntegrationTestCacheName,
+        const respFetch = await cacheClient.listFetch(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -232,15 +232,15 @@ export function runListTests(
 
         for (const value of values) {
           await addValue({
-            cacheName: IntegrationTestCacheName,
+            cacheName: integrationTestCacheName,
             listName: listName,
             value: value,
             truncateToSize: 2,
           });
         }
 
-        const respFetch = await Momento.listFetch(
-          IntegrationTestCacheName,
+        const respFetch = await cacheClient.listFetch(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -255,12 +255,12 @@ export function runListTests(
 
     describe('#listFetch', () => {
       itBehavesLikeItValidates((props: ValidateListProps) => {
-        return Momento.listFetch(props.cacheName, props.listName);
+        return cacheClient.listFetch(props.cacheName, props.listName);
       });
 
       it('returns a miss if the list does not exist', async () => {
-        const respFetch = await Momento.listFetch(
-          IntegrationTestCacheName,
+        const respFetch = await cacheClient.listFetch(
+          integrationTestCacheName,
           v4()
         );
         expect(respFetch).toBeInstanceOf(CacheListFetch.Miss);
@@ -271,14 +271,14 @@ export function runListTests(
         const valueString = 'abc123';
         const valueBytes = new Uint8Array([97, 98, 99, 49, 50, 51]);
 
-        await Momento.listPushFront(
-          IntegrationTestCacheName,
+        await cacheClient.listPushFront(
+          integrationTestCacheName,
           listName,
           valueString
         );
 
-        const respFetch = await Momento.listFetch(
-          IntegrationTestCacheName,
+        const respFetch = await cacheClient.listFetch(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -297,23 +297,27 @@ export function runListTests(
 
       it('returns a miss if the list is deleted', async () => {
         const listName = v4();
-        await Momento.listPushFront(IntegrationTestCacheName, listName, '123');
-        const respFetch = await Momento.listFetch(
-          IntegrationTestCacheName,
+        await cacheClient.listPushFront(
+          integrationTestCacheName,
+          listName,
+          '123'
+        );
+        const respFetch = await cacheClient.listFetch(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
           expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
         }, `expected a HIT but got ${respFetch.toString()}`);
 
-        const deleteResp = await Momento.delete(
-          IntegrationTestCacheName,
+        const deleteResp = await cacheClient.delete(
+          integrationTestCacheName,
           listName
         );
         expect(deleteResp).toBeInstanceOf(CacheDelete.Success);
 
-        const respFetch2 = await Momento.listFetch(
-          IntegrationTestCacheName,
+        const respFetch2 = await cacheClient.listFetch(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -326,14 +330,14 @@ export function runListTests(
         const valueArray = ['a', 'b', 'c', '1', '2', '3'];
         const valueStringExpected = ['c', '1'];
 
-        await Momento.listConcatenateBack(
-          IntegrationTestCacheName,
+        await cacheClient.listConcatenateBack(
+          integrationTestCacheName,
           listName,
           valueArray
         );
 
-        const respFetch = await Momento.listFetch(
-          IntegrationTestCacheName,
+        const respFetch = await cacheClient.listFetch(
+          integrationTestCacheName,
           listName,
           {
             startIndex: 2,
@@ -352,7 +356,7 @@ export function runListTests(
       it('should support happy path for listFetch via curried cache via ICache interface', async () => {
         const listName = v4();
 
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
 
         await cache.listConcatenateFront(listName, ['foo', 'bar']);
 
@@ -369,13 +373,14 @@ export function runListTests(
       it('should support accessing value for CacheListFetch.Hit without instanceof check', async () => {
         const listName = v4();
 
-        await Momento.listConcatenateFront(IntegrationTestCacheName, listName, [
-          'foo',
-          'bar',
-        ]);
+        await cacheClient.listConcatenateFront(
+          integrationTestCacheName,
+          listName,
+          ['foo', 'bar']
+        );
 
-        let fetchResponse = await Momento.listFetch(
-          IntegrationTestCacheName,
+        let fetchResponse = await cacheClient.listFetch(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -390,7 +395,10 @@ export function runListTests(
         expect(hitResponse.value()).toEqual(expectedResult);
         expect(hitResponse.valueList()).toEqual(expectedResult);
 
-        fetchResponse = await Momento.listFetch(IntegrationTestCacheName, v4());
+        fetchResponse = await cacheClient.listFetch(
+          integrationTestCacheName,
+          v4()
+        );
         expectWithMessage(() => {
           expect(fetchResponse).toBeInstanceOf(CacheListFetch.Miss);
         }, `expected a MISS but got ${fetchResponse.toString()}`);
@@ -400,11 +408,14 @@ export function runListTests(
 
     describe('#listLength', () => {
       itBehavesLikeItValidates((props: ValidateListProps) => {
-        return Momento.listLength(props.cacheName, props.listName);
+        return cacheClient.listLength(props.cacheName, props.listName);
       });
 
       it('returns a miss if the list does not exist', async () => {
-        const resp = await Momento.listLength(IntegrationTestCacheName, v4());
+        const resp = await cacheClient.listLength(
+          integrationTestCacheName,
+          v4()
+        );
         expect(resp).toBeInstanceOf(CacheListLength.Miss);
       });
 
@@ -412,14 +423,14 @@ export function runListTests(
         const listName = v4();
         const values = ['one', 'two', 'three'];
 
-        await Momento.listConcatenateFront(
-          IntegrationTestCacheName,
+        await cacheClient.listConcatenateFront(
+          integrationTestCacheName,
           listName,
           values
         );
 
-        const resp = await Momento.listLength(
-          IntegrationTestCacheName,
+        const resp = await cacheClient.listLength(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -431,7 +442,7 @@ export function runListTests(
       it('should support happy path for listLength via curried cache via ICache interface', async () => {
         const listName = v4();
 
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
 
         await cache.listConcatenateFront(listName, ['foo', 'bar']);
 
@@ -445,11 +456,14 @@ export function runListTests(
 
     describe('#listPopBack', () => {
       itBehavesLikeItValidates((props: ValidateListProps) => {
-        return Momento.listPopBack(props.cacheName, props.listName);
+        return cacheClient.listPopBack(props.cacheName, props.listName);
       });
 
       it('misses when the list does not exist', async () => {
-        const resp = await Momento.listPopBack(IntegrationTestCacheName, v4());
+        const resp = await cacheClient.listPopBack(
+          integrationTestCacheName,
+          v4()
+        );
         expectWithMessage(() => {
           expect(resp).toBeInstanceOf(CacheListPopBack.Miss);
         }, `expected a MISS but got ${resp.toString()}`);
@@ -461,14 +475,14 @@ export function runListTests(
         const poppedValue = values[values.length - 1];
         const poppedBinary = Uint8Array.of(108, 111, 108);
 
-        await Momento.listConcatenateFront(
-          IntegrationTestCacheName,
+        await cacheClient.listConcatenateFront(
+          integrationTestCacheName,
           listName,
           values
         );
 
-        const resp = await Momento.listPopBack(
-          IntegrationTestCacheName,
+        const resp = await cacheClient.listPopBack(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -485,7 +499,7 @@ export function runListTests(
       it('should support happy path for listPopBack via curried cache via ICache interface', async () => {
         const listName = v4();
 
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
 
         await cache.listConcatenateFront(listName, ['foo', 'bar']);
 
@@ -499,13 +513,14 @@ export function runListTests(
       it('should support accessing value for CacheListPopBack.Hit without instanceof check', async () => {
         const listName = v4();
 
-        await Momento.listConcatenateFront(IntegrationTestCacheName, listName, [
-          'foo',
-          'bar',
-        ]);
+        await cacheClient.listConcatenateFront(
+          integrationTestCacheName,
+          listName,
+          ['foo', 'bar']
+        );
 
-        let popResponse = await Momento.listPopBack(
-          IntegrationTestCacheName,
+        let popResponse = await cacheClient.listPopBack(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -518,7 +533,10 @@ export function runListTests(
         expect(hitResponse.value()).toEqual('bar');
         expect(hitResponse.valueString()).toEqual('bar');
 
-        popResponse = await Momento.listPopBack(IntegrationTestCacheName, v4());
+        popResponse = await cacheClient.listPopBack(
+          integrationTestCacheName,
+          v4()
+        );
         expectWithMessage(() => {
           expect(popResponse).toBeInstanceOf(CacheListPopBack.Miss);
         }, `expected a MISS but got ${popResponse.toString()}`);
@@ -528,11 +546,14 @@ export function runListTests(
 
     describe('#listPopFront', () => {
       itBehavesLikeItValidates((props: ValidateListProps) => {
-        return Momento.listPopFront(props.cacheName, props.listName);
+        return cacheClient.listPopFront(props.cacheName, props.listName);
       });
 
       it('misses when the list does not exist', async () => {
-        const resp = await Momento.listPopFront(IntegrationTestCacheName, v4());
+        const resp = await cacheClient.listPopFront(
+          integrationTestCacheName,
+          v4()
+        );
         expectWithMessage(() => {
           expect(resp).toBeInstanceOf(CacheListPopFront.Miss);
         }, `expected a MISS but got ${resp.toString()}`);
@@ -544,14 +565,14 @@ export function runListTests(
         const poppedValue = values[0];
         const poppedBinary = Uint8Array.of(108, 111, 108);
 
-        await Momento.listConcatenateFront(
-          IntegrationTestCacheName,
+        await cacheClient.listConcatenateFront(
+          integrationTestCacheName,
           listName,
           values
         );
 
-        const resp = await Momento.listPopFront(
-          IntegrationTestCacheName,
+        const resp = await cacheClient.listPopFront(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -568,7 +589,7 @@ export function runListTests(
       it('should support happy path for listPopFront via curried cache via ICache interface', async () => {
         const listName = v4();
 
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
 
         await cache.listConcatenateFront(listName, ['foo', 'bar']);
 
@@ -582,13 +603,14 @@ export function runListTests(
       it('should support accessing value for CacheListPopFront.Hit without instanceof check', async () => {
         const listName = v4();
 
-        await Momento.listConcatenateFront(IntegrationTestCacheName, listName, [
-          'foo',
-          'bar',
-        ]);
+        await cacheClient.listConcatenateFront(
+          integrationTestCacheName,
+          listName,
+          ['foo', 'bar']
+        );
 
-        let popResponse = await Momento.listPopFront(
-          IntegrationTestCacheName,
+        let popResponse = await cacheClient.listPopFront(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -601,8 +623,8 @@ export function runListTests(
         expect(hitResponse.value()).toEqual('foo');
         expect(hitResponse.valueString()).toEqual('foo');
 
-        popResponse = await Momento.listPopFront(
-          IntegrationTestCacheName,
+        popResponse = await cacheClient.listPopFront(
+          integrationTestCacheName,
           v4()
         );
         expectWithMessage(() => {
@@ -614,11 +636,11 @@ export function runListTests(
 
     describe('#listPushBack', () => {
       itBehavesLikeItValidates((props: ValidateListProps) => {
-        return Momento.listPushBack(props.cacheName, props.listName, v4());
+        return cacheClient.listPushBack(props.cacheName, props.listName, v4());
       });
 
       itBehavesLikeItAddsValuesToTheBack((props: addValueProps) => {
-        return Momento.listPushBack(
+        return cacheClient.listPushBack(
           props.cacheName,
           props.listName,
           props.value,
@@ -630,8 +652,8 @@ export function runListTests(
       });
 
       it('returns a CacheListPushBack response', async () => {
-        const resp = await Momento.listPushBack(
-          IntegrationTestCacheName,
+        const resp = await cacheClient.listPushBack(
+          integrationTestCacheName,
           v4(),
           'test'
         );
@@ -643,7 +665,7 @@ export function runListTests(
       it('should support happy path for listPushBack via curried cache via ICache interface', async () => {
         const listName = v4();
 
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
 
         await cache.listConcatenateFront(listName, ['foo', 'bar']);
 
@@ -666,11 +688,11 @@ export function runListTests(
 
     describe('#listPushFront', () => {
       itBehavesLikeItValidates((props: ValidateListProps) => {
-        return Momento.listPushFront(props.cacheName, props.listName, v4());
+        return cacheClient.listPushFront(props.cacheName, props.listName, v4());
       });
 
       itBehavesLikeItAddsValuesToTheFront((props: addValueProps) => {
-        return Momento.listPushFront(
+        return cacheClient.listPushFront(
           props.cacheName,
           props.listName,
           props.value,
@@ -682,8 +704,8 @@ export function runListTests(
       });
 
       it('returns a CacheListPushFront response', async () => {
-        const resp = await Momento.listPushFront(
-          IntegrationTestCacheName,
+        const resp = await cacheClient.listPushFront(
+          integrationTestCacheName,
           v4(),
           'test'
         );
@@ -695,7 +717,7 @@ export function runListTests(
       it('should support happy path for listPushFront via curried cache via ICache interface', async () => {
         const listName = v4();
 
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
 
         await cache.listConcatenateFront(listName, ['foo', 'bar']);
 
@@ -718,7 +740,11 @@ export function runListTests(
 
     describe('#listRemoveValue', () => {
       itBehavesLikeItValidates((props: ValidateListProps) => {
-        return Momento.listRemoveValue(props.cacheName, props.listName, v4());
+        return cacheClient.listRemoveValue(
+          props.cacheName,
+          props.listName,
+          v4()
+        );
       });
 
       it('removes values', async () => {
@@ -733,21 +759,21 @@ export function runListTests(
         const expectedValues = ['turn me on', 'dead man'];
         const removeValue = 'number 9';
 
-        await Momento.listConcatenateFront(
-          IntegrationTestCacheName,
+        await cacheClient.listConcatenateFront(
+          integrationTestCacheName,
           listName,
           values
         );
 
-        const respRemove = await Momento.listRemoveValue(
-          IntegrationTestCacheName,
+        const respRemove = await cacheClient.listRemoveValue(
+          integrationTestCacheName,
           listName,
           removeValue
         );
         expect(respRemove).toBeInstanceOf(CacheListRemoveValue.Success);
 
-        const respFetch = await Momento.listFetch(
-          IntegrationTestCacheName,
+        const respFetch = await cacheClient.listFetch(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -761,7 +787,7 @@ export function runListTests(
       it('should support happy path for listRemoveValue via curried cache via ICache interface', async () => {
         const listName = v4();
 
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
 
         await cache.listConcatenateFront(listName, ['foo', 'bar', 'baz']);
 
@@ -783,11 +809,14 @@ export function runListTests(
 
     describe('#listRetain', () => {
       itBehavesLikeItValidates((props: ValidateListProps) => {
-        return Momento.listRetain(props.cacheName, props.listName);
+        return cacheClient.listRetain(props.cacheName, props.listName);
       });
 
       it('returns Success if the list does not exist', async () => {
-        const resp = await Momento.listRetain(IntegrationTestCacheName, v4());
+        const resp = await cacheClient.listRetain(
+          integrationTestCacheName,
+          v4()
+        );
         expectWithMessage(() => {
           expect(resp).toBeInstanceOf(CacheListRetain.Success);
         }, `expected a SUCCESS but got ${resp.toString()}`);
@@ -799,8 +828,8 @@ export function runListTests(
         const valueStringExpected = ['b'];
         const valueBytesExpected = new Uint8Array([98]);
 
-        const listPushResponse = await Momento.listConcatenateBack(
-          IntegrationTestCacheName,
+        const listPushResponse = await cacheClient.listConcatenateBack(
+          integrationTestCacheName,
           listName,
           valueString
         );
@@ -816,8 +845,8 @@ export function runListTests(
           endIndex: 2,
         };
 
-        const respRetain = await Momento.listRetain(
-          IntegrationTestCacheName,
+        const respRetain = await cacheClient.listRetain(
+          integrationTestCacheName,
           listName,
           retainOptions
         );
@@ -825,8 +854,8 @@ export function runListTests(
           expect(respRetain).toBeInstanceOf(CacheListRetain.Success);
         }, `expected a SUCCESS but got ${respRetain.toString()}`);
 
-        const respFetch = await Momento.listFetch(
-          IntegrationTestCacheName,
+        const respFetch = await cacheClient.listFetch(
+          integrationTestCacheName,
           listName
         );
 
@@ -847,7 +876,7 @@ export function runListTests(
       it('should support happy path for listRetain via curried cache via ICache interface', async () => {
         const listName = v4();
 
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
 
         await cache.listConcatenateFront(listName, [
           'foo',
@@ -877,13 +906,15 @@ export function runListTests(
 
     describe('#listConcatenateBack', () => {
       itBehavesLikeItValidates((props: ValidateListProps) => {
-        return Momento.listConcatenateBack(props.cacheName, props.listName, [
-          v4(),
-        ]);
+        return cacheClient.listConcatenateBack(
+          props.cacheName,
+          props.listName,
+          [v4()]
+        );
       });
 
       itBehavesLikeItAddsValuesToTheBack((props: addValueProps) => {
-        return Momento.listConcatenateBack(
+        return cacheClient.listConcatenateBack(
           props.cacheName,
           props.listName,
           [props.value] as string[] | Uint8Array[],
@@ -899,8 +930,8 @@ export function runListTests(
         const values1 = ['1', '2', '3', '4'];
         const values2 = ['this', 'that'];
 
-        let respConcat = await Momento.listConcatenateBack(
-          IntegrationTestCacheName,
+        let respConcat = await cacheClient.listConcatenateBack(
+          integrationTestCacheName,
           listName,
           values1
         );
@@ -911,8 +942,8 @@ export function runListTests(
           (respConcat as CacheListConcatenateBack.Success).listLength()
         ).toEqual(values1.length);
 
-        let respFetch = await Momento.listFetch(
-          IntegrationTestCacheName,
+        let respFetch = await cacheClient.listFetch(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -922,8 +953,8 @@ export function runListTests(
           values1
         );
 
-        respConcat = await Momento.listConcatenateBack(
-          IntegrationTestCacheName,
+        respConcat = await cacheClient.listConcatenateBack(
+          integrationTestCacheName,
           listName,
           values2
         );
@@ -934,7 +965,10 @@ export function runListTests(
           (respConcat as CacheListConcatenateBack.Success).listLength()
         ).toEqual(values1.length + values2.length);
 
-        respFetch = await Momento.listFetch(IntegrationTestCacheName, listName);
+        respFetch = await cacheClient.listFetch(
+          integrationTestCacheName,
+          listName
+        );
         expectWithMessage(() => {
           expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
         }, `expected a HIT but got ${respFetch.toString()}`);
@@ -946,7 +980,7 @@ export function runListTests(
       it('should support happy path for listConcatenateBack via curried cache via ICache interface', async () => {
         const listName = v4();
 
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
 
         await cache.listConcatenateFront(listName, ['foo', 'bar']);
 
@@ -973,13 +1007,15 @@ export function runListTests(
 
     describe('#listConcatenateFront', () => {
       itBehavesLikeItValidates((props: ValidateListProps) => {
-        return Momento.listConcatenateFront(props.cacheName, props.listName, [
-          v4(),
-        ]);
+        return cacheClient.listConcatenateFront(
+          props.cacheName,
+          props.listName,
+          [v4()]
+        );
       });
 
       itBehavesLikeItAddsValuesToTheFront((props: addValueProps) => {
-        return Momento.listConcatenateFront(
+        return cacheClient.listConcatenateFront(
           props.cacheName,
           props.listName,
           [props.value] as string[] | Uint8Array[],
@@ -995,8 +1031,8 @@ export function runListTests(
         const values1 = ['1', '2', '3', '4'];
         const values2 = ['this', 'that'];
 
-        let respConcat = await Momento.listConcatenateFront(
-          IntegrationTestCacheName,
+        let respConcat = await cacheClient.listConcatenateFront(
+          integrationTestCacheName,
           listName,
           values1
         );
@@ -1007,8 +1043,8 @@ export function runListTests(
           (respConcat as CacheListConcatenateFront.Success).listLength()
         ).toEqual(values1.length);
 
-        let respFetch = await Momento.listFetch(
-          IntegrationTestCacheName,
+        let respFetch = await cacheClient.listFetch(
+          integrationTestCacheName,
           listName
         );
         expectWithMessage(() => {
@@ -1018,8 +1054,8 @@ export function runListTests(
           values1
         );
 
-        respConcat = await Momento.listConcatenateFront(
-          IntegrationTestCacheName,
+        respConcat = await cacheClient.listConcatenateFront(
+          integrationTestCacheName,
           listName,
           values2
         );
@@ -1030,7 +1066,10 @@ export function runListTests(
           (respConcat as CacheListConcatenateFront.Success).listLength()
         ).toEqual(values1.length + values2.length);
 
-        respFetch = await Momento.listFetch(IntegrationTestCacheName, listName);
+        respFetch = await cacheClient.listFetch(
+          integrationTestCacheName,
+          listName
+        );
         expectWithMessage(() => {
           expect(respFetch).toBeInstanceOf(CacheListFetch.Hit);
         }, `expected a HIT but got ${respFetch.toString()}`);
@@ -1042,7 +1081,7 @@ export function runListTests(
       it('should support happy path for listConcatenateFront via curried cache via ICache interface', async () => {
         const listName = v4();
 
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
 
         await cache.listConcatenateFront(listName, ['foo', 'bar']);
 

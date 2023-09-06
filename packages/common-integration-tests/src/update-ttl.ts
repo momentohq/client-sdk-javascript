@@ -12,17 +12,17 @@ import {
   CacheItemGetTtl,
 } from '@gomomento/sdk-core';
 export function runUpdateTtlTest(
-  Momento: ICacheClient,
-  IntegrationTestCacheName: string
+  cacheClient: ICacheClient,
+  integrationTestCacheName: string
 ) {
   describe('#updateTTL', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-      return Momento.updateTtl(props.cacheName, v4(), 10000);
+      return cacheClient.updateTtl(props.cacheName, v4(), 10000);
     });
 
     it('should Miss for a key that does not exist in the cache', async () => {
-      const response = await Momento.updateTtl(
-        IntegrationTestCacheName,
+      const response = await cacheClient.updateTtl(
+        integrationTestCacheName,
         v4(),
         20000
       );
@@ -34,12 +34,12 @@ export function runUpdateTtlTest(
 
     it('should Set the new TTL for a key that exists in the cache', async () => {
       const cacheKey = v4();
-      await Momento.set(IntegrationTestCacheName, cacheKey, cacheKey, {
+      await cacheClient.set(integrationTestCacheName, cacheKey, cacheKey, {
         ttl: 10,
       });
 
-      const response = await Momento.updateTtl(
-        IntegrationTestCacheName,
+      const response = await cacheClient.updateTtl(
+        integrationTestCacheName,
         cacheKey,
         20000
       );
@@ -47,8 +47,8 @@ export function runUpdateTtlTest(
         expect(response).toBeInstanceOf(CacheUpdateTtl.Set);
       }, `expected SET but got ${response.toString()}`);
 
-      const ttlResponse = await Momento.itemGetTtl(
-        IntegrationTestCacheName,
+      const ttlResponse = await cacheClient.itemGetTtl(
+        integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
@@ -62,12 +62,12 @@ export function runUpdateTtlTest(
 
     it('should Error if given a TTL below 0', async () => {
       const cacheKey = v4();
-      await Momento.set(IntegrationTestCacheName, cacheKey, cacheKey, {
+      await cacheClient.set(integrationTestCacheName, cacheKey, cacheKey, {
         ttl: 10,
       });
 
-      const response = await Momento.updateTtl(
-        IntegrationTestCacheName,
+      const response = await cacheClient.updateTtl(
+        integrationTestCacheName,
         cacheKey,
         -20000
       );
@@ -79,7 +79,7 @@ export function runUpdateTtlTest(
 
     it('should support happy path for updateTTL via curried cache via ICache interface', async () => {
       const cacheKey = v4();
-      const cache = Momento.cache(IntegrationTestCacheName);
+      const cache = cacheClient.cache(integrationTestCacheName);
       await cache.set(cacheKey, cacheKey, {
         ttl: 10,
       });
@@ -102,12 +102,12 @@ export function runUpdateTtlTest(
 
   describe('#increaseTTL', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-      return Momento.increaseTtl(props.cacheName, v4(), 10000);
+      return cacheClient.increaseTtl(props.cacheName, v4(), 10000);
     });
 
     it('should Miss if given key does not exist in the cache', async () => {
-      const response = await Momento.increaseTtl(
-        IntegrationTestCacheName,
+      const response = await cacheClient.increaseTtl(
+        integrationTestCacheName,
         v4(),
         20000
       );
@@ -119,12 +119,12 @@ export function runUpdateTtlTest(
 
     it('should Set the new TTL for a key that exists in the cache and new TTL is greater than current TTL', async () => {
       const cacheKey = v4();
-      await Momento.set(IntegrationTestCacheName, cacheKey, cacheKey, {
+      await cacheClient.set(integrationTestCacheName, cacheKey, cacheKey, {
         ttl: 10,
       });
 
-      const response = await Momento.increaseTtl(
-        IntegrationTestCacheName,
+      const response = await cacheClient.increaseTtl(
+        integrationTestCacheName,
         cacheKey,
         20000
       );
@@ -132,8 +132,8 @@ export function runUpdateTtlTest(
         expect(response).toBeInstanceOf(CacheIncreaseTtl.Set);
       }, `expected SET but got ${response.toString()}`);
 
-      const ttlResponse = await Momento.itemGetTtl(
-        IntegrationTestCacheName,
+      const ttlResponse = await cacheClient.itemGetTtl(
+        integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
@@ -147,12 +147,12 @@ export function runUpdateTtlTest(
 
     it('should Error if given TTL is less than current TTL', async () => {
       const cacheKey = v4();
-      await Momento.set(IntegrationTestCacheName, cacheKey, cacheKey, {
+      await cacheClient.set(integrationTestCacheName, cacheKey, cacheKey, {
         ttl: 10,
       });
 
-      const response = await Momento.increaseTtl(
-        IntegrationTestCacheName,
+      const response = await cacheClient.increaseTtl(
+        integrationTestCacheName,
         cacheKey,
         5000
       );
@@ -163,12 +163,12 @@ export function runUpdateTtlTest(
 
     it('should Error if given a TTL below 0', async () => {
       const cacheKey = v4();
-      await Momento.set(IntegrationTestCacheName, cacheKey, cacheKey, {
+      await cacheClient.set(integrationTestCacheName, cacheKey, cacheKey, {
         ttl: 10,
       });
 
-      const response = await Momento.increaseTtl(
-        IntegrationTestCacheName,
+      const response = await cacheClient.increaseTtl(
+        integrationTestCacheName,
         cacheKey,
         -20000
       );
@@ -180,7 +180,7 @@ export function runUpdateTtlTest(
 
     it('should support happy path for increaseTTL via curried cache via ICache interface', async () => {
       const cacheKey = v4();
-      const cache = Momento.cache(IntegrationTestCacheName);
+      const cache = cacheClient.cache(integrationTestCacheName);
       await cache.set(cacheKey, cacheKey, {
         ttl: 10,
       });
@@ -203,12 +203,12 @@ export function runUpdateTtlTest(
 
   describe('#decreaseTTL', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-      return Momento.decreaseTtl(props.cacheName, v4(), 10000);
+      return cacheClient.decreaseTtl(props.cacheName, v4(), 10000);
     });
 
     it('should Miss if given key does not exist in the cache', async () => {
-      const response = await Momento.decreaseTtl(
-        IntegrationTestCacheName,
+      const response = await cacheClient.decreaseTtl(
+        integrationTestCacheName,
         v4(),
         5000
       );
@@ -220,12 +220,12 @@ export function runUpdateTtlTest(
 
     it('should Set the new TTL for a key that exists in the cache and new TTL is less than current TTL', async () => {
       const cacheKey = v4();
-      await Momento.set(IntegrationTestCacheName, cacheKey, cacheKey, {
+      await cacheClient.set(integrationTestCacheName, cacheKey, cacheKey, {
         ttl: 10,
       });
 
-      const response = await Momento.decreaseTtl(
-        IntegrationTestCacheName,
+      const response = await cacheClient.decreaseTtl(
+        integrationTestCacheName,
         cacheKey,
         5000
       );
@@ -233,8 +233,8 @@ export function runUpdateTtlTest(
         expect(response).toBeInstanceOf(CacheDecreaseTtl.Set);
       }, `expected SET but got ${response.toString()}`);
 
-      const ttlResponse = await Momento.itemGetTtl(
-        IntegrationTestCacheName,
+      const ttlResponse = await cacheClient.itemGetTtl(
+        integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
@@ -248,12 +248,12 @@ export function runUpdateTtlTest(
 
     it('should Error if given TTL is greater than current TTL', async () => {
       const cacheKey = v4();
-      await Momento.set(IntegrationTestCacheName, cacheKey, cacheKey, {
+      await cacheClient.set(integrationTestCacheName, cacheKey, cacheKey, {
         ttl: 10,
       });
 
-      const response = await Momento.decreaseTtl(
-        IntegrationTestCacheName,
+      const response = await cacheClient.decreaseTtl(
+        integrationTestCacheName,
         cacheKey,
         20000
       );
@@ -264,12 +264,12 @@ export function runUpdateTtlTest(
 
     it('should Error if given a TTL below 0', async () => {
       const cacheKey = v4();
-      await Momento.set(IntegrationTestCacheName, cacheKey, cacheKey, {
+      await cacheClient.set(integrationTestCacheName, cacheKey, cacheKey, {
         ttl: 10,
       });
 
-      const response = await Momento.decreaseTtl(
-        IntegrationTestCacheName,
+      const response = await cacheClient.decreaseTtl(
+        integrationTestCacheName,
         cacheKey,
         -20000
       );
@@ -281,7 +281,7 @@ export function runUpdateTtlTest(
 
     it('should support happy path for decreaseTTL via curried cache via ICache interface', async () => {
       const cacheKey = v4();
-      const cache = Momento.cache(IntegrationTestCacheName);
+      const cache = cacheClient.cache(integrationTestCacheName);
       await cache.set(cacheKey, cacheKey, {
         ttl: 10,
       });

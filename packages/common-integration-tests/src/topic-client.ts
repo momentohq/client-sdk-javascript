@@ -34,8 +34,8 @@ const STREAM_WAIT_TIME_MS = 2000;
 
 export function runTopicClientTests(
   topicClient: ITopicClient,
-  Momento: ICacheClient,
-  IntegrationTestCacheName: string
+  cacheClient: ICacheClient,
+  integrationTestCacheName: string
 ) {
   describe('#publish', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
@@ -60,7 +60,7 @@ export function runTopicClientTests(
 
     it('should not error when publishing to a topic that does not exist', async () => {
       const response = await topicClient.publish(
-        IntegrationTestCacheName,
+        integrationTestCacheName,
         v4(),
         'value'
       );
@@ -115,7 +115,7 @@ export function runTopicClientTests(
 
       let done = false;
       const subscribeResponse = await topicClient.subscribe(
-        IntegrationTestCacheName,
+        integrationTestCacheName,
         topicName,
         {
           onItem: (item: TopicItem) => {
@@ -139,7 +139,7 @@ export function runTopicClientTests(
 
       for (const value of publishedValues) {
         const publishResponse = await topicClient.publish(
-          IntegrationTestCacheName,
+          integrationTestCacheName,
           topicName,
           value
         );
@@ -165,7 +165,7 @@ export function runTopicClientTests(
 
       let done = false;
       const subscribeResponse = await topicClient.subscribe(
-        IntegrationTestCacheName,
+        integrationTestCacheName,
         topicName,
         {
           onItem: (item: TopicItem) => {
@@ -190,7 +190,7 @@ export function runTopicClientTests(
       (subscribeResponse as TopicSubscribe.Subscription).unsubscribe();
 
       const publishResponse = await topicClient.publish(
-        IntegrationTestCacheName,
+        integrationTestCacheName,
         topicName,
         publishedValue
       );
@@ -210,7 +210,7 @@ export function runTopicClientTests(
       const topicName = v4();
 
       const subscribeResponse = await topicClient.subscribe(
-        IntegrationTestCacheName,
+        integrationTestCacheName,
         topicName,
         {
           onItem: () => {
@@ -226,7 +226,9 @@ export function runTopicClientTests(
 
     it('should unsubscribe automatically if the cache is deleted mid-subscription', async () => {
       const randomCacheName = v4();
-      const createCacheResponse = await Momento.createCache(randomCacheName);
+      const createCacheResponse = await cacheClient.createCache(
+        randomCacheName
+      );
       let subscribeResponse: TopicSubscribe.Response | undefined;
 
       try {
@@ -260,14 +262,18 @@ export function runTopicClientTests(
         await sleep(STREAM_WAIT_TIME_MS);
 
         // Pull the rug out from under the subscription.
-        const deleteCacheResponse = await Momento.deleteCache(randomCacheName);
+        const deleteCacheResponse = await cacheClient.deleteCache(
+          randomCacheName
+        );
         expect(deleteCacheResponse).toBeInstanceOf(DeleteCache.Success);
 
         // Wait for the subscription error handler to run.
         await sleep(STREAM_WAIT_TIME_MS);
       } finally {
         // Just in case
-        const deleteCacheResponse = await Momento.deleteCache(randomCacheName);
+        const deleteCacheResponse = await cacheClient.deleteCache(
+          randomCacheName
+        );
         if (deleteCacheResponse instanceof DeleteCache.Error) {
           expect(deleteCacheResponse.errorCode()).toBe(
             MomentoErrorCode.NOT_FOUND_ERROR

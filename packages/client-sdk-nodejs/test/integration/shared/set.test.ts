@@ -1,6 +1,6 @@
 import {runSetTests} from '@gomomento/common-integration-tests';
 import {SetupIntegrationTest} from '../integration-setup';
 
-const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
+const {cacheClient, integrationTestCacheName} = SetupIntegrationTest();
 
-runSetTests(Momento, IntegrationTestCacheName);
+runSetTests(cacheClient, integrationTestCacheName);

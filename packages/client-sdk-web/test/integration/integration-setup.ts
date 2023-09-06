@@ -99,8 +99,8 @@ function momentoVectorClientForTesting(): PreviewVectorIndexClient {
 }
 
 export function SetupIntegrationTest(): {
-  Momento: CacheClient;
-  IntegrationTestCacheName: string;
+  cacheClient: CacheClient;
+  integrationTestCacheName: string;
 } {
   const cacheName = testCacheName();
 
@@ -121,17 +121,21 @@ export function SetupIntegrationTest(): {
   });
 
   const client = momentoClientForTesting();
-  return {Momento: client, IntegrationTestCacheName: cacheName};
+  return {cacheClient: client, integrationTestCacheName: cacheName};
 }
 
 export function SetupTopicIntegrationTest(): {
   topicClient: ITopicClient;
-  Momento: CacheClient;
-  IntegrationTestCacheName: string;
+  cacheClient: CacheClient;
+  integrationTestCacheName: string;
 } {
-  const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
+  const {cacheClient, integrationTestCacheName} = SetupIntegrationTest();
   const topicClient = momentoTopicClientForTesting();
-  return {topicClient, Momento, IntegrationTestCacheName};
+  return {
+    topicClient,
+    cacheClient: cacheClient,
+    integrationTestCacheName: integrationTestCacheName,
+  };
 }
 
 export function SetupVectorIntegrationTest(): {
