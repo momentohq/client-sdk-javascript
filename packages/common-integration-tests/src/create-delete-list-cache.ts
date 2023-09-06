@@ -17,19 +17,19 @@ import {
   CacheSet,
 } from '@gomomento/sdk-core';
 
-export function runCreateDeleteListCacheTests(Momento: ICacheClient) {
+export function runCreateDeleteListCacheTests(cacheClient: ICacheClient) {
   describe('create/delete cache', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-      return Momento.createCache(props.cacheName);
+      return cacheClient.createCache(props.cacheName);
     });
 
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-      return Momento.deleteCache(props.cacheName);
+      return cacheClient.deleteCache(props.cacheName);
     });
 
     it('should return NotFoundError if deleting a non-existent cache', async () => {
       const cacheName = testCacheName();
-      const deleteResponse = await Momento.deleteCache(cacheName);
+      const deleteResponse = await cacheClient.deleteCache(cacheName);
       expectWithMessage(() => {
         expect(deleteResponse).toBeInstanceOf(DeleteCache.Error);
       }, `expected ERROR but got ${deleteResponse.toString()}`);
@@ -42,16 +42,16 @@ export function runCreateDeleteListCacheTests(Momento: ICacheClient) {
 
     it('should return AlreadyExists response if trying to create a cache that already exists', async () => {
       const cacheName = testCacheName();
-      await WithCache(Momento, cacheName, async () => {
-        const createResponse = await Momento.createCache(cacheName);
+      await WithCache(cacheClient, cacheName, async () => {
+        const createResponse = await cacheClient.createCache(cacheName);
         expect(createResponse).toBeInstanceOf(CreateCache.AlreadyExists);
       });
     });
 
     it('should create 1 cache and list the created cache', async () => {
       const cacheName = testCacheName();
-      await WithCache(Momento, cacheName, async () => {
-        const listResponse = await Momento.listCaches();
+      await WithCache(cacheClient, cacheName, async () => {
+        const listResponse = await cacheClient.listCaches();
         expectWithMessage(() => {
           expect(listResponse).toBeInstanceOf(ListCaches.Success);
         }, `expected SUCCESS but got ${listResponse.toString()}`);
@@ -78,12 +78,12 @@ export function runCreateDeleteListCacheTests(Momento: ICacheClient) {
 
   describe('flush cache', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-      return Momento.flushCache(props.cacheName);
+      return cacheClient.flushCache(props.cacheName);
     });
 
     it('should return NotFoundError if flushing a non-existent cache', async () => {
       const cacheName = testCacheName();
-      const flushResponse = await Momento.flushCache(cacheName);
+      const flushResponse = await cacheClient.flushCache(cacheName);
       expectWithMessage(() => {
         expect(flushResponse).toBeInstanceOf(CacheFlush.Error);
       }, `expected ERROR but got ${flushResponse.toString()}`);
@@ -96,8 +96,8 @@ export function runCreateDeleteListCacheTests(Momento: ICacheClient) {
 
     it('should return success while flushing empty cache', async () => {
       const cacheName = testCacheName();
-      await WithCache(Momento, cacheName, async () => {
-        const flushResponse = await Momento.flushCache(cacheName);
+      await WithCache(cacheClient, cacheName, async () => {
+        const flushResponse = await cacheClient.flushCache(cacheName);
         expectWithMessage(() => {
           expect(flushResponse).toBeInstanceOf(CacheFlush.Success);
         }, `expected SUCCESS but got ${flushResponse.toString()}`);
@@ -110,21 +110,21 @@ export function runCreateDeleteListCacheTests(Momento: ICacheClient) {
       const key2 = v4();
       const value1 = v4();
       const value2 = v4();
-      await WithCache(Momento, cacheName, async () => {
-        const setResponse1 = await Momento.set(cacheName, key1, value1);
+      await WithCache(cacheClient, cacheName, async () => {
+        const setResponse1 = await cacheClient.set(cacheName, key1, value1);
         expectWithMessage(() => {
           expect(setResponse1).toBeInstanceOf(CacheSet.Success);
         }, `expected SUCCESS but got ${setResponse1.toString()}`);
-        const setResponse2 = await Momento.set(cacheName, key2, value2);
+        const setResponse2 = await cacheClient.set(cacheName, key2, value2);
         expectWithMessage(() => {
           expect(setResponse2).toBeInstanceOf(CacheSet.Success);
         }, `expected SUCCESS but got ${setResponse2.toString()}`);
-        const flushResponse = await Momento.flushCache(cacheName);
+        const flushResponse = await cacheClient.flushCache(cacheName);
         expectWithMessage(() => {
           expect(flushResponse).toBeInstanceOf(CacheFlush.Success);
         }, `expected SUCCESS but got ${flushResponse.toString()}`);
-        const getResponse1 = await Momento.get(cacheName, key1);
-        const getResponse2 = await Momento.get(cacheName, key2);
+        const getResponse1 = await cacheClient.get(cacheName, key1);
+        const getResponse2 = await cacheClient.get(cacheName, key2);
         expectWithMessage(() => {
           expect(getResponse1).toBeInstanceOf(CacheGet.Miss);
         }, `expected MISS but got ${getResponse1.toString()}`);

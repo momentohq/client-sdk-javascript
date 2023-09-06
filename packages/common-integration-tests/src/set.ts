@@ -26,8 +26,8 @@ const LOL_BYTE_ARRAY = Uint8Array.of(108, 111, 108);
 const FOO_BYTE_ARRAY = Uint8Array.of(102, 111, 111);
 
 export function runSetTests(
-  Momento: ICacheClient,
-  IntegrationTestCacheName: string
+  cacheClient: ICacheClient,
+  integrationTestCacheName: string
 ) {
   describe('Integration tests for convenience operations on sets datastructure', () => {
     const itBehavesLikeItValidates = (
@@ -39,7 +39,7 @@ export function runSetTests(
 
       it('validates its set name', async () => {
         const response = await getResponse({
-          cacheName: IntegrationTestCacheName,
+          cacheName: integrationTestCacheName,
           setName: '  ',
         });
 
@@ -50,24 +50,26 @@ export function runSetTests(
     };
 
     itBehavesLikeItValidates((props: ValidateSetProps) => {
-      return Momento.setAddElement(props.cacheName, props.setName, v4());
+      return cacheClient.setAddElement(props.cacheName, props.setName, v4());
     });
     itBehavesLikeItValidates((props: ValidateSetProps) => {
-      return Momento.setAddElements(props.cacheName, props.setName, [v4()]);
+      return cacheClient.setAddElements(props.cacheName, props.setName, [v4()]);
     });
     itBehavesLikeItValidates((props: ValidateSetProps) => {
-      return Momento.setFetch(props.cacheName, props.setName);
+      return cacheClient.setFetch(props.cacheName, props.setName);
     });
     itBehavesLikeItValidates((props: ValidateSetProps) => {
-      return Momento.setRemoveElements(props.cacheName, props.setName, [v4()]);
+      return cacheClient.setRemoveElements(props.cacheName, props.setName, [
+        v4(),
+      ]);
     });
   });
 
   describe('#addElement', () => {
     it('should succeed for addElement with a byte array happy path', async () => {
       const setName = v4();
-      const addResponse = await Momento.setAddElement(
-        IntegrationTestCacheName,
+      const addResponse = await cacheClient.setAddElement(
+        integrationTestCacheName,
         setName,
         LOL_BYTE_ARRAY
       );
@@ -75,8 +77,8 @@ export function runSetTests(
         expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
       }, `expected SUCCESS but got ${addResponse.toString()}`);
 
-      const fetchResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      const fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         setName
       );
       expectWithMessage(() => {
@@ -89,8 +91,8 @@ export function runSetTests(
 
     it('should succeed for addElement with a string happy path', async () => {
       const setName = v4();
-      const addResponse = await Momento.setAddElement(
-        IntegrationTestCacheName,
+      const addResponse = await cacheClient.setAddElement(
+        integrationTestCacheName,
         setName,
         'lol'
       );
@@ -98,8 +100,8 @@ export function runSetTests(
         expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
       }, `expected SUCCESS but got ${addResponse.toString()}`);
 
-      const fetchResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      const fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         setName
       );
       expectWithMessage(() => {
@@ -113,7 +115,7 @@ export function runSetTests(
     it('should support happy path for addElement via curried cache via ICache interface', async () => {
       const setName = v4();
 
-      const cache = Momento.cache(IntegrationTestCacheName);
+      const cache = cacheClient.cache(integrationTestCacheName);
 
       await cache.setAddElements(setName, ['foo', 'bar']);
 
@@ -135,8 +137,8 @@ export function runSetTests(
   describe('#removeElement', () => {
     it('should succeed for removeElement with a byte array happy path', async () => {
       const setName = v4();
-      const addResponse = await Momento.setAddElements(
-        IntegrationTestCacheName,
+      const addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
         setName,
         [FOO_BYTE_ARRAY, LOL_BYTE_ARRAY]
       );
@@ -144,15 +146,15 @@ export function runSetTests(
         expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
       }, `expected SUCCESS but got ${addResponse.toString()}`);
 
-      const removeResponse = await Momento.setRemoveElement(
-        IntegrationTestCacheName,
+      const removeResponse = await cacheClient.setRemoveElement(
+        integrationTestCacheName,
         setName,
         FOO_BYTE_ARRAY
       );
       expect(removeResponse).toBeInstanceOf(CacheSetRemoveElement.Success);
 
-      const fetchResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      const fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         setName
       );
       expectWithMessage(() => {
@@ -165,8 +167,8 @@ export function runSetTests(
 
     it('should succeed for removeElement with a string array happy path', async () => {
       const setName = v4();
-      const addResponse = await Momento.setAddElements(
-        IntegrationTestCacheName,
+      const addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
         setName,
         [FOO_BYTE_ARRAY, LOL_BYTE_ARRAY]
       );
@@ -174,8 +176,8 @@ export function runSetTests(
         expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
       }, `expected SUCCESS but got ${addResponse.toString()}`);
 
-      const removeResponse = await Momento.setRemoveElement(
-        IntegrationTestCacheName,
+      const removeResponse = await cacheClient.setRemoveElement(
+        integrationTestCacheName,
         setName,
         'foo'
       );
@@ -183,8 +185,8 @@ export function runSetTests(
         expect(removeResponse).toBeInstanceOf(CacheSetRemoveElement.Success);
       }, `expected SUCCESS but got ${removeResponse.toString()}`);
 
-      const fetchResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      const fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         setName
       );
       expectWithMessage(() => {
@@ -198,7 +200,7 @@ export function runSetTests(
     it('should support happy path for removeElement via curried cache via ICache interface', async () => {
       const setName = v4();
 
-      const cache = Momento.cache(IntegrationTestCacheName);
+      const cache = cacheClient.cache(integrationTestCacheName);
 
       await cache.setAddElements(setName, ['foo', 'bar', 'baz']);
 
@@ -220,8 +222,8 @@ export function runSetTests(
   describe('#addElements', () => {
     it('should succeed for addElements with byte arrays happy path', async () => {
       const setName = v4();
-      const addResponse = await Momento.setAddElements(
-        IntegrationTestCacheName,
+      const addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
         setName,
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY]
       );
@@ -229,8 +231,8 @@ export function runSetTests(
         expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
       }, `expected SUCCESS but got ${addResponse.toString()}`);
 
-      const fetchResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      const fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         setName
       );
       expectWithMessage(() => {
@@ -243,8 +245,8 @@ export function runSetTests(
 
     it('should succeed for addElements with byte arrays happy path with no refresh ttl', async () => {
       const setName = v4();
-      let addResponse = await Momento.setAddElements(
-        IntegrationTestCacheName,
+      let addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
         setName,
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY],
         {ttl: new CollectionTtl(2, false)}
@@ -253,8 +255,8 @@ export function runSetTests(
         expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
       }, `expected SUCCESS but got ${addResponse.toString()}`);
 
-      addResponse = await Momento.setAddElements(
-        IntegrationTestCacheName,
+      addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
         setName,
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY],
         {ttl: new CollectionTtl(10, false)}
@@ -265,8 +267,8 @@ export function runSetTests(
 
       await sleep(2_000);
 
-      const fetchResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      const fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         setName
       );
       expectWithMessage(() => {
@@ -276,8 +278,8 @@ export function runSetTests(
 
     it('should succeed for addElements with byte arrays happy path with refresh ttl', async () => {
       const setName = v4();
-      let addResponse = await Momento.setAddElements(
-        IntegrationTestCacheName,
+      let addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
         setName,
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY],
         {ttl: new CollectionTtl(2, false)}
@@ -286,8 +288,8 @@ export function runSetTests(
         expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
       }, `expected SUCCESS but got ${addResponse.toString()}`);
 
-      addResponse = await Momento.setAddElements(
-        IntegrationTestCacheName,
+      addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
         setName,
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY],
         {ttl: new CollectionTtl(10, true)}
@@ -298,8 +300,8 @@ export function runSetTests(
 
       await sleep(2_000);
 
-      const fetchResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      const fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         setName
       );
       expectWithMessage(() => {
@@ -318,8 +320,8 @@ export function runSetTests(
 
     it('should succeed for addElements for string arrays happy path', async () => {
       const setName = v4();
-      const addResponse = await Momento.setAddElements(
-        IntegrationTestCacheName,
+      const addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
         setName,
         ['lol', 'foo']
       );
@@ -327,8 +329,8 @@ export function runSetTests(
         expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
       }, `expected SUCCESS but got ${addResponse.toString()}`);
 
-      const fetchResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      const fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         setName
       );
       expectWithMessage(() => {
@@ -345,16 +347,16 @@ export function runSetTests(
 
     it('should succeed for addElements with duplicate elements', async () => {
       const setName = v4();
-      let addResponse = await Momento.setAddElements(
-        IntegrationTestCacheName,
+      let addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
         setName,
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY]
       );
       expectWithMessage(() => {
         expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
       }, `expected SUCCESS but got ${addResponse.toString()}`);
-      addResponse = await Momento.setAddElements(
-        IntegrationTestCacheName,
+      addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
         setName,
         [LOL_BYTE_ARRAY]
       );
@@ -362,8 +364,8 @@ export function runSetTests(
         expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
       }, `expected SUCCESS but got ${addResponse.toString()}`);
 
-      const fetchResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      const fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         setName
       );
       expectWithMessage(() => {
@@ -377,7 +379,7 @@ export function runSetTests(
     it('should support happy path for addElements via curried cache via ICache interface', async () => {
       const setName = v4();
 
-      const cache = Momento.cache(IntegrationTestCacheName);
+      const cache = cacheClient.cache(integrationTestCacheName);
 
       await cache.setAddElements(setName, ['foo', 'bar']);
 
@@ -399,8 +401,8 @@ export function runSetTests(
   describe('#removeElements', () => {
     it('should succeed for removeElements byte arrays happy path', async () => {
       const setName = v4();
-      const addResponse = await Momento.setAddElements(
-        IntegrationTestCacheName,
+      const addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
         setName,
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY]
       );
@@ -408,8 +410,8 @@ export function runSetTests(
         expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
       }, `expected SUCCESS but got ${addResponse.toString()}`);
 
-      const removeResponse = await Momento.setRemoveElements(
-        IntegrationTestCacheName,
+      const removeResponse = await cacheClient.setRemoveElements(
+        integrationTestCacheName,
         setName,
         [FOO_BYTE_ARRAY]
       );
@@ -417,8 +419,8 @@ export function runSetTests(
         expect(removeResponse).toBeInstanceOf(CacheSetRemoveElements.Success);
       }, `expected SUCCESS but got ${removeResponse.toString()}`);
 
-      const fetchResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      const fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         setName
       );
       expectWithMessage(() => {
@@ -431,8 +433,8 @@ export function runSetTests(
 
     it('should succeed for removeElements string arrays happy path', async () => {
       const setName = v4();
-      const addResponse = await Momento.setAddElements(
-        IntegrationTestCacheName,
+      const addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
         setName,
         ['lol', 'foo']
       );
@@ -440,8 +442,8 @@ export function runSetTests(
         expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
       }, `expected SUCCESS but got ${addResponse.toString()}`);
 
-      const removeResponse = await Momento.setRemoveElements(
-        IntegrationTestCacheName,
+      const removeResponse = await cacheClient.setRemoveElements(
+        integrationTestCacheName,
         setName,
         ['foo']
       );
@@ -449,8 +451,8 @@ export function runSetTests(
         expect(removeResponse).toBeInstanceOf(CacheSetRemoveElements.Success);
       }, `expected SUCCESS but got ${removeResponse.toString()}`);
 
-      const fetchResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      const fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         setName
       );
       expectWithMessage(() => {
@@ -463,8 +465,8 @@ export function runSetTests(
 
     it('should succeed for removeElements when the element does not exist', async () => {
       const setName = v4();
-      const addResponse = await Momento.setAddElements(
-        IntegrationTestCacheName,
+      const addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
         setName,
         [LOL_BYTE_ARRAY]
       );
@@ -472,8 +474,8 @@ export function runSetTests(
         expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
       }, `expected SUCCESS but got ${addResponse.toString()}`);
 
-      const removeResponse = await Momento.setRemoveElements(
-        IntegrationTestCacheName,
+      const removeResponse = await cacheClient.setRemoveElements(
+        integrationTestCacheName,
         setName,
         [FOO_BYTE_ARRAY]
       );
@@ -481,8 +483,8 @@ export function runSetTests(
         expect(removeResponse).toBeInstanceOf(CacheSetRemoveElements.Success);
       }, `expected SUCCESS but got ${removeResponse.toString()}`);
 
-      const fetchResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      const fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         setName
       );
       expectWithMessage(() => {
@@ -495,8 +497,8 @@ export function runSetTests(
 
     it('should succeed for removeElements when bytes/strings are used together', async () => {
       const setName = v4();
-      const addResponse = await Momento.setAddElements(
-        IntegrationTestCacheName,
+      const addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
         setName,
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY]
       );
@@ -504,8 +506,8 @@ export function runSetTests(
         expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
       }, `expected SUCCESS but got ${addResponse.toString()}`);
 
-      const removeResponse = await Momento.setRemoveElements(
-        IntegrationTestCacheName,
+      const removeResponse = await cacheClient.setRemoveElements(
+        integrationTestCacheName,
         setName,
         ['lol']
       );
@@ -513,8 +515,8 @@ export function runSetTests(
         expect(removeResponse).toBeInstanceOf(CacheSetRemoveElements.Success);
       }, `expected SUCCESS but got ${removeResponse.toString()}`);
 
-      const fetchResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      const fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         setName
       );
       expectWithMessage(() => {
@@ -528,7 +530,7 @@ export function runSetTests(
     it('should support happy path for removeElements via curried cache via ICache interface', async () => {
       const setName = v4();
 
-      const cache = Momento.cache(IntegrationTestCacheName);
+      const cache = cacheClient.cache(integrationTestCacheName);
 
       await cache.setAddElements(setName, ['foo', 'bar', 'baz', 'bam']);
 
@@ -550,8 +552,8 @@ export function runSetTests(
   describe('#setFetch', () => {
     it('should succeed for string arrays happy path', async () => {
       const setName = v4();
-      const addResponse = await Momento.setAddElements(
-        IntegrationTestCacheName,
+      const addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
         setName,
         ['how', 'ya', 'ding']
       );
@@ -559,8 +561,8 @@ export function runSetTests(
         expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
       }, `expected SUCCESS but got ${addResponse.toString()}`);
 
-      const fetchResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      const fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         setName
       );
       expectWithMessage(() => {
@@ -576,8 +578,8 @@ export function runSetTests(
     });
 
     it('should return MISS if set does not exist', async () => {
-      const noKeyGetResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      const noKeyGetResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         'this-set-doesnt-exist'
       );
       expect(noKeyGetResponse).toBeInstanceOf(CacheSetFetch.Miss);
@@ -585,21 +587,21 @@ export function runSetTests(
 
     it('should return MISS if set has been deleted', async () => {
       const setName = v4();
-      const addResponse = await Momento.setAddElements(
-        IntegrationTestCacheName,
+      const addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
         setName,
         [LOL_BYTE_ARRAY, FOO_BYTE_ARRAY]
       );
       expectWithMessage(() => {
         expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
       }, `expected SUCCESS but got ${addResponse.toString()}`);
-      const deleteResponse = await Momento.delete(
-        IntegrationTestCacheName,
+      const deleteResponse = await cacheClient.delete(
+        integrationTestCacheName,
         setName
       );
       expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
-      const fetchResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      const fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         setName
       );
       expectWithMessage(() => {
@@ -610,7 +612,7 @@ export function runSetTests(
     it('should support happy path for fetch via curried cache via ICache interface', async () => {
       const setName = v4();
 
-      const cache = Momento.cache(IntegrationTestCacheName);
+      const cache = cacheClient.cache(integrationTestCacheName);
 
       await cache.setAddElements(setName, ['foo', 'bar']);
 
@@ -626,13 +628,13 @@ export function runSetTests(
     it('should support accessing value for CacheSetFetch.Hit without instanceof check', async () => {
       const setName = v4();
 
-      await Momento.setAddElements(IntegrationTestCacheName, setName, [
+      await cacheClient.setAddElements(integrationTestCacheName, setName, [
         'foo',
         'bar',
       ]);
 
-      let fetchResponse = await Momento.setFetch(
-        IntegrationTestCacheName,
+      let fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
         setName
       );
       expectWithMessage(() => {
@@ -647,7 +649,10 @@ export function runSetTests(
       expect(new Set(hit.value())).toEqual(new Set(expectedResult));
       expect(new Set(hit.valueArray())).toEqual(new Set(expectedResult));
 
-      fetchResponse = await Momento.setFetch(IntegrationTestCacheName, v4());
+      fetchResponse = await cacheClient.setFetch(
+        integrationTestCacheName,
+        v4()
+      );
       expectWithMessage(() => {
         expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Miss);
       }, `expected a MISS but got ${fetchResponse.toString()}`);

@@ -1,6 +1,6 @@
 import {runTopicClientTests} from '@gomomento/common-integration-tests';
 import {SetupTopicIntegrationTest} from '../integration-setup';
 
-const {topicClient, Momento, IntegrationTestCacheName} =
+const {topicClient, cacheClient, integrationTestCacheName} =
   SetupTopicIntegrationTest();
-runTopicClientTests(topicClient, Momento, IntegrationTestCacheName);
+runTopicClientTests(topicClient, cacheClient, integrationTestCacheName);
