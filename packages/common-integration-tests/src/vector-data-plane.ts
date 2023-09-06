@@ -218,7 +218,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           "invalid parameter: vector, vector dimension has to match the index's dimension";
         const errorResponse = addResponse as VectorAddItemBatch.Error;
         expect(errorResponse.message()).toMatch(
-          `Invalid argument passed to Momento client:`
+          'Invalid argument passed to Momento client:'
         );
         expect(errorResponse.message()).toMatch(expectedInnerExMessage);
         expect(errorResponse.innerException().message).toMatch(

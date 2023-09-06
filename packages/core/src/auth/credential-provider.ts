@@ -245,6 +245,7 @@ export class EnvMomentoTokenProvider extends StringMomentoTokenProvider {
       authToken: authToken,
       controlEndpoint: props.controlEndpoint,
       cacheEndpoint: props.cacheEndpoint,
+      tokenEndpoint: props.tokenEndpoint,
       vectorEndpoint: props.vectorEndpoint,
     });
     this.environmentVariableName = props.environmentVariableName;

@@ -50,9 +50,7 @@ export function getWebVectorEndpoint(
   if (credentialProvider.isVectorEndpointOverridden()) {
     return withProtocolPrefix(credentialProvider.getVectorEndpoint());
   }
-  return withProtocolPrefix(
-    `web.${credentialProvider.getVectorEndpoint()}`
-  );
+  return withProtocolPrefix(`web.${credentialProvider.getVectorEndpoint()}`);
 }
 
 function withProtocolPrefix(endpoint: string): string {
