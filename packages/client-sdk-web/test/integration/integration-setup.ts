@@ -13,11 +13,11 @@ import {CacheClientProps} from '../../src/cache-client-props';
 import {
   CacheClient,
   TopicClient,
-  PreviewVectorClient,
+  PreviewVectorIndexClient,
   Configurations,
   AuthClient,
   TopicConfigurations,
-  VectorConfigurations,
+  VectorIndexConfigurations,
 } from '../../src';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
@@ -32,6 +32,8 @@ function credsProvider(): CredentialProvider {
         environmentVariableName: 'TEST_AUTH_TOKEN',
         controlEndpoint: 'https://no-controlplane-requests-allowed:9001',
         cacheEndpoint: 'https://localhost:9001',
+        tokenEndpoint: 'https://localhost:9001',
+        vectorEndpoint: 'https://localhost:9001',
       });
     } else {
       _credsProvider = CredentialProvider.fromEnvironmentVariable({
@@ -50,6 +52,8 @@ function sessionCredsProvider(): CredentialProvider {
       // steal them from the auth-token-based creds provider.
       cacheEndpoint: credsProvider().getCacheEndpoint(),
       controlEndpoint: credsProvider().getControlEndpoint(),
+      tokenEndpoint: credsProvider().getTokenEndpoint(),
+      vectorEndpoint: credsProvider().getVectorEndpoint(),
     });
   }
   return _sessionCredsProvider;
@@ -87,9 +91,9 @@ function momentoTopicClientForTestingWithSessionToken(): TopicClient {
   });
 }
 
-function momentoVectorClientForTesting(): PreviewVectorClient {
-  return new PreviewVectorClient({
-    configuration: VectorConfigurations.Laptop.latest(),
+function momentoVectorClientForTesting(): PreviewVectorIndexClient {
+  return new PreviewVectorIndexClient({
+    configuration: VectorIndexConfigurations.Laptop.latest(),
     credentialProvider: credsProvider(),
   });
 }
@@ -131,10 +135,10 @@ export function SetupTopicIntegrationTest(): {
 }
 
 export function SetupVectorIntegrationTest(): {
-  Momento: PreviewVectorClient;
+  vectorClient: PreviewVectorIndexClient;
 } {
-  const Momento = momentoVectorClientForTesting();
-  return {Momento};
+  const vectorClient = momentoVectorClientForTesting();
+  return {vectorClient};
 }
 
 export function SetupAuthClientIntegrationTest(): {

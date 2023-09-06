@@ -10,8 +10,8 @@ import {
   CredentialProvider,
   CollectionTtl,
   TopicClient,
-  PreviewVectorClient,
-  VectorConfigurations,
+  PreviewVectorIndexClient,
+  VectorIndexConfigurations,
 } from '../../src';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
@@ -42,9 +42,15 @@ export async function WithCache(
   }
 }
 
-const credsProvider = CredentialProvider.fromEnvironmentVariable({
-  environmentVariableName: 'TEST_AUTH_TOKEN',
-});
+let _credsProvider: CredentialProvider | undefined = undefined;
+function credsProvider(): CredentialProvider {
+  if (_credsProvider === undefined) {
+    _credsProvider = CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'TEST_AUTH_TOKEN',
+    });
+  }
+  return _credsProvider;
+}
 
 let _sessionCredsProvider: CredentialProvider | undefined = undefined;
 
@@ -54,21 +60,25 @@ function sessionCredsProvider(): CredentialProvider {
       environmentVariableName: 'TEST_SESSION_TOKEN',
       // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
       // steal them from the auth-token-based creds provider.
-      cacheEndpoint: credsProvider.getCacheEndpoint(),
-      controlEndpoint: credsProvider.getControlEndpoint(),
+      cacheEndpoint: credsProvider().getCacheEndpoint(),
+      controlEndpoint: credsProvider().getControlEndpoint(),
+      tokenEndpoint: credsProvider().getTokenEndpoint(),
+      vectorEndpoint: credsProvider().getVectorEndpoint(),
     });
   }
   return _sessionCredsProvider;
 }
 
-export const IntegrationTestCacheClientProps: CacheClientProps = {
-  configuration: Configurations.Laptop.latest(),
-  credentialProvider: credsProvider,
-  defaultTtlSeconds: 1111,
-};
+export function integrationTestCacheClientProps(): CacheClientProps {
+  return {
+    configuration: Configurations.Laptop.latest(),
+    credentialProvider: credsProvider(),
+    defaultTtlSeconds: 1111,
+  };
+}
 
 function momentoClientForTesting(): CacheClient {
-  return new CacheClient(IntegrationTestCacheClientProps);
+  return new CacheClient(integrationTestCacheClientProps());
 }
 
 function momentoClientForTestingWithSessionToken(): CacheClient {
@@ -81,22 +91,22 @@ function momentoClientForTestingWithSessionToken(): CacheClient {
 
 function momentoTopicClientForTesting(): TopicClient {
   return new TopicClient({
-    configuration: IntegrationTestCacheClientProps.configuration,
-    credentialProvider: IntegrationTestCacheClientProps.credentialProvider,
+    configuration: integrationTestCacheClientProps().configuration,
+    credentialProvider: integrationTestCacheClientProps().credentialProvider,
   });
 }
 
 function momentoTopicClientForTestingWithSessionToken(): TopicClient {
   return new TopicClient({
-    configuration: IntegrationTestCacheClientProps.configuration,
+    configuration: integrationTestCacheClientProps().configuration,
     credentialProvider: sessionCredsProvider(),
   });
 }
 
-function momentoVectorClientForTesting(): PreviewVectorClient {
-  return new PreviewVectorClient({
-    credentialProvider: IntegrationTestCacheClientProps.credentialProvider,
-    configuration: VectorConfigurations.Laptop.latest(),
+function momentoVectorClientForTesting(): PreviewVectorIndexClient {
+  return new PreviewVectorIndexClient({
+    credentialProvider: credsProvider(),
+    configuration: VectorIndexConfigurations.Laptop.latest(),
   });
 }
 
@@ -140,10 +150,10 @@ export function SetupTopicIntegrationTest(): {
 }
 
 export function SetupVectorIntegrationTest(): {
-  Momento: PreviewVectorClient;
+  vectorClient: PreviewVectorIndexClient;
 } {
-  const Momento = momentoVectorClientForTesting();
-  return {Momento};
+  const vectorClient = momentoVectorClientForTesting();
+  return {vectorClient};
 }
 
 export function SetupAuthClientIntegrationTest(): {

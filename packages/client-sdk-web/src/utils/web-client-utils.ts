@@ -38,7 +38,19 @@ export function getWebCacheEndpoint(
 export function getWebTokenEndpoint(
   credentialProvider: CredentialProvider
 ): string {
+  if (credentialProvider.isTokenEndpointOverridden()) {
+    return withProtocolPrefix(credentialProvider.getTokenEndpoint());
+  }
   return withProtocolPrefix(`web.${credentialProvider.getTokenEndpoint()}`);
+}
+
+export function getWebVectorEndpoint(
+  credentialProvider: CredentialProvider
+): string {
+  if (credentialProvider.isVectorEndpointOverridden()) {
+    return withProtocolPrefix(credentialProvider.getVectorEndpoint());
+  }
+  return withProtocolPrefix(`web.${credentialProvider.getVectorEndpoint()}`);
 }
 
 function withProtocolPrefix(endpoint: string): string {

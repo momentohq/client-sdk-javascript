@@ -12,6 +12,14 @@ interface CredentialProviderProps {
    * optionally overrides the default cacheEndpoint
    */
   cacheEndpoint?: string;
+  /**
+   * optionally overrides the default vectorEndpoint
+   */
+  tokenEndpoint?: string;
+  /**
+   * optionally overrides the default vectorEndpoint
+   */
+  vectorEndpoint?: string;
 }
 
 /**
@@ -42,6 +50,11 @@ export abstract class CredentialProvider {
   abstract getTokenEndpoint(): string;
 
   /**
+   * @returns {string} The host which the Momento client will connect to for Momento vector index operations
+   */
+  abstract getVectorEndpoint(): string;
+
+  /**
    * @returns {boolean} true if the cache endpoint was manually overridden at construction time; false otherwise
    */
   abstract isCacheEndpointOverridden(): boolean;
@@ -50,6 +63,16 @@ export abstract class CredentialProvider {
    * @returns {boolean} true if the control endpoint was manually overridden at construction time; false otherwise
    */
   abstract isControlEndpointOverridden(): boolean;
+
+  /**
+   * @returns {boolean} true if the token endpoint was manually overridden at construction time; false otherwise
+   */
+  abstract isTokenEndpointOverridden(): boolean;
+
+  /**
+   * @returns {boolean} true if the vector endpoint was manually overridden at construction time; false otherwise
+   */
+  abstract isVectorEndpointOverridden(): boolean;
 
   static fromEnvironmentVariable(
     props: EnvMomentoTokenProviderProps
@@ -73,8 +96,12 @@ abstract class CredentialProviderBase implements CredentialProvider {
 
   abstract getTokenEndpoint(): string;
 
+  abstract getVectorEndpoint(): string;
+
   abstract isCacheEndpointOverridden(): boolean;
   abstract isControlEndpointOverridden(): boolean;
+  abstract isTokenEndpointOverridden(): boolean;
+  abstract isVectorEndpointOverridden(): boolean;
 
   valueOf(): object {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -102,8 +129,11 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
   private readonly controlEndpoint: string;
   private readonly cacheEndpoint: string;
   private readonly tokenEndpoint: string;
+  private readonly vectorEndpoint: string;
   private readonly controlEndpointOverridden: boolean;
   private readonly cacheEndpointOverridden: boolean;
+  private readonly tokenEndpointOverridden: boolean;
+  private readonly vectorEndpointOverridden: boolean;
 
   /**
    * @param {StringMomentoTokenProviderProps} props configuration options for the token provider
@@ -128,9 +158,26 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
       );
     }
 
+    this.tokenEndpointOverridden = props.tokenEndpoint !== undefined;
+    const tokenEndpoint = props.tokenEndpoint ?? decodedToken.tokenEndpoint;
+    if (tokenEndpoint === undefined) {
+      throw new Error(
+        'Malformed token; unable to determine token endpoint.  Depending on the type of token you are using, you may need to specify the tokenEndpoint explicitly.'
+      );
+    }
+
+    this.vectorEndpointOverridden = props.vectorEndpoint !== undefined;
+    const vectorEndpoint = props.vectorEndpoint ?? decodedToken.vectorEndpoint;
+    if (vectorEndpoint === undefined) {
+      throw new Error(
+        'Malformed token; unable to determine vector endpoint.  Depending on the type of token you are using, you may need to specify the vectorEndpoint explicitly.'
+      );
+    }
+
     this.controlEndpoint = controlEndpoint;
     this.cacheEndpoint = cacheEndpoint;
     this.tokenEndpoint = decodedToken.tokenEndpoint || cacheEndpoint;
+    this.vectorEndpoint = vectorEndpoint;
   }
 
   getAuthToken(): string {
@@ -149,12 +196,24 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
     return this.tokenEndpoint;
   }
 
+  getVectorEndpoint(): string {
+    return this.vectorEndpoint;
+  }
+
   isControlEndpointOverridden(): boolean {
     return this.controlEndpointOverridden;
   }
 
   isCacheEndpointOverridden(): boolean {
     return this.cacheEndpointOverridden;
+  }
+
+  isTokenEndpointOverridden(): boolean {
+    return this.tokenEndpointOverridden;
+  }
+
+  isVectorEndpointOverridden(): boolean {
+    return this.vectorEndpointOverridden;
   }
 }
 
@@ -182,11 +241,12 @@ export class EnvMomentoTokenProvider extends StringMomentoTokenProvider {
         `Missing required environment variable ${props.environmentVariableName}`
       );
     }
-    const decodedToken = decodeAuthToken(authToken);
     super({
-      authToken: decodedToken.authToken,
-      controlEndpoint: props.controlEndpoint ?? decodedToken.controlEndpoint,
-      cacheEndpoint: props.cacheEndpoint ?? decodedToken.cacheEndpoint,
+      authToken: authToken,
+      controlEndpoint: props.controlEndpoint,
+      cacheEndpoint: props.cacheEndpoint,
+      tokenEndpoint: props.tokenEndpoint,
+      vectorEndpoint: props.vectorEndpoint,
     });
     this.environmentVariableName = props.environmentVariableName;
   }

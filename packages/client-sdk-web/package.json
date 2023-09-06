@@ -17,9 +17,10 @@
     "test": "jest --testPathIgnorePatterns auth-client.test.ts",
     "unit-test": "jest unit",
     "integration-test-auth": "jest auth-client.test.ts",
-    "integration-test-vector": "jest vector-control-plane.test.ts",
-    "integration-test": "jest integration --testPathIgnorePatterns \"auth-client.test.ts|vector-control-plane.test.ts\"",
-    "build-and-run-tests": "cd ../common-integration-tests && npm run build && cd - && jest --testPathIgnorePatterns auth-client.test.ts",
+    "integration-test-vector": "jest vector-control-plane.test.ts vector-data-plane.test.ts",
+    "integration-test": "jest integration --testPathIgnorePatterns \"auth-client.test.ts|vector-control-plane.test.ts|vector-data-plane.test.ts\"",
+    "build-deps": "cd ../core && npm run build && cd - && cd ../common-integration-tests && npm run build && cd -",
+    "build-and-run-tests": "npm run build-deps && jest --testPathIgnorePatterns auth-client.test.ts --maxWorkers 1",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",
@@ -51,7 +52,7 @@
     "xhr2": "^0.2.1"
   },
   "dependencies": {
-    "@gomomento/generated-types-webtext": "0.76.2",
+    "@gomomento/generated-types-webtext": "0.77.0",
     "@gomomento/sdk-core": "file:../core",
     "google-protobuf": "3.21.2",
     "grpc-web": "1.4.2",

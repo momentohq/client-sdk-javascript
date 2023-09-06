@@ -4,7 +4,7 @@ import {
   ListVectorIndexes,
 } from '../../../messages/responses/vector';
 
-export interface IVectorControlClient {
+export interface IVectorIndexControlClient {
   createIndex(
     indexName: string,
     numDimensions: number

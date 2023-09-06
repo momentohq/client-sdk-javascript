@@ -120,6 +120,8 @@ export {
   IncrementOptions,
 } from './clients/ICacheClient';
 
+export {IVectorIndexClient, SearchOptions} from './clients/IVectorIndexClient';
+
 export {
   CacheRole,
   CachePermission,

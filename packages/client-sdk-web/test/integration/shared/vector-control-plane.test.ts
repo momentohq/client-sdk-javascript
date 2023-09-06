@@ -1,6 +1,6 @@
-import {runVectorIndexTest} from '@gomomento/common-integration-tests';
+import {runVectorControlPlaneTest} from '@gomomento/common-integration-tests';
 import {SetupVectorIntegrationTest} from '../integration-setup';
 
-const {Momento} = SetupVectorIntegrationTest();
+const {vectorClient} = SetupVectorIntegrationTest();
 
-runVectorIndexTest(Momento);
+runVectorControlPlaneTest(vectorClient);

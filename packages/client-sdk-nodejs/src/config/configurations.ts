@@ -18,7 +18,7 @@ const defaultLoggerFactory: MomentoLoggerFactory =
   new DefaultMomentoLoggerFactory();
 const defaultMiddlewares: Middleware[] = [];
 
-function defaultRetryStrategy(
+export function defaultRetryStrategy(
   loggerFactory: MomentoLoggerFactory
 ): RetryStrategy {
   return new FixedCountRetryStrategy({
