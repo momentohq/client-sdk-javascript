@@ -1,7 +1,7 @@
 import {
   AuthClient,
   CredentialProvider,
-  GenerateAuthToken,
+  GenerateDisposableToken,
 } from "@gomomento/sdk";
 import {
   tokenPermissions,
@@ -32,20 +32,25 @@ export async function GET(_request: Request) {
       throw new Error("Unimplemented authentication method");
   }
 
-  if (generateAuthTokenResponse instanceof GenerateAuthToken.Success) {
+  if (generateAuthTokenResponse instanceof GenerateDisposableToken.Success) {
     return new Response(generateAuthTokenResponse.authToken, {
       headers: {
         "Cache-Control": "no-cache",
       },
     });
-  } else if (generateAuthTokenResponse instanceof GenerateAuthToken.Error) {
+  } else if (
+    generateAuthTokenResponse instanceof GenerateDisposableToken.Error
+  ) {
     throw new Error(generateAuthTokenResponse.message());
   }
   throw new Error("Unable to get token from momento");
 }
 
 async function fetchTokenWithOpenAuth() {
-  return await authClient.generateAuthToken(tokenPermissions, tokenExpiresIn);
+  return await authClient.generateDisposableToken(
+    tokenPermissions,
+    tokenExpiresIn,
+  );
 }
 
 async function fetchTokenWithAuthCredentials() {
@@ -55,5 +60,8 @@ async function fetchTokenWithAuthCredentials() {
     throw new Error("Unauthorized to request Momento token");
   }
 
-  return await authClient.generateAuthToken(tokenPermissions, tokenExpiresIn);
+  return await authClient.generateDisposableToken(
+    tokenPermissions,
+    tokenExpiresIn,
+  );
 }
