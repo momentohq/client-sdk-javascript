@@ -50,6 +50,8 @@ function sessionCredsProvider(): CredentialProvider {
       // steal them from the auth-token-based creds provider.
       cacheEndpoint: credsProvider().getCacheEndpoint(),
       controlEndpoint: credsProvider().getControlEndpoint(),
+      tokenEndpoint: credsProvider().getTokenEndpoint(),
+      vectorEndpoint: credsProvider().getVectorEndpoint(),
     });
   }
   return _sessionCredsProvider;
