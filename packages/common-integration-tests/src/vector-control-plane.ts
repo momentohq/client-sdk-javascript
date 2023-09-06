@@ -4,17 +4,17 @@ import {
   ItBehavesLikeItValidatesNumDimensions,
   testIndexName,
   expectWithMessage,
-  // WithIndex,
+  WithIndex,
 } from './common-int-test-utils';
-import {IVectorClient} from '@gomomento/sdk-core/dist/src/clients/IVectorClient';
 import {
-  // CreateVectorIndex,
+  CreateVectorIndex,
   DeleteVectorIndex,
-  // ListVectorIndexes,
+  IVectorIndexClient,
+  ListVectorIndexes,
   MomentoErrorCode,
 } from '@gomomento/sdk-core';
 
-export function runVectorIndexTest(Momento: IVectorClient) {
+export function runVectorControlPlaneTest(Momento: IVectorIndexClient) {
   describe('create/delete vector index', () => {
     ItBehavesLikeItValidatesIndexName((props: ValidateVectorProps) => {
       return Momento.createIndex(props.indexName, props.numDimensions);
@@ -40,38 +40,36 @@ export function runVectorIndexTest(Momento: IVectorClient) {
       }
     });
 
-    // Commenting out unstable tests for now
+    it('should return AlreadyExists response if trying to create a index that already exists', async () => {
+      const indexName = testIndexName();
+      await WithIndex(Momento, indexName, 10, async () => {
+        const createResponse = await Momento.createIndex(indexName, 1);
+        expect(createResponse).toBeInstanceOf(CreateVectorIndex.AlreadyExists);
+      });
+    });
 
-    // it('should return AlreadyExists response if trying to create a index that already exists', async () => {
-    //   const indexName = testIndexName();
-    //   await WithIndex(Momento, indexName, async () => {
-    //     const createResponse = await Momento.createIndex(indexName, 1);
-    //     expect(createResponse).toBeInstanceOf(CreateVectorIndex.AlreadyExists);
-    //   });
-    // });
+    it('should create and list an index', async () => {
+      const indexName = testIndexName();
+      await WithIndex(Momento, indexName, 10, async () => {
+        const listResponse = await Momento.listIndexes();
+        expectWithMessage(() => {
+          expect(listResponse).toBeInstanceOf(ListVectorIndexes.Success);
+        }, `expected SUCCESS but got ${listResponse.toString()}`);
+        if (listResponse instanceof ListVectorIndexes.Success) {
+          const caches = listResponse.getIndexNames();
+          expect(caches.includes(indexName)).toBeTruthy();
+        }
+      });
+    });
 
-    // it('should create and list an index', async () => {
-    //   const indexName = testIndexName();
-    //   await WithIndex(Momento, indexName, async () => {
-    //     const listResponse = await Momento.listIndexes();
-    //     expectWithMessage(() => {
-    //       expect(listResponse).toBeInstanceOf(ListVectorIndexes.Success);
-    //     }, `expected SUCCESS but got ${listResponse.toString()}`);
-    //     if (listResponse instanceof ListVectorIndexes.Success) {
-    //       const caches = listResponse.getIndexNames();
-    //       expect(caches.includes(indexName)).toBeTruthy();
-    //     }
-    //   });
-    // });
-
-    // it('should delete an index', async () => {
-    //   const indexName = testIndexName();
-    //   const createResponse = await Momento.createIndex(indexName, 1);
-    //   expect(createResponse).toBeInstanceOf(CreateVectorIndex.Success);
-    //   const deleteResponse = await Momento.deleteIndex(indexName);
-    //   expectWithMessage(() => {
-    //     expect(deleteResponse).toBeInstanceOf(DeleteVectorIndex.Success);
-    //   }, `expected SUCCESS but got ${deleteResponse.toString()}`);
-    // });
+    it('should delete an index', async () => {
+      const indexName = testIndexName();
+      const createResponse = await Momento.createIndex(indexName, 1);
+      expect(createResponse).toBeInstanceOf(CreateVectorIndex.Success);
+      const deleteResponse = await Momento.deleteIndex(indexName);
+      expectWithMessage(() => {
+        expect(deleteResponse).toBeInstanceOf(DeleteVectorIndex.Success);
+      }, `expected SUCCESS but got ${deleteResponse.toString()}`);
+    });
   });
 }

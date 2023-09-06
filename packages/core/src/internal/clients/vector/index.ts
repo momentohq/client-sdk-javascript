@@ -1,3 +1,3 @@
-export * from './AbstractVectorClient';
-export * from './IVectorControlClient';
-export * from '../../../clients/IVectorClient';
+export * from './AbstractVectorIndexClient';
+export * from './IVectorIndexControlClient';
+export * from '../../../clients/IVectorIndexClient';

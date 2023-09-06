@@ -16,9 +16,9 @@
     "prebuild": "eslint . --ext .ts",
     "test": "jest --testPathIgnorePatterns auth-client.test.ts",
     "integration-test-auth": "jest auth-client.test.ts",
-    "integration-test-vector": "jest vector-control-plane.test.ts",
+    "integration-test-vector": "jest vector-control-plane.test.ts vector-data-plane.test.ts",
     "unit-test": "jest unit",
-    "integration-test": "jest integration --testPathIgnorePatterns \"auth-client.test.ts|vector-control-plane.test.ts\"",
+    "integration-test": "jest integration --testPathIgnorePatterns \"auth-client.test.ts|vector-control-plane.test.ts|vector-data-plane.test.ts\"",
     "build-deps": "cd ../core && npm run build && cd - && cd ../common-integration-tests && npm run build && cd -",
     "build-and-run-tests": "npm run build-deps && jest --testPathIgnorePatterns auth-client.test.ts --maxWorkers 1",
     "lint": "eslint . --ext .ts",
@@ -52,7 +52,7 @@
     "uuid": "8.3.2"
   },
   "dependencies": {
-    "@gomomento/generated-types": "0.76.2",
+    "@gomomento/generated-types": "0.77.0",
     "@gomomento/sdk-core": "file:../core",
     "@grpc/grpc-js": "1.9.0",
     "@types/google-protobuf": "3.15.6",

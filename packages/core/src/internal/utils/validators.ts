@@ -106,6 +106,12 @@ export function validateNumDimensions(numDimensions: number) {
   }
 }
 
+export function validateTopK(topK: number) {
+  if (topK <= 0) {
+    throw new InvalidArgumentError('topK must be greater than zero');
+  }
+}
+
 export function validateTtlMinutes(ttlMinutes: number) {
   if (ttlMinutes < 0) {
     throw new InvalidArgumentError('ttlMinutes must be positive');

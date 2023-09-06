@@ -30,6 +30,7 @@ interface TokenAndEndpoints {
   controlEndpoint: string | undefined;
   cacheEndpoint: string | undefined;
   tokenEndpoint: string | undefined;
+  vectorEndpoint: string | undefined;
   authToken: string;
 }
 
@@ -59,6 +60,7 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
         controlEndpoint: `control.${base64DecodedToken.endpoint}`,
         cacheEndpoint: `cache.${base64DecodedToken.endpoint}`,
         tokenEndpoint: `token.${base64DecodedToken.endpoint}`,
+        vectorEndpoint: `vector.${base64DecodedToken.endpoint}`,
         authToken: base64DecodedToken.api_key,
       };
     } else {
@@ -70,11 +72,13 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
         controlEndpoint: decodedLegacyToken.cp,
         cacheEndpoint: decodedLegacyToken.c,
         tokenEndpoint: decodedLegacyToken.c,
+        vectorEndpoint: decodedLegacyToken.c,
         authToken: token,
       };
     }
   } catch (e) {
-    throw new InvalidArgumentError('failed to parse token');
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    throw new InvalidArgumentError(`failed to parse token: ${e}`);
   }
 };
 

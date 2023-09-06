@@ -1,6 +1,6 @@
-import {runVectorControlPlaneTest} from '@gomomento/common-integration-tests';
 import {SetupVectorIntegrationTest} from '../integration-setup';
+import {runVectorDataPlaneTest} from '@gomomento/common-integration-tests';
 
 const {vectorClient} = SetupVectorIntegrationTest();
 
-runVectorControlPlaneTest(vectorClient);
+runVectorDataPlaneTest(vectorClient);
