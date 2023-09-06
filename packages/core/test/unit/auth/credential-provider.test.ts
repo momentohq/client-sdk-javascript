@@ -98,6 +98,8 @@ describe('StringMomentoTokenProvider', () => {
       authToken: fakeSessionToken,
       controlEndpoint: 'control.foo',
       cacheEndpoint: 'cache.foo',
+      tokenEndpoint: 'token.foo',
+      vectorEndpoint: 'vector.foo',
     });
     expect(sessionTokenProvider.getAuthToken()).toEqual(fakeSessionToken);
     expect(sessionTokenProvider.getControlEndpoint()).toEqual('control.foo');

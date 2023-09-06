@@ -262,10 +262,6 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     });
   });
 
-  //
-  //   del_response = await vector_index_client_async.delete_index(index_name)
-  //   assert isinstance(del_response, DeleteIndex.Success)
-
   describe('deleteItem', () => {
     it('should delete ids', async () => {
       const indexName = testIndexName();
