@@ -32,6 +32,8 @@ function credsProvider(): CredentialProvider {
         environmentVariableName: 'TEST_AUTH_TOKEN',
         controlEndpoint: 'https://no-controlplane-requests-allowed:9001',
         cacheEndpoint: 'https://localhost:9001',
+        tokenEndpoint: 'https://localhost:9001',
+        vectorEndpoint: 'https://localhost:9001',
       });
     } else {
       _credsProvider = CredentialProvider.fromEnvironmentVariable({
