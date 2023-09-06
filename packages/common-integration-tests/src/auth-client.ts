@@ -31,6 +31,8 @@ import {
   ITopicClient,
 } from '@gomomento/sdk-core/dist/src/internal/clients';
 import {v4} from 'uuid';
+import {expect} from '@jest/globals';
+import './momento-jest-matchers';
 
 const SUPER_USER_PERMISSIONS: TokenScope = new InternalSuperUserPermissions();
 
@@ -85,7 +87,7 @@ export function runAuthClientTests(
       const neverExpireResponseSuccess =
         neverExpiresResponse as GenerateAuthToken.Success;
       expect(neverExpireResponseSuccess.is_success);
-      expect(neverExpireResponseSuccess.expiresAt.doesExpire()).toBeFalse();
+      expect(neverExpireResponseSuccess.expiresAt.doesExpire()).toBeFalsy();
     });
 
     it('should not succeed for generating an api token that has an invalid expires', async () => {
@@ -1287,11 +1289,8 @@ export function runAuthClientTests(
         FGA_CACHE_2_KEY,
         'woof'
       );
-      await expectPermissionDeniedForGet(
-        cacheClient,
-        FGA_CACHE_2,
-        FGA_CACHE_2_KEY
-      );
+      const getKey2 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
+      expect(getKey2).toBePermissionDeniedForCacheGet();
 
       // can publish and subscribe topics in FGA_CACHE_2 but not FGA_CACHE_1
       const subResp1 = await topicClient.subscribe(
