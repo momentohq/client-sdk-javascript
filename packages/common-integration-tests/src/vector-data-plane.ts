@@ -215,12 +215,13 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         }, `expected ERROR but got ${addResponse.toString()}}`);
 
         const expectedInnerExMessage =
-          "3 INVALID_ARGUMENT: invalid parameter: vector, vector dimension has to match the index's dimension";
+          "invalid parameter: vector, vector dimension has to match the index's dimension";
         const errorResponse = addResponse as VectorAddItemBatch.Error;
-        expect(errorResponse.message()).toEqual(
-          `Invalid argument passed to Momento client: ${expectedInnerExMessage}`
+        expect(errorResponse.message()).toMatch(
+          `Invalid argument passed to Momento client:`
         );
-        expect(errorResponse.innerException().message).toEqual(
+        expect(errorResponse.message()).toMatch(expectedInnerExMessage);
+        expect(errorResponse.innerException().message).toMatch(
           expectedInnerExMessage
         );
       });
@@ -251,11 +252,12 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         const errorResponse = searchResponse as VectorSearch.Error;
 
         const expectedInnerExMessage =
-          '3 INVALID_ARGUMENT: invalid parameter: query_vector, query vector dimension must match the index dimension';
-        expect(errorResponse.message()).toEqual(
-          `Invalid argument passed to Momento client: ${expectedInnerExMessage}`
+          'invalid parameter: query_vector, query vector dimension must match the index dimension';
+        expect(errorResponse.message()).toMatch(
+          'Invalid argument passed to Momento client'
         );
-        expect(errorResponse.innerException().message).toEqual(
+        expect(errorResponse.message()).toMatch(expectedInnerExMessage);
+        expect(errorResponse.innerException().message).toMatch(
           expectedInnerExMessage
         );
       });

@@ -65,7 +65,7 @@ export abstract class CredentialProvider {
   abstract isControlEndpointOverridden(): boolean;
 
   /**
-   * @returns {boolean} true if the vector endpoint was manually overridden at construction time; false otherwise
+   * @returns {boolean} true if the token endpoint was manually overridden at construction time; false otherwise
    */
   abstract isTokenEndpointOverridden(): boolean;
 

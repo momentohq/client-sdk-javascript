@@ -51,7 +51,7 @@ export function getWebVectorEndpoint(
     return withProtocolPrefix(credentialProvider.getVectorEndpoint());
   }
   return withProtocolPrefix(
-    `web.vector.${credentialProvider.getVectorEndpoint()}`
+    `web.${credentialProvider.getVectorEndpoint()}`
   );
 }
 

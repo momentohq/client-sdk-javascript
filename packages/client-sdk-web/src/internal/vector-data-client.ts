@@ -169,13 +169,14 @@ export class VectorDataClient implements IVectorIndexDataClient {
     if (options?.topK !== undefined) {
       request.setTopK(options.topK);
     }
-    if (options?.metadataFields !== undefined) {
-      const metadataRequest = new vectorindex._MetadataRequest();
-      const some = new vectorindex._MetadataRequest.Some();
-      some.setFieldsList(options.metadataFields);
-      metadataRequest.setSome(some);
-      request.setMetadataFields(metadataRequest);
-    }
+
+    const metadataRequest = new vectorindex._MetadataRequest();
+    const some = new vectorindex._MetadataRequest.Some();
+    some.setFieldsList(
+      options?.metadataFields === undefined ? [] : options.metadataFields
+    );
+    metadataRequest.setSome(some);
+    request.setMetadataFields(metadataRequest);
 
     return await new Promise(resolve => {
       this.client.search(
