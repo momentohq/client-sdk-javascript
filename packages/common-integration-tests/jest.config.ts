@@ -1,7 +1,7 @@
 import type {Config} from 'jest';
 
 const config: Config = {
-  setupFilesAfterEnv: ['<rootDir>/momento-jest-matchers.ts'],
+  setupFilesAfterEnv: ['<rootDir>/src/momento-jest-matchers.ts'],
   testEnvironment: 'node',
   roots: ['<rootDir>/test'],
   testMatch: ['**/*.test.ts'],
