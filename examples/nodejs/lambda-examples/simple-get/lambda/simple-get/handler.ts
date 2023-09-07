@@ -1,5 +1,15 @@
 import {GetSecretValueCommand, SecretsManagerClient} from '@aws-sdk/client-secrets-manager';
-import {CacheClient, CacheGet, Configurations, CredentialProvider} from '@gomomento/sdk';
+import {
+  CacheClient,
+  CacheGet,
+  Configurations,
+  CredentialProvider,
+  DefaultMomentoLoggerFactory, DefaultMomentoLoggerLevel,
+  MomentoLoggerFactory
+} from '@gomomento/sdk';
+import {
+  ExperimentalMetricsLoggingMiddleware
+} from "@gomomento/sdk/dist/src/config/middleware/experimental-metrics-logging-middleware";
 
 const CACHE_NAME = 'cache';
 const KEY = 'key';
@@ -11,17 +21,20 @@ let _cacheClient: CacheClient | undefined = undefined;
 export const handler = async () => {
   try {
     const cacheClient = await getCacheClient();
-    for (let i = 0; i < 100; i++) {
-      const response = await cacheClient.get(CACHE_NAME, KEY);
-      if (response instanceof CacheGet.Hit) {
-        console.log(`response ${i}: Hit!`);
-      } else if (response instanceof CacheGet.Miss) {
-        console.log(`response ${i}: Miss!`);
-      } else {
-        console.log(`response ${i}: Error!`);
-      }
+    for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < 100; i++) {
+        const actualKey = `${KEY}${i}`;
+        const response = await cacheClient.get(CACHE_NAME, actualKey);
+        if (response instanceof CacheGet.Hit) {
+          console.log(`response ${i}: Hit!`);
+        } else if (response instanceof CacheGet.Miss) {
+          console.log(`response ${i}: Miss!`);
+        } else {
+          console.log(`response ${i}: Error!`);
+        }
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
     }
 
     return {
@@ -49,11 +62,16 @@ async function getCacheClient(): Promise<CacheClient> {
     throw new Error("Missing required env var 'MOMENTO_AUTH_TOKEN_SECRET_NAME");
   }
   if (_cacheClient === undefined) {
+    const middlewaresExampleloggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory(
+      DefaultMomentoLoggerLevel.DEBUG
+    );
     const momentoAuthToken = await getSecret(authTokenSecretName);
     console.log('Retrieved secret!');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
     _cacheClient = await CacheClient.create({
-      configuration: Configurations.Lambda.latest(),
+      configuration: Configurations.Lambda.latest().withMiddlewares([
+        new ExperimentalMetricsLoggingMiddleware(middlewaresExampleloggerFactory),
+      ]),
       credentialProvider: CredentialProvider.fromString({authToken: momentoAuthToken}),
       defaultTtlSeconds: 60,
     });

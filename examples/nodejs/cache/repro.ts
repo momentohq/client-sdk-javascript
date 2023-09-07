@@ -16,14 +16,16 @@ async function main() {
 
   for (let i = 0; i < 1000; i++) {
     const client = clients[i % 2];
-    const createCacheResponse = await client.createCache(i.toString());
-    await client.listCaches();
-    if (
-      createCacheResponse instanceof CreateCache.Success ||
-      createCacheResponse instanceof CreateCache.AlreadyExists
-    ) {
-      await client.deleteCache(i.toString());
+    const key = `key${i}`;
+    const set = await client.set('cache', key, 'value');
+    if (set instanceof CacheSet.Error) {
+      console.log('Error: ', set.message());
     }
+    const get = await client.get('cache', key);
+    if (get instanceof CacheGet.Error) {
+      console.log('Error: ', get.message());
+    }
+
   }
 }
 
