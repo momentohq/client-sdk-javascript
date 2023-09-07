@@ -25,10 +25,10 @@ export abstract class AbstractAuthClient implements IAuthClient {
    * Generates a new API key, along with a refresh token to refresh the API key before expiry.
    *
    * @param {TokenScope} scope - controls the permissions that the new key will have
-   * @param {string} expiresIn - How long the token is valid for in epoch timestamp.
+   * @param {string} expiresIn - How long the API key should be valid for in epoch timestamp.
    * @returns {Promise<GenerateApiKey.Response>} -
-   * {@link GenerateApiKey.Success} containing the api key, refresh token, origin and epoch timestamp when token expires.
-   * If the token never expires, then no refresh token will be returned and expires at timestamp will be infinite.
+   * {@link GenerateApiKey.Success} containing the API key, refresh token, origin and epoch timestamp when token expires.
+   * If the API key never expires, then no refresh token will be returned and expires at timestamp will be infinite.
    * {@link GenerateApiKey.Error} on failure.
    */
   public async generateApiKey(
@@ -50,12 +50,12 @@ export abstract class AbstractAuthClient implements IAuthClient {
 
   /**
    * Refreshes an API key.  Returns a new API key and refresh token, that will be able to be refreshed again in the future.
-   * The new API key will be valid for the same length of time as the original token, starting from the time of refresh.
+   * The new API key will be valid for the same length of time as the original key, starting from the time of refresh.
    * The original api key will still work until its expired.
    *
    * @param {string} refreshToken - Refresh token used to refresh the API key.
    * @returns {Promise<RefreshApiKey.Response>} -
-   * {@link RefreshApiKey.Success} containing the new auth token, refresh token, origin and epoch timestamp when token expires.
+   * {@link RefreshApiKey.Success} containing the new API key, refresh token, origin and epoch timestamp when the API key expires.
    * {@link RefreshApiKey.Error} on failure.
    */
   public async refreshApiKey(
