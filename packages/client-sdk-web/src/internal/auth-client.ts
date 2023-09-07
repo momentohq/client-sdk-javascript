@@ -1,5 +1,4 @@
 import {auth, token} from '@gomomento/generated-types-webtext';
-import {GenerateAuthToken, RefreshAuthToken} from '..';
 import {Request, UnaryResponse} from 'grpc-web';
 import {
   _GenerateApiTokenRequest,
@@ -26,6 +25,8 @@ import {
   AllCacheItems,
   isCacheItemKey,
   isCacheItemKeyPrefix,
+  GenerateApiKey,
+  RefreshApiKey,
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {AuthClientProps} from '../auth-client-props';
@@ -87,10 +88,10 @@ export class InternalWebGrpcAuthClient<
     );
   }
 
-  public async generateAuthToken(
+  public async generateApiKey(
     scope: TokenScope,
     expiresIn: ExpiresIn
-  ): Promise<GenerateAuthToken.Response> {
+  ): Promise<GenerateApiKey.Response> {
     const request = new _GenerateApiTokenRequest();
     request.setAuthToken(this.creds.getAuthToken());
 
@@ -98,7 +99,7 @@ export class InternalWebGrpcAuthClient<
     try {
       permissions = permissionsFromScope(scope);
     } catch (err) {
-      return new GenerateAuthToken.Error(normalizeSdkError(err as Error));
+      return new GenerateApiKey.Error(normalizeSdkError(err as Error));
     }
 
     request.setPermissions(permissions);
@@ -107,7 +108,7 @@ export class InternalWebGrpcAuthClient<
       try {
         validateValidForSeconds(expiresIn.seconds());
       } catch (err) {
-        return new GenerateAuthToken.Error(normalizeSdkError(err as Error));
+        return new GenerateApiKey.Error(normalizeSdkError(err as Error));
       }
 
       const grpcExpires = new Expires();
@@ -117,16 +118,16 @@ export class InternalWebGrpcAuthClient<
       request.setNever(new Never());
     }
 
-    return await new Promise<GenerateAuthToken.Response>(resolve => {
+    return await new Promise<GenerateApiKey.Response>(resolve => {
       this.authClient.generateApiToken(
         request,
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
           if (err || !resp) {
-            resolve(new GenerateAuthToken.Error(cacheServiceErrorMapper(err)));
+            resolve(new GenerateApiKey.Error(cacheServiceErrorMapper(err)));
           } else {
             resolve(
-              new GenerateAuthToken.Success(
+              new GenerateApiKey.Success(
                 resp.getApiKey(),
                 resp.getRefreshToken(),
                 resp.getEndpoint(),
@@ -139,23 +140,33 @@ export class InternalWebGrpcAuthClient<
     });
   }
 
-  public async refreshAuthToken(
-    _refreshToken: string
-  ): Promise<RefreshAuthToken.Response> {
+  /**
+   * @deprecated please use `generateApiKey` instead
+   */
+  public generateAuthToken(
+    scope: TokenScope,
+    expiresIn: ExpiresIn
+  ): Promise<GenerateApiKey.Response> {
+    return this.generateApiKey(scope, expiresIn);
+  }
+
+  public async refreshApiKey(
+    refreshToken: string
+  ): Promise<RefreshApiKey.Response> {
     const request = new _RefreshApiTokenRequest();
     request.setApiKey(this.creds.getAuthToken());
-    request.setRefreshToken(_refreshToken);
+    request.setRefreshToken(refreshToken);
 
-    return await new Promise<RefreshAuthToken.Response>(resolve => {
+    return await new Promise<RefreshApiKey.Response>(resolve => {
       this.authClient.refreshApiToken(
         request,
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
           if (err || !resp) {
-            resolve(new RefreshAuthToken.Error(cacheServiceErrorMapper(err)));
+            resolve(new RefreshApiKey.Error(cacheServiceErrorMapper(err)));
           } else {
             resolve(
-              new RefreshAuthToken.Success(
+              new RefreshApiKey.Success(
                 resp.getApiKey(),
                 resp.getRefreshToken(),
                 resp.getEndpoint(),
@@ -166,6 +177,15 @@ export class InternalWebGrpcAuthClient<
         }
       );
     });
+  }
+
+  /**
+   * @deprecated please use `refreshApiKey` instead
+   */
+  public refreshAuthToken(
+    refreshToken: string
+  ): Promise<RefreshApiKey.Response> {
+    return this.refreshApiKey(refreshToken);
   }
 
   public async generateDisposableToken(

@@ -17,8 +17,8 @@ import {
   ExpiresIn,
   ExpiresAt,
   CredentialProvider,
-  RefreshAuthToken,
-  GenerateAuthToken,
+  RefreshApiKey,
+  GenerateApiKey,
   TokenScope,
   Permissions,
   Permission,
@@ -71,10 +71,10 @@ export class InternalAuthClient implements IAuthClient {
     ];
   }
 
-  public async generateAuthToken(
+  public async generateApiKey(
     scope: TokenScope,
     expiresIn: ExpiresIn
-  ): Promise<GenerateAuthToken.Response> {
+  ): Promise<GenerateApiKey.Response> {
     const authClient = new grpcAuth.AuthClient(
       this.creds.getControlEndpoint(),
       ChannelCredentials.createSsl()
@@ -84,7 +84,7 @@ export class InternalAuthClient implements IAuthClient {
     try {
       permissions = permissionsFromTokenScope(scope);
     } catch (err) {
-      return new GenerateAuthToken.Error(normalizeSdkError(err as Error));
+      return new GenerateApiKey.Error(normalizeSdkError(err as Error));
     }
     const request = new grpcAuth._GenerateApiTokenRequest({
       auth_token: this.creds.getAuthToken(),
@@ -95,7 +95,7 @@ export class InternalAuthClient implements IAuthClient {
       try {
         validateValidForSeconds(expiresIn.seconds());
       } catch (err) {
-        return new GenerateAuthToken.Error(normalizeSdkError(err as Error));
+        return new GenerateApiKey.Error(normalizeSdkError(err as Error));
       }
 
       request.expires = new Expires({
@@ -105,16 +105,16 @@ export class InternalAuthClient implements IAuthClient {
       request.never = new Never();
     }
 
-    return await new Promise<GenerateAuthToken.Response>(resolve => {
+    return await new Promise<GenerateApiKey.Response>(resolve => {
       authClient.GenerateApiToken(
         request,
         {interceptors: this.interceptors},
         (err, resp) => {
           if (err || !resp) {
-            resolve(new GenerateAuthToken.Error(cacheServiceErrorMapper(err)));
+            resolve(new GenerateApiKey.Error(cacheServiceErrorMapper(err)));
           } else {
             resolve(
-              new GenerateAuthToken.Success(
+              new GenerateApiKey.Success(
                 resp.api_key,
                 resp.refresh_token,
                 resp.endpoint,
@@ -127,9 +127,19 @@ export class InternalAuthClient implements IAuthClient {
     });
   }
 
-  public async refreshAuthToken(
+  /**
+   * @deprecated please use `generateApiKey` instead
+   */
+  public generateAuthToken(
+    scope: TokenScope,
+    expiresIn: ExpiresIn
+  ): Promise<GenerateApiKey.Response> {
+    return this.generateApiKey(scope, expiresIn);
+  }
+
+  public async refreshApiKey(
     refreshToken: string
-  ): Promise<RefreshAuthToken.Response> {
+  ): Promise<RefreshApiKey.Response> {
     const authClient = new grpcAuth.AuthClient(
       this.creds.getControlEndpoint(),
       ChannelCredentials.createSsl()
@@ -140,16 +150,16 @@ export class InternalAuthClient implements IAuthClient {
       refresh_token: refreshToken,
     });
 
-    return await new Promise<RefreshAuthToken.Response>(resolve => {
+    return await new Promise<RefreshApiKey.Response>(resolve => {
       authClient.RefreshApiToken(
         request,
         {interceptors: this.interceptors},
         (err, resp) => {
           if (err || !resp) {
-            resolve(new RefreshAuthToken.Error(cacheServiceErrorMapper(err)));
+            resolve(new RefreshApiKey.Error(cacheServiceErrorMapper(err)));
           } else {
             resolve(
-              new RefreshAuthToken.Success(
+              new RefreshApiKey.Success(
                 resp.api_key,
                 resp.refresh_token,
                 resp.endpoint,
@@ -160,6 +170,15 @@ export class InternalAuthClient implements IAuthClient {
         }
       );
     });
+  }
+
+  /**
+   * @deprecated please use `refreshApiKey` instead
+   */
+  public refreshAuthToken(
+    refreshToken: string
+  ): Promise<RefreshApiKey.Response> {
+    return this.refreshApiKey(refreshToken);
   }
 
   public async generateDisposableToken(
