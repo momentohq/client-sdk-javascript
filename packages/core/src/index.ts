@@ -60,8 +60,9 @@ import * as TopicSubscribe from './messages/responses/topic-subscribe';
 import {TopicItem} from './messages/responses/topic-item';
 
 // AuthClient Response Types
-import * as GenerateAuthToken from './messages/responses/generate-auth-token';
-import * as RefreshAuthToken from './messages/responses/refresh-auth-token';
+import * as GenerateApiKey from './messages/responses/generate-api-key';
+import * as RefreshApiKey from './messages/responses/refresh-api-key';
+
 import * as GenerateDisposableToken from './messages/responses/generate-disposable-token';
 
 // VectorClient Response Types
@@ -223,8 +224,16 @@ export {
   TopicItem,
   SubscribeCallOptions,
   // AuthClient Response Types
-  GenerateAuthToken,
-  RefreshAuthToken,
+  GenerateApiKey,
+  /**
+   * @deprecated - please use GenerateApiKey
+   */
+  GenerateApiKey as GenerateAuthToken,
+  RefreshApiKey,
+  /**
+   * @deprecated - please use RefreshApiKey
+   */
+  RefreshApiKey as RefreshAuthToken,
   GenerateDisposableToken,
   // Errors
   MomentoErrorCode,
