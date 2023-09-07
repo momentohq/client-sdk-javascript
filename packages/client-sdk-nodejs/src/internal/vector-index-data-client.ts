@@ -24,7 +24,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 
-export class VectorDataClient implements IVectorIndexDataClient {
+export class VectorIndexDataClient implements IVectorIndexDataClient {
   private readonly configuration: VectorIndexConfiguration;
   private readonly credentialProvider: CredentialProvider;
   private readonly logger: MomentoLogger;

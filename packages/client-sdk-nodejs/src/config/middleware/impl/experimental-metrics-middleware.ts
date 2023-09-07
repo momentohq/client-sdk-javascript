@@ -7,7 +7,7 @@ import {
   MiddlewareStatus,
 } from '../middleware';
 import {MomentoLogger, MomentoLoggerFactory} from '@gomomento/sdk-core';
-import {CONNECTION_ID_KEY} from '../../../internal/data-client';
+import {CONNECTION_ID_KEY} from '../../../internal/cache-data-client';
 
 const FIELD_NAMES: Array<string> = [
   'numActiveRequestsAtStart',

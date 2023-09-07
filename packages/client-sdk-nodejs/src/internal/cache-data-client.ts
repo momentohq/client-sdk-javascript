@@ -101,7 +101,7 @@ import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
-export class DataClient implements IDataClient {
+export class CacheDataClient implements IDataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
   private readonly textEncoder: TextEncoder;
   private readonly configuration: Configuration;
@@ -125,7 +125,8 @@ export class DataClient implements IDataClient {
       .getGrpcConfig();
 
     this.requestTimeoutMs =
-      grpcConfig.getDeadlineMillis() || DataClient.DEFAULT_REQUEST_TIMEOUT_MS;
+      grpcConfig.getDeadlineMillis() ||
+      CacheDataClient.DEFAULT_REQUEST_TIMEOUT_MS;
     this.validateRequestTimeout(this.requestTimeoutMs);
     this.logger.debug(
       `Creating cache client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`

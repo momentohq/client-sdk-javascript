@@ -1,4 +1,3 @@
-import {ControlClient} from './internal/control-client';
 import {
   AbstractVectorIndexClient,
   IVectorIndexClient,
@@ -6,8 +5,8 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/clients';
 import {VectorIndexClientProps} from './vector-index-client-props';
 import {IVectorIndexDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/vector/IVectorIndexDataClient';
-import {VectorDataClient} from './internal/vector-data-client';
-import {CacheConfiguration} from './config/configuration';
+import {VectorIndexDataClient} from './internal/vector-index-data-client';
+import {VectorIndexControlClient} from './internal/vector-index-control-client';
 
 /**
  * PREVIEW Vector Index Client
@@ -31,11 +30,8 @@ export class PreviewVectorIndexClient
 function createControlClient(
   props: VectorIndexClientProps
 ): IVectorIndexControlClient {
-  return new ControlClient({
-    configuration: new CacheConfiguration({
-      loggerFactory: props.configuration.getLoggerFactory(),
-      transportStrategy: props.configuration.getTransportStrategy(),
-    }),
+  return new VectorIndexControlClient({
+    configuration: props.configuration,
     credentialProvider: props.credentialProvider,
   });
 }
@@ -43,5 +39,5 @@ function createControlClient(
 function createDataClient(
   props: VectorIndexClientProps
 ): IVectorIndexDataClient {
-  return new VectorDataClient(props);
+  return new VectorIndexDataClient(props);
 }

@@ -19,7 +19,7 @@ import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {getWebVectorEndpoint} from '../utils/web-client-utils';
 
-export class VectorDataClient implements IVectorIndexDataClient {
+export class VectorIndexDataClient implements IVectorIndexDataClient {
   private readonly client: VectorIndexClient;
   private readonly logger: MomentoLogger;
   private readonly clientMetadataProvider: ClientMetadataProvider;
