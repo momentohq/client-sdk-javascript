@@ -1,5 +1,5 @@
-import {ControlClient} from './internal/control-client';
-import {DataClient} from './internal/data-client';
+import {CacheControlClient} from './internal/cache-control-client';
+import {CacheDataClient} from './internal/cache-data-client';
 import {PingClient} from './internal/ping-client';
 import {
   AbstractCacheClient,
@@ -21,14 +21,14 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
 }
 
 function createControlClient(props: CacheClientProps): IControlClient {
-  return new ControlClient({
+  return new CacheControlClient({
     configuration: props.configuration,
     credentialProvider: props.credentialProvider,
   });
 }
 
 function createDataClient(props: CacheClientProps): IDataClient {
-  return new DataClient({
+  return new CacheDataClient({
     configuration: props.configuration,
     credentialProvider: props.credentialProvider,
     defaultTtlSeconds: props.defaultTtlSeconds,

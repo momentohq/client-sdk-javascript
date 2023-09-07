@@ -139,7 +139,7 @@ export interface DataClientProps {
   defaultTtlSeconds: number;
 }
 
-export class DataClient<
+export class CacheDataClient<
   REQ extends Request<REQ, RESP>,
   RESP extends UnaryResponse<REQ, RESP>
 > implements IDataClient
