@@ -71,8 +71,9 @@ import {TopicItem} from '@gomomento/sdk-core/dist/src/messages/responses/topic-i
 
 // AuthClient Response Types
 import {AuthClient} from './auth-client';
-import * as GenerateAuthToken from '@gomomento/sdk-core/dist/src/messages/responses/generate-auth-token';
-import * as RefreshAuthToken from '@gomomento/sdk-core/dist/src/messages/responses/refresh-auth-token';
+import * as GenerateApiKey from '@gomomento/sdk-core/dist/src/messages/responses/generate-api-key';
+import * as RefreshApiKey from '@gomomento/sdk-core/dist/src/messages/responses/refresh-api-key';
+
 import * as GenerateDisposableToken from '@gomomento/sdk-core/dist/src/messages/responses/generate-disposable-token';
 
 // VectorClient Response Types
@@ -281,8 +282,16 @@ export {
   SubscribeCallOptions,
   // AuthClient response types
   AuthClient,
-  GenerateAuthToken,
-  RefreshAuthToken,
+  GenerateApiKey,
+  /**
+   * @deprecated Use 'GenerateApiKey' instead
+   */
+  GenerateApiKey as GenerateAuthToken,
+  RefreshApiKey,
+  /**
+   * @deprecated Use 'RefreshApiKey' instead
+   */
+  RefreshApiKey as RefreshAuthToken,
   GenerateDisposableToken,
   ExpiresAt,
   ExpiresIn,
