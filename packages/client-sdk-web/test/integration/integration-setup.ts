@@ -30,10 +30,12 @@ function credsProvider(): CredentialProvider {
     if (isLocalhostDevelopmentMode()) {
       _credsProvider = CredentialProvider.fromEnvironmentVariable({
         environmentVariableName: 'TEST_AUTH_TOKEN',
-        controlEndpoint: 'https://no-controlplane-requests-allowed:9001',
-        cacheEndpoint: 'https://localhost:9001',
-        tokenEndpoint: 'https://localhost:9001',
-        vectorEndpoint: 'https://localhost:9001',
+        endpointOverrides: {
+          controlEndpoint: 'https://no-controlplane-requests-allowed:9001',
+          cacheEndpoint: 'https://localhost:9001',
+          tokenEndpoint: 'https://localhost:9001',
+          vectorEndpoint: 'https://localhost:9001',
+        },
       });
     } else {
       _credsProvider = CredentialProvider.fromEnvironmentVariable({
@@ -50,10 +52,12 @@ function sessionCredsProvider(): CredentialProvider {
       environmentVariableName: 'TEST_SESSION_TOKEN',
       // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
       // steal them from the auth-token-based creds provider.
-      cacheEndpoint: credsProvider().getCacheEndpoint(),
-      controlEndpoint: credsProvider().getControlEndpoint(),
-      tokenEndpoint: credsProvider().getTokenEndpoint(),
-      vectorEndpoint: credsProvider().getVectorEndpoint(),
+      endpointOverrides: {
+        cacheEndpoint: credsProvider().getCacheEndpoint(),
+        controlEndpoint: credsProvider().getControlEndpoint(),
+        tokenEndpoint: credsProvider().getTokenEndpoint(),
+        vectorEndpoint: credsProvider().getVectorEndpoint(),
+      },
     });
   }
   return _sessionCredsProvider;

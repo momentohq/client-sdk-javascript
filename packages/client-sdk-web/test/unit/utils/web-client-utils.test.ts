@@ -6,6 +6,8 @@ import {CredentialProvider} from '@gomomento/sdk-core';
 import {
   getWebCacheEndpoint,
   getWebControlEndpoint,
+  getWebTokenEndpoint,
+  getWebVectorEndpoint,
 } from '../../../src/utils/web-client-utils';
 
 // These tokens have valid syntax, but they don't actually have valid credentials.  Just used for unit testing.
@@ -21,7 +23,7 @@ const base64EncodedFakeV1AuthToken = encodeToBase64(
   JSON.stringify(decodedV1Token)
 );
 
-describe('getWebControlEndpoint', () => {
+describe('getWeb*Endpoint', () => {
   it('adds "https://web." prefix to endpoints that were parsed from legacy tokens', () => {
     const credProvider = CredentialProvider.fromString({
       authToken: fakeTestLegacyToken,
@@ -39,102 +41,90 @@ describe('getWebControlEndpoint', () => {
     expect(webControlEndpoint).toEqual(
       'https://web.control.test.momentohq.com'
     );
+    const webCacheEndpoint = getWebCacheEndpoint(credProvider);
+    expect(webCacheEndpoint).toEqual('https://web.cache.test.momentohq.com');
+    const webTokenEndpoint = getWebTokenEndpoint(credProvider);
+    expect(webTokenEndpoint).toEqual('https://web.token.test.momentohq.com');
+    const webVectorEndpoint = getWebVectorEndpoint(credProvider);
+    expect(webVectorEndpoint).toEqual('https://web.vector.test.momentohq.com');
   });
 
   it('adds https protocol, but does not add web prefix for overridden endpoints', () => {
     const credProvider = CredentialProvider.fromString({
       authToken: base64EncodedFakeV1AuthToken,
-      controlEndpoint: 'some-control-endpoint',
-      cacheEndpoint: 'some-cache-endpoint',
+      endpointOverrides: {
+        controlEndpoint: 'some-control-endpoint',
+        cacheEndpoint: 'some-cache-endpoint',
+        tokenEndpoint: 'some-token-endpoint',
+        vectorEndpoint: 'some-vector-endpoint',
+      },
     });
     const webControlEndpoint = getWebControlEndpoint(credProvider);
     expect(webControlEndpoint).toEqual('https://some-control-endpoint');
+    const webCacheEndpoint = getWebCacheEndpoint(credProvider);
+    expect(webCacheEndpoint).toEqual('https://some-cache-endpoint');
+    const webTokenEndpoint = getWebTokenEndpoint(credProvider);
+    expect(webTokenEndpoint).toEqual('https://some-token-endpoint');
+    const webVectorEndpoint = getWebVectorEndpoint(credProvider);
+    expect(webVectorEndpoint).toEqual('https://some-vector-endpoint');
   });
   it('works with overridden endpoints that already have the protocol', () => {
     const credProvider = CredentialProvider.fromString({
       authToken: base64EncodedFakeV1AuthToken,
-      controlEndpoint: 'https://some-control-endpoint',
-      cacheEndpoint: 'https://some-cache-endpoint',
+      endpointOverrides: {
+        controlEndpoint: 'https://some-control-endpoint',
+        cacheEndpoint: 'https://some-cache-endpoint',
+        tokenEndpoint: 'http://some-token-endpoint',
+        vectorEndpoint: 'http://some-vector-endpoint',
+      },
     });
     const webControlEndpoint = getWebControlEndpoint(credProvider);
     expect(webControlEndpoint).toEqual('https://some-control-endpoint');
+    const webCacheEndpoint = getWebCacheEndpoint(credProvider);
+    expect(webCacheEndpoint).toEqual('https://some-cache-endpoint');
+    const webTokenEndpoint = getWebTokenEndpoint(credProvider);
+    expect(webTokenEndpoint).toEqual('http://some-token-endpoint');
+    const webVectorEndpoint = getWebVectorEndpoint(credProvider);
+    expect(webVectorEndpoint).toEqual('http://some-vector-endpoint');
   });
   describe('leaves port intact for overridden endpoints', () => {
     it("with overrides that don't contain protocol", () => {
       const credProvider = CredentialProvider.fromString({
         authToken: base64EncodedFakeV1AuthToken,
-        controlEndpoint: 'some-control-endpoint:9001',
-        cacheEndpoint: 'some-cache-endpoint:9001',
+        endpointOverrides: {
+          controlEndpoint: 'some-control-endpoint:9001',
+          cacheEndpoint: 'some-cache-endpoint:9001',
+          tokenEndpoint: 'some-token-endpoint:9001',
+          vectorEndpoint: 'some-vector-endpoint:9001',
+        },
       });
       const webControlEndpoint = getWebControlEndpoint(credProvider);
       expect(webControlEndpoint).toEqual('https://some-control-endpoint:9001');
+      const webCacheEndpoint = getWebCacheEndpoint(credProvider);
+      expect(webCacheEndpoint).toEqual('https://some-cache-endpoint:9001');
+      const webTokenEndpoint = getWebTokenEndpoint(credProvider);
+      expect(webTokenEndpoint).toEqual('https://some-token-endpoint:9001');
+      const webVectorEndpoint = getWebVectorEndpoint(credProvider);
+      expect(webVectorEndpoint).toEqual('https://some-vector-endpoint:9001');
     });
     it('with overrides that do contain protocol', () => {
       const credProvider = CredentialProvider.fromString({
         authToken: base64EncodedFakeV1AuthToken,
-        controlEndpoint: 'https://some-control-endpoint:9001',
-        cacheEndpoint: 'https://some-cache-endpoint:9001',
+        endpointOverrides: {
+          controlEndpoint: 'https://some-control-endpoint:9001',
+          cacheEndpoint: 'https://some-cache-endpoint:9001',
+          tokenEndpoint: 'http://some-token-endpoint:9001',
+          vectorEndpoint: 'http://some-vector-endpoint:9001',
+        },
       });
       const webControlEndpoint = getWebControlEndpoint(credProvider);
       expect(webControlEndpoint).toEqual('https://some-control-endpoint:9001');
-    });
-  });
-});
-
-describe('getWebCacheEndpoint', () => {
-  it('adds "https://web." prefix to endpoints that were parsed from legacy tokens', () => {
-    const credProvider = CredentialProvider.fromString({
-      authToken: fakeTestLegacyToken,
-    });
-    const webControlEndpoint = getWebCacheEndpoint(credProvider);
-    expect(webControlEndpoint).toEqual(
-      'https://web.cache-endpoint.not.a.domain'
-    );
-  });
-  it('adds "https://web." prefix to endpoints that were parsed from v1 tokens', () => {
-    const credProvider = CredentialProvider.fromString({
-      authToken: base64EncodedFakeV1AuthToken,
-    });
-    const webControlEndpoint = getWebCacheEndpoint(credProvider);
-    expect(webControlEndpoint).toEqual('https://web.cache.test.momentohq.com');
-  });
-
-  it('adds https protocol, but does not add web prefix for overridden endpoints', () => {
-    const credProvider = CredentialProvider.fromString({
-      authToken: base64EncodedFakeV1AuthToken,
-      controlEndpoint: 'some-control-endpoint',
-      cacheEndpoint: 'some-cache-endpoint',
-    });
-    const webControlEndpoint = getWebCacheEndpoint(credProvider);
-    expect(webControlEndpoint).toEqual('https://some-cache-endpoint');
-  });
-  it('works with overridden endpoints that already have the protocol', () => {
-    const credProvider = CredentialProvider.fromString({
-      authToken: base64EncodedFakeV1AuthToken,
-      controlEndpoint: 'https://some-control-endpoint',
-      cacheEndpoint: 'https://some-cache-endpoint',
-    });
-    const webControlEndpoint = getWebCacheEndpoint(credProvider);
-    expect(webControlEndpoint).toEqual('https://some-cache-endpoint');
-  });
-  describe('leaves port intact for overridden endpoints', () => {
-    it("with overrides that don't contain protocol", () => {
-      const credProvider = CredentialProvider.fromString({
-        authToken: base64EncodedFakeV1AuthToken,
-        controlEndpoint: 'some-control-endpoint:9001',
-        cacheEndpoint: 'some-cache-endpoint:9001',
-      });
-      const webControlEndpoint = getWebCacheEndpoint(credProvider);
-      expect(webControlEndpoint).toEqual('https://some-cache-endpoint:9001');
-    });
-    it('with overrides that do contain protocol', () => {
-      const credProvider = CredentialProvider.fromString({
-        authToken: base64EncodedFakeV1AuthToken,
-        controlEndpoint: 'https://some-control-endpoint:9001',
-        cacheEndpoint: 'https://some-cache-endpoint:9001',
-      });
-      const webControlEndpoint = getWebCacheEndpoint(credProvider);
-      expect(webControlEndpoint).toEqual('https://some-cache-endpoint:9001');
+      const webCacheEndpoint = getWebCacheEndpoint(credProvider);
+      expect(webCacheEndpoint).toEqual('https://some-cache-endpoint:9001');
+      const webTokenEndpoint = getWebTokenEndpoint(credProvider);
+      expect(webTokenEndpoint).toEqual('http://some-token-endpoint:9001');
+      const webVectorEndpoint = getWebVectorEndpoint(credProvider);
+      expect(webVectorEndpoint).toEqual('http://some-vector-endpoint:9001');
     });
   });
 });

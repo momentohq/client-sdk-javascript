@@ -34,6 +34,24 @@ interface TokenAndEndpoints {
   authToken: string;
 }
 
+export interface AllEndpoints {
+  controlEndpoint: string;
+  cacheEndpoint: string;
+  tokenEndpoint: string;
+  vectorEndpoint: string;
+}
+
+export function populateAllEndpointsFromBaseEndpoint(
+  baseEndpoint: string
+): AllEndpoints {
+  return {
+    controlEndpoint: `control.${baseEndpoint}`,
+    cacheEndpoint: `cache.${baseEndpoint}`,
+    tokenEndpoint: `token.${baseEndpoint}`,
+    vectorEndpoint: `vector.${baseEndpoint}`,
+  };
+}
+
 /**
  * @param {string} token
  * @returns TokenAndEndpoints
@@ -57,10 +75,7 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
         throw new InvalidArgumentError('failed to parse token');
       }
       return {
-        controlEndpoint: `control.${base64DecodedToken.endpoint}`,
-        cacheEndpoint: `cache.${base64DecodedToken.endpoint}`,
-        tokenEndpoint: `token.${base64DecodedToken.endpoint}`,
-        vectorEndpoint: `vector.${base64DecodedToken.endpoint}`,
+        ...populateAllEndpointsFromBaseEndpoint(base64DecodedToken.endpoint),
         authToken: base64DecodedToken.api_key,
       };
     } else {
