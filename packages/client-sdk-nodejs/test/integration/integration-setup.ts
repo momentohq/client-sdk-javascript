@@ -60,10 +60,12 @@ function sessionCredsProvider(): CredentialProvider {
       environmentVariableName: 'TEST_SESSION_TOKEN',
       // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
       // steal them from the auth-token-based creds provider.
-      cacheEndpoint: credsProvider().getCacheEndpoint(),
-      controlEndpoint: credsProvider().getControlEndpoint(),
-      tokenEndpoint: credsProvider().getTokenEndpoint(),
-      vectorEndpoint: credsProvider().getVectorEndpoint(),
+      endpointOverrides: {
+        cacheEndpoint: credsProvider().getCacheEndpoint(),
+        controlEndpoint: credsProvider().getControlEndpoint(),
+        tokenEndpoint: credsProvider().getTokenEndpoint(),
+        vectorEndpoint: credsProvider().getVectorEndpoint(),
+      },
     });
   }
   return _sessionCredsProvider;
