@@ -24,6 +24,8 @@ async function main() {
     const get = await client.get('cache', key);
     if (get instanceof CacheGet.Error) {
       console.log('Error: ', get.message());
+    } else if (get instanceof CacheGet.Hit) {
+      console.log('Hit');
     }
 
   }
