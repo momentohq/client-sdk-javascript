@@ -103,8 +103,12 @@ import {
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
   AllDataReadWrite,
+  PermissionScope,
+  /**
+   * @deprecated please use PermissionScope instead
+   */
   TokenScope,
-  TokenScopes,
+  PermissionScopes,
   DisposableTokenScope,
   DisposableTokenScopes,
   ExpiresIn,
@@ -153,8 +157,16 @@ export {
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
   AllDataReadWrite,
+  PermissionScope,
+  /**
+   * @deprecated please use 'PermissionScope' instead
+   */
   TokenScope,
-  TokenScopes,
+  PermissionScopes,
+  /**
+   * @deprecated please use 'PermissionScopes' instead
+   */
+  PermissionScopes as TokenScopes,
   DisposableTokenScope,
   DisposableTokenScopes,
   CacheName,

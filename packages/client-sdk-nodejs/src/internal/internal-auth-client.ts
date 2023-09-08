@@ -19,7 +19,7 @@ import {
   CredentialProvider,
   RefreshApiKey,
   GenerateApiKey,
-  TokenScope,
+  PermissionScope,
   Permissions,
   Permission,
   TopicPermission,
@@ -34,12 +34,12 @@ import {
   AllCacheItems,
   isCacheItemKey,
   isCacheItemKeyPrefix,
+  DisposableTokenScope,
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {AuthClientProps} from '../auth-client-props';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
-  DisposableTokenScope,
   asCachePermission,
   asPermissionsObject,
   asTopicPermission,
@@ -47,14 +47,16 @@ import {
   isPermissionsObject,
   isTopicPermission,
   PredefinedScope,
-  isDisposableTokenPermissionsObject,
+} from '@gomomento/sdk-core/dist/src/auth/tokens/permission-scope';
+import {permission_messages} from '@gomomento/generated-types/dist/permissionmessages';
+import {convert} from './utils';
+import {
+  asDisposableTokenCachePermission,
   asDisposableTokenPermissionsObject,
   DisposableTokenCachePermission,
   isDisposableTokenCachePermission,
-  asDisposableTokenCachePermission,
-} from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
-import {permission_messages} from '@gomomento/generated-types/dist/permissionmessages';
-import {convert} from './utils';
+  isDisposableTokenPermissionsObject,
+} from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
 
 export class InternalAuthClient implements IAuthClient {
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
@@ -72,7 +74,7 @@ export class InternalAuthClient implements IAuthClient {
   }
 
   public async generateApiKey(
-    scope: TokenScope,
+    scope: PermissionScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateApiKey.Response> {
     const authClient = new grpcAuth.AuthClient(
@@ -131,7 +133,7 @@ export class InternalAuthClient implements IAuthClient {
    * @deprecated please use `generateApiKey` instead
    */
   public generateAuthToken(
-    scope: TokenScope,
+    scope: PermissionScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateApiKey.Response> {
     return this.generateApiKey(scope, expiresIn);
@@ -237,7 +239,7 @@ export class InternalAuthClient implements IAuthClient {
 }
 
 export function permissionsFromTokenScope(
-  scope: TokenScope
+  scope: PermissionScope
 ): permission_messages.Permissions {
   const result = new permission_messages.Permissions();
   if (scope instanceof InternalSuperUserPermissions) {

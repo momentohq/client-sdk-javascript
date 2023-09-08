@@ -11,7 +11,7 @@ import {
   CredentialProvider,
   ExpiresAt,
   ExpiresIn,
-  TokenScope,
+  PermissionScope,
   Permission,
   TopicPermission,
   CachePermission,
@@ -44,20 +44,22 @@ import {
 } from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {
-  DisposableTokenScope,
   asCachePermission,
   asPermissionsObject,
   asTopicPermission,
   isCachePermission,
   isPermissionsObject,
   isTopicPermission,
+  PredefinedScope,
+} from '@gomomento/sdk-core/dist/src/auth/tokens/permission-scope';
+import {
+  DisposableTokenScope,
   asDisposableTokenCachePermission,
   isDisposableTokenPermissionsObject,
   DisposableTokenCachePermission,
   isDisposableTokenCachePermission,
   asDisposableTokenPermissionsObject,
-  PredefinedScope,
-} from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
+} from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
 import {_GenerateDisposableTokenRequest} from '@gomomento/generated-types-webtext/dist/token_pb';
 import {
   ExplicitPermissions,
@@ -89,7 +91,7 @@ export class InternalWebGrpcAuthClient<
   }
 
   public async generateApiKey(
-    scope: TokenScope,
+    scope: PermissionScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateApiKey.Response> {
     const request = new _GenerateApiTokenRequest();
@@ -144,7 +146,7 @@ export class InternalWebGrpcAuthClient<
    * @deprecated please use `generateApiKey` instead
    */
   public generateAuthToken(
-    scope: TokenScope,
+    scope: PermissionScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateApiKey.Response> {
     return this.generateApiKey(scope, expiresIn);
@@ -246,7 +248,7 @@ export class InternalWebGrpcAuthClient<
 }
 
 export function permissionsFromScope(
-  scope: TokenScope | DisposableTokenScope
+  scope: PermissionScope | DisposableTokenScope
 ): Permissions {
   const result = new Permissions();
   if (scope instanceof InternalSuperUserPermissions) {

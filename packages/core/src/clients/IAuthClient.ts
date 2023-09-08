@@ -1,14 +1,15 @@
 import {
+  DisposableTokenScope,
   ExpiresIn,
   GenerateApiKey,
   GenerateDisposableToken,
   RefreshApiKey,
 } from '../index';
-import {DisposableTokenScope, TokenScope} from '../auth/tokens/token-scope';
+import {PermissionScope} from '../auth/tokens/permission-scope';
 
 export interface IAuthClient {
   generateApiKey(
-    scope: TokenScope,
+    scope: PermissionScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateApiKey.Response>;
 
@@ -16,7 +17,7 @@ export interface IAuthClient {
    * @deprecated please use `generateApiKey` instead
    */
   generateAuthToken(
-    scope: TokenScope,
+    scope: PermissionScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateApiKey.Response>;
 

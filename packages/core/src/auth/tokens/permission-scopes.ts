@@ -1,24 +1,24 @@
 import {
   CacheRole,
   CacheSelector,
-  TokenScope,
+  PermissionScope,
   TopicRole,
   TopicSelector,
-} from './token-scope';
+} from './permission-scope';
 
-export function cacheReadWrite(cacheSelector: CacheSelector): TokenScope {
+export function cacheReadWrite(cacheSelector: CacheSelector): PermissionScope {
   return {
     permissions: [{role: CacheRole.ReadWrite, cache: cacheSelector}],
   };
 }
 
-export function cacheReadOnly(cacheSelector: CacheSelector): TokenScope {
+export function cacheReadOnly(cacheSelector: CacheSelector): PermissionScope {
   return {
     permissions: [{role: CacheRole.ReadOnly, cache: cacheSelector}],
   };
 }
 
-export function cacheWriteOnly(cacheSelector: CacheSelector): TokenScope {
+export function cacheWriteOnly(cacheSelector: CacheSelector): PermissionScope {
   return {
     permissions: [{role: CacheRole.WriteOnly, cache: cacheSelector}],
   };
@@ -27,7 +27,7 @@ export function cacheWriteOnly(cacheSelector: CacheSelector): TokenScope {
 export function topicSubscribeOnly(
   cacheSelector: CacheSelector,
   topicSelector: TopicSelector
-): TokenScope {
+): PermissionScope {
   return {
     permissions: [
       {
@@ -42,7 +42,7 @@ export function topicSubscribeOnly(
 export function topicPublishSubscribe(
   cacheSelector: CacheSelector,
   topicSelector: TopicSelector
-): TokenScope {
+): PermissionScope {
   return {
     permissions: [
       {
@@ -57,7 +57,7 @@ export function topicPublishSubscribe(
 export function topicPublishOnly(
   cacheSelector: CacheSelector,
   topicSelector: TopicSelector
-): TokenScope {
+): PermissionScope {
   return {
     permissions: [
       {

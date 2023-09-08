@@ -1,6 +1,7 @@
-import {CacheRole, CacheSelector, DisposableTokenScope} from './token-scope';
+import {CacheRole, CacheSelector} from './permission-scope';
+import {DisposableTokenScope} from './disposable-token-scope';
 
-export * from './token-scopes';
+export * from './permission-scopes';
 
 export function cacheKeyReadWrite(
   cacheSelector: CacheSelector,

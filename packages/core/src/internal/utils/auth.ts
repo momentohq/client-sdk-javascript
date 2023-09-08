@@ -2,7 +2,7 @@ import {InvalidArgumentError} from '../../errors';
 import jwtDecode from 'jwt-decode';
 import {isBase64} from './validators';
 import {decodeFromBase64} from './string';
-import {PredefinedScope} from '../../auth/tokens/token-scope';
+import {PredefinedScope} from '../../auth/tokens/permission-scope';
 
 export interface LegacyClaims {
   /**

@@ -3,12 +3,10 @@ import {
   ExpiresIn,
   RefreshApiKey,
   GenerateDisposableToken,
+  DisposableTokenScope,
 } from '../../../index';
 import {IAuthClient} from '../../../clients/IAuthClient';
-import {
-  DisposableTokenScope,
-  TokenScope,
-} from '../../../auth/tokens/token-scope';
+import {PermissionScope} from '../../../auth/tokens/permission-scope';
 
 export interface BaseAuthClientProps {
   createAuthClient: () => IAuthClient;
@@ -24,7 +22,7 @@ export abstract class AbstractAuthClient implements IAuthClient {
   /**
    * Generates a new API key, along with a refresh token to refresh the API key before expiry.
    *
-   * @param {TokenScope} scope - controls the permissions that the new key will have
+   * @param {PermissionScope} scope - controls the permissions that the new key will have
    * @param {string} expiresIn - How long the API key should be valid for in epoch timestamp.
    * @returns {Promise<GenerateApiKey.Response>} -
    * {@link GenerateApiKey.Success} containing the API key, refresh token, origin and epoch timestamp when token expires.
@@ -32,7 +30,7 @@ export abstract class AbstractAuthClient implements IAuthClient {
    * {@link GenerateApiKey.Error} on failure.
    */
   public async generateApiKey(
-    scope: TokenScope,
+    scope: PermissionScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateApiKey.Response> {
     return await this.authClient.generateApiKey(scope, expiresIn);
@@ -42,7 +40,7 @@ export abstract class AbstractAuthClient implements IAuthClient {
    * @deprecated please use `generateApiKey` instead
    */
   public async generateAuthToken(
-    scope: TokenScope,
+    scope: PermissionScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateApiKey.Response> {
     return await this.generateApiKey(scope, expiresIn);

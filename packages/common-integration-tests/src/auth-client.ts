@@ -13,8 +13,8 @@ import {
   MomentoErrorCode,
   RefreshApiKey,
   SubscribeCallOptions,
-  TokenScope,
-  TokenScopes,
+  PermissionScope,
+  PermissionScopes,
   TopicPublish,
   TopicRole,
   TopicSubscribe,
@@ -38,7 +38,8 @@ import {v4} from 'uuid';
 import {expect} from '@jest/globals';
 import './momento-jest-matchers';
 
-const SUPER_USER_PERMISSIONS: TokenScope = new InternalSuperUserPermissions();
+const SUPER_USER_PERMISSIONS: PermissionScope =
+  new InternalSuperUserPermissions();
 
 export function runAuthClientTests(
   sessionTokenAuthClient: IAuthClient,
@@ -540,7 +541,7 @@ export function runAuthClientTests(
     it('can only read all caches', async () => {
       const readAllCachesTokenResponse =
         await sessionTokenAuthClient.generateApiKey(
-          TokenScopes.cacheReadOnly(AllCaches),
+          PermissionScopes.cacheReadOnly(AllCaches),
           ExpiresIn.seconds(60)
         );
       expect(readAllCachesTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
@@ -588,7 +589,7 @@ export function runAuthClientTests(
     it('can only read all topics', async () => {
       const readAllTopicsTokenResponse =
         await sessionTokenAuthClient.generateApiKey(
-          TokenScopes.topicSubscribeOnly(AllCaches, AllTopics),
+          PermissionScopes.topicSubscribeOnly(AllCaches, AllTopics),
           ExpiresIn.seconds(60)
         );
       expect(readAllTopicsTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
