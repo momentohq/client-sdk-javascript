@@ -20,7 +20,7 @@ export function createCallMetadata(
 export function getWebControlEndpoint(
   credentialProvider: CredentialProvider
 ): string {
-  if (credentialProvider.isControlEndpointOverridden()) {
+  if (credentialProvider.areEndpointsOverridden()) {
     return withProtocolPrefix(credentialProvider.getControlEndpoint());
   }
   return withProtocolPrefix(`web.${credentialProvider.getControlEndpoint()}`);
@@ -29,7 +29,7 @@ export function getWebControlEndpoint(
 export function getWebCacheEndpoint(
   credentialProvider: CredentialProvider
 ): string {
-  if (credentialProvider.isCacheEndpointOverridden()) {
+  if (credentialProvider.areEndpointsOverridden()) {
     return withProtocolPrefix(credentialProvider.getCacheEndpoint());
   }
   return withProtocolPrefix(`web.${credentialProvider.getCacheEndpoint()}`);
@@ -38,7 +38,7 @@ export function getWebCacheEndpoint(
 export function getWebTokenEndpoint(
   credentialProvider: CredentialProvider
 ): string {
-  if (credentialProvider.isTokenEndpointOverridden()) {
+  if (credentialProvider.areEndpointsOverridden()) {
     return withProtocolPrefix(credentialProvider.getTokenEndpoint());
   }
   return withProtocolPrefix(`web.${credentialProvider.getTokenEndpoint()}`);
@@ -47,7 +47,7 @@ export function getWebTokenEndpoint(
 export function getWebVectorEndpoint(
   credentialProvider: CredentialProvider
 ): string {
-  if (credentialProvider.isVectorEndpointOverridden()) {
+  if (credentialProvider.areEndpointsOverridden()) {
     return withProtocolPrefix(credentialProvider.getVectorEndpoint());
   }
   return withProtocolPrefix(`web.${credentialProvider.getVectorEndpoint()}`);

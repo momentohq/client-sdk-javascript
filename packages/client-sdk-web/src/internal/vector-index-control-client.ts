@@ -1,0 +1,141 @@
+import {control} from '@gomomento/generated-types-webtext';
+import {CredentialProvider, MomentoLogger, VectorIndexConfiguration} from '..';
+import {Request, StatusCode, UnaryResponse} from 'grpc-web';
+import {
+  _CreateIndexRequest,
+  _ListIndexesRequest,
+  _DeleteIndexRequest,
+} from '@gomomento/generated-types-webtext/dist/controlclient_pb';
+import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {IVectorIndexControlClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {
+  validateIndexName,
+  validateNumDimensions,
+} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {getWebControlEndpoint} from '../utils/web-client-utils';
+import {ClientMetadataProvider} from './client-metadata-provider';
+import {
+  CreateVectorIndex,
+  DeleteVectorIndex,
+  ListVectorIndexes,
+} from '@gomomento/sdk-core';
+
+export interface ControlClientProps {
+  configuration: VectorIndexConfiguration;
+  credentialProvider: CredentialProvider;
+}
+
+export class VectorIndexControlClient<
+  REQ extends Request<REQ, RESP>,
+  RESP extends UnaryResponse<REQ, RESP>
+> implements IVectorIndexControlClient
+{
+  private readonly clientWrapper: control.ScsControlClient;
+  private readonly logger: MomentoLogger;
+
+  private readonly clientMetadataProvider: ClientMetadataProvider;
+
+  /**
+   * @param {ControlClientProps} props
+   */
+  constructor(props: ControlClientProps) {
+    this.logger = props.configuration.getLoggerFactory().getLogger(this);
+    this.logger.debug(
+      `Creating control client using endpoint: '${getWebControlEndpoint(
+        props.credentialProvider
+      )}`
+    );
+
+    this.clientMetadataProvider = new ClientMetadataProvider({
+      authToken: props.credentialProvider.getAuthToken(),
+    });
+    this.clientWrapper = new control.ScsControlClient(
+      // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
+      getWebControlEndpoint(props.credentialProvider),
+      null,
+      {}
+    );
+  }
+
+  public async createIndex(
+    indexName: string,
+    numDimensions: number
+  ): Promise<CreateVectorIndex.Response> {
+    try {
+      validateIndexName(indexName);
+      validateNumDimensions(numDimensions);
+    } catch (err) {
+      return new CreateVectorIndex.Error(normalizeSdkError(err as Error));
+    }
+    const request = new _CreateIndexRequest();
+    request.setIndexName(indexName);
+    request.setNumDimensions(numDimensions);
+    this.logger.debug("Issuing 'createIndex' request");
+    return await new Promise<CreateVectorIndex.Response>(resolve => {
+      this.clientWrapper.createIndex(
+        request,
+        this.clientMetadataProvider.createClientMetadata(),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        (err, resp) => {
+          if (err) {
+            if (err.code === StatusCode.ALREADY_EXISTS) {
+              resolve(new CreateVectorIndex.AlreadyExists());
+            } else {
+              resolve(
+                new CreateVectorIndex.Error(cacheServiceErrorMapper(err))
+              );
+            }
+          } else {
+            resolve(new CreateVectorIndex.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async listIndexes(): Promise<ListVectorIndexes.Response> {
+    const request = new _ListIndexesRequest();
+    this.logger.debug("Issuing 'listIndexes' request");
+    return await new Promise<ListVectorIndexes.Response>(resolve => {
+      this.clientWrapper.listIndexes(
+        request,
+        this.clientMetadataProvider.createClientMetadata(),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        (err, resp) => {
+          if (err) {
+            resolve(new ListVectorIndexes.Error(cacheServiceErrorMapper(err)));
+          } else {
+            const indexes = resp.getIndexNamesList();
+            resolve(new ListVectorIndexes.Success(indexes));
+          }
+        }
+      );
+    });
+  }
+
+  public async deleteIndex(indexName: string) {
+    const request = new _DeleteIndexRequest();
+    try {
+      validateIndexName(indexName);
+    } catch (err) {
+      return new CreateVectorIndex.Error(normalizeSdkError(err as Error));
+    }
+    request.setIndexName(indexName);
+    this.logger.debug("Issuing 'deleteIndex' request");
+    return await new Promise<DeleteVectorIndex.Response>(resolve => {
+      this.clientWrapper.deleteIndex(
+        request,
+        this.clientMetadataProvider.createClientMetadata(),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        (err, resp) => {
+          if (err) {
+            resolve(new DeleteVectorIndex.Error(cacheServiceErrorMapper(err)));
+          } else {
+            resolve(new DeleteVectorIndex.Success());
+          }
+        }
+      );
+    });
+  }
+}

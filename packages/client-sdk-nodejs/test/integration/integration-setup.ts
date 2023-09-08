@@ -60,10 +60,12 @@ function sessionCredsProvider(): CredentialProvider {
       environmentVariableName: 'TEST_SESSION_TOKEN',
       // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
       // steal them from the auth-token-based creds provider.
-      cacheEndpoint: credsProvider().getCacheEndpoint(),
-      controlEndpoint: credsProvider().getControlEndpoint(),
-      tokenEndpoint: credsProvider().getTokenEndpoint(),
-      vectorEndpoint: credsProvider().getVectorEndpoint(),
+      endpointOverrides: {
+        cacheEndpoint: credsProvider().getCacheEndpoint(),
+        controlEndpoint: credsProvider().getControlEndpoint(),
+        tokenEndpoint: credsProvider().getTokenEndpoint(),
+        vectorEndpoint: credsProvider().getVectorEndpoint(),
+      },
     });
   }
   return _sessionCredsProvider;
@@ -111,8 +113,8 @@ function momentoVectorClientForTesting(): PreviewVectorIndexClient {
 }
 
 export function SetupIntegrationTest(): {
-  Momento: CacheClient;
-  IntegrationTestCacheName: string;
+  cacheClient: CacheClient;
+  integrationTestCacheName: string;
 } {
   const cacheName = testCacheName();
 
@@ -136,17 +138,21 @@ export function SetupIntegrationTest(): {
   });
 
   const client = momentoClientForTesting();
-  return {Momento: client, IntegrationTestCacheName: cacheName};
+  return {cacheClient: client, integrationTestCacheName: cacheName};
 }
 
 export function SetupTopicIntegrationTest(): {
   topicClient: TopicClient;
-  Momento: CacheClient;
-  IntegrationTestCacheName: string;
+  cacheClient: CacheClient;
+  integrationTestCacheName: string;
 } {
-  const {Momento, IntegrationTestCacheName} = SetupIntegrationTest();
+  const {cacheClient, integrationTestCacheName} = SetupIntegrationTest();
   const topicClient = momentoTopicClientForTesting();
-  return {topicClient, Momento, IntegrationTestCacheName};
+  return {
+    topicClient,
+    cacheClient: cacheClient,
+    integrationTestCacheName: integrationTestCacheName,
+  };
 }
 
 export function SetupVectorIntegrationTest(): {

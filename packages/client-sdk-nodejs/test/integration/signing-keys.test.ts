@@ -5,13 +5,13 @@ import {
 } from '@gomomento/sdk-core';
 import {SetupIntegrationTest} from './integration-setup';
 
-const {Momento} = SetupIntegrationTest();
+const {cacheClient} = SetupIntegrationTest();
 
 describe('Signing keys', () => {
   it('should create, list, and revoke a signing key', async () => {
-    const createSigningKeyResponse = await Momento.createSigningKey(30);
+    const createSigningKeyResponse = await cacheClient.createSigningKey(30);
     expect(createSigningKeyResponse).toBeInstanceOf(CreateSigningKey.Success);
-    let listSigningKeysResponse = await Momento.listSigningKeys();
+    let listSigningKeysResponse = await cacheClient.listSigningKeys();
     expect(listSigningKeysResponse).toBeInstanceOf(ListSigningKeys.Success);
     let signingKeys = (
       listSigningKeysResponse as ListSigningKeys.Success
@@ -27,11 +27,11 @@ describe('Signing keys', () => {
             (createSigningKeyResponse as CreateSigningKey.Success).getKeyId()
         )
     ).toEqual(true);
-    const revokeResponse = await Momento.revokeSigningKey(
+    const revokeResponse = await cacheClient.revokeSigningKey(
       (createSigningKeyResponse as CreateSigningKey.Success).getKeyId()
     );
     expect(revokeResponse).toBeInstanceOf(RevokeSigningKey.Success);
-    listSigningKeysResponse = await Momento.listSigningKeys();
+    listSigningKeysResponse = await cacheClient.listSigningKeys();
     expect(listSigningKeysResponse).toBeInstanceOf(ListSigningKeys.Success);
     signingKeys = (
       listSigningKeysResponse as ListSigningKeys.Success

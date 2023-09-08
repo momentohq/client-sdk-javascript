@@ -68,8 +68,8 @@ import * as TopicSubscribe from '@gomomento/sdk-core/dist/src/messages/responses
 import {TopicItem} from '@gomomento/sdk-core/dist/src/messages/responses/topic-item';
 
 // AuthClient Response Types
-import * as GenerateAuthToken from '@gomomento/sdk-core/dist/src/messages/responses/generate-auth-token';
-import * as RefreshAuthToken from '@gomomento/sdk-core/dist/src/messages/responses/refresh-auth-token';
+import * as GenerateApiKey from '@gomomento/sdk-core/dist/src/messages/responses/generate-api-key';
+import * as RefreshApiKey from '@gomomento/sdk-core/dist/src/messages/responses/refresh-api-key';
 import * as GenerateDisposableToken from '@gomomento/sdk-core/dist/src/messages/responses/generate-disposable-token';
 
 import {
@@ -103,8 +103,12 @@ import {
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
   AllDataReadWrite,
+  PermissionScope,
+  /**
+   * @deprecated please use PermissionScope instead
+   */
   TokenScope,
-  TokenScopes,
+  PermissionScopes,
   DisposableTokenScope,
   DisposableTokenScopes,
   ExpiresIn,
@@ -153,8 +157,16 @@ export {
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
   AllDataReadWrite,
+  PermissionScope,
+  /**
+   * @deprecated please use 'PermissionScope' instead
+   */
   TokenScope,
-  TokenScopes,
+  PermissionScopes,
+  /**
+   * @deprecated please use 'PermissionScopes' instead
+   */
+  PermissionScopes as TokenScopes,
   DisposableTokenScope,
   DisposableTokenScopes,
   CacheName,
@@ -225,8 +237,16 @@ export {
   TopicPublish,
   TopicSubscribe,
   SubscribeCallOptions,
-  GenerateAuthToken,
-  RefreshAuthToken,
+  GenerateApiKey,
+  /**
+   * @deprecated - please use GenerateApiKey
+   */
+  GenerateApiKey as GenerateAuthToken,
+  RefreshApiKey,
+  /**
+   * @deprecated - please use RefreshApiKey
+   */
+  RefreshApiKey as RefreshAuthToken,
   GenerateDisposableToken,
   ExpiresAt,
   ExpiresIn,

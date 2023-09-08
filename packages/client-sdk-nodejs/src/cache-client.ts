@@ -1,5 +1,5 @@
-import {ControlClient} from './internal/control-client';
-import {DataClient} from './internal/data-client';
+import {CacheControlClient} from './internal/cache-control-client';
+import {CacheDataClient} from './internal/cache-data-client';
 import {
   CreateSigningKey,
   ListSigningKeys,
@@ -26,13 +26,13 @@ const EAGER_CONNECTION_DEFAULT_TIMEOUT_SECONDS = 30;
  */
 export class CacheClient extends AbstractCacheClient implements ICacheClient {
   private readonly logger: MomentoLogger;
-  private readonly notYetAbstractedControlClient: ControlClient;
+  private readonly notYetAbstractedControlClient: CacheControlClient;
   /**
    * Creates an instance of CacheClient.
    * @param {CacheClientProps} props configuration and credentials for creating a CacheClient.
    */
   constructor(props: CacheClientProps) {
-    const controlClient = new ControlClient({
+    const controlClient = new CacheControlClient({
       configuration: props.configuration,
       credentialProvider: props.credentialProvider,
     });
@@ -42,7 +42,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
       .getGrpcConfig()
       .getNumClients();
     const dataClients = range(numClients).map(
-      (_, id) => new DataClient(props, String(id))
+      (_, id) => new CacheDataClient(props, String(id))
     );
     super(controlClient, dataClients);
 
@@ -69,7 +69,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
     // client need to explicitly set the value as 0 to disable eager connection.
     if (props.eagerConnectTimeout !== 0) {
       await Promise.all(
-        client.dataClients.map(dc => (dc as DataClient).connect(timeout))
+        client.dataClients.map(dc => (dc as CacheDataClient).connect(timeout))
       );
     }
     return client;
@@ -138,11 +138,11 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
     );
   }
 
-  protected getNextDataClient(): DataClient {
+  protected getNextDataClient(): CacheDataClient {
     const client = this.dataClients[this.nextDataClientIndex];
     this.nextDataClientIndex =
       (this.nextDataClientIndex + 1) % this.dataClients.length;
-    return client as DataClient;
+    return client as CacheDataClient;
   }
 }
 

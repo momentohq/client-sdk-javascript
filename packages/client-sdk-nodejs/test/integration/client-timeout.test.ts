@@ -13,7 +13,7 @@ import {
   WithCache,
 } from './integration-setup';
 
-const {Momento} = SetupIntegrationTest();
+const {cacheClient} = SetupIntegrationTest();
 
 // TODO: these tests are only applicable to the nodejs CacheClient at the moment. Once the
 //  Web SDK supports the full Configuration interface, these tests should be moved into the
@@ -21,7 +21,7 @@ const {Momento} = SetupIntegrationTest();
 describe('client timeout tests', () => {
   it('should timeout on a set request that exceeds specified timeout', async () => {
     const cacheName = testCacheName();
-    const defaultTimeoutClient = Momento;
+    const defaultTimeoutClient = cacheClient;
     const shortTimeoutTransportStrategy = integrationTestCacheClientProps()
       .configuration.getTransportStrategy()
       .withClientTimeoutMillis(1);
@@ -52,7 +52,7 @@ describe('client timeout tests', () => {
 
   it('should timeout on a setIfNotExists request that exceeds specified timeout', async () => {
     const cacheName = testCacheName();
-    const defaultTimeoutClient = Momento;
+    const defaultTimeoutClient = cacheClient;
     const shortTimeoutTransportStrategy = integrationTestCacheClientProps()
       .configuration.getTransportStrategy()
       .withClientTimeoutMillis(1);

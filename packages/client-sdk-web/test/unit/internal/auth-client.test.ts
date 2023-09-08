@@ -16,7 +16,7 @@ import {
   Permissions,
   TopicRole,
 } from '@gomomento/sdk-core';
-import {DisposableTokenCachePermissions} from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
+import {DisposableTokenCachePermissions} from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
 import {convertToB64String} from '../../../src/utils/web-client-utils';
 
 describe('internal auth client', () => {

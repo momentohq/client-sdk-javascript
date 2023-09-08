@@ -8,24 +8,24 @@ import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache'
 import {CacheItemGetTtl, CollectionTtl} from '@gomomento/sdk-core';
 import {delay} from './auth-client';
 export function runItemGetTtlTest(
-  Momento: ICacheClient,
-  IntegrationTestCacheName: string
+  momento: ICacheClient,
+  integrationTestCacheName: string
 ) {
   describe('item ttl', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-      return Momento.itemGetTtl(props.cacheName, v4());
+      return momento.itemGetTtl(props.cacheName, v4());
     });
 
     it('should get item ttl remaining for a scalar', async () => {
       const cacheKey = v4();
       const cacheValue = v4();
-      await Momento.set(IntegrationTestCacheName, cacheKey, cacheValue, {
+      await momento.set(integrationTestCacheName, cacheKey, cacheValue, {
         ttl: 10,
       });
 
       // string cache key
-      let itemGetTtlResponse = await Momento.itemGetTtl(
-        IntegrationTestCacheName,
+      let itemGetTtlResponse = await momento.itemGetTtl(
+        integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
@@ -36,8 +36,8 @@ export function runItemGetTtlTest(
       expect(hitResult.remainingTtlMillis()).toBeGreaterThan(7000);
 
       // byte array cache key
-      itemGetTtlResponse = await Momento.itemGetTtl(
-        IntegrationTestCacheName,
+      itemGetTtlResponse = await momento.itemGetTtl(
+        integrationTestCacheName,
         new TextEncoder().encode(cacheKey)
       );
       expectWithMessage(() => {
@@ -51,8 +51,8 @@ export function runItemGetTtlTest(
     it('should get item ttl remaining for a dictionary', async () => {
       const cacheKey = v4();
       const cacheValue = {foo: v4()};
-      await Momento.dictionarySetFields(
-        IntegrationTestCacheName,
+      await momento.dictionarySetFields(
+        integrationTestCacheName,
         cacheKey,
         cacheValue,
         {
@@ -61,8 +61,8 @@ export function runItemGetTtlTest(
       );
 
       // string cache key
-      const itemGetTtlResponse = await Momento.itemGetTtl(
-        IntegrationTestCacheName,
+      const itemGetTtlResponse = await momento.itemGetTtl(
+        integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
@@ -76,8 +76,8 @@ export function runItemGetTtlTest(
     it('should return a miss for a non-existent key', async () => {
       const cacheKey = v4();
       // string cache key
-      const itemGetTtlResponse = await Momento.itemGetTtl(
-        IntegrationTestCacheName,
+      const itemGetTtlResponse = await momento.itemGetTtl(
+        integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
@@ -88,13 +88,13 @@ export function runItemGetTtlTest(
     it('should return a miss for an expired key', async () => {
       const cacheKey = v4();
       const cacheValue = v4();
-      await Momento.set(IntegrationTestCacheName, cacheKey, cacheValue, {
+      await momento.set(integrationTestCacheName, cacheKey, cacheValue, {
         ttl: 2,
       });
 
       // string cache key
-      let itemGetTtlResponse = await Momento.itemGetTtl(
-        IntegrationTestCacheName,
+      let itemGetTtlResponse = await momento.itemGetTtl(
+        integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
@@ -104,8 +104,8 @@ export function runItemGetTtlTest(
       await delay(2000);
 
       // byte array cache key
-      itemGetTtlResponse = await Momento.itemGetTtl(
-        IntegrationTestCacheName,
+      itemGetTtlResponse = await momento.itemGetTtl(
+        integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
@@ -116,11 +116,11 @@ export function runItemGetTtlTest(
     it('should support happy path for itemGetTtl via curried cache via ICache interface', async () => {
       const cacheKey = v4();
       const cacheValue = v4();
-      await Momento.set(IntegrationTestCacheName, cacheKey, cacheValue, {
+      await momento.set(integrationTestCacheName, cacheKey, cacheValue, {
         ttl: 10,
       });
 
-      const cache = Momento.cache(IntegrationTestCacheName);
+      const cache = momento.cache(integrationTestCacheName);
 
       // string cache key
       const itemGetTtlResponse = await cache.itemGetTtl(cacheKey);

@@ -24,6 +24,7 @@
   },
   "imports": {
     "http": "https://deno.land/std@0.198.0/http/server.ts",
-    "dotenv": "https://deno.land/std/dotenv/mod.ts"
+    "dotenv": "https://deno.land/std/dotenv/mod.ts",
+    "momento_http": "https://deno.land/x/momento_http@v0.2.0/src/index.ts"
   }
 }

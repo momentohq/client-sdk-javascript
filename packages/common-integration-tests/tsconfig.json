@@ -22,7 +22,6 @@
     "typeRoots": ["./node_modules/@types"],
     "resolveJsonModule": true
   },
-  "files": ["node_modules/jest-extended/types/index.d.ts"],
   "include": ["src/", "test/"],
   "exclude": ["node_modules", "dist", "examples/"]
 }

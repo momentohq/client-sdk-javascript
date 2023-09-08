@@ -34,8 +34,8 @@ import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 export function runSortedSetTests(
-  Momento: ICacheClient,
-  IntegrationTestCacheName: string
+  cacheClient: ICacheClient,
+  integrationTestCacheName: string
 ) {
   describe('Integration tests for sorted set operations', () => {
     it('is good at logic', async () => {
@@ -56,7 +56,7 @@ export function runSortedSetTests(
 
       it('validates its sorted set name', async () => {
         const response = await responder({
-          cacheName: IntegrationTestCacheName,
+          cacheName: integrationTestCacheName,
           sortedSetName: '  ',
           value: v4(),
         });
@@ -72,7 +72,7 @@ export function runSortedSetTests(
     ) => {
       it('misses when the sorted set does not exist', async () => {
         const response = await responder({
-          cacheName: IntegrationTestCacheName,
+          cacheName: integrationTestCacheName,
           sortedSetName: v4(),
           value: v4(),
         });
@@ -92,7 +92,7 @@ export function runSortedSetTests(
         const timeout = 1;
 
         let changeResponse = await changeResponder({
-          cacheName: IntegrationTestCacheName,
+          cacheName: integrationTestCacheName,
           sortedSetName: sortedSetName,
           value: value,
           score: 42,
@@ -101,7 +101,7 @@ export function runSortedSetTests(
         expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
 
         changeResponse = await changeResponder({
-          cacheName: IntegrationTestCacheName,
+          cacheName: integrationTestCacheName,
           sortedSetName: sortedSetName,
           value: value,
           score: 42,
@@ -110,8 +110,8 @@ export function runSortedSetTests(
         expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
         await sleep(timeout * 1000);
 
-        const getResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        const getResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -125,7 +125,7 @@ export function runSortedSetTests(
         const timeout = 1;
 
         let changeResponse = await changeResponder({
-          cacheName: IntegrationTestCacheName,
+          cacheName: integrationTestCacheName,
           sortedSetName: sortedSetName,
           value: value,
           score: 42,
@@ -134,7 +134,7 @@ export function runSortedSetTests(
         expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
 
         changeResponse = await changeResponder({
-          cacheName: IntegrationTestCacheName,
+          cacheName: integrationTestCacheName,
           sortedSetName: sortedSetName,
           value: value,
           score: 42,
@@ -143,8 +143,8 @@ export function runSortedSetTests(
         expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
         await sleep(timeout * 1000);
 
-        const getResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        const getResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -155,7 +155,7 @@ export function runSortedSetTests(
 
     describe('#sortedSetFetchByRank', () => {
       const responder = (props: ValidateSortedSetProps) => {
-        return Momento.sortedSetFetchByRank(
+        return cacheClient.sortedSetFetchByRank(
           props.cacheName,
           props.sortedSetName
         );
@@ -166,14 +166,14 @@ export function runSortedSetTests(
 
       it('should return expected toString value with sortedSetFetch', async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElement(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElement(
+          integrationTestCacheName,
           sortedSetName,
           'a',
           42
         );
-        const response = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        const response = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -191,8 +191,8 @@ export function runSortedSetTests(
         const field2 = 'bar';
         const score2 = 42;
 
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           new Map([
             [field1, score1],
@@ -200,8 +200,8 @@ export function runSortedSetTests(
           ])
         );
 
-        const response = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        const response = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -232,8 +232,8 @@ export function runSortedSetTests(
         const sortedSetName = v4();
 
         beforeAll(done => {
-          const setupPromise = Momento.sortedSetPutElements(
-            IntegrationTestCacheName,
+          const setupPromise = cacheClient.sortedSetPutElements(
+            integrationTestCacheName,
             sortedSetName,
             {
               bam: 1000,
@@ -256,8 +256,8 @@ export function runSortedSetTests(
         });
 
         it('should fetch only the specified range if start rank is specified', async () => {
-          const response = await Momento.sortedSetFetchByRank(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByRank(
+            integrationTestCacheName,
             sortedSetName,
             {
               startRank: 4,
@@ -277,8 +277,8 @@ export function runSortedSetTests(
         });
 
         it('should fetch only the specified range if end rank is specified', async () => {
-          const response = await Momento.sortedSetFetchByRank(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByRank(
+            integrationTestCacheName,
             sortedSetName,
             {
               endRank: 3,
@@ -297,8 +297,8 @@ export function runSortedSetTests(
         });
 
         it('should fetch only the specified range if both start and end rank are specified', async () => {
-          const response = await Momento.sortedSetFetchByRank(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByRank(
+            integrationTestCacheName,
             sortedSetName,
             {
               startRank: 1,
@@ -319,8 +319,8 @@ export function runSortedSetTests(
         });
 
         it('should return an empty list if start rank is out of bounds', async () => {
-          const response = await Momento.sortedSetFetchByRank(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByRank(
+            integrationTestCacheName,
             sortedSetName,
             {
               startRank: 10,
@@ -335,8 +335,8 @@ export function runSortedSetTests(
         });
 
         it('should return all the remaining elements if end rank is out of bounds', async () => {
-          const response = await Momento.sortedSetFetchByRank(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByRank(
+            integrationTestCacheName,
             sortedSetName,
             {
               startRank: 5,
@@ -356,8 +356,8 @@ export function runSortedSetTests(
         });
 
         it('should return the last elements if start rank is negative', async () => {
-          const response = await Momento.sortedSetFetchByRank(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByRank(
+            integrationTestCacheName,
             sortedSetName,
             {
               startRank: -5,
@@ -378,8 +378,8 @@ export function runSortedSetTests(
         });
 
         it('should return all but the last elements if end rank is negative', async () => {
-          const response = await Momento.sortedSetFetchByRank(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByRank(
+            integrationTestCacheName,
             sortedSetName,
             {
               endRank: -2,
@@ -401,8 +401,8 @@ export function runSortedSetTests(
         });
 
         it('should return a range from the end of the set if both start and end rank are negative', async () => {
-          const response = await Momento.sortedSetFetchByRank(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByRank(
+            integrationTestCacheName,
             sortedSetName,
             {
               startRank: -5,
@@ -422,8 +422,8 @@ export function runSortedSetTests(
         });
 
         it('should fetch in ascending order if order is explicitly specified', async () => {
-          const response = await Momento.sortedSetFetchByRank(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByRank(
+            integrationTestCacheName,
             sortedSetName,
             {
               order: SortedSetOrder.Ascending,
@@ -447,8 +447,8 @@ export function runSortedSetTests(
         });
 
         it('should fetch in descending order if specified', async () => {
-          const response = await Momento.sortedSetFetchByRank(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByRank(
+            integrationTestCacheName,
             sortedSetName,
             {
               order: SortedSetOrder.Descending,
@@ -472,8 +472,8 @@ export function runSortedSetTests(
         });
 
         it('should support descending order with a start rank', async () => {
-          const response = await Momento.sortedSetFetchByRank(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByRank(
+            integrationTestCacheName,
             sortedSetName,
             {
               order: SortedSetOrder.Descending,
@@ -493,8 +493,8 @@ export function runSortedSetTests(
         });
 
         it('should support descending order with a end rank', async () => {
-          const response = await Momento.sortedSetFetchByRank(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByRank(
+            integrationTestCacheName,
             sortedSetName,
             {
               order: SortedSetOrder.Descending,
@@ -514,8 +514,8 @@ export function runSortedSetTests(
         });
 
         it('should support descending order with a start and end rank', async () => {
-          const response = await Momento.sortedSetFetchByRank(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByRank(
+            integrationTestCacheName,
             sortedSetName,
             {
               order: SortedSetOrder.Descending,
@@ -535,8 +535,8 @@ export function runSortedSetTests(
         });
 
         it('should error if start rank is greater than end rank', async () => {
-          const response = await Momento.sortedSetFetchByRank(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByRank(
+            integrationTestCacheName,
             sortedSetName,
             {
               order: SortedSetOrder.Descending,
@@ -561,8 +561,8 @@ export function runSortedSetTests(
         });
 
         it('should error if negative start rank is less than negative end rank', async () => {
-          const response = await Momento.sortedSetFetchByRank(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByRank(
+            integrationTestCacheName,
             sortedSetName,
             {
               order: SortedSetOrder.Descending,
@@ -589,16 +589,16 @@ export function runSortedSetTests(
 
       it('should return a miss if the sorted set does not exist', async () => {
         const sortedSetName = v4();
-        let fetchResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        let fetchResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
           expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Miss);
         }, `expected MISS but got ${fetchResponse.toString()}`);
 
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           new Map([
             [v4(), 1],
@@ -607,24 +607,24 @@ export function runSortedSetTests(
           ])
         );
 
-        fetchResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        fetchResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
           expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
         }, `expected HIT but got ${fetchResponse.toString()}`);
 
-        const deleteResponse = await Momento.delete(
-          IntegrationTestCacheName,
+        const deleteResponse = await cacheClient.delete(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
           expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
         }, `expected SUCCESS but got ${deleteResponse.toString()}`);
 
-        fetchResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        fetchResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -635,7 +635,7 @@ export function runSortedSetTests(
       it('should support happy path for fetchByRank via curried cache via ICache interface', async () => {
         const sortedSetName = v4();
 
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
 
         await cache.sortedSetPutElements(sortedSetName, {
           bam: 1000,
@@ -668,8 +668,8 @@ export function runSortedSetTests(
       it('should support accessing value for a sortedSetFetchByRank Hit without instanceof check', async () => {
         const sortedSetName = v4();
 
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           {
             bam: 1000,
@@ -683,8 +683,8 @@ export function runSortedSetTests(
           }
         );
 
-        let fetchResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        let fetchResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName,
           {
             startRank: 1,
@@ -709,8 +709,8 @@ export function runSortedSetTests(
         expect(hitResponse.value()).toEqual(expectedResult);
         expect(hitResponse.valueArray()).toEqual(expectedResult);
 
-        fetchResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        fetchResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           v4()
         );
 
@@ -723,7 +723,7 @@ export function runSortedSetTests(
 
     describe('#sortedSetFetchByScore', () => {
       const responder = (props: ValidateSortedSetProps) => {
-        return Momento.sortedSetFetchByScore(
+        return cacheClient.sortedSetFetchByScore(
           props.cacheName,
           props.sortedSetName
         );
@@ -734,14 +734,14 @@ export function runSortedSetTests(
 
       it('should return expected toString value', async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElement(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElement(
+          integrationTestCacheName,
           sortedSetName,
           'a',
           42
         );
-        const response = await Momento.sortedSetFetchByScore(
-          IntegrationTestCacheName,
+        const response = await cacheClient.sortedSetFetchByScore(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -759,8 +759,8 @@ export function runSortedSetTests(
         const field2 = 'bar';
         const score2 = 42;
 
-        const putResponse = await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        const putResponse = await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           new Map([
             [field1, score1],
@@ -771,8 +771,8 @@ export function runSortedSetTests(
           expect(putResponse).toBeInstanceOf(CacheSortedSetPutElements.Success);
         }, `expected SUCCESS but got ${putResponse.toString()}`);
 
-        const response = await Momento.sortedSetFetchByScore(
-          IntegrationTestCacheName,
+        const response = await cacheClient.sortedSetFetchByScore(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -803,8 +803,8 @@ export function runSortedSetTests(
         const sortedSetName = v4();
 
         beforeAll(done => {
-          const setupPromise = Momento.sortedSetPutElements(
-            IntegrationTestCacheName,
+          const setupPromise = cacheClient.sortedSetPutElements(
+            integrationTestCacheName,
             sortedSetName,
             {
               bam: 1000,
@@ -827,8 +827,8 @@ export function runSortedSetTests(
         });
 
         it('should fetch only the matching elements if minScore is specified', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               minScore: 100,
@@ -848,8 +848,8 @@ export function runSortedSetTests(
         });
 
         it('should fetch only the matching elements if maxScore is specified', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               maxScore: 1000,
@@ -870,8 +870,8 @@ export function runSortedSetTests(
         });
 
         it('should fetch only the matching elements if minScore and maxScore are specified', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               minScore: 100,
@@ -890,8 +890,8 @@ export function runSortedSetTests(
         });
 
         it('should fetch an empty list if minScore is out of range', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               minScore: 2_000_000,
@@ -906,8 +906,8 @@ export function runSortedSetTests(
         });
 
         it('should fetch an empty list if maxScore is out of range', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               maxScore: 0,
@@ -922,8 +922,8 @@ export function runSortedSetTests(
         });
 
         it('should fetch the whole set if minScore is less than the minimum score', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               minScore: 0,
@@ -947,8 +947,8 @@ export function runSortedSetTests(
         });
 
         it('should fetch the whole set if maxScore is greater than the maximum score', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               maxScore: 2_000_000,
@@ -972,8 +972,8 @@ export function runSortedSetTests(
         });
 
         it('should error if minScore is greater than maxScore', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               minScore: 1_000,
@@ -997,8 +997,8 @@ export function runSortedSetTests(
         });
 
         it('should fetch starting from the offset if specified', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               minScore: 100,
@@ -1017,8 +1017,8 @@ export function runSortedSetTests(
         });
 
         it('should fetch the specified number of results if count is specified', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               minScore: 100,
@@ -1037,8 +1037,8 @@ export function runSortedSetTests(
         });
 
         it('should fetch the specified number of results from the offset if both count and offset are specified', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               minScore: 10,
@@ -1059,8 +1059,8 @@ export function runSortedSetTests(
         });
 
         it('should return an empty list if offset is greater than the size of the results', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               minScore: 100,
@@ -1076,8 +1076,8 @@ export function runSortedSetTests(
         });
 
         it('should return all remaining results if count is greater than the number of available results', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               minScore: 100,
@@ -1098,8 +1098,8 @@ export function runSortedSetTests(
         });
 
         it('should error if count is negative', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               minScore: 100,
@@ -1123,8 +1123,8 @@ export function runSortedSetTests(
         });
 
         it('should error if offset is negative', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               minScore: 100,
@@ -1148,8 +1148,8 @@ export function runSortedSetTests(
         });
 
         it('should return results in ascending order if order is explicitly set to ascending', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               order: SortedSetOrder.Ascending,
@@ -1170,8 +1170,8 @@ export function runSortedSetTests(
         });
 
         it('should return results in descending order if order is set to descending', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               order: SortedSetOrder.Descending,
@@ -1192,8 +1192,8 @@ export function runSortedSetTests(
         });
 
         it('should support offset and count when returning results in descending order', async () => {
-          const response = await Momento.sortedSetFetchByScore(
-            IntegrationTestCacheName,
+          const response = await cacheClient.sortedSetFetchByScore(
+            integrationTestCacheName,
             sortedSetName,
             {
               order: SortedSetOrder.Descending,
@@ -1217,16 +1217,16 @@ export function runSortedSetTests(
 
       it('should return a miss if the sorted set does not exist', async () => {
         const sortedSetName = v4();
-        let fetchResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        let fetchResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
           expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Miss);
         }, `expected MISS but got ${fetchResponse.toString()}`);
 
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           new Map([
             [v4(), 1],
@@ -1235,24 +1235,24 @@ export function runSortedSetTests(
           ])
         );
 
-        fetchResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        fetchResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
           expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
         }, `expected HIT but got ${fetchResponse.toString()}`);
 
-        const deleteResponse = await Momento.delete(
-          IntegrationTestCacheName,
+        const deleteResponse = await cacheClient.delete(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
           expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
         }, `expected SUCCESS but got ${deleteResponse.toString()}`);
 
-        fetchResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        fetchResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -1263,7 +1263,7 @@ export function runSortedSetTests(
       it('should support happy path for fetchByScore via curried cache via ICache interface', async () => {
         const sortedSetName = v4();
 
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
 
         await cache.sortedSetPutElements(sortedSetName, {
           bam: 1000,
@@ -1294,8 +1294,8 @@ export function runSortedSetTests(
       it('should support accessing value for sortedSetFetchByScore Hit without instanceof check', async () => {
         const sortedSetName = v4();
 
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           {
             bam: 1000,
@@ -1309,8 +1309,8 @@ export function runSortedSetTests(
           }
         );
 
-        let fetchResponse = await Momento.sortedSetFetchByScore(
-          IntegrationTestCacheName,
+        let fetchResponse = await cacheClient.sortedSetFetchByScore(
+          integrationTestCacheName,
           sortedSetName,
           {
             minScore: 100,
@@ -1333,8 +1333,8 @@ export function runSortedSetTests(
         expect(hitResponse.value()).toEqual(expectedResult);
         expect(hitResponse.valueArray()).toEqual(expectedResult);
 
-        fetchResponse = await Momento.sortedSetFetchByScore(
-          IntegrationTestCacheName,
+        fetchResponse = await cacheClient.sortedSetFetchByScore(
+          integrationTestCacheName,
           v4()
         );
 
@@ -1347,7 +1347,7 @@ export function runSortedSetTests(
 
     describe('#sortedSetGetRank', () => {
       const responder = (props: ValidateSortedSetProps) => {
-        return Momento.sortedSetGetRank(
+        return cacheClient.sortedSetGetRank(
           props.cacheName,
           props.sortedSetName,
           props.value
@@ -1359,14 +1359,14 @@ export function runSortedSetTests(
 
       it('retrieves rank for a value that exists', async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           {foo: 42, bar: 84, baz: 90210}
         );
 
-        let result = await Momento.sortedSetGetRank(
-          IntegrationTestCacheName,
+        let result = await cacheClient.sortedSetGetRank(
+          integrationTestCacheName,
           sortedSetName,
           'bar'
         );
@@ -1376,8 +1376,8 @@ export function runSortedSetTests(
         let hitResult = result as CacheSortedSetGetRank.Hit;
         expect(hitResult.rank()).toEqual(1);
 
-        result = await Momento.sortedSetGetRank(
-          IntegrationTestCacheName,
+        result = await cacheClient.sortedSetGetRank(
+          integrationTestCacheName,
           sortedSetName,
           'baz'
         );
@@ -1387,8 +1387,8 @@ export function runSortedSetTests(
         hitResult = result as CacheSortedSetGetRank.Hit;
         expect(hitResult.rank()).toEqual(2);
 
-        result = await Momento.sortedSetGetRank(
-          IntegrationTestCacheName,
+        result = await cacheClient.sortedSetGetRank(
+          integrationTestCacheName,
           sortedSetName,
           'foo'
         );
@@ -1401,14 +1401,14 @@ export function runSortedSetTests(
 
       it('returns a miss for a value that does not exist', async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           {foo: 42, bar: 84, baz: 90210}
         );
 
-        const result = await Momento.sortedSetGetRank(
-          IntegrationTestCacheName,
+        const result = await cacheClient.sortedSetGetRank(
+          integrationTestCacheName,
           sortedSetName,
           'taco'
         );
@@ -1419,7 +1419,7 @@ export function runSortedSetTests(
 
       it('should support happy path for sortedSetGetRank via curried cache via ICache interface', async () => {
         const sortedSetName = v4();
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
         await cache.sortedSetPutElements(sortedSetName, {
           foo: 42,
           bar: 84,
@@ -1437,7 +1437,7 @@ export function runSortedSetTests(
 
     describe('#sortedSetGetScore', () => {
       const responder = (props: ValidateSortedSetProps) => {
-        return Momento.sortedSetGetScore(
+        return cacheClient.sortedSetGetScore(
           props.cacheName,
           props.sortedSetName,
           props.value
@@ -1449,14 +1449,14 @@ export function runSortedSetTests(
 
       it('retrieves score for a value that exists', async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           {foo: 42, bar: 84, baz: 90210}
         );
 
-        let result = await Momento.sortedSetGetScore(
-          IntegrationTestCacheName,
+        let result = await cacheClient.sortedSetGetScore(
+          integrationTestCacheName,
           sortedSetName,
           'bar'
         );
@@ -1466,8 +1466,8 @@ export function runSortedSetTests(
         let hitResult = result as CacheSortedSetGetScore.Hit;
         expect(hitResult.score()).toEqual(84);
 
-        result = await Momento.sortedSetGetScore(
-          IntegrationTestCacheName,
+        result = await cacheClient.sortedSetGetScore(
+          integrationTestCacheName,
           sortedSetName,
           'baz'
         );
@@ -1480,14 +1480,14 @@ export function runSortedSetTests(
 
       it('returns a miss for a value that does not exist', async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           {foo: 42, bar: 84, baz: 90210}
         );
 
-        const result = await Momento.sortedSetGetScore(
-          IntegrationTestCacheName,
+        const result = await cacheClient.sortedSetGetScore(
+          integrationTestCacheName,
           sortedSetName,
           'taco'
         );
@@ -1498,7 +1498,7 @@ export function runSortedSetTests(
 
       it('should support happy path for sortedSetGetScore via curried cache via ICache interface', async () => {
         const sortedSetName = v4();
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
         await cache.sortedSetPutElements(sortedSetName, {
           foo: 42,
           bar: 84,
@@ -1515,8 +1515,8 @@ export function runSortedSetTests(
 
       it('should support accessing value for CacheSortedSetGetScore.Hit without instanceof check', async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           {
             foo: 42,
@@ -1525,8 +1525,8 @@ export function runSortedSetTests(
           }
         );
 
-        let getScoreResponse = await Momento.sortedSetGetScore(
-          IntegrationTestCacheName,
+        let getScoreResponse = await cacheClient.sortedSetGetScore(
+          integrationTestCacheName,
           sortedSetName,
           'bar'
         );
@@ -1539,8 +1539,8 @@ export function runSortedSetTests(
         const hitResult = getScoreResponse as CacheSortedSetGetScore.Hit;
         expect(hitResult.score()).toEqual(84);
 
-        getScoreResponse = await Momento.sortedSetGetScore(
-          IntegrationTestCacheName,
+        getScoreResponse = await cacheClient.sortedSetGetScore(
+          integrationTestCacheName,
           v4(),
           'bar'
         );
@@ -1555,7 +1555,7 @@ export function runSortedSetTests(
 
     describe('#sortedSetGetScores', () => {
       const responder = (props: ValidateSortedSetProps) => {
-        return Momento.sortedSetGetScores(
+        return cacheClient.sortedSetGetScores(
           props.cacheName,
           props.sortedSetName,
           [props.value] as string[] | Uint8Array[]
@@ -1567,14 +1567,14 @@ export function runSortedSetTests(
 
       it('retrieves scores for values that exist', async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           {foo: 42, bar: 84, baz: 90210}
         );
 
-        const result = await Momento.sortedSetGetScores(
-          IntegrationTestCacheName,
+        const result = await cacheClient.sortedSetGetScores(
+          integrationTestCacheName,
           sortedSetName,
           ['bar', 'baz']
         );
@@ -1590,14 +1590,14 @@ export function runSortedSetTests(
 
       it('returns partial record if some values do not exist', async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           {foo: 42, bar: 84, baz: 90210}
         );
 
-        const result = await Momento.sortedSetGetScores(
-          IntegrationTestCacheName,
+        const result = await cacheClient.sortedSetGetScores(
+          integrationTestCacheName,
           sortedSetName,
           ['bar', 'taco']
         );
@@ -1612,7 +1612,7 @@ export function runSortedSetTests(
 
       it('should support happy path for sortedSetGetScores via curried cache via ICache interface', async () => {
         const sortedSetName = v4();
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
         await cache.sortedSetPutElements(sortedSetName, {
           foo: 42,
           bar: 84,
@@ -1632,8 +1632,8 @@ export function runSortedSetTests(
 
       it('should support accessing value for CacheSortedSetGetScores.Hit without instanceof check', async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           {
             foo: 42,
@@ -1642,8 +1642,8 @@ export function runSortedSetTests(
           }
         );
 
-        let getScoresResponse = await Momento.sortedSetGetScores(
-          IntegrationTestCacheName,
+        let getScoresResponse = await cacheClient.sortedSetGetScores(
+          integrationTestCacheName,
           sortedSetName,
           ['bar', 'baz']
         );
@@ -1659,8 +1659,8 @@ export function runSortedSetTests(
         expect(hitResult.value()).toEqual(expectedResult);
         expect(hitResult.valueRecord()).toEqual(expectedResult);
 
-        getScoresResponse = await Momento.sortedSetGetScores(
-          IntegrationTestCacheName,
+        getScoresResponse = await cacheClient.sortedSetGetScores(
+          integrationTestCacheName,
           v4(),
           ['foo', 'bar']
         );
@@ -1676,7 +1676,7 @@ export function runSortedSetTests(
 
     describe('#sortedSetIncrementScore', () => {
       const responder = (props: ValidateSortedSetProps) => {
-        return Momento.sortedSetIncrementScore(
+        return cacheClient.sortedSetIncrementScore(
           props.cacheName,
           props.sortedSetName,
           props.value
@@ -1684,7 +1684,7 @@ export function runSortedSetTests(
       };
 
       const changeResponder = (props: ValidateSortedSetChangerProps) => {
-        return Momento.sortedSetIncrementScore(
+        return cacheClient.sortedSetIncrementScore(
           props.cacheName,
           props.sortedSetName,
           props.value,
@@ -1698,16 +1698,16 @@ export function runSortedSetTests(
 
       it('creates sorted set and element if they do not exist', async () => {
         const sortedSetName = v4();
-        let fetchResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        let fetchResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
           expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Miss);
         }, `expected MISS but got ${fetchResponse.toString()}`);
 
-        let incrementResponse = await Momento.sortedSetIncrementScore(
-          IntegrationTestCacheName,
+        let incrementResponse = await cacheClient.sortedSetIncrementScore(
+          integrationTestCacheName,
           sortedSetName,
           'foo'
         );
@@ -1720,8 +1720,8 @@ export function runSortedSetTests(
           incrementResponse as CacheSortedSetIncrementScore.Success;
         expect(successResponse.score()).toEqual(1);
 
-        fetchResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        fetchResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -1735,8 +1735,8 @@ export function runSortedSetTests(
           },
         ]);
 
-        incrementResponse = await Momento.sortedSetIncrementScore(
-          IntegrationTestCacheName,
+        incrementResponse = await cacheClient.sortedSetIncrementScore(
+          integrationTestCacheName,
           sortedSetName,
           'bar',
           42
@@ -1751,8 +1751,8 @@ export function runSortedSetTests(
           incrementResponse as CacheSortedSetIncrementScore.Success;
         expect(successResponse.score()).toEqual(42);
 
-        fetchResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        fetchResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
 
@@ -1769,15 +1769,15 @@ export function runSortedSetTests(
       it('increments an existing field by the expected amount for a string value', async () => {
         const sortedSetName = v4();
         const value = 'foo';
-        await Momento.sortedSetPutElement(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElement(
+          integrationTestCacheName,
           sortedSetName,
           value,
           90210
         );
 
-        const incrementResponse = await Momento.sortedSetIncrementScore(
-          IntegrationTestCacheName,
+        const incrementResponse = await cacheClient.sortedSetIncrementScore(
+          integrationTestCacheName,
           sortedSetName,
           value,
           10
@@ -1791,8 +1791,8 @@ export function runSortedSetTests(
           incrementResponse as CacheSortedSetIncrementScore.Success;
         expect(successResponse.score()).toEqual(90220);
 
-        const fetchResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        const fetchResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -1807,15 +1807,15 @@ export function runSortedSetTests(
       it('increments an existing field by the expected amount for a bytes value', async () => {
         const sortedSetName = v4();
         const value = uint8ArrayForTest('foo');
-        await Momento.sortedSetPutElement(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElement(
+          integrationTestCacheName,
           sortedSetName,
           value,
           90210
         );
 
-        const incrementResponse = await Momento.sortedSetIncrementScore(
-          IntegrationTestCacheName,
+        const incrementResponse = await cacheClient.sortedSetIncrementScore(
+          integrationTestCacheName,
           sortedSetName,
           value,
           10
@@ -1829,8 +1829,8 @@ export function runSortedSetTests(
           incrementResponse as CacheSortedSetIncrementScore.Success;
         expect(successResponse.score()).toEqual(90220);
 
-        const fetchResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        const fetchResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -1845,15 +1845,15 @@ export function runSortedSetTests(
       it('decrements an existing field by the expected amount for a string value', async () => {
         const sortedSetName = v4();
         const value = 'foo';
-        await Momento.sortedSetPutElement(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElement(
+          integrationTestCacheName,
           sortedSetName,
           value,
           90210
         );
 
-        const incrementRespone = await Momento.sortedSetIncrementScore(
-          IntegrationTestCacheName,
+        const incrementRespone = await cacheClient.sortedSetIncrementScore(
+          integrationTestCacheName,
           sortedSetName,
           value,
           -10
@@ -1867,8 +1867,8 @@ export function runSortedSetTests(
           incrementRespone as CacheSortedSetIncrementScore.Success;
         expect(successResponse.score()).toEqual(90200);
 
-        const fetchResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        const fetchResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -1883,15 +1883,15 @@ export function runSortedSetTests(
       it('increments an existing field by the expected amount for a bytes value', async () => {
         const sortedSetName = v4();
         const value = uint8ArrayForTest('foo');
-        await Momento.sortedSetPutElement(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElement(
+          integrationTestCacheName,
           sortedSetName,
           value,
           90210
         );
 
-        const incrementResponse = await Momento.sortedSetIncrementScore(
-          IntegrationTestCacheName,
+        const incrementResponse = await cacheClient.sortedSetIncrementScore(
+          integrationTestCacheName,
           sortedSetName,
           value,
           -10
@@ -1905,8 +1905,8 @@ export function runSortedSetTests(
           incrementResponse as CacheSortedSetIncrementScore.Success;
         expect(successResponse.score()).toEqual(90200);
 
-        const fetchResponse = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        const fetchResponse = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -1920,7 +1920,7 @@ export function runSortedSetTests(
 
       it('should support happy path for sortedSetIncrementScore via curried cache via ICache interface', async () => {
         const sortedSetName = v4();
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
         await cache.sortedSetPutElements(sortedSetName, {
           foo: 42,
           bar: 84,
@@ -1940,8 +1940,8 @@ export function runSortedSetTests(
 
       it('should support accessing value for SortedSetIncrementScore.Success without instanceof check', async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           {
             foo: 42,
@@ -1950,8 +1950,8 @@ export function runSortedSetTests(
           }
         );
 
-        const result = await Momento.sortedSetIncrementScore(
-          IntegrationTestCacheName,
+        const result = await cacheClient.sortedSetIncrementScore(
+          integrationTestCacheName,
           sortedSetName,
           'bar'
         );
@@ -1968,7 +1968,7 @@ export function runSortedSetTests(
 
     describe('#sortedSetRemoveElement', () => {
       const responder = (props: ValidateSortedSetProps) => {
-        return Momento.sortedSetRemoveElement(
+        return cacheClient.sortedSetRemoveElement(
           props.cacheName,
           props.sortedSetName,
           props.value
@@ -1979,8 +1979,8 @@ export function runSortedSetTests(
 
       it('should remove a string value', async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           {
             foo: 21,
@@ -1988,8 +1988,8 @@ export function runSortedSetTests(
           }
         );
 
-        let response = await Momento.sortedSetRemoveElement(
-          IntegrationTestCacheName,
+        let response = await cacheClient.sortedSetRemoveElement(
+          integrationTestCacheName,
           sortedSetName,
           'foo'
         );
@@ -1997,8 +1997,8 @@ export function runSortedSetTests(
           expect(response).toBeInstanceOf(CacheSortedSetRemoveElement.Success);
         }, `expected SUCCESS but got ${response.toString()}`);
 
-        response = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        response = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -2010,8 +2010,8 @@ export function runSortedSetTests(
 
       it('should remove a bytes value', async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           new Map([
             [uint8ArrayForTest('foo'), 21],
@@ -2019,8 +2019,8 @@ export function runSortedSetTests(
           ])
         );
 
-        let response = await Momento.sortedSetRemoveElement(
-          IntegrationTestCacheName,
+        let response = await cacheClient.sortedSetRemoveElement(
+          integrationTestCacheName,
           sortedSetName,
           uint8ArrayForTest('foo')
         );
@@ -2028,8 +2028,8 @@ export function runSortedSetTests(
           expect(response).toBeInstanceOf(CacheSortedSetRemoveElement.Success);
         }, `expected SUCCESS but got ${response.toString()}`);
 
-        response = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        response = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -2043,8 +2043,8 @@ export function runSortedSetTests(
 
       it("should do nothing for a value that doesn't exist", async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           {
             foo: 21,
@@ -2052,8 +2052,8 @@ export function runSortedSetTests(
           }
         );
 
-        let response = await Momento.sortedSetRemoveElement(
-          IntegrationTestCacheName,
+        let response = await cacheClient.sortedSetRemoveElement(
+          integrationTestCacheName,
           sortedSetName,
           'taco'
         );
@@ -2061,8 +2061,8 @@ export function runSortedSetTests(
           expect(response).toBeInstanceOf(CacheSortedSetRemoveElement.Success);
         }, `expected SUCCESS but got ${response.toString()}`);
 
-        response = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        response = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -2077,7 +2077,7 @@ export function runSortedSetTests(
 
       it('should support happy path for sortedSetRemoveElement via curried cache via ICache interface', async () => {
         const sortedSetName = v4();
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
         await cache.sortedSetPutElements(sortedSetName, {
           foo: 42,
           bar: 84,
@@ -2102,7 +2102,7 @@ export function runSortedSetTests(
 
     describe('#sortedSetRemoveElements', () => {
       const responder = (props: ValidateSortedSetProps) => {
-        return Momento.sortedSetRemoveElements(
+        return cacheClient.sortedSetRemoveElements(
           props.cacheName,
           props.sortedSetName,
           ['foo']
@@ -2113,8 +2113,8 @@ export function runSortedSetTests(
 
       it('should remove string values', async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           {
             foo: 21,
@@ -2123,8 +2123,8 @@ export function runSortedSetTests(
           }
         );
 
-        let response = await Momento.sortedSetRemoveElements(
-          IntegrationTestCacheName,
+        let response = await cacheClient.sortedSetRemoveElements(
+          integrationTestCacheName,
           sortedSetName,
           ['foo', 'baz']
         );
@@ -2132,8 +2132,8 @@ export function runSortedSetTests(
           expect(response).toBeInstanceOf(CacheSortedSetRemoveElements.Success);
         }, `expected SUCCESS but got ${response.toString()}`);
 
-        response = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        response = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -2145,8 +2145,8 @@ export function runSortedSetTests(
 
       it('should remove bytes values', async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           new Map([
             [uint8ArrayForTest('foo'), 21],
@@ -2155,8 +2155,8 @@ export function runSortedSetTests(
           ])
         );
 
-        let response = await Momento.sortedSetRemoveElements(
-          IntegrationTestCacheName,
+        let response = await cacheClient.sortedSetRemoveElements(
+          integrationTestCacheName,
           sortedSetName,
           [uint8ArrayForTest('foo'), uint8ArrayForTest('baz')]
         );
@@ -2164,8 +2164,8 @@ export function runSortedSetTests(
           expect(response).toBeInstanceOf(CacheSortedSetRemoveElements.Success);
         }, `expected SUCCESS but got ${response.toString()}`);
 
-        response = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        response = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -2179,8 +2179,8 @@ export function runSortedSetTests(
 
       it("should do nothing for values that don't exist", async () => {
         const sortedSetName = v4();
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           {
             foo: 21,
@@ -2189,8 +2189,8 @@ export function runSortedSetTests(
           }
         );
 
-        let response = await Momento.sortedSetRemoveElements(
-          IntegrationTestCacheName,
+        let response = await cacheClient.sortedSetRemoveElements(
+          integrationTestCacheName,
           sortedSetName,
           ['taco', 'habanero']
         );
@@ -2198,8 +2198,8 @@ export function runSortedSetTests(
           expect(response).toBeInstanceOf(CacheSortedSetRemoveElements.Success);
         }, `expected SUCCESS but got ${response.toString()}`);
 
-        response = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        response = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -2215,7 +2215,7 @@ export function runSortedSetTests(
 
       it('should support happy path for sortedSetRemoveElements via curried cache via ICache interface', async () => {
         const sortedSetName = v4();
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
         await cache.sortedSetPutElements(sortedSetName, {
           foo: 42,
           bar: 84,
@@ -2242,7 +2242,7 @@ export function runSortedSetTests(
 
     describe('#sortedSetPutElement', () => {
       const responder = (props: ValidateSortedSetProps) => {
-        return Momento.sortedSetPutElement(
+        return cacheClient.sortedSetPutElement(
           props.cacheName,
           props.sortedSetName,
           props.value,
@@ -2251,7 +2251,7 @@ export function runSortedSetTests(
       };
 
       const changeResponder = (props: ValidateSortedSetChangerProps) => {
-        return Momento.sortedSetPutElement(
+        return cacheClient.sortedSetPutElement(
           props.cacheName,
           props.sortedSetName,
           props.value,
@@ -2265,8 +2265,8 @@ export function runSortedSetTests(
 
       it('should store an element with a string value', async () => {
         const sortedSetName = v4();
-        let response = await Momento.sortedSetPutElement(
-          IntegrationTestCacheName,
+        let response = await cacheClient.sortedSetPutElement(
+          integrationTestCacheName,
           sortedSetName,
           'foo',
           42
@@ -2275,8 +2275,8 @@ export function runSortedSetTests(
           expect(response).toBeInstanceOf(CacheSortedSetPutElement.Success);
         }, `expected SUCCESS but got ${response.toString()}`);
 
-        response = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        response = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -2288,8 +2288,8 @@ export function runSortedSetTests(
 
       it('should store an element with a bytes value', async () => {
         const sortedSetName = v4();
-        let response = await Momento.sortedSetPutElement(
-          IntegrationTestCacheName,
+        let response = await cacheClient.sortedSetPutElement(
+          integrationTestCacheName,
           sortedSetName,
           uint8ArrayForTest('foo'),
           42
@@ -2298,8 +2298,8 @@ export function runSortedSetTests(
           expect(response).toBeInstanceOf(CacheSortedSetPutElement.Success);
         }, `expected SUCCESS but got ${response.toString()}`);
 
-        response = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        response = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -2313,7 +2313,7 @@ export function runSortedSetTests(
 
       it('should support happy path for sortedSetPutElement via curried cache via ICache interface', async () => {
         const sortedSetName = v4();
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
         await cache.sortedSetPutElements(sortedSetName, {
           foo: 42,
           bar: 84,
@@ -2344,7 +2344,7 @@ export function runSortedSetTests(
 
     describe('#sortedSetPutElements', () => {
       const responder = (props: ValidateSortedSetProps) => {
-        return Momento.sortedSetPutElements(
+        return cacheClient.sortedSetPutElements(
           props.cacheName,
           props.sortedSetName,
           new Map([[props.value, 42]])
@@ -2352,7 +2352,7 @@ export function runSortedSetTests(
       };
 
       const changeResponder = (props: ValidateSortedSetChangerProps) => {
-        return Momento.sortedSetPutElements(
+        return cacheClient.sortedSetPutElements(
           props.cacheName,
           props.sortedSetName,
           new Map([[props.value, props.score]]),
@@ -2365,8 +2365,8 @@ export function runSortedSetTests(
 
       it('should store elements with a string values passed via Map', async () => {
         const sortedSetName = v4();
-        let response = await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        let response = await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           new Map([
             ['foo', 42],
@@ -2377,8 +2377,8 @@ export function runSortedSetTests(
           expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
         }, `expected SUCCESS but got ${response.toString()}`);
 
-        response = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        response = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -2393,8 +2393,8 @@ export function runSortedSetTests(
 
       it('should store elements with a string values passed via Record', async () => {
         const sortedSetName = v4();
-        let response = await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        let response = await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           {foo: 42, bar: 84}
         );
@@ -2402,8 +2402,8 @@ export function runSortedSetTests(
           expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
         }, `expected SUCCESS but got ${response.toString()}`);
 
-        response = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        response = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -2418,8 +2418,8 @@ export function runSortedSetTests(
 
       it('should store elements with a bytes values passed via Map', async () => {
         const sortedSetName = v4();
-        let response = await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        let response = await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           new Map([
             [uint8ArrayForTest('foo'), 42],
@@ -2430,8 +2430,8 @@ export function runSortedSetTests(
           expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
         }, `expected SUCCESS but got ${response.toString()}`);
 
-        response = await Momento.sortedSetFetchByRank(
-          IntegrationTestCacheName,
+        response = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -2446,7 +2446,7 @@ export function runSortedSetTests(
 
       it('should support happy path for sortedSetPutElements via curried cache via ICache interface', async () => {
         const sortedSetName = v4();
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
         await cache.sortedSetPutElements(sortedSetName, {
           foo: 42,
           bar: 84,
@@ -2477,7 +2477,10 @@ export function runSortedSetTests(
 
     describe('#sortedSetLength', () => {
       const responder = (props: ValidateSortedSetProps) => {
-        return Momento.sortedSetLength(props.cacheName, props.sortedSetName);
+        return cacheClient.sortedSetLength(
+          props.cacheName,
+          props.sortedSetName
+        );
       };
 
       itBehavesLikeItValidates(responder);
@@ -2487,14 +2490,14 @@ export function runSortedSetTests(
         const sortedSetName = v4();
         const setValues = {foo: 42, bar: 84, baz: 90210};
         const numElements = Object.keys(setValues).length;
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           setValues
         );
 
-        const result = await Momento.sortedSetLength(
-          IntegrationTestCacheName,
+        const result = await cacheClient.sortedSetLength(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -2507,7 +2510,7 @@ export function runSortedSetTests(
 
       it('should support happy path for sortedSetLength via curried cache via ICache interface', async () => {
         const sortedSetName = v4();
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
         await cache.sortedSetPutElements(sortedSetName, {
           foo: 42,
           bar: 84,
@@ -2525,7 +2528,10 @@ export function runSortedSetTests(
 
     describe('#sortedSetLengthByScore', () => {
       const responder = (props: ValidateSortedSetProps) => {
-        return Momento.sortedSetLength(props.cacheName, props.sortedSetName);
+        return cacheClient.sortedSetLength(
+          props.cacheName,
+          props.sortedSetName
+        );
       };
 
       itBehavesLikeItValidates(responder);
@@ -2535,14 +2541,14 @@ export function runSortedSetTests(
         const sortedSetName = v4();
         const setValues = {foo: 42, bar: 84, baz: 90210};
         const numElements = Object.keys(setValues).length;
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           setValues
         );
 
-        const result = await Momento.sortedSetLengthByScore(
-          IntegrationTestCacheName,
+        const result = await cacheClient.sortedSetLengthByScore(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -2557,14 +2563,14 @@ export function runSortedSetTests(
         const sortedSetName = v4();
         const setValues = {foo: 42, bar: 42, baz: 42};
         const numElements = Object.keys(setValues).length;
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           setValues
         );
 
-        const result = await Momento.sortedSetLengthByScore(
-          IntegrationTestCacheName,
+        const result = await cacheClient.sortedSetLengthByScore(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -2589,14 +2595,14 @@ export function runSortedSetTests(
           fire: 555,
         };
         const numElements = Object.keys(setValues).length;
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           setValues
         );
 
-        const result = await Momento.sortedSetLengthByScore(
-          IntegrationTestCacheName,
+        const result = await cacheClient.sortedSetLengthByScore(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
@@ -2620,8 +2626,8 @@ export function runSortedSetTests(
           earth: 555,
           fire: 555,
         };
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           setValues
         );
@@ -2630,8 +2636,8 @@ export function runSortedSetTests(
           minScore: 42,
           maxScore: undefined,
         };
-        const result = await Momento.sortedSetLengthByScore(
-          IntegrationTestCacheName,
+        const result = await cacheClient.sortedSetLengthByScore(
+          integrationTestCacheName,
           sortedSetName,
           scoreRange
         );
@@ -2654,8 +2660,8 @@ export function runSortedSetTests(
           earth: 555,
           fire: 555,
         };
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           setValues
         );
@@ -2664,8 +2670,8 @@ export function runSortedSetTests(
           minScore: undefined,
           maxScore: 42,
         };
-        const result = await Momento.sortedSetLengthByScore(
-          IntegrationTestCacheName,
+        const result = await cacheClient.sortedSetLengthByScore(
+          integrationTestCacheName,
           sortedSetName,
           scoreRange
         );
@@ -2688,8 +2694,8 @@ export function runSortedSetTests(
           earth: 555,
           fire: 555,
         };
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           setValues
         );
@@ -2698,8 +2704,8 @@ export function runSortedSetTests(
           minScore: 0,
           maxScore: 100,
         };
-        const result = await Momento.sortedSetLengthByScore(
-          IntegrationTestCacheName,
+        const result = await cacheClient.sortedSetLengthByScore(
+          integrationTestCacheName,
           sortedSetName,
           scoreRange
         );
@@ -2722,8 +2728,8 @@ export function runSortedSetTests(
           earth: -555,
           fire: -555,
         };
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           setValues
         );
@@ -2732,8 +2738,8 @@ export function runSortedSetTests(
           minScore: -100,
           maxScore: 0,
         };
-        const result = await Momento.sortedSetLengthByScore(
-          IntegrationTestCacheName,
+        const result = await cacheClient.sortedSetLengthByScore(
+          integrationTestCacheName,
           sortedSetName,
           scoreRange
         );
@@ -2756,8 +2762,8 @@ export function runSortedSetTests(
           earth: 555,
           fire: 555,
         };
-        await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           setValues
         );
@@ -2766,8 +2772,8 @@ export function runSortedSetTests(
           minScore: 1,
           maxScore: 42,
         };
-        const result = await Momento.sortedSetLengthByScore(
-          IntegrationTestCacheName,
+        const result = await cacheClient.sortedSetLengthByScore(
+          integrationTestCacheName,
           sortedSetName,
           scoreRange
         );
@@ -2779,7 +2785,7 @@ export function runSortedSetTests(
 
       it('should support happy path for sortedSetLengthByScore via curried cache via ICache interface', async () => {
         const sortedSetName = v4();
-        const cache = Momento.cache(IntegrationTestCacheName);
+        const cache = cacheClient.cache(integrationTestCacheName);
         await cache.sortedSetPutElements(sortedSetName, {
           foo: 42,
           bar: 84,
@@ -2801,8 +2807,8 @@ export function runSortedSetTests(
     describe('test deleting sorted set', () => {
       it('returns a miss for a deleted sorted set', async () => {
         const sortedSetName = v4();
-        let response = await Momento.sortedSetPutElements(
-          IntegrationTestCacheName,
+        let response = await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
           sortedSetName,
           new Map([
             ['foo', 42],
@@ -2812,15 +2818,15 @@ export function runSortedSetTests(
         expectWithMessage(() => {
           expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
         }, `expected SUCCESS but got ${response.toString()}`);
-        response = await Momento.delete(
-          IntegrationTestCacheName,
+        response = await cacheClient.delete(
+          integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
           expect(response).toBeInstanceOf(CacheDelete.Success);
         }, `expected SUCCESS but got ${response.toString()}`);
-        response = await Momento.sortedSetGetScore(
-          IntegrationTestCacheName,
+        response = await cacheClient.sortedSetGetScore(
+          integrationTestCacheName,
           sortedSetName,
           'foo'
         );
