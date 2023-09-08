@@ -69,7 +69,7 @@ async function get(cacheClient: CacheClient, cacheName: string, key: string) {
 
 async function generateAuthToken(
   authClient: AuthClient,
-  scope: PermissionScope,
+  scope: TokenScope,
   durationSeconds: number
 ): Promise<[string, string]> {
   const generateTokenResponse = await authClient.generateAuthToken(scope, ExpiresIn.seconds(durationSeconds));
