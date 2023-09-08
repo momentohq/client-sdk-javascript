@@ -131,25 +131,36 @@ export {
   Permission,
   Permissions,
   AllDataReadWrite,
+  PermissionScope,
+  /**
+   * @deprecated - please use PermissionScope
+   */
   TokenScope,
-  DisposableTokenScope,
   CacheName,
   isCacheName,
   TopicName,
   isTopicName,
   CacheSelector,
   TopicSelector,
-  CacheItemSelector,
   AllCaches,
   AllTopics,
   AllCacheItems,
+} from './auth/tokens/permission-scope';
+
+export {
+  DisposableTokenScope,
+  CacheItemSelector,
   CacheItemKey,
   CacheItemKeyPrefix,
   isCacheItemKey,
   isCacheItemKeyPrefix,
-} from './auth/tokens/token-scope';
+} from './auth/tokens/disposable-token-scope';
 
-export * as TokenScopes from './auth/tokens/token-scopes';
+export * as PermissionScopes from './auth/tokens/permission-scopes';
+/**
+ * @deprecated please use PermissionScopes instead
+ */
+export * as TokenScopes from './auth/tokens/permission-scopes';
 export * as DisposableTokenScopes from './auth/tokens/disposable-token-scopes';
 
 export {

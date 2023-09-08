@@ -6,10 +6,17 @@ import {ExpiresAt} from '../../utils';
 export abstract class Response extends ResponseBase {}
 
 class _Success extends Response {
-  readonly authToken: string;
+  readonly apiKey: string;
   readonly refreshToken: string;
   readonly endpoint: string;
   readonly expiresAt: ExpiresAt;
+
+  /**
+   * @deprecated Use `apiKey` instead.
+   */
+  get authToken(): string {
+    return this.apiKey;
+  }
 
   constructor(
     apiKey: string,
@@ -18,7 +25,7 @@ class _Success extends Response {
     expiresAt: ExpiresAt
   ) {
     super();
-    this.authToken = encodeToBase64(
+    this.apiKey = encodeToBase64(
       JSON.stringify({endpoint: endpoint, api_key: apiKey})
     );
     this.refreshToken = refreshToken;

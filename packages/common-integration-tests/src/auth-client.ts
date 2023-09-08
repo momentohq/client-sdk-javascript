@@ -8,16 +8,24 @@ import {
   CreateCache,
   DeleteCache,
   ExpiresIn,
-  GenerateAuthToken,
+  GenerateApiKey,
   GenerateDisposableToken,
   MomentoErrorCode,
-  RefreshAuthToken,
+  RefreshApiKey,
   SubscribeCallOptions,
-  TokenScope,
-  TokenScopes,
+  PermissionScope,
+  PermissionScopes,
   TopicPublish,
   TopicRole,
   TopicSubscribe,
+  /**
+   * @deprecated but still included for testing backward compat
+   */
+  GenerateAuthToken,
+  /**
+   * @deprecated but still included for testing backward compat
+   */
+  RefreshAuthToken,
 } from '@gomomento/sdk-core';
 import {expectWithMessage} from './common-int-test-utils';
 import {InternalSuperUserPermissions} from '@gomomento/sdk-core/dist/src/internal/utils/auth';
@@ -30,7 +38,8 @@ import {v4} from 'uuid';
 import {expect} from '@jest/globals';
 import './momento-jest-matchers';
 
-const SUPER_USER_PERMISSIONS: TokenScope = new InternalSuperUserPermissions();
+const SUPER_USER_PERMISSIONS: PermissionScope =
+  new InternalSuperUserPermissions();
 
 export function runAuthClientTests(
   sessionTokenAuthClient: IAuthClient,
@@ -44,27 +53,27 @@ export function runAuthClientTests(
 ) {
   describe('generate auth token using session token credentials', () => {
     it('should return success and generate auth token', async () => {
-      const resp = await sessionTokenAuthClient.generateAuthToken(
+      const resp = await sessionTokenAuthClient.generateApiKey(
         SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(10)
       );
       expectWithMessage(
-        () => expect(resp).toBeInstanceOf(GenerateAuthToken.Success),
+        () => expect(resp).toBeInstanceOf(GenerateApiKey.Success),
         `Unexpected response: ${resp.toString()}`
       );
     });
 
     it('should succeed for generating an api token that expires', async () => {
       const secondsSinceEpoch = Math.round(Date.now() / 1000);
-      const expireResponse = await sessionTokenAuthClient.generateAuthToken(
+      const expireResponse = await sessionTokenAuthClient.generateApiKey(
         SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(10)
       );
       const expiresIn = secondsSinceEpoch + 10;
 
-      expect(expireResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      expect(expireResponse).toBeInstanceOf(GenerateApiKey.Success);
 
-      const expireResponseSuccess = expireResponse as GenerateAuthToken.Success;
+      const expireResponseSuccess = expireResponse as GenerateApiKey.Success;
       expect(expireResponseSuccess.is_success);
       expect(expireResponseSuccess.expiresAt.doesExpire());
       expect(expireResponseSuccess.expiresAt.epoch()).toBeWithin(
@@ -74,33 +83,94 @@ export function runAuthClientTests(
     });
 
     it('should succeed for generating an api token that never expires', async () => {
-      const neverExpiresResponse =
-        await sessionTokenAuthClient.generateAuthToken(
-          SUPER_USER_PERMISSIONS,
-          ExpiresIn.never()
-        );
-      expect(neverExpiresResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      const neverExpiresResponse = await sessionTokenAuthClient.generateApiKey(
+        SUPER_USER_PERMISSIONS,
+        ExpiresIn.never()
+      );
+      expect(neverExpiresResponse).toBeInstanceOf(GenerateApiKey.Success);
       const neverExpireResponseSuccess =
-        neverExpiresResponse as GenerateAuthToken.Success;
+        neverExpiresResponse as GenerateApiKey.Success;
       expect(neverExpireResponseSuccess.is_success);
       expect(neverExpireResponseSuccess.expiresAt.doesExpire()).toBeFalsy();
     });
 
     it('should not succeed for generating an api token that has an invalid expires', async () => {
       const invalidExpiresResponse =
-        await sessionTokenAuthClient.generateAuthToken(
+        await sessionTokenAuthClient.generateApiKey(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(-100)
         );
-      expect(invalidExpiresResponse).toBeInstanceOf(GenerateAuthToken.Error);
+      expect(invalidExpiresResponse).toBeInstanceOf(GenerateApiKey.Error);
       expect(
-        (invalidExpiresResponse as GenerateAuthToken.Error).errorCode()
+        (invalidExpiresResponse as GenerateApiKey.Error).errorCode()
       ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
     });
   });
 
   describe('refresh auth token use auth token credentials', () => {
     it('should succeed for refreshing an auth token', async () => {
+      const generateResponse = await sessionTokenAuthClient.generateApiKey(
+        SUPER_USER_PERMISSIONS,
+        ExpiresIn.seconds(10)
+      );
+      expectWithMessage(() => {
+        expect(generateResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Unexpected response: ${generateResponse.toString()}`);
+      const generateSuccessRst = generateResponse as GenerateApiKey.Success;
+
+      const authTokenAuthClient = authTokenAuthClientFactory(
+        generateSuccessRst.apiKey
+      );
+
+      // we need to sleep for a bit here so that the timestamp on the refreshed token will be different than the
+      // one on the original token
+      const delaySecondsBeforeRefresh = 2;
+      await delay(delaySecondsBeforeRefresh * 1_000);
+
+      const refreshResponse = await authTokenAuthClient.refreshApiKey(
+        generateSuccessRst.refreshToken
+      );
+      expectWithMessage(() => {
+        expect(refreshResponse).toBeInstanceOf(RefreshApiKey.Success);
+      }, `Unexpected response: ${refreshResponse.toString()}`);
+      const refreshSuccessRst = refreshResponse as RefreshApiKey.Success;
+
+      expect(refreshSuccessRst.is_success);
+
+      const expiresAtDelta =
+        refreshSuccessRst.expiresAt.epoch() -
+        generateSuccessRst.expiresAt.epoch();
+
+      expect(expiresAtDelta).toBeGreaterThanOrEqual(delaySecondsBeforeRefresh);
+      expect(expiresAtDelta).toBeLessThanOrEqual(delaySecondsBeforeRefresh + 1);
+    });
+
+    it("should not succeed for refreshing an api token that's expired", async () => {
+      const generateResponse = await sessionTokenAuthClient.generateApiKey(
+        SUPER_USER_PERMISSIONS,
+        ExpiresIn.seconds(1)
+      );
+      const generateSuccessRst = generateResponse as GenerateApiKey.Success;
+
+      // Wait 1sec for the token to expire
+      await delay(1000);
+
+      const authTokenAuthClient = authTokenAuthClientFactory(
+        generateSuccessRst.apiKey
+      );
+
+      const refreshResponse = await authTokenAuthClient.refreshApiKey(
+        generateSuccessRst.refreshToken
+      );
+      expect(refreshResponse).toBeInstanceOf(RefreshApiKey.Error);
+      expect((refreshResponse as RefreshApiKey.Error).errorCode()).toEqual(
+        MomentoErrorCode.AUTHENTICATION_ERROR
+      );
+    });
+  });
+
+  describe('should support generating and refreshing auth token through deprecated APIs', () => {
+    it('should succeed for generating and refreshing an auth token', async () => {
       const generateResponse = await sessionTokenAuthClient.generateAuthToken(
         SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(10)
@@ -129,6 +199,10 @@ export function runAuthClientTests(
 
       expect(refreshSuccessRst.is_success);
 
+      expect(refreshSuccessRst.authToken).not.toEqual(
+        generateSuccessRst.authToken
+      );
+
       const expiresAtDelta =
         refreshSuccessRst.expiresAt.epoch() -
         generateSuccessRst.expiresAt.epoch();
@@ -136,41 +210,20 @@ export function runAuthClientTests(
       expect(expiresAtDelta).toBeGreaterThanOrEqual(delaySecondsBeforeRefresh);
       expect(expiresAtDelta).toBeLessThanOrEqual(delaySecondsBeforeRefresh + 1);
     });
+  });
 
-    it("should not succeed for refreshing an api token that's expired", async () => {
-      const generateResponse = await sessionTokenAuthClient.generateAuthToken(
-        SUPER_USER_PERMISSIONS,
-        ExpiresIn.seconds(1)
-      );
-      const generateSuccessRst = generateResponse as GenerateAuthToken.Success;
-
-      // Wait 1sec for the token to expire
-      await delay(1000);
-
-      const authTokenAuthClient = authTokenAuthClientFactory(
-        generateSuccessRst.authToken
-      );
-
-      const refreshResponse = await authTokenAuthClient.refreshAuthToken(
-        generateSuccessRst.refreshToken
-      );
-      expect(refreshResponse).toBeInstanceOf(RefreshAuthToken.Error);
-      expect((refreshResponse as RefreshAuthToken.Error).errorCode()).toEqual(
-        MomentoErrorCode.AUTHENTICATION_ERROR
-      );
-    });
-
+  describe('generating superuser and AllDataReadWrite tokens', () => {
     it("expired token can't create cache", async () => {
-      const generateResponse = await sessionTokenAuthClient.generateAuthToken(
+      const generateResponse = await sessionTokenAuthClient.generateApiKey(
         SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(1)
       );
-      const generateSuccessRst = generateResponse as GenerateAuthToken.Success;
+      const generateSuccessRst = generateResponse as GenerateApiKey.Success;
 
       // Wait 1sec for the token to expire
       await delay(1000);
 
-      const cacheClient = cacheClientFactory(generateSuccessRst.authToken);
+      const cacheClient = cacheClientFactory(generateSuccessRst.apiKey);
 
       const createCacheRst = await cacheClient.createCache(
         'cache-should-fail-to-create'
@@ -184,118 +237,118 @@ export function runAuthClientTests(
     });
 
     it('should support generating a superuser token when authenticated via a session token', async () => {
-      const generateResponse = await sessionTokenAuthClient.generateAuthToken(
+      const generateResponse = await sessionTokenAuthClient.generateApiKey(
         SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Success);
     });
 
     it('should support generating an AllDataReadWrite token when authenticated via a session token', async () => {
-      const generateResponse = await sessionTokenAuthClient.generateAuthToken(
+      const generateResponse = await sessionTokenAuthClient.generateApiKey(
         AllDataReadWrite,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Success);
     });
 
     it('should not support generating a superuser token when authenticated via a v1 superuser token', async () => {
       const superUserTokenResponse =
-        await sessionTokenAuthClient.generateAuthToken(
+        await sessionTokenAuthClient.generateApiKey(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
 
       const authClient = authTokenAuthClientFactory(
-        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+        (superUserTokenResponse as GenerateApiKey.Success).apiKey
       );
 
-      const generateResponse = await authClient.generateAuthToken(
+      const generateResponse = await authClient.generateApiKey(
         SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Error);
-      const error = generateResponse as GenerateAuthToken.Error;
+      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
+      const error = generateResponse as GenerateApiKey.Error;
       expect(error.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
       expect(error.message()).toContain('Insufficient permissions');
     });
 
     it('should support generating an AllDataReadWrite token when authenticated via a v1 superuser token', async () => {
       const superUserTokenResponse =
-        await sessionTokenAuthClient.generateAuthToken(
+        await sessionTokenAuthClient.generateApiKey(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
 
       const authClient = authTokenAuthClientFactory(
-        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+        (superUserTokenResponse as GenerateApiKey.Success).apiKey
       );
 
-      const generateResponse = await authClient.generateAuthToken(
+      const generateResponse = await authClient.generateApiKey(
         AllDataReadWrite,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Success);
     });
 
     it('should not support generating a superuser token when authenticated via a v1 AllDataReadWrite token', async () => {
       const allDataReadWriteTokenResponse =
-        await sessionTokenAuthClient.generateAuthToken(
+        await sessionTokenAuthClient.generateApiKey(
           AllDataReadWrite,
           ExpiresIn.seconds(10)
         );
       expect(allDataReadWriteTokenResponse).toBeInstanceOf(
-        GenerateAuthToken.Success
+        GenerateApiKey.Success
       );
 
       const authClient = authTokenAuthClientFactory(
-        (allDataReadWriteTokenResponse as GenerateAuthToken.Success).authToken
+        (allDataReadWriteTokenResponse as GenerateApiKey.Success).apiKey
       );
 
-      const generateResponse = await authClient.generateAuthToken(
+      const generateResponse = await authClient.generateApiKey(
         SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Error);
+      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
     });
 
     it('should not support generating an AllDataReadWrite token when authenticated via a v1 AllDataReadWrite token', async () => {
       const allDataReadWriteTokenResponse =
-        await sessionTokenAuthClient.generateAuthToken(
+        await sessionTokenAuthClient.generateApiKey(
           AllDataReadWrite,
           ExpiresIn.seconds(10)
         );
       expect(allDataReadWriteTokenResponse).toBeInstanceOf(
-        GenerateAuthToken.Success
+        GenerateApiKey.Success
       );
 
       const authClient = authTokenAuthClientFactory(
-        (allDataReadWriteTokenResponse as GenerateAuthToken.Success).authToken
+        (allDataReadWriteTokenResponse as GenerateApiKey.Success).apiKey
       );
 
-      const generateResponse = await authClient.generateAuthToken(
+      const generateResponse = await authClient.generateApiKey(
         AllDataReadWrite,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Error);
+      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
     });
 
     it('should not support generating a superuser token when authenticated via a legacy token', async () => {
-      const generateResponse = await legacyTokenAuthClient.generateAuthToken(
+      const generateResponse = await legacyTokenAuthClient.generateApiKey(
         SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Error);
+      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
     });
 
     it('should not support generating an AllDataReadWrite token when authenticated via a legacy token', async () => {
-      const generateResponse = await legacyTokenAuthClient.generateAuthToken(
+      const generateResponse = await legacyTokenAuthClient.generateApiKey(
         AllDataReadWrite,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Error);
+      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
     });
   });
 
@@ -303,14 +356,13 @@ export function runAuthClientTests(
     let allDataReadWriteClient: ICacheClient;
 
     beforeAll(async () => {
-      const generateResponse = await sessionTokenAuthClient.generateAuthToken(
+      const generateResponse = await sessionTokenAuthClient.generateApiKey(
         AllDataReadWrite,
         ExpiresIn.seconds(60)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateAuthToken.Success);
-      const allDataReadWriteToken = (
-        generateResponse as GenerateAuthToken.Success
-      ).authToken;
+      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Success);
+      const allDataReadWriteToken = (generateResponse as GenerateApiKey.Success)
+        .apiKey;
       allDataReadWriteClient = cacheClientFactory(allDataReadWriteToken);
     });
     it('cannot create a cache', async () => {
@@ -416,19 +468,19 @@ export function runAuthClientTests(
     });
 
     it('cannot create token with empty permission list', async () => {
-      const tokenResponse = await sessionTokenAuthClient.generateAuthToken(
+      const tokenResponse = await sessionTokenAuthClient.generateApiKey(
         {permissions: []},
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateAuthToken.Error);
-      const tokenError = tokenResponse as GenerateAuthToken.Error;
+      expect(tokenResponse).toBeInstanceOf(GenerateApiKey.Error);
+      const tokenError = tokenResponse as GenerateApiKey.Error;
       expect(tokenError.errorCode()).toEqual(
         MomentoErrorCode.INVALID_ARGUMENT_ERROR
       );
     });
 
     it('cannot create token with duplicate/conflicting cache permissions - all caches', async () => {
-      const tokenResponse = await sessionTokenAuthClient.generateAuthToken(
+      const tokenResponse = await sessionTokenAuthClient.generateApiKey(
         {
           permissions: [
             {role: CacheRole.ReadOnly, cache: AllCaches},
@@ -437,15 +489,15 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateAuthToken.Error);
-      const tokenError = tokenResponse as GenerateAuthToken.Error;
+      expect(tokenResponse).toBeInstanceOf(GenerateApiKey.Error);
+      const tokenError = tokenResponse as GenerateApiKey.Error;
       expect(tokenError.errorCode()).toEqual(
         MomentoErrorCode.INVALID_ARGUMENT_ERROR
       );
     });
 
     it('cannot create token with duplicate/conflicting cache permissions - cache name', async () => {
-      const tokenResponse = await sessionTokenAuthClient.generateAuthToken(
+      const tokenResponse = await sessionTokenAuthClient.generateApiKey(
         {
           permissions: [
             {role: CacheRole.ReadOnly, cache: 'i-am-groot'},
@@ -454,15 +506,15 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateAuthToken.Error);
-      const tokenError = tokenResponse as GenerateAuthToken.Error;
+      expect(tokenResponse).toBeInstanceOf(GenerateApiKey.Error);
+      const tokenError = tokenResponse as GenerateApiKey.Error;
       expect(tokenError.errorCode()).toEqual(
         MomentoErrorCode.INVALID_ARGUMENT_ERROR
       );
     });
 
     it('cannot create token with duplicate/conflicting topic permissions - cache + topic name', async () => {
-      const tokenResponse = await sessionTokenAuthClient.generateAuthToken(
+      const tokenResponse = await sessionTokenAuthClient.generateApiKey(
         {
           permissions: [
             {
@@ -479,8 +531,8 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateAuthToken.Error);
-      const tokenError = tokenResponse as GenerateAuthToken.Error;
+      expect(tokenResponse).toBeInstanceOf(GenerateApiKey.Error);
+      const tokenError = tokenResponse as GenerateApiKey.Error;
       expect(tokenError.errorCode()).toEqual(
         MomentoErrorCode.INVALID_ARGUMENT_ERROR
       );
@@ -488,16 +540,14 @@ export function runAuthClientTests(
 
     it('can only read all caches', async () => {
       const readAllCachesTokenResponse =
-        await sessionTokenAuthClient.generateAuthToken(
-          TokenScopes.cacheReadOnly(AllCaches),
+        await sessionTokenAuthClient.generateApiKey(
+          PermissionScopes.cacheReadOnly(AllCaches),
           ExpiresIn.seconds(60)
         );
-      expect(readAllCachesTokenResponse).toBeInstanceOf(
-        GenerateAuthToken.Success
-      );
+      expect(readAllCachesTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
       const readAllCachesToken = (
-        readAllCachesTokenResponse as GenerateAuthToken.Success
-      ).authToken;
+        readAllCachesTokenResponse as GenerateApiKey.Success
+      ).apiKey;
       const cacheClient = cacheClientFactory(readAllCachesToken);
 
       // 1. Sets should fail
@@ -538,16 +588,14 @@ export function runAuthClientTests(
 
     it('can only read all topics', async () => {
       const readAllTopicsTokenResponse =
-        await sessionTokenAuthClient.generateAuthToken(
-          TokenScopes.topicSubscribeOnly(AllCaches, AllTopics),
+        await sessionTokenAuthClient.generateApiKey(
+          PermissionScopes.topicSubscribeOnly(AllCaches, AllTopics),
           ExpiresIn.seconds(60)
         );
-      expect(readAllTopicsTokenResponse).toBeInstanceOf(
-        GenerateAuthToken.Success
-      );
+      expect(readAllTopicsTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
       const readAllTopicsToken = (
-        readAllTopicsTokenResponse as GenerateAuthToken.Success
-      ).authToken;
+        readAllTopicsTokenResponse as GenerateApiKey.Success
+      ).apiKey;
       const cacheClient = cacheClientFactory(readAllTopicsToken);
 
       // Sets should fail
@@ -583,7 +631,7 @@ export function runAuthClientTests(
     });
 
     it('can read/write cache FGA_CACHE_1 and read/write all topics in cache FGA_CACHE_2', async () => {
-      const tokenResponse = await sessionTokenAuthClient.generateAuthToken(
+      const tokenResponse = await sessionTokenAuthClient.generateApiKey(
         {
           permissions: [
             {role: CacheRole.ReadWrite, cache: FGA_CACHE_1},
@@ -596,8 +644,8 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
-      const token = (tokenResponse as GenerateAuthToken.Success).authToken;
+      expect(tokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      const token = (tokenResponse as GenerateApiKey.Success).apiKey;
       const cacheClient = cacheClientFactory(token);
 
       // Read/Write on cache FGA_CACHE_1 is allowed
@@ -649,14 +697,14 @@ export function runAuthClientTests(
 
     it('can only write cache FGA_CACHE_1 and write all topics in cache FGA_CACHE_2', async () => {
       const superUserTokenResponse =
-        await sessionTokenAuthClient.generateAuthToken(
+        await sessionTokenAuthClient.generateApiKey(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
 
       const authClient = authTokenAuthClientFactory(
-        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+        (superUserTokenResponse as GenerateApiKey.Success).apiKey
       );
 
       const tokenResponse = await authClient.generateDisposableToken(
@@ -726,14 +774,14 @@ export function runAuthClientTests(
 
     it('can only read specific keys and key-prefixes from all caches', async () => {
       const superUserTokenResponse =
-        await sessionTokenAuthClient.generateAuthToken(
+        await sessionTokenAuthClient.generateApiKey(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
 
       const authClient = authTokenAuthClientFactory(
-        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+        (superUserTokenResponse as GenerateApiKey.Success).apiKey
       );
 
       const tokenResponse = await authClient.generateDisposableToken(
@@ -784,14 +832,14 @@ export function runAuthClientTests(
 
     it('can only read specific keys and key-prefixes from cache FGA_CACHE_1', async () => {
       const superUserTokenResponse =
-        await sessionTokenAuthClient.generateAuthToken(
+        await sessionTokenAuthClient.generateApiKey(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
 
       const authClient = authTokenAuthClientFactory(
-        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+        (superUserTokenResponse as GenerateApiKey.Success).apiKey
       );
 
       const tokenResponse = await authClient.generateDisposableToken(
@@ -842,14 +890,14 @@ export function runAuthClientTests(
 
     it('can only write specific keys and key-prefixes from all caches', async () => {
       const superUserTokenResponse =
-        await sessionTokenAuthClient.generateAuthToken(
+        await sessionTokenAuthClient.generateApiKey(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
 
       const authClient = authTokenAuthClientFactory(
-        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+        (superUserTokenResponse as GenerateApiKey.Success).apiKey
       );
 
       const tokenResponse = await authClient.generateDisposableToken(
@@ -906,14 +954,14 @@ export function runAuthClientTests(
 
     it('can only write specific keys and key-prefixes from cache FGA_CACHE_1', async () => {
       const superUserTokenResponse =
-        await sessionTokenAuthClient.generateAuthToken(
+        await sessionTokenAuthClient.generateApiKey(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
 
       const authClient = authTokenAuthClientFactory(
-        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+        (superUserTokenResponse as GenerateApiKey.Success).apiKey
       );
 
       const tokenResponse = await authClient.generateDisposableToken(
@@ -977,14 +1025,14 @@ export function runAuthClientTests(
 
     it('can read and write specific keys and key-prefixes from all caches', async () => {
       const superUserTokenResponse =
-        await sessionTokenAuthClient.generateAuthToken(
+        await sessionTokenAuthClient.generateApiKey(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
 
       const authClient = authTokenAuthClientFactory(
-        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+        (superUserTokenResponse as GenerateApiKey.Success).apiKey
       );
 
       const tokenResponse = await authClient.generateDisposableToken(
@@ -1041,14 +1089,14 @@ export function runAuthClientTests(
 
     it('can read and write specific keys and key-prefixes from cache FGA_CACHE_1', async () => {
       const superUserTokenResponse =
-        await sessionTokenAuthClient.generateAuthToken(
+        await sessionTokenAuthClient.generateApiKey(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
 
       const authClient = authTokenAuthClientFactory(
-        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+        (superUserTokenResponse as GenerateApiKey.Success).apiKey
       );
 
       const tokenResponse = await authClient.generateDisposableToken(

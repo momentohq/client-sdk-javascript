@@ -12,7 +12,7 @@ import {
   permissionsFromDisposableTokenScope,
 } from '../../src/internal/internal-auth-client';
 import {permission_messages} from '@gomomento/generated-types/dist/permissionmessages';
-import {DisposableTokenCachePermissions} from '@gomomento/sdk-core/dist/src/auth/tokens/token-scope';
+import {DisposableTokenCachePermissions} from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
 import {convert} from '../../src/internal/utils';
 
 describe('internal auth client', () => {
