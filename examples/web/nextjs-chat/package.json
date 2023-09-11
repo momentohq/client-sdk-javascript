@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@gomomento/sdk": "^1.37.0",
+    "@gomomento/sdk": "^1.38.0",
     "@gomomento/sdk-web": "^1.38.0",
     "autoprefixer": "10.4.14",
     "next": "13.4.8",
