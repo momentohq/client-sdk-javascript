@@ -23,7 +23,7 @@ const testCacheEndpoint = 'cache-endpoint.not.a.domain';
 describe('StringMomentoTokenProvider', () => {
   it('parses a valid legacy token', () => {
     const authProvider = CredentialProvider.fromString({
-      authToken: fakeTestLegacyToken,
+      apiKey: fakeTestLegacyToken,
     });
     expect(authProvider.getAuthToken()).toEqual(fakeTestLegacyToken);
     expect(authProvider.getControlEndpoint()).toEqual(testControlEndpoint);
@@ -31,6 +31,19 @@ describe('StringMomentoTokenProvider', () => {
   });
 
   it('parses a valid v1 auth token', () => {
+    const authProvider = CredentialProvider.fromString({
+      apiKey: base64EncodedFakeV1AuthToken,
+    });
+    expect(authProvider.getAuthToken()).toEqual(fakeTestV1ApiKey);
+    expect(authProvider.getControlEndpoint()).toEqual(
+      `control.${decodedV1Token.endpoint}`
+    );
+    expect(authProvider.getCacheEndpoint()).toEqual(
+      `cache.${decodedV1Token.endpoint}`
+    );
+  });
+
+  it('supports the old "authToken" option', () => {
     const authProvider = CredentialProvider.fromString({
       authToken: base64EncodedFakeV1AuthToken,
     });
@@ -45,7 +58,7 @@ describe('StringMomentoTokenProvider', () => {
 
   it('supports overriding endpoints by specifying a base endpoint', () => {
     const legacyAuthProvider = CredentialProvider.fromString({
-      authToken: fakeTestLegacyToken,
+      apiKey: fakeTestLegacyToken,
       endpointOverrides: {
         baseEndpoint: 'base.foo',
       },
@@ -58,7 +71,7 @@ describe('StringMomentoTokenProvider', () => {
     expect(legacyAuthProvider.areEndpointsOverridden()).toEqual(true);
 
     const v1AuthProvider = CredentialProvider.fromString({
-      authToken: base64EncodedFakeV1AuthToken,
+      apiKey: base64EncodedFakeV1AuthToken,
       endpointOverrides: {
         baseEndpoint: 'base.foo',
       },
@@ -73,7 +86,7 @@ describe('StringMomentoTokenProvider', () => {
 
   it('supports overriding all endpoints explicitly', () => {
     const legacyAuthProvider = CredentialProvider.fromString({
-      authToken: fakeTestLegacyToken,
+      apiKey: fakeTestLegacyToken,
       endpointOverrides: {
         controlEndpoint: 'control.foo',
         cacheEndpoint: 'cache.foo',
@@ -88,7 +101,7 @@ describe('StringMomentoTokenProvider', () => {
     expect(legacyAuthProvider.areEndpointsOverridden()).toEqual(true);
 
     const v1AuthProvider = CredentialProvider.fromString({
-      authToken: base64EncodedFakeV1AuthToken,
+      apiKey: base64EncodedFakeV1AuthToken,
       endpointOverrides: {
         controlEndpoint: 'control.foo',
         cacheEndpoint: 'cache.foo',
@@ -106,7 +119,7 @@ describe('StringMomentoTokenProvider', () => {
 
   it('parses a session token with endpoint overrides', () => {
     const sessionTokenProvider = CredentialProvider.fromString({
-      authToken: fakeSessionToken,
+      apiKey: fakeSessionToken,
       endpointOverrides: {
         controlEndpoint: 'control.foo',
         cacheEndpoint: 'cache.foo',
@@ -125,7 +138,7 @@ describe('StringMomentoTokenProvider', () => {
   it('fails to parse a session token with no endpoint overrides', () => {
     expect(() =>
       CredentialProvider.fromString({
-        authToken: fakeSessionToken,
+        apiKey: fakeSessionToken,
       })
     ).toThrowError('unable to determine control endpoint');
   });

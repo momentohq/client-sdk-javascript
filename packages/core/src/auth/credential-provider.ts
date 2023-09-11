@@ -107,7 +107,15 @@ abstract class CredentialProviderBase implements CredentialProvider {
   }
 }
 
-export interface StringMomentoTokenProviderProps
+export interface StringMomentoApiKeyProviderProps
+  extends CredentialProviderProps {
+  /**
+   * apiKey the momento API key
+   */
+  apiKey: string;
+}
+
+export interface StringMomentoAuthTokenProviderProps
   extends CredentialProviderProps {
   /**
    * authToken the momento auth token
@@ -115,13 +123,17 @@ export interface StringMomentoTokenProviderProps
   authToken: string;
 }
 
+export type StringMomentoTokenProviderProps =
+  | StringMomentoApiKeyProviderProps
+  | StringMomentoAuthTokenProviderProps;
+
 /**
  * Reads and parses a momento auth token stored in a String
  * @export
  * @class StringMomentoTokenProvider
  */
 export class StringMomentoTokenProvider extends CredentialProviderBase {
-  private readonly authToken: string;
+  private readonly apiKey: string;
   private readonly allEndpoints: AllEndpoints;
   private readonly endpointsOverridden: boolean;
 
@@ -130,8 +142,16 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
    */
   constructor(props: StringMomentoTokenProviderProps) {
     super();
-    const decodedToken = decodeAuthToken(props.authToken);
-    this.authToken = decodedToken.authToken;
+    let key: string;
+    if ('authToken' in props) {
+      key = props.authToken;
+    } else if ('apiKey' in props) {
+      key = props.apiKey;
+    } else {
+      throw new Error('Missing required property: authToken or apiKey');
+    }
+    const decodedToken = decodeAuthToken(key);
+    this.apiKey = decodedToken.authToken;
     if (props.endpointOverrides === undefined) {
       this.endpointsOverridden = false;
       if (decodedToken.controlEndpoint === undefined) {
@@ -177,7 +197,7 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
   }
 
   getAuthToken(): string {
-    return this.authToken;
+    return this.apiKey;
   }
 
   getCacheEndpoint(): string {
