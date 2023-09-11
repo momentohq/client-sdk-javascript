@@ -526,11 +526,16 @@ export function runAuthClientTests(
         {permissions: []},
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateApiKey.Error);
+      expectWithMessage(() => {
+        expect(tokenResponse).toBeInstanceOf(GenerateApiKey.Error);
+      }, `Expected ERROR but received ${tokenResponse.toString()}`);
+
       const tokenError = tokenResponse as GenerateApiKey.Error;
-      expect(tokenError.errorCode()).toEqual(
-        MomentoErrorCode.INVALID_ARGUMENT_ERROR
-      );
+      expectWithMessage(() => {
+        expect(tokenError.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }, `Expected INVALID_ARGUMENT_ERROR but received ${tokenError.errorCode()}`);
     });
 
     it('cannot create token with duplicate/conflicting cache permissions - all caches', async () => {
@@ -543,11 +548,16 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateApiKey.Error);
+      expectWithMessage(() => {
+        expect(tokenResponse).toBeInstanceOf(GenerateApiKey.Error);
+      }, `Expected ERROR but received ${tokenResponse.toString()}`);
+
       const tokenError = tokenResponse as GenerateApiKey.Error;
-      expect(tokenError.errorCode()).toEqual(
-        MomentoErrorCode.INVALID_ARGUMENT_ERROR
-      );
+      expectWithMessage(() => {
+        expect(tokenError.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }, `Expected INVALID_ARGUMENT_ERROR but received ${tokenError.errorCode()}`);
     });
 
     it('cannot create token with duplicate/conflicting cache permissions - cache name', async () => {
@@ -560,11 +570,16 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateApiKey.Error);
+      expectWithMessage(() => {
+        expect(tokenResponse).toBeInstanceOf(GenerateApiKey.Error);
+      }, `Expected ERROR but received ${tokenResponse.toString()}`);
+
       const tokenError = tokenResponse as GenerateApiKey.Error;
-      expect(tokenError.errorCode()).toEqual(
-        MomentoErrorCode.INVALID_ARGUMENT_ERROR
-      );
+      expectWithMessage(() => {
+        expect(tokenError.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }, `Expected INVALID_ARGUMENT_ERROR but received ${tokenError.errorCode()}`);
     });
 
     it('cannot create token with duplicate/conflicting topic permissions - cache + topic name', async () => {
@@ -585,11 +600,16 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateApiKey.Error);
+      expectWithMessage(() => {
+        expect(tokenResponse).toBeInstanceOf(GenerateApiKey.Error);
+      }, `Expected ERROR but received ${tokenResponse.toString()}`);
+
       const tokenError = tokenResponse as GenerateApiKey.Error;
-      expect(tokenError.errorCode()).toEqual(
-        MomentoErrorCode.INVALID_ARGUMENT_ERROR
-      );
+      expectWithMessage(() => {
+        expect(tokenError.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }, `Expected INVALID_ARGUMENT_ERROR but received ${tokenError.errorCode()}`);
     });
 
     it('can only read all caches', async () => {
@@ -598,7 +618,12 @@ export function runAuthClientTests(
           PermissionScopes.cacheReadOnly(AllCaches),
           ExpiresIn.seconds(60)
         );
-      expect(readAllCachesTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(() => {
+        expect(readAllCachesTokenResponse).toBeInstanceOf(
+          GenerateApiKey.Success
+        );
+      }, `Expected SUCCESS but received ${readAllCachesTokenResponse.toString()}`);
+
       const readAllCachesToken = (
         readAllCachesTokenResponse as GenerateApiKey.Success
       ).apiKey;
@@ -606,23 +631,36 @@ export function runAuthClientTests(
 
       // 1. Sets should fail
       const setResp1 = await cacheClient.set(FGA_CACHE_1, 'homer', 'simpson');
-      expect(setResp1).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp1).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp1.toString()}`);
 
       const setResp2 = await cacheClient.set(FGA_CACHE_2, 'oye', 'caramba');
-      expect(setResp2).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp2).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp2.toString()}`);
 
       // 2. Gets for existing keys should succeed with hits
       const getResp1 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
-      expect(getResp1).toBeHit(FGA_CACHE_1_VALUE);
+      expectWithMessage(() => {
+        expect(getResp1).toBeHit(FGA_CACHE_1_VALUE);
+      }, `Expected ERROR but received ${getResp1.toString()}`);
 
       const getResp2 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
-      expect(getResp2).toBeHit(FGA_CACHE_2_VALUE);
+      expectWithMessage(() => {
+        expect(getResp2).toBeHit(FGA_CACHE_2_VALUE);
+      }, `Expected ERROR but received ${getResp2.toString()}`);
 
       // 3. Gets for non-existing keys return misses
       const missResp1 = await cacheClient.get(FGA_CACHE_1, 'i-exist-not');
-      expect(missResp1).toBeInstanceOf(CacheGet.Miss);
+      expectWithMessage(() => {
+        expect(missResp1).toBeInstanceOf(CacheGet.Miss);
+      }, `Expected MISS but received ${missResp1.toString()}`);
+
       const missResp2 = await cacheClient.get(FGA_CACHE_2, 'i-exist-not');
-      expect(missResp2).toBeInstanceOf(CacheGet.Miss);
+      expectWithMessage(() => {
+        expect(missResp2).toBeInstanceOf(CacheGet.Miss);
+      }, `Expected MISS but received ${missResp2.toString()}`);
 
       const topicClient = topicClientFactory(readAllCachesToken);
       const pubResp = await topicClient.publish(
@@ -630,14 +668,18 @@ export function runAuthClientTests(
         'Ankh-Morpork Inquirer',
         'There is a werewolf in the City Watch!!!!!'
       );
-      expect(pubResp).toBePermissionDeniedForTopicPublish();
+      expectWithMessage(() => {
+        expect(pubResp).toBePermissionDeniedForTopicPublish();
+      }, `Expected ERROR but received ${pubResp.toString()}`);
 
       const subResp = await topicClient.subscribe(
         FGA_CACHE_1,
         'Ankh-Morpork Inquirer',
         trivialHandlers
       );
-      expect(subResp).toBePermissionDeniedForTopicSubscribe();
+      expectWithMessage(() => {
+        expect(subResp).toBePermissionDeniedForTopicSubscribe();
+      }, `Expected ERROR but received ${subResp.toString()}`);
     });
 
     it('can only read all topics', async () => {
@@ -646,7 +688,12 @@ export function runAuthClientTests(
           PermissionScopes.topicSubscribeOnly(AllCaches, AllTopics),
           ExpiresIn.seconds(60)
         );
-      expect(readAllTopicsTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(() => {
+        expect(readAllTopicsTokenResponse).toBeInstanceOf(
+          GenerateApiKey.Success
+        );
+      }, `Expected SUCCESS but received ${readAllTopicsTokenResponse.toString()}`);
+
       const readAllTopicsToken = (
         readAllTopicsTokenResponse as GenerateApiKey.Success
       ).apiKey;
@@ -654,17 +701,25 @@ export function runAuthClientTests(
 
       // Sets should fail
       const setResp1 = await cacheClient.set(FGA_CACHE_1, 'homer', 'simpson');
-      expect(setResp1).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp1).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp1.toString()}`);
 
       const setResp2 = await cacheClient.set(FGA_CACHE_2, 'oye', 'caramba');
-      expect(setResp2).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp2).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp2.toString()}`);
 
       // Gets should fail
       const getKey1 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
-      expect(getKey1).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey1).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey1.toString()}`);
 
       const getKey2 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
-      expect(getKey2).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey2).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey2.toString()}`);
 
       const topicClient = topicClientFactory(readAllTopicsToken);
       // Publish should fail
@@ -673,7 +728,9 @@ export function runAuthClientTests(
         'The Ankh-Morpork Times',
         'The Truth Shall Make Ye Fret'
       );
-      expect(pubResp).toBePermissionDeniedForTopicPublish();
+      expectWithMessage(() => {
+        expect(pubResp).toBePermissionDeniedForTopicPublish();
+      }, `Expected ERROR but received ${pubResp.toString()}`);
 
       // Subscribe should succeed
       const subResp = await topicClient.subscribe(
@@ -681,7 +738,9 @@ export function runAuthClientTests(
         'The Ankh-Morpork Times',
         trivialHandlers
       );
-      expect(subResp).toBeInstanceOf(TopicSubscribe.Subscription);
+      expectWithMessage(() => {
+        expect(subResp).toBeInstanceOf(TopicSubscribe.Subscription);
+      }, `Expected SUBSCRIPTION but received ${subResp.toString()}`);
     });
 
     it('can read/write cache FGA_CACHE_1 and read/write all topics in cache FGA_CACHE_2', async () => {
@@ -698,23 +757,34 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(() => {
+        expect(tokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Expected SUCCESS but received ${tokenResponse.toString()}`);
+
       const token = (tokenResponse as GenerateApiKey.Success).apiKey;
       const cacheClient = cacheClientFactory(token);
 
       // Read/Write on cache FGA_CACHE_1 is allowed
       const setResp1 = await cacheClient.set(FGA_CACHE_1, 'ned', 'flanders');
-      expect(setResp1).toBeInstanceOf(CacheSet.Success);
+      expectWithMessage(() => {
+        expect(setResp1).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setResp1.toString()}`);
 
       const getResp1 = await cacheClient.get(FGA_CACHE_1, 'ned');
-      expect(getResp1).toBeHit('flanders');
+      expectWithMessage(() => {
+        expect(getResp1).toBeHit('flanders');
+      }, `Expected HIT but received ${getResp1.toString()}`);
 
       // Read/Write on cache FGA_CACHE_2 is not allowed
       const setResp2 = await cacheClient.set(FGA_CACHE_2, 'flaming', 'mo');
-      expect(setResp2).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp2).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp2.toString()}`);
 
       const getResp2 = await cacheClient.get(FGA_CACHE_2, 'flaming');
-      expect(getResp2).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getResp2).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getResp2.toString()}`);
 
       const topicClient = topicClientFactory(token);
       // Read/Write on topics in cache FGA_CACHE_1 is not allowed
@@ -723,14 +793,18 @@ export function runAuthClientTests(
         'breaking news!',
         'Flying lizard seen over Manhattan!'
       );
-      expect(pubResp).toBePermissionDeniedForTopicPublish();
+      expectWithMessage(() => {
+        expect(pubResp).toBePermissionDeniedForTopicPublish();
+      }, `Expected ERROR but received ${pubResp.toString()}`);
 
       const subResp = await topicClient.subscribe(
         FGA_CACHE_1,
         'breaking news!',
         trivialHandlers
       );
-      expect(subResp).toBePermissionDeniedForTopicSubscribe();
+      expectWithMessage(() => {
+        expect(subResp).toBePermissionDeniedForTopicSubscribe();
+      }, `Expected ERROR but received ${subResp.toString()}`);
 
       // Read/Write on topics in cache FGA_CACHE_2 is allowed
       const pubResp1 = await topicClient.publish(
@@ -738,7 +812,10 @@ export function runAuthClientTests(
         'breaking news!',
         'UFOs spotted'
       );
-      expect(pubResp1).toBeInstanceOf(TopicPublish.Success);
+      expectWithMessage(() => {
+        expect(pubResp1).toBeInstanceOf(TopicPublish.Success);
+      }, `Expected SUCCESS but received ${pubResp1.toString()}`);
+
       const subResp1 = await topicClient.subscribe(
         FGA_CACHE_2,
         'breaking news!',
@@ -755,7 +832,9 @@ export function runAuthClientTests(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(() => {
+        expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Expected SUCCESS but received ${superUserTokenResponse.toString()}`);
 
       const authClient = authTokenAuthClientFactory(
         (superUserTokenResponse as GenerateApiKey.Success).apiKey
@@ -774,7 +853,9 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      expectWithMessage(() => {
+        expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      }, `Expected SUCCESS but received ${tokenResponse.toString()}`);
 
       const token = (tokenResponse as GenerateDisposableToken.Success)
         .authToken;
@@ -782,17 +863,25 @@ export function runAuthClientTests(
 
       // Only Write on cache FGA_CACHE_1 is allowed
       const setResp1 = await cacheClient.set(FGA_CACHE_1, 'ned', 'flanders');
-      expect(setResp1).toBeInstanceOf(CacheSet.Success);
+      expectWithMessage(() => {
+        expect(setResp1).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setResp1.toString()}`);
 
       const getResp1 = await cacheClient.get(FGA_CACHE_1, 'ned');
-      expect(getResp1).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getResp1).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getResp1.toString()}`);
 
       // Read/Write on cache FGA_CACHE_2 is not allowed
       const setResp2 = await cacheClient.set(FGA_CACHE_2, 'flaming', 'mo');
-      expect(setResp2).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp2).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp2.toString()}`);
 
       const getResp2 = await cacheClient.get(FGA_CACHE_2, 'flaming');
-      expect(getResp2).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getResp2).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getResp2.toString()}`);
 
       const topicClient = topicClientFactory(token);
       // Read/Write on topics in cache FGA_CACHE_1 is not allowed
@@ -801,14 +890,18 @@ export function runAuthClientTests(
         'breaking news!',
         'Flying lizard seen over Manhattan!'
       );
-      expect(pubResp).toBePermissionDeniedForTopicPublish();
+      expectWithMessage(() => {
+        expect(pubResp).toBePermissionDeniedForTopicPublish();
+      }, `Expected ERROR but received ${pubResp.toString()}`);
 
       const subResp = await topicClient.subscribe(
         FGA_CACHE_1,
         'breaking news!',
         trivialHandlers
       );
-      expect(subResp).toBePermissionDeniedForTopicSubscribe();
+      expectWithMessage(() => {
+        expect(subResp).toBePermissionDeniedForTopicSubscribe();
+      }, `Expected ERROR but received ${subResp.toString()}`);
 
       // Only Write on topics in cache FGA_CACHE_2 is allowed
       const pubResp1 = await topicClient.publish(
@@ -816,14 +909,18 @@ export function runAuthClientTests(
         'breaking news!',
         'UFOs spotted'
       );
-      expect(pubResp1).toBeInstanceOf(TopicPublish.Success);
+      expectWithMessage(() => {
+        expect(pubResp1).toBeInstanceOf(TopicPublish.Success);
+      }, `Expected SUCCESS but received ${pubResp1.toString()}`);
 
       const subResp1 = await topicClient.subscribe(
         FGA_CACHE_2,
         'breaking news!',
         trivialHandlers
       );
-      expect(subResp1).toBePermissionDeniedForTopicSubscribe();
+      expectWithMessage(() => {
+        expect(subResp1).toBePermissionDeniedForTopicSubscribe();
+      }, `Expected ERROR but received ${subResp1.toString()}`);
     });
 
     it('can only read specific keys and key-prefixes from all caches', async () => {
@@ -832,7 +929,9 @@ export function runAuthClientTests(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(() => {
+        expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Expected SUCCESS but received ${superUserTokenResponse.toString()}`);
 
       const authClient = authTokenAuthClientFactory(
         (superUserTokenResponse as GenerateApiKey.Success).apiKey
@@ -851,7 +950,9 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      expectWithMessage(() => {
+        expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      }, `Expected SUCCESS but received ${tokenResponse.toString()}`);
 
       const token = (tokenResponse as GenerateDisposableToken.Success)
         .authToken;
@@ -859,29 +960,45 @@ export function runAuthClientTests(
 
       // 1. Sets should fail
       const setResp1 = await cacheClient.set(FGA_CACHE_1, 'cow', 'meow');
-      expect(setResp1).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp1).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp1.toString()}`);
 
       const setResp2 = await cacheClient.set(FGA_CACHE_2, 'pet-fish', 'woof');
-      expect(setResp2).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp2).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp2.toString()}`);
 
       // 2. Gets to a specific key should work for both caches, and not for any other key
       const getKey1 = await cacheClient.get(FGA_CACHE_1, 'cow');
-      expect(getKey1).toBeHit('moo');
+      expectWithMessage(() => {
+        expect(getKey1).toBeHit('moo');
+      }, `Expected HIT but received ${getKey1.toString()}`);
 
       const getKey2 = await cacheClient.get(FGA_CACHE_2, 'cow');
-      expect(getKey2).toBeHit('moo');
+      expectWithMessage(() => {
+        expect(getKey2).toBeHit('moo');
+      }, `Expected HIT but received ${getKey2.toString()}`);
 
       const getKey3 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
-      expect(getKey3).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey3).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey3.toString()}`);
 
       const getKey4 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
-      expect(getKey4).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey4).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey4.toString()}`);
 
       const getKey5 = await cacheClient.get(FGA_CACHE_1, 'does-not-exist');
-      expect(getKey5).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey5).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey5.toString()}`);
 
       const getKey6 = await cacheClient.get(FGA_CACHE_2, 'does-not-exist');
-      expect(getKey6).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey6).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey6.toString()}`);
     });
 
     it('can only read specific keys and key-prefixes from cache FGA_CACHE_1', async () => {
@@ -890,7 +1007,9 @@ export function runAuthClientTests(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(() => {
+        expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Expected SUCCESS but received ${superUserTokenResponse.toString()}`);
 
       const authClient = authTokenAuthClientFactory(
         (superUserTokenResponse as GenerateApiKey.Success).apiKey
@@ -909,7 +1028,9 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      expectWithMessage(() => {
+        expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      }, `Expected SUCCESS but received ${tokenResponse.toString()}`);
 
       const token = (tokenResponse as GenerateDisposableToken.Success)
         .authToken;
@@ -917,29 +1038,45 @@ export function runAuthClientTests(
 
       // 1. Sets should fail
       const setResp1 = await cacheClient.set(FGA_CACHE_1, 'cow', 'meow');
-      expect(setResp1).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp1).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp1.toString()}`);
 
       const setResp2 = await cacheClient.set(FGA_CACHE_1, 'pet-fish', 'woof');
-      expect(setResp2).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp2).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp2.toString()}`);
 
       const setResp3 = await cacheClient.set(FGA_CACHE_2, 'pet', 'moo');
-      expect(setResp3).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp3).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp3.toString()}`);
 
       // 2. Gets to a specific key should work for only FGA_CACHE_1, and not for any other key or cache
       const getKey1 = await cacheClient.get(FGA_CACHE_1, 'cow');
-      expect(getKey1).toBeHit('moo');
+      expectWithMessage(() => {
+        expect(getKey1).toBeHit('moo');
+      }, `Expected HIT but received ${getKey1.toString()}`);
 
       const getKey2 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
-      expect(getKey2).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey2).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey2.toString()}`);
 
       const getKey3 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
-      expect(getKey3).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey3).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey3.toString()}`);
 
       const getKey4 = await cacheClient.get(FGA_CACHE_1, 'does-not-exist');
-      expect(getKey4).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey4).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey4.toString()}`);
 
       const getKey5 = await cacheClient.get(FGA_CACHE_2, 'does-not-exist');
-      expect(getKey5).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey5).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey5.toString()}`);
     });
 
     it('can only write specific keys and key-prefixes from all caches', async () => {
@@ -948,7 +1085,9 @@ export function runAuthClientTests(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(() => {
+        expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Expected SUCCESS but received ${superUserTokenResponse.toString()}`);
 
       const authClient = authTokenAuthClientFactory(
         (superUserTokenResponse as GenerateApiKey.Success).apiKey
@@ -967,7 +1106,9 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      expectWithMessage(() => {
+        expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      }, `Expected SUCCESS but received ${tokenResponse.toString()}`);
 
       const token = (tokenResponse as GenerateDisposableToken.Success)
         .authToken;
@@ -975,35 +1116,55 @@ export function runAuthClientTests(
 
       // 1. Sets should pass in both caches
       const setResp1 = await cacheClient.set(FGA_CACHE_1, 'cow', 'meow');
-      expect(setResp1).toBeInstanceOf(CacheSet.Success);
+      expectWithMessage(() => {
+        expect(setResp1).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setResp1.toString()}`);
 
       const setResp2 = await cacheClient.set(FGA_CACHE_1, 'pet-fish', 'woof');
-      expect(setResp2).toBeInstanceOf(CacheSet.Success);
+      expectWithMessage(() => {
+        expect(setResp2).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setResp2.toString()}`);
 
       const setResp3 = await cacheClient.set(FGA_CACHE_2, 'cow', 'meow');
-      expect(setResp3).toBeInstanceOf(CacheSet.Success);
+      expectWithMessage(() => {
+        expect(setResp3).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setResp3.toString()}`);
 
       const setResp4 = await cacheClient.set(FGA_CACHE_2, 'pet-bird', 'woof');
-      expect(setResp4).toBeInstanceOf(CacheSet.Success);
+      expectWithMessage(() => {
+        expect(setResp4).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setResp4.toString()}`);
 
       // 2. Gets should fail
       const getKey1 = await cacheClient.get(FGA_CACHE_1, 'cow');
-      expect(getKey1).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey1).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey1.toString()}`);
 
       const getKey2 = await cacheClient.get(FGA_CACHE_2, 'pet-fish');
-      expect(getKey2).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey2).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey2.toString()}`);
 
       const getKey3 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
-      expect(getKey3).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey3).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey3.toString()}`);
 
       const getKey4 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
-      expect(getKey4).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey4).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey4.toString()}`);
 
       const getKey5 = await cacheClient.get(FGA_CACHE_1, 'does-not-exist');
-      expect(getKey5).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey5).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey5.toString()}`);
 
       const getKey6 = await cacheClient.get(FGA_CACHE_2, 'does-not-exist');
-      expect(getKey6).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey6).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey6.toString()}`);
     });
 
     it('can only write specific keys and key-prefixes from cache FGA_CACHE_1', async () => {
@@ -1012,7 +1173,9 @@ export function runAuthClientTests(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(() => {
+        expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Expected SUCCESS but received ${superUserTokenResponse.toString()}`);
 
       const authClient = authTokenAuthClientFactory(
         (superUserTokenResponse as GenerateApiKey.Success).apiKey
@@ -1031,7 +1194,9 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      expectWithMessage(() => {
+        expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      }, `Expected SUCCESS but received ${tokenResponse.toString()}`);
 
       const token = (tokenResponse as GenerateDisposableToken.Success)
         .authToken;
@@ -1039,42 +1204,64 @@ export function runAuthClientTests(
 
       // 1. Sets should pass in only FGA_CACHE_1 and only to the specified keys and key prefixes
       const setResp1 = await cacheClient.set(FGA_CACHE_1, 'cow', 'meow');
-      expect(setResp1).toBeInstanceOf(CacheSet.Success);
+      expectWithMessage(() => {
+        expect(setResp1).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setResp1.toString()}`);
 
       const setResp2 = await cacheClient.set(FGA_CACHE_1, 'pet-fish', 'woof');
-      expect(setResp2).toBeInstanceOf(CacheSet.Success);
+      expectWithMessage(() => {
+        expect(setResp2).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setResp2.toString()}`);
 
       const setResp3 = await cacheClient.set(
         FGA_CACHE_1,
         FGA_CACHE_1_KEY,
         'moo'
       );
-      expect(setResp3).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp3).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp3.toString()}`);
 
       const setResp4 = await cacheClient.set(FGA_CACHE_2, 'cow', 'meow');
-      expect(setResp4).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp4).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp4.toString()}`);
 
       const setResp5 = await cacheClient.set(FGA_CACHE_2, 'pet-bird', 'woof');
-      expect(setResp5).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp5).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp5.toString()}`);
 
       // 2. Gets should fail
       const getKey1 = await cacheClient.get(FGA_CACHE_1, 'cow');
-      expect(getKey1).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey1).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey1.toString()}`);
 
       const getKey2 = await cacheClient.get(FGA_CACHE_2, 'pet-fish');
-      expect(getKey2).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey2).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey2.toString()}`);
 
       const getKey3 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
-      expect(getKey3).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey3).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey3.toString()}`);
 
       const getKey4 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
-      expect(getKey4).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey4).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey4.toString()}`);
 
       const getKey5 = await cacheClient.get(FGA_CACHE_1, 'does-not-exist');
-      expect(getKey5).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey5).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey5.toString()}`);
 
       const getKey6 = await cacheClient.get(FGA_CACHE_2, 'does-not-exist');
-      expect(getKey6).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey6).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey6.toString()}`);
     });
 
     it('can read and write specific keys and key-prefixes from all caches', async () => {
@@ -1083,7 +1270,9 @@ export function runAuthClientTests(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(() => {
+        expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Expected SUCCESS but received ${superUserTokenResponse.toString()}`);
 
       const authClient = authTokenAuthClientFactory(
         (superUserTokenResponse as GenerateApiKey.Success).apiKey
@@ -1102,7 +1291,9 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      expectWithMessage(() => {
+        expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      }, `Expected SUCCESS but received ${tokenResponse.toString()}`);
 
       const token = (tokenResponse as GenerateDisposableToken.Success)
         .authToken;
@@ -1110,35 +1301,55 @@ export function runAuthClientTests(
 
       // 1. Sets should work in both caches but only for the specified keys and prefixes
       const setResp1 = await cacheClient.set(FGA_CACHE_1, 'cow', 'meow');
-      expect(setResp1).toBeInstanceOf(CacheSet.Success);
+      expectWithMessage(() => {
+        expect(setResp1).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setResp1.toString()}`);
 
       const setResp2 = await cacheClient.set(FGA_CACHE_1, 'pet-fish', 'woof');
-      expect(setResp2).toBeInstanceOf(CacheSet.Success);
+      expectWithMessage(() => {
+        expect(setResp2).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setResp2.toString()}`);
 
       const setResp3 = await cacheClient.set(FGA_CACHE_2, 'cow', 'meow');
-      expect(setResp3).toBeInstanceOf(CacheSet.Success);
+      expectWithMessage(() => {
+        expect(setResp3).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setResp3.toString()}`);
 
       const setResp4 = await cacheClient.set(FGA_CACHE_2, 'pet-bird', 'woof');
-      expect(setResp4).toBeInstanceOf(CacheSet.Success);
+      expectWithMessage(() => {
+        expect(setResp4).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setResp4.toString()}`);
 
       // 2. Gets to a specific key should work for both caches, and not for any other key
       const getKey1 = await cacheClient.get(FGA_CACHE_1, 'cow');
-      expect(getKey1).toBeHit('meow');
+      expectWithMessage(() => {
+        expect(getKey1).toBeHit('meow');
+      }, `Expected HIT but received ${getKey1.toString()}`);
 
       const getKey2 = await cacheClient.get(FGA_CACHE_2, 'pet-fish');
-      expect(getKey2).toBeHit('blub');
+      expectWithMessage(() => {
+        expect(getKey2).toBeHit('blub');
+      }, `Expected HIT but received ${getKey2.toString()}`);
 
       const getKey3 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
-      expect(getKey3).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey3).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey3.toString()}`);
 
       const getKey4 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
-      expect(getKey4).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey4).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey4.toString()}`);
 
       const getKey5 = await cacheClient.get(FGA_CACHE_1, 'does-not-exist');
-      expect(getKey5).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey5).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey5.toString()}`);
 
       const getKey6 = await cacheClient.get(FGA_CACHE_2, 'does-not-exist');
-      expect(getKey6).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey6).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey6.toString()}`);
     });
 
     it('can read and write specific keys and key-prefixes from cache FGA_CACHE_1', async () => {
@@ -1147,7 +1358,9 @@ export function runAuthClientTests(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(() => {
+        expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Expected SUCCESS but received ${superUserTokenResponse.toString()}`);
 
       const authClient = authTokenAuthClientFactory(
         (superUserTokenResponse as GenerateApiKey.Success).apiKey
@@ -1166,7 +1379,9 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      expectWithMessage(() => {
+        expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      }, `Expected SUCCESS but received ${tokenResponse.toString()}`);
 
       const token = (tokenResponse as GenerateDisposableToken.Success)
         .authToken;
@@ -1174,54 +1389,78 @@ export function runAuthClientTests(
 
       // 1. Sets should work in only FGA_CACHE_1 but only for the specified keys and prefixes
       const setResp1 = await cacheClient.set(FGA_CACHE_1, 'cow', 'meow');
-      expect(setResp1).toBeInstanceOf(CacheSet.Success);
+      expectWithMessage(() => {
+        expect(setResp1).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setResp1.toString()}`);
 
       const setResp2 = await cacheClient.set(FGA_CACHE_1, 'pet-fish', 'woof');
-      expect(setResp2).toBeInstanceOf(CacheSet.Success);
+      expectWithMessage(() => {
+        expect(setResp2).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setResp2.toString()}`);
 
       const setResp3 = await cacheClient.set(
         FGA_CACHE_1,
         FGA_CACHE_1_KEY,
         'meow'
       );
-      expect(setResp3).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp3).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp3.toString()}`);
 
       const setResp4 = await cacheClient.set(FGA_CACHE_2, 'cow', 'meow');
-      expect(setResp4).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp4).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp4.toString()}`);
 
       const setResp5 = await cacheClient.set(FGA_CACHE_2, 'pet-bird', 'woof');
-      expect(setResp5).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp5).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp5.toString()}`);
 
       // 2. Gets to a specific key should work for only FGA_CACHE_1, and not for any other key or cache
       const getKey1 = await cacheClient.get(FGA_CACHE_1, 'cow');
-      expect(getKey1).toBeHit('meow');
+      expectWithMessage(() => {
+        expect(getKey1).toBeHit('meow');
+      }, `Expected HIT but received ${getKey1.toString()}`);
 
       const getKey2 = await cacheClient.get(FGA_CACHE_2, 'pet-fish');
-      expect(getKey2).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey2).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey2.toString()}`);
 
       const getKey3 = await cacheClient.get(FGA_CACHE_1, FGA_CACHE_1_KEY);
-      expect(getKey3).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey3).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey3.toString()}`);
 
       const getKey4 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
-      expect(getKey4).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey4).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey4.toString()}`);
 
       const getKey5 = await cacheClient.get(FGA_CACHE_1, 'does-not-exist');
-      expect(getKey5).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey5).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey5.toString()}`);
 
       const getKey6 = await cacheClient.get(FGA_CACHE_2, 'does-not-exist');
-      expect(getKey6).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey6).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey6.toString()}`);
     });
 
     it('can use disposable tokens to read and write to caches and topics like usual', async () => {
       const superUserTokenResponse =
-        await sessionTokenAuthClient.generateAuthToken(
+        await sessionTokenAuthClient.generateApiKey(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateAuthToken.Success);
+      expectWithMessage(() => {
+        expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Expected SUCCESS but received ${superUserTokenResponse.toString()}`);
 
       const authClient = authTokenAuthClientFactory(
-        (superUserTokenResponse as GenerateAuthToken.Success).authToken
+        (superUserTokenResponse as GenerateAuthToken.Success).apiKey
       );
 
       const tokenResponse = await authClient.generateDisposableToken(
@@ -1237,7 +1476,9 @@ export function runAuthClientTests(
         },
         ExpiresIn.seconds(60)
       );
-      expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      expectWithMessage(() => {
+        expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      }, `Expected SUCCESS but received ${tokenResponse.toString()}`);
 
       const token = (tokenResponse as GenerateDisposableToken.Success)
         .authToken;
@@ -1246,20 +1487,28 @@ export function runAuthClientTests(
 
       // can get and set items in FGA_CACHE_1 but not FGA_CACHE_2
       const setResp1 = await cacheClient.set(FGA_CACHE_1, 'cow', 'meow');
-      expect(setResp1).toBeInstanceOf(CacheSet.Success);
+      expectWithMessage(() => {
+        expect(setResp1).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setResp1.toString()}`);
 
       const getKey1 = await cacheClient.get(FGA_CACHE_1, 'cow');
-      expect(getKey1).toBeHit('meow');
+      expectWithMessage(() => {
+        expect(getKey1).toBeHit('meow');
+      }, `Expected HIT but received ${getKey1.toString()}`);
 
       const setResp2 = await cacheClient.set(
         FGA_CACHE_2,
         FGA_CACHE_2_KEY,
         'woof'
       );
-      expect(setResp2).toBePermissionDeniedForCacheSet();
+      expectWithMessage(() => {
+        expect(setResp2).toBePermissionDeniedForCacheSet();
+      }, `Expected ERROR but received ${setResp2.toString()}`);
 
       const getKey2 = await cacheClient.get(FGA_CACHE_2, FGA_CACHE_2_KEY);
-      expect(getKey2).toBePermissionDeniedForCacheGet();
+      expectWithMessage(() => {
+        expect(getKey2).toBePermissionDeniedForCacheGet();
+      }, `Expected ERROR but received ${getKey2.toString()}`);
 
       // can publish and subscribe topics in FGA_CACHE_2 but not FGA_CACHE_1
       const subResp1 = await topicClient.subscribe(
@@ -1267,37 +1516,52 @@ export function runAuthClientTests(
         'breaking news!',
         trivialHandlers
       );
-      expect(subResp1).toBeInstanceOf(TopicSubscribe.Subscription);
+      expectWithMessage(() => {
+        expect(subResp1).toBeInstanceOf(TopicSubscribe.Subscription);
+      }, `Expected SUBSCRIPTION but received ${subResp1.toString()}`);
 
       const pubResp1 = await topicClient.publish(
         FGA_CACHE_2,
         'breaking news!',
         'humans landed on Mars!'
       );
-      expect(pubResp1).toBeInstanceOf(TopicPublish.Success);
+      expectWithMessage(() => {
+        expect(pubResp1).toBeInstanceOf(TopicPublish.Success);
+      }, `Expected SUCCESS but received ${pubResp1.toString()}`);
 
       const subResp2 = await topicClient.subscribe(
         FGA_CACHE_1,
         'breaking news!',
         trivialHandlers
       );
-      expect(subResp2).toBePermissionDeniedForTopicSubscribe();
+      expectWithMessage(() => {
+        expect(subResp2).toBePermissionDeniedForTopicSubscribe();
+      }, `Expected ERROR but received ${subResp2.toString()}`);
 
       const pubResp = await topicClient.publish(
         FGA_CACHE_1,
         'breaking news!',
         'humans landed on Pluto!'
       );
-      expect(pubResp).toBePermissionDeniedForTopicPublish();
+      expectWithMessage(() => {
+        expect(pubResp).toBePermissionDeniedForTopicPublish();
+      }, `Expected ERROR but received ${pubResp.toString()}`);
     });
 
     afterAll(async () => {
-      expect(
-        await sessionTokenCacheClient.deleteCache(FGA_CACHE_1)
-      ).toBeInstanceOf(DeleteCache.Success);
-      expect(
-        await sessionTokenCacheClient.deleteCache(FGA_CACHE_2)
-      ).toBeInstanceOf(DeleteCache.Success);
+      const deleteCache1 = await sessionTokenCacheClient.deleteCache(
+        FGA_CACHE_1
+      );
+      expectWithMessage(() => {
+        expect(deleteCache1).toBeInstanceOf(DeleteCache.Success);
+      }, `Expected SUCCESS but received ${deleteCache1.toString()}`);
+
+      const deleteCache2 = await sessionTokenCacheClient.deleteCache(
+        FGA_CACHE_2
+      );
+      expectWithMessage(() => {
+        expect(deleteCache2).toBeInstanceOf(DeleteCache.Success);
+      }, `Expected SUCCESS but received ${deleteCache2.toString()}`);
     });
   });
 }
