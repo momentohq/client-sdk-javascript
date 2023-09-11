@@ -426,12 +426,20 @@ export function runAuthClientTests(
 
     // Setup 2 caches
     beforeAll(async () => {
-      expect(
-        await sessionTokenCacheClient.createCache(FGA_CACHE_1)
-      ).toBeInstanceOf(CreateCache.Success);
-      expect(
-        await sessionTokenCacheClient.createCache(FGA_CACHE_2)
-      ).toBeInstanceOf(CreateCache.Success);
+      const createCache1 = await sessionTokenCacheClient.createCache(
+        FGA_CACHE_1
+      );
+      expectWithMessage(() => {
+        expect(createCache1).toBeInstanceOf(CreateCache.Success);
+      }, `Expected SUCCESS but received ${createCache1.toString()}`);
+
+      const createCache2 = await sessionTokenCacheClient.createCache(
+        FGA_CACHE_2
+      );
+      expectWithMessage(() => {
+        expect(createCache1).toBeInstanceOf(CreateCache.Success);
+      }, `Expected SUCCESS but received ${createCache2.toString()}`);
+
       expect(
         await sessionTokenCacheClient.set(FGA_CACHE_1, 'foo', 'FOO', {ttl: 600})
       ).toBeInstanceOf(CacheSet.Success);
