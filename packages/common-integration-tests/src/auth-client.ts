@@ -408,8 +408,8 @@ export function runAuthClientTests(
   });
 
   describe('Fine grained authorization scenarios', () => {
-    const FGA_CACHE_1 = 'fga-' + v4();
-    const FGA_CACHE_2 = 'fga-' + v4();
+    const FGA_CACHE_1 = 'js-fga-' + v4();
+    const FGA_CACHE_2 = 'js-fga-' + v4();
     const FGA_CACHE_1_KEY = 'foo';
     const FGA_CACHE_1_VALUE = 'FOO';
     const FGA_CACHE_2_KEY = 'bar';
@@ -440,39 +440,85 @@ export function runAuthClientTests(
         expect(createCache1).toBeInstanceOf(CreateCache.Success);
       }, `Expected SUCCESS but received ${createCache2.toString()}`);
 
-      expect(
-        await sessionTokenCacheClient.set(FGA_CACHE_1, 'foo', 'FOO', {ttl: 600})
-      ).toBeInstanceOf(CacheSet.Success);
-      expect(
-        await sessionTokenCacheClient.set(FGA_CACHE_2, 'bar', 'BAR', {ttl: 600})
-      ).toBeInstanceOf(CacheSet.Success);
-      // Set up additional keys for testing key-level FGAC
-      expect(
-        await sessionTokenCacheClient.set(FGA_CACHE_1, 'pet-cat', 'meow', {
-          ttl: 600,
-        })
-      ).toBeInstanceOf(CacheSet.Success);
-      expect(
-        await sessionTokenCacheClient.set(FGA_CACHE_1, 'pet-dog', 'woof', {
-          ttl: 600,
-        })
-      ).toBeInstanceOf(CacheSet.Success);
-      expect(
-        await sessionTokenCacheClient.set(FGA_CACHE_1, 'cow', 'moo', {ttl: 600})
-      ).toBeInstanceOf(CacheSet.Success);
-      expect(
-        await sessionTokenCacheClient.set(FGA_CACHE_2, 'pet-bird', 'tweet', {
-          ttl: 600,
-        })
-      ).toBeInstanceOf(CacheSet.Success);
-      expect(
-        await sessionTokenCacheClient.set(FGA_CACHE_2, 'pet-fish', 'blub', {
-          ttl: 600,
-        })
-      ).toBeInstanceOf(CacheSet.Success);
-      expect(
-        await sessionTokenCacheClient.set(FGA_CACHE_2, 'cow', 'moo', {ttl: 600})
-      ).toBeInstanceOf(CacheSet.Success);
+      const setCache1Value1 = await sessionTokenCacheClient.set(
+        FGA_CACHE_1,
+        'foo',
+        'FOO',
+        {ttl: 600}
+      );
+      expectWithMessage(() => {
+        expect(setCache1Value1).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setCache1Value1.toString()}`);
+
+      const setCache1Value2 = await sessionTokenCacheClient.set(
+        FGA_CACHE_1,
+        'pet-cat',
+        'meow',
+        {ttl: 600}
+      );
+      expectWithMessage(() => {
+        expect(setCache1Value2).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setCache1Value2.toString()}`);
+
+      const setCache1Value3 = await sessionTokenCacheClient.set(
+        FGA_CACHE_1,
+        'pet-dog',
+        'woof',
+        {ttl: 600}
+      );
+      expectWithMessage(() => {
+        expect(setCache1Value3).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setCache1Value3.toString()}`);
+
+      const setCache1Value4 = await sessionTokenCacheClient.set(
+        FGA_CACHE_1,
+        'cow',
+        'moo',
+        {ttl: 600}
+      );
+      expectWithMessage(() => {
+        expect(setCache1Value4).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setCache1Value4.toString()}`);
+
+      const setCache2Value1 = await sessionTokenCacheClient.set(
+        FGA_CACHE_2,
+        'bar',
+        'BAR',
+        {ttl: 600}
+      );
+      expectWithMessage(() => {
+        expect(setCache2Value1).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setCache2Value1.toString()}`);
+
+      const setCache2Value2 = await sessionTokenCacheClient.set(
+        FGA_CACHE_2,
+        'pet-bird',
+        'tweet',
+        {ttl: 600}
+      );
+      expectWithMessage(() => {
+        expect(setCache2Value2).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setCache2Value2.toString()}`);
+
+      const setCache2Value3 = await sessionTokenCacheClient.set(
+        FGA_CACHE_2,
+        'pet-fish',
+        'blub',
+        {ttl: 600}
+      );
+      expectWithMessage(() => {
+        expect(setCache2Value3).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setCache2Value3.toString()}`);
+
+      const setCache2Value4 = await sessionTokenCacheClient.set(
+        FGA_CACHE_2,
+        'cow',
+        'moo',
+        {ttl: 600}
+      );
+      expectWithMessage(() => {
+        expect(setCache2Value4).toBeInstanceOf(CacheSet.Success);
+      }, `Expected SUCCESS but received ${setCache2Value4.toString()}`);
     });
 
     it('cannot create token with empty permission list', async () => {
