@@ -16,7 +16,7 @@ async function main() {
       // This is where the middleware that captures the request count metric is added.
       .addMiddleware(new ExampleMetricMiddleware()),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
     defaultTtlSeconds: 60,
   });

@@ -14,7 +14,7 @@ import { getServerSession } from "next-auth";
 
 const authClient = new AuthClient({
   credentialProvider: CredentialProvider.fromString({
-    authToken: process.env.MOMENTO_AUTH_TOKEN,
+    authToken: process.env.MOMENTO_API_KEY,
   }),
 });
 

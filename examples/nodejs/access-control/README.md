@@ -29,7 +29,7 @@ This example demonstrates creating and using Momento API tokens with different p
 
 ```bash
 # Run example code
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run access-control
+MOMENTO_API_KEY=<YOUR API KEY> npm run access-control
 ```
 
 Example Code: [access-control.ts](access-control.ts)

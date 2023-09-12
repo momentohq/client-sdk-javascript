@@ -82,7 +82,7 @@ function retrieveAuthTokenFromYourSecretsManager(): string {
 }
 
 function example_API_CredentialProviderFromEnvVar() {
-  CredentialProvider.fromEnvironmentVariable({environmentVariableName: 'MOMENTO_AUTH_TOKEN'});
+  CredentialProvider.fromEnvironmentVariable({environmentVariableName: 'MOMENTO_API_KEY'});
 }
 
 function example_API_CredentialProviderFromString() {
@@ -110,7 +110,7 @@ async function example_API_InstantiateCacheClient() {
   return await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
     defaultTtlSeconds: 60,
   });
@@ -773,7 +773,7 @@ async function example_API_SortedSetRemoveElements(cacheClient: CacheClient) {
 function example_API_InstantiateAuthClient() {
   new AuthClient({
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
   });
 }
@@ -782,7 +782,7 @@ function example_API_InstantiateTopicClient() {
   new TopicClient({
     configuration: TopicConfigurations.Default.latest(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
   });
 }
@@ -1034,10 +1034,10 @@ async function example_API_TopicSubscribe(topicClient: TopicClient) {
 }
 
 async function main() {
-  const originalAuthToken = process.env['MOMENTO_AUTH_TOKEN'];
-  process.env['MOMENTO_AUTH_TOKEN'] = retrieveAuthTokenFromYourSecretsManager();
+  const originalAuthToken = process.env['MOMENTO_API_KEY'];
+  process.env['MOMENTO_API_KEY'] = retrieveAuthTokenFromYourSecretsManager();
   example_API_CredentialProviderFromEnvVar();
-  process.env['MOMENTO_AUTH_TOKEN'] = originalAuthToken;
+  process.env['MOMENTO_API_KEY'] = originalAuthToken;
 
   example_API_CredentialProviderFromString();
   example_API_ConfigurationLaptop();
@@ -1050,7 +1050,7 @@ async function main() {
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
     defaultTtlSeconds: 60,
   });
@@ -1111,7 +1111,7 @@ async function main() {
   example_API_InstantiateAuthClient();
   const authClient = new AuthClient({
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
   });
   await example_API_GenerateAuthToken(authClient);
@@ -1122,7 +1122,7 @@ async function main() {
   const topicClient = new TopicClient({
     configuration: TopicConfigurations.Default.latest(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
   });
   await example_API_TopicPublish(topicClient);

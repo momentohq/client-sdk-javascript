@@ -75,7 +75,7 @@ class MomentoFetcher {
 }
 
 export interface Env {
-	MOMENTO_AUTH_TOKEN: string;
+	MOMENTO_API_KEY: string;
 	MOMENTO_CACHE_NAME: string;
 }
 
@@ -86,7 +86,7 @@ export default {
 		const momento = new CacheClient({
 			configuration: Configurations.Laptop.v1(),
 			credentialProvider: CredentialProvider.fromString({
-				authToken:env.MOMENTO_AUTH_TOKEN
+				authToken:env.MOMENTO_API_KEY
 			}),
 			defaultTtlSeconds: 60,
 		});

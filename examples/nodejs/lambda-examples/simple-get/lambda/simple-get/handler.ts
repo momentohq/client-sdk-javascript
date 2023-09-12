@@ -44,9 +44,9 @@ export const handler = async () => {
 };
 
 async function getCacheClient(): Promise<CacheClient> {
-  const authTokenSecretName = process.env.MOMENTO_AUTH_TOKEN_SECRET_NAME;
+  const authTokenSecretName = process.env.MOMENTO_API_KEY_SECRET_NAME;
   if (authTokenSecretName === undefined) {
-    throw new Error("Missing required env var 'MOMENTO_AUTH_TOKEN_SECRET_NAME");
+    throw new Error("Missing required env var 'MOMENTO_API_KEY_SECRET_NAME");
   }
   if (_cacheClient === undefined) {
     const momentoAuthToken = await getSecret(authTokenSecretName);

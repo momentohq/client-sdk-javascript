@@ -16,7 +16,7 @@ The HTTP API is lightweight in that you won't need any additional dependencies b
 
 3. Create a `.env` file and provide the name of your Momento Cache, a corresponding fine-grained access token, and the HTTP endpoint associated with your token. You can create a both a cache and an access token in the [Momento Console](https://console.gomomento.com/). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information.
   ```
-  MOMENTO_AUTH_TOKEN="<your-auth-token>"
+  MOMENTO_API_KEY="<your-auth-token>"
   MOMENTO_CACHE_NAME="<your-cache-name>"
   MOMENTO_HTTP_ENDPOINT="<your-http-endpoint>"
   ```

@@ -14,7 +14,7 @@ cd examples
 npm install
 
 # SDKコード例を実行する
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run example
+MOMENTO_API_KEY=<YOUR API KEY> npm run example
 ```
 
 SDK コード例: [index.ts](index.ts)
@@ -33,7 +33,7 @@ npm install @gomomento/sdk
 import { CacheClient, CacheGetStatus } from "@gomomento/sdk";
 
 // ユーザーのMomentoオーストークン
-const authToken = process.env.MOMENTO_AUTH_TOKEN;
+const authToken = process.env.MOMENTO_API_KEY;
 
 //  Momentoをイニシャライズする
 const DEFAULT_TTL = 60; // デフォルトTTLは60秒

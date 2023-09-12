@@ -4,7 +4,7 @@ import {SecretsManagerClient, GetSecretValueCommand} from '@aws-sdk/client-secre
 
 async function example_API_retrieveAuthTokenFromSecretsManager(
   ttl = 600,
-  secretName = 'MOMENTO_AUTH_TOKEN',
+  secretName = 'MOMENTO_API_KEY',
   regionName = 'us-west-2'
 ): Promise<CacheClient> {
   let secret;
