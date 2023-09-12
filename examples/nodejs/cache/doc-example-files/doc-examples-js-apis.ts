@@ -935,7 +935,7 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
   if (oneKeyOneCacheToken instanceof GenerateDisposableToken.Success) {
     console.log('Generated a disposable API key with access to the "mo" key in the "squirrels" cache!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`API key starts with: ${oneKeyOneCacheToken.apiKey.substring(0, 10)}`);
+    console.log(`API key starts with: ${oneKeyOneCacheToken.authToken.substring(0, 10)}`);
     console.log(`Expires At: ${oneKeyOneCacheToken.expiresAt.epoch()}`);
   } else if (oneKeyOneCacheToken instanceof GenerateDisposableToken.Error) {
     throw new Error(
@@ -951,7 +951,7 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
   if (keyPrefixAllCachesToken instanceof GenerateDisposableToken.Success) {
     console.log('Generated a disposable API key with access to keys prefixed with "squirrel" in all caches!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`API key starts with: ${keyPrefixAllCachesToken.apiKey.substring(0, 10)}`);
+    console.log(`API key starts with: ${keyPrefixAllCachesToken.authToken.substring(0, 10)}`);
     console.log(`Expires At: ${keyPrefixAllCachesToken.expiresAt.epoch()}`);
   } else if (keyPrefixAllCachesToken instanceof GenerateDisposableToken.Error) {
     throw new Error(
@@ -967,7 +967,7 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
   if (allTopicsOneCacheToken instanceof GenerateDisposableToken.Success) {
     console.log('Generated a disposable API key with access to all topics in the "squirrel" cache!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`API key starts with: ${allTopicsOneCacheToken.apiKey.substring(0, 10)}`);
+    console.log(`API key starts with: ${allTopicsOneCacheToken.authToken.substring(0, 10)}`);
     console.log(`Expires At: ${allTopicsOneCacheToken.expiresAt.epoch()}`);
   } else if (allTopicsOneCacheToken instanceof GenerateDisposableToken.Error) {
     throw new Error(
@@ -983,7 +983,7 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
   if (oneTopicAllCachesToken instanceof GenerateDisposableToken.Success) {
     console.log('Generated a disposable API key with access to all topics in the "squirrel" cache!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`API key starts with: ${oneTopicAllCachesToken.apiKey.substring(0, 10)}`);
+    console.log(`API key starts with: ${oneTopicAllCachesToken.authToken.substring(0, 10)}`);
     console.log(`Expires At: ${oneTopicAllCachesToken.expiresAt.epoch()}`);
   } else if (oneTopicAllCachesToken instanceof GenerateDisposableToken.Error) {
     throw new Error(
