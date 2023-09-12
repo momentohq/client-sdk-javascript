@@ -44,17 +44,17 @@ export const handler = async () => {
 };
 
 async function getCacheClient(): Promise<CacheClient> {
-  const authTokenSecretName = process.env.MOMENTO_API_KEY_SECRET_NAME;
-  if (authTokenSecretName === undefined) {
+  const apiKeySecretName = process.env.MOMENTO_API_KEY_SECRET_NAME;
+  if (apiKeySecretName === undefined) {
     throw new Error("Missing required env var 'MOMENTO_API_KEY_SECRET_NAME");
   }
   if (_cacheClient === undefined) {
-    const momentoAuthToken = await getSecret(authTokenSecretName);
+    const momentoApiKey = await getSecret(apiKeySecretName);
     console.log('Retrieved secret!');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
     _cacheClient = await CacheClient.create({
       configuration: Configurations.Lambda.latest(),
-      credentialProvider: CredentialProvider.fromString({authToken: momentoAuthToken}),
+      credentialProvider: CredentialProvider.fromString({apiKey: momentoApiKey}),
       defaultTtlSeconds: 60,
     });
   }

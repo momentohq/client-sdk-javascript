@@ -28,8 +28,8 @@ import {
   AllTopics,
   CacheRole,
   TopicRole,
-  GenerateAuthToken,
-  RefreshAuthToken,
+  GenerateApiKey,
+  RefreshApiKey,
   GenerateDisposableToken,
   CacheIncrement,
   CacheItemGetType,
@@ -74,7 +74,7 @@ import {
   TopicConfigurations,
 } from '@gomomento/sdk';
 
-function retrieveAuthTokenFromYourSecretsManager(): string {
+function retrieveApiKeyFromYourSecretsManager(): string {
   // this is not a valid API key but conforms to the syntax requirements.
   const fakeTestV1ApiKey =
     'eyJhcGlfa2V5IjogImV5SjBlWEFpT2lKS1YxUWlMQ0poYkdjaU9pSklVekkxTmlKOS5leUpwYzNNaU9pSlBibXhwYm1VZ1NsZFVJRUoxYVd4a1pYSWlMQ0pwWVhRaU9qRTJOemd6TURVNE1USXNJbVY0Y0NJNk5EZzJOVFV4TlRReE1pd2lZWFZrSWpvaUlpd2ljM1ZpSWpvaWFuSnZZMnRsZEVCbGVHRnRjR3hsTG1OdmJTSjkuOEl5OHE4NExzci1EM1lDb19IUDRkLXhqSGRUOFVDSXV2QVljeGhGTXl6OCIsICJlbmRwb2ludCI6ICJ0ZXN0Lm1vbWVudG9ocS5jb20ifQo=';
@@ -86,8 +86,8 @@ function example_API_CredentialProviderFromEnvVar() {
 }
 
 function example_API_CredentialProviderFromString() {
-  const authToken = retrieveAuthTokenFromYourSecretsManager();
-  CredentialProvider.fromString({authToken: authToken});
+  const apiKey = retrieveApiKeyFromYourSecretsManager();
+  CredentialProvider.fromString({apiKey: apiKey});
 }
 
 function example_API_ConfigurationLaptop() {
@@ -787,86 +787,86 @@ function example_API_InstantiateTopicClient() {
   });
 }
 
-async function example_API_GenerateAuthToken(authClient: AuthClient) {
+async function example_API_GenerateApiKey(authClient: AuthClient) {
   // Generate a token that allows all data plane APIs on all caches and topics.
-  const allDataRWTokenResponse = await authClient.generateAuthToken(AllDataReadWrite, ExpiresIn.minutes(30));
-  if (allDataRWTokenResponse instanceof GenerateAuthToken.Success) {
+  const allDataRWTokenResponse = await authClient.generateApiKey(AllDataReadWrite, ExpiresIn.minutes(30));
+  if (allDataRWTokenResponse instanceof GenerateApiKey.Success) {
     console.log('Generated an API key with AllDataReadWrite scope!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`API key starts with: ${allDataRWTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${allDataRWTokenResponse.apiKey.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${allDataRWTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${allDataRWTokenResponse.expiresAt.epoch()}`);
-  } else if (allDataRWTokenResponse instanceof GenerateAuthToken.Error) {
+  } else if (allDataRWTokenResponse instanceof GenerateApiKey.Error) {
     throw new Error(
-      `An error occurred while attempting to call generateAuthToken with AllDataReadWrite scope: ${allDataRWTokenResponse.errorCode()}: ${allDataRWTokenResponse.toString()}`
+      `An error occurred while attempting to call generateApiKey with AllDataReadWrite scope: ${allDataRWTokenResponse.errorCode()}: ${allDataRWTokenResponse.toString()}`
     );
   }
 
   // Generate a token that can only call read-only data plane APIs on a specific cache foo. No topic apis (publish/subscribe) are allowed.
-  const singleCacheROTokenResponse = await authClient.generateAuthToken(
+  const singleCacheROTokenResponse = await authClient.generateApiKey(
     TokenScopes.cacheReadOnly('foo'),
     ExpiresIn.minutes(30)
   );
-  if (singleCacheROTokenResponse instanceof GenerateAuthToken.Success) {
+  if (singleCacheROTokenResponse instanceof GenerateApiKey.Success) {
     console.log('Generated an API key with read-only access to cache foo!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`API key starts with: ${singleCacheROTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${singleCacheROTokenResponse.apiKey.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${singleCacheROTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${singleCacheROTokenResponse.expiresAt.epoch()}`);
-  } else if (singleCacheROTokenResponse instanceof GenerateAuthToken.Error) {
+  } else if (singleCacheROTokenResponse instanceof GenerateApiKey.Error) {
     throw new Error(
-      `An error occurred while attempting to call generateAuthToken with single cache read-only scope: ${singleCacheROTokenResponse.errorCode()}: ${singleCacheROTokenResponse.toString()}`
+      `An error occurred while attempting to call generateApiKey with single cache read-only scope: ${singleCacheROTokenResponse.errorCode()}: ${singleCacheROTokenResponse.toString()}`
     );
   }
 
   // Generate a token that can call all data plane APIs on all caches. No topic apis (publish/subscribe) are allowed.
-  const allCachesRWTokenResponse = await authClient.generateAuthToken(
+  const allCachesRWTokenResponse = await authClient.generateApiKey(
     TokenScopes.cacheReadWrite(AllCaches),
     ExpiresIn.minutes(30)
   );
-  if (allCachesRWTokenResponse instanceof GenerateAuthToken.Success) {
+  if (allCachesRWTokenResponse instanceof GenerateApiKey.Success) {
     console.log('Generated an API key with read-write access to all caches!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`API key starts with: ${allCachesRWTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${allCachesRWTokenResponse.apiKey.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${allCachesRWTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${allCachesRWTokenResponse.expiresAt.epoch()}`);
-  } else if (allCachesRWTokenResponse instanceof GenerateAuthToken.Error) {
+  } else if (allCachesRWTokenResponse instanceof GenerateApiKey.Error) {
     throw new Error(
-      `An error occurred while attempting to call generateAuthToken with all caches read-write scope: ${allCachesRWTokenResponse.errorCode()}: ${allCachesRWTokenResponse.toString()}`
+      `An error occurred while attempting to call generateApiKey with all caches read-write scope: ${allCachesRWTokenResponse.errorCode()}: ${allCachesRWTokenResponse.toString()}`
     );
   }
 
   // Generate a token that can call publish and subscribe on all topics within cache bar
-  const singleCacheAllTopicsRWTokenResponse = await authClient.generateAuthToken(
+  const singleCacheAllTopicsRWTokenResponse = await authClient.generateApiKey(
     TokenScopes.topicPublishSubscribe({name: 'bar'}, AllTopics),
     ExpiresIn.minutes(30)
   );
-  if (singleCacheAllTopicsRWTokenResponse instanceof GenerateAuthToken.Success) {
+  if (singleCacheAllTopicsRWTokenResponse instanceof GenerateApiKey.Success) {
     console.log('Generated an API key with publish-subscribe access to all topics within cache bar!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`API key starts with: ${singleCacheAllTopicsRWTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${singleCacheAllTopicsRWTokenResponse.apiKey.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${singleCacheAllTopicsRWTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${singleCacheAllTopicsRWTokenResponse.expiresAt.epoch()}`);
-  } else if (singleCacheAllTopicsRWTokenResponse instanceof GenerateAuthToken.Error) {
+  } else if (singleCacheAllTopicsRWTokenResponse instanceof GenerateApiKey.Error) {
     throw new Error(
-      `An error occurred while attempting to call generateAuthToken with read-write scope for all topics in a single cache: ${singleCacheAllTopicsRWTokenResponse.errorCode()}: ${singleCacheAllTopicsRWTokenResponse.toString()}`
+      `An error occurred while attempting to call generateApiKey with read-write scope for all topics in a single cache: ${singleCacheAllTopicsRWTokenResponse.errorCode()}: ${singleCacheAllTopicsRWTokenResponse.toString()}`
     );
   }
 
   // Generate a token that can only call subscribe on topic where_is_mo within cache mo_nuts
-  const oneCacheOneTopicRWTokenResponse = await authClient.generateAuthToken(
+  const oneCacheOneTopicRWTokenResponse = await authClient.generateApiKey(
     TokenScopes.topicSubscribeOnly('mo_nuts', 'where_is_mo'),
     ExpiresIn.minutes(30)
   );
-  if (oneCacheOneTopicRWTokenResponse instanceof GenerateAuthToken.Success) {
+  if (oneCacheOneTopicRWTokenResponse instanceof GenerateApiKey.Success) {
     console.log('Generated an API key with subscribe-only access to topic where_is_mo within cache mo_nuts!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`API key starts with: ${oneCacheOneTopicRWTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${oneCacheOneTopicRWTokenResponse.apiKey.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${oneCacheOneTopicRWTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${oneCacheOneTopicRWTokenResponse.expiresAt.epoch()}`);
-  } else if (oneCacheOneTopicRWTokenResponse instanceof GenerateAuthToken.Error) {
+  } else if (oneCacheOneTopicRWTokenResponse instanceof GenerateApiKey.Error) {
     throw new Error(
-      `An error occurred while attempting to call generateAuthToken with read-write scope for single topic in a single cache: ${oneCacheOneTopicRWTokenResponse.errorCode()}: ${oneCacheOneTopicRWTokenResponse.toString()}`
+      `An error occurred while attempting to call generateApiKey with read-write scope for single topic in a single cache: ${oneCacheOneTopicRWTokenResponse.errorCode()}: ${oneCacheOneTopicRWTokenResponse.toString()}`
     );
   }
 
@@ -894,32 +894,32 @@ async function example_API_GenerateAuthToken(authClient: AuthClient) {
     permissions: [cachePermission1, cachePermission2, topicPermission1, topicPermission2],
   };
 
-  const multiplePermsTokenResponse = await authClient.generateAuthToken(permissions, ExpiresIn.minutes(30));
-  if (multiplePermsTokenResponse instanceof GenerateAuthToken.Success) {
+  const multiplePermsTokenResponse = await authClient.generateApiKey(permissions, ExpiresIn.minutes(30));
+  if (multiplePermsTokenResponse instanceof GenerateApiKey.Success) {
     console.log('Generated an API key with multiple cache and topic permissions!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`API key starts with: ${multiplePermsTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${multiplePermsTokenResponse.apiKey.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${multiplePermsTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${multiplePermsTokenResponse.expiresAt.epoch()}`);
-  } else if (multiplePermsTokenResponse instanceof GenerateAuthToken.Error) {
+  } else if (multiplePermsTokenResponse instanceof GenerateApiKey.Error) {
     throw new Error(
-      `An error occurred while attempting to call generateAuthToken with multiple permissions: ${multiplePermsTokenResponse.errorCode()}: ${multiplePermsTokenResponse.toString()}`
+      `An error occurred while attempting to call generateApiKey with multiple permissions: ${multiplePermsTokenResponse.errorCode()}: ${multiplePermsTokenResponse.toString()}`
     );
   }
 }
 
-async function example_API_RefreshAuthToken(authClient: AuthClient) {
-  const generateTokenResponse = await authClient.generateAuthToken(AllDataReadWrite, ExpiresIn.minutes(30));
-  if (generateTokenResponse instanceof GenerateAuthToken.Success) {
+async function example_API_RefreshApiKey(authClient: AuthClient) {
+  const generateTokenResponse = await authClient.generateApiKey(AllDataReadWrite, ExpiresIn.minutes(30));
+  if (generateTokenResponse instanceof GenerateApiKey.Success) {
     console.log('Generated API key; refreshing!');
     const refreshAuthClient = new AuthClient({
-      credentialProvider: CredentialProvider.fromString({authToken: generateTokenResponse.authToken}),
+      credentialProvider: CredentialProvider.fromString({apiKey: generateTokenResponse.apiKey}),
     });
-    const refreshTokenResponse = await refreshAuthClient.refreshAuthToken(generateTokenResponse.refreshToken);
-    if (refreshTokenResponse instanceof RefreshAuthToken.Success) {
+    const refreshTokenResponse = await refreshAuthClient.refreshApiKey(generateTokenResponse.refreshToken);
+    if (refreshTokenResponse instanceof RefreshApiKey.Success) {
       console.log('API key refreshed!');
       // logging only a substring of the tokens, because logging security credentials is not advisable :)
-      console.log(`Refreshed API key starts with: ${refreshTokenResponse.authToken.substring(0, 10)}`);
+      console.log(`Refreshed API key starts with: ${refreshTokenResponse.apiKey.substring(0, 10)}`);
       console.log(`New refresh token starts with: ${refreshTokenResponse.refreshToken.substring(0, 10)}`);
       console.log(`Refreshed API key expires At: ${refreshTokenResponse.expiresAt.epoch()}`);
     }
@@ -935,11 +935,11 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
   if (oneKeyOneCacheToken instanceof GenerateDisposableToken.Success) {
     console.log('Generated a disposable API key with access to the "mo" key in the "squirrels" cache!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`API key starts with: ${oneKeyOneCacheToken.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${oneKeyOneCacheToken.apiKey.substring(0, 10)}`);
     console.log(`Expires At: ${oneKeyOneCacheToken.expiresAt.epoch()}`);
   } else if (oneKeyOneCacheToken instanceof GenerateDisposableToken.Error) {
     throw new Error(
-      `An error occurred while attempting to call generateAuthToken with disposable token scope: ${oneKeyOneCacheToken.errorCode()}: ${oneKeyOneCacheToken.toString()}`
+      `An error occurred while attempting to call generateApiKey with disposable token scope: ${oneKeyOneCacheToken.errorCode()}: ${oneKeyOneCacheToken.toString()}`
     );
   }
 
@@ -951,11 +951,11 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
   if (keyPrefixAllCachesToken instanceof GenerateDisposableToken.Success) {
     console.log('Generated a disposable API key with access to keys prefixed with "squirrel" in all caches!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`API key starts with: ${keyPrefixAllCachesToken.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${keyPrefixAllCachesToken.apiKey.substring(0, 10)}`);
     console.log(`Expires At: ${keyPrefixAllCachesToken.expiresAt.epoch()}`);
   } else if (keyPrefixAllCachesToken instanceof GenerateDisposableToken.Error) {
     throw new Error(
-      `An error occurred while attempting to call generateAuthToken with disposable token scope: ${keyPrefixAllCachesToken.errorCode()}: ${keyPrefixAllCachesToken.toString()}`
+      `An error occurred while attempting to call generateApiKey with disposable token scope: ${keyPrefixAllCachesToken.errorCode()}: ${keyPrefixAllCachesToken.toString()}`
     );
   }
 
@@ -967,11 +967,11 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
   if (allTopicsOneCacheToken instanceof GenerateDisposableToken.Success) {
     console.log('Generated a disposable API key with access to all topics in the "squirrel" cache!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`API key starts with: ${allTopicsOneCacheToken.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${allTopicsOneCacheToken.apiKey.substring(0, 10)}`);
     console.log(`Expires At: ${allTopicsOneCacheToken.expiresAt.epoch()}`);
   } else if (allTopicsOneCacheToken instanceof GenerateDisposableToken.Error) {
     throw new Error(
-      `An error occurred while attempting to call generateAuthToken with disposable token scope: ${allTopicsOneCacheToken.errorCode()}: ${allTopicsOneCacheToken.toString()}`
+      `An error occurred while attempting to call generateApiKey with disposable token scope: ${allTopicsOneCacheToken.errorCode()}: ${allTopicsOneCacheToken.toString()}`
     );
   }
 
@@ -983,11 +983,11 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
   if (oneTopicAllCachesToken instanceof GenerateDisposableToken.Success) {
     console.log('Generated a disposable API key with access to all topics in the "squirrel" cache!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`API key starts with: ${oneTopicAllCachesToken.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${oneTopicAllCachesToken.apiKey.substring(0, 10)}`);
     console.log(`Expires At: ${oneTopicAllCachesToken.expiresAt.epoch()}`);
   } else if (oneTopicAllCachesToken instanceof GenerateDisposableToken.Error) {
     throw new Error(
-      `An error occurred while attempting to call generateAuthToken with disposable token scope: ${oneTopicAllCachesToken.errorCode()}: ${oneTopicAllCachesToken.toString()}`
+      `An error occurred while attempting to call generateApiKey with disposable token scope: ${oneTopicAllCachesToken.errorCode()}: ${oneTopicAllCachesToken.toString()}`
     );
   }
 }
@@ -1034,10 +1034,10 @@ async function example_API_TopicSubscribe(topicClient: TopicClient) {
 }
 
 async function main() {
-  const originalAuthToken = process.env['MOMENTO_API_KEY'];
-  process.env['MOMENTO_API_KEY'] = retrieveAuthTokenFromYourSecretsManager();
+  const originalApiKey = process.env['MOMENTO_API_KEY'];
+  process.env['MOMENTO_API_KEY'] = retrieveApiKeyFromYourSecretsManager();
   example_API_CredentialProviderFromEnvVar();
-  process.env['MOMENTO_API_KEY'] = originalAuthToken;
+  process.env['MOMENTO_API_KEY'] = originalApiKey;
 
   example_API_CredentialProviderFromString();
   example_API_ConfigurationLaptop();
@@ -1114,8 +1114,8 @@ async function main() {
       environmentVariableName: 'MOMENTO_API_KEY',
     }),
   });
-  await example_API_GenerateAuthToken(authClient);
-  await example_API_RefreshAuthToken(authClient);
+  await example_API_GenerateApiKey(authClient);
+  await example_API_RefreshApiKey(authClient);
   await example_API_GenerateDisposableToken(authClient);
 
   example_API_InstantiateTopicClient();

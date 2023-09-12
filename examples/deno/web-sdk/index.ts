@@ -27,15 +27,15 @@ export const handler = async (_request: Request): Promise<Response> => {
 		throw new Error('Missing environment variable MOMENTO_CACHE_NAME')
 	}
 
-	const authToken = env['MOMENTO_API_KEY']
-	if (!authToken) {
+	const apiKey = env['MOMENTO_API_KEY']
+	if (!apiKey) {
 		throw new Error('Missing environment variable MOMENTO_API_KEY')
 	}
 
 	const momento = new CacheClient({
 		configuration: Configurations.Browser.v1(),
 		credentialProvider: CredentialProvider.fromString({
-			authToken: authToken,
+			apiKey: apiKey,
 		}),
 		defaultTtlSeconds: 60,
 	})

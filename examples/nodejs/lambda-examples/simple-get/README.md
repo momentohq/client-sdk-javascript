@@ -43,7 +43,7 @@ You will also need a superuser API key generated from the [Momento Console](http
 Then run:
 
 ```
-npm run cdk -- deploy --parameters MomentoAuthToken=<YOUR_MOMENTO_API_KEY>
+npm run cdk -- deploy --parameters MomentoApiKey=<YOUR_MOMENTO_API_KEY>
 ```
 
 The lambda does not set up a way to access itself externally, so to run it, you will have to go to MomentoSimpleGet in AWS Lambda and run a test.

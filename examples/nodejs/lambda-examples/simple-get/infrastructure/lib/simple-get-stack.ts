@@ -9,15 +9,15 @@ export class SimpleGetStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const momentoAuthTokenParam = new cdk.CfnParameter(this, 'MomentoAuthToken', {
+    const momentoApiKeyParam = new cdk.CfnParameter(this, 'MomentoApiKey', {
       type: 'String',
       description: 'The Momento API key that will be used to read from the cache.',
       noEcho: true,
     });
 
-    const authTokenSecret = new secrets.Secret(this, 'MomentoSimpleGetAuthToken', {
-      secretName: 'MomentoSimpleGetAuthToken',
-      secretStringValue: new cdk.SecretValue(momentoAuthTokenParam.valueAsString),
+    const apiKeySecret = new secrets.Secret(this, 'MomentoSimpleGetApiKey', {
+      secretName: 'MomentoSimpleGetApiKey',
+      secretStringValue: new cdk.SecretValue(momentoApiKeyParam.valueAsString),
     });
 
     const getLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoSimpleGet', {
@@ -30,10 +30,10 @@ export class SimpleGetStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(30),
       memorySize: 128,
       environment: {
-        MOMENTO_API_KEY_SECRET_NAME: authTokenSecret.secretName,
+        MOMENTO_API_KEY_SECRET_NAME: apiKeySecret.secretName,
       },
     });
 
-    authTokenSecret.grantRead(getLambda);
+    apiKeySecret.grantRead(getLambda);
   }
 }

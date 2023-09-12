@@ -33,11 +33,11 @@ npm install @gomomento/sdk
 import { CacheClient, CacheGetStatus } from "@gomomento/sdk";
 
 // ユーザーのMomentoオーストークン
-const authToken = process.env.MOMENTO_API_KEY;
+const apiKey = process.env.MOMENTO_API_KEY;
 
 //  Momentoをイニシャライズする
 const DEFAULT_TTL = 60; // デフォルトTTLは60秒
-const momento = new CacheClient(authToken, DEFAULT_TTL);
+const momento = new CacheClient(apiKey, DEFAULT_TTL);
 
 // "myCache"という名のキャッシュを作成する
 const CACHE_NAME = "myCache";

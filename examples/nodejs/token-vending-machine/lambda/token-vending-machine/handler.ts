@@ -9,19 +9,19 @@ let _momentoAuthClient: AuthClient | undefined = undefined;
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
-    const vendorAuthTokenSecretName = process.env.MOMENTO_API_KEY_SECRET_NAME;
-    if (vendorAuthTokenSecretName === undefined) {
+    const vendorApiKeySecretName = process.env.MOMENTO_API_KEY_SECRET_NAME;
+    if (vendorApiKeySecretName === undefined) {
       throw new Error("Missing required env var 'MOMENTO_API_KEY_SECRET_NAME");
     }
     console.log("headers in handler:", event.headers);
-    const vendedAuthToken = await vendAuthToken(vendorAuthTokenSecretName, event.headers);
+    const vendedApiKey = await vendApiKey(vendorApiKeySecretName, event.headers);
     return {
       statusCode: 200,
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*"
       },
-      body: JSON.stringify(vendedAuthToken),
+      body: JSON.stringify(vendedApiKey),
     };
   } catch (err) {
     console.log(err);
@@ -34,13 +34,13 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   }
 };
 
-interface VendedAuthToken {
-  authToken: string;
+interface VendedApiKey {
+  apiKey: string;
   expiresAt: number;
 }
 
-async function vendAuthToken(vendorAuthTokenSecretName: string, headers: APIGatewayProxyEventHeaders): Promise<VendedAuthToken> {
-  const momentoAuthClient = await getMomentoAuthClient(vendorAuthTokenSecretName);
+async function vendApiKey(vendorApiKeySecretName: string, headers: APIGatewayProxyEventHeaders): Promise<VendedApiKey> {
+  const momentoAuthClient = await getMomentoAuthClient(vendorApiKeySecretName);
 
   let generateTokenResponse;
   if (authenticationMethod === AuthenticationMethod.AmazonCognito) {
@@ -53,7 +53,7 @@ async function vendAuthToken(vendorAuthTokenSecretName: string, headers: APIGate
 
   if (generateTokenResponse instanceof GenerateDisposableToken.Success) {
     return {
-      authToken: generateTokenResponse.authToken,
+      apiKey: generateTokenResponse.apiKey,
       expiresAt: generateTokenResponse.expiresAt.epoch(),
     };
   } else {
@@ -77,12 +77,12 @@ function determineCognitoUserTokenScope(headers: APIGatewayProxyEventHeaders) {
   }
 }
 
-async function getMomentoAuthClient(authTokenSecretName: string): Promise<AuthClient> {
+async function getMomentoAuthClient(apiKeySecretName: string): Promise<AuthClient> {
   if (_momentoAuthClient === undefined) {
-    const momentoAuthToken = await getSecret(authTokenSecretName);
+    const momentoApiKey = await getSecret(apiKeySecretName);
     console.log('Retrieved secret!');
     _momentoAuthClient = new AuthClient({
-      credentialProvider: CredentialProvider.fromString({authToken: momentoAuthToken}),
+      credentialProvider: CredentialProvider.fromString({apiKey: momentoApiKey}),
     });
   }
   return _momentoAuthClient;

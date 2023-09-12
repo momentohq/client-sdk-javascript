@@ -58,7 +58,7 @@ export async function CreateCacheClient(
   // Get a new cache connection with the token and set a default TTL for the connection.
   return await CacheClient.create({
     configuration: Configurations.Laptop.latest(),
-    credentialProvider: CredentialProvider.fromString({ authToken : token }),
+    credentialProvider: CredentialProvider.fromString({ apiKey : token }),
     defaultTtlSeconds: ttl,
   });
 }
@@ -73,6 +73,6 @@ export async function CreateTopicClient(secretName: string, region: string): Pro
   // Get a new cache connection with the token and set a default TTL for the connection.
   return new TopicClient({
     configuration: Configurations.Lambda.latest(),
-    credentialProvider: CredentialProvider.fromString({ authToken : token }),
+    credentialProvider: CredentialProvider.fromString({ apiKey : token }),
   });
 }
