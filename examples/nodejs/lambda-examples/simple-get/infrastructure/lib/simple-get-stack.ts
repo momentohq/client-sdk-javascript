@@ -11,7 +11,7 @@ export class SimpleGetStack extends cdk.Stack {
 
     const momentoAuthTokenParam = new cdk.CfnParameter(this, 'MomentoAuthToken', {
       type: 'String',
-      description: 'The Momento Auth Token that will be used to read from the cache.',
+      description: 'The Momento API key that will be used to read from the cache.',
       noEcho: true,
     });
 

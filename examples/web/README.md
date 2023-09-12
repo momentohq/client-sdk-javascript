@@ -11,7 +11,7 @@
 ## Example Requirements
 
 - Node version 14 or higher is required
-- A Momento Auth Token is required, you can generate one using the [Momento Console](https://console.gomomento.com)
+- A Momento API key is required, you can generate one using the [Momento Console](https://console.gomomento.com)
 
 ## Examples
 

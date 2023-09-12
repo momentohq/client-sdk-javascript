@@ -8,8 +8,8 @@ This example currently uses [jest](https://jestjs.io/) to call the example funct
 
 ## Prerequisites
 - An AWS account and commandline env configured so you can remotely call AWS Secrets Manager.
-- A Momento auth token from the [Momento console](https://console.gomomento.com).
-- The Momento auth token [stored in AWS Secrets Manager](https://docs.momentohq.com/develop/integrations/aws-secrets-manager) as text.
+- A Momento API key from the [Momento console](https://console.gomomento.com).
+- The Momento API key [stored in AWS Secrets Manager](https://docs.momentohq.com/develop/integrations/aws-secrets-manager) as text.
 - MongoDB installed somewhere. It can be local, in your cloud provider account, or MongoDB Atlas.
 - Node.js installed
 

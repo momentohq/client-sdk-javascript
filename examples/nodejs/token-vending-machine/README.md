@@ -12,12 +12,12 @@
 
 This repo contains an example Token Vending Machine application, built using AWS CDK, API Gateway and Lambda.
 
-The primary use for the Token Vending Machine is to provide temporary, restricted scope Momento Auth tokens. These tokens can be used by browsers that are running apps written against the [Momento Web SDK](https://github.com/momentohq/client-sdk-javascript/tree/main/packages/client-sdk-web). For example, you can create a browser-based chat application that allows pub/sub communication between your users via [Momento Topics](https://docs.momentohq.com/introduction/momento-topics); each browser will need a Momento auth token in order to communicate with the Momento Topics server, and the Token Vending Machine can provide those tokens.
+The primary use for the Token Vending Machine is to provide temporary, restricted scope Momento API keys. These tokens can be used by browsers that are running apps written against the [Momento Web SDK](https://github.com/momentohq/client-sdk-javascript/tree/main/packages/client-sdk-web). For example, you can create a browser-based chat application that allows pub/sub communication between your users via [Momento Topics](https://docs.momentohq.com/introduction/momento-topics); each browser will need a Momento API key in order to communicate with the Momento Topics server, and the Token Vending Machine can provide those tokens.
 
 ## Prerequisites
 
 - Node version 14 or higher is required
-- To get started with Momento you will need a Momento Auth Token. You can get one from the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining an auth token.
+- To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining an API key.
 
 ## Configuring the Token Vending Machine App
 
@@ -46,7 +46,7 @@ npm install
 
 To deploy the CDK app you will need to have [configured your AWS credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-authentication.html#cli-chap-authentication-precedence).
 
-You will also need a superuser token generated from the [Momento Console](https://console.gomomento.com).
+You will also need a superuser API key generated from the [Momento Console](https://console.gomomento.com).
 
 Then run:
 
@@ -61,7 +61,7 @@ Outputs:
 MomentoTokenVendingMachine.MomentoTokenVendingMachineApiEndpointE36C2123 = https://9jkmukxn68.execute-api.us-west-2.amazonaws.com/prod/
 ```
 
-This is the URL of the API Gateway endpoint for your Token Vending Machine. Now you should be able to `curl` this endpoint, and the response will be a temporary Momento Auth Token suitable for use in a browser!
+This is the URL of the API Gateway endpoint for your Token Vending Machine. Now you should be able to `curl` this endpoint, and the response will be a temporary Momento API key suitable for use in a browser!
 
 ## Example Apps That Use The Token Vending Machine
 

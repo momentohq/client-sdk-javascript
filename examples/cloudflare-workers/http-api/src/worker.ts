@@ -9,15 +9,15 @@
  */
 
 class MomentoFetcher {
-	private readonly apiToken: string;
+	private readonly apiKey: string;
 	private readonly baseurl: string;
-	constructor(token: string, endpoint: string) {
-		this.apiToken = token;
+	constructor(key: string, endpoint: string) {
+		this.apiKey = key;
 		this.baseurl = `${endpoint}/cache`;
 	}
 
 	async get(cacheName: string, key: string) {
-		const resp = await fetch(`${this.baseurl}/${cacheName}?key=${key}&token=${this.apiToken}`);
+		const resp = await fetch(`${this.baseurl}/${cacheName}?key=${key}&token=${this.apiKey}`);
 		if (resp.status < 300) {
 			console.log(`successfully retrieved ${key} from cache`)
 		} else {
@@ -28,7 +28,7 @@ class MomentoFetcher {
 	}
 
 	async set(cacheName: string, key: string, value: string, ttl_seconds: number = 30) {
-		const resp = await fetch(`${this.baseurl}/${cacheName}?key=${key}&token=${this.apiToken}&&ttl_seconds=${ttl_seconds}`, {
+		const resp = await fetch(`${this.baseurl}/${cacheName}?key=${key}&token=${this.apiKey}&&ttl_seconds=${ttl_seconds}`, {
 			method: 'PUT',
 			body: value
 		});
@@ -43,7 +43,7 @@ class MomentoFetcher {
 	}
 
 	async delete(cacheName: string, key: string) {
-		const resp = await fetch(`${this.baseurl}/${cacheName}?key=${key}&token=${this.apiToken}`, {
+		const resp = await fetch(`${this.baseurl}/${cacheName}?key=${key}&token=${this.apiKey}`, {
 			method: 'DELETE',
 		});
 		if (resp.status < 300) {

@@ -6,8 +6,8 @@ NOTE: This is just an example usage of Momento Topics to create a generic micros
 
 ## Prerequisites
 - An AWS account
-- A Momento auth token from the [Momento console](https://console.gomomento.com).
-- The Momento auth token [stored in AWS Secrets Manager](https://docs.momentohq.com/develop/integrations/aws-secrets-manager) as text.
+- A Momento API key from the [Momento console](https://console.gomomento.com).
+- The Momento API key [stored in AWS Secrets Manager](https://docs.momentohq.com/develop/integrations/aws-secrets-manager) as text.
 - AWS CDK command line tool installed (optional as you can run CDK via npm with `npm run cdk`)
 - Node.js installed
 
@@ -16,4 +16,4 @@ NOTE: This is just an example usage of Momento Topics to create a generic micros
 * `cdk diff`        compare deployed stack with current state
 * `cdk synth`       emits the synthesized CloudFormation template
 * `cdk destroy`     destroys this stack in your default AWS account/Region
-* 
+*
