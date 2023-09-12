@@ -12,10 +12,10 @@ You will need a Momento auth token and a cache, both of which you can create in 
 
 ## Getting Started
 
-First, create a new file called `.env.local` that looks like: 
+First, create a new file called `.env.local` that looks like:
 
 ```
-MOMENTO_AUTH_TOKEN=<Put your token here>
+MOMENTO_API_KEY=<Put your token here>
 NEXT_PUBLIC_MOMENTO_CACHE_NAME=<Put your cache name here>
 ```
 

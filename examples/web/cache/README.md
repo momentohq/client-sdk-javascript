@@ -27,7 +27,7 @@ npm install
 
 ```bash
 # Run example code
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run example
+MOMENTO_API_KEY=<YOUR API KEY> npm run example
 ```
 
 Example Code: [basic.ts](basic.ts)
@@ -36,7 +36,7 @@ Example Code: [basic.ts](basic.ts)
 
 ```bash
 # Run example code
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run advanced
+MOMENTO_API_KEY=<YOUR API KEY> npm run advanced
 ```
 
 Example Code: [advanced.ts](advanced.ts)
@@ -47,7 +47,7 @@ This example demonstrates how to use the dictionary data type.
 
 ```bash
 # Run example code
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run dictionary
+MOMENTO_API_KEY=<YOUR API KEY> npm run dictionary
 ```
 
 Example Code: [dictionary.ts](dictionary.ts)

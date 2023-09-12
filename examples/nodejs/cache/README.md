@@ -29,7 +29,7 @@ This example demonstrates a basic set and get from a cache.
 
 ```bash
 # Run example code
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run basic
+MOMENTO_API_KEY=<YOUR API KEY> npm run basic
 ```
 
 Example Code: [basic.ts](basic.ts)
@@ -45,7 +45,7 @@ This example demonstrates several slightly more advanced concepts, including:
 
 ```bash
 # Run example code
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run advanced
+MOMENTO_API_KEY=<YOUR API KEY> npm run advanced
 ```
 
 Example Code: [advanced.ts](advanced.ts)
@@ -56,7 +56,7 @@ This example demonstrates how to use the dictionary data type.
 
 ```bash
 # Run example code
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run dictionary
+MOMENTO_API_KEY=<YOUR API KEY> npm run dictionary
 ```
 
 Example Code: [dictionary.ts](dictionary.ts)

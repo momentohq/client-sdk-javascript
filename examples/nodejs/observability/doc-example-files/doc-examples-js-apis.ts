@@ -15,7 +15,7 @@ function example_API_InstantiateCacheClientWithMiddleware() {
   new CacheClient({
     configuration: Configurations.Laptop.v1().addMiddleware(new ExampleMetricMiddleware()),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
     defaultTtlSeconds: 60,
   });

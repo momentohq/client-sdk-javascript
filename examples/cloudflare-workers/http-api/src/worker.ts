@@ -57,14 +57,14 @@ class MomentoFetcher {
 }
 
 export interface Env {
-	MOMENTO_AUTH_TOKEN: string;
+	MOMENTO_API_KEY: string;
 	MOMENTO_REST_ENDPOINT: string;
 	MOMENTO_CACHE_NAME: string;
 }
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-		const client = new MomentoFetcher(env.MOMENTO_AUTH_TOKEN, env.MOMENTO_REST_ENDPOINT);
+		const client = new MomentoFetcher(env.MOMENTO_API_KEY, env.MOMENTO_REST_ENDPOINT);
 		const cache = env.MOMENTO_CACHE_NAME;
 		const key = "key";
 		const value = "value";

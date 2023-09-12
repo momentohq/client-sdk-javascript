@@ -17,7 +17,7 @@ export async function getCacheClient(
   return await CacheClient.create({
     configuration: Configurations.Laptop.v1(loggerFactory).withClientTimeoutMillis(requestTimeoutMs),
     credentialProvider: new EnvMomentoTokenProvider({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
     defaultTtlSeconds: cacheItemTtlSeconds,
   });

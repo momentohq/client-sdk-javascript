@@ -2,7 +2,7 @@
 
 This example shows how to use Momento Cache via the Momento Web SDK inside of a [Deno](https://deno.land/) runtime.
 
-The Web SDK supports the full Momento API (including collections like Dictionaries and SortedSets, plus the ability to publish to Momento Topics). It also has a complete TypeScript/JavaScript API that makes it simpler to write code to interact with Momento. This can save you time and effort when developing your Worker. 
+The Web SDK supports the full Momento API (including collections like Dictionaries and SortedSets, plus the ability to publish to Momento Topics). It also has a complete TypeScript/JavaScript API that makes it simpler to write code to interact with Momento. This can save you time and effort when developing your Worker.
 
 ## Getting Started
 
@@ -16,7 +16,7 @@ The Web SDK supports the full Momento API (including collections like Dictionari
 
 3. Create a `.env` file and provide the name of your Momento Cache and a corresponding fine-grained access token. You can create a both a cache and an access token in the [Momento Console](https://console.gomomento.com/). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on creating a cache and auth token.
   ```
-  MOMENTO_AUTH_TOKEN="<your-auth-token>"
+  MOMENTO_API_KEY="<your-auth-token>"
   MOMENTO_CACHE_NAME="<your-cache-name>"
   ```
 

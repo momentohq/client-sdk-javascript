@@ -55,14 +55,14 @@ A deployed example can be found [here](https://momento-cloudflare-worker-web.pra
 
 ### Deploying to CloudFlare
 
-If you would like to deploy this example to your own Cloudflare worker, make sure you add the MOMENTO_AUTH_TOKEN as a secret inside your Cloudflare account:
+If you would like to deploy this example to your own Cloudflare worker, make sure you add the MOMENTO_API_KEY as a secret inside your Cloudflare account:
 
 ```shell
 
-npx wrangler secret put MOMENTO_AUTH_TOKEN
+npx wrangler secret put MOMENTO_API_KEY
 > Enter a secret value: **************************
 > 🌀 Creating the secret for the Worker "momento-cloudflare-worker-web"
-> ✨ Success! Uploaded secret MOMENTO_AUTH_TOKEN
+> ✨ Success! Uploaded secret MOMENTO_API_KEY
 ```
 
 Then you can run `npm run deploy`. You will be prompted for a Cloudflare login before deploying to your Cloudflare account.

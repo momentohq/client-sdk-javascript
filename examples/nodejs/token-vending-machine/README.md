@@ -51,7 +51,7 @@ You will also need a superuser token generated from the [Momento Console](https:
 Then run:
 
 ```
-npm run cdk -- deploy --parameters MomentoAuthToken=<YOUR_MOMENTO_AUTH_TOKEN>
+npm run cdk -- deploy --parameters MomentoAuthToken=<YOUR_MOMENTO_API_KEY>
 ```
 
 When the command completes, you should see something like this near the end of the output:

@@ -1,5 +1,5 @@
 namespace NodeJS {
     interface ProcessEnv {
-        MOMENTO_AUTH_TOKEN: string;
+        MOMENTO_API_KEY: string;
     }
 }

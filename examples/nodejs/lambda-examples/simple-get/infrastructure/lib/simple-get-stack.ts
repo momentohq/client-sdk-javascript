@@ -30,7 +30,7 @@ export class SimpleGetStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(30),
       memorySize: 128,
       environment: {
-        MOMENTO_AUTH_TOKEN_SECRET_NAME: authTokenSecret.secretName,
+        MOMENTO_API_KEY_SECRET_NAME: authTokenSecret.secretName,
       },
     });
 

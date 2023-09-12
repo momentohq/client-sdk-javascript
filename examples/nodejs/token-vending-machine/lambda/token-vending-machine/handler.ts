@@ -9,9 +9,9 @@ let _momentoAuthClient: AuthClient | undefined = undefined;
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
-    const vendorAuthTokenSecretName = process.env.MOMENTO_AUTH_TOKEN_SECRET_NAME;
+    const vendorAuthTokenSecretName = process.env.MOMENTO_API_KEY_SECRET_NAME;
     if (vendorAuthTokenSecretName === undefined) {
-      throw new Error("Missing required env var 'MOMENTO_AUTH_TOKEN_SECRET_NAME");
+      throw new Error("Missing required env var 'MOMENTO_API_KEY_SECRET_NAME");
     }
     console.log("headers in handler:", event.headers);
     const vendedAuthToken = await vendAuthToken(vendorAuthTokenSecretName, event.headers);

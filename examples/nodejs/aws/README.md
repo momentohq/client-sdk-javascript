@@ -26,7 +26,7 @@ This example demonstrates how to retrieve a Momento auth token stored as a secre
 
 ```bash
 # Run example code
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run secrets-example
+MOMENTO_API_KEY=<YOUR API KEY> npm run secrets-example
 ```
 
 [Example Code](doc-example-files/doc-examples-js-aws-secrets.ts)

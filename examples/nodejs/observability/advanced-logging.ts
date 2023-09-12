@@ -13,7 +13,7 @@ function example_observability_CreateCacheClientWithPinoLogger(): CacheClient {
         },
       })
     ),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({environmentVariableName: 'MOMENTO_AUTH_TOKEN'}),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({environmentVariableName: 'MOMENTO_API_KEY'}),
     defaultTtlSeconds: 60,
   });
 }
