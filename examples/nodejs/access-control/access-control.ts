@@ -155,11 +155,7 @@ async function main() {
     ],
   };
 
-  const [scopedToken1, scopedRefreshToken1] = await generateApiKey(
-    mainAuthClient,
-    permissions,
-    tokenValidForSeconds
-  );
+  const [scopedToken1, scopedRefreshToken1] = await generateApiKey(mainAuthClient, permissions, tokenValidForSeconds);
   // Do something with the token.
 }
 
