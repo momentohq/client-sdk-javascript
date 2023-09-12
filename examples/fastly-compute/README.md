@@ -4,7 +4,7 @@ This example shows how to use the Momento HTTP API inside of a [Fastly Compute@E
 
 ## Getting Started
 
-1. Create a Momento cache and corresponding fine-grained access token in the [Momento Console](https://console.gomomento.com/). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on creating a cache and auth token.
+1. Create a Momento cache and corresponding fine-grained access token in the [Momento Console](https://console.gomomento.com/). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on creating a cache and API key.
 
 2. Sign into the [Fastly console](https://manage.fastly.com/account/company) and [create a user API token](https://docs.fastly.com/en/guides/using-api-tokens#creating-api-tokens). Make sure to copy it for the next step.
 
@@ -35,7 +35,7 @@ This example shows how to use the Momento HTTP API inside of a [Fastly Compute@E
 
   More information about the `fastly.toml` can be [found here](https://developer.fastly.com/reference/compute/fastly-toml/).
 
-  **Note**: for production environments, the Momento auth token should be saved in a [Fastly Secret Store](https://developer.fastly.com/reference/api/services/resources/secret-store/). However, this is a feature currently restricted to beta users, so this example saves the auth token in a [Config Store](https://developer.fastly.com/reference/api/services/resources/config-store/) instead.
+  **Note**: for production environments, the Momento API key should be saved in a [Fastly Secret Store](https://developer.fastly.com/reference/api/services/resources/secret-store/). However, this is a feature currently restricted to beta users, so this example saves the API key in a [Config Store](https://developer.fastly.com/reference/api/services/resources/config-store/) instead.
 
 6. Start a local server to check that it's running at http://127.0.0.1:7676
   ```

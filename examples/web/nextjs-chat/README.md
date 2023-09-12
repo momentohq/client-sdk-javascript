@@ -2,13 +2,13 @@
 
 This is an example project showing how Momento topics and secure tokens can be used within a nextjs application. A deployed example can be found [here](https://momento-nextjs-chat.vercel.app).
 
-This example project is a browser-based chat application that allows pub/sub communication between your users via [Momento Topics](https://docs.momentohq.com/introduction/momento-topics). Each browser will need a Momento auth token in order to communicate with the Momento Topics server, and those tokens can be scoped to provide permissions to only the necessary caches and topics using the [Momento JavaScript SDK](https://github.com/momentohq/client-sdk-javascript).
+This example project is a browser-based chat application that allows pub/sub communication between your users via [Momento Topics](https://docs.momentohq.com/introduction/momento-topics). Each browser will need a Momento API key in order to communicate with the Momento Topics server, and those tokens can be scoped to provide permissions to only the necessary caches and topics using the [Momento JavaScript SDK](https://github.com/momentohq/client-sdk-javascript).
 
 A version of this project has been deployed on [Vercel](https://momento-nextjs-chat.vercel.app).
 
 ## Prerequisites
 
-You will need a Momento auth token and a cache, both of which you can create in the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining a server side token and creating a cache.
+You will need a Momento API key and a cache, both of which you can create in the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining a server side token and creating a cache.
 
 ## Getting Started
 

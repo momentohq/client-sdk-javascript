@@ -1,6 +1,6 @@
 ## About
 
-This example project is a browser-based chat application that allows pub/sub communication between your users via [Momento Topics](https://docs.momentohq.com/introduction/momento-topics). Each browser will need a Momento auth token in order to communicate with the Momento Topics server, and Momento's [Token Vending Machine application](https://github.com/momentohq/client-sdk-javascript/tree/main/examples/nodejs/token-vending-machine) can provide those tokens, which can be scoped to provide permissions to only the necessary caches and topics.
+This example project is a browser-based chat application that allows pub/sub communication between your users via [Momento Topics](https://docs.momentohq.com/introduction/momento-topics). Each browser will need a Momento API key in order to communicate with the Momento Topics server, and Momento's [Token Vending Machine application](https://github.com/momentohq/client-sdk-javascript/tree/main/examples/nodejs/token-vending-machine) can provide those tokens, which can be scoped to provide permissions to only the necessary caches and topics.
 
 ## Prerequisites
 
@@ -74,7 +74,7 @@ VITE_TOKEN_VENDING_MACHINE_USERNAME_READWRITE=<readwrite-user-username>
 VITE_TOKEN_VENDING_MACHINE_PASSWORD_READWRITE=<readwrite-user-password>
 ```
 
-The usernames and passwords you provide for the ReadOnly and ReadWrite roles should match what you hardcoded into your Token Vending Machine deployment ([Cognito user creation lines linked here](https://github.com/momentohq/client-sdk-javascript/blob/main/examples/nodejs/token-vending-machine/infrastructure/lib/token-vending-machine-stack.ts#L134)). 
+The usernames and passwords you provide for the ReadOnly and ReadWrite roles should match what you hardcoded into your Token Vending Machine deployment ([Cognito user creation lines linked here](https://github.com/momentohq/client-sdk-javascript/blob/main/examples/nodejs/token-vending-machine/infrastructure/lib/token-vending-machine-stack.ts#L134)).
 The AWS region should match the region that you deployed the Token Vending Machine to.
 The client ID should be the string that's printed out after you deploy the CDK stack:
 

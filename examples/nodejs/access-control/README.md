@@ -15,7 +15,7 @@ _Read this in other languages_: Coming Soon
 ## Example Requirements
 
 - Node version 14 or higher is required
-- A Momento auth token is required, you can generate one using the [Momento Console](https://console.gomomento.com)
+- A Momento API key is required, you can generate one using the [Momento Console](https://console.gomomento.com)
 
 To run any of the examples you will need to install the dependencies once first:
 
@@ -25,7 +25,7 @@ npm install
 
 ## Running the Example
 
-This example demonstrates creating and using Momento API tokens with different permissions
+This example demonstrates creating and using Momento API keys with different permissions
 
 ```bash
 # Run example code

@@ -17,7 +17,7 @@ The primary use is to provide a base for testing Momento performance in a lambda
 ## Prerequisites
 
 - Node version 14 or higher is required
-- To get started with Momento you will need a Momento Auth Token. You can get one from the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining an auth token.
+- To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining an API key.
 
 ## Deploying the Simple Get Lambda
 
@@ -38,7 +38,7 @@ npm install
 
 To deploy the CDK app you will need to have [configured your AWS credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-authentication.html#cli-chap-authentication-precedence).
 
-You will also need a superuser token generated from the [Momento Console](https://console.gomomento.com).
+You will also need a superuser API key generated from the [Momento Console](https://console.gomomento.com).
 
 Then run:
 
