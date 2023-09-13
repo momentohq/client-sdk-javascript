@@ -78,6 +78,7 @@ import * as GenerateDisposableToken from '@gomomento/sdk-core/dist/src/messages/
 
 // VectorClient Response Types
 export {vector, VectorIndexItem} from '@gomomento/sdk-core';
+export * from '@gomomento/sdk-core/dist/src/messages/responses/vector';
 
 import {
   ICacheClient,
