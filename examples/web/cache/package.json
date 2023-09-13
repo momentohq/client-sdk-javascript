@@ -29,7 +29,7 @@
     "typescript": "4.4.3"
   },
   "dependencies": {
-    "@gomomento/sdk-web": "^1.39.1",
+    "@gomomento/sdk-web": "^1.39.2",
     "jsdom": "22.1.0"
   }
 }
