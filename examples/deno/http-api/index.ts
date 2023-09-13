@@ -13,9 +13,9 @@ export const handler = async (_request: Request): Promise<Response> => {
 		throw new Error('Missing environment variable MOMENTO_CACHE_NAME')
 	}
 
-	const authToken = env['MOMENTO_AUTH_TOKEN']
+	const authToken = env['MOMENTO_API_KEY']
 	if (!authToken) {
-		throw new Error('Missing environment variable MOMENTO_AUTH_TOKEN')
+		throw new Error('Missing environment variable MOMENTO_API_KEY')
 	}
 
 	const endpoint = env['MOMENTO_HTTP_ENDPOINT']

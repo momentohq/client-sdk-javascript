@@ -27,11 +27,11 @@ npm install
 
 
 ### Setting up Momento Authentication
-- In the Momento console, generate a [token for your cache](https://console.gomomento.com/tokens), making sure to choose the same AWS region you used to create the cache. You'll want to use a `Fine-Grained Access Token` with read/write permissions for the cache you created.
-   ![Console Token Screen](https://assets.website-files.com/628fadb065a50abf13a11485/64b97cb50a7e1d8d752ae539_3fU8mYh6gAhMwUYzrLOEiEXQc-KO79zANMtiH141Js2tZydZ7sFxZtr5TWLcC3OzFJTIEMZQOkLtWtBOOTEOEXmpinv1Ah3AC_LdkovI3FU7iUGY_N35cB0op1PXTNHAW0kZ-9wZ6qrCol5wrz_nuA.png)
-- Copy the `Auth Token` value from the token generation screen for use in the next two steps.
-   ![Token generation results](https://assets.website-files.com/628fadb065a50abf13a11485/64b97cb50d9a0db6b03c40e8_JZLnsjtwN5RaGx83NX424WKmvauAuqcUD3YeWLx2LFFIwLiXHupq1XF3MOyggObfaC8LE1fQUN4b-9nDTOwGYUHugfZYqYTK92HybD2X1OsuRF-DxmJKekTWgV0SY0LzWpE9vvA0To8sGmNXkG-geQ.png)
-- Update the `.dev.vars` file in the example directory with the Momento auth token. Since this is a secret token, we don’t store it as an environment variable, instead storing it as a Cloudflare secret.
+- In the Momento console, generate an [API key for your cache](https://console.gomomento.com/tokens), making sure to choose the same AWS region you used to create the cache. You'll want to use a `Fine-Grained Access Key` with read/write permissions for the cache you created.
+   ![Console API Key Screen](https://assets.website-files.com/628fadb065a50abf13a11485/64b97cb50a7e1d8d752ae539_3fU8mYh6gAhMwUYzrLOEiEXQc-KO79zANMtiH141Js2tZydZ7sFxZtr5TWLcC3OzFJTIEMZQOkLtWtBOOTEOEXmpinv1Ah3AC_LdkovI3FU7iUGY_N35cB0op1PXTNHAW0kZ-9wZ6qrCol5wrz_nuA.png)
+- Copy the `API key` value from the API key generation screen for use in the next two steps.
+   ![API Key generation results](https://assets.website-files.com/628fadb065a50abf13a11485/64b97cb50d9a0db6b03c40e8_JZLnsjtwN5RaGx83NX424WKmvauAuqcUD3YeWLx2LFFIwLiXHupq1XF3MOyggObfaC8LE1fQUN4b-9nDTOwGYUHugfZYqYTK92HybD2X1OsuRF-DxmJKekTWgV0SY0LzWpE9vvA0To8sGmNXkG-geQ.png)
+- Update the `.dev.vars` file in the example directory with the Momento API key. Since this is a secret key, we don’t store it as an environment variable, instead storing it as a Cloudflare secret.
 - Start the development server:
 
 ### Running locally
@@ -55,14 +55,14 @@ A deployed example can be found [here](https://momento-cloudflare-worker-web.pra
 
 ### Deploying to CloudFlare
 
-If you would like to deploy this example to your own Cloudflare worker, make sure you add the MOMENTO_AUTH_TOKEN as a secret inside your Cloudflare account:
+If you would like to deploy this example to your own Cloudflare worker, make sure you add the MOMENTO_API_KEY as a secret inside your Cloudflare account:
 
 ```shell
 
-npx wrangler secret put MOMENTO_AUTH_TOKEN
+npx wrangler secret put MOMENTO_API_KEY
 > Enter a secret value: **************************
 > 🌀 Creating the secret for the Worker "momento-cloudflare-worker-web"
-> ✨ Success! Uploaded secret MOMENTO_AUTH_TOKEN
+> ✨ Success! Uploaded secret MOMENTO_API_KEY
 ```
 
 Then you can run `npm run deploy`. You will be prompted for a Cloudflare login before deploying to your Cloudflare account.

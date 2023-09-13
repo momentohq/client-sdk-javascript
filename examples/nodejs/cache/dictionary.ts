@@ -17,7 +17,7 @@ const cacheName = 'cache';
 const dictionaryName = 'dictionary';
 
 const credentialsProvider = new EnvMomentoTokenProvider({
-  environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+  environmentVariableName: 'MOMENTO_API_KEY',
 });
 
 const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory();

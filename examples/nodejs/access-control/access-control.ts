@@ -74,20 +74,20 @@ async function generateAuthToken(
 ): Promise<[string, string]> {
   const generateTokenResponse = await authClient.generateAuthToken(scope, ExpiresIn.seconds(durationSeconds));
   if (generateTokenResponse instanceof GenerateAuthToken.Success) {
-    console.log(`Generated an auth token with ${scope.toString()} scope at time ${Date.now() / 1000}!`);
+    console.log(`Generated an API key with ${scope.toString()} scope at time ${Date.now() / 1000}!`);
     console.log('Logging only a substring of the tokens, because logging security credentials is not advisable:');
-    console.log(`Auth token starts with: ${generateTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${generateTokenResponse.authToken.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${generateTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${generateTokenResponse.expiresAt.epoch()}`);
     return [generateTokenResponse.authToken, generateTokenResponse.refreshToken];
   } else {
-    throw new Error(`Failed to generate auth token: ${generateTokenResponse.toString()}`);
+    throw new Error(`Failed to generate API key: ${generateTokenResponse.toString()}`);
   }
 }
 
 async function main() {
   const mainCredsProvider = CredentialProvider.fromEnvironmentVariable({
-    environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+    environmentVariableName: 'MOMENTO_API_KEY',
   });
   const mainAuthClient = new AuthClient({
     credentialProvider: mainCredsProvider,

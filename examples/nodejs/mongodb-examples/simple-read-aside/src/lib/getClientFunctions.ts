@@ -10,24 +10,24 @@ import {
   GetSecretValueCommandOutput,
 } from '@aws-sdk/client-secrets-manager';
 
-/* A function that gets the Momento auth token stored in AWS Secrets Manager.
+/* A function that gets the Momento API key stored in AWS Secrets Manager.
 The secret was stored as a plaintext format in Secrets Manager to avoid parsing JSON.
 
-You don't have to store the Momento auth token in something like AWS Secrets Manager,
-but it is best practice. You could pass the Momento auth token in from an environment variable.
+You don't have to store the Momento API key in something like AWS Secrets Manager,
+but it is best practice. You could pass the Momento API key in from an environment variable.
 
-For the moment, this code does not take into Momento auth tokens that need refreshing. You
+For the moment, this code does not take into Momento API keys that need refreshing. You
 would have to do that in an out of band process, like a customer Lambda Function.
 
 */
-export async function GetToken(
+export async function GetApiKey(
   secretName: string,
   regionName: string = "us-west-2"
   ): Promise<string> {
     try {
       // Get connection client to AWS Secrets Manager.
       const client = new SecretsManagerClient({ region: regionName});
-      // Get Momento auth token.
+      // Get Momento API key.
       const response: GetSecretValueCommandOutput = await client.send(
         new GetSecretValueCommand({
           SecretId: secretName,
@@ -43,18 +43,18 @@ export async function GetToken(
     }
   }
 
-/* This function calls to the GetToken function, uses the Momento auth token to create a
+/* This function calls to the GetApiKey function, uses the Momento API key to create a
  Momento client connection to Momento Cache and returns that object for later use. */
 export default async function CreateCacheClient(
   ttl:number = 600,
-  tokenName:string = "Momento_Auth_Token",
+  apiKeySecretName:string = "Momento_Api_Key",
   ): Promise<CacheClient> {
-  // Call the Get Token function to get a Momento auth token from AWS Secrets Manager.
-  const token: string = await GetToken(tokenName);
-  // Get a new cache connection with the token and set a default TTL for the connection.
+  // Call the GetApiKey function to get a Momento API key from AWS Secrets Manager.
+  const apiKey: string = await GetApiKey(apiKeySecretName);
+  // Get a new cache connection with the API key and set a default TTL for the connection.
   return await CacheClient.create({
       configuration: Configurations.Laptop.latest(),
-      credentialProvider: CredentialProvider.fromString({ authToken : token }),
+      credentialProvider: CredentialProvider.fromString({ apiKey : apiKey }),
       defaultTtlSeconds: ttl,
   });
 }

@@ -5,7 +5,7 @@
   "scripts": {
     "deploy": "wrangler deploy",
     "start": "wrangler dev",
-		"build": "tsc"
+    "build": "tsc"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230419.0",
@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@gomomento/sdk-core": "^1.38.0",
-    "@gomomento/sdk-web": "^1.38.0",
+    "@gomomento/sdk-web": "^1.39.1",
     "xhr4sw": "^0.0.5"
   }
 }

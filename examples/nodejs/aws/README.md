@@ -12,7 +12,7 @@
 ## Example Requirements
 
 - Node version 14 or higher is required
-- To get started with Momento you will need a Momento Auth Token. You can get one from the [Momento Console](https://console.gomomento.com).
+- To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com).
 
 To run any of the examples you will need to install the dependencies once first:
 
@@ -22,11 +22,11 @@ npm install
 
 ## Running the AWS Secrets Manager Example
 
-This example demonstrates how to retrieve a Momento auth token stored as a secret in AWS Secrets Manager and use it to create a cache.
+This example demonstrates how to retrieve a Momento API key stored as a secret in AWS Secrets Manager and use it to create a cache.
 
 ```bash
 # Run example code
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run secrets-example
+MOMENTO_API_KEY=<YOUR API KEY> npm run secrets-example
 ```
 
 [Example Code](doc-example-files/doc-examples-js-aws-secrets.ts)

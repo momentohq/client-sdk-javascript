@@ -4,15 +4,15 @@ import {SecretsManagerClient, GetSecretValueCommand} from '@aws-sdk/client-secre
 
 async function example_API_retrieveAuthTokenFromSecretsManager(
   ttl = 600,
-  secretName = 'MOMENTO_AUTH_TOKEN',
+  secretName = 'MOMENTO_API_KEY',
   regionName = 'us-west-2'
 ): Promise<CacheClient> {
   let secret;
 
   /* Try-catch block that gets the Momento_Auth_Token stored in AWS Secrets Manager.
   The secret was stored as a plaintext format in Secrets Manager to avoid parsing JSON.
-  You don't have to store the Momento auth token in something like AWS Secrets Manager,
-  but it is best practice. You could pass the Momento auth token in from an environment variable.
+  You don't have to store the Momento API key in something like AWS Secrets Manager,
+  but it is best practice. You could pass the Momento API key in from an environment variable.
   */
   try {
     const client = new SecretsManagerClient({region: regionName});

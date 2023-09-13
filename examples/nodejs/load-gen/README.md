@@ -19,7 +19,7 @@ improve throughput for workloads that it is suitable for.
 ## Example Requirements
 
 - Node version 14 or higher is required
-- To get started with Momento you will need a Momento Auth Token. You can get one from the [Momento Console](https://console.gomomento.com).
+- To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com).
 
 To run any of the examples you will need to install the dependencies once first:
 
@@ -56,7 +56,7 @@ To run the load generator:
 
 ```bash
 # Run example load generator
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run load-gen
+MOMENTO_API_KEY=<YOUR API KEY> npm run load-gen
 ```
 
 You can check out the example code in [load-gen.ts](load-gen.ts). The configurable
@@ -108,7 +108,7 @@ https://github.com/momentohq/client-sdk-nodejs/blob/main/examples/utils/momento-
 ### Run the above example:
 ```bash
 # Run example request coalescing
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run request-coalsecing
+MOMENTO_API_KEY=<YOUR API KEY> npm run request-coalsecing
 ```
 
 You can check out the example code in [request-coalescing.ts](request-coalescing.ts). The configurable

@@ -68,6 +68,7 @@ import * as GenerateDisposableToken from './messages/responses/generate-disposab
 // VectorClient Response Types
 export * as vector from './messages/responses/vector';
 export * from './messages/responses/vector';
+export {VectorIndexItem} from './messages/vector-index';
 
 import {CacheInfo} from './messages/cache-info';
 import {

@@ -82,7 +82,7 @@ function retrieveAuthTokenFromYourSecretsManager(): string {
 }
 
 function example_API_CredentialProviderFromEnvVar() {
-  CredentialProvider.fromEnvironmentVariable({environmentVariableName: 'MOMENTO_AUTH_TOKEN'});
+  CredentialProvider.fromEnvironmentVariable({environmentVariableName: 'MOMENTO_API_KEY'});
 }
 
 function example_API_CredentialProviderFromString() {
@@ -110,7 +110,7 @@ async function example_API_InstantiateCacheClient() {
   return await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
     defaultTtlSeconds: 60,
   });
@@ -773,7 +773,7 @@ async function example_API_SortedSetRemoveElements(cacheClient: CacheClient) {
 function example_API_InstantiateAuthClient() {
   new AuthClient({
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
   });
 }
@@ -782,7 +782,7 @@ function example_API_InstantiateTopicClient() {
   new TopicClient({
     configuration: TopicConfigurations.Default.latest(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
   });
 }
@@ -791,9 +791,9 @@ async function example_API_GenerateAuthToken(authClient: AuthClient) {
   // Generate a token that allows all data plane APIs on all caches and topics.
   const allDataRWTokenResponse = await authClient.generateAuthToken(AllDataReadWrite, ExpiresIn.minutes(30));
   if (allDataRWTokenResponse instanceof GenerateAuthToken.Success) {
-    console.log('Generated an auth token with AllDataReadWrite scope!');
+    console.log('Generated an API key with AllDataReadWrite scope!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`Auth token starts with: ${allDataRWTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${allDataRWTokenResponse.authToken.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${allDataRWTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${allDataRWTokenResponse.expiresAt.epoch()}`);
   } else if (allDataRWTokenResponse instanceof GenerateAuthToken.Error) {
@@ -808,9 +808,9 @@ async function example_API_GenerateAuthToken(authClient: AuthClient) {
     ExpiresIn.minutes(30)
   );
   if (singleCacheROTokenResponse instanceof GenerateAuthToken.Success) {
-    console.log('Generated an auth token with read-only access to cache foo!');
+    console.log('Generated an API key with read-only access to cache foo!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`Auth token starts with: ${singleCacheROTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${singleCacheROTokenResponse.authToken.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${singleCacheROTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${singleCacheROTokenResponse.expiresAt.epoch()}`);
   } else if (singleCacheROTokenResponse instanceof GenerateAuthToken.Error) {
@@ -825,9 +825,9 @@ async function example_API_GenerateAuthToken(authClient: AuthClient) {
     ExpiresIn.minutes(30)
   );
   if (allCachesRWTokenResponse instanceof GenerateAuthToken.Success) {
-    console.log('Generated an auth token with read-write access to all caches!');
+    console.log('Generated an API key with read-write access to all caches!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`Auth token starts with: ${allCachesRWTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${allCachesRWTokenResponse.authToken.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${allCachesRWTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${allCachesRWTokenResponse.expiresAt.epoch()}`);
   } else if (allCachesRWTokenResponse instanceof GenerateAuthToken.Error) {
@@ -842,9 +842,9 @@ async function example_API_GenerateAuthToken(authClient: AuthClient) {
     ExpiresIn.minutes(30)
   );
   if (singleCacheAllTopicsRWTokenResponse instanceof GenerateAuthToken.Success) {
-    console.log('Generated an auth token with publish-subscribe access to all topics within cache bar!');
+    console.log('Generated an API key with publish-subscribe access to all topics within cache bar!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`Auth token starts with: ${singleCacheAllTopicsRWTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${singleCacheAllTopicsRWTokenResponse.authToken.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${singleCacheAllTopicsRWTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${singleCacheAllTopicsRWTokenResponse.expiresAt.epoch()}`);
   } else if (singleCacheAllTopicsRWTokenResponse instanceof GenerateAuthToken.Error) {
@@ -859,9 +859,9 @@ async function example_API_GenerateAuthToken(authClient: AuthClient) {
     ExpiresIn.minutes(30)
   );
   if (oneCacheOneTopicRWTokenResponse instanceof GenerateAuthToken.Success) {
-    console.log('Generated an auth token with subscribe-only access to topic where_is_mo within cache mo_nuts!');
+    console.log('Generated an API key with subscribe-only access to topic where_is_mo within cache mo_nuts!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`Auth token starts with: ${oneCacheOneTopicRWTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${oneCacheOneTopicRWTokenResponse.authToken.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${oneCacheOneTopicRWTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${oneCacheOneTopicRWTokenResponse.expiresAt.epoch()}`);
   } else if (oneCacheOneTopicRWTokenResponse instanceof GenerateAuthToken.Error) {
@@ -896,9 +896,9 @@ async function example_API_GenerateAuthToken(authClient: AuthClient) {
 
   const multiplePermsTokenResponse = await authClient.generateAuthToken(permissions, ExpiresIn.minutes(30));
   if (multiplePermsTokenResponse instanceof GenerateAuthToken.Success) {
-    console.log('Generated an auth token with multiple cache and topic permissions!');
+    console.log('Generated an API key with multiple cache and topic permissions!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`Auth token starts with: ${multiplePermsTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${multiplePermsTokenResponse.authToken.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${multiplePermsTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${multiplePermsTokenResponse.expiresAt.epoch()}`);
   } else if (multiplePermsTokenResponse instanceof GenerateAuthToken.Error) {
@@ -911,17 +911,17 @@ async function example_API_GenerateAuthToken(authClient: AuthClient) {
 async function example_API_RefreshAuthToken(authClient: AuthClient) {
   const generateTokenResponse = await authClient.generateAuthToken(AllDataReadWrite, ExpiresIn.minutes(30));
   if (generateTokenResponse instanceof GenerateAuthToken.Success) {
-    console.log('Generated auth token; refreshing!');
+    console.log('Generated API key; refreshing!');
     const refreshAuthClient = new AuthClient({
       credentialProvider: CredentialProvider.fromString({authToken: generateTokenResponse.authToken}),
     });
     const refreshTokenResponse = await refreshAuthClient.refreshAuthToken(generateTokenResponse.refreshToken);
     if (refreshTokenResponse instanceof RefreshAuthToken.Success) {
-      console.log('Auth token refreshed!');
+      console.log('API key refreshed!');
       // logging only a substring of the tokens, because logging security credentials is not advisable :)
-      console.log(`Refreshed auth token starts with: ${refreshTokenResponse.authToken.substring(0, 10)}`);
+      console.log(`Refreshed API key starts with: ${refreshTokenResponse.authToken.substring(0, 10)}`);
       console.log(`New refresh token starts with: ${refreshTokenResponse.refreshToken.substring(0, 10)}`);
-      console.log(`Refreshed auth token expires At: ${refreshTokenResponse.expiresAt.epoch()}`);
+      console.log(`Refreshed API key expires At: ${refreshTokenResponse.expiresAt.epoch()}`);
     }
   }
 }
@@ -933,9 +933,9 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
     ExpiresIn.minutes(30)
   );
   if (oneKeyOneCacheToken instanceof GenerateDisposableToken.Success) {
-    console.log('Generated a disposable auth token with access to the "mo" key in the "squirrels" cache!');
+    console.log('Generated a disposable API key with access to the "mo" key in the "squirrels" cache!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`Auth token starts with: ${oneKeyOneCacheToken.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${oneKeyOneCacheToken.authToken.substring(0, 10)}`);
     console.log(`Expires At: ${oneKeyOneCacheToken.expiresAt.epoch()}`);
   } else if (oneKeyOneCacheToken instanceof GenerateDisposableToken.Error) {
     throw new Error(
@@ -949,9 +949,9 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
     ExpiresIn.minutes(30)
   );
   if (keyPrefixAllCachesToken instanceof GenerateDisposableToken.Success) {
-    console.log('Generated a disposable auth token with access to keys prefixed with "squirrel" in all caches!');
+    console.log('Generated a disposable API key with access to keys prefixed with "squirrel" in all caches!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`Auth token starts with: ${keyPrefixAllCachesToken.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${keyPrefixAllCachesToken.authToken.substring(0, 10)}`);
     console.log(`Expires At: ${keyPrefixAllCachesToken.expiresAt.epoch()}`);
   } else if (keyPrefixAllCachesToken instanceof GenerateDisposableToken.Error) {
     throw new Error(
@@ -965,9 +965,9 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
     ExpiresIn.minutes(30)
   );
   if (allTopicsOneCacheToken instanceof GenerateDisposableToken.Success) {
-    console.log('Generated a disposable auth token with access to all topics in the "squirrel" cache!');
+    console.log('Generated a disposable API key with access to all topics in the "squirrel" cache!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`Auth token starts with: ${allTopicsOneCacheToken.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${allTopicsOneCacheToken.authToken.substring(0, 10)}`);
     console.log(`Expires At: ${allTopicsOneCacheToken.expiresAt.epoch()}`);
   } else if (allTopicsOneCacheToken instanceof GenerateDisposableToken.Error) {
     throw new Error(
@@ -981,9 +981,9 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
     ExpiresIn.minutes(30)
   );
   if (oneTopicAllCachesToken instanceof GenerateDisposableToken.Success) {
-    console.log('Generated a disposable auth token with access to all topics in the "squirrel" cache!');
+    console.log('Generated a disposable API key with access to all topics in the "squirrel" cache!');
     // logging only a substring of the tokens, because logging security credentials is not advisable :)
-    console.log(`Auth token starts with: ${oneTopicAllCachesToken.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${oneTopicAllCachesToken.authToken.substring(0, 10)}`);
     console.log(`Expires At: ${oneTopicAllCachesToken.expiresAt.epoch()}`);
   } else if (oneTopicAllCachesToken instanceof GenerateDisposableToken.Error) {
     throw new Error(
@@ -1034,10 +1034,10 @@ async function example_API_TopicSubscribe(topicClient: TopicClient) {
 }
 
 async function main() {
-  const originalAuthToken = process.env['MOMENTO_AUTH_TOKEN'];
-  process.env['MOMENTO_AUTH_TOKEN'] = retrieveAuthTokenFromYourSecretsManager();
+  const originalAuthToken = process.env['MOMENTO_API_KEY'];
+  process.env['MOMENTO_API_KEY'] = retrieveAuthTokenFromYourSecretsManager();
   example_API_CredentialProviderFromEnvVar();
-  process.env['MOMENTO_AUTH_TOKEN'] = originalAuthToken;
+  process.env['MOMENTO_API_KEY'] = originalAuthToken;
 
   example_API_CredentialProviderFromString();
   example_API_ConfigurationLaptop();
@@ -1050,7 +1050,7 @@ async function main() {
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
     defaultTtlSeconds: 60,
   });
@@ -1111,7 +1111,7 @@ async function main() {
   example_API_InstantiateAuthClient();
   const authClient = new AuthClient({
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
   });
   await example_API_GenerateAuthToken(authClient);
@@ -1122,7 +1122,7 @@ async function main() {
   const topicClient = new TopicClient({
     configuration: TopicConfigurations.Default.latest(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
   });
   await example_API_TopicPublish(topicClient);

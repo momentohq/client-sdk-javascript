@@ -15,7 +15,7 @@ _Read this in other languages_: [日本語](README.ja.md)
 ## Example Requirements
 
 - Node version 14 or higher is required
-- To get started with Momento you will need a Momento Auth Token. You can get one from the [Momento Console](https://console.gomomento.com).
+- To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com).
 
 To run any of the examples you will need to install the dependencies once first:
 
@@ -27,7 +27,7 @@ npm install
 
 ```bash
 # Run example code
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run example
+MOMENTO_API_KEY=<YOUR API KEY> npm run example
 ```
 
 Example Code: [basic.ts](basic.ts)
@@ -36,7 +36,7 @@ Example Code: [basic.ts](basic.ts)
 
 ```bash
 # Run example code
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run advanced
+MOMENTO_API_KEY=<YOUR API KEY> npm run advanced
 ```
 
 Example Code: [advanced.ts](advanced.ts)
@@ -47,7 +47,7 @@ This example demonstrates how to use the dictionary data type.
 
 ```bash
 # Run example code
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run dictionary
+MOMENTO_API_KEY=<YOUR API KEY> npm run dictionary
 ```
 
 Example Code: [dictionary.ts](dictionary.ts)
@@ -59,13 +59,13 @@ This example demonstrates how to subscribe to a topic and publish values to it.
 In one terminal, subscribe to a topic on a cache:
 
 ```bash
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run topic-subscribe <cache-name> <topic-name>
+MOMENTO_API_KEY=<YOUR API KEY> npm run topic-subscribe <cache-name> <topic-name>
 ```
 
 Then in another terminal, publish a value to the topic:
 
 ```bash
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run topic-publish <cache-name> <topic-name> <value>
+MOMENTO_API_KEY=<YOUR API KEY> npm run topic-publish <cache-name> <topic-name> <value>
 ```
 
 Note that you do not need to create the cache before running the examples; the examples take care of that. Also note the service creates a topic automatically.
@@ -74,9 +74,9 @@ As an example:
 
 ```bash
 # in the first terminal
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run topic-subscribe my-cache dogs
+MOMENTO_API_KEY=<YOUR API KEY> npm run topic-subscribe my-cache dogs
 # in another terminal
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run topic-publish my-cache dogs poodle
+MOMENTO_API_KEY=<YOUR API KEY> npm run topic-publish my-cache dogs poodle
 # "poodle" should soon appear on the first terminal
 ```
 ## Running the observability example
@@ -94,7 +94,7 @@ docker-compose up -d
 ```
 ```bash
 # Run the observability example
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run observability
+MOMENTO_API_KEY=<YOUR API KEY> npm run observability
 ```
 
 After the example completes, the metrics can be viewed in Grafana by browsing to [localhost:3000](http://localhost:3000)
@@ -141,7 +141,7 @@ To run the load generator:
 
 ```bash
 # Run example load generator
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run load-gen
+MOMENTO_API_KEY=<YOUR API KEY> npm run load-gen
 ```
 
 You can check out the example code in [load-gen.ts](load-gen.ts). The configurable
@@ -193,7 +193,7 @@ https://github.com/momentohq/client-sdk-nodejs/blob/main/examples/utils/momento-
 ### Run the above example:
 ```bash
 # Run example request coalescing
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> npm run request-coalsecing
+MOMENTO_API_KEY=<YOUR API KEY> npm run request-coalsecing
 ```
 
 You can check out the example code in [request-coalescing.ts](request-coalescing.ts). The configurable

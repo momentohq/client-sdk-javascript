@@ -16,7 +16,7 @@ export class TokenVendingMachineStack extends cdk.Stack {
     const momentoAuthTokenParam = new cdk.CfnParameter(this, 'MomentoAuthToken', {
       type: 'String',
       description:
-        'The Momento Auth Token that will be used to vend browser tokens. Generated tokens will be stored in Secrets Manager for ongoing access later.',
+        'The Momento API key that will be used to vend browser tokens. Generated tokens will be stored in Secrets Manager for ongoing access later.',
       noEcho: true,
     });
 
@@ -35,7 +35,7 @@ export class TokenVendingMachineStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(30),
       memorySize: 128,
       environment: {
-        MOMENTO_AUTH_TOKEN_SECRET_NAME: authTokenSecret.secretName,
+        MOMENTO_API_KEY_SECRET_NAME: authTokenSecret.secretName,
       },
     });
 

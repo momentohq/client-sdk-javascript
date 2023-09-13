@@ -32,7 +32,7 @@ async function main() {
   momento = await CacheClient.create({
     configuration: Configurations.Laptop.v1(loggerFactory),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
     defaultTtlSeconds: 60,
   });
@@ -139,7 +139,7 @@ async function middlewaresExample() {
       new ExperimentalMetricsCsvMiddleware(metricsCsvPath, middlewaresExampleloggerFactory),
     ]),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_AUTH_TOKEN',
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
     defaultTtlSeconds: 60,
   });
