@@ -20,28 +20,30 @@ const authClient = new AuthClient({
 
 export const revalidate = 0;
 export async function GET(_request: Request) {
-  let generateApiKeyResponse;
+  let generateDisposableTokenResponse;
   switch (authenticationMethod) {
     case AuthenticationMethod.Open:
-      generateApiKeyResponse = await fetchTokenWithOpenAuth();
+      generateDisposableTokenResponse = await fetchTokenWithOpenAuth();
       break;
     case AuthenticationMethod.Credentials:
-      generateApiKeyResponse = await fetchTokenWithAuthCredentials();
+      generateDisposableTokenResponse = await fetchTokenWithAuthCredentials();
       break;
     default:
       throw new Error("Unimplemented authentication method");
   }
 
-  if (generateApiKeyResponse instanceof GenerateDisposableToken.Success) {
-    return new Response(generateApiKeyResponse.apiKey, {
+  if (
+    generateDisposableTokenResponse instanceof GenerateDisposableToken.Success
+  ) {
+    return new Response(generateDisposableTokenResponse.authToken, {
       headers: {
         "Cache-Control": "no-cache",
       },
     });
   } else if (
-    generateApiKeyResponse instanceof GenerateDisposableToken.Error
+    generateDisposableTokenResponse instanceof GenerateDisposableToken.Error
   ) {
-    throw new Error(generateApiKeyResponse.message());
+    throw new Error(generateDisposableTokenResponse.message());
   }
   throw new Error("Unable to get token from momento");
 }
