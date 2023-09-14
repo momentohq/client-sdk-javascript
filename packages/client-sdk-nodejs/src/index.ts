@@ -4,6 +4,7 @@ import {PreviewVectorIndexClient} from './preview-vector-index-client';
 import * as Configurations from './config/configurations';
 import * as TopicConfigurations from './config/topic-configurations';
 import * as VectorIndexConfigurations from './config/vector-index-configurations';
+import * as BatchUtils from './batchutils/batch-functions';
 
 import {TopicClientProps} from './topic-client-props';
 import {VectorIndexConfiguration} from './config/vector-index-configuration';
@@ -330,4 +331,6 @@ export {
   MomentoLoggerFactory,
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
+  // BatchUtils
+  BatchUtils,
 };
