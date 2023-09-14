@@ -331,6 +331,5 @@ export {
   MomentoLoggerFactory,
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
-  // BatchUtils
   BatchUtils,
 };
