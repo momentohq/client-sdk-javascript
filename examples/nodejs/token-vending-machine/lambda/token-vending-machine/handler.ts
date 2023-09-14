@@ -13,13 +13,13 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     if (vendorApiKeySecretName === undefined) {
       throw new Error("Missing required env var 'MOMENTO_API_KEY_SECRET_NAME");
     }
-    console.log("headers in handler:", event.headers);
-    const vendedApiKey = await vendApiKey(vendorApiKeySecretName, event.headers);
+    console.log('headers in handler:', event.headers);
+    const vendedApiKey = await vendDisposableToken(vendorApiKeySecretName, event.headers);
     return {
       statusCode: 200,
       headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify(vendedApiKey),
     };
@@ -34,26 +34,31 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   }
 };
 
-interface VendedApiKey {
-  apiKey: string;
+interface VendedToken {
+  authToken: string;
   expiresAt: number;
 }
 
-async function vendApiKey(vendorApiKeySecretName: string, headers: APIGatewayProxyEventHeaders): Promise<VendedApiKey> {
+async function vendDisposableToken(
+  vendorApiKeySecretName: string,
+  headers: APIGatewayProxyEventHeaders
+): Promise<VendedToken> {
   const momentoAuthClient = await getMomentoAuthClient(vendorApiKeySecretName);
 
   let generateTokenResponse;
   if (authenticationMethod === AuthenticationMethod.AmazonCognito) {
     const cognitoUserTokenPermissions = determineCognitoUserTokenScope(headers);
-    generateTokenResponse = await momentoAuthClient.generateDisposableToken(cognitoUserTokenPermissions, tokenExpiresIn);
-  }
-  else {
+    generateTokenResponse = await momentoAuthClient.generateDisposableToken(
+      cognitoUserTokenPermissions,
+      tokenExpiresIn
+    );
+  } else {
     generateTokenResponse = await momentoAuthClient.generateDisposableToken(tokenPermissions, tokenExpiresIn);
   }
 
   if (generateTokenResponse instanceof GenerateDisposableToken.Success) {
     return {
-      apiKey: generateTokenResponse.apiKey,
+      authToken: generateTokenResponse.authToken,
       expiresAt: generateTokenResponse.expiresAt.epoch(),
     };
   } else {
@@ -62,18 +67,16 @@ async function vendApiKey(vendorApiKeySecretName: string, headers: APIGatewayPro
 }
 
 function determineCognitoUserTokenScope(headers: APIGatewayProxyEventHeaders) {
-  if (!("cachename" in headers) || !("usergroup" in headers)) {
+  if (!('cachename' in headers) || !('usergroup' in headers)) {
     throw new Error("Could not find expected headers 'cachename' and 'usergroup'");
   }
 
-  if (headers["cachename"] && headers["usergroup"] === 'ReadWriteUserGroup') {
-    return TokenScopes.topicPublishSubscribe(headers["cachename"], AllTopics);
-  }
-  else if (headers["cachename"] && headers["usergroup"] === 'ReadOnlyUserGroup') {
-      return TokenScopes.topicSubscribeOnly(headers["cachename"], AllTopics);
-  }
-  else {
-    throw new Error(`Unrecognized Cognito user group: ${headers["usergroup"]}`);
+  if (headers['cachename'] && headers['usergroup'] === 'ReadWriteUserGroup') {
+    return TokenScopes.topicPublishSubscribe(headers['cachename'], AllTopics);
+  } else if (headers['cachename'] && headers['usergroup'] === 'ReadOnlyUserGroup') {
+    return TokenScopes.topicSubscribeOnly(headers['cachename'], AllTopics);
+  } else {
+    throw new Error(`Unrecognized Cognito user group: ${headers['usergroup']}`);
   }
 }
 
