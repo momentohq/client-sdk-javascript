@@ -35,8 +35,8 @@ async function handleRequest(event: FetchEvent) {
 
   // Get all required information from the Config Store
   // Note: for production environments, the Momento API key should be saved in a Fastly Secret Store
-  const authToken = secrets.get('MOMENTO_API_KEY');
-  if (!authToken) {
+  const apiKey = secrets.get('MOMENTO_API_KEY');
+  if (!apiKey) {
     return new Response('Missing required env var MOMENTO_API_KEY', {
       status: 500,
     });
@@ -64,7 +64,7 @@ async function handleRequest(event: FetchEvent) {
   const value = 'serverless';
 
   try {
-    const momento = new MomentoFetcher(authToken, httpEndpoint, backend);
+    const momento = new MomentoFetcher(apiKey, httpEndpoint, backend);
 
     const getResp = await momento.get(cacheName, key);
     console.log(`Fetching the key when the cache is empty: ${getResp}`);
