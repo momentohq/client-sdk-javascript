@@ -1,91 +1,103 @@
-import {CacheDelete, CacheGet, CacheSet} from '@gomomento/sdk-core';
-import {CacheClient} from '../cache-client';
 import {
-  BatchDeleteRequest,
+  CacheDelete,
+  CacheGet,
+  CacheSet,
+  ICacheClient,
+} from '@gomomento/sdk-core';
+import {
+  BatchDeleteOptions,
   BatchDeleteResponse,
-  BatchGetRequest,
+  BatchGetOptions,
   BatchGetResponse,
-  BatchSetItem,
-  BatchSetRequest,
+  BatchSetOptions,
   BatchSetResponse,
   defaultMaxConcurrentRequests,
+  defaultTtlSeconds,
 } from './batch-props';
 import {range} from '@gomomento/sdk-core/dist/src/internal/utils';
 
 export {
-  BatchDeleteRequest,
+  BatchDeleteOptions,
   BatchDeleteResponse,
-  BatchGetRequest,
+  BatchGetOptions,
   BatchGetResponse,
-  BatchSetItem,
-  BatchSetRequest,
+  BatchSetOptions,
   BatchSetResponse,
   defaultMaxConcurrentRequests,
+  defaultTtlSeconds,
 };
 
 export async function batchGet(
-  request: BatchGetRequest
+  cacheClient: ICacheClient,
+  cacheName: string,
+  keys: Array<string | Uint8Array>,
+  options?: BatchGetOptions
 ): Promise<BatchGetResponse> {
-  const maxConcurrentGets = request.maxConcurrentGets
-    ? request.maxConcurrentGets
-    : Math.min(defaultMaxConcurrentRequests, request.keys.length);
+  const maxConcurrentGets = options?.maxConcurrentGets
+    ? options.maxConcurrentGets
+    : Math.min(defaultMaxConcurrentRequests, keys.length);
 
   const batchGetResults = range(maxConcurrentGets).map((workerId: number) =>
-    getWorker(workerId, request.cacheClient, request.cacheName, request.keys)
+    getWorker(workerId, cacheClient, cacheName, keys)
   );
   const awaitAll = await Promise.all(batchGetResults);
 
   const batchGetResponse: BatchGetResponse = {};
   awaitAll.forEach(responses => {
-    for (const key of Object.keys(responses)) {
-      batchGetResponse[key] = responses[key];
-    }
+    Object.assign(batchGetResponse, responses);
   });
   return batchGetResponse;
 }
 
 async function getWorker(
   workerId: number,
-  cacheClient: CacheClient,
+  cacheClient: ICacheClient,
   cacheName: string,
-  keys: Array<string>
+  keys: Array<string | Uint8Array>
 ): Promise<Record<string, CacheGet.Response>> {
   const responses: Record<string, CacheGet.Response> = {};
   while (keys.length) {
     const cacheKey = keys.pop();
     if (cacheKey !== undefined) {
-      responses[cacheKey] = await cacheClient.get(cacheName, cacheKey);
+      responses[String(cacheKey)] = await cacheClient.get(cacheName, cacheKey);
     }
   }
   return Promise.resolve(responses);
 }
 
 export async function batchSet(
-  request: BatchSetRequest
+  cacheClient: ICacheClient,
+  cacheName: string,
+  keys: Array<string | Uint8Array>,
+  values: Array<string | Uint8Array>,
+  options?: BatchSetOptions
 ): Promise<BatchSetResponse> {
-  const maxConcurrentSets = request.maxConcurrentSets
-    ? request.maxConcurrentSets
-    : Math.min(defaultMaxConcurrentRequests, request.items.length);
+  const maxConcurrentSets = options?.maxConcurrentSets
+    ? options.maxConcurrentSets
+    : Math.min(defaultMaxConcurrentRequests, keys.length);
+  const ttl = options?.ttl ? options.ttl : defaultTtlSeconds;
 
+  const items = keys.map((key, i) => {
+    return {key: String(key), value: String(values[i])};
+  });
   const batchSetResults = range(maxConcurrentSets).map((workerId: number) =>
-    setWorker(workerId, request.cacheClient, request.cacheName, request.items)
+    setWorker(workerId, cacheClient, cacheName, items, ttl)
   );
   const awaitAll = await Promise.all(batchSetResults);
 
   const batchSetResponse: BatchSetResponse = {};
   awaitAll.forEach(responses => {
-    for (const key of Object.keys(responses)) {
-      batchSetResponse[key] = responses[key];
-    }
+    Object.assign(batchSetResponse, responses);
   });
   return batchSetResponse;
 }
 
 async function setWorker(
   workerId: number,
-  cacheClient: CacheClient,
+  cacheClient: ICacheClient,
   cacheName: string,
-  items: Array<BatchSetItem>
+  items: Array<Record<string, string>>,
+  ttl: number
 ): Promise<Record<string, CacheSet.Response>> {
   const responses: Record<string, CacheSet.Response> = {};
   while (items.length) {
@@ -94,7 +106,8 @@ async function setWorker(
       responses[item.key] = await cacheClient.set(
         cacheName,
         item.key,
-        item.value
+        item.value,
+        {ttl}
       );
     }
   }
@@ -102,43 +115,41 @@ async function setWorker(
 }
 
 export async function batchDelete(
-  request: BatchDeleteRequest
+  cacheClient: ICacheClient,
+  cacheName: string,
+  keys: Array<string | Uint8Array>,
+  options?: BatchDeleteOptions
 ): Promise<BatchDeleteResponse> {
-  const maxConcurrentDeletes = request.maxConcurrentDeletes
-    ? request.maxConcurrentDeletes
-    : Math.min(defaultMaxConcurrentRequests, request.keys.length);
+  const maxConcurrentDeletes = options?.maxConcurrentDeletes
+    ? options.maxConcurrentDeletes
+    : Math.min(defaultMaxConcurrentRequests, keys.length);
 
   const batchDeleteResults = range(maxConcurrentDeletes).map(
-    (workerId: number) =>
-      deleteWorker(
-        workerId,
-        request.cacheClient,
-        request.cacheName,
-        request.keys
-      )
+    (workerId: number) => deleteWorker(workerId, cacheClient, cacheName, keys)
   );
   const awaitAll = await Promise.all(batchDeleteResults);
 
   const batchDeleteResponse: BatchDeleteResponse = {};
   awaitAll.forEach(responses => {
-    for (const key of Object.keys(responses)) {
-      batchDeleteResponse[key] = responses[key];
-    }
+    Object.assign(batchDeleteResponse, responses);
   });
   return batchDeleteResponse;
 }
 
 async function deleteWorker(
   workerId: number,
-  cacheClient: CacheClient,
+  cacheClient: ICacheClient,
   cacheName: string,
-  keys: Array<string>
+  keys: Array<string | Uint8Array>
 ): Promise<Record<string, CacheDelete.Response>> {
   const responses: Record<string, CacheDelete.Response> = {};
   while (keys.length) {
     const cacheKey = keys.pop();
     if (cacheKey !== undefined) {
-      responses[cacheKey] = await cacheClient.delete(cacheName, cacheKey);
+      responses[String(cacheKey)] = await cacheClient.delete(
+        cacheName,
+        cacheKey
+      );
     }
   }
   return Promise.resolve(responses);

@@ -4,24 +4,21 @@ import {
   batchGet,
   batchSet,
 } from '../../src/batchutils/batch-functions';
-import {
-  BatchDeleteRequest,
-  BatchGetRequest,
-  BatchSetRequest,
-} from '../../src/batchutils/batch-props';
-import {SetupIntegrationTest} from './integration-setup';
+import {SetupIntegrationTest, delay} from './integration-setup';
 import {expectWithMessage} from '@gomomento/common-integration-tests';
 
 const {cacheClient, integrationTestCacheName} = SetupIntegrationTest();
 
 describe('BatchUtils', () => {
   it('batchGet happy path with all misses', async () => {
-    const request: BatchGetRequest = {
-      cacheClient: cacheClient,
-      cacheName: integrationTestCacheName,
-      keys: ['a', 'b', 'c', '1', '2', '3'],
-    };
-    const response = await batchGet(request);
+    const response = await batchGet(cacheClient, integrationTestCacheName, [
+      'a',
+      'b',
+      'c',
+      '1',
+      '2',
+      '3',
+    ]);
     for (const [key, resp] of Object.entries(response)) {
       expectWithMessage(() => {
         expect(resp).toBeInstanceOf(CacheGet.Miss);
@@ -30,19 +27,12 @@ describe('BatchUtils', () => {
   });
 
   it('batchSet happy path', async () => {
-    const request: BatchSetRequest = {
-      cacheClient: cacheClient,
-      cacheName: integrationTestCacheName,
-      items: [
-        {key: 'a', value: 'apple'},
-        {key: 'b', value: 'berry'},
-        {key: 'c', value: 'cantaloupe'},
-        {key: '1', value: 'first'},
-        {key: '2', value: 'second'},
-        {key: '3', value: 'third'},
-      ],
-    };
-    const response = await batchSet(request);
+    const response = await batchSet(
+      cacheClient,
+      integrationTestCacheName,
+      ['a', 'b', 'c', '1', '2', '3'],
+      ['apple', 'berry', 'cantaloupe', 'first', 'second', 'third']
+    );
     for (const [key, resp] of Object.entries(response)) {
       expectWithMessage(() => {
         expect(resp).toBeInstanceOf(CacheSet.Success);
@@ -50,33 +40,58 @@ describe('BatchUtils', () => {
     }
   });
 
+  it('batchSet happy path with ttl', async () => {
+    const response = await batchSet(
+      cacheClient,
+      integrationTestCacheName,
+      ['a', 'b', 'c', '1', '2', '3'],
+      ['apple', 'berry', 'cantaloupe', 'first', 'second', 'third'],
+      {ttl: 3}
+    );
+    for (const [key, resp] of Object.entries(response)) {
+      expectWithMessage(() => {
+        expect(resp).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS for item ${key} but received ${resp.toString()}`);
+    }
+
+    await delay(5000);
+    const getResponse = await batchGet(cacheClient, integrationTestCacheName, [
+      'a',
+      'b',
+      'c',
+      '1',
+      '2',
+      '3',
+    ]);
+    for (const [key, resp] of Object.entries(getResponse)) {
+      expectWithMessage(() => {
+        expect(resp).toBeInstanceOf(CacheGet.Miss);
+      }, `expected MISS for key ${key}, received ${resp.toString()}`);
+    }
+  });
+
   it('batchGet happy path with all hits', async () => {
     // Set some values first
-    const setRequest: BatchSetRequest = {
-      cacheClient: cacheClient,
-      cacheName: integrationTestCacheName,
-      items: [
-        {key: 'a', value: 'apple'},
-        {key: 'b', value: 'berry'},
-        {key: 'c', value: 'cantaloupe'},
-        {key: '1', value: 'first'},
-        {key: '2', value: 'second'},
-        {key: '3', value: 'third'},
-      ],
-    };
-    const setResponse = await batchSet(setRequest);
+    const setResponse = await batchSet(
+      cacheClient,
+      integrationTestCacheName,
+      ['a', 'b', 'c', '1', '2', '3'],
+      ['apple', 'berry', 'cantaloupe', 'first', 'second', 'third']
+    );
     for (const [key, resp] of Object.entries(setResponse)) {
       expectWithMessage(() => {
         expect(resp).toBeInstanceOf(CacheSet.Success);
       }, `expected SUCCESS for item ${key} but received ${resp.toString()}`);
     }
 
-    const request: BatchGetRequest = {
-      cacheClient: cacheClient,
-      cacheName: integrationTestCacheName,
-      keys: ['a', 'b', 'c', '1', '2', '3'],
-    };
-    const response = await batchGet(request);
+    const response = await batchGet(cacheClient, integrationTestCacheName, [
+      'a',
+      'b',
+      'c',
+      '1',
+      '2',
+      '3',
+    ]);
     for (const [key, resp] of Object.entries(response)) {
       expectWithMessage(() => {
         expect(resp).toBeInstanceOf(CacheGet.Hit);
@@ -86,31 +101,26 @@ describe('BatchUtils', () => {
 
   it('batchGet happy path with some hits and misses', async () => {
     // Set some values first
-    const setRequest: BatchSetRequest = {
-      cacheClient: cacheClient,
-      cacheName: integrationTestCacheName,
-      items: [
-        {key: 'a', value: 'apple'},
-        {key: 'b', value: 'berry'},
-        {key: 'c', value: 'cantaloupe'},
-        {key: '1', value: 'first'},
-        {key: '2', value: 'second'},
-        {key: '3', value: 'third'},
-      ],
-    };
-    const setResponse = await batchSet(setRequest);
+    const setResponse = await batchSet(
+      cacheClient,
+      integrationTestCacheName,
+      ['a', 'b', 'c', '1', '2', '3'],
+      ['apple', 'berry', 'cantaloupe', 'first', 'second', 'third']
+    );
     for (const [key, resp] of Object.entries(setResponse)) {
       expectWithMessage(() => {
         expect(resp).toBeInstanceOf(CacheSet.Success);
       }, `expected SUCCESS for item ${key} but received ${resp.toString()}`);
     }
 
-    const request: BatchGetRequest = {
-      cacheClient: cacheClient,
-      cacheName: integrationTestCacheName,
-      keys: ['a', 'b', 'c', '10', '11', '12'],
-    };
-    const response = await batchGet(request);
+    const response = await batchGet(cacheClient, integrationTestCacheName, [
+      'a',
+      'b',
+      'c',
+      '10',
+      '11',
+      '12',
+    ]);
     for (const [key, resp] of Object.entries(response)) {
       if (['a', 'b', 'c'].includes(key)) {
         expectWithMessage(() => {
@@ -126,31 +136,26 @@ describe('BatchUtils', () => {
 
   it('batchDelete happy path', async () => {
     // Set some values first
-    const setRequest: BatchSetRequest = {
-      cacheClient: cacheClient,
-      cacheName: integrationTestCacheName,
-      items: [
-        {key: 'a', value: 'apple'},
-        {key: 'b', value: 'berry'},
-        {key: 'c', value: 'cantaloupe'},
-        {key: '1', value: 'first'},
-        {key: '2', value: 'second'},
-        {key: '3', value: 'third'},
-      ],
-    };
-    const setResponse = await batchSet(setRequest);
+    const setResponse = await batchSet(
+      cacheClient,
+      integrationTestCacheName,
+      ['a', 'b', 'c', '1', '2', '3'],
+      ['apple', 'berry', 'cantaloupe', 'first', 'second', 'third']
+    );
     for (const [key, resp] of Object.entries(setResponse)) {
       expectWithMessage(() => {
         expect(resp).toBeInstanceOf(CacheSet.Success);
       }, `expected SUCCESS for item ${key} but received ${resp.toString()}`);
     }
 
-    const request: BatchDeleteRequest = {
-      cacheClient: cacheClient,
-      cacheName: integrationTestCacheName,
-      keys: ['a', 'b', 'c', '1', '2', '3'],
-    };
-    const response = await batchDelete(request);
+    const response = await batchDelete(cacheClient, integrationTestCacheName, [
+      'a',
+      'b',
+      'c',
+      '1',
+      '2',
+      '3',
+    ]);
     for (const [key, resp] of Object.entries(response)) {
       expectWithMessage(() => {
         expect(resp).toBeInstanceOf(CacheDelete.Success);
@@ -160,31 +165,26 @@ describe('BatchUtils', () => {
 
   it('batchDelete some existing and some non-existing keys', async () => {
     // Set some values first
-    const setRequest: BatchSetRequest = {
-      cacheClient: cacheClient,
-      cacheName: integrationTestCacheName,
-      items: [
-        {key: 'a', value: 'apple'},
-        {key: 'b', value: 'berry'},
-        {key: 'c', value: 'cantaloupe'},
-        {key: '1', value: 'first'},
-        {key: '2', value: 'second'},
-        {key: '3', value: 'third'},
-      ],
-    };
-    const setResponse = await batchSet(setRequest);
+    const setResponse = await batchSet(
+      cacheClient,
+      integrationTestCacheName,
+      ['a', 'b', 'c', '1', '2', '3'],
+      ['apple', 'berry', 'cantaloupe', 'first', 'second', 'third']
+    );
     for (const [key, resp] of Object.entries(setResponse)) {
       expectWithMessage(() => {
         expect(resp).toBeInstanceOf(CacheSet.Success);
       }, `expected SUCCESS for item ${key} but received ${resp.toString()}`);
     }
 
-    const request: BatchDeleteRequest = {
-      cacheClient: cacheClient,
-      cacheName: integrationTestCacheName,
-      keys: ['ab', 'cd', 'ef', '1', '2', '3'],
-    };
-    const response = await batchDelete(request);
+    const response = await batchDelete(cacheClient, integrationTestCacheName, [
+      'ab',
+      'cd',
+      'ef',
+      '1',
+      '2',
+      '3',
+    ]);
     for (const [key, resp] of Object.entries(response)) {
       expectWithMessage(() => {
         expect(resp).toBeInstanceOf(CacheDelete.Success);

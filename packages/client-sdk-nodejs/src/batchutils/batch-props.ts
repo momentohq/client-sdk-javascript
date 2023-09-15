@@ -1,35 +1,22 @@
 import {CacheGet, CacheSet, CacheDelete} from '@gomomento/sdk-core';
-import {CacheClient} from '../cache-client';
 
 export const defaultMaxConcurrentRequests = 5;
+export const defaultTtlSeconds = 60;
 
-export interface BatchGetRequest {
-  cacheClient: CacheClient;
-  cacheName: string;
-  keys: Array<string>;
+export interface BatchGetOptions {
   maxConcurrentGets?: number;
 }
 
 export type BatchGetResponse = Record<string, CacheGet.Response>;
 
-export interface BatchSetItem {
-  key: string;
-  value: string;
-}
-
-export interface BatchSetRequest {
-  cacheClient: CacheClient;
-  cacheName: string;
-  items: Array<BatchSetItem>;
+export interface BatchSetOptions {
+  ttl?: number;
   maxConcurrentSets?: number;
 }
 
 export type BatchSetResponse = Record<string, CacheSet.Response>;
 
-export interface BatchDeleteRequest {
-  cacheClient: CacheClient;
-  cacheName: string;
-  keys: Array<string>;
+export interface BatchDeleteOptions {
   maxConcurrentDeletes?: number;
 }
 
