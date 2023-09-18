@@ -9,19 +9,19 @@ let _momentoAuthClient: AuthClient | undefined = undefined;
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
-    const vendorAuthTokenSecretName = process.env.MOMENTO_API_KEY_SECRET_NAME;
-    if (vendorAuthTokenSecretName === undefined) {
+    const vendorApiKeySecretName = process.env.MOMENTO_API_KEY_SECRET_NAME;
+    if (vendorApiKeySecretName === undefined) {
       throw new Error("Missing required env var 'MOMENTO_API_KEY_SECRET_NAME");
     }
-    console.log("headers in handler:", event.headers);
-    const vendedAuthToken = await vendAuthToken(vendorAuthTokenSecretName, event.headers);
+    console.log('headers in handler:', event.headers);
+    const vendedApiKey = await vendDisposableToken(vendorApiKeySecretName, event.headers);
     return {
       statusCode: 200,
       headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
       },
-      body: JSON.stringify(vendedAuthToken),
+      body: JSON.stringify(vendedApiKey),
     };
   } catch (err) {
     console.log(err);
@@ -34,20 +34,25 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   }
 };
 
-interface VendedAuthToken {
+interface VendedToken {
   authToken: string;
   expiresAt: number;
 }
 
-async function vendAuthToken(vendorAuthTokenSecretName: string, headers: APIGatewayProxyEventHeaders): Promise<VendedAuthToken> {
-  const momentoAuthClient = await getMomentoAuthClient(vendorAuthTokenSecretName);
+async function vendDisposableToken(
+  vendorApiKeySecretName: string,
+  headers: APIGatewayProxyEventHeaders
+): Promise<VendedToken> {
+  const momentoAuthClient = await getMomentoAuthClient(vendorApiKeySecretName);
 
   let generateTokenResponse;
   if (authenticationMethod === AuthenticationMethod.AmazonCognito) {
     const cognitoUserTokenPermissions = determineCognitoUserTokenScope(headers);
-    generateTokenResponse = await momentoAuthClient.generateDisposableToken(cognitoUserTokenPermissions, tokenExpiresIn);
-  }
-  else {
+    generateTokenResponse = await momentoAuthClient.generateDisposableToken(
+      cognitoUserTokenPermissions,
+      tokenExpiresIn
+    );
+  } else {
     generateTokenResponse = await momentoAuthClient.generateDisposableToken(tokenPermissions, tokenExpiresIn);
   }
 
@@ -62,27 +67,25 @@ async function vendAuthToken(vendorAuthTokenSecretName: string, headers: APIGate
 }
 
 function determineCognitoUserTokenScope(headers: APIGatewayProxyEventHeaders) {
-  if (!("cachename" in headers) || !("usergroup" in headers)) {
+  if (!('cachename' in headers) || !('usergroup' in headers)) {
     throw new Error("Could not find expected headers 'cachename' and 'usergroup'");
   }
 
-  if (headers["cachename"] && headers["usergroup"] === 'ReadWriteUserGroup') {
-    return TokenScopes.topicPublishSubscribe(headers["cachename"], AllTopics);
-  }
-  else if (headers["cachename"] && headers["usergroup"] === 'ReadOnlyUserGroup') {
-      return TokenScopes.topicSubscribeOnly(headers["cachename"], AllTopics);
-  }
-  else {
-    throw new Error(`Unrecognized Cognito user group: ${headers["usergroup"]}`);
+  if (headers['cachename'] && headers['usergroup'] === 'ReadWriteUserGroup') {
+    return TokenScopes.topicPublishSubscribe(headers['cachename'], AllTopics);
+  } else if (headers['cachename'] && headers['usergroup'] === 'ReadOnlyUserGroup') {
+    return TokenScopes.topicSubscribeOnly(headers['cachename'], AllTopics);
+  } else {
+    throw new Error(`Unrecognized Cognito user group: ${headers['usergroup']}`);
   }
 }
 
-async function getMomentoAuthClient(authTokenSecretName: string): Promise<AuthClient> {
+async function getMomentoAuthClient(apiKeySecretName: string): Promise<AuthClient> {
   if (_momentoAuthClient === undefined) {
-    const momentoAuthToken = await getSecret(authTokenSecretName);
+    const momentoApiKey = await getSecret(apiKeySecretName);
     console.log('Retrieved secret!');
     _momentoAuthClient = new AuthClient({
-      credentialProvider: CredentialProvider.fromString({authToken: momentoAuthToken}),
+      credentialProvider: CredentialProvider.fromString({apiKey: momentoApiKey}),
     });
   }
   return _momentoAuthClient;

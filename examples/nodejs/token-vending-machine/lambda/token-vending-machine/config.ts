@@ -1,10 +1,4 @@
-import {
-  ExpiresIn,
-  AllTopics,
-  CacheRole,
-  TopicRole,
-  type DisposableTokenScope,
-} from "@gomomento/sdk";
+import {ExpiresIn, AllTopics, CacheRole, TopicRole, DisposableTokenScope} from '@gomomento/sdk';
 
 /**
  * First, set the scope of permissions for your tokens.
@@ -49,14 +43,15 @@ export const tokenPermissions: DisposableTokenScope = {
   permissions: [
     {
       role: CacheRole.ReadWrite,
-      cache: "default-cache"
+      cache: 'default-cache',
     },
     {
-      role: TopicRole.PublishSubscribe, 
-      cache: "default-cache",
-      topic: AllTopics
-    }
-]};
+      role: TopicRole.PublishSubscribe,
+      cache: 'default-cache',
+      topic: AllTopics,
+    },
+  ],
+};
 
 /**
  * Second, set the TTL for your tokens in terms of seconds, minutes, hours,
@@ -68,15 +63,15 @@ export const tokenPermissions: DisposableTokenScope = {
 export const tokenExpiresIn: ExpiresIn = ExpiresIn.hours(1);
 
 /**
- * Third, set the authentication method for the token vending machine to protect 
+ * Third, set the authentication method for the token vending machine to protect
  * against unauthorized users. The available options are provided below.
- * 
+ *
  * Note: when using Amazon Cognito, you'll need to first sign into Cognito to get an ID
- * token that you'll include in your requests to the Token Vending Machine API. 
+ * token that you'll include in your requests to the Token Vending Machine API.
  */
 export enum AuthenticationMethod {
-  Open,             // no authentication
+  Open, // no authentication
   LambdaAuthorizer, // use Lambda Authorizer attached to API Gateway
-  AmazonCognito,    // use Cognito user pool authorizer attached to API Gateway
+  AmazonCognito, // use Cognito user pool authorizer attached to API Gateway
 }
 export const authenticationMethod: AuthenticationMethod = AuthenticationMethod.Open;
