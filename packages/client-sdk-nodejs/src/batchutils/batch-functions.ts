@@ -11,6 +11,7 @@ import {
   BatchGetResponse,
   BatchSetOptions,
   BatchSetResponse,
+  BatchSetItem,
   defaultMaxConcurrentRequests,
   defaultTtlSeconds,
 } from './batch-props';
@@ -23,9 +24,14 @@ export {
   BatchGetResponse,
   BatchSetOptions,
   BatchSetResponse,
+  BatchSetItem,
   defaultMaxConcurrentRequests,
   defaultTtlSeconds,
 };
+
+// Note: all promises in batch request workers have a client-side timeout deadline
+// because grpc request timeouts are baked into the cache client. The timeout can be 
+// overridden using the `withClientTimeoutMillis` function.
 
 export async function batchGet(
   cacheClient: ICacheClient,
@@ -33,8 +39,8 @@ export async function batchGet(
   keys: Array<string | Uint8Array>,
   options?: BatchGetOptions
 ): Promise<BatchGetResponse> {
-  const maxConcurrentGets = options?.maxConcurrentGets
-    ? options.maxConcurrentGets
+  const maxConcurrentGets = options?.maxConcurrentRequests
+    ? options.maxConcurrentRequests
     : Math.min(defaultMaxConcurrentRequests, keys.length);
 
   const batchGetResults = range(maxConcurrentGets).map((workerId: number) =>
@@ -68,20 +74,15 @@ async function getWorker(
 export async function batchSet(
   cacheClient: ICacheClient,
   cacheName: string,
-  keys: Array<string | Uint8Array>,
-  values: Array<string | Uint8Array>,
+  items: Array<BatchSetItem>,
   options?: BatchSetOptions
 ): Promise<BatchSetResponse> {
-  const maxConcurrentSets = options?.maxConcurrentSets
-    ? options.maxConcurrentSets
-    : Math.min(defaultMaxConcurrentRequests, keys.length);
-  const ttl = options?.ttl ? options.ttl : defaultTtlSeconds;
+  const maxConcurrentSets = options?.maxConcurrentRequests
+    ? options.maxConcurrentRequests
+    : Math.min(defaultMaxConcurrentRequests, items.length);
 
-  const items = keys.map((key, i) => {
-    return {key: String(key), value: String(values[i])};
-  });
   const batchSetResults = range(maxConcurrentSets).map((workerId: number) =>
-    setWorker(workerId, cacheClient, cacheName, items, ttl)
+    setWorker(workerId, cacheClient, cacheName, items)
   );
   const awaitAll = await Promise.all(batchSetResults);
 
@@ -96,18 +97,17 @@ async function setWorker(
   workerId: number,
   cacheClient: ICacheClient,
   cacheName: string,
-  items: Array<Record<string, string>>,
-  ttl: number
+  items: Array<BatchSetItem>
 ): Promise<Record<string, CacheSet.Response>> {
   const responses: Record<string, CacheSet.Response> = {};
   while (items.length) {
     const item = items.pop();
     if (item !== undefined) {
-      responses[item.key] = await cacheClient.set(
+      responses[String(item.key)] = await cacheClient.set(
         cacheName,
         item.key,
         item.value,
-        {ttl}
+        {ttl: item.ttl ? item.ttl : defaultTtlSeconds}
       );
     }
   }
@@ -120,8 +120,8 @@ export async function batchDelete(
   keys: Array<string | Uint8Array>,
   options?: BatchDeleteOptions
 ): Promise<BatchDeleteResponse> {
-  const maxConcurrentDeletes = options?.maxConcurrentDeletes
-    ? options.maxConcurrentDeletes
+  const maxConcurrentDeletes = options?.maxConcurrentRequests
+    ? options.maxConcurrentRequests
     : Math.min(defaultMaxConcurrentRequests, keys.length);
 
   const batchDeleteResults = range(maxConcurrentDeletes).map(

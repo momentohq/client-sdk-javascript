@@ -27,11 +27,18 @@ describe('BatchUtils', () => {
   });
 
   it('batchSet happy path', async () => {
+    const items = [
+      {key: 'a', value: 'apple'},
+      {key: 'b', value: 'berry'},
+      {key: 'c', value: 'cantaloupe'},
+      {key: '1', value: 'first'},
+      {key: '2', value: 'second'},
+      {key: '3', value: 'third'},
+    ];
     const response = await batchSet(
       cacheClient,
       integrationTestCacheName,
-      ['a', 'b', 'c', '1', '2', '3'],
-      ['apple', 'berry', 'cantaloupe', 'first', 'second', 'third']
+      items
     );
     for (const [key, resp] of Object.entries(response)) {
       expectWithMessage(() => {
@@ -41,12 +48,18 @@ describe('BatchUtils', () => {
   });
 
   it('batchSet happy path with ttl', async () => {
+    const items = [
+      {key: 'a', value: 'apple', ttl: 3},
+      {key: 'b', value: 'berry', ttl: 3},
+      {key: 'c', value: 'cantaloupe', ttl: 3},
+      {key: '1', value: 'first', ttl: 3},
+      {key: '2', value: 'second', ttl: 3},
+      {key: '3', value: 'third', ttl: 3},
+    ];
     const response = await batchSet(
       cacheClient,
       integrationTestCacheName,
-      ['a', 'b', 'c', '1', '2', '3'],
-      ['apple', 'berry', 'cantaloupe', 'first', 'second', 'third'],
-      {ttl: 3}
+      items
     );
     for (const [key, resp] of Object.entries(response)) {
       expectWithMessage(() => {
@@ -72,11 +85,18 @@ describe('BatchUtils', () => {
 
   it('batchGet happy path with all hits', async () => {
     // Set some values first
+    const items = [
+      {key: 'a', value: 'apple'},
+      {key: 'b', value: 'berry'},
+      {key: 'c', value: 'cantaloupe'},
+      {key: '1', value: 'first'},
+      {key: '2', value: 'second'},
+      {key: '3', value: 'third'},
+    ];
     const setResponse = await batchSet(
       cacheClient,
       integrationTestCacheName,
-      ['a', 'b', 'c', '1', '2', '3'],
-      ['apple', 'berry', 'cantaloupe', 'first', 'second', 'third']
+      items
     );
     for (const [key, resp] of Object.entries(setResponse)) {
       expectWithMessage(() => {
@@ -101,11 +121,18 @@ describe('BatchUtils', () => {
 
   it('batchGet happy path with some hits and misses', async () => {
     // Set some values first
+    const items = [
+      {key: 'a', value: 'apple'},
+      {key: 'b', value: 'berry'},
+      {key: 'c', value: 'cantaloupe'},
+      {key: '1', value: 'first'},
+      {key: '2', value: 'second'},
+      {key: '3', value: 'third'},
+    ];
     const setResponse = await batchSet(
       cacheClient,
       integrationTestCacheName,
-      ['a', 'b', 'c', '1', '2', '3'],
-      ['apple', 'berry', 'cantaloupe', 'first', 'second', 'third']
+      items
     );
     for (const [key, resp] of Object.entries(setResponse)) {
       expectWithMessage(() => {
@@ -136,11 +163,18 @@ describe('BatchUtils', () => {
 
   it('batchDelete happy path', async () => {
     // Set some values first
+    const items = [
+      {key: 'a', value: 'apple'},
+      {key: 'b', value: 'berry'},
+      {key: 'c', value: 'cantaloupe'},
+      {key: '1', value: 'first'},
+      {key: '2', value: 'second'},
+      {key: '3', value: 'third'},
+    ];
     const setResponse = await batchSet(
       cacheClient,
       integrationTestCacheName,
-      ['a', 'b', 'c', '1', '2', '3'],
-      ['apple', 'berry', 'cantaloupe', 'first', 'second', 'third']
+      items
     );
     for (const [key, resp] of Object.entries(setResponse)) {
       expectWithMessage(() => {
@@ -165,11 +199,18 @@ describe('BatchUtils', () => {
 
   it('batchDelete some existing and some non-existing keys', async () => {
     // Set some values first
+    const items = [
+      {key: 'a', value: 'apple'},
+      {key: 'b', value: 'berry'},
+      {key: 'c', value: 'cantaloupe'},
+      {key: '1', value: 'first'},
+      {key: '2', value: 'second'},
+      {key: '3', value: 'third'},
+    ];
     const setResponse = await batchSet(
       cacheClient,
       integrationTestCacheName,
-      ['a', 'b', 'c', '1', '2', '3'],
-      ['apple', 'berry', 'cantaloupe', 'first', 'second', 'third']
+      items
     );
     for (const [key, resp] of Object.entries(setResponse)) {
       expectWithMessage(() => {
