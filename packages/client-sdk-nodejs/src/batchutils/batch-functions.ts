@@ -30,7 +30,7 @@ export {
 };
 
 // Note: all promises in batch request workers have a client-side timeout deadline
-// because grpc request timeouts are baked into the cache client. The timeout can be 
+// because grpc request timeouts are baked into the cache client. The timeout can be
 // overridden using the `withClientTimeoutMillis` function.
 
 export async function batchGet(
