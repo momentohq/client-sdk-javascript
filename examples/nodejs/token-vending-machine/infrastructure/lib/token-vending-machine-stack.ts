@@ -13,16 +13,16 @@ export class TokenVendingMachineStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const momentoAuthTokenParam = new cdk.CfnParameter(this, 'MomentoAuthToken', {
+    const momentoApiKeyParam = new cdk.CfnParameter(this, 'MomentoApiKey', {
       type: 'String',
       description:
         'The Momento API key that will be used to vend browser tokens. Generated tokens will be stored in Secrets Manager for ongoing access later.',
       noEcho: true,
     });
 
-    const authTokenSecret = new secrets.Secret(this, 'MomentoTokenVendingMachineAuthToken', {
-      secretName: 'MomentoTokenVendingMachineAuthToken',
-      secretStringValue: new cdk.SecretValue(momentoAuthTokenParam.valueAsString),
+    const apiKeySecret = new secrets.Secret(this, 'MomentoTokenVendingMachineApiKey', {
+      secretName: 'MomentoTokenVendingMachineApiKey',
+      secretStringValue: new cdk.SecretValue(momentoApiKeyParam.valueAsString),
     });
 
     const tvmLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoTokenVendingMachine', {
@@ -35,11 +35,11 @@ export class TokenVendingMachineStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(30),
       memorySize: 128,
       environment: {
-        MOMENTO_API_KEY_SECRET_NAME: authTokenSecret.secretName,
+        MOMENTO_API_KEY_SECRET_NAME: apiKeySecret.secretName,
       },
     });
 
-    authTokenSecret.grantRead(tvmLambda);
+    apiKeySecret.grantRead(tvmLambda);
 
     const api = new apig.RestApi(this, 'MomentoTokenVendingMachineApi', {
       restApiName: 'Momento Token Vending Machine',

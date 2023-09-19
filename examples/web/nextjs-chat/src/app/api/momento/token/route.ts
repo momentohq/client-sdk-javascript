@@ -14,34 +14,36 @@ import { getServerSession } from "next-auth";
 
 const authClient = new AuthClient({
   credentialProvider: CredentialProvider.fromString({
-    authToken: process.env.MOMENTO_API_KEY,
+    apiKey: process.env.MOMENTO_API_KEY,
   }),
 });
 
 export const revalidate = 0;
 export async function GET(_request: Request) {
-  let generateAuthTokenResponse;
+  let generateDisposableTokenResponse;
   switch (authenticationMethod) {
     case AuthenticationMethod.Open:
-      generateAuthTokenResponse = await fetchTokenWithOpenAuth();
+      generateDisposableTokenResponse = await fetchTokenWithOpenAuth();
       break;
     case AuthenticationMethod.Credentials:
-      generateAuthTokenResponse = await fetchTokenWithAuthCredentials();
+      generateDisposableTokenResponse = await fetchTokenWithAuthCredentials();
       break;
     default:
       throw new Error("Unimplemented authentication method");
   }
 
-  if (generateAuthTokenResponse instanceof GenerateDisposableToken.Success) {
-    return new Response(generateAuthTokenResponse.authToken, {
+  if (
+    generateDisposableTokenResponse instanceof GenerateDisposableToken.Success
+  ) {
+    return new Response(generateDisposableTokenResponse.authToken, {
       headers: {
         "Cache-Control": "no-cache",
       },
     });
   } else if (
-    generateAuthTokenResponse instanceof GenerateDisposableToken.Error
+    generateDisposableTokenResponse instanceof GenerateDisposableToken.Error
   ) {
-    throw new Error(generateAuthTokenResponse.message());
+    throw new Error(generateDisposableTokenResponse.message());
   }
   throw new Error("Unable to get token from momento");
 }

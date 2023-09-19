@@ -10,7 +10,7 @@ import {
   DeleteCache,
   AuthClient,
   ExpiresIn,
-  GenerateAuthToken,
+  GenerateApiKey,
   TokenScope,
   TokenScopes,
   CacheRole,
@@ -67,19 +67,19 @@ async function get(cacheClient: CacheClient, cacheName: string, key: string) {
   }
 }
 
-async function generateAuthToken(
+async function generateApiKey(
   authClient: AuthClient,
   scope: TokenScope,
   durationSeconds: number
 ): Promise<[string, string]> {
-  const generateTokenResponse = await authClient.generateAuthToken(scope, ExpiresIn.seconds(durationSeconds));
-  if (generateTokenResponse instanceof GenerateAuthToken.Success) {
+  const generateTokenResponse = await authClient.generateApiKey(scope, ExpiresIn.seconds(durationSeconds));
+  if (generateTokenResponse instanceof GenerateApiKey.Success) {
     console.log(`Generated an API key with ${scope.toString()} scope at time ${Date.now() / 1000}!`);
     console.log('Logging only a substring of the tokens, because logging security credentials is not advisable:');
-    console.log(`API key starts with: ${generateTokenResponse.authToken.substring(0, 10)}`);
+    console.log(`API key starts with: ${generateTokenResponse.apiKey.substring(0, 10)}`);
     console.log(`Refresh token starts with: ${generateTokenResponse.refreshToken.substring(0, 10)}`);
     console.log(`Expires At: ${generateTokenResponse.expiresAt.epoch()}`);
-    return [generateTokenResponse.authToken, generateTokenResponse.refreshToken];
+    return [generateTokenResponse.apiKey, generateTokenResponse.refreshToken];
   } else {
     throw new Error(`Failed to generate API key: ${generateTokenResponse.toString()}`);
   }
@@ -107,14 +107,14 @@ async function main() {
     await set(mainCacheClient, CACHE_OPEN_DOOR, 'hello', 'world');
 
     // Create a token valid for 600 seconds that can only read a specific cache 'open-door'
-    const [scopedToken, scopedRefreshToken] = await generateAuthToken(
+    const [scopedToken, scopedRefreshToken] = await generateApiKey(
       mainAuthClient,
       TokenScopes.cacheReadOnly(CACHE_OPEN_DOOR),
       tokenValidForSeconds
     );
     const scopedTokenCacheClient = await CacheClient.create({
       configuration: Configurations.Laptop.v1(),
-      credentialProvider: CredentialProvider.fromString({authToken: scopedToken}),
+      credentialProvider: CredentialProvider.fromString({apiKey: scopedToken}),
       defaultTtlSeconds: 600,
     });
 
@@ -155,11 +155,7 @@ async function main() {
     ],
   };
 
-  const [scopedToken1, scopedRefreshToken1] = await generateAuthToken(
-    mainAuthClient,
-    permissions,
-    tokenValidForSeconds
-  );
+  const [scopedToken1, scopedRefreshToken1] = await generateApiKey(mainAuthClient, permissions, tokenValidForSeconds);
   // Do something with the token.
 }
 

@@ -65,12 +65,12 @@ async function getNewWebClients(selectedUser?: string): Promise<MomentoClients> 
       throw new Error(`Unrecognized token vending machine auth type ${token_vending_machine_auth}`);
     }
   }
-  
+
   const token = await fetchResp.json();
   const topicClient = new TopicClient({
     configuration: Configurations.Browser.v1(),
     credentialProvider: CredentialProvider.fromString({
-      authToken: token.authToken,
+      apiKey: token.apiKey,
     }),
   });
   webTopicClient = topicClient;
@@ -102,7 +102,7 @@ async function fetchTokenWithLambdaAuth() {
 }
 
 async function fetchTokenWithCognitoAuth(selectedUser?: string) {
-  // Cognito auth flow: sign into Cognito, get ID token, pass ID token as 
+  // Cognito auth flow: sign into Cognito, get ID token, pass ID token as
   // the Authorization token to the token vending machine
   const cognitoClient = new CognitoIdentityProviderClient({
     "region": import.meta.env.VITE_TOKEN_VENDING_MACHINE_AWS_REGION,
@@ -114,13 +114,13 @@ async function fetchTokenWithCognitoAuth(selectedUser?: string) {
 
   let userCredentials = {};
   if (selectedUser === "ReadWrite") {
-    userCredentials = { 
+    userCredentials = {
       "USERNAME": import.meta.env.VITE_TOKEN_VENDING_MACHINE_USERNAME_READWRITE,
       "PASSWORD": import.meta.env.VITE_TOKEN_VENDING_MACHINE_PASSWORD_READWRITE,
     };
   }
   else {
-    userCredentials = { 
+    userCredentials = {
       "USERNAME": import.meta.env.VITE_TOKEN_VENDING_MACHINE_USERNAME_READONLY,
       "PASSWORD": import.meta.env.VITE_TOKEN_VENDING_MACHINE_PASSWORD_READONLY,
     };
@@ -129,7 +129,7 @@ async function fetchTokenWithCognitoAuth(selectedUser?: string) {
   const input = {
     AuthFlow: "USER_PASSWORD_AUTH",
     AuthParameters: userCredentials,
-    ClientId: import.meta.env.VITE_TOKEN_VENDING_MACHINE_CLIENT_ID, 
+    ClientId: import.meta.env.VITE_TOKEN_VENDING_MACHINE_CLIENT_ID,
   };
   const command = new InitiateAuthCommand(input);
   const response = await cognitoClient.send(command);
@@ -140,7 +140,7 @@ async function fetchTokenWithCognitoAuth(selectedUser?: string) {
 
   const decodedToken: any = jwt_decode(IdToken);
   const userCognitoGroup = decodedToken['cognito:groups'][0];
-  
+
   // Make the actual API call to the token vending machine here
   return await fetch(import.meta.env.VITE_TOKEN_VENDING_MACHINE_URL, {
     cache: "no-store",  // don't cache the token since it will expire in 5 min
@@ -203,7 +203,7 @@ async function publish(cacheName: string, topicName: string, message: string) {
       clearCurrentClient();
       await subscribeToTopic(cacheName, topicName, onItemCb, onErrorCb);
       await publish(cacheName, topicName, message);
-    } 
+    }
     else if (resp.errorCode() === MomentoErrorCode.PERMISSION_ERROR) {
       console.log("User is not allowed to publish to topic", resp);
       alert("You have entered the chat room as a read-only user!");
