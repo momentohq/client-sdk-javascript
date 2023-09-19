@@ -1,5 +1,13 @@
-import {CacheDelete, CacheGet, CacheSet} from '@gomomento/sdk-core';
-import {CacheClient, Configurations, CredentialProvider, CreateCache, BatchUtils} from '@gomomento/sdk';
+import {
+  CacheDelete,
+  CacheGet,
+  CacheSet,
+  CacheClient,
+  Configurations,
+  CredentialProvider,
+  CreateCache,
+  BatchUtils,
+} from '@gomomento/sdk';
 
 const cacheName = 'cache';
 
@@ -27,30 +35,22 @@ async function main() {
     {key: '2', value: 'second'},
     {key: '3', value: 'third'},
   ];
-  const setResponse = await BatchUtils.batchSet(
-    cacheClient,
-    cacheName,
-    items
-  );
-  console.log("\nValues set for the following keys?");
+  const setResponse = await BatchUtils.batchSet(cacheClient, cacheName, items);
+  console.log('\nValues set for the following keys?');
   for (const [key, resp] of Object.entries(setResponse)) {
-    console.log(`\t|${key}: ${resp instanceof CacheSet.Success}`);
+    console.log(`\t|${key}: ${String(resp instanceof CacheSet.Success)}`);
   }
 
   const getResponse = await BatchUtils.batchGet(cacheClient, cacheName, ['a', 'b', 'c', '1', '2', '3']);
-  console.log("\nValues fetched for the following keys?");
+  console.log('\nValues fetched for the following keys?');
   for (const [key, resp] of Object.entries(getResponse)) {
-    console.log(`\t|${key}: ${resp instanceof CacheGet.Hit} | value: ${(resp as CacheGet.Hit).value()}`);
+    console.log(`\t|${key}: ${String(resp instanceof CacheGet.Hit)} | value: ${(resp as CacheGet.Hit).value()}`);
   }
 
-  const deleteResponse = await BatchUtils.batchDelete(
-    cacheClient,
-    cacheName,
-    ['a', 'b', 'c', '1', '2', '3'],
-  );
-  console.log("\nValues deleted for the following keys?");
+  const deleteResponse = await BatchUtils.batchDelete(cacheClient, cacheName, ['a', 'b', 'c', '1', '2', '3']);
+  console.log('\nValues deleted for the following keys?');
   for (const [key, resp] of Object.entries(deleteResponse)) {
-    console.log(`\t|${key}: ${resp instanceof CacheDelete.Success}`);
+    console.log(`\t|${key}: ${String(resp instanceof CacheDelete.Success)}`);
   }
 }
 
