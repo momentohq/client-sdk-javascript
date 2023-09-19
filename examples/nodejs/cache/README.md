@@ -61,6 +61,15 @@ MOMENTO_API_KEY=<YOUR API KEY> npm run dictionary
 
 Example Code: [dictionary.ts](dictionary.ts)
 
+## Running the BatchUtils Example
+
+This example demonstrates how to use the `batchSet`, `batchGet`, and `batchDelete` functions.
+
+```bash
+# Run example code
+MOMENTO_API_KEY=<YOUR API KEY> npm run batchutils
+```
+
 If you have questions or need help experimenting further, please reach out to us!
 
 
