@@ -66,12 +66,16 @@ export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 
 		if (env.MOMENTO_API_KEY === undefined) {
-			throw new Error('MOMENTO_API_KEY should be set in .dev.vars for local development, and should' +
+			throw new Error('MOMENTO_API_KEY must be set in .dev.vars for local development, and should' +
 				' be uploaded to Cloudflare secrets through NPX if you are testing your worker. See README for more details')
 		}
 
 		if (env.MOMENTO_CACHE_NAME === undefined) {
-			throw new Error('MOMENTO_CACHE_NAME should be set in wrangler.toml file. See README for more details')
+			throw new Error('MOMENTO_CACHE_NAME must be set in wrangler.toml file. See README for more details')
+		}
+
+		if (env.MOMENTO_REST_ENDPOINT === undefined) {
+			throw new Error('MOMENTO_REST_ENDPOINT must be set in wrangler.toml file. See README for more details')
 		}
 
 		const client = new MomentoFetcher(env.MOMENTO_API_KEY, env.MOMENTO_REST_ENDPOINT);

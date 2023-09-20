@@ -30,8 +30,11 @@ npm install
 - Copy the `API key` value from the API key generation screen for use in the next two steps.
    ![API Key generation results](https://assets.website-files.com/628fadb065a50abf13a11485/64b97cb50d9a0db6b03c40e8_JZLnsjtwN5RaGx83NX424WKmvauAuqcUD3YeWLx2LFFIwLiXHupq1XF3MOyggObfaC8LE1fQUN4b-9nDTOwGYUHugfZYqYTK92HybD2X1OsuRF-DxmJKekTWgV0SY0LzWpE9vvA0To8sGmNXkG-geQ.png)
 - Update the `.dev.vars` file in the example directory with the Momento API key. Since this is a secret key, we don’t store it as an environment variable, instead storing it as a Cloudflare secret.
-- Cloudflare uses a file called wrangler.toml to configure the development and publishing of a worker. More information about Cloudflare configuration can be found [on their website](https://developers.cloudflare.com/workers/wrangler/configuration/). In the example directory, update the `wrangler.toml` file and set the `MOMENTO_CACHE` environment variable to match the name of the cache you created earlier. Note that
-	you'll also need to uncomment two lines including line that has `[vars]` in it.
+- Cloudflare uses a file called wrangler.toml to configure the development and publishing of a worker. More information about Cloudflare configuration can be found [on their website](https://developers.cloudflare.com/workers/wrangler/configuration/). In the example directory, update the `wrangler.toml` file and set the `MOMENTO_CACHE` environment variable to match the name of the cache you created earlier. Note that we need to explicitly uncomment the below 2 lines by removing the `#` sign and with the updated data.
+```bash
+[vars]
+MOMENTO_CACHE_NAME = "myCache"
+```
 - Start the development server:
 
 ### Running locally
