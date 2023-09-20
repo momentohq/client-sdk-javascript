@@ -27,6 +27,6 @@
     "typescript": "4.4.3"
   },
   "dependencies": {
-    "@gomomento/sdk": "^1.39.3"
+    "@gomomento/sdk": "^1.40.1"
   }
 }
