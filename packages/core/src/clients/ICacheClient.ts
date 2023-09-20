@@ -342,9 +342,7 @@ export interface ICacheClient extends IControlClient, IPingClient {
   leaderboardUpsert(
     cacheName: string,
     leaderboardName: string,
-    elements:
-      | Map<string, number>
-      | Record<string, number>
+    elements: Map<bigint, number>
   ): Promise<CacheLeaderboardUpsert.Response>;
   leaderboardGetElementsByRankRange(
     cacheName: string,
@@ -354,12 +352,12 @@ export interface ICacheClient extends IControlClient, IPingClient {
   leaderboardGetElementRank(
     cacheName: string,
     leaderboardName: string,
-    elementId: string
+    elementId: bigint
   ): Promise<CacheLeaderboardGetElementRank.Response>;
   leaderboardRemoveElements(
     cacheName: string,
     leaderboardName: string,
-    elementIds: Array<string>
+    elementIds: Array<bigint>
   ): Promise<CacheLeaderboardRemoveElements.Response>;
   leaderboardGetElementsByScoreRange(
     cacheName: string,
