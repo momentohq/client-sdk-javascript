@@ -41,5 +41,5 @@ export interface ILeaderboardClient {
       cacheName: string,
       leaderboardName: string,
       options?: LeaderboardFetchByScoreOptions
-    ): Promise<LeaderboardFetchByScoreRange.Response>;
+    ): Promise<LeaderboardFetchByScore.Response>;
 }
