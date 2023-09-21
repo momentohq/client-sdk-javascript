@@ -1,43 +1,45 @@
 import {
   SortedSetFetchByRankCallOptions,
   SortedSetFetchByScoreCallOptions,
+  SortedSetOrder,
 } from '../utils';
 
 export type LeaderboardGetElementsByRankRangeOptions = SortedSetFetchByRankCallOptions;
 export type LeaderboardGetElementsByScoreRangeOptions = SortedSetFetchByScoreCallOptions;
+export type LeaderboardOrder = SortedSetOrder;
 
 export interface ILeaderboardClient {
     leaderboardDelete(
       cacheName: string,
       leaderboardName: string
-    ): Promise<CacheLeaderboardDelete.Response>;
+    ): Promise<LeaderboardDelete.Response>;
     leaderboardLength(
       cacheName: string,
       leaderboardName: string
-    ): Promise<CacheLeaderboardLength.Response>;
+    ): Promise<LeaderboardLength.Response>;
     leaderboardUpsert(
       cacheName: string,
       leaderboardName: string,
       elements: Map<bigint, number>
-    ): Promise<CacheLeaderboardUpsert.Response>;
+    ): Promise<LeaderboardUpsert.Response>;
     leaderboardGetElementsByRankRange(
       cacheName: string,
       leaderboardName: string,
       options?: LeaderboardGetElementsByRankRangeOptions
-    ): Promise<CacheLeaderboardGetElementsByRankRange.Response>;
+    ): Promise<LeaderboardGetElementsByRankRange.Response>;
     leaderboardGetElementRank(
       cacheName: string,
       leaderboardName: string,
       elementId: bigint
-    ): Promise<CacheLeaderboardGetElementRank.Response>;
+    ): Promise<LeaderboardGetElementRank.Response>;
     leaderboardRemoveElements(
       cacheName: string,
       leaderboardName: string,
       elementIds: Array<bigint>
-    ): Promise<CacheLeaderboardRemoveElements.Response>;
+    ): Promise<LeaderboardRemoveElements.Response>;
     leaderboardGetElementsByScoreRange(
       cacheName: string,
       leaderboardName: string,
       options?: LeaderboardGetElementsByScoreRangeOptions
-    ): Promise<CacheLeaderboardGetElementsByScoreRange.Response>;
+    ): Promise<LeaderboardGetElementsByScoreRange.Response>;
 }
