@@ -13,7 +13,11 @@ class MomentoFetcher {
 	private readonly baseurl: string;
 	constructor(key: string, endpoint: string) {
 		this.apiKey = key;
-		this.baseurl = `${endpoint}/cache`;
+		if (!endpoint.startsWith('https://')) {
+			this.baseurl = `https://${endpoint}/cache`;
+		} else {
+			this.baseurl = `${endpoint}/cache`;
+		}
 	}
 
 	async get(cacheName: string, key: string) {
@@ -58,7 +62,7 @@ class MomentoFetcher {
 
 export interface Env {
 	MOMENTO_API_KEY: string;
-	MOMENTO_REST_ENDPOINT: string;
+	MOMENTO_HTTP_ENDPOINT: string;
 	MOMENTO_CACHE_NAME: string;
 }
 
@@ -74,11 +78,11 @@ export default {
 			throw new Error('MOMENTO_CACHE_NAME must be set in wrangler.toml file. See README for more details')
 		}
 
-		if (env.MOMENTO_REST_ENDPOINT === undefined) {
-			throw new Error('MOMENTO_REST_ENDPOINT must be set in wrangler.toml file. See README for more details')
+		if (env.MOMENTO_HTTP_ENDPOINT === undefined) {
+			throw new Error('MOMENTO_HTTP_ENDPOINT must be set in wrangler.toml file. See README for more details')
 		}
 
-		const client = new MomentoFetcher(env.MOMENTO_API_KEY, env.MOMENTO_REST_ENDPOINT);
+		const client = new MomentoFetcher(env.MOMENTO_API_KEY, env.MOMENTO_HTTP_ENDPOINT);
 		const cache = env.MOMENTO_CACHE_NAME;
 		const key = "key";
 		const value = "value";
