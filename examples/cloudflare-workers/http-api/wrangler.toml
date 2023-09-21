@@ -1,6 +1,7 @@
 name = "momento-cloudflare-worker-http"
 main = "src/worker.ts"
 compatibility_date = "2023-07-10"
+keep_vars = true
 
 # [vars]
 # MOMENTO_HTTP_ENDPOINT = "REPLACE ME"
