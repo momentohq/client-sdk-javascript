@@ -22,24 +22,24 @@ export interface ILeaderboardClient {
       leaderboardName: string,
       elements: Map<bigint, number>
     ): Promise<LeaderboardUpsert.Response>;
-    leaderboardGetElementsByRankRange(
+    leaderboardFetchByRank(
       cacheName: string,
       leaderboardName: string,
-      options?: LeaderboardGetElementsByRankRangeOptions
-    ): Promise<LeaderboardGetElementsByRankRange.Response>;
-    leaderboardGetElementRank(
+      options?: LeaderboardFetchByRankOptions
+    ): Promise<LeaderboardFetchByRank.Response>;
+    leaderboardGetRank(
       cacheName: string,
       leaderboardName: string,
       elementId: bigint
-    ): Promise<LeaderboardGetElementRank.Response>;
+    ): Promise<LeaderboardGetRank.Response>;
     leaderboardRemoveElements(
       cacheName: string,
       leaderboardName: string,
       elementIds: Array<bigint>
     ): Promise<LeaderboardRemoveElements.Response>;
-    leaderboardGetElementsByScoreRange(
+    leaderboardFetchByScore(
       cacheName: string,
       leaderboardName: string,
-      options?: LeaderboardGetElementsByScoreRangeOptions
-    ): Promise<LeaderboardGetElementsByScoreRange.Response>;
+      options?: LeaderboardFetchByScoreOptions
+    ): Promise<LeaderboardFetchByScoreRange.Response>;
 }
