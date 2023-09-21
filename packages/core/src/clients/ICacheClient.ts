@@ -80,10 +80,6 @@ export type SortedSetFetchByScoreOptions = SortedSetFetchByScoreCallOptions;
 export type SortedSetIncrementOptions = CollectionCallOptions;
 export type SortedSetLengthByScoreOptions = SortedSetLengthByScoreCallOptions;
 
-// Sketching out the Leaderboard APIs
-export type LeaderboardGetElementsByRankRangeOptions = SortedSetFetchByRankCallOptions;
-export type LeaderboardGetElementsByScoreRangeOptions = SortedSetFetchByScoreCallOptions;
-
 export interface ICacheClient extends IControlClient, IPingClient {
   cache(cacheName: string): IMomentoCache;
 
@@ -329,39 +325,4 @@ export interface ICacheClient extends IControlClient, IPingClient {
     key: string | Uint8Array,
     ttlMilliseconds: number
   ): Promise<CacheDecreaseTtl.Response>;
-  
-  // Sketching out Leaderboard API signatures
-  leaderboardDelete(
-    cacheName: string,
-    leaderboardName: string
-  ): Promise<CacheLeaderboardDelete.Response>;
-  leaderboardLength(
-    cacheName: string,
-    leaderboardName: string
-  ): Promise<CacheLeaderboardLength.Response>;
-  leaderboardUpsert(
-    cacheName: string,
-    leaderboardName: string,
-    elements: Map<bigint, number>
-  ): Promise<CacheLeaderboardUpsert.Response>;
-  leaderboardGetElementsByRankRange(
-    cacheName: string,
-    leaderboardName: string,
-    options?: LeaderboardGetElementsByRankRangeOptions
-  ): Promise<CacheLeaderboardGetElementsByRankRange.Response>;
-  leaderboardGetElementRank(
-    cacheName: string,
-    leaderboardName: string,
-    elementId: bigint
-  ): Promise<CacheLeaderboardGetElementRank.Response>;
-  leaderboardRemoveElements(
-    cacheName: string,
-    leaderboardName: string,
-    elementIds: Array<bigint>
-  ): Promise<CacheLeaderboardRemoveElements.Response>;
-  leaderboardGetElementsByScoreRange(
-    cacheName: string,
-    leaderboardName: string,
-    options?: LeaderboardGetElementsByScoreRangeOptions
-  ): Promise<CacheLeaderboardGetElementsByScoreRange.Response>;
 }
