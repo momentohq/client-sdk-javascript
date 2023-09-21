@@ -27,7 +27,7 @@ npm install
 1. Cloudflare uses a file called wrangler.toml to configure the development and publishing of a worker. More information about Cloudflare configuration can be found [on their website](https://developers.cloudflare.com/workers/wrangler/configuration/). In the example directory, update the `wrangler.toml` file with the cache name and HTTP endpoint as they appeared in the Momento Console. Note that we need to explicitly uncomment the below 3 lines by removing the `#` sign and with the updated data.
 ```bash
 [vars]
-MOMENTO_REST_ENDPOINT = "myEndpoint"
+MOMENTO_HTTP_ENDPOINT = "myEndpoint"
 MOMENTO_CACHE_NAME =  "myCache"
 ```
 1. Update the `.dev.vars` file in the example directory with the Momento API key. Since this is a secret key, we don’t store it as an environment variable, instead storing it as a Cloudflare secret.
