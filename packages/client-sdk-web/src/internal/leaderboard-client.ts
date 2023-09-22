@@ -1,7 +1,5 @@
 import {InternalLeaderboardClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {
-  CredentialProvider,
-  InvalidArgumentError,
   LeaderboardDelete,
   LeaderboardFetch,
   LeaderboardGetRank,
@@ -21,40 +19,30 @@ import {
   validateSortedSetOffset,
   validateSortedSetCount,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {Configuration} from '../config/configuration';
 import {delay} from '@gomomento/common-integration-tests';
+import {Request, UnaryResponse} from 'grpc-web';
+import {getWebCacheEndpoint} from '../utils/web-client-utils';
 
-export class LeaderboardClient implements InternalLeaderboardClient {
-  private readonly configuration: Configuration;
-  private readonly credentialProvider: CredentialProvider;
+export class LeaderboardClient<
+  REQ extends Request<REQ, RESP>,
+  RESP extends UnaryResponse<REQ, RESP>
+> implements InternalLeaderboardClient
+{
   private readonly logger: MomentoLogger;
-  private readonly requestTimeoutMs: number;
-  // TODO: add LeaderboardClient class member
+  // TODO: add LeaderboardClient and other class members
 
+  /**
+   * @param {LeaderboardClientProps} props
+   */
   constructor(props: LeaderboardClientProps) {
-    this.configuration = props.configuration;
-    this.credentialProvider = props.credentialProvider;
-    this.logger = this.configuration.getLoggerFactory().getLogger(this);
-    const grpcConfig = this.configuration
-      .getTransportStrategy()
-      .getGrpcConfig();
-
-    this.requestTimeoutMs = grpcConfig.getDeadlineMillis();
-    this.validateRequestTimeout(this.requestTimeoutMs);
+    this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.logger.debug(
-      `Creating leaderboard client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
+      `Creating data client using endpoint: '${getWebCacheEndpoint(
+        props.credentialProvider
+      )}`
     );
 
     // TODO: create LeaderboardClient
-  }
-
-  private validateRequestTimeout(timeout?: number) {
-    this.logger.debug(`Request timeout ms: ${String(timeout)}`);
-    if (timeout !== undefined && timeout <= 0) {
-      throw new InvalidArgumentError(
-        'request timeout must be greater than zero.'
-      );
-    }
   }
 
   public async leaderboardUpsert(
