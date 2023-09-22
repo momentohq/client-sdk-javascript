@@ -1,4 +1,4 @@
-import { SdkError } from "../../../errors";
+import {SdkError} from '../../../errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
 
 /**

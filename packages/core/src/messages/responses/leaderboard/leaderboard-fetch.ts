@@ -1,5 +1,5 @@
-import { SdkError } from "../../../errors";
-import { _RankedElement } from "../grpc-response-types";
+import {SdkError} from '../../../errors';
+import {_RankedElement} from '../grpc-response-types';
 import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
 
 /**
@@ -36,7 +36,7 @@ class _Success extends Response {
    * The id is a bigint, the score is a number, and the rank is a bigint.
    * @returns {{id: bigint, score: number, rank: bigint}[]}
    */
-  public valueArray(): {id: bigint, score: number, rank: bigint}[] {
+  public valueArray(): {id: bigint; score: number; rank: bigint}[] {
     return this._elements.map(item => {
       return {
         id: item.id,

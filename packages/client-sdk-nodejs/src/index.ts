@@ -81,6 +81,10 @@ import * as GenerateDisposableToken from '@gomomento/sdk-core/dist/src/messages/
 export {vector, VectorIndexItem} from '@gomomento/sdk-core';
 export * from '@gomomento/sdk-core/dist/src/messages/responses/vector';
 
+// LeaderboardClient Response Types
+export {leaderboard} from '@gomomento/sdk-core';
+export * from '@gomomento/sdk-core/dist/src/messages/responses/leaderboard';
+
 import {
   ICacheClient,
   SubscribeCallOptions,
