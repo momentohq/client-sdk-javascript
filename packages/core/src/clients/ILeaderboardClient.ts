@@ -15,19 +15,16 @@ export type LeaderboardFetchByRankOptions = SortedSetFetchByRankCallOptions;
 export type LeaderboardFetchByScoreOptions = SortedSetFetchByScoreCallOptions;
 
 export interface ILeaderboardClient {
-  leaderboardDelete(
-    cacheName: string,
-    leaderboardName: string
-  ): Promise<LeaderboardDelete.Response>;
-  leaderboardLength(
-    cacheName: string,
-    leaderboardName: string
-  ): Promise<LeaderboardLength.Response>;
   leaderboardUpsert(
     cacheName: string,
     leaderboardName: string,
     elements: Map<bigint, number>
   ): Promise<LeaderboardUpsert.Response>;
+  leaderboardFetchByScore(
+    cacheName: string,
+    leaderboardName: string,
+    options?: LeaderboardFetchByScoreOptions
+  ): Promise<LeaderboardFetch.Response>;
   leaderboardFetchByRank(
     cacheName: string,
     leaderboardName: string,
@@ -38,14 +35,17 @@ export interface ILeaderboardClient {
     leaderboardName: string,
     elementId: bigint
   ): Promise<LeaderboardGetRank.Response>;
+  leaderboardLength(
+    cacheName: string,
+    leaderboardName: string
+  ): Promise<LeaderboardLength.Response>;
   leaderboardRemoveElements(
     cacheName: string,
     leaderboardName: string,
     elementIds: Array<bigint>
   ): Promise<LeaderboardRemoveElements.Response>;
-  leaderboardFetchByScore(
+  leaderboardDelete(
     cacheName: string,
-    leaderboardName: string,
-    options?: LeaderboardFetchByScoreOptions
-  ): Promise<LeaderboardFetch.Response>;
+    leaderboardName: string
+  ): Promise<LeaderboardDelete.Response>;
 }

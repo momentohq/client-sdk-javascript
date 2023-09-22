@@ -14,13 +14,6 @@ export interface InternalLeaderboardClient {
     leaderboardName: string,
     elements: Map<bigint, number>
   ): Promise<LeaderboardUpsert.Response>;
-  leaderboardFetchByRank(
-    cacheName: string,
-    leaderboardName: string,
-    startRank: number,
-    endRank?: number,
-    order?: SortedSetOrder
-  ): Promise<LeaderboardFetch.Response>;
   leaderboardFetchByScore(
     cacheName: string,
     leaderboardName: string,
@@ -30,22 +23,29 @@ export interface InternalLeaderboardClient {
     offset?: number,
     count?: number
   ): Promise<LeaderboardFetch.Response>;
-  leaderboardDelete(
+  leaderboardFetchByRank(
     cacheName: string,
-    leaderboardName: string
-  ): Promise<LeaderboardDelete.Response>;
-  leaderboardLength(
-    cacheName: string,
-    leaderboardName: string
-  ): Promise<LeaderboardLength.Response>;
+    leaderboardName: string,
+    startRank: number,
+    endRank?: number,
+    order?: SortedSetOrder
+  ): Promise<LeaderboardFetch.Response>;
   leaderboardGetRank(
     cacheName: string,
     leaderboardName: string,
     elementId: bigint
   ): Promise<LeaderboardGetRank.Response>;
+  leaderboardLength(
+    cacheName: string,
+    leaderboardName: string
+  ): Promise<LeaderboardLength.Response>;
   leaderboardRemoveElements(
     cacheName: string,
     leaderboardName: string,
     elementIds: Array<bigint>
   ): Promise<LeaderboardRemoveElements.Response>;
+  leaderboardDelete(
+    cacheName: string,
+    leaderboardName: string
+  ): Promise<LeaderboardDelete.Response>;
 }

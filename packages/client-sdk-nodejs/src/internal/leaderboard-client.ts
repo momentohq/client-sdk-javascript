@@ -74,26 +74,6 @@ export class LeaderboardClient implements InternalLeaderboardClient {
     );
   }
 
-  public async leaderboardFetchByRank(
-    cacheName: string,
-    leaderboardName: string,
-    startRank: number,
-    endRank?: number,
-    order?: SortedSetOrder
-  ): Promise<LeaderboardFetch.Response> {
-    try {
-      validateCacheName(cacheName);
-      validateLeaderboardName(leaderboardName);
-      validateSortedSetRanks(startRank, endRank);
-    } catch (err) {
-      return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
-    }
-    await delay(1); // to keep async in the API signature
-    return new LeaderboardFetch.Error(
-      normalizeSdkError(new Error('Not Yet Implemented'))
-    );
-  }
-
   public async leaderboardFetchByScore(
     cacheName: string,
     leaderboardName: string,
@@ -122,34 +102,22 @@ export class LeaderboardClient implements InternalLeaderboardClient {
     );
   }
 
-  public async leaderboardDelete(
+  public async leaderboardFetchByRank(
     cacheName: string,
-    leaderboardName: string
-  ): Promise<LeaderboardDelete.Response> {
+    leaderboardName: string,
+    startRank: number,
+    endRank?: number,
+    order?: SortedSetOrder
+  ): Promise<LeaderboardFetch.Response> {
     try {
       validateCacheName(cacheName);
       validateLeaderboardName(leaderboardName);
+      validateSortedSetRanks(startRank, endRank);
     } catch (err) {
-      return new LeaderboardDelete.Error(normalizeSdkError(err as Error));
+      return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
     }
     await delay(1); // to keep async in the API signature
-    return new LeaderboardDelete.Error(
-      normalizeSdkError(new Error('Not Yet Implemented'))
-    );
-  }
-
-  public async leaderboardLength(
-    cacheName: string,
-    leaderboardName: string
-  ): Promise<LeaderboardLength.Response> {
-    try {
-      validateCacheName(cacheName);
-      validateLeaderboardName(leaderboardName);
-    } catch (err) {
-      return new LeaderboardLength.Error(normalizeSdkError(err as Error));
-    }
-    await delay(1); // to keep async in the API signature
-    return new LeaderboardLength.Error(
+    return new LeaderboardFetch.Error(
       normalizeSdkError(new Error('Not Yet Implemented'))
     );
   }
@@ -171,6 +139,22 @@ export class LeaderboardClient implements InternalLeaderboardClient {
     );
   }
 
+  public async leaderboardLength(
+    cacheName: string,
+    leaderboardName: string
+  ): Promise<LeaderboardLength.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateLeaderboardName(leaderboardName);
+    } catch (err) {
+      return new LeaderboardLength.Error(normalizeSdkError(err as Error));
+    }
+    await delay(1); // to keep async in the API signature
+    return new LeaderboardLength.Error(
+      normalizeSdkError(new Error('Not Yet Implemented'))
+    );
+  }
+
   public async leaderboardRemoveElements(
     cacheName: string,
     leaderboardName: string,
@@ -186,6 +170,22 @@ export class LeaderboardClient implements InternalLeaderboardClient {
     }
     await delay(1); // to keep async in the API signature
     return new LeaderboardRemoveElements.Error(
+      normalizeSdkError(new Error('Not Yet Implemented'))
+    );
+  }
+
+  public async leaderboardDelete(
+    cacheName: string,
+    leaderboardName: string
+  ): Promise<LeaderboardDelete.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateLeaderboardName(leaderboardName);
+    } catch (err) {
+      return new LeaderboardDelete.Error(normalizeSdkError(err as Error));
+    }
+    await delay(1); // to keep async in the API signature
+    return new LeaderboardDelete.Error(
       normalizeSdkError(new Error('Not Yet Implemented'))
     );
   }
