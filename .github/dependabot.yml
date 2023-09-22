@@ -4,8 +4,8 @@
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
 version: 2
-updates: []
-
+#updates: 
+#
 ########################################################################################################################
 #
 # NOTE: we have currently disabled dependabot because it doesn't work well with repos that have multiple projects in
