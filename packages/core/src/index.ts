@@ -70,6 +70,10 @@ export * as vector from './messages/responses/vector';
 export * from './messages/responses/vector';
 export {VectorIndexItem} from './messages/vector-index';
 
+// Leaderboard Response Types
+export * as leaderboard from './messages/responses/leaderboard';
+export * from './messages/responses/leaderboard';
+
 import {CacheInfo} from './messages/cache-info';
 import {
   SubscribeCallOptions,

@@ -1,11 +1,12 @@
+import { LeaderboardDelete, LeaderboardFetch, LeaderboardGetRank, LeaderboardLength, LeaderboardRemoveElements, LeaderboardUpsert } from '../messages/responses/leaderboard';
 import {
   SortedSetFetchByRankCallOptions,
   SortedSetFetchByScoreCallOptions,
   SortedSetOrder,
 } from '../utils';
 
-export type LeaderboardGetElementsByRankRangeOptions = SortedSetFetchByRankCallOptions;
-export type LeaderboardGetElementsByScoreRangeOptions = SortedSetFetchByScoreCallOptions;
+export type LeaderboardFetchByRankOptions = SortedSetFetchByRankCallOptions;
+export type LeaderboardFetchByScoreOptions = SortedSetFetchByScoreCallOptions;
 export type LeaderboardOrder = SortedSetOrder;
 
 export interface ILeaderboardClient {
@@ -26,7 +27,7 @@ export interface ILeaderboardClient {
       cacheName: string,
       leaderboardName: string,
       options?: LeaderboardFetchByRankOptions
-    ): Promise<LeaderboardFetchByRank.Response>;
+    ): Promise<LeaderboardFetch.Response>;
     leaderboardGetRank(
       cacheName: string,
       leaderboardName: string,
@@ -41,5 +42,5 @@ export interface ILeaderboardClient {
       cacheName: string,
       leaderboardName: string,
       options?: LeaderboardFetchByScoreOptions
-    ): Promise<LeaderboardFetchByScore.Response>;
+    ): Promise<LeaderboardFetch.Response>;
 }
