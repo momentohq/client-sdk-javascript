@@ -48,7 +48,7 @@ export class LeaderboardClient<
   public async leaderboardUpsert(
     cacheName: string,
     leaderboardName: string,
-    elements: Map<bigint, number>
+    elements: Map<bigint | number, number>
   ): Promise<LeaderboardUpsert.Response> {
     try {
       validateCacheName(cacheName);
@@ -113,7 +113,7 @@ export class LeaderboardClient<
   public async leaderboardGetRank(
     cacheName: string,
     leaderboardName: string,
-    elementId: bigint
+    id: bigint | number
   ): Promise<LeaderboardGetRank.Response> {
     try {
       validateCacheName(cacheName);
@@ -146,7 +146,7 @@ export class LeaderboardClient<
   public async leaderboardRemoveElements(
     cacheName: string,
     leaderboardName: string,
-    elementIds: Array<bigint>
+    ids: Array<bigint | number>
   ): Promise<LeaderboardRemoveElements.Response> {
     try {
       validateCacheName(cacheName);

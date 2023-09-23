@@ -123,7 +123,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
    *
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to fetch the element from.
-   * @param {bigint} elementId - The id of the element whose rank we are retrieving.
+   * @param {bigint} id - The id of the element whose rank we are retrieving.
    * @returns {Promise<LeaderboardGetRank.Response>}
    * {@link LeaderboardGetRank.Success} containing the rank of the requested element when found.
    * {@link LeaderboardGetRank.Error} on failure.
@@ -131,12 +131,12 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
   public async leaderboardGetRank(
     cacheName: string,
     leaderboardName: string,
-    elementId: bigint
+    id: bigint
   ): Promise<LeaderboardGetRank.Response> {
     return await this.leaderboardClient.leaderboardGetRank(
       cacheName,
       leaderboardName,
-      elementId
+      id
     );
   }
 
@@ -162,7 +162,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
    * Remove multiple elements from the given leaderboard
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to remove elements from.
-   * @param {Array<bigint>} elementIds - The IDs of the elements to remove from the leaderboard.
+   * @param {Array<bigint>} ids - The IDs of the elements to remove from the leaderboard.
    * @returns {Promise<LeaderboardRemoveElements.Response>}
    * {@link LeaderboardRemoveElements.Success} if the elements were successfully removed.
    * {@link LeaderboardRemoveElements.Error} on failure.
@@ -170,12 +170,12 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
   public async leaderboardRemoveElements(
     cacheName: string,
     leaderboardName: string,
-    elementIds: Array<bigint>
+    ids: Array<bigint>
   ): Promise<LeaderboardRemoveElements.Response> {
     return await this.leaderboardClient.leaderboardRemoveElements(
       cacheName,
       leaderboardName,
-      elementIds
+      ids
     );
   }
 

@@ -4,6 +4,7 @@ import {PreviewVectorIndexClient} from './preview-vector-index-client';
 import * as Configurations from './config/configurations';
 import * as TopicConfigurations from './config/topic-configurations';
 import * as VectorIndexConfigurations from './config/vector-index-configurations';
+import * as LeaderboardConfigurations from './config/leaderboard-configurations';
 import * as BatchUtils from './batchutils/batch-functions';
 
 import {TopicClientProps} from './topic-client-props';
@@ -145,6 +146,10 @@ import {
   TopicConfiguration,
   TopicClientConfiguration,
 } from './config/topic-configuration';
+import {
+  LeaderboardConfiguration,
+  LeaderboardClientConfiguration,
+} from './config/leaderboard-configuration';
 
 export {
   DefaultMomentoLoggerFactory,
@@ -313,6 +318,10 @@ export {
   GenerateDisposableToken,
   ExpiresAt,
   ExpiresIn,
+  // LeaderboardClient
+  LeaderboardConfigurations,
+  LeaderboardConfiguration,
+  LeaderboardClientConfiguration,
   // Errors
   MomentoErrorCode,
   SdkError,

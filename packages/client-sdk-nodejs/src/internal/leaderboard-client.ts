@@ -21,11 +21,11 @@ import {
   validateSortedSetOffset,
   validateSortedSetCount,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {Configuration} from '../config/configuration';
 import {delay} from '@gomomento/common-integration-tests';
+import {LeaderboardConfiguration} from '../config/leaderboard-configuration';
 
 export class LeaderboardClient implements InternalLeaderboardClient {
-  private readonly configuration: Configuration;
+  private readonly configuration: LeaderboardConfiguration;
   private readonly credentialProvider: CredentialProvider;
   private readonly logger: MomentoLogger;
   private readonly requestTimeoutMs: number;
@@ -60,7 +60,7 @@ export class LeaderboardClient implements InternalLeaderboardClient {
   public async leaderboardUpsert(
     cacheName: string,
     leaderboardName: string,
-    elements: Map<bigint, number>
+    elements: Map<bigint | number, number>
   ): Promise<LeaderboardUpsert.Response> {
     try {
       validateCacheName(cacheName);
@@ -125,7 +125,7 @@ export class LeaderboardClient implements InternalLeaderboardClient {
   public async leaderboardGetRank(
     cacheName: string,
     leaderboardName: string,
-    elementId: bigint
+    id: bigint | number
   ): Promise<LeaderboardGetRank.Response> {
     try {
       validateCacheName(cacheName);
@@ -158,7 +158,7 @@ export class LeaderboardClient implements InternalLeaderboardClient {
   public async leaderboardRemoveElements(
     cacheName: string,
     leaderboardName: string,
-    elementIds: Array<bigint>
+    ids: Array<bigint | number>
   ): Promise<LeaderboardRemoveElements.Response> {
     try {
       validateCacheName(cacheName);

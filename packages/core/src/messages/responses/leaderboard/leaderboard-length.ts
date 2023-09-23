@@ -23,17 +23,17 @@ import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
 export abstract class Response extends ResponseBase {}
 
 class _Success extends Response {
-  private readonly _length: number;
-  constructor(length: number) {
+  private readonly _length: bigint;
+  constructor(length: bigint) {
     super();
     this._length = length;
   }
 
   /**
    * Returns the length of the leaderboard
-   * @returns {number}
+   * @returns {bigint}
    */
-  public length(): number {
+  public length(): bigint {
     return this._length;
   }
 

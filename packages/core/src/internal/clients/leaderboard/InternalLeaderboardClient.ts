@@ -33,7 +33,7 @@ export interface InternalLeaderboardClient {
   leaderboardGetRank(
     cacheName: string,
     leaderboardName: string,
-    elementId: bigint
+    id: bigint
   ): Promise<LeaderboardGetRank.Response>;
   leaderboardLength(
     cacheName: string,
@@ -42,7 +42,7 @@ export interface InternalLeaderboardClient {
   leaderboardRemoveElements(
     cacheName: string,
     leaderboardName: string,
-    elementIds: Array<bigint>
+    ids: Array<bigint>
   ): Promise<LeaderboardRemoveElements.Response>;
   leaderboardDelete(
     cacheName: string,

@@ -1,10 +1,10 @@
-import {Configuration, CredentialProvider} from '.';
+import {LeaderboardConfiguration, CredentialProvider} from '.';
 
 export interface LeaderboardClientProps {
   /**
    * Configuration settings for the vector client
    */
-  configuration: Configuration;
+  configuration: LeaderboardConfiguration;
   /**
    * controls how the client will get authentication information for connecting to the Momento service
    */
