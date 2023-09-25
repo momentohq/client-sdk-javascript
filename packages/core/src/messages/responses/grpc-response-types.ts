@@ -59,3 +59,15 @@ export class _SortedSetElement {
     this.score = score;
   }
 }
+
+export class _RankedElement {
+  readonly id: bigint;
+  readonly score: number;
+  readonly rank: bigint;
+
+  constructor(id: bigint, score: number, rank: bigint) {
+    this.id = id;
+    this.score = score;
+    this.rank = rank;
+  }
+}
