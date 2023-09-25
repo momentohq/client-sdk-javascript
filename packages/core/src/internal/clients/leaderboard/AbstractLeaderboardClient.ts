@@ -32,7 +32,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
    *
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to upsert to.
-   * @param {Map<bigint, number>} elements - The ID->score pairs to add to the leaderboard.
+   * @param {Map<bigint|number, number> | Record<string|number, number>} elements - The ID->score pairs to add to the leaderboard.
    * @returns {Promise<LeaderboardUpsert.Response>} -
    * {@link LeaderboardUpsert.Success} on success.
    * {@link LeaderboardUpsert.Error} on failure.
@@ -40,7 +40,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
   public async leaderboardUpsert(
     cacheName: string,
     leaderboardName: string,
-    elements: Map<bigint, number>
+    elements: Map<bigint | number, number>
   ): Promise<LeaderboardUpsert.Response> {
     return await this.leaderboardClient.leaderboardUpsert(
       cacheName,

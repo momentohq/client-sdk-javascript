@@ -12,7 +12,7 @@ export interface InternalLeaderboardClient {
   leaderboardUpsert(
     cacheName: string,
     leaderboardName: string,
-    elements: Map<bigint, number>
+    elements: Map<bigint | number, number>
   ): Promise<LeaderboardUpsert.Response>;
   leaderboardFetchByScore(
     cacheName: string,
