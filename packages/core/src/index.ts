@@ -128,6 +128,8 @@ export {
 
 export {IVectorIndexClient, SearchOptions} from './clients/IVectorIndexClient';
 
+export {ILeaderboardClient} from './clients/ILeaderboardClient';
+
 export {
   CacheRole,
   CachePermission,

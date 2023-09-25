@@ -150,6 +150,7 @@ import {
   LeaderboardConfiguration,
   LeaderboardClientConfiguration,
 } from './config/leaderboard-configuration';
+import {LeaderboardClient} from './leaderboard-client';
 
 export {
   DefaultMomentoLoggerFactory,
@@ -322,6 +323,7 @@ export {
   LeaderboardConfigurations,
   LeaderboardConfiguration,
   LeaderboardClientConfiguration,
+  LeaderboardClient,
   // Errors
   MomentoErrorCode,
   SdkError,

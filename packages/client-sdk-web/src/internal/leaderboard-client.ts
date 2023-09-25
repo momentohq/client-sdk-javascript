@@ -23,7 +23,7 @@ import {delay} from '@gomomento/common-integration-tests';
 import {Request, UnaryResponse} from 'grpc-web';
 import {getWebCacheEndpoint} from '../utils/web-client-utils';
 
-export class LeaderboardClient<
+export class LeaderboardDataClient<
   REQ extends Request<REQ, RESP>,
   RESP extends UnaryResponse<REQ, RESP>
 > implements InternalLeaderboardClient

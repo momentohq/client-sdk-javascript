@@ -1,4 +1,3 @@
-import {InternalLeaderboardClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {
   CredentialProvider,
   InvalidArgumentError,
@@ -21,10 +20,10 @@ import {
   validateSortedSetOffset,
   validateSortedSetCount,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {delay} from '@gomomento/common-integration-tests';
 import {LeaderboardConfiguration} from '../config/leaderboard-configuration';
+import {InternalLeaderboardClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 
-export class LeaderboardClient implements InternalLeaderboardClient {
+export class LeaderboardDataClient implements InternalLeaderboardClient {
   private readonly configuration: LeaderboardConfiguration;
   private readonly credentialProvider: CredentialProvider;
   private readonly logger: MomentoLogger;
@@ -189,4 +188,8 @@ export class LeaderboardClient implements InternalLeaderboardClient {
       normalizeSdkError(new Error('Not Yet Implemented'))
     );
   }
+}
+
+function delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
