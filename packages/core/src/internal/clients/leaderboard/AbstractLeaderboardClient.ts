@@ -28,6 +28,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
   /**
    * Updates elements in a leaderboard or inserts elements if they do not already exist.
    * The leaderboard is also created if it does not already exist.
+   * Note: can upsert a maximum of 8192 elements at a time.
    *
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to upsert to.
@@ -50,6 +51,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
 
   /**
    * Fetch the elements in the given leaderboard by score.
+   * Note: can fetch a maximum of 8192 elements at a time.
    *
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to fetch from.
@@ -88,6 +90,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
 
   /**
    * Fetch the elements in the given leaderboard by index (rank).
+   * Note: can fetch a maximum of 8192 elements at a time.
    *
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to fetch from.
@@ -160,6 +163,8 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
 
   /**
    * Remove multiple elements from the given leaderboard
+   * Note: can remove a maximum of 8192 elements at a time.
+   *
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to remove elements from.
    * @param {Array<bigint>} ids - The IDs of the elements to remove from the leaderboard.

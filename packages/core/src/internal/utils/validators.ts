@@ -162,3 +162,11 @@ export function validateLeaderboardName(name: string) {
     throw new InvalidArgumentError('leaderboard name must not be empty');
   }
 }
+
+export function validateLeaderboardElementsBatchSize(batchSize: number) {
+  if (batchSize > 8192) {
+    throw new InvalidArgumentError(
+      'leaderboard functions can accept a maximum of 8192 elements per request'
+    );
+  }
+}

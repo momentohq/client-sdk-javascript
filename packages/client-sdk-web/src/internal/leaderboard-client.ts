@@ -18,6 +18,7 @@ import {
   validateSortedSetScores,
   validateSortedSetOffset,
   validateSortedSetCount,
+  validateLeaderboardElementsBatchSize,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {delay} from '@gomomento/common-integration-tests';
 import {Request, UnaryResponse} from 'grpc-web';
@@ -53,6 +54,7 @@ export class LeaderboardClient<
     try {
       validateCacheName(cacheName);
       validateLeaderboardName(leaderboardName);
+      validateLeaderboardElementsBatchSize(elements.size);
     } catch (err) {
       return new LeaderboardUpsert.Error(normalizeSdkError(err as Error));
     }
@@ -80,6 +82,7 @@ export class LeaderboardClient<
       }
       if (count !== undefined) {
         validateSortedSetCount(count);
+        validateLeaderboardElementsBatchSize(count);
       }
     } catch (err) {
       return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
@@ -151,6 +154,7 @@ export class LeaderboardClient<
     try {
       validateCacheName(cacheName);
       validateLeaderboardName(leaderboardName);
+      validateLeaderboardElementsBatchSize(ids.length);
     } catch (err) {
       return new LeaderboardRemoveElements.Error(
         normalizeSdkError(err as Error)
