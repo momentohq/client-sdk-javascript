@@ -37,8 +37,10 @@ async function main() {
     offset: 10,
     count: 100,
   });
-  if (fetchByScore instanceof LeaderboardFetch.Success) {
-    console.log('Fetch by score success');
+  if (fetchByScore instanceof LeaderboardFetch.Hit) {
+    console.log('Fetch by score hit');
+  } else if (fetchByScore instanceof LeaderboardFetch.Miss) {
+    console.log('Fetch by score miss');
   } else if (fetchByScore instanceof LeaderboardFetch.Error) {
     console.log('Fetch by score error:', fetchByScore.message());
   }
@@ -49,27 +51,33 @@ async function main() {
     endRank: 5,
     order: SortedSetOrder.Ascending,
   });
-  if (fetchByRank instanceof LeaderboardFetch.Success) {
-    console.log('Fetch by rank success');
+  if (fetchByRank instanceof LeaderboardFetch.Hit) {
+    console.log('Fetch by rank hit');
+  } else if (fetchByRank instanceof LeaderboardFetch.Miss) {
+    console.log('Fetch by rank miss');
   } else if (fetchByRank instanceof LeaderboardFetch.Error) {
     console.log('Fetch by rank error:', fetchByRank.message());
   }
 
   // get rank
   const getRank = await client.leaderboardGetRank('my-cache', 'my-leaderboard', 123n);
-  if (getRank instanceof LeaderboardGetRank.Success) {
-    console.log('Get rank success');
-  } else if (getRank instanceof LeaderboardGetRank.Error) {
+  if (getRank instanceof LeaderboardGetRank.Hit) {
+    console.log('Get rank hit');
+  } else if (getRank instanceof LeaderboardGetRank.Miss) {
+    console.log('Get rank miss');
+  }else if (getRank instanceof LeaderboardGetRank.Error) {
     console.log('Get rank error:', getRank.message());
   }
 
   // length
   const lengthResp = await client.leaderboardLength('my-cache', 'my-leaderboard');
-  if (lengthResp instanceof LeaderboardLength.Success) {
-    console.log('Get leaderboard length success');
+  if (lengthResp instanceof LeaderboardLength.Hit) {
+    console.log('Get leaderboard length hit');
+  } else if (lengthResp instanceof LeaderboardLength.Miss) {
+    console.log('Get leaderboard length miss');
   } else if (lengthResp instanceof LeaderboardLength.Error) {
     console.log('Get leaderboard length error:', lengthResp.message());
-  }
+  } 
 
   // remove
   const removeResp = await client.leaderboardRemoveElements('my-cache', 'my-leaderboard', [123n, 456n, 789n]);
