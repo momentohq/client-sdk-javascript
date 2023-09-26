@@ -14,15 +14,12 @@ import {
 } from '../../../clients/ILeaderboardClient';
 import {InternalLeaderboardClient} from './InternalLeaderboardClient';
 
-export interface BaseLeaderboardClientProps {
-  createLeaderboardClient: () => InternalLeaderboardClient;
-}
 export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
   // making these protected until we fully abstract away the nodejs client
   protected readonly leaderboardClient: InternalLeaderboardClient;
 
-  protected constructor(props: BaseLeaderboardClientProps) {
-    this.leaderboardClient = props.createLeaderboardClient();
+  protected constructor(client: InternalLeaderboardClient) {
+    this.leaderboardClient = client;
   }
 
   /**
