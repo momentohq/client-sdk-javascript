@@ -1,11 +1,22 @@
+# NOTE: this file should be named `dependabot.yml`. We are temporarily disabling it
+#  because it ties up too many build resources by creating tons of parallel PRs whenever
+#  we do a new release. Until github has a solution for this issue:
+#
+# https://github.com/dependabot/dependabot-core/issues/2178
+#
+#  we will have to roll our own solution for this; there is now a script in the `scripts`
+#  dir that will update dependencies in the examples.
+#
+
+
 # To get started with Dependabot version updates, you'll need to specify which
 # package ecosystems to update and where the package manifests are located.
 # Please see the documentation for all configuration options:
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
 version: 2
-updates: []
-
+#updates: 
+#
 ########################################################################################################################
 #
 # NOTE: we have currently disabled dependabot because it doesn't work well with repos that have multiple projects in

@@ -13,7 +13,11 @@ class MomentoFetcher {
 	private readonly baseurl: string;
 	constructor(key: string, endpoint: string) {
 		this.apiKey = key;
-		this.baseurl = `${endpoint}/cache`;
+		if (!endpoint.startsWith('https://')) {
+			this.baseurl = `https://${endpoint}/cache`;
+		} else {
+			this.baseurl = `${endpoint}/cache`;
+		}
 	}
 
 	async get(cacheName: string, key: string) {
@@ -58,7 +62,7 @@ class MomentoFetcher {
 
 export interface Env {
 	MOMENTO_API_KEY: string;
-	MOMENTO_REST_ENDPOINT: string;
+	MOMENTO_HTTP_ENDPOINT: string;
 	MOMENTO_CACHE_NAME: string;
 }
 
@@ -66,15 +70,19 @@ export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 
 		if (env.MOMENTO_API_KEY === undefined) {
-			throw new Error('MOMENTO_API_KEY should be set in .dev.vars for local development, and should' +
+			throw new Error('MOMENTO_API_KEY must be set in .dev.vars for local development, and should' +
 				' be uploaded to Cloudflare secrets through NPX if you are testing your worker. See README for more details')
 		}
 
 		if (env.MOMENTO_CACHE_NAME === undefined) {
-			throw new Error('MOMENTO_CACHE_NAME should be set in wrangler.toml file. See README for more details')
+			throw new Error('MOMENTO_CACHE_NAME must be set in wrangler.toml file. See README for more details')
 		}
 
-		const client = new MomentoFetcher(env.MOMENTO_API_KEY, env.MOMENTO_REST_ENDPOINT);
+		if (env.MOMENTO_HTTP_ENDPOINT === undefined) {
+			throw new Error('MOMENTO_HTTP_ENDPOINT must be set in wrangler.toml file. See README for more details')
+		}
+
+		const client = new MomentoFetcher(env.MOMENTO_API_KEY, env.MOMENTO_HTTP_ENDPOINT);
 		const cache = env.MOMENTO_CACHE_NAME;
 		const key = "key";
 		const value = "value";
