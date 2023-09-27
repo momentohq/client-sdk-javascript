@@ -2,7 +2,7 @@ import {CacheClient} from './cache-client';
 import {AuthClient} from './auth-client';
 import {TopicClient} from './topic-client';
 import {PreviewVectorIndexClient} from './preview-vector-index-client';
-import {LeaderboardClient} from './leaderboard-client';
+import {PreviewLeaderboardClient} from './preview-leaderboard-client';
 import * as Configurations from './config/configurations';
 import * as TopicConfigurations from './config/topic-configurations';
 import * as VectorIndexConfigurations from './config/vector-index-configurations';
@@ -246,7 +246,7 @@ export {
   LeaderboardConfigurations,
   LeaderboardConfiguration,
   LeaderboardClientConfiguration,
-  LeaderboardClient,
+  PreviewLeaderboardClient,
   GenerateApiKey,
   /**
    * @deprecated - please use GenerateApiKey

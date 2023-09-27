@@ -7,7 +7,7 @@ import {
   LeaderboardRemoveElements,
   LeaderboardUpsert,
   MomentoLogger,
-  SortedSetOrder,
+  LeaderboardOrder,
 } from '@gomomento/sdk-core';
 import {LeaderboardClientProps} from '../leaderboard-client-props';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
@@ -65,11 +65,11 @@ export class LeaderboardDataClient<
   public async leaderboardFetchByScore(
     cacheName: string,
     leaderboardName: string,
-    order?: SortedSetOrder,
+    order?: LeaderboardOrder,
     minScore?: number,
     maxScore?: number,
-    offset?: number,
-    count?: number
+    offset?: bigint | number,
+    count?: bigint | number
   ): Promise<LeaderboardFetch.Response> {
     try {
       validateCacheName(cacheName);
@@ -93,9 +93,9 @@ export class LeaderboardDataClient<
   public async leaderboardFetchByRank(
     cacheName: string,
     leaderboardName: string,
-    startRank: number,
-    endRank?: number,
-    order?: SortedSetOrder
+    startRank?: bigint | number,
+    endRank?: bigint | number,
+    order?: LeaderboardOrder
   ): Promise<LeaderboardFetch.Response> {
     try {
       validateCacheName(cacheName);
@@ -113,7 +113,8 @@ export class LeaderboardDataClient<
   public async leaderboardGetRank(
     cacheName: string,
     leaderboardName: string,
-    id: bigint | number
+    id: bigint | number,
+    order?: LeaderboardOrder
   ): Promise<LeaderboardGetRank.Response> {
     try {
       validateCacheName(cacheName);
