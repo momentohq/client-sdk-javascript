@@ -38,7 +38,7 @@ async function main() {
   const fetchByScore = await client.leaderboardFetchByScore('my-cache', 'my-leaderboard', {
     minScore: 100,
     maxScore: 500,
-    order: LeaderboardOrder.Descending,
+    order: LeaderboardOrder.Ascending,
     offset: 10,
     count: 100,
   });

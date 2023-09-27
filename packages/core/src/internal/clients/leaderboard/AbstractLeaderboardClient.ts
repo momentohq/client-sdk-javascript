@@ -55,7 +55,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
    * @param {LeaderboardFetchByScoreCallOptions} options
    * @param {number} [options.minScore] - The minimum score (inclusive) of the
    * elements to fetch. Defaults to negative infinity.
-   * @param {number} [options.maxScore] - The maximum score (inclusive) of the
+   * @param {number} [options.maxScore] - The maximum score (exclusive) of the
    * elements to fetch. Defaults to positive infinity.
    * @param {LeaderboardOrder} [options.order] - The order to fetch the elements in.
    * Defaults to ascending, meaning 0 is the lowest-scoring rank.

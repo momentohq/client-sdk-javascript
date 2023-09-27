@@ -122,8 +122,8 @@ export interface ListFetchCallOptions {
 }
 
 export enum LeaderboardOrder {
-  Ascending = 'ASC',
-  Descending = 'DESC',
+  Ascending = 'ASC', // 0 is the lowest-scoring rank
+  Descending = 'DESC',  // 0 is the highest-scoring rank.
 }
 
 export interface LeaderboardGetRankCallOptions {
@@ -131,7 +131,7 @@ export interface LeaderboardGetRankCallOptions {
    * The order in which to return the elements.
    * If the order is not specified, the elements are returned in ascending order.
    * If descending order is used, the start and end ranks are interpreted as if
-   * the list were reversed.
+   * the leaderboard were reversed.
    */
   order?: LeaderboardOrder;
 }
@@ -139,21 +139,23 @@ export interface LeaderboardGetRankCallOptions {
 export interface LeaderboardFetchByRankCallOptions {
   /**
    * The rank of the first element to return, inclusive.
-   * If negative, the rank is relative to the end of the list.
-   * If the rank is not specified, the first element is used.
+   * If the rank is not specified, defaults to 0.
+   * Ranks can be used to manually paginate through the leaderboard
+   * in batches of 8192 elements (e.g. request 0-8192, then 8192-16384, etc)
    */
   startRank?: bigint | number;
   /**
    * The rank of the last element to return, exclusive.
-   * If negative, the rank is relative to the end of the list.
-   * If the rank is not specified, the range extends to the end of the list.
+   * If the rank is not specified, defaults to 8192.
+   * Ranks can be used to manually paginate through the leaderboard
+   * in batches of 8192 elements (e.g. request 0-8192, then 8192-16384, etc)
    */
   endRank?: bigint | number;
   /**
    * The order in which to return the elements.
    * If the order is not specified, the elements are returned in ascending order.
    * If descending order is used, the start and end ranks are interpreted as if
-   * the list were reversed.
+   * the leaderboard were reversed.
    */
   order?: LeaderboardOrder;
 }
@@ -165,7 +167,7 @@ export interface LeaderboardFetchByScoreCallOptions {
    */
   minScore?: number;
   /**
-   * The maximum score of the elements to return, inclusive.
+   * The maximum score of the elements to return, exclusive.
    * If the maximum score is not specified, the range extends to the highest score.
    */
   maxScore?: number;
@@ -183,7 +185,7 @@ export interface LeaderboardFetchByScoreCallOptions {
   /**
    * The maximum number of elements to return.
    * If specified must be strictly positive (> 0).
-   * Defaults to all elements in the result set.
+   * Defaults to 8192, the maximum number of elements that can be returned at a time.
    */
   count?: bigint | number;
 }
