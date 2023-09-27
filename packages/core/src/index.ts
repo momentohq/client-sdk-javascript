@@ -122,6 +122,8 @@ export {
   IncrementOptions,
 } from './clients/ICacheClient';
 
+export {IMomentoCache} from './clients/IMomentoCache';
+
 export {IVectorIndexClient, SearchOptions} from './clients/IVectorIndexClient';
 
 export {
