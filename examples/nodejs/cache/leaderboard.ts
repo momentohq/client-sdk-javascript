@@ -1,4 +1,9 @@
-import {LeaderboardClient, LeaderboardConfigurations, CredentialProvider, SortedSetOrder} from '@gomomento/sdk';
+import {
+  PreviewLeaderboardClient,
+  LeaderboardConfigurations,
+  CredentialProvider,
+  LeaderboardOrder,
+} from '@gomomento/sdk';
 import {
   LeaderboardDelete,
   LeaderboardFetch,
@@ -9,7 +14,7 @@ import {
 } from '@gomomento/sdk-core';
 
 async function main() {
-  const client = new LeaderboardClient({
+  const client = new PreviewLeaderboardClient({
     configuration: LeaderboardConfigurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_API_KEY',
@@ -18,9 +23,9 @@ async function main() {
 
   // upsert
   const elements: Map<bigint, number> = new Map([
-    [123n, 100],
-    [456n, 200],
-    [789n, 300],
+    [123n, 100.0],
+    [456n, 200.0],
+    [789n, 300.0],
   ]);
   const upsertResp = await client.leaderboardUpsert('my-cache', 'my-leaderboard', elements);
   if (upsertResp instanceof LeaderboardUpsert.Success) {
@@ -33,14 +38,14 @@ async function main() {
   const fetchByScore = await client.leaderboardFetchByScore('my-cache', 'my-leaderboard', {
     minScore: 100,
     maxScore: 500,
-    order: SortedSetOrder.Descending,
+    order: LeaderboardOrder.Descending,
     offset: 10,
     count: 100,
   });
-  if (fetchByScore instanceof LeaderboardFetch.Hit) {
-    console.log('Fetch by score hit');
-  } else if (fetchByScore instanceof LeaderboardFetch.Miss) {
-    console.log('Fetch by score miss');
+  if (fetchByScore instanceof LeaderboardFetch.Found) {
+    console.log('Fetch by score Found');
+  } else if (fetchByScore instanceof LeaderboardFetch.NotFound) {
+    console.log('Fetch by score NotFound');
   } else if (fetchByScore instanceof LeaderboardFetch.Error) {
     console.log('Fetch by score error:', fetchByScore.message());
   }
@@ -49,35 +54,35 @@ async function main() {
   const fetchByRank = await client.leaderboardFetchByRank('my-cache', 'my-leaderboard', {
     startRank: 1,
     endRank: 5,
-    order: SortedSetOrder.Ascending,
+    order: LeaderboardOrder.Ascending,
   });
-  if (fetchByRank instanceof LeaderboardFetch.Hit) {
-    console.log('Fetch by rank hit');
-  } else if (fetchByRank instanceof LeaderboardFetch.Miss) {
-    console.log('Fetch by rank miss');
+  if (fetchByRank instanceof LeaderboardFetch.Found) {
+    console.log('Fetch by rank Found');
+  } else if (fetchByRank instanceof LeaderboardFetch.NotFound) {
+    console.log('Fetch by rank NotFound');
   } else if (fetchByRank instanceof LeaderboardFetch.Error) {
     console.log('Fetch by rank error:', fetchByRank.message());
   }
 
   // get rank
-  const getRank = await client.leaderboardGetRank('my-cache', 'my-leaderboard', 123n);
-  if (getRank instanceof LeaderboardGetRank.Hit) {
-    console.log('Get rank hit');
-  } else if (getRank instanceof LeaderboardGetRank.Miss) {
-    console.log('Get rank miss');
-  }else if (getRank instanceof LeaderboardGetRank.Error) {
+  const getRank = await client.leaderboardGetRank('my-cache', 'my-leaderboard', 123n, LeaderboardOrder.Ascending);
+  if (getRank instanceof LeaderboardGetRank.Found) {
+    console.log('Get rank Found');
+  } else if (getRank instanceof LeaderboardGetRank.NotFound) {
+    console.log('Get rank NotFound');
+  } else if (getRank instanceof LeaderboardGetRank.Error) {
     console.log('Get rank error:', getRank.message());
   }
 
   // length
   const lengthResp = await client.leaderboardLength('my-cache', 'my-leaderboard');
-  if (lengthResp instanceof LeaderboardLength.Hit) {
-    console.log('Get leaderboard length hit');
-  } else if (lengthResp instanceof LeaderboardLength.Miss) {
-    console.log('Get leaderboard length miss');
+  if (lengthResp instanceof LeaderboardLength.Found) {
+    console.log('Get leaderboard length Found');
+  } else if (lengthResp instanceof LeaderboardLength.NotFound) {
+    console.log('Get leaderboard length NotFound');
   } else if (lengthResp instanceof LeaderboardLength.Error) {
     console.log('Get leaderboard length error:', lengthResp.message());
-  } 
+  }
 
   // remove
   const removeResp = await client.leaderboardRemoveElements('my-cache', 'my-leaderboard', [123n, 456n, 789n]);
