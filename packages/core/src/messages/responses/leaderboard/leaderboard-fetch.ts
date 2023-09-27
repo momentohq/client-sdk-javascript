@@ -3,8 +3,8 @@ import {_RankedElement} from '../grpc-response-types';
 import {
   ResponseBase,
   ResponseError,
-  ResponseMiss,
-  ResponseHit,
+  ResponseNotFound,
+  ResponseFound,
 } from '../response-base';
 
 /**
@@ -12,8 +12,8 @@ import {
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * - {Hit}
- * - {Miss}
+ * - {Found}
+ * - {NotFound}
  * - {Error}
  *
  * `instanceof` type guards can be used to operate on the appropriate subtype.
@@ -29,7 +29,7 @@ import {
  */
 export abstract class Response extends ResponseBase {}
 
-class _Hit extends Response {
+class _Found extends Response {
   private readonly _elements: _RankedElement[];
 
   constructor(elements: _RankedElement[]) {
@@ -56,14 +56,14 @@ class _Hit extends Response {
 /**
  * Indicates a Successful leaderboard fetch by rank or by score request.
  */
-export class Hit extends ResponseHit(_Hit) {}
+export class Found extends ResponseFound(_Found) {}
 
-class _Miss extends Response {}
+class _NotFound extends Response {}
 
 /**
  * Indicates that the requested data was not available in the cache.
  */
-export class Miss extends ResponseMiss(_Miss) {}
+export class NotFound extends ResponseNotFound(_NotFound) {}
 
 class _Error extends Response {
   constructor(protected _innerException: SdkError) {

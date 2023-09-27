@@ -5,12 +5,12 @@ import {
   LeaderboardLength,
   LeaderboardRemoveElements,
   LeaderboardUpsert,
-  SortedSetOrder,
 } from '../../../index';
 import {
   ILeaderboardClient,
-  LeaderboardFetchByRankOptions,
-  LeaderboardFetchByScoreOptions,
+  LeaderboardFetchByRankCallOptions,
+  LeaderboardFetchByScoreCallOptions,
+  LeaderboardGetRankCallOptions,
 } from '../../../clients/ILeaderboardClient';
 import {InternalLeaderboardClient} from './InternalLeaderboardClient';
 
@@ -29,7 +29,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
    *
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to upsert to.
-   * @param {Map<bigint|number, number> | Record<string|number, number>} elements - The ID->score pairs to add to the leaderboard.
+   * @param {Map<bigint|number, number>} elements - The ID->score pairs to add to the leaderboard.
    * @returns {Promise<LeaderboardUpsert.Response>} -
    * {@link LeaderboardUpsert.Success} on success.
    * {@link LeaderboardUpsert.Error} on failure.
@@ -52,19 +52,19 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
    *
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to fetch from.
-   * @param {LeaderboardFetchByScoreOptions} options
+   * @param {LeaderboardFetchByScoreCallOptions} options
    * @param {number} [options.minScore] - The minimum score (inclusive) of the
    * elements to fetch. Defaults to negative infinity.
    * @param {number} [options.maxScore] - The maximum score (inclusive) of the
    * elements to fetch. Defaults to positive infinity.
-   * @param {SortedSetOrder} [options.order] - The order to fetch the elements in.
-   * Defaults to ascending.
-   * @param {number} [options.offset] - The number of elements to skip before
+   * @param {LeaderboardOrder} [options.order] - The order to fetch the elements in.
+   * Defaults to ascending, meaning 0 is the lowest-scoring rank.
+   * @param {bigint|number} [options.offset] - The number of elements to skip before
    * returning the first element. Defaults to 0. Note: this is not the score of
    * the first element to return, but the number of elements of the result set
    * to skip before returning the first element.
-   * @param {number} [options.count] - The maximum number of elements to return.
-   * Defaults to undefined, which returns all elements.
+   * @param {bigint|number} [options.count] - The maximum number of elements to return.
+   * Defaults to 8192, which is the maximum that can be fetched at a time.
    * @returns {Promise<LeaderboardFetch.Response>} -
    * {@link LeaderboardFetch.Success} containing the requested elements.
    * {@link LeaderboardFetch.Error} on failure.
@@ -72,12 +72,12 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
   public async leaderboardFetchByScore(
     cacheName: string,
     leaderboardName: string,
-    options?: LeaderboardFetchByScoreOptions
+    options?: LeaderboardFetchByScoreCallOptions
   ): Promise<LeaderboardFetch.Response> {
     return await this.leaderboardClient.leaderboardFetchByScore(
       cacheName,
       leaderboardName,
-      options?.order ?? SortedSetOrder.Ascending,
+      options?.order,
       options?.minScore,
       options?.maxScore,
       options?.offset,
@@ -92,14 +92,14 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to fetch from.
    * @param {LeaderboardFetchByRankOptions} options
-   * @param {number} [options.startRank] - The rank of the first element to
+   * @param {bigint|number} [options.startRank] - The rank of the first element to
    * fetch. Defaults to 0. This rank is inclusive, ie the element at this rank
    * will be fetched.
-   * @param {number} [options.endRank] - The rank of the last element to fetch.
+   * @param {bigint|number} [options.endRank] - The rank of the last element to fetch.
    * This rank is exclusive, ie the element at this rank will not be fetched.
-   * Defaults to null, which fetches up until and including the last element.
-   * @param {SortedSetOrder} [options.order] - The order to fetch the elements in.
-   * Defaults to ascending.
+   * Defaults to startRank + 8192 in order to fetch the maximum 8192 elements per request.
+   * @param {LeaderboardOrder} [options.order] - The order to fetch the elements in.
+   * Defaults to ascending, meaning 0 is the lowest-scoring rank.
    * @returns {Promise<LeaderboardFetch.Response>} -
    * {@link LeaderboardFetch.Success} containing the requested elements.
    * {@link LeaderboardFetch.Error} on failure.
@@ -107,23 +107,26 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
   public async leaderboardFetchByRank(
     cacheName: string,
     leaderboardName: string,
-    options?: LeaderboardFetchByRankOptions
+    options?: LeaderboardFetchByRankCallOptions
   ): Promise<LeaderboardFetch.Response> {
     return await this.leaderboardClient.leaderboardFetchByRank(
       cacheName,
       leaderboardName,
-      options?.startRank ?? 0,
+      options?.startRank,
       options?.endRank,
-      options?.order ?? SortedSetOrder.Ascending
+      options?.order
     );
   }
 
   /**
-   * Look up the rank of an element in the leaderboard, by the id of the element.
+   * Look up the rank of an element in the leaderboard given the element id.
    *
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to fetch the element from.
-   * @param {bigint} id - The id of the element whose rank we are retrieving.
+   * @param {bigint|number} id - The id of the element whose rank we are retrieving.
+   * @param {LeaderboardGetRankCallOptions} options
+   * @param {LeaderboardOrder} [options.order] - The order to fetch the elements in.
+   * Defaults to ascending, meaning 0 is the lowest-scoring rank.
    * @returns {Promise<LeaderboardGetRank.Response>}
    * {@link LeaderboardGetRank.Success} containing the rank of the requested element when found.
    * {@link LeaderboardGetRank.Error} on failure.
@@ -131,12 +134,14 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
   public async leaderboardGetRank(
     cacheName: string,
     leaderboardName: string,
-    id: bigint
+    id: bigint | number,
+    options?: LeaderboardGetRankCallOptions
   ): Promise<LeaderboardGetRank.Response> {
     return await this.leaderboardClient.leaderboardGetRank(
       cacheName,
       leaderboardName,
-      id
+      id,
+      options?.order
     );
   }
 
@@ -164,7 +169,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
    *
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to remove elements from.
-   * @param {Array<bigint>} ids - The IDs of the elements to remove from the leaderboard.
+   * @param {Array<bigint|number>} ids - The IDs of the elements to remove from the leaderboard.
    * @returns {Promise<LeaderboardRemoveElements.Response>}
    * {@link LeaderboardRemoveElements.Success} if the elements were successfully removed.
    * {@link LeaderboardRemoveElements.Error} on failure.
@@ -172,7 +177,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
   public async leaderboardRemoveElements(
     cacheName: string,
     leaderboardName: string,
-    ids: Array<bigint>
+    ids: Array<bigint | number>
   ): Promise<LeaderboardRemoveElements.Response> {
     return await this.leaderboardClient.leaderboardRemoveElements(
       cacheName,

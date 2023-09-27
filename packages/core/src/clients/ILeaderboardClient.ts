@@ -7,12 +7,11 @@ import {
   LeaderboardUpsert,
 } from '../messages/responses/leaderboard';
 import {
-  SortedSetFetchByRankCallOptions,
-  SortedSetFetchByScoreCallOptions,
+  LeaderboardFetchByRankCallOptions,
+  LeaderboardFetchByScoreCallOptions,
+  LeaderboardGetRankCallOptions,
+  LeaderboardOrder,
 } from '../utils';
-
-export type LeaderboardFetchByRankOptions = SortedSetFetchByRankCallOptions;
-export type LeaderboardFetchByScoreOptions = SortedSetFetchByScoreCallOptions;
 
 export interface ILeaderboardClient {
   leaderboardUpsert(
@@ -23,17 +22,18 @@ export interface ILeaderboardClient {
   leaderboardFetchByScore(
     cacheName: string,
     leaderboardName: string,
-    options?: LeaderboardFetchByScoreOptions
+    options?: LeaderboardFetchByScoreCallOptions
   ): Promise<LeaderboardFetch.Response>;
   leaderboardFetchByRank(
     cacheName: string,
     leaderboardName: string,
-    options?: LeaderboardFetchByRankOptions
+    options?: LeaderboardFetchByRankCallOptions
   ): Promise<LeaderboardFetch.Response>;
   leaderboardGetRank(
     cacheName: string,
     leaderboardName: string,
-    id: bigint
+    id: bigint | number,
+    options?: LeaderboardGetRankCallOptions
   ): Promise<LeaderboardGetRank.Response>;
   leaderboardLength(
     cacheName: string,
@@ -42,10 +42,16 @@ export interface ILeaderboardClient {
   leaderboardRemoveElements(
     cacheName: string,
     leaderboardName: string,
-    ids: Array<bigint>
+    ids: Array<bigint | number>
   ): Promise<LeaderboardRemoveElements.Response>;
   leaderboardDelete(
     cacheName: string,
     leaderboardName: string
   ): Promise<LeaderboardDelete.Response>;
 }
+export {
+  LeaderboardFetchByRankCallOptions,
+  LeaderboardFetchByScoreCallOptions,
+  LeaderboardGetRankCallOptions,
+  LeaderboardOrder,
+};

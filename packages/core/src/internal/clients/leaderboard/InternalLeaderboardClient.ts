@@ -6,7 +6,7 @@ import {
   LeaderboardRemoveElements,
   LeaderboardUpsert,
 } from '../../../messages/responses/leaderboard';
-import {SortedSetOrder} from '../../../utils/cache-call-options';
+import {LeaderboardOrder} from '../../../utils/cache-call-options';
 
 export interface InternalLeaderboardClient {
   leaderboardUpsert(
@@ -17,23 +17,24 @@ export interface InternalLeaderboardClient {
   leaderboardFetchByScore(
     cacheName: string,
     leaderboardName: string,
-    order?: SortedSetOrder,
+    order?: LeaderboardOrder,
     minScore?: number,
     maxScore?: number,
-    offset?: number,
-    count?: number
+    offset?: bigint | number,
+    count?: bigint | number
   ): Promise<LeaderboardFetch.Response>;
   leaderboardFetchByRank(
     cacheName: string,
     leaderboardName: string,
-    startRank: number,
-    endRank?: number,
-    order?: SortedSetOrder
+    startRank?: bigint | number,
+    endRank?: bigint | number,
+    order?: LeaderboardOrder
   ): Promise<LeaderboardFetch.Response>;
   leaderboardGetRank(
     cacheName: string,
     leaderboardName: string,
-    id: bigint
+    id: bigint | number,
+    order?: LeaderboardOrder
   ): Promise<LeaderboardGetRank.Response>;
   leaderboardLength(
     cacheName: string,
@@ -42,7 +43,7 @@ export interface InternalLeaderboardClient {
   leaderboardRemoveElements(
     cacheName: string,
     leaderboardName: string,
-    ids: Array<bigint>
+    ids: Array<bigint | number>
   ): Promise<LeaderboardRemoveElements.Response>;
   leaderboardDelete(
     cacheName: string,
