@@ -2,7 +2,7 @@ name: Build
 
 on:
   pull_request:
-    branches: [main, leaderboard-apis-implemented]
+    branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
