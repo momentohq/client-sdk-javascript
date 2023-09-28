@@ -123,7 +123,7 @@ export interface ListFetchCallOptions {
 
 export enum LeaderboardOrder {
   Ascending = 'ASC', // 0 is the lowest-scoring rank
-  Descending = 'DESC',  // 0 is the highest-scoring rank.
+  Descending = 'DESC', // 0 is the highest-scoring rank.
 }
 
 export interface LeaderboardGetRankCallOptions {
