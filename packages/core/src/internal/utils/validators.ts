@@ -156,3 +156,9 @@ export function isBase64(str: string): boolean {
     return false;
   }
 }
+
+export function validateLeaderboardName(name: string) {
+  if (isEmpty(name)) {
+    throw new InvalidArgumentError('leaderboard name must not be empty');
+  }
+}

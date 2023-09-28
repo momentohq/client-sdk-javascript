@@ -68,3 +68,11 @@ export function ResponseSuccess<TBase extends Constructor>(Base: TBase) {
     public readonly is_success: boolean = true;
   };
 }
+
+export function ResponseFound<TBase extends Constructor>(Base: TBase) {
+  return class ResponseFound extends Base {};
+}
+
+export function ResponseNotFound<TBase extends Constructor>(Base: TBase) {
+  return class ResponseNotFound extends Base {};
+}
