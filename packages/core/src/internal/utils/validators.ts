@@ -183,3 +183,9 @@ export function validateLeaderboardCount(count: bigint) {
     throw new InvalidArgumentError('count must be strictly positive (> 0)');
   }
 }
+
+export function validateLeaderboardNumberOfElements(numElements: number) {
+  if (numElements < 1) {
+    throw new InvalidArgumentError('must provide at least one element');
+  }
+}

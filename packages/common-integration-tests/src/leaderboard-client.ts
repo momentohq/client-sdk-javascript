@@ -1,9 +1,11 @@
 import {
   ILeaderboardClient,
   LeaderboardFetch,
-  LeaderboardUpsert,
   LeaderboardOrder,
+  LeaderboardUpsert,
   MomentoErrorCode,
+  // LeaderboardLength,
+  // LeaderboardGetRank,
 } from '@gomomento/sdk-core';
 import {expectWithMessage} from './common-int-test-utils';
 import {v4} from 'uuid';
@@ -29,6 +31,12 @@ export function runLeaderboardClientTests(
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardUpsert.Error);
       }, `expected ERROR but got ${response.toString()}`);
+      const responseError = response as LeaderboardUpsert.Error;
+      expectWithMessage(() => {
+        expect(responseError.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }, `expected INVALID_ARGUMENT_ERROR but got ${responseError.errorCode()} ${responseError.message()}`);
     });
 
     it('validates the leaderboard name', async () => {
@@ -45,6 +53,12 @@ export function runLeaderboardClientTests(
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardUpsert.Error);
       }, `expected ERROR but got ${response.toString()}`);
+      const responseError = response as LeaderboardUpsert.Error;
+      expectWithMessage(() => {
+        expect(responseError.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }, `expected INVALID_ARGUMENT_ERROR but got ${responseError.errorCode()} ${responseError.message()}`);
     });
 
     it('creates new leaderboard to insert elements into', async () => {
@@ -203,7 +217,99 @@ export function runLeaderboardClientTests(
   });
 
   // describe('#Fetch by score', () => {
-  //   it('', async () => {});
+  //   const leaderboardName = `leaderboard-${v4()}`;
+
+  //   it('validates the cache name', async () => {
+  //     const response = await leaderboardClient.leaderboardFetchByScore(
+  //       '   ',
+  //       leaderboardName
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(response).toBeInstanceOf(LeaderboardFetch.Error);
+  //     }, `expected ERROR but got ${response.toString()}`);
+  //     const responseError = response as LeaderboardFetch.Error;
+  //     expectWithMessage(() => {
+  //       expect(responseError.errorCode()).toEqual(
+  //         MomentoErrorCode.INVALID_ARGUMENT_ERROR
+  //       );
+  //     }, `expected INVALID_ARGUMENT_ERROR but got ${responseError.errorCode()} ${responseError.message()}`);
+  //   });
+
+  //   it('validates the leaderboard name', async () => {
+  //     const response = await leaderboardClient.leaderboardFetchByScore(
+  //       integrationTestCacheName,
+  //       '   '
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(response).toBeInstanceOf(LeaderboardFetch.Error);
+  //     }, `expected ERROR but got ${response.toString()}`);
+  //     const responseError = response as LeaderboardFetch.Error;
+  //     expectWithMessage(() => {
+  //       expect(responseError.errorCode()).toEqual(
+  //         MomentoErrorCode.INVALID_ARGUMENT_ERROR
+  //       );
+  //     }, `expected INVALID_ARGUMENT_ERROR but got ${responseError.errorCode()} ${responseError.message()}`);
+  //   });
+
+  //   it('validates the offset', async () => {
+  //     const negativeOffset = await leaderboardClient.leaderboardFetchByScore(
+  //       integrationTestCacheName,
+  //       leaderboardName,
+  //       {offset: -10}
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(negativeOffset).toBeInstanceOf(LeaderboardFetch.Error);
+  //     }, `expected ERROR but got ${negativeOffset.toString()}`);
+  //     const negativeOffsetError = negativeOffset as LeaderboardFetch.Error;
+  //     expectWithMessage(() => {
+  //       expect(negativeOffsetError.errorCode()).toEqual(
+  //         MomentoErrorCode.INVALID_ARGUMENT_ERROR
+  //       );
+  //     }, `expected INVALID_ARGUMENT_ERROR but got ${negativeOffsetError.errorCode()} ${negativeOffsetError.message()}`);
+
+  //     const positiveOffset = await leaderboardClient.leaderboardFetchByScore(
+  //       integrationTestCacheName,
+  //       leaderboardName,
+  //       {offset: 10}
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(positiveOffset).toBeInstanceOf(LeaderboardFetch.NotFound);
+  //     }, `expected NotFound but got ${positiveOffset.toString()}`);
+  //   });
+
+  //   it('validates the count', async () => {
+  //     const negativeCount = await leaderboardClient.leaderboardFetchByScore(
+  //       integrationTestCacheName,
+  //       leaderboardName,
+  //       {count: -10}
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(negativeCount).toBeInstanceOf(LeaderboardFetch.Error);
+  //     }, `expected ERROR but got ${negativeCount.toString()}`);
+  //     const negativeCountError = negativeCount as LeaderboardFetch.Error;
+  //     expectWithMessage(() => {
+  //       expect(negativeCountError.errorCode()).toEqual(
+  //         MomentoErrorCode.INVALID_ARGUMENT_ERROR
+  //       );
+  //     }, `expected INVALID_ARGUMENT_ERROR but got ${negativeCountError.errorCode()} ${negativeCountError.message()}`);
+
+  //     const positiveCount = await leaderboardClient.leaderboardFetchByScore(
+  //       integrationTestCacheName,
+  //       leaderboardName,
+  //       {count: 10}
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(positiveCount).toBeInstanceOf(LeaderboardFetch.NotFound);
+  //     }, `expected NotFound but got ${positiveCount.toString()}`);
+  //   });
+
+  //   it('validates the score range', async () => {
+  //     // tba
+  //   });
+
+  //   it('fetches elements given a variety of score ranges', async () => {
+  //     // tba
+  //   });
   // });
 
   describe('#Fetch by rank', () => {
@@ -217,6 +323,12 @@ export function runLeaderboardClientTests(
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardFetch.Error);
       }, `expected ERROR but got ${response.toString()}`);
+      const responseError = response as LeaderboardFetch.Error;
+      expectWithMessage(() => {
+        expect(responseError.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }, `expected INVALID_ARGUMENT_ERROR but got ${responseError.errorCode()} ${responseError.message()}`);
     });
 
     it('validates the leaderboard name', async () => {
@@ -227,6 +339,12 @@ export function runLeaderboardClientTests(
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardFetch.Error);
       }, `expected ERROR but got ${response.toString()}`);
+      const responseError = response as LeaderboardFetch.Error;
+      expectWithMessage(() => {
+        expect(responseError.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }, `expected INVALID_ARGUMENT_ERROR but got ${responseError.errorCode()} ${responseError.message()}`);
     });
 
     it('validates the rank range', async () => {
@@ -423,11 +541,169 @@ export function runLeaderboardClientTests(
   });
 
   // describe('#Get element rank', () => {
-  //   it('', async () => {});
+  //   const leaderboardName = `leaderboard-${v4()}`;
+
+  //   it('validates the cache name', async () => {
+  //     const response = await leaderboardClient.leaderboardGetRank(
+  //       '   ',
+  //       leaderboardName,
+  //       123n
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(response).toBeInstanceOf(LeaderboardGetRank.Error);
+  //     }, `expected ERROR but got ${response.toString()}`);
+  //     const responseError = response as LeaderboardGetRank.Error;
+  //     expectWithMessage(() => {
+  //       expect(responseError.errorCode()).toEqual(
+  //         MomentoErrorCode.INVALID_ARGUMENT_ERROR
+  //       );
+  //     }, `expected INVALID_ARGUMENT_ERROR but got ${responseError.errorCode()} ${responseError.message()}`);
+  //   });
+
+  //   it('validates the leaderboard name', async () => {
+  //     const response = await leaderboardClient.leaderboardGetRank(
+  //       integrationTestCacheName,
+  //       '   ',
+  //       123n
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(response).toBeInstanceOf(LeaderboardGetRank.Error);
+  //     }, `expected ERROR but got ${response.toString()}`);
+  //     const responseError = response as LeaderboardGetRank.Error;
+  //     expectWithMessage(() => {
+  //       expect(responseError.errorCode()).toEqual(
+  //         MomentoErrorCode.INVALID_ARGUMENT_ERROR
+  //       );
+  //     }, `expected INVALID_ARGUMENT_ERROR but got ${responseError.errorCode()} ${responseError.message()}`);
+  //   });
+
+  //   it('returns NotFound when leaderboard does not exist', async () => {
+  //     const response = await leaderboardClient.leaderboardGetRank(
+  //       integrationTestCacheName,
+  //       leaderboardName,
+  //       123n
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(response).toBeInstanceOf(LeaderboardGetRank.NotFound);
+  //     }, `expected NotFound but got ${response.toString()}`);
+  //   });
+
+  //   it('rank changes given ascending vs descending order', async () => {
+  //     // Insert some elements
+  //     const elements = new Map([
+  //       [123n, 100.0],
+  //       [456n, 200.0],
+  //       [789n, 300.0],
+  //     ]);
+  //     const upsertResponse = await leaderboardClient.leaderboardUpsert(
+  //       integrationTestCacheName,
+  //       leaderboardName,
+  //       elements
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(upsertResponse).toBeInstanceOf(LeaderboardUpsert.Success);
+  //     }, `expected SUCCESS but got ${upsertResponse.toString()}`);
+
+  //     // Get rank of an element when leaderboard is in ascending order
+  //     const getRankAscending = await leaderboardClient.leaderboardGetRank(
+  //       integrationTestCacheName,
+  //       leaderboardName,
+  //       123n,
+  //       {order: LeaderboardOrder.Ascending}
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(getRankAscending).toBeInstanceOf(LeaderboardGetRank.Found);
+  //     }, `expected Found but got ${getRankAscending.toString()}`);
+  //     const receivedRankAsc = getRankAscending as LeaderboardGetRank.Found;
+  //     expect(receivedRankAsc.rank()).toEqual(0n);
+
+  //     // Get rank of an element when leaderboard is in descending order
+  //     const getRankDescending = await leaderboardClient.leaderboardGetRank(
+  //       integrationTestCacheName,
+  //       leaderboardName,
+  //       123n,
+  //       {order: LeaderboardOrder.Descending}
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(getRankDescending).toBeInstanceOf(LeaderboardGetRank.Found);
+  //     }, `expected Found but got ${getRankDescending.toString()}`);
+  //     const receivedRankDesc = getRankDescending as LeaderboardGetRank.Found;
+  //     expect(receivedRankDesc.rank()).toEqual(2n);
+  //   });
   // });
 
   // describe('#Get leaderboard length', () => {
-  //   it('', async () => {});
+  //   const leaderboardName = `leaderboard-${v4()}`;
+
+  //   it('validates the cache name', async () => {
+  //     const response = await leaderboardClient.leaderboardLength(
+  //       '   ',
+  //       leaderboardName
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(response).toBeInstanceOf(LeaderboardLength.Error);
+  //     }, `expected ERROR but got ${response.toString()}`);
+  //     const responseError = response as LeaderboardLength.Error;
+  //     expectWithMessage(() => {
+  //       expect(responseError.errorCode()).toEqual(
+  //         MomentoErrorCode.INVALID_ARGUMENT_ERROR
+  //       );
+  //     }, `expected INVALID_ARGUMENT_ERROR but got ${responseError.errorCode()} ${responseError.message()}`);
+  //   });
+
+  //   it('validates the leaderboard name', async () => {
+  //     const response = await leaderboardClient.leaderboardLength(
+  //       integrationTestCacheName,
+  //       '   '
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(response).toBeInstanceOf(LeaderboardLength.Error);
+  //     }, `expected ERROR but got ${response.toString()}`);
+  //     const responseError = response as LeaderboardLength.Error;
+  //     expectWithMessage(() => {
+  //       expect(responseError.errorCode()).toEqual(
+  //         MomentoErrorCode.INVALID_ARGUMENT_ERROR
+  //       );
+  //     }, `expected INVALID_ARGUMENT_ERROR but got ${responseError.errorCode()} ${responseError.message()}`);
+  //   });
+
+  //   it('returns NotFound when leaderboard does not exist', async () => {
+  //     const response = await leaderboardClient.leaderboardLength(
+  //       integrationTestCacheName,
+  //       leaderboardName
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(response).toBeInstanceOf(LeaderboardLength.NotFound);
+  //     }, `expected NotFound but got ${response.toString()}`);
+  //   });
+
+  //   it('returns Found when leaderboard does exist', async () => {
+  //     // Insert some elements
+  //     const elements = new Map([
+  //       [123n, 100.0],
+  //       [456n, 200.0],
+  //       [789n, 300.0],
+  //     ]);
+  //     const upsertResponse = await leaderboardClient.leaderboardUpsert(
+  //       integrationTestCacheName,
+  //       leaderboardName,
+  //       elements
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(upsertResponse).toBeInstanceOf(LeaderboardUpsert.Success);
+  //     }, `expected SUCCESS but got ${upsertResponse.toString()}`);
+
+  //     // Length should match number of elements inserted
+  //     const lengthResponse = await leaderboardClient.leaderboardLength(
+  //       integrationTestCacheName,
+  //       leaderboardName
+  //     );
+  //     expectWithMessage(() => {
+  //       expect(lengthResponse).toBeInstanceOf(LeaderboardLength.Found);
+  //     }, `expected Found but got ${lengthResponse.toString()}`);
+  //     const receivedLength = lengthResponse as LeaderboardLength.Found;
+  //     expect(receivedLength.length()).toEqual(BigInt(elements.size));
+  //   });
   // });
 
   // describe('#Remove elements', () => {

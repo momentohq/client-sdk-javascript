@@ -19,12 +19,12 @@ import {
   validateLeaderboardRanks,
   validateLeaderboardOffset,
   validateLeaderboardCount,
+  validateLeaderboardNumberOfElements,
   validateSortedSetScores,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {LeaderboardConfiguration} from '../config/leaderboard-configuration';
 import {InternalLeaderboardClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {leaderboard} from '@gomomento/generated-types/dist/leaderboard';
-// import _RankedElement = leaderboard._RankedElement;
 import _Element = leaderboard._Element;
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
@@ -136,10 +136,10 @@ export class LeaderboardDataClient implements InternalLeaderboardClient {
     try {
       validateCacheName(cacheName);
       validateLeaderboardName(leaderboardName);
+      validateLeaderboardNumberOfElements(elements.size);
     } catch (err) {
       return new LeaderboardUpsert.Error(normalizeSdkError(err as Error));
     }
-
     this.logger.trace(
       `Issuing 'upsert' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, number of elements: ${elements.size}`
     );

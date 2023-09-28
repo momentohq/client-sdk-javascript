@@ -18,6 +18,8 @@ import {
   AuthClient,
   TopicConfigurations,
   VectorIndexConfigurations,
+  PreviewLeaderboardClient,
+  LeaderboardConfigurations,
 } from '../../src';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
@@ -102,6 +104,13 @@ function momentoVectorClientForTesting(): PreviewVectorIndexClient {
   });
 }
 
+function momentoLeaderboardClientForTesting(): PreviewLeaderboardClient {
+  return new PreviewLeaderboardClient({
+    credentialProvider: credsProvider(),
+    configuration: LeaderboardConfigurations.Laptop.latest(),
+  });
+}
+
 export function SetupIntegrationTest(): {
   cacheClient: CacheClient;
   integrationTestCacheName: string;
@@ -147,6 +156,18 @@ export function SetupVectorIntegrationTest(): {
 } {
   const vectorClient = momentoVectorClientForTesting();
   return {vectorClient};
+}
+
+export function SetupLeaderboardIntegrationTest(): {
+  leaderboardClient: PreviewLeaderboardClient;
+  integrationTestCacheName: string;
+} {
+  const {integrationTestCacheName} = SetupIntegrationTest();
+  const leaderboardClient = momentoLeaderboardClientForTesting();
+  return {
+    leaderboardClient,
+    integrationTestCacheName: integrationTestCacheName,
+  };
 }
 
 export function SetupAuthClientIntegrationTest(): {

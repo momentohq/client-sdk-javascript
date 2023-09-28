@@ -14,14 +14,31 @@ import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
   validateCacheName,
   validateLeaderboardName,
-  validateSortedSetRanks,
   validateSortedSetScores,
-  validateSortedSetOffset,
-  validateSortedSetCount,
+  validateLeaderboardOffset,
+  validateLeaderboardCount,
+  validateLeaderboardRanks,
+  validateLeaderboardNumberOfElements,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {delay} from '@gomomento/common-integration-tests';
-import {Request, UnaryResponse} from 'grpc-web';
-import {getWebCacheEndpoint} from '../utils/web-client-utils';
+import {Request, UnaryResponse, StatusCode} from 'grpc-web';
+import {
+  createCallMetadata,
+  getWebCacheEndpoint,
+} from '../utils/web-client-utils';
+import {leaderboard} from '@gomomento/generated-types-webtext';
+import {
+  _Element,
+  _GetByRankRequest,
+  _GetByRankResponse,
+  _Order,
+  _RankRange,
+  _RankedElement as _RankedElementGrpc,
+  _UpsertElementsRequest,
+} from '@gomomento/generated-types-webtext/dist/leaderboard_pb';
+import {ClientMetadataProvider} from './client-metadata-provider';
+import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import { _RankedElement } from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
 
 export class LeaderboardDataClient<
   REQ extends Request<REQ, RESP>,
@@ -29,7 +46,9 @@ export class LeaderboardDataClient<
 > implements InternalLeaderboardClient
 {
   private readonly logger: MomentoLogger;
-  // TODO: add LeaderboardClient and other class members
+  private readonly client: leaderboard.LeaderboardClient;
+  private readonly clientMetadataProvider: ClientMetadataProvider;
+  private readonly deadlineMillis: number;
 
   /**
    * @param {LeaderboardClientProps} props
@@ -41,8 +60,19 @@ export class LeaderboardDataClient<
         props.credentialProvider
       )}`
     );
-
-    // TODO: create LeaderboardClient
+    this.clientMetadataProvider = new ClientMetadataProvider({
+      authToken: props.credentialProvider.getAuthToken(),
+    });
+    this.deadlineMillis = props.configuration
+      .getTransportStrategy()
+      .getGrpcConfig()
+      .getDeadlineMillis();
+    this.client = new leaderboard.LeaderboardClient(
+      // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
+      getWebCacheEndpoint(props.credentialProvider),
+      null,
+      {}
+    );
   }
 
   public async leaderboardUpsert(
@@ -53,13 +83,53 @@ export class LeaderboardDataClient<
     try {
       validateCacheName(cacheName);
       validateLeaderboardName(leaderboardName);
+      validateLeaderboardNumberOfElements(elements.size);
     } catch (err) {
       return new LeaderboardUpsert.Error(normalizeSdkError(err as Error));
     }
-    await delay(1); // to keep async in the API signature
-    return new LeaderboardUpsert.Error(
-      normalizeSdkError(new Error('Not Yet Implemented'))
+    this.logger.trace(
+      `Issuing 'upsert' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, number of elements: ${elements.size}`
     );
+    return await this.sendLeaderboardUpsert(
+      cacheName,
+      leaderboardName,
+      elements
+    );
+  }
+
+  private async sendLeaderboardUpsert(
+    cacheName: string,
+    leaderboardName: string,
+    elements: Map<bigint | number, number>
+  ): Promise<LeaderboardUpsert.Response> {
+    const convertedElements: _Element[] = [];
+    elements.forEach((score, id) => {
+      const newElement = new _Element();
+      newElement.setId(String(id));
+      newElement.setScore(score);
+      convertedElements.push(newElement);
+    });
+    const request = new _UpsertElementsRequest();
+    request.setCacheName(cacheName);
+    request.setLeaderboard(leaderboardName);
+    request.setElementsList(convertedElements);
+
+    return await new Promise(resolve => {
+      this.client.upsertElements(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new LeaderboardUpsert.Success());
+          } else {
+            resolve(new LeaderboardUpsert.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
   }
 
   public async leaderboardFetchByScore(
@@ -71,15 +141,17 @@ export class LeaderboardDataClient<
     offset?: bigint | number,
     count?: bigint | number
   ): Promise<LeaderboardFetch.Response> {
+    const offsetValue = offset === undefined ? 0n : BigInt(offset);
+    const countValue = count === undefined ? 8192n : BigInt(count);
     try {
       validateCacheName(cacheName);
       validateLeaderboardName(leaderboardName);
       validateSortedSetScores(minScore, maxScore);
       if (offset !== undefined) {
-        validateSortedSetOffset(offset);
+        validateLeaderboardOffset(offsetValue);
       }
       if (count !== undefined) {
-        validateSortedSetCount(count);
+        validateLeaderboardCount(countValue);
       }
     } catch (err) {
       return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
@@ -97,17 +169,84 @@ export class LeaderboardDataClient<
     endRank?: bigint | number,
     order?: LeaderboardOrder
   ): Promise<LeaderboardFetch.Response> {
+    const rankOrder = order ?? LeaderboardOrder.Ascending;
+    const startRankValue = startRank === undefined ? 0n : BigInt(startRank);
+    const endRankValue =
+      endRank === undefined ? startRankValue + 8192n : BigInt(endRank);
     try {
       validateCacheName(cacheName);
       validateLeaderboardName(leaderboardName);
-      validateSortedSetRanks(startRank, endRank);
+      validateLeaderboardRanks(startRankValue, endRankValue);
     } catch (err) {
       return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
     }
-    await delay(1); // to keep async in the API signature
-    return new LeaderboardFetch.Error(
-      normalizeSdkError(new Error('Not Yet Implemented'))
+    this.logger.trace(
+      "Issuing 'leaderboardFetchByRank' request; startRank: %s, endRank : %s, order: %s",
+      startRankValue.toString(),
+      endRankValue.toString(),
+      rankOrder.toString()
     );
+    return await this.sendLeaderboardFetchByRank(
+      cacheName,
+      leaderboardName,
+      startRankValue,
+      endRankValue,
+      rankOrder
+    );
+  }
+
+  private async sendLeaderboardFetchByRank(
+    cacheName: string,
+    leaderboardName: string,
+    startRank: bigint,
+    endRank: bigint,
+    order: LeaderboardOrder
+  ): Promise<LeaderboardFetch.Response> {
+    const request = new _GetByRankRequest();
+    request.setCacheName(cacheName);
+    request.setLeaderboard(leaderboardName);
+
+    const protoBufOrder =
+      order === LeaderboardOrder.Descending
+        ? _Order.DESCENDING
+        : _Order.ASCENDING;
+    request.setOrder(protoBufOrder);
+
+    const protoBufRankRange = new _RankRange();
+    protoBufRankRange.setStartInclusive(startRank.toString());
+    protoBufRankRange.setEndExclusive(endRank.toString());
+    request.setRankRange(protoBufRankRange);
+
+    return await new Promise(resolve => {
+      this.client.getByRank(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            const foundElements = (resp as _GetByRankResponse).getElementsList();
+            const convertedElements: _RankedElement[] = foundElements.map(
+              element => {
+                return new _RankedElement(
+                  BigInt(element.getId()),
+                  element.getScore(),
+                  BigInt(element.getRank())
+                );
+              }
+            );
+            resolve(new LeaderboardFetch.Found(convertedElements));
+          } else {
+            if (err?.code === StatusCode.NOT_FOUND) {
+              resolve(new LeaderboardFetch.NotFound());
+            } else {
+              resolve(new LeaderboardFetch.Error(cacheServiceErrorMapper(err)));
+            }
+          }
+        }
+      );
+    });
   }
 
   public async leaderboardGetRank(
