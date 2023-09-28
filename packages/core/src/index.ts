@@ -70,11 +70,16 @@ export * as vector from './messages/responses/vector';
 export * from './messages/responses/vector';
 export {VectorIndexItem} from './messages/vector-index';
 
+// Leaderboard Response Types
+export * as leaderboard from './messages/responses/leaderboard';
+export * from './messages/responses/leaderboard';
+
 import {CacheInfo} from './messages/cache-info';
 import {
   SubscribeCallOptions,
   CollectionTtl,
   SortedSetOrder,
+  LeaderboardOrder,
   ExpiresIn,
   ExpiresAt,
   ItemType,
@@ -126,6 +131,8 @@ export {IMomentoCache} from './clients/IMomentoCache';
 
 export {IVectorIndexClient, SearchOptions} from './clients/IVectorIndexClient';
 
+export {ILeaderboardClient} from './clients/ILeaderboardClient';
+
 export {
   CacheRole,
   CachePermission,
@@ -172,6 +179,7 @@ export {
   CollectionTtl,
   ItemType,
   SortedSetOrder,
+  LeaderboardOrder,
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,

@@ -70,6 +70,23 @@ This example demonstrates how to use the `batchSet`, `batchGet`, and `batchDelet
 MOMENTO_API_KEY=<YOUR API KEY> npm run batchutils
 ```
 
+## Running the Leaderboard Example
+
+First you'll need to install a version of the JS SDK that contains the leaderboard APIs. To do so using Momento-provided tarballs, you'll run:
+
+```
+npm install <sdk-tarball-name>.tgz
+npm install <sdk-core-tarball-name>.tgz
+```
+
+Then you can run the example code, which demonstrates how to call the LeaderboardClient functions.
+Note: implementations are currently stubbed and simply return a "not implemented" error.
+
+```bash
+# Run example code
+MOMENTO_API_KEY=<YOUR API KEY> npm run leaderboard
+```
+
 If you have questions or need help experimenting further, please reach out to us!
 
 
