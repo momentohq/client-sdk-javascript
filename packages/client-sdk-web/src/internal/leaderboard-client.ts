@@ -20,7 +20,6 @@ import {
   validateLeaderboardRanks,
   validateLeaderboardNumberOfElements,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {delay} from '@gomomento/common-integration-tests';
 import {Request, UnaryResponse, StatusCode} from 'grpc-web';
 import {
   createCallMetadata,
@@ -28,17 +27,26 @@ import {
 } from '../utils/web-client-utils';
 import {leaderboard} from '@gomomento/generated-types-webtext';
 import {
+  _DeleteLeaderboardRequest,
   _Element,
   _GetByRankRequest,
   _GetByRankResponse,
+  _GetByScoreRequest,
+  _GetByScoreResponse,
+  _GetLeaderboardLengthRequest,
+  _GetLeaderboardLengthResponse,
+  _GetRankRequest,
   _Order,
   _RankRange,
   _RankedElement as _RankedElementGrpc,
+  _RemoveElementsRequest,
+  _ScoreRange,
+  _Unbounded,
   _UpsertElementsRequest,
 } from '@gomomento/generated-types-webtext/dist/leaderboard_pb';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-import { _RankedElement } from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
+import {_RankedElement} from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
 
 export class LeaderboardDataClient<
   REQ extends Request<REQ, RESP>,
@@ -75,6 +83,31 @@ export class LeaderboardDataClient<
     );
   }
 
+  private convertMapToElementsList(
+    elements: Map<bigint | number, number>
+  ): _Element[] {
+    const convertedElements: _Element[] = [];
+    elements.forEach((score, id) => {
+      const newElement = new _Element();
+      newElement.setId(String(id));
+      newElement.setScore(score);
+      convertedElements.push(newElement);
+    });
+    return convertedElements;
+  }
+
+  private convertToRankedElementsList(
+    elements: _RankedElementGrpc[]
+  ): _RankedElement[] {
+    return elements.map(element => {
+      return new _RankedElement(
+        BigInt(element.getId()),
+        element.getScore(),
+        BigInt(element.getRank())
+      );
+    });
+  }
+
   public async leaderboardUpsert(
     cacheName: string,
     leaderboardName: string,
@@ -102,17 +135,10 @@ export class LeaderboardDataClient<
     leaderboardName: string,
     elements: Map<bigint | number, number>
   ): Promise<LeaderboardUpsert.Response> {
-    const convertedElements: _Element[] = [];
-    elements.forEach((score, id) => {
-      const newElement = new _Element();
-      newElement.setId(String(id));
-      newElement.setScore(score);
-      convertedElements.push(newElement);
-    });
     const request = new _UpsertElementsRequest();
     request.setCacheName(cacheName);
     request.setLeaderboard(leaderboardName);
-    request.setElementsList(convertedElements);
+    request.setElementsList(this.convertMapToElementsList(elements));
 
     return await new Promise(resolve => {
       this.client.upsertElements(
@@ -143,23 +169,93 @@ export class LeaderboardDataClient<
   ): Promise<LeaderboardFetch.Response> {
     const offsetValue = offset === undefined ? 0n : BigInt(offset);
     const countValue = count === undefined ? 8192n : BigInt(count);
+    const orderValue = order ?? LeaderboardOrder.Ascending;
     try {
       validateCacheName(cacheName);
       validateLeaderboardName(leaderboardName);
       validateSortedSetScores(minScore, maxScore);
-      if (offset !== undefined) {
-        validateLeaderboardOffset(offsetValue);
-      }
-      if (count !== undefined) {
-        validateLeaderboardCount(countValue);
-      }
+      validateLeaderboardOffset(offsetValue);
+      validateLeaderboardCount(countValue);
     } catch (err) {
       return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
     }
-    await delay(1); // to keep async in the API signature
-    return new LeaderboardFetch.Error(
-      normalizeSdkError(new Error('Not Yet Implemented'))
+    this.logger.trace(
+      `Issuing 'leaderboardFetchByScore' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, order: ${orderValue.toString()}, minScore: ${
+        minScore ?? 'null'
+      }, maxScore: ${
+        maxScore?.toString() ?? 'null'
+      }, offset: ${offsetValue.toString()}, count: ${countValue.toString()}`
     );
+    return await this.sendLeaderboardFetchByScore(
+      cacheName,
+      leaderboardName,
+      orderValue,
+      offsetValue,
+      countValue,
+      minScore,
+      maxScore
+    );
+  }
+
+  private async sendLeaderboardFetchByScore(
+    cacheName: string,
+    leaderboardName: string,
+    order: LeaderboardOrder,
+    offset: bigint,
+    count: bigint,
+    minScore?: number,
+    maxScore?: number
+  ): Promise<LeaderboardFetch.Response> {
+    const request = new _GetByScoreRequest();
+    request.setCacheName(cacheName);
+    request.setLeaderboard(leaderboardName);
+    request.setOffset(offset.toString());
+    request.setLimitElements(count.toString());
+
+    const protoBufOrder =
+      order === LeaderboardOrder.Descending
+        ? _Order.DESCENDING
+        : _Order.ASCENDING;
+    request.setOrder(protoBufOrder);
+
+    const protoBufScoreRange = new _ScoreRange();
+    if (minScore !== undefined) {
+      protoBufScoreRange.setMinInclusive(minScore);
+    } else {
+      protoBufScoreRange.setUnboundedMin(new _Unbounded());
+    }
+    if (maxScore !== undefined) {
+      protoBufScoreRange.setMaxExclusive(maxScore);
+    } else {
+      protoBufScoreRange.setUnboundedMax(new _Unbounded());
+    }
+    request.setScoreRange(protoBufScoreRange);
+
+    return await new Promise(resolve => {
+      this.client.getByScore(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            const foundElements = resp.getElementsList();
+            resolve(
+              new LeaderboardFetch.Found(
+                this.convertToRankedElementsList(foundElements)
+              )
+            );
+          } else {
+            if (err.code === StatusCode.NOT_FOUND) {
+              resolve(new LeaderboardFetch.NotFound());
+            } else {
+              resolve(new LeaderboardFetch.Error(cacheServiceErrorMapper(err)));
+            }
+          }
+        }
+      );
+    });
   }
 
   public async leaderboardFetchByRank(
@@ -226,17 +322,12 @@ export class LeaderboardDataClient<
         },
         (err, resp) => {
           if (resp) {
-            const foundElements = (resp as _GetByRankResponse).getElementsList();
-            const convertedElements: _RankedElement[] = foundElements.map(
-              element => {
-                return new _RankedElement(
-                  BigInt(element.getId()),
-                  element.getScore(),
-                  BigInt(element.getRank())
-                );
-              }
+            const foundElements = resp.getElementsList();
+            resolve(
+              new LeaderboardFetch.Found(
+                this.convertToRankedElementsList(foundElements)
+              )
             );
-            resolve(new LeaderboardFetch.Found(convertedElements));
           } else {
             if (err?.code === StatusCode.NOT_FOUND) {
               resolve(new LeaderboardFetch.NotFound());
@@ -255,16 +346,64 @@ export class LeaderboardDataClient<
     id: bigint | number,
     order?: LeaderboardOrder
   ): Promise<LeaderboardGetRank.Response> {
+    const orderValue = order ?? LeaderboardOrder.Ascending;
     try {
       validateCacheName(cacheName);
       validateLeaderboardName(leaderboardName);
     } catch (err) {
       return new LeaderboardGetRank.Error(normalizeSdkError(err as Error));
     }
-    await delay(1); // to keep async in the API signature
-    return new LeaderboardGetRank.Error(
-      normalizeSdkError(new Error('Not Yet Implemented'))
+    this.logger.trace(
+      `Issuing 'leaderboardGetRank' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, order: ${orderValue.toString()}, id: ${id.toString()}`
     );
+    return await this.sendLeaderboardGetRank(
+      cacheName,
+      leaderboardName,
+      BigInt(id),
+      orderValue
+    );
+  }
+
+  private async sendLeaderboardGetRank(
+    cacheName: string,
+    leaderboardName: string,
+    id: bigint,
+    order?: LeaderboardOrder
+  ): Promise<LeaderboardGetRank.Response> {
+    const request = new _GetRankRequest();
+    request.setCacheName(cacheName);
+    request.setLeaderboard(leaderboardName);
+    request.setId(id.toString());
+
+    const protoBufOrder =
+      order === LeaderboardOrder.Descending
+        ? _Order.DESCENDING
+        : _Order.ASCENDING;
+    request.setOrder(protoBufOrder);
+
+    return await new Promise(resolve => {
+      this.client.getRank(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            const foundElementRank = resp.getRank();
+            resolve(new LeaderboardGetRank.Found(BigInt(foundElementRank)));
+          } else {
+            if (err?.code === StatusCode.NOT_FOUND) {
+              resolve(new LeaderboardGetRank.NotFound());
+            } else {
+              resolve(
+                new LeaderboardGetRank.Error(cacheServiceErrorMapper(err))
+              );
+            }
+          }
+        }
+      );
+    });
   }
 
   public async leaderboardLength(
@@ -277,10 +416,43 @@ export class LeaderboardDataClient<
     } catch (err) {
       return new LeaderboardLength.Error(normalizeSdkError(err as Error));
     }
-    await delay(1); // to keep async in the API signature
-    return new LeaderboardLength.Error(
-      normalizeSdkError(new Error('Not Yet Implemented'))
+    this.logger.trace(
+      `Issuing 'leaderboardLength' request; cache: ${cacheName}, leaderboard: ${leaderboardName}`
     );
+    return await this.sendLeaderboardLength(cacheName, leaderboardName);
+  }
+
+  private async sendLeaderboardLength(
+    cacheName: string,
+    leaderboardName: string
+  ): Promise<LeaderboardLength.Response> {
+    const request = new _GetLeaderboardLengthRequest();
+    request.setCacheName(cacheName);
+    request.setLeaderboard(leaderboardName);
+
+    return await new Promise(resolve => {
+      this.client.getLeaderboardLength(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            const length = resp.getCount();
+            resolve(new LeaderboardLength.Found(BigInt(length)));
+          } else {
+            if (err?.code === StatusCode.NOT_FOUND) {
+              resolve(new LeaderboardLength.NotFound());
+            } else {
+              resolve(
+                new LeaderboardLength.Error(cacheServiceErrorMapper(err))
+              );
+            }
+          }
+        }
+      );
+    });
   }
 
   public async leaderboardRemoveElements(
@@ -291,15 +463,52 @@ export class LeaderboardDataClient<
     try {
       validateCacheName(cacheName);
       validateLeaderboardName(leaderboardName);
+      validateLeaderboardNumberOfElements(ids.length);
     } catch (err) {
       return new LeaderboardRemoveElements.Error(
         normalizeSdkError(err as Error)
       );
     }
-    await delay(1); // to keep async in the API signature
-    return new LeaderboardRemoveElements.Error(
-      normalizeSdkError(new Error('Not Yet Implemented'))
+    this.logger.trace(
+      `Issuing 'leaderboardRemoveElements' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, number of elements: ${ids.length.toString()}`
     );
+    return await this.sendLeaderboardRemoveElements(
+      cacheName,
+      leaderboardName,
+      ids
+    );
+  }
+
+  private async sendLeaderboardRemoveElements(
+    cacheName: string,
+    leaderboardName: string,
+    elements: Array<bigint | number>
+  ): Promise<LeaderboardRemoveElements.Response> {
+    const request = new _RemoveElementsRequest();
+    request.setCacheName(cacheName);
+    request.setLeaderboard(leaderboardName);
+
+    const convertedIds = elements.map(id => id.toString());
+    request.setIdsList(convertedIds);
+
+    return await new Promise(resolve => {
+      this.client.removeElements(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new LeaderboardRemoveElements.Success());
+          } else {
+            resolve(
+              new LeaderboardRemoveElements.Error(cacheServiceErrorMapper(err))
+            );
+          }
+        }
+      );
+    });
   }
 
   public async leaderboardDelete(
@@ -312,9 +521,35 @@ export class LeaderboardDataClient<
     } catch (err) {
       return new LeaderboardDelete.Error(normalizeSdkError(err as Error));
     }
-    await delay(1); // to keep async in the API signature
-    return new LeaderboardDelete.Error(
-      normalizeSdkError(new Error('Not Yet Implemented'))
+    this.logger.trace(
+      `Issuing 'leaderboardDelete' request; cache: ${cacheName}, leaderboard: ${leaderboardName}`
     );
+    return await this.sendLeaderboardDelete(cacheName, leaderboardName);
+  }
+
+  private async sendLeaderboardDelete(
+    cacheName: string,
+    leaderboardName: string
+  ): Promise<LeaderboardDelete.Response> {
+    const request = new _DeleteLeaderboardRequest();
+    request.setCacheName(cacheName);
+    request.setLeaderboard(leaderboardName);
+
+    return await new Promise(resolve => {
+      this.client.deleteLeaderboard(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new LeaderboardDelete.Success());
+          } else {
+            resolve(new LeaderboardDelete.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
   }
 }
