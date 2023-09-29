@@ -167,8 +167,8 @@ export class LeaderboardDataClient<
     offset?: bigint | number,
     count?: bigint | number
   ): Promise<LeaderboardFetch.Response> {
-    const offsetValue = offset === undefined ? 0n : BigInt(offset);
-    const countValue = count === undefined ? 8192n : BigInt(count);
+    const offsetValue = offset === undefined ? BigInt(0) : BigInt(offset);
+    const countValue = count === undefined ? BigInt(8192) : BigInt(count);
     const orderValue = order ?? LeaderboardOrder.Ascending;
     try {
       validateCacheName(cacheName);
@@ -266,9 +266,9 @@ export class LeaderboardDataClient<
     order?: LeaderboardOrder
   ): Promise<LeaderboardFetch.Response> {
     const rankOrder = order ?? LeaderboardOrder.Ascending;
-    const startRankValue = startRank === undefined ? 0n : BigInt(startRank);
+    const startRankValue = startRank === undefined ? BigInt(0) : BigInt(startRank);
     const endRankValue =
-      endRank === undefined ? startRankValue + 8192n : BigInt(endRank);
+      endRank === undefined ? startRankValue + BigInt(8192) : BigInt(endRank);
     try {
       validateCacheName(cacheName);
       validateLeaderboardName(leaderboardName);
