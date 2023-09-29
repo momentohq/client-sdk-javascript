@@ -162,3 +162,30 @@ export function validateLeaderboardName(name: string) {
     throw new InvalidArgumentError('leaderboard name must not be empty');
   }
 }
+
+export function validateLeaderboardRanks(start_rank: bigint, end_rank: bigint) {
+  if (start_rank > 0 && end_rank > 0 && start_rank >= end_rank) {
+    throw new InvalidArgumentError('start rank must be less than end rank');
+  }
+  if (start_rank < 0 || end_rank < 0) {
+    throw new InvalidArgumentError('ranks must be positive');
+  }
+}
+
+export function validateLeaderboardOffset(offset: bigint) {
+  if (offset < 0) {
+    throw new InvalidArgumentError('offset must be non-negative (>= 0)');
+  }
+}
+
+export function validateLeaderboardCount(count: bigint) {
+  if (count < 1) {
+    throw new InvalidArgumentError('count must be strictly positive (> 0)');
+  }
+}
+
+export function validateLeaderboardNumberOfElements(numElements: number) {
+  if (numElements < 1) {
+    throw new InvalidArgumentError('must provide at least one element');
+  }
+}
