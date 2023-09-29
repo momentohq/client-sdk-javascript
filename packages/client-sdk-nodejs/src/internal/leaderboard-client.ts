@@ -307,7 +307,8 @@ export class LeaderboardDataClient implements InternalLeaderboardClient {
     order?: LeaderboardOrder
   ): Promise<LeaderboardFetch.Response> {
     const rankOrder = order ?? LeaderboardOrder.Ascending;
-    const startRankValue = startRank === undefined ? BigInt(0) : BigInt(startRank);
+    const startRankValue =
+      startRank === undefined ? BigInt(0) : BigInt(startRank);
     const endRankValue =
       endRank === undefined ? startRankValue + BigInt(8192) : BigInt(endRank);
     try {

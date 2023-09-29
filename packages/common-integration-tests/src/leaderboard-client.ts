@@ -81,32 +81,33 @@ export function runLeaderboardClientTests(
       }, `expected INVALID_ARGUMENT_ERROR but got ${responseError.errorCode()} ${responseError.message()}`);
     });
 
-    it('creates new leaderboard to insert elements into', async () => {
-      const elements = new Map([
+    it('creates new leaderboard and inserts elements', async () => {
+      // Insert the first three elements
+      const elements1 = new Map([
         [BigInt(123), 100.0],
         [BigInt(456), 200.0],
         [BigInt(789), 300.0],
       ]);
-      const response = await leaderboardClient.leaderboardUpsert(
+      const response1 = await leaderboardClient.leaderboardUpsert(
         integrationTestCacheName,
         leaderboardName,
-        elements
+        elements1
       );
       expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardUpsert.Success);
-      }, `expected SUCCESS but got ${response.toString()}`);
+        expect(response1).toBeInstanceOf(LeaderboardUpsert.Success);
+      }, `expected SUCCESS but got ${response1.toString()}`);
 
-      const fetchResponse = await leaderboardClient.leaderboardFetchByRank(
+      const fetchResponse1 = await leaderboardClient.leaderboardFetchByRank(
         integrationTestCacheName,
         leaderboardName
       );
       expectWithMessage(() => {
-        expect(fetchResponse).toBeInstanceOf(LeaderboardFetch.Found);
-      }, `expected HIT but got ${fetchResponse.toString()}`);
-      const receivedElements = (
-        fetchResponse as LeaderboardFetch.Found
+        expect(fetchResponse1).toBeInstanceOf(LeaderboardFetch.Found);
+      }, `expected HIT but got ${fetchResponse1.toString()}`);
+      const receivedElements1 = (
+        fetchResponse1 as LeaderboardFetch.Found
       ).valueArray();
-      const expectedElements = [
+      const expectedElements1 = [
         {
           id: BigInt(123),
           score: 100,
@@ -123,34 +124,33 @@ export function runLeaderboardClientTests(
           rank: BigInt(2),
         },
       ];
-      expect(receivedElements).toEqual(expectedElements);
-    });
+      expect(receivedElements1).toEqual(expectedElements1);
 
-    it('inserts new elements into an existing leaderboard', async () => {
-      const elements = new Map([
+      // Inserts two more elements into the existing leaderboard
+      const elements2 = new Map([
         [BigInt(1234), 800],
         [BigInt(5678), 900],
       ]);
-      const response = await leaderboardClient.leaderboardUpsert(
+      const response2 = await leaderboardClient.leaderboardUpsert(
         integrationTestCacheName,
         leaderboardName,
-        elements
+        elements2
       );
       expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardUpsert.Success);
-      }, `expected SUCCESS but got ${response.toString()}`);
+        expect(response2).toBeInstanceOf(LeaderboardUpsert.Success);
+      }, `expected SUCCESS but got ${response2.toString()}`);
 
-      const fetchResponse = await leaderboardClient.leaderboardFetchByRank(
+      const fetchResponse2 = await leaderboardClient.leaderboardFetchByRank(
         integrationTestCacheName,
         leaderboardName
       );
       expectWithMessage(() => {
-        expect(fetchResponse).toBeInstanceOf(LeaderboardFetch.Found);
-      }, `expected HIT but got ${fetchResponse.toString()}`);
-      const receivedElements = (
-        fetchResponse as LeaderboardFetch.Found
+        expect(fetchResponse2).toBeInstanceOf(LeaderboardFetch.Found);
+      }, `expected HIT but got ${fetchResponse2.toString()}`);
+      const receivedElements2 = (
+        fetchResponse2 as LeaderboardFetch.Found
       ).valueArray();
-      const expectedElements = [
+      const expectedElements2 = [
         {
           id: BigInt(123),
           score: 100,
@@ -177,35 +177,33 @@ export function runLeaderboardClientTests(
           rank: BigInt(4),
         },
       ];
-      expect(receivedElements).toEqual(expectedElements);
-    });
+      expect(receivedElements2).toEqual(expectedElements2);
 
-    it('updates elements when they already exist in the leaderboard', async () => {
-      const elements = new Map([
+      // Updates elements that already exist in the leaderboard
+      const elements3 = new Map([
         [BigInt(123), 500],
         [BigInt(456), 600],
         [BigInt(789), 700],
       ]);
-      const response = await leaderboardClient.leaderboardUpsert(
+      const response3 = await leaderboardClient.leaderboardUpsert(
         integrationTestCacheName,
         leaderboardName,
-        elements
+        elements3
       );
       expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardUpsert.Success);
-      }, `expected SUCCESS but got ${response.toString()}`);
-
-      const fetchResponse = await leaderboardClient.leaderboardFetchByRank(
+        expect(response3).toBeInstanceOf(LeaderboardUpsert.Success);
+      }, `expected SUCCESS but got ${response3.toString()}`);
+      const fetchResponse3 = await leaderboardClient.leaderboardFetchByRank(
         integrationTestCacheName,
         leaderboardName
       );
       expectWithMessage(() => {
-        expect(fetchResponse).toBeInstanceOf(LeaderboardFetch.Found);
-      }, `expected HIT but got ${fetchResponse.toString()}`);
-      const receivedElements = (
-        fetchResponse as LeaderboardFetch.Found
+        expect(fetchResponse3).toBeInstanceOf(LeaderboardFetch.Found);
+      }, `expected HIT but got ${fetchResponse3.toString()}`);
+      const receivedElements3 = (
+        fetchResponse3 as LeaderboardFetch.Found
       ).valueArray();
-      const expectedElements = [
+      const expectedElements3 = [
         {
           id: BigInt(123),
           score: 500,
@@ -232,7 +230,7 @@ export function runLeaderboardClientTests(
           rank: BigInt(4),
         },
       ];
-      expect(receivedElements).toEqual(expectedElements);
+      expect(receivedElements3).toEqual(expectedElements3);
     });
   });
 

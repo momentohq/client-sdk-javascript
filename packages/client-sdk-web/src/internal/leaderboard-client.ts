@@ -30,11 +30,8 @@ import {
   _DeleteLeaderboardRequest,
   _Element,
   _GetByRankRequest,
-  _GetByRankResponse,
   _GetByScoreRequest,
-  _GetByScoreResponse,
   _GetLeaderboardLengthRequest,
-  _GetLeaderboardLengthResponse,
   _GetRankRequest,
   _Order,
   _RankRange,
@@ -266,7 +263,8 @@ export class LeaderboardDataClient<
     order?: LeaderboardOrder
   ): Promise<LeaderboardFetch.Response> {
     const rankOrder = order ?? LeaderboardOrder.Ascending;
-    const startRankValue = startRank === undefined ? BigInt(0) : BigInt(startRank);
+    const startRankValue =
+      startRank === undefined ? BigInt(0) : BigInt(startRank);
     const endRankValue =
       endRank === undefined ? startRankValue + BigInt(8192) : BigInt(endRank);
     try {
