@@ -87,7 +87,8 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
 
   /**
    * Fetch the elements in the given leaderboard by index (rank).
-   * Note: can fetch a maximum of 8192 elements at a time.
+   * Note: can fetch a maximum of 8192 elements at a time and rank 
+   * is 0-based (index begins at 0).
    *
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to fetch from.
@@ -120,6 +121,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
 
   /**
    * Look up the rank of an element in the leaderboard given the element id.
+   * Note: rank is 0-based (index begins at 0).
    *
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to fetch the element from.
@@ -128,7 +130,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
    * @param {LeaderboardOrder} [options.order] - The order to fetch the elements in.
    * Defaults to ascending, meaning 0 is the lowest-scoring rank.
    * @returns {Promise<LeaderboardGetRank.Response>}
-   * {@link LeaderboardGetRank.Success} containing the rank of the requested element when found.
+   * {@link LeaderboardGetRank.Success} containing the requested element when found.
    * {@link LeaderboardGetRank.Error} on failure.
    */
   public async leaderboardGetRank(
@@ -147,6 +149,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
 
   /**
    * Fetch length (number of items) of leaderboard
+   * 
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to fetch the length of.
    * @returns {Promise<LeaderboardLength.Response>}
@@ -188,6 +191,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
 
   /**
    * Delete the given leaderboard
+   * 
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to delete.
    * @returns {Promise<LeaderboardDelete.Response>}
