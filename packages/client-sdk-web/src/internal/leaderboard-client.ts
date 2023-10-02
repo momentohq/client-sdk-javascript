@@ -2,7 +2,6 @@ import {InternalLeaderboardClient} from '@gomomento/sdk-core/dist/src/internal/c
 import {
   LeaderboardDelete,
   LeaderboardFetch,
-  LeaderboardGetRank,
   LeaderboardLength,
   LeaderboardRemoveElements,
   LeaderboardUpsert,
@@ -103,6 +102,10 @@ export class LeaderboardDataClient<
         BigInt(element.getRank())
       );
     });
+  }
+
+  private convertIdsToStringArray(ids: Array<bigint | number>) {
+    return ids.map(id => id.toString());
   }
 
   public async leaderboardUpsert(
@@ -341,23 +344,25 @@ export class LeaderboardDataClient<
   public async leaderboardGetRank(
     cacheName: string,
     leaderboardName: string,
-    id: bigint | number,
+    ids: Array<bigint | number>,
     order?: LeaderboardOrder
-  ): Promise<LeaderboardGetRank.Response> {
+  ): Promise<LeaderboardFetch.Response> {
     const orderValue = order ?? LeaderboardOrder.Ascending;
     try {
       validateCacheName(cacheName);
       validateLeaderboardName(leaderboardName);
     } catch (err) {
-      return new LeaderboardGetRank.Error(normalizeSdkError(err as Error));
+      return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(
-      `Issuing 'leaderboardGetRank' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, order: ${orderValue.toString()}, id: ${id.toString()}`
+      `Issuing 'leaderboardGetRank' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, order: ${orderValue.toString()}, number of ids: ${
+        ids.length
+      }`
     );
     return await this.sendLeaderboardGetRank(
       cacheName,
       leaderboardName,
-      BigInt(id),
+      this.convertIdsToStringArray(ids),
       orderValue
     );
   }
@@ -365,13 +370,13 @@ export class LeaderboardDataClient<
   private async sendLeaderboardGetRank(
     cacheName: string,
     leaderboardName: string,
-    id: bigint,
+    ids: Array<string>,
     order?: LeaderboardOrder
-  ): Promise<LeaderboardGetRank.Response> {
+  ): Promise<LeaderboardFetch.Response> {
     const request = new _GetRankRequest();
     request.setCacheName(cacheName);
     request.setLeaderboard(leaderboardName);
-    request.setId(id.toString());
+    request.setIdsList(ids);
 
     const protoBufOrder =
       order === LeaderboardOrder.Descending
@@ -388,20 +393,17 @@ export class LeaderboardDataClient<
         },
         (err, resp) => {
           if (resp) {
+            const foundElements = resp.getElementsList();
             resolve(
-              new LeaderboardGetRank.Found(
-                BigInt(resp.getId()),
-                BigInt(resp.getRank()),
-                resp.getScore()
+              new LeaderboardFetch.Found(
+                this.convertToRankedElementsList(foundElements)
               )
             );
           } else {
             if (err?.code === StatusCode.NOT_FOUND) {
-              resolve(new LeaderboardGetRank.NotFound());
+              resolve(new LeaderboardFetch.NotFound());
             } else {
-              resolve(
-                new LeaderboardGetRank.Error(cacheServiceErrorMapper(err))
-              );
+              resolve(new LeaderboardFetch.Error(cacheServiceErrorMapper(err)));
             }
           }
         }

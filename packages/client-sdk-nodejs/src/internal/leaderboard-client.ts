@@ -3,7 +3,6 @@ import {
   InvalidArgumentError,
   LeaderboardDelete,
   LeaderboardFetch,
-  LeaderboardGetRank,
   LeaderboardLength,
   LeaderboardRemoveElements,
   LeaderboardUpsert,
@@ -144,6 +143,10 @@ export class LeaderboardDataClient implements InternalLeaderboardClient {
         BigInt(element.rank)
       );
     });
+  }
+
+  private convertIdsToStringArray(ids: Array<bigint | number>) {
+    return ids.map(id => id.toString());
   }
 
   public async leaderboardUpsert(
@@ -389,23 +392,25 @@ export class LeaderboardDataClient implements InternalLeaderboardClient {
   public async leaderboardGetRank(
     cacheName: string,
     leaderboardName: string,
-    id: bigint | number,
+    ids: Array<bigint | number>,
     order?: LeaderboardOrder
-  ): Promise<LeaderboardGetRank.Response> {
+  ): Promise<LeaderboardFetch.Response> {
     const orderValue = order ?? LeaderboardOrder.Ascending;
     try {
       validateCacheName(cacheName);
       validateLeaderboardName(leaderboardName);
     } catch (err) {
-      return new LeaderboardGetRank.Error(normalizeSdkError(err as Error));
+      return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(
-      `Issuing 'leaderboardGetRank' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, order: ${orderValue.toString()}, id: ${id.toString()}`
+      `Issuing 'leaderboardGetRank' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, order: ${orderValue.toString()}, number of ids: ${
+        ids.length
+      }`
     );
     return await this.sendLeaderboardGetRank(
       cacheName,
       leaderboardName,
-      BigInt(id),
+      this.convertIdsToStringArray(ids),
       orderValue
     );
   }
@@ -413,9 +418,9 @@ export class LeaderboardDataClient implements InternalLeaderboardClient {
   private async sendLeaderboardGetRank(
     cacheName: string,
     leaderboardName: string,
-    id: bigint,
+    ids: Array<string>,
     order: LeaderboardOrder
-  ): Promise<LeaderboardGetRank.Response> {
+  ): Promise<LeaderboardFetch.Response> {
     const protoBufOrder =
       order === LeaderboardOrder.Descending
         ? leaderboard._Order.DESCENDING
@@ -424,7 +429,7 @@ export class LeaderboardDataClient implements InternalLeaderboardClient {
     const request = new leaderboard._GetRankRequest({
       cache_name: cacheName,
       leaderboard: leaderboardName,
-      id: id.toString(),
+      ids: ids,
       order: protoBufOrder,
     });
     const metadata = this.createMetadata(cacheName);
@@ -437,21 +442,18 @@ export class LeaderboardDataClient implements InternalLeaderboardClient {
         },
         (err: ServiceError | null, resp: unknown) => {
           if (resp) {
-            const element = resp as leaderboard._RankedElement;
+            const foundElements = (resp as leaderboard._GetRankResponse)
+              .elements;
             resolve(
-              new LeaderboardGetRank.Found(
-                BigInt(element.id),
-                BigInt(element.rank),
-                element.score
+              new LeaderboardFetch.Found(
+                this.convertToRankedElementsList(foundElements)
               )
             );
           } else {
             if (err?.code === status.NOT_FOUND) {
-              resolve(new LeaderboardGetRank.NotFound());
+              resolve(new LeaderboardFetch.NotFound());
             } else {
-              resolve(
-                new LeaderboardGetRank.Error(cacheServiceErrorMapper(err))
-              );
+              resolve(new LeaderboardFetch.Error(cacheServiceErrorMapper(err)));
             }
           }
         }

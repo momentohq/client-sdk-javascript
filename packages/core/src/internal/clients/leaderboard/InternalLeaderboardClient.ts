@@ -1,7 +1,6 @@
 import {
   LeaderboardDelete,
   LeaderboardFetch,
-  LeaderboardGetRank,
   LeaderboardLength,
   LeaderboardRemoveElements,
   LeaderboardUpsert,
@@ -33,9 +32,9 @@ export interface InternalLeaderboardClient {
   leaderboardGetRank(
     cacheName: string,
     leaderboardName: string,
-    id: bigint | number,
+    ids: Array<bigint | number>,
     order?: LeaderboardOrder
-  ): Promise<LeaderboardGetRank.Response>;
+  ): Promise<LeaderboardFetch.Response>;
   leaderboardLength(
     cacheName: string,
     leaderboardName: string

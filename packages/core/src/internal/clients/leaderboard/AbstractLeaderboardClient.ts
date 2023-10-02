@@ -1,7 +1,6 @@
 import {
   LeaderboardDelete,
   LeaderboardFetch,
-  LeaderboardGetRank,
   LeaderboardLength,
   LeaderboardRemoveElements,
   LeaderboardUpsert,
@@ -66,7 +65,8 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
    * @param {bigint|number} [options.count] - The maximum number of elements to return.
    * Defaults to 8192, which is the maximum that can be fetched at a time.
    * @returns {Promise<LeaderboardFetch.Response>} -
-   * {@link LeaderboardFetch.Success} containing the requested elements.
+   * {@link LeaderboardFetch.Found} containing the requested elements.
+   * {@link LeaderboardFetch.NotFound} when requested elements were not found.
    * {@link LeaderboardFetch.Error} on failure.
    */
   public async leaderboardFetchByScore(
@@ -102,7 +102,8 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
    * @param {LeaderboardOrder} [options.order] - The order to fetch the elements in.
    * Defaults to ascending, meaning 0 is the lowest-scoring rank.
    * @returns {Promise<LeaderboardFetch.Response>} -
-   * {@link LeaderboardFetch.Success} containing the requested elements.
+   * {@link LeaderboardFetch.Found} containing the requested elements.
+   * {@link LeaderboardFetch.NotFound} when requested elements were not found.
    * {@link LeaderboardFetch.Error} on failure.
    */
   public async leaderboardFetchByRank(
@@ -129,20 +130,21 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
    * @param {LeaderboardGetRankCallOptions} options
    * @param {LeaderboardOrder} [options.order] - The order to fetch the elements in.
    * Defaults to ascending, meaning 0 is the lowest-scoring rank.
-   * @returns {Promise<LeaderboardGetRank.Response>}
-   * {@link LeaderboardGetRank.Success} containing the requested element when found.
-   * {@link LeaderboardGetRank.Error} on failure.
+   * @returns {Promise<LeaderboardFetch.Response>}
+   * {@link LeaderboardFetch.Found} containing the requested elements.
+   * {@link LeaderboardFetch.NotFound} when requested elements were not found.
+   * {@link LeaderboardFetch.Error} on failure.
    */
   public async leaderboardGetRank(
     cacheName: string,
     leaderboardName: string,
-    id: bigint | number,
+    ids: Array<bigint | number>,
     options?: LeaderboardGetRankCallOptions
-  ): Promise<LeaderboardGetRank.Response> {
+  ): Promise<LeaderboardFetch.Response> {
     return await this.leaderboardClient.leaderboardGetRank(
       cacheName,
       leaderboardName,
-      id,
+      ids,
       options?.order
     );
   }

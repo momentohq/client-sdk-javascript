@@ -7,7 +7,6 @@ import {
   LeaderboardUpsert,
   MomentoErrorCode,
   LeaderboardLength,
-  LeaderboardGetRank,
 } from '@gomomento/sdk-core';
 import {expectWithMessage} from './common-int-test-utils';
 import {v4} from 'uuid';
@@ -719,12 +718,12 @@ export function runLeaderboardClientTests(
       const response = await leaderboardClient.leaderboardGetRank(
         '   ',
         leaderboardName,
-        BigInt(123)
+        [BigInt(123)]
       );
       expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardGetRank.Error);
+        expect(response).toBeInstanceOf(LeaderboardFetch.Error);
       }, `expected ERROR but got ${response.toString()}`);
-      const responseError = response as LeaderboardGetRank.Error;
+      const responseError = response as LeaderboardFetch.Error;
       expectWithMessage(() => {
         expect(responseError.errorCode()).toEqual(
           MomentoErrorCode.INVALID_ARGUMENT_ERROR
@@ -736,12 +735,12 @@ export function runLeaderboardClientTests(
       const response = await leaderboardClient.leaderboardGetRank(
         integrationTestCacheName,
         '   ',
-        BigInt(123)
+        [BigInt(123)]
       );
       expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardGetRank.Error);
+        expect(response).toBeInstanceOf(LeaderboardFetch.Error);
       }, `expected ERROR but got ${response.toString()}`);
-      const responseError = response as LeaderboardGetRank.Error;
+      const responseError = response as LeaderboardFetch.Error;
       expectWithMessage(() => {
         expect(responseError.errorCode()).toEqual(
           MomentoErrorCode.INVALID_ARGUMENT_ERROR
@@ -753,10 +752,10 @@ export function runLeaderboardClientTests(
       const response = await leaderboardClient.leaderboardGetRank(
         integrationTestCacheName,
         leaderboardName,
-        BigInt(123)
+        [BigInt(123)]
       );
       expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardGetRank.NotFound);
+        expect(response).toBeInstanceOf(LeaderboardFetch.NotFound);
       }, `expected NotFound but got ${response.toString()}`);
     });
 
@@ -780,27 +779,55 @@ export function runLeaderboardClientTests(
       const getRankAscending = await leaderboardClient.leaderboardGetRank(
         integrationTestCacheName,
         leaderboardName,
-        BigInt(123),
+        [BigInt(123), BigInt(789)],
         {order: LeaderboardOrder.Ascending}
       );
       expectWithMessage(() => {
-        expect(getRankAscending).toBeInstanceOf(LeaderboardGetRank.Found);
+        expect(getRankAscending).toBeInstanceOf(LeaderboardFetch.Found);
       }, `expected Found but got ${getRankAscending.toString()}`);
-      const receivedRankAsc = getRankAscending as LeaderboardGetRank.Found;
-      expect(receivedRankAsc.rank()).toEqual(0);
+      const receivedAscending = (
+        getRankAscending as LeaderboardFetch.Found
+      ).valueArray();
+      const expectedAscending = [
+        {
+          id: BigInt(123),
+          score: 100,
+          rank: 0,
+        },
+        {
+          id: BigInt(789),
+          score: 300,
+          rank: 2,
+        },
+      ];
+      expect(receivedAscending).toEqual(expectedAscending);
 
       // Get rank of an element when leaderboard is in descending order
       const getRankDescending = await leaderboardClient.leaderboardGetRank(
         integrationTestCacheName,
         leaderboardName,
-        BigInt(123),
+        [BigInt(123), BigInt(789)],
         {order: LeaderboardOrder.Descending}
       );
       expectWithMessage(() => {
-        expect(getRankDescending).toBeInstanceOf(LeaderboardGetRank.Found);
+        expect(getRankDescending).toBeInstanceOf(LeaderboardFetch.Found);
       }, `expected Found but got ${getRankDescending.toString()}`);
-      const receivedRankDesc = getRankDescending as LeaderboardGetRank.Found;
-      expect(receivedRankDesc.rank()).toEqual(2);
+      const receivedDescending = (
+        getRankDescending as LeaderboardFetch.Found
+      ).valueArray();
+      const expectedDescending = [
+        {
+          id: BigInt(789),
+          score: 300,
+          rank: 0,
+        },
+        {
+          id: BigInt(123),
+          score: 100,
+          rank: 2,
+        },
+      ];
+      expect(receivedDescending).toEqual(expectedDescending);
     });
   });
 
