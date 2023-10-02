@@ -87,7 +87,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
 
   /**
    * Fetch the elements in the given leaderboard by index (rank).
-   * Note: can fetch a maximum of 8192 elements at a time and rank 
+   * Note: can fetch a maximum of 8192 elements at a time and rank
    * is 0-based (index begins at 0).
    *
    * @param {string} cacheName - The cache containing the leaderboard.
@@ -149,7 +149,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
 
   /**
    * Fetch length (number of items) of leaderboard
-   * 
+   *
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to fetch the length of.
    * @returns {Promise<LeaderboardLength.Response>}
@@ -191,7 +191,7 @@ export abstract class AbstractLeaderboardClient implements ILeaderboardClient {
 
   /**
    * Delete the given leaderboard
-   * 
+   *
    * @param {string} cacheName - The cache containing the leaderboard.
    * @param {string} leaderboardName - The leaderboard to delete.
    * @returns {Promise<LeaderboardDelete.Response>}

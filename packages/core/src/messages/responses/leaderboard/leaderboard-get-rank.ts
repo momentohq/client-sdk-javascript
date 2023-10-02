@@ -49,10 +49,10 @@ class _Found extends Response {
 
   /**
    * Returns the rank of the requested element in the leaderboard
-   * @returns {bigint}
+   * @returns {number}
    */
-  public rank(): bigint {
-    return this._rank;
+  public rank(): number {
+    return Number(this._rank);
   }
 
   /**
@@ -64,7 +64,7 @@ class _Found extends Response {
   }
 
   public override toString(): string {
-    return `${super.toString()}: get element rank ${this._rank}`;
+    return `${super.toString()}: get element rank ${Number(this._rank)}`;
   }
 }
 
