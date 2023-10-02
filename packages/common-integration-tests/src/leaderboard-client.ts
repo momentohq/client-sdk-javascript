@@ -384,7 +384,7 @@ export function runLeaderboardClientTests(
         expect(response).toBeInstanceOf(LeaderboardUpsert.Success);
       }, `expected SUCCESS but got ${response.toString()}`);
 
-      // Currently failing, returning nothing, but expecting 2 elements.
+      // Fetch using unbounded score range and specifc offset and count
       const fetchWithOffsetAndCount =
         await leaderboardClient.leaderboardFetchByScore(
           integrationTestCacheName,
@@ -749,7 +749,6 @@ export function runLeaderboardClientTests(
       }, `expected INVALID_ARGUMENT_ERROR but got ${responseError.errorCode()} ${responseError.message()}`);
     });
 
-    // Currently failing with error code 14
     it('returns NotFound when leaderboard element does not exist', async () => {
       const response = await leaderboardClient.leaderboardGetRank(
         integrationTestCacheName,
@@ -761,7 +760,6 @@ export function runLeaderboardClientTests(
       }, `expected NotFound but got ${response.toString()}`);
     });
 
-    // Currently failing with error code 14
     it('rank changes given ascending vs descending order', async () => {
       // Insert some elements
       const elements = new Map([
@@ -789,7 +787,7 @@ export function runLeaderboardClientTests(
         expect(getRankAscending).toBeInstanceOf(LeaderboardGetRank.Found);
       }, `expected Found but got ${getRankAscending.toString()}`);
       const receivedRankAsc = getRankAscending as LeaderboardGetRank.Found;
-      expect(receivedRankAsc.rank()).toEqual(BigInt(0));
+      expect(receivedRankAsc.rank()).toEqual(0);
 
       // Get rank of an element when leaderboard is in descending order
       const getRankDescending = await leaderboardClient.leaderboardGetRank(
@@ -802,7 +800,7 @@ export function runLeaderboardClientTests(
         expect(getRankDescending).toBeInstanceOf(LeaderboardGetRank.Found);
       }, `expected Found but got ${getRankDescending.toString()}`);
       const receivedRankDesc = getRankDescending as LeaderboardGetRank.Found;
-      expect(receivedRankDesc.rank()).toEqual(BigInt(2));
+      expect(receivedRankDesc.rank()).toEqual(2);
     });
   });
 
