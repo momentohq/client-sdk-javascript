@@ -111,17 +111,17 @@ export function runLeaderboardClientTests(
         {
           id: BigInt(123),
           score: 100,
-          rank: BigInt(0),
+          rank: 0,
         },
         {
           id: BigInt(456),
           score: 200,
-          rank: BigInt(1),
+          rank: 1,
         },
         {
           id: BigInt(789),
           score: 300,
-          rank: BigInt(2),
+          rank: 2,
         },
       ];
       expect(receivedElements1).toEqual(expectedElements1);
@@ -154,27 +154,27 @@ export function runLeaderboardClientTests(
         {
           id: BigInt(123),
           score: 100,
-          rank: BigInt(0),
+          rank: 0,
         },
         {
           id: BigInt(456),
           score: 200,
-          rank: BigInt(1),
+          rank: 1,
         },
         {
           id: BigInt(789),
           score: 300,
-          rank: BigInt(2),
+          rank: 2,
         },
         {
           id: BigInt(1234),
           score: 800,
-          rank: BigInt(3),
+          rank: 3,
         },
         {
           id: BigInt(5678),
           score: 900,
-          rank: BigInt(4),
+          rank: 4,
         },
       ];
       expect(receivedElements2).toEqual(expectedElements2);
@@ -207,27 +207,27 @@ export function runLeaderboardClientTests(
         {
           id: BigInt(123),
           score: 500,
-          rank: BigInt(0),
+          rank: 0,
         },
         {
           id: BigInt(456),
           score: 600,
-          rank: BigInt(1),
+          rank: 1,
         },
         {
           id: BigInt(789),
           score: 700,
-          rank: BigInt(2),
+          rank: 2,
         },
         {
           id: BigInt(1234),
           score: 800,
-          rank: BigInt(3),
+          rank: 3,
         },
         {
           id: BigInt(5678),
           score: 900,
-          rank: BigInt(4),
+          rank: 4,
         },
       ];
       expect(receivedElements3).toEqual(expectedElements3);
@@ -384,35 +384,35 @@ export function runLeaderboardClientTests(
         expect(response).toBeInstanceOf(LeaderboardUpsert.Success);
       }, `expected SUCCESS but got ${response.toString()}`);
 
-      // Fetch using offset and count: failing, returning nothing
-      // const fetchWithOffsetAndCount =
-      //   await leaderboardClient.leaderboardFetchByScore(
-      //     integrationTestCacheName,
-      //     leaderboardName,
-      //     {
-      //       offset: 2,
-      //       count: 2,
-      //     }
-      //   );
-      // expectWithMessage(() => {
-      //   expect(fetchWithOffsetAndCount).toBeInstanceOf(LeaderboardFetch.Found);
-      // }, `expected HIT but got ${fetchWithOffsetAndCount.toString()}`);
-      // const receivedWithOffsetAndCount = (
-      //   fetchWithOffsetAndCount as LeaderboardFetch.Found
-      // ).valueArray();
-      // const expectedWithOffsetAndCount = [
-      //   {
-      //     id: BigInt(345),
-      //     score: 250.0,
-      //     rank: BigInt(2),
-      //   },
-      //   {
-      //     id: BigInt(456),
-      //     score: 500.0,
-      //     rank: BigInt(3),
-      //   },
-      // ];
-      // expect(receivedWithOffsetAndCount).toEqual(expectedWithOffsetAndCount);
+      // Currently failing, returning nothing, but expecting 2 elements.
+      const fetchWithOffsetAndCount =
+        await leaderboardClient.leaderboardFetchByScore(
+          integrationTestCacheName,
+          leaderboardName,
+          {
+            offset: 2,
+            count: 2,
+          }
+        );
+      expectWithMessage(() => {
+        expect(fetchWithOffsetAndCount).toBeInstanceOf(LeaderboardFetch.Found);
+      }, `expected HIT but got ${fetchWithOffsetAndCount.toString()}`);
+      const receivedWithOffsetAndCount = (
+        fetchWithOffsetAndCount as LeaderboardFetch.Found
+      ).valueArray();
+      const expectedWithOffsetAndCount = [
+        {
+          id: BigInt(345),
+          score: 250.0,
+          rank: 2,
+        },
+        {
+          id: BigInt(456),
+          score: 500.0,
+          rank: 3,
+        },
+      ];
+      expect(receivedWithOffsetAndCount).toEqual(expectedWithOffsetAndCount);
 
       // Fetch using score range
       const fetchWithScoreRange =
@@ -434,12 +434,12 @@ export function runLeaderboardClientTests(
         {
           id: BigInt(567),
           score: 750.0,
-          rank: BigInt(4),
+          rank: 4,
         },
         {
           id: BigInt(678),
           score: 1000.0,
-          rank: BigInt(5),
+          rank: 5,
         },
       ];
       expect(receivedWithScoreRange).toEqual(expectedWithScoreRange);
@@ -467,17 +467,17 @@ export function runLeaderboardClientTests(
         {
           id: BigInt(345),
           score: 250,
-          rank: BigInt(5),
+          rank: 5,
         },
         {
           id: BigInt(234),
           score: 100.0,
-          rank: BigInt(6),
+          rank: 6,
         },
         {
           id: BigInt(123),
           score: 10.0,
-          rank: BigInt(7),
+          rank: 7,
         },
       ];
       expect(receivedWithAllOptions).toEqual(expectedWithAllOptions);
@@ -638,17 +638,17 @@ export function runLeaderboardClientTests(
         {
           id: BigInt(123),
           score: 100,
-          rank: BigInt(0),
+          rank: 0,
         },
         {
           id: BigInt(456),
           score: 200,
-          rank: BigInt(1),
+          rank: 1,
         },
         {
           id: BigInt(789),
           score: 300,
-          rank: BigInt(2),
+          rank: 2,
         },
       ];
       expect(receivedAscending).toEqual(expectedAscending);
@@ -668,17 +668,17 @@ export function runLeaderboardClientTests(
         {
           id: BigInt(789),
           score: 300,
-          rank: BigInt(0),
+          rank: 0,
         },
         {
           id: BigInt(456),
           score: 200,
-          rank: BigInt(1),
+          rank: 1,
         },
         {
           id: BigInt(123),
           score: 100,
-          rank: BigInt(2),
+          rank: 2,
         },
       ];
       expect(receivedDescending).toEqual(expectedDescending);
@@ -700,12 +700,12 @@ export function runLeaderboardClientTests(
         {
           id: BigInt(123),
           score: 100,
-          rank: BigInt(0),
+          rank: 0,
         },
         {
           id: BigInt(456),
           score: 200,
-          rank: BigInt(1),
+          rank: 1,
         },
       ];
       expect(receivedTopTwo).toEqual(expectedTopTwo);
@@ -750,60 +750,60 @@ export function runLeaderboardClientTests(
     });
 
     // Currently failing with error code 14
-    // it('returns NotFound when leaderboard does not exist', async () => {
-    //   const response = await leaderboardClient.leaderboardGetRank(
-    //     integrationTestCacheName,
-    //     leaderboardName,
-    //     BigInt(123)
-    //   );
-    //   expectWithMessage(() => {
-    //     expect(response).toBeInstanceOf(LeaderboardGetRank.NotFound);
-    //   }, `expected NotFound but got ${response.toString()}`);
-    // });
+    it('returns NotFound when leaderboard element does not exist', async () => {
+      const response = await leaderboardClient.leaderboardGetRank(
+        integrationTestCacheName,
+        leaderboardName,
+        BigInt(123)
+      );
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(LeaderboardGetRank.NotFound);
+      }, `expected NotFound but got ${response.toString()}`);
+    });
 
     // Currently failing with error code 14
-    // it('rank changes given ascending vs descending order', async () => {
-    //   // Insert some elements
-    //   const elements = new Map([
-    //     [BigInt(123), 100.0],
-    //     [BigInt(456), 200.0],
-    //     [BigInt(789), 300.0],
-    //   ]);
-    //   const upsertResponse = await leaderboardClient.leaderboardUpsert(
-    //     integrationTestCacheName,
-    //     leaderboardName,
-    //     elements
-    //   );
-    //   expectWithMessage(() => {
-    //     expect(upsertResponse).toBeInstanceOf(LeaderboardUpsert.Success);
-    //   }, `expected SUCCESS but got ${upsertResponse.toString()}`);
+    it('rank changes given ascending vs descending order', async () => {
+      // Insert some elements
+      const elements = new Map([
+        [BigInt(123), 100.0],
+        [BigInt(456), 200.0],
+        [BigInt(789), 300.0],
+      ]);
+      const upsertResponse = await leaderboardClient.leaderboardUpsert(
+        integrationTestCacheName,
+        leaderboardName,
+        elements
+      );
+      expectWithMessage(() => {
+        expect(upsertResponse).toBeInstanceOf(LeaderboardUpsert.Success);
+      }, `expected SUCCESS but got ${upsertResponse.toString()}`);
 
-    //   // Get rank of an element when leaderboard is in ascending order
-    //   const getRankAscending = await leaderboardClient.leaderboardGetRank(
-    //     integrationTestCacheName,
-    //     leaderboardName,
-    //     BigInt(123),
-    //     {order: LeaderboardOrder.Ascending}
-    //   );
-    //   expectWithMessage(() => {
-    //     expect(getRankAscending).toBeInstanceOf(LeaderboardGetRank.Found);
-    //   }, `expected Found but got ${getRankAscending.toString()}`);
-    //   const receivedRankAsc = getRankAscending as LeaderboardGetRank.Found;
-    //   expect(receivedRankAsc.rank()).toEqual(BigInt(0));
+      // Get rank of an element when leaderboard is in ascending order
+      const getRankAscending = await leaderboardClient.leaderboardGetRank(
+        integrationTestCacheName,
+        leaderboardName,
+        BigInt(123),
+        {order: LeaderboardOrder.Ascending}
+      );
+      expectWithMessage(() => {
+        expect(getRankAscending).toBeInstanceOf(LeaderboardGetRank.Found);
+      }, `expected Found but got ${getRankAscending.toString()}`);
+      const receivedRankAsc = getRankAscending as LeaderboardGetRank.Found;
+      expect(receivedRankAsc.rank()).toEqual(BigInt(0));
 
-    //   // Get rank of an element when leaderboard is in descending order
-    //   const getRankDescending = await leaderboardClient.leaderboardGetRank(
-    //     integrationTestCacheName,
-    //     leaderboardName,
-    //     BigInt(123),
-    //     {order: LeaderboardOrder.Descending}
-    //   );
-    //   expectWithMessage(() => {
-    //     expect(getRankDescending).toBeInstanceOf(LeaderboardGetRank.Found);
-    //   }, `expected Found but got ${getRankDescending.toString()}`);
-    //   const receivedRankDesc = getRankDescending as LeaderboardGetRank.Found;
-    //   expect(receivedRankDesc.rank()).toEqual(BigInt(2));
-    // });
+      // Get rank of an element when leaderboard is in descending order
+      const getRankDescending = await leaderboardClient.leaderboardGetRank(
+        integrationTestCacheName,
+        leaderboardName,
+        BigInt(123),
+        {order: LeaderboardOrder.Descending}
+      );
+      expectWithMessage(() => {
+        expect(getRankDescending).toBeInstanceOf(LeaderboardGetRank.Found);
+      }, `expected Found but got ${getRankDescending.toString()}`);
+      const receivedRankDesc = getRankDescending as LeaderboardGetRank.Found;
+      expect(receivedRankDesc.rank()).toEqual(BigInt(2));
+    });
   });
 
   describe('#Get leaderboard length', () => {
@@ -979,7 +979,7 @@ export function runLeaderboardClientTests(
         {
           id: BigInt(456),
           score: 200.0,
-          rank: BigInt(0),
+          rank: 0,
         },
       ];
       expect(receivedElements).toEqual(expectedElements);
