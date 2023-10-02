@@ -399,7 +399,7 @@ export class LeaderboardDataClient implements InternalLeaderboardClient {
     } catch (err) {
       return new LeaderboardGetRank.Error(normalizeSdkError(err as Error));
     }
-    this.logger.trace(
+    console.log(
       `Issuing 'leaderboardGetRank' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, order: ${orderValue.toString()}, id: ${id.toString()}`
     );
     return await this.sendLeaderboardGetRank(
@@ -427,6 +427,7 @@ export class LeaderboardDataClient implements InternalLeaderboardClient {
       id: id.toString(),
       order: protoBufOrder,
     });
+    console.log('The whole grpc request:', request);
     const metadata = this.createMetadata(cacheName);
     return await new Promise(resolve => {
       this.clientWrapper.getClient().GetRank(
@@ -438,7 +439,13 @@ export class LeaderboardDataClient implements InternalLeaderboardClient {
         (err: ServiceError | null, resp: unknown) => {
           if (resp) {
             const element = resp as leaderboard._RankedElement;
-            resolve(new LeaderboardGetRank.Found(BigInt(element.rank)));
+            resolve(
+              new LeaderboardGetRank.Found(
+                BigInt(element.id),
+                BigInt(element.rank),
+                element.score
+              )
+            );
           } else {
             if (err?.code === status.NOT_FOUND) {
               resolve(new LeaderboardGetRank.NotFound());

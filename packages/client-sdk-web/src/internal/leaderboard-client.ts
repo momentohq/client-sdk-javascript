@@ -388,8 +388,13 @@ export class LeaderboardDataClient<
         },
         (err, resp) => {
           if (resp) {
-            const foundElementRank = resp.getRank();
-            resolve(new LeaderboardGetRank.Found(BigInt(foundElementRank)));
+            resolve(
+              new LeaderboardGetRank.Found(
+                BigInt(resp.getId()),
+                BigInt(resp.getRank()),
+                resp.getScore()
+              )
+            );
           } else {
             if (err?.code === StatusCode.NOT_FOUND) {
               resolve(new LeaderboardGetRank.NotFound());

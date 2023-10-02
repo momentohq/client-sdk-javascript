@@ -29,18 +29,38 @@ import {
 export abstract class Response extends ResponseBase {}
 
 class _Found extends Response {
+  private readonly _id: bigint;
   private readonly _rank: bigint;
-  constructor(rank: bigint) {
+  private readonly _score: number;
+  constructor(id: bigint, rank: bigint, score: number) {
     super();
+    this._id = id;
     this._rank = rank;
+    this._score = score;
   }
 
   /**
-   * Returns the rank of an element in the leaderboard
+   * Returns the id of the requested element in the leaderboard
+   * @returns {bigint}
+   */
+  public id(): bigint {
+    return this._id;
+  }
+
+  /**
+   * Returns the rank of the requested element in the leaderboard
    * @returns {bigint}
    */
   public rank(): bigint {
     return this._rank;
+  }
+
+  /**
+   * Returns the score of the requested element in the leaderboard
+   * @returns {number}
+   */
+  public score(): number {
+    return this._score;
   }
 
   public override toString(): string {
