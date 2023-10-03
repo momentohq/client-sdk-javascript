@@ -1,21 +1,28 @@
 import {IVectorIndexControlClient} from '../internal/clients';
 import {
-  VectorAddItemBatch,
+  VectorUpsertItemBatch,
   VectorDeleteItemBatch,
   VectorSearch,
 } from '../messages/responses/vector';
 import {VectorIndexItem} from '../messages/vector-index';
 
+export const ALL = Symbol('ALL');
+
+/**
+ * @param {number} topK - The number of results to return. Defaults to 10.
+ * @param {Array<string>} metadataFields - A list of metadata fields to return with each result,
+ * or a value indicating all metadata should be returned. If not provided, no metadata is returned. Defaults to None.
+ */
 export interface SearchOptions {
   topK?: number;
-  metadataFields?: Array<string>;
+  metadataFields?: Array<string> | typeof ALL;
 }
 
 export interface IVectorIndexClient extends IVectorIndexControlClient {
-  addItemBatch(
+  upsertItemBatch(
     indexName: string,
     items: Array<VectorIndexItem>
-  ): Promise<VectorAddItemBatch.Response>;
+  ): Promise<VectorUpsertItemBatch.Response>;
 
   search(
     indexName: string,

@@ -1,9 +1,9 @@
 import {
-  ValidateVectorProps,
+  expectWithMessage,
   ItBehavesLikeItValidatesIndexName,
   ItBehavesLikeItValidatesNumDimensions,
   testIndexName,
-  expectWithMessage,
+  ValidateVectorProps,
   WithIndex,
 } from './common-int-test-utils';
 import {
@@ -13,18 +13,27 @@ import {
   ListVectorIndexes,
   MomentoErrorCode,
 } from '@gomomento/sdk-core';
+import {SimilarityMetric} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
   describe('create/delete vector index', () => {
     ItBehavesLikeItValidatesIndexName((props: ValidateVectorProps) => {
-      return vectorClient.createIndex(props.indexName, props.numDimensions);
+      return vectorClient.createIndex(
+        props.indexName,
+        props.numDimensions,
+        SimilarityMetric.INNER_PRODUCT
+      );
     });
     ItBehavesLikeItValidatesIndexName((props: ValidateVectorProps) => {
       return vectorClient.deleteIndex(props.indexName);
     });
 
     ItBehavesLikeItValidatesNumDimensions((props: ValidateVectorProps) => {
-      return vectorClient.createIndex(props.indexName, props.numDimensions);
+      return vectorClient.createIndex(
+        props.indexName,
+        props.numDimensions,
+        SimilarityMetric.INNER_PRODUCT
+      );
     });
 
     it('should return a NotFoundError if deleting a non-existent index', async () => {
@@ -43,7 +52,11 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
     it('should return AlreadyExists response if trying to create a index that already exists', async () => {
       const indexName = testIndexName();
       await WithIndex(vectorClient, indexName, 10, async () => {
-        const createResponse = await vectorClient.createIndex(indexName, 1);
+        const createResponse = await vectorClient.createIndex(
+          indexName,
+          1,
+          SimilarityMetric.INNER_PRODUCT
+        );
         expect(createResponse).toBeInstanceOf(CreateVectorIndex.AlreadyExists);
       });
     });
@@ -64,7 +77,11 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
 
     it('should delete an index', async () => {
       const indexName = testIndexName();
-      const createResponse = await vectorClient.createIndex(indexName, 1);
+      const createResponse = await vectorClient.createIndex(
+        indexName,
+        1,
+        SimilarityMetric.INNER_PRODUCT
+      );
       expect(createResponse).toBeInstanceOf(CreateVectorIndex.Success);
       const deleteResponse = await vectorClient.deleteIndex(indexName);
       expectWithMessage(() => {

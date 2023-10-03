@@ -13,6 +13,7 @@ import {
   ResponseBase,
 } from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
 import {v4} from 'uuid';
+import {SimilarityMetric} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 export function isLocalhostDevelopmentMode(): boolean {
   const useLocalhost = process.env.MOMENTO_SDK_TESTS_USE_LOCALHOST;
@@ -103,7 +104,11 @@ export const createIndexIfNotExists = async (
     );
     return;
   }
-  const createResponse = await client.createIndex(indexName, numDimensions);
+  const createResponse = await client.createIndex(
+    indexName,
+    numDimensions,
+    SimilarityMetric.INNER_PRODUCT
+  );
   if (createResponse instanceof CreateVectorIndex.Error) {
     throw createResponse.innerException();
   }

@@ -7,9 +7,9 @@ import {
   MomentoLogger,
   MomentoLoggerFactory,
   SearchOptions,
-  VectorAddItemBatch,
   VectorDeleteItemBatch,
   VectorSearch,
+  VectorUpsertItemBatch,
 } from '@gomomento/sdk-core';
 import {VectorIndexClientProps} from '../vector-index-client-props';
 import {VectorIndexConfiguration} from '../config/vector-index-configuration';
@@ -23,6 +23,7 @@ import {
   validateTopK,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {ALL} from '@gomomento/sdk-core/dist/src/clients/IVectorIndexClient';
 
 export class VectorIndexDataClient implements IVectorIndexDataClient {
   private readonly configuration: VectorIndexConfiguration;
@@ -72,23 +73,24 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     );
   }
 
-  public async addItemBatch(
+  public async upsertItemBatch(
     indexName: string,
     items: Array<VectorIndexItem>
-  ): Promise<VectorAddItemBatch.Response> {
+  ): Promise<VectorUpsertItemBatch.Response> {
     try {
       validateIndexName(indexName);
     } catch (err) {
-      return new VectorAddItemBatch.Error(normalizeSdkError(err as Error));
+      return new VectorUpsertItemBatch.Error(normalizeSdkError(err as Error));
     }
-    return await this.sendAddItemBatch(indexName, items);
+    return await this.sendUpsertItemBatch(indexName, items);
   }
 
-  private async sendAddItemBatch(
+  private async sendUpsertItemBatch(
     indexName: string,
     items: Array<VectorIndexItem>
-  ): Promise<VectorAddItemBatch.Response> {
-    const request = new vectorindex._AddItemBatchRequest({
+  ): Promise<VectorUpsertItemBatch.Response> {
+    // integration test covering replacing a vector, metadata
+    const request = new vectorindex._UpsertItemBatchRequest({
       index_name: indexName,
       items: items.map(item => {
         return new vectorindex._Item({
@@ -108,14 +110,16 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       }),
     });
     return await new Promise(resolve => {
-      this.client.AddItemBatch(
+      this.client.UpsertItemBatch(
         request,
         {interceptors: this.interceptors},
         (err, resp) => {
           if (resp) {
-            resolve(new VectorAddItemBatch.Success());
+            resolve(new VectorUpsertItemBatch.Success());
           } else {
-            resolve(new VectorAddItemBatch.Error(cacheServiceErrorMapper(err)));
+            resolve(
+              new VectorUpsertItemBatch.Error(cacheServiceErrorMapper(err))
+            );
           }
         }
       );
@@ -180,16 +184,21 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     queryVector: Array<number>,
     options?: SearchOptions
   ): Promise<VectorSearch.Response> {
+    const metadataRequest = new vectorindex._MetadataRequest();
+    if (options?.metadataFields === ALL) {
+      metadataRequest.all = new vectorindex._MetadataRequest.All();
+    } else {
+      metadataRequest.some = new vectorindex._MetadataRequest.Some({
+        fields:
+          options?.metadataFields === undefined ? [] : options.metadataFields,
+      });
+    }
+
     const request = new vectorindex._SearchRequest({
       index_name: indexName,
       query_vector: new vectorindex._Vector({elements: queryVector}),
       top_k: options?.topK,
-      metadata_fields: new vectorindex._MetadataRequest({
-        some: new vectorindex._MetadataRequest.Some({
-          fields:
-            options?.metadataFields === undefined ? [] : options.metadataFields,
-        }),
-      }),
+      metadata_fields: metadataRequest,
     });
 
     return await new Promise(resolve => {

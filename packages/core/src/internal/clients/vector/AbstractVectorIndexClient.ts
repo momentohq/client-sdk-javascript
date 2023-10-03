@@ -2,7 +2,7 @@ import {
   CreateVectorIndex,
   DeleteVectorIndex,
   ListVectorIndexes,
-  VectorAddItemBatch,
+  VectorUpsertItemBatch,
   VectorSearch,
   VectorDeleteItemBatch,
 } from '../../..';
@@ -10,7 +10,10 @@ import {
   IVectorIndexClient,
   SearchOptions,
 } from '../../../clients/IVectorIndexClient';
-import {IVectorIndexControlClient} from './IVectorIndexControlClient';
+import {
+  IVectorIndexControlClient,
+  SimilarityMetric,
+} from './IVectorIndexControlClient';
 import {VectorIndexItem} from '../../../messages/vector-index';
 import {IVectorIndexDataClient} from './IVectorIndexDataClient';
 
@@ -33,6 +36,9 @@ export abstract class AbstractVectorIndexClient
    *
    * @param {string} indexName - The vector index to be created.
    * @param {number} numDimensions - Number of dimensions per vector.
+   * @param {SimilarityMetric} similarityMetric - The metric used to
+   * quantify the distance between vectors. Can be cosine similarity,
+   * inner product, or euclidian distance. defaults to cosine similarity.
    * @returns {Promise<CreateVectorIndex.Response>} -
    * {@link CreateVectorIndex.Success} on success.
    * {@link CreateVectorIndex.AlreadyExists} if the cache already exists.
@@ -40,9 +46,14 @@ export abstract class AbstractVectorIndexClient
    */
   public async createIndex(
     indexName: string,
-    numDimensions: number
+    numDimensions: number,
+    similarityMetric?: SimilarityMetric
   ): Promise<CreateVectorIndex.Response> {
-    return await this.controlClient.createIndex(indexName, numDimensions);
+    return await this.controlClient.createIndex(
+      indexName,
+      numDimensions,
+      similarityMetric
+    );
   }
 
   /**
@@ -71,39 +82,36 @@ export abstract class AbstractVectorIndexClient
   }
 
   /**
-   * Adds a batch of items into a vector index.
+   * Upserts a batch of items into a vector index.
    *
-   * Adds an item into the index regardless if the ID already exists.
-   * On duplicate ID, a separate entry is created with the same ID.
-   * To deduplicate, first call `deleteItemBatch` to remove all items
-   * with the same ID, then call `addItemBatch` to add the new items.
+   * If an item with the same ID already exists in the index, it will be replaced.
+   * Otherwise, it will be added to the index.
    *
-   * @param {string} indexName - Name of the index to add the items into.
-   * @param {Array<VectorIndexItem>} items - The items to be added into the index.
-   * @returns {Promise<VectorAddItemBatch.Response>} -
-   * {@link VectorAddItemBatch.Success} on success.
-   * {@link VectorAddItemBatch.Error} on error.
+   * @param {string} indexName - Name of the index to upsert the items into.
+   * @param {Array<VectorIndexItem>} items - The items to be upserted into the index.
+   * @returns {Promise<VectorUpsertItemBatch.Response>} -
+   * {@link VectorUpsertItemBatch.Success} on success.
+   * {@link VectorUpsertItemBatch.Error} on error.
    */
-  public async addItemBatch(
+  public async upsertItemBatch(
     indexName: string,
     items: Array<VectorIndexItem>
-  ): Promise<VectorAddItemBatch.Response> {
-    return await this.dataClient.addItemBatch(indexName, items);
+  ): Promise<VectorUpsertItemBatch.Response> {
+    return await this.dataClient.upsertItemBatch(indexName, items);
   }
 
   /**
    * Searches for the most similar vectors to the query vector in the index.
    * Ranks the vectors in the index by maximum inner product to the query vector.
    * If the index and query vectors are unit normalized, this is equivalent to
-   * ranking by cosine similarity. Hence to perform a cosine similarity search,
+   * ranking by cosine similarity. Hence, to perform a cosine similarity search,
    * the index vectors should be unit normalized prior to indexing, and the query
    * vector should be unit normalized prior to searching.
    *
    * @param {string} indexName - Name of the index to search in.
    * @param {Array<number>} queryVector - The vector to search for.
-   * @param {number} topK - The number of results to return. Defaults to 10.
-   * @param {Array<string>} metadataFields - A list of metadata fields to return with each result.
-   *   If not provided, no metadata is returned. Defaults to None.
+   * @param {SearchOptions} options - Optional search arguments,
+   * including max number of results and which metadata to return.
    * @returns {Promise<VectorSearch.Response>}
    */
   public async search(

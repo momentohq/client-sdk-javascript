@@ -1,5 +1,5 @@
 import {
-  VectorAddItemBatch,
+  VectorUpsertItemBatch,
   VectorSearch,
   VectorDeleteItemBatch,
   IVectorIndexClient,
@@ -15,9 +15,9 @@ import {
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 
 export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
-  describe('addItem validation', () => {
+  describe('upsertItem validation', () => {
     ItBehavesLikeItValidatesIndexName((props: ValidateVectorProps) => {
-      return vectorClient.addItemBatch(props.indexName, []);
+      return vectorClient.upsertItemBatch(props.indexName, []);
     });
   });
 
@@ -37,19 +37,19 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     });
   });
 
-  describe('addItem and search', () => {
-    it('should support addItem and search', async () => {
+  describe('upsertItem and search', () => {
+    it('should support upsertItem and search', async () => {
       const indexName = testIndexName();
       await WithIndex(vectorClient, indexName, 2, async () => {
-        const addResponse = await vectorClient.addItemBatch(indexName, [
+        const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
           {
             id: 'test_item',
             vector: [1.0, 2.0],
           },
         ]);
         expectWithMessage(() => {
-          expect(addResponse).toBeInstanceOf(VectorAddItemBatch.Success);
-        }, `expected SUCCESS but got ${addResponse.toString()}}`);
+          expect(upsertResponse).toBeInstanceOf(VectorUpsertItemBatch.Success);
+        }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
 
         await sleep(2_000);
 
@@ -72,17 +72,17 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
       });
     });
 
-    it('should support adding multiple items and searching', async () => {
+    it('should support upserting multiple items and searching', async () => {
       const indexName = testIndexName();
       await WithIndex(vectorClient, indexName, 2, async () => {
-        const addResponse = await vectorClient.addItemBatch(indexName, [
+        const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
           {id: 'test_item_1', vector: [1.0, 2.0]},
           {id: 'test_item_2', vector: [3.0, 4.0]},
           {id: 'test_item_3', vector: [5.0, 6.0]},
         ]);
         expectWithMessage(() => {
-          expect(addResponse).toBeInstanceOf(VectorAddItemBatch.Success);
-        }, `expected SUCCESS but got ${addResponse.toString()}}`);
+          expect(upsertResponse).toBeInstanceOf(VectorUpsertItemBatch.Success);
+        }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
 
         await sleep(2_000);
         const searchResponse = await vectorClient.search(
@@ -102,17 +102,17 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
       });
     });
 
-    it('should support adding multiple items and searching with top k', async () => {
+    it('should support upserting multiple items and searching with top k', async () => {
       const indexName = testIndexName();
       await WithIndex(vectorClient, indexName, 2, async () => {
-        const addResponse = await vectorClient.addItemBatch(indexName, [
+        const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
           {id: 'test_item_1', vector: [1.0, 2.0]},
           {id: 'test_item_2', vector: [3.0, 4.0]},
           {id: 'test_item_3', vector: [5.0, 6.0]},
         ]);
         expectWithMessage(() => {
-          expect(addResponse).toBeInstanceOf(VectorAddItemBatch.Success);
-        }, `expected SUCCESS but got ${addResponse.toString()}}`);
+          expect(upsertResponse).toBeInstanceOf(VectorUpsertItemBatch.Success);
+        }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
 
         await sleep(2_000);
         const searchResponse = await vectorClient.search(
@@ -131,10 +131,10 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
       });
     });
 
-    it('should support add and search with metadata', async () => {
+    it('should support upsert and search with metadata', async () => {
       const indexName = testIndexName();
       await WithIndex(vectorClient, indexName, 2, async () => {
-        const addResponse = await vectorClient.addItemBatch(indexName, [
+        const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
           {
             id: 'test_item_1',
             vector: [1.0, 2.0],
@@ -152,8 +152,8 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           },
         ]);
         expectWithMessage(() => {
-          expect(addResponse).toBeInstanceOf(VectorAddItemBatch.Success);
-        }, `expected SUCCESS but got ${addResponse.toString()}}`);
+          expect(upsertResponse).toBeInstanceOf(VectorUpsertItemBatch.Success);
+        }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
 
         await sleep(2_000);
 
@@ -204,19 +204,19 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
       });
     });
 
-    it('should fail when adding item with wrong number of dimensions', async () => {
+    it('should fail when upserting item with wrong number of dimensions', async () => {
       const indexName = testIndexName();
       await WithIndex(vectorClient, indexName, 2, async () => {
-        const addResponse = await vectorClient.addItemBatch(indexName, [
+        const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
           {id: 'test_item', vector: [1.0, 2.0, 3.0]},
         ]);
         expectWithMessage(() => {
-          expect(addResponse).toBeInstanceOf(VectorAddItemBatch.Error);
-        }, `expected ERROR but got ${addResponse.toString()}}`);
+          expect(upsertResponse).toBeInstanceOf(VectorUpsertItemBatch.Error);
+        }, `expected ERROR but got ${upsertResponse.toString()}}`);
 
         const expectedInnerExMessage =
           "invalid parameter: vector, vector dimension has to match the index's dimension";
-        const errorResponse = addResponse as VectorAddItemBatch.Error;
+        const errorResponse = upsertResponse as VectorUpsertItemBatch.Error;
         expect(errorResponse.message()).toMatch(
           'Invalid argument passed to Momento client:'
         );
@@ -230,14 +230,14 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     it('should fail when searching with wrong number of dimensions', async () => {
       const indexName = testIndexName();
       await WithIndex(vectorClient, indexName, 2, async () => {
-        const addResponse = await vectorClient.addItemBatch(indexName, [
+        const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
           {id: 'test_item_1', vector: [1.0, 2.0]},
           {id: 'test_item_2', vector: [3.0, 4.0]},
           {id: 'test_item_3', vector: [5.0, 6.0]},
         ]);
         expectWithMessage(() => {
-          expect(addResponse).toBeInstanceOf(VectorAddItemBatch.Success);
-        }, `expected SUCCESS but got ${addResponse.toString()}}`);
+          expect(upsertResponse).toBeInstanceOf(VectorUpsertItemBatch.Success);
+        }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
 
         await sleep(2_000);
 
@@ -268,7 +268,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     it('should delete ids', async () => {
       const indexName = testIndexName();
       await WithIndex(vectorClient, indexName, 2, async () => {
-        const addResponse = await vectorClient.addItemBatch(indexName, [
+        const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
           {id: 'test_item_1', vector: [1.0, 2.0]},
           {id: 'test_item_2', vector: [3.0, 4.0]},
           {id: 'test_item_3', vector: [5.0, 6.0]},
@@ -276,8 +276,8 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         ]);
 
         expectWithMessage(() => {
-          expect(addResponse).toBeInstanceOf(VectorAddItemBatch.Success);
-        }, `expected SUCCESS but got ${addResponse.toString()}}`);
+          expect(upsertResponse).toBeInstanceOf(VectorUpsertItemBatch.Success);
+        }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
 
         await sleep(2_000);
 

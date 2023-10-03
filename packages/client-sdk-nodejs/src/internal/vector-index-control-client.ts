@@ -1,17 +1,16 @@
 import {control} from '@gomomento/generated-types';
-import grpcControl = control.control_client;
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {
-  ListCaches,
   CreateSigningKey,
-  ListSigningKeys,
-  RevokeSigningKey,
   CredentialProvider,
+  ListCaches,
+  ListSigningKeys,
   MomentoLogger,
+  RevokeSigningKey,
   VectorIndexConfiguration,
 } from '..';
 import {version} from '../../package.json';
@@ -29,7 +28,11 @@ import {
   DeleteVectorIndex,
   ListVectorIndexes,
 } from '@gomomento/sdk-core';
-import {IVectorIndexControlClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {
+  IVectorIndexControlClient,
+  SimilarityMetric,
+} from '@gomomento/sdk-core/dist/src/internal/clients';
+import grpcControl = control.control_client;
 
 export interface ControlClientProps {
   configuration: VectorIndexConfiguration;
@@ -73,7 +76,8 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
 
   public async createIndex(
     indexName: string,
-    numDimensions: number
+    numDimensions: number,
+    similarityMetric?: SimilarityMetric
   ): Promise<CreateVectorIndex.Response> {
     try {
       validateIndexName(indexName);
@@ -85,6 +89,23 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
     const request = new grpcControl._CreateIndexRequest();
     request.index_name = indexName;
     request.num_dimensions = numDimensions;
+
+    switch (similarityMetric) {
+      case SimilarityMetric.INNER_PRODUCT:
+        request.inner_product =
+          new grpcControl._CreateIndexRequest._InnerProduct();
+        break;
+      case SimilarityMetric.EUCLIDIAN_DISTANCE:
+        request.euclidean_distance =
+          new grpcControl._CreateIndexRequest._EuclideanDistance();
+        break;
+      case SimilarityMetric.COSINE_SIMILARITY:
+      default:
+        request.cosine_similarity =
+          new grpcControl._CreateIndexRequest._CosineSimilarity();
+        break;
+    }
+
     return await new Promise<CreateVectorIndex.Response>(resolve => {
       this.clientWrapper.getClient().CreateIndex(
         request,

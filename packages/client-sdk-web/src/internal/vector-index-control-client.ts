@@ -7,7 +7,10 @@ import {
   _DeleteIndexRequest,
 } from '@gomomento/generated-types-webtext/dist/controlclient_pb';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-import {IVectorIndexControlClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {
+  IVectorIndexControlClient,
+  SimilarityMetric,
+} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
   validateIndexName,
@@ -60,7 +63,8 @@ export class VectorIndexControlClient<
 
   public async createIndex(
     indexName: string,
-    numDimensions: number
+    numDimensions: number,
+    similarityMetric?: SimilarityMetric
   ): Promise<CreateVectorIndex.Response> {
     try {
       validateIndexName(indexName);
@@ -71,6 +75,7 @@ export class VectorIndexControlClient<
     const request = new _CreateIndexRequest();
     request.setIndexName(indexName);
     request.setNumDimensions(numDimensions);
+    //TODO: add similarity metric
     this.logger.debug("Issuing 'createIndex' request");
     return await new Promise<CreateVectorIndex.Response>(resolve => {
       this.clientWrapper.createIndex(
