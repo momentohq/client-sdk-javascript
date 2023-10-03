@@ -285,11 +285,16 @@ export class LeaderboardDataClient implements InternalLeaderboardClient {
           if (resp) {
             const foundElements = (resp as leaderboard._GetByScoreResponse)
               .elements;
-            resolve(
-              new LeaderboardFetch.Found(
-                this.convertToRankedElementsList(foundElements)
-              )
-            );
+            if (foundElements.length) {
+              resolve(
+                new LeaderboardFetch.Found(
+                  this.convertToRankedElementsList(foundElements)
+                )
+              );
+            } else {
+              // Empty list means requested elements were not found
+              resolve(new LeaderboardFetch.NotFound());
+            }
           } else {
             if (err?.code === status.NOT_FOUND) {
               resolve(new LeaderboardFetch.NotFound());
@@ -372,11 +377,16 @@ export class LeaderboardDataClient implements InternalLeaderboardClient {
           if (resp) {
             const foundElements = (resp as leaderboard._GetByRankResponse)
               .elements;
-            resolve(
-              new LeaderboardFetch.Found(
-                this.convertToRankedElementsList(foundElements)
-              )
-            );
+            if (foundElements.length) {
+              resolve(
+                new LeaderboardFetch.Found(
+                  this.convertToRankedElementsList(foundElements)
+                )
+              );
+            } else {
+              // Empty list means requested elements were not found
+              resolve(new LeaderboardFetch.NotFound());
+            }
           } else {
             if (err?.code === status.NOT_FOUND) {
               resolve(new LeaderboardFetch.NotFound());
@@ -444,11 +454,16 @@ export class LeaderboardDataClient implements InternalLeaderboardClient {
           if (resp) {
             const foundElements = (resp as leaderboard._GetRankResponse)
               .elements;
-            resolve(
-              new LeaderboardFetch.Found(
-                this.convertToRankedElementsList(foundElements)
-              )
-            );
+            if (foundElements.length) {
+              resolve(
+                new LeaderboardFetch.Found(
+                  this.convertToRankedElementsList(foundElements)
+                )
+              );
+            } else {
+              // Empty list means requested elements were not found
+              resolve(new LeaderboardFetch.NotFound());
+            }
           } else {
             if (err?.code === status.NOT_FOUND) {
               resolve(new LeaderboardFetch.NotFound());

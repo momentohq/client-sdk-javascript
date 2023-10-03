@@ -241,11 +241,16 @@ export class LeaderboardDataClient<
         (err, resp) => {
           if (resp) {
             const foundElements = resp.getElementsList();
-            resolve(
-              new LeaderboardFetch.Found(
-                this.convertToRankedElementsList(foundElements)
-              )
-            );
+            if (foundElements.length) {
+              resolve(
+                new LeaderboardFetch.Found(
+                  this.convertToRankedElementsList(foundElements)
+                )
+              );
+            } else {
+              // Empty list means requested elements were not found
+              resolve(new LeaderboardFetch.NotFound());
+            }
           } else {
             if (err.code === StatusCode.NOT_FOUND) {
               resolve(new LeaderboardFetch.NotFound());
@@ -324,11 +329,16 @@ export class LeaderboardDataClient<
         (err, resp) => {
           if (resp) {
             const foundElements = resp.getElementsList();
-            resolve(
-              new LeaderboardFetch.Found(
-                this.convertToRankedElementsList(foundElements)
-              )
-            );
+            if (foundElements.length) {
+              resolve(
+                new LeaderboardFetch.Found(
+                  this.convertToRankedElementsList(foundElements)
+                )
+              );
+            } else {
+              // Empty list means requested elements were not found
+              resolve(new LeaderboardFetch.NotFound());
+            }
           } else {
             if (err?.code === StatusCode.NOT_FOUND) {
               resolve(new LeaderboardFetch.NotFound());
@@ -394,11 +404,16 @@ export class LeaderboardDataClient<
         (err, resp) => {
           if (resp) {
             const foundElements = resp.getElementsList();
-            resolve(
-              new LeaderboardFetch.Found(
-                this.convertToRankedElementsList(foundElements)
-              )
-            );
+            if (foundElements.length) {
+              resolve(
+                new LeaderboardFetch.Found(
+                  this.convertToRankedElementsList(foundElements)
+                )
+              );
+            } else {
+              // Empty list means requested elements were not found
+              resolve(new LeaderboardFetch.NotFound());
+            }
           } else {
             if (err?.code === StatusCode.NOT_FOUND) {
               resolve(new LeaderboardFetch.NotFound());
