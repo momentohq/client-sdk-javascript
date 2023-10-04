@@ -18,7 +18,7 @@ import {
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {getWebVectorEndpoint} from '../utils/web-client-utils';
-import {ALL} from '@gomomento/sdk-core/dist/src/clients/IVectorIndexClient';
+import {ALL_METADATA} from '@gomomento/sdk-core/dist/src/clients/IVectorIndexClient';
 
 export class VectorIndexDataClient implements IVectorIndexDataClient {
   private readonly client: VectorIndexClient;
@@ -59,7 +59,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     indexName: string,
     items: Array<VectorIndexItem>
   ): Promise<VectorUpsertItemBatch.Response> {
-    const request = new vectorindex._AddItemBatchRequest();
+    const request = new vectorindex._UpsertItemBatchRequest();
     request.setIndexName(indexName);
     request.setItemsList(
       items.map(vectorIndexItem => {
@@ -84,7 +84,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     );
 
     return await new Promise(resolve => {
-      this.client.addItemBatch(
+      this.client.upsertItemBatch(
         request,
         {
           ...this.clientMetadataProvider.createClientMetadata(),
@@ -174,10 +174,9 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     }
 
     const metadataRequest = new vectorindex._MetadataRequest();
-    if (options?.metadataFields === ALL) {
-      //TODO: handle 'all' case
-      // const all = new vectorindex._MetadataRequest.All();
-      // metadataRequest.setAll(all);
+    if (options?.metadataFields === ALL_METADATA) {
+      const all = new vectorindex._MetadataRequest.All();
+      metadataRequest.setAll(all);
     } else {
       const some = new vectorindex._MetadataRequest.Some();
       some.setFieldsList(

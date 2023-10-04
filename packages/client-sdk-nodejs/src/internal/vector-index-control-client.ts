@@ -95,9 +95,9 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
         request.inner_product =
           new grpcControl._CreateIndexRequest._InnerProduct();
         break;
-      case SimilarityMetric.EUCLIDIAN_DISTANCE:
-        request.euclidean_distance =
-          new grpcControl._CreateIndexRequest._EuclideanDistance();
+      case SimilarityMetric.EUCLIDEAN_SIMILARITY:
+        request.euclidean_similarity =
+          new grpcControl._CreateIndexRequest._EuclideanSimilarity();
         break;
       case SimilarityMetric.COSINE_SIMILARITY:
       default:

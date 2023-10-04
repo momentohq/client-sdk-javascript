@@ -96,7 +96,8 @@ export const deleteIndexIfExists = async (
 export const createIndexIfNotExists = async (
   client: IVectorIndexClient,
   indexName: string,
-  numDimensions: number
+  numDimensions: number,
+  similarityMetric: SimilarityMetric
 ) => {
   if (isLocalhostDevelopmentMode()) {
     console.log(
@@ -107,7 +108,7 @@ export const createIndexIfNotExists = async (
   const createResponse = await client.createIndex(
     indexName,
     numDimensions,
-    SimilarityMetric.INNER_PRODUCT
+    similarityMetric
   );
   if (createResponse instanceof CreateVectorIndex.Error) {
     throw createResponse.innerException();
@@ -118,10 +119,16 @@ export async function WithIndex(
   client: IVectorIndexClient,
   indexName: string,
   numDimensions: number,
+  similarityMetric: SimilarityMetric,
   block: () => Promise<void>
 ) {
   await deleteIndexIfExists(client, indexName);
-  await createIndexIfNotExists(client, indexName, numDimensions);
+  await createIndexIfNotExists(
+    client,
+    indexName,
+    numDimensions,
+    similarityMetric
+  );
   try {
     await block();
   } finally {

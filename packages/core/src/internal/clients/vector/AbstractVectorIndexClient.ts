@@ -32,13 +32,24 @@ export abstract class AbstractVectorIndexClient
   }
 
   /**
-   * Creates an index if it does not exist.
+   * Creates a vector index if it does not exist.
+   *
+   * Remark on the choice of similarity metric:
+   * - Cosine similarity is appropriate for most embedding models as they tend to be optimized
+   *     for this metric.
+   * - If the vectors are unit normalized, cosine similarity is equivalent to inner product.
+   *     If your vectors are already unit normalized, you can use inner product to improve
+   *     performance.
+   * - Euclidean similarity, the sum of squared differences, is appropriate for datasets where
+   *     this metric is meaningful. For example, if the vectors represent images, and the
+   *     embedding model is trained to optimize the euclidean distance between images, then
+   *     euclidean similarity is appropriate.
    *
    * @param {string} indexName - The vector index to be created.
    * @param {number} numDimensions - Number of dimensions per vector.
    * @param {SimilarityMetric} similarityMetric - The metric used to
    * quantify the distance between vectors. Can be cosine similarity,
-   * inner product, or euclidian distance. defaults to cosine similarity.
+   * inner product, or euclidean similarity. Defaults to cosine similarity.
    * @returns {Promise<CreateVectorIndex.Response>} -
    * {@link CreateVectorIndex.Success} on success.
    * {@link CreateVectorIndex.AlreadyExists} if the cache already exists.

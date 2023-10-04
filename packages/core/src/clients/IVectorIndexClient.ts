@@ -6,7 +6,10 @@ import {
 } from '../messages/responses/vector';
 import {VectorIndexItem} from '../messages/vector-index';
 
-export const ALL = Symbol('ALL');
+/**
+ * A special value to request all metadata fields.
+ */
+export const ALL_METADATA = Symbol('ALL_METADATA');
 
 /**
  * @param {number} topK - The number of results to return. Defaults to 10.
@@ -15,7 +18,7 @@ export const ALL = Symbol('ALL');
  */
 export interface SearchOptions {
   topK?: number;
-  metadataFields?: Array<string> | typeof ALL;
+  metadataFields?: Array<string> | typeof ALL_METADATA;
 }
 
 export interface IVectorIndexClient extends IVectorIndexControlClient {

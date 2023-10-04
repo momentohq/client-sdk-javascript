@@ -75,7 +75,24 @@ export class VectorIndexControlClient<
     const request = new _CreateIndexRequest();
     request.setIndexName(indexName);
     request.setNumDimensions(numDimensions);
-    //TODO: add similarity metric
+
+    switch (similarityMetric) {
+      case SimilarityMetric.INNER_PRODUCT:
+        request.setInnerProduct(new _CreateIndexRequest._InnerProduct());
+        break;
+      case SimilarityMetric.EUCLIDEAN_SIMILARITY:
+        request.setEuclideanSimilarity(
+          new _CreateIndexRequest._EuclideanSimilarity()
+        );
+        break;
+      case SimilarityMetric.COSINE_SIMILARITY:
+      default:
+        request.setCosineSimilarity(
+          new _CreateIndexRequest._CosineSimilarity()
+        );
+        break;
+    }
+
     this.logger.debug("Issuing 'createIndex' request");
     return await new Promise<CreateVectorIndex.Response>(resolve => {
       this.clientWrapper.createIndex(
