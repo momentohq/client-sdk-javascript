@@ -89,7 +89,6 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     indexName: string,
     items: Array<VectorIndexItem>
   ): Promise<VectorUpsertItemBatch.Response> {
-    // integration test covering replacing a vector, metadata
     const request = new vectorindex._UpsertItemBatchRequest({
       index_name: indexName,
       items: items.map(item => {
