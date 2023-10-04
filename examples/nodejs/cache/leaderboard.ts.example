@@ -2,18 +2,35 @@ import {
   PreviewLeaderboardClient,
   LeaderboardConfigurations,
   CredentialProvider,
-  LeaderboardOrder,
+  CacheClient,
+  Configurations,
 } from '@gomomento/sdk';
 import {
+  CreateCache,
   LeaderboardDelete,
   LeaderboardFetch,
-  LeaderboardGetRank,
   LeaderboardLength,
+  LeaderboardOrder,
   LeaderboardRemoveElements,
   LeaderboardUpsert,
 } from '@gomomento/sdk-core';
 
 async function main() {
+  const cacheClient = await CacheClient.create({
+    configuration: Configurations.Laptop.v1(),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_API_KEY',
+    }),
+    defaultTtlSeconds: 60,
+  });
+
+  const createCacheResponse = await cacheClient.createCache('my-cache');
+  if (createCacheResponse instanceof CreateCache.AlreadyExists) {
+    console.log('cache already exists');
+  } else if (createCacheResponse instanceof CreateCache.Error) {
+    throw createCacheResponse.innerException();
+  }
+
   const client = new PreviewLeaderboardClient({
     configuration: LeaderboardConfigurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
@@ -23,9 +40,9 @@ async function main() {
 
   // upsert
   const elements: Map<bigint, number> = new Map([
-    [123n, 100.0],
-    [456n, 200.0],
-    [789n, 300.0],
+    [BigInt(123), 100.0],
+    [BigInt(456), 200.0],
+    [BigInt(789), 300.0],
   ]);
   const upsertResp = await client.leaderboardUpsert('my-cache', 'my-leaderboard', elements);
   if (upsertResp instanceof LeaderboardUpsert.Success) {
@@ -65,12 +82,14 @@ async function main() {
   }
 
   // get rank
-  const getRank = await client.leaderboardGetRank('my-cache', 'my-leaderboard', 123n, LeaderboardOrder.Ascending);
-  if (getRank instanceof LeaderboardGetRank.Found) {
+  const getRank = await client.leaderboardGetRank('my-cache', 'my-leaderboard', [BigInt(123)], {
+    order: LeaderboardOrder.Ascending,
+  });
+  if (getRank instanceof LeaderboardFetch.Found) {
     console.log('Get rank Found');
-  } else if (getRank instanceof LeaderboardGetRank.NotFound) {
+  } else if (getRank instanceof LeaderboardFetch.NotFound) {
     console.log('Get rank NotFound');
-  } else if (getRank instanceof LeaderboardGetRank.Error) {
+  } else if (getRank instanceof LeaderboardFetch.Error) {
     console.log('Get rank error:', getRank.message());
   }
 
@@ -85,7 +104,11 @@ async function main() {
   }
 
   // remove
-  const removeResp = await client.leaderboardRemoveElements('my-cache', 'my-leaderboard', [123n, 456n, 789n]);
+  const removeResp = await client.leaderboardRemoveElements('my-cache', 'my-leaderboard', [
+    BigInt(123),
+    BigInt(456),
+    BigInt(789),
+  ]);
   if (removeResp instanceof LeaderboardRemoveElements.Success) {
     console.log('Remove elements success');
   } else if (removeResp instanceof LeaderboardRemoveElements.Error) {
