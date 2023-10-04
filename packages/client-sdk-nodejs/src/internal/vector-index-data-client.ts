@@ -23,7 +23,7 @@ import {
   validateTopK,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
-import {ALL_METADATA} from '@gomomento/sdk-core/dist/src/clients/IVectorIndexClient';
+import {ALL_VECTOR_METADATA} from '@gomomento/sdk-core/dist/src/clients/IVectorIndexClient';
 
 export class VectorIndexDataClient implements IVectorIndexDataClient {
   private readonly configuration: VectorIndexConfiguration;
@@ -185,7 +185,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     options?: SearchOptions
   ): Promise<VectorSearch.Response> {
     const metadataRequest = new vectorindex._MetadataRequest();
-    if (options?.metadataFields === ALL_METADATA) {
+    if (options?.metadataFields === ALL_VECTOR_METADATA) {
       metadataRequest.all = new vectorindex._MetadataRequest.All();
     } else {
       metadataRequest.some = new vectorindex._MetadataRequest.Some({

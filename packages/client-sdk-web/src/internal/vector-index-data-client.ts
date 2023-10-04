@@ -18,7 +18,7 @@ import {
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {getWebVectorEndpoint} from '../utils/web-client-utils';
-import {ALL_METADATA} from '@gomomento/sdk-core/dist/src/clients/IVectorIndexClient';
+import {ALL_VECTOR_METADATA} from '@gomomento/sdk-core/dist/src/clients/IVectorIndexClient';
 
 export class VectorIndexDataClient implements IVectorIndexDataClient {
   private readonly client: VectorIndexClient;
@@ -174,7 +174,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     }
 
     const metadataRequest = new vectorindex._MetadataRequest();
-    if (options?.metadataFields === ALL_METADATA) {
+    if (options?.metadataFields === ALL_VECTOR_METADATA) {
       const all = new vectorindex._MetadataRequest.All();
       metadataRequest.setAll(all);
     } else {

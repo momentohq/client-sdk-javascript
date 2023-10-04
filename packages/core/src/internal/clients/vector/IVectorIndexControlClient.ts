@@ -7,7 +7,7 @@ import {
 /**
  * The similarity metric to use when comparing vectors in the index.
  */
-export enum SimilarityMetric {
+export enum VectorSimilarityMetric {
   /**
    * The cosine similarity between two vectors, ie the cosine of the angle between them.
    * Bigger is better. Ranges from -1 to 1.
@@ -31,7 +31,7 @@ export interface IVectorIndexControlClient {
   createIndex(
     indexName: string,
     numDimensions: number,
-    similarityMetric?: SimilarityMetric
+    similarityMetric?: VectorSimilarityMetric
   ): Promise<CreateVectorIndex.Response>;
   listIndexes(): Promise<ListVectorIndexes.Response>;
   deleteIndex(indexName: string): Promise<DeleteVectorIndex.Response>;

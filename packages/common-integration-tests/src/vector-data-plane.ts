@@ -14,8 +14,8 @@ import {
 } from './common-int-test-utils';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
-  ALL_METADATA,
-  SimilarityMetric,
+  ALL_VECTOR_METADATA,
+  VectorSimilarityMetric,
 } from '@gomomento/sdk-core/dist/src/internal/clients';
 
 export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
@@ -48,7 +48,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         vectorClient,
         indexName,
         2,
-        SimilarityMetric.INNER_PRODUCT,
+        VectorSimilarityMetric.INNER_PRODUCT,
         async () => {
           const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
             {
@@ -90,7 +90,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         vectorClient,
         indexName,
         2,
-        SimilarityMetric.COSINE_SIMILARITY,
+        VectorSimilarityMetric.COSINE_SIMILARITY,
         async () => {
           const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
             {
@@ -150,7 +150,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         vectorClient,
         indexName,
         2,
-        SimilarityMetric.EUCLIDEAN_SIMILARITY,
+        VectorSimilarityMetric.EUCLIDEAN_SIMILARITY,
         async () => {
           const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
             {
@@ -210,7 +210,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         vectorClient,
         indexName,
         2,
-        SimilarityMetric.INNER_PRODUCT,
+        VectorSimilarityMetric.INNER_PRODUCT,
         async () => {
           const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
             {id: 'test_item_1', vector: [1.0, 2.0]},
@@ -248,7 +248,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         vectorClient,
         indexName,
         2,
-        SimilarityMetric.INNER_PRODUCT,
+        VectorSimilarityMetric.INNER_PRODUCT,
         async () => {
           const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
             {id: 'test_item_1', vector: [1.0, 2.0]},
@@ -285,7 +285,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         vectorClient,
         indexName,
         2,
-        SimilarityMetric.INNER_PRODUCT,
+        VectorSimilarityMetric.INNER_PRODUCT,
         async () => {
           const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
             {
@@ -363,7 +363,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
 
           searchResponse = await vectorClient.search(indexName, [1.0, 2.0], {
             topK: 3,
-            metadataFields: ALL_METADATA,
+            metadataFields: ALL_VECTOR_METADATA,
           });
           expectWithMessage(() => {
             expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
@@ -388,7 +388,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         vectorClient,
         indexName,
         2,
-        SimilarityMetric.INNER_PRODUCT,
+        VectorSimilarityMetric.INNER_PRODUCT,
         async () => {
           let upsertResponse = await vectorClient.upsertItemBatch(indexName, [
             {
@@ -433,7 +433,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
             [1.0, 2.0],
             {
               topK: 5,
-              metadataFields: ALL_METADATA,
+              metadataFields: ALL_VECTOR_METADATA,
             }
           );
           expectWithMessage(() => {
@@ -459,7 +459,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         vectorClient,
         indexName,
         2,
-        SimilarityMetric.INNER_PRODUCT,
+        VectorSimilarityMetric.INNER_PRODUCT,
         async () => {
           const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
             {id: 'test_item', vector: [1.0, 2.0, 3.0]},
@@ -488,7 +488,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         vectorClient,
         indexName,
         2,
-        SimilarityMetric.INNER_PRODUCT,
+        VectorSimilarityMetric.INNER_PRODUCT,
         async () => {
           const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
             {id: 'test_item_1', vector: [1.0, 2.0]},
@@ -534,7 +534,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         vectorClient,
         indexName,
         2,
-        SimilarityMetric.INNER_PRODUCT,
+        VectorSimilarityMetric.INNER_PRODUCT,
         async () => {
           const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
             {id: 'test_item_1', vector: [1.0, 2.0]},

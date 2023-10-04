@@ -9,7 +9,7 @@ import {VectorIndexItem} from '../messages/vector-index';
 /**
  * A special value to request all metadata fields.
  */
-export const ALL_METADATA = Symbol('ALL_METADATA');
+export const ALL_VECTOR_METADATA = Symbol('ALL_VECTOR_METADATA');
 
 /**
  * @param {number} topK - The number of results to return. Defaults to 10.
@@ -18,7 +18,7 @@ export const ALL_METADATA = Symbol('ALL_METADATA');
  */
 export interface SearchOptions {
   topK?: number;
-  metadataFields?: Array<string> | typeof ALL_METADATA;
+  metadataFields?: Array<string> | typeof ALL_VECTOR_METADATA;
 }
 
 export interface IVectorIndexClient extends IVectorIndexControlClient {

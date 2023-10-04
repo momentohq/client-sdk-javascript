@@ -13,7 +13,7 @@ import {
   ListVectorIndexes,
   MomentoErrorCode,
 } from '@gomomento/sdk-core';
-import {SimilarityMetric} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {VectorSimilarityMetric} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
   describe('create/delete vector index', () => {
@@ -60,7 +60,7 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
         vectorClient,
         indexName,
         10,
-        SimilarityMetric.INNER_PRODUCT,
+        VectorSimilarityMetric.INNER_PRODUCT,
         async () => {
           const createResponse = await vectorClient.createIndex(indexName, 1);
           expect(createResponse).toBeInstanceOf(
@@ -76,7 +76,7 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
         vectorClient,
         indexName,
         10,
-        SimilarityMetric.INNER_PRODUCT,
+        VectorSimilarityMetric.INNER_PRODUCT,
         async () => {
           const listResponse = await vectorClient.listIndexes();
           expectWithMessage(() => {

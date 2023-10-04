@@ -12,7 +12,7 @@ import {
 } from '../../../clients/IVectorIndexClient';
 import {
   IVectorIndexControlClient,
-  SimilarityMetric,
+  VectorSimilarityMetric,
 } from './IVectorIndexControlClient';
 import {VectorIndexItem} from '../../../messages/vector-index';
 import {IVectorIndexDataClient} from './IVectorIndexDataClient';
@@ -47,7 +47,7 @@ export abstract class AbstractVectorIndexClient
    *
    * @param {string} indexName - The vector index to be created.
    * @param {number} numDimensions - Number of dimensions per vector.
-   * @param {SimilarityMetric} similarityMetric - The metric used to
+   * @param {VectorSimilarityMetric} similarityMetric - The metric used to
    * quantify the distance between vectors. Can be cosine similarity,
    * inner product, or euclidean similarity. Defaults to cosine similarity.
    * @returns {Promise<CreateVectorIndex.Response>} -
@@ -58,7 +58,7 @@ export abstract class AbstractVectorIndexClient
   public async createIndex(
     indexName: string,
     numDimensions: number,
-    similarityMetric?: SimilarityMetric
+    similarityMetric?: VectorSimilarityMetric
   ): Promise<CreateVectorIndex.Response> {
     return await this.controlClient.createIndex(
       indexName,

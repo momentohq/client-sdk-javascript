@@ -30,7 +30,7 @@ import {
 } from '@gomomento/sdk-core';
 import {
   IVectorIndexControlClient,
-  SimilarityMetric,
+  VectorSimilarityMetric,
 } from '@gomomento/sdk-core/dist/src/internal/clients';
 import grpcControl = control.control_client;
 
@@ -77,7 +77,7 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
   public async createIndex(
     indexName: string,
     numDimensions: number,
-    similarityMetric?: SimilarityMetric
+    similarityMetric?: VectorSimilarityMetric
   ): Promise<CreateVectorIndex.Response> {
     try {
       validateIndexName(indexName);
@@ -91,15 +91,15 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
     request.num_dimensions = numDimensions;
 
     switch (similarityMetric) {
-      case SimilarityMetric.INNER_PRODUCT:
+      case VectorSimilarityMetric.INNER_PRODUCT:
         request.inner_product =
           new grpcControl._CreateIndexRequest._InnerProduct();
         break;
-      case SimilarityMetric.EUCLIDEAN_SIMILARITY:
+      case VectorSimilarityMetric.EUCLIDEAN_SIMILARITY:
         request.euclidean_similarity =
           new grpcControl._CreateIndexRequest._EuclideanSimilarity();
         break;
-      case SimilarityMetric.COSINE_SIMILARITY:
+      case VectorSimilarityMetric.COSINE_SIMILARITY:
       default:
         request.cosine_similarity =
           new grpcControl._CreateIndexRequest._CosineSimilarity();

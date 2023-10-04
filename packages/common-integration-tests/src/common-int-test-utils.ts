@@ -13,7 +13,7 @@ import {
   ResponseBase,
 } from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
 import {v4} from 'uuid';
-import {SimilarityMetric} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {VectorSimilarityMetric} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 export function isLocalhostDevelopmentMode(): boolean {
   const useLocalhost = process.env.MOMENTO_SDK_TESTS_USE_LOCALHOST;
@@ -97,7 +97,7 @@ export const createIndexIfNotExists = async (
   client: IVectorIndexClient,
   indexName: string,
   numDimensions: number,
-  similarityMetric: SimilarityMetric
+  similarityMetric: VectorSimilarityMetric
 ) => {
   if (isLocalhostDevelopmentMode()) {
     console.log(
@@ -119,7 +119,7 @@ export async function WithIndex(
   client: IVectorIndexClient,
   indexName: string,
   numDimensions: number,
-  similarityMetric: SimilarityMetric,
+  similarityMetric: VectorSimilarityMetric,
   block: () => Promise<void>
 ) {
   await deleteIndexIfExists(client, indexName);
