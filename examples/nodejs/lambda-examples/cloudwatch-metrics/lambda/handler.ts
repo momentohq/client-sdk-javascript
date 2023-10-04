@@ -20,8 +20,8 @@ export const handler = async () => {
     const cacheClient = await getCacheClient(loggerFactory);
     logger.info('Created a CacheClient configured with metrics middleware');
 
-    logger.info('Issuing 100 set and get requests to demonstrate middleware request logging and metrics.');
-    for (let i = 0; i < (60 /* seconds */ * 10 /* minutes */); i++) {
+    logger.info('Issuing 5 minutes of set and get requests to generate data for the dashboard example');
+    for (let i = 0; i < (60 /* seconds */ * 5 /* minutes */); i++) {
       await cacheClient.set('cache', 'metrics-example-{i}', 'VALUE');
       await cacheClient.get('cache', 'metrics-example-{i}');
       await delay(1000);
