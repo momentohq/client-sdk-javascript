@@ -6,6 +6,7 @@ import {
   DeleteVectorIndex,
   IVectorIndexClient,
   MomentoErrorCode,
+  VectorSimilarityMetric,
 } from '@gomomento/sdk-core';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {
@@ -95,7 +96,8 @@ export const deleteIndexIfExists = async (
 export const createIndexIfNotExists = async (
   client: IVectorIndexClient,
   indexName: string,
-  numDimensions: number
+  numDimensions: number,
+  similarityMetric: VectorSimilarityMetric
 ) => {
   if (isLocalhostDevelopmentMode()) {
     console.log(
@@ -103,7 +105,11 @@ export const createIndexIfNotExists = async (
     );
     return;
   }
-  const createResponse = await client.createIndex(indexName, numDimensions);
+  const createResponse = await client.createIndex(
+    indexName,
+    numDimensions,
+    similarityMetric
+  );
   if (createResponse instanceof CreateVectorIndex.Error) {
     throw createResponse.innerException();
   }
@@ -113,10 +119,16 @@ export async function WithIndex(
   client: IVectorIndexClient,
   indexName: string,
   numDimensions: number,
+  similarityMetric: VectorSimilarityMetric,
   block: () => Promise<void>
 ) {
   await deleteIndexIfExists(client, indexName);
-  await createIndexIfNotExists(client, indexName, numDimensions);
+  await createIndexIfNotExists(
+    client,
+    indexName,
+    numDimensions,
+    similarityMetric
+  );
   try {
     await block();
   } finally {

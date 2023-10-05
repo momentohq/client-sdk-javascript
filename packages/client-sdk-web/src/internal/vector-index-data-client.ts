@@ -5,9 +5,9 @@ import {VectorIndexItem} from '@gomomento/sdk-core/dist/src/messages/vector-inde
 import {
   MomentoLogger,
   SearchOptions,
-  VectorAddItemBatch,
   VectorDeleteItemBatch,
   VectorSearch,
+  VectorUpsertItemBatch,
 } from '@gomomento/sdk-core';
 import {VectorIndexClientProps} from '../vector-index-client-props';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
@@ -18,6 +18,7 @@ import {
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {getWebVectorEndpoint} from '../utils/web-client-utils';
+import {ALL_VECTOR_METADATA} from '@gomomento/sdk-core/dist/src/clients/IVectorIndexClient';
 
 export class VectorIndexDataClient implements IVectorIndexDataClient {
   private readonly client: VectorIndexClient;
@@ -42,23 +43,23 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     this.client = new VectorIndexClient(vectorEndpoint, null, {});
   }
 
-  public async addItemBatch(
+  public async upsertItemBatch(
     indexName: string,
     items: Array<VectorIndexItem>
-  ): Promise<VectorAddItemBatch.Response> {
+  ): Promise<VectorUpsertItemBatch.Response> {
     try {
       validateIndexName(indexName);
     } catch (err) {
-      return new VectorAddItemBatch.Error(normalizeSdkError(err as Error));
+      return new VectorUpsertItemBatch.Error(normalizeSdkError(err as Error));
     }
-    return await this.sendAddItemBatch(indexName, items);
+    return await this.sendUpsertItemBatch(indexName, items);
   }
 
-  private async sendAddItemBatch(
+  private async sendUpsertItemBatch(
     indexName: string,
     items: Array<VectorIndexItem>
-  ): Promise<VectorAddItemBatch.Response> {
-    const request = new vectorindex._AddItemBatchRequest();
+  ): Promise<VectorUpsertItemBatch.Response> {
+    const request = new vectorindex._UpsertItemBatchRequest();
     request.setIndexName(indexName);
     request.setItemsList(
       items.map(vectorIndexItem => {
@@ -83,7 +84,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     );
 
     return await new Promise(resolve => {
-      this.client.addItemBatch(
+      this.client.upsertItemBatch(
         request,
         {
           ...this.clientMetadataProvider.createClientMetadata(),
@@ -91,9 +92,11 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
         },
         (err, resp) => {
           if (resp) {
-            resolve(new VectorAddItemBatch.Success());
+            resolve(new VectorUpsertItemBatch.Success());
           } else {
-            resolve(new VectorAddItemBatch.Error(cacheServiceErrorMapper(err)));
+            resolve(
+              new VectorUpsertItemBatch.Error(cacheServiceErrorMapper(err))
+            );
           }
         }
       );
@@ -171,11 +174,16 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     }
 
     const metadataRequest = new vectorindex._MetadataRequest();
-    const some = new vectorindex._MetadataRequest.Some();
-    some.setFieldsList(
-      options?.metadataFields === undefined ? [] : options.metadataFields
-    );
-    metadataRequest.setSome(some);
+    if (options?.metadataFields === ALL_VECTOR_METADATA) {
+      const all = new vectorindex._MetadataRequest.All();
+      metadataRequest.setAll(all);
+    } else {
+      const some = new vectorindex._MetadataRequest.Some();
+      some.setFieldsList(
+        options?.metadataFields === undefined ? [] : options.metadataFields
+      );
+      metadataRequest.setSome(some);
+    }
     request.setMetadataFields(metadataRequest);
 
     return await new Promise(resolve => {

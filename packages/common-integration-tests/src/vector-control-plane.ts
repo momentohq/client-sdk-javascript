@@ -1,9 +1,9 @@
 import {
-  ValidateVectorProps,
+  expectWithMessage,
   ItBehavesLikeItValidatesIndexName,
   ItBehavesLikeItValidatesNumDimensions,
   testIndexName,
-  expectWithMessage,
+  ValidateVectorProps,
   WithIndex,
 } from './common-int-test-utils';
 import {
@@ -12,6 +12,7 @@ import {
   IVectorIndexClient,
   ListVectorIndexes,
   MomentoErrorCode,
+  VectorSimilarityMetric,
 } from '@gomomento/sdk-core';
 
 export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
@@ -25,6 +26,23 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
 
     ItBehavesLikeItValidatesNumDimensions((props: ValidateVectorProps) => {
       return vectorClient.createIndex(props.indexName, props.numDimensions);
+    });
+
+    it('should return an InvalidArgumentError if given a bad similarity metric', async () => {
+      const indexName = testIndexName();
+      const createResponse = await vectorClient.createIndex(
+        indexName,
+        1,
+        'badMetric' as unknown as VectorSimilarityMetric
+      );
+      expectWithMessage(() => {
+        expect(createResponse).toBeInstanceOf(CreateVectorIndex.Error);
+      }, `expected ERROR but got ${createResponse.toString()}`);
+      if (createResponse instanceof CreateVectorIndex.Error) {
+        expect(createResponse.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }
     });
 
     it('should return a NotFoundError if deleting a non-existent index', async () => {
@@ -42,24 +60,38 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
 
     it('should return AlreadyExists response if trying to create a index that already exists', async () => {
       const indexName = testIndexName();
-      await WithIndex(vectorClient, indexName, 10, async () => {
-        const createResponse = await vectorClient.createIndex(indexName, 1);
-        expect(createResponse).toBeInstanceOf(CreateVectorIndex.AlreadyExists);
-      });
+      await WithIndex(
+        vectorClient,
+        indexName,
+        10,
+        VectorSimilarityMetric.INNER_PRODUCT,
+        async () => {
+          const createResponse = await vectorClient.createIndex(indexName, 1);
+          expect(createResponse).toBeInstanceOf(
+            CreateVectorIndex.AlreadyExists
+          );
+        }
+      );
     });
 
     it('should create and list an index', async () => {
       const indexName = testIndexName();
-      await WithIndex(vectorClient, indexName, 10, async () => {
-        const listResponse = await vectorClient.listIndexes();
-        expectWithMessage(() => {
-          expect(listResponse).toBeInstanceOf(ListVectorIndexes.Success);
-        }, `expected SUCCESS but got ${listResponse.toString()}`);
-        if (listResponse instanceof ListVectorIndexes.Success) {
-          const caches = listResponse.getIndexNames();
-          expect(caches.includes(indexName)).toBeTruthy();
+      await WithIndex(
+        vectorClient,
+        indexName,
+        10,
+        VectorSimilarityMetric.INNER_PRODUCT,
+        async () => {
+          const listResponse = await vectorClient.listIndexes();
+          expectWithMessage(() => {
+            expect(listResponse).toBeInstanceOf(ListVectorIndexes.Success);
+          }, `expected SUCCESS but got ${listResponse.toString()}`);
+          if (listResponse instanceof ListVectorIndexes.Success) {
+            const caches = listResponse.getIndexNames();
+            expect(caches.includes(indexName)).toBeTruthy();
+          }
         }
-      });
+      );
     });
 
     it('should delete an index', async () => {

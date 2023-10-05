@@ -1,5 +1,10 @@
 import {control} from '@gomomento/generated-types-webtext';
-import {CredentialProvider, MomentoLogger, VectorIndexConfiguration} from '..';
+import {
+  CredentialProvider,
+  InvalidArgumentError,
+  MomentoLogger,
+  VectorIndexConfiguration,
+} from '..';
 import {Request, StatusCode, UnaryResponse} from 'grpc-web';
 import {
   _CreateIndexRequest,
@@ -7,7 +12,10 @@ import {
   _DeleteIndexRequest,
 } from '@gomomento/generated-types-webtext/dist/controlclient_pb';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-import {IVectorIndexControlClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {
+  IVectorIndexControlClient,
+  VectorSimilarityMetric,
+} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
   validateIndexName,
@@ -60,7 +68,8 @@ export class VectorIndexControlClient<
 
   public async createIndex(
     indexName: string,
-    numDimensions: number
+    numDimensions: number,
+    similarityMetric?: VectorSimilarityMetric
   ): Promise<CreateVectorIndex.Response> {
     try {
       validateIndexName(indexName);
@@ -71,6 +80,32 @@ export class VectorIndexControlClient<
     const request = new _CreateIndexRequest();
     request.setIndexName(indexName);
     request.setNumDimensions(numDimensions);
+
+    similarityMetric ??= VectorSimilarityMetric.COSINE_SIMILARITY;
+
+    switch (similarityMetric) {
+      case VectorSimilarityMetric.INNER_PRODUCT:
+        request.setInnerProduct(new _CreateIndexRequest._InnerProduct());
+        break;
+      case VectorSimilarityMetric.EUCLIDEAN_SIMILARITY:
+        request.setEuclideanSimilarity(
+          new _CreateIndexRequest._EuclideanSimilarity()
+        );
+        break;
+      case VectorSimilarityMetric.COSINE_SIMILARITY:
+        request.setCosineSimilarity(
+          new _CreateIndexRequest._CosineSimilarity()
+        );
+        break;
+      default:
+        return new CreateVectorIndex.Error(
+          new InvalidArgumentError(
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            `Invalid similarity metric: ${similarityMetric}`
+          )
+        );
+    }
+
     this.logger.debug("Issuing 'createIndex' request");
     return await new Promise<CreateVectorIndex.Response>(resolve => {
       this.clientWrapper.createIndex(

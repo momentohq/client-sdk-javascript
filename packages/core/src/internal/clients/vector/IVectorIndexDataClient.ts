@@ -1,5 +1,5 @@
 import {
-  VectorAddItemBatch,
+  VectorUpsertItemBatch,
   VectorDeleteItemBatch,
   VectorSearch,
 } from '../../../messages/responses/vector';
@@ -7,10 +7,10 @@ import {VectorIndexItem} from '../../../messages/vector-index';
 import {SearchOptions} from '../../../clients/IVectorIndexClient';
 
 export interface IVectorIndexDataClient {
-  addItemBatch(
+  upsertItemBatch(
     indexName: string,
     items: Array<VectorIndexItem>
-  ): Promise<VectorAddItemBatch.Response>;
+  ): Promise<VectorUpsertItemBatch.Response>;
   search(
     indexName: string,
     queryVector: Array<number>,
