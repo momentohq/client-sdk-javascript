@@ -113,11 +113,8 @@ export abstract class AbstractVectorIndexClient
 
   /**
    * Searches for the most similar vectors to the query vector in the index.
-   * Ranks the vectors in the index by maximum inner product to the query vector.
-   * If the index and query vectors are unit normalized, this is equivalent to
-   * ranking by cosine similarity. Hence, to perform a cosine similarity search,
-   * the index vectors should be unit normalized prior to indexing, and the query
-   * vector should be unit normalized prior to searching.
+   * Ranks the vectors according to the similarity metric specified when the
+   * index was created.
    *
    * @param {string} indexName - Name of the index to search in.
    * @param {Array<number>} queryVector - The vector to search for.

@@ -3,6 +3,8 @@ import {
   VectorDeleteItemBatch,
   VectorSearch,
   VectorUpsertItemBatch,
+  ALL_VECTOR_METADATA,
+  VectorSimilarityMetric,
 } from '@gomomento/sdk-core';
 import {
   expectWithMessage,
@@ -13,10 +15,6 @@ import {
   WithIndex,
 } from './common-int-test-utils';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
-import {
-  ALL_VECTOR_METADATA,
-  VectorSimilarityMetric,
-} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
   describe('upsertItem validation', () => {

@@ -6,6 +6,7 @@ import {
   DeleteVectorIndex,
   IVectorIndexClient,
   MomentoErrorCode,
+  VectorSimilarityMetric,
 } from '@gomomento/sdk-core';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {
@@ -13,7 +14,6 @@ import {
   ResponseBase,
 } from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
 import {v4} from 'uuid';
-import {VectorSimilarityMetric} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 export function isLocalhostDevelopmentMode(): boolean {
   const useLocalhost = process.env.MOMENTO_SDK_TESTS_USE_LOCALHOST;

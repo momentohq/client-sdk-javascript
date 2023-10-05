@@ -12,8 +12,8 @@ import {
   IVectorIndexClient,
   ListVectorIndexes,
   MomentoErrorCode,
+  VectorSimilarityMetric,
 } from '@gomomento/sdk-core';
-import {VectorSimilarityMetric} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
   describe('create/delete vector index', () => {
@@ -30,13 +30,17 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
 
     it('should return an InvalidArgumentError if given a bad similarity metric', async () => {
       const indexName = testIndexName();
-      const deleteResponse = await vectorClient.deleteIndex(indexName);
+      const createResponse = await vectorClient.createIndex(
+        indexName,
+        1,
+        'badMetric' as unknown as VectorSimilarityMetric
+      );
       expectWithMessage(() => {
-        expect(deleteResponse).toBeInstanceOf(DeleteVectorIndex.Error);
-      }, `expected ERROR but got ${deleteResponse.toString()}`);
-      if (deleteResponse instanceof DeleteVectorIndex.Error) {
-        expect(deleteResponse.errorCode()).toEqual(
-          MomentoErrorCode.NOT_FOUND_ERROR
+        expect(createResponse).toBeInstanceOf(CreateVectorIndex.Error);
+      }, `expected ERROR but got ${createResponse.toString()}`);
+      if (createResponse instanceof CreateVectorIndex.Error) {
+        expect(createResponse.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
         );
       }
     });

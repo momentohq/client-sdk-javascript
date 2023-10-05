@@ -1,5 +1,10 @@
 import {control} from '@gomomento/generated-types-webtext';
-import {CredentialProvider, MomentoLogger, VectorIndexConfiguration} from '..';
+import {
+  CredentialProvider,
+  InvalidArgumentError,
+  MomentoLogger,
+  VectorIndexConfiguration,
+} from '..';
 import {Request, StatusCode, UnaryResponse} from 'grpc-web';
 import {
   _CreateIndexRequest,
@@ -76,6 +81,8 @@ export class VectorIndexControlClient<
     request.setIndexName(indexName);
     request.setNumDimensions(numDimensions);
 
+    similarityMetric ??= VectorSimilarityMetric.COSINE_SIMILARITY;
+
     switch (similarityMetric) {
       case VectorSimilarityMetric.INNER_PRODUCT:
         request.setInnerProduct(new _CreateIndexRequest._InnerProduct());
@@ -86,11 +93,17 @@ export class VectorIndexControlClient<
         );
         break;
       case VectorSimilarityMetric.COSINE_SIMILARITY:
-      default:
         request.setCosineSimilarity(
           new _CreateIndexRequest._CosineSimilarity()
         );
         break;
+      default:
+        return new CreateVectorIndex.Error(
+          new InvalidArgumentError(
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            `Invalid similarity metric: ${similarityMetric}`
+          )
+        );
     }
 
     this.logger.debug("Issuing 'createIndex' request");
