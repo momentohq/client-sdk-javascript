@@ -94,9 +94,6 @@ export function isDisposableTokenPermissionsObject(
 export function asDisposableTokenPermissionsObject(
   scope: DisposableTokenScope
 ): DisposableTokenCachePermissions {
-  console.log(
-    `AS_DISPOSABLE_TOKEN_PERMISSIONS_OBJECT: ${JSON.stringify(scope)}`
-  );
   if (!isDisposableTokenPermissionsObject(scope)) {
     throw new Error(
       `Token scope is not a DisposableTokenCachePermissions object: ${JSON.stringify(

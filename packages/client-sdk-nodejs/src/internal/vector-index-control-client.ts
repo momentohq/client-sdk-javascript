@@ -1,16 +1,12 @@
 import {control} from '@gomomento/generated-types';
-import grpcControl = control.control_client;
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {
-  ListCaches,
-  CreateSigningKey,
-  ListSigningKeys,
-  RevokeSigningKey,
   CredentialProvider,
+  InvalidArgumentError,
   MomentoLogger,
   VectorIndexConfiguration,
 } from '..';
@@ -20,16 +16,18 @@ import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {
   validateIndexName,
   validateNumDimensions,
-  validateTtlMinutes,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
-import {_SigningKey} from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
 import {
   CreateVectorIndex,
   DeleteVectorIndex,
   ListVectorIndexes,
 } from '@gomomento/sdk-core';
-import {IVectorIndexControlClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {
+  IVectorIndexControlClient,
+  VectorSimilarityMetric,
+} from '@gomomento/sdk-core/dist/src/internal/clients';
+import grpcControl = control.control_client;
 
 export interface ControlClientProps {
   configuration: VectorIndexConfiguration;
@@ -73,7 +71,8 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
 
   public async createIndex(
     indexName: string,
-    numDimensions: number
+    numDimensions: number,
+    similarityMetric?: VectorSimilarityMetric
   ): Promise<CreateVectorIndex.Response> {
     try {
       validateIndexName(indexName);
@@ -85,6 +84,31 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
     const request = new grpcControl._CreateIndexRequest();
     request.index_name = indexName;
     request.num_dimensions = numDimensions;
+
+    similarityMetric ??= VectorSimilarityMetric.COSINE_SIMILARITY;
+
+    switch (similarityMetric) {
+      case VectorSimilarityMetric.INNER_PRODUCT:
+        request.inner_product =
+          new grpcControl._CreateIndexRequest._InnerProduct();
+        break;
+      case VectorSimilarityMetric.EUCLIDEAN_SIMILARITY:
+        request.euclidean_similarity =
+          new grpcControl._CreateIndexRequest._EuclideanSimilarity();
+        break;
+      case VectorSimilarityMetric.COSINE_SIMILARITY:
+        request.cosine_similarity =
+          new grpcControl._CreateIndexRequest._CosineSimilarity();
+        break;
+      default:
+        return new CreateVectorIndex.Error(
+          new InvalidArgumentError(
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            `Invalid similarity metric: ${similarityMetric}`
+          )
+        );
+    }
+
     return await new Promise<CreateVectorIndex.Response>(resolve => {
       this.clientWrapper.getClient().CreateIndex(
         request,
@@ -107,7 +131,7 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
     });
   }
 
-  public async listIndexes(): Promise<ListCaches.Response> {
+  public async listIndexes(): Promise<ListVectorIndexes.Response> {
     const request = new grpcControl._ListIndexesRequest();
     this.logger.debug("Issuing 'listIndexes' request");
     return await new Promise<ListVectorIndexes.Response>(resolve => {
@@ -158,87 +182,6 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
           }
         }
       );
-    });
-  }
-
-  public async createSigningKey(
-    ttlMinutes: number,
-    endpoint: string
-  ): Promise<CreateSigningKey.Response> {
-    try {
-      validateTtlMinutes(ttlMinutes);
-    } catch (err) {
-      return new CreateSigningKey.Error(normalizeSdkError(err as Error));
-    }
-    this.logger.debug("Issuing 'createSigningKey' request");
-    const request = new grpcControl._CreateSigningKeyRequest();
-    request.ttl_minutes = ttlMinutes;
-    return await new Promise<CreateSigningKey.Response>(resolve => {
-      this.clientWrapper
-        .getClient()
-        .CreateSigningKey(
-          request,
-          {interceptors: this.interceptors},
-          (err, resp) => {
-            if (err) {
-              resolve(new CreateSigningKey.Error(cacheServiceErrorMapper(err)));
-            } else {
-              const signingKey = new _SigningKey(resp?.key, resp?.expires_at);
-              resolve(new CreateSigningKey.Success(endpoint, signingKey));
-            }
-          }
-        );
-    });
-  }
-
-  public async revokeSigningKey(
-    keyId: string
-  ): Promise<RevokeSigningKey.Response> {
-    const request = new grpcControl._RevokeSigningKeyRequest();
-    request.key_id = keyId;
-    this.logger.debug("Issuing 'revokeSigningKey' request");
-    return await new Promise<RevokeSigningKey.Response>(resolve => {
-      this.clientWrapper
-        .getClient()
-        .RevokeSigningKey(request, {interceptors: this.interceptors}, err => {
-          if (err) {
-            resolve(new RevokeSigningKey.Error(cacheServiceErrorMapper(err)));
-          } else {
-            resolve(new RevokeSigningKey.Success());
-          }
-        });
-    });
-  }
-
-  public async listSigningKeys(
-    endpoint: string
-  ): Promise<ListSigningKeys.Response> {
-    const request = new grpcControl._ListSigningKeysRequest();
-    request.next_token = '';
-    this.logger.debug("Issuing 'listSigningKeys' request");
-    return await new Promise<ListSigningKeys.Response>(resolve => {
-      this.clientWrapper
-        .getClient()
-        .ListSigningKeys(
-          request,
-          {interceptors: this.interceptors},
-          (err, resp) => {
-            if (err || !resp) {
-              resolve(new ListSigningKeys.Error(cacheServiceErrorMapper(err)));
-            } else {
-              const signingKeys = resp.signing_key.map(
-                sk => new _SigningKey(sk.key_id, sk.expires_at)
-              );
-              resolve(
-                new ListSigningKeys.Success(
-                  endpoint,
-                  signingKeys,
-                  resp.next_token
-                )
-              );
-            }
-          }
-        );
     });
   }
 }

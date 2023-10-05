@@ -2,7 +2,7 @@ import {SdkError} from '../../../errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
 
 /**
- * Parent response type for a VectorAddItemBatch request.  The
+ * Parent response type for a VectorUpsertItemBatch request.  The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
@@ -13,9 +13,9 @@ import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
  * @example
  * For example:
  * ```
- * if (response instanceof VectorAddItemBatch.Error) {
+ * if (response instanceof VectorUpsertItemBatch.Error) {
  *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `VectorAddItemBatch.Error` in this block, so you will have access to the properties
+ *   // `VectorUpsertItemBatch.Error` in this block, so you will have access to the properties
  *   // of the Error class; e.g. `response.errorCode()`.
  * }
  * ```
@@ -25,7 +25,7 @@ export abstract class Response extends ResponseBase {}
 class _Success extends Response {}
 
 /**
- * Indicates a Successful VectorAddItemBatch request.
+ * Indicates a Successful VectorUpsertItemBatch request.
  */
 export class Success extends ResponseSuccess(_Success) {}
 
@@ -36,7 +36,7 @@ class _Error extends Response {
 }
 
 /**
- * Indicates that an error occurred during the VectorAddItemBatch request.
+ * Indicates that an error occurred during the VectorUpsertItemBatch request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:

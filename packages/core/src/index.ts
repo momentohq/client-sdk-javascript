@@ -124,7 +124,13 @@ export {
 
 export {IMomentoCache} from './clients/IMomentoCache';
 
-export {IVectorIndexClient, SearchOptions} from './clients/IVectorIndexClient';
+export {
+  IVectorIndexClient,
+  SearchOptions,
+  ALL_VECTOR_METADATA,
+} from './clients/IVectorIndexClient';
+
+export {VectorSimilarityMetric} from './internal/clients';
 
 export {
   CacheRole,
