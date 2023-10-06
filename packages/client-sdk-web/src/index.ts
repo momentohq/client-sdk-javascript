@@ -74,6 +74,7 @@ import * as GenerateDisposableToken from '@gomomento/sdk-core/dist/src/messages/
 
 import {
   ICacheClient,
+  IMomentoCache,
   SubscribeCallOptions,
   CacheInfo,
   CollectionTtl,
@@ -145,6 +146,7 @@ export {
 
 export {
   ICacheClient,
+  IMomentoCache,
   CollectionTtl,
   ItemType,
   SortedSetOrder,

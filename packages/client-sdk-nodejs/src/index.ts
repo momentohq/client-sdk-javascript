@@ -86,6 +86,7 @@ export * from '@gomomento/sdk-core/dist/src/messages/responses/vector';
 
 import {
   ICacheClient,
+  IMomentoCache,
   SubscribeCallOptions,
   CacheInfo,
   CollectionTtl,
@@ -191,6 +192,7 @@ export {ExampleAsyncMiddleware} from './config/middleware/example-async-middlewa
 
 export {
   ICacheClient,
+  IMomentoCache,
   CollectionTtl,
   ItemType,
   SortedSetOrder,
