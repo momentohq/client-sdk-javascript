@@ -61,11 +61,11 @@ export class _SortedSetElement {
 }
 
 export class _RankedElement {
-  readonly id: bigint;
+  readonly id: number;
   readonly score: number;
-  readonly rank: bigint;
+  readonly rank: number;
 
-  constructor(id: bigint, score: number, rank: bigint) {
+  constructor(id: number, score: number, rank: number) {
     this.id = id;
     this.score = score;
     this.rank = rank;

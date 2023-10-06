@@ -143,14 +143,14 @@ export interface LeaderboardFetchByRankCallOptions {
    * Ranks can be used to manually paginate through the leaderboard
    * in batches of 8192 elements (e.g. request 0-8192, then 8192-16384, etc)
    */
-  startRank?: bigint | number;
+  startRank?: number;
   /**
    * The rank of the last element to return, exclusive.
    * If the rank is not specified, defaults to 8192.
    * Ranks can be used to manually paginate through the leaderboard
    * in batches of 8192 elements (e.g. request 0-8192, then 8192-16384, etc)
    */
-  endRank?: bigint | number;
+  endRank?: number;
   /**
    * The order in which to return the elements.
    * If the order is not specified, the elements are returned in ascending order.
@@ -181,11 +181,11 @@ export interface LeaderboardFetchByScoreCallOptions {
    * If specified must be non-negative (>= 0).
    * Defaults to zero, ie. the start at first element in the result set.
    */
-  offset?: bigint | number;
+  offset?: number;
   /**
    * The maximum number of elements to return.
    * If specified must be strictly positive (> 0).
    * Defaults to 8192, the maximum number of elements that can be returned at a time.
    */
-  count?: bigint | number;
+  count?: number;
 }

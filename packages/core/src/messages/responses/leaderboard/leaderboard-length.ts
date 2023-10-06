@@ -29,17 +29,17 @@ import {
 export abstract class Response extends ResponseBase {}
 
 class _Found extends Response {
-  private readonly _length: bigint;
-  constructor(length: bigint) {
+  private readonly _length: number;
+  constructor(length: number) {
     super();
     this._length = length;
   }
 
   /**
    * Returns the length of the leaderboard
-   * @returns {bigint}
+   * @returns {number}
    */
-  public length(): bigint {
+  public length(): number {
     return this._length;
   }
 

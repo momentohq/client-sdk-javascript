@@ -1,4 +1,3 @@
-import {AbstractLeaderboardClient} from '@gomomento/sdk-core/dist/src/internal/clients/leaderboard/AbstractLeaderboardClient';
 import {LeaderboardDataClient} from './internal/leaderboard-client';
 import {LeaderboardClientProps} from './leaderboard-client-props';
 import {ILeaderboardClient} from '@gomomento/sdk-core/dist/src/clients/ILeaderboardClient';
@@ -13,24 +12,20 @@ import {InternalLeaderboardClient} from '@gomomento/sdk-core/dist/src/internal/c
  * The response object is resolved to a type-safe object of one of several
  * sub-types. See the documentation for each response type for details.
  */
-export class PreviewLeaderboardClient
-  extends AbstractLeaderboardClient
-  implements ILeaderboardClient
-{
-  /**
-   * Creates an instance of LeaderboardClient.
-   */
-  constructor(props: LeaderboardClientProps) {
-    const client: InternalLeaderboardClient = createLeaderboardClient(props);
-    super(client);
-  }
-}
+export class PreviewLeaderboardClient implements ILeaderboardClient {
+  protected readonly props: LeaderboardClientProps;
 
-function createLeaderboardClient(
-  props: LeaderboardClientProps
-): InternalLeaderboardClient {
-  return new LeaderboardDataClient({
-    configuration: props.configuration,
-    credentialProvider: props.credentialProvider,
-  });
+  constructor(props: LeaderboardClientProps) {
+    this.props = props;
+  }
+
+  /**
+   * Creates an instance of LeaderboardClient with 32-bit float scores.
+   */
+  public createLeaderboard(
+    cacheName: string,
+    leaderboardName: string
+  ): InternalLeaderboardClient {
+    return new LeaderboardDataClient(this.props, cacheName, leaderboardName);
+  }
 }

@@ -1,3 +1,3 @@
-export * from './AbstractLeaderboardClient';
+export * from './InternalLeaderboardClient';
 export * from '../../../clients/ILeaderboardClient';
 export * from './InternalLeaderboardClient';

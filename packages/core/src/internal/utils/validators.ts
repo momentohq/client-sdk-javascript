@@ -163,7 +163,7 @@ export function validateLeaderboardName(name: string) {
   }
 }
 
-export function validateLeaderboardRanks(start_rank: bigint, end_rank: bigint) {
+export function validateLeaderboardRanks(start_rank: number, end_rank: number) {
   if (start_rank > 0 && end_rank > 0 && start_rank >= end_rank) {
     throw new InvalidArgumentError('start rank must be less than end rank');
   }
@@ -172,13 +172,13 @@ export function validateLeaderboardRanks(start_rank: bigint, end_rank: bigint) {
   }
 }
 
-export function validateLeaderboardOffset(offset: bigint) {
+export function validateLeaderboardOffset(offset: number) {
   if (offset < 0) {
     throw new InvalidArgumentError('offset must be non-negative (>= 0)');
   }
 }
 
-export function validateLeaderboardCount(count: bigint) {
+export function validateLeaderboardCount(count: number) {
   if (count < 1) {
     throw new InvalidArgumentError('count must be strictly positive (> 0)');
   }

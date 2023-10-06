@@ -1,4 +1,9 @@
-import {InternalLeaderboardClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {
+  InternalLeaderboardClient,
+  LeaderboardFetchByRankCallOptions,
+  LeaderboardFetchByScoreCallOptions,
+  LeaderboardGetRankCallOptions,
+} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {
   LeaderboardDelete,
   LeaderboardFetch,
@@ -9,7 +14,10 @@ import {
   LeaderboardOrder,
 } from '@gomomento/sdk-core';
 import {LeaderboardClientProps} from '../leaderboard-client-props';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {
+  InvalidArgumentError,
+  normalizeSdkError,
+} from '@gomomento/sdk-core/dist/src/errors';
 import {
   validateCacheName,
   validateLeaderboardName,
@@ -49,15 +57,29 @@ export class LeaderboardDataClient<
   RESP extends UnaryResponse<REQ, RESP>
 > implements InternalLeaderboardClient
 {
+  public readonly cacheName: string;
+  public readonly leaderboardName: string;
   private readonly logger: MomentoLogger;
   private readonly client: leaderboard.LeaderboardClient;
   private readonly clientMetadataProvider: ClientMetadataProvider;
   private readonly deadlineMillis: number;
 
-  /**
-   * @param {LeaderboardClientProps} props
-   */
-  constructor(props: LeaderboardClientProps) {
+  constructor(
+    props: LeaderboardClientProps,
+    cacheName: string,
+    leaderboardName: string
+  ) {
+    try {
+      validateCacheName(cacheName);
+      validateLeaderboardName(leaderboardName);
+    } catch (err) {
+      throw new InvalidArgumentError(
+        'cache name and leaderboard name must not be empty strings'
+      );
+    }
+    this.cacheName = cacheName;
+    this.leaderboardName = leaderboardName;
+
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.logger.debug(
       `Creating data client using endpoint: '${getWebCacheEndpoint(
@@ -79,13 +101,11 @@ export class LeaderboardDataClient<
     );
   }
 
-  private convertMapToElementsList(
-    elements: Map<bigint | number, number>
-  ): _Element[] {
+  private convertMapToElementsList(elements: Map<number, number>): _Element[] {
     const convertedElements: _Element[] = [];
     elements.forEach((score, id) => {
       const newElement = new _Element();
-      newElement.setId(String(id));
+      newElement.setId(id);
       newElement.setScore(score);
       convertedElements.push(newElement);
     });
@@ -97,47 +117,33 @@ export class LeaderboardDataClient<
   ): _RankedElement[] {
     return elements.map(element => {
       return new _RankedElement(
-        BigInt(element.getId()),
+        element.getId(),
         element.getScore(),
-        BigInt(element.getRank())
+        element.getRank()
       );
     });
   }
 
-  private convertIdsToStringArray(ids: Array<bigint | number>) {
-    return ids.map(id => id.toString());
-  }
-
   public async leaderboardUpsert(
-    cacheName: string,
-    leaderboardName: string,
-    elements: Map<bigint | number, number>
+    elements: Map<number, number>
   ): Promise<LeaderboardUpsert.Response> {
     try {
-      validateCacheName(cacheName);
-      validateLeaderboardName(leaderboardName);
       validateLeaderboardNumberOfElements(elements.size);
     } catch (err) {
       return new LeaderboardUpsert.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(
-      `Issuing 'upsert' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, number of elements: ${elements.size}`
+      `Issuing 'upsert' request; cache: ${this.cacheName}, leaderboard: ${this.leaderboardName}, number of elements: ${elements.size}`
     );
-    return await this.sendLeaderboardUpsert(
-      cacheName,
-      leaderboardName,
-      elements
-    );
+    return await this.sendLeaderboardUpsert(elements);
   }
 
   private async sendLeaderboardUpsert(
-    cacheName: string,
-    leaderboardName: string,
-    elements: Map<bigint | number, number>
+    elements: Map<number, number>
   ): Promise<LeaderboardUpsert.Response> {
     const request = new _UpsertElementsRequest();
-    request.setCacheName(cacheName);
-    request.setLeaderboard(leaderboardName);
+    request.setCacheName(this.cacheName);
+    request.setLeaderboard(this.leaderboardName);
     request.setElementsList(this.convertMapToElementsList(elements));
 
     return await new Promise(resolve => {
@@ -145,7 +151,7 @@ export class LeaderboardDataClient<
         request,
         {
           ...this.clientMetadataProvider.createClientMetadata(),
-          ...createCallMetadata(cacheName, this.deadlineMillis),
+          ...createCallMetadata(this.cacheName, this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -159,58 +165,50 @@ export class LeaderboardDataClient<
   }
 
   public async leaderboardFetchByScore(
-    cacheName: string,
-    leaderboardName: string,
-    order?: LeaderboardOrder,
-    minScore?: number,
-    maxScore?: number,
-    offset?: bigint | number,
-    count?: bigint | number
+    options?: LeaderboardFetchByScoreCallOptions
   ): Promise<LeaderboardFetch.Response> {
-    const offsetValue = offset === undefined ? BigInt(0) : BigInt(offset);
-    const countValue = count === undefined ? BigInt(8192) : BigInt(count);
-    const orderValue = order ?? LeaderboardOrder.Ascending;
+    const offsetValue = options?.offset === undefined ? 0 : options.offset;
+    const countValue = options?.count === undefined ? 8192 : options.count;
+    const orderValue = options?.order ?? LeaderboardOrder.Ascending;
     try {
-      validateCacheName(cacheName);
-      validateLeaderboardName(leaderboardName);
-      validateSortedSetScores(minScore, maxScore);
+      validateSortedSetScores(options?.minScore, options?.maxScore);
       validateLeaderboardOffset(offsetValue);
       validateLeaderboardCount(countValue);
     } catch (err) {
       return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(
-      `Issuing 'leaderboardFetchByScore' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, order: ${orderValue.toString()}, minScore: ${
-        minScore ?? 'null'
+      `Issuing 'leaderboardFetchByScore' request; cache: ${
+        this.cacheName
+      }, leaderboard: ${
+        this.leaderboardName
+      }, order: ${orderValue.toString()}, minScore: ${
+        options?.minScore ?? 'null'
       }, maxScore: ${
-        maxScore?.toString() ?? 'null'
+        options?.maxScore?.toString() ?? 'null'
       }, offset: ${offsetValue.toString()}, count: ${countValue.toString()}`
     );
     return await this.sendLeaderboardFetchByScore(
-      cacheName,
-      leaderboardName,
       orderValue,
       offsetValue,
       countValue,
-      minScore,
-      maxScore
+      options?.minScore,
+      options?.maxScore
     );
   }
 
   private async sendLeaderboardFetchByScore(
-    cacheName: string,
-    leaderboardName: string,
     order: LeaderboardOrder,
-    offset: bigint,
-    count: bigint,
+    offset: number,
+    count: number,
     minScore?: number,
     maxScore?: number
   ): Promise<LeaderboardFetch.Response> {
     const request = new _GetByScoreRequest();
-    request.setCacheName(cacheName);
-    request.setLeaderboard(leaderboardName);
-    request.setOffset(offset.toString());
-    request.setLimitElements(count.toString());
+    request.setCacheName(this.cacheName);
+    request.setLeaderboard(this.leaderboardName);
+    request.setOffset(offset);
+    request.setLimitElements(count);
 
     const protoBufOrder =
       order === LeaderboardOrder.Descending
@@ -236,7 +234,7 @@ export class LeaderboardDataClient<
         request,
         {
           ...this.clientMetadataProvider.createClientMetadata(),
-          ...createCallMetadata(cacheName, this.deadlineMillis),
+          ...createCallMetadata(this.cacheName, this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -264,20 +262,14 @@ export class LeaderboardDataClient<
   }
 
   public async leaderboardFetchByRank(
-    cacheName: string,
-    leaderboardName: string,
-    startRank?: bigint | number,
-    endRank?: bigint | number,
-    order?: LeaderboardOrder
+    options?: LeaderboardFetchByRankCallOptions
   ): Promise<LeaderboardFetch.Response> {
-    const rankOrder = order ?? LeaderboardOrder.Ascending;
+    const rankOrder = options?.order ?? LeaderboardOrder.Ascending;
     const startRankValue =
-      startRank === undefined ? BigInt(0) : BigInt(startRank);
+      options?.startRank === undefined ? 0 : options.startRank;
     const endRankValue =
-      endRank === undefined ? startRankValue + BigInt(8192) : BigInt(endRank);
+      options?.endRank === undefined ? startRankValue + 8192 : options.endRank;
     try {
-      validateCacheName(cacheName);
-      validateLeaderboardName(leaderboardName);
       validateLeaderboardRanks(startRankValue, endRankValue);
     } catch (err) {
       return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
@@ -289,8 +281,6 @@ export class LeaderboardDataClient<
       rankOrder.toString()
     );
     return await this.sendLeaderboardFetchByRank(
-      cacheName,
-      leaderboardName,
       startRankValue,
       endRankValue,
       rankOrder
@@ -298,15 +288,13 @@ export class LeaderboardDataClient<
   }
 
   private async sendLeaderboardFetchByRank(
-    cacheName: string,
-    leaderboardName: string,
-    startRank: bigint,
-    endRank: bigint,
+    startRank: number,
+    endRank: number,
     order: LeaderboardOrder
   ): Promise<LeaderboardFetch.Response> {
     const request = new _GetByRankRequest();
-    request.setCacheName(cacheName);
-    request.setLeaderboard(leaderboardName);
+    request.setCacheName(this.cacheName);
+    request.setLeaderboard(this.leaderboardName);
 
     const protoBufOrder =
       order === LeaderboardOrder.Descending
@@ -315,8 +303,8 @@ export class LeaderboardDataClient<
     request.setOrder(protoBufOrder);
 
     const protoBufRankRange = new _RankRange();
-    protoBufRankRange.setStartInclusive(startRank.toString());
-    protoBufRankRange.setEndExclusive(endRank.toString());
+    protoBufRankRange.setStartInclusive(startRank);
+    protoBufRankRange.setEndExclusive(endRank);
     request.setRankRange(protoBufRankRange);
 
     return await new Promise(resolve => {
@@ -324,7 +312,7 @@ export class LeaderboardDataClient<
         request,
         {
           ...this.clientMetadataProvider.createClientMetadata(),
-          ...createCallMetadata(cacheName, this.deadlineMillis),
+          ...createCallMetadata(this.cacheName, this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -352,40 +340,27 @@ export class LeaderboardDataClient<
   }
 
   public async leaderboardGetRank(
-    cacheName: string,
-    leaderboardName: string,
-    ids: Array<bigint | number>,
-    order?: LeaderboardOrder
+    ids: Array<number>,
+    options?: LeaderboardGetRankCallOptions
   ): Promise<LeaderboardFetch.Response> {
-    const orderValue = order ?? LeaderboardOrder.Ascending;
-    try {
-      validateCacheName(cacheName);
-      validateLeaderboardName(leaderboardName);
-    } catch (err) {
-      return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
-    }
+    const orderValue = options?.order ?? LeaderboardOrder.Ascending;
     this.logger.trace(
-      `Issuing 'leaderboardGetRank' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, order: ${orderValue.toString()}, number of ids: ${
-        ids.length
-      }`
+      `Issuing 'leaderboardGetRank' request; cache: ${
+        this.cacheName
+      }, leaderboard: ${
+        this.leaderboardName
+      }, order: ${orderValue.toString()}, number of ids: ${ids.length}`
     );
-    return await this.sendLeaderboardGetRank(
-      cacheName,
-      leaderboardName,
-      this.convertIdsToStringArray(ids),
-      orderValue
-    );
+    return await this.sendLeaderboardGetRank(ids, orderValue);
   }
 
   private async sendLeaderboardGetRank(
-    cacheName: string,
-    leaderboardName: string,
-    ids: Array<string>,
+    ids: Array<number>,
     order?: LeaderboardOrder
   ): Promise<LeaderboardFetch.Response> {
     const request = new _GetRankRequest();
-    request.setCacheName(cacheName);
-    request.setLeaderboard(leaderboardName);
+    request.setCacheName(this.cacheName);
+    request.setLeaderboard(this.leaderboardName);
     request.setIdsList(ids);
 
     const protoBufOrder =
@@ -399,7 +374,7 @@ export class LeaderboardDataClient<
         request,
         {
           ...this.clientMetadataProvider.createClientMetadata(),
-          ...createCallMetadata(cacheName, this.deadlineMillis),
+          ...createCallMetadata(this.cacheName, this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -426,41 +401,29 @@ export class LeaderboardDataClient<
     });
   }
 
-  public async leaderboardLength(
-    cacheName: string,
-    leaderboardName: string
-  ): Promise<LeaderboardLength.Response> {
-    try {
-      validateCacheName(cacheName);
-      validateLeaderboardName(leaderboardName);
-    } catch (err) {
-      return new LeaderboardLength.Error(normalizeSdkError(err as Error));
-    }
+  public async leaderboardLength(): Promise<LeaderboardLength.Response> {
     this.logger.trace(
-      `Issuing 'leaderboardLength' request; cache: ${cacheName}, leaderboard: ${leaderboardName}`
+      `Issuing 'leaderboardLength' request; cache: ${this.cacheName}, leaderboard: ${this.leaderboardName}`
     );
-    return await this.sendLeaderboardLength(cacheName, leaderboardName);
+    return await this.sendLeaderboardLength();
   }
 
-  private async sendLeaderboardLength(
-    cacheName: string,
-    leaderboardName: string
-  ): Promise<LeaderboardLength.Response> {
+  private async sendLeaderboardLength(): Promise<LeaderboardLength.Response> {
     const request = new _GetLeaderboardLengthRequest();
-    request.setCacheName(cacheName);
-    request.setLeaderboard(leaderboardName);
+    request.setCacheName(this.cacheName);
+    request.setLeaderboard(this.leaderboardName);
 
     return await new Promise(resolve => {
       this.client.getLeaderboardLength(
         request,
         {
           ...this.clientMetadataProvider.createClientMetadata(),
-          ...createCallMetadata(cacheName, this.deadlineMillis),
+          ...createCallMetadata(this.cacheName, this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
             const length = resp.getCount();
-            resolve(new LeaderboardLength.Found(BigInt(length)));
+            resolve(new LeaderboardLength.Found(length));
           } else {
             if (err?.code === StatusCode.NOT_FOUND) {
               resolve(new LeaderboardLength.NotFound());
@@ -476,13 +439,9 @@ export class LeaderboardDataClient<
   }
 
   public async leaderboardRemoveElements(
-    cacheName: string,
-    leaderboardName: string,
-    ids: Array<bigint | number>
+    ids: Array<number>
   ): Promise<LeaderboardRemoveElements.Response> {
     try {
-      validateCacheName(cacheName);
-      validateLeaderboardName(leaderboardName);
       validateLeaderboardNumberOfElements(ids.length);
     } catch (err) {
       return new LeaderboardRemoveElements.Error(
@@ -490,33 +449,29 @@ export class LeaderboardDataClient<
       );
     }
     this.logger.trace(
-      `Issuing 'leaderboardRemoveElements' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, number of elements: ${ids.length.toString()}`
+      `Issuing 'leaderboardRemoveElements' request; cache: ${
+        this.cacheName
+      }, leaderboard: ${
+        this.leaderboardName
+      }, number of elements: ${ids.length.toString()}`
     );
-    return await this.sendLeaderboardRemoveElements(
-      cacheName,
-      leaderboardName,
-      ids
-    );
+    return await this.sendLeaderboardRemoveElements(ids);
   }
 
   private async sendLeaderboardRemoveElements(
-    cacheName: string,
-    leaderboardName: string,
-    elements: Array<bigint | number>
+    elements: Array<number>
   ): Promise<LeaderboardRemoveElements.Response> {
     const request = new _RemoveElementsRequest();
-    request.setCacheName(cacheName);
-    request.setLeaderboard(leaderboardName);
-
-    const convertedIds = elements.map(id => id.toString());
-    request.setIdsList(convertedIds);
+    request.setCacheName(this.cacheName);
+    request.setLeaderboard(this.leaderboardName);
+    request.setIdsList(elements);
 
     return await new Promise(resolve => {
       this.client.removeElements(
         request,
         {
           ...this.clientMetadataProvider.createClientMetadata(),
-          ...createCallMetadata(cacheName, this.deadlineMillis),
+          ...createCallMetadata(this.cacheName, this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
@@ -531,36 +486,24 @@ export class LeaderboardDataClient<
     });
   }
 
-  public async leaderboardDelete(
-    cacheName: string,
-    leaderboardName: string
-  ): Promise<LeaderboardDelete.Response> {
-    try {
-      validateCacheName(cacheName);
-      validateLeaderboardName(leaderboardName);
-    } catch (err) {
-      return new LeaderboardDelete.Error(normalizeSdkError(err as Error));
-    }
+  public async leaderboardDelete(): Promise<LeaderboardDelete.Response> {
     this.logger.trace(
-      `Issuing 'leaderboardDelete' request; cache: ${cacheName}, leaderboard: ${leaderboardName}`
+      `Issuing 'leaderboardDelete' request; cache: ${this.cacheName}, leaderboard: ${this.leaderboardName}`
     );
-    return await this.sendLeaderboardDelete(cacheName, leaderboardName);
+    return await this.sendLeaderboardDelete();
   }
 
-  private async sendLeaderboardDelete(
-    cacheName: string,
-    leaderboardName: string
-  ): Promise<LeaderboardDelete.Response> {
+  private async sendLeaderboardDelete(): Promise<LeaderboardDelete.Response> {
     const request = new _DeleteLeaderboardRequest();
-    request.setCacheName(cacheName);
-    request.setLeaderboard(leaderboardName);
+    request.setCacheName(this.cacheName);
+    request.setLeaderboard(this.leaderboardName);
 
     return await new Promise(resolve => {
       this.client.deleteLeaderboard(
         request,
         {
           ...this.clientMetadataProvider.createClientMetadata(),
-          ...createCallMetadata(cacheName, this.deadlineMillis),
+          ...createCallMetadata(this.cacheName, this.deadlineMillis),
         },
         (err, resp) => {
           if (resp) {
