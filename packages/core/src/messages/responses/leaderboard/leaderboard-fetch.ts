@@ -41,7 +41,7 @@ class _Found extends Response {
    * Returns the elements as an array of objects, each containing an `id`, `score`, and `rank` field.
    * @returns {{id: bigint, score: number, rank: number}[]}
    */
-  public valueArray(): {id: number; score: number; rank: number}[] {
+  public values(): {id: number; score: number; rank: number}[] {
     return this._elements.map(item => {
       return {
         id: item.id,

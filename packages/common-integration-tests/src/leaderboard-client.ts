@@ -80,7 +80,7 @@ export function runLeaderboardClientTests(
       }, `expected HIT but got ${fetchResponse1.toString()}`);
       const receivedElements1 = (
         fetchResponse1 as LeaderboardFetch.Found
-      ).valueArray();
+      ).values();
       const expectedElements1 = [
         {
           id: 123,
@@ -116,7 +116,7 @@ export function runLeaderboardClientTests(
       }, `expected HIT but got ${fetchResponse2.toString()}`);
       const receivedElements2 = (
         fetchResponse2 as LeaderboardFetch.Found
-      ).valueArray();
+      ).values();
       const expectedElements2 = [
         {
           id: 123,
@@ -162,7 +162,7 @@ export function runLeaderboardClientTests(
       }, `expected HIT but got ${fetchResponse3.toString()}`);
       const receivedElements3 = (
         fetchResponse3 as LeaderboardFetch.Found
-      ).valueArray();
+      ).values();
       const expectedElements3 = [
         {
           id: 123,
@@ -306,7 +306,7 @@ export function runLeaderboardClientTests(
       }, `expected HIT but got ${fetchWithOffsetAndCount.toString()}`);
       const receivedWithOffsetAndCount = (
         fetchWithOffsetAndCount as LeaderboardFetch.Found
-      ).valueArray();
+      ).values();
       const expectedWithOffsetAndCount = [
         {
           id: 345,
@@ -331,7 +331,7 @@ export function runLeaderboardClientTests(
       }, `expected HIT but got ${fetchWithScoreRange.toString()}`);
       const receivedWithScoreRange = (
         fetchWithScoreRange as LeaderboardFetch.Found
-      ).valueArray();
+      ).values();
       const expectedWithScoreRange = [
         {
           id: 567,
@@ -359,7 +359,7 @@ export function runLeaderboardClientTests(
       }, `expected HIT but got ${fetchWithAllOptions.toString()}`);
       const receivedWithAllOptions = (
         fetchWithAllOptions as LeaderboardFetch.Found
-      ).valueArray();
+      ).values();
       const expectedWithAllOptions = [
         {
           id: 345,
@@ -496,7 +496,7 @@ export function runLeaderboardClientTests(
       }, `expected FOUND but got ${ascendingOrder.toString()}`);
       const receivedAscending = (
         ascendingOrder as LeaderboardFetch.Found
-      ).valueArray();
+      ).values();
       const expectedAscending = [
         {
           id: 123,
@@ -524,7 +524,7 @@ export function runLeaderboardClientTests(
       }, `expected FOUND but got ${descendingOrder.toString()}`);
       const receivedDescending = (
         descendingOrder as LeaderboardFetch.Found
-      ).valueArray();
+      ).values();
       const expectedDescending = [
         {
           id: 789,
@@ -552,7 +552,7 @@ export function runLeaderboardClientTests(
       expectWithMessage(() => {
         expect(topTwo).toBeInstanceOf(LeaderboardFetch.Found);
       }, `expected FOUND but got ${topTwo.toString()}`);
-      const receivedTopTwo = (topTwo as LeaderboardFetch.Found).valueArray();
+      const receivedTopTwo = (topTwo as LeaderboardFetch.Found).values();
       const expectedTopTwo = [
         {
           id: 123,
@@ -605,7 +605,7 @@ export function runLeaderboardClientTests(
       }, `expected Found but got ${getRankAscending.toString()}`);
       const receivedAscending = (
         getRankAscending as LeaderboardFetch.Found
-      ).valueArray();
+      ).values();
       const expectedAscending = [
         {
           id: 123,
@@ -630,7 +630,7 @@ export function runLeaderboardClientTests(
       }, `expected Found but got ${getRankDescending.toString()}`);
       const receivedDescending = (
         getRankDescending as LeaderboardFetch.Found
-      ).valueArray();
+      ).values();
       const expectedDescending = [
         {
           id: 123,
@@ -734,7 +734,7 @@ export function runLeaderboardClientTests(
       }, `expected Found but got ${fetchResponse.toString()}`);
       const receivedElements = (
         fetchResponse as LeaderboardFetch.Found
-      ).valueArray();
+      ).values();
       const expectedElements = [
         {
           id: 456,
