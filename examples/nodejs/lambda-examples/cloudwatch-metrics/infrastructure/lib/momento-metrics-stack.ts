@@ -5,6 +5,8 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as secrets from 'aws-cdk-lib/aws-secretsmanager';
 import {FilterPattern, LogGroup, RetentionDays} from 'aws-cdk-lib/aws-logs';
+import * as ecs from 'aws-cdk-lib/aws-ecs';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import {
   Dashboard,
   GraphWidget,
@@ -15,6 +17,14 @@ import {
   Stats,
   Unit,
 } from 'aws-cdk-lib/aws-cloudwatch';
+import { DockerImageAsset } from 'aws-cdk-lib/aws-ecr-assets';
+
+enum exampleApp {
+  NodejsLambda,
+  NodejsEcs,
+}
+
+const stackConfig: exampleApp = exampleApp.NodejsEcs;
 
 export class MomentoMetricsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -31,26 +41,79 @@ export class MomentoMetricsStack extends cdk.Stack {
       secretStringValue: new cdk.SecretValue(momentoApiKeyParam.valueAsString),
     });
 
-    const getLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoMetricsMiddlewareCDKExample', {
-      functionName: 'MomentoMetricsMiddlewareCDKExample',
-      runtime: lambda.Runtime.NODEJS_16_X,
-      entry: path.join(__dirname, '../../lambda/handler.ts'),
-      projectRoot: path.join(__dirname, '../../lambda'),
-      depsLockFilePath: path.join(__dirname, '../../lambda/package-lock.json'),
-      handler: 'handler',
-      timeout: cdk.Duration.minutes(6),
-      memorySize: 128,
-      environment: {
-        MOMENTO_API_KEY_SECRET_NAME: apiKeySecret.secretName,
-      },
-    });
-
-    apiKeySecret.grantRead(getLambda);
+    const logGroupName = stackConfig === exampleApp.NodejsLambda ? '/aws/lambda/MomentoMetricsMiddlewareCDKExample' : '/aws/ecs/MomentoMetricsMiddlewareCDKExample';
 
     const logGroup = new LogGroup(this, 'Logs', {
-      logGroupName: '/aws/lambda/MomentoMetricsMiddlewareCDKExample',
+      logGroupName: logGroupName,
       retention: RetentionDays.ONE_DAY,
     });
+
+    switch (stackConfig) {
+      case exampleApp.NodejsLambda: {
+        const nodejsLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoMetricsMiddlewareCDKExample', {
+          functionName: 'MomentoMetricsMiddlewareCDKExample',
+          runtime: lambda.Runtime.NODEJS_16_X,
+          entry: path.join(__dirname, '../../lambda/handler.ts'),
+          projectRoot: path.join(__dirname, '../../lambda'),
+          depsLockFilePath: path.join(__dirname, '../../lambda/package-lock.json'),
+          handler: 'handler',
+          timeout: cdk.Duration.minutes(6),
+          memorySize: 128,
+          environment: {
+            MOMENTO_API_KEY_SECRET_NAME: apiKeySecret.secretName,
+          },
+        });
+        apiKeySecret.grantRead(nodejsLambda);
+        break;
+      }
+      case exampleApp.NodejsEcs: {
+        const cluster = new ecs.Cluster(this, 'MomentoMetricsExampleFargateCluster');
+
+        const imageAsset = new DockerImageAsset(this, "MomentoMetricsECSDockerImage", {
+          directory: path.join(__dirname, "../../docker")
+        });
+
+        const taskDefinition = new ecs.FargateTaskDefinition(this, 'MomentoMetricsMiddlewareCDKExample');
+        taskDefinition.addContainer('MomentoMetricsECSContainer', {
+          image: ecs.ContainerImage.fromDockerImageAsset(imageAsset),
+          logging: new ecs.AwsLogDriver({
+            logGroup: logGroup,
+            streamPrefix: "MomentoMetricsMiddlewareCDKExample"
+          })
+        });
+        taskDefinition.addToTaskRolePolicy(new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: [
+            "secretsmanager:ListSecrets",
+            "secretsmanager:GetSecretValue",
+            "logs:PutLogEvents",
+            "logs:CreateLogStream",
+            "ecs:*"
+          ],
+          resources: ["*"],
+        }));
+        taskDefinition.addToExecutionRolePolicy(new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: [
+            "secretsmanager:ListSecrets",
+            "secretsmanager:GetSecretValue",
+            "logs:PutLogEvents",
+            "logs:CreateLogStream",
+            "ecs:*"
+          ],
+          resources: ["*"],
+        }));
+
+        new ecs.FargateService(this, 'MomentoMetricsECSFargateService', {
+          cluster,
+          taskDefinition,
+        });
+        break;
+      }
+      default: {
+        throw new Error('Unimplemented CDK stack application');
+      }
+    }
 
     logGroup.addMetricFilter('ExampleMetricFilterDuration', {
       metricNamespace: 'MomentoMetricsCDKExample',
