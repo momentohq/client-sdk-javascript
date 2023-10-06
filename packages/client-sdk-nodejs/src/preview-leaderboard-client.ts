@@ -26,7 +26,7 @@ export class PreviewLeaderboardClient implements ILeaderboardClient {
   /**
    * Creates an instance of LeaderboardClient with 32-bit float scores.
    */
-  public createLeaderboard(
+  public leaderboard(
     cacheName: string,
     leaderboardName: string
   ): InternalLeaderboardClient {

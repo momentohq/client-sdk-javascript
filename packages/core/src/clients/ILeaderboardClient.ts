@@ -7,7 +7,7 @@ import {
 } from '../utils';
 
 export interface ILeaderboardClient {
-  createLeaderboard(
+  leaderboard(
     cacheName: string,
     leaderboardName: string
   ): InternalLeaderboardClient;

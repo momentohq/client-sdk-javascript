@@ -21,29 +21,26 @@ export function runLeaderboardClientTests(
 
     it('validates the cache name', () => {
       expect(() =>
-        leaderboardClient.createLeaderboard('   ', leaderboardName)
+        leaderboardClient.leaderboard('   ', leaderboardName)
       ).toThrowError(InvalidArgumentError);
     });
 
     it('validates the leaderboard name', () => {
       expect(() =>
-        leaderboardClient.createLeaderboard(integrationTestCacheName, '   ')
+        leaderboardClient.leaderboard(integrationTestCacheName, '   ')
       ).toThrowError(InvalidArgumentError);
     });
 
     it('creates a new leaderboard', () => {
       expect(() =>
-        leaderboardClient.createLeaderboard(
-          integrationTestCacheName,
-          leaderboardName
-        )
+        leaderboardClient.leaderboard(integrationTestCacheName, leaderboardName)
       ).not.toThrow();
     });
   });
 
   describe('#Upsert elements', () => {
     const leaderboardName = `leaderboard-${v4()}`;
-    const leaderboard = leaderboardClient.createLeaderboard(
+    const leaderboard = leaderboardClient.leaderboard(
       integrationTestCacheName,
       leaderboardName
     );
@@ -196,7 +193,7 @@ export function runLeaderboardClientTests(
 
   describe('#Fetch by score', () => {
     const leaderboardName = `leaderboard-${v4()}`;
-    const leaderboard = leaderboardClient.createLeaderboard(
+    const leaderboard = leaderboardClient.leaderboard(
       integrationTestCacheName,
       leaderboardName
     );
@@ -383,7 +380,7 @@ export function runLeaderboardClientTests(
 
   describe('#Fetch by rank', () => {
     const leaderboardName = `leaderboard-${v4()}`;
-    const leaderboard = leaderboardClient.createLeaderboard(
+    const leaderboard = leaderboardClient.leaderboard(
       integrationTestCacheName,
       leaderboardName
     );
@@ -571,7 +568,7 @@ export function runLeaderboardClientTests(
 
   describe('#Get element rank', () => {
     const leaderboardName = `leaderboard-${v4()}`;
-    const leaderboard = leaderboardClient.createLeaderboard(
+    const leaderboard = leaderboardClient.leaderboard(
       integrationTestCacheName,
       leaderboardName
     );
@@ -649,7 +646,7 @@ export function runLeaderboardClientTests(
 
   describe('#Get leaderboard length', () => {
     const leaderboardName = `leaderboard-${v4()}`;
-    const leaderboard = leaderboardClient.createLeaderboard(
+    const leaderboard = leaderboardClient.leaderboard(
       integrationTestCacheName,
       leaderboardName
     );
@@ -687,7 +684,7 @@ export function runLeaderboardClientTests(
 
   describe('#Remove elements', () => {
     const leaderboardName = `leaderboard-${v4()}`;
-    const leaderboard = leaderboardClient.createLeaderboard(
+    const leaderboard = leaderboardClient.leaderboard(
       integrationTestCacheName,
       leaderboardName
     );
@@ -748,7 +745,7 @@ export function runLeaderboardClientTests(
 
   describe('#Delete leaderboard', () => {
     const leaderboardName = `leaderboard-${v4()}`;
-    const leaderboard = leaderboardClient.createLeaderboard(
+    const leaderboard = leaderboardClient.leaderboard(
       integrationTestCacheName,
       leaderboardName
     );
