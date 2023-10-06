@@ -130,6 +130,9 @@ import {
 
 import {VectorIndexConfiguration} from './config/vector-index-configuration';
 
+// VectorClient Request Types
+export {ALL_VECTOR_METADATA, VectorSimilarityMetric} from '@gomomento/sdk-core';
+
 // VectorClient Response Types
 export {vector, VectorIndexItem} from '@gomomento/sdk-core';
 export * from '@gomomento/sdk-core/dist/src/messages/responses/vector';
