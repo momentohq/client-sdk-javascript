@@ -138,6 +138,7 @@ export {
 export {VectorSimilarityMetric} from './internal/clients';
 
 export {ILeaderboardClient} from './clients/ILeaderboardClient';
+export {ILeaderboard} from './clients/ILeaderboard';
 
 export {
   CacheRole,

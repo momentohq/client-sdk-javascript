@@ -1,17 +1,33 @@
 import {
+  ILeaderboard,
+  LeaderboardFetchByRankCallOptions,
+  LeaderboardFetchByScoreCallOptions,
+  LeaderboardGetRankCallOptions,
+} from '../../../clients/ILeaderboard';
+import {
   LeaderboardDelete,
   LeaderboardFetch,
   LeaderboardLength,
   LeaderboardRemoveElements,
   LeaderboardUpsert,
 } from '../../../messages/responses/leaderboard';
-import {
-  LeaderboardFetchByRankCallOptions,
-  LeaderboardFetchByScoreCallOptions,
-  LeaderboardGetRankCallOptions,
-} from '../../../utils/cache-call-options';
+import {ILeaderboardDataClient} from './ILeaderboardDataClient';
 
-export interface InternalLeaderboardClient {
+export abstract class AbstractLeaderboard implements ILeaderboard {
+  protected readonly cacheName: string;
+  protected readonly leaderboardName: string;
+  protected readonly dataClient: ILeaderboardDataClient;
+
+  protected constructor(
+    cacheName: string,
+    leaderboardName: string,
+    dataClient: ILeaderboardDataClient
+  ) {
+    this.cacheName = cacheName;
+    this.leaderboardName = leaderboardName;
+    this.dataClient = dataClient;
+  }
+
   /**
    * Updates elements in a leaderboard or inserts elements if they do not already exist.
    * The leaderboard is also created if it does not already exist.
@@ -22,9 +38,15 @@ export interface InternalLeaderboardClient {
    * {@link LeaderboardUpsert.Success} on success.
    * {@link LeaderboardUpsert.Error} on failure.
    */
-  leaderboardUpsert(
+  public async leaderboardUpsert(
     elements: Map<number, number>
-  ): Promise<LeaderboardUpsert.Response>;
+  ): Promise<LeaderboardUpsert.Response> {
+    return await this.dataClient.leaderboardUpsert(
+      this.cacheName,
+      this.leaderboardName,
+      elements
+    );
+  }
 
   /**
    * Fetch the elements in the given leaderboard by score.
@@ -48,9 +70,19 @@ export interface InternalLeaderboardClient {
    * {@link LeaderboardFetch.NotFound} when requested elements were not found.
    * {@link LeaderboardFetch.Error} on failure.
    */
-  leaderboardFetchByScore(
+  public async leaderboardFetchByScore(
     options?: LeaderboardFetchByScoreCallOptions
-  ): Promise<LeaderboardFetch.Response>;
+  ): Promise<LeaderboardFetch.Response> {
+    return await this.dataClient.leaderboardFetchByScore(
+      this.cacheName,
+      this.leaderboardName,
+      options?.minScore,
+      options?.maxScore,
+      options?.order,
+      options?.offset,
+      options?.count
+    );
+  }
 
   /**
    * Fetch the elements in the given leaderboard by index (rank).
@@ -71,9 +103,17 @@ export interface InternalLeaderboardClient {
    * {@link LeaderboardFetch.NotFound} when requested elements were not found.
    * {@link LeaderboardFetch.Error} on failure.
    */
-  leaderboardFetchByRank(
+  public async leaderboardFetchByRank(
     options?: LeaderboardFetchByRankCallOptions
-  ): Promise<LeaderboardFetch.Response>;
+  ): Promise<LeaderboardFetch.Response> {
+    return await this.dataClient.leaderboardFetchByRank(
+      this.cacheName,
+      this.leaderboardName,
+      options?.startRank,
+      options?.endRank,
+      options?.order
+    );
+  }
 
   /**
    * Look up the rank of an element in the leaderboard given the element id.
@@ -88,10 +128,17 @@ export interface InternalLeaderboardClient {
    * {@link LeaderboardFetch.NotFound} when requested elements were not found.
    * {@link LeaderboardFetch.Error} on failure.
    */
-  leaderboardGetRank(
+  public async leaderboardGetRank(
     ids: Array<number>,
     options?: LeaderboardGetRankCallOptions
-  ): Promise<LeaderboardFetch.Response>;
+  ): Promise<LeaderboardFetch.Response> {
+    return await this.dataClient.leaderboardGetRank(
+      this.cacheName,
+      this.leaderboardName,
+      ids,
+      options?.order
+    );
+  }
 
   /**
    * Fetch length (number of items) of leaderboard
@@ -100,7 +147,12 @@ export interface InternalLeaderboardClient {
    * {@link LeaderboardLength.Success} containing the length if the leaderboard exists.
    * {@link LeaderboardLength.Error} on failure.
    */
-  leaderboardLength(): Promise<LeaderboardLength.Response>;
+  public async leaderboardLength(): Promise<LeaderboardLength.Response> {
+    return await this.dataClient.leaderboardLength(
+      this.cacheName,
+      this.leaderboardName
+    );
+  }
 
   /**
    * Remove multiple elements from the given leaderboard
@@ -111,9 +163,15 @@ export interface InternalLeaderboardClient {
    * {@link LeaderboardRemoveElements.Success} if the elements were successfully removed.
    * {@link LeaderboardRemoveElements.Error} on failure.
    */
-  leaderboardRemoveElements(
+  public async leaderboardRemoveElements(
     ids: Array<number>
-  ): Promise<LeaderboardRemoveElements.Response>;
+  ): Promise<LeaderboardRemoveElements.Response> {
+    return await this.dataClient.leaderboardRemoveElements(
+      this.cacheName,
+      this.leaderboardName,
+      ids
+    );
+  }
 
   /**
    * Delete the given leaderboard
@@ -122,5 +180,10 @@ export interface InternalLeaderboardClient {
    * {@link LeaderboardDelete.Success} on success.
    * {@link LeaderboardDelete.Error} on failure.
    */
-  leaderboardDelete(): Promise<LeaderboardDelete.Response>;
+  public async leaderboardDelete(): Promise<LeaderboardDelete.Response> {
+    return await this.dataClient.leaderboardDelete(
+      this.cacheName,
+      this.leaderboardName
+    );
+  }
 }

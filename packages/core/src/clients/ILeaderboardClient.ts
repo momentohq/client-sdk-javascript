@@ -1,20 +1,5 @@
-import {InternalLeaderboardClient} from '../internal/clients';
-import {
-  LeaderboardFetchByRankCallOptions,
-  LeaderboardFetchByScoreCallOptions,
-  LeaderboardGetRankCallOptions,
-  LeaderboardOrder,
-} from '../utils';
+import {ILeaderboard} from './ILeaderboard';
 
 export interface ILeaderboardClient {
-  leaderboard(
-    cacheName: string,
-    leaderboardName: string
-  ): InternalLeaderboardClient;
+  leaderboard(cacheName: string, leaderboardName: string): ILeaderboard;
 }
-export {
-  LeaderboardFetchByRankCallOptions,
-  LeaderboardFetchByScoreCallOptions,
-  LeaderboardGetRankCallOptions,
-  LeaderboardOrder,
-};

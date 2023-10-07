@@ -1,7 +1,8 @@
-import {LeaderboardDataClient} from './internal/leaderboard-client';
+import {ILeaderboardDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/leaderboard/ILeaderboardDataClient';
+import {Leaderboard} from './internal/leaderboard';
+import {LeaderboardDataClient} from './internal/leaderboard-data-client';
 import {LeaderboardClientProps} from './leaderboard-client-props';
-import {ILeaderboardClient} from '@gomomento/sdk-core/dist/src/clients/ILeaderboardClient';
-import {InternalLeaderboardClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {ILeaderboardClient, ILeaderboard} from '@gomomento/sdk-core';
 
 /**
  * PREVIEW Momento Leaderboard Client
@@ -14,18 +15,17 @@ import {InternalLeaderboardClient} from '@gomomento/sdk-core/dist/src/internal/c
  */
 export class PreviewLeaderboardClient implements ILeaderboardClient {
   protected readonly props: LeaderboardClientProps;
+  private dataClient: ILeaderboardDataClient;
 
   constructor(props: LeaderboardClientProps) {
     this.props = props;
+    this.dataClient = new LeaderboardDataClient(this.props);
   }
 
   /**
    * Creates an instance of LeaderboardClient with 32-bit float scores.
    */
-  public leaderboard(
-    cacheName: string,
-    leaderboardName: string
-  ): InternalLeaderboardClient {
-    return new LeaderboardDataClient(this.props, cacheName, leaderboardName);
+  public leaderboard(cacheName: string, leaderboardName: string): ILeaderboard {
+    return new Leaderboard(this.dataClient, cacheName, leaderboardName);
   }
 }
