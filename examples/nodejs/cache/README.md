@@ -70,6 +70,15 @@ This example demonstrates how to use the `batchSet`, `batchGet`, and `batchDelet
 MOMENTO_API_KEY=<YOUR API KEY> npm run batchutils
 ```
 
+## Running the Leaderboard Example
+
+This example demonstrates how to use the Leaderboard functions.
+
+```bash
+# Run example code
+MOMENTO_API_KEY=<YOUR API KEY> npm run leaderboard
+```
+
 If you have questions or need help experimenting further, please reach out to us!
 
 

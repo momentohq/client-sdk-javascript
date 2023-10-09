@@ -12,3 +12,4 @@ export * from './keys-exist';
 export * from './update-ttl';
 export * from './vector-control-plane';
 export * from './vector-data-plane';
+export * from './leaderboard-client';
