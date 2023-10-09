@@ -4,6 +4,7 @@ import {PreviewVectorIndexClient} from './preview-vector-index-client';
 import * as Configurations from './config/configurations';
 import * as TopicConfigurations from './config/topic-configurations';
 import * as VectorIndexConfigurations from './config/vector-index-configurations';
+import * as LeaderboardConfigurations from './config/leaderboard-configurations';
 import * as BatchUtils from './batchutils/batch-functions';
 
 import {TopicClientProps} from './topic-client-props';
@@ -84,6 +85,10 @@ export {ALL_VECTOR_METADATA, VectorSimilarityMetric} from '@gomomento/sdk-core';
 export {vector, VectorIndexItem} from '@gomomento/sdk-core';
 export * from '@gomomento/sdk-core/dist/src/messages/responses/vector';
 
+// LeaderboardClient Response Types
+export {leaderboard} from '@gomomento/sdk-core';
+export * from '@gomomento/sdk-core/dist/src/messages/responses/leaderboard';
+
 import {
   ICacheClient,
   IMomentoCache,
@@ -145,6 +150,11 @@ import {
   TopicConfiguration,
   TopicClientConfiguration,
 } from './config/topic-configuration';
+import {
+  LeaderboardConfiguration,
+  LeaderboardClientConfiguration,
+} from './config/leaderboard-configuration';
+import {PreviewLeaderboardClient} from './preview-leaderboard-client';
 
 export {
   DefaultMomentoLoggerFactory,
@@ -314,6 +324,11 @@ export {
   GenerateDisposableToken,
   ExpiresAt,
   ExpiresIn,
+  // LeaderboardClient
+  LeaderboardConfigurations,
+  LeaderboardConfiguration,
+  LeaderboardClientConfiguration,
+  PreviewLeaderboardClient,
   // Errors
   MomentoErrorCode,
   SdkError,

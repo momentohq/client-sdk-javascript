@@ -2,9 +2,11 @@ import {CacheClient} from './cache-client';
 import {AuthClient} from './auth-client';
 import {TopicClient} from './topic-client';
 import {PreviewVectorIndexClient} from './preview-vector-index-client';
+import {PreviewLeaderboardClient} from './preview-leaderboard-client';
 import * as Configurations from './config/configurations';
 import * as TopicConfigurations from './config/topic-configurations';
 import * as VectorIndexConfigurations from './config/vector-index-configurations';
+import * as LeaderboardConfigurations from './config/leaderboard-configurations';
 
 // Cache Client Response Types
 import * as CacheGet from '@gomomento/sdk-core/dist/src/messages/responses/cache-get';
@@ -130,6 +132,10 @@ import {
 } from './config/topic-configuration';
 
 import {VectorIndexConfiguration} from './config/vector-index-configuration';
+import {
+  LeaderboardClientConfiguration,
+  LeaderboardConfiguration,
+} from './config/leaderboard-configuration';
 
 // VectorClient Request Types
 export {ALL_VECTOR_METADATA, VectorSimilarityMetric} from '@gomomento/sdk-core';
@@ -242,6 +248,10 @@ export {
   TopicPublish,
   TopicSubscribe,
   SubscribeCallOptions,
+  LeaderboardConfigurations,
+  LeaderboardConfiguration,
+  LeaderboardClientConfiguration,
+  PreviewLeaderboardClient,
   GenerateApiKey,
   /**
    * @deprecated - please use GenerateApiKey

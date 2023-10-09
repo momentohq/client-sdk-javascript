@@ -120,3 +120,72 @@ export interface ListFetchCallOptions {
    */
   endIndex?: number;
 }
+
+export enum LeaderboardOrder {
+  Ascending = 'ASC', // 0 is the lowest-scoring rank
+  Descending = 'DESC', // 0 is the highest-scoring rank.
+}
+
+export interface LeaderboardGetRankCallOptions {
+  /**
+   * The order in which to return the elements.
+   * If the order is not specified, the elements are returned in ascending order.
+   * If descending order is used, the start and end ranks are interpreted as if
+   * the leaderboard were reversed.
+   */
+  order?: LeaderboardOrder;
+}
+
+export interface LeaderboardFetchByRankCallOptions {
+  /**
+   * The rank of the first element to return, inclusive.
+   * If the rank is not specified, defaults to 0.
+   * Ranks can be used to manually paginate through the leaderboard
+   * in batches of 8192 elements (e.g. request 0-8192, then 8192-16384, etc)
+   */
+  startRank?: number;
+  /**
+   * The rank of the last element to return, exclusive.
+   * If the rank is not specified, defaults to 8192.
+   * Ranks can be used to manually paginate through the leaderboard
+   * in batches of 8192 elements (e.g. request 0-8192, then 8192-16384, etc)
+   */
+  endRank?: number;
+  /**
+   * The order in which to return the elements.
+   * If the order is not specified, the elements are returned in ascending order.
+   * If descending order is used, the start and end ranks are interpreted as if
+   * the leaderboard were reversed.
+   */
+  order?: LeaderboardOrder;
+}
+
+export interface LeaderboardFetchByScoreCallOptions {
+  /**
+   * The minimum score of the elements to return, inclusive.
+   * If the minimum score is not specified, the range extends to the lowest score.
+   */
+  minScore?: number;
+  /**
+   * The maximum score of the elements to return, exclusive.
+   * If the maximum score is not specified, the range extends to the highest score.
+   */
+  maxScore?: number;
+  /**
+   * The order in which to return the elements.
+   * If the order is not specified, the elements are returned in ascending order.
+   */
+  order?: LeaderboardOrder;
+  /**
+   * The index offset of the first element to return, relative to the first element in the result set.
+   * If specified must be non-negative (>= 0).
+   * Defaults to zero, ie. the start at first element in the result set.
+   */
+  offset?: number;
+  /**
+   * The maximum number of elements to return.
+   * If specified must be strictly positive (> 0).
+   * Defaults to 8192, the maximum number of elements that can be returned at a time.
+   */
+  count?: number;
+}
