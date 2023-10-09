@@ -107,11 +107,7 @@ async function main() {
   }
 
   // remove
-  const removeResp = await leaderboard.leaderboardRemoveElements([
-    123,
-    456,
-    789,
-  ]);
+  const removeResp = await leaderboard.leaderboardRemoveElements([123, 456, 789]);
   if (removeResp instanceof LeaderboardRemoveElements.Success) {
     console.log('Remove elements success');
   } else if (removeResp instanceof LeaderboardRemoveElements.Error) {
