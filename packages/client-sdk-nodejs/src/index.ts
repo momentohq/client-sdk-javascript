@@ -78,6 +78,9 @@ import * as RefreshApiKey from '@gomomento/sdk-core/dist/src/messages/responses/
 
 import * as GenerateDisposableToken from '@gomomento/sdk-core/dist/src/messages/responses/generate-disposable-token';
 
+// VectorClient Request Types
+export {ALL_VECTOR_METADATA, VectorSimilarityMetric} from '@gomomento/sdk-core';
+
 // VectorClient Response Types
 export {vector, VectorIndexItem} from '@gomomento/sdk-core';
 export * from '@gomomento/sdk-core/dist/src/messages/responses/vector';
@@ -88,6 +91,7 @@ export * from '@gomomento/sdk-core/dist/src/messages/responses/leaderboard';
 
 import {
   ICacheClient,
+  IMomentoCache,
   SubscribeCallOptions,
   CacheInfo,
   CollectionTtl,
@@ -198,6 +202,7 @@ export {ExampleAsyncMiddleware} from './config/middleware/example-async-middlewa
 
 export {
   ICacheClient,
+  IMomentoCache,
   CollectionTtl,
   ItemType,
   SortedSetOrder,
