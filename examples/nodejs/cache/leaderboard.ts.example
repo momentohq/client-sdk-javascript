@@ -38,13 +38,16 @@ async function main() {
     }),
   });
 
+  // Create a leaderboard with given cache and leaderboard names
+  const leaderboard = client.leaderboard('my-cache', 'my-leaderboard');
+
   // upsert
-  const elements: Map<bigint, number> = new Map([
-    [BigInt(123), 100.0],
-    [BigInt(456), 200.0],
-    [BigInt(789), 300.0],
+  const elements: Map<number, number> = new Map([
+    [123, 100.0],
+    [456, 200.0],
+    [789, 300.0],
   ]);
-  const upsertResp = await client.leaderboardUpsert('my-cache', 'my-leaderboard', elements);
+  const upsertResp = await leaderboard.leaderboardUpsert(elements);
   if (upsertResp instanceof LeaderboardUpsert.Success) {
     console.log('Upsert success');
   } else if (upsertResp instanceof LeaderboardUpsert.Error) {
@@ -52,7 +55,7 @@ async function main() {
   }
 
   // fetch by score
-  const fetchByScore = await client.leaderboardFetchByScore('my-cache', 'my-leaderboard', {
+  const fetchByScore = await leaderboard.leaderboardFetchByScore({
     minScore: 100,
     maxScore: 500,
     order: LeaderboardOrder.Ascending,
@@ -68,7 +71,7 @@ async function main() {
   }
 
   // fetch by rank
-  const fetchByRank = await client.leaderboardFetchByRank('my-cache', 'my-leaderboard', {
+  const fetchByRank = await leaderboard.leaderboardFetchByRank({
     startRank: 1,
     endRank: 5,
     order: LeaderboardOrder.Ascending,
@@ -82,7 +85,7 @@ async function main() {
   }
 
   // get rank
-  const getRank = await client.leaderboardGetRank('my-cache', 'my-leaderboard', [BigInt(123)], {
+  const getRank = await leaderboard.leaderboardGetRank([123], {
     order: LeaderboardOrder.Ascending,
   });
   if (getRank instanceof LeaderboardFetch.Found) {
@@ -94,7 +97,7 @@ async function main() {
   }
 
   // length
-  const lengthResp = await client.leaderboardLength('my-cache', 'my-leaderboard');
+  const lengthResp = await leaderboard.leaderboardLength();
   if (lengthResp instanceof LeaderboardLength.Found) {
     console.log('Get leaderboard length Found');
   } else if (lengthResp instanceof LeaderboardLength.NotFound) {
@@ -104,10 +107,10 @@ async function main() {
   }
 
   // remove
-  const removeResp = await client.leaderboardRemoveElements('my-cache', 'my-leaderboard', [
-    BigInt(123),
-    BigInt(456),
-    BigInt(789),
+  const removeResp = await leaderboard.leaderboardRemoveElements([
+    123,
+    456,
+    789,
   ]);
   if (removeResp instanceof LeaderboardRemoveElements.Success) {
     console.log('Remove elements success');
@@ -116,7 +119,7 @@ async function main() {
   }
 
   // delete
-  const deleteResp = await client.leaderboardDelete('my-cache', 'my-leaderboard');
+  const deleteResp = await leaderboard.leaderboardDelete();
   if (deleteResp instanceof LeaderboardDelete.Success) {
     console.log('Delete leaderboard success');
   } else if (deleteResp instanceof LeaderboardDelete.Error) {
