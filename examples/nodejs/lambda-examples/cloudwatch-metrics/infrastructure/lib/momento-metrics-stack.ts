@@ -24,7 +24,7 @@ enum exampleApp {
   NodejsEcs,
 }
 
-const stackConfig: exampleApp = exampleApp.NodejsEcs;
+const stackConfig: exampleApp = exampleApp.NodejsLambda;
 
 export class MomentoMetricsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {

@@ -8,7 +8,7 @@
     "build": "tsc",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
-    "start": "tsc && node dist/index.js"
+    "start": "tsc index.ts && node index.js"
   },
   "author": "",
   "license": "ISC",

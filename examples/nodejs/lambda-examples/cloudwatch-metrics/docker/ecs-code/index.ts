@@ -28,22 +28,8 @@ async function main() {
     }
 
     logger.info('Momento metrics middleware example complete!');
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-      body: '{}',
-    };
   } catch (err) {
     console.log('Error occurred in the ECS example code:', err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: 'An error occurred!',
-      }),
-    };
   }
 }
 
