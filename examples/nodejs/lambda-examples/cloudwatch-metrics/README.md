@@ -88,3 +88,17 @@ npm run cdk -- deploy --parameters MomentoApiKey=<YOUR_MOMENTO_API_KEY>
 ```
 
 The ECS cluster should automatically start running the task and generating logs. After a few minutes, you should be able to see the metrics populating several charts by navigating to CloudWatch > Dashboards > Custom Dashboards > MomentoMetricsCDKExampleDashboard in the AWS console.
+
+## Deploying a Custom Application
+
+If you want to create the metric filters and CloudWatch dashboard without the Lambda function or ECS cluster, you can set the `stackConfig` variable in the [`momento-metrics-stack.ts` file](./infrastructure/lib/momento-metrics-stack.ts) to `exampleApp.Custom` to indicate that you have a custom application for generating the logs.
+
+```
+const stackConfig: exampleApp = exampleApp.Custom;
+```
+
+Then proceed with the usual CDK deployment:
+
+```
+npm run cdk -- deploy --parameters MomentoApiKey=<YOUR_MOMENTO_API_KEY>
+```

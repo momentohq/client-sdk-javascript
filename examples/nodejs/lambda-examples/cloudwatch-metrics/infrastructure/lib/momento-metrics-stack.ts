@@ -22,9 +22,10 @@ import { DockerImageAsset } from 'aws-cdk-lib/aws-ecr-assets';
 enum exampleApp {
   NodejsLambda,
   NodejsEcs,
+  Custom
 }
 
-const stackConfig: exampleApp = exampleApp.NodejsLambda;
+const stackConfig: exampleApp = exampleApp.Custom;
 
 export class MomentoMetricsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -41,7 +42,12 @@ export class MomentoMetricsStack extends cdk.Stack {
       secretStringValue: new cdk.SecretValue(momentoApiKeyParam.valueAsString),
     });
 
-    const logGroupName = stackConfig === exampleApp.NodejsLambda ? '/aws/lambda/MomentoMetricsMiddlewareCDKExample' : '/aws/ecs/MomentoMetricsMiddlewareCDKExample';
+    const configToLogGroupName = new Map([
+      [exampleApp.NodejsLambda, '/aws/lambda/MomentoMetricsMiddlewareCDKExample'],
+      [exampleApp.NodejsEcs, '/aws/ecs/MomentoMetricsMiddlewareCDKExample'],
+      [exampleApp.Custom, '/custom/MomentoMetricsMiddlewareCDKExample']
+    ])
+    const logGroupName = configToLogGroupName.get(stackConfig);
 
     const logGroup = new LogGroup(this, 'Logs', {
       logGroupName: logGroupName,
@@ -108,6 +114,10 @@ export class MomentoMetricsStack extends cdk.Stack {
           cluster,
           taskDefinition,
         });
+        break;
+      }
+      case exampleApp.Custom: {
+        console.log('Skipping to dashboard creation');
         break;
       }
       default: {
