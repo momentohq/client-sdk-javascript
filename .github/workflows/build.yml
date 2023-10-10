@@ -153,6 +153,11 @@ jobs:
             npm ci
             npm run build
           popd
+          pushd examples/nodejs/vector-index
+            npm ci
+            npm run build
+            npm run validate-examples
+          popd
 
       - name: Send CI failure mail
         if: ${{ steps.validation.outcome == 'failure' }}
