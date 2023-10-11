@@ -72,7 +72,10 @@ import {
   TopicSubscribe,
   TopicItem,
   TopicConfigurations,
+  PreviewLeaderboardClient,
+  LeaderboardConfigurations,
 } from '@gomomento/sdk';
+import { ILeaderboard, LeaderboardDelete, LeaderboardFetch, LeaderboardLength, LeaderboardOrder, LeaderboardRemoveElements, LeaderboardUpsert } from '@gomomento/sdk-core';
 
 function retrieveApiKeyFromYourSecretsManager(): string {
   // this is not a valid API key but conforms to the syntax requirements.
@@ -1033,6 +1036,203 @@ async function example_API_TopicSubscribe(topicClient: TopicClient) {
   }
 }
 
+function example_API_InstantiateLeaderboardClient() {
+  const leaderboardClient = new PreviewLeaderboardClient({
+    configuration: LeaderboardConfigurations.Laptop.v1(),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_API_KEY',
+    }),
+  });
+}
+
+async function example_API_CreateLeaderboard(leaderboardClient: PreviewLeaderboardClient) {
+  // You can create multiple leaderboards using the same leaderboard client
+  // but with different cache and leaderboard names
+  const leaderboard1 = leaderboardClient.leaderboard('test-cache', 'momento-leaderboard');
+  const leaderboard2 = leaderboardClient.leaderboard('test-cache', 'acorns-leaderboard');
+
+  // Leaderboard and cache names must be non-empty strings
+  try {
+    const leaderboard3 = leaderboardClient.leaderboard('test-cache', '   ');
+  } catch (error) {
+    console.log('Expected error creating a leaderboard with invalid leaderboard name:', error);
+  }
+}
+
+async function example_API_LeaderboardUpsert(leaderboard: ILeaderboard) {
+  const elements: Map<number, number> = new Map([
+    [123, 100.0],
+    [234, 200.0],
+    [345, 300.0],
+    [456, 400.0],
+    [567, 500.0],
+    [678, 600.0],
+    [789, 700.0],
+    [890, 800.0],
+  ]);
+  const result = await leaderboard.leaderboardUpsert(elements);
+  if (result instanceof LeaderboardUpsert.Success) {
+    console.log('Successfully upserted elements to leaderboard');
+  } else if (result instanceof LeaderboardUpsert.Error) {
+    console.log('Upsert error:', result.message());
+    throw new Error(
+      `An error occurred while attempting to call leaderboardUpsert on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
+    );
+  }
+}
+
+async function example_API_LeaderboardFetchByScore(leaderboard: ILeaderboard) {
+  // By default, FetchByScore will fetch the elements from the entire score range
+  // with zero offset in ascending order. It can return 8192 elements at a time.
+  const result1 = await leaderboard.leaderboardFetchByScore();
+  if (result1 instanceof LeaderboardFetch.Found) {
+    console.log('Successfully fetched elements using open score range:');
+    result1.values().forEach(element => {
+      console.log(`\tId: ${element.id} | Rank: ${element.rank} | Score: ${element.score}`);
+    });
+  } else if (result1 instanceof LeaderboardFetch.NotFound) {
+    console.log('Requested elements not found');
+  } else if (result1 instanceof LeaderboardFetch.Error) {
+    throw new Error(
+      `An error occurred while attempting to call leaderboardFetchByScore with no options on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result1.errorCode()}: ${result1.message()}`
+    );
+  }
+
+  // Example specifying all FetchByScore options. You can provide any subset of these options
+  // to modify your FetchByScore request.
+  const result2 = await leaderboard.leaderboardFetchByScore({
+    minScore: 10,
+    maxScore: 600,
+    order: LeaderboardOrder.Descending,
+    offset: 2,
+    count: 10,
+  });
+  if (result2 instanceof LeaderboardFetch.Found) {
+    console.log('Successfully fetched elements by score using all options:');
+    result2.values().forEach(element => {
+      console.log(`\tId: ${element.id} | Rank: ${element.rank} | Score: ${element.score}`);
+    });
+  } else if (result2 instanceof LeaderboardFetch.NotFound) {
+    console.log('Requested elements not found');
+  } else if (result2 instanceof LeaderboardFetch.Error) {
+    throw new Error(
+      `An error occurred while attempting to call leaderboardFetchByScore with all options on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result2.errorCode()}: ${result2.message()}`
+    );
+  }
+}
+
+async function example_API_LeaderboardFetchByRank(leaderboard: ILeaderboard) {
+  // By default, FetchByRank will fetch the first 8192 ranked elements with the 
+  // leaderboard in ascending order, meaning rank 0 is for the lowest score
+  const result1 = await leaderboard.leaderboardFetchByRank();
+  if (result1 instanceof LeaderboardFetch.Found) {
+    console.log('Successfully fetched elements in default rank range [0,8192)');
+    result1.values().forEach(element => {
+      console.log(`\tId: ${element.id} | Rank: ${element.rank} | Score: ${element.score}`);
+    });
+  } else if (result1 instanceof LeaderboardFetch.NotFound) {
+    console.log('Requested elements not found');
+  } else if (result1 instanceof LeaderboardFetch.Error) {
+    throw new Error(
+      `An error occurred while attempting to call leaderboardFetchByRank with no options on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result1.errorCode()}: ${result1.message()}`
+    );
+  }
+
+  // You can use FetchByRank to paginate through your leaderboard.
+  // This request gets the first half of our example leaderboard.
+  const result2 = await leaderboard.leaderboardFetchByRank({
+    startRank: 0, // inclusive
+    endRank: 4,   // exclusive
+    order: LeaderboardOrder.Descending,
+  });
+  if (result2 instanceof LeaderboardFetch.Found) {
+    console.log('Successfully fetched elements in rank range [0,4):');
+    result2.values().forEach(element => {
+      console.log(`\tId: ${element.id} | Rank: ${element.rank} | Score: ${element.score}`);
+    });
+  } else if (result2 instanceof LeaderboardFetch.NotFound) {
+    console.log('Requested elements not found');
+  } else if (result2 instanceof LeaderboardFetch.Error) {
+    throw new Error(
+      `An error occurred while attempting to call leaderboardFetchByRank for ranks 0-5 on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result2.errorCode()}: ${result2.message()}`
+    );
+  }
+
+  // This request gets the second half of our example leaderboard.
+  const result3 = await leaderboard.leaderboardFetchByRank({
+    startRank: 4, // inclusive
+    endRank: 8,  // exclusive
+    order: LeaderboardOrder.Descending,
+  });
+  if (result3 instanceof LeaderboardFetch.Found) {
+    console.log('Successfully fetched elements in rank range [4,8):');
+    result3.values().forEach(element => {
+      console.log(`\tId: ${element.id} | Rank: ${element.rank} | Score: ${element.score}`);
+    });
+  } else if (result3 instanceof LeaderboardFetch.NotFound) {
+    console.log('Requested elements not found');
+  } else if (result3 instanceof LeaderboardFetch.Error) {
+    throw new Error(
+      `An error occurred while attempting to call leaderboardFetchByRank for ranks 5-10 on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result3.errorCode()}: ${result3.message()}`
+    );
+  }
+}
+
+async function example_API_LeaderboardGetRank(leaderboard: ILeaderboard) {
+  // Provide a list of element IDs to get their ranks in ascending or descending order
+  const result = await leaderboard.leaderboardGetRank([123, 456, 789], {
+    order: LeaderboardOrder.Descending
+  });
+  if (result instanceof LeaderboardFetch.Found) {
+    console.log('Successfully fetched the rank of 3 elements:');
+    result.values().forEach(element => {
+      console.log(`\tId: ${element.id} | Rank: ${element.rank} | Score: ${element.score}`);
+    });
+  } else if (result instanceof LeaderboardFetch.NotFound) {
+    console.log('Requested elements not found');
+  } else if (result instanceof LeaderboardFetch.Error) {
+    throw new Error(
+      `An error occurred while attempting to call leaderboardGetRank on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
+    );
+  }
+}
+
+async function example_API_LeaderboardLength(leaderboard: ILeaderboard) {
+  const result = await leaderboard.leaderboardLength();
+  if (result instanceof LeaderboardLength.Found) {
+    console.log('Successfully retrieved leaderboard length:', result.length());
+  } else if (result instanceof LeaderboardLength.NotFound) {
+    console.log('Leaderboard not found');
+  } else if (result instanceof LeaderboardLength.Error) {
+    throw new Error(
+      `An error occurred while attempting to call leaderboardLength on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
+    );
+  }
+}
+
+async function example_API_LeaderboardRemoveElements(leaderboard: ILeaderboard) {
+  // Provide a list of element IDs to delete those elements
+  const result = await leaderboard.leaderboardRemoveElements([123, 456, 789]);
+  if (result instanceof LeaderboardRemoveElements.Success) {
+    console.log('Successfully removed elements');
+  } else if (result instanceof LeaderboardRemoveElements.Error) {
+    throw new Error(
+      `An error occurred while attempting to call leaderboardRemoveElements on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
+    );
+  }
+}
+
+async function example_API_LeaderboardDelete(leaderboard: ILeaderboard) {
+  const result = await leaderboard.leaderboardDelete();
+  if (result instanceof LeaderboardDelete.Success) {
+    console.log('Successfully deleted the leaderboard');
+  } else if (result instanceof LeaderboardDelete.Error) {
+    throw new Error(
+      `An error occurred while attempting to call leaderboardDelete on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
+    );
+  }
+}
+
 async function main() {
   const originalApiKey = process.env['MOMENTO_API_KEY'];
   process.env['MOMENTO_API_KEY'] = retrieveApiKeyFromYourSecretsManager();
@@ -1064,69 +1264,86 @@ async function main() {
   await example_API_ListCaches(cacheClient);
   await example_API_FlushCache(cacheClient);
 
-  await example_API_Set(cacheClient);
-  await example_API_Get(cacheClient);
-  await example_API_Delete(cacheClient);
-  await example_API_Increment(cacheClient);
-  await example_API_ItemGetType(cacheClient);
-  await example_API_SetIfNotExists(cacheClient);
+  // await example_API_Set(cacheClient);
+  // await example_API_Get(cacheClient);
+  // await example_API_Delete(cacheClient);
+  // await example_API_Increment(cacheClient);
+  // await example_API_ItemGetType(cacheClient);
+  // await example_API_SetIfNotExists(cacheClient);
 
-  await example_API_ListFetch(cacheClient);
-  await example_API_ListConcatenateBack(cacheClient);
-  await example_API_ListConcatenateFront(cacheClient);
-  await example_API_ListLength(cacheClient);
-  await example_API_ListPopBack(cacheClient);
-  await example_API_ListPopFront(cacheClient);
-  await example_API_ListPushBack(cacheClient);
-  await example_API_ListPushFront(cacheClient);
-  await example_API_ListRemoveValue(cacheClient);
-  await example_API_ListRetain(cacheClient);
+  // await example_API_ListFetch(cacheClient);
+  // await example_API_ListConcatenateBack(cacheClient);
+  // await example_API_ListConcatenateFront(cacheClient);
+  // await example_API_ListLength(cacheClient);
+  // await example_API_ListPopBack(cacheClient);
+  // await example_API_ListPopFront(cacheClient);
+  // await example_API_ListPushBack(cacheClient);
+  // await example_API_ListPushFront(cacheClient);
+  // await example_API_ListRemoveValue(cacheClient);
+  // await example_API_ListRetain(cacheClient);
 
-  await example_API_DictionaryFetch(cacheClient);
-  await example_API_DictionaryGetField(cacheClient);
-  await example_API_DictionaryGetFields(cacheClient);
-  await example_API_DictionarySetField(cacheClient);
-  await example_API_DictionarySetFields(cacheClient);
-  await example_API_DictionaryIncrement(cacheClient);
-  await example_API_DictionaryRemoveField(cacheClient);
-  await example_API_DictionaryRemoveFields(cacheClient);
+  // await example_API_DictionaryFetch(cacheClient);
+  // await example_API_DictionaryGetField(cacheClient);
+  // await example_API_DictionaryGetFields(cacheClient);
+  // await example_API_DictionarySetField(cacheClient);
+  // await example_API_DictionarySetFields(cacheClient);
+  // await example_API_DictionaryIncrement(cacheClient);
+  // await example_API_DictionaryRemoveField(cacheClient);
+  // await example_API_DictionaryRemoveFields(cacheClient);
 
-  await example_API_SetAddElement(cacheClient);
-  await example_API_SetAddElements(cacheClient);
-  await example_API_SetFetch(cacheClient);
-  await example_API_SetRemoveElement(cacheClient);
-  await example_API_SetRemoveElements(cacheClient);
+  // await example_API_SetAddElement(cacheClient);
+  // await example_API_SetAddElements(cacheClient);
+  // await example_API_SetFetch(cacheClient);
+  // await example_API_SetRemoveElement(cacheClient);
+  // await example_API_SetRemoveElements(cacheClient);
 
-  await example_API_SortedSetPutElement(cacheClient);
-  await example_API_SortedSetPutElements(cacheClient);
-  await example_API_SortedSetFetchByRank(cacheClient);
-  await example_API_SortedSetFetchByScore(cacheClient);
-  await example_API_SortedSetGetRank(cacheClient);
-  await example_API_SortedSetGetScore(cacheClient);
-  await example_API_SortedSetGetScores(cacheClient);
-  await example_API_SortedSetIncrementScore(cacheClient);
-  await example_API_SortedSetRemoveElement(cacheClient);
-  await example_API_SortedSetRemoveElements(cacheClient);
+  // await example_API_SortedSetPutElement(cacheClient);
+  // await example_API_SortedSetPutElements(cacheClient);
+  // await example_API_SortedSetFetchByRank(cacheClient);
+  // await example_API_SortedSetFetchByScore(cacheClient);
+  // await example_API_SortedSetGetRank(cacheClient);
+  // await example_API_SortedSetGetScore(cacheClient);
+  // await example_API_SortedSetGetScores(cacheClient);
+  // await example_API_SortedSetIncrementScore(cacheClient);
+  // await example_API_SortedSetRemoveElement(cacheClient);
+  // await example_API_SortedSetRemoveElements(cacheClient);
 
-  example_API_InstantiateAuthClient();
-  const authClient = new AuthClient({
+  // example_API_InstantiateAuthClient();
+  // const authClient = new AuthClient({
+  //   credentialProvider: CredentialProvider.fromEnvironmentVariable({
+  //     environmentVariableName: 'MOMENTO_API_KEY',
+  //   }),
+  // });
+  // await example_API_GenerateApiKey(authClient);
+  // await example_API_RefreshApiKey(authClient);
+  // await example_API_GenerateDisposableToken(authClient);
+
+  // example_API_InstantiateTopicClient();
+  // const topicClient = new TopicClient({
+  //   configuration: TopicConfigurations.Default.latest(),
+  //   credentialProvider: CredentialProvider.fromEnvironmentVariable({
+  //     environmentVariableName: 'MOMENTO_API_KEY',
+  //   }),
+  // });
+  // await example_API_TopicPublish(topicClient);
+  // await example_API_TopicSubscribe(topicClient);
+
+  example_API_InstantiateLeaderboardClient();
+  const leaderboardClient = new PreviewLeaderboardClient({
+    configuration: LeaderboardConfigurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_API_KEY',
     }),
   });
-  await example_API_GenerateApiKey(authClient);
-  await example_API_RefreshApiKey(authClient);
-  await example_API_GenerateDisposableToken(authClient);
-
-  example_API_InstantiateTopicClient();
-  const topicClient = new TopicClient({
-    configuration: TopicConfigurations.Default.latest(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
-  });
-  await example_API_TopicPublish(topicClient);
-  await example_API_TopicSubscribe(topicClient);
+  const leaderboard = leaderboardClient.leaderboard('test-cache', 'momento-leaderboard');
+  await example_API_CreateLeaderboard(leaderboardClient);
+  await example_API_LeaderboardUpsert(leaderboard);
+  await example_API_LeaderboardFetchByScore(leaderboard);
+  await example_API_LeaderboardFetchByRank(leaderboard);
+  await example_API_LeaderboardGetRank(leaderboard);
+  await example_API_LeaderboardLength(leaderboard);
+  await example_API_LeaderboardRemoveElements(leaderboard);
+  await example_API_LeaderboardDelete(leaderboard);
 }
 
 main().catch(e => {
