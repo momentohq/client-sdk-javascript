@@ -1089,6 +1089,24 @@ async function example_API_LeaderboardUpsert(leaderboard: ILeaderboard) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function example_API_LeaderboardUpsertPagination(leaderboard: ILeaderboard) {
+  // To upsert a large number of elements, you must upsert in batches of 8192
+  const elements = [...Array(20000).keys()].map(i => {
+    return {id: i + 1, score: i * Math.random()};
+  });
+  for (let i = 0; i < 20000; i += 8192) {
+    // Create a Map containing 8192 elements at a time
+    const batch = new Map(elements.slice(i, i + 8192).map(obj => [obj['id'], obj['score']]));
+
+    // Then upsert one batch at a time until all elements have been ingested
+    const result = await leaderboard.leaderboardUpsert(batch);
+    if (result instanceof LeaderboardUpsert.Error) {
+      console.log(`Error upserting batch [${i}, ${i + 8192})`);
+    }
+  }
+}
+
 async function example_API_LeaderboardFetchByScore(leaderboard: ILeaderboard) {
   // By default, FetchByScore will fetch the elements from the entire score range
   // with zero offset in ascending order. It can return 8192 elements at a time.
@@ -1129,6 +1147,30 @@ async function example_API_LeaderboardFetchByScore(leaderboard: ILeaderboard) {
   }
 }
 
+function processBatch(
+  values: {
+    id: number;
+    score: number;
+    rank: number;
+  }[]
+) {
+  console.log('Empty function', values.length);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function example_API_LeaderboardFetchByScorePagination(leaderboard: ILeaderboard) {
+  // Use the offset option to paginate through your results if your leaderboard
+  // has more than 8192 elements.
+  for (let offset = 0; offset < 20000; offset += 8192) {
+    const result = await leaderboard.leaderboardFetchByScore({offset});
+    if (result instanceof LeaderboardFetch.Found) {
+      processBatch(result.values());
+    } else if (result instanceof LeaderboardFetch.Error) {
+      console.log(`Error fetching batch [${offset}, ${offset + 8192})`);
+    }
+  }
+}
+
 async function example_API_LeaderboardFetchByRank(leaderboard: ILeaderboard) {
   // By default, FetchByRank will fetch the first 8192 ranked elements with the
   // leaderboard in ascending order, meaning rank 0 is for the lowest score
@@ -1145,44 +1187,22 @@ async function example_API_LeaderboardFetchByRank(leaderboard: ILeaderboard) {
       `An error occurred while attempting to call leaderboardFetchByRank with no options on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result1.errorCode()}: ${result1.message()}`
     );
   }
+}
 
-  // You can use FetchByRank to paginate through your leaderboard.
-  // This request gets the first half of our example leaderboard.
-  const result2 = await leaderboard.leaderboardFetchByRank({
-    startRank: 0, // inclusive
-    endRank: 4, // exclusive
-    order: LeaderboardOrder.Descending,
-  });
-  if (result2 instanceof LeaderboardFetch.Found) {
-    console.log('Successfully fetched elements in rank range [0,4):');
-    result2.values().forEach(element => {
-      console.log(`\tId: ${element.id} | Rank: ${element.rank} | Score: ${element.score}`);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function example_API_LeaderboardFetchByRankPagination(leaderboard: ILeaderboard) {
+  // Use the startRank and endRank options to paginate through your leaderboard
+  for (let rank = 0; rank < 20000; rank += 8192) {
+    const result = await leaderboard.leaderboardFetchByRank({
+      startRank: rank,
+      endRank: rank + 8192,
+      order: LeaderboardOrder.Descending,
     });
-  } else if (result2 instanceof LeaderboardFetch.NotFound) {
-    console.log('Requested elements not found');
-  } else if (result2 instanceof LeaderboardFetch.Error) {
-    throw new Error(
-      `An error occurred while attempting to call leaderboardFetchByRank for ranks 0-5 on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result2.errorCode()}: ${result2.message()}`
-    );
-  }
-
-  // This request gets the second half of our example leaderboard.
-  const result3 = await leaderboard.leaderboardFetchByRank({
-    startRank: 4, // inclusive
-    endRank: 8, // exclusive
-    order: LeaderboardOrder.Descending,
-  });
-  if (result3 instanceof LeaderboardFetch.Found) {
-    console.log('Successfully fetched elements in rank range [4,8):');
-    result3.values().forEach(element => {
-      console.log(`\tId: ${element.id} | Rank: ${element.rank} | Score: ${element.score}`);
-    });
-  } else if (result3 instanceof LeaderboardFetch.NotFound) {
-    console.log('Requested elements not found');
-  } else if (result3 instanceof LeaderboardFetch.Error) {
-    throw new Error(
-      `An error occurred while attempting to call leaderboardFetchByRank for ranks 5-10 on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result3.errorCode()}: ${result3.message()}`
-    );
+    if (result instanceof LeaderboardFetch.Found) {
+      processBatch(result.values());
+    } else if (result instanceof LeaderboardFetch.Error) {
+      console.log(`Error fetching batch [${rank}, ${rank + 8192})`);
+    }
   }
 }
 
@@ -1227,6 +1247,18 @@ async function example_API_LeaderboardRemoveElements(leaderboard: ILeaderboard) 
     throw new Error(
       `An error occurred while attempting to call leaderboardRemoveElements on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
     );
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function example_API_LeaderboardRemoveElementsPagination(leaderboard: ILeaderboard) {
+  // You can remove batches of 8192 elements at a time
+  const ids = [...Array(20000).keys()];
+  for (let i = 0; i < 20000; i += 8192) {
+    const result = await leaderboard.leaderboardRemoveElements(ids.slice(i, i + 8192));
+    if (result instanceof LeaderboardRemoveElements.Error) {
+      console.log(`Error removing batch [${i}, ${i + 8192})`);
+    }
   }
 }
 
