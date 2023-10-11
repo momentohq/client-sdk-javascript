@@ -75,7 +75,15 @@ import {
   PreviewLeaderboardClient,
   LeaderboardConfigurations,
 } from '@gomomento/sdk';
-import { ILeaderboard, LeaderboardDelete, LeaderboardFetch, LeaderboardLength, LeaderboardOrder, LeaderboardRemoveElements, LeaderboardUpsert } from '@gomomento/sdk-core';
+import {
+  ILeaderboard,
+  LeaderboardDelete,
+  LeaderboardFetch,
+  LeaderboardLength,
+  LeaderboardOrder,
+  LeaderboardRemoveElements,
+  LeaderboardUpsert,
+} from '@gomomento/sdk-core';
 
 function retrieveApiKeyFromYourSecretsManager(): string {
   // this is not a valid API key but conforms to the syntax requirements.
@@ -1045,7 +1053,7 @@ function example_API_InstantiateLeaderboardClient() {
   });
 }
 
-async function example_API_CreateLeaderboard(leaderboardClient: PreviewLeaderboardClient) {
+function example_API_CreateLeaderboard(leaderboardClient: PreviewLeaderboardClient) {
   // You can create multiple leaderboards using the same leaderboard client
   // but with different cache and leaderboard names
   const leaderboard1 = leaderboardClient.leaderboard('test-cache', 'momento-leaderboard');
@@ -1122,7 +1130,7 @@ async function example_API_LeaderboardFetchByScore(leaderboard: ILeaderboard) {
 }
 
 async function example_API_LeaderboardFetchByRank(leaderboard: ILeaderboard) {
-  // By default, FetchByRank will fetch the first 8192 ranked elements with the 
+  // By default, FetchByRank will fetch the first 8192 ranked elements with the
   // leaderboard in ascending order, meaning rank 0 is for the lowest score
   const result1 = await leaderboard.leaderboardFetchByRank();
   if (result1 instanceof LeaderboardFetch.Found) {
@@ -1142,7 +1150,7 @@ async function example_API_LeaderboardFetchByRank(leaderboard: ILeaderboard) {
   // This request gets the first half of our example leaderboard.
   const result2 = await leaderboard.leaderboardFetchByRank({
     startRank: 0, // inclusive
-    endRank: 4,   // exclusive
+    endRank: 4, // exclusive
     order: LeaderboardOrder.Descending,
   });
   if (result2 instanceof LeaderboardFetch.Found) {
@@ -1161,7 +1169,7 @@ async function example_API_LeaderboardFetchByRank(leaderboard: ILeaderboard) {
   // This request gets the second half of our example leaderboard.
   const result3 = await leaderboard.leaderboardFetchByRank({
     startRank: 4, // inclusive
-    endRank: 8,  // exclusive
+    endRank: 8, // exclusive
     order: LeaderboardOrder.Descending,
   });
   if (result3 instanceof LeaderboardFetch.Found) {
@@ -1181,7 +1189,7 @@ async function example_API_LeaderboardFetchByRank(leaderboard: ILeaderboard) {
 async function example_API_LeaderboardGetRank(leaderboard: ILeaderboard) {
   // Provide a list of element IDs to get their ranks in ascending or descending order
   const result = await leaderboard.leaderboardGetRank([123, 456, 789], {
-    order: LeaderboardOrder.Descending
+    order: LeaderboardOrder.Descending,
   });
   if (result instanceof LeaderboardFetch.Found) {
     console.log('Successfully fetched the rank of 3 elements:');
@@ -1264,69 +1272,69 @@ async function main() {
   await example_API_ListCaches(cacheClient);
   await example_API_FlushCache(cacheClient);
 
-  // await example_API_Set(cacheClient);
-  // await example_API_Get(cacheClient);
-  // await example_API_Delete(cacheClient);
-  // await example_API_Increment(cacheClient);
-  // await example_API_ItemGetType(cacheClient);
-  // await example_API_SetIfNotExists(cacheClient);
+  await example_API_Set(cacheClient);
+  await example_API_Get(cacheClient);
+  await example_API_Delete(cacheClient);
+  await example_API_Increment(cacheClient);
+  await example_API_ItemGetType(cacheClient);
+  await example_API_SetIfNotExists(cacheClient);
 
-  // await example_API_ListFetch(cacheClient);
-  // await example_API_ListConcatenateBack(cacheClient);
-  // await example_API_ListConcatenateFront(cacheClient);
-  // await example_API_ListLength(cacheClient);
-  // await example_API_ListPopBack(cacheClient);
-  // await example_API_ListPopFront(cacheClient);
-  // await example_API_ListPushBack(cacheClient);
-  // await example_API_ListPushFront(cacheClient);
-  // await example_API_ListRemoveValue(cacheClient);
-  // await example_API_ListRetain(cacheClient);
+  await example_API_ListFetch(cacheClient);
+  await example_API_ListConcatenateBack(cacheClient);
+  await example_API_ListConcatenateFront(cacheClient);
+  await example_API_ListLength(cacheClient);
+  await example_API_ListPopBack(cacheClient);
+  await example_API_ListPopFront(cacheClient);
+  await example_API_ListPushBack(cacheClient);
+  await example_API_ListPushFront(cacheClient);
+  await example_API_ListRemoveValue(cacheClient);
+  await example_API_ListRetain(cacheClient);
 
-  // await example_API_DictionaryFetch(cacheClient);
-  // await example_API_DictionaryGetField(cacheClient);
-  // await example_API_DictionaryGetFields(cacheClient);
-  // await example_API_DictionarySetField(cacheClient);
-  // await example_API_DictionarySetFields(cacheClient);
-  // await example_API_DictionaryIncrement(cacheClient);
-  // await example_API_DictionaryRemoveField(cacheClient);
-  // await example_API_DictionaryRemoveFields(cacheClient);
+  await example_API_DictionaryFetch(cacheClient);
+  await example_API_DictionaryGetField(cacheClient);
+  await example_API_DictionaryGetFields(cacheClient);
+  await example_API_DictionarySetField(cacheClient);
+  await example_API_DictionarySetFields(cacheClient);
+  await example_API_DictionaryIncrement(cacheClient);
+  await example_API_DictionaryRemoveField(cacheClient);
+  await example_API_DictionaryRemoveFields(cacheClient);
 
-  // await example_API_SetAddElement(cacheClient);
-  // await example_API_SetAddElements(cacheClient);
-  // await example_API_SetFetch(cacheClient);
-  // await example_API_SetRemoveElement(cacheClient);
-  // await example_API_SetRemoveElements(cacheClient);
+  await example_API_SetAddElement(cacheClient);
+  await example_API_SetAddElements(cacheClient);
+  await example_API_SetFetch(cacheClient);
+  await example_API_SetRemoveElement(cacheClient);
+  await example_API_SetRemoveElements(cacheClient);
 
-  // await example_API_SortedSetPutElement(cacheClient);
-  // await example_API_SortedSetPutElements(cacheClient);
-  // await example_API_SortedSetFetchByRank(cacheClient);
-  // await example_API_SortedSetFetchByScore(cacheClient);
-  // await example_API_SortedSetGetRank(cacheClient);
-  // await example_API_SortedSetGetScore(cacheClient);
-  // await example_API_SortedSetGetScores(cacheClient);
-  // await example_API_SortedSetIncrementScore(cacheClient);
-  // await example_API_SortedSetRemoveElement(cacheClient);
-  // await example_API_SortedSetRemoveElements(cacheClient);
+  await example_API_SortedSetPutElement(cacheClient);
+  await example_API_SortedSetPutElements(cacheClient);
+  await example_API_SortedSetFetchByRank(cacheClient);
+  await example_API_SortedSetFetchByScore(cacheClient);
+  await example_API_SortedSetGetRank(cacheClient);
+  await example_API_SortedSetGetScore(cacheClient);
+  await example_API_SortedSetGetScores(cacheClient);
+  await example_API_SortedSetIncrementScore(cacheClient);
+  await example_API_SortedSetRemoveElement(cacheClient);
+  await example_API_SortedSetRemoveElements(cacheClient);
 
-  // example_API_InstantiateAuthClient();
-  // const authClient = new AuthClient({
-  //   credentialProvider: CredentialProvider.fromEnvironmentVariable({
-  //     environmentVariableName: 'MOMENTO_API_KEY',
-  //   }),
-  // });
-  // await example_API_GenerateApiKey(authClient);
-  // await example_API_RefreshApiKey(authClient);
-  // await example_API_GenerateDisposableToken(authClient);
+  example_API_InstantiateAuthClient();
+  const authClient = new AuthClient({
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_API_KEY',
+    }),
+  });
+  await example_API_GenerateApiKey(authClient);
+  await example_API_RefreshApiKey(authClient);
+  await example_API_GenerateDisposableToken(authClient);
 
-  // example_API_InstantiateTopicClient();
-  // const topicClient = new TopicClient({
-  //   configuration: TopicConfigurations.Default.latest(),
-  //   credentialProvider: CredentialProvider.fromEnvironmentVariable({
-  //     environmentVariableName: 'MOMENTO_API_KEY',
-  //   }),
-  // });
-  // await example_API_TopicPublish(topicClient);
-  // await example_API_TopicSubscribe(topicClient);
+  example_API_InstantiateTopicClient();
+  const topicClient = new TopicClient({
+    configuration: TopicConfigurations.Default.latest(),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_API_KEY',
+    }),
+  });
+  await example_API_TopicPublish(topicClient);
+  await example_API_TopicSubscribe(topicClient);
 
   example_API_InstantiateLeaderboardClient();
   const leaderboardClient = new PreviewLeaderboardClient({
@@ -1336,7 +1344,7 @@ async function main() {
     }),
   });
   const leaderboard = leaderboardClient.leaderboard('test-cache', 'momento-leaderboard');
-  await example_API_CreateLeaderboard(leaderboardClient);
+  example_API_CreateLeaderboard(leaderboardClient);
   await example_API_LeaderboardUpsert(leaderboard);
   await example_API_LeaderboardFetchByScore(leaderboard);
   await example_API_LeaderboardFetchByRank(leaderboard);
