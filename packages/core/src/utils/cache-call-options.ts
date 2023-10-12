@@ -138,20 +138,6 @@ export interface LeaderboardGetRankCallOptions {
 
 export interface LeaderboardFetchByRankCallOptions {
   /**
-   * The rank of the first element to return, inclusive.
-   * If the rank is not specified, defaults to 0.
-   * Ranks can be used to manually paginate through the leaderboard
-   * in batches of 8192 elements (e.g. request 0-8192, then 8192-16384, etc)
-   */
-  startRank?: number;
-  /**
-   * The rank of the last element to return, exclusive.
-   * If the rank is not specified, defaults to 8192.
-   * Ranks can be used to manually paginate through the leaderboard
-   * in batches of 8192 elements (e.g. request 0-8192, then 8192-16384, etc)
-   */
-  endRank?: number;
-  /**
    * The order in which to return the elements.
    * If the order is not specified, the elements are returned in ascending order.
    * If descending order is used, the start and end ranks are interpreted as if

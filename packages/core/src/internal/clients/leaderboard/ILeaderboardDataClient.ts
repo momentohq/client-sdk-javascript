@@ -8,12 +8,12 @@ import {
 import {LeaderboardOrder} from '../../../utils';
 
 export interface ILeaderboardDataClient {
-  leaderboardUpsert(
+  upsert(
     cacheName: string,
     leaderboardName: string,
-    elements: Map<number, number>
+    elements: Record<number, number> | Map<number, number>
   ): Promise<LeaderboardUpsert.Response>;
-  leaderboardFetchByScore(
+  fetchByScore(
     cacheName: string,
     leaderboardName: string,
     minScore?: number,
@@ -22,29 +22,29 @@ export interface ILeaderboardDataClient {
     offset?: number,
     count?: number
   ): Promise<LeaderboardFetch.Response>;
-  leaderboardFetchByRank(
+  fetchByRank(
     cacheName: string,
     leaderboardName: string,
-    startRank?: number,
-    endRank?: number,
+    startRank: number,
+    endRank: number,
     order?: LeaderboardOrder
   ): Promise<LeaderboardFetch.Response>;
-  leaderboardGetRank(
+  getRank(
     cacheName: string,
     leaderboardName: string,
     ids: Array<number>,
     order?: LeaderboardOrder
   ): Promise<LeaderboardFetch.Response>;
-  leaderboardLength(
+  length(
     cacheName: string,
     leaderboardName: string
   ): Promise<LeaderboardLength.Response>;
-  leaderboardRemoveElements(
+  removeElements(
     cacheName: string,
     leaderboardName: string,
     ids: Array<number>
   ): Promise<LeaderboardRemoveElements.Response>;
-  leaderboardDelete(
+  delete(
     cacheName: string,
     leaderboardName: string
   ): Promise<LeaderboardDelete.Response>;
