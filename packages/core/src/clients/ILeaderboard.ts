@@ -13,24 +13,26 @@ import {
 } from '../utils/cache-call-options';
 
 export interface ILeaderboard {
-  leaderboardUpsert(
-    elements: Map<number, number>
+  upsert(
+    elements: Record<number, number> | Map<number, number>
   ): Promise<LeaderboardUpsert.Response>;
-  leaderboardFetchByScore(
+  fetchByScore(
     options?: LeaderboardFetchByScoreCallOptions
   ): Promise<LeaderboardFetch.Response>;
-  leaderboardFetchByRank(
+  fetchByRank(
+    startRank: number,
+    endRank: number,
     options?: LeaderboardFetchByRankCallOptions
   ): Promise<LeaderboardFetch.Response>;
-  leaderboardGetRank(
+  getRank(
     ids: Array<number>,
     options?: LeaderboardGetRankCallOptions
   ): Promise<LeaderboardFetch.Response>;
-  leaderboardLength(): Promise<LeaderboardLength.Response>;
-  leaderboardRemoveElements(
+  length(): Promise<LeaderboardLength.Response>;
+  removeElements(
     ids: Array<number>
   ): Promise<LeaderboardRemoveElements.Response>;
-  leaderboardDelete(): Promise<LeaderboardDelete.Response>;
+  delete(): Promise<LeaderboardDelete.Response>;
 }
 export {
   LeaderboardFetchByRankCallOptions,

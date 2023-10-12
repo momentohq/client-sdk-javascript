@@ -38,10 +38,10 @@ export abstract class AbstractLeaderboard implements ILeaderboard {
    * {@link LeaderboardUpsert.Success} on success.
    * {@link LeaderboardUpsert.Error} on failure.
    */
-  public async leaderboardUpsert(
-    elements: Map<number, number>
+  public async upsert(
+    elements: Record<number, number> | Map<number, number>
   ): Promise<LeaderboardUpsert.Response> {
-    return await this.dataClient.leaderboardUpsert(
+    return await this.dataClient.upsert(
       this.cacheName,
       this.leaderboardName,
       elements
@@ -66,14 +66,13 @@ export abstract class AbstractLeaderboard implements ILeaderboard {
    * @param {number} [options.count] - The maximum number of elements to return.
    * Defaults to 8192, which is the maximum that can be fetched at a time.
    * @returns {Promise<LeaderboardFetch.Response>} -
-   * {@link LeaderboardFetch.Found} containing the requested elements.
-   * {@link LeaderboardFetch.NotFound} when requested elements were not found.
+   * {@link LeaderboardFetch.Success} containing the requested elements.
    * {@link LeaderboardFetch.Error} on failure.
    */
-  public async leaderboardFetchByScore(
+  public async fetchByScore(
     options?: LeaderboardFetchByScoreCallOptions
   ): Promise<LeaderboardFetch.Response> {
-    return await this.dataClient.leaderboardFetchByScore(
+    return await this.dataClient.fetchByScore(
       this.cacheName,
       this.leaderboardName,
       options?.minScore,
@@ -89,28 +88,31 @@ export abstract class AbstractLeaderboard implements ILeaderboard {
    * Note: can fetch a maximum of 8192 elements at a time and rank
    * is 0-based (index begins at 0).
    *
-   * @param {LeaderboardFetchByRankOptions} options
-   * @param {number} [options.startRank] - The rank of the first element to
-   * fetch. Defaults to 0. This rank is inclusive, ie the element at this rank
-   * will be fetched.
-   * @param {number} [options.endRank] - The rank of the last element to fetch.
+   * @param {number} [startRank] - The rank of the first element to
+   * fetch. This rank is inclusive, ie the element at this rank
+   * will be fetched. Ranks can be used to manually paginate through the leaderboard
+   * in batches of 8192 elements (e.g. request 0-8192, then 8192-16384, etc).
+   * @param {number} [endRank] - The rank of the last element to fetch.
    * This rank is exclusive, ie the element at this rank will not be fetched.
-   * Defaults to startRank + 8192 in order to fetch the maximum 8192 elements per request.
+   * Ranks can be used to manually paginate through the leaderboard
+   * in batches of 8192 elements (e.g. request 0-8192, then 8192-16384, etc).
+   * @param {LeaderboardFetchByRankOptions} options
    * @param {LeaderboardOrder} [options.order] - The order to fetch the elements in.
    * Defaults to ascending, meaning 0 is the lowest-scoring rank.
    * @returns {Promise<LeaderboardFetch.Response>} -
-   * {@link LeaderboardFetch.Found} containing the requested elements.
-   * {@link LeaderboardFetch.NotFound} when requested elements were not found.
+   * {@link LeaderboardFetch.Success} containing the requested elements.
    * {@link LeaderboardFetch.Error} on failure.
    */
-  public async leaderboardFetchByRank(
+  public async fetchByRank(
+    startRank: number,
+    endRank: number,
     options?: LeaderboardFetchByRankCallOptions
   ): Promise<LeaderboardFetch.Response> {
-    return await this.dataClient.leaderboardFetchByRank(
+    return await this.dataClient.fetchByRank(
       this.cacheName,
       this.leaderboardName,
-      options?.startRank,
-      options?.endRank,
+      startRank,
+      endRank,
       options?.order
     );
   }
@@ -124,15 +126,14 @@ export abstract class AbstractLeaderboard implements ILeaderboard {
    * @param {LeaderboardOrder} [options.order] - The order to fetch the elements in.
    * Defaults to ascending, meaning 0 is the lowest-scoring rank.
    * @returns {Promise<LeaderboardFetch.Response>}
-   * {@link LeaderboardFetch.Found} containing the requested elements.
-   * {@link LeaderboardFetch.NotFound} when requested elements were not found.
+   * {@link LeaderboardFetch.Success} containing the requested elements.
    * {@link LeaderboardFetch.Error} on failure.
    */
-  public async leaderboardGetRank(
+  public async getRank(
     ids: Array<number>,
     options?: LeaderboardGetRankCallOptions
   ): Promise<LeaderboardFetch.Response> {
-    return await this.dataClient.leaderboardGetRank(
+    return await this.dataClient.getRank(
       this.cacheName,
       this.leaderboardName,
       ids,
@@ -147,11 +148,8 @@ export abstract class AbstractLeaderboard implements ILeaderboard {
    * {@link LeaderboardLength.Success} containing the length if the leaderboard exists.
    * {@link LeaderboardLength.Error} on failure.
    */
-  public async leaderboardLength(): Promise<LeaderboardLength.Response> {
-    return await this.dataClient.leaderboardLength(
-      this.cacheName,
-      this.leaderboardName
-    );
+  public async length(): Promise<LeaderboardLength.Response> {
+    return await this.dataClient.length(this.cacheName, this.leaderboardName);
   }
 
   /**
@@ -163,10 +161,10 @@ export abstract class AbstractLeaderboard implements ILeaderboard {
    * {@link LeaderboardRemoveElements.Success} if the elements were successfully removed.
    * {@link LeaderboardRemoveElements.Error} on failure.
    */
-  public async leaderboardRemoveElements(
+  public async removeElements(
     ids: Array<number>
   ): Promise<LeaderboardRemoveElements.Response> {
-    return await this.dataClient.leaderboardRemoveElements(
+    return await this.dataClient.removeElements(
       this.cacheName,
       this.leaderboardName,
       ids
@@ -180,10 +178,7 @@ export abstract class AbstractLeaderboard implements ILeaderboard {
    * {@link LeaderboardDelete.Success} on success.
    * {@link LeaderboardDelete.Error} on failure.
    */
-  public async leaderboardDelete(): Promise<LeaderboardDelete.Response> {
-    return await this.dataClient.leaderboardDelete(
-      this.cacheName,
-      this.leaderboardName
-    );
+  public async delete(): Promise<LeaderboardDelete.Response> {
+    return await this.dataClient.delete(this.cacheName, this.leaderboardName);
   }
 }

@@ -1,18 +1,12 @@
 import {SdkError} from '../../../errors';
-import {
-  ResponseBase,
-  ResponseError,
-  ResponseFound,
-  ResponseNotFound,
-} from '../response-base';
+import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
 
 /**
  * Parent response type for a leaderboard length request.  The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * - {Found}
- * - {NotFound}
+ * - {Success}
  * - {Error}
  *
  * `instanceof` type guards can be used to operate on the appropriate subtype.
@@ -28,7 +22,7 @@ import {
  */
 export abstract class Response extends ResponseBase {}
 
-class _Found extends Response {
+class _Success extends Response {
   private readonly _length: number;
   constructor(length: number) {
     super();
@@ -51,14 +45,7 @@ class _Found extends Response {
 /**
  * Indicates a successful leaderboard length request.
  */
-export class Found extends ResponseFound(_Found) {}
-
-class _NotFound extends Response {}
-
-/**
- * Indicates that the requested data was not available in the cache.
- */
-export class NotFound extends ResponseNotFound(_NotFound) {}
+export class Success extends ResponseSuccess(_Success) {}
 
 class _Error extends Response {
   constructor(protected _innerException: SdkError) {
