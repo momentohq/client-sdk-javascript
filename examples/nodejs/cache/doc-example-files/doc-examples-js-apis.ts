@@ -1105,7 +1105,7 @@ async function example_API_LeaderboardUpsert(leaderboard: ILeaderboard) {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function example_API_LeaderboardUpsertPagination(leaderboard: ILeaderboard) {
-  // To upsert a large number of elements, you must upsert 
+  // To upsert a large number of elements, you must upsert
   // in batches of up to 8192 elements at a time.
   const elements = [...Array(20000).keys()].map(i => {
     return {id: i + 1, score: i * Math.random()};
@@ -1203,10 +1203,7 @@ async function example_API_LeaderboardFetchByRankPagination(leaderboard: ILeader
   // Use the startRank and endRank options to paginate through your leaderboard
   // if your leaderboard has more than 8192 elements
   for (let rank = 0; rank < 20000; rank += 8192) {
-    const result = await leaderboard.fetchByRank(
-      rank, 
-      rank + 8192, 
-      {order: LeaderboardOrder.Descending});
+    const result = await leaderboard.fetchByRank(rank, rank + 8192, {order: LeaderboardOrder.Descending});
     if (result instanceof LeaderboardFetch.Success) {
       processBatch(result.values());
     } else if (result instanceof LeaderboardFetch.Error) {

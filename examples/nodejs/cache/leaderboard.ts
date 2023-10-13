@@ -57,8 +57,8 @@ async function main() {
   // Or upsert elements using a Record
   const elements2: Record<number, number> = {
     1234: 111,
-    5678: 222
-  }
+    5678: 222,
+  };
   const upsertResp2 = await leaderboard.upsert(elements2);
   if (upsertResp2 instanceof LeaderboardUpsert.Success) {
     console.log('Upsert attempt 2: success');
@@ -83,13 +83,10 @@ async function main() {
   // Fetch by rank can be used to page through the leaderboard
   // by requesting N elements at a time (maximum 8192 at a time).
   // This example is using N=2 for this small leaderboard.
-  for (var rank = 0; rank < 5; rank += 2) {
+  for (let rank = 0; rank < 5; rank += 2) {
     const startRank = rank;
     const endRank = rank + 2;
-    const fetchByRank = await leaderboard.fetchByRank(
-      startRank,
-      endRank,
-      {order: LeaderboardOrder.Ascending});
+    const fetchByRank = await leaderboard.fetchByRank(startRank, endRank, {order: LeaderboardOrder.Ascending});
     if (fetchByRank instanceof LeaderboardFetch.Success) {
       console.log('Fetch by rank success:', fetchByRank.values());
     } else if (fetchByRank instanceof LeaderboardFetch.Error) {
