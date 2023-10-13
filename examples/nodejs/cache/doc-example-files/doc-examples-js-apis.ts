@@ -1068,30 +1068,45 @@ function example_API_CreateLeaderboard(leaderboardClient: PreviewLeaderboardClie
 }
 
 async function example_API_LeaderboardUpsert(leaderboard: ILeaderboard) {
-  const elements: Map<number, number> = new Map([
+  // Upsert a set of elements as a Map
+  const elements1: Map<number, number> = new Map([
     [123, 100.0],
     [234, 200.0],
     [345, 300.0],
     [456, 400.0],
-    [567, 500.0],
-    [678, 600.0],
-    [789, 700.0],
-    [890, 800.0],
   ]);
-  const result = await leaderboard.leaderboardUpsert(elements);
-  if (result instanceof LeaderboardUpsert.Success) {
+  const result1 = await leaderboard.upsert(elements1);
+  if (result1 instanceof LeaderboardUpsert.Success) {
     console.log('Successfully upserted elements to leaderboard');
-  } else if (result instanceof LeaderboardUpsert.Error) {
-    console.log('Upsert error:', result.message());
+  } else if (result1 instanceof LeaderboardUpsert.Error) {
+    console.log('Upsert error:', result1.message());
     throw new Error(
-      `An error occurred while attempting to call leaderboardUpsert on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
+      `An error occurred while attempting to call upsert on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result1.errorCode()}: ${result1.message()}`
+    );
+  }
+
+  // Or upsert a set of elements as a Record
+  const elements2: Record<number, number> = {
+    567: 500,
+    678: 600,
+    789: 700,
+    890: 800,
+  };
+  const result2 = await leaderboard.upsert(elements2);
+  if (result2 instanceof LeaderboardUpsert.Success) {
+    console.log('Successfully upserted elements to leaderboard');
+  } else if (result2 instanceof LeaderboardUpsert.Error) {
+    console.log('Upsert error:', result2.message());
+    throw new Error(
+      `An error occurred while attempting to call upsert on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result2.errorCode()}: ${result2.message()}`
     );
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function example_API_LeaderboardUpsertPagination(leaderboard: ILeaderboard) {
-  // To upsert a large number of elements, you must upsert in batches of 8192
+  // To upsert a large number of elements, you must upsert 
+  // in batches of up to 8192 elements at a time.
   const elements = [...Array(20000).keys()].map(i => {
     return {id: i + 1, score: i * Math.random()};
   });
@@ -1100,7 +1115,7 @@ async function example_API_LeaderboardUpsertPagination(leaderboard: ILeaderboard
     const batch = new Map(elements.slice(i, i + 8192).map(obj => [obj['id'], obj['score']]));
 
     // Then upsert one batch at a time until all elements have been ingested
-    const result = await leaderboard.leaderboardUpsert(batch);
+    const result = await leaderboard.upsert(batch);
     if (result instanceof LeaderboardUpsert.Error) {
       console.log(`Error upserting batch [${i}, ${i + 8192})`);
     }
@@ -1110,39 +1125,35 @@ async function example_API_LeaderboardUpsertPagination(leaderboard: ILeaderboard
 async function example_API_LeaderboardFetchByScore(leaderboard: ILeaderboard) {
   // By default, FetchByScore will fetch the elements from the entire score range
   // with zero offset in ascending order. It can return 8192 elements at a time.
-  const result1 = await leaderboard.leaderboardFetchByScore();
-  if (result1 instanceof LeaderboardFetch.Found) {
+  const result1 = await leaderboard.fetchByScore();
+  if (result1 instanceof LeaderboardFetch.Success) {
     console.log('Successfully fetched elements using open score range:');
     result1.values().forEach(element => {
       console.log(`\tId: ${element.id} | Rank: ${element.rank} | Score: ${element.score}`);
     });
-  } else if (result1 instanceof LeaderboardFetch.NotFound) {
-    console.log('Requested elements not found');
   } else if (result1 instanceof LeaderboardFetch.Error) {
     throw new Error(
-      `An error occurred while attempting to call leaderboardFetchByScore with no options on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result1.errorCode()}: ${result1.message()}`
+      `An error occurred while attempting to call fetchByScore with no options on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result1.errorCode()}: ${result1.message()}`
     );
   }
 
   // Example specifying all FetchByScore options. You can provide any subset of these options
   // to modify your FetchByScore request.
-  const result2 = await leaderboard.leaderboardFetchByScore({
+  const result2 = await leaderboard.fetchByScore({
     minScore: 10,
     maxScore: 600,
     order: LeaderboardOrder.Descending,
     offset: 2,
     count: 10,
   });
-  if (result2 instanceof LeaderboardFetch.Found) {
+  if (result2 instanceof LeaderboardFetch.Success) {
     console.log('Successfully fetched elements by score using all options:');
     result2.values().forEach(element => {
       console.log(`\tId: ${element.id} | Rank: ${element.rank} | Score: ${element.score}`);
     });
-  } else if (result2 instanceof LeaderboardFetch.NotFound) {
-    console.log('Requested elements not found');
   } else if (result2 instanceof LeaderboardFetch.Error) {
     throw new Error(
-      `An error occurred while attempting to call leaderboardFetchByScore with all options on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result2.errorCode()}: ${result2.message()}`
+      `An error occurred while attempting to call fetchByScore with all options on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result2.errorCode()}: ${result2.message()}`
     );
   }
 }
@@ -1162,8 +1173,8 @@ async function example_API_LeaderboardFetchByScorePagination(leaderboard: ILeade
   // Use the offset option to paginate through your results if your leaderboard
   // has more than 8192 elements.
   for (let offset = 0; offset < 20000; offset += 8192) {
-    const result = await leaderboard.leaderboardFetchByScore({offset});
-    if (result instanceof LeaderboardFetch.Found) {
+    const result = await leaderboard.fetchByScore({offset});
+    if (result instanceof LeaderboardFetch.Success) {
       processBatch(result.values());
     } else if (result instanceof LeaderboardFetch.Error) {
       console.log(`Error fetching batch [${offset}, ${offset + 8192})`);
@@ -1172,19 +1183,17 @@ async function example_API_LeaderboardFetchByScorePagination(leaderboard: ILeade
 }
 
 async function example_API_LeaderboardFetchByRank(leaderboard: ILeaderboard) {
-  // By default, FetchByRank will fetch the first 8192 ranked elements with the
-  // leaderboard in ascending order, meaning rank 0 is for the lowest score
-  const result1 = await leaderboard.leaderboardFetchByRank();
-  if (result1 instanceof LeaderboardFetch.Found) {
-    console.log('Successfully fetched elements in default rank range [0,8192)');
+  // By default, FetchByRank will fetch the elements in the range [startRank, endRank)
+  // in ascending order, meaning rank 0 is for the lowest score.
+  const result1 = await leaderboard.fetchByRank(0, 10);
+  if (result1 instanceof LeaderboardFetch.Success) {
+    console.log('Successfully fetched elements in rank range [0,10)');
     result1.values().forEach(element => {
       console.log(`\tId: ${element.id} | Rank: ${element.rank} | Score: ${element.score}`);
     });
-  } else if (result1 instanceof LeaderboardFetch.NotFound) {
-    console.log('Requested elements not found');
   } else if (result1 instanceof LeaderboardFetch.Error) {
     throw new Error(
-      `An error occurred while attempting to call leaderboardFetchByRank with no options on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result1.errorCode()}: ${result1.message()}`
+      `An error occurred while attempting to call fetchByRank with no options on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result1.errorCode()}: ${result1.message()}`
     );
   }
 }
@@ -1192,13 +1201,13 @@ async function example_API_LeaderboardFetchByRank(leaderboard: ILeaderboard) {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function example_API_LeaderboardFetchByRankPagination(leaderboard: ILeaderboard) {
   // Use the startRank and endRank options to paginate through your leaderboard
+  // if your leaderboard has more than 8192 elements
   for (let rank = 0; rank < 20000; rank += 8192) {
-    const result = await leaderboard.leaderboardFetchByRank({
-      startRank: rank,
-      endRank: rank + 8192,
-      order: LeaderboardOrder.Descending,
-    });
-    if (result instanceof LeaderboardFetch.Found) {
+    const result = await leaderboard.fetchByRank(
+      rank, 
+      rank + 8192, 
+      {order: LeaderboardOrder.Descending});
+    if (result instanceof LeaderboardFetch.Success) {
       processBatch(result.values());
     } else if (result instanceof LeaderboardFetch.Error) {
       console.log(`Error fetching batch [${rank}, ${rank + 8192})`);
@@ -1208,44 +1217,40 @@ async function example_API_LeaderboardFetchByRankPagination(leaderboard: ILeader
 
 async function example_API_LeaderboardGetRank(leaderboard: ILeaderboard) {
   // Provide a list of element IDs to get their ranks in ascending or descending order
-  const result = await leaderboard.leaderboardGetRank([123, 456, 789], {
+  const result = await leaderboard.getRank([123, 456, 789], {
     order: LeaderboardOrder.Descending,
   });
-  if (result instanceof LeaderboardFetch.Found) {
+  if (result instanceof LeaderboardFetch.Success) {
     console.log('Successfully fetched the rank of 3 elements:');
     result.values().forEach(element => {
       console.log(`\tId: ${element.id} | Rank: ${element.rank} | Score: ${element.score}`);
     });
-  } else if (result instanceof LeaderboardFetch.NotFound) {
-    console.log('Requested elements not found');
   } else if (result instanceof LeaderboardFetch.Error) {
     throw new Error(
-      `An error occurred while attempting to call leaderboardGetRank on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
+      `An error occurred while attempting to call getRank on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
     );
   }
 }
 
 async function example_API_LeaderboardLength(leaderboard: ILeaderboard) {
-  const result = await leaderboard.leaderboardLength();
-  if (result instanceof LeaderboardLength.Found) {
+  const result = await leaderboard.length();
+  if (result instanceof LeaderboardLength.Success) {
     console.log('Successfully retrieved leaderboard length:', result.length());
-  } else if (result instanceof LeaderboardLength.NotFound) {
-    console.log('Leaderboard not found');
   } else if (result instanceof LeaderboardLength.Error) {
     throw new Error(
-      `An error occurred while attempting to call leaderboardLength on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
+      `An error occurred while attempting to call length on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
     );
   }
 }
 
 async function example_API_LeaderboardRemoveElements(leaderboard: ILeaderboard) {
   // Provide a list of element IDs to delete those elements
-  const result = await leaderboard.leaderboardRemoveElements([123, 456, 789]);
+  const result = await leaderboard.removeElements([123, 456, 789]);
   if (result instanceof LeaderboardRemoveElements.Success) {
     console.log('Successfully removed elements');
   } else if (result instanceof LeaderboardRemoveElements.Error) {
     throw new Error(
-      `An error occurred while attempting to call leaderboardRemoveElements on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
+      `An error occurred while attempting to call removeElements on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
     );
   }
 }
@@ -1255,7 +1260,7 @@ async function example_API_LeaderboardRemoveElementsPagination(leaderboard: ILea
   // You can remove batches of 8192 elements at a time
   const ids = [...Array(20000).keys()];
   for (let i = 0; i < 20000; i += 8192) {
-    const result = await leaderboard.leaderboardRemoveElements(ids.slice(i, i + 8192));
+    const result = await leaderboard.removeElements(ids.slice(i, i + 8192));
     if (result instanceof LeaderboardRemoveElements.Error) {
       console.log(`Error removing batch [${i}, ${i + 8192})`);
     }
@@ -1263,12 +1268,12 @@ async function example_API_LeaderboardRemoveElementsPagination(leaderboard: ILea
 }
 
 async function example_API_LeaderboardDelete(leaderboard: ILeaderboard) {
-  const result = await leaderboard.leaderboardDelete();
+  const result = await leaderboard.delete();
   if (result instanceof LeaderboardDelete.Success) {
     console.log('Successfully deleted the leaderboard');
   } else if (result instanceof LeaderboardDelete.Error) {
     throw new Error(
-      `An error occurred while attempting to call leaderboardDelete on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
+      `An error occurred while attempting to call delete on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
     );
   }
 }
