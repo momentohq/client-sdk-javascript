@@ -47,10 +47,10 @@ export function runLeaderboardClientTests(
 
     it('validates the number of elements', async () => {
       const elements = new Map<number, number>();
-      const response = await leaderboard.leaderboardUpsert(elements);
+      const response = await leaderboard.upsert(elements);
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardUpsert.Error);
-      }, `expected ERROR but got ${response.toString()}`);
+      }, `expected Error but got ${response.toString()}`);
       const responseError = response as LeaderboardUpsert.Error;
       expectWithMessage(() => {
         expect(responseError.errorCode()).toEqual(
@@ -66,17 +66,17 @@ export function runLeaderboardClientTests(
         [456, 200.0],
         [789, 300.0],
       ]);
-      const response1 = await leaderboard.leaderboardUpsert(elements1);
+      const response1 = await leaderboard.upsert(elements1);
       expectWithMessage(() => {
         expect(response1).toBeInstanceOf(LeaderboardUpsert.Success);
-      }, `expected SUCCESS but got ${response1.toString()}`);
+      }, `expected Success but got ${response1.toString()}`);
 
-      const fetchResponse1 = await leaderboard.leaderboardFetchByRank();
+      const fetchResponse1 = await leaderboard.fetchByScore();
       expectWithMessage(() => {
-        expect(fetchResponse1).toBeInstanceOf(LeaderboardFetch.Found);
+        expect(fetchResponse1).toBeInstanceOf(LeaderboardFetch.Success);
       }, `expected HIT but got ${fetchResponse1.toString()}`);
       const receivedElements1 = (
-        fetchResponse1 as LeaderboardFetch.Found
+        fetchResponse1 as LeaderboardFetch.Success
       ).values();
       const expectedElements1 = [
         {
@@ -102,17 +102,17 @@ export function runLeaderboardClientTests(
         [1234, 800],
         [5678, 900],
       ]);
-      const response2 = await leaderboard.leaderboardUpsert(elements2);
+      const response2 = await leaderboard.upsert(elements2);
       expectWithMessage(() => {
         expect(response2).toBeInstanceOf(LeaderboardUpsert.Success);
-      }, `expected SUCCESS but got ${response2.toString()}`);
+      }, `expected Success but got ${response2.toString()}`);
 
-      const fetchResponse2 = await leaderboard.leaderboardFetchByRank();
+      const fetchResponse2 = await leaderboard.fetchByScore();
       expectWithMessage(() => {
-        expect(fetchResponse2).toBeInstanceOf(LeaderboardFetch.Found);
+        expect(fetchResponse2).toBeInstanceOf(LeaderboardFetch.Success);
       }, `expected HIT but got ${fetchResponse2.toString()}`);
       const receivedElements2 = (
-        fetchResponse2 as LeaderboardFetch.Found
+        fetchResponse2 as LeaderboardFetch.Success
       ).values();
       const expectedElements2 = [
         {
@@ -149,16 +149,16 @@ export function runLeaderboardClientTests(
         [456, 600],
         [789, 700],
       ]);
-      const response3 = await leaderboard.leaderboardUpsert(elements3);
+      const response3 = await leaderboard.upsert(elements3);
       expectWithMessage(() => {
         expect(response3).toBeInstanceOf(LeaderboardUpsert.Success);
-      }, `expected SUCCESS but got ${response3.toString()}`);
-      const fetchResponse3 = await leaderboard.leaderboardFetchByRank();
+      }, `expected Success but got ${response3.toString()}`);
+      const fetchResponse3 = await leaderboard.fetchByScore();
       expectWithMessage(() => {
-        expect(fetchResponse3).toBeInstanceOf(LeaderboardFetch.Found);
+        expect(fetchResponse3).toBeInstanceOf(LeaderboardFetch.Success);
       }, `expected HIT but got ${fetchResponse3.toString()}`);
       const receivedElements3 = (
-        fetchResponse3 as LeaderboardFetch.Found
+        fetchResponse3 as LeaderboardFetch.Success
       ).values();
       const expectedElements3 = [
         {
@@ -188,6 +188,62 @@ export function runLeaderboardClientTests(
         },
       ];
       expect(receivedElements3).toEqual(expectedElements3);
+
+      // Inserts elements using Record type as well
+      const elements4 = {
+        4321: 1000,
+        9876: 2000,
+      };
+      const response4 = await leaderboard.upsert(elements4);
+      expectWithMessage(() => {
+        expect(response4).toBeInstanceOf(LeaderboardUpsert.Success);
+      }, `expected Success but got ${response4.toString()}`);
+
+      const fetchResponse4 = await leaderboard.fetchByScore();
+      expectWithMessage(() => {
+        expect(fetchResponse4).toBeInstanceOf(LeaderboardFetch.Success);
+      }, `expected HIT but got ${fetchResponse4.toString()}`);
+      const receivedElements4 = (
+        fetchResponse4 as LeaderboardFetch.Success
+      ).values();
+      const expectedElements4 = [
+        {
+          id: 123,
+          score: 500,
+          rank: 0,
+        },
+        {
+          id: 456,
+          score: 600,
+          rank: 1,
+        },
+        {
+          id: 789,
+          score: 700,
+          rank: 2,
+        },
+        {
+          id: 1234,
+          score: 800,
+          rank: 3,
+        },
+        {
+          id: 5678,
+          score: 900,
+          rank: 4,
+        },
+        {
+          id: 4321,
+          score: 1000,
+          rank: 5,
+        },
+        {
+          id: 9876,
+          score: 2000,
+          rank: 6,
+        },
+      ];
+      expect(receivedElements4).toEqual(expectedElements4);
     });
   });
 
@@ -199,12 +255,12 @@ export function runLeaderboardClientTests(
     );
 
     it('validates the offset', async () => {
-      const negativeOffset = await leaderboard.leaderboardFetchByScore({
+      const negativeOffset = await leaderboard.fetchByScore({
         offset: -10,
       });
       expectWithMessage(() => {
         expect(negativeOffset).toBeInstanceOf(LeaderboardFetch.Error);
-      }, `expected ERROR but got ${negativeOffset.toString()}`);
+      }, `expected Error but got ${negativeOffset.toString()}`);
       const negativeOffsetError = negativeOffset as LeaderboardFetch.Error;
       expectWithMessage(() => {
         expect(negativeOffsetError.errorCode()).toEqual(
@@ -213,21 +269,27 @@ export function runLeaderboardClientTests(
       }, `expected INVALID_ARGUMENT_ERROR but got ${negativeOffsetError.errorCode()} ${negativeOffsetError.message()}`);
 
       // Request should go through but finds no elements
-      const positiveOffset = await leaderboard.leaderboardFetchByScore({
+      const positiveOffset = await leaderboard.fetchByScore({
         offset: 10,
       });
       expectWithMessage(() => {
-        expect(positiveOffset).toBeInstanceOf(LeaderboardFetch.NotFound);
-      }, `expected NotFound but got ${positiveOffset.toString()}`);
+        expect(positiveOffset).toBeInstanceOf(LeaderboardFetch.Success);
+      }, `expected Success but got ${positiveOffset.toString()}`);
+      const positiveOffsetElements = (
+        positiveOffset as LeaderboardFetch.Success
+      ).values();
+      expectWithMessage(() => {
+        expect(positiveOffsetElements).toBeArrayOfSize(0);
+      }, `expected array of size 0 but got ${positiveOffsetElements.length}`);
     });
 
     it('validates the count', async () => {
-      const negativeCount = await leaderboard.leaderboardFetchByScore({
+      const negativeCount = await leaderboard.fetchByScore({
         count: -10,
       });
       expectWithMessage(() => {
         expect(negativeCount).toBeInstanceOf(LeaderboardFetch.Error);
-      }, `expected ERROR but got ${negativeCount.toString()}`);
+      }, `expected Error but got ${negativeCount.toString()}`);
       const negativeCountError = negativeCount as LeaderboardFetch.Error;
       expectWithMessage(() => {
         expect(negativeCountError.errorCode()).toEqual(
@@ -236,23 +298,29 @@ export function runLeaderboardClientTests(
       }, `expected INVALID_ARGUMENT_ERROR but got ${negativeCountError.errorCode()} ${negativeCountError.message()}`);
 
       // Request should go through but finds no elements
-      const positiveCount = await leaderboard.leaderboardFetchByScore({
+      const positiveCount = await leaderboard.fetchByScore({
         count: 10,
       });
       expectWithMessage(() => {
-        expect(positiveCount).toBeInstanceOf(LeaderboardFetch.NotFound);
-      }, `expected NotFound but got ${positiveCount.toString()}`);
+        expect(positiveCount).toBeInstanceOf(LeaderboardFetch.Success);
+      }, `expected Success but got ${positiveCount.toString()}`);
+      const positiveCountElements = (
+        positiveCount as LeaderboardFetch.Success
+      ).values();
+      expectWithMessage(() => {
+        expect(positiveCountElements).toBeArrayOfSize(0);
+      }, `expected array of size 0 but got ${positiveCountElements.length}`);
     });
 
     it('validates the score range', async () => {
       // min should not be greater than max
-      const badRange = await leaderboard.leaderboardFetchByScore({
+      const badRange = await leaderboard.fetchByScore({
         minScore: 100,
         maxScore: 50,
       });
       expectWithMessage(() => {
         expect(badRange).toBeInstanceOf(LeaderboardFetch.Error);
-      }, `expected ERROR but got ${badRange.toString()}`);
+      }, `expected Error but got ${badRange.toString()}`);
       const badRangeError = badRange as LeaderboardFetch.Error;
       expectWithMessage(() => {
         expect(badRangeError.errorCode()).toEqual(
@@ -261,17 +329,27 @@ export function runLeaderboardClientTests(
       }, `expected INVALID_ARGUMENT_ERROR but got ${badRangeError.errorCode()} ${badRangeError.message()}`);
 
       // undefined min and max are acceptable, request should go through but finds no elements
-      const undefinedRange = await leaderboard.leaderboardFetchByScore();
+      const undefinedRange = await leaderboard.fetchByScore();
       expectWithMessage(() => {
-        expect(undefinedRange).toBeInstanceOf(LeaderboardFetch.NotFound);
-      }, `expected NotFound but got ${undefinedRange.toString()}`);
+        expect(undefinedRange).toBeInstanceOf(LeaderboardFetch.Success);
+      }, `expected Success but got ${undefinedRange.toString()}`);
+      const undefinedRangeElements = (
+        undefinedRange as LeaderboardFetch.Success
+      ).values();
+      expectWithMessage(() => {
+        expect(undefinedRangeElements).toBeArrayOfSize(0);
+      }, `expected array of size 0 but got ${undefinedRangeElements.length}`);
     });
 
-    it('returns NotFound when leaderboard is empty', async () => {
-      const response = await leaderboard.leaderboardFetchByScore();
+    it('returns Success with no values when leaderboard does not exist', async () => {
+      const response = await leaderboard.fetchByScore();
       expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardFetch.NotFound);
-      }, `expected NotFound but got ${response.toString()}`);
+        expect(response).toBeInstanceOf(LeaderboardFetch.Success);
+      }, `expected Success but got ${response.toString()}`);
+      const elements = (response as LeaderboardFetch.Success).values();
+      expectWithMessage(() => {
+        expect(elements).toBeArrayOfSize(0);
+      }, `expected array of size 0 but got ${elements.length}`);
     });
 
     it('fetches elements given a variety of score ranges', async () => {
@@ -286,23 +364,23 @@ export function runLeaderboardClientTests(
         [789, 1500.0],
         [890, 2000.0],
       ]);
-      const response = await leaderboard.leaderboardUpsert(elements);
+      const response = await leaderboard.upsert(elements);
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardUpsert.Success);
-      }, `expected SUCCESS but got ${response.toString()}`);
+      }, `expected Success but got ${response.toString()}`);
 
       // Fetch using unbounded score range and specifc offset and count
-      const fetchWithOffsetAndCount = await leaderboard.leaderboardFetchByScore(
-        {
-          offset: 2,
-          count: 2,
-        }
-      );
+      const fetchWithOffsetAndCount = await leaderboard.fetchByScore({
+        offset: 2,
+        count: 2,
+      });
       expectWithMessage(() => {
-        expect(fetchWithOffsetAndCount).toBeInstanceOf(LeaderboardFetch.Found);
+        expect(fetchWithOffsetAndCount).toBeInstanceOf(
+          LeaderboardFetch.Success
+        );
       }, `expected HIT but got ${fetchWithOffsetAndCount.toString()}`);
       const receivedWithOffsetAndCount = (
-        fetchWithOffsetAndCount as LeaderboardFetch.Found
+        fetchWithOffsetAndCount as LeaderboardFetch.Success
       ).values();
       const expectedWithOffsetAndCount = [
         {
@@ -319,15 +397,15 @@ export function runLeaderboardClientTests(
       expect(receivedWithOffsetAndCount).toEqual(expectedWithOffsetAndCount);
 
       // Fetch using score range
-      const fetchWithScoreRange = await leaderboard.leaderboardFetchByScore({
+      const fetchWithScoreRange = await leaderboard.fetchByScore({
         minScore: 750, // inclusive
         maxScore: 1500, // exclusive
       });
       expectWithMessage(() => {
-        expect(fetchWithScoreRange).toBeInstanceOf(LeaderboardFetch.Found);
+        expect(fetchWithScoreRange).toBeInstanceOf(LeaderboardFetch.Success);
       }, `expected HIT but got ${fetchWithScoreRange.toString()}`);
       const receivedWithScoreRange = (
-        fetchWithScoreRange as LeaderboardFetch.Found
+        fetchWithScoreRange as LeaderboardFetch.Success
       ).values();
       const expectedWithScoreRange = [
         {
@@ -344,7 +422,7 @@ export function runLeaderboardClientTests(
       expect(receivedWithScoreRange).toEqual(expectedWithScoreRange);
 
       // Fetch using all options
-      const fetchWithAllOptions = await leaderboard.leaderboardFetchByScore({
+      const fetchWithAllOptions = await leaderboard.fetchByScore({
         offset: 2,
         count: 10,
         minScore: 0,
@@ -352,10 +430,10 @@ export function runLeaderboardClientTests(
         order: LeaderboardOrder.Descending,
       });
       expectWithMessage(() => {
-        expect(fetchWithAllOptions).toBeInstanceOf(LeaderboardFetch.Found);
+        expect(fetchWithAllOptions).toBeInstanceOf(LeaderboardFetch.Success);
       }, `expected HIT but got ${fetchWithAllOptions.toString()}`);
       const receivedWithAllOptions = (
-        fetchWithAllOptions as LeaderboardFetch.Found
+        fetchWithAllOptions as LeaderboardFetch.Success
       ).values();
       const expectedWithAllOptions = [
         {
@@ -386,40 +464,22 @@ export function runLeaderboardClientTests(
     );
 
     it('validates the rank range', async () => {
-      const negativeStartRank = await leaderboard.leaderboardFetchByRank({
-        startRank: -10,
-      });
+      const negativeRankRange = await leaderboard.fetchByRank(-10, -5);
       expectWithMessage(() => {
-        expect(negativeStartRank).toBeInstanceOf(LeaderboardFetch.Error);
-      }, `expected ERROR but got ${negativeStartRank.toString()}`);
-      const negativeStartRankError =
-        negativeStartRank as LeaderboardFetch.Error;
+        expect(negativeRankRange).toBeInstanceOf(LeaderboardFetch.Error);
+      }, `expected Error but got ${negativeRankRange.toString()}`);
+      const negativeRankRangeError =
+        negativeRankRange as LeaderboardFetch.Error;
       expectWithMessage(() => {
-        expect(negativeStartRankError.errorCode()).toEqual(
+        expect(negativeRankRangeError.errorCode()).toEqual(
           MomentoErrorCode.INVALID_ARGUMENT_ERROR
         );
-      }, `expected INVALID_ARGUMENT_ERROR but got ${negativeStartRankError.errorCode()} ${negativeStartRankError.message()}`);
+      }, `expected INVALID_ARGUMENT_ERROR but got ${negativeRankRangeError.errorCode()} ${negativeRankRangeError.message()}`);
 
-      const negativeEndRank = await leaderboard.leaderboardFetchByRank({
-        endRank: -10,
-      });
-      expectWithMessage(() => {
-        expect(negativeEndRank).toBeInstanceOf(LeaderboardFetch.Error);
-      }, `expected ERROR but got ${negativeEndRank.toString()}`);
-      const negativeEndRankError = negativeEndRank as LeaderboardFetch.Error;
-      expectWithMessage(() => {
-        expect(negativeEndRankError.errorCode()).toEqual(
-          MomentoErrorCode.INVALID_ARGUMENT_ERROR
-        );
-      }, `expected INVALID_ARGUMENT_ERROR but got ${negativeEndRankError.errorCode()} ${negativeEndRankError.message()}`);
-
-      const noRange = await leaderboard.leaderboardFetchByRank({
-        startRank: 0,
-        endRank: 0,
-      });
+      const noRange = await leaderboard.fetchByRank(0, 0);
       expectWithMessage(() => {
         expect(noRange).toBeInstanceOf(LeaderboardFetch.Error);
-      }, `expected ERROR but got ${noRange.toString()}`);
+      }, `expected Error but got ${noRange.toString()}`);
       const noRangeError = noRange as LeaderboardFetch.Error;
       expectWithMessage(() => {
         expect(noRangeError.errorCode()).toEqual(
@@ -427,13 +487,10 @@ export function runLeaderboardClientTests(
         );
       }, `expected INVALID_ARGUMENT_ERROR but got ${noRangeError.errorCode()} ${noRangeError.message()}`);
 
-      const reverseRange = await leaderboard.leaderboardFetchByRank({
-        startRank: 10,
-        endRank: 5,
-      });
+      const reverseRange = await leaderboard.fetchByRank(10, 5);
       expectWithMessage(() => {
         expect(reverseRange).toBeInstanceOf(LeaderboardFetch.Error);
-      }, `expected ERROR but got ${reverseRange.toString()}`);
+      }, `expected Error but got ${reverseRange.toString()}`);
       const reverseRangeError = reverseRange as LeaderboardFetch.Error;
       expectWithMessage(() => {
         expect(reverseRangeError.errorCode()).toEqual(
@@ -441,35 +498,27 @@ export function runLeaderboardClientTests(
         );
       }, `expected INVALID_ARGUMENT_ERROR but got ${reverseRangeError.errorCode()} ${reverseRangeError.message()}`);
 
-      const overLimit = await leaderboard.leaderboardFetchByRank({
-        startRank: 0,
-        endRank: 8193,
-      });
+      const overLimit = await leaderboard.fetchByRank(0, 8193);
       expectWithMessage(() => {
         expect(overLimit).toBeInstanceOf(LeaderboardFetch.Error);
-      }, `expected ERROR but got ${overLimit.toString()}`);
+      }, `expected Error but got ${overLimit.toString()}`);
       const overLimitError = overLimit as LeaderboardFetch.Error;
       expectWithMessage(() => {
         expect(overLimitError.errorCode()).toEqual(
           MomentoErrorCode.INVALID_ARGUMENT_ERROR
         );
       }, `expected INVALID_ARGUMENT_ERROR but got ${overLimitError.errorCode()} ${overLimitError.message()}`);
-
-      // Request should go through but finds no elements
-      const okayRange = await leaderboard.leaderboardFetchByRank({
-        startRank: 0,
-        endRank: 8000,
-      });
-      expectWithMessage(() => {
-        expect(okayRange).toBeInstanceOf(LeaderboardFetch.NotFound);
-      }, `expected NotFound but got ${okayRange.toString()}`);
     });
 
-    it('returns NotFound when leaderboard is empty', async () => {
-      const response = await leaderboard.leaderboardFetchByRank();
+    it('returns Success with no values when leaderboard does not exist', async () => {
+      const response = await leaderboard.fetchByRank(0, 100);
       expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardFetch.NotFound);
-      }, `expected NotFound but got ${response.toString()}`);
+        expect(response).toBeInstanceOf(LeaderboardFetch.Success);
+      }, `expected Success but got ${response.toString()}`);
+      const elements = (response as LeaderboardFetch.Success).values();
+      expectWithMessage(() => {
+        expect(elements).toBeArrayOfSize(0);
+      }, `expected array of size 0 but got ${elements.length}`);
     });
 
     it('fetches elements given a variety of rank ranges', async () => {
@@ -479,20 +528,20 @@ export function runLeaderboardClientTests(
         [456, 200],
         [789, 300],
       ]);
-      const response = await leaderboard.leaderboardUpsert(elements);
+      const response = await leaderboard.upsert(elements);
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardUpsert.Success);
-      }, `expected SUCCESS but got ${response.toString()}`);
+      }, `expected Success but got ${response.toString()}`);
 
       // fetch them in various ways
-      const ascendingOrder = await leaderboard.leaderboardFetchByRank({
+      const ascendingOrder = await leaderboard.fetchByRank(0, 10, {
         order: LeaderboardOrder.Ascending,
       });
       expectWithMessage(() => {
-        expect(ascendingOrder).toBeInstanceOf(LeaderboardFetch.Found);
+        expect(ascendingOrder).toBeInstanceOf(LeaderboardFetch.Success);
       }, `expected FOUND but got ${ascendingOrder.toString()}`);
       const receivedAscending = (
-        ascendingOrder as LeaderboardFetch.Found
+        ascendingOrder as LeaderboardFetch.Success
       ).values();
       const expectedAscending = [
         {
@@ -513,14 +562,14 @@ export function runLeaderboardClientTests(
       ];
       expect(receivedAscending).toEqual(expectedAscending);
 
-      const descendingOrder = await leaderboard.leaderboardFetchByRank({
+      const descendingOrder = await leaderboard.fetchByRank(0, 10, {
         order: LeaderboardOrder.Descending,
       });
       expectWithMessage(() => {
-        expect(descendingOrder).toBeInstanceOf(LeaderboardFetch.Found);
+        expect(descendingOrder).toBeInstanceOf(LeaderboardFetch.Success);
       }, `expected FOUND but got ${descendingOrder.toString()}`);
       const receivedDescending = (
-        descendingOrder as LeaderboardFetch.Found
+        descendingOrder as LeaderboardFetch.Success
       ).values();
       const expectedDescending = [
         {
@@ -541,15 +590,13 @@ export function runLeaderboardClientTests(
       ];
       expect(receivedDescending).toEqual(expectedDescending);
 
-      const topTwo = await leaderboard.leaderboardFetchByRank({
-        startRank: 0,
-        endRank: 2,
+      const topTwo = await leaderboard.fetchByRank(0, 2, {
         order: LeaderboardOrder.Ascending,
       });
       expectWithMessage(() => {
-        expect(topTwo).toBeInstanceOf(LeaderboardFetch.Found);
+        expect(topTwo).toBeInstanceOf(LeaderboardFetch.Success);
       }, `expected FOUND but got ${topTwo.toString()}`);
-      const receivedTopTwo = (topTwo as LeaderboardFetch.Found).values();
+      const receivedTopTwo = (topTwo as LeaderboardFetch.Success).values();
       const expectedTopTwo = [
         {
           id: 123,
@@ -573,11 +620,15 @@ export function runLeaderboardClientTests(
       leaderboardName
     );
 
-    it('returns NotFound when leaderboard is empty', async () => {
-      const response = await leaderboard.leaderboardGetRank([123]);
+    it('returns Success with no values when leaderboard does not exist', async () => {
+      const response = await leaderboard.getRank([123]);
       expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardFetch.NotFound);
-      }, `expected NotFound but got ${response.toString()}`);
+        expect(response).toBeInstanceOf(LeaderboardFetch.Success);
+      }, `expected Success but got ${response.toString()}`);
+      const elements = (response as LeaderboardFetch.Success).values();
+      expectWithMessage(() => {
+        expect(elements).toBeArrayOfSize(0);
+      }, `expected array of size 0 but got ${elements.length}`);
     });
 
     it('rank changes given ascending vs descending order', async () => {
@@ -587,21 +638,20 @@ export function runLeaderboardClientTests(
         [456, 200.0],
         [789, 300.0],
       ]);
-      const upsertResponse = await leaderboard.leaderboardUpsert(elements);
+      const upsertResponse = await leaderboard.upsert(elements);
       expectWithMessage(() => {
         expect(upsertResponse).toBeInstanceOf(LeaderboardUpsert.Success);
-      }, `expected SUCCESS but got ${upsertResponse.toString()}`);
+      }, `expected Success but got ${upsertResponse.toString()}`);
 
       // Get rank of an element when leaderboard is in ascending order
-      const getRankAscending = await leaderboard.leaderboardGetRank(
-        [123, 789],
-        {order: LeaderboardOrder.Ascending}
-      );
+      const getRankAscending = await leaderboard.getRank([123, 789], {
+        order: LeaderboardOrder.Ascending,
+      });
       expectWithMessage(() => {
-        expect(getRankAscending).toBeInstanceOf(LeaderboardFetch.Found);
+        expect(getRankAscending).toBeInstanceOf(LeaderboardFetch.Success);
       }, `expected Found but got ${getRankAscending.toString()}`);
       const receivedAscending = (
-        getRankAscending as LeaderboardFetch.Found
+        getRankAscending as LeaderboardFetch.Success
       ).values();
       const expectedAscending = [
         {
@@ -618,15 +668,14 @@ export function runLeaderboardClientTests(
       expect(receivedAscending).toEqual(expectedAscending);
 
       // Get rank of an element when leaderboard is in descending order
-      const getRankDescending = await leaderboard.leaderboardGetRank(
-        [123, 789],
-        {order: LeaderboardOrder.Descending}
-      );
+      const getRankDescending = await leaderboard.getRank([123, 789], {
+        order: LeaderboardOrder.Descending,
+      });
       expectWithMessage(() => {
-        expect(getRankDescending).toBeInstanceOf(LeaderboardFetch.Found);
+        expect(getRankDescending).toBeInstanceOf(LeaderboardFetch.Success);
       }, `expected Found but got ${getRankDescending.toString()}`);
       const receivedDescending = (
-        getRankDescending as LeaderboardFetch.Found
+        getRankDescending as LeaderboardFetch.Success
       ).values();
       const expectedDescending = [
         {
@@ -651,13 +700,13 @@ export function runLeaderboardClientTests(
       leaderboardName
     );
 
-    it('returns length 0 when leaderboard does not contain elements', async () => {
-      const response = await leaderboard.leaderboardLength();
+    it('returns Success with length 0 when leaderboard does not exist', async () => {
+      const response = await leaderboard.length();
       expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardLength.Found);
+        expect(response).toBeInstanceOf(LeaderboardLength.Success);
       }, `expected Found but got ${response.toString()}`);
-      const receivedLength = response as LeaderboardLength.Found;
-      expect(receivedLength.length()).toEqual(0);
+      const receivedLength = (response as LeaderboardLength.Success).length();
+      expect(receivedLength).toEqual(0);
     });
 
     it('returns length when leaderboard contains elements', async () => {
@@ -667,17 +716,17 @@ export function runLeaderboardClientTests(
         [456, 200.0],
         [789, 300.0],
       ]);
-      const upsertResponse = await leaderboard.leaderboardUpsert(elements);
+      const upsertResponse = await leaderboard.upsert(elements);
       expectWithMessage(() => {
         expect(upsertResponse).toBeInstanceOf(LeaderboardUpsert.Success);
-      }, `expected SUCCESS but got ${upsertResponse.toString()}`);
+      }, `expected Success but got ${upsertResponse.toString()}`);
 
       // Length should match number of elements inserted
-      const lengthResponse = await leaderboard.leaderboardLength();
+      const lengthResponse = await leaderboard.length();
       expectWithMessage(() => {
-        expect(lengthResponse).toBeInstanceOf(LeaderboardLength.Found);
+        expect(lengthResponse).toBeInstanceOf(LeaderboardLength.Success);
       }, `expected Found but got ${lengthResponse.toString()}`);
-      const receivedLength = lengthResponse as LeaderboardLength.Found;
+      const receivedLength = lengthResponse as LeaderboardLength.Success;
       expect(receivedLength.length()).toEqual(elements.size);
     });
   });
@@ -690,16 +739,23 @@ export function runLeaderboardClientTests(
     );
 
     it('validates the number of elements', async () => {
-      const response = await leaderboard.leaderboardRemoveElements([]);
+      const response = await leaderboard.removeElements([]);
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardRemoveElements.Error);
-      }, `expected ERROR but got ${response.toString()}`);
+      }, `expected Error but got ${response.toString()}`);
       const responseError = response as LeaderboardRemoveElements.Error;
       expectWithMessage(() => {
         expect(responseError.errorCode()).toEqual(
           MomentoErrorCode.INVALID_ARGUMENT_ERROR
         );
       }, `expected INVALID_ARGUMENT_ERROR but got ${responseError.errorCode()} ${responseError.message()}`);
+    });
+
+    it('returns Success (no-op) when leaderboard does not exist', async () => {
+      const response = await leaderboard.removeElements([123]);
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(LeaderboardRemoveElements.Success);
+      }, `expected Success but got ${response.toString()}`);
     });
 
     it('successfully removes elements', async () => {
@@ -709,28 +765,26 @@ export function runLeaderboardClientTests(
         [456, 200.0],
         [789, 300.0],
       ]);
-      const response = await leaderboard.leaderboardUpsert(elements);
+      const response = await leaderboard.upsert(elements);
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardUpsert.Success);
-      }, `expected SUCCESS but got ${response.toString()}`);
+      }, `expected Success but got ${response.toString()}`);
 
       // Remove some elements
-      const removeResponse = await leaderboard.leaderboardRemoveElements([
-        123, 789,
-      ]);
+      const removeResponse = await leaderboard.removeElements([123, 789]);
       expectWithMessage(() => {
         expect(removeResponse).toBeInstanceOf(
           LeaderboardRemoveElements.Success
         );
-      }, `expected SUCCESS but got ${removeResponse.toString()}`);
+      }, `expected Success but got ${removeResponse.toString()}`);
 
       // Check that the remaining elements are as expected
-      const fetchResponse = await leaderboard.leaderboardFetchByRank();
+      const fetchResponse = await leaderboard.fetchByScore();
       expectWithMessage(() => {
-        expect(fetchResponse).toBeInstanceOf(LeaderboardFetch.Found);
+        expect(fetchResponse).toBeInstanceOf(LeaderboardFetch.Success);
       }, `expected Found but got ${fetchResponse.toString()}`);
       const receivedElements = (
-        fetchResponse as LeaderboardFetch.Found
+        fetchResponse as LeaderboardFetch.Success
       ).values();
       const expectedElements = [
         {
@@ -750,6 +804,13 @@ export function runLeaderboardClientTests(
       leaderboardName
     );
 
+    it('returns Success (no-op) when leaderboard does not exist', async () => {
+      const response = await leaderboard.delete();
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(LeaderboardDelete.Success);
+      }, `expected Success but got ${response.toString()}`);
+    });
+
     it('successfully deletes a leaderboard', async () => {
       // Create a leaderboard by upserting some elements
       const elements = new Map([
@@ -757,32 +818,38 @@ export function runLeaderboardClientTests(
         [456, 200.0],
         [789, 300.0],
       ]);
-      const response = await leaderboard.leaderboardUpsert(elements);
+      const response = await leaderboard.upsert(elements);
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardUpsert.Success);
-      }, `expected SUCCESS but got ${response.toString()}`);
+      }, `expected Success but got ${response.toString()}`);
 
       // Verify the leaderboard exists
-      const verifyExists = await leaderboard.leaderboardLength();
+      const verifyExists = await leaderboard.length();
       expectWithMessage(() => {
-        expect(verifyExists).toBeInstanceOf(LeaderboardLength.Found);
+        expect(verifyExists).toBeInstanceOf(LeaderboardLength.Success);
       }, `expected Found but got ${verifyExists.toString()}`);
-      const receivedLength = verifyExists as LeaderboardLength.Found;
-      expect(receivedLength.length()).toEqual(elements.size);
+      const receivedLength = (
+        verifyExists as LeaderboardLength.Success
+      ).length();
+      expectWithMessage(() => {
+        expect(receivedLength).toEqual(elements.size);
+      }, `expected array of size 0 but got ${receivedLength}`);
 
       // Delete the leaderboard
-      const deleteResponse = await leaderboard.leaderboardDelete();
+      const deleteResponse = await leaderboard.delete();
       expectWithMessage(() => {
         expect(deleteResponse).toBeInstanceOf(LeaderboardDelete.Success);
-      }, `expected SUCCESS but got ${deleteResponse.toString()}`);
+      }, `expected Success but got ${deleteResponse.toString()}`);
 
       // Verify it no longer exists
-      const deleted = await leaderboard.leaderboardLength();
+      const deleted = await leaderboard.length();
       expectWithMessage(() => {
-        expect(deleted).toBeInstanceOf(LeaderboardLength.Found);
+        expect(deleted).toBeInstanceOf(LeaderboardLength.Success);
       }, `expected Found but got ${deleted.toString()}`);
-      const deletedLength = deleted as LeaderboardLength.Found;
-      expect(deletedLength.length()).toEqual(0);
+      const deletedLength = (deleted as LeaderboardLength.Success).length();
+      expectWithMessage(() => {
+        expect(deletedLength).toEqual(0);
+      }, `expected array of size 0 but got ${deletedLength}`);
     });
   });
 }

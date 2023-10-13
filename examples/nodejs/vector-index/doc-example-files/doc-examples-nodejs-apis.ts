@@ -1,12 +1,23 @@
 import {
   CreateVectorIndex,
+  CredentialProvider,
   DeleteVectorIndex,
   ListVectorIndexes,
   PreviewVectorIndexClient,
+  VectorIndexConfigurations,
   VectorSearch,
-  VectorUpsertItemBatch
-} from "@gomomento/sdk";
-import {ALL_VECTOR_METADATA} from "@gomomento/sdk-core";
+  VectorUpsertItemBatch,
+} from '@gomomento/sdk';
+import {ALL_VECTOR_METADATA} from '@gomomento/sdk-core';
+
+function example_API_InstantiateVectorClient() {
+  new PreviewVectorIndexClient({
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_API_KEY',
+    }),
+    configuration: VectorIndexConfigurations.Laptop.latest(),
+  });
+}
 
 async function example_API_CreateIndex(vectorClient: PreviewVectorIndexClient) {
   const result = await vectorClient.createIndex('test-index', 2);
@@ -24,18 +35,14 @@ async function example_API_CreateIndex(vectorClient: PreviewVectorIndexClient) {
 async function example_API_ListIndexes(vectorClient: PreviewVectorIndexClient) {
   const result = await vectorClient.listIndexes();
   if (result instanceof ListVectorIndexes.Success) {
-    console.log(
-      `Indexes:\n${result
-        .getIndexNames()
-        .join('\n')}\n\n`
-    );
+    console.log(`Indexes:\n${result.getIndexNames().join('\n')}\n\n`);
   } else if (result instanceof ListVectorIndexes.Error) {
     throw new Error(`An error occurred while attempting to list caches: ${result.errorCode()}: ${result.toString()}`);
   }
 }
 
 async function example_API_DeleteIndex(vectorClient: PreviewVectorIndexClient) {
-  const result = await vectorClient.deleteIndex('test-index')
+  const result = await vectorClient.deleteIndex('test-index');
   if (result instanceof DeleteVectorIndex.Success) {
     console.log("Index 'test-index' deleted");
   } else if (result instanceof DeleteVectorIndex.Error) {
@@ -82,3 +89,24 @@ async function example_API_Search(vectorClient: PreviewVectorIndexClient) {
     throw new Error(`An error occurred searching index test-index: ${result.errorCode()}: ${result.toString()}`);
   }
 }
+
+async function main() {
+  const vectorClient = new PreviewVectorIndexClient({
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_API_KEY',
+    }),
+    configuration: VectorIndexConfigurations.Laptop.latest(),
+  });
+
+  example_API_InstantiateVectorClient();
+  await example_API_CreateIndex(vectorClient);
+  await example_API_ListIndexes(vectorClient);
+  await example_API_UpsertItemBatch(vectorClient);
+  await example_API_Search(vectorClient);
+  await example_API_DeleteItemBatch(vectorClient);
+  await example_API_DeleteIndex(vectorClient);
+}
+
+main().catch(e => {
+  throw e;
+});

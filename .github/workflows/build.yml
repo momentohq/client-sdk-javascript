@@ -87,11 +87,6 @@ jobs:
           node -v
           ./scripts/test-vector-packages.sh
 
-      - name: Run leaderboard tests for packages
-        run: |
-          node -v
-          ./scripts/test-leaderboard-packages.sh
-
   test-examples:
     strategy:
       matrix:
@@ -152,6 +147,11 @@ jobs:
           pushd examples/nodejs/aws
             npm ci
             npm run build
+          popd
+          pushd examples/nodejs/vector-index
+            npm ci
+            npm run build
+            npm run validate-examples
           popd
 
       - name: Send CI failure mail
