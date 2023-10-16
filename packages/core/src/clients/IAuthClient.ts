@@ -30,6 +30,7 @@ export interface IAuthClient {
 
   generateDisposableToken(
     scope: DisposableTokenScope,
-    expiresIn: ExpiresIn
+    expiresIn: ExpiresIn,
+    tokenID?: string
   ): Promise<GenerateDisposableToken.Response>;
 }

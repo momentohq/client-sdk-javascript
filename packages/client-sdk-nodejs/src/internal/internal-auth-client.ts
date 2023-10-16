@@ -185,7 +185,8 @@ export class InternalAuthClient implements IAuthClient {
 
   public async generateDisposableToken(
     scope: DisposableTokenScope,
-    expiresIn: ExpiresIn
+    expiresIn: ExpiresIn,
+    tokenId?: string
   ): Promise<GenerateDisposableToken.Response> {
     const tokenClient = new token.token.TokenClient(
       this.creds.getTokenEndpoint(),
@@ -212,6 +213,7 @@ export class InternalAuthClient implements IAuthClient {
       expires: expires,
       auth_token: this.creds.getAuthToken(),
       permissions: permissions,
+      token_id: tokenId,
     });
 
     return await new Promise<GenerateDisposableToken.Response>(resolve => {

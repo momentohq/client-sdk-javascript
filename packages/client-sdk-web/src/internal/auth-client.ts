@@ -192,7 +192,8 @@ export class InternalWebGrpcAuthClient<
 
   public async generateDisposableToken(
     scope: DisposableTokenScope,
-    expiresIn: ExpiresIn
+    expiresIn: ExpiresIn,
+    tokenID?: string
   ): Promise<GenerateDisposableToken.Response> {
     const tokenClient = new token.TokenClient(
       // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
@@ -212,6 +213,10 @@ export class InternalWebGrpcAuthClient<
     }
 
     request.setPermissions(permissions);
+
+    if (tokenID !== undefined) {
+      request.setTokenId(tokenID);
+    }
 
     try {
       validateDisposableTokenExpiry(expiresIn);

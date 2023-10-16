@@ -82,8 +82,13 @@ export abstract class AbstractAuthClient implements IAuthClient {
    */
   public async generateDisposableToken(
     scope: DisposableTokenScope,
-    expiresIn: ExpiresIn
+    expiresIn: ExpiresIn,
+    tokenID?: string
   ): Promise<GenerateDisposableToken.Response> {
-    return await this.authClient.generateDisposableToken(scope, expiresIn);
+    return await this.authClient.generateDisposableToken(
+      scope,
+      expiresIn,
+      tokenID
+    );
   }
 }
