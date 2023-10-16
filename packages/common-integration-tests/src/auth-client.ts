@@ -851,8 +851,7 @@ export function runAuthClientTests(
             },
           ],
         },
-        ExpiresIn.seconds(60),
-        'randomTokenID'
+        ExpiresIn.seconds(60)
       );
       expectWithMessage(() => {
         expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
@@ -1475,7 +1474,7 @@ export function runAuthClientTests(
             },
           ],
         },
-        ExpiresIn.seconds(60),
+        ExpiresIn.seconds(60)
       );
       expectWithMessage(() => {
         expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);

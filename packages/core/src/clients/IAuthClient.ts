@@ -6,6 +6,7 @@ import {
   RefreshApiKey,
 } from '../index';
 import {PermissionScope} from '../auth/tokens/permission-scope';
+import {DisposableTokenProps} from '../auth/tokens/disposable-token-scope';
 
 export interface IAuthClient {
   generateApiKey(
@@ -31,6 +32,6 @@ export interface IAuthClient {
   generateDisposableToken(
     scope: DisposableTokenScope,
     expiresIn: ExpiresIn,
-    tokenID?: string
+    props?: DisposableTokenProps
   ): Promise<GenerateDisposableToken.Response>;
 }

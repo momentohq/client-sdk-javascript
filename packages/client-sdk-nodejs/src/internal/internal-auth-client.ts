@@ -10,6 +10,7 @@ import {
   validateDisposableTokenExpiry,
   validateValidForSeconds,
   validateCacheKeyOrPrefix,
+  validateDisposableTokenTokenID,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import Never = grpcAuth._GenerateApiTokenRequest.Never;
 import Expires = grpcAuth._GenerateApiTokenRequest.Expires;
@@ -54,6 +55,7 @@ import {
   asDisposableTokenCachePermission,
   asDisposableTokenPermissionsObject,
   DisposableTokenCachePermission,
+  DisposableTokenProps,
   isDisposableTokenCachePermission,
   isDisposableTokenPermissionsObject,
 } from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
@@ -186,7 +188,7 @@ export class InternalAuthClient implements IAuthClient {
   public async generateDisposableToken(
     scope: DisposableTokenScope,
     expiresIn: ExpiresIn,
-    tokenId?: string
+    disposableTokenProps?: DisposableTokenProps
   ): Promise<GenerateDisposableToken.Response> {
     const tokenClient = new token.token.TokenClient(
       this.creds.getTokenEndpoint(),
@@ -209,11 +211,22 @@ export class InternalAuthClient implements IAuthClient {
       return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
     }
 
+    const tokenID = disposableTokenProps?.tokenID;
+    if (tokenID) {
+      try {
+        validateDisposableTokenTokenID(tokenID);
+      } catch (err) {
+        return new GenerateDisposableToken.Error(
+          normalizeSdkError(err as Error)
+        );
+      }
+    }
+
     const request = new token.token._GenerateDisposableTokenRequest({
       expires: expires,
       auth_token: this.creds.getAuthToken(),
       permissions: permissions,
-      token_id: tokenId,
+      token_id: tokenID,
     });
 
     return await new Promise<GenerateDisposableToken.Response>(resolve => {
