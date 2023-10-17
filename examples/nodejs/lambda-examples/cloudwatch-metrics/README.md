@@ -71,10 +71,11 @@ cd infrastructure
 npm install
 ```
 
-You will also need to set the `stackConfig` variable in the [`momento-metrics-stack.ts` file](./infrastructure/lib/momento-metrics-stack.ts) to `exampleApp.NodejsEcs` to specify that you want to deploy the ECS metrics example.
+You will also need to set the `stackConfig` variable in the [`momento-metrics-stack.ts` file](./infrastructure/lib/momento-metrics-stack.ts) to `exampleApp.NodejsEcs` to specify that you want to deploy the ECS metrics example, as well as the `customLogGroupName` variable so that the CDK stack knows which log group to attach the metric filters to.
 
 ```
 const stackConfig: exampleApp = exampleApp.NodejsEcs;
+const customLogGroupName = '/your/log/group/name/here';
 ```
 
 To deploy the CDK app you will need to have [configured your AWS credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-authentication.html#cli-chap-authentication-precedence).

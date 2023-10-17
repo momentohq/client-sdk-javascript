@@ -26,6 +26,7 @@ enum exampleApp {
 }
 
 const stackConfig: exampleApp = exampleApp.Custom;
+const customLogGroupName = '/aws/lambda/MomentoMetricsMiddlewareCDKExample';
 
 export class MomentoMetricsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -45,7 +46,7 @@ export class MomentoMetricsStack extends cdk.Stack {
     const configToLogGroupName = new Map([
       [exampleApp.NodejsLambda, '/aws/lambda/MomentoMetricsMiddlewareCDKExample'],
       [exampleApp.NodejsEcs, '/aws/ecs/MomentoMetricsMiddlewareCDKExample'],
-      [exampleApp.Custom, '/custom/MomentoMetricsMiddlewareCDKExample']
+      [exampleApp.Custom, customLogGroupName]
     ])
     const logGroupName = configToLogGroupName.get(stackConfig);
 
