@@ -826,6 +826,63 @@ export function runAuthClientTests(
       }, `expected SUBSCRIPTION but got ${subResp1.toString()}`);
     });
 
+    it('can generate disposable token with valid permissions, expiry and a tokenID', async () => {
+      const superUserTokenResponse =
+        await sessionTokenAuthClient.generateApiKey(
+          SUPER_USER_PERMISSIONS,
+          ExpiresIn.seconds(10)
+        );
+      expectWithMessage(() => {
+        expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Expected SUCCESS but received ${superUserTokenResponse.toString()}`);
+
+      const authClient = authTokenAuthClientFactory(
+        (superUserTokenResponse as GenerateApiKey.Success).apiKey
+      );
+
+      const tokenResponse = await authClient.generateDisposableToken(
+        {
+          permissions: [{role: CacheRole.WriteOnly, cache: FGA_CACHE_1}],
+        },
+        ExpiresIn.seconds(60),
+        {tokenID: 'someTokenID'}
+      );
+      expectWithMessage(() => {
+        expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
+      }, `Expected SUCCESS but received ${tokenResponse.toString()}`);
+    });
+
+    it('throws error when tokenID more than max length', async () => {
+      const superUserTokenResponse =
+        await sessionTokenAuthClient.generateApiKey(
+          SUPER_USER_PERMISSIONS,
+          ExpiresIn.seconds(10)
+        );
+      expectWithMessage(() => {
+        expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Expected SUCCESS but received ${superUserTokenResponse.toString()}`);
+
+      const authClient = authTokenAuthClientFactory(
+        (superUserTokenResponse as GenerateApiKey.Success).apiKey
+      );
+
+      const tokenResponse = await authClient.generateDisposableToken(
+        {
+          permissions: [{role: CacheRole.WriteOnly, cache: FGA_CACHE_1}],
+        },
+        ExpiresIn.seconds(60),
+        {tokenID: 't'.repeat(66)}
+      );
+      expectWithMessage(() => {
+        expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Error);
+        if (tokenResponse instanceof GenerateDisposableToken.Error) {
+          expect(tokenResponse.errorCode()).toEqual(
+            MomentoErrorCode.INVALID_ARGUMENT_ERROR
+          );
+        }
+      }, `Expected ERROR but received ${tokenResponse.toString()}`);
+    });
+
     it('can only write cache FGA_CACHE_1 and write all topics in cache FGA_CACHE_2', async () => {
       const superUserTokenResponse =
         await sessionTokenAuthClient.generateApiKey(
