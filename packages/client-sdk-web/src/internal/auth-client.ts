@@ -218,7 +218,13 @@ export class InternalWebGrpcAuthClient<
 
     const tokenID = disposableTokenProps?.tokenID;
     if (tokenID) {
-      validateDisposableTokenTokenID(tokenID);
+      try {
+        validateDisposableTokenTokenID(tokenID);
+      } catch (err) {
+        return new GenerateDisposableToken.Error(
+          normalizeSdkError(err as Error)
+        );
+      }
       request.setTokenId(tokenID);
     }
 
