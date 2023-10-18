@@ -25,7 +25,7 @@ enum exampleApp {
   Custom
 }
 
-const stackConfig: exampleApp = exampleApp.Custom;
+const stackConfig: exampleApp = exampleApp.NodejsLambda;
 const customLogGroupName = '/aws/lambda/MomentoMetricsMiddlewareCDKExample';
 
 export class MomentoMetricsStack extends cdk.Stack {
@@ -59,7 +59,7 @@ export class MomentoMetricsStack extends cdk.Stack {
       case exampleApp.NodejsLambda: {
         const nodejsLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoMetricsMiddlewareCDKExample', {
           functionName: 'MomentoMetricsMiddlewareCDKExample',
-          runtime: lambda.Runtime.NODEJS_16_X,
+          runtime: lambda.Runtime.NODEJS_LATEST,
           entry: path.join(__dirname, '../../lambda/handler.ts'),
           projectRoot: path.join(__dirname, '../../lambda'),
           depsLockFilePath: path.join(__dirname, '../../lambda/package-lock.json'),
