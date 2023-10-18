@@ -145,8 +145,8 @@ export function validateDisposableTokenExpiry(expiresIn: ExpiresIn) {
   }
 }
 
-export function validateDisposableTokenTokenID(tokenID: string) {
-  if (tokenID.length > 64) {
+export function validateDisposableTokenTokenID(tokenId: string) {
+  if (tokenId.length > 64) {
     throw new InvalidArgumentError(
       'TokenID must be less than or equal to 64 characters.'
     );

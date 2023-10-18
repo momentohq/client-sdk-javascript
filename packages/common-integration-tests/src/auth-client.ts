@@ -845,7 +845,7 @@ export function runAuthClientTests(
           permissions: [{role: CacheRole.WriteOnly, cache: FGA_CACHE_1}],
         },
         ExpiresIn.seconds(60),
-        {tokenID: 'someTokenID'}
+        {tokenId: 'someTokenID'}
       );
       expectWithMessage(() => {
         expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
@@ -871,7 +871,7 @@ export function runAuthClientTests(
           permissions: [{role: CacheRole.WriteOnly, cache: FGA_CACHE_1}],
         },
         ExpiresIn.seconds(60),
-        {tokenID: 't'.repeat(66)}
+        {tokenId: 't'.repeat(66)}
       );
       expectWithMessage(() => {
         expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Error);

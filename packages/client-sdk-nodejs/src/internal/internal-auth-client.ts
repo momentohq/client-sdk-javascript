@@ -211,10 +211,10 @@ export class InternalAuthClient implements IAuthClient {
       return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
     }
 
-    const tokenID = disposableTokenProps?.tokenID;
-    if (tokenID) {
+    const tokenId = disposableTokenProps?.tokenId;
+    if (tokenId !== undefined) {
       try {
-        validateDisposableTokenTokenID(tokenID);
+        validateDisposableTokenTokenID(tokenId);
       } catch (err) {
         return new GenerateDisposableToken.Error(
           normalizeSdkError(err as Error)
@@ -226,7 +226,7 @@ export class InternalAuthClient implements IAuthClient {
       expires: expires,
       auth_token: this.creds.getAuthToken(),
       permissions: permissions,
-      token_id: tokenID,
+      token_id: tokenId,
     });
 
     return await new Promise<GenerateDisposableToken.Response>(resolve => {

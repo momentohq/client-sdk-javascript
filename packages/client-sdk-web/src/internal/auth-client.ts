@@ -216,16 +216,16 @@ export class InternalWebGrpcAuthClient<
 
     request.setPermissions(permissions);
 
-    const tokenID = disposableTokenProps?.tokenID;
-    if (tokenID) {
+    const tokenId = disposableTokenProps?.tokenId;
+    if (tokenId !== undefined) {
       try {
-        validateDisposableTokenTokenID(tokenID);
+        validateDisposableTokenTokenID(tokenId);
       } catch (err) {
         return new GenerateDisposableToken.Error(
           normalizeSdkError(err as Error)
         );
       }
-      request.setTokenId(tokenID);
+      request.setTokenId(tokenId);
     }
 
     try {
