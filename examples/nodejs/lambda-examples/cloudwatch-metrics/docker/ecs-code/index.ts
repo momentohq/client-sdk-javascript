@@ -14,7 +14,7 @@ let _cacheClient: CacheClient | undefined = undefined;
 
 async function main() {
   try {
-    const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.DEBUG);
+    const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.INFO);
     const logger = loggerFactory.getLogger('CloudWatchMetricsMiddlewaresExample');
 
     const cacheClient = await getCacheClient(loggerFactory);
