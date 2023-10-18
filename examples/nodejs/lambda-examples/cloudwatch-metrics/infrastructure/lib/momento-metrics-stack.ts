@@ -22,7 +22,7 @@ import { DockerImageAsset } from 'aws-cdk-lib/aws-ecr-assets';
 enum exampleApp {
   NodejsLambda,
   NodejsEcs,
-  Custom
+  DashboardOnly
 }
 
 const stackConfig: exampleApp = exampleApp.NodejsLambda;
@@ -32,21 +32,30 @@ export class MomentoMetricsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // Step 1: we define a set of configurable parameters that will be passed into
+    // the CDK deploy command.
     const momentoApiKeyParam = new cdk.CfnParameter(this, 'MomentoApiKey', {
       type: 'String',
       description: 'The Momento API key that will be used to read from the cache.',
       noEcho: true,
     });
 
+    // Step 2: insert your Momento API key into AWS Secrets Manager
     const apiKeySecret = new secrets.Secret(this, 'MomentoMetricsApiKey', {
       secretName: 'MomentoMetricsApiKey',
       secretStringValue: new cdk.SecretValue(momentoApiKeyParam.valueAsString),
     });
 
+    /*
+    Step 3: determine which log group name to use when creating our log group.
+    Note: Lambda functions automatically create a log group titled 'aws/lambda/FunctionName',
+    so if you create only the dashboard here and use your own Lambda function, make sure to
+    provide your function's log group name for the ___ parameter.
+    */
     const configToLogGroupName = new Map([
       [exampleApp.NodejsLambda, '/aws/lambda/MomentoMetricsMiddlewareCDKExample'],
       [exampleApp.NodejsEcs, '/aws/ecs/MomentoMetricsMiddlewareCDKExample'],
-      [exampleApp.Custom, customLogGroupName]
+      [exampleApp.DashboardOnly, customLogGroupName]
     ])
     const logGroupName = configToLogGroupName.get(stackConfig);
 
@@ -55,26 +64,74 @@ export class MomentoMetricsStack extends cdk.Stack {
       retention: RetentionDays.ONE_DAY,
     });
 
+    // Step 4: create the Lambda or ECS example as specified. Otherwise skip this step
+    // and create only the dashboard.
     switch (stackConfig) {
       case exampleApp.NodejsLambda: {
-        const nodejsLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoMetricsMiddlewareCDKExample', {
-          functionName: 'MomentoMetricsMiddlewareCDKExample',
-          runtime: lambda.Runtime.NODEJS_LATEST,
-          entry: path.join(__dirname, '../../lambda/handler.ts'),
-          projectRoot: path.join(__dirname, '../../lambda'),
-          depsLockFilePath: path.join(__dirname, '../../lambda/package-lock.json'),
-          handler: 'handler',
-          timeout: cdk.Duration.minutes(6),
-          memorySize: 128,
-          environment: {
-            MOMENTO_API_KEY_SECRET_NAME: apiKeySecret.secretName,
-          },
-        });
-        apiKeySecret.grantRead(nodejsLambda);
+        this.setUpLambdaFunction(apiKeySecret);
         break;
       }
       case exampleApp.NodejsEcs: {
-        const cluster = new ecs.Cluster(this, 'MomentoMetricsExampleFargateCluster');
+        this.setUpEcsCluster(logGroup);
+        break;
+      }
+      case exampleApp.DashboardOnly: {
+        console.log('Skipping to dashboard creation');
+        break;
+      }
+      default: {
+        throw new Error('Unimplemented CDK stack application');
+      }
+    }
+
+    /* Step 5:
+    The Momento experimental metrics middleware produces JSON logs with metrics about each Momento request. An example log entry looks like this:
+        (Momento: _ExperimentalMetricsLoggingMiddleware): 
+        {
+            "numActiveRequestsAtStart": 1,
+            "numActiveRequestsAtFinish": 1,
+            "requestType": "MiddlewareMessage",
+            "status": 0,
+            "startTime": 1697663118489,
+            "requestBodyTime": 1697663118489,
+            "endTime": 1697663118492,
+            "duration": 3,
+            "requestSize": 32,
+            "responseSize": 2,
+            "connectionID": "0"
+        }
+    
+    The `createMetricFilters` function creates CloudWatch Metric Filters to extract metrics from these log messages. The metric filters are attached to the log group that we created above.
+    */
+    this.createMetricFilters(logGroup);
+    
+    // Step 6: create the CloudWatch dashboard and add all the widgets (graphs)
+    const dashboard = new Dashboard(this, 'MomentoMetricsCDKExampleDashboard', {
+      dashboardName: 'MomentoMetricsCDKExampleDashboard',
+      defaultInterval: cdk.Duration.hours(1),
+    });
+    this.addWidgetsToDashboard(dashboard);
+  }
+
+  setUpLambdaFunction(apiKeySecret: cdk.aws_secretsmanager.Secret) {
+    const nodejsLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoMetricsMiddlewareCDKExample', {
+      functionName: 'MomentoMetricsMiddlewareCDKExample',
+      runtime: lambda.Runtime.NODEJS_LATEST,
+      entry: path.join(__dirname, '../../lambda/handler.ts'),
+      projectRoot: path.join(__dirname, '../../lambda'),
+      depsLockFilePath: path.join(__dirname, '../../lambda/package-lock.json'),
+      handler: 'handler',
+      timeout: cdk.Duration.minutes(6),
+      memorySize: 128,
+      environment: {
+        MOMENTO_API_KEY_SECRET_NAME: apiKeySecret.secretName,
+      },
+    });
+    apiKeySecret.grantRead(nodejsLambda);
+  }
+
+  setUpEcsCluster(logGroup: cdk.aws_logs.LogGroup) {
+    const cluster = new ecs.Cluster(this, 'MomentoMetricsExampleFargateCluster');
 
         const imageAsset = new DockerImageAsset(this, "MomentoMetricsECSDockerImage", {
           directory: path.join(__dirname, "../../docker")
@@ -115,17 +172,9 @@ export class MomentoMetricsStack extends cdk.Stack {
           cluster,
           taskDefinition,
         });
-        break;
-      }
-      case exampleApp.Custom: {
-        console.log('Skipping to dashboard creation');
-        break;
-      }
-      default: {
-        throw new Error('Unimplemented CDK stack application');
-      }
-    }
+  }
 
+  createMetricFilters(logGroup: cdk.aws_logs.LogGroup) {
     logGroup.addMetricFilter('ExampleMetricFilterDuration', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Duration (Latency)',
@@ -156,45 +205,30 @@ export class MomentoMetricsStack extends cdk.Stack {
       filterPattern: FilterPattern.literal('{ $.status >= 0 }'),
       metricValue: '$.status',
     });
+  }
 
-    const dashboard = new Dashboard(this, 'MomentoMetricsCDKExampleDashboard', {
-      dashboardName: 'MomentoMetricsCDKExampleDashboard',
-      defaultInterval: cdk.Duration.hours(1),
-    });
-
+  addWidgetsToDashboard(dashboard: cdk.aws_cloudwatch.Dashboard) {
     const latency = new GraphWidget({
       left: [
         new Metric({
           metricName: 'Duration (Latency)',
           namespace: 'MomentoMetricsCDKExample',
-          region: 'us-west-2',
         }),
       ],
-      stacked: false,
-      height: 6,
-      width: 6,
-      region: 'us-west-2',
       title: 'Duration (Latency)',
     });
-    latency.position(0, 0);
 
     const errorCodes = new GraphWidget({
       left: [
         new Metric({
           metricName: 'GRPC Status Code',
           namespace: 'MomentoMetricsCDKExample',
-          region: 'us-west-2',
         }),
       ],
-      stacked: false,
-      height: 6,
-      width: 6,
-      region: 'us-west-2',
       title: 'GRPC Error Codes',
       period: cdk.Duration.minutes(1),
       leftYAxis: {
         label: 'Error Code',
-        min: 0,
         max: 16,
       },
       leftAnnotations: [
@@ -205,32 +239,24 @@ export class MomentoMetricsStack extends cdk.Stack {
         },
       ],
     });
-    errorCodes.position(6, 0);
 
     const messageSizes = new GraphWidget({
       left: [
         new Metric({
           metricName: 'Response Size (bytes)',
           namespace: 'MomentoMetricsCDKExample',
-          region: 'us-west-2',
           label: 'Response Size (bytes)',
         }),
         new Metric({
           metricName: 'Request Size (bytes)',
-          namespace: '.',
-          region: 'us-west-2',
+          namespace: 'MomentoMetricsCDKExample',
           label: 'Request Size (bytes)',
         }),
       ],
-      stacked: false,
-      height: 6,
-      width: 6,
-      region: 'us-west-2',
       title: 'Request and Response Sizes in Bytes',
       period: cdk.Duration.minutes(1),
       statistic: Stats.AVERAGE,
     });
-    messageSizes.position(12, 0);
 
     // Add the first three widgets in the first row of the dashboard
     dashboard.addWidgets(latency, errorCodes, messageSizes);
@@ -240,38 +266,28 @@ export class MomentoMetricsStack extends cdk.Stack {
         new Metric({
           metricName: 'Response Size (bytes)',
           namespace: 'MomentoMetricsCDKExample',
-          region: 'us-west-2',
           label: 'Count of responses per second',
           statistic: Stats.SAMPLE_COUNT,
         }),
       ],
       period: cdk.Duration.seconds(1),
       height: 6,
-      width: 6,
       sparkline: true,
       title: 'Transactions per second',
-      region: 'us-west-2',
     });
-    transactionsPerSecond.position(0, 6);
 
     const numberOfRequests = new GraphWidget({
       left: [
         new Metric({
           metricName: 'Request Size (bytes)',
           namespace: 'MomentoMetricsCDKExample',
-          region: 'us-west-2',
           label: 'Number of requests per second',
         }),
       ],
-      stacked: false,
-      height: 6,
-      width: 6,
-      region: 'us-west-2',
       title: 'Number of requests',
       period: cdk.Duration.minutes(1),
       statistic: Stats.SAMPLE_COUNT,
     });
-    numberOfRequests.position(6, 6);
 
     const totalBytesSentReceived = new GraphWidget({
       left: [
@@ -282,27 +298,20 @@ export class MomentoMetricsStack extends cdk.Stack {
             m1: new Metric({
               metricName: 'Request Size (bytes)',
               namespace: 'MomentoMetricsCDKExample',
-              region: 'us-west-2',
               label: 'Total Request Bytes',
             }),
             m2: new Metric({
               metricName: 'Response Size (bytes)',
               namespace: 'MomentoMetricsCDKExample',
-              region: 'us-west-2',
               label: 'Total Response Bytes',
             }),
           },
         }),
       ],
-      stacked: false,
-      height: 6,
-      width: 6,
-      region: 'us-west-2',
       title: 'Total bytes sent and received',
       period: cdk.Duration.minutes(1),
       statistic: Stats.SUM,
     });
-    totalBytesSentReceived.position(12, 6);
 
     // Add the next 3 widgets to the second row of the dashboard
     dashboard.addWidgets(transactionsPerSecond, numberOfRequests, totalBytesSentReceived);
