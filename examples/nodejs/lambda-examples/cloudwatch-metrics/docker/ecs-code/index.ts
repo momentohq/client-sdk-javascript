@@ -41,7 +41,6 @@ async function getCacheClient(loggerFactory: DefaultMomentoLoggerFactory): Promi
   if (_cacheClient === undefined) {
     const momentoApiKey = await getSecret(apiKeySecretName);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
     _cacheClient = await CacheClient.create({
       configuration: Configurations.Lambda.latest(loggerFactory).withMiddlewares([
         new ExperimentalMetricsLoggingMiddleware(loggerFactory),
@@ -57,13 +56,11 @@ async function getSecret(secretName: string): Promise<string> {
   if (!_cachedSecrets.has(secretName)) {
     const secretResponse = await _secretsClient.send(new GetSecretValueCommand({SecretId: secretName}));
     if (secretResponse) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       _cachedSecrets.set(secretName, secretResponse.SecretString!);
     } else {
       throw new Error(`Unable to retrieve secret: ${secretName}`);
     }
   }
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   return _cachedSecrets.get(secretName)!;
 }
 
@@ -71,7 +68,6 @@ function delay(ms: number): Promise<unknown> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-main()
-  .catch(err => {
-    console.log('Error in example run:', err);
-  });
+main().catch(err => {
+  console.log('Error in example run:', err);
+});
