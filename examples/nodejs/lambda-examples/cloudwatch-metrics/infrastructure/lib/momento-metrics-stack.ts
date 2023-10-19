@@ -75,7 +75,7 @@ export class MomentoMetricsStack extends cdk.Stack {
         break;
       }
       case "ecs": {
-        this.setUpEcsCluster(logGroup);
+        this.setUpEcsCluster(logGroup, apiKeySecret);
         break;
       }
       case "dashboard-only": {
@@ -133,48 +133,44 @@ export class MomentoMetricsStack extends cdk.Stack {
     apiKeySecret.grantRead(nodejsLambda);
   }
 
-  setUpEcsCluster(logGroup: cdk.aws_logs.LogGroup) {
+  setUpEcsCluster(logGroup: cdk.aws_logs.LogGroup, apiKeySecret: cdk.aws_secretsmanager.Secret) {
     const cluster = new ecs.Cluster(this, 'MomentoMetricsExampleFargateCluster');
 
-        const imageAsset = new DockerImageAsset(this, "MomentoMetricsECSDockerImage", {
-          directory: path.join(__dirname, "../../docker")
-        });
+    const imageAsset = new DockerImageAsset(this, "MomentoMetricsECSDockerImage", {
+      directory: path.join(__dirname, "../../docker")
+    });
 
-        const taskDefinition = new ecs.FargateTaskDefinition(this, 'MomentoMetricsMiddlewareCDKExample');
-        taskDefinition.addContainer('MomentoMetricsECSContainer', {
-          image: ecs.ContainerImage.fromDockerImageAsset(imageAsset),
-          logging: new ecs.AwsLogDriver({
-            logGroup: logGroup,
-            streamPrefix: "MomentoMetricsMiddlewareCDKExample"
-          })
-        });
-        taskDefinition.addToTaskRolePolicy(new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          actions: [
-            "secretsmanager:ListSecrets",
-            "secretsmanager:GetSecretValue",
-            "logs:PutLogEvents",
-            "logs:CreateLogStream",
-            "ecs:*"
-          ],
-          resources: ["*"],
-        }));
-        taskDefinition.addToExecutionRolePolicy(new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          actions: [
-            "secretsmanager:ListSecrets",
-            "secretsmanager:GetSecretValue",
-            "logs:PutLogEvents",
-            "logs:CreateLogStream",
-            "ecs:*"
-          ],
-          resources: ["*"],
-        }));
+    const taskDefinition = new ecs.FargateTaskDefinition(this, 'MomentoMetricsMiddlewareCDKExample');
+    taskDefinition.addContainer('MomentoMetricsECSContainer', {
+      image: ecs.ContainerImage.fromDockerImageAsset(imageAsset),
+      logging: new ecs.AwsLogDriver({
+        logGroup: logGroup,
+        streamPrefix: "MomentoMetricsMiddlewareCDKExample"
+      })
+    });
 
-        new ecs.FargateService(this, 'MomentoMetricsECSFargateService', {
-          cluster,
-          taskDefinition,
-        });
+    const policy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        "secretsmanager:GetSecretValue",
+        "logs:PutLogEvents",
+        "logs:CreateLogStream",
+        "ecs:*"
+      ],
+    });
+    policy.addResources(
+      apiKeySecret.secretArn, 
+      logGroup.logGroupArn, 
+      cluster.clusterArn, 
+      taskDefinition.taskDefinitionArn
+    );
+    taskDefinition.addToTaskRolePolicy(policy);
+    taskDefinition.addToExecutionRolePolicy(policy);
+
+    new ecs.FargateService(this, 'MomentoMetricsECSFargateService', {
+      cluster,
+      taskDefinition,
+    });
   }
 
   createMetricFilters(logGroup: cdk.aws_logs.LogGroup) {
