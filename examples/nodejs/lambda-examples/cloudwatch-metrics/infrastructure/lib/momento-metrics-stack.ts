@@ -18,32 +18,35 @@ import {
   Unit,
 } from 'aws-cdk-lib/aws-cloudwatch';
 import { DockerImageAsset } from 'aws-cdk-lib/aws-ecr-assets';
+import 'dotenv/config';
 
-enum exampleApp {
-  NodejsLambda,
-  NodejsEcs,
-  DashboardOnly
-}
-
-const stackConfig: exampleApp = exampleApp.NodejsLambda;
-const customLogGroupName = '/aws/lambda/MomentoMetricsMiddlewareCDKExample';
+const validStackConfigs = ["lambda", "ecs", "dashboard-only"];
 
 export class MomentoMetricsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // Step 1: we define a set of configurable parameters that will be passed into
-    // the CDK deploy command.
-    const momentoApiKeyParam = new cdk.CfnParameter(this, 'MomentoApiKey', {
-      type: 'String',
-      description: 'The Momento API key that will be used to read from the cache.',
-      noEcho: true,
-    });
+    // Step 1: read in environment variables from your .env file
+    console.log(process.env.MOMENTO_API_KEY);
+    if (!this.validateMomentoApiKey(process.env.MOMENTO_API_KEY)) {
+      throw new Error('Missing required environment variable MOMENTO_API_KEY');
+    }
+    const momentoApiKey = String(process.env.MOMENTO_API_KEY);
+
+    if (!this.validateStackConfig(process.env.STACK_CONFIG)) {
+      throw new Error('Missing or invalid entry for required environment variable STACK_CONFIG');
+    }
+    const stackConfig = String(process.env.STACK_CONFIG);
+
+    if (!this.validateLogGroupName(stackConfig, process.env.LOG_GROUP_NAME)) {
+      throw new Error('Missing required environment variable LOG_GROUP_NAME');
+    }
+    const dashboardOnlyLogGroupName = String(process.env.LOG_GROUP_NAME);
 
     // Step 2: insert your Momento API key into AWS Secrets Manager
     const apiKeySecret = new secrets.Secret(this, 'MomentoMetricsApiKey', {
       secretName: 'MomentoMetricsApiKey',
-      secretStringValue: new cdk.SecretValue(momentoApiKeyParam.valueAsString),
+      secretStringValue: new cdk.SecretValue(momentoApiKey),
     });
 
     /*
@@ -53,10 +56,10 @@ export class MomentoMetricsStack extends cdk.Stack {
     provide your function's log group name for the ___ parameter.
     */
     const configToLogGroupName = new Map([
-      [exampleApp.NodejsLambda, '/aws/lambda/MomentoMetricsMiddlewareCDKExample'],
-      [exampleApp.NodejsEcs, '/aws/ecs/MomentoMetricsMiddlewareCDKExample'],
-      [exampleApp.DashboardOnly, customLogGroupName]
-    ])
+      ["lambda", '/aws/lambda/MomentoMetricsMiddlewareCDKExample'],
+      ["ecs", '/aws/ecs/MomentoMetricsMiddlewareCDKExample'],
+      ["dashboard-only", dashboardOnlyLogGroupName]
+    ]);
     const logGroupName = configToLogGroupName.get(stackConfig);
 
     const logGroup = new LogGroup(this, 'Logs', {
@@ -67,15 +70,15 @@ export class MomentoMetricsStack extends cdk.Stack {
     // Step 4: create the Lambda or ECS example as specified. Otherwise skip this step
     // and create only the dashboard.
     switch (stackConfig) {
-      case exampleApp.NodejsLambda: {
+      case "lambda": {
         this.setUpLambdaFunction(apiKeySecret);
         break;
       }
-      case exampleApp.NodejsEcs: {
+      case "ecs": {
         this.setUpEcsCluster(logGroup);
         break;
       }
-      case exampleApp.DashboardOnly: {
+      case "dashboard-only": {
         console.log('Skipping to dashboard creation');
         break;
       }
@@ -315,5 +318,25 @@ export class MomentoMetricsStack extends cdk.Stack {
 
     // Add the next 3 widgets to the second row of the dashboard
     dashboard.addWidgets(transactionsPerSecond, numberOfRequests, totalBytesSentReceived);
+  }
+
+  validateStackConfig(stackConfig?: string) {
+    if (stackConfig && stackConfig.length && validStackConfigs.includes(stackConfig)) {
+      return true;
+    }
+    return false;
+  }
+
+  validateMomentoApiKey(key?: string) {
+    return (key && key.length > 0);
+  }
+
+  validateLogGroupName(stackConfig: string, name?: string) {
+    if (stackConfig === "dashboard-only" && name && name.length > 0) {
+      return true;
+    } else if (validStackConfigs.includes(stackConfig) && stackConfig != "dashboard-only") {
+      return true;
+    }
+    return false;
   }
 }
