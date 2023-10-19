@@ -35,6 +35,7 @@ import {
   validateValidForSeconds,
   validateDisposableTokenExpiry,
   validateCacheKeyOrPrefix,
+  validateDisposableTokenTokenID,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
@@ -59,6 +60,7 @@ import {
   DisposableTokenCachePermission,
   isDisposableTokenCachePermission,
   asDisposableTokenPermissionsObject,
+  DisposableTokenProps,
 } from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
 import {_GenerateDisposableTokenRequest} from '@gomomento/generated-types-webtext/dist/token_pb';
 import {
@@ -192,7 +194,8 @@ export class InternalWebGrpcAuthClient<
 
   public async generateDisposableToken(
     scope: DisposableTokenScope,
-    expiresIn: ExpiresIn
+    expiresIn: ExpiresIn,
+    disposableTokenProps?: DisposableTokenProps
   ): Promise<GenerateDisposableToken.Response> {
     const tokenClient = new token.TokenClient(
       // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
@@ -212,6 +215,18 @@ export class InternalWebGrpcAuthClient<
     }
 
     request.setPermissions(permissions);
+
+    const tokenId = disposableTokenProps?.tokenId;
+    if (tokenId !== undefined) {
+      try {
+        validateDisposableTokenTokenID(tokenId);
+      } catch (err) {
+        return new GenerateDisposableToken.Error(
+          normalizeSdkError(err as Error)
+        );
+      }
+      request.setTokenId(tokenId);
+    }
 
     try {
       validateDisposableTokenExpiry(expiresIn);
