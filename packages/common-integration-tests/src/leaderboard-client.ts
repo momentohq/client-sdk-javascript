@@ -17,7 +17,7 @@ export function runLeaderboardClientTests(
   integrationTestCacheName: string
 ) {
   describe('#Creates leaderboard client', () => {
-    const leaderboardName = `leaderboard-${v4()}`;
+    const leaderboardName = `test-leaderboard-${v4()}`;
 
     it('validates the cache name', () => {
       expect(() =>
@@ -39,7 +39,7 @@ export function runLeaderboardClientTests(
   });
 
   describe('#Upsert elements', () => {
-    const leaderboardName = `leaderboard-${v4()}`;
+    const leaderboardName = `test-leaderboard-${v4()}`;
     const leaderboard = leaderboardClient.leaderboard(
       integrationTestCacheName,
       leaderboardName
@@ -245,10 +245,17 @@ export function runLeaderboardClientTests(
       ];
       expect(receivedElements4).toEqual(expectedElements4);
     });
+
+    it('deletes the leaderboard when done testing', async () => {
+      const response = await leaderboard.delete();
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(LeaderboardDelete.Success);
+      }, `expected Success but got ${response.toString()}`);
+    });
   });
 
   describe('#Fetch by score', () => {
-    const leaderboardName = `leaderboard-${v4()}`;
+    const leaderboardName = `test-leaderboard-${v4()}`;
     const leaderboard = leaderboardClient.leaderboard(
       integrationTestCacheName,
       leaderboardName
@@ -454,10 +461,17 @@ export function runLeaderboardClientTests(
       ];
       expect(receivedWithAllOptions).toEqual(expectedWithAllOptions);
     });
+
+    it('deletes the leaderboard when done testing', async () => {
+      const response = await leaderboard.delete();
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(LeaderboardDelete.Success);
+      }, `expected Success but got ${response.toString()}`);
+    });
   });
 
   describe('#Fetch by rank', () => {
-    const leaderboardName = `leaderboard-${v4()}`;
+    const leaderboardName = `test-leaderboard-${v4()}`;
     const leaderboard = leaderboardClient.leaderboard(
       integrationTestCacheName,
       leaderboardName
@@ -611,10 +625,17 @@ export function runLeaderboardClientTests(
       ];
       expect(receivedTopTwo).toEqual(expectedTopTwo);
     });
+
+    it('deletes the leaderboard when done testing', async () => {
+      const response = await leaderboard.delete();
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(LeaderboardDelete.Success);
+      }, `expected Success but got ${response.toString()}`);
+    });
   });
 
   describe('#Get element rank', () => {
-    const leaderboardName = `leaderboard-${v4()}`;
+    const leaderboardName = `test-leaderboard-${v4()}`;
     const leaderboard = leaderboardClient.leaderboard(
       integrationTestCacheName,
       leaderboardName
@@ -691,10 +712,17 @@ export function runLeaderboardClientTests(
       ];
       expect(receivedDescending).toEqual(expectedDescending);
     });
+
+    it('deletes the leaderboard when done testing', async () => {
+      const response = await leaderboard.delete();
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(LeaderboardDelete.Success);
+      }, `expected Success but got ${response.toString()}`);
+    });
   });
 
   describe('#Get leaderboard length', () => {
-    const leaderboardName = `leaderboard-${v4()}`;
+    const leaderboardName = `test-leaderboard-${v4()}`;
     const leaderboard = leaderboardClient.leaderboard(
       integrationTestCacheName,
       leaderboardName
@@ -729,10 +757,17 @@ export function runLeaderboardClientTests(
       const receivedLength = lengthResponse as LeaderboardLength.Success;
       expect(receivedLength.length()).toEqual(elements.size);
     });
+
+    it('deletes the leaderboard when done testing', async () => {
+      const response = await leaderboard.delete();
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(LeaderboardDelete.Success);
+      }, `expected Success but got ${response.toString()}`);
+    });
   });
 
   describe('#Remove elements', () => {
-    const leaderboardName = `leaderboard-${v4()}`;
+    const leaderboardName = `test-leaderboard-${v4()}`;
     const leaderboard = leaderboardClient.leaderboard(
       integrationTestCacheName,
       leaderboardName
@@ -795,10 +830,17 @@ export function runLeaderboardClientTests(
       ];
       expect(receivedElements).toEqual(expectedElements);
     });
+
+    it('deletes the leaderboard when done testing', async () => {
+      const response = await leaderboard.delete();
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(LeaderboardDelete.Success);
+      }, `expected Success but got ${response.toString()}`);
+    });
   });
 
   describe('#Delete leaderboard', () => {
-    const leaderboardName = `leaderboard-${v4()}`;
+    const leaderboardName = `test-leaderboard-${v4()}`;
     const leaderboard = leaderboardClient.leaderboard(
       integrationTestCacheName,
       leaderboardName
@@ -850,6 +892,13 @@ export function runLeaderboardClientTests(
       expectWithMessage(() => {
         expect(deletedLength).toEqual(0);
       }, `expected array of size 0 but got ${deletedLength}`);
+    });
+
+    it('deletes the leaderboard when done testing', async () => {
+      const response = await leaderboard.delete();
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(LeaderboardDelete.Success);
+      }, `expected Success but got ${response.toString()}`);
     });
   });
 }
