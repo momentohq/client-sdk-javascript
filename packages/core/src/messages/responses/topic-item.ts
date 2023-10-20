@@ -52,7 +52,7 @@ export class TopicItem {
     const displayValue = truncateString(this.value().toString());
     let displayString = `${this.constructor.name}: ${displayValue}`;
 
-    if (this._publisherId) {
+    if (this._publisherId !== undefined) {
       displayString += `; Publisher ID: ${this._publisherId}`;
     }
 
