@@ -9,11 +9,11 @@ import {truncateString} from '../../internal/utils';
  */
 export class TopicItem {
   private readonly _value: string | Uint8Array;
-  private readonly _publisherID?: string;
+  private readonly _publisherId?: string;
 
-  constructor(_value: string | Uint8Array, _publisherID?: string) {
+  constructor(_value: string | Uint8Array, _publisherId?: string) {
     this._value = _value;
-    this._publisherID = _publisherID;
+    this._publisherId = _publisherId;
   }
 
   /**
@@ -44,16 +44,16 @@ export class TopicItem {
    * Optionally returns the publisher ID from the steam if it exists.
    * @returns string | undefined
    */
-  public publisherID(): string | undefined {
-    return this._publisherID;
+  public publisherId(): string | undefined {
+    return this._publisherId;
   }
 
   public toString(): string {
     const displayValue = truncateString(this.value().toString());
     let displayString = `${this.constructor.name}: ${displayValue}`;
 
-    if (this._publisherID) {
-      displayString += `; Publisher ID: ${this._publisherID}`;
+    if (this._publisherId) {
+      displayString += `; Publisher ID: ${this._publisherId}`;
     }
 
     return displayString;

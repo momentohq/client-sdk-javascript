@@ -902,7 +902,7 @@ export function runAuthClientTests(
       await sleep(2000);
 
       expect(receivedValues[0].valueString()).toEqual('humans landed on Mars!');
-      expect(receivedValues[0].publisherID()).toEqual('myTokenID');
+      expect(receivedValues[0].publisherId()).toEqual('myTokenID');
       expect(receivedValues[0].toString()).toEqual(
         'TopicItem: humans landed on Mars!; Publisher ID: myTokenID'
       );
