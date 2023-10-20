@@ -8,6 +8,8 @@ import {
   VectorDeleteItemBatch,
   VectorSearch,
   VectorUpsertItemBatch,
+  InvalidArgumentError,
+  UnknownError,
 } from '@gomomento/sdk-core';
 import {VectorIndexClientProps} from '../vector-index-client-props';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
@@ -47,18 +49,26 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     indexName: string,
     items: Array<VectorIndexItem>
   ): Promise<VectorUpsertItemBatch.Response> {
+    let request: vectorindex._UpsertItemBatchRequest;
+
     try {
       validateIndexName(indexName);
+
+      // Create the request here to catch any metadata validation errors.
+      request = VectorIndexDataClient.buildUpsertItemBatchRequest(
+        indexName,
+        items
+      );
     } catch (err) {
       return new VectorUpsertItemBatch.Error(normalizeSdkError(err as Error));
     }
-    return await this.sendUpsertItemBatch(indexName, items);
+    return await this.sendUpsertItemBatch(request);
   }
 
-  private async sendUpsertItemBatch(
+  private static buildUpsertItemBatchRequest(
     indexName: string,
     items: Array<VectorIndexItem>
-  ): Promise<VectorUpsertItemBatch.Response> {
+  ): vectorindex._UpsertItemBatchRequest {
     const request = new vectorindex._UpsertItemBatchRequest();
     request.setIndexName(indexName);
     request.setItemsList(
@@ -70,19 +80,60 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
         item.setVector(vector);
 
         item.setMetadataList(
-          vectorIndexItem.metadata === undefined
-            ? []
-            : Object.entries(vectorIndexItem.metadata).map(([key, value]) => {
-                const metadata = new vectorindex._Metadata();
-                metadata.setField(key);
-                metadata.setStringValue(value);
-                return metadata;
-              })
+          VectorIndexDataClient.convertItemMetadataToProtobufMetadata(
+            vectorIndexItem
+          )
         );
         return item;
       })
     );
+    return request;
+  }
 
+  private static convertItemMetadataToProtobufMetadata(
+    item: VectorIndexItem
+  ): vectorindex._Metadata[] {
+    if (item.metadata === undefined) {
+      return [];
+    }
+    return Object.entries(item.metadata).map(([key, value]) => {
+      const metadata = new vectorindex._Metadata();
+      metadata.setField(key);
+      if (typeof value === 'string') {
+        metadata.setStringValue(value);
+      } else if (typeof value === 'number') {
+        if (Number.isInteger(value)) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          metadata.setIntegerValue(value);
+        } else {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          metadata.setDoubleValue(value);
+        }
+      } else if (typeof value === 'boolean') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        metadata.setBooleanValue(value);
+      } else if (
+        Array.isArray(value) &&
+        value.every(item => typeof item === 'string')
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+        const listOfStrings = new vectorindex._Metadata._ListOfStrings();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        listOfStrings.setValuesList(value);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        metadata.setListOfStringsValue(listOfStrings);
+      } else {
+        throw new InvalidArgumentError(
+          `Metadata value for field '${key}' is not a valid type. Value is of type '${typeof value} and is not a string, number, boolean, or array of strings.'`
+        );
+      }
+      return metadata;
+    });
+  }
+
+  private async sendUpsertItemBatch(
+    request: vectorindex._UpsertItemBatchRequest
+  ): Promise<VectorUpsertItemBatch.Response> {
     return await new Promise(resolve => {
       this.client.upsertItemBatch(
         request,
@@ -201,9 +252,43 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
                   id: hit.getId(),
                   distance: hit.getDistance(),
                   metadata: hit.getMetadataList().reduce((acc, metadata) => {
-                    acc[metadata.getField()] = metadata.getStringValue();
+                    const field = metadata.getField();
+                    switch (metadata.getValueCase()) {
+                      case vectorindex._Metadata.ValueCase.STRING_VALUE:
+                        acc[field] = metadata.getStringValue();
+                        break;
+                      case vectorindex._Metadata.ValueCase.INTEGER_VALUE:
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+                        acc[field] = metadata.getIntegerValue();
+                        break;
+                      case vectorindex._Metadata.ValueCase.DOUBLE_VALUE:
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+                        acc[field] = metadata.getDoubleValue();
+                        break;
+                      case vectorindex._Metadata.ValueCase.BOOLEAN_VALUE:
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+                        acc[field] = metadata.getBooleanValue();
+                        break;
+                      case vectorindex._Metadata.ValueCase
+                        .LIST_OF_STRINGS_VALUE:
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+                        acc[field] =
+                          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                          metadata.getListOfStringsValue()?.getValuesList() ??
+                          [];
+                        break;
+                      default:
+                        resolve(
+                          new VectorSearch.Error(
+                            new UnknownError(
+                              'Search responded with an unknown result'
+                            )
+                          )
+                        );
+                        break;
+                    }
                     return acc;
-                  }, {} as Record<string, string>),
+                  }, {} as Record<string, string | number | boolean | Array<string>>),
                 }))
               )
             );
