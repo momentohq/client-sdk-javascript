@@ -380,6 +380,56 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
       );
     });
 
+    it('should support upsert and search with diverse metadata', async () => {
+      const indexName = testIndexName();
+      await WithIndex(
+        vectorClient,
+        indexName,
+        2,
+        VectorSimilarityMetric.INNER_PRODUCT,
+        async () => {
+          const metadata = {
+            string_key: 'string_value',
+            integer_key: 123,
+            double_key: 3.14,
+            boolean_key: true,
+            list_of_strings: ['a', 'b', 'c'],
+            empty_list: [],
+          };
+          const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
+            {
+              id: 'test_item_1',
+              vector: [1.0, 2.0],
+              metadata,
+            },
+          ]);
+          expectWithMessage(() => {
+            expect(upsertResponse).toBeInstanceOf(
+              VectorUpsertItemBatch.Success
+            );
+          }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
+
+          await sleep(2_000);
+
+          const searchResponse = await vectorClient.search(
+            indexName,
+            [1.0, 2.0],
+            {
+              topK: 1,
+              metadataFields: ALL_VECTOR_METADATA,
+            }
+          );
+          expectWithMessage(() => {
+            expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
+          }, `expected SUCCESS but got ${searchResponse.toString()}}`);
+          const successResponse = searchResponse as VectorSearch.Success;
+          expect(successResponse.hits()).toEqual([
+            {id: 'test_item_1', distance: 5.0, metadata},
+          ]);
+        }
+      );
+    });
+
     it('should replacing existing items with upsert', async () => {
       const indexName = testIndexName();
       await WithIndex(

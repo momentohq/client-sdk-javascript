@@ -4,7 +4,7 @@ import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
 export interface SearchHit {
   id: string;
   distance: number;
-  metadata: Record<string, string>;
+  metadata: Record<string, string | number | boolean | Array<string>>;
 }
 
 /**
