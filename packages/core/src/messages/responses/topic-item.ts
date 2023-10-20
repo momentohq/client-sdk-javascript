@@ -9,9 +9,13 @@ import {truncateString} from '../../internal/utils';
  */
 export class TopicItem {
   private readonly _value: string | Uint8Array;
-  constructor(_value: string | Uint8Array) {
+  private readonly _publisherID?: string;
+
+  constructor(_value: string | Uint8Array, _publisherID?: string) {
     this._value = _value;
+    this._publisherID = _publisherID;
   }
+
   /**
    * Returns the data read from the stream.
    * @returns string | Uint8Array
@@ -36,8 +40,22 @@ export class TopicItem {
     return this.value() as Uint8Array;
   }
 
+  /**
+   * Optionally returns the publisher ID from the steam if it exists.
+   * @returns string | undefined
+   */
+  public publisherID(): string | undefined {
+    return this._publisherID;
+  }
+
   public toString(): string {
-    const display = truncateString(this.value().toString());
-    return `${this.constructor.name}: ${display}`;
+    const displayValue = truncateString(this.value().toString());
+    let displayString = `${this.constructor.name}: ${displayValue}`;
+
+    if (this._publisherID) {
+      displayString += `; Publisher ID: ${this._publisherID}`;
+    }
+
+    return displayString;
   }
 }

@@ -184,9 +184,13 @@ export class PubsubClient extends AbstractPubsubClient {
         options.subscriptionState.lastTopicSequenceNumber =
           resp.item.topic_sequence_number;
         if (resp.item.value.text) {
-          options.onItem(new TopicItem(resp.item.value.text));
+          options.onItem(
+            new TopicItem(resp.item.value.text, resp.item.publisher_id)
+          );
         } else if (resp.item.value.binary) {
-          options.onItem(new TopicItem(resp.item.value.binary));
+          options.onItem(
+            new TopicItem(resp.item.value.binary, resp.item.publisher_id)
+          );
         } else {
           this.logger.error(
             'Received subscription item with unknown type; topic: %s',

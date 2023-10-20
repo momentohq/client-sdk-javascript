@@ -158,6 +158,61 @@ export function runTopicClientTests(
       (subscribeResponse as TopicSubscribe.Subscription).unsubscribe();
     });
 
+    it('should publish data with tokenID client and receive them on a subscription', async () => {
+      const topicName = v4();
+      const publishedValues = [
+        'value1',
+        'value2',
+        new TextEncoder().encode('value3'),
+      ];
+      const expectedValues = ['value1', 'value2', uint8ArrayForTest('value3')];
+      const receivedValues: (string | Uint8Array)[] = [];
+
+      let done = false;
+      const subscribeResponse = await topicClient.subscribe(
+        integrationTestCacheName,
+        topicName,
+        {
+          onItem: (item: TopicItem) => {
+            receivedValues.push(item.value());
+          },
+          onError: (error: TopicSubscribe.Error) => {
+            if (!done) {
+              expect(1).fail(
+                `Should not receive an error but got one: ${error.message()}`
+              );
+            }
+          },
+        }
+      );
+      expectWithMessage(() => {
+        expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
+      }, `expected SUBSCRIPTION but got ${subscribeResponse.toString()}`);
+
+      // Wait for stream to start.
+      await sleep(STREAM_WAIT_TIME_MS);
+
+      for (const value of publishedValues) {
+        const publishResponse = await topicClient.publish(
+          integrationTestCacheName,
+          topicName,
+          value
+        );
+        expectWithMessage(() => {
+          expect(publishResponse).toBeInstanceOf(TopicPublish.Success);
+        }, `expected SUCCESS but got ${publishResponse.toString()}`);
+      }
+
+      // Wait for values to be received.
+      await sleep(STREAM_WAIT_TIME_MS);
+
+      expect(receivedValues).toEqual(expectedValues);
+      done = true;
+
+      // Need to close the stream before the test ends or else the test will hang.
+      (subscribeResponse as TopicSubscribe.Subscription).unsubscribe();
+    });
+
     it('should not receive messages when unsubscribed', async () => {
       const topicName = v4();
       const publishedValue = 'value';
