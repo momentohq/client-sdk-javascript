@@ -78,18 +78,10 @@ import * as RefreshApiKey from '@gomomento/sdk-core/dist/src/messages/responses/
 
 import * as GenerateDisposableToken from '@gomomento/sdk-core/dist/src/messages/responses/generate-disposable-token';
 
-// VectorClient Request Types
-export {ALL_VECTOR_METADATA, VectorSimilarityMetric} from '@gomomento/sdk-core';
-
-// VectorClient Response Types
-export {vector, VectorIndexItem} from '@gomomento/sdk-core';
 export * from '@gomomento/sdk-core/dist/src/messages/responses/vector';
-
-// LeaderboardClient Response Types
-export {leaderboard} from '@gomomento/sdk-core';
 export * from '@gomomento/sdk-core/dist/src/messages/responses/leaderboard';
 
-import {
+import {leaderboard,vector, VectorIndexItem,ALL_VECTOR_METADATA, VectorSimilarityMetric,
   ICacheClient,
   IMomentoCache,
   SubscribeCallOptions,
@@ -352,4 +344,5 @@ export {
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
   BatchUtils,
+  leaderboard,vector, VectorIndexItem,ALL_VECTOR_METADATA, VectorSimilarityMetric
 };

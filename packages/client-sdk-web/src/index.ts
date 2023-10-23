@@ -122,6 +122,10 @@ import {
   TopicSelector,
   AllCaches,
   AllTopics,
+  ALL_VECTOR_METADATA,
+  VectorSimilarityMetric,
+  vector,
+  VectorIndexItem,
 } from '@gomomento/sdk-core';
 
 import {Configuration} from './config/configuration';
@@ -137,11 +141,6 @@ import {
   LeaderboardConfiguration,
 } from './config/leaderboard-configuration';
 
-// VectorClient Request Types
-export {ALL_VECTOR_METADATA, VectorSimilarityMetric} from '@gomomento/sdk-core';
-
-// VectorClient Response Types
-export {vector, VectorIndexItem} from '@gomomento/sdk-core';
 export * from '@gomomento/sdk-core/dist/src/messages/responses/vector';
 
 export {
@@ -285,4 +284,8 @@ export {
   MomentoLoggerFactory,
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
+  ALL_VECTOR_METADATA,
+  VectorSimilarityMetric,
+  vector,
+  VectorIndexItem,
 };
