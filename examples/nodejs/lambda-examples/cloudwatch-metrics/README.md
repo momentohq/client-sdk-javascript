@@ -18,7 +18,7 @@ This directory contains an AWS CDK stack that will create and populate a custom 
 - To get started with Momento, you will need a Super User Momento API key. You can get one from the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining an API key.
 - To deploy the CDK app, you will need to have [configured your AWS credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-authentication.html#cli-chap-authentication-precedence).
 
-## Deploying the Lambda Function
+## Deploying the CloudWatch Dashboard (along with an example Momento Lambda Function)
 
 Follow the instructions in this section to deploy a CloudWatch dashboard along with a Node.js Lambda function that uses Momento's Experimental Metrics Middleware.
 
@@ -38,11 +38,11 @@ npm install
 ```
 
 Then create a `.env` file in the `infrastructure` directory, which is where you will define all required configuration variables. 
-You will need the Super User API key you generated from the [Momento Console](https://console.gomomento.com). You will also set the `STACK_CONFIG` variable to `lambda` like so:
+You will need the Super User API key you generated from the [Momento Console](https://console.gomomento.com). You will also set the `EXAMPLE_MOMENTO_APPLICATION` variable to `lambda` like so:
 
 ```bash
 MOMENTO_API_KEY=<YOUR_MOMENTO_API_KEY>
-STACK_CONFIG="lambda"
+EXAMPLE_MOMENTO_APPLICATION="lambda"
 ```
 
 Then deploy the CDK stack for the example Lambda function and CloudWatch dashboard:
@@ -55,7 +55,7 @@ To run the lambda, go to the `MomentoMetricsMiddlewareCDKExample` function in th
 
 After a few minutes, you should be able to see the metrics populating several charts by navigating to CloudWatch > Dashboards > Custom Dashboards > MomentoMetricsCDKExampleDashboard in the AWS console.
 
-## Deploying the ECS Cluster
+## Deploying the CloudWatch Dashboard (along with an example Momento ECS Cluster)
 
 Follow the instructions in this section to deploy a CloudWatch dashboard along with a small ECS cluster for a Node.js Docker image that uses Momento's Experimental Metrics Middleware.
 
@@ -75,11 +75,11 @@ npm install
 ```
 
 Then create a `.env` file in the `infrastructure` directory, which is where you will define all required configuration variables. 
-You will need the Super User API key you generated from the [Momento Console](https://console.gomomento.com). You will also set the `STACK_CONFIG` variable to `ecs` like so:
+You will need the Super User API key you generated from the [Momento Console](https://console.gomomento.com). You will also set the `EXAMPLE_MOMENTO_APPLICATION` variable to `ecs` like so:
 
 ```bash
 MOMENTO_API_KEY=<YOUR_MOMENTO_API_KEY>
-STACK_CONFIG="ecs"
+EXAMPLE_MOMENTO_APPLICATION="ecs"
 ```
 
 Then deploy the CDK stack for the example Lambda function and CloudWatch dashboard:
@@ -102,11 +102,11 @@ npm install
 ```
 
 Then create a `.env` file in the `infrastructure` directory, which is where you will define all required configuration variables. 
-You will need the Super User API key you generated from the [Momento Console](https://console.gomomento.com). You will also set the `STACK_CONFIG` and `LOG_GROUP_NAME` variables like so:
+You will need the Super User API key you generated from the [Momento Console](https://console.gomomento.com). You will also set the `EXAMPLE_MOMENTO_APPLICATION` and `LOG_GROUP_NAME` variables like so:
 
 ```bash
 MOMENTO_API_KEY=<YOUR_MOMENTO_API_KEY>
-STACK_CONFIG="dashboard-only"
+EXAMPLE_MOMENTO_APPLICATION="dashboard-only"
 LOG_GROUP_NAME="<YOUR_LOG_GROUP_NAME>"
 ```
 

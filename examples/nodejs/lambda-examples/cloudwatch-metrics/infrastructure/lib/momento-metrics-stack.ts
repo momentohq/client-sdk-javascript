@@ -27,16 +27,15 @@ export class MomentoMetricsStack extends cdk.Stack {
     super(scope, id, props);
 
     // Step 1: read in environment variables from your .env file
-    console.log(process.env.MOMENTO_API_KEY);
     if (!this.validateMomentoApiKey(process.env.MOMENTO_API_KEY)) {
       throw new Error('Missing required environment variable MOMENTO_API_KEY');
     }
     const momentoApiKey = String(process.env.MOMENTO_API_KEY);
 
-    if (!this.validateStackConfig(process.env.STACK_CONFIG)) {
-      throw new Error('Missing or invalid entry for required environment variable STACK_CONFIG');
+    if (!this.validateStackConfig(process.env.EXAMPLE_MOMENTO_APPLICATION)) {
+      throw new Error('Missing or invalid entry for required environment variable EXAMPLE_MOMENTO_APPLICATION');
     }
-    const stackConfig = String(process.env.STACK_CONFIG);
+    const stackConfig = String(process.env.EXAMPLE_MOMENTO_APPLICATION);
 
     if (!this.validateLogGroupName(stackConfig, process.env.LOG_GROUP_NAME)) {
       throw new Error('Missing required environment variable LOG_GROUP_NAME');
