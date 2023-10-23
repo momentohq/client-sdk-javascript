@@ -8,9 +8,30 @@ import {
   MomentoErrorCode,
   LeaderboardLength,
   InvalidArgumentError,
+  ILeaderboard,
 } from '@gomomento/sdk-core';
 import {expectWithMessage} from './common-int-test-utils';
 import {v4} from 'uuid';
+
+// Leaderboard items have a 7-day or no TTL so it's important to make sure we
+// delete temporary leaderboards at the end of each test to the best of our ability
+async function withTemporaryLeaderboard(
+  leaderboardClient: ILeaderboardClient,
+  leaderboardName: string,
+  cacheName: string,
+  testCase: (leaderboard: ILeaderboard) => Promise<void>
+) {
+  const leaderboard = leaderboardClient.leaderboard(cacheName, leaderboardName);
+
+  try {
+    await testCase(leaderboard);
+  } finally {
+    const response = await leaderboard.delete();
+    expectWithMessage(() => {
+      expect(response).toBeInstanceOf(LeaderboardDelete.Success);
+    }, `expected deleting temporary leaderboard ${leaderboardName} to be a Success but got ${response.toString()}`);
+  }
+}
 
 export function runLeaderboardClientTests(
   leaderboardClient: ILeaderboardClient,
@@ -40,26 +61,32 @@ export function runLeaderboardClientTests(
 
   describe('#Upsert elements', () => {
     const leaderboardName = `test-leaderboard-${v4()}`;
-    const leaderboard = leaderboardClient.leaderboard(
-      integrationTestCacheName,
-      leaderboardName
-    );
 
-    it('validates the number of elements', async () => {
+    const validateNumberOfElements = async (leaderboard: ILeaderboard) => {
       const elements = new Map<number, number>();
+
       const response = await leaderboard.upsert(elements);
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardUpsert.Error);
       }, `expected Error but got ${response.toString()}`);
+
       const responseError = response as LeaderboardUpsert.Error;
       expectWithMessage(() => {
         expect(responseError.errorCode()).toEqual(
           MomentoErrorCode.INVALID_ARGUMENT_ERROR
         );
       }, `expected INVALID_ARGUMENT_ERROR but got ${responseError.errorCode()} ${responseError.message()}`);
+    };
+    it('validates the number of elements', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        validateNumberOfElements
+      );
     });
 
-    it('creates new leaderboard and inserts elements', async () => {
+    const insertsAndUpdatesElements = async (leaderboard: ILeaderboard) => {
       // Insert the first three elements
       const elements1 = new Map([
         [123, 100.0],
@@ -244,24 +271,21 @@ export function runLeaderboardClientTests(
         },
       ];
       expect(receivedElements4).toEqual(expectedElements4);
-    });
-
-    it('deletes the leaderboard when done testing', async () => {
-      const response = await leaderboard.delete();
-      expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardDelete.Success);
-      }, `expected Success but got ${response.toString()}`);
+    };
+    it('creates new leaderboard and inserts elements', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        insertsAndUpdatesElements
+      );
     });
   });
 
   describe('#Fetch by score', () => {
     const leaderboardName = `test-leaderboard-${v4()}`;
-    const leaderboard = leaderboardClient.leaderboard(
-      integrationTestCacheName,
-      leaderboardName
-    );
 
-    it('validates the offset', async () => {
+    const validatesOffset = async (leaderboard: ILeaderboard) => {
       const negativeOffset = await leaderboard.fetchByScore({
         offset: -10,
       });
@@ -288,9 +312,17 @@ export function runLeaderboardClientTests(
       expectWithMessage(() => {
         expect(positiveOffsetElements).toBeArrayOfSize(0);
       }, `expected array of size 0 but got ${positiveOffsetElements.length}`);
+    };
+    it('validates the offset', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        validatesOffset
+      );
     });
 
-    it('validates the count', async () => {
+    const validatesCount = async (leaderboard: ILeaderboard) => {
       const negativeCount = await leaderboard.fetchByScore({
         count: -10,
       });
@@ -317,9 +349,17 @@ export function runLeaderboardClientTests(
       expectWithMessage(() => {
         expect(positiveCountElements).toBeArrayOfSize(0);
       }, `expected array of size 0 but got ${positiveCountElements.length}`);
+    };
+    it('validates the count', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        validatesCount
+      );
     });
 
-    it('validates the score range', async () => {
+    const validatesScoreRange = async (leaderboard: ILeaderboard) => {
       // min should not be greater than max
       const badRange = await leaderboard.fetchByScore({
         minScore: 100,
@@ -346,9 +386,17 @@ export function runLeaderboardClientTests(
       expectWithMessage(() => {
         expect(undefinedRangeElements).toBeArrayOfSize(0);
       }, `expected array of size 0 but got ${undefinedRangeElements.length}`);
+    };
+    it('validates the score range', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        validatesScoreRange
+      );
     });
 
-    it('returns Success with no values when leaderboard does not exist', async () => {
+    const leaderboardDoesNotExist = async (leaderboard: ILeaderboard) => {
       const response = await leaderboard.fetchByScore();
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardFetch.Success);
@@ -357,9 +405,17 @@ export function runLeaderboardClientTests(
       expectWithMessage(() => {
         expect(elements).toBeArrayOfSize(0);
       }, `expected array of size 0 but got ${elements.length}`);
+    };
+    it('returns Success with no values when leaderboard does not exist', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        leaderboardDoesNotExist
+      );
     });
 
-    it('fetches elements given a variety of score ranges', async () => {
+    const fetchesElementsByScore = async (leaderboard: ILeaderboard) => {
       // Insert some elements
       const elements = new Map([
         [123, 10.0],
@@ -460,24 +516,21 @@ export function runLeaderboardClientTests(
         },
       ];
       expect(receivedWithAllOptions).toEqual(expectedWithAllOptions);
-    });
-
-    it('deletes the leaderboard when done testing', async () => {
-      const response = await leaderboard.delete();
-      expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardDelete.Success);
-      }, `expected Success but got ${response.toString()}`);
+    };
+    it('fetches elements given a variety of score ranges', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        fetchesElementsByScore
+      );
     });
   });
 
   describe('#Fetch by rank', () => {
     const leaderboardName = `test-leaderboard-${v4()}`;
-    const leaderboard = leaderboardClient.leaderboard(
-      integrationTestCacheName,
-      leaderboardName
-    );
 
-    it('validates the rank range', async () => {
+    const validatesRankRange = async (leaderboard: ILeaderboard) => {
       const negativeRankRange = await leaderboard.fetchByRank(-10, -5);
       expectWithMessage(() => {
         expect(negativeRankRange).toBeInstanceOf(LeaderboardFetch.Error);
@@ -522,9 +575,17 @@ export function runLeaderboardClientTests(
           MomentoErrorCode.INVALID_ARGUMENT_ERROR
         );
       }, `expected INVALID_ARGUMENT_ERROR but got ${overLimitError.errorCode()} ${overLimitError.message()}`);
+    };
+    it('validates the rank range', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        validatesRankRange
+      );
     });
 
-    it('returns Success with no values when leaderboard does not exist', async () => {
+    const leaderboardDoesNotExist = async (leaderboard: ILeaderboard) => {
       const response = await leaderboard.fetchByRank(0, 100);
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardFetch.Success);
@@ -533,9 +594,17 @@ export function runLeaderboardClientTests(
       expectWithMessage(() => {
         expect(elements).toBeArrayOfSize(0);
       }, `expected array of size 0 but got ${elements.length}`);
+    };
+    it('returns Success with no values when leaderboard does not exist', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        leaderboardDoesNotExist
+      );
     });
 
-    it('fetches elements given a variety of rank ranges', async () => {
+    const fetchesElementsByRank = async (leaderboard: ILeaderboard) => {
       // upsert some values first
       const elements = new Map([
         [123, 100],
@@ -624,24 +693,21 @@ export function runLeaderboardClientTests(
         },
       ];
       expect(receivedTopTwo).toEqual(expectedTopTwo);
-    });
-
-    it('deletes the leaderboard when done testing', async () => {
-      const response = await leaderboard.delete();
-      expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardDelete.Success);
-      }, `expected Success but got ${response.toString()}`);
+    };
+    it('fetches elements given a variety of score ranges', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        fetchesElementsByRank
+      );
     });
   });
 
   describe('#Get element rank', () => {
     const leaderboardName = `test-leaderboard-${v4()}`;
-    const leaderboard = leaderboardClient.leaderboard(
-      integrationTestCacheName,
-      leaderboardName
-    );
 
-    it('returns Success with no values when leaderboard does not exist', async () => {
+    const leaderboardDoesNotExist = async (leaderboard: ILeaderboard) => {
       const response = await leaderboard.getRank([123]);
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardFetch.Success);
@@ -650,9 +716,17 @@ export function runLeaderboardClientTests(
       expectWithMessage(() => {
         expect(elements).toBeArrayOfSize(0);
       }, `expected array of size 0 but got ${elements.length}`);
+    };
+    it('returns Success with no values when leaderboard does not exist', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        leaderboardDoesNotExist
+      );
     });
 
-    it('rank changes given ascending vs descending order', async () => {
+    const fetchesRank = async (leaderboard: ILeaderboard) => {
       // Insert some elements
       const elements = new Map([
         [123, 100.0],
@@ -711,33 +785,38 @@ export function runLeaderboardClientTests(
         },
       ];
       expect(receivedDescending).toEqual(expectedDescending);
-    });
-
-    it('deletes the leaderboard when done testing', async () => {
-      const response = await leaderboard.delete();
-      expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardDelete.Success);
-      }, `expected Success but got ${response.toString()}`);
+    };
+    it('rank changes given ascending vs descending order', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        fetchesRank
+      );
     });
   });
 
   describe('#Get leaderboard length', () => {
     const leaderboardName = `test-leaderboard-${v4()}`;
-    const leaderboard = leaderboardClient.leaderboard(
-      integrationTestCacheName,
-      leaderboardName
-    );
 
-    it('returns Success with length 0 when leaderboard does not exist', async () => {
+    const leaderboardDoesNotExist = async (leaderboard: ILeaderboard) => {
       const response = await leaderboard.length();
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardLength.Success);
       }, `expected Found but got ${response.toString()}`);
       const receivedLength = (response as LeaderboardLength.Success).length();
       expect(receivedLength).toEqual(0);
+    };
+    it('returns Success with no values when leaderboard does not exist', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        leaderboardDoesNotExist
+      );
     });
 
-    it('returns length when leaderboard contains elements', async () => {
+    const fetchesLength = async (leaderboard: ILeaderboard) => {
       // Insert some elements
       const elements = new Map([
         [123, 100.0],
@@ -756,24 +835,21 @@ export function runLeaderboardClientTests(
       }, `expected Found but got ${lengthResponse.toString()}`);
       const receivedLength = lengthResponse as LeaderboardLength.Success;
       expect(receivedLength.length()).toEqual(elements.size);
-    });
-
-    it('deletes the leaderboard when done testing', async () => {
-      const response = await leaderboard.delete();
-      expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardDelete.Success);
-      }, `expected Success but got ${response.toString()}`);
+    };
+    it('returns length when leaderboard contains elements', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        fetchesLength
+      );
     });
   });
 
   describe('#Remove elements', () => {
     const leaderboardName = `test-leaderboard-${v4()}`;
-    const leaderboard = leaderboardClient.leaderboard(
-      integrationTestCacheName,
-      leaderboardName
-    );
 
-    it('validates the number of elements', async () => {
+    const validateNumberOfElements = async (leaderboard: ILeaderboard) => {
       const response = await leaderboard.removeElements([]);
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardRemoveElements.Error);
@@ -784,16 +860,32 @@ export function runLeaderboardClientTests(
           MomentoErrorCode.INVALID_ARGUMENT_ERROR
         );
       }, `expected INVALID_ARGUMENT_ERROR but got ${responseError.errorCode()} ${responseError.message()}`);
+    };
+    it('validates the number of elements', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        validateNumberOfElements
+      );
     });
 
-    it('returns Success (no-op) when leaderboard does not exist', async () => {
+    const leaderboardDoesNotExist = async (leaderboard: ILeaderboard) => {
       const response = await leaderboard.removeElements([123]);
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardRemoveElements.Success);
       }, `expected Success but got ${response.toString()}`);
+    };
+    it('returns Success (no-op) with no values when leaderboard does not exist', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        leaderboardDoesNotExist
+      );
     });
 
-    it('successfully removes elements', async () => {
+    const removesElements = async (leaderboard: ILeaderboard) => {
       // Insert some elements first
       const elements = new Map([
         [123, 100.0],
@@ -829,31 +921,36 @@ export function runLeaderboardClientTests(
         },
       ];
       expect(receivedElements).toEqual(expectedElements);
-    });
-
-    it('deletes the leaderboard when done testing', async () => {
-      const response = await leaderboard.delete();
-      expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardDelete.Success);
-      }, `expected Success but got ${response.toString()}`);
+    };
+    it('successfully removes elements', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        removesElements
+      );
     });
   });
 
   describe('#Delete leaderboard', () => {
     const leaderboardName = `test-leaderboard-${v4()}`;
-    const leaderboard = leaderboardClient.leaderboard(
-      integrationTestCacheName,
-      leaderboardName
-    );
 
-    it('returns Success (no-op) when leaderboard does not exist', async () => {
+    const leaderboardDoesNotExist = async (leaderboard: ILeaderboard) => {
       const response = await leaderboard.delete();
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(LeaderboardDelete.Success);
       }, `expected Success but got ${response.toString()}`);
+    };
+    it('returns Success (no-op) with no values when leaderboard does not exist', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        leaderboardDoesNotExist
+      );
     });
 
-    it('successfully deletes a leaderboard', async () => {
+    const deletesLeaderboard = async (leaderboard: ILeaderboard) => {
       // Create a leaderboard by upserting some elements
       const elements = new Map([
         [123, 100.0],
@@ -892,13 +989,14 @@ export function runLeaderboardClientTests(
       expectWithMessage(() => {
         expect(deletedLength).toEqual(0);
       }, `expected array of size 0 but got ${deletedLength}`);
-    });
-
-    it('deletes the leaderboard when done testing', async () => {
-      const response = await leaderboard.delete();
-      expectWithMessage(() => {
-        expect(response).toBeInstanceOf(LeaderboardDelete.Success);
-      }, `expected Success but got ${response.toString()}`);
+    };
+    it('returns Success (no-op) with no values when leaderboard does not exist', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        deletesLeaderboard
+      );
     });
   });
 }
