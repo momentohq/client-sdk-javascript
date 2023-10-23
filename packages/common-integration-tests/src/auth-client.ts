@@ -26,6 +26,7 @@ import {
    * @deprecated but still included for testing backward compat
    */
   RefreshAuthToken,
+  TopicItem,
 } from '@gomomento/sdk-core';
 import {expectWithMessage} from './common-int-test-utils';
 import {InternalSuperUserPermissions} from '@gomomento/sdk-core/dist/src/internal/utils/auth';
@@ -37,6 +38,7 @@ import {
 import {v4} from 'uuid';
 import {expect} from '@jest/globals';
 import './momento-jest-matchers';
+import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 
 const SUPER_USER_PERMISSIONS: PermissionScope =
   new InternalSuperUserPermissions();
@@ -842,14 +844,72 @@ export function runAuthClientTests(
 
       const tokenResponse = await authClient.generateDisposableToken(
         {
-          permissions: [{role: CacheRole.WriteOnly, cache: FGA_CACHE_1}],
+          permissions: [
+            {role: CacheRole.WriteOnly, cache: FGA_CACHE_1},
+            {
+              role: TopicRole.PublishSubscribe,
+              cache: FGA_CACHE_2,
+              topic: AllTopics,
+            },
+          ],
         },
         ExpiresIn.seconds(60),
-        {tokenId: 'someTokenID'}
+        {tokenId: 'myTokenID'}
       );
+
       expectWithMessage(() => {
         expect(tokenResponse).toBeInstanceOf(GenerateDisposableToken.Success);
       }, `Expected SUCCESS but received ${tokenResponse.toString()}`);
+
+      const token = (tokenResponse as GenerateDisposableToken.Success)
+        .authToken;
+
+      const topicClient = topicClientFactory(token);
+
+      const receivedValues: TopicItem[] = [];
+
+      let done = false;
+      const subscribeResponse = await topicClient.subscribe(
+        FGA_CACHE_2,
+        'breaking news!',
+        {
+          onItem: (item: TopicItem) => {
+            receivedValues.push(item);
+          },
+          onError: (error: TopicSubscribe.Error) => {
+            if (!done) {
+              throw new Error(error.message());
+            }
+          },
+        }
+      );
+      expectWithMessage(() => {
+        expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
+      }, `expected SUBSCRIPTION but got ${subscribeResponse.toString()}`);
+
+      // Wait for stream to start.
+      await sleep(2000);
+      const pubResp1 = await topicClient.publish(
+        FGA_CACHE_2,
+        'breaking news!',
+        'humans landed on Mars!'
+      );
+      expectWithMessage(() => {
+        expect(pubResp1).toBeInstanceOf(TopicPublish.Success);
+      }, `Expected SUCCESS but received ${pubResp1.toString()}`);
+
+      // wait for values
+      await sleep(2000);
+
+      expect(receivedValues[0].valueString()).toEqual('humans landed on Mars!');
+      expect(receivedValues[0].publisherId()).toEqual('myTokenID');
+      expect(receivedValues[0].toString()).toEqual(
+        'TopicItem: humans landed on Mars!; Publisher ID: myTokenID'
+      );
+      done = true;
+
+      // Need to close the stream before the test ends or else the test will hang.
+      (subscribeResponse as TopicSubscribe.Subscription).unsubscribe();
     });
 
     it('throws error when tokenID more than max length', async () => {
