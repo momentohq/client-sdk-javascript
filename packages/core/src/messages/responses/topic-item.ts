@@ -1,5 +1,9 @@
 import {truncateString} from '../../internal/utils';
 
+export interface TopicItemOptions {
+  publisherId?: string;
+}
+
 /**
  * Represents the data received from a topic subscription.
  *
@@ -11,9 +15,9 @@ export class TopicItem {
   private readonly _value: string | Uint8Array;
   private readonly _publisherId?: string;
 
-  constructor(_value: string | Uint8Array, _publisherId?: string) {
+  constructor(_value: string | Uint8Array, options?: TopicItemOptions) {
     this._value = _value;
-    this._publisherId = _publisherId;
+    this._publisherId = options?.publisherId;
   }
 
   /**
