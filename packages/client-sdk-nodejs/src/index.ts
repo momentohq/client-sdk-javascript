@@ -81,7 +81,12 @@ import * as GenerateDisposableToken from '@gomomento/sdk-core/dist/src/messages/
 export * from '@gomomento/sdk-core/dist/src/messages/responses/vector';
 export * from '@gomomento/sdk-core/dist/src/messages/responses/leaderboard';
 
-import {leaderboard,vector, VectorIndexItem,ALL_VECTOR_METADATA, VectorSimilarityMetric,
+import {
+  leaderboard,
+  vector,
+  VectorIndexItem,
+  ALL_VECTOR_METADATA,
+  VectorSimilarityMetric,
   ICacheClient,
   IMomentoCache,
   SubscribeCallOptions,
@@ -344,5 +349,9 @@ export {
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
   BatchUtils,
-  leaderboard,vector, VectorIndexItem,ALL_VECTOR_METADATA, VectorSimilarityMetric
+  leaderboard,
+  vector,
+  VectorIndexItem,
+  ALL_VECTOR_METADATA,
+  VectorSimilarityMetric,
 };
