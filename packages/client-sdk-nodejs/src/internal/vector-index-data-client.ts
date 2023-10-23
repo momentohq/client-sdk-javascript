@@ -22,7 +22,10 @@ import {
   validateIndexName,
   validateTopK,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {
+  UnknownError,
+  normalizeSdkError,
+} from '@gomomento/sdk-core/dist/src/errors';
 import {ALL_VECTOR_METADATA} from '@gomomento/sdk-core/dist/src/clients/IVectorIndexClient';
 
 export class VectorIndexDataClient implements IVectorIndexDataClient {
@@ -77,37 +80,92 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     indexName: string,
     items: Array<VectorIndexItem>
   ): Promise<VectorUpsertItemBatch.Response> {
+    let request: vectorindex._UpsertItemBatchRequest;
     try {
       validateIndexName(indexName);
+
+      // Create the request here to catch any metadata validation errors.
+      request = VectorIndexDataClient.buildUpsertItemBatchRequest(
+        indexName,
+        items
+      );
     } catch (err) {
       return new VectorUpsertItemBatch.Error(normalizeSdkError(err as Error));
     }
-    return await this.sendUpsertItemBatch(indexName, items);
+    return await this.sendUpsertItemBatch(indexName, request);
   }
 
-  private async sendUpsertItemBatch(
+  private static buildUpsertItemBatchRequest(
     indexName: string,
     items: Array<VectorIndexItem>
-  ): Promise<VectorUpsertItemBatch.Response> {
-    const request = new vectorindex._UpsertItemBatchRequest({
+  ): vectorindex._UpsertItemBatchRequest {
+    return new vectorindex._UpsertItemBatchRequest({
       index_name: indexName,
       items: items.map(item => {
         return new vectorindex._Item({
           id: item.id,
           vector: new vectorindex._Vector({elements: item.vector}),
           metadata:
-            item.metadata === undefined
-              ? []
-              : Object.entries(item.metadata).map(
-                  ([key, value]) =>
-                    new vectorindex._Metadata({
-                      field: key,
-                      string_value: value,
-                    })
-                ),
+            VectorIndexDataClient.convertItemMetadataToProtobufMetadata(item),
         });
       }),
     });
+  }
+
+  private static convertItemMetadataToProtobufMetadata(
+    item: VectorIndexItem
+  ): vectorindex._Metadata[] {
+    if (item.metadata === undefined) {
+      return [];
+    }
+    return Object.entries(item.metadata).map(([key, value]) => {
+      if (typeof value === 'string') {
+        return new vectorindex._Metadata({
+          field: key,
+          string_value: value,
+        });
+      } else if (typeof value === 'number') {
+        if (Number.isInteger(value)) {
+          return new vectorindex._Metadata({
+            field: key,
+            integer_value: value,
+          });
+        } else {
+          return new vectorindex._Metadata({
+            field: key,
+            double_value: value,
+          });
+        }
+      } else if (typeof value === 'boolean') {
+        return new vectorindex._Metadata({
+          field: key,
+          boolean_value: value,
+        });
+      } else if (
+        Array.isArray(value) &&
+        value.every(item => typeof item === 'string')
+      ) {
+        return new vectorindex._Metadata({
+          field: key,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          list_of_strings_value:
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            new vectorindex._Metadata._ListOfStrings({
+              values: value,
+            }),
+        });
+      } else {
+        throw new InvalidArgumentError(
+          `Metadata value for field '${key}' is not a valid type. Value is of type '${typeof value} and is not a string, number, boolean, or array of strings.'`
+        );
+      }
+    });
+  }
+
+  private async sendUpsertItemBatch(
+    indexName: string,
+    request: vectorindex._UpsertItemBatchRequest
+  ): Promise<VectorUpsertItemBatch.Response> {
     return await new Promise(resolve => {
       this.client.UpsertItemBatch(
         request,
@@ -212,9 +270,35 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
                   id: hit.id,
                   distance: hit.distance,
                   metadata: hit.metadata.reduce((acc, metadata) => {
-                    acc[metadata.field] = metadata.string_value;
+                    const field = metadata.field;
+                    switch (metadata.value) {
+                      case 'string_value':
+                        acc[field] = metadata.string_value;
+                        break;
+                      case 'integer_value':
+                        acc[field] = metadata.integer_value;
+                        break;
+                      case 'double_value':
+                        acc[field] = metadata.double_value;
+                        break;
+                      case 'boolean_value':
+                        acc[field] = metadata.boolean_value;
+                        break;
+                      case 'list_of_strings_value':
+                        acc[field] = metadata.list_of_strings_value.values;
+                        break;
+                      default:
+                        resolve(
+                          new VectorSearch.Error(
+                            new UnknownError(
+                              'Search responded with an unknown result'
+                            )
+                          )
+                        );
+                        break;
+                    }
                     return acc;
-                  }, {} as Record<string, string>),
+                  }, {} as Record<string, string | number | boolean | Array<string>>),
                 }))
               )
             );

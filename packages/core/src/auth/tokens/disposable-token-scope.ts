@@ -77,6 +77,10 @@ export type DisposableTokenScope =
   | PredefinedScope
   | DisposableTokenCachePermissions;
 
+export interface DisposableTokenProps {
+  tokenId?: string;
+}
+
 function isDisposableTokenPermissionObject(p: Permission): boolean {
   return isDisposableTokenCachePermission(p);
 }
