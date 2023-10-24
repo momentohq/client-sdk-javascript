@@ -69,7 +69,7 @@ You should see an output like:
 ```
 
 You can also pass a `tokenId` as a query string to your `curl` command. This is particularly useful to add context
-to your token, that can be viewed as a part of Momento [topic's](https://www.gomomento.com/services/topics) subscription messages.
+to your token, that can be viewed as a part of [Momento Topic's](https://www.gomomento.com/services/topics) subscription messages.
 An example is a chat application, where receivers can verify the authenticity of the sender. This example uses an optional `name` as a query string
 parameter, so your curl command with the API endpoint will look like:
 
