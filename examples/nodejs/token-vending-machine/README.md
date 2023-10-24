@@ -68,7 +68,7 @@ You should see an output like:
 {"authToken":"someShortLivedDisposableToken","expiresAt":1698119397}
 ```
 
-You can also pass a tokenId as a query string to your curl command to add context to your token. This can be particularly useful when using [Momento Topics](https://www.gomomento.com/services/topics) as the tokenId can be retrieved from subscription messages, allowing your application to distinguish between different subscribers.
+You can also pass a tokenId as a query string to your curl command to add context to your token. This can be particularly useful when using [Momento Topics](https://www.gomomento.com/services/topics) as the tokenId can be retrieved from subscription messages, allowing your application to distinguish between different subscribers. In this case, a `name` for the user is the `tokenId` passed as a query string.
 
 `https://9jkmukxn68.execute-api.us-west-2.amazonaws.com/prod?name=Taylor`
 
