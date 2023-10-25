@@ -21,7 +21,9 @@ const authClient = new AuthClient({
 export const revalidate = 0;
 
 export async function GET(_request: Request) {
-  const usernameValue = _request.cookies._parsed.get('username').value;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const usernameValue = _request.cookies._parsed.get("username").value;
 
   if (usernameValue === undefined) {
     console.error(`Username is undefined`);
