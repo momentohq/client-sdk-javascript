@@ -122,7 +122,7 @@ import {
   TopicSelector,
   AllCaches,
   AllTopics,
-  CacheRole, 
+  CacheRole,
   TopicRole,
 } from '@gomomento/sdk-core';
 
