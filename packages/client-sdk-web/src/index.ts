@@ -106,6 +106,10 @@ import {
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
   AllDataReadWrite,
+  CachePermission,
+  TopicPermission,
+  Permission,
+  Permissions,
   PermissionScope,
   /**
    * @deprecated please use PermissionScope instead
@@ -170,9 +174,13 @@ export {
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
   AllDataReadWrite,
-  PermissionScope,
   CacheRole,
   TopicRole,
+  CachePermission,
+  TopicPermission,
+  Permission,
+  Permissions,
+  PermissionScope,
   /**
    * @deprecated please use 'PermissionScope' instead
    */
