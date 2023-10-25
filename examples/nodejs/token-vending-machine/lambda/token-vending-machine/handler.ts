@@ -14,7 +14,9 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       throw new Error("Missing required env var 'MOMENTO_API_KEY_SECRET_NAME");
     }
     console.log('headers in handler:', event.headers);
-    const vendedApiKey = await vendDisposableToken(vendorApiKeySecretName, event.headers);
+    const tokenId = event.queryStringParameters?.name;
+    console.log('tokenID inferred from queryStringParameters: ', tokenId);
+    const vendedApiKey = await vendDisposableToken(vendorApiKeySecretName, event.headers, tokenId);
     return {
       statusCode: 200,
       headers: {
@@ -41,7 +43,8 @@ interface VendedToken {
 
 async function vendDisposableToken(
   vendorApiKeySecretName: string,
-  headers: APIGatewayProxyEventHeaders
+  headers: APIGatewayProxyEventHeaders,
+  tokenId: string | undefined
 ): Promise<VendedToken> {
   const momentoAuthClient = await getMomentoAuthClient(vendorApiKeySecretName);
 
@@ -50,10 +53,15 @@ async function vendDisposableToken(
     const cognitoUserTokenPermissions = determineCognitoUserTokenScope(headers);
     generateTokenResponse = await momentoAuthClient.generateDisposableToken(
       cognitoUserTokenPermissions,
-      tokenExpiresIn
+      tokenExpiresIn,
+      {
+        tokenId: tokenId,
+      }
     );
   } else {
-    generateTokenResponse = await momentoAuthClient.generateDisposableToken(tokenPermissions, tokenExpiresIn);
+    generateTokenResponse = await momentoAuthClient.generateDisposableToken(tokenPermissions, tokenExpiresIn, {
+      tokenId: tokenId,
+    });
   }
 
   if (generateTokenResponse instanceof GenerateDisposableToken.Success) {

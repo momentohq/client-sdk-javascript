@@ -2,10 +2,14 @@ import {
   CreateVectorIndex,
   DeleteVectorIndex,
   ListVectorIndexes,
-  PreviewVectorIndexClient, VectorSearch,
-  VectorUpsertItemBatch
-} from "@gomomento/sdk-web";
-import {ALL_VECTOR_METADATA} from "@gomomento/sdk-core";
+  PreviewVectorIndexClient,
+  VectorSearch,
+  VectorUpsertItemBatch,
+  ALL_VECTOR_METADATA,
+  Configurations,
+  CredentialProvider,
+} from '@gomomento/sdk-web';
+import {initJSDom} from '../utils/jsdom';
 
 async function example_API_CreateIndex(vectorClient: PreviewVectorIndexClient) {
   const result = await vectorClient.createIndex('test-index', 2);
@@ -23,18 +27,14 @@ async function example_API_CreateIndex(vectorClient: PreviewVectorIndexClient) {
 async function example_API_ListIndexes(vectorClient: PreviewVectorIndexClient) {
   const result = await vectorClient.listIndexes();
   if (result instanceof ListVectorIndexes.Success) {
-    console.log(
-      `Indexes:\n${result
-        .getIndexNames()
-        .join('\n')}\n\n`
-    );
+    console.log(`Indexes:\n${result.getIndexNames().join('\n')}\n\n`);
   } else if (result instanceof ListVectorIndexes.Error) {
     throw new Error(`An error occurred while attempting to list caches: ${result.errorCode()}: ${result.toString()}`);
   }
 }
 
 async function example_API_DeleteIndex(vectorClient: PreviewVectorIndexClient) {
-  const result = await vectorClient.deleteIndex('test-index')
+  const result = await vectorClient.deleteIndex('test-index');
   if (result instanceof DeleteVectorIndex.Success) {
     console.log("Index 'test-index' deleted");
   } else if (result instanceof DeleteVectorIndex.Error) {
@@ -81,3 +81,23 @@ async function example_API_Search(vectorClient: PreviewVectorIndexClient) {
     throw new Error(`An error occurred searching index test-index: ${result.errorCode()}: ${result.toString()}`);
   }
 }
+
+async function main() {
+  // Because the Momento Web SDK is intended for use in a browser, we use the JSDom library to set up an environment
+  // that will allow us to use it in a node.js program.
+  initJSDom();
+  const vectorClient = new PreviewVectorIndexClient({
+    configuration: Configurations.Laptop.latest(),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({environmentVariableName: 'MOMENTO_API_KEY'}),
+  });
+  await example_API_CreateIndex(vectorClient);
+  await example_API_ListIndexes(vectorClient);
+  await example_API_UpsertItemBatch(vectorClient);
+  await example_API_Search(vectorClient);
+  await example_API_DeleteItemBatch(vectorClient);
+  await example_API_DeleteIndex(vectorClient);
+}
+
+main().catch(e => {
+  throw e;
+});
