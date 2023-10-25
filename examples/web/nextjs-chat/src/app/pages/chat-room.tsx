@@ -26,6 +26,9 @@ export default function ChatRoom(props: Props) {
   const onItem = (item: TopicItem) => {
     try {
       const message = JSON.parse(item.valueString()) as ChatEvent;
+      if (message.username === undefined) {
+        message.username = item.tokenId();
+      }
       setChats((curr) => [...curr, message]);
     } catch (e) {
       console.error("unable to parse chat message", e);
@@ -42,16 +45,17 @@ export default function ChatRoom(props: Props) {
     );
     sub.unsubscribe();
     clearCurrentClient();
-    await subscribeToTopic(props.cacheName, props.topicName, onItem, onError);
-  };
-
-  const onSendMessage = async () => {
-    await sendMessage(
+    await subscribeToTopic(
       props.cacheName,
       props.topicName,
       props.username,
-      textInput,
+      onItem,
+      onError,
     );
+  };
+
+  const onSendMessage = async () => {
+    await sendMessage(props.cacheName, props.topicName, textInput);
     setTextInput("");
   };
 
@@ -62,7 +66,13 @@ export default function ChatRoom(props: Props) {
   };
 
   useEffect(() => {
-    subscribeToTopic(props.cacheName, props.topicName, onItem, onError)
+    subscribeToTopic(
+      props.cacheName,
+      props.topicName,
+      props.username,
+      onItem,
+      onError,
+    )
       .then(async () => {
         console.log("successfully subscribed");
         await userJoined(props.cacheName, props.topicName, props.username);
