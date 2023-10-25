@@ -122,6 +122,7 @@ import {
   TopicSelector,
   AllCaches,
   AllTopics,
+  CacheRole, TopicRole
 } from '@gomomento/sdk-core';
 
 import {Configuration} from './config/configuration';
@@ -169,6 +170,8 @@ export {
   EnvMomentoTokenProvider,
   AllDataReadWrite,
   PermissionScope,
+  CacheRole,
+  TopicRole,
   /**
    * @deprecated please use 'PermissionScope' instead
    */
