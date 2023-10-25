@@ -9,17 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@gomomento/sdk": "^1.45.0",
-    "@gomomento/sdk-web": "^1.45.0",
+    "@gomomento/sdk": "^1.45.1",
+    "@gomomento/sdk-web": "^1.45.1",
     "autoprefixer": "10.4.14",
-    "js-cookie": "^3.0.5",
     "next": "13.4.8",
     "next-auth": "^4.22.3",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "@types/js-cookie": "^3.0.5",
     "@types/node": "^20.4.1",
     "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",
