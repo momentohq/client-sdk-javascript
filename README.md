@@ -65,8 +65,8 @@ Documentation is available on the [Momento Docs website](https://docs.momentohq.
 
 Working example projects, with all required build configuration files, are available for both the node.js and web SDKs:
 
-* [Node.js SDK examples](./examples/nodejs)
-* [Web SDK examples](./examples/web)
+* [Node.js SDK examples](https://github.com/momentohq/client-sdk-javascript/tree/main/examples/nodejs)
+* [Web SDK examples](https://github.com/momentohq/client-sdk-javascript/tree/main/examples/web)
 
 ## Developing
 
