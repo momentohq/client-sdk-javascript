@@ -26,6 +26,9 @@ export default function ChatRoom(props: Props) {
   const onItem = (item: TopicItem) => {
     try {
       const message = JSON.parse(item.valueString()) as ChatEvent;
+      if (message.username === undefined) {
+        message.username = item.publisherId();
+      }
       setChats((curr) => [...curr, message]);
     } catch (e) {
       console.error("unable to parse chat message", e);

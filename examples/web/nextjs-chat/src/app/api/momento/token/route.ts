@@ -19,14 +19,21 @@ const authClient = new AuthClient({
 });
 
 export const revalidate = 0;
+
 export async function GET(_request: Request) {
+  const usernameValue = _request.cookies._parsed.get('username').value;
+
+  if (usernameValue === undefined) {
+    console.error(`Username is undefined`);
+  }
+
   let generateDisposableTokenResponse;
   switch (authenticationMethod) {
     case AuthenticationMethod.Open:
-      generateDisposableTokenResponse = await fetchTokenWithOpenAuth();
+      generateDisposableTokenResponse = await fetchTokenWithOpenAuth(usernameValue);
       break;
     case AuthenticationMethod.Credentials:
-      generateDisposableTokenResponse = await fetchTokenWithAuthCredentials();
+      generateDisposableTokenResponse = await fetchTokenWithAuthCredentials(usernameValue);
       break;
     default:
       throw new Error("Unimplemented authentication method");
@@ -48,14 +55,16 @@ export async function GET(_request: Request) {
   throw new Error("Unable to get token from momento");
 }
 
-async function fetchTokenWithOpenAuth() {
+async function fetchTokenWithOpenAuth(username: string) {
+
   return await authClient.generateDisposableToken(
     tokenPermissions,
     tokenExpiresIn,
+    { tokenId: username },
   );
 }
 
-async function fetchTokenWithAuthCredentials() {
+async function fetchTokenWithAuthCredentials(username: string) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
@@ -65,5 +74,6 @@ async function fetchTokenWithAuthCredentials() {
   return await authClient.generateDisposableToken(
     tokenPermissions,
     tokenExpiresIn,
+    { tokenId: username },
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Cookies from 'js-cookie';
 import { useState } from "react";
 import { clearCurrentClient } from "@/utils/momento-web";
 import ChatRoom from "@/app/pages/chat-room";
@@ -85,6 +86,12 @@ export default function Home() {
   }
 
   if (!usernameSelected) {
+    const handleUsernameChange = (e) => {
+      const newUsername = e.target.value;
+      setUsername(newUsername);
+      Cookies.set('username', newUsername, { expires: 7 }); // Store username in a cookie
+    }
+
     return (
       <div
         className={
@@ -102,7 +109,7 @@ export default function Home() {
           <input
             className={"rounded-2xl p-2 w-60 items-center"}
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={handleUsernameChange}
             placeholder={"username"}
           />
         </div>
