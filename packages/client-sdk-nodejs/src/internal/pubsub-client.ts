@@ -186,13 +186,13 @@ export class PubsubClient extends AbstractPubsubClient {
         if (resp.item.value.text) {
           options.onItem(
             new TopicItem(resp.item.value.text, {
-              publisherId: resp.item.publisher_id,
+              tokenId: resp.item.publisher_id,
             })
           );
         } else if (resp.item.value.binary) {
           options.onItem(
             new TopicItem(resp.item.value.binary, {
-              publisherId: resp.item.publisher_id,
+              tokenId: resp.item.publisher_id,
             })
           );
         } else {
