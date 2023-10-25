@@ -32,10 +32,14 @@ export async function GET(_request: Request) {
   let generateDisposableTokenResponse;
   switch (authenticationMethod) {
     case AuthenticationMethod.Open:
-      generateDisposableTokenResponse = await fetchTokenWithOpenAuth(usernameValue);
+      generateDisposableTokenResponse = await fetchTokenWithOpenAuth(
+        usernameValue,
+      );
       break;
     case AuthenticationMethod.Credentials:
-      generateDisposableTokenResponse = await fetchTokenWithAuthCredentials(usernameValue);
+      generateDisposableTokenResponse = await fetchTokenWithAuthCredentials(
+        usernameValue,
+      );
       break;
     default:
       throw new Error("Unimplemented authentication method");
@@ -58,7 +62,6 @@ export async function GET(_request: Request) {
 }
 
 async function fetchTokenWithOpenAuth(username: string) {
-
   return await authClient.generateDisposableToken(
     tokenPermissions,
     tokenExpiresIn,

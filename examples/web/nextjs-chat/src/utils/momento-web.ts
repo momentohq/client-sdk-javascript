@@ -15,7 +15,7 @@ export enum EventTypes {
 
 export type ChatMessageEvent = {
   event: EventTypes.MESSAGE;
-  username: string;
+  username?: string;
   text: string;
   timestamp: number;
 };

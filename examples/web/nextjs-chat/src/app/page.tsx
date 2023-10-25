@@ -1,6 +1,6 @@
 "use client";
 
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 import { useState } from "react";
 import { clearCurrentClient } from "@/utils/momento-web";
 import ChatRoom from "@/app/pages/chat-room";
@@ -86,11 +86,11 @@ export default function Home() {
   }
 
   if (!usernameSelected) {
-    const handleUsernameChange = (e) => {
+    const handleUsernameChange = (e: { target: { value: string } }) => {
       const newUsername = e.target.value;
       setUsername(newUsername);
-      Cookies.set('username', newUsername, { expires: 7 }); // Store username in a cookie
-    }
+      Cookies.set("username", newUsername, { expires: 7 }); // Store username in a cookie
+    };
 
     return (
       <div
