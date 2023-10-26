@@ -190,27 +190,38 @@ export class InternalAuthClient implements IAuthClient {
     expiresIn: ExpiresIn,
     disposableTokenProps?: DisposableTokenProps
   ): Promise<GenerateDisposableToken.Response> {
+
+    console.time('Constructing client');
     const tokenClient = new token.token.TokenClient(
       this.creds.getTokenEndpoint(),
       ChannelCredentials.createSsl()
     );
+    console.timeEnd('Constructing client');
 
+    console.time('Validating token');
     try {
       validateDisposableTokenExpiry(expiresIn);
     } catch (err) {
       return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
     }
+    console.timeEnd('Validating token');
+
+    console.time('_GenerateDisposableTokenRequest.Expires');
     const expires = new token.token._GenerateDisposableTokenRequest.Expires({
       valid_for_seconds: expiresIn.seconds(),
     });
+    console.timeEnd('_GenerateDisposableTokenRequest.Expire');
 
+    console.time('permissionsFromDisposableTokenScope');
     let permissions;
     try {
       permissions = permissionsFromDisposableTokenScope(scope);
     } catch (err) {
       return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
     }
+    console.timeEnd('permissionsFromDisposableTokenScope');
 
+    console.time('validateDisposableTokenTokenID');
     const tokenId = disposableTokenProps?.tokenId;
     if (tokenId !== undefined) {
       try {
@@ -221,15 +232,20 @@ export class InternalAuthClient implements IAuthClient {
         );
       }
     }
+    console.timeEnd('validateDisposableTokenTokenID');
 
+    console.time('token.token._GenerateDisposableTokenRequest');
     const request = new token.token._GenerateDisposableTokenRequest({
       expires: expires,
       auth_token: this.creds.getAuthToken(),
       permissions: permissions,
       token_id: tokenId,
     });
+    console.timeEnd('token.token._GenerateDisposableTokenRequest');
+
 
     return await new Promise<GenerateDisposableToken.Response>(resolve => {
+      console.time('APICall');
       tokenClient.GenerateDisposableToken(
         request,
         {interceptors: this.interceptors},
@@ -249,6 +265,7 @@ export class InternalAuthClient implements IAuthClient {
           }
         }
       );
+      console.timeEnd('APICall');
     });
   }
 }
