@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@gomomento/sdk": "file:../../../packages/client-sdk-nodejs",
-    "@gomomento/sdk-core": "file:../../../packages/core"
+    "@gomomento/sdk-core": "1.45.5"
   },
   "engines": {
     "node": ">=10.4.0"
