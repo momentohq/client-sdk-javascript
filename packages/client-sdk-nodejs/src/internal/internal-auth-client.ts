@@ -275,9 +275,6 @@ export function permissionsFromTokenScope(
 export function permissionsFromDisposableTokenScope(
   scope: DisposableTokenScope
 ): permission_messages.Permissions {
-  console.log(
-    `PERMISSIONS FROM DISPOSABLE TOKEN SCOPE: ${JSON.stringify(scope)}`
-  );
   const result = new permission_messages.Permissions();
   if (
     !(scope instanceof PredefinedScope) &&
