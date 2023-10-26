@@ -1,7 +1,7 @@
 import {
   AllCaches,
   AllTopics,
-  AuthClient,
+  AuthClient, CacheClient, CacheGet, Configurations,
   CredentialProvider,
   ExpiresIn,
   GenerateDisposableToken,
@@ -9,6 +9,7 @@ import {
 } from '@gomomento/sdk';
 
 const authClient = getAuthClient();
+let _cacheClient: CacheClient | undefined = undefined;
 
 export const handler = async () => {
   try {
@@ -23,8 +24,8 @@ export const handler = async () => {
           permissions: [
             {
               role: TopicRole.PublishSubscribe,
-              cache: AllCaches,
-              topic: AllTopics,
+              cache: 'cache',
+              topic: 'topic',
             },
           ],
         },
@@ -53,6 +54,43 @@ export const handler = async () => {
     console.log(`P99 time: ${p99}ms`);
     console.log(`Max time: ${maxTime}ms`);
 
+    console.log(`Now getting for cache requests`);
+    const cacheClient = await getCacheClient();
+
+    const cacheDurations = []; // Store durations for each call
+
+    for (let i = 0; i < 100; i++) {
+      console.time(`cacheGet-call-${i}`);
+
+      const startTime = Date.now();
+
+      const response = await cacheClient.get('cache', 'key');
+      const duration = Date.now() - startTime;
+      cacheDurations.push(duration);
+      console.timeEnd(`cacheGet-call-${i}`);
+
+      if (response instanceof CacheGet.Hit) {
+        console.log(`response ${i}: Hit!`);
+      } else if (response instanceof CacheGet.Miss) {
+        console.log(`response ${i}: Miss!`);
+      } else {
+        console.log(`response ${i}: Error!`);
+      }
+    }
+
+
+    // Calculate metrics
+    const totalDurationC = cacheDurations.reduce((acc, curr) => acc + curr, 0);
+    const averageC = totalDuration / cacheDurations.length;
+
+    const sortedDurationsC = cacheDurations.sort((a, b) => a - b);
+    const p99IndexC = Math.ceil(0.99 * sortedDurationsC.length) - 1;
+    const p99c = sortedDurations[p99IndexC];
+
+    console.log(`Average time: ${averageC}ms`);
+    console.log(`P99 time: ${p99c}ms`);
+    console.log(`Max time: ${Math.max(...cacheDurations)}ms`);
+
     return {
       statusCode: 200,
       headers: {
@@ -80,4 +118,21 @@ function getAuthClient(): AuthClient {
   return new AuthClient({
     credentialProvider: CredentialProvider.fromString({apiKey: apiKeySecretName}),
   });
+}
+
+async function getCacheClient(): Promise<CacheClient> {
+  const apiKeySecretName = process.env.MOMENTO_API_KEY;
+  if (apiKeySecretName === undefined) {
+    throw new Error("Missing required env var 'MOMENTO_API_KEY_SECRET_NAME");
+  }
+  if (_cacheClient === undefined) {
+    console.log('Retrieved secret!');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
+    _cacheClient = await CacheClient.create({
+      configuration: Configurations.Lambda.latest(),
+      credentialProvider: CredentialProvider.fromString({apiKey: apiKeySecretName}),
+      defaultTtlSeconds: 60,
+    });
+  }
+  return _cacheClient;
 }
