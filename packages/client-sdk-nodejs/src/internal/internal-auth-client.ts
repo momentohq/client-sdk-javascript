@@ -59,12 +59,15 @@ import {
   isDisposableTokenCachePermission,
   isDisposableTokenPermissionsObject,
 } from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
+import {token} from '@gomomento/generated-types/dist/token';
 
 export class InternalAuthClient implements IAuthClient {
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
 
   private readonly creds: CredentialProvider;
   private readonly interceptors: Interceptor[];
+  private readonly tokenClient: token.token.TokenClient;
+  private readonly authClient: grpcAuth.AuthClient;
 
   constructor(props: AuthClientProps) {
     this.creds = props.credentialProvider;
@@ -73,17 +76,20 @@ export class InternalAuthClient implements IAuthClient {
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
       ClientTimeoutInterceptor(InternalAuthClient.REQUEST_TIMEOUT_MS),
     ];
+    this.tokenClient = new token.token.TokenClient(
+      this.creds.getTokenEndpoint(),
+      ChannelCredentials.createSsl()
+    );
+    this.authClient = new grpcAuth.AuthClient(
+      this.creds.getControlEndpoint(),
+      ChannelCredentials.createSsl()
+    );
   }
 
   public async generateApiKey(
     scope: PermissionScope,
     expiresIn: ExpiresIn
   ): Promise<GenerateApiKey.Response> {
-    const authClient = new grpcAuth.AuthClient(
-      this.creds.getControlEndpoint(),
-      ChannelCredentials.createSsl()
-    );
-
     let permissions;
     try {
       permissions = permissionsFromTokenScope(scope);
@@ -110,7 +116,7 @@ export class InternalAuthClient implements IAuthClient {
     }
 
     return await new Promise<GenerateApiKey.Response>(resolve => {
-      authClient.GenerateApiToken(
+      this.authClient.GenerateApiToken(
         request,
         {interceptors: this.interceptors},
         (err, resp) => {
@@ -144,18 +150,13 @@ export class InternalAuthClient implements IAuthClient {
   public async refreshApiKey(
     refreshToken: string
   ): Promise<RefreshApiKey.Response> {
-    const authClient = new grpcAuth.AuthClient(
-      this.creds.getControlEndpoint(),
-      ChannelCredentials.createSsl()
-    );
-
     const request = new grpcAuth._RefreshApiTokenRequest({
       api_key: this.creds.getAuthToken(),
       refresh_token: refreshToken,
     });
 
     return await new Promise<RefreshApiKey.Response>(resolve => {
-      authClient.RefreshApiToken(
+      this.authClient.RefreshApiToken(
         request,
         {interceptors: this.interceptors},
         (err, resp) => {
@@ -190,11 +191,6 @@ export class InternalAuthClient implements IAuthClient {
     expiresIn: ExpiresIn,
     disposableTokenProps?: DisposableTokenProps
   ): Promise<GenerateDisposableToken.Response> {
-    const tokenClient = new token.token.TokenClient(
-      this.creds.getTokenEndpoint(),
-      ChannelCredentials.createSsl()
-    );
-
     try {
       validateDisposableTokenExpiry(expiresIn);
     } catch (err) {
@@ -230,7 +226,7 @@ export class InternalAuthClient implements IAuthClient {
     });
 
     return await new Promise<GenerateDisposableToken.Response>(resolve => {
-      tokenClient.GenerateDisposableToken(
+      this.tokenClient.GenerateDisposableToken(
         request,
         {interceptors: this.interceptors},
         (err, resp) => {
