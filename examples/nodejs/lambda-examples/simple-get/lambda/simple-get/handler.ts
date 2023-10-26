@@ -1,5 +1,5 @@
 process.env.GRPC_VERBOSITY = 'debug';
-process.env.GRPC_TRACE = 'dns_resolver;resolving_load_balancer;index';
+process.env.GRPC_TRACE = 'dns_resolver,resolving_load_balancer,index';
 
 import {
   AllCaches,
@@ -15,20 +15,23 @@ const authClient = getAuthClient();
 
 export const handler = async () => {
   try {
-    const tokenResponse = await authClient.generateDisposableToken(
-      {
-        permissions: [
-          {
-            role: TopicRole.PublishSubscribe,
-            cache: AllCaches,
-            topic: AllTopics,
-          },
-        ],
-      },
-      ExpiresIn.seconds(60),
-    );
-    if (tokenResponse instanceof GenerateDisposableToken.Success) {
-      console.log('Successfully generated token');
+
+    for (let i = 0; i < 100; i++) {
+      const tokenResponse = await authClient.generateDisposableToken(
+        {
+          permissions: [
+            {
+              role: TopicRole.PublishSubscribe,
+              cache: AllCaches,
+              topic: AllTopics,
+            },
+          ],
+        },
+        ExpiresIn.seconds(60),
+      );
+      if (tokenResponse instanceof GenerateDisposableToken.Success) {
+        console.log('Successfully generated token');
+      }
     }
 
     return {
