@@ -59,7 +59,6 @@ import {
   isDisposableTokenCachePermission,
   isDisposableTokenPermissionsObject,
 } from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
-import {token} from '@gomomento/generated-types/dist/token';
 
 export class InternalAuthClient implements IAuthClient {
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
