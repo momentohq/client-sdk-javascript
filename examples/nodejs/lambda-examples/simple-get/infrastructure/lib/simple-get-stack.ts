@@ -3,7 +3,6 @@ import * as cdk from 'aws-cdk-lib';
 import {Construct} from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
-import * as secrets from 'aws-cdk-lib/aws-secretsmanager';
 
 export class SimpleGetStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -13,11 +12,6 @@ export class SimpleGetStack extends cdk.Stack {
       type: 'String',
       description: 'The Momento API key that will be used to read from the cache.',
       noEcho: true,
-    });
-
-    const apiKeySecret = new secrets.Secret(this, 'MomentoSimpleGetApiKey', {
-      secretName: 'MomentoSimpleGetApiKey',
-      secretStringValue: new cdk.SecretValue(momentoApiKeyParam.valueAsString),
     });
 
     const getLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoSimpleGet', {
@@ -30,10 +24,8 @@ export class SimpleGetStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(30),
       memorySize: 128,
       environment: {
-        MOMENTO_API_KEY_SECRET_NAME: apiKeySecret.secretName,
+        MOMENTO_API_KEY: momentoApiKeyParam.valueAsString,
       },
     });
-
-    apiKeySecret.grantRead(getLambda);
   }
 }

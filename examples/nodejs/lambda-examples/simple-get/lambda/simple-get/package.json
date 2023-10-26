@@ -27,7 +27,6 @@
     "typescript": "4.4.3"
   },
   "dependencies": {
-    "@aws-sdk/client-secrets-manager": "3.352.0",
     "@gomomento/sdk": "^1.40.1",
     "aws-lambda": "1.0.7"
   }
