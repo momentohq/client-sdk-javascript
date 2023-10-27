@@ -128,6 +128,8 @@ import {
   AllTopics,
   CacheRole,
   TopicRole,
+  LeaderboardOrder,
+  ILeaderboard,
 } from '@gomomento/sdk-core';
 
 import {Configuration} from './config/configuration';
@@ -264,6 +266,8 @@ export {
   LeaderboardConfiguration,
   LeaderboardClientConfiguration,
   PreviewLeaderboardClient,
+  LeaderboardOrder,
+  ILeaderboard,
   GenerateApiKey,
   /**
    * @deprecated - please use GenerateApiKey
