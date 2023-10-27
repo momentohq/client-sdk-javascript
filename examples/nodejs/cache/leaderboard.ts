@@ -4,6 +4,8 @@ import {
   CredentialProvider,
   CacheClient,
   Configurations,
+} from '@gomomento/sdk';
+import {
   CreateCache,
   LeaderboardDelete,
   LeaderboardFetch,
@@ -11,7 +13,7 @@ import {
   LeaderboardOrder,
   LeaderboardRemoveElements,
   LeaderboardUpsert,
-} from '@gomomento/sdk';
+} from '@gomomento/sdk-core';
 
 async function main() {
   const cacheClient = await CacheClient.create({
