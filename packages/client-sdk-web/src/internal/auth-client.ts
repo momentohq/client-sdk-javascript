@@ -80,6 +80,7 @@ export class InternalWebGrpcAuthClient<
   private readonly creds: CredentialProvider;
   private readonly clientMetadataProvider: ClientMetadataProvider;
   private readonly authClient: auth.AuthClient;
+  private readonly tokenClient: token.TokenClient;
 
   constructor(props: AuthClientProps) {
     this.creds = props.credentialProvider;
@@ -87,6 +88,12 @@ export class InternalWebGrpcAuthClient<
     this.authClient = new auth.AuthClient(
       // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
       getWebControlEndpoint(this.creds),
+      null,
+      {}
+    );
+    this.tokenClient = new token.TokenClient(
+      // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
+      getWebTokenEndpoint(this.creds),
       null,
       {}
     );
@@ -197,13 +204,6 @@ export class InternalWebGrpcAuthClient<
     expiresIn: ExpiresIn,
     disposableTokenProps?: DisposableTokenProps
   ): Promise<GenerateDisposableToken.Response> {
-    const tokenClient = new token.TokenClient(
-      // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
-      getWebTokenEndpoint(this.creds),
-      null,
-      {}
-    );
-
     const request = new _GenerateDisposableTokenRequest();
     request.setAuthToken(this.creds.getAuthToken());
 
@@ -239,7 +239,7 @@ export class InternalWebGrpcAuthClient<
     request.setExpires(grpcExpires);
 
     return await new Promise<GenerateDisposableToken.Response>(resolve => {
-      tokenClient.generateDisposableToken(
+      this.tokenClient.generateDisposableToken(
         request,
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
