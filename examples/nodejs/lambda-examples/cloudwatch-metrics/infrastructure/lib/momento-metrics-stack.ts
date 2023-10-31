@@ -175,7 +175,7 @@ export class MomentoMetricsStack extends cdk.Stack {
   createMetricFilters(logGroup: cdk.aws_logs.LogGroup) {
     logGroup.addMetricFilter('ExampleMetricFilterDuration', {
       metricNamespace: 'MomentoMetricsCDKExample',
-      metricName: 'Duration (Latency)',
+      metricName: 'Latency',
       filterPattern: FilterPattern.literal('{$.duration > 0}'),
       metricValue: '$.duration',
       unit: Unit.MILLISECONDS,
@@ -211,13 +211,27 @@ export class MomentoMetricsStack extends cdk.Stack {
     const latency = new GraphWidget({
       left: [
         new Metric({
-          metricName: 'Duration (Latency)',
+          metricName: 'Latency',
           namespace: 'MomentoMetricsCDKExample',
+          statistic: Stats.percentile(50),
+          label: 'p50'
+        }),
+        new Metric({
+          metricName: 'Latency',
+          namespace: 'MomentoMetricsCDKExample',
+          statistic: Stats.percentile(90),
+          label: 'p90'
+        }),
+        new Metric({
+          metricName: 'Latency',
+          namespace: 'MomentoMetricsCDKExample',
+          statistic: Stats.percentile(99),
+          label: 'p99'
         }),
       ],
-      title: 'Duration (Latency)',
+      title: 'Latency',
       leftYAxis: {
-        label: 'Latency',
+        label: 'milliseconds',
         min: 0,
       },
       period: graphPeriod,
@@ -266,30 +280,21 @@ export class MomentoMetricsStack extends cdk.Stack {
     // Add the first three widgets in the first row of the dashboard
     dashboard.addWidgets(latency, errorCodes, messageSizes);
 
-    const transactionsPerSecond = new SingleValueWidget({
-      metrics: [
-        new Metric({
-          metricName: 'Response Size (bytes)',
-          namespace: 'MomentoMetricsCDKExample',
-          label: 'Count of responses per second',
-          statistic: Stats.SAMPLE_COUNT,
-        }),
-      ],
-      period: graphPeriod,
-      height: 6,
-      sparkline: true,
-      title: 'Requests per second',
-    });
-
-    const numberOfRequests = new GraphWidget({
+    const requestsPerSecond = new GraphWidget({
       left: [
-        new Metric({
-          metricName: 'Request Size (bytes)',
-          namespace: 'MomentoMetricsCDKExample',
-          label: 'Number of requests per second',
-        }),
+        new MathExpression({
+          expression: 'countPerMinute / 60', 
+          label: 'Count of requests per second',
+          usingMetrics: {
+            countPerMinute: new Metric({
+              metricName: 'Request Size (bytes)',
+              namespace: 'MomentoMetricsCDKExample',
+              statistic: Stats.SAMPLE_COUNT,
+            }),
+          }
+        })
       ],
-      title: 'Number of requests',
+      title: 'Number of requests per second',
       period: graphPeriod,
       statistic: Stats.SAMPLE_COUNT,
     });
@@ -298,17 +303,37 @@ export class MomentoMetricsStack extends cdk.Stack {
       left: [
         new MathExpression({
           expression: 'm1 + m2',
-          label: 'Total Bytes',
+          label: 'p50 Total Bytes',
           usingMetrics: {
             m1: new Metric({
               metricName: 'Request Size (bytes)',
               namespace: 'MomentoMetricsCDKExample',
-              label: 'Total Request Bytes',
+              label: 'p50 Total Request Bytes',
+              statistic: Stats.percentile(50),
             }),
             m2: new Metric({
               metricName: 'Response Size (bytes)',
               namespace: 'MomentoMetricsCDKExample',
-              label: 'Total Response Bytes',
+              label: 'p50 Total Response Bytes',
+              statistic: Stats.percentile(50),
+            }),
+          },
+        }),
+        new MathExpression({
+          expression: 'm3 + m4',
+          label: 'p99 Total Bytes',
+          usingMetrics: {
+            m3: new Metric({
+              metricName: 'Request Size (bytes)',
+              namespace: 'MomentoMetricsCDKExample',
+              label: 'p99 Total Request Bytes',
+              statistic: Stats.percentile(99),
+            }),
+            m4: new Metric({
+              metricName: 'Response Size (bytes)',
+              namespace: 'MomentoMetricsCDKExample',
+              label: 'p99 Total Response Bytes',
+              statistic: Stats.percentile(99),
             }),
           },
         }),
@@ -319,7 +344,7 @@ export class MomentoMetricsStack extends cdk.Stack {
     });
 
     // Add the next 3 widgets to the second row of the dashboard
-    dashboard.addWidgets(transactionsPerSecond, numberOfRequests, totalBytesSentReceived);
+    dashboard.addWidgets(requestsPerSecond, totalBytesSentReceived);
   }
 
   validateStackConfig(stackConfig?: string) {
