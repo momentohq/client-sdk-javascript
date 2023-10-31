@@ -17,23 +17,26 @@ async function main() {
   const rateLimiterIncrement = new IncrementRateLimiter(momento, 10);
   const rateLimiterGetIncrement = new GetIncrementRateLimiter(momento, 10);
 
-  const totalRequests = 50;
+  const totalRequests = 1000;
   const userIDs = ['user1', 'user2', 'user3', 'user4', 'user5'];
   const tasks = [];
+  let currentUserIndex = 0;
 
   // Simulate for both rate limiters
   for (const rateLimiter of [rateLimiterIncrement, rateLimiterGetIncrement]) {
     for (let i = 0; i < totalRequests; i++) {
       const randomDelay = Math.floor(Math.random() * 60000);
-      const randomUser = userIDs[Math.floor(Math.random() * userIDs.length)];
+      // Round-robin user selection
+      const selectedUser = userIDs[currentUserIndex];
+      currentUserIndex = (currentUserIndex + 1) % userIDs.length;
 
       const task = new Promise<void>((resolve) => {
         setTimeout(async () => {
           try {
-            await worker(randomUser, rateLimiter, service);
+            await worker(selectedUser, rateLimiter, service);
             resolve();
           } catch (error) {
-            console.error(`Error in worker for user ${randomUser}:`, error);
+            console.error(`Error in worker for user ${selectedUser}:`, error);
             resolve();
           }
         }, randomDelay);

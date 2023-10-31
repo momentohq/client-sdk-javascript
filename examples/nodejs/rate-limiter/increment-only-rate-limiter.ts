@@ -26,6 +26,7 @@ export class IncrementRateLimiter extends AbstractRateLimiter {
         this.metrics.recordSuccess(latency);
         return true;
       }
+      console.log(`Throttled user key ${currentMinuteKey}`);
       this.metrics.recordThrottle(latency);
       return false;
     } else if (resp instanceof CacheIncrement.Error) {

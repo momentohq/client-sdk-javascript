@@ -23,9 +23,11 @@ export class GetIncrementRateLimiter extends AbstractRateLimiter {
         this.metrics.recordSuccess(latency);
         return true;
       }
+      console.log(`Throttled user key ${currentMinuteKey}`);
       this.metrics.recordThrottle(latency);
       return false;
     } else if (getResp instanceof CacheGet.Miss) {
+      // first call to key so we set TTL now to 60 seconds
       await this._client.increment('rate-limiter', currentMinuteKey, 1, {ttl: 60000});
       this.metrics.recordSuccess(latency);
       return true;
