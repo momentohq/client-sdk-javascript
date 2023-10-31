@@ -33,7 +33,7 @@ async function main() {
       const task = new Promise<void>((resolve) => {
         setTimeout(async () => {
           try {
-            await worker(selectedUser, rateLimiter, service);
+            await worker(selectedUser.concat(rateLimiter.constructor.name), rateLimiter, service);
             resolve();
           } catch (error) {
             console.error(`Error in worker for user ${selectedUser}:`, error);
