@@ -13,13 +13,11 @@ async function main() {
     defaultTtlSeconds: 6000,
   });
 
-  const service = new DummyService();
-  const rateLimiterIncrement = new IncrementRateLimiter(momento, 1);
-  const rateLimiterGetIncrement = new GetIncrementRateLimiter(momento, 1);
 
   // default values
   let totalRequests = 10000;
   let randomDelayUpperBound = 60000;
+  let tpmLimit = 1;
 
   if (process.argv[2]) {
     totalRequests = parseInt(process.argv[2], 10);
@@ -28,6 +26,15 @@ async function main() {
   if (process.argv[3]) {
     randomDelayUpperBound = parseInt(process.argv[3], 10);
   }
+
+  if (process.argv[4]) {
+    tpmLimit = parseInt(process.argv[4], 10);
+  }
+
+  const service = new DummyService();
+  const rateLimiterIncrement = new IncrementRateLimiter(momento, tpmLimit);
+  const rateLimiterGetIncrement = new GetIncrementRateLimiter(momento, tpmLimit);
+
 
   const userIDs = ['user1', 'user2', 'user3', 'user4', 'user5'];
   const tasks = [];
@@ -38,7 +45,7 @@ async function main() {
   // Simulate for both rate limiters
   for (const rateLimiter of [rateLimiterIncrement, rateLimiterGetIncrement]) {
     for (let i = 0; i < totalRequests; i++) {
-      const randomDelay = Math.floor(Math.random() * 60000);
+      const randomDelay = Math.floor(Math.random() * randomDelayUpperBound);
       // Round-robin user selection
       const selectedUser = userIDs[currentUserIndex];
       currentUserIndex = (currentUserIndex + 1) % userIDs.length;
