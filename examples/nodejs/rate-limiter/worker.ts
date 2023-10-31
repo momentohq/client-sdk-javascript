@@ -52,7 +52,7 @@ async function main() {
             console.error(`Error in worker for user ${selectedUser}:`, error);
             resolve();
           }
-        }, randomDelayUpperBound);
+        }, randomDelay);
       });
 
       tasks.push(task);
