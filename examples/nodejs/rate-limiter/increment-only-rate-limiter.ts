@@ -1,9 +1,10 @@
 import {CacheClient, CacheIncrement} from "@gomomento/sdk";
-import {AbstractRateLimiter} from "./rate-limiter";
+import {AbstractRateLimiter, RATE_LIMITER_TTL_MILLIS} from "./rate-limiter";
 
 export class IncrementRateLimiter extends AbstractRateLimiter {
   _client: CacheClient;
   _limit: number;
+
   constructor(client: CacheClient, limit: number) {
     super();
     this._client = client;
@@ -19,7 +20,7 @@ export class IncrementRateLimiter extends AbstractRateLimiter {
     if (resp instanceof CacheIncrement.Success) {
       if (resp.value() <= this._limit) {
         if (resp.value() === 1) {
-          await this._client.updateTtl('rate-limiter', id, 60000);
+          await this._client.updateTtl('rate-limiter', id, RATE_LIMITER_TTL_MILLIS);
         }
         return true;
       }

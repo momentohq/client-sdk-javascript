@@ -14,7 +14,6 @@ async function main() {
     defaultTtlSeconds: 6000,
   });
 
-
   // default values
   let totalRequests = 10000;
   let randomDelayUpperBound = 60000;
@@ -79,8 +78,8 @@ async function main() {
 }
 
 async function worker(id: string, rateLimiter: RateLimiter, service: DummyService, metrics: Metrics) {
-  const start = Date.now();
   try {
+    const start = Date.now();
     const allowed = await rateLimiter.acquire(id);
     const latency = Date.now() - start;
     if (allowed) {
