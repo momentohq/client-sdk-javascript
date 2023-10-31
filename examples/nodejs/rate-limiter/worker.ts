@@ -17,7 +17,7 @@ async function main() {
   // default values
   let totalRequests = 1000;
   let randomDelayUpperBound = 60000;
-  let tpmLimit = 500;
+  let tpmLimit = 5000;
 
   if (process.argv[2]) {
     totalRequests = parseInt(process.argv[2], 10);
@@ -44,7 +44,8 @@ async function main() {
   const tasks = [];
   let currentUserIndex = 0;
 
-  console.log(`Simulating ${totalRequests} requests for each rate limiter with a random delay between requests upto a max of ${randomDelayUpperBound} milliseconds. The rate limiter allow ${tpmLimit} requests per minute.`);
+  console.log(`Simulating ${totalRequests} requests for each rate limiter with a random delay between requests upto a max of ${randomDelayUpperBound} milliseconds. The rate limiter allow ${tpmLimit} requests per minute.
+   The simulation uses ${userIDs.length} users and evenly divides requests for each user.`);
 
   // Simulate for both rate limiters
   for (const { limiter, metrics } of rateLimiters) {
