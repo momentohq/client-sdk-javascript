@@ -44,8 +44,7 @@ async function main() {
   const tasks = [];
   let currentUserIndex = 0;
 
-  console.log(`Simulating ${totalRequests} requests for each rate limiter with a random delay between requests upto a max of ${randomDelayUpperBound} milliseconds. The rate limiter allow ${tpmLimit} requests per minute.
-   The simulation uses ${userIDs.length} users and evenly divides requests for each user.`);
+  console.log(`Simulating ${totalRequests} requests for each rate limiter with a random delay between requests upto a max of ${randomDelayUpperBound} milliseconds. The rate limiter allow ${tpmLimit} requests per minute. The simulation uses ${userIDs.length} users and evenly divides requests for each user.`);
 
   // Simulate for both rate limiters
   for (const { limiter, metrics } of rateLimiters) {

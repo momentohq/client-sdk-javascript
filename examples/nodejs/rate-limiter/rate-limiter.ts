@@ -1,5 +1,3 @@
-import { Metrics } from "./metrics";
-
 export interface RateLimiter {
   acquire(id: string): Promise<boolean>;
 }
