@@ -1,8 +1,8 @@
-import {CacheClient, Configurations, CredentialProvider} from "@gomomento/sdk";
+import {CacheClient, Configurations, CreateCache, CredentialProvider} from "@gomomento/sdk";
 import {IncrementRateLimiter} from "./increment-only-rate-limiter";
 import {DummyService} from "./service";
 import {GetIncrementRateLimiter} from "./get-increment-rate-limiter";
-import {RateLimiter} from "./rate-limiter";
+import {RATE_LIMITER_CACHE_NAME, RateLimiter} from "./rate-limiter";
 import {Metrics} from "./metrics";
 
 async function main() {
@@ -13,6 +13,11 @@ async function main() {
     }),
     defaultTtlSeconds: 6000,
   });
+
+  const resp = await momento.createCache(RATE_LIMITER_CACHE_NAME);
+  if (resp instanceof CreateCache.Error) {
+    throw new Error(`Failed to create cache ${RATE_LIMITER_CACHE_NAME}`);
+  }
 
   // default values
   let totalRequests = 1000;

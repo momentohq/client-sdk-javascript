@@ -1,5 +1,5 @@
 import {CacheClient, CacheGet} from "@gomomento/sdk";
-import {AbstractRateLimiter, RATE_LIMITER_TTL_MILLIS} from "./rate-limiter";
+import {AbstractRateLimiter, RATE_LIMITER_CACHE_NAME, RATE_LIMITER_TTL_MILLIS} from "./rate-limiter";
 
 export class GetIncrementRateLimiter extends AbstractRateLimiter {
   _client: CacheClient;
@@ -15,11 +15,11 @@ export class GetIncrementRateLimiter extends AbstractRateLimiter {
 
     const currentMinuteKey = this.generateMinuteKey(id);
     // we do not pass a TTL to this; we don't know if the key for this user was present or not
-    const getResp = await this._client.get('rate-limiter', currentMinuteKey);
+    const getResp = await this._client.get(RATE_LIMITER_CACHE_NAME, currentMinuteKey);
 
     if (getResp instanceof CacheGet.Hit) {
       if (parseInt(getResp.value(), 10) <= this._limit) {
-        await this._client.increment('rate-limiter', currentMinuteKey);
+        await this._client.increment(RATE_LIMITER_CACHE_NAME, currentMinuteKey);
         return true;
       }
     } else if (getResp instanceof CacheGet.Miss) {

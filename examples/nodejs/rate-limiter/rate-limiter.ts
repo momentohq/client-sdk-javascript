@@ -4,6 +4,7 @@ export interface RateLimiter {
 
 // since our rate limiting buckets are per minute, we expire keys every minute
 export const RATE_LIMITER_TTL_MILLIS = 60000;
+export const RATE_LIMITER_CACHE_NAME = 'rate-limiter';
 
 export abstract class AbstractRateLimiter implements RateLimiter {
 
