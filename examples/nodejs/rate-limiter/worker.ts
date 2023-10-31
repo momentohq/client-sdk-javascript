@@ -74,8 +74,18 @@ async function main() {
 }
 
 async function worker(id: string, rateLimiter: RateLimiter, service: DummyService) {
-  if ((await rateLimiter.acquire(id)) === true) {
-    service.doWork();
+  const start = Date.now();
+  try {
+    const allowed = await rateLimiter.acquire(id);
+    const latency = Date.now() - start;
+    if (allowed) {
+      rateLimiter.getMetrics().recordSuccess(latency);
+    } else {
+      rateLimiter.getMetrics().recordThrottle(latency);
+    }
+  } catch (err) {
+    rateLimiter.getMetrics().recordErrors();
+    console.error(`Error while calling rate limiter ${err}`)
   }
 }
 

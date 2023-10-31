@@ -11,9 +11,6 @@ export class IncrementRateLimiter extends AbstractRateLimiter {
   }
 
   public async acquire(id: string): Promise<boolean> {
-    const start = Date.now();
-
-    let allowed = false;
 
     const currentMinuteKey = this.generateMinuteKey(id);
     // we do not pass a TTL to this; we don't know if the key for this user was present or not
@@ -24,20 +21,13 @@ export class IncrementRateLimiter extends AbstractRateLimiter {
         if (resp.value() === 1) {
           await this._client.updateTtl('rate-limiter', id, 60000);
         }
-        allowed = true;
+        return true;
       }
     } else if (resp instanceof CacheIncrement.Error) {
       console.error('Error while incrementing ' + resp.message());
-      this.metrics.recordErrors();
+      throw new Error(resp.message());
     }
 
-    const latency = Date.now() - start;
-    if (allowed) {
-      this.metrics.recordSuccess(latency);
-    } else {
-      this.metrics.recordThrottle(latency);
-    }
-
-    return allowed;
+    return false;
   }
 }
