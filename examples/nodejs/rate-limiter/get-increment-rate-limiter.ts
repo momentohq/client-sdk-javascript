@@ -20,7 +20,7 @@ export class GetIncrementRateLimiter extends AbstractRateLimiter {
     const getResp = await this._client.get('rate-limiter', currentMinuteKey);
 
     if (getResp instanceof CacheGet.Hit) {
-      if (parseInt(getResp.value(), 10) < this._limit) {
+      if (parseInt(getResp.value(), 10) <= this._limit) {
         await this._client.increment('rate-limiter', currentMinuteKey);
         allowed = true;
       }
@@ -28,7 +28,6 @@ export class GetIncrementRateLimiter extends AbstractRateLimiter {
       // first call to key so we set TTL now to 60 seconds
       await this._client.increment('rate-limiter', currentMinuteKey, 1, {ttl: 60000});
       allowed = true;
-      return true;
     } else if (getResp instanceof CacheGet.Error) {
       console.error(`Error while getting value for key ${currentMinuteKey}` + getResp.message());
       this.metrics.recordErrors();
