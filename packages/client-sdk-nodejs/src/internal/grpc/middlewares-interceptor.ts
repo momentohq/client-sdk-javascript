@@ -61,7 +61,6 @@ export function middlewaresInterceptor(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             next: (message: any) => void
           ): void {
-            if (message !== undefined && message !== null) {
               applyMiddlewareHandlers(
                 'onResponseBody',
                 reversedMiddlewareRequestHandlers,
@@ -71,7 +70,6 @@ export function middlewaresInterceptor(
                 new MiddlewareMessage(message as Message),
                 (msg: MiddlewareMessage | null) => next(msg?._grpcMessage)
               );
-            }
           },
           onReceiveStatus: function (
             status: StatusObject,
@@ -100,7 +98,6 @@ export function middlewaresInterceptor(
       // unfortunately grpc uses `any` in their type defs for these
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       sendMessage: function (message: any, next: (message: any) => void): void {
-        if (message !== undefined && message !== null) {
           applyMiddlewareHandlers(
             'onRequestBody',
             middlewareRequestHandlers,
@@ -109,9 +106,9 @@ export function middlewaresInterceptor(
             new MiddlewareMessage(message as Message),
             (m: MiddlewareMessage) => next(m._grpcMessage)
           );
-        }
       },
     };
+    console.log("\nCompleted creating the requester");
     return new InterceptingCall(nextCall(options), requester);
   };
 }
