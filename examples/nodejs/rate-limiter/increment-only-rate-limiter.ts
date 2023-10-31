@@ -20,13 +20,11 @@ export class IncrementRateLimiter extends AbstractRateLimiter {
     if (resp instanceof CacheIncrement.Success) {
       if (resp.value() <= this._limit) {
         if (resp.value() === 1) {
-          console.log(`First call made to this key ${currentMinuteKey}; setting TTL for a minute now`);
           await this._client.updateTtl('rate-limiter', id, 60000);
         }
         this.metrics.recordSuccess(latency);
         return true;
       }
-      console.log(`Throttled user key ${currentMinuteKey}`);
       this.metrics.recordThrottle(latency);
       return false;
     } else if (resp instanceof CacheIncrement.Error) {

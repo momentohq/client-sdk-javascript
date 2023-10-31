@@ -14,10 +14,21 @@ async function main() {
   });
 
   const service = new DummyService();
-  const rateLimiterIncrement = new IncrementRateLimiter(momento, 10);
-  const rateLimiterGetIncrement = new GetIncrementRateLimiter(momento, 10);
+  const rateLimiterIncrement = new IncrementRateLimiter(momento, 1);
+  const rateLimiterGetIncrement = new GetIncrementRateLimiter(momento, 1);
 
-  const totalRequests = 1000;
+  // default values
+  let totalRequests = 10000;
+  let randomDelayUpperBound = 60000;
+
+  if (process.argv[2]) {
+    totalRequests = parseInt(process.argv[2], 10);
+  }
+
+  if (process.argv[3]) {
+    randomDelayUpperBound = parseInt(process.argv[3], 10);
+  }
+
   const userIDs = ['user1', 'user2', 'user3', 'user4', 'user5'];
   const tasks = [];
   let currentUserIndex = 0;
@@ -39,7 +50,7 @@ async function main() {
             console.error(`Error in worker for user ${selectedUser}:`, error);
             resolve();
           }
-        }, randomDelay);
+        }, randomDelayUpperBound);
       });
 
       tasks.push(task);
