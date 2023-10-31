@@ -20,11 +20,12 @@ async function main() {
     const cacheClient = await getCacheClient(loggerFactory);
     logger.info('Created a CacheClient configured with metrics middleware');
 
-    logger.info('Issuing 5 minutes of set and get requests to generate data for the dashboard example');
-    for (let i = 0; i < 60 /* seconds */ * 5 /* minutes */; i++) {
-      await cacheClient.set('cache', 'metrics-example-{i}', 'VALUE');
-      await cacheClient.get('cache', 'metrics-example-{i}');
-      await delay(1000);
+    logger.info('Issuing 60 minutes of set and get requests to generate data for the dashboard example');
+    const delayBetweenRequestsMillis = 100;
+    for (let i = 0; i < (60 /* seconds */ * 60 /* minutes */); i++) {
+      await cacheClient.set('cache', `metrics-example-${i}`, 'VALUE');
+      await cacheClient.get('cache', `metrics-example-${i}`);
+      await delay(delayBetweenRequestsMillis);
     }
 
     logger.info('Momento metrics middleware example complete!');

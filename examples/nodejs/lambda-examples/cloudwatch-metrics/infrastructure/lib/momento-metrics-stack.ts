@@ -55,8 +55,8 @@ export class MomentoMetricsStack extends cdk.Stack {
     provide your function's log group name for the ___ parameter.
     */
     const configToLogGroupName = new Map([
-      ["lambda", '/aws/lambda/MomentoMetricsMiddlewareCDKExample'],
-      ["ecs", '/aws/ecs/MomentoMetricsMiddlewareCDKExample'],
+      ["lambda", '/aws/lambda/MomentoMetricsMiddlewareLambda'],
+      ["ecs", '/aws/ecs/MomentoMetricsMiddlewareECS'],
       ["dashboard-only", dashboardOnlyLogGroupName]
     ]);
     const logGroupName = configToLogGroupName.get(stackConfig);
@@ -116,9 +116,9 @@ export class MomentoMetricsStack extends cdk.Stack {
   }
 
   setUpLambdaFunction(apiKeySecret: cdk.aws_secretsmanager.Secret) {
-    const nodejsLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoMetricsMiddlewareCDKExample', {
-      functionName: 'MomentoMetricsMiddlewareCDKExample',
-      runtime: lambda.Runtime.NODEJS_LATEST,
+    const nodejsLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoMetricsMiddlewareLambda', {
+      functionName: 'MomentoMetricsMiddlewareLambda',
+      runtime: lambda.Runtime.NODEJS_18_X,
       entry: path.join(__dirname, '../../lambda/handler.ts'),
       projectRoot: path.join(__dirname, '../../lambda'),
       depsLockFilePath: path.join(__dirname, '../../lambda/package-lock.json'),
@@ -139,12 +139,12 @@ export class MomentoMetricsStack extends cdk.Stack {
       directory: path.join(__dirname, "../../docker")
     });
 
-    const taskDefinition = new ecs.FargateTaskDefinition(this, 'MomentoMetricsMiddlewareCDKExample');
+    const taskDefinition = new ecs.FargateTaskDefinition(this, 'MomentoMetricsMiddlewareECS');
     taskDefinition.addContainer('MomentoMetricsECSContainer', {
       image: ecs.ContainerImage.fromDockerImageAsset(imageAsset),
       logging: new ecs.AwsLogDriver({
         logGroup: logGroup,
-        streamPrefix: "MomentoMetricsMiddlewareCDKExample"
+        streamPrefix: "MomentoMetricsMiddlewareECS"
       })
     });
 
@@ -206,6 +206,8 @@ export class MomentoMetricsStack extends cdk.Stack {
   }
 
   addWidgetsToDashboard(dashboard: cdk.aws_cloudwatch.Dashboard) {
+    const graphPeriod = cdk.Duration.minutes(1);
+
     const latency = new GraphWidget({
       left: [
         new Metric({
@@ -214,6 +216,11 @@ export class MomentoMetricsStack extends cdk.Stack {
         }),
       ],
       title: 'Duration (Latency)',
+      leftYAxis: {
+        label: 'Latency',
+        min: 0,
+      },
+      period: graphPeriod,
     });
 
     const errorCodes = new GraphWidget({
@@ -224,7 +231,7 @@ export class MomentoMetricsStack extends cdk.Stack {
         }),
       ],
       title: 'GRPC Error Codes',
-      period: cdk.Duration.minutes(1),
+      period: graphPeriod,
       leftYAxis: {
         label: 'Error Code',
         max: 16,
@@ -252,7 +259,7 @@ export class MomentoMetricsStack extends cdk.Stack {
         }),
       ],
       title: 'Request and Response Sizes in Bytes',
-      period: cdk.Duration.minutes(1),
+      period: graphPeriod,
       statistic: Stats.AVERAGE,
     });
 
@@ -268,10 +275,10 @@ export class MomentoMetricsStack extends cdk.Stack {
           statistic: Stats.SAMPLE_COUNT,
         }),
       ],
-      period: cdk.Duration.seconds(1),
+      period: graphPeriod,
       height: 6,
       sparkline: true,
-      title: 'Transactions per second',
+      title: 'Requests per second',
     });
 
     const numberOfRequests = new GraphWidget({
@@ -283,7 +290,7 @@ export class MomentoMetricsStack extends cdk.Stack {
         }),
       ],
       title: 'Number of requests',
-      period: cdk.Duration.minutes(1),
+      period: graphPeriod,
       statistic: Stats.SAMPLE_COUNT,
     });
 
@@ -307,7 +314,7 @@ export class MomentoMetricsStack extends cdk.Stack {
         }),
       ],
       title: 'Total bytes sent and received',
-      period: cdk.Duration.minutes(1),
+      period: graphPeriod,
       statistic: Stats.SUM,
     });
 
