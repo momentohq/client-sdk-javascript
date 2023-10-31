@@ -3,6 +3,7 @@ import {IncrementRateLimiter} from "./increment-only-rate-limiter";
 import {DummyService} from "./service";
 import {GetIncrementRateLimiter} from "./get-increment-rate-limiter";
 import {RateLimiter} from "./rate-limiter";
+import {Metrics} from "./metrics";
 
 async function main() {
   const momento = await CacheClient.create({
@@ -32,9 +33,13 @@ async function main() {
   }
 
   const service = new DummyService();
-  const rateLimiterIncrement = new IncrementRateLimiter(momento, tpmLimit);
-  const rateLimiterGetIncrement = new GetIncrementRateLimiter(momento, tpmLimit);
+  const rateLimiterIncrementMetrics =  new Metrics();
+  const rateLimiterGetIncrementMetrics = new Metrics();
 
+  const rateLimiters = [
+    { limiter: new IncrementRateLimiter(momento, tpmLimit), metrics: rateLimiterIncrementMetrics },
+    { limiter: new GetIncrementRateLimiter(momento, tpmLimit), metrics: rateLimiterGetIncrementMetrics }
+  ];
 
   const userIDs = ['user1', 'user2', 'user3', 'user4', 'user5'];
   const tasks = [];
@@ -43,7 +48,7 @@ async function main() {
   console.log(`Simulating ${totalRequests} requests for each rate limiter with a random delay between requests upto a max of ${randomDelayUpperBound} milliseconds.`);
 
   // Simulate for both rate limiters
-  for (const rateLimiter of [rateLimiterIncrement, rateLimiterGetIncrement]) {
+  for (const { limiter, metrics } of rateLimiters) {
     for (let i = 0; i < totalRequests; i++) {
       const randomDelay = Math.floor(Math.random() * randomDelayUpperBound);
       // Round-robin user selection
@@ -53,7 +58,7 @@ async function main() {
       const task = new Promise<void>((resolve) => {
         setTimeout(async () => {
           try {
-            await worker(selectedUser.concat(rateLimiter.constructor.name), rateLimiter, service);
+            await worker(selectedUser.concat(limiter.constructor.name), limiter, service, metrics);
             resolve();
           } catch (error) {
             console.error(`Error in worker for user ${selectedUser}:`, error);
@@ -69,22 +74,23 @@ async function main() {
   await Promise.all(tasks);
 
   // Display metrics for both rate limiters
-  rateLimiterIncrement.metrics.displayMetrics("Increment");
-  rateLimiterGetIncrement.metrics.displayMetrics("GetIncrement");
+  rateLimiterIncrementMetrics.displayMetrics("Increment");
+  rateLimiterGetIncrementMetrics.displayMetrics("GetIncrement");
 }
 
-async function worker(id: string, rateLimiter: RateLimiter, service: DummyService) {
+async function worker(id: string, rateLimiter: RateLimiter, service: DummyService, metrics: Metrics) {
   const start = Date.now();
   try {
     const allowed = await rateLimiter.acquire(id);
     const latency = Date.now() - start;
     if (allowed) {
-      rateLimiter.getMetrics().recordSuccess(latency);
+      metrics.recordSuccess(latency);
+      service.doWork();
     } else {
-      rateLimiter.getMetrics().recordThrottle(latency);
+      metrics.recordThrottle(latency);
     }
   } catch (err) {
-    rateLimiter.getMetrics().recordErrors();
+    metrics.recordErrors();
     console.error(`Error while calling rate limiter ${err}`)
   }
 }
