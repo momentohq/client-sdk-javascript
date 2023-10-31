@@ -33,8 +33,7 @@ async function main() {
   const tasks = [];
   let currentUserIndex = 0;
 
-  console.log(`Simulating ${totalRequests} requests for each rate limiter with a random delay between requests
-   upto a max of ${randomDelayUpperBound} milliseconds.`);
+  console.log(`Simulating ${totalRequests} requests for each rate limiter with a random delay between requests upto a max of ${randomDelayUpperBound} milliseconds.`);
 
   // Simulate for both rate limiters
   for (const rateLimiter of [rateLimiterIncrement, rateLimiterGetIncrement]) {
