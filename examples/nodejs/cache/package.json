@@ -9,7 +9,6 @@
     "basic": "tsc && node dist/basic.js",
     "advanced": "tsc && node dist/advanced.js",
     "dictionary": "tsc && node dist/dictionary.js",
-    "rate-limiter": "tsc && node dist/rate-limiter.js",
     "doc-examples": "tsc && node dist/doc-example-files/doc-examples-js-apis.js",
     "validate-examples": "tsc && node dist/readme.js && node dist/basic.js && node dist/advanced.js && node dist/dictionary.js && node dist/doc-example-files/doc-examples-js-apis.js && node dist/doc-example-files/cheat-sheet-main.js && node dist/batchutils.js && node dist/leaderboard.js",
     "leaderboard": "tsc && node dist/leaderboard.js",
