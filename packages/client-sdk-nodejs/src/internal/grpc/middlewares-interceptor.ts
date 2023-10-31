@@ -61,7 +61,7 @@ export function middlewaresInterceptor(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             next: (message: any) => void
           ): void {
-            if (message != undefined && message != null) {
+            if (message !== undefined && message !== null) {
               applyMiddlewareHandlers(
                 'onResponseBody',
                 reversedMiddlewareRequestHandlers,
@@ -100,7 +100,7 @@ export function middlewaresInterceptor(
       // unfortunately grpc uses `any` in their type defs for these
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       sendMessage: function (message: any, next: (message: any) => void): void {
-        if (message != undefined && message != null) {
+        if (message !== undefined && message !== null) {
           applyMiddlewareHandlers(
             'onRequestBody',
             middlewareRequestHandlers,
