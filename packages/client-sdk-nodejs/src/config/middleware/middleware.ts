@@ -29,7 +29,10 @@ export class MiddlewareMessage {
   }
 
   messageLength(): number {
-    return this._grpcMessage.serializeBinary().length;
+    if (this._grpcMessage !== null && this._grpcMessage !== undefined) {
+      return this._grpcMessage.serializeBinary().length;
+    }
+    return 0;
   }
 }
 
