@@ -31,7 +31,7 @@ export class Metrics {
   }
 
   getAverageLatency(): number {
-    return this.totalLatency / (this.successes + this.throttles);
+    return this.totalLatency / (this.successes + this.throttles + this.errors);
   }
 
   displayMetrics(type: string) {
