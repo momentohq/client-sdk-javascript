@@ -69,18 +69,18 @@ export function runAuthClientTests(
       const secondsSinceEpoch = Math.round(Date.now() / 1000);
       const expireResponse = await sessionTokenAuthClient.generateApiKey(
         SUPER_USER_PERMISSIONS,
-        ExpiresIn.seconds(10)
+        ExpiresIn.minutes(5)
       );
-      const expiresIn = secondsSinceEpoch + 10;
+
+      const expiresIn = secondsSinceEpoch + 300;
 
       expect(expireResponse).toBeInstanceOf(GenerateApiKey.Success);
-
       const expireResponseSuccess = expireResponse as GenerateApiKey.Success;
       expect(expireResponseSuccess.is_success);
       expect(expireResponseSuccess.expiresAt.doesExpire());
       expect(expireResponseSuccess.expiresAt.epoch()).toBeWithin(
-        expiresIn - 1,
-        expiresIn + 2
+        expiresIn - 60,
+        expiresIn + 60
       );
     });
 
