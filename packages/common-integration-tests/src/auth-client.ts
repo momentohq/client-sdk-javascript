@@ -77,8 +77,6 @@ export function runAuthClientTests(
       expect(expireResponse).toBeInstanceOf(GenerateApiKey.Success);
       const expireResponseSuccess = expireResponse as GenerateApiKey.Success;
       expect(expireResponseSuccess.is_success);
-      console.log(expiresIn);
-      console.log(expireResponseSuccess.expiresAt.epoch());
       expect(expireResponseSuccess.expiresAt.doesExpire());
       expect(expireResponseSuccess.expiresAt.epoch()).toBeWithin(
         expiresIn - 60,
