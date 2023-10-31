@@ -15,7 +15,7 @@ export enum EventTypes {
 
 export type ChatMessageEvent = {
   event: EventTypes.MESSAGE;
-  username: string;
+  username?: string;
   text: string;
   timestamp: number;
 };
@@ -35,7 +35,7 @@ let onErrorCb: (
   error: TopicSubscribe.Error,
   subscription: TopicSubscribe.Subscription,
 ) => Promise<void>;
-
+let username: string;
 type MomentoClients = {
   topicClient: TopicClient;
 };
@@ -43,9 +43,12 @@ type MomentoClients = {
 async function getNewWebClients(): Promise<MomentoClients> {
   webTopicClient = undefined;
   // we don't want to cache the token, since it will expire in 5 min
-  const fetchResp = await fetch(window.location.origin + "/api/momento/token", {
-    cache: "no-store",
-  });
+  const fetchResp = await fetch(
+    window.location.origin + `/api/momento/token?username=${username}`,
+    {
+      cache: "no-store",
+    },
+  );
   const token = await fetchResp.text();
   const topicClient = new TopicClient({
     configuration: Configurations.Browser.v1(),
@@ -83,6 +86,7 @@ export async function listCaches(): Promise<string[]> {
 export async function subscribeToTopic(
   cacheName: string,
   topicName: string,
+  userName: string,
   onItem: (item: TopicItem) => void,
   onError: (
     error: TopicSubscribe.Error,
@@ -91,11 +95,13 @@ export async function subscribeToTopic(
 ) {
   onErrorCb = onError;
   onItemCb = onItem;
+  username = userName;
   const topicClient = await getWebTopicClient();
   const resp = await topicClient.subscribe(cacheName, topicName, {
     onItem: onItemCb,
     onError: onErrorCb,
   });
+
   if (resp instanceof TopicSubscribe.Subscription) {
     subscription = resp;
     return subscription;
@@ -113,7 +119,13 @@ async function publish(cacheName: string, topicName: string, message: string) {
         "token has expired, going to refresh subscription and retry publish",
       );
       clearCurrentClient();
-      await subscribeToTopic(cacheName, topicName, onItemCb, onErrorCb);
+      await subscribeToTopic(
+        cacheName,
+        topicName,
+        username,
+        onItemCb,
+        onErrorCb,
+      );
       await publish(cacheName, topicName, message);
     } else {
       console.error("failed to publish to topic", resp);
@@ -137,11 +149,9 @@ export async function userJoined(
 export async function sendMessage(
   cacheName: string,
   topicName: string,
-  username: string,
   text: string,
 ) {
   const chatMessage: ChatMessageEvent = {
-    username,
     text,
     timestamp: Date.now(),
     event: EventTypes.MESSAGE,

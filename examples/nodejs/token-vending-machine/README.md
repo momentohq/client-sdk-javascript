@@ -62,6 +62,16 @@ MomentoTokenVendingMachine.MomentoTokenVendingMachineApiEndpointE36C2123 = https
 ```
 
 This is the URL of the API Gateway endpoint for your Token Vending Machine. Now you should be able to `curl` this endpoint, and the response will be a temporary Momento API key suitable for use in a browser!
+You should see an output like:
+
+```
+{"authToken":"someShortLivedDisposableToken","expiresAt":1698119397}
+```
+
+You can also pass a tokenId as a query string to your curl command to add context to your token. This can be particularly useful when using [Momento Topics](https://www.gomomento.com/services/topics) as the tokenId can be retrieved from subscription messages, allowing your application to distinguish between different subscribers. In this case, a `name` for the user is the `tokenId` passed as a query string.
+
+`https://9jkmukxn68.execute-api.us-west-2.amazonaws.com/prod?name=Taylor`
+
 
 ## Example Apps That Use The Token Vending Machine
 

@@ -106,6 +106,10 @@ import {
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
   AllDataReadWrite,
+  CachePermission,
+  TopicPermission,
+  Permission,
+  Permissions,
   PermissionScope,
   /**
    * @deprecated please use PermissionScope instead
@@ -122,6 +126,10 @@ import {
   TopicSelector,
   AllCaches,
   AllTopics,
+  CacheRole,
+  TopicRole,
+  LeaderboardOrder,
+  ILeaderboard,
 } from '@gomomento/sdk-core';
 
 import {Configuration} from './config/configuration';
@@ -168,6 +176,12 @@ export {
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
   AllDataReadWrite,
+  CacheRole,
+  TopicRole,
+  CachePermission,
+  TopicPermission,
+  Permission,
+  Permissions,
   PermissionScope,
   /**
    * @deprecated please use 'PermissionScope' instead
@@ -252,6 +266,8 @@ export {
   LeaderboardConfiguration,
   LeaderboardClientConfiguration,
   PreviewLeaderboardClient,
+  LeaderboardOrder,
+  ILeaderboard,
   GenerateApiKey,
   /**
    * @deprecated - please use GenerateApiKey

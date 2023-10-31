@@ -176,9 +176,9 @@ export class PubsubClient<
         const publisherId = resp.getItem()?.getPublisherId();
         const itemBinary = resp.getItem()?.getValue()?.getBinary();
         if (itemText) {
-          options.onItem(new TopicItem(itemText, {publisherId: publisherId}));
+          options.onItem(new TopicItem(itemText, {tokenId: publisherId}));
         } else if (itemBinary) {
-          options.onItem(new TopicItem(itemBinary, {publisherId: publisherId}));
+          options.onItem(new TopicItem(itemBinary, {tokenId: publisherId}));
         } else {
           this.logger.error(
             'Received subscription item with unknown type; topic: %s',

@@ -1,7 +1,7 @@
 import {truncateString} from '../../internal/utils';
 
 export interface TopicItemOptions {
-  publisherId?: string;
+  tokenId?: string;
 }
 
 /**
@@ -13,11 +13,11 @@ export interface TopicItemOptions {
  */
 export class TopicItem {
   private readonly _value: string | Uint8Array;
-  private readonly _publisherId?: string;
+  private readonly _tokenId?: string;
 
   constructor(_value: string | Uint8Array, options?: TopicItemOptions) {
     this._value = _value;
-    this._publisherId = options?.publisherId;
+    this._tokenId = options?.tokenId;
   }
 
   /**
@@ -48,16 +48,16 @@ export class TopicItem {
    * Optionally returns the publisher ID from the steam if it exists.
    * @returns string | undefined
    */
-  public publisherId(): string | undefined {
-    return this._publisherId;
+  public tokenId(): string | undefined {
+    return this._tokenId;
   }
 
   public toString(): string {
     const displayValue = truncateString(this.value().toString());
     let displayString = `${this.constructor.name}: ${displayValue}`;
 
-    if (this._publisherId !== undefined) {
-      displayString += `; Publisher ID: ${this._publisherId}`;
+    if (this._tokenId !== undefined) {
+      displayString += `; Token Id: ${this._tokenId}`;
     }
 
     return displayString;

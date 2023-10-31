@@ -143,6 +143,8 @@ import {
   TopicSelector,
   AllCaches,
   AllTopics,
+  LeaderboardOrder,
+  ILeaderboard,
 } from '@gomomento/sdk-core';
 
 import {Configuration, CacheConfiguration} from './config/configuration';
@@ -330,6 +332,8 @@ export {
   LeaderboardConfiguration,
   LeaderboardClientConfiguration,
   PreviewLeaderboardClient,
+  LeaderboardOrder,
+  ILeaderboard,
   // Errors
   MomentoErrorCode,
   SdkError,
