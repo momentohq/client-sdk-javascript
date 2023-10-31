@@ -61,15 +61,15 @@ export function middlewaresInterceptor(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             next: (message: any) => void
           ): void {
-              applyMiddlewareHandlers(
-                'onResponseBody',
-                reversedMiddlewareRequestHandlers,
-                (h: MiddlewareRequestHandler) =>
-                  (request: MiddlewareMessage | null) =>
-                    h.onResponseBody(request),
-                new MiddlewareMessage(message as Message),
-                (msg: MiddlewareMessage | null) => next(msg?._grpcMessage)
-              );
+            applyMiddlewareHandlers(
+              'onResponseBody',
+              reversedMiddlewareRequestHandlers,
+              (h: MiddlewareRequestHandler) =>
+                (request: MiddlewareMessage | null) =>
+                  h.onResponseBody(request),
+              new MiddlewareMessage(message as Message),
+              (msg: MiddlewareMessage | null) => next(msg?._grpcMessage)
+            );
           },
           onReceiveStatus: function (
             status: StatusObject,
@@ -98,17 +98,16 @@ export function middlewaresInterceptor(
       // unfortunately grpc uses `any` in their type defs for these
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       sendMessage: function (message: any, next: (message: any) => void): void {
-          applyMiddlewareHandlers(
-            'onRequestBody',
-            middlewareRequestHandlers,
-            (h: MiddlewareRequestHandler) => (request: MiddlewareMessage) =>
-              h.onRequestBody(request),
-            new MiddlewareMessage(message as Message),
-            (m: MiddlewareMessage) => next(m._grpcMessage)
-          );
+        applyMiddlewareHandlers(
+          'onRequestBody',
+          middlewareRequestHandlers,
+          (h: MiddlewareRequestHandler) => (request: MiddlewareMessage) =>
+            h.onRequestBody(request),
+          new MiddlewareMessage(message as Message),
+          (m: MiddlewareMessage) => next(m._grpcMessage)
+        );
       },
     };
-    console.log("\nCompleted creating the requester");
     return new InterceptingCall(nextCall(options), requester);
   };
 }
