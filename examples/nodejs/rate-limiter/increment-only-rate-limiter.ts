@@ -14,10 +14,12 @@ export class IncrementRateLimiter extends AbstractRateLimiter {
     const start = Date.now();
 
     const currentMinuteKey = this.generateMinuteKey(id);
+    const requestStart = Date.now();
     // we do not pass a TTL to this; we don't know if the key for this user was present or not
     const resp = await this._client.increment('rate-limiter', currentMinuteKey);
+    const requestLatency = Date.now() - requestStart;
     const latency = Date.now() - start;
-    console.log(`Individual latency is ${latency}`);
+    console.log(`Individual latency is ${requestLatency}`);
     if (resp instanceof CacheIncrement.Success) {
       if (resp.value() <= this._limit) {
         if (resp.value() === 1) {
