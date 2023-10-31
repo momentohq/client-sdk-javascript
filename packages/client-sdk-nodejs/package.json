@@ -15,7 +15,7 @@
   "scripts": {
     "prebuild": "eslint . --ext .ts",
     "test": "jest --testPathIgnorePatterns auth-client.test.ts --reporters=jest-silent-reporter",
-    "integration-test-auth": "jest auth-client.test.ts",
+    "integration-test-auth": "jest auth-client.test.ts --reporters=jest-silent-reporter",
     "integration-test-vector": "jest vector-control-plane.test.ts vector-data-plane.test.ts --reporters=jest-silent-reporter",
     "unit-test": "jest unit --reporters=jest-silent-reporter",
     "integration-test": "jest integration --reporters=jest-silent-reporter --testPathIgnorePatterns \"auth-client.test.ts|vector-control-plane.test.ts|vector-data-plane.test.ts\"",
