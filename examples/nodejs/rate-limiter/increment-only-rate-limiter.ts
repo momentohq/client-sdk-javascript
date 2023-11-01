@@ -1,4 +1,4 @@
-import { CacheClient, CacheIncrement } from "@gomomento/sdk";
+import {CacheClient, CacheIncrement, CacheUpdateTtl} from "@gomomento/sdk";
 import {
   AbstractRateLimiter,
   RATE_LIMITER_CACHE_NAME,
@@ -28,11 +28,16 @@ export class IncrementRateLimiter extends AbstractRateLimiter {
         // if returned value is 1, we know this was the first request in this minute for the given user. So
         // we set the TTL for this minute's key to 60 seconds now.
         if (resp.value() === 1) {
-          await this._client.updateTtl(
+          const updateTTLResp = await this._client.updateTtl(
             RATE_LIMITER_CACHE_NAME,
-            id,
+            currentMinuteKey,
             RATE_LIMITER_TTL_MILLIS
           );
+          if (!(updateTTLResp instanceof CacheUpdateTtl.Set)) {
+            console.error(
+              `Failed to update TTL; this minute's user requests might be overcounted, key: ${currentMinuteKey}`
+            );
+          }
         }
         return true;
       }
