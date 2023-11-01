@@ -1,4 +1,4 @@
-import {CacheClient, CacheIncrement, CacheUpdateTtl} from "@gomomento/sdk";
+import { CacheClient, CacheIncrement, CacheUpdateTtl } from "@gomomento/sdk";
 import {
   AbstractRateLimiter,
   RATE_LIMITER_CACHE_NAME,
