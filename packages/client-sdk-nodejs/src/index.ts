@@ -202,7 +202,6 @@ export {ExperimentalRequestLoggingMiddleware} from './config/middleware/experime
 export {ExperimentalMetricsCsvMiddleware} from './config/middleware/experimental-metrics-csv-middleware';
 export {ExperimentalMetricsLoggingMiddleware} from './config/middleware/experimental-metrics-logging-middleware';
 export {ExampleAsyncMiddleware} from './config/middleware/example-async-middleware';
-export {ExperimentalMetricsLoggingMiddleware} from './config/middleware/experimental-metrics-logging-middleware';
 
 export {
   ICacheClient,
