@@ -5,8 +5,8 @@ import {
   DefaultMomentoLoggerFactory,
   DefaultMomentoLoggerLevel,
   CredentialProvider,
+  ExperimentalMetricsLoggingMiddleware
 } from '@gomomento/sdk';
-import {ExperimentalMetricsLoggingMiddleware} from '@gomomento/sdk/dist/src/config/middleware/experimental-metrics-logging-middleware';
 
 const _secretsClient = new SecretsManagerClient({});
 const _cachedSecrets = new Map<string, string>();
