@@ -298,7 +298,7 @@ export class MomentoMetricsStack extends cdk.Stack {
           metricName: 'Latency + GRPC Status',
           namespace: 'MomentoMetricsCDKExample',
           statistic: Stats.percentile(50),
-          label: 'p50 code 0',
+          label: 'p50 OK',
           dimensionsMap: {
             'status': '0'
           }
@@ -307,7 +307,7 @@ export class MomentoMetricsStack extends cdk.Stack {
           metricName: 'Latency + GRPC Status',
           namespace: 'MomentoMetricsCDKExample',
           statistic: Stats.percentile(99),
-          label: 'p99 code 0',
+          label: 'p99 OK',
           dimensionsMap: {
             'status': '0'
           }
@@ -316,7 +316,7 @@ export class MomentoMetricsStack extends cdk.Stack {
           metricName: 'Latency + GRPC Status',
           namespace: 'MomentoMetricsCDKExample',
           statistic: Stats.percentile(50),
-          label: 'p50 code 13',
+          label: 'p50 ERROR: INTERNAL',
           dimensionsMap: {
             'status': '13'
           }
@@ -325,7 +325,7 @@ export class MomentoMetricsStack extends cdk.Stack {
           metricName: 'Latency + GRPC Status',
           namespace: 'MomentoMetricsCDKExample',
           statistic: Stats.percentile(99),
-          label: 'p99 code 13',
+          label: 'p99 ERROR: INTERNAL',
           dimensionsMap: {
             'status': '13'
           }
@@ -429,7 +429,7 @@ export class MomentoMetricsStack extends cdk.Stack {
         new Metric({
           metricName: 'Response Size (bytes) + GRPC Status',
           namespace: 'MomentoMetricsCDKExample',
-          label: 'p50 responses code 0',
+          label: 'p50 responses OK',
           statistic: Stats.percentile(50),
           dimensionsMap: {
             'status': '0'
@@ -438,7 +438,7 @@ export class MomentoMetricsStack extends cdk.Stack {
         new Metric({
           metricName: 'Response Size (bytes) + GRPC Status',
           namespace: 'MomentoMetricsCDKExample',
-          label: 'p50 responses code 13',
+          label: 'p50 responses ERROR: INTERNAL',
           statistic: Stats.percentile(50),
           dimensionsMap: {
             'status': '13'
@@ -447,7 +447,7 @@ export class MomentoMetricsStack extends cdk.Stack {
         new Metric({
           metricName: 'Request Size (bytes) + GRPC Status',
           namespace: 'MomentoMetricsCDKExample',
-          label: 'p50 requests code 0',
+          label: 'p50 requests OK',
           statistic: Stats.percentile(50),
           dimensionsMap: {
             'status': '0'
@@ -456,7 +456,7 @@ export class MomentoMetricsStack extends cdk.Stack {
         new Metric({
           metricName: 'Request Size (bytes) + GRPC Status',
           namespace: 'MomentoMetricsCDKExample',
-          label: 'p50 requests code 13',
+          label: 'p50 requests ERROR: INTERNAL',
           statistic: Stats.percentile(50),
           dimensionsMap: {
             'status': '13'
@@ -525,7 +525,7 @@ export class MomentoMetricsStack extends cdk.Stack {
       left: [
         new MathExpression({
           expression: 'countPerMinute / 60', 
-          label: 'Count of requests per second',
+          label: 'Average count of requests per second',
           usingMetrics: {
             countPerMinute: new Metric({
               metricName: 'Request Size (bytes)',
@@ -539,7 +539,7 @@ export class MomentoMetricsStack extends cdk.Stack {
       period: graphPeriod,
       statistic: Stats.SAMPLE_COUNT,
       leftYAxis: {
-        label: 'count',
+        label: 'average count per second',
         min: 0,
       },
     });

@@ -10,7 +10,9 @@
 
 ## CloudWatch Metrics using Momento's Experimental Metrics Middleware
 
-This directory contains an AWS CDK stack that will create and populate a custom CloudWatch dashboard for Momento client-side metrics. You can deploy an example Lambda function or ECS cluster that uses the Momento Node.js SDK's Experimental Metrics Middleware to generate example dashboard data for 5 minutes at a time. Or you can deploy just the CloudWatch dashboard and use your own application to emit Momento metrics.
+This directory contains an AWS CDK stack that will create and populate a custom CloudWatch dashboard for Momento client-side metrics. These metrics measure latency between your client and Momento's servers and can be useful for debugging performance issues. 
+
+With the code in this directory, you can deploy an example Lambda function or ECS cluster that uses the Momento Node.js SDK's Experimental Metrics Middleware to generate example dashboard data for 5 minutes at a time. Or you can deploy just the CloudWatch dashboard and use your own application to emit Momento metrics.
 
 ## Prerequisites
 
