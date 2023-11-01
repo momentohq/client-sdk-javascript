@@ -171,7 +171,7 @@ export class MomentoMetricsStack extends cdk.Stack {
     logGroup.addMetricFilter('MetricFilterDuration', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Latency',
-      filterPattern: FilterPattern.literal('{$.MomentoMetricsMiddleware.duration > 0}'),
+      filterPattern: FilterPattern.literal('{$.momento.duration > 0}'),
       metricValue: '$.duration',
       unit: Unit.MILLISECONDS,
     });
@@ -179,7 +179,7 @@ export class MomentoMetricsStack extends cdk.Stack {
     logGroup.addMetricFilter('MetricFilterDurationAndGrpcStatus', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Latency + GRPC Status',
-      filterPattern: FilterPattern.literal('{$.MomentoMetricsMiddleware.duration > 0 && $.status >= 0}'),
+      filterPattern: FilterPattern.literal('{$.momento.duration > 0 && $.status >= 0}'),
       metricValue: '$.duration',
       unit: Unit.MILLISECONDS,
       dimensions: {
@@ -190,7 +190,7 @@ export class MomentoMetricsStack extends cdk.Stack {
     logGroup.addMetricFilter('MetricFilterDurationAndRequestType', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Latency + Request Type',
-      filterPattern: FilterPattern.literal('{$.MomentoMetricsMiddleware.duration > 0 && $.requestType = "*"}'),
+      filterPattern: FilterPattern.literal('{$.momento.duration > 0 && $.requestType = "*"}'),
       metricValue: '$.duration',
       unit: Unit.MILLISECONDS,
       dimensions: {
@@ -201,7 +201,7 @@ export class MomentoMetricsStack extends cdk.Stack {
     logGroup.addMetricFilter('MetricFilterRequestSize', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Request Size (bytes)',
-      filterPattern: FilterPattern.literal('{$.MomentoMetricsMiddleware.requestSize >= 0}'),
+      filterPattern: FilterPattern.literal('{$.momento.requestSize >= 0}'),
       metricValue: '$.requestSize',
       unit: Unit.BYTES,
     });
@@ -209,7 +209,7 @@ export class MomentoMetricsStack extends cdk.Stack {
     logGroup.addMetricFilter('MetricFilterRequestSizeAndGrpcStatus', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Request Size (bytes) + GRPC Status',
-      filterPattern: FilterPattern.literal('{$.MomentoMetricsMiddleware.requestSize >= 0 && $.status >= 0}'),
+      filterPattern: FilterPattern.literal('{$.momento.requestSize >= 0 && $.status >= 0}'),
       metricValue: '$.requestSize',
       unit: Unit.BYTES,
       dimensions: {
@@ -220,7 +220,7 @@ export class MomentoMetricsStack extends cdk.Stack {
     logGroup.addMetricFilter('MetricFilterRequestSizeAndRequestType', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Request Size (bytes) + Request Type',
-      filterPattern: FilterPattern.literal('{$.MomentoMetricsMiddleware.requestSize >= 0 && $.requestType = "*"}'),
+      filterPattern: FilterPattern.literal('{$.momento.requestSize >= 0 && $.requestType = "*"}'),
       metricValue: '$.requestSize',
       unit: Unit.BYTES,
       dimensions: {
@@ -231,7 +231,7 @@ export class MomentoMetricsStack extends cdk.Stack {
     logGroup.addMetricFilter('MetricFilterResponseSize', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Response Size (bytes)',
-      filterPattern: FilterPattern.literal('{$.MomentoMetricsMiddleware.responseSize >= 0}'),
+      filterPattern: FilterPattern.literal('{$.momento.responseSize >= 0}'),
       metricValue: '$.responseSize',
       unit: Unit.BYTES,
     });
@@ -239,7 +239,7 @@ export class MomentoMetricsStack extends cdk.Stack {
     logGroup.addMetricFilter('MetricFilterResponseSizeAndGrpcStatus', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Response Size (bytes) + GRPC Status',
-      filterPattern: FilterPattern.literal('{$.MomentoMetricsMiddleware.responseSize >= 0 && $.status >= 0}'),
+      filterPattern: FilterPattern.literal('{$.momento.responseSize >= 0 && $.status >= 0}'),
       metricValue: '$.responseSize',
       unit: Unit.BYTES,
       dimensions: {
@@ -250,7 +250,7 @@ export class MomentoMetricsStack extends cdk.Stack {
     logGroup.addMetricFilter('MetricFilterResponseSizeAndRequestType', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Response Size (bytes) +  Request Type',
-      filterPattern: FilterPattern.literal('{$.MomentoMetricsMiddleware.responseSize >= 0 && $.requestType = "*"}'),
+      filterPattern: FilterPattern.literal('{$.momento.responseSize >= 0 && $.requestType = "*"}'),
       metricValue: '$.responseSize',
       unit: Unit.BYTES,
       dimensions: {
