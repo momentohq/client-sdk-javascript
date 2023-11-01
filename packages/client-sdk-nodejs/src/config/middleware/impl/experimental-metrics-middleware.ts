@@ -24,7 +24,7 @@ const FIELD_NAMES: Array<string> = [
 ];
 
 export interface ExperimentalRequestMetrics {
-  MomentoMetricsMiddleware: {
+  momento: {
     /**
      * number of requests active at the start of the request
      */
@@ -152,7 +152,7 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
   private recordMetrics(): void {
     const endTime = new Date().getTime();
     const metrics: ExperimentalRequestMetrics = {
-      MomentoMetricsMiddleware: {
+      momento: {
         numActiveRequestsAtStart: this.numActiveRequestsAtStart,
         numActiveRequestsAtFinish: this.parent.activeRequestCount(),
         requestType: this.requestType,
