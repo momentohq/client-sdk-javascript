@@ -103,7 +103,31 @@ For example, in a simulation with 10 concurrent API calls, 5 users, and a rate l
     GetIncrement Rate Limiter - p99.9 Latency: 88
     ```
 
-    With the second approach, you can see that all the requests were granted and wasn't accurate like the first one,
-    even though the first one paid a little extra penalty on the latency.
+The second approach, although slightly better in latency under certain conditions, is prone to inaccuracies, which could be a trade-off depending on the application's requirements. Note that in some other simulation runs, the latency of the first approach was infact slightly better, so we disregard this difference in either case as an epsilon.
 
-The second approach, although slightly better in latency under certain conditions, is prone to inaccuracies, which could be a trade-off depending on the application's requirements.
+```bash
+Simulating 100 requests for each rate limiter with a random delay between requests upto a max of 1 milliseconds. The rate limiter allow 1 requests per minute. The simulation uses 5 users and evenly divides requests for each user.
+
+Increment Rate Limiter - Successes: 5
+Increment Rate Limiter - Throttles: 95
+Increment Rate Limiter - Errors: 0
+Increment Rate Limiter - Average Latency: 223.880
+Increment Rate Limiter - p50 Latency: 229
+Increment Rate Limiter - p90 Latency: 289
+Increment Rate Limiter - p99 Latency: 346
+Increment Rate Limiter - p99.9 Latency: 346
+
+GetIncrement Rate Limiter - Successes: 100
+GetIncrement Rate Limiter - Throttles: 0
+GetIncrement Rate Limiter - Errors: 0
+GetIncrement Rate Limiter - Average Latency: 248.550
+GetIncrement Rate Limiter - p50 Latency: 249
+GetIncrement Rate Limiter - p90 Latency: 277
+GetIncrement Rate Limiter - p99 Latency: 292
+GetIncrement Rate Limiter - p99.9 Latency: 292
+
+All tasks complete!
+
+```
+
+In the above results for a similar scenario of high contention with 5 users and 100 requests and 1 TPM limit per user, we see the inaccuracy again with the second approach and a slightly worse latency.
