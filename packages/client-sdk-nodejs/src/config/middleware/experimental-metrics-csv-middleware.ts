@@ -22,17 +22,17 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler extends ExperimentalMetrics
 
   async emitMetrics(metrics: ExperimentalRequestMetrics): Promise<void> {
     const csvRow = [
-      metrics.numActiveRequestsAtStart,
-      metrics.numActiveRequestsAtFinish,
-      metrics.requestType,
-      metrics.status,
-      metrics.startTime,
-      metrics.requestBodyTime,
-      metrics.endTime,
-      metrics.duration,
-      metrics.requestSize,
-      metrics.responseSize,
-      metrics.connectionID,
+      metrics.MomentoMetricsMiddleware.numActiveRequestsAtStart,
+      metrics.MomentoMetricsMiddleware.numActiveRequestsAtFinish,
+      metrics.MomentoMetricsMiddleware.requestType,
+      metrics.MomentoMetricsMiddleware.status,
+      metrics.MomentoMetricsMiddleware.startTime,
+      metrics.MomentoMetricsMiddleware.requestBodyTime,
+      metrics.MomentoMetricsMiddleware.endTime,
+      metrics.MomentoMetricsMiddleware.duration,
+      metrics.MomentoMetricsMiddleware.requestSize,
+      metrics.MomentoMetricsMiddleware.responseSize,
+      metrics.MomentoMetricsMiddleware.connectionID,
     ].join(',');
     try {
       await fs.promises.appendFile(this.csvPath, `${csvRow}\n`);

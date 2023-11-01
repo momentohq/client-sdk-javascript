@@ -24,50 +24,52 @@ const FIELD_NAMES: Array<string> = [
 ];
 
 export interface ExperimentalRequestMetrics {
-  /**
-   * number of requests active at the start of the request
-   */
-  numActiveRequestsAtStart: number;
-  /**
-   * number of requests active at the finish of the request (including the request itself)
-   */
-  numActiveRequestsAtFinish: number;
-  /**
-   * The generated grpc object type of the request
-   */
-  requestType: string;
-  /**
-   * The grpc status code of the response
-   */
-  status: number;
-  /**
-   * The time the request started (millis since epoch)
-   */
-  startTime: number;
-  /**
-   * The time the body of the request was available to the grpc library (millis since epoch)
-   */
-  requestBodyTime: number;
-  /**
-   * The time the request completed (millis since epoch)
-   */
-  endTime: number;
-  /**
-   * The duration of the request (in millis)
-   */
-  duration: number;
-  /**
-   * The size of the request body in bytes
-   */
-  requestSize: number;
-  /**
-   * The size of the response body in bytes
-   */
-  responseSize: number;
-  /**
-   * The ID of the specific connection that made the request
-   */
-  connectionID: string;
+  MomentoMetricsMiddleware: {
+    /**
+     * number of requests active at the start of the request
+     */
+    numActiveRequestsAtStart: number;
+    /**
+     * number of requests active at the finish of the request (including the request itself)
+     */
+    numActiveRequestsAtFinish: number;
+    /**
+     * The generated grpc object type of the request
+     */
+    requestType: string;
+    /**
+     * The grpc status code of the response
+     */
+    status: number;
+    /**
+     * The time the request started (millis since epoch)
+     */
+    startTime: number;
+    /**
+     * The time the body of the request was available to the grpc library (millis since epoch)
+     */
+    requestBodyTime: number;
+    /**
+     * The time the request completed (millis since epoch)
+     */
+    endTime: number;
+    /**
+     * The duration of the request (in millis)
+     */
+    duration: number;
+    /**
+     * The size of the request body in bytes
+     */
+    requestSize: number;
+    /**
+     * The size of the response body in bytes
+     */
+    responseSize: number;
+    /**
+     * The ID of the specific connection that made the request
+     */
+    connectionID: string;
+  };
 }
 
 export abstract class ExperimentalMetricsMiddlewareRequestHandler
@@ -150,17 +152,19 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
   private recordMetrics(): void {
     const endTime = new Date().getTime();
     const metrics: ExperimentalRequestMetrics = {
-      numActiveRequestsAtStart: this.numActiveRequestsAtStart,
-      numActiveRequestsAtFinish: this.parent.activeRequestCount(),
-      requestType: this.requestType,
-      status: this.responseStatusCode,
-      startTime: this.startTime,
-      requestBodyTime: this.requestBodyTime,
-      endTime: endTime,
-      duration: endTime - this.startTime,
-      requestSize: this.requestSize,
-      responseSize: this.responseSize,
-      connectionID: this.connectionID,
+      MomentoMetricsMiddleware: {
+        numActiveRequestsAtStart: this.numActiveRequestsAtStart,
+        numActiveRequestsAtFinish: this.parent.activeRequestCount(),
+        requestType: this.requestType,
+        status: this.responseStatusCode,
+        startTime: this.startTime,
+        requestBodyTime: this.requestBodyTime,
+        endTime: endTime,
+        duration: endTime - this.startTime,
+        requestSize: this.requestSize,
+        responseSize: this.responseSize,
+        connectionID: this.connectionID,
+      },
     };
     this.emitMetrics(metrics).catch(e =>
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
