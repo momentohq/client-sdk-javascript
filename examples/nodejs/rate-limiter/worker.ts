@@ -1,15 +1,20 @@
-import {CacheClient, Configurations, CreateCache, CredentialProvider} from "@gomomento/sdk";
-import {IncrementRateLimiter} from "./increment-only-rate-limiter";
-import {DummyService} from "./service";
-import {GetIncrementRateLimiter} from "./get-increment-rate-limiter";
-import {RATE_LIMITER_CACHE_NAME, RateLimiter} from "./rate-limiter";
-import {Metrics} from "./metrics";
+import {
+  CacheClient,
+  Configurations,
+  CreateCache,
+  CredentialProvider,
+} from "@gomomento/sdk";
+import { IncrementRateLimiter } from "./increment-only-rate-limiter";
+import { DummyService } from "./service";
+import { GetIncrementRateLimiter } from "./get-increment-rate-limiter";
+import { RATE_LIMITER_CACHE_NAME, RateLimiter } from "./rate-limiter";
+import { Metrics } from "./metrics";
 
 async function main() {
   const momento = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
+      environmentVariableName: "MOMENTO_API_KEY",
     }),
     defaultTtlSeconds: 6000,
   });
@@ -37,19 +42,27 @@ async function main() {
   }
 
   const service = new DummyService();
-  const rateLimiterIncrementMetrics =  new Metrics();
+  const rateLimiterIncrementMetrics = new Metrics();
   const rateLimiterGetIncrementMetrics = new Metrics();
 
   const rateLimiters = [
-    { limiter: new IncrementRateLimiter(momento, tpmLimit), metrics: rateLimiterIncrementMetrics },
-    { limiter: new GetIncrementRateLimiter(momento, tpmLimit), metrics: rateLimiterGetIncrementMetrics }
+    {
+      limiter: new IncrementRateLimiter(momento, tpmLimit),
+      metrics: rateLimiterIncrementMetrics,
+    },
+    {
+      limiter: new GetIncrementRateLimiter(momento, tpmLimit),
+      metrics: rateLimiterGetIncrementMetrics,
+    },
   ];
 
-  const userIDs = ['user1', 'user2', 'user3', 'user4', 'user5'];
+  const userIDs = ["user1", "user2", "user3", "user4", "user5"];
   const tasks = [];
   let currentUserIndex = 0;
 
-  console.log(`Simulating ${totalRequests} requests for each rate limiter with a random delay between requests upto a max of ${randomDelayUpperBound} milliseconds. The rate limiter allow ${tpmLimit} requests per minute. The simulation uses ${userIDs.length} users and evenly divides requests for each user.`);
+  console.log(
+    `Simulating ${totalRequests} requests for each rate limiter with a random delay between requests upto a max of ${randomDelayUpperBound} milliseconds. The rate limiter allow ${tpmLimit} requests per minute. The simulation uses ${userIDs.length} users and evenly divides requests for each user.`
+  );
 
   // Simulate for both rate limiters
   for (const { limiter, metrics } of rateLimiters) {
@@ -60,14 +73,20 @@ async function main() {
       currentUserIndex = (currentUserIndex + 1) % userIDs.length;
 
       const task = new Promise<void>((resolve) => {
-        setTimeout(async () => {
-          try {
-            await worker(selectedUser.concat(limiter.constructor.name), limiter, service, metrics);
-            resolve();
-          } catch (error) {
-            console.error(`Error in worker for user ${selectedUser}:`, error);
-            resolve();
-          }
+        setTimeout(() => {
+          worker(
+            selectedUser.concat("-".concat(limiter.constructor.name)),
+            limiter,
+            service,
+            metrics
+          )
+            .then(() => {
+              resolve();
+            })
+            .catch((error) => {
+              console.error(`Error in worker for user ${selectedUser}:`, error);
+              resolve();
+            });
         }, randomDelay);
       });
 
@@ -82,7 +101,12 @@ async function main() {
   rateLimiterGetIncrementMetrics.displayMetrics("GetIncrement");
 }
 
-async function worker(id: string, rateLimiter: RateLimiter, service: DummyService, metrics: Metrics) {
+async function worker(
+  id: string,
+  rateLimiter: RateLimiter,
+  service: DummyService,
+  metrics: Metrics
+) {
   try {
     const start = Date.now();
     const allowed = await rateLimiter.acquire(id);
@@ -95,13 +119,13 @@ async function worker(id: string, rateLimiter: RateLimiter, service: DummyServic
     }
   } catch (err) {
     metrics.recordErrors();
-    console.error(`Error while calling rate limiter ${err}`)
+    console.error(`Error while calling rate limiter ${(err as Error).message}`);
   }
 }
 
 main()
   .then(() => {
-    console.log('All tasks complete!');
+    console.log("All tasks complete!");
   })
   .catch((e: Error) => {
     console.error(`Uncaught exception while running example: ${e.message}`);

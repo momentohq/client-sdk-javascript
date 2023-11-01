@@ -1,8 +1,8 @@
 export class Metrics {
-  private successes: number = 0;
-  private throttles: number = 0;
-  private totalLatency: number = 0;
-  private errors: number = 0;
+  private successes = 0;
+  private throttles = 0;
+  private totalLatency = 0;
+  private errors = 0;
   private latencies: number[] = [];
 
   recordSuccess(latency: number) {
@@ -22,11 +22,20 @@ export class Metrics {
   }
 
   public displayMetrics(rateLimiterName: string) {
-    const averageLatency = this.totalLatency / (this.successes + this.throttles);
-    console.log(`${rateLimiterName} Rate Limiter - Successes: ${this.successes}`);
-    console.log(`${rateLimiterName} Rate Limiter - Throttles: ${this.throttles}`);
+    const averageLatency =
+      this.totalLatency / (this.successes + this.throttles);
+    console.log(
+      `${rateLimiterName} Rate Limiter - Successes: ${this.successes}`
+    );
+    console.log(
+      `${rateLimiterName} Rate Limiter - Throttles: ${this.throttles}`
+    );
     console.log(`${rateLimiterName} Rate Limiter - Errors: ${this.errors}`);
-    console.log(`${rateLimiterName} Rate Limiter - Average Latency: ${averageLatency.toFixed(3)}`);
+    console.log(
+      `${rateLimiterName} Rate Limiter - Average Latency: ${averageLatency.toFixed(
+        3
+      )}`
+    );
     if (this.latencies.length > 0) {
       this.displayPercentiles(rateLimiterName);
     }
