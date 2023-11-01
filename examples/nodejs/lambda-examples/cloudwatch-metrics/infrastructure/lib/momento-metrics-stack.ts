@@ -12,8 +12,6 @@ import {
   GraphWidget,
   MathExpression,
   Metric,
-  Shading,
-  SingleValueWidget,
   Stats,
   Unit,
 } from 'aws-cdk-lib/aws-cloudwatch';
@@ -123,7 +121,7 @@ export class MomentoMetricsStack extends cdk.Stack {
       projectRoot: path.join(__dirname, '../../lambda'),
       depsLockFilePath: path.join(__dirname, '../../lambda/package-lock.json'),
       handler: 'handler',
-      timeout: cdk.Duration.minutes(6),
+      timeout: cdk.Duration.minutes(12),
       memorySize: 128,
       environment: {
         MOMENTO_API_KEY_SECRET_NAME: apiKeySecret.secretName,
@@ -173,7 +171,7 @@ export class MomentoMetricsStack extends cdk.Stack {
   }
 
   createMetricFilters(logGroup: cdk.aws_logs.LogGroup) {
-    logGroup.addMetricFilter('ExampleMetricFilterDuration', {
+    logGroup.addMetricFilter('MetricFilterDuration', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Latency',
       filterPattern: FilterPattern.literal('{$.duration > 0}'),
@@ -181,7 +179,29 @@ export class MomentoMetricsStack extends cdk.Stack {
       unit: Unit.MILLISECONDS,
     });
 
-    logGroup.addMetricFilter('ExampleMetricFilterRequestSize', {
+    logGroup.addMetricFilter('MetricFilterDurationAndGrpcStatus', {
+      metricNamespace: 'MomentoMetricsCDKExample',
+      metricName: 'Latency + GRPC Status',
+      filterPattern: FilterPattern.literal('{$.duration > 0 && $.status >= 0}'),
+      metricValue: '$.duration',
+      unit: Unit.MILLISECONDS,
+      dimensions: {
+        'status': '$.status',
+      }
+    });
+
+    logGroup.addMetricFilter('MetricFilterDurationAndRequestType', {
+      metricNamespace: 'MomentoMetricsCDKExample',
+      metricName: 'Latency + Request Type',
+      filterPattern: FilterPattern.literal('{$.duration > 0 && $.requestType = "*"}'),
+      metricValue: '$.duration',
+      unit: Unit.MILLISECONDS,
+      dimensions: {
+        'requestType': '$.requestType',
+      }
+    });
+
+    logGroup.addMetricFilter('MetricFilterRequestSize', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Request Size (bytes)',
       filterPattern: FilterPattern.literal('{$.requestSize >= 0}'),
@@ -189,7 +209,29 @@ export class MomentoMetricsStack extends cdk.Stack {
       unit: Unit.BYTES,
     });
 
-    logGroup.addMetricFilter('ExampleMetricFilterResponseSize', {
+    logGroup.addMetricFilter('MetricFilterRequestSizeAndGrpcStatus', {
+      metricNamespace: 'MomentoMetricsCDKExample',
+      metricName: 'Request Size (bytes) + GRPC Status',
+      filterPattern: FilterPattern.literal('{$.requestSize >= 0 && $.status >= 0}'),
+      metricValue: '$.requestSize',
+      unit: Unit.BYTES,
+      dimensions: {
+        'status': '$.status',
+      }
+    });
+
+    logGroup.addMetricFilter('MetricFilterRequestSizeAndRequestType', {
+      metricNamespace: 'MomentoMetricsCDKExample',
+      metricName: 'Request Size (bytes) + Request Type',
+      filterPattern: FilterPattern.literal('{$.requestSize >= 0 && $.requestType = "*"}'),
+      metricValue: '$.requestSize',
+      unit: Unit.BYTES,
+      dimensions: {
+        'requestType': '$.requestType',
+      }
+    });
+
+    logGroup.addMetricFilter('MetricFilterResponseSize', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Response Size (bytes)',
       filterPattern: FilterPattern.literal('{$.responseSize >= 0}'),
@@ -197,11 +239,26 @@ export class MomentoMetricsStack extends cdk.Stack {
       unit: Unit.BYTES,
     });
 
-    logGroup.addMetricFilter('ExampleMetricFilterGrpcStatusCode', {
+    logGroup.addMetricFilter('MetricFilterResponseSizeAndGrpcStatus', {
       metricNamespace: 'MomentoMetricsCDKExample',
-      metricName: 'GRPC Status Code',
-      filterPattern: FilterPattern.literal('{ $.status >= 0 }'),
-      metricValue: '$.status',
+      metricName: 'Response Size (bytes) + GRPC Status',
+      filterPattern: FilterPattern.literal('{$.responseSize >= 0 && $.status >= 0}'),
+      metricValue: '$.responseSize',
+      unit: Unit.BYTES,
+      dimensions: {
+        'status': '$.status',
+      }
+    });
+
+    logGroup.addMetricFilter('MetricFilterResponseSizeAndRequestType', {
+      metricNamespace: 'MomentoMetricsCDKExample',
+      metricName: 'Response Size (bytes) +  Request Type',
+      filterPattern: FilterPattern.literal('{$.responseSize >= 0 && $.requestType = "*"}'),
+      metricValue: '$.responseSize',
+      unit: Unit.BYTES,
+      dimensions: {
+        'requestType': '$.requestType',
+      }
     });
   }
 
@@ -237,48 +294,233 @@ export class MomentoMetricsStack extends cdk.Stack {
       period: graphPeriod,
     });
 
-    const errorCodes = new GraphWidget({
+    const latencyByGrpcStatus = new GraphWidget({
       left: [
         new Metric({
-          metricName: 'GRPC Status Code',
+          metricName: 'Latency + GRPC Status',
           namespace: 'MomentoMetricsCDKExample',
+          statistic: Stats.percentile(50),
+          label: 'p50 code 0',
+          dimensionsMap: {
+            'status': '0'
+          }
+        }),
+        new Metric({
+          metricName: 'Latency + GRPC Status',
+          namespace: 'MomentoMetricsCDKExample',
+          statistic: Stats.percentile(99),
+          label: 'p99 code 0',
+          dimensionsMap: {
+            'status': '0'
+          }
+        }),
+        new Metric({
+          metricName: 'Latency + GRPC Status',
+          namespace: 'MomentoMetricsCDKExample',
+          statistic: Stats.percentile(50),
+          label: 'p50 code 13',
+          dimensionsMap: {
+            'status': '13'
+          }
+        }),
+        new Metric({
+          metricName: 'Latency + GRPC Status',
+          namespace: 'MomentoMetricsCDKExample',
+          statistic: Stats.percentile(99),
+          label: 'p99 code 13',
+          dimensionsMap: {
+            'status': '13'
+          }
         }),
       ],
-      title: 'GRPC Error Codes',
-      period: graphPeriod,
+      title: 'Latency + Select GRPC Statuses',
       leftYAxis: {
-        label: 'Error Code',
-        max: 16,
+        label: 'milliseconds',
+        min: 0,
       },
-      leftAnnotations: [
-        {
-          value: 4,
-          fill: Shading.ABOVE,
-          label: 'GRPC Error Codes >= 4',
-        },
-      ],
+      period: graphPeriod,
     });
+
+    const latencyByRequestType = new GraphWidget({
+      left: [
+        new Metric({
+          metricName: 'Latency + Request Type',
+          namespace: 'MomentoMetricsCDKExample',
+          statistic: Stats.percentile(50),
+          label: 'p50 GET',
+          dimensionsMap: {
+            'requestType': '_GetRequest'
+          }
+        }),
+        new Metric({
+          metricName: 'Latency + Request Type',
+          namespace: 'MomentoMetricsCDKExample',
+          statistic: Stats.percentile(99),
+          label: 'p99 GET',
+          dimensionsMap: {
+            'requestType': '_GetRequest'
+          }
+        }),
+        new Metric({
+          metricName: 'Latency + Request Type',
+          namespace: 'MomentoMetricsCDKExample',
+          statistic: Stats.percentile(50),
+          label: 'p50 SET',
+          dimensionsMap: {
+            'requestType': '_SetRequest'
+          }
+        }),
+        new Metric({
+          metricName: 'Latency + Request Type',
+          namespace: 'MomentoMetricsCDKExample',
+          statistic: Stats.percentile(99),
+          label: 'p99 SET',
+          dimensionsMap: {
+            'requestType': '_SetRequest'
+          }
+        }),
+      ],
+      title: 'Latency + Select Request Types',
+      leftYAxis: {
+        label: 'milliseconds',
+        min: 0,
+      },
+      period: graphPeriod,
+    });
+
+    dashboard.addWidgets(latency, latencyByGrpcStatus, latencyByRequestType);
 
     const messageSizes = new GraphWidget({
       left: [
         new Metric({
           metricName: 'Response Size (bytes)',
           namespace: 'MomentoMetricsCDKExample',
-          label: 'Response Size (bytes)',
+          label: 'p50 responses',
+          statistic: Stats.percentile(50),
+        }),
+        new Metric({
+          metricName: 'Response Size (bytes)',
+          namespace: 'MomentoMetricsCDKExample',
+          label: 'p99 responses',
+          statistic: Stats.percentile(99),
         }),
         new Metric({
           metricName: 'Request Size (bytes)',
           namespace: 'MomentoMetricsCDKExample',
-          label: 'Request Size (bytes)',
+          label: 'p50 requests',
+          statistic: Stats.percentile(50),
+        }),
+        new Metric({
+          metricName: 'Request Size (bytes)',
+          namespace: 'MomentoMetricsCDKExample',
+          label: 'p99 requests',
+          statistic: Stats.percentile(99),
         }),
       ],
-      title: 'Request and Response Sizes in Bytes',
+      title: 'Size in Bytes',
       period: graphPeriod,
-      statistic: Stats.AVERAGE,
+      leftYAxis: {
+        label: 'bytes',
+        min: 0,
+      },
+    });
+
+    const messageSizesByGrpcStatus = new GraphWidget({
+      left: [
+        new Metric({
+          metricName: 'Response Size (bytes) + GRPC Status',
+          namespace: 'MomentoMetricsCDKExample',
+          label: 'p50 responses code 0',
+          statistic: Stats.percentile(50),
+          dimensionsMap: {
+            'status': '0'
+          }
+        }),
+        new Metric({
+          metricName: 'Response Size (bytes) + GRPC Status',
+          namespace: 'MomentoMetricsCDKExample',
+          label: 'p50 responses code 13',
+          statistic: Stats.percentile(50),
+          dimensionsMap: {
+            'status': '13'
+          }
+        }),
+        new Metric({
+          metricName: 'Request Size (bytes) + GRPC Status',
+          namespace: 'MomentoMetricsCDKExample',
+          label: 'p50 requests code 0',
+          statistic: Stats.percentile(50),
+          dimensionsMap: {
+            'status': '0'
+          }
+        }),
+        new Metric({
+          metricName: 'Request Size (bytes) + GRPC Status',
+          namespace: 'MomentoMetricsCDKExample',
+          label: 'p50 requests code 13',
+          statistic: Stats.percentile(50),
+          dimensionsMap: {
+            'status': '13'
+          }
+        }),
+      ],
+      title: 'Size in Bytes + Select GRPC Statuses',
+      period: graphPeriod,
+      leftYAxis: {
+        label: 'bytes',
+        min: 0,
+      },
+    });
+
+    const messageSizesByRequestType = new GraphWidget({
+      left: [
+        new Metric({
+          metricName: 'Response Size (bytes) + Request Type',
+          namespace: 'MomentoMetricsCDKExample',
+          label: 'p50 responses GET',
+          statistic: Stats.percentile(50),
+          dimensionsMap: {
+            'requestType': '_GetRequest'
+          }
+        }),
+        new Metric({
+          metricName: 'Response Size (bytes) + Request Type',
+          namespace: 'MomentoMetricsCDKExample',
+          label: 'p50 responses SET',
+          statistic: Stats.percentile(99),
+          dimensionsMap: {
+            'requestType': '_SetRequest'
+          }
+        }),
+        new Metric({
+          metricName: 'Request Size (bytes) + Request Type',
+          namespace: 'MomentoMetricsCDKExample',
+          label: 'p50 requests GET',
+          statistic: Stats.percentile(50),
+          dimensionsMap: {
+            'requestType': '_GetRequest'
+          }
+        }),
+        new Metric({
+          metricName: 'Request Size (bytes) + Request Type',
+          namespace: 'MomentoMetricsCDKExample',
+          label: 'p99 requests SET',
+          statistic: Stats.percentile(99),
+          dimensionsMap: {
+            'requestType': '_SetRequest'
+          }
+        }),
+      ],
+      title: 'Size in Bytes + Select Request Types',
+      period: graphPeriod,
+      leftYAxis: {
+        label: 'bytes',
+        min: 0,
+      },
     });
 
     // Add the first three widgets in the first row of the dashboard
-    dashboard.addWidgets(latency, errorCodes, messageSizes);
+    dashboard.addWidgets(messageSizes, messageSizesByGrpcStatus, messageSizesByRequestType);
 
     const requestsPerSecond = new GraphWidget({
       left: [
@@ -297,42 +539,46 @@ export class MomentoMetricsStack extends cdk.Stack {
       title: 'Number of requests per second',
       period: graphPeriod,
       statistic: Stats.SAMPLE_COUNT,
+      leftYAxis: {
+        label: 'count',
+        min: 0,
+      },
     });
 
     const totalBytesSentReceived = new GraphWidget({
       left: [
         new MathExpression({
           expression: 'm1 + m2',
-          label: 'p50 Total Bytes',
+          label: 'p50',
           usingMetrics: {
             m1: new Metric({
               metricName: 'Request Size (bytes)',
               namespace: 'MomentoMetricsCDKExample',
-              label: 'p50 Total Request Bytes',
+              label: 'p50 requests',
               statistic: Stats.percentile(50),
             }),
             m2: new Metric({
               metricName: 'Response Size (bytes)',
               namespace: 'MomentoMetricsCDKExample',
-              label: 'p50 Total Response Bytes',
+              label: 'p50 responses',
               statistic: Stats.percentile(50),
             }),
           },
         }),
         new MathExpression({
           expression: 'm3 + m4',
-          label: 'p99 Total Bytes',
+          label: 'p99',
           usingMetrics: {
             m3: new Metric({
               metricName: 'Request Size (bytes)',
               namespace: 'MomentoMetricsCDKExample',
-              label: 'p99 Total Request Bytes',
+              label: 'p99 requests',
               statistic: Stats.percentile(99),
             }),
             m4: new Metric({
               metricName: 'Response Size (bytes)',
               namespace: 'MomentoMetricsCDKExample',
-              label: 'p99 Total Response Bytes',
+              label: 'p99 responses',
               statistic: Stats.percentile(99),
             }),
           },
@@ -340,11 +586,121 @@ export class MomentoMetricsStack extends cdk.Stack {
       ],
       title: 'Total bytes sent and received',
       period: graphPeriod,
-      statistic: Stats.SUM,
+      leftYAxis: {
+        label: 'bytes',
+        min: 0,
+      },
+    });
+
+    const totalBytesSentReceivedByRequestType = new GraphWidget({
+      left: [
+        new MathExpression({
+          expression: 'm1 + m2',
+          label: 'p50 GET',
+          usingMetrics: {
+            m1: new Metric({
+              metricName: 'Request Size (bytes) + Request Type',
+              namespace: 'MomentoMetricsCDKExample',
+              label: 'p50 GET requests',
+              statistic: Stats.percentile(50),
+              dimensionsMap: {
+                'requestType': '_GetRequest'
+              }
+            }),
+            m2: new Metric({
+              metricName: 'Response Size (bytes) + Request Type',
+              namespace: 'MomentoMetricsCDKExample',
+              label: 'p50 GET responses',
+              statistic: Stats.percentile(50),
+              dimensionsMap: {
+                'requestType': '_GetRequest'
+              }
+            }),
+          },
+        }),
+        new MathExpression({
+          expression: 'm3 + m4',
+          label: 'p99 GET',
+          usingMetrics: {
+            m3: new Metric({
+              metricName: 'Request Size (bytes) + Request Type',
+              namespace: 'MomentoMetricsCDKExample',
+              label: 'p99 GET requests',
+              statistic: Stats.percentile(99),
+              dimensionsMap: {
+                'requestType': '_GetRequest'
+              }
+            }),
+            m4: new Metric({
+              metricName: 'Response Size (bytes) + Request Type',
+              namespace: 'MomentoMetricsCDKExample',
+              label: 'p99 GET responses',
+              statistic: Stats.percentile(99),
+              dimensionsMap: {
+                'requestType': '_GetRequest'
+              }
+            }),
+          },
+        }),
+        new MathExpression({
+          expression: 'm5 + m6',
+          label: 'p50 SET',
+          usingMetrics: {
+            m5: new Metric({
+              metricName: 'Request Size (bytes) + Request Type',
+              namespace: 'MomentoMetricsCDKExample',
+              label: 'p50 SET requests',
+              statistic: Stats.percentile(50),
+              dimensionsMap: {
+                'requestType': '_SetRequest'
+              }
+            }),
+            m6: new Metric({
+              metricName: 'Response Size (bytes) + Request Type',
+              namespace: 'MomentoMetricsCDKExample',
+              label: 'p50 SET responses',
+              statistic: Stats.percentile(50),
+              dimensionsMap: {
+                'requestType': '_SetRequest'
+              }
+            }),
+          },
+        }),
+        new MathExpression({
+          expression: 'm7 + m8',
+          label: 'p99 SET',
+          usingMetrics: {
+            m7: new Metric({
+              metricName: 'Request Size (bytes) + Request Type',
+              namespace: 'MomentoMetricsCDKExample',
+              label: 'p99 SET requests',
+              statistic: Stats.percentile(99),
+              dimensionsMap: {
+                'requestType': '_SetRequest'
+              }
+            }),
+            m8: new Metric({
+              metricName: 'Response Size (bytes) + Request Type',
+              namespace: 'MomentoMetricsCDKExample',
+              label: 'p99 SET responses',
+              statistic: Stats.percentile(99),
+              dimensionsMap: {
+                'requestType': '_SetRequest'
+              }
+            }),
+          },
+        }),
+      ],
+      title: 'Total bytes sent and received',
+      period: graphPeriod,
+      leftYAxis: {
+        label: 'bytes',
+        min: 0,
+      },
     });
 
     // Add the next 3 widgets to the second row of the dashboard
-    dashboard.addWidgets(requestsPerSecond, totalBytesSentReceived);
+    dashboard.addWidgets(requestsPerSecond, totalBytesSentReceived, totalBytesSentReceivedByRequestType);
   }
 
   validateStackConfig(stackConfig?: string) {
