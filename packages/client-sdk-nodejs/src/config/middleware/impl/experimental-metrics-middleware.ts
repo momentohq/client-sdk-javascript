@@ -108,7 +108,7 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
 
   onRequestBody(request: MiddlewareMessage): Promise<MiddlewareMessage> {
     this.requestSize = request.messageLength();
-    this.requestType = request.constructor.name;
+    this.requestType = request._grpcMessage.constructor.name;
     this.requestBodyTime = new Date().getTime();
     return Promise.resolve(request);
   }
