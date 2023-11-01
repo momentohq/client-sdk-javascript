@@ -21,11 +21,6 @@ export class TopicsMicroserviceStack extends Stack {
         "SECRETNAME": secretName,
         "CACHENAME": cachName
       },
-      bundling: {
-        externalModules: [
-          'aws-sdk', // Use the 'aws-sdk' available in the Lambda runtime
-        ],
-      },
       depsLockFilePath: join(__dirname, '..', 'package-lock.json'),
       runtime: Runtime.NODEJS_18_X,
       memorySize: 1024, // Increase memory to help with response times
