@@ -48,9 +48,6 @@ export class MomentoMetricsStack extends cdk.Stack {
 
     /*
     Step 3: determine which log group name to use when creating our log group.
-    Note: Lambda functions automatically create a log group titled 'aws/lambda/FunctionName',
-    so if you create only the dashboard here and use your own Lambda function, make sure to
-    provide your function's log group name for the ___ parameter.
     */
     const configToLogGroupName = new Map([
       ["lambda", '/aws/lambda/MomentoMetricsMiddlewareLambda'],
@@ -90,7 +87,7 @@ export class MomentoMetricsStack extends cdk.Stack {
         {
             "numActiveRequestsAtStart": 1,
             "numActiveRequestsAtFinish": 1,
-            "requestType": "MiddlewareMessage",
+            "requestType": "_GetRequest",
             "status": 0,
             "startTime": 1697663118489,
             "requestBodyTime": 1697663118489,
@@ -263,6 +260,7 @@ export class MomentoMetricsStack extends cdk.Stack {
   }
 
   addWidgetsToDashboard(dashboard: cdk.aws_cloudwatch.Dashboard) {
+    // All graphs currently default to a period of one minute
     const graphPeriod = cdk.Duration.minutes(1);
 
     const latency = new GraphWidget({
@@ -388,6 +386,7 @@ export class MomentoMetricsStack extends cdk.Stack {
       period: graphPeriod,
     });
 
+    // Add the first three widgets to the first row of the dashboard
     dashboard.addWidgets(latency, latencyByGrpcStatus, latencyByRequestType);
 
     const messageSizes = new GraphWidget({
@@ -519,7 +518,7 @@ export class MomentoMetricsStack extends cdk.Stack {
       },
     });
 
-    // Add the first three widgets in the first row of the dashboard
+    // Add the next widgets to the second row of the dashboard
     dashboard.addWidgets(messageSizes, messageSizesByGrpcStatus, messageSizesByRequestType);
 
     const requestsPerSecond = new GraphWidget({
@@ -699,7 +698,7 @@ export class MomentoMetricsStack extends cdk.Stack {
       },
     });
 
-    // Add the next 3 widgets to the second row of the dashboard
+    // Add the next widgets to the third row of the dashboard
     dashboard.addWidgets(requestsPerSecond, totalBytesSentReceived, totalBytesSentReceivedByRequestType);
   }
 
