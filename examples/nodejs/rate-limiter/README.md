@@ -39,7 +39,7 @@ const momento = await CacheClient.create({
 });
 
 const tpmLimit = 10;
-const cacheName = "rate-limier";
+const cacheName = "rate-limiter";
 const rateLimiter = new MomentoRateLimiter(momento, tpmLimit, cacheName);
 
 // test rate limiter
