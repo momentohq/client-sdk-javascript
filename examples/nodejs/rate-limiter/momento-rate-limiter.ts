@@ -1,25 +1,23 @@
 import { CacheClient, CacheIncrement, CacheUpdateTtl } from "@gomomento/sdk";
-import {
-  AbstractRateLimiter,
-  RATE_LIMITER_CACHE_NAME,
-  RATE_LIMITER_TTL_MILLIS,
-} from "./rate-limiter";
+import { AbstractRateLimiter, RATE_LIMITER_TTL_MILLIS } from "./rate-limiter";
 
 export class MomentoRateLimiter extends AbstractRateLimiter {
   _client: CacheClient;
   _limit: number;
+  _cacheName: string;
 
-  constructor(client: CacheClient, limit: number) {
+  constructor(client: CacheClient, limit: number, cacheName: string) {
     super();
     this._client = client;
     this._limit = limit;
+    this._cacheName = cacheName;
   }
 
   public async isLimitExceeded(id: string): Promise<boolean> {
     const currentMinuteKey = this.generateMinuteKey(id);
     // we do not pass a TTL to this; we don't know if the key for this user was present or not
     const resp = await this._client.increment(
-      RATE_LIMITER_CACHE_NAME,
+      this._cacheName,
       currentMinuteKey
     );
 
@@ -29,7 +27,7 @@ export class MomentoRateLimiter extends AbstractRateLimiter {
         // we set the TTL for this minute's key to 60 seconds now.
         if (resp.value() === 1) {
           const updateTTLResp = await this._client.updateTtl(
-            RATE_LIMITER_CACHE_NAME,
+            this._cacheName,
             currentMinuteKey,
             RATE_LIMITER_TTL_MILLIS
           );
