@@ -6,7 +6,7 @@ import {
 } from "@gomomento/sdk";
 import { DummyService } from "./service";
 import { MomentoRateLimiter } from "./momento-rate-limiter";
-import { RATE_LIMITER_CACHE_NAME, RateLimiter } from "./rate-limiter";
+import { RateLimiter } from "./rate-limiter";
 import { Metrics } from "./metrics";
 
 async function main() {
@@ -17,11 +17,6 @@ async function main() {
     }),
     defaultTtlSeconds: 6000,
   });
-
-  const resp = await momento.createCache(RATE_LIMITER_CACHE_NAME);
-  if (resp instanceof CreateCache.Error) {
-    throw new Error(`Failed to create cache ${RATE_LIMITER_CACHE_NAME}`);
-  }
 
   // default values
   let totalRequests = 1000;
@@ -42,7 +37,14 @@ async function main() {
 
   const service = new DummyService();
   const rateLimiterMetrics = new Metrics();
-  const rateLimiter = new MomentoRateLimiter(momento, tpmLimit);
+  const cacheName = `rate-limiter`;
+
+  const resp = await momento.createCache(cacheName);
+  if (resp instanceof CreateCache.Error) {
+    throw new Error(`Failed to create cache ${cacheName}`);
+  }
+
+  const rateLimiter = new MomentoRateLimiter(momento, tpmLimit, cacheName);
 
   const userIDs = ["user1", "user2", "user3", "user4", "user5"];
   const tasks = [];
