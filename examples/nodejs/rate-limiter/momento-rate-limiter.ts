@@ -39,12 +39,12 @@ export class MomentoRateLimiter extends AbstractRateLimiter {
             );
           }
         }
-        return true;
+        return false;
       }
     } else if (resp instanceof CacheIncrement.Error) {
       throw new Error(resp.message());
     }
 
-    return false;
+    return true;
   }
 }
