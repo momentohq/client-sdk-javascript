@@ -88,7 +88,8 @@ function momentoClientForTesting(): CacheClient {
 
 function momentoClientForTestingWithSessionToken(): CacheClient {
   return new CacheClient({
-    configuration: Configurations.Laptop.latest().withClientTimeoutMillis(60000),
+    configuration:
+      Configurations.Laptop.latest().withClientTimeoutMillis(60000),
     credentialProvider: sessionCredsProvider(),
     defaultTtlSeconds: 1111,
   });
