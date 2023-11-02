@@ -100,6 +100,10 @@ To override totalRequests to 10, randomDelayUpperBound to 60, and tpmLimit to 1,
 MOMENTO_API_KEY="yourApiKey" npm run rate-limiter 10 60 1
 ```
 
+## Analysis
+
+Read our [blog post](https://www.gomomento.com/blog/did-you-say-you-want-a-distributed-rate-limiter) for an analysis of the rate-limiter against other approaches!
+
 ## Conclusion
 
 In conclusion, Momento's Node.js Client Library empowers developers to implement efficient rate-limiting with ease, ensuring service stability and equitable resource distribution. It exemplifies how modern solutions can elegantly address classical challenges in distributed systems.
