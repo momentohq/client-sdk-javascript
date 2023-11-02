@@ -21,13 +21,13 @@ Some common use-cases of rate-limiting includes:
 ## Getting started
 
 We provide a `MomentoRateLimiter` class that uses Momento's `increment` and `updateTTL` [APIs](https://docs.momentohq.com/cache/develop/api-reference) to achieve rate-limiting.
-Incorporating the `MomentoRateLimiter` class into your application is a straightforward process, facilitated by Momento. Begin by setting up a Momento cache client, then link it to the rate-limiter, specifying the user-specific limits. This rate-limiter operates with minute-level precision, meaning that the defined limits will be enforced on a per-minute basis for each user or entity.
+Incorporating the `MomentoRateLimiter` class into your application is a straightforward process. Begin by setting up a Momento cache client, then link it to the rate-limiter, specifying the user-specific limits. This rate-limiter operates with minute-level precision, meaning that the defined limits will be enforced on a per-minute basis for each user or entity.
 
 To get started with the rate-limiter:
 - You will need a Momento API key. You can obtain one from the [Momento Console](https://console.gomomento.com).
 - You will need to create a cache called `rate-limiter` from the console as well!
 
-Once you have the key and the cache created, you can begin integration! Remember to store your token in an environment variable named `MOMENTO_API_KEY`.
+Once you have the key and the cache created, you can begin integration! Remember to store your API key in an environment variable named `MOMENTO_API_KEY`.
 
 ```typescript
 const momento = await CacheClient.create({
@@ -42,7 +42,7 @@ const tpmLimit = 10;
 const rateLimiter = new MomentoRateLimiter(momento, tpmLimit);
 
 // test rate limiter
-const limitExceeded : boolean = (await rateLimiter.isLimitExceeded(`id`));
+const limitExceeded : boolean = await rateLimiter.isLimitExceeded(`id`);
 ```
 
 ## Key Mechanism
