@@ -1,5 +1,5 @@
 export interface RateLimiter {
-  acquire(id: string): Promise<boolean>;
+  isLimitExceeded(id: string): Promise<boolean>;
 }
 
 // since our rate limiting buckets are per minute, we expire keys every minute
@@ -7,7 +7,7 @@ export const RATE_LIMITER_TTL_MILLIS = 60000;
 export const RATE_LIMITER_CACHE_NAME = "rate-limiter";
 
 export abstract class AbstractRateLimiter implements RateLimiter {
-  abstract acquire(id: string): Promise<boolean>;
+  abstract isLimitExceeded(id: string): Promise<boolean>;
 
   /**
    * Generates a unique key for a user (baseKey) for the current minute. This key will server as the backend

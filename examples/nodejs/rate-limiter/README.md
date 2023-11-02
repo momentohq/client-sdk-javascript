@@ -6,128 +6,100 @@
 [![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 [![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 
-## Rate-limiter Requirements
+## Why rate-limiters?
 
-- Node version 14 or higher is required
-- To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com).
+The need for rate-limiting stems from the fundamental requirement to maintain the health and quality of any service. Without it, resources could easily become overwhelmed, leading to service degradation or outright failure. This is particularly important in distributed systems and web services where the client requests can vary dramatically in volume and frequency. Rate-limiting ensures a fair distribution of resources, prevents abuse, and can even be a crucial component in defending against certain types of cyber-attacks, such as Distributed Denial of Service (DDoS) attacks.
 
-To run any of the examples you will need to install the dependencies once first:
+Some common use-cases of rate-limiting includes:
 
-```bash
-npm install
-```
+- API Management: In a platform offering various APIs, rate-limiting is crucial to prevent a single user or service from monopolizing the bandwidth, ensuring that all users have equitable access to the resources.
 
-## Running the rate-limiter
+- E-commerce Websites: During high-traffic events like Black Friday sales, rate-limiting can prevent the website from crashing by controlling the influx of user requests, thus providing a stable and fair shopping experience to all customers.
 
-```bash
-npm install
-MOMENTO_API_KEY="yourApiKey" npm run rate-limiter
-```
+- Online Gaming Servers: Rate-limiting can help in mitigating cheating by throttling the number of actions a player can perform in a given time, ensuring a level playing field and maintaining the game's integrity.
 
-You'll see a sample output that contains statistics about two different rate-limiters (more on this soon!):
+## Getting started
 
-```bash
+We provide a `MomentoRateLimiter` class that uses Momento's `increment` and `updateTTL` [APIs](https://docs.momentohq.com/cache/develop/api-reference) to achieve rate-limiting.
+Incorporating the `MomentoRateLimiter` class into your application is a straightforward process, facilitated by Momento. Begin by setting up a Momento cache client, then link it to the rate-limiter, specifying the user-specific limits. This rate-limiter operates with minute-level precision, meaning that the defined limits will be enforced on a per-minute basis for each user or entity.
 
-Simulating 1000 requests for each rate limiter with a random delay between requests upto a max of 60000 milliseconds.
+To get started with the rate-limiter:
+- You will need a Momento API key. You can obtain one from the [Momento Console](https://console.gomomento.com).
+- You will need to create a cache called `rate-limiter` from the console as well!
 
-Increment Rate Limiter - Successes: 1000
-Increment Rate Limiter - Throttles: 0
-Increment Rate Limiter - Errors: 0
-Increment Rate Limiter - Average Latency: 2.427
-Increment Rate Limiter - p50 Latency: 2
-Increment Rate Limiter - p90 Latency: 3
-Increment Rate Limiter - p99 Latency: 5
-Increment Rate Limiter - p99.9 Latency: 34
+Once you have the key and the cache created, you can begin integration! Remember to store your token in an environment variable named `MOMENTO_API_KEY`.
 
-GetIncrement Rate Limiter - Successes: 1000
-GetIncrement Rate Limiter - Throttles: 0
-GetIncrement Rate Limiter - Errors: 0
-GetIncrement Rate Limiter - Average Latency: 4.415
-GetIncrement Rate Limiter - p50 Latency: 4
-GetIncrement Rate Limiter - p90 Latency: 5
-GetIncrement Rate Limiter - p99 Latency: 7
-GetIncrement Rate Limiter - p99.9 Latency: 46
+```typescript
+const momento = await CacheClient.create({
+  configuration: Configurations.Laptop.v1(),
+  credentialProvider: CredentialProvider.fromEnvironmentVariable({
+    environmentVariableName: "MOMENTO_API_KEY",
+  }),
+  defaultTtlSeconds: 6000,
+});
 
-All tasks complete!
+const tpmLimit = 10;
+const rateLimiter = new MomentoRateLimiter(momento, tpmLimit);
 
+// test rate limiter
+const limitExceeded : boolean = (await rateLimiter.isLimitExceeded(`id`));
 ```
 
 ## Key Mechanism
 
 At the heart of our rate-limiter is a key mechanism that allows us to perform rate limiting based on user-per-minute granularity. The key is constructed using a combination of the user ID and the current minute. This key plays a pivotal role in tracking and limiting the number of transactions a user can make in a given minute.
 
-## Approaches
+```typescript
+generateMinuteKey(baseKey: string): string {
+    const currentDate = new Date();
+    const currentMinute = currentDate.getMinutes();
+    return `${baseKey}_${currentMinute}`;
+  }
+```
 
-We have demonstrated two approaches to implement a TPM (transactions per minute) rate-limiter using Momento. We strongly recommend using the `IncrementRateLimiter` implementation, which outperforms and provides higher accuracy than the alternative approach.
+## Running the example
 
-1. [RECOMMENDED] Using Momento `increment` and `updateTTL` APIs
+To run the example, you'll need:
 
-   - Increment the key (user-id_current-minute).
-   - If the value returns 1, set a 1-minute TTL (for the first request of any minute called by a user).
-   - Allow the request if the value is below the limit; throttle if it reaches the limit.
-
-2. Using Momento `get` and `increment` APIs (similar to the one recommended by [Redis](https://redis.com/glossary/rate-limiting/)):
-
-  - Retrieve the key (user-id_current-minute).
-  - If the key doesn't exist, create it with value 1 and a 1-minute TTL.
-  - If the key exists and the value is below the limit, allow the request and increment the key without changing the TTL.
-  - If the value reaches the limit, throttle.
-
-
-## Observations and Analysis
-
-Our simulations indicate the first approach outperforms the second in terms of latency, with average and p99 latencies being significantly lower. Additionally, it is more accurate, especially under high contention due to the first approach mitigating the issue with a classic [read-modify-write operation](https://en.wikipedia.org/wiki/Read%E2%80%93modify%E2%80%93write).
-
-For example, in a simulation with 10 concurrent API calls, 5 users, and a rate limiter set to 1 TPM per user, the recommended approach yielded 1 success and 1 throttle per user, while the second approach inaccurately allowed all requests.
-
-    ```
-    Simulating 10 requests for each rate limiter with a random delay between requests upto a max of 0 milliseconds.
-    The simulation uses 5 users and evenly divides requests for each user.
-
-    Increment Rate Limiter - Successes: 5
-    Increment Rate Limiter - Throttles: 5
-    Increment Rate Limiter - Errors: 0
-    Increment Rate Limiter - Average Latency: 92.200
-    Increment Rate Limiter - p50 Latency: 89
-    Increment Rate Limiter - p90 Latency: 127
-    Increment Rate Limiter - p99 Latency: 127
-    Increment Rate Limiter - p99.9 Latency: 127
-
-    GetIncrement Rate Limiter - Successes: 10
-    GetIncrement Rate Limiter - Throttles: 0
-    GetIncrement Rate Limiter - Errors: 0
-    GetIncrement Rate Limiter - Average Latency: 81.800
-    GetIncrement Rate Limiter - p50 Latency: 82
-    GetIncrement Rate Limiter - p90 Latency: 88
-    GetIncrement Rate Limiter - p99 Latency: 88
-    GetIncrement Rate Limiter - p99.9 Latency: 88
-    ```
-
-The second approach, although slightly better in latency under certain conditions, is prone to inaccuracies, which could be a trade-off depending on the application's requirements. Note that in some other simulation runs, the latency of the first approach was infact slightly better, so we disregard this difference in either case as an epsilon.
+- Node version 14 or higher
+- A Momento API key, which you can obtain from the [Momento Console](https://console.gomomento.com).
 
 ```bash
-Simulating 100 requests for each rate limiter with a random delay between requests upto a max of 1 milliseconds. The rate limiter allow 1 requests per minute. The simulation uses 5 users and evenly divides requests for each user.
+npm install
+MOMENTO_API_KEY="yourApiKey" npm run rate-limiter
+```
 
-Increment Rate Limiter - Successes: 5
-Increment Rate Limiter - Throttles: 95
-Increment Rate Limiter - Errors: 0
-Increment Rate Limiter - Average Latency: 223.880
-Increment Rate Limiter - p50 Latency: 229
-Increment Rate Limiter - p90 Latency: 289
-Increment Rate Limiter - p99 Latency: 346
-Increment Rate Limiter - p99.9 Latency: 346
+You'll see a sample output that contains statistics about the rate-limiter.
 
-GetIncrement Rate Limiter - Successes: 100
-GetIncrement Rate Limiter - Throttles: 0
-GetIncrement Rate Limiter - Errors: 0
-GetIncrement Rate Limiter - Average Latency: 248.550
-GetIncrement Rate Limiter - p50 Latency: 249
-GetIncrement Rate Limiter - p90 Latency: 277
-GetIncrement Rate Limiter - p99 Latency: 292
-GetIncrement Rate Limiter - p99.9 Latency: 292
+```bash
+
+Simulating 1000 requests for each rate limiter with a random delay between requests upto a max of 60000 milliseconds.
+
+Momento Rate Limiter - Successes: 1000
+Momento Rate Limiter - Throttles: 0
+Momento Rate Limiter - Errors: 0
+Momento Rate Limiter - Average Latency: 2.427
+Momento Rate Limiter - p50 Latency: 2
+Momento Rate Limiter - p90 Latency: 3
+Momento Rate Limiter - p99 Latency: 5
+Momento Rate Limiter - p99.9 Latency: 34
 
 All tasks complete!
 
 ```
 
-In the above results for a similar scenario of high contention with 5 users and 100 requests and 1 TPM limit per user, we see the inaccuracy again with the second approach and a slightly worse latency.
+There are three additional arguments that you can provide to the rate-limiter if you want to experiment with different configurations:
+
+- totalRequests: The total number of requests that the example will simulate, defaulted to 1000.
+- randomDelayUpperBound: The simulation adds a random delay between 0 and the randomDelayUpperBound, defaulted to 60 seconds.
+- tpmLimit: The rate per minute at which a user or entity will be allowed by the rate-limiter, defaulted to 500.
+
+To override totalRequests to 10, randomDelayUpperBound to 60, and tpmLimit to 1, the command will look like:
+
+```bash
+MOMENTO_API_KEY="yourApiKey" npm run rate-limiter 10 60 1
+```
+
+## Conclusion
+
+In conclusion, Momento's Node.js Client Library empowers developers to implement efficient rate-limiting with ease, ensuring service stability and equitable resource distribution. It exemplifies how modern solutions can elegantly address classical challenges in distributed systems.

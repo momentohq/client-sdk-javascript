@@ -4,9 +4,8 @@ import {
   CreateCache,
   CredentialProvider,
 } from "@gomomento/sdk";
-import { IncrementRateLimiter } from "./increment-only-rate-limiter";
 import { DummyService } from "./service";
-import { GetIncrementRateLimiter } from "./get-increment-rate-limiter";
+import { MomentoRateLimiter } from "./momento-rate-limiter";
 import { RATE_LIMITER_CACHE_NAME, RateLimiter } from "./rate-limiter";
 import { Metrics } from "./metrics";
 
@@ -27,7 +26,7 @@ async function main() {
   // default values
   let totalRequests = 1000;
   let randomDelayUpperBound = 60000;
-  let tpmLimit = 5000;
+  let tpmLimit = 500;
 
   if (process.argv[2]) {
     totalRequests = parseInt(process.argv[2], 10);
@@ -42,19 +41,8 @@ async function main() {
   }
 
   const service = new DummyService();
-  const rateLimiterIncrementMetrics = new Metrics();
-  const rateLimiterGetIncrementMetrics = new Metrics();
-
-  const rateLimiters = [
-    {
-      limiter: new IncrementRateLimiter(momento, tpmLimit),
-      metrics: rateLimiterIncrementMetrics,
-    },
-    {
-      limiter: new GetIncrementRateLimiter(momento, tpmLimit),
-      metrics: rateLimiterGetIncrementMetrics,
-    },
-  ];
+  const rateLimiterMetrics = new Metrics();
+  const rateLimiter = new MomentoRateLimiter(momento, tpmLimit);
 
   const userIDs = ["user1", "user2", "user3", "user4", "user5"];
   const tasks = [];
@@ -64,41 +52,32 @@ async function main() {
     `Simulating ${totalRequests} requests for each rate limiter with a random delay between requests upto a max of ${randomDelayUpperBound} milliseconds. The rate limiter allow ${tpmLimit} requests per minute. The simulation uses ${userIDs.length} users and evenly divides requests for each user.`
   );
 
-  // Simulate for both rate limiters
-  for (const { limiter, metrics } of rateLimiters) {
-    for (let i = 0; i < totalRequests; i++) {
-      const randomDelay = Math.floor(Math.random() * randomDelayUpperBound);
-      // Round-robin user selection
-      const selectedUser = userIDs[currentUserIndex];
-      currentUserIndex = (currentUserIndex + 1) % userIDs.length;
+  for (let i = 0; i < totalRequests; i++) {
+    const randomDelay = Math.floor(Math.random() * randomDelayUpperBound);
+    // Round-robin user selection
+    const selectedUser = userIDs[currentUserIndex];
+    currentUserIndex = (currentUserIndex + 1) % userIDs.length;
 
-      const task = new Promise<void>((resolve) => {
-        setTimeout(() => {
-          worker(
-            selectedUser.concat("-".concat(limiter.constructor.name)),
-            limiter,
-            service,
-            metrics
-          )
-            .then(() => {
-              resolve();
-            })
-            .catch((error) => {
-              console.error(`Error in worker for user ${selectedUser}:`, error);
-              resolve();
-            });
-        }, randomDelay);
-      });
+    const task = new Promise<void>((resolve) => {
+      setTimeout(() => {
+        worker(selectedUser, rateLimiter, service, rateLimiterMetrics)
+          .then(() => {
+            resolve();
+          })
+          .catch((error) => {
+            console.error(`Error in worker for user ${selectedUser}:`, error);
+            resolve();
+          });
+      }, randomDelay);
+    });
 
-      tasks.push(task);
-    }
+    tasks.push(task);
   }
 
   await Promise.all(tasks);
 
   // Display metrics for both rate limiters
-  rateLimiterIncrementMetrics.displayMetrics("Increment");
-  rateLimiterGetIncrementMetrics.displayMetrics("GetIncrement");
+  rateLimiterMetrics.displayMetrics("Momento");
 }
 
 async function worker(
@@ -109,7 +88,7 @@ async function worker(
 ) {
   try {
     const start = Date.now();
-    const allowed = await rateLimiter.acquire(id);
+    const allowed = !(await rateLimiter.isLimitExceeded(id));
     const latency = Date.now() - start;
     if (allowed) {
       metrics.recordSuccess(latency);

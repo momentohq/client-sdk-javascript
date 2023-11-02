@@ -5,7 +5,7 @@ import {
   RATE_LIMITER_TTL_MILLIS,
 } from "./rate-limiter";
 
-export class IncrementRateLimiter extends AbstractRateLimiter {
+export class MomentoRateLimiter extends AbstractRateLimiter {
   _client: CacheClient;
   _limit: number;
 
@@ -15,7 +15,7 @@ export class IncrementRateLimiter extends AbstractRateLimiter {
     this._limit = limit;
   }
 
-  public async acquire(id: string): Promise<boolean> {
+  public async isLimitExceeded(id: string): Promise<boolean> {
     const currentMinuteKey = this.generateMinuteKey(id);
     // we do not pass a TTL to this; we don't know if the key for this user was present or not
     const resp = await this._client.increment(
