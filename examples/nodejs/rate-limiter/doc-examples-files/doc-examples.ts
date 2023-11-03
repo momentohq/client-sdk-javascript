@@ -82,8 +82,16 @@ async function main() {
     cacheName
   );
 
-  const limitExceeded = await momentoRateLimier.isLimitExceeded('user-id');
+  const limitExceeded = await momentoRateLimier.isLimitExceeded("user-id");
   if (!limitExceeded) {
     // do work for user
+    console.log("Successfully called work and request was allowed");
+  } else {
+    console.warn("Request was throttled");
+
   }
 }
+
+main()
+  .then()
+  .catch((err: Error) => console.error(err.message));
