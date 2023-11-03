@@ -2,7 +2,8 @@ import {
   CacheClient,
   CacheIncrement,
   CacheUpdateTtl,
-  Configurations, CreateCache,
+  Configurations,
+  CreateCache,
   CredentialProvider,
 } from "@gomomento/sdk";
 
@@ -96,7 +97,6 @@ async function main() {
     console.log("Successfully called work and request was allowed");
   } else {
     console.warn("Request was throttled");
-
   }
 }
 
