@@ -2,7 +2,7 @@ import {
   CacheClient,
   CacheIncrement,
   CacheUpdateTtl,
-  Configurations,
+  Configurations, CreateCache,
   CredentialProvider,
 } from "@gomomento/sdk";
 
@@ -76,6 +76,14 @@ async function main() {
 
   const tpmLimit = 1;
   const cacheName = "rate-limiter";
+
+  const createCacheResp = await cacheClient.createCache(cacheName);
+  if (createCacheResp instanceof CreateCache.Error) {
+    throw new Error(createCacheResp.message());
+  } else if (createCacheResp instanceof CreateCache.AlreadyExists) {
+    console.log(`${cacheName} cache already exists`);
+  }
+
   const momentoRateLimier = new MomentoRateLimiter(
     cacheClient,
     tpmLimit,
