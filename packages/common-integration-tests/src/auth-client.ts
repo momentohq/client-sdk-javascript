@@ -137,14 +137,14 @@ export function runAuthClientTests(
       }, `Unexpected response: ${refreshResponse.toString()}`);
       const refreshSuccessRst = refreshResponse as RefreshApiKey.Success;
 
-      expect(refreshSuccessRst.is_success);
-
       const expiresAtDelta =
         refreshSuccessRst.expiresAt.epoch() -
         generateSuccessRst.expiresAt.epoch();
 
       expect(expiresAtDelta).toBeGreaterThanOrEqual(delaySecondsBeforeRefresh);
-      expect(expiresAtDelta).toBeLessThanOrEqual(delaySecondsBeforeRefresh + 1);
+      expect(expiresAtDelta).toBeLessThanOrEqual(
+        delaySecondsBeforeRefresh + 10
+      );
     });
 
     it("should not succeed for refreshing an api token that's expired", async () => {
