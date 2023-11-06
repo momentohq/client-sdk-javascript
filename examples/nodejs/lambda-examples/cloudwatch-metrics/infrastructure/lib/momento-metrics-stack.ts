@@ -85,6 +85,7 @@ export class MomentoMetricsStack extends cdk.Stack {
     The Momento experimental metrics middleware produces JSON logs with metrics about each Momento request. An example log entry looks like this:
         (Momento: _ExperimentalMetricsLoggingMiddleware): 
         {
+          "momento": {
             "numActiveRequestsAtStart": 1,
             "numActiveRequestsAtFinish": 1,
             "requestType": "_GetRequest",
@@ -96,6 +97,7 @@ export class MomentoMetricsStack extends cdk.Stack {
             "requestSize": 32,
             "responseSize": 2,
             "connectionID": "0"
+          }
         }
     
     The `createMetricFilters` function creates CloudWatch Metric Filters to extract metrics from these log messages. The metric filters are attached to the log group that we created above.
@@ -172,29 +174,29 @@ export class MomentoMetricsStack extends cdk.Stack {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Latency',
       filterPattern: FilterPattern.literal('{$.momento.duration > 0}'),
-      metricValue: '$.duration',
+      metricValue: '$.momento.duration',
       unit: Unit.MILLISECONDS,
     });
 
     logGroup.addMetricFilter('MetricFilterDurationAndGrpcStatus', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Latency + GRPC Status',
-      filterPattern: FilterPattern.literal('{$.momento.duration > 0 && $.status >= 0}'),
-      metricValue: '$.duration',
+      filterPattern: FilterPattern.literal('{$.momento.duration > 0 && $.momento.status >= 0}'),
+      metricValue: '$.momento.duration',
       unit: Unit.MILLISECONDS,
       dimensions: {
-        'status': '$.status',
+        'status': '$.momento.status',
       }
     });
 
     logGroup.addMetricFilter('MetricFilterDurationAndRequestType', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Latency + Request Type',
-      filterPattern: FilterPattern.literal('{$.momento.duration > 0 && $.requestType = "*"}'),
-      metricValue: '$.duration',
+      filterPattern: FilterPattern.literal('{$.momento.duration > 0 && $.momento.requestType = "*"}'),
+      metricValue: '$.momento.duration',
       unit: Unit.MILLISECONDS,
       dimensions: {
-        'requestType': '$.requestType',
+        'requestType': '$.momento.requestType',
       }
     });
 
@@ -202,29 +204,29 @@ export class MomentoMetricsStack extends cdk.Stack {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Request Size (bytes)',
       filterPattern: FilterPattern.literal('{$.momento.requestSize >= 0}'),
-      metricValue: '$.requestSize',
+      metricValue: '$.momento.requestSize',
       unit: Unit.BYTES,
     });
 
     logGroup.addMetricFilter('MetricFilterRequestSizeAndGrpcStatus', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Request Size (bytes) + GRPC Status',
-      filterPattern: FilterPattern.literal('{$.momento.requestSize >= 0 && $.status >= 0}'),
-      metricValue: '$.requestSize',
+      filterPattern: FilterPattern.literal('{$.momento.requestSize >= 0 && $.momento.status >= 0}'),
+      metricValue: '$.momento.requestSize',
       unit: Unit.BYTES,
       dimensions: {
-        'status': '$.status',
+        'status': '$.momento.status',
       }
     });
 
     logGroup.addMetricFilter('MetricFilterRequestSizeAndRequestType', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Request Size (bytes) + Request Type',
-      filterPattern: FilterPattern.literal('{$.momento.requestSize >= 0 && $.requestType = "*"}'),
-      metricValue: '$.requestSize',
+      filterPattern: FilterPattern.literal('{$.momento.requestSize >= 0 && $.momento.requestType = "*"}'),
+      metricValue: '$.momento.requestSize',
       unit: Unit.BYTES,
       dimensions: {
-        'requestType': '$.requestType',
+        'requestType': '$.momento.requestType',
       }
     });
 
@@ -232,29 +234,29 @@ export class MomentoMetricsStack extends cdk.Stack {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Response Size (bytes)',
       filterPattern: FilterPattern.literal('{$.momento.responseSize >= 0}'),
-      metricValue: '$.responseSize',
+      metricValue: '$.momento.responseSize',
       unit: Unit.BYTES,
     });
 
     logGroup.addMetricFilter('MetricFilterResponseSizeAndGrpcStatus', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Response Size (bytes) + GRPC Status',
-      filterPattern: FilterPattern.literal('{$.momento.responseSize >= 0 && $.status >= 0}'),
-      metricValue: '$.responseSize',
+      filterPattern: FilterPattern.literal('{$.momento.responseSize >= 0 && $.momento.status >= 0}'),
+      metricValue: '$.momento.responseSize',
       unit: Unit.BYTES,
       dimensions: {
-        'status': '$.status',
+        'status': '$.momento.status',
       }
     });
 
     logGroup.addMetricFilter('MetricFilterResponseSizeAndRequestType', {
       metricNamespace: 'MomentoMetricsCDKExample',
       metricName: 'Response Size (bytes) +  Request Type',
-      filterPattern: FilterPattern.literal('{$.momento.responseSize >= 0 && $.requestType = "*"}'),
-      metricValue: '$.responseSize',
+      filterPattern: FilterPattern.literal('{$.momento.responseSize >= 0 && $.momento.requestType = "*"}'),
+      metricValue: '$.momento.responseSize',
       unit: Unit.BYTES,
       dimensions: {
-        'requestType': '$.requestType',
+        'requestType': '$.momento.requestType',
       }
     });
   }
