@@ -25,7 +25,7 @@ Incorporating the `MomentoRateLimiter` class into your application is a straight
 
 To get started with the rate-limiter:
 - You will need a Momento API key. You can obtain one from the [Momento Console](https://console.gomomento.com).
-- You will need to create a cache called `rate-limiter` from the console as well!
+- You will need to create a cache called `rate-limiter` from the console as well! You can choose a different cache name and pass it to the rate-limiter constructor if you'd like.
 
 Once you have the key and the cache created, you can begin integration! Remember to store your API key in an environment variable named `MOMENTO_API_KEY`.
 
@@ -39,7 +39,8 @@ const momento = await CacheClient.create({
 });
 
 const tpmLimit = 10;
-const rateLimiter = new MomentoRateLimiter(momento, tpmLimit);
+const cacheName = "rate-limiter";
+const rateLimiter = new MomentoRateLimiter(momento, tpmLimit, cacheName);
 
 // test rate limiter
 const limitExceeded : boolean = await rateLimiter.isLimitExceeded(`id`);
@@ -88,7 +89,7 @@ All tasks complete!
 
 ```
 
-There are three additional arguments that you can provide to the rate-limiter if you want to experiment with different configurations:
+There are three additional arguments that you can provide to the simulator if you want to experiment with the rate-limiter:
 
 - totalRequests: The total number of requests that the example will simulate, defaulted to 1000.
 - randomDelayUpperBound: The simulation adds a random delay between 0 and the randomDelayUpperBound, defaulted to 60 seconds.
@@ -97,7 +98,13 @@ There are three additional arguments that you can provide to the rate-limiter if
 To override totalRequests to 10, randomDelayUpperBound to 60, and tpmLimit to 1, the command will look like:
 
 ```bash
-MOMENTO_API_KEY="yourApiKey" npm run rate-limiter 10 60 1
+MOMENTO_API_KEY="yourApiKey" npm run rate-limiter -- 10 60 1
+```
+
+The displayed output above indicates a 100% success rate. To observe throttles, modify the configuration as below, which results in approximately half of the requests being throttled. The rate limit is set to 10 requests per user, and we distribute 20 requests among 5 users (totaling 100 requests), introducing a random delay ranging from 0 to 500 milliseconds between each request.
+
+```bash
+MOMENTO_API_KEY="yourApiKey" npm run rate-limiter -- 100 500 10
 ```
 
 ## Analysis
