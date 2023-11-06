@@ -74,9 +74,11 @@ export function runAuthClientTests(
 
       const expiresIn = secondsSinceEpoch + 300;
 
-      expect(expireResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(
+        () => expect(expireResponse).toBeInstanceOf(GenerateApiKey.Success),
+        `Unexpected response: ${expireResponse.toString()}`
+      );
       const expireResponseSuccess = expireResponse as GenerateApiKey.Success;
-      expect(expireResponseSuccess.is_success);
       expect(expireResponseSuccess.expiresAt.doesExpire());
       expect(expireResponseSuccess.expiresAt.epoch()).toBeWithin(
         expiresIn - 60,
@@ -89,10 +91,13 @@ export function runAuthClientTests(
         SUPER_USER_PERMISSIONS,
         ExpiresIn.never()
       );
-      expect(neverExpiresResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(
+        () =>
+          expect(neverExpiresResponse).toBeInstanceOf(GenerateApiKey.Success),
+        `Unexpected response: ${neverExpiresResponse.toString()}`
+      );
       const neverExpireResponseSuccess =
         neverExpiresResponse as GenerateApiKey.Success;
-      expect(neverExpireResponseSuccess.is_success);
       expect(neverExpireResponseSuccess.expiresAt.doesExpire()).toBeFalsy();
     });
 
@@ -102,10 +107,19 @@ export function runAuthClientTests(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(-100)
         );
-      expect(invalidExpiresResponse).toBeInstanceOf(GenerateApiKey.Error);
-      expect(
-        (invalidExpiresResponse as GenerateApiKey.Error).errorCode()
-      ).toEqual(MomentoErrorCode.INVALID_ARGUMENT_ERROR);
+      expectWithMessage(
+        () =>
+          expect(invalidExpiresResponse).toBeInstanceOf(GenerateApiKey.Error),
+        `Unexpected response: ${invalidExpiresResponse.toString()}`
+      );
+      const errorResponse = invalidExpiresResponse as GenerateApiKey.Error;
+      expectWithMessage(
+        () =>
+          expect(errorResponse.errorCode()).toEqual(
+            MomentoErrorCode.INVALID_ARGUMENT_ERROR
+          ),
+        `Unexpected error code: ${errorResponse.errorCode()}`
+      );
     });
   });
 
@@ -127,7 +141,7 @@ export function runAuthClientTests(
       // we need to sleep for a bit here so that the timestamp on the refreshed token will be different than the
       // one on the original token
       const delaySecondsBeforeRefresh = 2;
-      await delay(delaySecondsBeforeRefresh * 1_000);
+      await delay(delaySecondsBeforeRefresh * 1000);
 
       const refreshResponse = await authTokenAuthClient.refreshApiKey(
         generateSuccessRst.refreshToken
@@ -137,14 +151,14 @@ export function runAuthClientTests(
       }, `Unexpected response: ${refreshResponse.toString()}`);
       const refreshSuccessRst = refreshResponse as RefreshApiKey.Success;
 
-      expect(refreshSuccessRst.is_success);
-
       const expiresAtDelta =
         refreshSuccessRst.expiresAt.epoch() -
         generateSuccessRst.expiresAt.epoch();
 
       expect(expiresAtDelta).toBeGreaterThanOrEqual(delaySecondsBeforeRefresh);
-      expect(expiresAtDelta).toBeLessThanOrEqual(delaySecondsBeforeRefresh + 1);
+      expect(expiresAtDelta).toBeLessThanOrEqual(
+        delaySecondsBeforeRefresh + 10 // to account for network delays and etc
+      );
     });
 
     it("should not succeed for refreshing an api token that's expired", async () => {
@@ -152,6 +166,9 @@ export function runAuthClientTests(
         SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(1)
       );
+      expectWithMessage(() => {
+        expect(generateResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Unexpected response: ${generateResponse.toString()}`);
       const generateSuccessRst = generateResponse as GenerateApiKey.Success;
 
       // Wait 1sec for the token to expire
@@ -164,9 +181,16 @@ export function runAuthClientTests(
       const refreshResponse = await authTokenAuthClient.refreshApiKey(
         generateSuccessRst.refreshToken
       );
-      expect(refreshResponse).toBeInstanceOf(RefreshApiKey.Error);
-      expect((refreshResponse as RefreshApiKey.Error).errorCode()).toEqual(
-        MomentoErrorCode.AUTHENTICATION_ERROR
+      expectWithMessage(() => {
+        expect(refreshResponse).toBeInstanceOf(RefreshApiKey.Error);
+      }, `Unexpected response: ${refreshResponse.toString()}`);
+      const errorResponse = refreshResponse as RefreshApiKey.Error;
+      expectWithMessage(
+        () =>
+          expect(errorResponse.errorCode()).toEqual(
+            MomentoErrorCode.AUTHENTICATION_ERROR
+          ),
+        `Unexpected error code: ${errorResponse.errorCode()}`
       );
     });
   });
@@ -210,7 +234,9 @@ export function runAuthClientTests(
         generateSuccessRst.expiresAt.epoch();
 
       expect(expiresAtDelta).toBeGreaterThanOrEqual(delaySecondsBeforeRefresh);
-      expect(expiresAtDelta).toBeLessThanOrEqual(delaySecondsBeforeRefresh + 1);
+      expect(expiresAtDelta).toBeLessThanOrEqual(
+        delaySecondsBeforeRefresh + 10 // to account for network delays and etc
+      );
     });
   });
 
@@ -220,6 +246,9 @@ export function runAuthClientTests(
         SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(1)
       );
+      expectWithMessage(() => {
+        expect(generateResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Unexpected response: ${generateResponse.toString()}`);
       const generateSuccessRst = generateResponse as GenerateApiKey.Success;
 
       // Wait 1sec for the token to expire
@@ -231,10 +260,17 @@ export function runAuthClientTests(
         'cache-should-fail-to-create'
       );
 
-      expect(createCacheRst).toBeInstanceOf(CreateCache.Error);
+      expectWithMessage(
+        () => expect(createCacheRst).toBeInstanceOf(CreateCache.Error),
+        `Unexpected response: ${generateResponse.toString()}`
+      );
       const createCacheErrorRst = createCacheRst as CreateCache.Error;
-      expect(createCacheErrorRst.errorCode()).toEqual(
-        MomentoErrorCode.AUTHENTICATION_ERROR
+      expectWithMessage(
+        () =>
+          expect(createCacheErrorRst.errorCode()).toEqual(
+            MomentoErrorCode.AUTHENTICATION_ERROR
+          ),
+        `Unexpected error code: ${createCacheErrorRst.errorCode()}`
       );
     });
 
@@ -243,7 +279,9 @@ export function runAuthClientTests(
         SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(() => {
+        expect(generateResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Unexpected response: ${generateResponse.toString()}`);
     });
 
     it('should support generating an AllDataReadWrite token when authenticated via a session token', async () => {
@@ -251,7 +289,9 @@ export function runAuthClientTests(
         AllDataReadWrite,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(() => {
+        expect(generateResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Unexpected response: ${generateResponse.toString()}`);
     });
 
     it('should not support generating a superuser token when authenticated via a v1 superuser token', async () => {
@@ -260,7 +300,9 @@ export function runAuthClientTests(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(() => {
+        expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Unexpected response: ${superUserTokenResponse.toString()}`);
 
       const authClient = authTokenAuthClientFactory(
         (superUserTokenResponse as GenerateApiKey.Success).apiKey
@@ -270,9 +312,15 @@ export function runAuthClientTests(
         SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
+      expectWithMessage(() => {
+        expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
+      }, `Unexpected response: ${generateResponse.toString()}`);
       const error = generateResponse as GenerateApiKey.Error;
-      expect(error.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR);
+      expectWithMessage(
+        () =>
+          expect(error.errorCode()).toEqual(MomentoErrorCode.PERMISSION_ERROR),
+        `Unexpected error code: ${error.errorCode()}`
+      );
       expect(error.message()).toContain('Insufficient permissions');
     });
 
@@ -282,7 +330,9 @@ export function runAuthClientTests(
           SUPER_USER_PERMISSIONS,
           ExpiresIn.seconds(10)
         );
-      expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(() => {
+        expect(superUserTokenResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Unexpected response: ${superUserTokenResponse.toString()}`);
 
       const authClient = authTokenAuthClientFactory(
         (superUserTokenResponse as GenerateApiKey.Success).apiKey
@@ -292,7 +342,9 @@ export function runAuthClientTests(
         AllDataReadWrite,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(() => {
+        expect(generateResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Unexpected response: ${generateResponse.toString()}`);
     });
 
     it('should not support generating a superuser token when authenticated via a v1 AllDataReadWrite token', async () => {
@@ -301,8 +353,12 @@ export function runAuthClientTests(
           AllDataReadWrite,
           ExpiresIn.seconds(10)
         );
-      expect(allDataReadWriteTokenResponse).toBeInstanceOf(
-        GenerateApiKey.Success
+      expectWithMessage(
+        () =>
+          expect(allDataReadWriteTokenResponse).toBeInstanceOf(
+            GenerateApiKey.Success
+          ),
+        `Unexpected response: ${allDataReadWriteTokenResponse.toString()}`
       );
 
       const authClient = authTokenAuthClientFactory(
@@ -313,7 +369,9 @@ export function runAuthClientTests(
         SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
+      expectWithMessage(() => {
+        expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
+      }, `Unexpected response: ${generateResponse.toString()}`);
     });
 
     it('should not support generating an AllDataReadWrite token when authenticated via a v1 AllDataReadWrite token', async () => {
@@ -334,7 +392,9 @@ export function runAuthClientTests(
         AllDataReadWrite,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
+      expectWithMessage(() => {
+        expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
+      }, `Unexpected response: ${generateResponse.toString()}`);
     });
 
     it('should not support generating a superuser token when authenticated via a legacy token', async () => {
@@ -342,7 +402,9 @@ export function runAuthClientTests(
         SUPER_USER_PERMISSIONS,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
+      expectWithMessage(() => {
+        expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
+      }, `Unexpected response: ${generateResponse.toString()}`);
     });
 
     it('should not support generating an AllDataReadWrite token when authenticated via a legacy token', async () => {
@@ -350,7 +412,9 @@ export function runAuthClientTests(
         AllDataReadWrite,
         ExpiresIn.seconds(1)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
+      expectWithMessage(() => {
+        expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
+      }, `Unexpected response: ${generateResponse.toString()}`);
     });
   });
 
@@ -362,30 +426,48 @@ export function runAuthClientTests(
         AllDataReadWrite,
         ExpiresIn.seconds(60)
       );
-      expect(generateResponse).toBeInstanceOf(GenerateApiKey.Success);
+      expectWithMessage(() => {
+        expect(generateResponse).toBeInstanceOf(GenerateApiKey.Success);
+      }, `Unexpected response: ${generateResponse.toString()}`);
       const allDataReadWriteToken = (generateResponse as GenerateApiKey.Success)
         .apiKey;
       allDataReadWriteClient = cacheClientFactory(allDataReadWriteToken);
     });
+
     it('cannot create a cache', async () => {
       const createCacheResponse = await allDataReadWriteClient.createCache(
         'FOOFOOFOO'
       );
-      expect(createCacheResponse).toBeInstanceOf(CreateCache.Error);
+      expectWithMessage(
+        () => expect(createCacheResponse).toBeInstanceOf(CreateCache.Error),
+        `Unexpected response: ${createCacheResponse.toString()}`
+      );
       const createCacheError = createCacheResponse as CreateCache.Error;
-      expect(createCacheError.errorCode()).toEqual(
-        MomentoErrorCode.PERMISSION_ERROR
+      expectWithMessage(
+        () =>
+          expect(createCacheError.errorCode()).toEqual(
+            MomentoErrorCode.PERMISSION_ERROR
+          ),
+        `Unexpected error code: ${createCacheError.errorCode()}`
       );
       expect(createCacheError.message()).toContain('Insufficient permissions');
     });
+
     it('cannot delete a cache', async () => {
       const deleteCacheResponse = await allDataReadWriteClient.deleteCache(
         cacheName
       );
-      expect(deleteCacheResponse).toBeInstanceOf(DeleteCache.Error);
+      expectWithMessage(
+        () => expect(deleteCacheResponse).toBeInstanceOf(DeleteCache.Error),
+        `Unexpected response: ${deleteCacheResponse.toString()}`
+      );
       const deleteCacheError = deleteCacheResponse as DeleteCache.Error;
-      expect(deleteCacheError.errorCode()).toEqual(
-        MomentoErrorCode.PERMISSION_ERROR
+      expectWithMessage(
+        () =>
+          expect(deleteCacheError.errorCode()).toEqual(
+            MomentoErrorCode.PERMISSION_ERROR
+          ),
+        `Unexpected error code: ${deleteCacheError.errorCode()}`
       );
       expect(deleteCacheError.message()).toContain('Insufficient permissions');
     });
@@ -396,16 +478,21 @@ export function runAuthClientTests(
         'foo',
         'FOO'
       );
-      console.log('setResponse', setResponse);
-      expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      expectWithMessage(
+        () => expect(setResponse).toBeInstanceOf(CacheSet.Success),
+        `Unexpected response: ${setResponse.toString()}`
+      );
     });
+
     it('can get values from an existing cache', async () => {
       const getResponse = await allDataReadWriteClient.get(
         cacheName,
         'habanero'
       );
-      console.log('getResponse', getResponse);
-      expect(getResponse).toBeInstanceOf(CacheGet.Miss);
+      expectWithMessage(
+        () => expect(getResponse).toBeInstanceOf(CacheGet.Miss),
+        `Unexpected response: ${getResponse.toString()}`
+      );
     });
   });
 
