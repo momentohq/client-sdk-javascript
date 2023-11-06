@@ -60,17 +60,35 @@ export function runCreateDeleteListCacheTests(cacheClient: ICacheClient) {
           const knownCaches = caches.filter(c => c.getName() === cacheName);
           expect(knownCaches.length === 1).toBeTrue();
           const cache = knownCaches[0];
+          const limitsMessage =
+            'test/canary cache limits must be: throughput_throttling_limit=1024, item_size_limit=1024, ' +
+            'throttling_limit=100, max_ttl=86400000; topic limits must be: publish_rate=100, ' +
+            'subscription_count=100, publish_message_size=100.';
 
-          // checking cache limits
-          expect(cache.getCacheLimits().maxThroughputKbps).toEqual(1024);
-          expect(cache.getCacheLimits().maxItemSizeKb).toEqual(1024);
-          expect(cache.getCacheLimits().maxTrafficRate).toEqual(100);
-          expect(cache.getCacheLimits().maxTtlSeconds).toEqual(86400);
+          // checking that cache limits are equal to or greater than default limits
+          expectWithMessage(() => {
+            expect(cache.getCacheLimits().maxThroughputKbps).toEqual(1024);
+          }, `invalid throughput_throttling_limit. ${limitsMessage}`);
+          expectWithMessage(() => {
+            expect(cache.getCacheLimits().maxItemSizeKb).toEqual(1024);
+          }, `invalid item_size_limit. ${limitsMessage}`);
+          expectWithMessage(() => {
+            expect(cache.getCacheLimits().maxTrafficRate).toEqual(100);
+          }, `invalid throttling_limit. ${limitsMessage}`);
+          expectWithMessage(() => {
+            expect(cache.getCacheLimits().maxTtlSeconds).toEqual(86400);
+          }, `invalid max_ttl. ${limitsMessage}`);
 
-          // checking topic limits
-          expect(cache.getTopicLimits().maxPublishMessageSizeKb).toEqual(100);
-          expect(cache.getTopicLimits().maxPublishRate).toEqual(100);
-          expect(cache.getTopicLimits().maxSubscriptionCount).toEqual(100);
+          // checking that topic limits are equal to or greater than default limits
+          expectWithMessage(() => {
+            expect(cache.getTopicLimits().maxPublishMessageSizeKb).toEqual(100);
+          }, `invalid publish_message_size. ${limitsMessage}`);
+          expectWithMessage(() => {
+            expect(cache.getTopicLimits().maxPublishRate).toEqual(100);
+          }, `invalid publish_rate. ${limitsMessage}`);
+          expectWithMessage(() => {
+            expect(cache.getTopicLimits().maxSubscriptionCount).toEqual(100);
+          }, `invalid subscription_count. ${limitsMessage}`);
         }
       });
     });

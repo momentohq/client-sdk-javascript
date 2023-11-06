@@ -1,19 +1,13 @@
 {
-  "name": "momento-nodejs-example",
+  "name": "momento-nodejs-rate-limiter",
   "version": "1.0.0",
   "description": "Getting started with Momento sdk",
   "main": "index.ts",
   "scripts": {
     "prebuild": "eslint . --ext .ts",
     "build": "tsc",
-    "basic": "tsc && node dist/basic.js",
-    "advanced": "tsc && node dist/advanced.js",
-    "dictionary": "tsc && node dist/dictionary.js",
-    "doc-examples": "tsc && node dist/doc-example-files/doc-examples-js-apis.js",
-    "validate-examples": "tsc && node dist/readme.js && node dist/basic.js && node dist/advanced.js && node dist/dictionary.js && node dist/doc-example-files/doc-examples-js-apis.js && node dist/doc-example-files/cheat-sheet-main.js && node dist/batchutils.js && node dist/leaderboard.js",
-    "leaderboard": "tsc && node dist/leaderboard.js",
-    "batchutils": "tsc && node dist/batchutils.js",
-    "test": "jest",
+    "validate-examples": "tsc && node dist/worker.js 1 1 1",
+    "rate-limiter": "tsc && node dist/worker.js",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix"
   },

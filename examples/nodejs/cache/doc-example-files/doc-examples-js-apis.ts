@@ -74,8 +74,6 @@ import {
   TopicConfigurations,
   PreviewLeaderboardClient,
   LeaderboardConfigurations,
-} from '@gomomento/sdk';
-import {
   ILeaderboard,
   LeaderboardDelete,
   LeaderboardFetch,
@@ -83,7 +81,7 @@ import {
   LeaderboardOrder,
   LeaderboardRemoveElements,
   LeaderboardUpsert,
-} from '@gomomento/sdk-core';
+} from '@gomomento/sdk';
 
 function retrieveApiKeyFromYourSecretsManager(): string {
   // this is not a valid API key but conforms to the syntax requirements.
