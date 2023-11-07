@@ -101,7 +101,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
   }
 
   private initializeInterceptors(
-    loggerFactory: MomentoLoggerFactory
+    _loggerFactory: MomentoLoggerFactory
   ): Interceptor[] {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
