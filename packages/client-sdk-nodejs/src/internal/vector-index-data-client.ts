@@ -257,6 +257,11 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       top_k: options?.topK,
       metadata_fields: metadataRequest,
     });
+    if (options?.scoreThreshold !== undefined) {
+      request.score_threshold = options.scoreThreshold;
+    } else {
+      request.no_score_threshold = new vectorindex._NoScoreThreshold();
+    }
 
     return await new Promise(resolve => {
       this.client.Search(

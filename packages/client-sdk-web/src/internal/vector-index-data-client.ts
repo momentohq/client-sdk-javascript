@@ -237,6 +237,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     }
     request.setMetadataFields(metadataRequest);
 
+    if (options?.scoreThreshold !== undefined) {
+      request.setScoreThreshold(options.scoreThreshold);
+    } else {
+      request.setNoScoreThreshold(new vectorindex._NoScoreThreshold());
+    }
+
     return await new Promise(resolve => {
       this.client.search(
         request,
