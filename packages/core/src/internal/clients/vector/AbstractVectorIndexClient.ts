@@ -118,9 +118,12 @@ export abstract class AbstractVectorIndexClient
    *
    * @param {string} indexName - Name of the index to search in.
    * @param {Array<number>} queryVector - The vector to search for.
-   * @param {SearchOptions} options - Optional search arguments,
-   * including max number of results and which metadata to return.
-   * @returns {Promise<VectorSearch.Response>}
+   * @param {SearchOptions} options - Optional search arguments, including
+   * the number of results to return, metadata fields to return, and a score
+   * threshold to filter results by.
+   * @returns {Promise<VectorSearch.Response>} -
+   * {@link VectorSearch.Success} on success.
+   * {@link VectorSearch.Error} on error.
    */
   public async search(
     indexName: string,
