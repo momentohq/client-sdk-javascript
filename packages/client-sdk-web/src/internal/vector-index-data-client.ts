@@ -237,6 +237,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     }
     request.setMetadataFields(metadataRequest);
 
+    if (options?.scoreThreshold !== undefined) {
+      request.setScoreThreshold(options.scoreThreshold);
+    } else {
+      request.setNoScoreThreshold(new vectorindex._NoScoreThreshold());
+    }
+
     return await new Promise(resolve => {
       this.client.search(
         request,
@@ -250,7 +256,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               new VectorSearch.Success(
                 resp.getHitsList().map(hit => ({
                   id: hit.getId(),
-                  distance: hit.getDistance(),
+                  score: hit.getDistance(),
                   metadata: hit.getMetadataList().reduce((acc, metadata) => {
                     const field = metadata.getField();
                     switch (metadata.getValueCase()) {

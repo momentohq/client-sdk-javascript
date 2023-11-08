@@ -1,4 +1,5 @@
 import {SdkError} from '../../../errors';
+import {VectorIndexInfo} from '../../vector-index-info';
 import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
 
 /**
@@ -23,22 +24,23 @@ import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
 export abstract class Response extends ResponseBase {}
 
 class _Success extends Response {
-  private readonly indexNames: string[];
-  constructor(indexNames: string[]) {
+  private readonly indexes: VectorIndexInfo[];
+  constructor(indexes: VectorIndexInfo[]) {
     super();
-    this.indexNames = indexNames;
+    this.indexes = indexes;
   }
 
   /**
    * An array of index names.
    * @returns {string[]}
    */
-  public getIndexNames() {
-    return this.indexNames;
+  public getIndexes() {
+    return this.indexes;
   }
 
   public override toString() {
-    return super.toString() + ': ' + this.indexNames.join(', ');
+    const indexes = this.indexes.map(indexInfo => indexInfo.getName());
+    return super.toString() + ': ' + indexes.join(', ');
   }
 }
 

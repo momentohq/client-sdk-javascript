@@ -75,6 +75,7 @@ export * as leaderboard from './messages/responses/leaderboard';
 export * from './messages/responses/leaderboard';
 
 import {CacheInfo} from './messages/cache-info';
+export {VectorIndexInfo} from './messages/vector-index-info';
 import {
   SubscribeCallOptions,
   CollectionTtl,

@@ -1,5 +1,5 @@
-import { CacheClient, CacheIncrement, CacheUpdateTtl } from "@gomomento/sdk";
-import { AbstractRateLimiter, RATE_LIMITER_TTL_MILLIS } from "./rate-limiter";
+import {CacheClient, CacheIncrement, CacheUpdateTtl} from '@gomomento/sdk';
+import {AbstractRateLimiter, RATE_LIMITER_TTL_MILLIS} from './rate-limiter';
 
 export class MomentoRateLimiter extends AbstractRateLimiter {
   _client: CacheClient;

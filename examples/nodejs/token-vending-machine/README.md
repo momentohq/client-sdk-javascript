@@ -29,13 +29,6 @@ These three required configuration variables live in the [config.ts](./lambda/to
 
 ## Deploying the Token Vending Machine App
 
-First make sure to start Docker and install the dependencies in the `lambda` directory, which is where the AWS Lambda code lives.
-
-```bash
-cd lambda/token-vending-machine
-npm install
-```
-
 The source code for the CDK application lives in the `infrastructure` directory.
 To build and deploy it you will first need to install the dependencies:
 
@@ -51,7 +44,7 @@ You will also need a superuser API key generated from the [Momento Console](http
 Then run:
 
 ```
-npm run cdk -- deploy --parameters MomentoApiKey=<YOUR_MOMENTO_API_KEY>
+npm run deploy -- --parameters MomentoApiKey=<YOUR_MOMENTO_API_KEY>
 ```
 
 When the command completes, you should see something like this near the end of the output:

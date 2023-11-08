@@ -47,7 +47,16 @@
         // async without await is often an error and in other uses it obfuscates
         // the intent of the developer. Functions are async when they want to await.
         "require-await": "error",
-        "import/no-duplicates": "error"
+        "import/no-duplicates": "error",
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": [
+          "warn",
+          { 
+            "argsIgnorePattern": "^_",
+            "varsIgnorePattern": "^_",
+            "caughtErrorsIgnorePattern": "^_"
+          }
+        ]
     },
     "settings": {
         "import/resolver": {

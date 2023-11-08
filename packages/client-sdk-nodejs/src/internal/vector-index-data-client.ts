@@ -257,6 +257,11 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       top_k: options?.topK,
       metadata_fields: metadataRequest,
     });
+    if (options?.scoreThreshold !== undefined) {
+      request.score_threshold = options.scoreThreshold;
+    } else {
+      request.no_score_threshold = new vectorindex._NoScoreThreshold();
+    }
 
     return await new Promise(resolve => {
       this.client.Search(
@@ -268,7 +273,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               new VectorSearch.Success(
                 resp.hits.map(hit => ({
                   id: hit.id,
-                  distance: hit.distance,
+                  score: hit.distance,
                   metadata: hit.metadata.reduce((acc, metadata) => {
                     const field = metadata.field;
                     switch (metadata.value) {
@@ -320,7 +325,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   }
 
   private initializeInterceptors(
-    loggerFactory: MomentoLoggerFactory
+    _loggerFactory: MomentoLoggerFactory
   ): Interceptor[] {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),

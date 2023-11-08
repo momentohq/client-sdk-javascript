@@ -3,7 +3,7 @@ import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
 
 export interface SearchHit {
   id: string;
-  distance: number;
+  score: number;
   metadata: Record<string, string | number | boolean | Array<string>>;
 }
 
