@@ -127,18 +127,15 @@ export const createWebhookIfNotExists = async (
 
 export async function WithWebhook(
   topicClient: ITopicClient,
-  cacheClient: ICacheClient,
   webhook: Webhook,
   block: () => Promise<void>
 ) {
-  await WithCache(cacheClient, webhook.id.cacheName, async () => {
-    await createWebhookIfNotExists(topicClient, webhook);
-    try {
-      await block();
-    } finally {
-      await deleteWebhookIfExists(topicClient, webhook.id);
-    }
-  });
+  await createWebhookIfNotExists(topicClient, webhook);
+  try {
+    await block();
+  } finally {
+    await deleteWebhookIfExists(topicClient, webhook.id);
+  }
 }
 
 export const deleteIndexIfExists = async (

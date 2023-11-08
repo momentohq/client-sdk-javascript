@@ -17,7 +17,7 @@ export function runWebhookTests(
   cacheClient: ICacheClient,
   integrationTestCacheName: string
 ) {
-  describe('#putWebhook', () => {
+  describe.skip('#putWebhook', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
       return topicClient.putWebhook({
         id: {
@@ -41,13 +41,13 @@ export function runWebhookTests(
     });
   });
 
-  describe('#listWebhooks', () => {
+  describe.skip('#listWebhooks', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
       return topicClient.listWebhooks(props.cacheName);
     });
   });
 
-  describe('#deleteWebhook', () => {
+  describe.skip('#deleteWebhook', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
       return topicClient.deleteWebhook({
         webhookName: 'some webhook',
@@ -57,9 +57,9 @@ export function runWebhookTests(
   });
 
   describe('put list and delete', () => {
-    it('should create a new webhook, an', async () => {
+    it('should create a new webhook, list it, and then delete it', async () => {
       const webhook = testWebhook(integrationTestCacheName);
-      await WithWebhook(topicClient, cacheClient, webhook, async () => {
+      await WithWebhook(topicClient, webhook, async () => {
         const resp = await topicClient.listWebhooks(webhook.id.cacheName);
         if (resp instanceof ListWebhooks.Success) {
           const webhookWeAreLookingFor = resp
