@@ -9,6 +9,7 @@ import {
   InvalidArgumentError,
   MomentoLogger,
   VectorIndexConfiguration,
+  VectorIndexInfo,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -148,9 +149,11 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
                 new ListVectorIndexes.Error(cacheServiceErrorMapper(err))
               );
             } else {
-              // TODO: um, what?
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call
-              const indexes = resp.index_names;
+              const indexes = resp.index_names.map((name: string) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
+                return new VectorIndexInfo(name);
+              });
               // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
               resolve(new ListVectorIndexes.Success(indexes));
             }
