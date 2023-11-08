@@ -430,6 +430,109 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
       );
     });
 
+    it.each([
+      {
+        similarityMetric: VectorSimilarityMetric.COSINE_SIMILARITY,
+        distances: [1.0, 0.0, -1.0],
+        thresholds: [0.5, -1.01, 1.0],
+      },
+      {
+        similarityMetric: VectorSimilarityMetric.INNER_PRODUCT,
+        distances: [4.0, 0.0, -4.0],
+        thresholds: [0.0, -4.01, 4.0],
+      },
+      {
+        similarityMetric: VectorSimilarityMetric.EUCLIDEAN_SIMILARITY,
+        distances: [2, 10, 18],
+        thresholds: [3, 20, -0.01],
+      },
+    ])(
+      'should prune results with a search threshold',
+      async ({similarityMetric, distances, thresholds}) => {
+        const indexName = testIndexName();
+        await WithIndex(
+          vectorClient,
+          indexName,
+          2,
+          similarityMetric,
+          async () => {
+            const upsertResponse = await vectorClient.upsertItemBatch(
+              indexName,
+              [
+                {
+                  id: 'test_item_1',
+                  vector: [1.0, 1.0],
+                },
+                {
+                  id: 'test_item_2',
+                  vector: [-1.0, 1.0],
+                },
+                {
+                  id: 'test_item_3',
+                  vector: [-1.0, -1.0],
+                },
+              ]
+            );
+            expectWithMessage(() => {
+              expect(upsertResponse).toBeInstanceOf(
+                VectorUpsertItemBatch.Success
+              );
+            }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
+            await sleep(2_000);
+
+            const queryVector = [2.0, 2.0];
+            const searchHits = [
+              {id: 'test_item_1', distance: distances[0], metadata: {}},
+              {id: 'test_item_2', distance: distances[1], metadata: {}},
+              {id: 'test_item_3', distance: distances[2], metadata: {}},
+            ];
+
+            // Test threshold to get only the top result
+            const searchResponse = await vectorClient.search(
+              indexName,
+              queryVector,
+              {topK: 3, scoreThreshold: thresholds[0]}
+            );
+            expectWithMessage(() => {
+              expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
+            }, `expected SUCCESS but got ${searchResponse.toString()}}`);
+
+            //
+            const successResponse = searchResponse as VectorSearch.Success;
+            expectWithMessage(() => {
+              expect(successResponse.hits()).toEqual([searchHits[0]]);
+            }, `expected ${JSON.stringify(searchHits[0])} but got ${JSON.stringify(successResponse.hits())}`);
+
+            // Test threshold to get all results
+            const searchResponse2 = await vectorClient.search(
+              indexName,
+              queryVector,
+              {topK: 3, scoreThreshold: thresholds[1]}
+            );
+            expectWithMessage(() => {
+              expect(searchResponse2).toBeInstanceOf(VectorSearch.Success);
+            }, `expected SUCCESS but got ${searchResponse2.toString()}}`);
+
+            const successResponse2 = searchResponse2 as VectorSearch.Success;
+            expect(successResponse2.hits()).toEqual(searchHits);
+
+            // Test threshold to get no results
+            const searchResponse3 = await vectorClient.search(
+              indexName,
+              queryVector,
+              {topK: 3, scoreThreshold: thresholds[2]}
+            );
+            expectWithMessage(() => {
+              expect(searchResponse3).toBeInstanceOf(VectorSearch.Success);
+            }, `expected SUCCESS but got ${searchResponse3.toString()}}`);
+
+            const successResponse3 = searchResponse3 as VectorSearch.Success;
+            expect(successResponse3.hits()).toEqual([]);
+          }
+        );
+      }
+    );
+
     it('should replacing existing items with upsert', async () => {
       const indexName = testIndexName();
       await WithIndex(
