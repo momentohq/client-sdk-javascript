@@ -1043,7 +1043,7 @@ async function example_API_TopicSubscribe(topicClient: TopicClient) {
 }
 
 function example_API_InstantiateLeaderboardClient() {
-  const leaderboardClient = new PreviewLeaderboardClient({
+  new PreviewLeaderboardClient({
     configuration: LeaderboardConfigurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_API_KEY',
@@ -1054,12 +1054,12 @@ function example_API_InstantiateLeaderboardClient() {
 function example_API_CreateLeaderboard(leaderboardClient: PreviewLeaderboardClient) {
   // You can create multiple leaderboards using the same leaderboard client
   // but with different cache and leaderboard names
-  const leaderboard1 = leaderboardClient.leaderboard('test-cache', 'momento-leaderboard');
-  const leaderboard2 = leaderboardClient.leaderboard('test-cache', 'acorns-leaderboard');
+  leaderboardClient.leaderboard('test-cache', 'momento-leaderboard');
+  leaderboardClient.leaderboard('test-cache', 'acorns-leaderboard');
 
   // Leaderboard and cache names must be non-empty strings
   try {
-    const leaderboard3 = leaderboardClient.leaderboard('test-cache', '   ');
+    leaderboardClient.leaderboard('test-cache', '   ');
   } catch (error) {
     console.log('Expected error creating a leaderboard with invalid leaderboard name:', error);
   }

@@ -5,7 +5,7 @@ import {
   Configurations,
   CreateCache,
   CredentialProvider,
-} from "@gomomento/sdk";
+} from '@gomomento/sdk';
 
 // since our rate limiting buckets are per minute, we expire keys every minute
 export const RATE_LIMITER_TTL_MILLIS = 60000;
@@ -70,13 +70,13 @@ async function main() {
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: "MOMENTO_API_KEY",
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
     defaultTtlSeconds: 60,
   });
 
   const tpmLimit = 1;
-  const cacheName = "rate-limiter";
+  const cacheName = 'rate-limiter';
 
   const createCacheResp = await cacheClient.createCache(cacheName);
   if (createCacheResp instanceof CreateCache.Error) {
@@ -91,12 +91,12 @@ async function main() {
     cacheName
   );
 
-  const limitExceeded = await momentoRateLimier.isLimitExceeded("user-id");
+  const limitExceeded = await momentoRateLimier.isLimitExceeded('user-id');
   if (!limitExceeded) {
     // do work for user
-    console.log("Successfully called work and request was allowed");
+    console.log('Successfully called work and request was allowed');
   } else {
-    console.warn("Request was throttled");
+    console.warn('Request was throttled');
   }
 }
 

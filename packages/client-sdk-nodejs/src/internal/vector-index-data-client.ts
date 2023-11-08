@@ -325,7 +325,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   }
 
   private initializeInterceptors(
-    loggerFactory: MomentoLoggerFactory
+    _loggerFactory: MomentoLoggerFactory
   ): Interceptor[] {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
