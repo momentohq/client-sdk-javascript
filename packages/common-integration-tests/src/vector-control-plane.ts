@@ -87,8 +87,9 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
             expect(listResponse).toBeInstanceOf(ListVectorIndexes.Success);
           }, `expected SUCCESS but got ${listResponse.toString()}`);
           if (listResponse instanceof ListVectorIndexes.Success) {
-            const caches = listResponse.getIndexNames();
-            expect(caches.includes(indexName)).toBeTruthy();
+            const indexes = listResponse.getIndexes();
+            const indexNames = indexes.map(indexInfo => indexInfo.getName());
+            expect(indexNames.includes(indexName)).toBeTruthy();
           }
         }
       );
