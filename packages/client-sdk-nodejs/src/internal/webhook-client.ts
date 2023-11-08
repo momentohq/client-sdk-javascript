@@ -22,7 +22,7 @@ import {
   validateCacheName,
   validateTopicName,
   validateWebhookName,
-} from '../../../core/src/internal/utils';
+} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 
 export class WebhookClient implements IWebhookClient {

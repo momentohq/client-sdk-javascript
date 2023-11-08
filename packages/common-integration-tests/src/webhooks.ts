@@ -17,7 +17,7 @@ export function runWebhookTests(
   cacheClient: ICacheClient,
   integrationTestCacheName: string
 ) {
-  describe.skip('#putWebhook', () => {
+  describe('#putWebhook', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
       return topicClient.putWebhook({
         id: {
@@ -41,13 +41,13 @@ export function runWebhookTests(
     });
   });
 
-  describe.skip('#listWebhooks', () => {
+  describe('#listWebhooks', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
       return topicClient.listWebhooks(props.cacheName);
     });
   });
 
-  describe.skip('#deleteWebhook', () => {
+  describe('#deleteWebhook', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
       return topicClient.deleteWebhook({
         webhookName: 'some webhook',
