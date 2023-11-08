@@ -74,7 +74,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           expect(successResponse.hits()).toEqual([
             {
               id: 'test_item',
-              distance: 5.0,
+              score: 5.0,
               metadata: {},
             },
           ]);
@@ -124,17 +124,17 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           expect(successResponse.hits()).toEqual([
             {
               id: 'test_item_1',
-              distance: 1.0,
+              score: 1.0,
               metadata: {},
             },
             {
               id: 'test_item_2',
-              distance: 0.0,
+              score: 0.0,
               metadata: {},
             },
             {
               id: 'test_item_3',
-              distance: -1.0,
+              score: -1.0,
               metadata: {},
             },
           ]);
@@ -184,17 +184,17 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           expect(successResponse.hits()).toEqual([
             {
               id: 'test_item_1',
-              distance: 0.0,
+              score: 0.0,
               metadata: {},
             },
             {
               id: 'test_item_2',
-              distance: 4.0,
+              score: 4.0,
               metadata: {},
             },
             {
               id: 'test_item_3',
-              distance: 8.0,
+              score: 8.0,
               metadata: {},
             },
           ]);
@@ -232,9 +232,9 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           }, `expected SUCCESS but got ${searchResponse.toString()}}`);
           const successResponse = searchResponse as VectorSearch.Success;
           expect(successResponse.hits()).toEqual([
-            {id: 'test_item_3', distance: 17.0, metadata: {}},
-            {id: 'test_item_2', distance: 11.0, metadata: {}},
-            {id: 'test_item_1', distance: 5.0, metadata: {}},
+            {id: 'test_item_3', score: 17.0, metadata: {}},
+            {id: 'test_item_2', score: 11.0, metadata: {}},
+            {id: 'test_item_1', score: 5.0, metadata: {}},
           ]);
         }
       );
@@ -270,8 +270,8 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           }, `expected SUCCESS but got ${searchResponse.toString()}}`);
           const successResponse = searchResponse as VectorSearch.Success;
           expect(successResponse.hits()).toEqual([
-            {id: 'test_item_3', distance: 17.0, metadata: {}},
-            {id: 'test_item_2', distance: 11.0, metadata: {}},
+            {id: 'test_item_3', score: 17.0, metadata: {}},
+            {id: 'test_item_2', score: 11.0, metadata: {}},
           ]);
         }
       );
@@ -322,9 +322,9 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           }, `expected SUCCESS but got ${searchResponse.toString()}}`);
           let successResponse = searchResponse as VectorSearch.Success;
           expect(successResponse.hits()).toEqual([
-            {id: 'test_item_3', distance: 17.0, metadata: {}},
-            {id: 'test_item_2', distance: 11.0, metadata: {}},
-            {id: 'test_item_1', distance: 5.0, metadata: {}},
+            {id: 'test_item_3', score: 17.0, metadata: {}},
+            {id: 'test_item_2', score: 11.0, metadata: {}},
+            {id: 'test_item_1', score: 5.0, metadata: {}},
           ]);
 
           searchResponse = await vectorClient.search(indexName, [1.0, 2.0], {
@@ -336,9 +336,9 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           }, `expected SUCCESS but got ${searchResponse.toString()}}`);
           successResponse = searchResponse as VectorSearch.Success;
           expect(successResponse.hits()).toEqual([
-            {id: 'test_item_3', distance: 17.0, metadata: {key1: 'value3'}},
-            {id: 'test_item_2', distance: 11.0, metadata: {}},
-            {id: 'test_item_1', distance: 5.0, metadata: {key1: 'value1'}},
+            {id: 'test_item_3', score: 17.0, metadata: {key1: 'value3'}},
+            {id: 'test_item_2', score: 11.0, metadata: {}},
+            {id: 'test_item_1', score: 5.0, metadata: {key1: 'value1'}},
           ]);
 
           searchResponse = await vectorClient.search(indexName, [1.0, 2.0], {
@@ -352,11 +352,11 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           expect(successResponse.hits()).toEqual([
             {
               id: 'test_item_3',
-              distance: 17.0,
+              score: 17.0,
               metadata: {key1: 'value3', key3: 'value3'},
             },
-            {id: 'test_item_2', distance: 11.0, metadata: {key2: 'value2'}},
-            {id: 'test_item_1', distance: 5.0, metadata: {key1: 'value1'}},
+            {id: 'test_item_2', score: 11.0, metadata: {key2: 'value2'}},
+            {id: 'test_item_1', score: 5.0, metadata: {key1: 'value1'}},
           ]);
 
           searchResponse = await vectorClient.search(indexName, [1.0, 2.0], {
@@ -370,11 +370,11 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           expect(successResponse.hits()).toEqual([
             {
               id: 'test_item_3',
-              distance: 17.0,
+              score: 17.0,
               metadata: {key1: 'value3', key3: 'value3'},
             },
-            {id: 'test_item_2', distance: 11.0, metadata: {key2: 'value2'}},
-            {id: 'test_item_1', distance: 5.0, metadata: {key1: 'value1'}},
+            {id: 'test_item_2', score: 11.0, metadata: {key2: 'value2'}},
+            {id: 'test_item_1', score: 5.0, metadata: {key1: 'value1'}},
           ]);
         }
       );
@@ -424,7 +424,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           }, `expected SUCCESS but got ${searchResponse.toString()}}`);
           const successResponse = searchResponse as VectorSearch.Success;
           expect(successResponse.hits()).toEqual([
-            {id: 'test_item_1', distance: 5.0, metadata},
+            {id: 'test_item_1', score: 5.0, metadata},
           ]);
         }
       );
@@ -433,22 +433,22 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     it.each([
       {
         similarityMetric: VectorSimilarityMetric.COSINE_SIMILARITY,
-        distances: [1.0, 0.0, -1.0],
+        scores: [1.0, 0.0, -1.0],
         thresholds: [0.5, -1.01, 1.0],
       },
       {
         similarityMetric: VectorSimilarityMetric.INNER_PRODUCT,
-        distances: [4.0, 0.0, -4.0],
+        scores: [4.0, 0.0, -4.0],
         thresholds: [0.0, -4.01, 4.0],
       },
       {
         similarityMetric: VectorSimilarityMetric.EUCLIDEAN_SIMILARITY,
-        distances: [2, 10, 18],
+        scores: [2, 10, 18],
         thresholds: [3, 20, -0.01],
       },
     ])(
       'should prune results with a search threshold',
-      async ({similarityMetric, distances, thresholds}) => {
+      async ({similarityMetric, scores, thresholds}) => {
         const indexName = testIndexName();
         await WithIndex(
           vectorClient,
@@ -482,9 +482,9 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
 
             const queryVector = [2.0, 2.0];
             const searchHits = [
-              {id: 'test_item_1', distance: distances[0], metadata: {}},
-              {id: 'test_item_2', distance: distances[1], metadata: {}},
-              {id: 'test_item_3', distance: distances[2], metadata: {}},
+              {id: 'test_item_1', score: scores[0], metadata: {}},
+              {id: 'test_item_2', score: scores[1], metadata: {}},
+              {id: 'test_item_3', score: scores[2], metadata: {}},
             ];
 
             // Test threshold to get only the top result
@@ -594,11 +594,11 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           expect(successResponse.hits()).toEqual([
             {
               id: 'test_item_3',
-              distance: 17.0,
+              score: 17.0,
               metadata: {key1: 'value3', key3: 'value3'},
             },
-            {id: 'test_item_2', distance: 11.0, metadata: {key2: 'value2'}},
-            {id: 'test_item_1', distance: 10.0, metadata: {key4: 'value4'}},
+            {id: 'test_item_2', score: 11.0, metadata: {key2: 'value2'}},
+            {id: 'test_item_1', score: 10.0, metadata: {key4: 'value4'}},
           ]);
         }
       );
@@ -714,9 +714,9 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           }, `expected SUCCESS but got ${searchResponse.toString()}}`);
           let successResponse = searchResponse as VectorSearch.Success;
           expect(successResponse.hits()).toEqual([
-            {id: 'test_item_3', distance: 23.0, metadata: {}},
-            {id: 'test_item_2', distance: 11.0, metadata: {}},
-            {id: 'test_item_1', distance: 5.0, metadata: {}},
+            {id: 'test_item_3', score: 23.0, metadata: {}},
+            {id: 'test_item_2', score: 11.0, metadata: {}},
+            {id: 'test_item_1', score: 5.0, metadata: {}},
           ]);
 
           const deleteResponse = await vectorClient.deleteItemBatch(indexName, [
@@ -737,7 +737,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           });
           successResponse = searchResponse as VectorSearch.Success;
           expect(successResponse.hits()).toEqual([
-            {id: 'test_item_2', distance: 11.0, metadata: {}},
+            {id: 'test_item_2', score: 11.0, metadata: {}},
           ]);
         }
       );
