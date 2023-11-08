@@ -4,12 +4,19 @@ import {
   SubscribeCallOptions,
   TopicPublish,
   TopicSubscribe,
+  ListWebhooks,
+  PutWebhook,
+  DeleteWebhook,
+  WebhookId,
+  Webhook,
 } from '../../../index';
 import {IPubsubClient} from './IPubsubClient';
+import {IWebhookClient} from './IWebhookClient';
 
 export abstract class AbstractTopicClient implements ITopicClient {
   protected readonly logger: MomentoLogger;
-  protected readonly client: IPubsubClient;
+  protected readonly pubsubClient: IPubsubClient;
+  protected readonly webhookClient: IWebhookClient;
 
   /**
    * Publishes a value to a topic.
@@ -26,7 +33,7 @@ export abstract class AbstractTopicClient implements ITopicClient {
     topicName: string,
     value: string | Uint8Array
   ): Promise<TopicPublish.Response> {
-    return await this.client.publish(cacheName, topicName, value);
+    return await this.pubsubClient.publish(cacheName, topicName, value);
   }
 
   /**
@@ -46,6 +53,42 @@ export abstract class AbstractTopicClient implements ITopicClient {
     topicName: string,
     options: SubscribeCallOptions
   ): Promise<TopicSubscribe.Response> {
-    return await this.client.subscribe(cacheName, topicName, options);
+    return await this.pubsubClient.subscribe(cacheName, topicName, options);
+  }
+
+  /**
+   * Deletes a webhook
+   *
+   * @param {WebhookId} id - The webhook id to be deleted
+   * @returns {Promise<DeleteWebhook.Response>} -
+   * {@link DeleteWebhook.Success} on success.
+   * {@link DeleteWebhook.Error} on failure.
+   */
+  public async deleteWebhook(id: WebhookId): Promise<DeleteWebhook.Response> {
+    return await this.webhookClient.deleteWebhook(id);
+  }
+
+  /**
+   * Lists webhooks associated with a cache
+   *
+   * @param {string} cache - The cache to list webhooks associated with it
+   * @returns {Promise<ListWebhooks.Response>} -
+   * {@link ListWebhooks.Success} on success.
+   * {@link ListWebhooks.Error} on failure.
+   */
+  public async listWebhooks(cache: string): Promise<ListWebhooks.Response> {
+    return await this.webhookClient.listWebhooks(cache);
+  }
+
+  /**
+   * Creates a new webhook, or updates an existing one
+   *
+   * @param {Webhook} webhook - The webhook to create/update
+   * @returns {Promise<PutWebhook.Response>} -
+   * {@link PutWebhook.Success} on success.
+   * {@link PutWebhook.Error} on failure.
+   */
+  public async putWebhook(webhook: Webhook): Promise<PutWebhook.Response> {
+    return await this.webhookClient.putWebhook(webhook);
   }
 }

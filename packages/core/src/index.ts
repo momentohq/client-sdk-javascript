@@ -74,6 +74,10 @@ export {VectorIndexItem} from './messages/vector-index';
 export * as leaderboard from './messages/responses/leaderboard';
 export * from './messages/responses/leaderboard';
 
+export * as webhook from './messages/responses/webhook';
+export * from './messages/responses/webhook';
+export {Webhook, WebhookId, WebhookItem} from './messages/webhook';
+
 import {CacheInfo} from './messages/cache-info';
 import {
   SubscribeCallOptions,
@@ -83,6 +87,9 @@ import {
   ExpiresIn,
   ExpiresAt,
   ItemType,
+  WebhookDestination,
+  PostUrlWebhookDestination,
+  WebhookDestinationType,
 } from './utils';
 
 import {
@@ -185,6 +192,9 @@ export {
   ExpiresAt,
   CollectionTtl,
   ItemType,
+  WebhookDestination,
+  PostUrlWebhookDestination,
+  WebhookDestinationType,
   SortedSetOrder,
   LeaderboardOrder,
   CredentialProvider,

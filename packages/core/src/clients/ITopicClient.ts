@@ -1,4 +1,13 @@
-import {TopicPublish, TopicSubscribe, SubscribeCallOptions} from '../index';
+import {
+  TopicPublish,
+  TopicSubscribe,
+  SubscribeCallOptions,
+  ListWebhooks,
+  PutWebhook,
+  DeleteWebhook,
+  WebhookId,
+  Webhook,
+} from '../index';
 
 export interface ITopicClient {
   publish(
@@ -12,4 +21,8 @@ export interface ITopicClient {
     topicName: string,
     options: SubscribeCallOptions
   ): Promise<TopicSubscribe.Response>;
+
+  listWebhooks(cache: string): Promise<ListWebhooks.Response>;
+  putWebhook(webhook: Webhook): Promise<PutWebhook.Response>;
+  deleteWebhook(id: WebhookId): Promise<DeleteWebhook.Response>;
 }

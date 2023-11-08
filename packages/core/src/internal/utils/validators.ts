@@ -94,6 +94,12 @@ export function validateTopicName(name: string) {
   }
 }
 
+export function validateWebhookName(name: string) {
+  if (isEmpty(name)) {
+    throw new InvalidArgumentError('webhook name must not be empty');
+  }
+}
+
 export function validateIndexName(name: string) {
   if (isEmpty(name)) {
     throw new InvalidArgumentError('index name must not be empty');

@@ -145,6 +145,15 @@ import {
   AllTopics,
   LeaderboardOrder,
   ILeaderboard,
+  PostUrlWebhookDestination,
+  Webhook,
+  WebhookDestination,
+  WebhookId,
+  DeleteWebhook,
+  ListWebhooks,
+  PutWebhook,
+  WebhookDestinationType,
+  WebhookItem,
 } from '@gomomento/sdk-core';
 
 import {Configuration, CacheConfiguration} from './config/configuration';
@@ -312,6 +321,16 @@ export {
   TopicPublish,
   TopicSubscribe,
   SubscribeCallOptions,
+  // Webhooks
+  PostUrlWebhookDestination,
+  Webhook,
+  WebhookDestination,
+  WebhookId,
+  DeleteWebhook,
+  ListWebhooks,
+  PutWebhook,
+  WebhookDestinationType,
+  WebhookItem,
   // AuthClient response types
   AuthClient,
   GenerateApiKey,
