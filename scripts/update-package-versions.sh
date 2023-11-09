@@ -58,8 +58,6 @@ pushd ${ROOT_DIR}/packages/${PACKAGE}
     echo "New package.json:"
     cat package.json
     echo ""
-    npm ci
-    npm run build
-    npm run lint
-    npm run test
 popd
+
+${ROOT_DIR}/scripts/build-and-test-package.sh ${PACKAGE}
