@@ -35,7 +35,12 @@ async function example_API_CreateIndex(vectorClient: PreviewVectorIndexClient) {
 async function example_API_ListIndexes(vectorClient: PreviewVectorIndexClient) {
   const result = await vectorClient.listIndexes();
   if (result instanceof ListVectorIndexes.Success) {
-    console.log(`Indexes:\n${result.getIndexNames().join('\n')}\n\n`);
+    console.log(
+      `Indexes:\n${result
+        .getIndexes()
+        .map(index => JSON.stringify(index))
+        .join('\n')}\n\n`
+    );
   } else if (result instanceof ListVectorIndexes.Error) {
     throw new Error(`An error occurred while attempting to list caches: ${result.errorCode()}: ${result.toString()}`);
   }
