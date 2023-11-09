@@ -71,7 +71,6 @@ export function runWebhookTests(
             );
           expect(webhookWeAreLookingFor).toBeTruthy();
         } else {
-          console.log(resp);
           throw new Error(
             `list webhooks request failed: ${(
               resp as ListWebhooks.Error
