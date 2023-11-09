@@ -30,6 +30,7 @@ export function cacheServiceErrorMapper(err: ServiceError | null): SdkError {
     err?.metadata,
     err?.stack,
   ];
+  console.log('err code', err);
   switch (err?.code) {
     case Status.PERMISSION_DENIED:
       return new PermissionError(...errParams);

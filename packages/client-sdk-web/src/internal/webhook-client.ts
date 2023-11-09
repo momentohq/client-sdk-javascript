@@ -1,5 +1,4 @@
-import {webhook} from '@gomomento/generated-types';
-import grpcWebhook = webhook.webhook;
+import * as webhook from '@gomomento/generated-types-webtext/dist/WebhookServiceClientPb';
 import {TopicClientProps} from '../topic-client-props';
 import {
   CredentialProvider,
@@ -11,13 +10,9 @@ import {
   ListWebhooks,
   PostUrlWebhookDestination,
   WebhookItem,
-  SdkError,
+  WebhookDestinationType,
 } from '../../../core';
-import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {IWebhookClient} from '../../../core/src/internal/clients/pubsub/IWebhookClient';
-import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
-import {version} from '../../package.json';
-import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   validateCacheName,
@@ -25,32 +20,48 @@ import {
   validateWebhookName,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {getWebControlEndpoint} from '../utils/web-client-utils';
+import {ClientMetadataProvider} from './client-metadata-provider';
+import {TopicConfiguration} from '../config/topic-configuration';
+import {
+  _DeleteWebhookRequest,
+  _ListWebhookRequest,
+  _PutWebhookRequest,
+  _Webhook,
+  _WebhookDestination,
+  _WebhookId,
+} from '@gomomento/generated-types-webtext/dist/webhook_pb';
 
 export class WebhookClient implements IWebhookClient {
-  private readonly webhookClient: grpcWebhook.WebhookClient;
+  private readonly webhookClient: webhook.WebhookClient;
   protected readonly credentialProvider: CredentialProvider;
+  private readonly configuration: TopicConfiguration;
   private readonly logger: MomentoLogger;
-  private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
-  private readonly unaryInterceptors: Interceptor[];
+  private readonly clientMetadataProvider: ClientMetadataProvider;
 
   /**
    * @param {TopicClientProps} props
    */
   constructor(props: TopicClientProps) {
+    this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
-    this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    const headers = [
-      new Header('Authorization', props.credentialProvider.getAuthToken()),
-      new Header('Agent', `nodejs:${version}`),
-    ];
-    this.unaryInterceptors = [
-      new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
-      ClientTimeoutInterceptor(WebhookClient.DEFAULT_REQUEST_TIMEOUT_MS),
-    ];
-    this.webhookClient = new webhook.webhook.WebhookClient(
-      props.credentialProvider.getControlEndpoint(),
-      ChannelCredentials.createSsl()
+    this.logger = this.configuration.getLoggerFactory().getLogger(this);
+
+    this.logger.debug(
+      `Creating webhook client using endpoint: '${getWebControlEndpoint(
+        this.credentialProvider
+      )}'`
     );
+
+    this.webhookClient = new webhook.WebhookClient(
+      // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
+      getWebControlEndpoint(props.credentialProvider),
+      null,
+      {}
+    );
+    this.clientMetadataProvider = new ClientMetadataProvider({
+      authToken: props.credentialProvider.getAuthToken(),
+    });
   }
 
   async deleteWebhook(id: WebhookId): Promise<DeleteWebhook.Response> {
@@ -59,18 +70,19 @@ export class WebhookClient implements IWebhookClient {
     } catch (err) {
       return new DeleteWebhook.Error(normalizeSdkError(err as Error));
     }
-    const request = new grpcWebhook._DeleteWebhookRequest({
-      webhook_id: new grpcWebhook._WebhookId({
-        cache_name: id.cacheName,
-        webhook_name: id.webhookName,
-      }),
-    });
+
+    const request = new _DeleteWebhookRequest();
+    const webhookId = new _WebhookId();
+    webhookId.setWebhookName(id.webhookName);
+    webhookId.setCacheName(id.cacheName);
+    request.setWebhookId(webhookId);
+    request.setWebhookId(webhookId);
     this.logger.debug('issuing "DeleteWebhook" request');
 
     return await new Promise<DeleteWebhook.Response>(resolve => {
-      this.webhookClient.DeleteWebhook(
+      this.webhookClient.deleteWebhook(
         request,
-        {interceptors: this.unaryInterceptors},
+        this.clientMetadataProvider.createClientMetadata(),
         (err, _resp) => {
           if (err) {
             resolve(new DeleteWebhook.Error(cacheServiceErrorMapper(err)));
@@ -86,35 +98,36 @@ export class WebhookClient implements IWebhookClient {
     try {
       validateCacheName(cache);
     } catch (err) {
-      console.log('herer', err, err instanceof SdkError);
       return new ListWebhooks.Error(normalizeSdkError(err as Error));
     }
-    const request = new grpcWebhook._ListWebhookRequest({cache_name: cache});
+    const request = new _ListWebhookRequest();
+    request.setCacheName(cache);
     this.logger.debug('issuing "ListWebhooks" request');
 
     return await new Promise<ListWebhooks.Response>(resolve => {
-      this.webhookClient.ListWebhooks(
+      this.webhookClient.listWebhooks(
         request,
-        {interceptors: this.unaryInterceptors},
+        this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
-          console.log('inside list webhooks');
           if (err || !resp) {
             resolve(new ListWebhooks.Error(cacheServiceErrorMapper(err)));
           } else {
-            const webhookItems = resp.webhook_item.map(item => {
+            const webhookItems = resp.getWebhookItemList().map(item => {
               const webhook: Webhook = {
                 id: {
-                  cacheName: item.webhook.webhook_id.cache_name,
-                  webhookName: item.webhook.webhook_id.webhook_name,
+                  cacheName:
+                    item.getWebhook()?.getWebhookId()?.getCacheName() ?? '',
+                  webhookName:
+                    item.getWebhook()?.getWebhookId()?.getWebhookName() ?? '',
                 },
-                topicName: item.webhook.topic_name,
+                topicName: item.getWebhook()?.getTopicName() ?? '',
                 destination: new PostUrlWebhookDestination(
-                  item.webhook.destination.post_url
+                  item.getWebhook()?.getDestination()?.getPostUrl() ?? ''
                 ),
               };
               const webhookItem: WebhookItem = {
                 webhook,
-                secret: item.secret,
+                secret: item.getSecret(),
               };
               return webhookItem;
             });
@@ -134,29 +147,32 @@ export class WebhookClient implements IWebhookClient {
       return new PutWebhook.Error(normalizeSdkError(err as Error));
     }
 
-    const request = new grpcWebhook._PutWebhookRequest({
-      webhook: new grpcWebhook._Webhook({
-        webhook_id: new grpcWebhook._WebhookId({
-          cache_name: webhook.id.cacheName,
-          webhook_name: webhook.id.webhookName,
-        }),
-        destination: new grpcWebhook._WebhookDestination({
-          post_url: webhook.destination.url(),
-        }),
-        topic_name: webhook.topicName,
-      }),
-    });
+    const request = new _PutWebhookRequest();
+    const _webhook = new _Webhook();
+    const webhookId = new _WebhookId();
+    webhookId.setWebhookName(webhook.id.webhookName);
+    webhookId.setCacheName(webhook.id.cacheName);
+    _webhook.setWebhookId(webhookId);
+    _webhook.setTopicName(webhook.topicName);
+    const destination = new _WebhookDestination();
+    switch (webhook.destination.type) {
+      case WebhookDestinationType.PostUrl:
+        destination.setPostUrl(webhook.destination.url());
+        break;
+    }
+    _webhook.setDestination(destination);
+    request.setWebhook(_webhook);
     this.logger.debug('issuing "PutWebhook" request');
 
     return await new Promise<PutWebhook.Response>(resolve => {
-      this.webhookClient.PutWebhook(
+      this.webhookClient.putWebhook(
         request,
-        {interceptors: this.unaryInterceptors},
+        this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
           if (err || !resp) {
             resolve(new PutWebhook.Error(cacheServiceErrorMapper(err)));
           } else {
-            resolve(new PutWebhook.Success(resp.secret_string));
+            resolve(new PutWebhook.Success(resp.getSecretString()));
           }
         }
       );

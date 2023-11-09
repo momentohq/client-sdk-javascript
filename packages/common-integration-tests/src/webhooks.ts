@@ -60,7 +60,7 @@ export function runWebhookTests(
     it('should create a new webhook, list it, and then delete it', async () => {
       const webhook = testWebhook(integrationTestCacheName);
       await WithWebhook(topicClient, webhook, async () => {
-        const resp = await topicClient.listWebhooks(webhook.id.cacheName);
+        const resp = await topicClient.listWebhooks(integrationTestCacheName);
         if (resp instanceof ListWebhooks.Success) {
           const webhookWeAreLookingFor = resp
             .getWebhookItems()
@@ -72,6 +72,7 @@ export function runWebhookTests(
           expect(webhookWeAreLookingFor).toBeTruthy();
           expect(webhookWeAreLookingFor?.secret).toBeTruthy();
         } else {
+          console.log(resp);
           throw new Error(
             `list webhooks request failed: ${(
               resp as ListWebhooks.Error
