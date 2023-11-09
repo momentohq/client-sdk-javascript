@@ -10,8 +10,3 @@ export interface Webhook {
   id: WebhookId;
   topicName: string;
 }
-
-export interface WebhookItem {
-  webhook: Webhook;
-  secret: string;
-}

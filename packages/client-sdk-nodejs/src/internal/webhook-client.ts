@@ -10,7 +10,6 @@ import {
   PutWebhook,
   ListWebhooks,
   PostUrlWebhookDestination,
-  WebhookItem,
   SdkError,
 } from '../../../core';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
@@ -97,28 +96,23 @@ export class WebhookClient implements IWebhookClient {
         request,
         {interceptors: this.unaryInterceptors},
         (err, resp) => {
-          console.log('inside list webhooks');
           if (err || !resp) {
             resolve(new ListWebhooks.Error(cacheServiceErrorMapper(err)));
           } else {
-            const webhookItems = resp.webhook_item.map(item => {
+            const webhooks = resp.webhook.map(wh => {
               const webhook: Webhook = {
                 id: {
-                  cacheName: item.webhook.webhook_id.cache_name,
-                  webhookName: item.webhook.webhook_id.webhook_name,
+                  cacheName: wh.webhook_id.cache_name,
+                  webhookName: wh.webhook_id.webhook_name,
                 },
-                topicName: item.webhook.topic_name,
+                topicName: wh.topic_name,
                 destination: new PostUrlWebhookDestination(
-                  item.webhook.destination.post_url
+                  wh.destination.post_url
                 ),
               };
-              const webhookItem: WebhookItem = {
-                webhook,
-                secret: item.secret,
-              };
-              return webhookItem;
+              return webhook;
             });
-            resolve(new ListWebhooks.Success(webhookItems));
+            resolve(new ListWebhooks.Success(webhooks));
           }
         }
       );

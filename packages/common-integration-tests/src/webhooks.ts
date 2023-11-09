@@ -63,14 +63,13 @@ export function runWebhookTests(
         const resp = await topicClient.listWebhooks(integrationTestCacheName);
         if (resp instanceof ListWebhooks.Success) {
           const webhookWeAreLookingFor = resp
-            .getWebhookItems()
+            .getWebhooks()
             .find(
-              wi =>
-                wi.webhook.id.webhookName === webhook.id.webhookName &&
-                wi.webhook.id.cacheName === webhook.id.cacheName
+              wh =>
+                wh.id.webhookName === webhook.id.webhookName &&
+                wh.id.cacheName === webhook.id.cacheName
             );
           expect(webhookWeAreLookingFor).toBeTruthy();
-          expect(webhookWeAreLookingFor?.secret).toBeTruthy();
         } else {
           console.log(resp);
           throw new Error(

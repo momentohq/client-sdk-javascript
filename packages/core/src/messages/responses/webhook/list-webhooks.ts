@@ -1,6 +1,6 @@
 import {SdkError} from '../../../errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
-import {WebhookItem} from '../../webhook';
+import {Webhook} from '../../webhook';
 
 /**
  * Parent response type for a list webhooks request.  The
@@ -24,25 +24,25 @@ import {WebhookItem} from '../../webhook';
 export abstract class Response extends ResponseBase {}
 
 class _Success extends Response {
-  private readonly webhookItems: WebhookItem[];
-  constructor(webhookItems: WebhookItem[]) {
+  private readonly webhooks: Webhook[];
+  constructor(webhooks: Webhook[]) {
     super();
-    this.webhookItems = webhookItems;
+    this.webhooks = webhooks;
   }
 
   /**
-   * An array of webhook items.
-   * @returns {WebhookItem[]}
+   * An array of webhooks.
+   * @returns {Webhook[]}
    */
-  public getWebhookItems() {
-    return this.webhookItems;
+  public getWebhooks() {
+    return this.webhooks;
   }
 
   public override toString() {
     return (
       super.toString() +
       ': ' +
-      this.webhookItems.map(wh => wh.webhook.id.webhookName).join(', ')
+      this.webhooks.map(webhook => webhook.id.webhookName).join(', ')
     );
   }
 }

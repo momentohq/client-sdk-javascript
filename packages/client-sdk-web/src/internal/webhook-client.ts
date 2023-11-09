@@ -9,7 +9,6 @@ import {
   PutWebhook,
   ListWebhooks,
   PostUrlWebhookDestination,
-  WebhookItem,
   WebhookDestinationType,
 } from '../../../core';
 import {IWebhookClient} from '../../../core/src/internal/clients/pubsub/IWebhookClient';
@@ -112,26 +111,20 @@ export class WebhookClient implements IWebhookClient {
           if (err || !resp) {
             resolve(new ListWebhooks.Error(cacheServiceErrorMapper(err)));
           } else {
-            const webhookItems = resp.getWebhookItemList().map(item => {
+            const webhooks = resp.getWebhookList().map(wh => {
               const webhook: Webhook = {
                 id: {
-                  cacheName:
-                    item.getWebhook()?.getWebhookId()?.getCacheName() ?? '',
-                  webhookName:
-                    item.getWebhook()?.getWebhookId()?.getWebhookName() ?? '',
+                  cacheName: wh.getWebhookId()?.getCacheName() ?? '',
+                  webhookName: wh.getWebhookId()?.getWebhookName() ?? '',
                 },
-                topicName: item.getWebhook()?.getTopicName() ?? '',
+                topicName: wh.getTopicName() ?? '',
                 destination: new PostUrlWebhookDestination(
-                  item.getWebhook()?.getDestination()?.getPostUrl() ?? ''
+                  wh.getDestination()?.getPostUrl() ?? ''
                 ),
               };
-              const webhookItem: WebhookItem = {
-                webhook,
-                secret: item.getSecret(),
-              };
-              return webhookItem;
+              return webhook;
             });
-            resolve(new ListWebhooks.Success(webhookItems));
+            resolve(new ListWebhooks.Success(webhooks));
           }
         }
       );

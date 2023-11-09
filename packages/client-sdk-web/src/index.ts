@@ -138,7 +138,6 @@ import {
   ListWebhooks,
   PutWebhook,
   WebhookDestinationType,
-  WebhookItem,
 } from '@gomomento/sdk-core';
 
 import {Configuration} from './config/configuration';
@@ -319,5 +318,4 @@ export {
   ListWebhooks,
   PutWebhook,
   WebhookDestinationType,
-  WebhookItem,
 };

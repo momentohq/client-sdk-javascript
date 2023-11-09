@@ -76,7 +76,7 @@ export * from './messages/responses/leaderboard';
 
 export * as webhook from './messages/responses/webhook';
 export * from './messages/responses/webhook';
-export {Webhook, WebhookId, WebhookItem} from './messages/webhook';
+export {Webhook, WebhookId} from './messages/webhook';
 
 import {CacheInfo} from './messages/cache-info';
 import {
