@@ -85,7 +85,6 @@ export class WebhookClient implements IWebhookClient {
     try {
       validateCacheName(cache);
     } catch (err) {
-      console.log('herer', err, err instanceof SdkError);
       return new ListWebhooks.Error(normalizeSdkError(err as Error));
     }
     const request = new grpcWebhook._ListWebhookRequest({cache_name: cache});
