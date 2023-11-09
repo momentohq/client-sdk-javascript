@@ -10,7 +10,6 @@ import {
   PutWebhook,
   ListWebhooks,
   PostUrlWebhookDestination,
-  SdkError,
 } from '../../../core';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {IWebhookClient} from '../../../core/src/internal/clients/pubsub/IWebhookClient';
