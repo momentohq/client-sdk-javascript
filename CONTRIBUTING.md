@@ -2,7 +2,7 @@
 
 Thank you for taking your time to contribute to our JavaScript SDKs!
 <br/>
-This guide will provide you information to start your own development and testing.
+This guide will provide you information to start development and testing.
 <br/>
 Happy coding :dancer:
 <br/>
