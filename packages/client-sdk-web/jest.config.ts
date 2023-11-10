@@ -2,7 +2,7 @@ import type {Config} from 'jest';
 
 const config: Config = {
   setupFilesAfterEnv: ['jest-extended/all'],
-  testEnvironment: '@happy-dom/jest-environment',
+  testEnvironment: 'jsdom',
   roots: ['<rootDir>/test'],
   testMatch: ['**/*.test.ts'],
   transform: {
