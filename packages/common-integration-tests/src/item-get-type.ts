@@ -7,6 +7,7 @@ import {
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
 import {CacheItemGetType} from '@gomomento/sdk-core';
 import {ItemType} from '@gomomento/sdk-core/dist/src/utils';
+import {describe, it, expect} from 'vitest';
 export function runItemGetTypeTest(
   cacheClient: ICacheClient,
   integrationTestCacheName: string

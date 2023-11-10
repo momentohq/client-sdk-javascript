@@ -30,6 +30,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
+import {describe, it, expect} from 'vitest';
 
 export function runDictionaryTests(
   cacheClient: ICacheClient,

@@ -5,14 +5,10 @@ import {
   TopicPublish,
   TopicSubscribe,
 } from '@gomomento/sdk-core';
-import {expect} from '@jest/globals';
-// eslint-disable-next-line node/no-extraneous-import
-import type {MatcherFunction} from 'expect';
-import {toBeWithin} from 'jest-extended';
+import {expect} from 'vitest';
+import * as matchers from 'jest-extended';
 
-const toBePermissionDeniedForCacheGet: MatcherFunction = function (
-  received: unknown
-) {
+function toBePermissionDeniedForCacheGet(received: unknown) {
   if (!(received instanceof CacheGet.Response)) {
     throw new Error('Expected CacheGet.Response');
   }
@@ -35,11 +31,9 @@ const toBePermissionDeniedForCacheGet: MatcherFunction = function (
       pass: false,
     };
   }
-};
+}
 
-const toBePermissionDeniedForCacheSet: MatcherFunction = function (
-  received: unknown
-) {
+function toBePermissionDeniedForCacheSet(received: unknown) {
   if (!(received instanceof CacheSet.Response)) {
     throw new Error('Expected CacheSet.Response');
   }
@@ -62,11 +56,9 @@ const toBePermissionDeniedForCacheSet: MatcherFunction = function (
       pass: false,
     };
   }
-};
+}
 
-const toBePermissionDeniedForTopicSubscribe: MatcherFunction = function (
-  received: unknown
-) {
+function toBePermissionDeniedForTopicSubscribe(received: unknown) {
   if (!(received instanceof TopicSubscribe.Response)) {
     throw new Error('Expected TopicSubscribe.Response');
   }
@@ -89,11 +81,9 @@ const toBePermissionDeniedForTopicSubscribe: MatcherFunction = function (
       pass: false,
     };
   }
-};
+}
 
-const toBePermissionDeniedForTopicPublish: MatcherFunction = function (
-  received: unknown
-) {
+function toBePermissionDeniedForTopicPublish(received: unknown) {
   if (!(received instanceof TopicPublish.Response)) {
     throw new Error('Expected TopicPublish.Response');
   }
@@ -116,50 +106,36 @@ const toBePermissionDeniedForTopicPublish: MatcherFunction = function (
       pass: false,
     };
   }
-};
-
-const toBeHit: MatcherFunction<[expected: string]> = function (
-  received: unknown,
-  expected: string
-) {
-  if (!(received instanceof CacheGet.Response)) {
-    throw new Error('Expected CacheGet.Response');
-  }
-  const pass =
-    received instanceof CacheGet.Hit && received.value() === expected;
-  if (pass) {
-    // when pass is true, return error message for when expect(x).not.thisFunction() fails
-    return {
-      message: () =>
-        `expected ${this.utils.printReceived(received)} not to be ${expected}`,
-      pass: true,
-    };
-  } else {
-    // when pass is false, return error message for when expect(x).thisFunction() fails
-    return {
-      message: () =>
-        `expected ${this.utils.printReceived(received)} to be ${expected}`,
-      pass: false,
-    };
-  }
-};
+}
 
 expect.extend({
-  toBeWithin,
+  ...matchers,
   toBePermissionDeniedForCacheGet,
   toBePermissionDeniedForCacheSet,
   toBePermissionDeniedForTopicSubscribe,
   toBePermissionDeniedForTopicPublish,
-  toBeHit,
+  toBeHit(received: unknown, expected: string) {
+    if (!(received instanceof CacheGet.Response)) {
+      throw new Error('Expected CacheGet.Response');
+    }
+    const pass =
+      received instanceof CacheGet.Hit && received.value() === expected;
+    if (pass) {
+      // when pass is true, return error message for when expect(x).not.thisFunction() fails
+      return {
+        message: () =>
+          `expected ${this.utils.printReceived(
+            received
+          )} not to be ${expected}`,
+        pass: true,
+      };
+    } else {
+      // when pass is false, return error message for when expect(x).thisFunction() fails
+      return {
+        message: () =>
+          `expected ${this.utils.printReceived(received)} to be ${expected}`,
+        pass: false,
+      };
+    }
+  },
 });
-
-declare module 'expect' {
-  interface Matchers<R> {
-    toBePermissionDeniedForCacheGet(): R;
-    toBePermissionDeniedForCacheSet(): R;
-    toBePermissionDeniedForTopicSubscribe(): R;
-    toBePermissionDeniedForTopicPublish(): R;
-    toBeHit(expected: string): R;
-    toBeWithin(start: number, end: number): R;
-  }
-}

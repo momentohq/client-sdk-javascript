@@ -23,6 +23,7 @@ import {
   ITopicClient,
 } from '@gomomento/sdk-core/dist/src/internal/clients';
 import {IResponseError} from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
+import {describe, it, expect} from 'vitest';
 
 const STREAM_WAIT_TIME_MS = 2000;
 

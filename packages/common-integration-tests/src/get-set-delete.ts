@@ -16,6 +16,7 @@ import {
 } from './common-int-test-utils';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
+import {describe, it, expect} from 'vitest';
 
 export function runGetSetDeleteTests(
   cacheClient: ICacheClient,

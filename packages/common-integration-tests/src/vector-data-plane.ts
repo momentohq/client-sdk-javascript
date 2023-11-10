@@ -15,6 +15,7 @@ import {
   WithIndex,
 } from './common-int-test-utils';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {describe, it, expect} from 'vitest';
 
 export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
   describe('upsertItem validation', () => {

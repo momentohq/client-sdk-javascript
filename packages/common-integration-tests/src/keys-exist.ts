@@ -6,6 +6,7 @@ import {
 } from './common-int-test-utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
 import {CacheKeyExists, CacheKeysExist} from '@gomomento/sdk-core';
+import {describe, it, expect} from 'vitest';
 export function runKeysExistTest(
   cacheClient: ICacheClient,
   integrationTestCacheName: string

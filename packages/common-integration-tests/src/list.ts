@@ -14,6 +14,7 @@ import {
   CacheListRetain,
   MomentoErrorCode,
 } from '@gomomento/sdk-core';
+import {describe, it, expect} from 'vitest';
 
 import {
   expectWithMessage,

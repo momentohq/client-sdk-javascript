@@ -14,6 +14,7 @@ import {
   MomentoErrorCode,
   VectorSimilarityMetric,
 } from '@gomomento/sdk-core';
+import {describe, it, expect} from 'vitest';
 
 export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
   describe('create/delete vector index', () => {

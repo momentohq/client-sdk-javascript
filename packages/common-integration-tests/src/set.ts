@@ -21,6 +21,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {describe, it, expect} from 'vitest';
 
 const LOL_BYTE_ARRAY = Uint8Array.of(108, 111, 108);
 const FOO_BYTE_ARRAY = Uint8Array.of(102, 111, 111);
@@ -311,7 +312,7 @@ export function runSetTests(
       expect(hit.valueSetUint8Array()).toEqual(
         new Set([LOL_BYTE_ARRAY, FOO_BYTE_ARRAY])
       );
-      expect(hit.valueArrayUint8Array()).toBeArrayOfSize(2);
+      expect(hit.valueArrayUint8Array().length).toBe(2);
       expect(hit.valueArrayUint8Array()).toContainAllValues([
         LOL_BYTE_ARRAY,
         FOO_BYTE_ARRAY,

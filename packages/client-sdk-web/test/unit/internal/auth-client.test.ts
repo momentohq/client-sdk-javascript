@@ -18,6 +18,7 @@ import {
 } from '@gomomento/sdk-core';
 import {DisposableTokenCachePermissions} from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
 import {convertToB64String} from '../../../src/utils/web-client-utils';
+import {describe, expect, it} from 'vitest';
 
 describe('internal auth client', () => {
   describe('permissionsFromScope', () => {

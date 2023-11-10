@@ -32,6 +32,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {describe, it, expect, beforeAll} from 'vitest';
 
 export function runSortedSetTests(
   cacheClient: ICacheClient,
@@ -231,8 +232,8 @@ export function runSortedSetTests(
       describe('when fetching with ranges and order', () => {
         const sortedSetName = v4();
 
-        beforeAll(done => {
-          const setupPromise = cacheClient.sortedSetPutElements(
+        beforeAll(async () => {
+          await cacheClient.sortedSetPutElements(
             integrationTestCacheName,
             sortedSetName,
             {
@@ -246,13 +247,6 @@ export function runSortedSetTests(
               jalapeno: 1_000_000,
             }
           );
-          setupPromise
-            .then(() => {
-              done();
-            })
-            .catch(e => {
-              throw e;
-            });
         });
 
         it('should fetch only the specified range if start rank is specified', async () => {
@@ -802,8 +796,8 @@ export function runSortedSetTests(
       describe('when fetching with minScore, maxScore, ranges and order', () => {
         const sortedSetName = v4();
 
-        beforeAll(done => {
-          const setupPromise = cacheClient.sortedSetPutElements(
+        beforeAll(async () => {
+          await cacheClient.sortedSetPutElements(
             integrationTestCacheName,
             sortedSetName,
             {
@@ -817,13 +811,6 @@ export function runSortedSetTests(
               jalapeno: 1_000_000,
             }
           );
-          setupPromise
-            .then(() => {
-              done();
-            })
-            .catch(e => {
-              throw e;
-            });
         });
 
         it('should fetch only the matching elements if minScore is specified', async () => {

@@ -9,6 +9,7 @@ import {
   getWebTokenEndpoint,
   getWebVectorEndpoint,
 } from '../../../src/utils/web-client-utils';
+import {describe, expect, it} from 'vitest';
 
 // These tokens have valid syntax, but they don't actually have valid credentials.  Just used for unit testing.
 const fakeTestLegacyToken =

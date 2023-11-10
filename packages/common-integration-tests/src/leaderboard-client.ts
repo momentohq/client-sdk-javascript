@@ -12,6 +12,7 @@ import {
 } from '@gomomento/sdk-core';
 import {expectWithMessage} from './common-int-test-utils';
 import {v4} from 'uuid';
+import {describe, it, expect} from 'vitest';
 
 // Leaderboard items have a 7-day or no TTL so it's important to make sure we
 // delete temporary leaderboards at the end of each test to the best of our ability

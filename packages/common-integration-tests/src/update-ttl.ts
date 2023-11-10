@@ -11,6 +11,8 @@ import {
   CacheIncreaseTtl,
   CacheItemGetTtl,
 } from '@gomomento/sdk-core';
+import {describe, it, expect} from 'vitest';
+
 export function runUpdateTtlTest(
   cacheClient: ICacheClient,
   integrationTestCacheName: string

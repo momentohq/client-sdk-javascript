@@ -36,8 +36,7 @@ import {
   ITopicClient,
 } from '@gomomento/sdk-core/dist/src/internal/clients';
 import {v4} from 'uuid';
-import {expect} from '@jest/globals';
-import './momento-jest-matchers';
+import {expect, describe, it, beforeAll, afterAll} from 'vitest';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 
 const SUPER_USER_PERMISSIONS: PermissionScope =

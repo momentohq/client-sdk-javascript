@@ -23,6 +23,7 @@ import {
 } from '../../src';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
+import {beforeAll, afterAll} from 'vitest';
 
 let _credsProvider: CredentialProvider | undefined = undefined;
 let _sessionCredsProvider: CredentialProvider | undefined = undefined;
