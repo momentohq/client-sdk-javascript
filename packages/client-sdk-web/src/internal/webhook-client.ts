@@ -150,7 +150,7 @@ export class WebhookClient implements IWebhookClient {
     _webhook.setWebhookId(webhookId);
     _webhook.setTopicName(webhook.topicName);
     const destination = new _WebhookDestination();
-    switch (webhook.destination.type) {
+    switch (webhook.destination.getType()) {
       case WebhookDestinationType.PostUrl:
         destination.setPostUrl(webhook.destination.url());
         break;

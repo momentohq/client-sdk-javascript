@@ -5,6 +5,7 @@ export enum WebhookDestinationType {
 interface IPostUrlWebhookDestination {
   url: () => string;
   type: WebhookDestinationType.PostUrl;
+  getType: () => WebhookDestinationType.PostUrl;
 }
 
 export class PostUrlWebhookDestination implements IPostUrlWebhookDestination {
@@ -18,6 +19,10 @@ export class PostUrlWebhookDestination implements IPostUrlWebhookDestination {
   }
 
   type: WebhookDestinationType.PostUrl;
+
+  getType(): WebhookDestinationType.PostUrl {
+    return WebhookDestinationType.PostUrl;
+  }
 }
 
 export type WebhookDestination = InstanceType<typeof PostUrlWebhookDestination>;
