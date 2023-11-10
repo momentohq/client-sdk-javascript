@@ -273,7 +273,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               new VectorSearch.Success(
                 resp.hits.map(hit => ({
                   id: hit.id,
-                  score: hit.distance,
+                  score: hit.score,
                   metadata: hit.metadata.reduce((acc, metadata) => {
                     const field = metadata.field;
                     switch (metadata.value) {
