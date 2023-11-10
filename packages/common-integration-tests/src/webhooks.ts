@@ -1,4 +1,8 @@
-import {PostUrlWebhookDestination, ListWebhooks} from '@gomomento/sdk-core';
+import {
+  PostUrlWebhookDestination,
+  ListWebhooks,
+  GetWebhookSecret,
+} from '@gomomento/sdk-core';
 import {
   ItBehavesLikeItValidatesCacheName,
   ItBehavesLikeItValidatesTopicName,
@@ -56,7 +60,16 @@ export function runWebhookTests(
     });
   });
 
-  describe('put list and delete', () => {
+  describe('#getWebhookSecret', () => {
+    ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+      return topicClient.getWebhookSecret({
+        webhookName: 'some webhook',
+        cacheName: props.cacheName,
+      });
+    });
+  });
+
+  describe('put list delete getWebhookSecret', () => {
     it('should create a new webhook, list it, and then delete it', async () => {
       const webhook = testWebhook(integrationTestCacheName);
       await WithWebhook(topicClient, webhook, async () => {
@@ -74,6 +87,23 @@ export function runWebhookTests(
           throw new Error(
             `list webhooks request failed: ${(
               resp as ListWebhooks.Error
+            ).message()}`
+          );
+        }
+      });
+    });
+    it('should create a new webhook, get its secret, and then delete it', async () => {
+      const webhook = testWebhook(integrationTestCacheName);
+      await WithWebhook(topicClient, webhook, async () => {
+        const resp = await topicClient.getWebhookSecret(webhook.id);
+        if (resp instanceof GetWebhookSecret.Success) {
+          expect(resp.secret()).toBeTruthy();
+          expect(resp.webhookName()).toEqual(webhook.id.webhookName);
+          expect(resp.cacheName()).toEqual(webhook.id.cacheName);
+        } else {
+          throw new Error(
+            `getWebhookSecret request failed: ${(
+              resp as GetWebhookSecret.Error
             ).message()}`
           );
         }

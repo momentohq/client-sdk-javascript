@@ -10,6 +10,7 @@ import {
   ListWebhooks,
   PostUrlWebhookDestination,
   WebhookDestinationType,
+  GetWebhookSecret,
 } from '../../../core';
 import {IWebhookClient} from '../../../core/src/internal/clients/pubsub/IWebhookClient';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
@@ -25,6 +26,7 @@ import {TopicConfiguration} from '../config/topic-configuration';
 import {
   _DeleteWebhookRequest,
   _ListWebhookRequest,
+  _GetWebhookSecretRequest,
   _PutWebhookRequest,
   _Webhook,
   _WebhookDestination,
@@ -166,6 +168,40 @@ export class WebhookClient implements IWebhookClient {
             resolve(new PutWebhook.Error(cacheServiceErrorMapper(err)));
           } else {
             resolve(new PutWebhook.Success(resp.getSecretString()));
+          }
+        }
+      );
+    });
+  }
+
+  async getWebhookSecret(id: WebhookId): Promise<GetWebhookSecret.Response> {
+    try {
+      validateCacheName(id.cacheName);
+      validateWebhookName(id.webhookName);
+    } catch (err) {
+      return new GetWebhookSecret.Error(normalizeSdkError(err as Error));
+    }
+
+    const request = new _GetWebhookSecretRequest();
+    request.setCacheName(id.cacheName);
+    request.setWebhookName(id.webhookName);
+    this.logger.debug('issuing "GetWebhookSecret" request');
+
+    return await new Promise<GetWebhookSecret.Response>(resolve => {
+      this.webhookClient.getWebhookSecret(
+        request,
+        this.clientMetadataProvider.createClientMetadata(),
+        (err, resp) => {
+          if (err || !resp) {
+            resolve(new GetWebhookSecret.Error(cacheServiceErrorMapper(err)));
+          } else {
+            resolve(
+              new GetWebhookSecret.Success({
+                secret: resp.getSecretString(),
+                webhookName: resp.getWebhookName(),
+                cacheName: resp.getCacheName(),
+              })
+            );
           }
         }
       );

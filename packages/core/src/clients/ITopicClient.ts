@@ -7,6 +7,7 @@ import {
   DeleteWebhook,
   WebhookId,
   Webhook,
+  GetWebhookSecret,
 } from '../index';
 
 export interface ITopicClient {
@@ -25,4 +26,5 @@ export interface ITopicClient {
   listWebhooks(cache: string): Promise<ListWebhooks.Response>;
   putWebhook(webhook: Webhook): Promise<PutWebhook.Response>;
   deleteWebhook(id: WebhookId): Promise<DeleteWebhook.Response>;
+  getWebhookSecret(id: WebhookId): Promise<GetWebhookSecret.Response>;
 }

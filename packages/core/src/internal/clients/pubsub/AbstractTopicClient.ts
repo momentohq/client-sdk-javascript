@@ -9,6 +9,7 @@ import {
   DeleteWebhook,
   WebhookId,
   Webhook,
+  GetWebhookSecret,
 } from '../../../index';
 import {IPubsubClient} from './IPubsubClient';
 import {IWebhookClient} from './IWebhookClient';
@@ -90,5 +91,19 @@ export abstract class AbstractTopicClient implements ITopicClient {
    */
   public async putWebhook(webhook: Webhook): Promise<PutWebhook.Response> {
     return await this.webhookClient.putWebhook(webhook);
+  }
+
+  /**
+   * Gets the signing secret for a webhook
+   *
+   * @param {WebhookId} id - The webhook id to get the signing secret for
+   * @returns {Promise<GetWebhookSecret.Response>} -
+   * {@link GetWebhookSecret.Success} on success.
+   * {@link GetWebhookSecret.Error} on failure.
+   */
+  public async getWebhookSecret(
+    id: WebhookId
+  ): Promise<GetWebhookSecret.Response> {
+    return await this.webhookClient.getWebhookSecret(id);
   }
 }

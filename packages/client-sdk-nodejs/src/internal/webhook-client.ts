@@ -10,6 +10,7 @@ import {
   PutWebhook,
   ListWebhooks,
   PostUrlWebhookDestination,
+  GetWebhookSecret,
 } from '../../../core';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {IWebhookClient} from '../../../core/src/internal/clients/pubsub/IWebhookClient';
@@ -149,6 +150,41 @@ export class WebhookClient implements IWebhookClient {
             resolve(new PutWebhook.Error(cacheServiceErrorMapper(err)));
           } else {
             resolve(new PutWebhook.Success(resp.secret_string));
+          }
+        }
+      );
+    });
+  }
+
+  async getWebhookSecret(id: WebhookId): Promise<GetWebhookSecret.Response> {
+    try {
+      validateCacheName(id.cacheName);
+      validateWebhookName(id.webhookName);
+    } catch (err) {
+      return new GetWebhookSecret.Error(normalizeSdkError(err as Error));
+    }
+
+    const request = new grpcWebhook._GetWebhookSecretRequest({
+      webhook_name: id.webhookName,
+      cache_name: id.cacheName,
+    });
+    this.logger.debug('issuing "GetWebhookSecret" request');
+
+    return await new Promise<GetWebhookSecret.Response>(resolve => {
+      this.webhookClient.GetWebhookSecret(
+        request,
+        {interceptors: this.unaryInterceptors},
+        (err, resp) => {
+          if (err || !resp) {
+            resolve(new GetWebhookSecret.Error(cacheServiceErrorMapper(err)));
+          } else {
+            resolve(
+              new GetWebhookSecret.Success({
+                secret: resp.secret_string,
+                webhookName: resp.webhook_name,
+                cacheName: resp.cache_name,
+              })
+            );
           }
         }
       );
