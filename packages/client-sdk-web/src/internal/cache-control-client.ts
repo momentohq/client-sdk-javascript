@@ -70,7 +70,7 @@ export class CacheControlClient<
     } catch (err) {
       return new CreateCache.Error(normalizeSdkError(err as Error));
     }
-    this.logger.info(`Creating cache: ${name}`);
+    this.logger.debug(`Creating cache: ${name}`);
     const request = new _CreateCacheRequest();
     request.setCacheName(name);
 
@@ -78,8 +78,7 @@ export class CacheControlClient<
       this.clientWrapper.createCache(
         request,
         this.clientMetadataProvider.createClientMetadata(),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        (err, resp) => {
+        (err, _resp) => {
           if (err) {
             if (err.code === StatusCode.ALREADY_EXISTS) {
               resolve(new CreateCache.AlreadyExists());
@@ -102,13 +101,12 @@ export class CacheControlClient<
     }
     const request = new _DeleteCacheRequest();
     request.setCacheName(name);
-    this.logger.info(`Deleting cache: ${name}`);
+    this.logger.debug(`Deleting cache: ${name}`);
     return await new Promise<DeleteCache.Response>(resolve => {
       this.clientWrapper.deleteCache(
         request,
         this.clientMetadataProvider.createClientMetadata(),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        (err, resp) => {
+        (err, _resp) => {
           if (err) {
             resolve(new DeleteCache.Error(cacheServiceErrorMapper(err)));
           } else {
@@ -138,7 +136,6 @@ export class CacheControlClient<
       this.clientWrapper.flushCache(
         request,
         this.clientMetadataProvider.createClientMetadata(),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (resp) {
             resolve(new CacheFlush.Success());

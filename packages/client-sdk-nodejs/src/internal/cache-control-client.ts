@@ -78,27 +78,28 @@ export class CacheControlClient {
     } catch (err) {
       return new CreateCache.Error(normalizeSdkError(err as Error));
     }
-    this.logger.info(`Creating cache: ${name}`);
+    this.logger.debug(`Creating cache: ${name}`);
     const request = new grpcControl._CreateCacheRequest({
       cache_name: name,
     });
     return await new Promise<CreateCache.Response>(resolve => {
-      this.clientWrapper.getClient().CreateCache(
-        request,
-        {interceptors: this.interceptors},
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        (err, resp) => {
-          if (err) {
-            if (err.code === Status.ALREADY_EXISTS) {
-              resolve(new CreateCache.AlreadyExists());
+      this.clientWrapper
+        .getClient()
+        .CreateCache(
+          request,
+          {interceptors: this.interceptors},
+          (err, _resp) => {
+            if (err) {
+              if (err.code === Status.ALREADY_EXISTS) {
+                resolve(new CreateCache.AlreadyExists());
+              } else {
+                resolve(new CreateCache.Error(cacheServiceErrorMapper(err)));
+              }
             } else {
-              resolve(new CreateCache.Error(cacheServiceErrorMapper(err)));
+              resolve(new CreateCache.Success());
             }
-          } else {
-            resolve(new CreateCache.Success());
           }
-        }
-      );
+        );
     });
   }
 
@@ -111,20 +112,21 @@ export class CacheControlClient {
     const request = new grpcControl._DeleteCacheRequest({
       cache_name: name,
     });
-    this.logger.info(`Deleting cache: ${name}`);
+    this.logger.debug(`Deleting cache: ${name}`);
     return await new Promise<DeleteCache.Response>(resolve => {
-      this.clientWrapper.getClient().DeleteCache(
-        request,
-        {interceptors: this.interceptors},
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        (err, resp) => {
-          if (err) {
-            resolve(new DeleteCache.Error(cacheServiceErrorMapper(err)));
-          } else {
-            resolve(new DeleteCache.Success());
+      this.clientWrapper
+        .getClient()
+        .DeleteCache(
+          request,
+          {interceptors: this.interceptors},
+          (err, _resp) => {
+            if (err) {
+              resolve(new DeleteCache.Error(cacheServiceErrorMapper(err)));
+            } else {
+              resolve(new DeleteCache.Success());
+            }
           }
-        }
-      );
+        );
     });
   }
 
@@ -134,7 +136,7 @@ export class CacheControlClient {
     } catch (err) {
       return new CacheFlush.Error(normalizeSdkError(err as Error));
     }
-    this.logger.trace(`Flushing cache: ${cacheName}`);
+    this.logger.debug(`Flushing cache: ${cacheName}`);
     return await this.sendFlushCache(cacheName);
   }
 
