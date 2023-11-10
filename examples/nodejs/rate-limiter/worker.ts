@@ -3,17 +3,17 @@ import {
   Configurations,
   CreateCache,
   CredentialProvider,
-} from "@gomomento/sdk";
-import { DummyService } from "./service";
-import { MomentoRateLimiter } from "./momento-rate-limiter";
-import { RateLimiter } from "./rate-limiter";
-import { Metrics } from "./metrics";
+} from '@gomomento/sdk';
+import {DummyService} from './service';
+import {MomentoRateLimiter} from './momento-rate-limiter';
+import {RateLimiter} from './rate-limiter';
+import {Metrics} from './metrics';
 
 async function main() {
   const momento = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: "MOMENTO_API_KEY",
+      environmentVariableName: 'MOMENTO_API_KEY',
     }),
     defaultTtlSeconds: 6000,
   });
@@ -37,7 +37,7 @@ async function main() {
 
   const service = new DummyService();
   const rateLimiterMetrics = new Metrics();
-  const cacheName = `rate-limiter`;
+  const cacheName = 'rate-limiter';
 
   const resp = await momento.createCache(cacheName);
   if (resp instanceof CreateCache.Error) {
@@ -46,7 +46,7 @@ async function main() {
 
   const rateLimiter = new MomentoRateLimiter(momento, tpmLimit, cacheName);
 
-  const userIDs = ["user1", "user2", "user3", "user4", "user5"];
+  const userIDs = ['user1', 'user2', 'user3', 'user4', 'user5'];
   const tasks = [];
   let currentUserIndex = 0;
 
@@ -60,13 +60,13 @@ async function main() {
     const selectedUser = userIDs[currentUserIndex];
     currentUserIndex = (currentUserIndex + 1) % userIDs.length;
 
-    const task = new Promise<void>((resolve) => {
+    const task = new Promise<void>(resolve => {
       setTimeout(() => {
         worker(selectedUser, rateLimiter, service, rateLimiterMetrics)
           .then(() => {
             resolve();
           })
-          .catch((error) => {
+          .catch(error => {
             console.error(`Error in worker for user ${selectedUser}:`, error);
             resolve();
           });
@@ -79,7 +79,7 @@ async function main() {
   await Promise.all(tasks);
 
   // Display metrics for both rate limiters
-  rateLimiterMetrics.displayMetrics("Momento");
+  rateLimiterMetrics.displayMetrics('Momento');
 }
 
 async function worker(
@@ -106,7 +106,7 @@ async function worker(
 
 main()
   .then(() => {
-    console.log("All tasks complete!");
+    console.log('All tasks complete!');
   })
   .catch((e: Error) => {
     console.error(`Uncaught exception while running example: ${e.message}`);

@@ -79,6 +79,7 @@ export * from './messages/responses/webhook';
 export {Webhook, WebhookId} from './messages/webhook';
 
 import {CacheInfo} from './messages/cache-info';
+export {VectorIndexInfo} from './messages/vector-index-info';
 import {
   SubscribeCallOptions,
   CollectionTtl,

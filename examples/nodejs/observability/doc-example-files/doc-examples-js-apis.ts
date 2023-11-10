@@ -8,7 +8,13 @@
  * a second file in the future if desired.
  *
  */
-import {CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
+import {
+  CacheClient,
+  Configurations,
+  CredentialProvider,
+  DefaultMomentoLoggerFactory,
+  DefaultMomentoLoggerLevel,
+} from '@gomomento/sdk';
 import {ExampleMetricMiddleware} from '../example-metric-middleware';
 
 function example_API_InstantiateCacheClientWithMiddleware() {
@@ -21,8 +27,23 @@ function example_API_InstantiateCacheClientWithMiddleware() {
   });
 }
 
+function example_observability_CreateLoggerFactory() {
+  // Setting the level to ERROR means you will see error messages but
+  // no trace, info, debug, or warning messages.
+  const errorLoggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.ERROR);
+  const errorLogger = errorLoggerFactory.getLogger('momento-error-logger');
+  errorLogger.error('error in the code!');
+
+  // Setting the level to DEBUG means you will see error, info, debug,
+  // and warning messages but no trace messages.
+  const debugLoggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.DEBUG);
+  const debugLogger = debugLoggerFactory.getLogger('momento-debug-logger');
+  debugLogger.debug('helpful debugging message');
+}
+
 function main() {
   example_API_InstantiateCacheClientWithMiddleware();
+  example_observability_CreateLoggerFactory();
 }
 
 main();

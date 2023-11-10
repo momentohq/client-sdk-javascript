@@ -27,7 +27,7 @@ jobs:
 
       - name: Output release
         id: release
-        run: echo "::set-output name=release::${{ steps.semrel.outputs.version }}"
+        run: echo "release=${{ steps.semrel.outputs.version }}" >> $GITHUB_OUTPUT
   publish_javascript:
     # The type of runner that the job will run on
     runs-on: macos-latest

@@ -4,6 +4,7 @@ import {
   InvalidArgumentError,
   MomentoLogger,
   VectorIndexConfiguration,
+  VectorIndexInfo,
 } from '..';
 import {Request, StatusCode, UnaryResponse} from 'grpc-web';
 import {
@@ -141,7 +142,13 @@ export class VectorIndexControlClient<
           if (err) {
             resolve(new ListVectorIndexes.Error(cacheServiceErrorMapper(err)));
           } else {
-            const indexes = resp.getIndexNamesList();
+            const indexes: VectorIndexInfo[] = resp
+              .getIndexNamesList()
+              .map((name: string) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
+                return new VectorIndexInfo(name);
+              });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             resolve(new ListVectorIndexes.Success(indexes));
           }
         }

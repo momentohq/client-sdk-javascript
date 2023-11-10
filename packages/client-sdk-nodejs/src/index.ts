@@ -94,6 +94,7 @@ import {
   IMomentoCache,
   SubscribeCallOptions,
   CacheInfo,
+  VectorIndexInfo,
   CollectionTtl,
   ItemType,
   SortedSetOrder,
@@ -226,6 +227,7 @@ export {
   CacheClient,
   SimpleCacheClient,
   CacheInfo,
+  VectorIndexInfo,
   // Credentials / Auth
   CredentialProvider,
   StringMomentoTokenProvider,
