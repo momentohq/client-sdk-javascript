@@ -235,6 +235,36 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     }
   }
 
+  private static deserializeMetadata(
+    metadata: vectorindex._Metadata[],
+    errorCallback: () => void
+  ): Record<string, string | number | boolean | Array<string>> {
+    return metadata.reduce((acc, metadata) => {
+      const field = metadata.getField();
+      switch (metadata.getValueCase()) {
+        case vectorindex._Metadata.ValueCase.STRING_VALUE:
+          acc[field] = metadata.getStringValue();
+          break;
+        case vectorindex._Metadata.ValueCase.INTEGER_VALUE:
+          acc[field] = metadata.getIntegerValue();
+          break;
+        case vectorindex._Metadata.ValueCase.DOUBLE_VALUE:
+          acc[field] = metadata.getDoubleValue();
+          break;
+        case vectorindex._Metadata.ValueCase.BOOLEAN_VALUE:
+          acc[field] = metadata.getBooleanValue();
+          break;
+        case vectorindex._Metadata.ValueCase.LIST_OF_STRINGS_VALUE:
+          acc[field] = metadata.getListOfStringsValue()?.getValuesList() ?? [];
+          break;
+        default:
+          errorCallback();
+          break;
+      }
+      return acc;
+    }, {} as Record<string, string | number | boolean | Array<string>>);
+  }
+
   private async sendSearch(
     indexName: string,
     queryVector: Array<number>,
@@ -267,39 +297,17 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
                 resp.getHitsList().map(hit => ({
                   id: hit.getId(),
                   score: hit.getScore(),
-                  metadata: hit.getMetadataList().reduce((acc, metadata) => {
-                    const field = metadata.getField();
-                    switch (metadata.getValueCase()) {
-                      case vectorindex._Metadata.ValueCase.STRING_VALUE:
-                        acc[field] = metadata.getStringValue();
-                        break;
-                      case vectorindex._Metadata.ValueCase.INTEGER_VALUE:
-                        acc[field] = metadata.getIntegerValue();
-                        break;
-                      case vectorindex._Metadata.ValueCase.DOUBLE_VALUE:
-                        acc[field] = metadata.getDoubleValue();
-                        break;
-                      case vectorindex._Metadata.ValueCase.BOOLEAN_VALUE:
-                        acc[field] = metadata.getBooleanValue();
-                        break;
-                      case vectorindex._Metadata.ValueCase
-                        .LIST_OF_STRINGS_VALUE:
-                        acc[field] =
-                          metadata.getListOfStringsValue()?.getValuesList() ??
-                          [];
-                        break;
-                      default:
-                        resolve(
-                          new VectorSearch.Error(
-                            new UnknownError(
-                              'Search responded with an unknown result'
-                            )
+                  metadata: VectorIndexDataClient.deserializeMetadata(
+                    hit.getMetadataList(),
+                    () =>
+                      resolve(
+                        new VectorSearch.Error(
+                          new UnknownError(
+                            'Search responded with an unknown result'
                           )
-                        );
-                        break;
-                    }
-                    return acc;
-                  }, {} as Record<string, string | number | boolean | Array<string>>),
+                        )
+                      )
+                  ),
                 }))
               )
             );
@@ -366,39 +374,17 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
                   id: hit.getId(),
                   score: hit.getScore(),
                   vector: hit.getVector()?.getElementsList() ?? [],
-                  metadata: hit.getMetadataList().reduce((acc, metadata) => {
-                    const field = metadata.getField();
-                    switch (metadata.getValueCase()) {
-                      case vectorindex._Metadata.ValueCase.STRING_VALUE:
-                        acc[field] = metadata.getStringValue();
-                        break;
-                      case vectorindex._Metadata.ValueCase.INTEGER_VALUE:
-                        acc[field] = metadata.getIntegerValue();
-                        break;
-                      case vectorindex._Metadata.ValueCase.DOUBLE_VALUE:
-                        acc[field] = metadata.getDoubleValue();
-                        break;
-                      case vectorindex._Metadata.ValueCase.BOOLEAN_VALUE:
-                        acc[field] = metadata.getBooleanValue();
-                        break;
-                      case vectorindex._Metadata.ValueCase
-                        .LIST_OF_STRINGS_VALUE:
-                        acc[field] =
-                          metadata.getListOfStringsValue()?.getValuesList() ??
-                          [];
-                        break;
-                      default:
-                        resolve(
-                          new VectorSearchAndFetchVectors.Error(
-                            new UnknownError(
-                              'Search responded with an unknown result'
-                            )
+                  metadata: VectorIndexDataClient.deserializeMetadata(
+                    hit.getMetadataList(),
+                    () =>
+                      resolve(
+                        new VectorSearchAndFetchVectors.Error(
+                          new UnknownError(
+                            'Search responded with an unknown result'
                           )
-                        );
-                        break;
-                    }
-                    return acc;
-                  }, {} as Record<string, string | number | boolean | Array<string>>),
+                        )
+                      )
+                  ),
                 }))
               )
             );
