@@ -4,6 +4,7 @@ import {
   ListVectorIndexes,
   VectorUpsertItemBatch,
   VectorSearch,
+  VectorSearchAndFetchVectors,
   VectorDeleteItemBatch,
 } from '../../..';
 import {
@@ -113,6 +114,7 @@ export abstract class AbstractVectorIndexClient
 
   /**
    * Searches for the most similar vectors to the query vector in the index.
+   *
    * Ranks the vectors according to the similarity metric specified when the
    * index was created.
    *
@@ -131,6 +133,34 @@ export abstract class AbstractVectorIndexClient
     options?: SearchOptions
   ): Promise<VectorSearch.Response> {
     return await this.dataClient.search(indexName, queryVector, options);
+  }
+
+  /**
+   * Searches for the most similar vectors to the query vector in the index.
+   *
+   * Ranks the vectors according to the similarity metric specified when the
+   * index was created.
+   * Also retursn the vectors associated with each result.
+   *
+   * @param indexName - Name of the index to search in.
+   * @param queryVector - The vector to search for.
+   * @param options - Optional search arguments, including
+   * the number of results to return, metadata fields to return, and a score
+   * threshold to filter results by.
+   * @returns {Promise<VectorSearchAndFetchVectors.Response>} -
+   * {@link VectorSearchAndFetchVectors.Success} on success.
+   * {@link VectorSearchAndFetchVectors.Error} on error.
+   */
+  public async searchAndFetchVectors(
+    indexName: string,
+    queryVector: number[],
+    options?: SearchOptions | undefined
+  ): Promise<VectorSearchAndFetchVectors.Response> {
+    return await this.dataClient.searchAndFetchVectors(
+      indexName,
+      queryVector,
+      options
+    );
   }
 
   /**
