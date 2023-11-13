@@ -140,7 +140,7 @@ export abstract class AbstractVectorIndexClient
    *
    * Ranks the vectors according to the similarity metric specified when the
    * index was created.
-   * Also retursn the vectors associated with each result.
+   * Also returns the vectors associated with each result.
    *
    * @param indexName - Name of the index to search in.
    * @param queryVector - The vector to search for.
