@@ -103,7 +103,10 @@ export const deleteWebhookIfExists = async (
     );
     return;
   }
-  const deleteResponse = await client.deleteWebhook(webhookId);
+  const deleteResponse = await client.deleteWebhook(
+    webhookId.cacheName,
+    webhookId.webhookName
+  );
   if (deleteResponse instanceof DeleteWebhook.Error) {
     throw deleteResponse.innerException();
   }
@@ -119,7 +122,14 @@ export const createWebhookIfNotExists = async (
     );
     return;
   }
-  const createResponse = await client.putWebhook(webhook);
+  const createResponse = await client.putWebhook(
+    webhook.id.cacheName,
+    webhook.id.webhookName,
+    {
+      topicName: webhook.topicName,
+      destination: webhook.destination,
+    }
+  );
   if (createResponse instanceof PutWebhook.Error) {
     throw createResponse.innerException();
   }

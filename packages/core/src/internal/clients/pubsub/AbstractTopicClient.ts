@@ -7,12 +7,12 @@ import {
   ListWebhooks,
   PutWebhook,
   DeleteWebhook,
-  WebhookId,
-  Webhook,
   GetWebhookSecret,
+  PostUrlWebhookDestination,
 } from '../../../index';
 import {IPubsubClient} from './IPubsubClient';
 import {IWebhookClient} from './IWebhookClient';
+import {PutWebhookCallOptions} from '../../../utils/webhook-call-options';
 
 export abstract class AbstractTopicClient implements ITopicClient {
   protected readonly logger: MomentoLogger;
@@ -60,50 +60,75 @@ export abstract class AbstractTopicClient implements ITopicClient {
   /**
    * Deletes a webhook
    *
-   * @param {WebhookId} id - The webhook id to be deleted
+   * @param {string} cacheName - The name of the cache associated with the webhook
+   * @param {string} webhookName - The name of the webhook
    * @returns {Promise<DeleteWebhook.Response>} -
    * {@link DeleteWebhook.Success} on success.
    * {@link DeleteWebhook.Error} on failure.
    */
-  public async deleteWebhook(id: WebhookId): Promise<DeleteWebhook.Response> {
-    return await this.webhookClient.deleteWebhook(id);
+  public async deleteWebhook(
+    cacheName: string,
+    webhookName: string
+  ): Promise<DeleteWebhook.Response> {
+    return await this.webhookClient.deleteWebhook({cacheName, webhookName});
   }
 
   /**
    * Lists webhooks associated with a cache
    *
-   * @param {string} cache - The cache to list webhooks associated with it
+   * @param {string} cacheName - The cache to list webhooks associated with it
    * @returns {Promise<ListWebhooks.Response>} -
    * {@link ListWebhooks.Success} on success.
    * {@link ListWebhooks.Error} on failure.
    */
-  public async listWebhooks(cache: string): Promise<ListWebhooks.Response> {
-    return await this.webhookClient.listWebhooks(cache);
+  public async listWebhooks(cacheName: string): Promise<ListWebhooks.Response> {
+    return await this.webhookClient.listWebhooks(cacheName);
   }
 
   /**
    * Creates a new webhook, or updates an existing one
    *
-   * @param {Webhook} webhook - The webhook to create/update
+   * @param {string} cacheName - The name of the cache to associate the webhook with
+   * @param {string} webhookName - The name of the webhook
+   * @param {PutWebhookCallOptions} options - The options for the webhook
+   * @param {string} topicName - The name of the topic for the webhook to listen to
+   * @param {WebhookDestination | string} webhookDestination - The url to associate the webhook with
    * @returns {Promise<PutWebhook.Response>} -
    * {@link PutWebhook.Success} on success.
    * {@link PutWebhook.Error} on failure.
    */
-  public async putWebhook(webhook: Webhook): Promise<PutWebhook.Response> {
-    return await this.webhookClient.putWebhook(webhook);
+  public async putWebhook(
+    cacheName: string,
+    webhookName: string,
+    options: PutWebhookCallOptions
+  ): Promise<PutWebhook.Response> {
+    let _dest = options.destination;
+    if (typeof _dest === 'string') {
+      _dest = new PostUrlWebhookDestination(_dest);
+    }
+    return await this.webhookClient.putWebhook({
+      topicName: options.topicName,
+      id: {
+        cacheName,
+        webhookName,
+      },
+      destination: _dest,
+    });
   }
 
   /**
    * Gets the signing secret for a webhook
    *
-   * @param {WebhookId} id - The webhook id to get the signing secret for
+   * @param {string} cacheName - The name of the cache associated with the webhook
+   * @param {string} webhookName - The name of the webhook
    * @returns {Promise<GetWebhookSecret.Response>} -
    * {@link GetWebhookSecret.Success} on success.
    * {@link GetWebhookSecret.Error} on failure.
    */
   public async getWebhookSecret(
-    id: WebhookId
+    cacheName: string,
+    webhookName: string
   ): Promise<GetWebhookSecret.Response> {
-    return await this.webhookClient.getWebhookSecret(id);
+    return await this.webhookClient.getWebhookSecret({cacheName, webhookName});
   }
 }

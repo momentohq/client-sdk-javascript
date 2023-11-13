@@ -5,10 +5,9 @@ import {
   ListWebhooks,
   PutWebhook,
   DeleteWebhook,
-  WebhookId,
-  Webhook,
   GetWebhookSecret,
 } from '../index';
+import {PutWebhookCallOptions} from '../utils/webhook-call-options';
 
 export interface ITopicClient {
   publish(
@@ -24,7 +23,17 @@ export interface ITopicClient {
   ): Promise<TopicSubscribe.Response>;
 
   listWebhooks(cache: string): Promise<ListWebhooks.Response>;
-  putWebhook(webhook: Webhook): Promise<PutWebhook.Response>;
-  deleteWebhook(id: WebhookId): Promise<DeleteWebhook.Response>;
-  getWebhookSecret(id: WebhookId): Promise<GetWebhookSecret.Response>;
+  putWebhook(
+    cacheName: string,
+    webhookName: string,
+    options: PutWebhookCallOptions
+  ): Promise<PutWebhook.Response>;
+  deleteWebhook(
+    cacheName: string,
+    webhookName: string
+  ): Promise<DeleteWebhook.Response>;
+  getWebhookSecret(
+    cacheName: string,
+    webhookName: string
+  ): Promise<GetWebhookSecret.Response>;
 }

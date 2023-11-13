@@ -23,25 +23,25 @@ export function runWebhookTests(
 ) {
   describe('#putWebhook', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-      return topicClient.putWebhook({
-        id: {
-          cacheName: props.cacheName,
-          webhookName: 'ItBehavesLikeItValidatesCacheName',
-        },
-        topicName: 'a topic',
-        destination: new PostUrlWebhookDestination('someurl.com'),
-      });
+      return topicClient.putWebhook(
+        props.cacheName,
+        'ItBehavesLikeItValidatesCacheName',
+        {
+          topicName: 'a topic',
+          destination: new PostUrlWebhookDestination('someurl.com'),
+        }
+      );
     });
 
     ItBehavesLikeItValidatesTopicName((props: ValidateTopicProps) => {
-      return topicClient.putWebhook({
-        id: {
-          cacheName: 'a cache',
-          webhookName: 'ItBehavesLikeItValidatesCacheName',
-        },
-        topicName: props.topicName,
-        destination: new PostUrlWebhookDestination('someurl.com'),
-      });
+      return topicClient.putWebhook(
+        'a cache',
+        'ItBehavesLikeItValidatesCacheName',
+        {
+          topicName: props.topicName,
+          destination: new PostUrlWebhookDestination('someurl.com'),
+        }
+      );
     });
   });
 
@@ -53,19 +53,13 @@ export function runWebhookTests(
 
   describe('#deleteWebhook', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-      return topicClient.deleteWebhook({
-        webhookName: 'some webhook',
-        cacheName: props.cacheName,
-      });
+      return topicClient.deleteWebhook(props.cacheName, 'some webhook');
     });
   });
 
   describe('#getWebhookSecret', () => {
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
-      return topicClient.getWebhookSecret({
-        webhookName: 'some webhook',
-        cacheName: props.cacheName,
-      });
+      return topicClient.getWebhookSecret(props.cacheName, 'some webhook');
     });
   });
 
@@ -95,7 +89,10 @@ export function runWebhookTests(
     it('should create a new webhook, get its secret, and then delete it', async () => {
       const webhook = testWebhook(integrationTestCacheName);
       await WithWebhook(topicClient, webhook, async () => {
-        const resp = await topicClient.getWebhookSecret(webhook.id);
+        const resp = await topicClient.getWebhookSecret(
+          webhook.id.cacheName,
+          webhook.id.webhookName
+        );
         if (resp instanceof GetWebhookSecret.Success) {
           expect(resp.secret()).toBeTruthy();
           expect(resp.webhookName()).toEqual(webhook.id.webhookName);
