@@ -681,7 +681,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         scores: [2, 10, 18],
         thresholds: [3, 20, -0.01],
         searchMethodName: 'searchAndFetchVectors',
-        response: VectorSearch.Success,
+        response: VectorSearchAndFetchVectors.Success,
       },
     ])(
       'should prune results with a search threshold',
