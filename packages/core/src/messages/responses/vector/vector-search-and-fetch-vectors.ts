@@ -26,7 +26,7 @@ export interface SearchAndFetchVectorsHit extends SearchHit {
  * ```
  */
 export abstract class Response extends ResponseBase {
-  hits(): Array<SearchHit> | undefined {
+  hits(): Array<SearchAndFetchVectorsHit> | undefined {
     if (this instanceof Success) {
       return this.hits();
     }
@@ -40,12 +40,12 @@ class _Success extends Response {}
  * Indicates a Successful VectorSearchAndFetchVectors request.
  */
 export class Success extends ResponseSuccess(_Success) {
-  private readonly _hits: Array<SearchHit>;
-  constructor(hits: Array<SearchHit>) {
+  private readonly _hits: Array<SearchAndFetchVectorsHit>;
+  constructor(hits: Array<SearchAndFetchVectorsHit>) {
     super();
     this._hits = hits;
   }
-  hits(): Array<SearchHit> {
+  hits(): Array<SearchAndFetchVectorsHit> {
     return this._hits;
   }
 }
