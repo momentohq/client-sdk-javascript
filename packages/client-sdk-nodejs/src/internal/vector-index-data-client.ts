@@ -352,7 +352,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     );
   }
 
-  private sendSearchAndFetchVectors(
+  private async sendSearchAndFetchVectors(
     indexName: string,
     queryVector: Array<number>,
     options?: SearchOptions
@@ -365,7 +365,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     });
     VectorIndexDataClient.applyScoreThreshold(request, options);
 
-    return new Promise(resolve => {
+    return await new Promise(resolve => {
       this.client.SearchAndFetchVectors(
         request,
         {interceptors: this.interceptors},
