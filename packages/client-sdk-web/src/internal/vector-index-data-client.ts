@@ -7,6 +7,7 @@ import {
   SearchOptions,
   VectorDeleteItemBatch,
   VectorSearch,
+  VectorSearchAndFetchVectors,
   VectorUpsertItemBatch,
   InvalidArgumentError,
   UnknownError,
@@ -304,6 +305,36 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
         }
       );
     });
+  }
+
+  public async searchAndFetchVectors(
+    indexName: string,
+    queryVector: Array<number>,
+    options?: SearchOptions
+  ): Promise<VectorSearchAndFetchVectors.Response> {
+    try {
+      validateIndexName(indexName);
+      if (options?.topK !== undefined) {
+        validateTopK(options.topK);
+      }
+    } catch (err) {
+      return new VectorSearchAndFetchVectors.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    return await this.sendSearchAndFetchVectors(
+      indexName,
+      queryVector,
+      options
+    );
+  }
+
+  private sendSearchAndFetchVectors(
+    indexName: string,
+    queryVector: Array<number>,
+    options?: SearchOptions
+  ): Promise<VectorSearchAndFetchVectors.Response> {
+    throw new Error('Method not implemented.');
   }
 
   private createVectorCallMetadata(timeoutMillis: number): {deadline: string} {
