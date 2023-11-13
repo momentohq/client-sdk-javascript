@@ -104,24 +104,18 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
         metadata.setStringValue(value);
       } else if (typeof value === 'number') {
         if (Number.isInteger(value)) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           metadata.setIntegerValue(value);
         } else {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           metadata.setDoubleValue(value);
         }
       } else if (typeof value === 'boolean') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         metadata.setBooleanValue(value);
       } else if (
         Array.isArray(value) &&
         value.every(item => typeof item === 'string')
       ) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
         const listOfStrings = new vectorindex._Metadata._ListOfStrings();
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         listOfStrings.setValuesList(value);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         metadata.setListOfStringsValue(listOfStrings);
       } else {
         throw new InvalidArgumentError(
@@ -280,22 +274,17 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
                         acc[field] = metadata.getStringValue();
                         break;
                       case vectorindex._Metadata.ValueCase.INTEGER_VALUE:
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                         acc[field] = metadata.getIntegerValue();
                         break;
                       case vectorindex._Metadata.ValueCase.DOUBLE_VALUE:
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                         acc[field] = metadata.getDoubleValue();
                         break;
                       case vectorindex._Metadata.ValueCase.BOOLEAN_VALUE:
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                         acc[field] = metadata.getBooleanValue();
                         break;
                       case vectorindex._Metadata.ValueCase
                         .LIST_OF_STRINGS_VALUE:
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                         acc[field] =
-                          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
                           metadata.getListOfStringsValue()?.getValuesList() ??
                           [];
                         break;
@@ -384,22 +373,17 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
                         acc[field] = metadata.getStringValue();
                         break;
                       case vectorindex._Metadata.ValueCase.INTEGER_VALUE:
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                         acc[field] = metadata.getIntegerValue();
                         break;
                       case vectorindex._Metadata.ValueCase.DOUBLE_VALUE:
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                         acc[field] = metadata.getDoubleValue();
                         break;
                       case vectorindex._Metadata.ValueCase.BOOLEAN_VALUE:
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                         acc[field] = metadata.getBooleanValue();
                         break;
                       case vectorindex._Metadata.ValueCase
                         .LIST_OF_STRINGS_VALUE:
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                         acc[field] =
-                          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
                           metadata.getListOfStringsValue()?.getValuesList() ??
                           [];
                         break;

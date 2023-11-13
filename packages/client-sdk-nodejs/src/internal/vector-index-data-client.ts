@@ -148,12 +148,9 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       ) {
         return new vectorindex._Metadata({
           field: key,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          list_of_strings_value:
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            new vectorindex._Metadata._ListOfStrings({
-              values: value,
-            }),
+          list_of_strings_value: new vectorindex._Metadata._ListOfStrings({
+            values: value,
+          }),
         });
       } else {
         throw new InvalidArgumentError(
