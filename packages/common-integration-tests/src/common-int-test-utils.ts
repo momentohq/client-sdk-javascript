@@ -7,6 +7,11 @@ import {
   IVectorIndexClient,
   MomentoErrorCode,
   VectorSimilarityMetric,
+  DeleteWebhook,
+  Webhook,
+  PutWebhook,
+  WebhookId,
+  PostUrlWebhookDestination,
 } from '@gomomento/sdk-core';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {
@@ -14,6 +19,7 @@ import {
   ResponseBase,
 } from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
 import {v4} from 'uuid';
+import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 
 export function isLocalhostDevelopmentMode(): boolean {
   const useLocalhost = process.env.MOMENTO_SDK_TESTS_USE_LOCALHOST;
@@ -25,6 +31,18 @@ export function testCacheName(): string {
 
 export function testIndexName(): string {
   return `js-integration-test-${v4()}`;
+}
+
+export function testWebhook(cache?: string): Webhook {
+  const cacheName = cache ?? testCacheName();
+  return {
+    id: {
+      cacheName,
+      webhookName: `webhook-${cacheName}`,
+    },
+    destination: new PostUrlWebhookDestination('https://www.fake.url.com'),
+    topicName: `topic-${v4()}`,
+  };
 }
 
 export const deleteCacheIfExists = async (
@@ -72,6 +90,61 @@ export async function WithCache(
     await block();
   } finally {
     await deleteCacheIfExists(client, cacheName);
+  }
+}
+
+export const deleteWebhookIfExists = async (
+  client: ITopicClient,
+  webhookId: WebhookId
+) => {
+  if (isLocalhostDevelopmentMode()) {
+    console.log(
+      `LOCALHOST DEVELOPMENT MODE: skipping delete webhook command for cache '${webhookId.cacheName}`
+    );
+    return;
+  }
+  const deleteResponse = await client.deleteWebhook(
+    webhookId.cacheName,
+    webhookId.webhookName
+  );
+  if (deleteResponse instanceof DeleteWebhook.Error) {
+    throw deleteResponse.innerException();
+  }
+};
+
+export const createWebhookIfNotExists = async (
+  client: ITopicClient,
+  webhook: Webhook
+) => {
+  if (isLocalhostDevelopmentMode()) {
+    console.log(
+      `LOCALHOST DEVELOPMENT MODE: skipping create webhook command for cache '${webhook.id.cacheName}`
+    );
+    return;
+  }
+  const createResponse = await client.putWebhook(
+    webhook.id.cacheName,
+    webhook.id.webhookName,
+    {
+      topicName: webhook.topicName,
+      destination: webhook.destination,
+    }
+  );
+  if (createResponse instanceof PutWebhook.Error) {
+    throw createResponse.innerException();
+  }
+};
+
+export async function WithWebhook(
+  topicClient: ITopicClient,
+  webhook: Webhook,
+  block: () => Promise<void>
+) {
+  await createWebhookIfNotExists(topicClient, webhook);
+  try {
+    await block();
+  } finally {
+    await deleteWebhookIfExists(topicClient, webhook.id);
   }
 }
 
