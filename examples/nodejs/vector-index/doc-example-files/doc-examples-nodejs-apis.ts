@@ -6,6 +6,7 @@ import {
   PreviewVectorIndexClient,
   VectorIndexConfigurations,
   VectorSearch,
+  VectorSearchAndFetchVectors,
   VectorUpsertItemBatch,
   ALL_VECTOR_METADATA,
 } from '@gomomento/sdk';
@@ -95,6 +96,18 @@ async function example_API_Search(vectorClient: PreviewVectorIndexClient) {
   }
 }
 
+async function example_API_SearchAndFetchVectors(vectorClient: PreviewVectorIndexClient) {
+  const result = await vectorClient.searchAndFetchVectors('test-index', [1.0, 2.0], {
+    topK: 3,
+    metadataFields: ALL_VECTOR_METADATA,
+  });
+  if (result instanceof VectorSearchAndFetchVectors.Success) {
+    console.log(`Found ${result.hits().length} matches`);
+  } else if (result instanceof VectorSearchAndFetchVectors.Error) {
+    throw new Error(`An error occurred searching index test-index: ${result.errorCode()}: ${result.toString()}`);
+  }
+}
+
 async function main() {
   const vectorClient = new PreviewVectorIndexClient({
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
@@ -108,6 +121,7 @@ async function main() {
   await example_API_ListIndexes(vectorClient);
   await example_API_UpsertItemBatch(vectorClient);
   await example_API_Search(vectorClient);
+  await example_API_SearchAndFetchVectors(vectorClient);
   await example_API_DeleteItemBatch(vectorClient);
   await example_API_DeleteIndex(vectorClient);
 }
