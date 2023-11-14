@@ -3,6 +3,7 @@ import {
   VectorUpsertItemBatch,
   VectorDeleteItemBatch,
   VectorSearch,
+  VectorSearchAndFetchVectors,
 } from '../messages/responses/vector';
 import {VectorIndexItem} from '../messages/vector-index';
 
@@ -45,6 +46,12 @@ export interface IVectorIndexClient extends IVectorIndexControlClient {
     queryVector: Array<number>,
     options?: SearchOptions
   ): Promise<VectorSearch.Response>;
+
+  searchAndFetchVectors(
+    indexName: string,
+    queryVector: Array<number>,
+    options?: SearchOptions
+  ): Promise<VectorSearchAndFetchVectors.Response>;
 
   deleteItemBatch(
     indexName: string,

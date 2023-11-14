@@ -7,6 +7,7 @@ import {
   SearchOptions,
   VectorDeleteItemBatch,
   VectorSearch,
+  VectorSearchAndFetchVectors,
   VectorUpsertItemBatch,
   InvalidArgumentError,
   UnknownError,
@@ -204,6 +205,66 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     return await this.sendSearch(indexName, queryVector, options);
   }
 
+  private static prepareMetadataRequest(
+    options?: SearchOptions
+  ): vectorindex._MetadataRequest {
+    const metadataRequest = new vectorindex._MetadataRequest();
+    if (options?.metadataFields === ALL_VECTOR_METADATA) {
+      const all = new vectorindex._MetadataRequest.All();
+      metadataRequest.setAll(all);
+    } else {
+      const some = new vectorindex._MetadataRequest.Some();
+      some.setFieldsList(
+        options?.metadataFields === undefined ? [] : options.metadataFields
+      );
+      metadataRequest.setSome(some);
+    }
+    return metadataRequest;
+  }
+
+  private static applyScoreThreshold(
+    request:
+      | vectorindex._SearchRequest
+      | vectorindex._SearchAndFetchVectorsRequest,
+    options?: SearchOptions
+  ): void {
+    if (options?.scoreThreshold !== undefined) {
+      request.setScoreThreshold(options.scoreThreshold);
+    } else {
+      request.setNoScoreThreshold(new vectorindex._NoScoreThreshold());
+    }
+  }
+
+  private static deserializeMetadata(
+    metadata: vectorindex._Metadata[],
+    errorCallback: () => void
+  ): Record<string, string | number | boolean | Array<string>> {
+    return metadata.reduce((acc, metadata) => {
+      const field = metadata.getField();
+      switch (metadata.getValueCase()) {
+        case vectorindex._Metadata.ValueCase.STRING_VALUE:
+          acc[field] = metadata.getStringValue();
+          break;
+        case vectorindex._Metadata.ValueCase.INTEGER_VALUE:
+          acc[field] = metadata.getIntegerValue();
+          break;
+        case vectorindex._Metadata.ValueCase.DOUBLE_VALUE:
+          acc[field] = metadata.getDoubleValue();
+          break;
+        case vectorindex._Metadata.ValueCase.BOOLEAN_VALUE:
+          acc[field] = metadata.getBooleanValue();
+          break;
+        case vectorindex._Metadata.ValueCase.LIST_OF_STRINGS_VALUE:
+          acc[field] = metadata.getListOfStringsValue()?.getValuesList() ?? [];
+          break;
+        default:
+          errorCallback();
+          break;
+      }
+      return acc;
+    }, {} as Record<string, string | number | boolean | Array<string>>);
+  }
+
   private async sendSearch(
     indexName: string,
     queryVector: Array<number>,
@@ -217,25 +278,10 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     if (options?.topK !== undefined) {
       request.setTopK(options.topK);
     }
-
-    const metadataRequest = new vectorindex._MetadataRequest();
-    if (options?.metadataFields === ALL_VECTOR_METADATA) {
-      const all = new vectorindex._MetadataRequest.All();
-      metadataRequest.setAll(all);
-    } else {
-      const some = new vectorindex._MetadataRequest.Some();
-      some.setFieldsList(
-        options?.metadataFields === undefined ? [] : options.metadataFields
-      );
-      metadataRequest.setSome(some);
-    }
-    request.setMetadataFields(metadataRequest);
-
-    if (options?.scoreThreshold !== undefined) {
-      request.setScoreThreshold(options.scoreThreshold);
-    } else {
-      request.setNoScoreThreshold(new vectorindex._NoScoreThreshold());
-    }
+    request.setMetadataFields(
+      VectorIndexDataClient.prepareMetadataRequest(options)
+    );
+    VectorIndexDataClient.applyScoreThreshold(request, options);
 
     return await new Promise(resolve => {
       this.client.search(
@@ -251,44 +297,103 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
                 resp.getHitsList().map(hit => ({
                   id: hit.getId(),
                   score: hit.getScore(),
-                  metadata: hit.getMetadataList().reduce((acc, metadata) => {
-                    const field = metadata.getField();
-                    switch (metadata.getValueCase()) {
-                      case vectorindex._Metadata.ValueCase.STRING_VALUE:
-                        acc[field] = metadata.getStringValue();
-                        break;
-                      case vectorindex._Metadata.ValueCase.INTEGER_VALUE:
-                        acc[field] = metadata.getIntegerValue();
-                        break;
-                      case vectorindex._Metadata.ValueCase.DOUBLE_VALUE:
-                        acc[field] = metadata.getDoubleValue();
-                        break;
-                      case vectorindex._Metadata.ValueCase.BOOLEAN_VALUE:
-                        acc[field] = metadata.getBooleanValue();
-                        break;
-                      case vectorindex._Metadata.ValueCase
-                        .LIST_OF_STRINGS_VALUE:
-                        acc[field] =
-                          metadata.getListOfStringsValue()?.getValuesList() ??
-                          [];
-                        break;
-                      default:
-                        resolve(
-                          new VectorSearch.Error(
-                            new UnknownError(
-                              'Search responded with an unknown result'
-                            )
+                  metadata: VectorIndexDataClient.deserializeMetadata(
+                    hit.getMetadataList(),
+                    () =>
+                      resolve(
+                        new VectorSearch.Error(
+                          new UnknownError(
+                            'Search responded with an unknown result'
                           )
-                        );
-                        break;
-                    }
-                    return acc;
-                  }, {} as Record<string, string | number | boolean | Array<string>>),
+                        )
+                      )
+                  ),
                 }))
               )
             );
           } else {
             resolve(new VectorSearch.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async searchAndFetchVectors(
+    indexName: string,
+    queryVector: Array<number>,
+    options?: SearchOptions
+  ): Promise<VectorSearchAndFetchVectors.Response> {
+    try {
+      validateIndexName(indexName);
+      if (options?.topK !== undefined) {
+        validateTopK(options.topK);
+      }
+    } catch (err) {
+      return new VectorSearchAndFetchVectors.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    return await this.sendSearchAndFetchVectors(
+      indexName,
+      queryVector,
+      options
+    );
+  }
+
+  private async sendSearchAndFetchVectors(
+    indexName: string,
+    queryVector: Array<number>,
+    options?: SearchOptions
+  ): Promise<VectorSearchAndFetchVectors.Response> {
+    const request = new vectorindex._SearchAndFetchVectorsRequest();
+    request.setIndexName(indexName);
+    const vector = new vectorindex._Vector();
+    vector.setElementsList(queryVector);
+    request.setQueryVector(vector);
+    if (options?.topK !== undefined) {
+      request.setTopK(options.topK);
+    }
+    request.setMetadataFields(
+      VectorIndexDataClient.prepareMetadataRequest(options)
+    );
+    VectorIndexDataClient.applyScoreThreshold(request, options);
+
+    return await new Promise(resolve => {
+      this.client.searchAndFetchVectors(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...this.createVectorCallMetadata(this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(
+              new VectorSearchAndFetchVectors.Success(
+                resp.getHitsList().map(hit => ({
+                  id: hit.getId(),
+                  score: hit.getScore(),
+                  vector: hit.getVector()?.getElementsList() ?? [],
+                  metadata: VectorIndexDataClient.deserializeMetadata(
+                    hit.getMetadataList(),
+                    () =>
+                      resolve(
+                        new VectorSearchAndFetchVectors.Error(
+                          new UnknownError(
+                            'Search responded with an unknown result'
+                          )
+                        )
+                      )
+                  ),
+                }))
+              )
+            );
+          } else {
+            resolve(
+              new VectorSearchAndFetchVectors.Error(
+                cacheServiceErrorMapper(err)
+              )
+            );
           }
         }
       );

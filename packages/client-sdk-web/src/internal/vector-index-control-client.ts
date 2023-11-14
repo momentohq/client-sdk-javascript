@@ -112,8 +112,7 @@ export class VectorIndexControlClient<
       this.clientWrapper.createIndex(
         request,
         this.clientMetadataProvider.createClientMetadata(),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        (err, resp) => {
+        (err, _resp) => {
           if (err) {
             if (err.code === StatusCode.ALREADY_EXISTS) {
               resolve(new CreateVectorIndex.AlreadyExists());
@@ -137,7 +136,6 @@ export class VectorIndexControlClient<
       this.clientWrapper.listIndexes(
         request,
         this.clientMetadataProvider.createClientMetadata(),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
             resolve(new ListVectorIndexes.Error(cacheServiceErrorMapper(err)));
@@ -145,10 +143,8 @@ export class VectorIndexControlClient<
             const indexes: VectorIndexInfo[] = resp
               .getIndexNamesList()
               .map((name: string) => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
                 return new VectorIndexInfo(name);
               });
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             resolve(new ListVectorIndexes.Success(indexes));
           }
         }
@@ -169,8 +165,7 @@ export class VectorIndexControlClient<
       this.clientWrapper.deleteIndex(
         request,
         this.clientMetadataProvider.createClientMetadata(),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        (err, resp) => {
+        (err, _resp) => {
           if (err) {
             resolve(new DeleteVectorIndex.Error(cacheServiceErrorMapper(err)));
           } else {
