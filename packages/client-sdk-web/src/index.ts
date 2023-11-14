@@ -131,6 +131,14 @@ import {
   TopicRole,
   LeaderboardOrder,
   ILeaderboard,
+  PostUrlWebhookDestination,
+  Webhook,
+  WebhookDestination,
+  WebhookId,
+  DeleteWebhook,
+  ListWebhooks,
+  PutWebhook,
+  WebhookDestinationType,
 } from '@gomomento/sdk-core';
 
 import {Configuration} from './config/configuration';
@@ -303,4 +311,13 @@ export {
   MomentoLoggerFactory,
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
+  // Webhooks
+  PostUrlWebhookDestination,
+  Webhook,
+  WebhookDestination,
+  WebhookId,
+  DeleteWebhook,
+  ListWebhooks,
+  PutWebhook,
+  WebhookDestinationType,
 };
