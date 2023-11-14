@@ -1,12 +1,29 @@
-import {CacheGet, CreateCache, CacheSet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk-web';
+import {
+  CacheClient,
+  CacheGet,
+  CacheSet,
+  Configurations,
+  CreateCache,
+  CredentialProvider,
+  DefaultMomentoLoggerFactory,
+  DefaultMomentoLoggerLevel,
+} from '@gomomento/sdk-web';
 import {initJSDom} from './utils/jsdom';
+import {ExperimentalRequestLoggingMiddleware} from '@gomomento/sdk-web/dist/src/config/middleware/experimental-request-logging-middleware';
 
 async function main() {
   // Because the Momento Web SDK is intended for use in a browser, we use the JSDom library to set up an environment
   // that will allow us to use it in a node.js program.
   initJSDom();
+
+  const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.INFO);
+
   const momento = new CacheClient({
-    configuration: Configurations.Laptop.v1(),
+    configuration: Configurations.Laptop.v1().withMiddlewares([
+      new ExperimentalRequestLoggingMiddleware(loggerFactory.getLogger('basicLogger1')),
+      new ExperimentalRequestLoggingMiddleware(loggerFactory.getLogger('basicLogger2')),
+      new ExperimentalRequestLoggingMiddleware(loggerFactory.getLogger('basicLogger3')),
+    ]),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_API_KEY',
     }),

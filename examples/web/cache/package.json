@@ -7,6 +7,7 @@
     "prebuild": "eslint . --ext .ts",
     "build": "tsc",
     "example": "tsc && node dist/basic.js",
+    "basic": "tsc && node dist/basic.js",
     "advanced": "tsc && node dist/advanced.js",
     "dictionary": "tsc && node dist/dictionary.js",
     "validate-examples": "tsc && node dist/basic.js && node dist/advanced.js && node dist/dictionary.js && node dist/readme.js",
@@ -29,7 +30,7 @@
     "typescript": "4.4.3"
   },
   "dependencies": {
-    "@gomomento/sdk-web": "^1.40.1",
+    "@gomomento/sdk-web": "file:../../../packages/client-sdk-web",
     "jsdom": "22.1.0"
   }
 }

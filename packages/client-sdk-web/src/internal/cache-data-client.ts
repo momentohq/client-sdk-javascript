@@ -129,6 +129,8 @@ import {
   getWebCacheEndpoint,
 } from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
+import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
+import {MiddlewareRequestHandlerContext} from '../config/middleware/middleware';
 
 export interface DataClientProps {
   configuration: Configuration;
@@ -170,11 +172,20 @@ export class CacheDataClient<
     this.clientMetadataProvider = new ClientMetadataProvider({
       authToken: props.credentialProvider.getAuthToken(),
     });
+    const context: MiddlewareRequestHandlerContext = {};
     this.clientWrapper = new cache.ScsClient(
       // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
       getWebCacheEndpoint(props.credentialProvider),
       null,
-      {}
+      {
+        streamInterceptors: [
+          middlewaresInterceptor(
+            props.configuration.getLoggerFactory(),
+            props.configuration.getMiddlewares(),
+            context
+          ),
+        ],
+      }
     );
     this.textEncoder = new TextEncoder();
   }

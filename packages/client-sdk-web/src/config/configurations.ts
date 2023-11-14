@@ -48,6 +48,7 @@ export class Laptop extends CacheConfiguration {
     return new Laptop({
       loggerFactory: loggerFactory,
       transportStrategy: transportStrategy,
+      middlewares: [],
     });
   }
 }
@@ -89,6 +90,7 @@ export class Browser extends CacheConfiguration {
     return new Browser({
       loggerFactory: loggerFactory,
       transportStrategy: transportStrategy,
+      middlewares: [],
     });
   }
 }
