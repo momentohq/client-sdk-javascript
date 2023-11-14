@@ -11,7 +11,7 @@ import {
   PostUrlWebhookDestination,
   WebhookDestinationType,
   GetWebhookSecret,
-} from '../../../core';
+} from '@gomomento/sdk-core';
 import {IWebhookClient} from '../../../core/src/internal/clients/pubsub/IWebhookClient';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
