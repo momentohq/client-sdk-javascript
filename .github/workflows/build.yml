@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   verify:
-    runs-on: macos-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
@@ -57,7 +57,7 @@ jobs:
       matrix:
         node: [18]
     name: Test on Node ${{ matrix.node }}
-    runs-on: macos-latest
+    runs-on: ubuntu-22.04
     env:
       TEST_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
       TEST_SESSION_TOKEN: ${{ secrets.MOMENTO_PREPROD_SESSION_TOKEN }}
