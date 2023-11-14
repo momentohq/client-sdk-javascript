@@ -88,17 +88,18 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
 
     similarityMetric ??= VectorSimilarityMetric.COSINE_SIMILARITY;
 
+    const similarityMetricPb = new grpcControl._SimilarityMetric();
     switch (similarityMetric) {
       case VectorSimilarityMetric.INNER_PRODUCT:
-        request.similarity_metric.inner_product =
+        similarityMetricPb.inner_product =
           new grpcControl._SimilarityMetric._InnerProduct();
         break;
       case VectorSimilarityMetric.EUCLIDEAN_SIMILARITY:
-        request.similarity_metric.euclidean_similarity =
+        similarityMetricPb.euclidean_similarity =
           new grpcControl._SimilarityMetric._EuclideanSimilarity();
         break;
       case VectorSimilarityMetric.COSINE_SIMILARITY:
-        request.similarity_metric.cosine_similarity =
+        similarityMetricPb.cosine_similarity =
           new grpcControl._SimilarityMetric._CosineSimilarity();
         break;
       default:
@@ -109,6 +110,7 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
           )
         );
     }
+    request.similarity_metric = similarityMetricPb;
 
     return await new Promise<CreateVectorIndex.Response>(resolve => {
       this.clientWrapper.getClient().CreateIndex(
