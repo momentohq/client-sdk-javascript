@@ -4,6 +4,8 @@ import {
   ListVectorIndexes,
   PreviewVectorIndexClient,
   VectorSearch,
+  VectorSearchAndFetchVectors,
+  VectorDeleteItemBatch,
   VectorUpsertItemBatch,
   ALL_VECTOR_METADATA,
   Configurations,
@@ -71,9 +73,9 @@ async function example_API_UpsertItemBatch(vectorClient: PreviewVectorIndexClien
 
 async function example_API_DeleteItemBatch(vectorClient: PreviewVectorIndexClient) {
   const result = await vectorClient.deleteItemBatch('test-index', ['example_item_1', 'example_item_2']);
-  if (result instanceof VectorUpsertItemBatch.Success) {
+  if (result instanceof VectorDeleteItemBatch.Success) {
     console.log('Successfully deleted items');
-  } else if (result instanceof VectorUpsertItemBatch.Error) {
+  } else if (result instanceof VectorDeleteItemBatch.Error) {
     throw new Error(`An error occurred while deleting items: ${result.errorCode()}: ${result.toString()}`);
   }
 }
@@ -83,6 +85,18 @@ async function example_API_Search(vectorClient: PreviewVectorIndexClient) {
   if (result instanceof VectorSearch.Success) {
     console.log(`Found ${result.hits().length} matches`);
   } else if (result instanceof VectorSearch.Error) {
+    throw new Error(`An error occurred searching index test-index: ${result.errorCode()}: ${result.toString()}`);
+  }
+}
+
+async function example_API_SearchAndFetchVectors(vectorClient: PreviewVectorIndexClient) {
+  const result = await vectorClient.searchAndFetchVectors('test-index', [1.0, 2.0], {
+    topK: 3,
+    metadataFields: ALL_VECTOR_METADATA,
+  });
+  if (result instanceof VectorSearchAndFetchVectors.Success) {
+    console.log(`Found ${result.hits().length} matches`);
+  } else if (result instanceof VectorSearchAndFetchVectors.Error) {
     throw new Error(`An error occurred searching index test-index: ${result.errorCode()}: ${result.toString()}`);
   }
 }
@@ -99,6 +113,7 @@ async function main() {
   await example_API_ListIndexes(vectorClient);
   await example_API_UpsertItemBatch(vectorClient);
   await example_API_Search(vectorClient);
+  await example_API_SearchAndFetchVectors(vectorClient);
   await example_API_DeleteItemBatch(vectorClient);
   await example_API_DeleteIndex(vectorClient);
 }
