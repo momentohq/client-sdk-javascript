@@ -35,12 +35,15 @@ export function testIndexName(): string {
 
 export function testWebhook(cache?: string): Webhook {
   const cacheName = cache ?? testCacheName();
+  const webhookName = `webhook-${cacheName}`;
   return {
     id: {
       cacheName,
-      webhookName: `webhook-${cacheName}`,
+      webhookName,
     },
-    destination: new PostUrlWebhookDestination('https://www.fake.url.com'),
+    destination: new PostUrlWebhookDestination(
+      `https://synthetics-webhooks.synthetics.preprod.a.momentohq.com/v1/webhooks/${webhookName}`
+    ),
     topicName: `topic-${v4()}`,
   };
 }
@@ -392,4 +395,19 @@ export function expectWithMessage(expected: () => void, message: string) {
     }
     throw new Error(message);
   }
+}
+
+type WebhookRequestDetails = {
+  invocationCount: number;
+  requestId: string;
+};
+export async function getWebhookRequestDetails(
+  webhookDestination: string
+): Promise<WebhookRequestDetails> {
+  const resp = await fetch(webhookDestination);
+
+  if (!resp.ok) {
+    throw new Error(`failed to get webhook details: ${await resp.text()}`);
+  }
+  return (await resp.json()) as WebhookRequestDetails;
 }

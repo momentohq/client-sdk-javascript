@@ -2,8 +2,10 @@ import {
   PostUrlWebhookDestination,
   ListWebhooks,
   GetWebhookSecret,
+  TopicPublish,
 } from '@gomomento/sdk-core';
 import {
+  getWebhookRequestDetails,
   ItBehavesLikeItValidatesCacheName,
   ItBehavesLikeItValidatesTopicName,
   testWebhook,
@@ -15,6 +17,7 @@ import {
   ICacheClient,
   ITopicClient,
 } from '@gomomento/sdk-core/dist/src/internal/clients';
+import {delay} from './auth-client';
 
 export function runWebhookTests(
   topicClient: ITopicClient,
@@ -77,11 +80,11 @@ export function runWebhookTests(
                 wh.id.cacheName === webhook.id.cacheName
             );
           expect(webhookWeAreLookingFor).toBeTruthy();
+        } else if (resp instanceof ListWebhooks.Error) {
+          throw new Error(`list webhooks request failed: ${resp.message()}`);
         } else {
           throw new Error(
-            `list webhooks request failed: ${(
-              resp as ListWebhooks.Error
-            ).message()}`
+            `unknown error occured when making a 'listWebhooks' request: ${resp.toString()}`
           );
         }
       });
@@ -97,13 +100,36 @@ export function runWebhookTests(
           expect(resp.secret()).toBeTruthy();
           expect(resp.webhookName()).toEqual(webhook.id.webhookName);
           expect(resp.cacheName()).toEqual(webhook.id.cacheName);
+        } else if (resp instanceof GetWebhookSecret.Error) {
+          throw new Error(`getWebhookSecret request failed: ${resp.message()}`);
         } else {
           throw new Error(
-            `getWebhookSecret request failed: ${(
-              resp as GetWebhookSecret.Error
-            ).message()}`
+            `unknown error occured when making a 'getWebhookSecret' request: ${resp.toString()}`
           );
         }
+      });
+    });
+    it('should create a new webhook, publish a message to a topic, and verify that the webhook was called', async () => {
+      const webhook = testWebhook(integrationTestCacheName);
+      await WithWebhook(topicClient, webhook, async () => {
+        const publishResp = await topicClient.publish(
+          webhook.id.cacheName,
+          webhook.topicName,
+          'a message'
+        );
+        if (publishResp instanceof TopicPublish.Error) {
+          throw new Error(
+            `failed to publish to topic: ${webhook.topicName} in cache: ${
+              webhook.id.cacheName
+            } webhook: ${
+              webhook.id.webhookName
+            } error: ${publishResp.toString()}`
+          );
+        }
+        // wait 5 seconds for webhook to get called. Can increase this if needed
+        await delay(5 * 1000);
+        const detes = await getWebhookRequestDetails(webhook.destination.url());
+        expect(detes.invocationCount).toBe(1);
       });
     });
   });
