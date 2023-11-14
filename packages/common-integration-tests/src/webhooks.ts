@@ -5,7 +5,6 @@ import {
   TopicPublish,
 } from '@gomomento/sdk-core';
 import {
-  expectWithMessage,
   getWebhookRequestDetails,
   ItBehavesLikeItValidatesCacheName,
   ItBehavesLikeItValidatesTopicName,
@@ -81,11 +80,11 @@ export function runWebhookTests(
                 wh.id.cacheName === webhook.id.cacheName
             );
           expect(webhookWeAreLookingFor).toBeTruthy();
+        } else if (resp instanceof ListWebhooks.Error) {
+          throw new Error(`list webhooks request failed: ${resp.message()}`);
         } else {
           throw new Error(
-            `list webhooks request failed: ${(
-              resp as ListWebhooks.Error
-            ).message()}`
+            `unknown error occured when making a 'listWebhooks' request: ${resp.toString()}`
           );
         }
       });
@@ -101,11 +100,11 @@ export function runWebhookTests(
           expect(resp.secret()).toBeTruthy();
           expect(resp.webhookName()).toEqual(webhook.id.webhookName);
           expect(resp.cacheName()).toEqual(webhook.id.cacheName);
+        } else if (resp instanceof GetWebhookSecret.Error) {
+          throw new Error(`getWebhookSecret request failed: ${resp.message()}`);
         } else {
           throw new Error(
-            `getWebhookSecret request failed: ${(
-              resp as GetWebhookSecret.Error
-            ).message()}`
+            `unknown error occured when making a 'getWebhookSecret' request: ${resp.toString()}`
           );
         }
       });
