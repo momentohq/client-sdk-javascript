@@ -13,7 +13,7 @@ import {
   GetWebhookSecret,
 } from '@gomomento/sdk-core';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
-import {IWebhookClient} from '../../../core/src/internal/clients/pubsub/IWebhookClient';
+import {IWebhookClient} from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/IWebhookClient';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {version} from '../../package.json';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';

@@ -12,7 +12,7 @@ import {
   WebhookDestinationType,
   GetWebhookSecret,
 } from '@gomomento/sdk-core';
-import {IWebhookClient} from '../../../core/src/internal/clients/pubsub/IWebhookClient';
+import {IWebhookClient} from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/IWebhookClient';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   validateCacheName,
