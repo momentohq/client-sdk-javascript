@@ -47,9 +47,7 @@ describe('Expiration', () => {
     });
 
     test('expiresAt.fromEpoch', () => {
-      const currentDate = new Date();
-      currentDate.setSeconds(currentDate.getSeconds() + 100);
-      const expiresAtEpoch = currentDate.getSeconds() / 1000;
+      const expiresAtEpoch = Date.now() / 1000;
       const expiresIn = ExpiresAt.fromEpoch(expiresAtEpoch);
 
       expect(expiresIn.doesExpire()).toBe(true);
