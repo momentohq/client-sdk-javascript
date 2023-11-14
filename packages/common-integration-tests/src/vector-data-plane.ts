@@ -5,6 +5,9 @@ import {
   VectorUpsertItemBatch,
   ALL_VECTOR_METADATA,
   VectorSimilarityMetric,
+  SearchOptions,
+  VectorSearchAndFetchVectors,
+  VectorIndexItem,
 } from '@gomomento/sdk-core';
 import {
   expectWithMessage,
@@ -33,6 +36,18 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     });
   });
 
+  describe('search and fetch vectors validation', () => {
+    ItBehavesLikeItValidatesIndexName((props: ValidateVectorProps) => {
+      return vectorClient.searchAndFetchVectors(props.indexName, []);
+    });
+
+    ItBehavesLikeItValidatesTopK((props: ValidateVectorProps) => {
+      return vectorClient.searchAndFetchVectors(props.indexName, [], {
+        topK: props.topK,
+      });
+    });
+  });
+
   describe('delete validation', () => {
     ItBehavesLikeItValidatesIndexName((props: ValidateVectorProps) => {
       return vectorClient.deleteItemBatch(props.indexName, []);
@@ -40,167 +55,277 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
   });
 
   describe('upsertItem and search', () => {
-    it('should support upsertItem and search using inner product', async () => {
-      const indexName = testIndexName();
-      await WithIndex(
-        vectorClient,
-        indexName,
-        2,
-        VectorSimilarityMetric.INNER_PRODUCT,
-        async () => {
-          const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
-            {
-              id: 'test_item',
-              vector: [1.0, 2.0],
-            },
-          ]);
-          expectWithMessage(() => {
-            expect(upsertResponse).toBeInstanceOf(
-              VectorUpsertItemBatch.Success
+    /*
+     * In the following tests we test both search and searchAndFetchVectors with a common
+     * suite of tests. To do this we abstract away calling the search method, building the hits
+     * (which may or may not contain the vectors), and asserting the results.
+     *
+     * We have two helpers to do this: search and buildSearchHits. The search method calls the
+     * appropriate search method on the vector client. The buildSearchHits method takes the
+     * search hits and the search method name and returns the expected search hits.
+     */
+
+    async function search(
+      vectorClient: IVectorIndexClient,
+      searchMethodName: string,
+      indexName: string,
+      queryVector: number[],
+      options?: SearchOptions
+    ): Promise<VectorSearch.Response | VectorSearchAndFetchVectors.Response> {
+      if (searchMethodName === 'search') {
+        return await vectorClient.search(indexName, queryVector, options);
+      } else if (searchMethodName === 'searchAndFetchVectors') {
+        return await vectorClient.searchAndFetchVectors(
+          indexName,
+          queryVector,
+          options
+        );
+      } else {
+        throw new Error(`unknown search method ${searchMethodName}`);
+      }
+    }
+
+    function buildSearchHits(
+      searchHits: VectorSearch.SearchHit[],
+      searchMethodName: string,
+      items: VectorIndexItem[]
+    ): VectorSearch.SearchHit[] {
+      if (searchMethodName === 'search') {
+        return searchHits;
+      } else if (searchMethodName === 'searchAndFetchVectors') {
+        const idToVector = new Map<string, number[]>();
+        items.forEach(item => {
+          idToVector.set(item.id, item.vector);
+        });
+        return searchHits.map(hit => {
+          return {
+            ...hit,
+            vector: idToVector.get(hit.id),
+          };
+        });
+      } else {
+        throw new Error(`unknown search method ${searchMethodName}`);
+      }
+    }
+
+    it.each([
+      {searchMethodName: 'search', response: VectorSearch.Success},
+      {
+        searchMethodName: 'searchAndFetchVectors',
+        response: VectorSearchAndFetchVectors.Success,
+      },
+    ])(
+      'should support upsertItem and search using inner product',
+      async ({searchMethodName, response}) => {
+        const indexName = testIndexName();
+        await WithIndex(
+          vectorClient,
+          indexName,
+          2,
+          VectorSimilarityMetric.INNER_PRODUCT,
+          async () => {
+            const items = [
+              {
+                id: 'test_item',
+                vector: [1.0, 2.0],
+              },
+            ];
+            const upsertResponse = await vectorClient.upsertItemBatch(
+              indexName,
+              items
             );
-          }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
+            expectWithMessage(() => {
+              expect(upsertResponse).toBeInstanceOf(
+                VectorUpsertItemBatch.Success
+              );
+            }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
 
-          await sleep(2_000);
+            await sleep(2_000);
 
-          const searchResponse = await vectorClient.search(
-            indexName,
-            [1.0, 2.0],
-            {topK: 1}
-          );
-          expectWithMessage(() => {
-            expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
-          }, `expected SUCCESS but got ${searchResponse.toString()}}`);
-          const successResponse = searchResponse as VectorSearch.Success;
-          expect(successResponse.hits()).toEqual([
-            {
-              id: 'test_item',
-              score: 5.0,
-              metadata: {},
-            },
-          ]);
-        }
-      );
-    });
-
-    it('should support upsertItem and search using cosine similarity', async () => {
-      const indexName = testIndexName();
-      await WithIndex(
-        vectorClient,
-        indexName,
-        2,
-        VectorSimilarityMetric.COSINE_SIMILARITY,
-        async () => {
-          const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
-            {
-              id: 'test_item_1',
-              vector: [1.0, 1.0],
-            },
-            {
-              id: 'test_item_2',
-              vector: [-1.0, 1.0],
-            },
-            {
-              id: 'test_item_3',
-              vector: [-1.0, -1.0],
-            },
-          ]);
-          expectWithMessage(() => {
-            expect(upsertResponse).toBeInstanceOf(
-              VectorUpsertItemBatch.Success
+            const searchResponse = await search(
+              vectorClient,
+              searchMethodName,
+              indexName,
+              [1.0, 2.0],
+              {topK: 1}
             );
-          }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
-
-          await sleep(2_000);
-
-          const searchResponse = await vectorClient.search(
-            indexName,
-            [2.0, 2.0],
-            {topK: 3}
-          );
-          expectWithMessage(() => {
-            expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
-          }, `expected SUCCESS but got ${searchResponse.toString()}}`);
-          const successResponse = searchResponse as VectorSearch.Success;
-          expect(successResponse.hits()).toEqual([
-            {
-              id: 'test_item_1',
-              score: 1.0,
-              metadata: {},
-            },
-            {
-              id: 'test_item_2',
-              score: 0.0,
-              metadata: {},
-            },
-            {
-              id: 'test_item_3',
-              score: -1.0,
-              metadata: {},
-            },
-          ]);
-        }
-      );
-    });
-
-    it('should support upsertItem and search using euclidean similarity', async () => {
-      const indexName = testIndexName();
-      await WithIndex(
-        vectorClient,
-        indexName,
-        2,
-        VectorSimilarityMetric.EUCLIDEAN_SIMILARITY,
-        async () => {
-          const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
-            {
-              id: 'test_item_1',
-              vector: [1.0, 1.0],
-            },
-            {
-              id: 'test_item_2',
-              vector: [-1.0, 1.0],
-            },
-            {
-              id: 'test_item_3',
-              vector: [-1.0, -1.0],
-            },
-          ]);
-          expectWithMessage(() => {
-            expect(upsertResponse).toBeInstanceOf(
-              VectorUpsertItemBatch.Success
+            expectWithMessage(() => {
+              expect(searchResponse).toBeInstanceOf(response);
+            }, `expected SUCCESS but got ${searchResponse.toString()}}`);
+            const hits = buildSearchHits(
+              [
+                {
+                  id: 'test_item',
+                  score: 5.0,
+                  metadata: {},
+                },
+              ],
+              searchMethodName,
+              items
             );
-          }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
+            expect(searchResponse.hits()).toEqual(hits);
+          }
+        );
+      }
+    );
 
-          await sleep(2_000);
+    it.each([
+      {searchMethodName: 'search', response: VectorSearch.Success},
+      {
+        searchMethodName: 'searchAndFetchVectors',
+        response: VectorSearchAndFetchVectors.Success,
+      },
+    ])(
+      'should support upsertItem and search using cosine similarity',
+      async ({searchMethodName, response}) => {
+        const indexName = testIndexName();
+        await WithIndex(
+          vectorClient,
+          indexName,
+          2,
+          VectorSimilarityMetric.COSINE_SIMILARITY,
+          async () => {
+            const items = [
+              {
+                id: 'test_item_1',
+                vector: [1.0, 1.0],
+              },
+              {
+                id: 'test_item_2',
+                vector: [-1.0, 1.0],
+              },
+              {
+                id: 'test_item_3',
+                vector: [-1.0, -1.0],
+              },
+            ];
+            const upsertResponse = await vectorClient.upsertItemBatch(
+              indexName,
+              items
+            );
+            expectWithMessage(() => {
+              expect(upsertResponse).toBeInstanceOf(
+                VectorUpsertItemBatch.Success
+              );
+            }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
 
-          const searchResponse = await vectorClient.search(
-            indexName,
-            [1.0, 1.0],
-            {topK: 3}
-          );
-          expectWithMessage(() => {
-            expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
-          }, `expected SUCCESS but got ${searchResponse.toString()}}`);
-          const successResponse = searchResponse as VectorSearch.Success;
-          expect(successResponse.hits()).toEqual([
-            {
-              id: 'test_item_1',
-              score: 0.0,
-              metadata: {},
-            },
-            {
-              id: 'test_item_2',
-              score: 4.0,
-              metadata: {},
-            },
-            {
-              id: 'test_item_3',
-              score: 8.0,
-              metadata: {},
-            },
-          ]);
-        }
-      );
-    });
+            await sleep(2_000);
+
+            const searchResponse = await search(
+              vectorClient,
+              searchMethodName,
+              indexName,
+              [2.0, 2.0],
+              {topK: 3}
+            );
+            expectWithMessage(() => {
+              expect(searchResponse).toBeInstanceOf(response);
+            }, `expected SUCCESS but got ${searchResponse.toString()}}`);
+            const hits = buildSearchHits(
+              [
+                {
+                  id: 'test_item_1',
+                  score: 1.0,
+                  metadata: {},
+                },
+                {
+                  id: 'test_item_2',
+                  score: 0.0,
+                  metadata: {},
+                },
+                {
+                  id: 'test_item_3',
+                  score: -1.0,
+                  metadata: {},
+                },
+              ],
+              searchMethodName,
+              items
+            );
+            expect(searchResponse.hits()).toEqual(hits);
+          }
+        );
+      }
+    );
+
+    it.each([
+      {searchMethodName: 'search', response: VectorSearch.Success},
+      {
+        searchMethodName: 'searchAndFetchVectors',
+        response: VectorSearchAndFetchVectors.Success,
+      },
+    ])(
+      'should support upsertItem and search using euclidean similarity',
+      async ({searchMethodName, response}) => {
+        const indexName = testIndexName();
+        await WithIndex(
+          vectorClient,
+          indexName,
+          2,
+          VectorSimilarityMetric.EUCLIDEAN_SIMILARITY,
+          async () => {
+            const items = [
+              {
+                id: 'test_item_1',
+                vector: [1.0, 1.0],
+              },
+              {
+                id: 'test_item_2',
+                vector: [-1.0, 1.0],
+              },
+              {
+                id: 'test_item_3',
+                vector: [-1.0, -1.0],
+              },
+            ];
+            const upsertResponse = await vectorClient.upsertItemBatch(
+              indexName,
+              items
+            );
+            expectWithMessage(() => {
+              expect(upsertResponse).toBeInstanceOf(
+                VectorUpsertItemBatch.Success
+              );
+            }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
+
+            await sleep(2_000);
+
+            const searchResponse = await search(
+              vectorClient,
+              searchMethodName,
+              indexName,
+              [1.0, 1.0],
+              {topK: 3}
+            );
+            expectWithMessage(() => {
+              expect(searchResponse).toBeInstanceOf(response);
+            }, `expected SUCCESS but got ${searchResponse.toString()}}`);
+            const hits = buildSearchHits(
+              [
+                {
+                  id: 'test_item_1',
+                  score: 0.0,
+                  metadata: {},
+                },
+                {
+                  id: 'test_item_2',
+                  score: 4.0,
+                  metadata: {},
+                },
+                {
+                  id: 'test_item_3',
+                  score: 8.0,
+                  metadata: {},
+                },
+              ],
+              searchMethodName,
+              items
+            );
+            expect(searchResponse.hits()).toEqual(hits);
+          }
+        );
+      }
+    );
 
     it('should support upserting multiple items and searching', async () => {
       const indexName = testIndexName();
@@ -240,215 +365,333 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
       );
     });
 
-    it('should support upserting multiple items and searching with top k', async () => {
-      const indexName = testIndexName();
-      await WithIndex(
-        vectorClient,
-        indexName,
-        2,
-        VectorSimilarityMetric.INNER_PRODUCT,
-        async () => {
-          const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
-            {id: 'test_item_1', vector: [1.0, 2.0]},
-            {id: 'test_item_2', vector: [3.0, 4.0]},
-            {id: 'test_item_3', vector: [5.0, 6.0]},
-          ]);
-          expectWithMessage(() => {
-            expect(upsertResponse).toBeInstanceOf(
-              VectorUpsertItemBatch.Success
+    it.each([
+      {searchMethodName: 'search', response: VectorSearch.Success},
+      {
+        searchMethodName: 'searchAndFetchVectors',
+        response: VectorSearchAndFetchVectors.Success,
+      },
+    ])(
+      'should support upserting multiple items and searching with top k',
+      async ({searchMethodName, response}) => {
+        const indexName = testIndexName();
+        await WithIndex(
+          vectorClient,
+          indexName,
+          2,
+          VectorSimilarityMetric.INNER_PRODUCT,
+          async () => {
+            const items = [
+              {id: 'test_item_1', vector: [1.0, 2.0]},
+              {id: 'test_item_2', vector: [3.0, 4.0]},
+              {id: 'test_item_3', vector: [5.0, 6.0]},
+            ];
+            const upsertResponse = await vectorClient.upsertItemBatch(
+              indexName,
+              items
             );
-          }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
+            expectWithMessage(() => {
+              expect(upsertResponse).toBeInstanceOf(
+                VectorUpsertItemBatch.Success
+              );
+            }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
 
-          await sleep(2_000);
-          const searchResponse = await vectorClient.search(
-            indexName,
-            [1.0, 2.0],
-            {topK: 2}
-          );
-          expectWithMessage(() => {
-            expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
-          }, `expected SUCCESS but got ${searchResponse.toString()}}`);
-          const successResponse = searchResponse as VectorSearch.Success;
-          expect(successResponse.hits()).toEqual([
-            {id: 'test_item_3', score: 17.0, metadata: {}},
-            {id: 'test_item_2', score: 11.0, metadata: {}},
-          ]);
-        }
-      );
-    });
-
-    it('should support upsert and search with metadata', async () => {
-      const indexName = testIndexName();
-      await WithIndex(
-        vectorClient,
-        indexName,
-        2,
-        VectorSimilarityMetric.INNER_PRODUCT,
-        async () => {
-          const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
-            {
-              id: 'test_item_1',
-              vector: [1.0, 2.0],
-              metadata: {key1: 'value1'},
-            },
-            {
-              id: 'test_item_2',
-              vector: [3.0, 4.0],
-              metadata: {key2: 'value2'},
-            },
-            {
-              id: 'test_item_3',
-              vector: [5.0, 6.0],
-              metadata: {key1: 'value3', key3: 'value3'},
-            },
-          ]);
-          expectWithMessage(() => {
-            expect(upsertResponse).toBeInstanceOf(
-              VectorUpsertItemBatch.Success
+            await sleep(2_000);
+            const searchResponse = await search(
+              vectorClient,
+              searchMethodName,
+              indexName,
+              [1.0, 2.0],
+              {topK: 2}
             );
-          }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
-
-          await sleep(2_000);
-
-          let searchResponse = await vectorClient.search(
-            indexName,
-            [1.0, 2.0],
-            {
-              topK: 3,
-            }
-          );
-          expectWithMessage(() => {
-            expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
-          }, `expected SUCCESS but got ${searchResponse.toString()}}`);
-          let successResponse = searchResponse as VectorSearch.Success;
-          expect(successResponse.hits()).toEqual([
-            {id: 'test_item_3', score: 17.0, metadata: {}},
-            {id: 'test_item_2', score: 11.0, metadata: {}},
-            {id: 'test_item_1', score: 5.0, metadata: {}},
-          ]);
-
-          searchResponse = await vectorClient.search(indexName, [1.0, 2.0], {
-            topK: 3,
-            metadataFields: ['key1'],
-          });
-          expectWithMessage(() => {
-            expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
-          }, `expected SUCCESS but got ${searchResponse.toString()}}`);
-          successResponse = searchResponse as VectorSearch.Success;
-          expect(successResponse.hits()).toEqual([
-            {id: 'test_item_3', score: 17.0, metadata: {key1: 'value3'}},
-            {id: 'test_item_2', score: 11.0, metadata: {}},
-            {id: 'test_item_1', score: 5.0, metadata: {key1: 'value1'}},
-          ]);
-
-          searchResponse = await vectorClient.search(indexName, [1.0, 2.0], {
-            topK: 3,
-            metadataFields: ['key1', 'key2', 'key3', 'key4'],
-          });
-          expectWithMessage(() => {
-            expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
-          }, `expected SUCCESS but got ${searchResponse.toString()}}`);
-          successResponse = searchResponse as VectorSearch.Success;
-          expect(successResponse.hits()).toEqual([
-            {
-              id: 'test_item_3',
-              score: 17.0,
-              metadata: {key1: 'value3', key3: 'value3'},
-            },
-            {id: 'test_item_2', score: 11.0, metadata: {key2: 'value2'}},
-            {id: 'test_item_1', score: 5.0, metadata: {key1: 'value1'}},
-          ]);
-
-          searchResponse = await vectorClient.search(indexName, [1.0, 2.0], {
-            topK: 3,
-            metadataFields: ALL_VECTOR_METADATA,
-          });
-          expectWithMessage(() => {
-            expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
-          }, `expected SUCCESS but got ${searchResponse.toString()}}`);
-          successResponse = searchResponse as VectorSearch.Success;
-          expect(successResponse.hits()).toEqual([
-            {
-              id: 'test_item_3',
-              score: 17.0,
-              metadata: {key1: 'value3', key3: 'value3'},
-            },
-            {id: 'test_item_2', score: 11.0, metadata: {key2: 'value2'}},
-            {id: 'test_item_1', score: 5.0, metadata: {key1: 'value1'}},
-          ]);
-        }
-      );
-    });
-
-    it('should support upsert and search with diverse metadata', async () => {
-      const indexName = testIndexName();
-      await WithIndex(
-        vectorClient,
-        indexName,
-        2,
-        VectorSimilarityMetric.INNER_PRODUCT,
-        async () => {
-          const metadata = {
-            string_key: 'string_value',
-            integer_key: 123,
-            double_key: 3.14,
-            boolean_key: true,
-            list_of_strings: ['a', 'b', 'c'],
-            empty_list: [],
-          };
-          const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
-            {
-              id: 'test_item_1',
-              vector: [1.0, 2.0],
-              metadata,
-            },
-          ]);
-          expectWithMessage(() => {
-            expect(upsertResponse).toBeInstanceOf(
-              VectorUpsertItemBatch.Success
+            expectWithMessage(() => {
+              expect(searchResponse).toBeInstanceOf(response);
+            }, `expected SUCCESS but got ${searchResponse.toString()}}`);
+            const hits = buildSearchHits(
+              [
+                {id: 'test_item_3', score: 17.0, metadata: {}},
+                {id: 'test_item_2', score: 11.0, metadata: {}},
+              ],
+              searchMethodName,
+              items
             );
-          }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
+            expect(searchResponse.hits()).toEqual(hits);
+          }
+        );
+      }
+    );
 
-          await sleep(2_000);
+    it.each([
+      {searchMethodName: 'search', response: VectorSearch.Success},
+      {
+        searchMethodName: 'searchAndFetchVectors',
+        response: VectorSearchAndFetchVectors.Success,
+      },
+    ])(
+      'should support upsert and search with metadata',
+      async ({searchMethodName, response}) => {
+        const indexName = testIndexName();
+        await WithIndex(
+          vectorClient,
+          indexName,
+          2,
+          VectorSimilarityMetric.INNER_PRODUCT,
+          async () => {
+            const items: VectorIndexItem[] = [
+              {
+                id: 'test_item_1',
+                vector: [1.0, 2.0],
+                metadata: {key1: 'value1'},
+              },
+              {
+                id: 'test_item_2',
+                vector: [3.0, 4.0],
+                metadata: {key2: 'value2'},
+              },
+              {
+                id: 'test_item_3',
+                vector: [5.0, 6.0],
+                metadata: {key1: 'value3', key3: 'value3'},
+              },
+            ];
+            const upsertResponse = await vectorClient.upsertItemBatch(
+              indexName,
+              items
+            );
+            expectWithMessage(() => {
+              expect(upsertResponse).toBeInstanceOf(
+                VectorUpsertItemBatch.Success
+              );
+            }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
 
-          const searchResponse = await vectorClient.search(
-            indexName,
-            [1.0, 2.0],
-            {
-              topK: 1,
-              metadataFields: ALL_VECTOR_METADATA,
-            }
-          );
-          expectWithMessage(() => {
-            expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
-          }, `expected SUCCESS but got ${searchResponse.toString()}}`);
-          const successResponse = searchResponse as VectorSearch.Success;
-          expect(successResponse.hits()).toEqual([
-            {id: 'test_item_1', score: 5.0, metadata},
-          ]);
-        }
-      );
-    });
+            await sleep(2_000);
+
+            let searchResponse = await search(
+              vectorClient,
+              searchMethodName,
+              indexName,
+              [1.0, 2.0],
+              {
+                topK: 3,
+              }
+            );
+            expectWithMessage(() => {
+              expect(searchResponse).toBeInstanceOf(response);
+            }, `expected SUCCESS but got ${searchResponse.toString()}}`);
+            const hits1 = buildSearchHits(
+              [
+                {id: 'test_item_3', score: 17.0, metadata: {}},
+                {id: 'test_item_2', score: 11.0, metadata: {}},
+                {id: 'test_item_1', score: 5.0, metadata: {}},
+              ],
+              searchMethodName,
+              items
+            );
+            expect(searchResponse.hits()).toEqual(hits1);
+
+            searchResponse = await search(
+              vectorClient,
+              searchMethodName,
+              indexName,
+              [1.0, 2.0],
+              {
+                topK: 3,
+                metadataFields: ['key1'],
+              }
+            );
+            expectWithMessage(() => {
+              expect(searchResponse).toBeInstanceOf(response);
+            }, `expected SUCCESS but got ${searchResponse.toString()}}`);
+            const hits2 = buildSearchHits(
+              [
+                {id: 'test_item_3', score: 17.0, metadata: {key1: 'value3'}},
+                {id: 'test_item_2', score: 11.0, metadata: {}},
+                {id: 'test_item_1', score: 5.0, metadata: {key1: 'value1'}},
+              ],
+              searchMethodName,
+              items
+            );
+            expect(searchResponse.hits()).toEqual(hits2);
+
+            searchResponse = await search(
+              vectorClient,
+              searchMethodName,
+              indexName,
+              [1.0, 2.0],
+              {
+                topK: 3,
+                metadataFields: ['key1', 'key2', 'key3', 'key4'],
+              }
+            );
+            expectWithMessage(() => {
+              expect(searchResponse).toBeInstanceOf(response);
+            }, `expected SUCCESS but got ${searchResponse.toString()}}`);
+            const hits3 = buildSearchHits(
+              [
+                {
+                  id: 'test_item_3',
+                  score: 17.0,
+                  metadata: {key1: 'value3', key3: 'value3'},
+                },
+                {id: 'test_item_2', score: 11.0, metadata: {key2: 'value2'}},
+                {id: 'test_item_1', score: 5.0, metadata: {key1: 'value1'}},
+              ],
+              searchMethodName,
+              items
+            );
+            expect(searchResponse.hits()).toEqual(hits3);
+
+            searchResponse = await search(
+              vectorClient,
+              searchMethodName,
+              indexName,
+              [1.0, 2.0],
+              {
+                topK: 3,
+                metadataFields: ALL_VECTOR_METADATA,
+              }
+            );
+            expectWithMessage(() => {
+              expect(searchResponse).toBeInstanceOf(response);
+            }, `expected SUCCESS but got ${searchResponse.toString()}}`);
+            const hits4 = buildSearchHits(
+              [
+                {
+                  id: 'test_item_3',
+                  score: 17.0,
+                  metadata: {key1: 'value3', key3: 'value3'},
+                },
+                {id: 'test_item_2', score: 11.0, metadata: {key2: 'value2'}},
+                {id: 'test_item_1', score: 5.0, metadata: {key1: 'value1'}},
+              ],
+              searchMethodName,
+              items
+            );
+            expect(searchResponse.hits()).toEqual(hits4);
+          }
+        );
+      }
+    );
+
+    it.each([
+      {searchMethodName: 'search', response: VectorSearch.Success},
+      {
+        searchMethodName: 'searchAndFetchVectors',
+        response: VectorSearchAndFetchVectors.Success,
+      },
+    ])(
+      'should support upsert and search with diverse metadata',
+      async ({searchMethodName, response}) => {
+        const indexName = testIndexName();
+        await WithIndex(
+          vectorClient,
+          indexName,
+          2,
+          VectorSimilarityMetric.INNER_PRODUCT,
+          async () => {
+            const metadata = {
+              string_key: 'string_value',
+              integer_key: 123,
+              double_key: 3.14,
+              boolean_key: true,
+              list_of_strings: ['a', 'b', 'c'],
+              empty_list: [],
+            };
+            const items = [
+              {
+                id: 'test_item_1',
+                vector: [1.0, 2.0],
+                metadata,
+              },
+            ];
+            const upsertResponse = await vectorClient.upsertItemBatch(
+              indexName,
+              items
+            );
+            expectWithMessage(() => {
+              expect(upsertResponse).toBeInstanceOf(
+                VectorUpsertItemBatch.Success
+              );
+            }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
+
+            await sleep(2_000);
+
+            const searchResponse = await search(
+              vectorClient,
+              searchMethodName,
+              indexName,
+              [1.0, 2.0],
+              {
+                topK: 1,
+                metadataFields: ALL_VECTOR_METADATA,
+              }
+            );
+            expectWithMessage(() => {
+              expect(searchResponse).toBeInstanceOf(response);
+            }, `expected SUCCESS but got ${searchResponse.toString()}}`);
+            const hits = buildSearchHits(
+              [{id: 'test_item_1', score: 5.0, metadata}],
+              searchMethodName,
+              items
+            );
+            expect(searchResponse.hits()).toEqual(hits);
+          }
+        );
+      }
+    );
 
     it.each([
       {
         similarityMetric: VectorSimilarityMetric.COSINE_SIMILARITY,
         scores: [1.0, 0.0, -1.0],
         thresholds: [0.5, -1.01, 1.0],
+        searchMethodName: 'search',
+        response: VectorSearch.Success,
+      },
+      {
+        similarityMetric: VectorSimilarityMetric.COSINE_SIMILARITY,
+        scores: [1.0, 0.0, -1.0],
+        thresholds: [0.5, -1.01, 1.0],
+        searchMethodName: 'searchAndFetchVectors',
+        response: VectorSearchAndFetchVectors.Success,
       },
       {
         similarityMetric: VectorSimilarityMetric.INNER_PRODUCT,
         scores: [4.0, 0.0, -4.0],
         thresholds: [0.0, -4.01, 4.0],
+        searchMethodName: 'search',
+        response: VectorSearch.Success,
+      },
+      {
+        similarityMetric: VectorSimilarityMetric.INNER_PRODUCT,
+        scores: [4.0, 0.0, -4.0],
+        thresholds: [0.0, -4.01, 4.0],
+        searchMethodName: 'searchAndFetchVectors',
+        response: VectorSearchAndFetchVectors.Success,
       },
       {
         similarityMetric: VectorSimilarityMetric.EUCLIDEAN_SIMILARITY,
         scores: [2, 10, 18],
         thresholds: [3, 20, -0.01],
+        searchMethodName: 'search',
+        response: VectorSearch.Success,
+      },
+      {
+        similarityMetric: VectorSimilarityMetric.EUCLIDEAN_SIMILARITY,
+        scores: [2, 10, 18],
+        thresholds: [3, 20, -0.01],
+        searchMethodName: 'searchAndFetchVectors',
+        response: VectorSearchAndFetchVectors.Success,
       },
     ])(
       'should prune results with a search threshold',
-      async ({similarityMetric, scores, thresholds}) => {
+      async ({
+        similarityMetric,
+        scores,
+        thresholds,
+        searchMethodName,
+        response,
+      }) => {
         const indexName = testIndexName();
         await WithIndex(
           vectorClient,
@@ -456,22 +699,23 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           2,
           similarityMetric,
           async () => {
+            const items = [
+              {
+                id: 'test_item_1',
+                vector: [1.0, 1.0],
+              },
+              {
+                id: 'test_item_2',
+                vector: [-1.0, 1.0],
+              },
+              {
+                id: 'test_item_3',
+                vector: [-1.0, -1.0],
+              },
+            ];
             const upsertResponse = await vectorClient.upsertItemBatch(
               indexName,
-              [
-                {
-                  id: 'test_item_1',
-                  vector: [1.0, 1.0],
-                },
-                {
-                  id: 'test_item_2',
-                  vector: [-1.0, 1.0],
-                },
-                {
-                  id: 'test_item_3',
-                  vector: [-1.0, -1.0],
-                },
-              ]
+              items
             );
             expectWithMessage(() => {
               expect(upsertResponse).toBeInstanceOf(
@@ -481,53 +725,63 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
             await sleep(2_000);
 
             const queryVector = [2.0, 2.0];
-            const searchHits = [
-              {id: 'test_item_1', score: scores[0], metadata: {}},
-              {id: 'test_item_2', score: scores[1], metadata: {}},
-              {id: 'test_item_3', score: scores[2], metadata: {}},
-            ];
+            const searchHits = buildSearchHits(
+              [
+                {id: 'test_item_1', score: scores[0], metadata: {}},
+                {id: 'test_item_2', score: scores[1], metadata: {}},
+                {id: 'test_item_3', score: scores[2], metadata: {}},
+              ],
+              searchMethodName,
+              items
+            );
 
             // Test threshold to get only the top result
-            const searchResponse = await vectorClient.search(
+            const searchResponse = await search(
+              vectorClient,
+              searchMethodName,
               indexName,
               queryVector,
               {topK: 3, scoreThreshold: thresholds[0]}
             );
             expectWithMessage(() => {
-              expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
+              expect(searchResponse).toBeInstanceOf(response);
             }, `expected SUCCESS but got ${searchResponse.toString()}}`);
 
             //
-            const successResponse = searchResponse as VectorSearch.Success;
             expectWithMessage(() => {
-              expect(successResponse.hits()).toEqual([searchHits[0]]);
-            }, `expected ${JSON.stringify(searchHits[0])} but got ${JSON.stringify(successResponse.hits())}`);
+              expect(searchResponse.hits()).toEqual([searchHits[0]]);
+            }, `expected ${JSON.stringify(searchHits[0])} but got ${JSON.stringify(searchResponse.hits())}`);
 
             // Test threshold to get all results
-            const searchResponse2 = await vectorClient.search(
+            const searchResponse2 = await search(
+              vectorClient,
+              searchMethodName,
               indexName,
               queryVector,
               {topK: 3, scoreThreshold: thresholds[1]}
             );
             expectWithMessage(() => {
-              expect(searchResponse2).toBeInstanceOf(VectorSearch.Success);
+              expect(searchResponse2).toBeInstanceOf(response);
             }, `expected SUCCESS but got ${searchResponse2.toString()}}`);
 
-            const successResponse2 = searchResponse2 as VectorSearch.Success;
-            expect(successResponse2.hits()).toEqual(searchHits);
+            expect(searchResponse2.hits()).toEqual(searchHits);
 
             // Test threshold to get no results
-            const searchResponse3 = await vectorClient.search(
+            const searchResponse3 = await search(
+              vectorClient,
+              searchMethodName,
               indexName,
               queryVector,
-              {topK: 3, scoreThreshold: thresholds[2]}
+              {
+                topK: 3,
+                scoreThreshold: thresholds[2],
+              }
             );
             expectWithMessage(() => {
-              expect(searchResponse3).toBeInstanceOf(VectorSearch.Success);
+              expect(searchResponse3).toBeInstanceOf(response);
             }, `expected SUCCESS but got ${searchResponse3.toString()}}`);
 
-            const successResponse3 = searchResponse3 as VectorSearch.Success;
-            expect(successResponse3.hits()).toEqual([]);
+            expect(searchResponse3.hits()).toEqual([]);
           }
         );
       }
@@ -633,49 +887,64 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
       );
     });
 
-    it('should fail when searching with wrong number of dimensions', async () => {
-      const indexName = testIndexName();
-      await WithIndex(
-        vectorClient,
-        indexName,
-        2,
-        VectorSimilarityMetric.INNER_PRODUCT,
-        async () => {
-          const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
-            {id: 'test_item_1', vector: [1.0, 2.0]},
-            {id: 'test_item_2', vector: [3.0, 4.0]},
-            {id: 'test_item_3', vector: [5.0, 6.0]},
-          ]);
-          expectWithMessage(() => {
-            expect(upsertResponse).toBeInstanceOf(
-              VectorUpsertItemBatch.Success
+    it.each([
+      {searchMethodName: 'search', response: VectorSearch.Error},
+      {
+        searchMethodName: 'searchAndFetchVectors',
+        response: VectorSearchAndFetchVectors.Error,
+      },
+    ])(
+      'should fail when searching with wrong number of dimensions',
+      async ({searchMethodName, response}) => {
+        const indexName = testIndexName();
+        await WithIndex(
+          vectorClient,
+          indexName,
+          2,
+          VectorSimilarityMetric.INNER_PRODUCT,
+          async () => {
+            const items = [
+              {id: 'test_item_1', vector: [1.0, 2.0]},
+              {id: 'test_item_2', vector: [3.0, 4.0]},
+              {id: 'test_item_3', vector: [5.0, 6.0]},
+            ];
+            const upsertResponse = await vectorClient.upsertItemBatch(
+              indexName,
+              items
             );
-          }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
+            expectWithMessage(() => {
+              expect(upsertResponse).toBeInstanceOf(
+                VectorUpsertItemBatch.Success
+              );
+            }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
 
-          await sleep(2_000);
+            await sleep(2_000);
 
-          const searchResponse = await vectorClient.search(
-            indexName,
-            [1.0, 2.0, 3.0],
-            {topK: 2}
-          );
-          expectWithMessage(() => {
-            expect(searchResponse).toBeInstanceOf(VectorSearch.Error);
-          }, `expected ERROR but got ${searchResponse.toString()}}`);
-          const errorResponse = searchResponse as VectorSearch.Error;
+            const searchResponse = await search(
+              vectorClient,
+              searchMethodName,
+              indexName,
+              [1.0, 2.0, 3.0],
+              {topK: 2}
+            );
+            expectWithMessage(() => {
+              expect(searchResponse).toBeInstanceOf(response);
+            }, `expected ERROR but got ${searchResponse.toString()}}`);
 
-          const expectedInnerExMessage =
-            'invalid parameter: query_vector, query vector dimension must match the index dimension';
-          expect(errorResponse.message()).toMatch(
-            'Invalid argument passed to Momento client'
-          );
-          expect(errorResponse.message()).toMatch(expectedInnerExMessage);
-          expect(errorResponse.innerException().message).toMatch(
-            expectedInnerExMessage
-          );
-        }
-      );
-    });
+            const error = searchResponse as VectorSearch.Error;
+            const expectedInnerExMessage =
+              'invalid parameter: query_vector, query vector dimension must match the index dimension';
+            expect(error.message()).toMatch(
+              'Invalid argument passed to Momento client'
+            );
+            expect(error.message()).toMatch(expectedInnerExMessage);
+            expect(error.innerException().message).toMatch(
+              expectedInnerExMessage
+            );
+          }
+        );
+      }
+    );
   });
 
   describe('deleteItem', () => {
