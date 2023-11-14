@@ -7,8 +7,8 @@ import {
   VectorIndexConfigurations,
   VectorSearch,
   VectorUpsertItemBatch,
+  ALL_VECTOR_METADATA,
 } from '@gomomento/sdk';
-import {ALL_VECTOR_METADATA} from '@gomomento/sdk-core';
 
 function example_API_InstantiateVectorClient() {
   new PreviewVectorIndexClient({
