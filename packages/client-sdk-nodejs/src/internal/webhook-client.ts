@@ -11,7 +11,7 @@ import {
   ListWebhooks,
   PostUrlWebhookDestination,
   GetWebhookSecret,
-} from '../../../core';
+} from '@gomomento/sdk-core';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {IWebhookClient} from '../../../core/src/internal/clients/pubsub/IWebhookClient';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
