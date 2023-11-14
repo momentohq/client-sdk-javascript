@@ -117,7 +117,7 @@ export function runWebhookTests(
           webhook.topicName,
           'a message'
         );
-        if (publishResp instanceof TopicPublish.Success) {
+        if (publishResp instanceof TopicPublish.Error) {
           throw new Error(
             `failed to publish to topic: ${webhook.topicName} in cache: ${
               webhook.id.cacheName
