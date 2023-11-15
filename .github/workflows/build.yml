@@ -315,14 +315,14 @@ jobs:
       - name: Locally install in example and verify it builds
         run: |
           pushd examples/nodejs/cache
-            npm i ../../packages/core/gomomento-sdk-core-0.0.1.tgz
-            npm i ../../packages/client-sdk-nodejs/gomomento-sdk-0.0.1.tgz
+            npm i ../../../packages/core/gomomento-sdk-core-0.0.1.tgz
+            npm i ../../../packages/client-sdk-nodejs/gomomento-sdk-0.0.1.tgz
             npm i
             npm run build
           popd
           pushd examples/web/cache
-            npm i ../../packages/core/gomomento-sdk-core-0.0.1.tgz
-            npm i ../../packages/client-sdk-web/gomomento-sdk-web-0.0.1.tgz
+            npm i ../../../packages/core/gomomento-sdk-core-0.0.1.tgz
+            npm i ../../../packages/client-sdk-web/gomomento-sdk-web-0.0.1.tgz
             npm i
             npm run build
           popd
