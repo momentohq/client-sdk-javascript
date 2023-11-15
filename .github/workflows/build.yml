@@ -276,6 +276,51 @@ jobs:
         if: ${{ steps.validation.outcome == 'failure' }}
         run: exit 1
 
+  verify-packages:
+    strategy:
+      matrix:
+        node: [ 18 ]
+      fail-fast: true
+      max-parallel: 1
+    name: Test Deno examples on node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v3
+
+      - name: Build all packages
+        run: |
+          pushd packages/core
+            npm ci
+            npm run build
+            npm pack
+          popd
+          pushd packages/client-sdk-nodejs
+            npm ci
+            npm run build
+            npm pack
+          popd
+          pushd packages/client-sdk-web
+            npm ci
+            npm run build
+            npm pack
+          popd
+
+      - name: Locally install in example and verify it builds
+        run: |
+          pushd example/nodejs/cache
+            npm i ../../packages/core/gomomento-sdk-core-0.0.1.tgz
+            npm i ../../packages/client-sdk-nodejs/gomomento-sdk-0.0.1.tgz
+            npm i
+            npm run build
+          popd
+          pushd example/web/cache
+            npm i ../../packages/core/gomomento-sdk-core-0.0.1.tgz
+            npm i ../../packages/client-sdk-web/gomomento-sdk-web-0.0.1.tgz
+            npm i
+            npm run build
+          popd
   # https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions#enable-auto-merge-on-a-pull-request
   # dependabot-auto-merge:
   #   name: Dependabot Auto Merge
