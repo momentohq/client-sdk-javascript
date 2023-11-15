@@ -15,7 +15,7 @@ describe('list-vector-indexes.ts', () => {
     ];
     const listIndexesResponse = new ListVectorIndexes.Success(indexes);
     expect(listIndexesResponse.toString()).toEqual(
-      'Success: [VectorIndexInfo(test-index, 10, INNER_PRODUCT)]'
+      "Success: [VectorIndexInfo('test-index', 10, 'INNER_PRODUCT')]"
     );
   });
 });
