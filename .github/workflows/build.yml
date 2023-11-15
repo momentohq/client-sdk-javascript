@@ -315,6 +315,9 @@ jobs:
       - name: Locally install in nodejs example and verify it builds
         run: |
           pushd examples/nodejs/cache
+            # This is a bit of a hack, but ensures that the package-lock does not get corrupted
+            # due to installing these locally packaged files. All we care about is that the examples
+            # use the locally packaged sdks, and that they can build correctly with no errors
             rm -rf node_modules package-lock.json
             npm i ../../../packages/core/gomomento-sdk-core-0.0.1.tgz
             rm -rf node_modules package-lock.json
