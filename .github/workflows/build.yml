@@ -312,13 +312,25 @@ jobs:
             npm pack
           popd
 
-      - name: Locally install in example and verify it builds
+      - name: Locally install in nodejs example and verify it builds
         run: |
           pushd examples/nodejs/cache
             rm -rf node_modules package-lock.json
             npm i ../../../packages/core/gomomento-sdk-core-0.0.1.tgz
             rm -rf node_modules package-lock.json
             npm i ../../../packages/client-sdk-nodejs/gomomento-sdk-0.0.1.tgz
+            rm -rf node_modules package-lock.json
+            npm i
+            npm run build
+          popd
+
+      - name: Locally install in web example and verify it builds
+        run: |
+          pushd examples/web/cache
+            rm -rf node_modules package-lock.json
+            npm i ../../../packages/core/gomomento-sdk-core-0.0.1.tgz
+            rm -rf node_modules package-lock.json
+            npm i ../../../packages/client-sdk-web/gomomento-sdk-web-0.0.1.tgz
             rm -rf node_modules package-lock.json
             npm i
             npm run build
