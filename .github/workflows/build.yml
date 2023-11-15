@@ -315,9 +315,11 @@ jobs:
       - name: Locally install in example and verify it builds
         run: |
           pushd examples/nodejs/cache
-            rm package-lock.json
+            rm -rf node_modules package-lock.json
             npm i ../../../packages/core/gomomento-sdk-core-0.0.1.tgz
+            rm -rf node_modules package-lock.json
             npm i ../../../packages/client-sdk-nodejs/gomomento-sdk-0.0.1.tgz
+            rm -rf node_modules package-lock.json
             npm i
             npm run build
           popd
