@@ -18,7 +18,10 @@ import {
   IVectorIndexControlClient,
   VectorSimilarityMetric,
 } from '@gomomento/sdk-core/dist/src/internal/clients';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {
+  normalizeSdkError,
+  UnknownError,
+} from '@gomomento/sdk-core/dist/src/errors';
 import {
   validateIndexName,
   validateNumDimensions,
@@ -148,7 +151,41 @@ export class VectorIndexControlClient<
             const indexes: VectorIndexInfo[] = resp
               .getIndexesList()
               .map(index => {
-                return new VectorIndexInfo(index.getIndexName());
+                let similarityMetric: VectorSimilarityMetric =
+                  VectorSimilarityMetric.COSINE_SIMILARITY;
+                switch (
+                  index.getSimilarityMetric()?.getSimilarityMetricCase()
+                ) {
+                  case _SimilarityMetric.SimilarityMetricCase.INNER_PRODUCT:
+                    similarityMetric = VectorSimilarityMetric.INNER_PRODUCT;
+                    break;
+                  case _SimilarityMetric.SimilarityMetricCase
+                    .EUCLIDEAN_SIMILARITY:
+                    similarityMetric =
+                      VectorSimilarityMetric.EUCLIDEAN_SIMILARITY;
+                    break;
+                  case _SimilarityMetric.SimilarityMetricCase.COSINE_SIMILARITY:
+                    similarityMetric = VectorSimilarityMetric.COSINE_SIMILARITY;
+                    break;
+                  default:
+                    resolve(
+                      new ListVectorIndexes.Error(
+                        new UnknownError(
+                          `Unknown similarity metric: ${
+                            index
+                              .getSimilarityMetric()
+                              ?.getSimilarityMetricCase() ?? 'undefined'
+                          }`
+                        )
+                      )
+                    );
+                    break;
+                }
+                return new VectorIndexInfo(
+                  index.getIndexName(),
+                  index.getNumDimensions(),
+                  similarityMetric
+                );
               });
             resolve(new ListVectorIndexes.Success(indexes));
           }

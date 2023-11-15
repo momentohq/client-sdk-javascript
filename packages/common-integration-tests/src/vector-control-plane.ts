@@ -74,26 +74,52 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
       );
     });
 
-    it('should create and list an index', async () => {
-      const indexName = testIndexName();
-      await WithIndex(
-        vectorClient,
-        indexName,
-        10,
-        VectorSimilarityMetric.INNER_PRODUCT,
-        async () => {
-          const listResponse = await vectorClient.listIndexes();
-          expectWithMessage(() => {
-            expect(listResponse).toBeInstanceOf(ListVectorIndexes.Success);
-          }, `expected SUCCESS but got ${listResponse.toString()}`);
-          if (listResponse instanceof ListVectorIndexes.Success) {
-            const indexes = listResponse.getIndexes();
-            const indexNames = indexes.map(indexInfo => indexInfo.getName());
-            expect(indexNames.includes(indexName)).toBeTruthy();
+    it.each([
+      {
+        indexName: testIndexName(),
+        numDimensions: 10,
+        similarityMetric: VectorSimilarityMetric.INNER_PRODUCT,
+      },
+      {
+        indexName: testIndexName(),
+        numDimensions: 20,
+        similarityMetric: VectorSimilarityMetric.EUCLIDEAN_SIMILARITY,
+      },
+      {
+        indexName: testIndexName(),
+        numDimensions: 30,
+        similarityMetric: VectorSimilarityMetric.COSINE_SIMILARITY,
+      },
+    ])(
+      'should create and list an index',
+      async ({indexName, numDimensions, similarityMetric}) => {
+        await WithIndex(
+          vectorClient,
+          indexName,
+          numDimensions,
+          similarityMetric,
+          async () => {
+            const listResponse = await vectorClient.listIndexes();
+            expectWithMessage(() => {
+              expect(listResponse).toBeInstanceOf(ListVectorIndexes.Success);
+            }, `expected SUCCESS but got ${listResponse.toString()}`);
+            if (listResponse instanceof ListVectorIndexes.Success) {
+              listResponse.getIndexes().forEach(indexInfo => {
+                if (indexInfo.name === indexName) {
+                  expect(indexInfo.numDimensions).toEqual(numDimensions);
+                  expect(indexInfo.similarityMetric).toEqual(similarityMetric);
+                }
+              });
+              expect(
+                listResponse
+                  .getIndexes()
+                  .map(indexInfo => indexInfo.name === indexName)
+              ).toBeTruthy();
+            }
           }
-        }
-      );
-    });
+        );
+      }
+    );
 
     it('should delete an index', async () => {
       const indexName = testIndexName();

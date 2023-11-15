@@ -18,7 +18,10 @@ import {
   validateIndexName,
   validateNumDimensions,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {
+  normalizeSdkError,
+  UnknownError,
+} from '@gomomento/sdk-core/dist/src/errors';
 import {
   CreateVectorIndex,
   DeleteVectorIndex,
@@ -105,8 +108,9 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
       default:
         return new CreateVectorIndex.Error(
           new InvalidArgumentError(
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            `Invalid similarity metric: ${similarityMetric}`
+            `Invalid similarity metric: ${
+              similarityMetric as unknown as string
+            }`
           )
         );
     }
@@ -152,7 +156,34 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
               );
             } else {
               const indexes = resp.indexes.map(index => {
-                return new VectorIndexInfo(index.index_name);
+                let similarityMetric: VectorSimilarityMetric =
+                  VectorSimilarityMetric.COSINE_SIMILARITY;
+                switch (index.similarity_metric.similarity_metric) {
+                  case 'inner_product':
+                    similarityMetric = VectorSimilarityMetric.INNER_PRODUCT;
+                    break;
+                  case 'euclidean_similarity':
+                    similarityMetric =
+                      VectorSimilarityMetric.EUCLIDEAN_SIMILARITY;
+                    break;
+                  case 'cosine_similarity':
+                    similarityMetric = VectorSimilarityMetric.COSINE_SIMILARITY;
+                    break;
+                  default:
+                    resolve(
+                      new ListVectorIndexes.Error(
+                        new UnknownError(
+                          `Unknown similarity metric: ${index.similarity_metric.similarity_metric}`
+                        )
+                      )
+                    );
+                    break;
+                }
+                return new VectorIndexInfo(
+                  index.index_name,
+                  index.num_dimensions,
+                  similarityMetric
+                );
               });
               resolve(new ListVectorIndexes.Success(indexes));
             }
