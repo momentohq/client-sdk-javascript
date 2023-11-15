@@ -105,17 +105,15 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
             }, `expected SUCCESS but got ${listResponse.toString()}`);
             if (listResponse instanceof ListVectorIndexes.Success) {
               listResponse.getIndexes().forEach(indexInfo => {
-                if (indexInfo.getName() === indexName) {
-                  expect(indexInfo.getNumDimensions()).toEqual(numDimensions);
-                  expect(indexInfo.getSimilarityMetric()).toEqual(
-                    similarityMetric
-                  );
+                if (indexInfo.name === indexName) {
+                  expect(indexInfo.numDimensions).toEqual(numDimensions);
+                  expect(indexInfo.similarityMetric).toEqual(similarityMetric);
                 }
               });
               expect(
                 listResponse
                   .getIndexes()
-                  .map(indexInfo => indexInfo.getName() === indexName)
+                  .map(indexInfo => indexInfo.name === indexName)
               ).toBeTruthy();
             }
           }
