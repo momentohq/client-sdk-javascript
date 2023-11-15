@@ -40,7 +40,7 @@ export class VectorIndexInfo {
   }
 
   public toString(): string {
-    return `VectorIndexInfo(${this._name}, ${this._numDimensions}, ${this._similarityMetric})`;
+    return `VectorIndexInfo('${this._name}', ${this._numDimensions}, '${this._similarityMetric}')`;
   }
 
   public equals(other: VectorIndexInfo): boolean {
