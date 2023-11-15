@@ -39,8 +39,8 @@ class _Success extends Response {
   }
 
   public override toString() {
-    const indexes = this.indexes.map(indexInfo => indexInfo.getName());
-    return super.toString() + ': ' + indexes.join(', ');
+    const indexes = this.indexes.map(indexInfo => indexInfo.toString());
+    return super.toString() + ': [' + indexes.join(', ') + ']';
   }
 }
 
