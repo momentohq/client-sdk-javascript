@@ -31,6 +31,8 @@ num_attempts=0
 seconds_between_retries=120
 # 120 seconds * 30 retries = 3600 seconds = 60 minutes
 max_num_attempts=30
+# wait 60 seconds before starting to try cause 200 doesnt necessarily mean its fully replicated on npmjs. Case in point https://github.com/momentohq/client-sdk-javascript/actions/runs/6871226968/job/18687674948
+sleep 60
 while true; do
   num_attempts=$((num_attempts+1))
   package_exists_status_code=$(curl -v -o /dev/null -w "%{http_code}" https://registry.npmjs.org/${PACKAGE}/${VERSION})
