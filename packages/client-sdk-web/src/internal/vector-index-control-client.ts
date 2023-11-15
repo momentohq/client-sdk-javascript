@@ -11,13 +11,17 @@ import {
   _CreateIndexRequest,
   _ListIndexesRequest,
   _DeleteIndexRequest,
+  _SimilarityMetric,
 } from '@gomomento/generated-types-webtext/dist/controlclient_pb';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   IVectorIndexControlClient,
   VectorSimilarityMetric,
 } from '@gomomento/sdk-core/dist/src/internal/clients';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
+import {
+  normalizeSdkError,
+  UnknownError,
+} from '@gomomento/sdk-core/dist/src/errors';
 import {
   validateIndexName,
   validateNumDimensions,
@@ -84,18 +88,21 @@ export class VectorIndexControlClient<
 
     similarityMetric ??= VectorSimilarityMetric.COSINE_SIMILARITY;
 
+    const similarityMetricPb = new _SimilarityMetric();
     switch (similarityMetric) {
       case VectorSimilarityMetric.INNER_PRODUCT:
-        request.setInnerProduct(new _CreateIndexRequest._InnerProduct());
+        similarityMetricPb.setInnerProduct(
+          new _SimilarityMetric._InnerProduct()
+        );
         break;
       case VectorSimilarityMetric.EUCLIDEAN_SIMILARITY:
-        request.setEuclideanSimilarity(
-          new _CreateIndexRequest._EuclideanSimilarity()
+        similarityMetricPb.setEuclideanSimilarity(
+          new _SimilarityMetric._EuclideanSimilarity()
         );
         break;
       case VectorSimilarityMetric.COSINE_SIMILARITY:
-        request.setCosineSimilarity(
-          new _CreateIndexRequest._CosineSimilarity()
+        similarityMetricPb.setCosineSimilarity(
+          new _SimilarityMetric._CosineSimilarity()
         );
         break;
       default:
@@ -106,6 +113,7 @@ export class VectorIndexControlClient<
           )
         );
     }
+    request.setSimilarityMetric(similarityMetricPb);
 
     this.logger.debug("Issuing 'createIndex' request");
     return await new Promise<CreateVectorIndex.Response>(resolve => {
@@ -141,9 +149,43 @@ export class VectorIndexControlClient<
             resolve(new ListVectorIndexes.Error(cacheServiceErrorMapper(err)));
           } else {
             const indexes: VectorIndexInfo[] = resp
-              .getIndexNamesList()
-              .map((name: string) => {
-                return new VectorIndexInfo(name);
+              .getIndexesList()
+              .map(index => {
+                let similarityMetric: VectorSimilarityMetric =
+                  VectorSimilarityMetric.COSINE_SIMILARITY;
+                switch (
+                  index.getSimilarityMetric()?.getSimilarityMetricCase()
+                ) {
+                  case _SimilarityMetric.SimilarityMetricCase.INNER_PRODUCT:
+                    similarityMetric = VectorSimilarityMetric.INNER_PRODUCT;
+                    break;
+                  case _SimilarityMetric.SimilarityMetricCase
+                    .EUCLIDEAN_SIMILARITY:
+                    similarityMetric =
+                      VectorSimilarityMetric.EUCLIDEAN_SIMILARITY;
+                    break;
+                  case _SimilarityMetric.SimilarityMetricCase.COSINE_SIMILARITY:
+                    similarityMetric = VectorSimilarityMetric.COSINE_SIMILARITY;
+                    break;
+                  default:
+                    resolve(
+                      new ListVectorIndexes.Error(
+                        new UnknownError(
+                          `Unknown similarity metric: ${
+                            index
+                              .getSimilarityMetric()
+                              ?.getSimilarityMetricCase() ?? 'undefined'
+                          }`
+                        )
+                      )
+                    );
+                    break;
+                }
+                return new VectorIndexInfo(
+                  index.getIndexName(),
+                  index.getNumDimensions(),
+                  similarityMetric
+                );
               });
             resolve(new ListVectorIndexes.Success(indexes));
           }

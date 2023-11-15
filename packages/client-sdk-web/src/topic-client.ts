@@ -3,7 +3,7 @@ import {PubsubClient} from './internal/pubsub-client';
 import {TopicClientProps} from './topic-client-props';
 import {IPubsubClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {AbstractTopicClient} from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/AbstractTopicClient';
-import {IWebhookClient} from '../../core/src/internal/clients/pubsub/IWebhookClient';
+import {IWebhookClient} from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/IWebhookClient';
 import {WebhookClient} from './internal/webhook-client';
 
 /**

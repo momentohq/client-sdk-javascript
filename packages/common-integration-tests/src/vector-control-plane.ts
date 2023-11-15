@@ -13,6 +13,7 @@ import {
   ListVectorIndexes,
   MomentoErrorCode,
   VectorSimilarityMetric,
+  VectorIndexInfo,
 } from '@gomomento/sdk-core';
 
 export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
@@ -74,22 +75,45 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
       );
     });
 
-    it('should create and list an index', async () => {
-      const indexName = testIndexName();
+    it.each([
+      {
+        indexInfo: new VectorIndexInfo(
+          testIndexName(),
+          10,
+          VectorSimilarityMetric.INNER_PRODUCT
+        ),
+      },
+      {
+        indexInfo: new VectorIndexInfo(
+          testIndexName(),
+          20,
+          VectorSimilarityMetric.EUCLIDEAN_SIMILARITY
+        ),
+      },
+      {
+        indexInfo: new VectorIndexInfo(
+          testIndexName(),
+          30,
+          VectorSimilarityMetric.COSINE_SIMILARITY
+        ),
+      },
+    ])('should create and list an index', async ({indexInfo}) => {
       await WithIndex(
         vectorClient,
-        indexName,
-        10,
-        VectorSimilarityMetric.INNER_PRODUCT,
+        indexInfo.name,
+        indexInfo.numDimensions,
+        indexInfo.similarityMetric,
         async () => {
           const listResponse = await vectorClient.listIndexes();
           expectWithMessage(() => {
             expect(listResponse).toBeInstanceOf(ListVectorIndexes.Success);
           }, `expected SUCCESS but got ${listResponse.toString()}`);
           if (listResponse instanceof ListVectorIndexes.Success) {
-            const indexes = listResponse.getIndexes();
-            const indexNames = indexes.map(indexInfo => indexInfo.getName());
-            expect(indexNames.includes(indexName)).toBeTruthy();
+            expect(
+              listResponse
+                .getIndexes()
+                .map(thisIndexInfo => thisIndexInfo.equals(indexInfo))
+            ).toBeTruthy();
           }
         }
       );
