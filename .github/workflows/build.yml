@@ -151,8 +151,7 @@ jobs:
           pushd examples/nodejs/vector-index
             npm ci
             npm run build
-            # TODO re-enable once we update the example to use the new SDK
-            #npm run validate-examples
+            npm run validate-examples
           popd
           pushd examples/nodejs/rate-limiter
             npm ci
@@ -213,8 +212,7 @@ jobs:
           pushd examples/web/vector-index
             npm ci
             npm run build
-            # TODO re-enable once we update the example to use the new SDK
-            #npm run validate-examples
+            npm run validate-examples
           popd
 
       - name: Send CI failure mail
