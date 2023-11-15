@@ -314,7 +314,7 @@ jobs:
 
       - name: Locally install in example and verify it builds
         run: |
-          pushd example/nodejs/cache
+          pushd examples/nodejs/cache
             npm i ../../packages/core/gomomento-sdk-core-0.0.1.tgz
             npm i ../../packages/client-sdk-nodejs/gomomento-sdk-0.0.1.tgz
             npm i
