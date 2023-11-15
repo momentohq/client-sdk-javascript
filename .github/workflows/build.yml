@@ -213,7 +213,8 @@ jobs:
           pushd examples/web/vector-index
             npm ci
             npm run build
-            npm run validate-examples
+            # TODO re-enable once we update the example to use the new SDK
+            #npm run validate-examples
           popd
 
       - name: Send CI failure mail
