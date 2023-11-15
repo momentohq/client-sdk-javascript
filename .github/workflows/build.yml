@@ -282,7 +282,7 @@ jobs:
         node: [ 18 ]
       fail-fast: true
       max-parallel: 1
-    name: Test Deno examples on node ${{ matrix.node }}
+    name: Verify packages are installable on node ${{ matrix.node }}
     runs-on: ubuntu-latest
 
     steps:
