@@ -14,7 +14,7 @@ describe('vector-index-info.ts', () => {
     expect(vectorIndexInfo.numDimensions).toEqual(numDimensions);
     expect(vectorIndexInfo.similarityMetric).toEqual(similarityMetric);
     expect(vectorIndexInfo.toString()).toEqual(
-      `VectorIndexInfo(${indexName}, ${numDimensions}, ${similarityMetric})`
+      `VectorIndexInfo('${indexName}', ${numDimensions}, '${similarityMetric}')`
     );
   });
 });
