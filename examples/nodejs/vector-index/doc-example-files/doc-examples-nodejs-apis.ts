@@ -39,7 +39,7 @@ async function example_API_ListIndexes(vectorClient: PreviewVectorIndexClient) {
     console.log(
       `Indexes:\n${result
         .getIndexes()
-        .map(index => JSON.stringify(index))
+        .map(index => index.toString())
         .join('\n')}\n\n`
     );
   } else if (result instanceof ListVectorIndexes.Error) {
