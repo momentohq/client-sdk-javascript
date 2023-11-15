@@ -296,6 +296,11 @@ jobs:
             npm run build
             npm pack
           popd
+          pushd packages/common-integration-tests
+            npm ci
+            npm run build
+            npm pack
+          popd
           pushd packages/client-sdk-nodejs
             npm ci
             npm run build
