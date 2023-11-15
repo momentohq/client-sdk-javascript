@@ -60,4 +60,4 @@ pushd ${ROOT_DIR}/packages/${PACKAGE}
     echo ""
 popd
 
-${ROOT_DIR}/scripts/build-and-test-package.sh ${PACKAGE}
+${ROOT_DIR}/scripts/build-package.sh ${PACKAGE}
