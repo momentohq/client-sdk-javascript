@@ -88,18 +88,19 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
 
     similarityMetric ??= VectorSimilarityMetric.COSINE_SIMILARITY;
 
+    const similarityMetricPb = new grpcControl._SimilarityMetric();
     switch (similarityMetric) {
       case VectorSimilarityMetric.INNER_PRODUCT:
-        request.inner_product =
-          new grpcControl._CreateIndexRequest._InnerProduct();
+        similarityMetricPb.inner_product =
+          new grpcControl._SimilarityMetric._InnerProduct();
         break;
       case VectorSimilarityMetric.EUCLIDEAN_SIMILARITY:
-        request.euclidean_similarity =
-          new grpcControl._CreateIndexRequest._EuclideanSimilarity();
+        similarityMetricPb.euclidean_similarity =
+          new grpcControl._SimilarityMetric._EuclideanSimilarity();
         break;
       case VectorSimilarityMetric.COSINE_SIMILARITY:
-        request.cosine_similarity =
-          new grpcControl._CreateIndexRequest._CosineSimilarity();
+        similarityMetricPb.cosine_similarity =
+          new grpcControl._SimilarityMetric._CosineSimilarity();
         break;
       default:
         return new CreateVectorIndex.Error(
@@ -109,6 +110,7 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
           )
         );
     }
+    request.similarity_metric = similarityMetricPb;
 
     return await new Promise<CreateVectorIndex.Response>(resolve => {
       this.clientWrapper.getClient().CreateIndex(
@@ -149,12 +151,9 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
                 new ListVectorIndexes.Error(cacheServiceErrorMapper(err))
               );
             } else {
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call
-              const indexes = resp.index_names.map((name: string) => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
-                return new VectorIndexInfo(name);
+              const indexes = resp.indexes.map(index => {
+                return new VectorIndexInfo(index.index_name);
               });
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
               resolve(new ListVectorIndexes.Success(indexes));
             }
           }
