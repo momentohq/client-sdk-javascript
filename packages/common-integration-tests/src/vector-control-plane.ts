@@ -13,6 +13,7 @@ import {
   ListVectorIndexes,
   MomentoErrorCode,
   VectorSimilarityMetric,
+  VectorIndexInfo,
 } from '@gomomento/sdk-core';
 
 export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
@@ -76,50 +77,47 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
 
     it.each([
       {
-        indexName: testIndexName(),
-        numDimensions: 10,
-        similarityMetric: VectorSimilarityMetric.INNER_PRODUCT,
+        indexInfo: new VectorIndexInfo(
+          testIndexName(),
+          10,
+          VectorSimilarityMetric.INNER_PRODUCT
+        ),
       },
       {
-        indexName: testIndexName(),
-        numDimensions: 20,
-        similarityMetric: VectorSimilarityMetric.EUCLIDEAN_SIMILARITY,
+        indexInfo: new VectorIndexInfo(
+          testIndexName(),
+          20,
+          VectorSimilarityMetric.EUCLIDEAN_SIMILARITY
+        ),
       },
       {
-        indexName: testIndexName(),
-        numDimensions: 30,
-        similarityMetric: VectorSimilarityMetric.COSINE_SIMILARITY,
+        indexInfo: new VectorIndexInfo(
+          testIndexName(),
+          30,
+          VectorSimilarityMetric.COSINE_SIMILARITY
+        ),
       },
-    ])(
-      'should create and list an index',
-      async ({indexName, numDimensions, similarityMetric}) => {
-        await WithIndex(
-          vectorClient,
-          indexName,
-          numDimensions,
-          similarityMetric,
-          async () => {
-            const listResponse = await vectorClient.listIndexes();
-            expectWithMessage(() => {
-              expect(listResponse).toBeInstanceOf(ListVectorIndexes.Success);
-            }, `expected SUCCESS but got ${listResponse.toString()}`);
-            if (listResponse instanceof ListVectorIndexes.Success) {
-              listResponse.getIndexes().forEach(indexInfo => {
-                if (indexInfo.name === indexName) {
-                  expect(indexInfo.numDimensions).toEqual(numDimensions);
-                  expect(indexInfo.similarityMetric).toEqual(similarityMetric);
-                }
-              });
-              expect(
-                listResponse
-                  .getIndexes()
-                  .map(indexInfo => indexInfo.name === indexName)
-              ).toBeTruthy();
-            }
+    ])('should create and list an index', async ({indexInfo}) => {
+      await WithIndex(
+        vectorClient,
+        indexInfo.name,
+        indexInfo.numDimensions,
+        indexInfo.similarityMetric,
+        async () => {
+          const listResponse = await vectorClient.listIndexes();
+          expectWithMessage(() => {
+            expect(listResponse).toBeInstanceOf(ListVectorIndexes.Success);
+          }, `expected SUCCESS but got ${listResponse.toString()}`);
+          if (listResponse instanceof ListVectorIndexes.Success) {
+            expect(
+              listResponse
+                .getIndexes()
+                .map(thisIndexInfo => thisIndexInfo.equals(indexInfo))
+            ).toBeTruthy();
           }
-        );
-      }
-    );
+        }
+      );
+    });
 
     it('should delete an index', async () => {
       const indexName = testIndexName();

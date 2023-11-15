@@ -12,19 +12,19 @@ export enum VectorSimilarityMetric {
    * The cosine similarity between two vectors, ie the cosine of the angle between them.
    * Bigger is better. Ranges from -1 to 1.
    */
-  COSINE_SIMILARITY,
+  COSINE_SIMILARITY = 'COSINE_SIMILARITY',
 
   /**
    * The inner product between two vectors, ie the sum of the element-wise products.
    * Bigger is better. Ranges from 0 to infinity.
    */
-  INNER_PRODUCT,
+  INNER_PRODUCT = 'INNER_PRODUCT',
 
   /**
    * The Euclidean distance squared between two vectors, ie the sum of squared differences between each element.
    * Smaller is better. Ranges from 0 to infinity.
    */
-  EUCLIDEAN_SIMILARITY,
+  EUCLIDEAN_SIMILARITY = 'EUCLIDEAN_SIMILARITY',
 }
 
 export interface IVectorIndexControlClient {

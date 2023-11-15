@@ -38,4 +38,16 @@ export class VectorIndexInfo {
   public get similarityMetric(): VectorSimilarityMetric {
     return this._similarityMetric;
   }
+
+  public toString(): string {
+    return `VectorIndexInfo(${this._name}, ${this._numDimensions}, ${this._similarityMetric})`;
+  }
+
+  public equals(other: VectorIndexInfo): boolean {
+    return (
+      this._name === other._name &&
+      this._numDimensions === other._numDimensions &&
+      this._similarityMetric === other._similarityMetric
+    );
+  }
 }
