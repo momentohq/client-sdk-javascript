@@ -55,7 +55,6 @@ export function runUpdateTtlTest(
         expect(ttlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
       }, `expected HIT but got ${ttlResponse.toString()}`);
       const ttlResult = ttlResponse as CacheItemGetTtl.Hit;
-      console.log('\nTtl result:', ttlResult);
       expect(ttlResult.remainingTtlMillis()).toBeLessThan(20000);
       expect(ttlResult.remainingTtlMillis()).toBeGreaterThan(15000);
     });
@@ -94,7 +93,6 @@ export function runUpdateTtlTest(
         expect(ttlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
       }, `expected HIT but got ${ttlResponse.toString()}`);
       const ttlResult = ttlResponse as CacheItemGetTtl.Hit;
-      console.log('\nTtl result:', ttlResult);
       expect(ttlResult.remainingTtlMillis()).toBeLessThan(20000);
       expect(ttlResult.remainingTtlMillis()).toBeGreaterThan(15000);
     });
@@ -140,7 +138,6 @@ export function runUpdateTtlTest(
         expect(ttlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
       }, `expected HIT but got ${ttlResponse.toString()}`);
       const ttlResult = ttlResponse as CacheItemGetTtl.Hit;
-      console.log('\nTtl result:', ttlResult);
       expect(ttlResult.remainingTtlMillis()).toBeLessThan(20000);
       expect(ttlResult.remainingTtlMillis()).toBeGreaterThan(15000);
     });
@@ -195,7 +192,6 @@ export function runUpdateTtlTest(
         expect(ttlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
       }, `expected HIT but got ${ttlResponse.toString()}`);
       const ttlResult = ttlResponse as CacheItemGetTtl.Hit;
-      console.log('\nTtl result:', ttlResult);
       expect(ttlResult.remainingTtlMillis()).toBeLessThan(20000);
       expect(ttlResult.remainingTtlMillis()).toBeGreaterThan(15000);
     });
@@ -241,7 +237,6 @@ export function runUpdateTtlTest(
         expect(ttlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
       }, `expected HIT but got ${ttlResponse.toString()}`);
       const ttlResult = ttlResponse as CacheItemGetTtl.Hit;
-      console.log('\nTtl result:', ttlResult);
       expect(ttlResult.remainingTtlMillis()).toBeLessThan(5000);
       expect(ttlResult.remainingTtlMillis()).toBeGreaterThan(0);
     });
@@ -296,7 +291,6 @@ export function runUpdateTtlTest(
         expect(ttlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
       }, `expected HIT but got ${ttlResponse.toString()}`);
       const ttlResult = ttlResponse as CacheItemGetTtl.Hit;
-      console.log('\nTtl result:', ttlResult);
       expect(ttlResult.remainingTtlMillis()).toBeLessThan(5000);
       expect(ttlResult.remainingTtlMillis()).toBeGreaterThan(0);
     });
