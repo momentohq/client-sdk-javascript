@@ -9,6 +9,7 @@ const config: Config = {
     '^.+\\.tsx?$': 'ts-jest',
   },
   testTimeout: 120000,
+  reporters: ["jest-ci-spec-reporter"]
 };
 
 export default config;
