@@ -21,6 +21,18 @@ import {
 import {v4} from 'uuid';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 
+const isInsideGithubCI = process.env.CI === 'true';
+const itif = (condition: boolean) => (condition ? it : it.skip);
+const maybe = (condition: boolean) => (condition ? describe : describe.skip);
+/**
+ * Only runs the tests inside the 'it' block if inside a continuous integration environment.
+ */
+export const itOnlyInCi = itif(isInsideGithubCI);
+/**
+ * Only runs the test inside the 'describe' block if inside a continuous integration environment.
+ */
+export const describeOnlyInCi = maybe(isInsideGithubCI);
+
 export function isLocalhostDevelopmentMode(): boolean {
   const useLocalhost = process.env.MOMENTO_SDK_TESTS_USE_LOCALHOST;
   return useLocalhost !== undefined;
