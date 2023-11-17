@@ -2,6 +2,7 @@ import {v4} from 'uuid';
 import {
   expectWithMessage,
   ItBehavesLikeItValidatesCacheName,
+  itOnlyInCi,
   testCacheName,
   ValidateCacheProps,
   WithCache,
@@ -48,7 +49,7 @@ export function runCreateDeleteListCacheTests(cacheClient: ICacheClient) {
       });
     });
 
-    it('should create 1 cache and list the created cache', async () => {
+    itOnlyInCi('should create 1 cache and list the created cache', async () => {
       const cacheName = testCacheName();
       await WithCache(cacheClient, cacheName, async () => {
         const listResponse = await cacheClient.listCaches();
