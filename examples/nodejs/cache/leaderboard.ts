@@ -11,11 +11,14 @@ import {
   LeaderboardOrder,
   LeaderboardRemoveElements,
   LeaderboardUpsert,
+  DefaultMomentoLoggerLevel,
+  DefaultMomentoLoggerFactory,
 } from '@gomomento/sdk';
 
 async function main() {
+  const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.TRACE);
   const cacheClient = await CacheClient.create({
-    configuration: Configurations.Laptop.v1(),
+    configuration: Configurations.Laptop.v1(loggerFactory),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_API_KEY',
     }),
