@@ -11,11 +11,16 @@ import {
   LeaderboardOrder,
   LeaderboardRemoveElements,
   LeaderboardUpsert,
+  DefaultMomentoLoggerLevel,
+  DefaultMomentoLoggerFactory,
 } from '@gomomento/sdk';
 
 async function main() {
+  // NOTE: trace logging to view leaderboard interactions; might want to disable in production to save log noise and
+  // switch to ERROR or info
+  const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.TRACE);
   const cacheClient = await CacheClient.create({
-    configuration: Configurations.Laptop.v1(),
+    configuration: Configurations.Laptop.v1(loggerFactory),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_API_KEY',
     }),
