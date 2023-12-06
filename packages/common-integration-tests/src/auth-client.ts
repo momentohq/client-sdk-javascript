@@ -65,15 +65,15 @@ export function runAuthClientTests(
       );
     });
 
-    // this test is sensitive to clock skew inside of github actions, skipping it for now
-    it.skip('should succeed for generating an api token that expires', async () => {
+    it('should succeed for generating an api token that expires', async () => {
       const secondsSinceEpoch = Math.round(Date.now() / 1000);
       const expireResponse = await sessionTokenAuthClient.generateApiKey(
         SUPER_USER_PERMISSIONS,
-        ExpiresIn.minutes(5)
+        ExpiresIn.days(1)
       );
-
-      const expiresIn = secondsSinceEpoch + 300;
+      const oneHourInSeconds = 60 * 60;
+      const oneDayInSeconds = oneHourInSeconds * 24;
+      const expiresIn = secondsSinceEpoch + oneDayInSeconds;
 
       expectWithMessage(
         () => expect(expireResponse).toBeInstanceOf(GenerateApiKey.Success),
@@ -82,8 +82,8 @@ export function runAuthClientTests(
       const expireResponseSuccess = expireResponse as GenerateApiKey.Success;
       expect(expireResponseSuccess.expiresAt.doesExpire());
       expect(expireResponseSuccess.expiresAt.epoch()).toBeWithin(
-        expiresIn - 60,
-        expiresIn + 60
+        expiresIn - oneHourInSeconds,
+        expiresIn + oneHourInSeconds
       );
     });
 
