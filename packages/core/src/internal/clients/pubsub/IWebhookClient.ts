@@ -5,6 +5,7 @@ import {
   Webhook,
   WebhookId,
   GetWebhookSecret,
+  RotateWebhookSecret,
 } from '../../../index';
 
 export interface IWebhookClient {
@@ -12,4 +13,5 @@ export interface IWebhookClient {
   putWebhook(webhook: Webhook): Promise<PutWebhook.Response>;
   deleteWebhook(id: WebhookId): Promise<DeleteWebhook.Response>;
   getWebhookSecret(id: WebhookId): Promise<GetWebhookSecret.Response>;
+  rotateWebhookSecret(id: WebhookId): Promise<RotateWebhookSecret.Response>;
 }
