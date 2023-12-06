@@ -151,8 +151,7 @@ jobs:
           pushd examples/nodejs/vector-index
             npm ci
             npm run build
-            # TODO re-enable once we update the example to use the new SDK
-            #npm run validate-examples
+            npm run validate-examples
           popd
           pushd examples/nodejs/rate-limiter
             npm ci
@@ -213,8 +212,7 @@ jobs:
           pushd examples/web/vector-index
             npm ci
             npm run build
-            # TODO re-enable once we update the example to use the new SDK
-            #npm run validate-examples
+            npm run validate-examples
           popd
 
       - name: Send CI failure mail
@@ -276,6 +274,68 @@ jobs:
         if: ${{ steps.validation.outcome == 'failure' }}
         run: exit 1
 
+  verify-packages:
+    strategy:
+      matrix:
+        node: [ 18 ]
+      fail-fast: true
+      max-parallel: 1
+    name: Verify packages are installable on node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v3
+
+      - name: Build all packages
+        run: |
+          pushd packages/core
+            npm install
+            npm run build
+            npm pack
+          popd
+          pushd packages/common-integration-tests
+            npm install
+            npm run build
+            npm pack
+          popd
+          pushd packages/client-sdk-nodejs
+            npm install
+            npm run build
+            npm pack
+          popd
+          pushd packages/client-sdk-web
+            npm install
+            npm run build
+            npm pack
+          popd
+
+      - name: Locally install in nodejs example and verify it builds
+        run: |
+          pushd examples/nodejs/cache
+            # This is a bit of a hack, but ensures that the package-lock does not get corrupted
+            # due to installing these locally packaged files. All we care about is that the examples
+            # use the locally packaged sdks, and that they can build correctly with no errors
+            rm -rf node_modules package-lock.json
+            npm i ../../../packages/core/gomomento-sdk-core-0.0.1.tgz
+            rm -rf node_modules package-lock.json
+            npm i ../../../packages/client-sdk-nodejs/gomomento-sdk-0.0.1.tgz
+            rm -rf node_modules package-lock.json
+            npm i
+            npm run build
+          popd
+
+      - name: Locally install in web example and verify it builds
+        run: |
+          pushd examples/web/cache
+            rm -rf node_modules package-lock.json
+            npm i ../../../packages/core/gomomento-sdk-core-0.0.1.tgz
+            rm -rf node_modules package-lock.json
+            npm i ../../../packages/client-sdk-web/gomomento-sdk-web-0.0.1.tgz
+            rm -rf node_modules package-lock.json
+            npm i
+            npm run build
+          popd
   # https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions#enable-auto-merge-on-a-pull-request
   # dependabot-auto-merge:
   #   name: Dependabot Auto Merge

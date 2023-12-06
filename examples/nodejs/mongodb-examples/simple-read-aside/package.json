@@ -12,7 +12,7 @@
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.369.0",
     "@gomomento/sdk": "^1.40.1",
-    "mongodb": "^5.5.0"
+    "mongodb": "^5.8.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.1",
