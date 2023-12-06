@@ -129,21 +129,17 @@ export class ExperimentalMetricsLoggingMiddleware extends ExperimentalMetricsMid
       this.elu = performance.eventLoopUtilization(this.elu);
       const metrics: StateMetrics = {
         eventLoopUtilization: this.elu.utilization,
-        eventLoopDelayMean: this.normalizeEld(this.eldMonitor.mean),
-        eventLoopDelayMin: Math.max(0, this.normalizeEld(this.eldMonitor.min)),
-        eventLoopDelayP50: this.normalizeEld(this.eldMonitor.percentile(50)),
-        eventLoopDelayP75: this.normalizeEld(this.eldMonitor.percentile(75)),
-        eventLoopDelayP90: this.normalizeEld(this.eldMonitor.percentile(90)),
-        eventLoopDelayP95: this.normalizeEld(this.eldMonitor.percentile(95)),
-        eventLoopDelayP99: this.normalizeEld(this.eldMonitor.percentile(99)),
-        eventLoopDelayMax: this.normalizeEld(this.eldMonitor.max),
+        eventLoopDelayMean: this.eldMonitor.mean,
+        eventLoopDelayMin: this.eldMonitor.min,
+        eventLoopDelayP50: this.eldMonitor.percentile(50),
+        eventLoopDelayP75: this.eldMonitor.percentile(75),
+        eventLoopDelayP90: this.eldMonitor.percentile(90),
+        eventLoopDelayP95: this.eldMonitor.percentile(95),
+        eventLoopDelayP99: this.eldMonitor.percentile(99),
+        eventLoopDelayMax: this.eldMonitor.max,
       };
       logger.info(JSON.stringify(metrics));
       this.eldMonitor.reset();
     }, this.metricsLogInterval);
-  }
-
-  private static normalizeEld(eventLoopDelay: number): number {
-    return eventLoopDelay / 1_000_000 - this.eventLoopDelayInterval;
   }
 }
