@@ -1048,19 +1048,19 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         getMethodName: 'getItemBatch',
         ids: [],
         expectedResponse: VectorGetItemBatch.Success,
-        hits: {},
+        values: {},
       },
       {
         getMethodName: 'getItemMetadataBatch',
         ids: [],
         expectedResponse: VectorGetItemMetadataBatch.Success,
-        hits: {},
+        values: {},
       },
       {
         getMethodName: 'getItemBatch',
         ids: ['test_item_1'],
         expectedResponse: VectorGetItemBatch.Success,
-        hits: {
+        values: {
           test_item_1: {
             id: 'test_item_1',
             vector: [1.0, 2.0],
@@ -1072,7 +1072,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         getMethodName: 'getItemMetadataBatch',
         ids: ['test_item_1'],
         expectedResponse: VectorGetItemMetadataBatch.Success,
-        hits: {
+        values: {
           test_item_1: {
             key1: 'value1',
           },
@@ -1082,19 +1082,19 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         getMethodName: 'getItemBatch',
         ids: ['missing_id'],
         expectedResponse: VectorGetItemBatch.Success,
-        hits: {},
+        values: {},
       },
       {
         getMethodName: 'getItemMetadataBatch',
         ids: ['missing_id'],
         expectedResponse: VectorGetItemMetadataBatch.Success,
-        hits: {},
+        values: {},
       },
       {
         getMethodName: 'getItemBatch',
         ids: ['test_item_1', 'missing_id_2', 'test_item_2'],
         expectedResponse: VectorGetItemBatch.Success,
-        hits: {
+        values: {
           test_item_1: {
             id: 'test_item_1',
             vector: [1.0, 2.0],
@@ -1111,7 +1111,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         getMethodName: 'getItemMetadataBatch',
         ids: ['test_item_1', 'missing_id_2', 'test_item_2'],
         expectedResponse: VectorGetItemMetadataBatch.Success,
-        hits: {
+        values: {
           test_item_1: {
             key1: 'value1',
           },
@@ -1120,7 +1120,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
       },
     ])(
       'should get items and get item metadata',
-      async ({getMethodName, ids, expectedResponse, hits}) => {
+      async ({getMethodName, ids, expectedResponse, values}) => {
         const indexName = testIndexName();
         await WithIndex(
           vectorClient,
@@ -1158,7 +1158,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
               expect(getResponse).toBeInstanceOf(expectedResponse);
             }, `expected SUCCESS but got ${getResponse.toString()}}`);
 
-            expect(getResponse.hits()).toEqual(hits);
+            expect(getResponse.values()).toEqual(values);
           }
         );
       }

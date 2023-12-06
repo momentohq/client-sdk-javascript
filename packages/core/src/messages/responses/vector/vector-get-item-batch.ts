@@ -22,9 +22,9 @@ import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
  * ```
  */
 export abstract class Response extends ResponseBase {
-  hits(): Record<string, VectorIndexStoredItem> | undefined {
+  values(): Record<string, VectorIndexStoredItem> | undefined {
     if (this instanceof Success) {
-      return this.hits();
+      return this.values();
     }
     return undefined;
   }
@@ -36,10 +36,10 @@ class _Success extends Response {}
  * Indicates a Successful VectorGetItemBatch request.
  */
 export class Success extends ResponseSuccess(_Success) {
-  private readonly _hits: Record<string, VectorIndexStoredItem>;
-  constructor(hits: Record<string, VectorIndexStoredItem>) {
+  private readonly _values: Record<string, VectorIndexStoredItem>;
+  constructor(values: Record<string, VectorIndexStoredItem>) {
     super();
-    this._hits = hits;
+    this._values = values;
   }
   /**
    * Returns the found items from the VectorGetItemBatch request.
@@ -49,7 +49,7 @@ export class Success extends ResponseSuccess(_Success) {
    * @returns {Record<string, VectorIndexStoredItem>} The items that were found in the index.
    */
   hits(): Record<string, VectorIndexStoredItem> {
-    return this._hits;
+    return this._values;
   }
 }
 
