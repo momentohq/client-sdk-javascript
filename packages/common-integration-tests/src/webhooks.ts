@@ -156,7 +156,7 @@ export function runWebhookTests(
             `unknown error occured when making a 'rotateWebhookSecret' request: ${resp.toString()}`
           );
         }
-        const rotateResp = _rotateResp as GetWebhookSecret.Success;
+        const rotateResp = _rotateResp as RotateWebhookSecret.Success;
         expect(rotateResp.secret()).toBeTruthy();
         expect(rotateResp.webhookName()).toEqual(getSecretResp.webhookName());
         expect(rotateResp.cacheName()).toEqual(getSecretResp.cacheName());
