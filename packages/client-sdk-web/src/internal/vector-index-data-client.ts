@@ -421,6 +421,11 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     const request = new vectorindex._GetItemBatchRequest();
     request.setIndexName(indexName);
     request.setIdsList(ids);
+    request.setMetadataFields(
+      VectorIndexDataClient.prepareMetadataRequest({
+        metadataFields: ALL_VECTOR_METADATA,
+      })
+    );
 
     return await new Promise(resolve => {
       this.client.getItemBatch(
@@ -499,6 +504,11 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     const request = new vectorindex._GetItemMetadataBatchRequest();
     request.setIndexName(indexName);
     request.setIdsList(ids);
+    request.setMetadataFields(
+      VectorIndexDataClient.prepareMetadataRequest({
+        metadataFields: ALL_VECTOR_METADATA,
+      })
+    );
 
     return await new Promise(resolve => {
       this.client.getItemMetadataBatch(
