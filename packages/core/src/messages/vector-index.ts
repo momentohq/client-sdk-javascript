@@ -1,4 +1,12 @@
 /**
+ * The metadata of an item stored in the vector index.
+ */
+export type VectorIndexMetadata = Record<
+  string,
+  string | number | boolean | Array<string>
+>;
+
+/**
  * An item to upsert into the vector index.
  */
 export interface VectorIndexItem {
@@ -13,7 +21,7 @@ export interface VectorIndexItem {
   /**
    * The metadata of the item, if any.
    */
-  metadata?: Record<string, string | number | boolean | Array<string>>;
+  metadata?: VectorIndexMetadata;
 }
 
 /**
@@ -35,5 +43,5 @@ export interface VectorIndexStoredItem {
   /**
    * The metadata of the item.
    */
-  metadata: Record<string, string | number | boolean | Array<string>>;
+  metadata: VectorIndexMetadata;
 }

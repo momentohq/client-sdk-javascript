@@ -68,7 +68,11 @@ import * as GenerateDisposableToken from './messages/responses/generate-disposab
 // VectorClient Response Types
 export * as vector from './messages/responses/vector';
 export * from './messages/responses/vector';
-export {VectorIndexItem, VectorIndexStoredItem} from './messages/vector-index';
+export {
+  VectorIndexMetadata,
+  VectorIndexItem,
+  VectorIndexStoredItem,
+} from './messages/vector-index';
 
 // Leaderboard Response Types
 export * as leaderboard from './messages/responses/leaderboard';

@@ -1,4 +1,5 @@
 import {SdkError} from '../../../errors';
+import {VectorIndexMetadata} from '../../..';
 import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
 
 /**
@@ -21,9 +22,7 @@ import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
  * ```
  */
 export abstract class Response extends ResponseBase {
-  hits():
-    | Record<string, Record<string, string | number | boolean | Array<string>>>
-    | undefined {
+  hits(): Record<string, VectorIndexMetadata> | undefined {
     if (this instanceof Success) {
       return this.hits();
     }
@@ -37,16 +36,8 @@ class _Success extends Response {}
  * Indicates a Successful VectorGetItemMetadataBatch request.
  */
 export class Success extends ResponseSuccess(_Success) {
-  private readonly _hits: Record<
-    string,
-    Record<string, string | number | boolean | Array<string>>
-  >;
-  constructor(
-    hits: Record<
-      string,
-      Record<string, string | number | boolean | Array<string>>
-    >
-  ) {
+  private readonly _hits: Record<string, VectorIndexMetadata>;
+  constructor(hits: Record<string, VectorIndexMetadata>) {
     super();
     this._hits = hits;
   }
@@ -55,12 +46,9 @@ export class Success extends ResponseSuccess(_Success) {
    *
    * Items that were not found will not be included in the
    * returned object.
-   * @returns {Record<string, Record<string, string | number | boolean | Array<string>>>} The metadata for items found in the index.
+   * @returns {Record<string, VectorIndexMetadata>} The metadata for items found in the index.
    */
-  hits(): Record<
-    string,
-    Record<string, string | number | boolean | Array<string>>
-  > {
+  hits(): Record<string, VectorIndexMetadata> {
     return this._hits;
   }
 }

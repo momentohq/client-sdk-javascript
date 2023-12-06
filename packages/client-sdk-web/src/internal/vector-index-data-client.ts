@@ -7,6 +7,7 @@ import {
   VectorDeleteItemBatch,
   VectorSearch,
   VectorSearchAndFetchVectors,
+  VectorIndexMetadata,
   VectorIndexItem,
   VectorUpsertItemBatch,
   VectorIndexStoredItem,
@@ -241,7 +242,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   private static deserializeMetadata(
     metadata: vectorindex._Metadata[],
     errorCallback: () => void
-  ): Record<string, string | number | boolean | Array<string>> {
+  ): VectorIndexMetadata {
     return metadata.reduce((acc, metadata) => {
       const field = metadata.getField();
       switch (metadata.getValueCase()) {
@@ -265,7 +266,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           break;
       }
       return acc;
-    }, {} as Record<string, string | number | boolean | Array<string>>);
+    }, {} as VectorIndexMetadata);
   }
 
   private async sendSearch(
@@ -555,7 +556,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
                         break;
                     }
                     return acc;
-                  }, {} as Record<string, Record<string, string | number | boolean | Array<string>>>)
+                  }, {} as Record<string, VectorIndexMetadata>)
               )
             );
           } else {
