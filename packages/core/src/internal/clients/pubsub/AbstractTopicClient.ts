@@ -9,6 +9,7 @@ import {
   DeleteWebhook,
   GetWebhookSecret,
   PostUrlWebhookDestination,
+  RotateWebhookSecret,
 } from '../../../index';
 import {IPubsubClient} from './IPubsubClient';
 import {IWebhookClient} from './IWebhookClient';
@@ -130,5 +131,24 @@ export abstract class AbstractTopicClient implements ITopicClient {
     webhookName: string
   ): Promise<GetWebhookSecret.Response> {
     return await this.webhookClient.getWebhookSecret({cacheName, webhookName});
+  }
+
+  /**
+   * Rotates the signing secret for a webhook
+   *
+   * @param {string} cacheName - The name of the cache associated with the webhook
+   * @param {string} webhookName - The name of the webhook
+   * @returns {Promise<RotateWebhookSecret.Response>} -
+   * {@link RotateWebhookSecret.Success} on success.
+   * {@link RotateWebhookSecret.Error} on failure.
+   */
+  public async rotateWebhookSecret(
+    cacheName: string,
+    webhookName: string
+  ): Promise<RotateWebhookSecret.Response> {
+    return await this.webhookClient.rotateWebhookSecret({
+      cacheName,
+      webhookName,
+    });
   }
 }

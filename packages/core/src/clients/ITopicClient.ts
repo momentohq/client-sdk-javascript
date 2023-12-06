@@ -6,6 +6,7 @@ import {
   PutWebhook,
   DeleteWebhook,
   GetWebhookSecret,
+  RotateWebhookSecret,
 } from '../index';
 import {PutWebhookCallOptions} from '../utils/webhook-call-options';
 
@@ -36,4 +37,8 @@ export interface ITopicClient {
     cacheName: string,
     webhookName: string
   ): Promise<GetWebhookSecret.Response>;
+  rotateWebhookSecret(
+    cacheName: string,
+    webhookName: string
+  ): Promise<RotateWebhookSecret.Response>;
 }
