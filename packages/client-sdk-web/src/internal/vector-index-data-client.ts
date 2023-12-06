@@ -1,14 +1,15 @@
 import {VectorIndexClient} from '@gomomento/generated-types-webtext/dist/VectorindexServiceClientPb';
 import * as vectorindex from '@gomomento/generated-types-webtext/dist/vectorindex_pb';
 import {IVectorIndexDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/vector/IVectorIndexDataClient';
-import {VectorIndexItem} from '@gomomento/sdk-core/dist/src/messages/vector-index';
 import {
   MomentoLogger,
   SearchOptions,
   VectorDeleteItemBatch,
   VectorSearch,
   VectorSearchAndFetchVectors,
+  VectorIndexItem,
   VectorUpsertItemBatch,
+  VectorIndexStoredItem,
   VectorGetItemBatch,
   VectorGetItemMetadataBatch,
   InvalidArgumentError,
@@ -472,7 +473,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
                       break;
                   }
                   return acc;
-                }, {} as Record<string, VectorIndexItem>)
+                }, {} as Record<string, VectorIndexStoredItem>)
               )
             );
           } else {

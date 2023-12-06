@@ -1,5 +1,5 @@
 import {SdkError} from '../../../errors';
-import {VectorIndexItem} from '../../vector-index';
+import {VectorIndexStoredItem} from '../../vector-index';
 import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
 
 /**
@@ -22,7 +22,7 @@ import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
  * ```
  */
 export abstract class Response extends ResponseBase {
-  hits(): Record<string, VectorIndexItem> | undefined {
+  hits(): Record<string, VectorIndexStoredItem> | undefined {
     if (this instanceof Success) {
       return this.hits();
     }
@@ -36,8 +36,8 @@ class _Success extends Response {}
  * Indicates a Successful VectorGetItemBatch request.
  */
 export class Success extends ResponseSuccess(_Success) {
-  private readonly _hits: Record<string, VectorIndexItem>;
-  constructor(hits: Record<string, VectorIndexItem>) {
+  private readonly _hits: Record<string, VectorIndexStoredItem>;
+  constructor(hits: Record<string, VectorIndexStoredItem>) {
     super();
     this._hits = hits;
   }
@@ -46,9 +46,9 @@ export class Success extends ResponseSuccess(_Success) {
    *
    * Items that were not found will not be included in the
    * returned object.
-   * @returns {Record<string, VectorIndexItem>} The items that were found in the index.
+   * @returns {Record<string, VectorIndexStoredItem>} The items that were found in the index.
    */
-  hits(): Record<string, VectorIndexItem> {
+  hits(): Record<string, VectorIndexStoredItem> {
     return this._hits;
   }
 }

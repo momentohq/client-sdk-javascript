@@ -1,6 +1,5 @@
 import {version} from '../../package.json';
 import {IVectorIndexDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/vector/IVectorIndexDataClient';
-import {VectorIndexItem} from '@gomomento/sdk-core/dist/src/messages/vector-index';
 import {
   CredentialProvider,
   InvalidArgumentError,
@@ -10,7 +9,9 @@ import {
   VectorDeleteItemBatch,
   VectorSearch,
   VectorSearchAndFetchVectors,
+  VectorIndexItem,
   VectorUpsertItemBatch,
+  VectorIndexStoredItem,
   VectorGetItemBatch,
   VectorGetItemMetadataBatch,
 } from '@gomomento/sdk-core';
@@ -476,7 +477,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
                       break;
                   }
                   return acc;
-                }, {} as Record<string, VectorIndexItem>)
+                }, {} as Record<string, VectorIndexStoredItem>)
               )
             );
           } else {
