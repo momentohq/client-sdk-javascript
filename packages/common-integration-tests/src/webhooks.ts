@@ -136,27 +136,25 @@ export function runWebhookTests(
     it('should rotate a webhook secret', async () => {
       const webhook = testWebhook(integrationTestCacheName);
       await WithWebhook(topicClient, webhook, async () => {
-        const resp = await topicClient.getWebhookSecret(
+        const getSecretResp = await topicClient.getWebhookSecret(
           webhook.id.cacheName,
           webhook.id.webhookName
         );
-        if (!(resp instanceof GetWebhookSecret.Success)) {
+        if (!(getSecretResp instanceof GetWebhookSecret.Success)) {
           throw new Error(
-            `unknown error occured when making a 'getWebhookSecret' request: ${resp.toString()}`
+            `unknown error occured when making a 'getWebhookSecret' request: ${getSecretResp.toString()}`
           );
         }
-        const getSecretResp = resp;
-        expect(resp.secret()).toBeTruthy();
-        const _rotateResp = await topicClient.rotateWebhookSecret(
+        expect(getSecretResp.secret()).toBeTruthy();
+        const rotateResp = await topicClient.rotateWebhookSecret(
           webhook.id.cacheName,
           webhook.id.webhookName
         );
-        if (!(_rotateResp instanceof RotateWebhookSecret.Success)) {
+        if (!(rotateResp instanceof RotateWebhookSecret.Success)) {
           throw new Error(
-            `unknown error occured when making a 'rotateWebhookSecret' request: ${resp.toString()}`
+            `unknown error occured when making a 'rotateWebhookSecret' request: ${rotateResp.toString()}`
           );
         }
-        const rotateResp = _rotateResp as RotateWebhookSecret.Success;
         expect(rotateResp.secret()).toBeTruthy();
         expect(rotateResp.webhookName()).toEqual(getSecretResp.webhookName());
         expect(rotateResp.cacheName()).toEqual(getSecretResp.cacheName());
