@@ -33,6 +33,7 @@
   "devDependencies": {
     "@gomomento/common-integration-tests": "file:../common-integration-tests",
     "@happy-dom/jest-environment": "^12.10.3",
+    "@types/google-protobuf": "3.15.6",
     "@types/jest": "27.5.2",
     "@types/node": "14.18.3",
     "@types/uuid": "^9.0.7",
@@ -57,7 +58,6 @@
   "dependencies": {
     "@gomomento/generated-types-webtext": "0.97.1",
     "@gomomento/sdk-core": "file:../core",
-    "@types/google-protobuf": "3.15.6",
     "google-protobuf": "3.21.2",
     "grpc-web": "1.4.2",
     "jwt-decode": "3.1.2"
