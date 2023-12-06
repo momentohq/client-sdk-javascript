@@ -151,7 +151,7 @@ export function runWebhookTests(
           webhook.id.cacheName,
           webhook.id.webhookName
         );
-        if (!(resp instanceof RotateWebhookSecret.Success)) {
+        if (!(_rotateResp instanceof RotateWebhookSecret.Success)) {
           throw new Error(
             `unknown error occured when making a 'rotateWebhookSecret' request: ${resp.toString()}`
           );
