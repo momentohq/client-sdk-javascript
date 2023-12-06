@@ -5,3 +5,5 @@ export * as VectorUpsertItemBatch from './vector-upsert-item-batch';
 export * as VectorSearch from './vector-search';
 export * as VectorSearchAndFetchVectors from './vector-search-and-fetch-vectors';
 export * as VectorDeleteItemBatch from './vector-delete-item-batch';
+export * as VectorGetItemBatch from './vector-get-item-batch';
+export * as VectorGetItemMetadataBatch from './vector-get-item-metadata-batch';

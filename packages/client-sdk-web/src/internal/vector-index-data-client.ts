@@ -1,14 +1,18 @@
 import {VectorIndexClient} from '@gomomento/generated-types-webtext/dist/VectorindexServiceClientPb';
 import * as vectorindex from '@gomomento/generated-types-webtext/dist/vectorindex_pb';
 import {IVectorIndexDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/vector/IVectorIndexDataClient';
-import {VectorIndexItem} from '@gomomento/sdk-core/dist/src/messages/vector-index';
 import {
   MomentoLogger,
   SearchOptions,
   VectorDeleteItemBatch,
   VectorSearch,
   VectorSearchAndFetchVectors,
+  VectorIndexMetadata,
+  VectorIndexItem,
   VectorUpsertItemBatch,
+  VectorIndexStoredItem,
+  VectorGetItemBatch,
+  VectorGetItemMetadataBatch,
   InvalidArgumentError,
   UnknownError,
 } from '@gomomento/sdk-core';
@@ -238,7 +242,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   private static deserializeMetadata(
     metadata: vectorindex._Metadata[],
     errorCallback: () => void
-  ): Record<string, string | number | boolean | Array<string>> {
+  ): VectorIndexMetadata {
     return metadata.reduce((acc, metadata) => {
       const field = metadata.getField();
       switch (metadata.getValueCase()) {
@@ -262,7 +266,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           break;
       }
       return acc;
-    }, {} as Record<string, string | number | boolean | Array<string>>);
+    }, {} as VectorIndexMetadata);
   }
 
   private async sendSearch(
@@ -393,6 +397,171 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               new VectorSearchAndFetchVectors.Error(
                 cacheServiceErrorMapper(err)
               )
+            );
+          }
+        }
+      );
+    });
+  }
+
+  public async getItemBatch(
+    indexName: string,
+    ids: string[]
+  ): Promise<VectorGetItemBatch.Response> {
+    try {
+      validateIndexName(indexName);
+    } catch (err) {
+      return new VectorGetItemBatch.Error(normalizeSdkError(err as Error));
+    }
+    return await this.sendGetItemBatch(indexName, ids);
+  }
+
+  private async sendGetItemBatch(
+    indexName: string,
+    ids: string[]
+  ): Promise<VectorGetItemBatch.Response> {
+    const request = new vectorindex._GetItemBatchRequest();
+    request.setIndexName(indexName);
+    request.setIdsList(ids);
+    request.setMetadataFields(
+      VectorIndexDataClient.prepareMetadataRequest({
+        metadataFields: ALL_VECTOR_METADATA,
+      })
+    );
+
+    return await new Promise(resolve => {
+      this.client.getItemBatch(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...this.createVectorCallMetadata(this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(
+              new VectorGetItemBatch.Success(
+                resp.getItemResponseList().reduce((acc, itemResponse) => {
+                  let hit: vectorindex._ItemResponse._Hit | undefined;
+                  switch (itemResponse.getResponseCase()) {
+                    case vectorindex._ItemResponse.ResponseCase.HIT:
+                      hit = itemResponse.getHit();
+                      acc[hit?.getId() ?? ''] = {
+                        id: hit?.getId() ?? '',
+                        vector: hit?.getVector()?.getElementsList() ?? [],
+                        metadata: VectorIndexDataClient.deserializeMetadata(
+                          hit?.getMetadataList() ?? [],
+                          () =>
+                            resolve(
+                              new VectorGetItemBatch.Error(
+                                new UnknownError(
+                                  'GetItemBatch responded with an unknown result'
+                                )
+                              )
+                            )
+                        ),
+                      };
+                      break;
+                    case vectorindex._ItemResponse.ResponseCase.MISS:
+                      break;
+                    default:
+                      resolve(
+                        new VectorGetItemBatch.Error(
+                          new UnknownError(
+                            'GetItemBatch responded with an unknown result'
+                          )
+                        )
+                      );
+                      break;
+                  }
+                  return acc;
+                }, {} as Record<string, VectorIndexStoredItem>)
+              )
+            );
+          } else {
+            resolve(new VectorGetItemBatch.Error(cacheServiceErrorMapper(err)));
+          }
+        }
+      );
+    });
+  }
+
+  public async getItemMetadataBatch(
+    indexName: string,
+    ids: string[]
+  ): Promise<VectorGetItemMetadataBatch.Response> {
+    try {
+      validateIndexName(indexName);
+    } catch (err) {
+      return new VectorGetItemMetadataBatch.Error(
+        normalizeSdkError(err as Error)
+      );
+    }
+    return await this.sendGetItemMetadataBatch(indexName, ids);
+  }
+
+  private async sendGetItemMetadataBatch(
+    indexName: string,
+    ids: string[]
+  ): Promise<VectorGetItemMetadataBatch.Response> {
+    const request = new vectorindex._GetItemMetadataBatchRequest();
+    request.setIndexName(indexName);
+    request.setIdsList(ids);
+    request.setMetadataFields(
+      VectorIndexDataClient.prepareMetadataRequest({
+        metadataFields: ALL_VECTOR_METADATA,
+      })
+    );
+
+    return await new Promise(resolve => {
+      this.client.getItemMetadataBatch(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...this.createVectorCallMetadata(this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(
+              new VectorGetItemMetadataBatch.Success(
+                resp
+                  .getItemMetadataResponseList()
+                  .reduce((acc, itemResponse) => {
+                    let hit: vectorindex._ItemMetadataResponse._Hit | undefined;
+                    switch (itemResponse.getResponseCase()) {
+                      case vectorindex._ItemMetadataResponse.ResponseCase.HIT:
+                        hit = itemResponse.getHit();
+                        acc[hit?.getId() ?? ''] =
+                          VectorIndexDataClient.deserializeMetadata(
+                            hit?.getMetadataList() ?? [],
+                            () =>
+                              resolve(
+                                new VectorGetItemMetadataBatch.Error(
+                                  new UnknownError(
+                                    'GetItemMetadataBatch responded with an unknown result'
+                                  )
+                                )
+                              )
+                          );
+                        break;
+                      case vectorindex._ItemResponse.ResponseCase.MISS:
+                        break;
+                      default:
+                        resolve(
+                          new VectorGetItemMetadataBatch.Error(
+                            new UnknownError(
+                              'GetItemMetadataBatch responded with an unknown result'
+                            )
+                          )
+                        );
+                        break;
+                    }
+                    return acc;
+                  }, {} as Record<string, VectorIndexMetadata>)
+              )
+            );
+          } else {
+            resolve(
+              new VectorGetItemMetadataBatch.Error(cacheServiceErrorMapper(err))
             );
           }
         }
