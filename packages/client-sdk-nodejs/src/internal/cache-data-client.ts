@@ -2036,7 +2036,7 @@ export class CacheDataClient implements IDataClient {
       );
     }
     this.logger.trace(
-      "Issuing 'sortedSetPutElements' request; value: %s, score : %s, ttl: %s",
+      "Issuing 'sortedSetPutElements' request; elements : %s, ttl: %s",
       elements.toString(),
       ttl.ttlSeconds.toString() ?? 'null'
     );

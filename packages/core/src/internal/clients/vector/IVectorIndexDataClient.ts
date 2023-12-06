@@ -3,6 +3,8 @@ import {
   VectorDeleteItemBatch,
   VectorSearch,
   VectorSearchAndFetchVectors,
+  VectorGetItemBatch,
+  VectorGetItemMetadataBatch,
 } from '../../../messages/responses/vector';
 import {VectorIndexItem} from '../../../messages/vector-index';
 import {SearchOptions} from '../../../clients/IVectorIndexClient';
@@ -26,4 +28,12 @@ export interface IVectorIndexDataClient {
     indexName: string,
     ids: Array<string>
   ): Promise<VectorDeleteItemBatch.Response>;
+  getItemBatch(
+    indexName: string,
+    ids: Array<string>
+  ): Promise<VectorGetItemBatch.Response>;
+  getItemMetadataBatch(
+    indexName: string,
+    ids: Array<string>
+  ): Promise<VectorGetItemMetadataBatch.Response>;
 }
