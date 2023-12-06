@@ -1114,6 +1114,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           test_item_1: {
             key1: 'value1',
           },
+          test_item_2: {},
         },
       },
     ])(
