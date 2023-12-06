@@ -211,7 +211,7 @@ export class WebhookClient implements IWebhookClient {
     });
     this.logger.debug('issuing "RotateWebhookSecret" request');
 
-    return await new Promise<GetWebhookSecret.Response>(resolve => {
+    return await new Promise<RotateWebhookSecret.Response>(resolve => {
       this.webhookClient.RotateWebhookSecret(
         request,
         {interceptors: this.unaryInterceptors},
