@@ -1,0 +1,29 @@
+  on:
+    schedule:
+      - cron: '0 12 * * *'
+    # for testing, temporarily allow manual triggering
+    workflow_dispatch:
+
+  jobs:
+    update-example-deps:
+      name: Update Momento deps in examples
+      runs-on: ubuntu-latest
+      env:
+        # TODO: remove token stored as secret in favor of using a
+        # momento-local instance that can be spun up for testing
+        MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+
+      steps:
+        - name: Setup repo
+          uses: actions/checkout@v3
+
+        - name: Install Node
+          uses: actions/setup-node@v3
+          with:
+            node-version: 16
+
+        - name: Run update script
+          id: validation
+          run: |
+            ./scripts/update-all-examples-dependencies.sh
+
