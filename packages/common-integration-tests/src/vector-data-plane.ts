@@ -1103,6 +1103,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
           test_item_2: {
             id: 'test_item_2',
             vector: [3.0, 4.0],
+            metadata: {},
           },
         },
       },
@@ -1118,7 +1119,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         },
       },
     ])(
-      'should get item metadata',
+      'should get items and get item metadata',
       async ({getMethodName, ids, expectedResponse, hits}) => {
         const indexName = testIndexName();
         await WithIndex(
