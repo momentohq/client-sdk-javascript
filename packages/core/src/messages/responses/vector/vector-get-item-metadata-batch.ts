@@ -48,7 +48,7 @@ export class Success extends ResponseSuccess(_Success) {
    * returned object.
    * @returns {Record<string, VectorIndexMetadata>} The metadata for items found in the index.
    */
-  hits(): Record<string, VectorIndexMetadata> {
+  values(): Record<string, VectorIndexMetadata> {
     return this._values;
   }
 }

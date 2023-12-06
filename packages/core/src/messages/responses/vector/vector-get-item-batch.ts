@@ -48,7 +48,7 @@ export class Success extends ResponseSuccess(_Success) {
    * returned object.
    * @returns {Record<string, VectorIndexStoredItem>} The items that were found in the index.
    */
-  hits(): Record<string, VectorIndexStoredItem> {
+  values(): Record<string, VectorIndexStoredItem> {
     return this._values;
   }
 }
