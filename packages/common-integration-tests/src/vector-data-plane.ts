@@ -1051,7 +1051,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         hits: {},
       },
       {
-        getMethodName: 'getItemMetdataBatch',
+        getMethodName: 'getItemMetadataBatch',
         ids: [],
         expectedResponse: VectorGetItemMetadataBatch.Success,
         hits: {},
