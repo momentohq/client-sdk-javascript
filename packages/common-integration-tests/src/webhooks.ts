@@ -13,6 +13,7 @@ import {
   ValidateCacheProps,
   ValidateTopicProps,
   WithWebhook,
+  itOnlyInCi,
 } from './common-int-test-utils';
 import {
   ICacheClient,
@@ -133,7 +134,7 @@ export function runWebhookTests(
         expect(detes.invocationCount).toBe(1);
       });
     });
-    it('should rotate a webhook secret', async () => {
+    itOnlyInCi('should rotate a webhook secret', async () => {
       const webhook = testWebhook(integrationTestCacheName);
       await WithWebhook(topicClient, webhook, async () => {
         const getSecretResp = await topicClient.getWebhookSecret(
