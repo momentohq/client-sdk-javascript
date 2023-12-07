@@ -103,9 +103,9 @@ async function example_API_GetItemMetadataBatch(vectorClient: PreviewVectorIndex
 
 async function example_API_DeleteItemBatch(vectorClient: PreviewVectorIndexClient) {
   const result = await vectorClient.deleteItemBatch('test-index', ['example_item_1', 'example_item_2']);
-  if (result instanceof VectorUpsertItemBatch.Success) {
+  if (result instanceof VectorDeleteItemBatch.Success) {
     console.log('Successfully deleted items');
-  } else if (result instanceof VectorUpsertItemBatch.Error) {
+  } else if (result instanceof VectorDeleteItemBatch.Error) {
     throw new Error(`An error occurred while deleting items: ${result.errorCode()}: ${result.toString()}`);
   }
 }
