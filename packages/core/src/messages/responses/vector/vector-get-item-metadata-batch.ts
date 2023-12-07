@@ -22,9 +22,9 @@ import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
  * ```
  */
 export abstract class Response extends ResponseBase {
-  hits(): Record<string, VectorIndexMetadata> | undefined {
+  values(): Record<string, VectorIndexMetadata> | undefined {
     if (this instanceof Success) {
-      return this.hits();
+      return this.values();
     }
     return undefined;
   }
@@ -36,10 +36,10 @@ class _Success extends Response {}
  * Indicates a Successful VectorGetItemMetadataBatch request.
  */
 export class Success extends ResponseSuccess(_Success) {
-  private readonly _hits: Record<string, VectorIndexMetadata>;
-  constructor(hits: Record<string, VectorIndexMetadata>) {
+  private readonly _values: Record<string, VectorIndexMetadata>;
+  constructor(values: Record<string, VectorIndexMetadata>) {
     super();
-    this._hits = hits;
+    this._values = values;
   }
   /**
    * Returns the metadat for the found items from the VectorGetItemMetadataBatch request.
@@ -48,8 +48,8 @@ export class Success extends ResponseSuccess(_Success) {
    * returned object.
    * @returns {Record<string, VectorIndexMetadata>} The metadata for items found in the index.
    */
-  hits(): Record<string, VectorIndexMetadata> {
-    return this._hits;
+  values(): Record<string, VectorIndexMetadata> {
+    return this._values;
   }
 }
 
