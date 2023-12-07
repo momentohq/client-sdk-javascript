@@ -3,6 +3,7 @@ import {
   ListWebhooks,
   GetWebhookSecret,
   TopicPublish,
+  RotateWebhookSecret,
 } from '@gomomento/sdk-core';
 import {
   getWebhookRequestDetails,
@@ -66,7 +67,7 @@ export function runWebhookTests(
     });
   });
 
-  describe('put list delete getWebhookSecret', () => {
+  describe('put list delete getWebhookSecret rotateWebhookSecret', () => {
     it('should create a new webhook, list it, and then delete it', async () => {
       const webhook = testWebhook(integrationTestCacheName);
       await WithWebhook(topicClient, webhook, async () => {
@@ -130,6 +131,36 @@ export function runWebhookTests(
         await delay(5 * 1000);
         const detes = await getWebhookRequestDetails(webhook.destination.url());
         expect(detes.invocationCount).toBe(1);
+      });
+    });
+    it('should rotate a webhook secret', async () => {
+      const webhook = testWebhook(integrationTestCacheName);
+      await WithWebhook(topicClient, webhook, async () => {
+        const getSecretResp = await topicClient.getWebhookSecret(
+          webhook.id.cacheName,
+          webhook.id.webhookName
+        );
+        if (!(getSecretResp instanceof GetWebhookSecret.Success)) {
+          throw new Error(
+            `unknown error occured when making a 'getWebhookSecret' request: ${getSecretResp.toString()}`
+          );
+        }
+        expect(getSecretResp.secret()).toBeTruthy();
+        const rotateResp = await topicClient.rotateWebhookSecret(
+          webhook.id.cacheName,
+          webhook.id.webhookName
+        );
+        if (!(rotateResp instanceof RotateWebhookSecret.Success)) {
+          throw new Error(
+            `unknown error occured when making a 'rotateWebhookSecret' request: ${rotateResp.toString()}`
+          );
+        }
+        expect(rotateResp.secret()).toBeTruthy();
+        expect(rotateResp.webhookName()).toEqual(getSecretResp.webhookName());
+        expect(rotateResp.cacheName()).toEqual(getSecretResp.cacheName());
+
+        // make sure the secrets are in fact different
+        expect(rotateResp.secret() === getSecretResp.secret()).toBeFalsy();
       });
     });
   });

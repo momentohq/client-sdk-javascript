@@ -8,6 +8,8 @@ import {
   SearchOptions,
   VectorSearchAndFetchVectors,
   VectorIndexItem,
+  VectorGetItemBatch,
+  VectorGetItemMetadataBatch,
 } from '@gomomento/sdk-core';
 import {
   expectWithMessage,
@@ -1011,5 +1013,155 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         }
       );
     });
+  });
+
+  describe('getItemBatch and getItemMetadataBatch', () => {
+    /*
+     * In the following tests we test both search and searchAndFetchVectors with a common
+     * suite of tests. To do this we abstract away calling the search method, building the hits
+     * (which may or may not contain the vectors), and asserting the results.
+     *
+     * We have two helpers to do this: search and buildSearchHits. The search method calls the
+     * appropriate search method on the vector client. The buildSearchHits method takes the
+     * search hits and the search method name and returns the expected search hits.
+     */
+
+    async function get(
+      vectorClient: IVectorIndexClient,
+      getMethodName: string,
+      indexName: string,
+      ids: string[]
+    ): Promise<
+      VectorGetItemBatch.Response | VectorGetItemMetadataBatch.Response
+    > {
+      if (getMethodName === 'getItemBatch') {
+        return await vectorClient.getItemBatch(indexName, ids);
+      } else if (getMethodName === 'getItemMetadataBatch') {
+        return await vectorClient.getItemMetadataBatch(indexName, ids);
+      } else {
+        throw new Error(`unknown search method ${getMethodName}`);
+      }
+    }
+
+    it.each([
+      {
+        getMethodName: 'getItemBatch',
+        ids: [],
+        expectedResponse: VectorGetItemBatch.Success,
+        values: {},
+      },
+      {
+        getMethodName: 'getItemMetadataBatch',
+        ids: [],
+        expectedResponse: VectorGetItemMetadataBatch.Success,
+        values: {},
+      },
+      {
+        getMethodName: 'getItemBatch',
+        ids: ['test_item_1'],
+        expectedResponse: VectorGetItemBatch.Success,
+        values: {
+          test_item_1: {
+            id: 'test_item_1',
+            vector: [1.0, 2.0],
+            metadata: {key1: 'value1'},
+          },
+        },
+      },
+      {
+        getMethodName: 'getItemMetadataBatch',
+        ids: ['test_item_1'],
+        expectedResponse: VectorGetItemMetadataBatch.Success,
+        values: {
+          test_item_1: {
+            key1: 'value1',
+          },
+        },
+      },
+      {
+        getMethodName: 'getItemBatch',
+        ids: ['missing_id'],
+        expectedResponse: VectorGetItemBatch.Success,
+        values: {},
+      },
+      {
+        getMethodName: 'getItemMetadataBatch',
+        ids: ['missing_id'],
+        expectedResponse: VectorGetItemMetadataBatch.Success,
+        values: {},
+      },
+      {
+        getMethodName: 'getItemBatch',
+        ids: ['test_item_1', 'missing_id_2', 'test_item_2'],
+        expectedResponse: VectorGetItemBatch.Success,
+        values: {
+          test_item_1: {
+            id: 'test_item_1',
+            vector: [1.0, 2.0],
+            metadata: {key1: 'value1'},
+          },
+          test_item_2: {
+            id: 'test_item_2',
+            vector: [3.0, 4.0],
+            metadata: {},
+          },
+        },
+      },
+      {
+        getMethodName: 'getItemMetadataBatch',
+        ids: ['test_item_1', 'missing_id_2', 'test_item_2'],
+        expectedResponse: VectorGetItemMetadataBatch.Success,
+        values: {
+          test_item_1: {
+            key1: 'value1',
+          },
+          test_item_2: {},
+        },
+      },
+    ])(
+      'should get items and get item metadata',
+      async ({getMethodName, ids, expectedResponse, values}) => {
+        const indexName = testIndexName();
+        await WithIndex(
+          vectorClient,
+          indexName,
+          2,
+          VectorSimilarityMetric.INNER_PRODUCT,
+          async () => {
+            const upsertResponse = await vectorClient.upsertItemBatch(
+              indexName,
+              [
+                {
+                  id: 'test_item_1',
+                  vector: [1.0, 2.0],
+                  metadata: {key1: 'value1'},
+                },
+                {id: 'test_item_2', vector: [3.0, 4.0]},
+                {id: 'test_item_3', vector: [5.0, 6.0]},
+              ]
+            );
+            expectWithMessage(() => {
+              expect(upsertResponse).toBeInstanceOf(
+                VectorUpsertItemBatch.Success
+              );
+            }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
+
+            await sleep(2_000);
+
+            const getResponse = await get(
+              vectorClient,
+              getMethodName,
+              indexName,
+              ids
+            );
+            expectWithMessage(() => {
+              expect(getResponse).toBeInstanceOf(expectedResponse);
+            }, `expected SUCCESS but got ${getResponse.toString()}}`);
+
+            expect(getResponse.values()).toEqual(values);
+          }
+        );
+      }
+    );
   });
 }

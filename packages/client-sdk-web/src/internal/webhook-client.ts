@@ -11,6 +11,7 @@ import {
   PostUrlWebhookDestination,
   WebhookDestinationType,
   GetWebhookSecret,
+  RotateWebhookSecret,
 } from '@gomomento/sdk-core';
 import {IWebhookClient} from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/IWebhookClient';
 import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
@@ -31,6 +32,7 @@ import {
   _Webhook,
   _WebhookDestination,
   _WebhookId,
+  _RotateWebhookSecretRequest,
 } from '@gomomento/generated-types-webtext/dist/webhook_pb';
 
 export class WebhookClient implements IWebhookClient {
@@ -200,6 +202,46 @@ export class WebhookClient implements IWebhookClient {
                 secret: resp.getSecretString(),
                 webhookName: resp.getWebhookName(),
                 cacheName: resp.getCacheName(),
+              })
+            );
+          }
+        }
+      );
+    });
+  }
+
+  async rotateWebhookSecret(
+    id: WebhookId
+  ): Promise<RotateWebhookSecret.Response> {
+    try {
+      validateCacheName(id.cacheName);
+      validateWebhookName(id.webhookName);
+    } catch (err) {
+      return new RotateWebhookSecret.Error(normalizeSdkError(err as Error));
+    }
+
+    const request = new _RotateWebhookSecretRequest();
+    const webhookId = new _WebhookId();
+    webhookId.setWebhookName(id.webhookName);
+    webhookId.setCacheName(id.cacheName);
+    request.setWebhookId(webhookId);
+    this.logger.debug('issuing "RotateWebhookSecret" request');
+
+    return await new Promise<RotateWebhookSecret.Response>(resolve => {
+      this.webhookClient.rotateWebhookSecret(
+        request,
+        this.clientMetadataProvider.createClientMetadata(),
+        (err, resp) => {
+          if (err || !resp) {
+            resolve(
+              new RotateWebhookSecret.Error(cacheServiceErrorMapper(err))
+            );
+          } else {
+            resolve(
+              new RotateWebhookSecret.Success({
+                secret: resp.getSecretString(),
+                webhookName: id.webhookName,
+                cacheName: id.cacheName,
               })
             );
           }

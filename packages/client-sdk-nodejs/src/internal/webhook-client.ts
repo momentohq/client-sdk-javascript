@@ -11,6 +11,7 @@ import {
   ListWebhooks,
   PostUrlWebhookDestination,
   GetWebhookSecret,
+  RotateWebhookSecret,
 } from '@gomomento/sdk-core';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {IWebhookClient} from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/IWebhookClient';
@@ -183,6 +184,48 @@ export class WebhookClient implements IWebhookClient {
                 secret: resp.secret_string,
                 webhookName: resp.webhook_name,
                 cacheName: resp.cache_name,
+              })
+            );
+          }
+        }
+      );
+    });
+  }
+
+  async rotateWebhookSecret(
+    id: WebhookId
+  ): Promise<RotateWebhookSecret.Response> {
+    try {
+      validateCacheName(id.cacheName);
+      validateWebhookName(id.webhookName);
+    } catch (err) {
+      return new RotateWebhookSecret.Error(normalizeSdkError(err as Error));
+    }
+
+    const webhookId = grpcWebhook._WebhookId.fromObject({
+      webhook_name: id.webhookName,
+      cache_name: id.cacheName,
+    });
+    const request = new grpcWebhook._RotateWebhookSecretRequest({
+      webhook_id: webhookId,
+    });
+    this.logger.debug('issuing "RotateWebhookSecret" request');
+
+    return await new Promise<RotateWebhookSecret.Response>(resolve => {
+      this.webhookClient.RotateWebhookSecret(
+        request,
+        {interceptors: this.unaryInterceptors},
+        (err, resp) => {
+          if (err || !resp) {
+            resolve(
+              new RotateWebhookSecret.Error(cacheServiceErrorMapper(err))
+            );
+          } else {
+            resolve(
+              new RotateWebhookSecret.Success({
+                secret: resp.secret_string,
+                webhookName: id.webhookName,
+                cacheName: id.cacheName,
               })
             );
           }
