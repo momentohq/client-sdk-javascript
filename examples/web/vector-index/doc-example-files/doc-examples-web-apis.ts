@@ -7,6 +7,8 @@ import {
   VectorSearchAndFetchVectors,
   VectorDeleteItemBatch,
   VectorUpsertItemBatch,
+  VectorGetItemBatch,
+  VectorGetItemMetadataBatch,
   ALL_VECTOR_METADATA,
   Configurations,
   CredentialProvider,
@@ -71,6 +73,26 @@ async function example_API_UpsertItemBatch(vectorClient: PreviewVectorIndexClien
   }
 }
 
+async function example_API_GetItemBatch(vectorClient: PreviewVectorIndexClient) {
+  const result = await vectorClient.getItemBatch('test-index', ['example_item_1', 'example_item_2']);
+  if (result instanceof VectorGetItemBatch.Success) {
+    console.log(`Found ${Object.keys(result.values()).length} items`);
+  } else if (result instanceof VectorGetItemBatch.Error) {
+    throw new Error(`An error occurred while retrieving items from index: ${result.errorCode()}: ${result.toString()}`);
+  }
+}
+
+async function example_API_GetItemMetadataBatch(vectorClient: PreviewVectorIndexClient) {
+  const result = await vectorClient.getItemMetadataBatch('test-index', ['example_item_1', 'example_item_2']);
+  if (result instanceof VectorGetItemMetadataBatch.Success) {
+    console.log(`Found metadata for ${Object.keys(result.values()).length} items`);
+  } else if (result instanceof VectorGetItemMetadataBatch.Error) {
+    throw new Error(
+      `An error occurred while retrieving item metadata from index: ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
 async function example_API_DeleteItemBatch(vectorClient: PreviewVectorIndexClient) {
   const result = await vectorClient.deleteItemBatch('test-index', ['example_item_1', 'example_item_2']);
   if (result instanceof VectorDeleteItemBatch.Success) {
@@ -114,6 +136,8 @@ async function main() {
   await example_API_UpsertItemBatch(vectorClient);
   await example_API_Search(vectorClient);
   await example_API_SearchAndFetchVectors(vectorClient);
+  await example_API_GetItemBatch(vectorClient);
+  await example_API_GetItemMetadataBatch(vectorClient);
   await example_API_DeleteItemBatch(vectorClient);
   await example_API_DeleteIndex(vectorClient);
 }

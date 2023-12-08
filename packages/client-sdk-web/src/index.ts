@@ -138,6 +138,8 @@ import {
   DeleteWebhook,
   ListWebhooks,
   PutWebhook,
+  GetWebhookSecret,
+  RotateWebhookSecret,
   WebhookDestinationType,
 } from '@gomomento/sdk-core';
 
@@ -319,5 +321,7 @@ export {
   DeleteWebhook,
   ListWebhooks,
   PutWebhook,
+  GetWebhookSecret,
+  RotateWebhookSecret,
   WebhookDestinationType,
 };
