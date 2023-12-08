@@ -81,6 +81,9 @@ import {
   LeaderboardOrder,
   LeaderboardRemoveElements,
   LeaderboardUpsert,
+  ListWebhooks,
+  DeleteWebhook,
+  PutWebhook,
 } from '@gomomento/sdk';
 
 function retrieveApiKeyFromYourSecretsManager(): string {
@@ -1042,6 +1045,43 @@ async function example_API_TopicSubscribe(topicClient: TopicClient) {
   }
 }
 
+async function example_API_ListWebhooks(topicClient: TopicClient) {
+  const result = await topicClient.listWebhooks('test-cache');
+  if (result instanceof ListWebhooks.Success) {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    console.log(`listed webhooks: ${result.getWebhooks()}`);
+  } else if (result instanceof ListWebhooks.Error) {
+    throw new Error(
+      `An error occurred while attempting to list webhooks for cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_DeleteWebhook(topicClient: TopicClient) {
+  const result = await topicClient.deleteWebhook('test-cache', 'a webhook');
+  if (result instanceof DeleteWebhook.Success) {
+    console.log('successfully deleted webhook');
+  } else if (result instanceof ListWebhooks.Error) {
+    throw new Error(
+      `An error occurred while attempting to delete webhook 'a webhook' inside of cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_PutWebhook(topicClient: TopicClient) {
+  const result = await topicClient.putWebhook('test-cache', 'examples webhook', {
+    topicName: 'a topic',
+    destination: 'https://www.thisisawebhookurl.com/v1/webhook',
+  });
+  if (result instanceof PutWebhook.Success) {
+    console.log('successfully created webhook');
+  } else if (result instanceof PutWebhook.Error) {
+    throw new Error(
+      `An error occurred while attempting to create a webhook 'examples webhook' inside of cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
 function example_API_InstantiateLeaderboardClient() {
   new PreviewLeaderboardClient({
     configuration: LeaderboardConfigurations.Laptop.v1(),
@@ -1367,6 +1407,11 @@ async function main() {
   });
   await example_API_TopicPublish(topicClient);
   await example_API_TopicSubscribe(topicClient);
+
+  // Webhooks
+  await example_API_ListWebhooks(topicClient);
+  await example_API_DeleteWebhook(topicClient);
+  await example_API_PutWebhook(topicClient);
 
   example_API_InstantiateLeaderboardClient();
   const leaderboardClient = new PreviewLeaderboardClient({
