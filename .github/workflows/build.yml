@@ -114,7 +114,7 @@ jobs:
         continue-on-error: true
         run: |
           pushd examples/nodejs/cache
-            npm i
+            npm ci
             npm run build
             npm run validate-examples
           popd
