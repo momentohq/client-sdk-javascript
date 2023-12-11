@@ -6,6 +6,7 @@ import * as TopicConfigurations from './config/topic-configurations';
 import * as VectorIndexConfigurations from './config/vector-index-configurations';
 import * as LeaderboardConfigurations from './config/leaderboard-configurations';
 import * as BatchUtils from './batchutils/batch-functions';
+import * as WebhookUtils from './webhookutils';
 
 import {TopicClientProps} from './topic-client-props';
 import {VectorIndexConfiguration} from './config/vector-index-configuration';
@@ -380,4 +381,5 @@ export {
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
   BatchUtils,
+  WebhookUtils,
 };
