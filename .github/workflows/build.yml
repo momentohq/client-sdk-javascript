@@ -90,7 +90,7 @@ jobs:
   test-examples:
     strategy:
       matrix:
-        node: [14, 16, 18]
+        node: [18]
       fail-fast: true
       max-parallel: 1
     name: Test examples on node ${{ matrix.node }}
