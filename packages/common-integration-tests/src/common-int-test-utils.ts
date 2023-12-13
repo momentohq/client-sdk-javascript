@@ -44,6 +44,7 @@ export function testCacheName(): string {
 /**
  * Returns a unique index name for use in integration tests.
  * @param meaningfulIdentifier Required suffix to identify the test for debugging purposes.
+ * Should be a string that describes the test uniquely.
  * @returns {string} A unique index name.
  */
 export function testIndexName(meaningfulIdentifier: string): string {
