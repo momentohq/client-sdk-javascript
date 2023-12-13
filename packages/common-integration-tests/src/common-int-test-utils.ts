@@ -41,12 +41,13 @@ export function testCacheName(): string {
   return process.env.TEST_CACHE_NAME || `js-integration-test-default-${v4()}`;
 }
 
-export function testIndexName(suffix?: string): string {
-  let indexName = `js-integration-test-${v4()}`;
-  if (suffix !== undefined) {
-    indexName = `${indexName}-${suffix}`;
-  }
-  return indexName;
+/**
+ * Returns a unique index name for use in integration tests.
+ * @param meaningfulIdentifier Required suffix to identify the test for debugging purposes.
+ * @returns {string} A unique index name.
+ */
+export function testIndexName(meaningfulIdentifier: string): string {
+  return `js-integration-test-${v4()}-${meaningfulIdentifier}`;
 }
 
 export function testWebhook(cache?: string): Webhook {
