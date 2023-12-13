@@ -30,7 +30,7 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
     });
 
     it('should return an InvalidArgumentError if given a bad similarity metric', async () => {
-      const indexName = testIndexName();
+      const indexName = testIndexName('control-create-with-bad-metric');
       const createResponse = await vectorClient.createIndex(
         indexName,
         1,
@@ -47,7 +47,7 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
     });
 
     it('should return a NotFoundError if deleting a non-existent index', async () => {
-      const indexName = testIndexName();
+      const indexName = testIndexName('control-delete-non-existent');
       const deleteResponse = await vectorClient.deleteIndex(indexName);
       expectWithMessage(() => {
         expect(deleteResponse).toBeInstanceOf(DeleteVectorIndex.Error);
@@ -60,7 +60,7 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
     });
 
     it('should return AlreadyExists response if trying to create a index that already exists', async () => {
-      const indexName = testIndexName();
+      const indexName = testIndexName('control-create-already-exists');
       await WithIndex(
         vectorClient,
         indexName,
@@ -78,21 +78,21 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
     it.each([
       {
         indexInfo: new VectorIndexInfo(
-          testIndexName(),
+          testIndexName('control-list-indexes-1'),
           10,
           VectorSimilarityMetric.INNER_PRODUCT
         ),
       },
       {
         indexInfo: new VectorIndexInfo(
-          testIndexName(),
+          testIndexName('control-list-indexes-2'),
           20,
           VectorSimilarityMetric.EUCLIDEAN_SIMILARITY
         ),
       },
       {
         indexInfo: new VectorIndexInfo(
-          testIndexName(),
+          testIndexName('control-list-indexes-3'),
           30,
           VectorSimilarityMetric.COSINE_SIMILARITY
         ),

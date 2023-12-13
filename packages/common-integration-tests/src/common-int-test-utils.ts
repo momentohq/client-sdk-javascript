@@ -41,8 +41,12 @@ export function testCacheName(): string {
   return process.env.TEST_CACHE_NAME || `js-integration-test-default-${v4()}`;
 }
 
-export function testIndexName(): string {
-  return `js-integration-test-${v4()}`;
+export function testIndexName(suffix?: string): string {
+  let indexName = `js-integration-test-${v4()}`;
+  if (suffix !== undefined) {
+    indexName = `${indexName}-${suffix}`;
+  }
+  return indexName;
 }
 
 export function testWebhook(cache?: string): Webhook {

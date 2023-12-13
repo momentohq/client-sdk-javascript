@@ -119,7 +119,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     ])(
       'should support upsertItem and search using inner product',
       async ({searchMethodName, response}) => {
-        const indexName = testIndexName();
+        const indexName = testIndexName('data-upsert-search-inner-product');
         await WithIndex(
           vectorClient,
           indexName,
@@ -180,7 +180,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     ])(
       'should support upsertItem and search using cosine similarity',
       async ({searchMethodName, response}) => {
-        const indexName = testIndexName();
+        const indexName = testIndexName('data-upsert-search-cosine-similarity');
         await WithIndex(
           vectorClient,
           indexName,
@@ -259,7 +259,9 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     ])(
       'should support upsertItem and search using euclidean similarity',
       async ({searchMethodName, response}) => {
-        const indexName = testIndexName();
+        const indexName = testIndexName(
+          'data-upsert-search-euclidean-similarity'
+        );
         await WithIndex(
           vectorClient,
           indexName,
@@ -330,7 +332,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     );
 
     it('should support upserting multiple items and searching', async () => {
-      const indexName = testIndexName();
+      const indexName = testIndexName('data-upsert-search-multiple-items');
       await WithIndex(
         vectorClient,
         indexName,
@@ -376,7 +378,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     ])(
       'should support upserting multiple items and searching with top k',
       async ({searchMethodName, response}) => {
-        const indexName = testIndexName();
+        const indexName = testIndexName('data-upsert-search-top-k');
         await WithIndex(
           vectorClient,
           indexName,
@@ -432,7 +434,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     ])(
       'should support upsert and search with metadata',
       async ({searchMethodName, response}) => {
-        const indexName = testIndexName();
+        const indexName = testIndexName('data-upsert-search-metadata');
         await WithIndex(
           vectorClient,
           indexName,
@@ -584,7 +586,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     ])(
       'should support upsert and search with diverse metadata',
       async ({searchMethodName, response}) => {
-        const indexName = testIndexName();
+        const indexName = testIndexName('data-upsert-search-diverse-metadata');
         await WithIndex(
           vectorClient,
           indexName,
@@ -694,7 +696,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         searchMethodName,
         response,
       }) => {
-        const indexName = testIndexName();
+        const indexName = testIndexName('data-upsert-search-threshold');
         await WithIndex(
           vectorClient,
           indexName,
@@ -790,7 +792,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     );
 
     it('should replacing existing items with upsert', async () => {
-      const indexName = testIndexName();
+      const indexName = testIndexName('data-upsert-replace-existing');
       await WithIndex(
         vectorClient,
         indexName,
@@ -861,7 +863,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     });
 
     it('should fail when upserting item with wrong number of dimensions', async () => {
-      const indexName = testIndexName();
+      const indexName = testIndexName('data-upsert-wrong-dimensions');
       await WithIndex(
         vectorClient,
         indexName,
@@ -898,7 +900,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     ])(
       'should fail when searching with wrong number of dimensions',
       async ({searchMethodName, response}) => {
-        const indexName = testIndexName();
+        const indexName = testIndexName('data-search-wrong-dimensions');
         await WithIndex(
           vectorClient,
           indexName,
@@ -951,7 +953,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
 
   describe('deleteItem', () => {
     it('should delete ids', async () => {
-      const indexName = testIndexName();
+      const indexName = testIndexName('data-delete-ids');
       await WithIndex(
         vectorClient,
         indexName,
@@ -1121,7 +1123,7 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
     ])(
       'should get items and get item metadata',
       async ({getMethodName, ids, expectedResponse, values}) => {
-        const indexName = testIndexName();
+        const indexName = testIndexName('data-get-items');
         await WithIndex(
           vectorClient,
           indexName,
