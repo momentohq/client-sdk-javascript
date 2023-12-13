@@ -120,7 +120,7 @@ export function runVectorControlPlaneTest(vectorClient: IVectorIndexClient) {
     });
 
     it('should delete an index', async () => {
-      const indexName = testIndexName();
+      const indexName = testIndexName('control-delete-index');
       const createResponse = await vectorClient.createIndex(indexName, 1);
       expect(createResponse).toBeInstanceOf(CreateVectorIndex.Success);
       const deleteResponse = await vectorClient.deleteIndex(indexName);
