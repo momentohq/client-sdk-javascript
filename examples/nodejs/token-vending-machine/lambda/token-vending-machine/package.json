@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "3.352.0",
-    "@gomomento/sdk": "^1.45.0",
+    "@gomomento/sdk": "^1.53.2",
     "aws-lambda": "1.0.7"
   }
 }
