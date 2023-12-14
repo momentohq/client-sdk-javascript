@@ -33,6 +33,7 @@
         - name: Open PR
           uses: peter-evans/create-pull-request@v5
           with:
+            token: ${{ secrets.MOMENTO_MACHINE_USER_GITHUB_TOKEN }}
             commit-message: "chore: update momento dependency in examples\n\nAutomated commit created by update-example-deps workflow"
             title: "chore: update momento dependency in examples"
             team-reviewers: "momentohq/dev-eco"
