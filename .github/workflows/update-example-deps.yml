@@ -32,11 +32,7 @@
 
         - name: Open PR
           uses: peter-evans/create-pull-request@v5
-          commit-message: |
-	    chore: update momento dependency in examples
-
-            Automated commit created by update-example-deps workflow
-
+          commit-message: "chore: update momento dependency in examples\n\nAutomated commit created by update-example-deps workflow"
           title: "chore: update momento dependency in examples"
 
 
