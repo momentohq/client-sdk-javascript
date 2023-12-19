@@ -84,6 +84,8 @@ import {
   ListWebhooks,
   DeleteWebhook,
   PutWebhook,
+  RotateWebhookSecret,
+  GetWebhookSecret,
 } from '@gomomento/sdk';
 
 function retrieveApiKeyFromYourSecretsManager(): string {
@@ -1082,6 +1084,28 @@ async function example_API_PutWebhook(topicClient: TopicClient) {
   }
 }
 
+async function example_API_RotateWebhookSecret(topicClient: TopicClient) {
+  const result = await topicClient.rotateWebhookSecret('test-cache', 'examples webhook');
+  if (result instanceof RotateWebhookSecret.Success) {
+    console.log('successfully rotated the webhook secret');
+  } else if (result instanceof RotateWebhookSecret.Error) {
+    throw new Error(
+      `An error occurred while attempting to rotate the secret for the webhook 'examples webhook' inside of cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_GetWebhookSecret(topicClient: TopicClient) {
+  const result = await topicClient.getWebhookSecret('test-cache', 'examples webhook');
+  if (result instanceof GetWebhookSecret.Success) {
+    console.log('successfully retrieved the webhook secret');
+  } else if (result instanceof GetWebhookSecret.Error) {
+    throw new Error(
+      `An error occurred while attempting to fetch the secret for the webhook 'examples webhook' inside of cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
 function example_API_InstantiateLeaderboardClient() {
   new PreviewLeaderboardClient({
     configuration: LeaderboardConfigurations.Laptop.v1(),
@@ -1412,6 +1436,8 @@ async function main() {
   await example_API_ListWebhooks(topicClient);
   await example_API_DeleteWebhook(topicClient);
   await example_API_PutWebhook(topicClient);
+  await example_API_RotateWebhookSecret(topicClient);
+  await example_API_GetWebhookSecret(topicClient);
 
   example_API_InstantiateLeaderboardClient();
   const leaderboardClient = new PreviewLeaderboardClient({

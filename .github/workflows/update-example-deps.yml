@@ -1,3 +1,5 @@
+  name: Update example dependencies
+
   on:
     schedule:
       - cron: '0 12 * * *'
@@ -26,4 +28,14 @@
           id: validation
           run: |
             ./scripts/update-all-examples-dependencies.sh
+            git status
+
+        - name: Open PR
+          uses: peter-evans/create-pull-request@v5
+          with:
+            token: ${{ secrets.MOMENTO_MACHINE_USER_GITHUB_TOKEN }}
+            commit-message: "chore: update momento dependency in examples\n\nAutomated commit created by update-example-deps workflow"
+            title: "chore: update momento dependency in examples"
+            team-reviewers: "momentohq/dev-eco"
+
 
