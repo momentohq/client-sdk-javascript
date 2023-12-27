@@ -18,6 +18,7 @@ import {
   validateLeaderboardOffset,
   validateLeaderboardCount,
   validateLeaderboardRanks,
+  range,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {LeaderboardConfiguration} from '../config/leaderboard-configuration';
 import {leaderboard} from '@gomomento/generated-types/dist/leaderboard';
@@ -41,7 +42,8 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
   private readonly credentialProvider: CredentialProvider;
   private readonly logger: MomentoLogger;
   private readonly requestTimeoutMs: number;
-  private readonly clientWrapper: GrpcClientWrapper<leaderboard.LeaderboardClient>;
+  private readonly clientWrappers: GrpcClientWrapper<leaderboard.LeaderboardClient>[];
+  protected nextDataClientIndex: number;
   private readonly interceptors: Interceptor[];
 
   constructor(props: LeaderboardClientProps) {
@@ -58,33 +60,44 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       `Creating leaderboard client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
     );
 
-    this.clientWrapper = new IdleGrpcClientWrapper({
-      clientFactoryFn: () =>
-        new leaderboard.LeaderboardClient(
-          this.credentialProvider.getCacheEndpoint(),
-          ChannelCredentials.createSsl(),
-          {
-            // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
-            // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
-            'grpc-node.max_session_memory': grpcConfig.getMaxSessionMemoryMb(),
-            // This flag controls whether channels use a shared global pool of subchannels, or whether
-            // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
-            // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
-            // than one grpc client.
-            'grpc.use_local_subchannel_pool': 1,
-            // The following settings are based on https://github.com/grpc/grpc/blob/e35db43c07f27cc13ec061520da1ed185f36abd4/doc/keepalive.md ,
-            // and guidance provided on various github issues for grpc-node. They will enable keepalive pings when a
-            // client connection is idle.
-            'grpc.keepalive_permit_without_calls': 1,
-            'grpc.keepalive_timeout_ms': 1000,
-            'grpc.keepalive_time_ms': 5000,
-          }
-        ),
-      loggerFactory: this.configuration.getLoggerFactory(),
-      maxIdleMillis: this.configuration
-        .getTransportStrategy()
-        .getMaxIdleMillis(),
-    });
+    const numDataClients = grpcConfig.getNumClients();
+
+    // We round-robin the requests through all of our clients.  Since javascript
+    // is single-threaded, we don't have to worry about thread safety on this
+    // index variable.
+    this.nextDataClientIndex = 0;
+
+    this.clientWrappers = range(numDataClients).map(
+      () =>
+        new IdleGrpcClientWrapper({
+          clientFactoryFn: () =>
+            new leaderboard.LeaderboardClient(
+              this.credentialProvider.getCacheEndpoint(),
+              ChannelCredentials.createSsl(),
+              {
+                // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
+                // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
+                'grpc-node.max_session_memory':
+                  grpcConfig.getMaxSessionMemoryMb(),
+                // This flag controls whether channels use a shared global pool of subchannels, or whether
+                // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
+                // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
+                // than one grpc client.
+                'grpc.use_local_subchannel_pool': 1,
+                // The following settings are based on https://github.com/grpc/grpc/blob/e35db43c07f27cc13ec061520da1ed185f36abd4/doc/keepalive.md ,
+                // and guidance provided on various github issues for grpc-node. They will enable keepalive pings when a
+                // client connection is idle.
+                'grpc.keepalive_permit_without_calls': 1,
+                'grpc.keepalive_timeout_ms': 1000,
+                'grpc.keepalive_time_ms': 5000,
+              }
+            ),
+          loggerFactory: this.configuration.getLoggerFactory(),
+          maxIdleMillis: this.configuration
+            .getTransportStrategy()
+            .getMaxIdleMillis(),
+        })
+    );
 
     this.interceptors = this.initializeInterceptors(
       this.configuration.getLoggerFactory()
@@ -167,7 +180,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise(resolve => {
-      this.clientWrapper.getClient().UpsertElements(
+      this.getNextDataClient().UpsertElements(
         request,
         metadata,
         {
@@ -257,7 +270,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise(resolve => {
-      this.clientWrapper.getClient().GetByScore(
+      this.getNextDataClient().GetByScore(
         request,
         metadata,
         {
@@ -326,7 +339,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise(resolve => {
-      this.clientWrapper.getClient().GetByRank(
+      this.getNextDataClient().GetByRank(
         request,
         metadata,
         {
@@ -379,7 +392,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise(resolve => {
-      this.clientWrapper.getClient().GetRank(
+      this.getNextDataClient().GetRank(
         request,
         metadata,
         {
@@ -418,7 +431,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise(resolve => {
-      this.clientWrapper.getClient().GetLeaderboardLength(
+      this.getNextDataClient().GetLeaderboardLength(
         request,
         metadata,
         {
@@ -467,7 +480,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise(resolve => {
-      this.clientWrapper.getClient().RemoveElements(
+      this.getNextDataClient().RemoveElements(
         request,
         metadata,
         {
@@ -506,7 +519,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise(resolve => {
-      this.clientWrapper.getClient().DeleteLeaderboard(
+      this.getNextDataClient().DeleteLeaderboard(
         request,
         metadata,
         {
@@ -521,5 +534,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
         }
       );
     });
+  }
+
+  protected getNextDataClient(): leaderboard.LeaderboardClient {
+    const clientWrapper = this.clientWrappers[this.nextDataClientIndex];
+    this.nextDataClientIndex =
+      (this.nextDataClientIndex + 1) % this.clientWrappers.length;
+    return clientWrapper.getClient();
   }
 }
