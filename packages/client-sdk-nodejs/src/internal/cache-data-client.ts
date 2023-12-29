@@ -1,6 +1,6 @@
 import {cache} from '@gomomento/generated-types';
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
-import {TextDecoder, TextEncoder} from 'util';
+import {TextEncoder} from 'util';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
