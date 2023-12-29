@@ -2212,7 +2212,10 @@ export class CacheDataClient<
   public async sortedSetPutElements(
     cacheName: string,
     sortedSetName: string,
-    elements: Map<string | Uint8Array, number> | Record<string, number>,
+    elements:
+      | Map<string | Uint8Array, number>
+      | Record<string, number>
+      | Array<[string, number]>,
     ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheSortedSetPutElements.Response> {
     try {
@@ -3190,9 +3193,14 @@ export class CacheDataClient<
   }
 
   private convertSortedSetMapOrRecord(
-    elements: Map<string | Uint8Array, number> | Record<string, number>
+    elements:
+      | Map<string | Uint8Array, number>
+      | Record<string, number>
+      | Array<[string, number]>
   ): _SortedSetElementGrpc[] {
-    if (elements instanceof Map) {
+    if (elements instanceof Array) {
+      return this.convertSortedSetMapOrRecord(new Map(elements));
+    } else if (elements instanceof Map) {
       return [...elements.entries()].map(element =>
         new _SortedSetElementGrpc()
           .setValue(convertToB64String(element[0]))

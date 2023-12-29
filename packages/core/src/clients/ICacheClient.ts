@@ -250,7 +250,10 @@ export interface ICacheClient extends IControlClient, IPingClient {
   sortedSetPutElements(
     cacheName: string,
     sortedSetName: string,
-    elements: Map<string | Uint8Array, number> | Record<string, number>,
+    elements:
+      | Map<string | Uint8Array, number>
+      | Record<string, number>
+      | Array<[string, number]>,
     options?: SortedSetPutElementsOptions
   ): Promise<CacheSortedSetPutElements.Response>;
   sortedSetGetRank(
