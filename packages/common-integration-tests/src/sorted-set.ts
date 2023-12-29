@@ -2416,6 +2416,34 @@ export function runSortedSetTests(
         ]);
       });
 
+      it('should store elements with a string values passed via Array', async () => {
+        const sortedSetName = v4();
+        let response = await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
+          sortedSetName,
+          [
+            ['foo', 42],
+            ['bar', 84],
+          ]
+        );
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
+
+        response = await cacheClient.sortedSetFetchByRank(
+          integrationTestCacheName,
+          sortedSetName
+        );
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${response.toString()}`);
+        const hitResponse = response as CacheSortedSetFetch.Hit;
+        expect(hitResponse.valueArray()).toEqual([
+          {value: 'foo', score: 42},
+          {value: 'bar', score: 84},
+        ]);
+      });
+
       it('should store elements with a bytes values passed via Map', async () => {
         const sortedSetName = v4();
         let response = await cacheClient.sortedSetPutElements(
