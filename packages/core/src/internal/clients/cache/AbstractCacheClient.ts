@@ -959,7 +959,10 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async sortedSetPutElements(
     cacheName: string,
     sortedSetName: string,
-    elements: Map<string | Uint8Array, number> | Record<string, number>,
+    elements:
+      | Map<string | Uint8Array, number>
+      | Record<string, number>
+      | Array<[string, number]>,
     options?: SortedSetPutElementsOptions
   ): Promise<CacheSortedSetPutElements.Response> {
     const client = this.getNextDataClient();

@@ -1,6 +1,6 @@
 import {cache} from '@gomomento/generated-types';
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
-import {TextEncoder} from 'util';
+import {TextDecoder, TextEncoder} from 'util';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
@@ -2024,7 +2024,10 @@ export class CacheDataClient implements IDataClient {
   public async sortedSetPutElements(
     cacheName: string,
     sortedSetName: string,
-    elements: Map<string | Uint8Array, number> | Record<string, number>,
+    elements:
+      | Map<string | Uint8Array, number>
+      | Record<string, number>
+      | Array<[string, number]>,
     ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheSortedSetPutElements.Response> {
     try {
@@ -2912,9 +2915,14 @@ export class CacheDataClient implements IDataClient {
   }
 
   private convertSortedSetMapOrRecord(
-    elements: Map<string | Uint8Array, number> | Record<string, number>
+    elements:
+      | Map<string | Uint8Array, number>
+      | Record<string, number>
+      | Array<[string, number]>
   ): grpcCache._SortedSetElement[] {
-    if (elements instanceof Map) {
+    if (elements instanceof Array) {
+      return this.convertSortedSetMapOrRecord(new Map(elements));
+    } else if (elements instanceof Map) {
       return [...elements.entries()].map(
         element =>
           new grpcCache._SortedSetElement({

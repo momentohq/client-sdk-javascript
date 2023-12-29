@@ -217,7 +217,10 @@ export interface IDataClient {
   sortedSetPutElements(
     cacheName: string,
     sortedSetName: string,
-    elements: Map<string | Uint8Array, number> | Record<string, number>,
+    elements:
+      | Map<string | Uint8Array, number>
+      | Record<string, number>
+      | Array<[string, number]>,
     ttl?: CollectionTtl
   ): Promise<CacheSortedSetPutElements.Response>;
   sortedSetGetRank(
