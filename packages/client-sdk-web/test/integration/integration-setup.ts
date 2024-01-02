@@ -65,18 +65,21 @@ function sessionCredsProvider(): CredentialProvider {
   return _sessionCredsProvider;
 }
 
-export const IntegrationTestCacheClientProps: CacheClientProps = {
-  configuration: Configurations.Laptop.latest().withClientTimeoutMillis(60000),
-  credentialProvider: credsProvider(),
-  defaultTtlSeconds: 1111,
-};
+function integrationTestCacheClientProps(): CacheClientProps {
+  return {
+    configuration:
+      Configurations.Laptop.latest().withClientTimeoutMillis(60000),
+    credentialProvider: credsProvider(),
+    defaultTtlSeconds: 1111,
+  };
+}
 
 function momentoClientForTesting(): CacheClient {
-  return new CacheClient(IntegrationTestCacheClientProps);
+  return new CacheClient(integrationTestCacheClientProps());
 }
 
 function momentoClientWithThrowOnErrorsForTesting(): CacheClient {
-  const props = IntegrationTestCacheClientProps;
+  const props: CacheClientProps = integrationTestCacheClientProps();
   props.configuration = props.configuration.withThrowOnErrors(true);
   return new CacheClient(props);
 }
@@ -99,7 +102,7 @@ function momentoTopicClientForTesting(): TopicClient {
 
 function momentoTopicClientForTestingWithSessionToken(): TopicClient {
   return new TopicClient({
-    configuration: IntegrationTestCacheClientProps.configuration,
+    configuration: integrationTestCacheClientProps().configuration,
     credentialProvider: sessionCredsProvider(),
   });
 }
