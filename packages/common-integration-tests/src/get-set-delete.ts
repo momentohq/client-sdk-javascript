@@ -7,6 +7,7 @@ import {
   CacheSet,
   CacheSetIfNotExists,
   MomentoErrorCode,
+  FailedPreconditionError,
 } from '@gomomento/sdk-core';
 import {TextEncoder} from 'util';
 import {
@@ -19,6 +20,7 @@ import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache'
 
 export function runGetSetDeleteTests(
   cacheClient: ICacheClient,
+  cacheClientWithThrowOnErrors: ICacheClient,
   integrationTestCacheName: string
 ) {
   describe('get/set/delete', () => {
@@ -748,6 +750,27 @@ export function runGetSetDeleteTests(
       if (getResponse instanceof CacheGet.Hit) {
         expect(getResponse.valueString()).toEqual(cacheValue);
       }
+    });
+  });
+
+  describe('when configured to throw on errors', () => {
+    it('throws a FailedPreconditionError if increment is called on a string', async () => {
+      const field = v4();
+
+      const setResponse = await cacheClientWithThrowOnErrors.set(
+        integrationTestCacheName,
+        field,
+        'abcxyz'
+      );
+      expect(setResponse).toBeInstanceOf(CacheSet.Success);
+
+      await expect(async () => {
+        await cacheClientWithThrowOnErrors.increment(
+          integrationTestCacheName,
+          field,
+          1
+        );
+      }).rejects.toBeInstanceOf(FailedPreconditionError);
     });
   });
 }

@@ -4,7 +4,7 @@ import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {version} from '../../package.json';
-import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   InternalSuperUserPermissions,
   validateDisposableTokenExpiry,
@@ -63,12 +63,16 @@ import {
 export class InternalAuthClient implements IAuthClient {
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
 
+  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly creds: CredentialProvider;
   private readonly interceptors: Interceptor[];
   private readonly tokenClient: token.token.TokenClient;
   private readonly authClient: grpcAuth.AuthClient;
 
   constructor(props: AuthClientProps) {
+    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
+      props.throwOnErrors ?? false
+    );
     this.creds = props.credentialProvider;
     const headers = [new Header('Agent', `nodejs:${version}`)];
     this.interceptors = [
@@ -114,13 +118,18 @@ export class InternalAuthClient implements IAuthClient {
       request.never = new Never();
     }
 
-    return await new Promise<GenerateApiKey.Response>(resolve => {
+    return await new Promise<GenerateApiKey.Response>((resolve, reject) => {
       this.authClient.GenerateApiToken(
         request,
         {interceptors: this.interceptors},
         (err, resp) => {
           if (err || !resp) {
-            resolve(new GenerateApiKey.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new GenerateApiKey.Error(e),
+              resolve,
+              reject
+            );
           } else {
             resolve(
               new GenerateApiKey.Success(
@@ -154,13 +163,18 @@ export class InternalAuthClient implements IAuthClient {
       refresh_token: refreshToken,
     });
 
-    return await new Promise<RefreshApiKey.Response>(resolve => {
+    return await new Promise<RefreshApiKey.Response>((resolve, reject) => {
       this.authClient.RefreshApiToken(
         request,
         {interceptors: this.interceptors},
         (err, resp) => {
           if (err || !resp) {
-            resolve(new RefreshApiKey.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new RefreshApiKey.Error(e),
+              resolve,
+              reject
+            );
           } else {
             resolve(
               new RefreshApiKey.Success(
@@ -224,27 +238,32 @@ export class InternalAuthClient implements IAuthClient {
       token_id: tokenId,
     });
 
-    return await new Promise<GenerateDisposableToken.Response>(resolve => {
-      this.tokenClient.GenerateDisposableToken(
-        request,
-        {interceptors: this.interceptors},
-        (err, resp) => {
-          if (err || !resp) {
-            resolve(
-              new GenerateDisposableToken.Error(cacheServiceErrorMapper(err))
-            );
-          } else {
-            resolve(
-              new GenerateDisposableToken.Success(
-                resp.api_key,
-                resp.endpoint,
-                ExpiresAt.fromEpoch(resp.valid_until)
-              )
-            );
+    return await new Promise<GenerateDisposableToken.Response>(
+      (resolve, reject) => {
+        this.tokenClient.GenerateDisposableToken(
+          request,
+          {interceptors: this.interceptors},
+          (err, resp) => {
+            if (err || !resp) {
+              this.cacheServiceErrorMapper.handleError(
+                err,
+                e => new GenerateDisposableToken.Error(e),
+                resolve,
+                reject
+              );
+            } else {
+              resolve(
+                new GenerateDisposableToken.Success(
+                  resp.api_key,
+                  resp.endpoint,
+                  ExpiresAt.fromEpoch(resp.valid_until)
+                )
+              );
+            }
           }
-        }
-      );
-    });
+        );
+      }
+    );
   }
 }
 

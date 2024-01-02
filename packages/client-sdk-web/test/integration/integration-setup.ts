@@ -75,6 +75,12 @@ function momentoClientForTesting(): CacheClient {
   return new CacheClient(IntegrationTestCacheClientProps);
 }
 
+function momentoClientWithThrowOnErrorsForTesting(): CacheClient {
+  const props = IntegrationTestCacheClientProps;
+  props.configuration = props.configuration.withThrowOnErrors(true);
+  return new CacheClient(props);
+}
+
 function momentoClientForTestingWithSessionToken(): CacheClient {
   return new CacheClient({
     configuration:
@@ -114,6 +120,7 @@ function momentoLeaderboardClientForTesting(): PreviewLeaderboardClient {
 
 export function SetupIntegrationTest(): {
   cacheClient: CacheClient;
+  cacheClientWithThrowOnErrors: CacheClient;
   integrationTestCacheName: string;
 } {
   const cacheName = testCacheName();
@@ -135,7 +142,12 @@ export function SetupIntegrationTest(): {
   });
 
   const client = momentoClientForTesting();
-  return {cacheClient: client, integrationTestCacheName: cacheName};
+  const clientWithThrowOnErrors = momentoClientWithThrowOnErrorsForTesting();
+  return {
+    cacheClient: client,
+    cacheClientWithThrowOnErrors: clientWithThrowOnErrors,
+    integrationTestCacheName: cacheName,
+  };
 }
 
 export function SetupTopicIntegrationTest(): {

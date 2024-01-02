@@ -29,6 +29,7 @@ describe('configuration.ts', () => {
     retryStrategy: testRetryStrategy,
     transportStrategy: testTransportStrategy,
     middlewares: testMiddlewares,
+    throwOnErrors: false,
   });
 
   it('should support overriding retry strategy', () => {
@@ -93,6 +94,21 @@ describe('configuration.ts', () => {
     );
     expect(configWithNewClientTimeout.getTransportStrategy()).toEqual(
       expectedTransportStrategy
+    );
+  });
+
+  it('should support overriding throwOnErrors strategy', () => {
+    const throwOnErrors = true;
+    const configWithThrowOnErrors =
+      testConfiguration.withThrowOnErrors(throwOnErrors);
+    expect(configWithThrowOnErrors.getLoggerFactory()).toEqual(
+      testLoggerFactory
+    );
+    expect(configWithThrowOnErrors.getRetryStrategy()).toEqual(
+      testRetryStrategy
+    );
+    expect(configWithThrowOnErrors.getTransportStrategy()).toEqual(
+      testTransportStrategy
     );
   });
 

@@ -57,6 +57,7 @@ export class Laptop extends VectorIndexClientConfiguration {
     return new Laptop({
       loggerFactory: loggerFactory,
       transportStrategy: transportStrategy,
+      throwOnErrors: false,
     });
   }
 }
@@ -100,6 +101,7 @@ export class Browser extends VectorIndexClientConfiguration {
     return new Browser({
       loggerFactory: loggerFactory,
       transportStrategy: transportStrategy,
+      throwOnErrors: false,
     });
   }
 }

@@ -52,6 +52,7 @@ export class Laptop extends LeaderboardClientConfiguration {
     return new Laptop({
       loggerFactory: loggerFactory,
       transportStrategy: transportStrategy,
+      throwOnErrors: false,
     });
   }
 }

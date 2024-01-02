@@ -17,7 +17,7 @@ import {
   UnknownError,
 } from '@gomomento/sdk-core';
 import {VectorIndexClientProps} from '../vector-index-client-props';
-import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   validateIndexName,
   validateTopK,
@@ -30,11 +30,15 @@ import {ALL_VECTOR_METADATA} from '@gomomento/sdk-core/dist/src/clients/IVectorI
 export class VectorIndexDataClient implements IVectorIndexDataClient {
   private readonly client: VectorIndexClient;
   private readonly logger: MomentoLogger;
+  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly clientMetadataProvider: ClientMetadataProvider;
   private readonly deadlineMillis: number;
 
   constructor(props: VectorIndexClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
+    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
+      props.configuration.getThrowOnErrors()
+    );
     const vectorEndpoint = getWebVectorEndpoint(props.credentialProvider);
     this.logger.debug(
       `Creating data client using endpoint: '${vectorEndpoint}`
@@ -133,7 +137,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   private async sendUpsertItemBatch(
     request: vectorindex._UpsertItemBatchRequest
   ): Promise<VectorUpsertItemBatch.Response> {
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.client.upsertItemBatch(
         request,
         {
@@ -144,8 +148,11 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           if (resp) {
             resolve(new VectorUpsertItemBatch.Success());
           } else {
-            resolve(
-              new VectorUpsertItemBatch.Error(cacheServiceErrorMapper(err))
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new VectorUpsertItemBatch.Error(e),
+              resolve,
+              reject
             );
           }
         }
@@ -173,7 +180,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     request.setIndexName(indexName);
     request.setIdsList(ids);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.client.deleteItemBatch(
         request,
         {
@@ -184,8 +191,11 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           if (resp) {
             resolve(new VectorDeleteItemBatch.Success());
           } else {
-            resolve(
-              new VectorDeleteItemBatch.Error(cacheServiceErrorMapper(err))
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new VectorDeleteItemBatch.Error(e),
+              resolve,
+              reject
             );
           }
         }
@@ -287,7 +297,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     );
     VectorIndexDataClient.applyScoreThreshold(request, options);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.client.search(
         request,
         {
@@ -316,7 +326,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               )
             );
           } else {
-            resolve(new VectorSearch.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new VectorSearch.Error(e),
+              resolve,
+              reject
+            );
           }
         }
       );
@@ -363,7 +378,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     );
     VectorIndexDataClient.applyScoreThreshold(request, options);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.client.searchAndFetchVectors(
         request,
         {
@@ -393,10 +408,11 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               )
             );
           } else {
-            resolve(
-              new VectorSearchAndFetchVectors.Error(
-                cacheServiceErrorMapper(err)
-              )
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new VectorSearchAndFetchVectors.Error(e),
+              resolve,
+              reject
             );
           }
         }
@@ -429,7 +445,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       })
     );
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.client.getItemBatch(
         request,
         {
@@ -478,7 +494,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               )
             );
           } else {
-            resolve(new VectorGetItemBatch.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new VectorGetItemBatch.Error(e),
+              resolve,
+              reject
+            );
           }
         }
       );
@@ -512,7 +533,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       })
     );
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.client.getItemMetadataBatch(
         request,
         {
@@ -560,8 +581,11 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               )
             );
           } else {
-            resolve(
-              new VectorGetItemMetadataBatch.Error(cacheServiceErrorMapper(err))
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new VectorGetItemMetadataBatch.Error(e),
+              resolve,
+              reject
             );
           }
         }

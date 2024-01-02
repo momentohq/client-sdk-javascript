@@ -3,7 +3,7 @@ import grpcControl = control.control_client;
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {Status} from '@grpc/grpc-js/build/src/constants';
-import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {
   CreateCache,
@@ -42,12 +42,16 @@ export class CacheControlClient {
   private readonly interceptors: Interceptor[];
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
   private readonly logger: MomentoLogger;
+  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
 
   /**
    * @param {ControlClientProps} props
    */
   constructor(props: ControlClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
+    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
+      props.configuration.getThrowOnErrors()
+    );
     const headers = [
       new Header('Authorization', props.credentialProvider.getAuthToken()),
       new Header('Agent', `nodejs:${version}`),
@@ -82,7 +86,7 @@ export class CacheControlClient {
     const request = new grpcControl._CreateCacheRequest({
       cache_name: name,
     });
-    return await new Promise<CreateCache.Response>(resolve => {
+    return await new Promise<CreateCache.Response>((resolve, reject) => {
       this.clientWrapper
         .getClient()
         .CreateCache(
@@ -93,7 +97,12 @@ export class CacheControlClient {
               if (err.code === Status.ALREADY_EXISTS) {
                 resolve(new CreateCache.AlreadyExists());
               } else {
-                resolve(new CreateCache.Error(cacheServiceErrorMapper(err)));
+                this.cacheServiceErrorMapper.handleError(
+                  err,
+                  e => new CreateCache.Error(e),
+                  resolve,
+                  reject
+                );
               }
             } else {
               resolve(new CreateCache.Success());
@@ -113,7 +122,7 @@ export class CacheControlClient {
       cache_name: name,
     });
     this.logger.debug(`Deleting cache: ${name}`);
-    return await new Promise<DeleteCache.Response>(resolve => {
+    return await new Promise<DeleteCache.Response>((resolve, reject) => {
       this.clientWrapper
         .getClient()
         .DeleteCache(
@@ -121,7 +130,12 @@ export class CacheControlClient {
           {interceptors: this.interceptors},
           (err, _resp) => {
             if (err) {
-              resolve(new DeleteCache.Error(cacheServiceErrorMapper(err)));
+              this.cacheServiceErrorMapper.handleError(
+                err,
+                e => new DeleteCache.Error(e),
+                resolve,
+                reject
+              );
             } else {
               resolve(new DeleteCache.Success());
             }
@@ -146,7 +160,7 @@ export class CacheControlClient {
     const request = new grpcControl._FlushCacheRequest({
       cache_name: cacheName,
     });
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.getClient().FlushCache(
         request,
         {
@@ -156,7 +170,12 @@ export class CacheControlClient {
           if (resp) {
             resolve(new CacheFlush.Success());
           } else {
-            resolve(new CacheFlush.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new CacheFlush.Error(e),
+              resolve,
+              reject
+            );
           }
         }
       );
@@ -167,12 +186,17 @@ export class CacheControlClient {
     const request = new grpcControl._ListCachesRequest();
     request.next_token = '';
     this.logger.debug("Issuing 'listCaches' request");
-    return await new Promise<ListCaches.Response>(resolve => {
+    return await new Promise<ListCaches.Response>((resolve, reject) => {
       this.clientWrapper
         .getClient()
         .ListCaches(request, {interceptors: this.interceptors}, (err, resp) => {
           if (err || !resp) {
-            resolve(new ListCaches.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new ListCaches.Error(e),
+              resolve,
+              reject
+            );
           } else {
             const caches = resp.cache.map(cache => {
               const cacheName = cache.cache_name;
@@ -209,7 +233,7 @@ export class CacheControlClient {
     this.logger.debug("Issuing 'createSigningKey' request");
     const request = new grpcControl._CreateSigningKeyRequest();
     request.ttl_minutes = ttlMinutes;
-    return await new Promise<CreateSigningKey.Response>(resolve => {
+    return await new Promise<CreateSigningKey.Response>((resolve, reject) => {
       this.clientWrapper
         .getClient()
         .CreateSigningKey(
@@ -217,7 +241,12 @@ export class CacheControlClient {
           {interceptors: this.interceptors},
           (err, resp) => {
             if (err) {
-              resolve(new CreateSigningKey.Error(cacheServiceErrorMapper(err)));
+              this.cacheServiceErrorMapper.handleError(
+                err,
+                e => new CreateSigningKey.Error(e),
+                resolve,
+                reject
+              );
             } else {
               const signingKey = new _SigningKey(resp?.key, resp?.expires_at);
               resolve(new CreateSigningKey.Success(endpoint, signingKey));
@@ -233,12 +262,17 @@ export class CacheControlClient {
     const request = new grpcControl._RevokeSigningKeyRequest();
     request.key_id = keyId;
     this.logger.debug("Issuing 'revokeSigningKey' request");
-    return await new Promise<RevokeSigningKey.Response>(resolve => {
+    return await new Promise<RevokeSigningKey.Response>((resolve, reject) => {
       this.clientWrapper
         .getClient()
         .RevokeSigningKey(request, {interceptors: this.interceptors}, err => {
           if (err) {
-            resolve(new RevokeSigningKey.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new RevokeSigningKey.Error(e),
+              resolve,
+              reject
+            );
           } else {
             resolve(new RevokeSigningKey.Success());
           }
@@ -252,7 +286,7 @@ export class CacheControlClient {
     const request = new grpcControl._ListSigningKeysRequest();
     request.next_token = '';
     this.logger.debug("Issuing 'listSigningKeys' request");
-    return await new Promise<ListSigningKeys.Response>(resolve => {
+    return await new Promise<ListSigningKeys.Response>((resolve, reject) => {
       this.clientWrapper
         .getClient()
         .ListSigningKeys(
@@ -260,7 +294,12 @@ export class CacheControlClient {
           {interceptors: this.interceptors},
           (err, resp) => {
             if (err || !resp) {
-              resolve(new ListSigningKeys.Error(cacheServiceErrorMapper(err)));
+              this.cacheServiceErrorMapper.handleError(
+                err,
+                e => new ListSigningKeys.Error(e),
+                resolve,
+                reject
+              );
             } else {
               const signingKeys = resp.signing_key.map(
                 sk => new _SigningKey(sk.key_id, sk.expires_at)

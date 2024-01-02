@@ -27,7 +27,7 @@ import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
-import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   ChannelCredentials,
   Interceptor,
@@ -41,6 +41,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
   private readonly configuration: LeaderboardConfiguration;
   private readonly credentialProvider: CredentialProvider;
   private readonly logger: MomentoLogger;
+  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly requestTimeoutMs: number;
   private readonly clientWrappers: GrpcClientWrapper<leaderboard.LeaderboardClient>[];
   protected nextDataClientIndex: number;
@@ -48,6 +49,9 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
 
   constructor(props: LeaderboardClientProps) {
     this.configuration = props.configuration;
+    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
+      props.configuration.getThrowOnErrors()
+    );
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
     const grpcConfig = this.configuration
@@ -179,7 +183,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       elements: this.convertMapOrRecordToElementsList(elements),
     });
     const metadata = this.createMetadata(cacheName);
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.getNextDataClient().UpsertElements(
         request,
         metadata,
@@ -190,7 +194,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
           if (resp) {
             resolve(new LeaderboardUpsert.Success());
           } else {
-            resolve(new LeaderboardUpsert.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new LeaderboardUpsert.Error(e),
+              resolve,
+              reject
+            );
           }
         }
       );
@@ -269,7 +278,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       limit_elements: count,
     });
     const metadata = this.createMetadata(cacheName);
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.getNextDataClient().GetByScore(
         request,
         metadata,
@@ -282,7 +291,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
               .elements;
             resolve(new LeaderboardFetch.Success(foundElements));
           } else {
-            resolve(new LeaderboardFetch.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new LeaderboardFetch.Error(e),
+              resolve,
+              reject
+            );
           }
         }
       );
@@ -338,7 +352,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       order: protoBufOrder,
     });
     const metadata = this.createMetadata(cacheName);
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.getNextDataClient().GetByRank(
         request,
         metadata,
@@ -351,7 +365,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
               .elements;
             resolve(new LeaderboardFetch.Success(foundElements));
           } else {
-            resolve(new LeaderboardFetch.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new LeaderboardFetch.Error(e),
+              resolve,
+              reject
+            );
           }
         }
       );
@@ -391,7 +410,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       order: protoBufOrder,
     });
     const metadata = this.createMetadata(cacheName);
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.getNextDataClient().GetRank(
         request,
         metadata,
@@ -404,7 +423,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
               .elements;
             resolve(new LeaderboardFetch.Success(foundElements));
           } else {
-            resolve(new LeaderboardFetch.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new LeaderboardFetch.Error(e),
+              resolve,
+              reject
+            );
           }
         }
       );
@@ -430,7 +454,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       leaderboard: leaderboardName,
     });
     const metadata = this.createMetadata(cacheName);
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.getNextDataClient().GetLeaderboardLength(
         request,
         metadata,
@@ -443,7 +467,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
               .count;
             resolve(new LeaderboardLength.Success(length));
           } else {
-            resolve(new LeaderboardLength.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new LeaderboardLength.Error(e),
+              resolve,
+              reject
+            );
           }
         }
       );
@@ -479,7 +508,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       ids: ids,
     });
     const metadata = this.createMetadata(cacheName);
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.getNextDataClient().RemoveElements(
         request,
         metadata,
@@ -490,8 +519,11 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
           if (resp) {
             resolve(new LeaderboardRemoveElements.Success());
           } else {
-            resolve(
-              new LeaderboardRemoveElements.Error(cacheServiceErrorMapper(err))
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new LeaderboardRemoveElements.Error(e),
+              resolve,
+              reject
             );
           }
         }
@@ -518,7 +550,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       leaderboard: leaderboardName,
     });
     const metadata = this.createMetadata(cacheName);
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.getNextDataClient().DeleteLeaderboard(
         request,
         metadata,
@@ -529,7 +561,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
           if (resp) {
             resolve(new LeaderboardDelete.Success());
           } else {
-            resolve(new LeaderboardDelete.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.handleError(
+              err,
+              e => new LeaderboardDelete.Error(e),
+              resolve,
+              reject
+            );
           }
         }
       );
