@@ -291,7 +291,7 @@ export function runTopicClientTests(
     });
   });
 
-  describe('when client is configured to throw on errors', () => {
-
-  });
+  // describe('when client is configured to throw on errors', () => {
+  //
+  // });
 }
