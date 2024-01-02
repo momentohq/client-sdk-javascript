@@ -114,6 +114,14 @@ function momentoVectorClientForTesting(): PreviewVectorIndexClient {
   });
 }
 
+function momentoVectorClientWithThrowsOnErrorsForTesting(): PreviewVectorIndexClient {
+  return new PreviewVectorIndexClient({
+    credentialProvider: credsProvider(),
+    configuration:
+      VectorIndexConfigurations.Laptop.latest().withThrowOnErrors(true),
+  });
+}
+
 function momentoLeaderboardClientForTesting(): PreviewLeaderboardClient {
   return new PreviewLeaderboardClient({
     credentialProvider: credsProvider(),
@@ -169,9 +177,12 @@ export function SetupTopicIntegrationTest(): {
 
 export function SetupVectorIntegrationTest(): {
   vectorClient: PreviewVectorIndexClient;
+  vectorClientWithThrowOnErrors: PreviewVectorIndexClient;
 } {
   const vectorClient = momentoVectorClientForTesting();
-  return {vectorClient};
+  const vectorClientWithThrowOnErrors =
+    momentoVectorClientWithThrowsOnErrorsForTesting();
+  return {vectorClient, vectorClientWithThrowOnErrors};
 }
 
 export function SetupLeaderboardIntegrationTest(): {

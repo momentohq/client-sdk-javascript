@@ -21,7 +21,10 @@ import {
 } from './common-int-test-utils';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 
-export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
+export function runVectorDataPlaneTest(
+  vectorClient: IVectorIndexClient,
+  vectorClientWithThrowOnErrors: IVectorIndexClient
+) {
   describe('upsertItem validation', () => {
     ItBehavesLikeItValidatesIndexName((props: ValidateVectorProps) => {
       return vectorClient.upsertItemBatch(props.indexName, []);
@@ -1165,5 +1168,27 @@ export function runVectorDataPlaneTest(vectorClient: IVectorIndexClient) {
         );
       }
     );
+  });
+
+  describe('when ThrowOnErrors is set to true', () => {
+    it('should throw when upserting item with wrong number of dimensions', async () => {
+      const indexName = testIndexName(
+        'throw-on-errors-data-upsert-wrong-dimensions'
+      );
+      await WithIndex(
+        vectorClientWithThrowOnErrors,
+        indexName,
+        2,
+        VectorSimilarityMetric.INNER_PRODUCT,
+        async () => {
+          await expect(
+            async () =>
+              await vectorClientWithThrowOnErrors.upsertItemBatch(indexName, [
+                {id: 'test_item', vector: [1.0, 2.0, 3.0]},
+              ])
+          ).rejects.toThrow(VectorUpsertItemBatch.Error);
+        }
+      );
+    });
   });
 }
