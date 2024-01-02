@@ -1176,7 +1176,7 @@ export function runVectorDataPlaneTest(
         'throw-on-errors-data-upsert-wrong-dimensions'
       );
       await WithIndex(
-        vectorClientWithThrowOnErrors,
+        vectorClient,
         indexName,
         2,
         VectorSimilarityMetric.INNER_PRODUCT,
