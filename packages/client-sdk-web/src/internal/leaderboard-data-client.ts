@@ -151,7 +151,7 @@ export class LeaderboardDataClient<
           if (resp) {
             resolve(new LeaderboardUpsert.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new LeaderboardUpsert.Error(e),
               resolveFn: resolve,
@@ -250,7 +250,7 @@ export class LeaderboardDataClient<
               )
             );
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new LeaderboardFetch.Error(e),
               resolveFn: resolve,
@@ -325,7 +325,7 @@ export class LeaderboardDataClient<
               )
             );
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new LeaderboardFetch.Error(e),
               resolveFn: resolve,
@@ -385,7 +385,7 @@ export class LeaderboardDataClient<
               )
             );
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new LeaderboardFetch.Error(e),
               resolveFn: resolve,
@@ -427,7 +427,7 @@ export class LeaderboardDataClient<
             const length = resp.getCount();
             resolve(new LeaderboardLength.Success(length));
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new LeaderboardLength.Error(e),
               resolveFn: resolve,
@@ -478,7 +478,7 @@ export class LeaderboardDataClient<
           if (resp) {
             resolve(new LeaderboardRemoveElements.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new LeaderboardRemoveElements.Error(e),
@@ -520,7 +520,7 @@ export class LeaderboardDataClient<
           if (resp) {
             resolve(new LeaderboardDelete.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new LeaderboardDelete.Error(e),
               resolveFn: resolve,

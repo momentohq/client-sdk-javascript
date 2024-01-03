@@ -148,7 +148,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           if (resp) {
             resolve(new VectorUpsertItemBatch.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new VectorUpsertItemBatch.Error(e),
               resolveFn: resolve,
@@ -191,7 +191,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           if (resp) {
             resolve(new VectorDeleteItemBatch.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new VectorDeleteItemBatch.Error(e),
               resolveFn: resolve,
@@ -326,7 +326,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               )
             );
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new VectorSearch.Error(e),
               resolveFn: resolve,
@@ -408,7 +408,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               )
             );
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new VectorSearchAndFetchVectors.Error(e),
@@ -495,7 +495,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               )
             );
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new VectorGetItemBatch.Error(e),
               resolveFn: resolve,
@@ -582,7 +582,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               )
             );
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new VectorGetItemMetadataBatch.Error(e),

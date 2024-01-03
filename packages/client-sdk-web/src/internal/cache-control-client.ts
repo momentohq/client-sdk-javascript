@@ -87,7 +87,7 @@ export class CacheControlClient<
             if (err.code === StatusCode.ALREADY_EXISTS) {
               resolve(new CreateCache.AlreadyExists());
             } else {
-              this.cacheServiceErrorMapper.handleError({
+              this.cacheServiceErrorMapper.resolveOrRejectError({
                 err: err,
                 errorResponseFactoryFn: e => new CreateCache.Error(e),
                 resolveFn: resolve,
@@ -117,7 +117,7 @@ export class CacheControlClient<
         this.clientMetadataProvider.createClientMetadata(),
         (err, _resp) => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new DeleteCache.Error(e),
               resolveFn: resolve,
@@ -154,7 +154,7 @@ export class CacheControlClient<
           if (resp) {
             resolve(new CacheFlush.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheFlush.Error(e),
               resolveFn: resolve,
@@ -176,7 +176,7 @@ export class CacheControlClient<
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new ListCaches.Error(e),
               resolveFn: resolve,

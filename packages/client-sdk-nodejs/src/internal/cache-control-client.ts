@@ -97,7 +97,7 @@ export class CacheControlClient {
               if (err.code === Status.ALREADY_EXISTS) {
                 resolve(new CreateCache.AlreadyExists());
               } else {
-                this.cacheServiceErrorMapper.handleError({
+                this.cacheServiceErrorMapper.resolveOrRejectError({
                   err: err,
                   errorResponseFactoryFn: e => new CreateCache.Error(e),
                   resolveFn: resolve,
@@ -130,7 +130,7 @@ export class CacheControlClient {
           {interceptors: this.interceptors},
           (err, _resp) => {
             if (err) {
-              this.cacheServiceErrorMapper.handleError({
+              this.cacheServiceErrorMapper.resolveOrRejectError({
                 err: err,
                 errorResponseFactoryFn: e => new DeleteCache.Error(e),
                 resolveFn: resolve,
@@ -170,7 +170,7 @@ export class CacheControlClient {
           if (resp) {
             resolve(new CacheFlush.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheFlush.Error(e),
               resolveFn: resolve,
@@ -191,7 +191,7 @@ export class CacheControlClient {
         .getClient()
         .ListCaches(request, {interceptors: this.interceptors}, (err, resp) => {
           if (err || !resp) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new ListCaches.Error(e),
               resolveFn: resolve,
@@ -241,7 +241,7 @@ export class CacheControlClient {
           {interceptors: this.interceptors},
           (err, resp) => {
             if (err) {
-              this.cacheServiceErrorMapper.handleError({
+              this.cacheServiceErrorMapper.resolveOrRejectError({
                 err: err,
                 errorResponseFactoryFn: e => new CreateSigningKey.Error(e),
                 resolveFn: resolve,
@@ -267,7 +267,7 @@ export class CacheControlClient {
         .getClient()
         .RevokeSigningKey(request, {interceptors: this.interceptors}, err => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new RevokeSigningKey.Error(e),
               resolveFn: resolve,
@@ -294,7 +294,7 @@ export class CacheControlClient {
           {interceptors: this.interceptors},
           (err, resp) => {
             if (err || !resp) {
-              this.cacheServiceErrorMapper.handleError({
+              this.cacheServiceErrorMapper.resolveOrRejectError({
                 err: err,
                 errorResponseFactoryFn: e => new ListSigningKeys.Error(e),
                 resolveFn: resolve,

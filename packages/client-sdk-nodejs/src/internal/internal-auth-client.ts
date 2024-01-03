@@ -124,7 +124,7 @@ export class InternalAuthClient implements IAuthClient {
         {interceptors: this.interceptors},
         (err, resp) => {
           if (err || !resp) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new GenerateApiKey.Error(e),
               resolveFn: resolve,
@@ -169,7 +169,7 @@ export class InternalAuthClient implements IAuthClient {
         {interceptors: this.interceptors},
         (err, resp) => {
           if (err || !resp) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new RefreshApiKey.Error(e),
               resolveFn: resolve,
@@ -245,7 +245,7 @@ export class InternalAuthClient implements IAuthClient {
           {interceptors: this.interceptors},
           (err, resp) => {
             if (err || !resp) {
-              this.cacheServiceErrorMapper.handleError({
+              this.cacheServiceErrorMapper.resolveOrRejectError({
                 err: err,
                 errorResponseFactoryFn: e =>
                   new GenerateDisposableToken.Error(e),

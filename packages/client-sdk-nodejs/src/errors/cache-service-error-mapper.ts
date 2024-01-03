@@ -18,7 +18,7 @@ import {
   FailedPreconditionError,
 } from '../../src';
 
-export interface HandleCacheServiceErrorOptions {
+export interface ResolveOrRejectErrorOptions {
   err: ServiceError | null;
   errorResponseFactoryFn: (err: SdkError) => unknown;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,7 +32,7 @@ export class CacheServiceErrorMapper {
   constructor(throwOnError: boolean) {
     this.throwOnError = throwOnError;
   }
-  handleError(opts: HandleCacheServiceErrorOptions): void {
+  resolveOrRejectError(opts: ResolveOrRejectErrorOptions): void {
     const error = this.convertError(opts.err);
 
     if (this.throwOnError) {

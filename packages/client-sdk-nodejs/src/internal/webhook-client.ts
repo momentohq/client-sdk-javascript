@@ -77,7 +77,7 @@ export class WebhookClient implements IWebhookClient {
         {interceptors: this.unaryInterceptors},
         (err, _resp) => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new DeleteWebhook.Error(e),
               resolveFn: resolve,
@@ -106,7 +106,7 @@ export class WebhookClient implements IWebhookClient {
         {interceptors: this.unaryInterceptors},
         (err, resp) => {
           if (err || !resp) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new ListWebhooks.Error(e),
               resolveFn: resolve,
@@ -162,7 +162,7 @@ export class WebhookClient implements IWebhookClient {
         {interceptors: this.unaryInterceptors},
         (err, resp) => {
           if (err || !resp) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new PutWebhook.Error(e),
               resolveFn: resolve,
@@ -196,7 +196,7 @@ export class WebhookClient implements IWebhookClient {
         {interceptors: this.unaryInterceptors},
         (err, resp) => {
           if (err || !resp) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new GetWebhookSecret.Error(e),
               resolveFn: resolve,
@@ -242,7 +242,7 @@ export class WebhookClient implements IWebhookClient {
           {interceptors: this.unaryInterceptors},
           (err, resp) => {
             if (err || !resp) {
-              this.cacheServiceErrorMapper.handleError({
+              this.cacheServiceErrorMapper.resolveOrRejectError({
                 err: err,
                 errorResponseFactoryFn: e => new RotateWebhookSecret.Error(e),
                 resolveFn: resolve,

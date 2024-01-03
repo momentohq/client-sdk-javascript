@@ -249,7 +249,7 @@ export class CacheDataClient<
                 break;
             }
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheGet.Error(e),
               resolveFn: resolve,
@@ -314,7 +314,7 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheSet.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSet.Error(e),
               resolveFn: resolve,
@@ -396,7 +396,7 @@ export class CacheDataClient<
                 break;
             }
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSetIfNotExists.Error(e),
               resolveFn: resolve,
@@ -439,7 +439,7 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheDelete.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheDelete.Error(e),
               resolveFn: resolve,
@@ -504,7 +504,7 @@ export class CacheDataClient<
               resolve(new CacheIncrement.Success(0));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheIncrement.Error(e),
               resolveFn: resolve,
@@ -551,7 +551,7 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheSetFetch.Miss());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSetFetch.Error(e),
               resolveFn: resolve,
@@ -606,7 +606,7 @@ export class CacheDataClient<
         },
         err => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSetAddElements.Error(e),
               resolveFn: resolve,
@@ -660,7 +660,7 @@ export class CacheDataClient<
         },
         err => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSetRemoveElements.Error(e),
               resolveFn: resolve,
@@ -738,7 +738,7 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheListConcatenateBack.Success(resp.getListLength()));
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new CacheListConcatenateBack.Error(e),
@@ -817,7 +817,7 @@ export class CacheDataClient<
               new CacheListConcatenateFront.Success(resp.getListLength())
             );
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new CacheListConcatenateFront.Error(e),
@@ -899,7 +899,7 @@ export class CacheDataClient<
               resolve(new CacheListFetch.Miss());
             }
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheListFetch.Error(e),
               resolveFn: resolve,
@@ -980,7 +980,7 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheListRetain.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheListRetain.Error(e),
               resolveFn: resolve,
@@ -1038,7 +1038,7 @@ export class CacheDataClient<
               resolve(new CacheListLength.Hit(len));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheListLength.Error(e),
               resolveFn: resolve,
@@ -1095,7 +1095,7 @@ export class CacheDataClient<
               resolve(new CacheListPopBack.Hit(this.convertToUint8Array(val)));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheListPopBack.Error(e),
               resolveFn: resolve,
@@ -1152,7 +1152,7 @@ export class CacheDataClient<
               resolve(new CacheListPopFront.Hit(this.convertToUint8Array(val)));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheListPopFront.Error(e),
               resolveFn: resolve,
@@ -1224,7 +1224,7 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheListPushBack.Success(resp.getListLength()));
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheListPushBack.Error(e),
               resolveFn: resolve,
@@ -1296,7 +1296,7 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheListPushFront.Success(resp.getListLength()));
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheListPushFront.Error(e),
               resolveFn: resolve,
@@ -1353,7 +1353,7 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheListRemoveValue.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheListRemoveValue.Error(e),
               resolveFn: resolve,
@@ -1425,7 +1425,7 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheDictionarySetField.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheDictionarySetField.Error(e),
               resolveFn: resolve,
@@ -1498,7 +1498,7 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheDictionarySetFields.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new CacheDictionarySetFields.Error(e),
@@ -1589,7 +1589,7 @@ export class CacheDataClient<
               );
             }
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new CacheDictionaryGetField.Error(
@@ -1667,7 +1667,7 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheDictionaryGetFields.Miss());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new CacheDictionaryGetFields.Error(e),
@@ -1731,7 +1731,7 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheDictionaryFetch.Miss());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheDictionaryFetch.Error(e),
               resolveFn: resolve,
@@ -1808,7 +1808,7 @@ export class CacheDataClient<
               resolve(new CacheDictionaryIncrement.Success(0));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new CacheDictionaryIncrement.Error(e),
@@ -1868,7 +1868,7 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheDictionaryRemoveField.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new CacheDictionaryRemoveField.Error(e),
@@ -1928,7 +1928,7 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheDictionaryRemoveFields.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new CacheDictionaryRemoveFields.Error(e),
@@ -1989,7 +1989,7 @@ export class CacheDataClient<
               resolve(new CacheDictionaryLength.Hit(len));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheDictionaryLength.Error(e),
               resolveFn: resolve,
@@ -2098,7 +2098,7 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheSortedSetFetch.Miss());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSortedSetFetch.Error(e),
               resolveFn: resolve,
@@ -2244,7 +2244,7 @@ export class CacheDataClient<
               );
             }
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSortedSetFetch.Error(e),
               resolveFn: resolve,
@@ -2321,7 +2321,7 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheSortedSetPutElement.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new CacheSortedSetPutElement.Error(e),
@@ -2397,7 +2397,7 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheSortedSetPutElements.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new CacheSortedSetPutElements.Error(e),
@@ -2510,7 +2510,7 @@ export class CacheDataClient<
               );
             }
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSortedSetGetScores.Error(e),
               resolveFn: resolve,
@@ -2582,7 +2582,7 @@ export class CacheDataClient<
               resolve(new CacheSortedSetGetRank.Miss());
             }
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSortedSetGetRank.Error(e),
               resolveFn: resolve,
@@ -2663,7 +2663,7 @@ export class CacheDataClient<
               resolve(new CacheSortedSetIncrementScore.Success(0));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new CacheSortedSetIncrementScore.Error(e),
@@ -2721,7 +2721,7 @@ export class CacheDataClient<
         },
         err => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new CacheSortedSetRemoveElement.Error(e),
@@ -2781,7 +2781,7 @@ export class CacheDataClient<
         },
         err => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new CacheSortedSetRemoveElements.Error(e),
@@ -2846,7 +2846,7 @@ export class CacheDataClient<
               resolve(new CacheSortedSetLength.Hit(len));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSortedSetLength.Error(e),
               resolveFn: resolve,
@@ -2931,7 +2931,7 @@ export class CacheDataClient<
               resolve(new CacheSortedSetLengthByScore.Hit(len));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e =>
                 new CacheSortedSetLengthByScore.Error(e),
@@ -2980,7 +2980,7 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheItemGetType.Miss());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheItemGetType.Error(e),
               resolveFn: resolve,
@@ -3025,7 +3025,7 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheItemGetTtl.Miss());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheItemGetTtl.Error(e),
               resolveFn: resolve,
@@ -3076,7 +3076,7 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheKeyExists.Success(resp.getExistsList()));
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheKeyExists.Error(e),
               resolveFn: resolve,
@@ -3130,7 +3130,7 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheKeysExist.Success(resp.getExistsList()));
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheKeysExist.Error(e),
               resolveFn: resolve,
@@ -3194,7 +3194,7 @@ export class CacheDataClient<
           } else if (resp?.getSet()) {
             resolve(new CacheUpdateTtl.Set());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheUpdateTtl.Error(e),
               resolveFn: resolve,
@@ -3258,7 +3258,7 @@ export class CacheDataClient<
           } else if (resp?.getSet()) {
             resolve(new CacheIncreaseTtl.Set());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheIncreaseTtl.Error(e),
               resolveFn: resolve,
@@ -3322,7 +3322,7 @@ export class CacheDataClient<
           } else if (resp?.getSet()) {
             resolve(new CacheDecreaseTtl.Set());
           } else {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheDecreaseTtl.Error(e),
               resolveFn: resolve,

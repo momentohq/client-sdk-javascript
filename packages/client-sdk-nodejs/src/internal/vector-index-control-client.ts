@@ -130,7 +130,7 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
             if (err.code === Status.ALREADY_EXISTS) {
               resolve(new CreateVectorIndex.AlreadyExists());
             } else {
-              this.cacheServiceErrorMapper.handleError({
+              this.cacheServiceErrorMapper.resolveOrRejectError({
                 err: err,
                 errorResponseFactoryFn: e => new CreateVectorIndex.Error(e),
                 resolveFn: resolve,
@@ -158,7 +158,7 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
             if (err || !resp) {
               // TODO: `Argument of type 'unknown' is not assignable to parameter of type 'Error'.`
               //  I don't see how this is different from the other methods here. So, yeah, what?
-              this.cacheServiceErrorMapper.handleError({
+              this.cacheServiceErrorMapper.resolveOrRejectError({
                 err: err,
                 errorResponseFactoryFn: e => new ListVectorIndexes.Error(e),
                 resolveFn: resolve,
@@ -219,7 +219,7 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new DeleteVectorIndex.Error(e),
               resolveFn: resolve,

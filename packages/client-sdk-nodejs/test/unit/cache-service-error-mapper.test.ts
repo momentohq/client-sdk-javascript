@@ -49,7 +49,7 @@ describe('CacheServiceErrorMapper', () => {
 
   it('should return permission denied error when Status.PERMISSION_DENIED', () => {
     const serviceError = generateServiceError(Status.PERMISSION_DENIED);
-    cacheServiceErrorMapper.handleError({
+    cacheServiceErrorMapper.resolveOrRejectError({
       err: serviceError,
       errorResponseFactoryFn: errorResponseFactoryFn,
       resolveFn: resolveFn,
@@ -59,7 +59,7 @@ describe('CacheServiceErrorMapper', () => {
   });
   it('should return invalid argument error when grpc status is INVALID_ARGUMENT', () => {
     const serviceError = generateServiceError(Status.INVALID_ARGUMENT);
-    cacheServiceErrorMapper.handleError({
+    cacheServiceErrorMapper.resolveOrRejectError({
       err: serviceError,
       errorResponseFactoryFn: errorResponseFactoryFn,
       resolveFn: resolveFn,
@@ -69,7 +69,7 @@ describe('CacheServiceErrorMapper', () => {
   });
   it('should return failed precondition error when grpc status is FAILED_PRECONDITION', () => {
     const serviceError = generateServiceError(Status.FAILED_PRECONDITION);
-    cacheServiceErrorMapper.handleError({
+    cacheServiceErrorMapper.resolveOrRejectError({
       err: serviceError,
       errorResponseFactoryFn: errorResponseFactoryFn,
       resolveFn: resolveFn,
@@ -83,7 +83,7 @@ describe('CacheServiceErrorMapper', () => {
       generateServiceError(Status.UNIMPLEMENTED),
     ];
     serviceErrors.forEach(e => {
-      cacheServiceErrorMapper.handleError({
+      cacheServiceErrorMapper.resolveOrRejectError({
         err: e,
         errorResponseFactoryFn: errorResponseFactoryFn,
         resolveFn: resolveFn,
@@ -94,7 +94,7 @@ describe('CacheServiceErrorMapper', () => {
   });
   it('should return cache not found error when grpc status is NOT_FOUND', () => {
     const serviceError = generateServiceError(Status.NOT_FOUND);
-    cacheServiceErrorMapper.handleError({
+    cacheServiceErrorMapper.resolveOrRejectError({
       err: serviceError,
       errorResponseFactoryFn: errorResponseFactoryFn,
       resolveFn: resolveFn,
@@ -104,7 +104,7 @@ describe('CacheServiceErrorMapper', () => {
   });
   it('should return unavailable error when grpc status is UNAVAILABLE', () => {
     const serviceError = generateServiceError(Status.UNAVAILABLE);
-    cacheServiceErrorMapper.handleError({
+    cacheServiceErrorMapper.resolveOrRejectError({
       err: serviceError,
       errorResponseFactoryFn: errorResponseFactoryFn,
       resolveFn: resolveFn,
@@ -114,7 +114,7 @@ describe('CacheServiceErrorMapper', () => {
   });
   it('should return unknown service error when grpc status is UNKNOWN', () => {
     const serviceError = generateServiceError(Status.UNKNOWN);
-    cacheServiceErrorMapper.handleError({
+    cacheServiceErrorMapper.resolveOrRejectError({
       err: serviceError,
       errorResponseFactoryFn: errorResponseFactoryFn,
       resolveFn: resolveFn,
@@ -129,7 +129,7 @@ describe('CacheServiceErrorMapper', () => {
       generateServiceError(Status.ABORTED),
     ];
     serviceErrors.forEach(e => {
-      cacheServiceErrorMapper.handleError({
+      cacheServiceErrorMapper.resolveOrRejectError({
         err: e,
         errorResponseFactoryFn: errorResponseFactoryFn,
         resolveFn: resolveFn,
@@ -140,7 +140,7 @@ describe('CacheServiceErrorMapper', () => {
   });
   it('should return cancelled error when grpc status is CANCELLED', () => {
     const serviceError = generateServiceError(Status.CANCELLED);
-    cacheServiceErrorMapper.handleError({
+    cacheServiceErrorMapper.resolveOrRejectError({
       err: serviceError,
       errorResponseFactoryFn: errorResponseFactoryFn,
       resolveFn: resolveFn,
@@ -150,7 +150,7 @@ describe('CacheServiceErrorMapper', () => {
   });
   it('should return timeout error when grpc status is DEADLINE_EXCEEDED', () => {
     const serviceError = generateServiceError(Status.DEADLINE_EXCEEDED);
-    cacheServiceErrorMapper.handleError({
+    cacheServiceErrorMapper.resolveOrRejectError({
       err: serviceError,
       errorResponseFactoryFn: errorResponseFactoryFn,
       resolveFn: resolveFn,
@@ -160,7 +160,7 @@ describe('CacheServiceErrorMapper', () => {
   });
   it('should return authentication error when grpc status is UNAUTHENTICATED', () => {
     const serviceError = generateServiceError(Status.UNAUTHENTICATED);
-    cacheServiceErrorMapper.handleError({
+    cacheServiceErrorMapper.resolveOrRejectError({
       err: serviceError,
       errorResponseFactoryFn: errorResponseFactoryFn,
       resolveFn: resolveFn,
@@ -170,7 +170,7 @@ describe('CacheServiceErrorMapper', () => {
   });
   it('should return limit exceeded error when grpc status is RESOURCE_EXHAUSTED', () => {
     const serviceError = generateServiceError(Status.RESOURCE_EXHAUSTED);
-    cacheServiceErrorMapper.handleError({
+    cacheServiceErrorMapper.resolveOrRejectError({
       err: serviceError,
       errorResponseFactoryFn: errorResponseFactoryFn,
       resolveFn: resolveFn,
@@ -180,7 +180,7 @@ describe('CacheServiceErrorMapper', () => {
   });
   it('should return already exists error when grpc status is ALREADY_EXISTS', () => {
     const serviceError = generateServiceError(Status.ALREADY_EXISTS);
-    cacheServiceErrorMapper.handleError({
+    cacheServiceErrorMapper.resolveOrRejectError({
       err: serviceError,
       errorResponseFactoryFn: errorResponseFactoryFn,
       resolveFn: resolveFn,
@@ -194,7 +194,7 @@ describe('CacheServiceErrorMapper', () => {
 
     it('should reject with LimitExceeded when grpc status is RESOURCE_EXHAUSTED', () => {
       const serviceError = generateServiceError(Status.RESOURCE_EXHAUSTED);
-      mapperWithThrowOnErrors.handleError({
+      mapperWithThrowOnErrors.resolveOrRejectError({
         err: serviceError,
         errorResponseFactoryFn: errorResponseFactoryFn,
         resolveFn: resolveFn,

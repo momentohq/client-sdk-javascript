@@ -129,7 +129,7 @@ export class VectorIndexControlClient<
             if (err.code === StatusCode.ALREADY_EXISTS) {
               resolve(new CreateVectorIndex.AlreadyExists());
             } else {
-              this.cacheServiceErrorMapper.handleError({
+              this.cacheServiceErrorMapper.resolveOrRejectError({
                 err: err,
                 errorResponseFactoryFn: e => new CreateVectorIndex.Error(e),
                 resolveFn: resolve,
@@ -153,7 +153,7 @@ export class VectorIndexControlClient<
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new ListVectorIndexes.Error(e),
               resolveFn: resolve,
@@ -221,7 +221,7 @@ export class VectorIndexControlClient<
         this.clientMetadataProvider.createClientMetadata(),
         (err, _resp) => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError({
+            this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new DeleteVectorIndex.Error(e),
               resolveFn: resolve,
