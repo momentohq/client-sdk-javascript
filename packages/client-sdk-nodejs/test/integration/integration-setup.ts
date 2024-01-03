@@ -145,6 +145,14 @@ function momentoLeaderboardClientForTesting(): PreviewLeaderboardClient {
   });
 }
 
+function momentoLeaderboardClientWithThrowOnErrorsForTesting(): PreviewLeaderboardClient {
+  return new PreviewLeaderboardClient({
+    credentialProvider: credsProvider(),
+    configuration:
+      LeaderboardConfigurations.Laptop.latest().withThrowOnErrors(true),
+  });
+}
+
 export function SetupIntegrationTest(): {
   cacheClient: CacheClient;
   cacheClientWithThrowOnErrors: CacheClient;
@@ -210,12 +218,16 @@ export function SetupVectorIntegrationTest(): {
 
 export function SetupLeaderboardIntegrationTest(): {
   leaderboardClient: PreviewLeaderboardClient;
+  leaderboardClientWithThrowOnErrors: PreviewLeaderboardClient;
   integrationTestCacheName: string;
 } {
   const {integrationTestCacheName} = SetupIntegrationTest();
   const leaderboardClient = momentoLeaderboardClientForTesting();
+  const leaderboardClientWithThrowOnErrors =
+    momentoLeaderboardClientWithThrowOnErrorsForTesting();
   return {
     leaderboardClient,
+    leaderboardClientWithThrowOnErrors,
     integrationTestCacheName: integrationTestCacheName,
   };
 }

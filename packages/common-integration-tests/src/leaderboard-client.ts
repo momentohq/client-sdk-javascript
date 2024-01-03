@@ -35,6 +35,7 @@ async function withTemporaryLeaderboard(
 
 export function runLeaderboardClientTests(
   leaderboardClient: ILeaderboardClient,
+  leaderboardClientWithThrowOnErrors: ILeaderboardClient,
   integrationTestCacheName: string
 ) {
   describe('#Creates leaderboard client', () => {
@@ -996,6 +997,23 @@ export function runLeaderboardClientTests(
         leaderboardName,
         integrationTestCacheName,
         deletesLeaderboard
+      );
+    });
+  });
+
+  describe('When client is configured to throw on errors', () => {
+    it('should throw if we attempt to fetch more than the max number of items', async () => {
+      const leaderboardName = `test-leaderboard-throw-on-error-${v4()}`;
+
+      await withTemporaryLeaderboard(
+        leaderboardClientWithThrowOnErrors,
+        leaderboardName,
+        integrationTestCacheName,
+        async (leaderboard: ILeaderboard) => {
+          await expect(async () => {
+            await leaderboard.fetchByRank(0, 8193);
+          }).rejects.toThrow(InvalidArgumentError);
+        }
       );
     });
   });
