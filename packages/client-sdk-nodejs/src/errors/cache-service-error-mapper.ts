@@ -18,25 +18,27 @@ import {
   FailedPreconditionError,
 } from '../../src';
 
+export interface HandleCacheServiceErrorOptions {
+  err: ServiceError | null;
+  errorResponseFactoryFn: (err: SdkError) => unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  resolveFn: (result: any) => void;
+  rejectFn: (err: SdkError) => void;
+}
+
 export class CacheServiceErrorMapper {
   private readonly throwOnError: boolean;
 
   constructor(throwOnError: boolean) {
     this.throwOnError = throwOnError;
   }
-  handleError(
-    err: ServiceError | null,
-    errorResponseFactoryFn: (err: SdkError) => unknown,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolveFn: (result: any) => void,
-    rejectFn: (err: SdkError) => void
-  ): void {
-    const error = this.convertError(err);
+  handleError(opts: HandleCacheServiceErrorOptions): void {
+    const error = this.convertError(opts.err);
 
     if (this.throwOnError) {
-      rejectFn(error);
+      opts.rejectFn(error);
     } else {
-      resolveFn(errorResponseFactoryFn(error));
+      opts.resolveFn(opts.errorResponseFactoryFn(error));
     }
   }
 

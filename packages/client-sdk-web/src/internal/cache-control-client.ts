@@ -87,12 +87,12 @@ export class CacheControlClient<
             if (err.code === StatusCode.ALREADY_EXISTS) {
               resolve(new CreateCache.AlreadyExists());
             } else {
-              this.cacheServiceErrorMapper.handleError(
-                err,
-                e => new CreateCache.Error(e),
-                resolve,
-                reject
-              );
+              this.cacheServiceErrorMapper.handleError({
+                err: err,
+                errorResponseFactoryFn: e => new CreateCache.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
             }
           } else {
             resolve(new CreateCache.Success());
@@ -117,12 +117,12 @@ export class CacheControlClient<
         this.clientMetadataProvider.createClientMetadata(),
         (err, _resp) => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new DeleteCache.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new DeleteCache.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new DeleteCache.Success());
           }
@@ -154,12 +154,12 @@ export class CacheControlClient<
           if (resp) {
             resolve(new CacheFlush.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheFlush.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheFlush.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -176,12 +176,12 @@ export class CacheControlClient<
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new ListCaches.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new ListCaches.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             const caches = resp.getCacheList().map(cache => {
               const cacheName = cache.getCacheName();

@@ -92,12 +92,12 @@ export class WebhookClient implements IWebhookClient {
         this.clientMetadataProvider.createClientMetadata(),
         (err, _resp) => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new DeleteWebhook.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new DeleteWebhook.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new DeleteWebhook.Success());
           }
@@ -122,12 +122,12 @@ export class WebhookClient implements IWebhookClient {
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
           if (err || !resp) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new ListWebhooks.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new ListWebhooks.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             const webhooks = resp.getWebhookList().map(wh => {
               const webhook: Webhook = {
@@ -181,12 +181,12 @@ export class WebhookClient implements IWebhookClient {
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
           if (err || !resp) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new PutWebhook.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new PutWebhook.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new PutWebhook.Success(resp.getSecretString()));
           }
@@ -214,12 +214,12 @@ export class WebhookClient implements IWebhookClient {
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
           if (err || !resp) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new GetWebhookSecret.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new GetWebhookSecret.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(
               new GetWebhookSecret.Success({
@@ -258,12 +258,12 @@ export class WebhookClient implements IWebhookClient {
           this.clientMetadataProvider.createClientMetadata(),
           (err, resp) => {
             if (err || !resp) {
-              this.cacheServiceErrorMapper.handleError(
-                err,
-                e => new RotateWebhookSecret.Error(e),
-                resolve,
-                reject
-              );
+              this.cacheServiceErrorMapper.handleError({
+                err: err,
+                errorResponseFactoryFn: e => new RotateWebhookSecret.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
             } else {
               resolve(
                 new RotateWebhookSecret.Success({

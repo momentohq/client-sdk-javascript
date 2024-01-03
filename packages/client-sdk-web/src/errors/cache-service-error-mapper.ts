@@ -17,6 +17,14 @@ import {
 } from '../../src';
 import {RpcError, StatusCode} from 'grpc-web';
 
+export interface HandleCacheServiceErrorOptions {
+  err: RpcError | null;
+  errorResponseFactoryFn: (err: SdkError) => unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  resolveFn: (result: any) => void;
+  rejectFn: (err: SdkError) => void;
+}
+
 export class CacheServiceErrorMapper {
   private readonly throwOnErrors: boolean;
 
@@ -24,18 +32,12 @@ export class CacheServiceErrorMapper {
     this.throwOnErrors = throwOnErrors;
   }
 
-  handleError(
-    err: RpcError | null,
-    errorResponseFactoryFn: (err: SdkError) => unknown,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolveFn: (result: any) => void,
-    rejectFn: (err: SdkError) => void
-  ): void {
-    const error = this.convertError(err);
+  handleError(opts: HandleCacheServiceErrorOptions): void {
+    const error = this.convertError(opts.err);
     if (this.throwOnErrors) {
-      rejectFn(error);
+      opts.rejectFn(error);
     } else {
-      resolveFn(errorResponseFactoryFn(error));
+      opts.resolveFn(opts.errorResponseFactoryFn(error));
     }
   }
 

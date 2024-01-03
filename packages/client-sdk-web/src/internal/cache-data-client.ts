@@ -249,12 +249,12 @@ export class CacheDataClient<
                 break;
             }
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheGet.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheGet.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -314,12 +314,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheSet.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheSet.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSet.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -396,12 +396,12 @@ export class CacheDataClient<
                 break;
             }
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheSetIfNotExists.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetIfNotExists.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -439,12 +439,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheDelete.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheDelete.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheDelete.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -504,12 +504,12 @@ export class CacheDataClient<
               resolve(new CacheIncrement.Success(0));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheIncrement.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheIncrement.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -551,12 +551,12 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheSetFetch.Miss());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheSetFetch.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetFetch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -606,12 +606,12 @@ export class CacheDataClient<
         },
         err => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheSetAddElements.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetAddElements.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new CacheSetAddElements.Success());
           }
@@ -660,12 +660,12 @@ export class CacheDataClient<
         },
         err => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheSetRemoveElements.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetRemoveElements.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new CacheSetRemoveElements.Success());
           }
@@ -738,12 +738,13 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheListConcatenateBack.Success(resp.getListLength()));
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheListConcatenateBack.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheListConcatenateBack.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -816,12 +817,13 @@ export class CacheDataClient<
               new CacheListConcatenateFront.Success(resp.getListLength())
             );
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheListConcatenateFront.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheListConcatenateFront.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -897,12 +899,12 @@ export class CacheDataClient<
               resolve(new CacheListFetch.Miss());
             }
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheListFetch.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheListFetch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -978,12 +980,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheListRetain.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheListRetain.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheListRetain.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1036,12 +1038,12 @@ export class CacheDataClient<
               resolve(new CacheListLength.Hit(len));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheListLength.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheListLength.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1093,12 +1095,12 @@ export class CacheDataClient<
               resolve(new CacheListPopBack.Hit(this.convertToUint8Array(val)));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheListPopBack.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheListPopBack.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1150,12 +1152,12 @@ export class CacheDataClient<
               resolve(new CacheListPopFront.Hit(this.convertToUint8Array(val)));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheListPopFront.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheListPopFront.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1222,12 +1224,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheListPushBack.Success(resp.getListLength()));
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheListPushBack.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheListPushBack.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1294,12 +1296,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheListPushFront.Success(resp.getListLength()));
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheListPushFront.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheListPushFront.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1351,12 +1353,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheListRemoveValue.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheListRemoveValue.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheListRemoveValue.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1423,12 +1425,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheDictionarySetField.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheDictionarySetField.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheDictionarySetField.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1496,12 +1498,13 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheDictionarySetFields.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheDictionarySetFields.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheDictionarySetFields.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1586,16 +1589,16 @@ export class CacheDataClient<
               );
             }
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e =>
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
                 new CacheDictionaryGetField.Error(
                   e,
                   this.convertToUint8Array(field)
                 ),
-              resolve,
-              reject
-            );
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1664,12 +1667,13 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheDictionaryGetFields.Miss());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheDictionaryGetFields.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheDictionaryGetFields.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1727,12 +1731,12 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheDictionaryFetch.Miss());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheDictionaryFetch.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheDictionaryFetch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1804,12 +1808,13 @@ export class CacheDataClient<
               resolve(new CacheDictionaryIncrement.Success(0));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheDictionaryIncrement.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheDictionaryIncrement.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1863,12 +1868,13 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheDictionaryRemoveField.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheDictionaryRemoveField.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheDictionaryRemoveField.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1922,12 +1928,13 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheDictionaryRemoveFields.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheDictionaryRemoveFields.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheDictionaryRemoveFields.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1982,12 +1989,12 @@ export class CacheDataClient<
               resolve(new CacheDictionaryLength.Hit(len));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheDictionaryLength.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheDictionaryLength.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2091,12 +2098,12 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheSortedSetFetch.Miss());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheSortedSetFetch.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSortedSetFetch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2237,12 +2244,12 @@ export class CacheDataClient<
               );
             }
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheSortedSetFetch.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSortedSetFetch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2314,12 +2321,13 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheSortedSetPutElement.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheSortedSetPutElement.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSortedSetPutElement.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2389,12 +2397,13 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheSortedSetPutElements.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheSortedSetPutElements.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSortedSetPutElements.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2501,12 +2510,12 @@ export class CacheDataClient<
               );
             }
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheSortedSetGetScores.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSortedSetGetScores.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2573,12 +2582,12 @@ export class CacheDataClient<
               resolve(new CacheSortedSetGetRank.Miss());
             }
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheSortedSetGetRank.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSortedSetGetRank.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2654,12 +2663,13 @@ export class CacheDataClient<
               resolve(new CacheSortedSetIncrementScore.Success(0));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheSortedSetIncrementScore.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSortedSetIncrementScore.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2711,12 +2721,13 @@ export class CacheDataClient<
         },
         err => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheSortedSetRemoveElement.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSortedSetRemoveElement.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new CacheSortedSetRemoveElement.Success());
           }
@@ -2770,12 +2781,13 @@ export class CacheDataClient<
         },
         err => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheSortedSetRemoveElements.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSortedSetRemoveElements.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new CacheSortedSetRemoveElements.Success());
           }
@@ -2834,12 +2846,12 @@ export class CacheDataClient<
               resolve(new CacheSortedSetLength.Hit(len));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheSortedSetLength.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSortedSetLength.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2919,12 +2931,13 @@ export class CacheDataClient<
               resolve(new CacheSortedSetLengthByScore.Hit(len));
             }
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheSortedSetLengthByScore.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSortedSetLengthByScore.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2967,12 +2980,12 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheItemGetType.Miss());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheItemGetType.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheItemGetType.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -3012,12 +3025,12 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheItemGetTtl.Miss());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheItemGetTtl.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheItemGetTtl.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -3063,12 +3076,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheKeyExists.Success(resp.getExistsList()));
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheKeyExists.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheKeyExists.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -3117,12 +3130,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheKeysExist.Success(resp.getExistsList()));
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheKeysExist.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheKeysExist.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -3181,12 +3194,12 @@ export class CacheDataClient<
           } else if (resp?.getSet()) {
             resolve(new CacheUpdateTtl.Set());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheUpdateTtl.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheUpdateTtl.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -3245,12 +3258,12 @@ export class CacheDataClient<
           } else if (resp?.getSet()) {
             resolve(new CacheIncreaseTtl.Set());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheIncreaseTtl.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheIncreaseTtl.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -3309,12 +3322,12 @@ export class CacheDataClient<
           } else if (resp?.getSet()) {
             resolve(new CacheDecreaseTtl.Set());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheDecreaseTtl.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheDecreaseTtl.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );

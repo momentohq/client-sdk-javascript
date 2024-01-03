@@ -139,12 +139,12 @@ export class InternalWebGrpcAuthClient<
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
           if (err || !resp) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new GenerateApiKey.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new GenerateApiKey.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(
               new GenerateApiKey.Success(
@@ -183,12 +183,12 @@ export class InternalWebGrpcAuthClient<
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
           if (err || !resp) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new RefreshApiKey.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new RefreshApiKey.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(
               new RefreshApiKey.Success(
@@ -259,12 +259,13 @@ export class InternalWebGrpcAuthClient<
           this.clientMetadataProvider.createClientMetadata(),
           (err, resp) => {
             if (err || !resp) {
-              this.cacheServiceErrorMapper.handleError(
-                err,
-                e => new GenerateDisposableToken.Error(e),
-                resolve,
-                reject
-              );
+              this.cacheServiceErrorMapper.handleError({
+                err: err,
+                errorResponseFactoryFn: e =>
+                  new GenerateDisposableToken.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
             } else {
               resolve(
                 new GenerateDisposableToken.Success(

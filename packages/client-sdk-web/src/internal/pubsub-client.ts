@@ -103,12 +103,12 @@ export class PubsubClient<
           if (resp) {
             resolve(new TopicPublish.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new TopicPublish.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new TopicPublish.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );

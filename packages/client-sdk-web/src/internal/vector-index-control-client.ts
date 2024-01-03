@@ -129,12 +129,12 @@ export class VectorIndexControlClient<
             if (err.code === StatusCode.ALREADY_EXISTS) {
               resolve(new CreateVectorIndex.AlreadyExists());
             } else {
-              this.cacheServiceErrorMapper.handleError(
-                err,
-                e => new CreateVectorIndex.Error(e),
-                resolve,
-                reject
-              );
+              this.cacheServiceErrorMapper.handleError({
+                err: err,
+                errorResponseFactoryFn: e => new CreateVectorIndex.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
             }
           } else {
             resolve(new CreateVectorIndex.Success());
@@ -153,12 +153,12 @@ export class VectorIndexControlClient<
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new ListVectorIndexes.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new ListVectorIndexes.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             const indexes: VectorIndexInfo[] = resp
               .getIndexesList()
@@ -221,12 +221,12 @@ export class VectorIndexControlClient<
         this.clientMetadataProvider.createClientMetadata(),
         (err, _resp) => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new DeleteVectorIndex.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new DeleteVectorIndex.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new DeleteVectorIndex.Success());
           }

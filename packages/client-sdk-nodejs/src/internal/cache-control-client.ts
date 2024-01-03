@@ -97,12 +97,12 @@ export class CacheControlClient {
               if (err.code === Status.ALREADY_EXISTS) {
                 resolve(new CreateCache.AlreadyExists());
               } else {
-                this.cacheServiceErrorMapper.handleError(
-                  err,
-                  e => new CreateCache.Error(e),
-                  resolve,
-                  reject
-                );
+                this.cacheServiceErrorMapper.handleError({
+                  err: err,
+                  errorResponseFactoryFn: e => new CreateCache.Error(e),
+                  resolveFn: resolve,
+                  rejectFn: reject,
+                });
               }
             } else {
               resolve(new CreateCache.Success());
@@ -130,12 +130,12 @@ export class CacheControlClient {
           {interceptors: this.interceptors},
           (err, _resp) => {
             if (err) {
-              this.cacheServiceErrorMapper.handleError(
-                err,
-                e => new DeleteCache.Error(e),
-                resolve,
-                reject
-              );
+              this.cacheServiceErrorMapper.handleError({
+                err: err,
+                errorResponseFactoryFn: e => new DeleteCache.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
             } else {
               resolve(new DeleteCache.Success());
             }
@@ -170,12 +170,12 @@ export class CacheControlClient {
           if (resp) {
             resolve(new CacheFlush.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new CacheFlush.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheFlush.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -191,12 +191,12 @@ export class CacheControlClient {
         .getClient()
         .ListCaches(request, {interceptors: this.interceptors}, (err, resp) => {
           if (err || !resp) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new ListCaches.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new ListCaches.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             const caches = resp.cache.map(cache => {
               const cacheName = cache.cache_name;
@@ -241,12 +241,12 @@ export class CacheControlClient {
           {interceptors: this.interceptors},
           (err, resp) => {
             if (err) {
-              this.cacheServiceErrorMapper.handleError(
-                err,
-                e => new CreateSigningKey.Error(e),
-                resolve,
-                reject
-              );
+              this.cacheServiceErrorMapper.handleError({
+                err: err,
+                errorResponseFactoryFn: e => new CreateSigningKey.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
             } else {
               const signingKey = new _SigningKey(resp?.key, resp?.expires_at);
               resolve(new CreateSigningKey.Success(endpoint, signingKey));
@@ -267,12 +267,12 @@ export class CacheControlClient {
         .getClient()
         .RevokeSigningKey(request, {interceptors: this.interceptors}, err => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new RevokeSigningKey.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new RevokeSigningKey.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new RevokeSigningKey.Success());
           }
@@ -294,12 +294,12 @@ export class CacheControlClient {
           {interceptors: this.interceptors},
           (err, resp) => {
             if (err || !resp) {
-              this.cacheServiceErrorMapper.handleError(
-                err,
-                e => new ListSigningKeys.Error(e),
-                resolve,
-                reject
-              );
+              this.cacheServiceErrorMapper.handleError({
+                err: err,
+                errorResponseFactoryFn: e => new ListSigningKeys.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
             } else {
               const signingKeys = resp.signing_key.map(
                 sk => new _SigningKey(sk.key_id, sk.expires_at)

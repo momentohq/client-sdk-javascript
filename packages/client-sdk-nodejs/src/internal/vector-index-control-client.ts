@@ -130,12 +130,12 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
             if (err.code === Status.ALREADY_EXISTS) {
               resolve(new CreateVectorIndex.AlreadyExists());
             } else {
-              this.cacheServiceErrorMapper.handleError(
-                err,
-                e => new CreateVectorIndex.Error(e),
-                resolve,
-                reject
-              );
+              this.cacheServiceErrorMapper.handleError({
+                err: err,
+                errorResponseFactoryFn: e => new CreateVectorIndex.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
             }
           } else {
             resolve(new CreateVectorIndex.Success());
@@ -158,12 +158,12 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
             if (err || !resp) {
               // TODO: `Argument of type 'unknown' is not assignable to parameter of type 'Error'.`
               //  I don't see how this is different from the other methods here. So, yeah, what?
-              this.cacheServiceErrorMapper.handleError(
-                err,
-                e => new ListVectorIndexes.Error(e),
-                resolve,
-                reject
-              );
+              this.cacheServiceErrorMapper.handleError({
+                err: err,
+                errorResponseFactoryFn: e => new ListVectorIndexes.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
             } else {
               const indexes = resp.indexes.map(index => {
                 let similarityMetric: VectorSimilarityMetric =
@@ -219,12 +219,12 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new DeleteVectorIndex.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new DeleteVectorIndex.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new DeleteVectorIndex.Success());
           }

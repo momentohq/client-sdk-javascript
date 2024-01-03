@@ -180,12 +180,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           if (resp) {
             resolve(new VectorUpsertItemBatch.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new VectorUpsertItemBatch.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new VectorUpsertItemBatch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -220,12 +220,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           if (resp) {
             resolve(new VectorDeleteItemBatch.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new VectorDeleteItemBatch.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new VectorDeleteItemBatch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -345,12 +345,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               )
             );
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new VectorSearch.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new VectorSearch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -419,12 +419,13 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               )
             );
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new VectorSearchAndFetchVectors.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new VectorSearchAndFetchVectors.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -498,12 +499,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               )
             );
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new VectorGetItemBatch.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new VectorGetItemBatch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -576,12 +577,13 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               )
             );
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new VectorGetItemMetadataBatch.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new VectorGetItemMetadataBatch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );

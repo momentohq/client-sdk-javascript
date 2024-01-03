@@ -194,12 +194,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
           if (resp) {
             resolve(new LeaderboardUpsert.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new LeaderboardUpsert.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new LeaderboardUpsert.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -291,12 +291,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
               .elements;
             resolve(new LeaderboardFetch.Success(foundElements));
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new LeaderboardFetch.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new LeaderboardFetch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -365,12 +365,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
               .elements;
             resolve(new LeaderboardFetch.Success(foundElements));
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new LeaderboardFetch.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new LeaderboardFetch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -423,12 +423,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
               .elements;
             resolve(new LeaderboardFetch.Success(foundElements));
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new LeaderboardFetch.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new LeaderboardFetch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -467,12 +467,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
               .count;
             resolve(new LeaderboardLength.Success(length));
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new LeaderboardLength.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new LeaderboardLength.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -519,12 +519,13 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
           if (resp) {
             resolve(new LeaderboardRemoveElements.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new LeaderboardRemoveElements.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new LeaderboardRemoveElements.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -561,12 +562,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
           if (resp) {
             resolve(new LeaderboardDelete.Success());
           } else {
-            this.cacheServiceErrorMapper.handleError(
-              err,
-              e => new LeaderboardDelete.Error(e),
-              resolve,
-              reject
-            );
+            this.cacheServiceErrorMapper.handleError({
+              err: err,
+              errorResponseFactoryFn: e => new LeaderboardDelete.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
