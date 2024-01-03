@@ -27,14 +27,14 @@ import {TopicConfiguration} from '../config/topic-configuration';
 export class PubsubClient<
   REQ extends Request<REQ, RESP>,
   RESP extends UnaryResponse<REQ, RESP>
-> extends AbstractPubsubClient {
+> extends AbstractPubsubClient<RpcError> {
   private readonly client: pubsub.PubsubClient;
   private readonly configuration: TopicConfiguration;
   protected readonly credentialProvider: CredentialProvider;
   private readonly requestTimeoutMs: number;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   protected readonly logger: MomentoLogger;
-  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
+  protected readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly clientMetadataProvider: ClientMetadataProvider;
 
   private static readonly RST_STREAM_NO_ERROR_MESSAGE =

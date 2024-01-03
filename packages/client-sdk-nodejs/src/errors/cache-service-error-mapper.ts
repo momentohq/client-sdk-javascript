@@ -17,25 +17,36 @@ import {
   UnknownError,
   FailedPreconditionError,
 } from '../../src';
+import {
+  ICacheServiceErrorMapper,
+  ResolveOrRejectErrorOptions,
+} from '@gomomento/sdk-core/dist/src/errors/ICacheServiceErrorMapper';
 
-export interface ResolveOrRejectErrorOptions {
-  err: ServiceError | null;
-  errorResponseFactoryFn: (err: SdkError) => unknown;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  resolveFn: (result: any) => void;
-  rejectFn: (err: SdkError) => void;
-}
-
-export class CacheServiceErrorMapper {
-  private readonly throwOnError: boolean;
+export class CacheServiceErrorMapper
+  implements ICacheServiceErrorMapper<ServiceError>
+{
+  private readonly throwOnErrors: boolean;
 
   constructor(throwOnError: boolean) {
-    this.throwOnError = throwOnError;
+    this.throwOnErrors = throwOnError;
   }
-  resolveOrRejectError(opts: ResolveOrRejectErrorOptions): void {
+
+  returnOrThrowError<TErrorResponse>(
+    err: Error,
+    errorResponseFactoryFn: (err: SdkError) => TErrorResponse
+  ): TErrorResponse {
+    const sdkError = normalizeSdkError(err);
+    if (this.throwOnErrors) {
+      throw sdkError;
+    } else {
+      return errorResponseFactoryFn(sdkError);
+    }
+  }
+
+  resolveOrRejectError(opts: ResolveOrRejectErrorOptions<ServiceError>): void {
     const error = this.convertError(opts.err);
 
-    if (this.throwOnError) {
+    if (this.throwOnErrors) {
       opts.rejectFn(error);
     } else {
       opts.resolveFn(opts.errorResponseFactoryFn(error));
@@ -88,4 +99,11 @@ export class CacheServiceErrorMapper {
         return new UnknownError(...errParams);
     }
   }
+}
+
+function normalizeSdkError(error: Error): SdkError {
+  if (error instanceof SdkError) {
+    return error;
+  }
+  return new UnknownError(error.message);
 }

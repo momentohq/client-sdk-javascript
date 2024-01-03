@@ -16,23 +16,33 @@ import {
   FailedPreconditionError,
 } from '../../src';
 import {RpcError, StatusCode} from 'grpc-web';
+import {
+  ICacheServiceErrorMapper,
+  ResolveOrRejectErrorOptions,
+} from '@gomomento/sdk-core/dist/src/errors/ICacheServiceErrorMapper';
 
-export interface ResolveOrRejectErrorOptions {
-  err: RpcError | null;
-  errorResponseFactoryFn: (err: SdkError) => unknown;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  resolveFn: (result: any) => void;
-  rejectFn: (err: SdkError) => void;
-}
-
-export class CacheServiceErrorMapper {
+export class CacheServiceErrorMapper
+  implements ICacheServiceErrorMapper<RpcError>
+{
   private readonly throwOnErrors: boolean;
 
   constructor(throwOnErrors: boolean) {
     this.throwOnErrors = throwOnErrors;
   }
 
-  resolveOrRejectError(opts: ResolveOrRejectErrorOptions): void {
+  returnOrThrowError<TErrorResponse>(
+    err: Error,
+    errorResponseFactoryFn: (err: SdkError) => TErrorResponse
+  ): TErrorResponse {
+    const sdkError = normalizeSdkError(err);
+    if (this.throwOnErrors) {
+      throw sdkError;
+    } else {
+      return errorResponseFactoryFn(sdkError);
+    }
+  }
+
+  resolveOrRejectError(opts: ResolveOrRejectErrorOptions<RpcError>): void {
     const error = this.convertError(opts.err);
     if (this.throwOnErrors) {
       opts.rejectFn(error);
@@ -87,4 +97,11 @@ export class CacheServiceErrorMapper {
         return new UnknownError(...errParams);
     }
   }
+}
+
+function normalizeSdkError(error: Error): SdkError {
+  if (error instanceof SdkError) {
+    return error;
+  }
+  return new UnknownError(error.message);
 }

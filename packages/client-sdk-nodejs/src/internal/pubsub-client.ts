@@ -25,7 +25,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/AbstractPubsubClient';
 import {TopicConfiguration} from '../config/topic-configuration';
 
-export class PubsubClient extends AbstractPubsubClient {
+export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   private readonly client: grpcPubsub.PubsubClient;
   private readonly configuration: TopicConfiguration;
   protected readonly credentialProvider: CredentialProvider;
@@ -33,7 +33,7 @@ export class PubsubClient extends AbstractPubsubClient {
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   private static readonly DEFAULT_MAX_SESSION_MEMORY_MB: number = 256;
   protected readonly logger: MomentoLogger;
-  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
+  protected readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly unaryInterceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
 
