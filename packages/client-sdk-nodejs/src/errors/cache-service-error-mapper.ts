@@ -22,8 +22,6 @@ export class CacheServiceErrorMapper {
   private readonly throwOnError: boolean;
 
   constructor(throwOnError: boolean) {
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    console.log(`CONSTRUCTING CACHE SERVICE ERROR MAPPER: ${throwOnError}`);
     this.throwOnError = throwOnError;
   }
   handleError(
