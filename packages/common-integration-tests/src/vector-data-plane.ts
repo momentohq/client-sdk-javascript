@@ -20,6 +20,7 @@ import {
   WithIndex,
 } from './common-int-test-utils';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {InvalidArgumentError} from "@gomomento/sdk-core/dist/src";
 
 export function runVectorDataPlaneTest(
   vectorClient: IVectorIndexClient,
@@ -1186,7 +1187,7 @@ export function runVectorDataPlaneTest(
               await vectorClientWithThrowOnErrors.upsertItemBatch(indexName, [
                 {id: 'test_item', vector: [1.0, 2.0, 3.0]},
               ])
-          ).rejects.toThrow(VectorUpsertItemBatch.Error);
+          ).rejects.toThrow(InvalidArgumentError);
         }
       );
     });
