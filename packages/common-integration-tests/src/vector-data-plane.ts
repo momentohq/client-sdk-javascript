@@ -1,4 +1,5 @@
 import {
+  InvalidArgumentError,
   IVectorIndexClient,
   VectorDeleteItemBatch,
   VectorSearch,
@@ -20,7 +21,6 @@ import {
   WithIndex,
 } from './common-int-test-utils';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
-import {InvalidArgumentError} from "@gomomento/sdk-core/dist/src";
 
 export function runVectorDataPlaneTest(
   vectorClient: IVectorIndexClient,

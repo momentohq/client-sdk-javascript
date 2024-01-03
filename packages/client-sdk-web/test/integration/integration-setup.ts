@@ -100,6 +100,13 @@ function momentoTopicClientForTesting(): TopicClient {
   });
 }
 
+function momentoTopicClientWithThrowOnErrorsForTesting(): TopicClient {
+  return new TopicClient({
+    configuration: TopicConfigurations.Default.latest().withThrowOnErrors(true),
+    credentialProvider: credsProvider(),
+  });
+}
+
 function momentoTopicClientForTestingWithSessionToken(): TopicClient {
   return new TopicClient({
     configuration: integrationTestCacheClientProps().configuration,
@@ -163,13 +170,17 @@ export function SetupIntegrationTest(): {
 
 export function SetupTopicIntegrationTest(): {
   topicClient: ITopicClient;
+  topicClientWithThrowOnErrors: ITopicClient;
   cacheClient: CacheClient;
   integrationTestCacheName: string;
 } {
   const {cacheClient, integrationTestCacheName} = SetupIntegrationTest();
   const topicClient = momentoTopicClientForTesting();
+  const topicClientWithThrowOnErrors =
+    momentoTopicClientWithThrowOnErrorsForTesting();
   return {
     topicClient,
+    topicClientWithThrowOnErrors,
     cacheClient: cacheClient,
     integrationTestCacheName: integrationTestCacheName,
   };
