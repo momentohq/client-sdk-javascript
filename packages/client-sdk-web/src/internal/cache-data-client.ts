@@ -278,8 +278,9 @@ export class CacheDataClient<
       );
     }
     if (ttl && ttl < 0) {
-      return new CacheSet.Error(
-        new InvalidArgumentError('ttl must be a positive integer')
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        new InvalidArgumentError('ttl must be a positive integer'),
+        err => new CacheSet.Error(err)
       );
     }
     const ttlToUse = ttl || this.defaultTtlSeconds;
@@ -346,8 +347,9 @@ export class CacheDataClient<
       );
     }
     if (ttl && ttl < 0) {
-      return new CacheSetIfNotExists.Error(
-        new InvalidArgumentError('ttl must be a positive integer')
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        new InvalidArgumentError('ttl must be a positive integer'),
+        err => new CacheSetIfNotExists.Error(err)
       );
     }
     this.logger.trace(
@@ -2498,15 +2500,17 @@ export class CacheDataClient<
     } else if (responses instanceof CacheSortedSetGetScores.Miss) {
       return new CacheSortedSetGetScore.Miss(this.convertToUint8Array(value));
     } else if (responses instanceof CacheSortedSetGetScores.Error) {
-      return new CacheSortedSetGetScore.Error(
+      return this.cacheServiceErrorMapper.returnOrThrowError(
         responses.innerException(),
-        this.convertToUint8Array(value)
+        err =>
+          new CacheSortedSetGetScore.Error(err, this.convertToUint8Array(value))
       );
     }
 
-    return new CacheSortedSetGetScore.Error(
+    return this.cacheServiceErrorMapper.returnOrThrowError(
       new UnknownError('Unknown response type'),
-      this.convertToUint8Array(value)
+      err =>
+        new CacheSortedSetGetScore.Error(err, this.convertToUint8Array(value))
     );
   }
 

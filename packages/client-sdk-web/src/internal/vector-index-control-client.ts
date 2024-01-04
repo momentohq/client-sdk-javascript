@@ -110,11 +110,12 @@ export class VectorIndexControlClient<
         );
         break;
       default:
-        return new CreateVectorIndex.Error(
+        return this.cacheServiceErrorMapper.returnOrThrowError(
           new InvalidArgumentError(
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             `Invalid similarity metric: ${similarityMetric}`
-          )
+          ),
+          err => new CreateVectorIndex.Error(err)
         );
     }
     request.setSimilarityMetric(similarityMetricPb);

@@ -110,12 +110,13 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
           new grpcControl._SimilarityMetric._CosineSimilarity();
         break;
       default:
-        return new CreateVectorIndex.Error(
+        this.cacheServiceErrorMapper.returnOrThrowError(
           new InvalidArgumentError(
             `Invalid similarity metric: ${
               similarityMetric as unknown as string
             }`
-          )
+          ),
+          err => new CreateVectorIndex.Error(err)
         );
     }
     request.similarity_metric = similarityMetricPb;
