@@ -122,7 +122,6 @@ import {
   validateSortedSetScores,
   validateValidForSeconds,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
   convertToB64String,
   createCallMetadata,
@@ -201,7 +200,10 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheGet.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheGet.Error(err)
+      );
     }
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
     const result = await this.sendGet(cacheName, convertToB64String(key));
@@ -270,7 +272,10 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheSet.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSet.Error(err)
+      );
     }
     if (ttl && ttl < 0) {
       return new CacheSet.Error(
@@ -335,7 +340,10 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheSetIfNotExists.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetIfNotExists.Error(err)
+      );
     }
     if (ttl && ttl < 0) {
       return new CacheSetIfNotExists.Error(
@@ -415,7 +423,10 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheDelete.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDelete.Error(err)
+      );
     }
     this.logger.trace(`Issuing 'delete' request; key: ${key.toString()}`);
     return await this.sendDelete(cacheName, convertToB64String(key));
@@ -460,7 +471,10 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheIncrement.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheIncrement.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'increment' request; field: ${field.toString()}, amount : ${amount}, ttl: ${
@@ -524,7 +538,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSetName(setName);
     } catch (err) {
-      return new CacheSetFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetFetch.Error(err)
+      );
     }
     return await this.sendSetFetch(cacheName, convertToB64String(setName));
   }
@@ -573,7 +590,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSetName(setName);
     } catch (err) {
-      return new CacheSetAddElements.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetAddElements.Error(err)
+      );
     }
     return await this.sendSetAddElements(
       cacheName,
@@ -629,7 +649,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSetName(setName);
     } catch (err) {
-      return new CacheSetRemoveElements.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetRemoveElements.Error(err)
+      );
     }
     return await this.sendSetRemoveElements(
       cacheName,
@@ -685,8 +708,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListConcatenateBack.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListConcatenateBack.Error(err)
       );
     }
 
@@ -762,8 +786,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListConcatenateFront.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListConcatenateFront.Error(err)
       );
     }
 
@@ -841,7 +866,10 @@ export class CacheDataClient<
       validateListName(listName);
       validateListSliceStartEnd(startIndex, endIndex);
     } catch (err) {
-      return new CacheListFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListFetch.Error(err)
+      );
     }
     this.logger.trace(
       "Issuing 'listFetch' request; listName: %s, startIndex: %s, endIndex: %s",
@@ -923,7 +951,10 @@ export class CacheDataClient<
       validateListName(listName);
       validateListSliceStartEnd(startIndex, endIndex);
     } catch (err) {
-      return new CacheListRetain.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListRetain.Error(err)
+      );
     }
     this.logger.trace(
       "Issuing 'listRetain' request; listName: %s, startIndex: %s, endIndex: %s, ttl: %s",
@@ -1000,7 +1031,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListLength.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListLength.Error(err)
+      );
     }
     this.logger.trace(`Issuing 'listLength' request; listName: ${listName}`);
     const result = await this.sendListLength(
@@ -1058,7 +1092,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListPopBack.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListPopBack.Error(err)
+      );
     }
 
     this.logger.trace("Issuing 'listPopBack' request");
@@ -1115,7 +1152,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListPopFront.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListPopFront.Error(err)
+      );
     }
 
     this.logger.trace("Issuing 'listPopFront' request");
@@ -1175,7 +1215,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListPushBack.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListPushBack.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -1247,7 +1290,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListPushFront.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListPushFront.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -1317,7 +1363,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListRemoveValue.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListRemoveValue.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -1376,7 +1425,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionarySetField.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDictionarySetField.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'dictionarySetField' request; field: ${field.toString()}, value length: ${
@@ -1449,8 +1501,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionarySetFields.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDictionarySetFields.Error(err)
       );
     }
     this.logger.trace(
@@ -1520,9 +1573,13 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionaryGetField.Error(
-        normalizeSdkError(err as Error),
-        this.convertToUint8Array(field)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err =>
+          new CacheDictionaryGetField.Error(
+            err,
+            this.convertToUint8Array(field)
+          )
       );
     }
     this.logger.trace(
@@ -1614,8 +1671,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionaryGetFields.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDictionaryGetFields.Error(err)
       );
     }
     this.logger.trace(
@@ -1688,7 +1746,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionaryFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDictionaryFetch.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'dictionaryFetch' request; dictionaryName: ${dictionaryName}`
@@ -1754,8 +1815,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionaryIncrement.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDictionaryIncrement.Error(err)
       );
     }
     this.logger.trace(
@@ -1830,8 +1892,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionaryRemoveField.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDictionaryRemoveField.Error(err)
       );
     }
     this.logger.trace(
@@ -1890,8 +1953,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionaryRemoveFields.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDictionaryRemoveFields.Error(err)
       );
     }
     this.logger.trace(
@@ -1949,7 +2013,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionaryLength.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDictionaryLength.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'dictionaryLength' request; dictionaryName: ${dictionaryName}`
@@ -2013,7 +2080,10 @@ export class CacheDataClient<
       validateSortedSetName(sortedSetName);
       validateSortedSetRanks(startRank, endRank);
     } catch (err) {
-      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetFetch.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -2130,7 +2200,10 @@ export class CacheDataClient<
         validateSortedSetCount(count);
       }
     } catch (err) {
-      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetFetch.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -2267,8 +2340,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetPutElement.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetPutElement.Error(err)
       );
     }
     this.logger.trace(
@@ -2347,8 +2421,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetPutElements.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetPutElements.Error(err)
       );
     }
     this.logger.trace(
@@ -2444,7 +2519,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetGetScores.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetGetScores.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -2531,7 +2609,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetGetRank.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetGetRank.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -2605,8 +2686,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetIncrementScore.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetIncrementScore.Error(err)
       );
     }
 
@@ -2685,7 +2767,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetFetch.Error(err)
+      );
     }
 
     this.logger.trace("Issuing 'sortedSetRemoveElement' request");
@@ -2745,7 +2830,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetFetch.Error(err)
+      );
     }
 
     this.logger.trace("Issuing 'sortedSetRemoveElements' request");
@@ -2804,7 +2892,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetFetch.Error(err)
+      );
     }
 
     this.logger.trace("Issuing 'sortedSetLength' request");
@@ -2869,7 +2960,10 @@ export class CacheDataClient<
       validateSortedSetName(sortedSetName);
       validateSortedSetScores(minScore, maxScore);
     } catch (err) {
-      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetFetch.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -2951,7 +3045,10 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheItemGetType.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheItemGetType.Error(err)
+      );
     }
     return await this.sendItemGetType(cacheName, convertToB64String(key));
   }
@@ -2999,7 +3096,10 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheItemGetTtl.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheItemGetTtl.Error(err)
+      );
     }
     return await this.sendItemGetTtl(cacheName, convertToB64String(key));
   }
@@ -3044,7 +3144,10 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheKeyExists.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheKeyExists.Error(err)
+      );
     }
 
     this.logger.trace("Issuing 'keyExists' request");
@@ -3095,7 +3198,10 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheKeysExist.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheKeysExist.Error(err)
+      );
     }
 
     this.logger.trace("Issuing 'keysExist' request");
@@ -3151,7 +3257,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateValidForSeconds(ttlMilliseconds);
     } catch (err) {
-      return new CacheUpdateTtl.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheUpdateTtl.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -3215,7 +3324,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateValidForSeconds(ttlMilliseconds);
     } catch (err) {
-      return new CacheIncreaseTtl.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheIncreaseTtl.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -3279,7 +3391,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateValidForSeconds(ttlMilliseconds);
     } catch (err) {
-      return new CacheDecreaseTtl.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDecreaseTtl.Error(err)
+      );
     }
 
     this.logger.trace(

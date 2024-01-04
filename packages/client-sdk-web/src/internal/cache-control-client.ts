@@ -18,7 +18,6 @@ import {
 } from '@gomomento/generated-types-webtext/dist/controlclient_pb';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {IControlClient} from '@gomomento/sdk-core/dist/src/internal/clients';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {validateCacheName} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {getWebControlEndpoint} from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
@@ -72,7 +71,10 @@ export class CacheControlClient<
     try {
       validateCacheName(name);
     } catch (err) {
-      return new CreateCache.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CreateCache.Error(err)
+      );
     }
     this.logger.debug(`Creating cache: ${name}`);
     const request = new _CreateCacheRequest();
@@ -106,7 +108,10 @@ export class CacheControlClient<
     try {
       validateCacheName(name);
     } catch (err) {
-      return new DeleteCache.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new DeleteCache.Error(err)
+      );
     }
     const request = new _DeleteCacheRequest();
     request.setCacheName(name);
@@ -135,7 +140,10 @@ export class CacheControlClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheFlush.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheFlush.Error(err)
+      );
     }
     this.logger.trace(`Flushing cache: ${cacheName}`);
     return await this.sendFlushCache(cacheName);

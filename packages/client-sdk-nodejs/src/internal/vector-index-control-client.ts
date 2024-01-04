@@ -18,10 +18,7 @@ import {
   validateIndexName,
   validateNumDimensions,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {
-  normalizeSdkError,
-  UnknownError,
-} from '@gomomento/sdk-core/dist/src/errors';
+import {UnknownError} from '@gomomento/sdk-core/dist/src/errors';
 import {
   CreateVectorIndex,
   DeleteVectorIndex,
@@ -86,7 +83,10 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
       validateIndexName(indexName);
       validateNumDimensions(numDimensions);
     } catch (err) {
-      return new CreateVectorIndex.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CreateVectorIndex.Error(err)
+      );
     }
     this.logger.debug("Issuing 'createIndex' request");
     const request = new grpcControl._CreateIndexRequest();
@@ -206,7 +206,10 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
     try {
       validateIndexName(name);
     } catch (err) {
-      return new DeleteVectorIndex.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new DeleteVectorIndex.Error(err)
+      );
     }
     const request = new grpcControl._DeleteIndexRequest({
       index_name: name,

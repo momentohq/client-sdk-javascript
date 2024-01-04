@@ -18,10 +18,7 @@ import {
   IVectorIndexControlClient,
   VectorSimilarityMetric,
 } from '@gomomento/sdk-core/dist/src/internal/clients';
-import {
-  normalizeSdkError,
-  UnknownError,
-} from '@gomomento/sdk-core/dist/src/errors';
+import {UnknownError} from '@gomomento/sdk-core/dist/src/errors';
 import {
   validateIndexName,
   validateNumDimensions,
@@ -84,7 +81,10 @@ export class VectorIndexControlClient<
       validateIndexName(indexName);
       validateNumDimensions(numDimensions);
     } catch (err) {
-      return new CreateVectorIndex.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CreateVectorIndex.Error(err)
+      );
     }
     const request = new _CreateIndexRequest();
     request.setIndexName(indexName);
@@ -211,7 +211,10 @@ export class VectorIndexControlClient<
     try {
       validateIndexName(indexName);
     } catch (err) {
-      return new CreateVectorIndex.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CreateVectorIndex.Error(err)
+      );
     }
     request.setIndexName(indexName);
     this.logger.debug("Issuing 'deleteIndex' request");

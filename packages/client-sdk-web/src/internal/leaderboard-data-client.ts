@@ -8,7 +8,6 @@ import {
   LeaderboardOrder,
 } from '@gomomento/sdk-core';
 import {LeaderboardClientProps} from '../leaderboard-client-props';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
   validateSortedSetScores,
   validateLeaderboardOffset,
@@ -122,7 +121,10 @@ export class LeaderboardDataClient<
     try {
       validateLeaderboardNumberOfElements(size);
     } catch (err) {
-      return new LeaderboardUpsert.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new LeaderboardUpsert.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'upsert' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, number of elements: ${size}`
@@ -180,7 +182,10 @@ export class LeaderboardDataClient<
       validateLeaderboardOffset(offsetValue);
       validateLeaderboardCount(countValue);
     } catch (err) {
-      return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new LeaderboardFetch.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'fetchByScore' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, order: ${orderValue.toString()}, minScore: ${
@@ -273,7 +278,10 @@ export class LeaderboardDataClient<
     try {
       validateLeaderboardRanks(startRank, endRank);
     } catch (err) {
-      return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new LeaderboardFetch.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'fetchByRank' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, order: ${rankOrder.toString()}, startRank: ${startRank}, endRank: ${endRank}`
@@ -447,8 +455,9 @@ export class LeaderboardDataClient<
     try {
       validateLeaderboardNumberOfElements(ids.length);
     } catch (err) {
-      return new LeaderboardRemoveElements.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new LeaderboardRemoveElements.Error(err)
       );
     }
     this.logger.trace(

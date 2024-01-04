@@ -25,7 +25,6 @@ import {
   validateCacheName,
   validateTtlMinutes,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {_SigningKey} from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
 import {
   CacheLimits,
@@ -80,7 +79,10 @@ export class CacheControlClient {
     try {
       validateCacheName(name);
     } catch (err) {
-      return new CreateCache.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CreateCache.Error(err)
+      );
     }
     this.logger.debug(`Creating cache: ${name}`);
     const request = new grpcControl._CreateCacheRequest({
@@ -116,7 +118,10 @@ export class CacheControlClient {
     try {
       validateCacheName(name);
     } catch (err) {
-      return new DeleteCache.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new DeleteCache.Error(err)
+      );
     }
     const request = new grpcControl._DeleteCacheRequest({
       cache_name: name,
@@ -148,7 +153,10 @@ export class CacheControlClient {
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheFlush.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheFlush.Error(err)
+      );
     }
     this.logger.debug(`Flushing cache: ${cacheName}`);
     return await this.sendFlushCache(cacheName);
@@ -228,7 +236,10 @@ export class CacheControlClient {
     try {
       validateTtlMinutes(ttlMinutes);
     } catch (err) {
-      return new CreateSigningKey.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CreateSigningKey.Error(err)
+      );
     }
     this.logger.debug("Issuing 'createSigningKey' request");
     const request = new grpcControl._CreateSigningKeyRequest();

@@ -37,7 +37,6 @@ import {
   validateCacheKeyOrPrefix,
   validateDisposableTokenTokenID,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
   convertToB64String,
   getWebControlEndpoint,
@@ -114,7 +113,10 @@ export class InternalWebGrpcAuthClient<
     try {
       permissions = permissionsFromScope(scope);
     } catch (err) {
-      return new GenerateApiKey.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new GenerateApiKey.Error(err)
+      );
     }
 
     request.setPermissions(permissions);
@@ -123,7 +125,10 @@ export class InternalWebGrpcAuthClient<
       try {
         validateValidForSeconds(expiresIn.seconds());
       } catch (err) {
-        return new GenerateApiKey.Error(normalizeSdkError(err as Error));
+        return this.cacheServiceErrorMapper.returnOrThrowError(
+          err as Error,
+          err => new GenerateApiKey.Error(err)
+        );
       }
 
       const grpcExpires = new Expires();
@@ -225,7 +230,10 @@ export class InternalWebGrpcAuthClient<
     try {
       permissions = permissionsFromScope(scope);
     } catch (err) {
-      return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new GenerateDisposableToken.Error(err)
+      );
     }
 
     request.setPermissions(permissions);
@@ -235,8 +243,9 @@ export class InternalWebGrpcAuthClient<
       try {
         validateDisposableTokenTokenID(tokenId);
       } catch (err) {
-        return new GenerateDisposableToken.Error(
-          normalizeSdkError(err as Error)
+        return this.cacheServiceErrorMapper.returnOrThrowError(
+          err as Error,
+          err => new GenerateDisposableToken.Error(err)
         );
       }
       request.setTokenId(tokenId);
@@ -245,7 +254,10 @@ export class InternalWebGrpcAuthClient<
     try {
       validateDisposableTokenExpiry(expiresIn);
     } catch (err) {
-      return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new GenerateDisposableToken.Error(err)
+      );
     }
 
     const grpcExpires = new _GenerateDisposableTokenRequest.Expires();

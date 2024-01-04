@@ -27,10 +27,7 @@ import {
   validateIndexName,
   validateTopK,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {
-  UnknownError,
-  normalizeSdkError,
-} from '@gomomento/sdk-core/dist/src/errors';
+import {UnknownError} from '@gomomento/sdk-core/dist/src/errors';
 import {ALL_VECTOR_METADATA} from '@gomomento/sdk-core/dist/src/clients/IVectorIndexClient';
 
 export class VectorIndexDataClient implements IVectorIndexDataClient {
@@ -99,7 +96,10 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
         items
       );
     } catch (err) {
-      return new VectorUpsertItemBatch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new VectorUpsertItemBatch.Error(err)
+      );
     }
     return await this.sendUpsertItemBatch(indexName, request);
   }
@@ -199,7 +199,10 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     try {
       validateIndexName(indexName);
     } catch (err) {
-      return new VectorDeleteItemBatch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new VectorDeleteItemBatch.Error(err)
+      );
     }
     return await this.sendDeleteItemBatch(indexName, ids);
   }
@@ -243,7 +246,10 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
         validateTopK(options.topK);
       }
     } catch (err) {
-      return new VectorSearch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new VectorSearch.Error(err)
+      );
     }
     return await this.sendSearch(indexName, queryVector, options);
   }
@@ -368,8 +374,9 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
         validateTopK(options.topK);
       }
     } catch (err) {
-      return new VectorSearchAndFetchVectors.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new VectorSearchAndFetchVectors.Error(err)
       );
     }
     return await this.sendSearchAndFetchVectors(
@@ -439,7 +446,10 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     try {
       validateIndexName(indexName);
     } catch (err) {
-      return new VectorGetItemBatch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new VectorGetItemBatch.Error(err)
+      );
     }
     return await this.sendGetItemBatch(indexName, ids);
   }
@@ -518,8 +528,9 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     try {
       validateIndexName(indexName);
     } catch (err) {
-      return new VectorGetItemMetadataBatch.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new VectorGetItemMetadataBatch.Error(err)
       );
     }
     return await this.sendGetItemMetadataBatch(indexName, ids);

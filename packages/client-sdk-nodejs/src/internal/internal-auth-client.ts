@@ -39,7 +39,6 @@ import {
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {AuthClientProps} from '../auth-client-props';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
   asCachePermission,
   asPermissionsObject,
@@ -97,7 +96,10 @@ export class InternalAuthClient implements IAuthClient {
     try {
       permissions = permissionsFromTokenScope(scope);
     } catch (err) {
-      return new GenerateApiKey.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new GenerateApiKey.Error(err)
+      );
     }
     const request = new grpcAuth._GenerateApiTokenRequest({
       auth_token: this.creds.getAuthToken(),
@@ -108,7 +110,10 @@ export class InternalAuthClient implements IAuthClient {
       try {
         validateValidForSeconds(expiresIn.seconds());
       } catch (err) {
-        return new GenerateApiKey.Error(normalizeSdkError(err as Error));
+        return this.cacheServiceErrorMapper.returnOrThrowError(
+          err as Error,
+          err => new GenerateApiKey.Error(err)
+        );
       }
 
       request.expires = new Expires({
@@ -207,7 +212,10 @@ export class InternalAuthClient implements IAuthClient {
     try {
       validateDisposableTokenExpiry(expiresIn);
     } catch (err) {
-      return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new GenerateDisposableToken.Error(err)
+      );
     }
     const expires = new token.token._GenerateDisposableTokenRequest.Expires({
       valid_for_seconds: expiresIn.seconds(),
@@ -217,7 +225,10 @@ export class InternalAuthClient implements IAuthClient {
     try {
       permissions = permissionsFromDisposableTokenScope(scope);
     } catch (err) {
-      return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new GenerateDisposableToken.Error(err)
+      );
     }
 
     const tokenId = disposableTokenProps?.tokenId;
@@ -225,8 +236,9 @@ export class InternalAuthClient implements IAuthClient {
       try {
         validateDisposableTokenTokenID(tokenId);
       } catch (err) {
-        return new GenerateDisposableToken.Error(
-          normalizeSdkError(err as Error)
+        return this.cacheServiceErrorMapper.returnOrThrowError(
+          err as Error,
+          err => new GenerateDisposableToken.Error(err)
         );
       }
     }

@@ -11,7 +11,6 @@ import {
   LeaderboardOrder,
 } from '@gomomento/sdk-core';
 import {LeaderboardClientProps} from '../leaderboard-client-props';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
   validateLeaderboardNumberOfElements,
   validateSortedSetScores,
@@ -164,7 +163,10 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     try {
       validateLeaderboardNumberOfElements(size);
     } catch (err) {
-      return new LeaderboardUpsert.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new LeaderboardUpsert.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'upsert' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, number of elements: ${size}`
@@ -223,7 +225,10 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       validateLeaderboardOffset(offsetValue);
       validateLeaderboardCount(countValue);
     } catch (err) {
-      return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new LeaderboardFetch.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'fetchByScore' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, order: ${orderValue.toString()}, minScore: ${
@@ -314,7 +319,10 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     try {
       validateLeaderboardRanks(startRank, endRank);
     } catch (err) {
-      return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new LeaderboardFetch.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'fetchByRank' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, order: ${rankOrder.toString()}, startRank: ${startRank}, endRank: ${endRank}`
@@ -487,8 +495,9 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     try {
       validateLeaderboardNumberOfElements(ids.length);
     } catch (err) {
-      return new LeaderboardRemoveElements.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new LeaderboardRemoveElements.Error(err)
       );
     }
     this.logger.trace(

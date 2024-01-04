@@ -3,7 +3,7 @@ import {
   validateCacheName,
   validateTopicName,
 } from '../../utils';
-import {MomentoErrorCode, normalizeSdkError} from '../../../errors';
+import {MomentoErrorCode} from '../../../errors';
 import {
   CredentialProvider,
   TopicPublish,
@@ -104,7 +104,10 @@ export abstract class AbstractPubsubClient<TGrpcError>
       validateCacheName(cacheName);
       validateTopicName(topicName);
     } catch (err) {
-      return new TopicSubscribe.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new TopicSubscribe.Error(err)
+      );
     }
     this.logger.trace(
       'Issuing subscribe request; topic: %s',

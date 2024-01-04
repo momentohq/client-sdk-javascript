@@ -24,7 +24,6 @@ import {
   validateTopicName,
   validateWebhookName,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 
 export class WebhookClient implements IWebhookClient {
   private readonly webhookClient: grpcWebhook.WebhookClient;
@@ -61,7 +60,10 @@ export class WebhookClient implements IWebhookClient {
     try {
       validateCacheName(id.cacheName);
     } catch (err) {
-      return new DeleteWebhook.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new DeleteWebhook.Error(err)
+      );
     }
     const request = new grpcWebhook._DeleteWebhookRequest({
       webhook_id: new grpcWebhook._WebhookId({
@@ -95,7 +97,10 @@ export class WebhookClient implements IWebhookClient {
     try {
       validateCacheName(cache);
     } catch (err) {
-      return new ListWebhooks.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new ListWebhooks.Error(err)
+      );
     }
     const request = new grpcWebhook._ListWebhookRequest({cache_name: cache});
     this.logger.debug('issuing "ListWebhooks" request');
@@ -139,7 +144,10 @@ export class WebhookClient implements IWebhookClient {
       validateTopicName(webhook.topicName);
       validateWebhookName(webhook.id.webhookName);
     } catch (err) {
-      return new PutWebhook.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new PutWebhook.Error(err)
+      );
     }
 
     const request = new grpcWebhook._PutWebhookRequest({
@@ -181,7 +189,10 @@ export class WebhookClient implements IWebhookClient {
       validateCacheName(id.cacheName);
       validateWebhookName(id.webhookName);
     } catch (err) {
-      return new GetWebhookSecret.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new GetWebhookSecret.Error(err)
+      );
     }
 
     const request = new grpcWebhook._GetWebhookSecretRequest({
@@ -223,7 +234,10 @@ export class WebhookClient implements IWebhookClient {
       validateCacheName(id.cacheName);
       validateWebhookName(id.webhookName);
     } catch (err) {
-      return new RotateWebhookSecret.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new RotateWebhookSecret.Error(err)
+      );
     }
 
     const webhookId = grpcWebhook._WebhookId.fromObject({
