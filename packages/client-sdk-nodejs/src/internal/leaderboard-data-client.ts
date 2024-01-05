@@ -11,7 +11,6 @@ import {
   LeaderboardOrder,
 } from '@gomomento/sdk-core';
 import {LeaderboardClientProps} from '../leaderboard-client-props';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
   validateLeaderboardNumberOfElements,
   validateSortedSetScores,
@@ -27,7 +26,7 @@ import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
-import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   ChannelCredentials,
   Interceptor,
@@ -41,6 +40,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
   private readonly configuration: LeaderboardConfiguration;
   private readonly credentialProvider: CredentialProvider;
   private readonly logger: MomentoLogger;
+  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly requestTimeoutMs: number;
   private readonly clientWrappers: GrpcClientWrapper<leaderboard.LeaderboardClient>[];
   protected nextDataClientIndex: number;
@@ -48,6 +48,9 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
 
   constructor(props: LeaderboardClientProps) {
     this.configuration = props.configuration;
+    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
+      props.configuration.getThrowOnErrors()
+    );
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
     const grpcConfig = this.configuration
@@ -160,7 +163,10 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     try {
       validateLeaderboardNumberOfElements(size);
     } catch (err) {
-      return new LeaderboardUpsert.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new LeaderboardUpsert.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'upsert' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, number of elements: ${size}`
@@ -179,7 +185,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       elements: this.convertMapOrRecordToElementsList(elements),
     });
     const metadata = this.createMetadata(cacheName);
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.getNextDataClient().UpsertElements(
         request,
         metadata,
@@ -190,7 +196,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
           if (resp) {
             resolve(new LeaderboardUpsert.Success());
           } else {
-            resolve(new LeaderboardUpsert.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new LeaderboardUpsert.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -214,7 +225,10 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       validateLeaderboardOffset(offsetValue);
       validateLeaderboardCount(countValue);
     } catch (err) {
-      return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new LeaderboardFetch.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'fetchByScore' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, order: ${orderValue.toString()}, minScore: ${
@@ -269,7 +283,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       limit_elements: count,
     });
     const metadata = this.createMetadata(cacheName);
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.getNextDataClient().GetByScore(
         request,
         metadata,
@@ -282,7 +296,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
               .elements;
             resolve(new LeaderboardFetch.Success(foundElements));
           } else {
-            resolve(new LeaderboardFetch.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new LeaderboardFetch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -300,7 +319,10 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     try {
       validateLeaderboardRanks(startRank, endRank);
     } catch (err) {
-      return new LeaderboardFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new LeaderboardFetch.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'fetchByRank' request; cache: ${cacheName}, leaderboard: ${leaderboardName}, order: ${rankOrder.toString()}, startRank: ${startRank}, endRank: ${endRank}`
@@ -338,7 +360,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       order: protoBufOrder,
     });
     const metadata = this.createMetadata(cacheName);
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.getNextDataClient().GetByRank(
         request,
         metadata,
@@ -351,7 +373,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
               .elements;
             resolve(new LeaderboardFetch.Success(foundElements));
           } else {
-            resolve(new LeaderboardFetch.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new LeaderboardFetch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -391,7 +418,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       order: protoBufOrder,
     });
     const metadata = this.createMetadata(cacheName);
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.getNextDataClient().GetRank(
         request,
         metadata,
@@ -404,7 +431,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
               .elements;
             resolve(new LeaderboardFetch.Success(foundElements));
           } else {
-            resolve(new LeaderboardFetch.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new LeaderboardFetch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -430,7 +462,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       leaderboard: leaderboardName,
     });
     const metadata = this.createMetadata(cacheName);
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.getNextDataClient().GetLeaderboardLength(
         request,
         metadata,
@@ -443,7 +475,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
               .count;
             resolve(new LeaderboardLength.Success(length));
           } else {
-            resolve(new LeaderboardLength.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new LeaderboardLength.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -458,8 +495,9 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     try {
       validateLeaderboardNumberOfElements(ids.length);
     } catch (err) {
-      return new LeaderboardRemoveElements.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new LeaderboardRemoveElements.Error(err)
       );
     }
     this.logger.trace(
@@ -479,7 +517,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       ids: ids,
     });
     const metadata = this.createMetadata(cacheName);
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.getNextDataClient().RemoveElements(
         request,
         metadata,
@@ -490,9 +528,13 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
           if (resp) {
             resolve(new LeaderboardRemoveElements.Success());
           } else {
-            resolve(
-              new LeaderboardRemoveElements.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new LeaderboardRemoveElements.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -518,7 +560,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       leaderboard: leaderboardName,
     });
     const metadata = this.createMetadata(cacheName);
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.getNextDataClient().DeleteLeaderboard(
         request,
         metadata,
@@ -529,7 +571,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
           if (resp) {
             resolve(new LeaderboardDelete.Success());
           } else {
-            resolve(new LeaderboardDelete.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new LeaderboardDelete.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );

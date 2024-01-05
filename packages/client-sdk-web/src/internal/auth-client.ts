@@ -4,7 +4,7 @@ import {
   _GenerateApiTokenRequest,
   _RefreshApiTokenRequest,
 } from '@gomomento/generated-types-webtext/dist/auth_pb';
-import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import Never = _GenerateApiTokenRequest.Never;
 import Expires = _GenerateApiTokenRequest.Expires;
 import {
@@ -37,7 +37,6 @@ import {
   validateCacheKeyOrPrefix,
   validateDisposableTokenTokenID,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
   convertToB64String,
   getWebControlEndpoint,
@@ -78,12 +77,16 @@ export class InternalWebGrpcAuthClient<
 > implements IAuthClient
 {
   private readonly creds: CredentialProvider;
+  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly clientMetadataProvider: ClientMetadataProvider;
   private readonly authClient: auth.AuthClient;
   private readonly tokenClient: token.TokenClient;
 
   constructor(props: AuthClientProps) {
     this.creds = props.credentialProvider;
+    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
+      props.throwOnErrors ?? false
+    );
     this.clientMetadataProvider = new ClientMetadataProvider({});
     this.authClient = new auth.AuthClient(
       // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
@@ -110,7 +113,10 @@ export class InternalWebGrpcAuthClient<
     try {
       permissions = permissionsFromScope(scope);
     } catch (err) {
-      return new GenerateApiKey.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new GenerateApiKey.Error(err)
+      );
     }
 
     request.setPermissions(permissions);
@@ -119,7 +125,10 @@ export class InternalWebGrpcAuthClient<
       try {
         validateValidForSeconds(expiresIn.seconds());
       } catch (err) {
-        return new GenerateApiKey.Error(normalizeSdkError(err as Error));
+        return this.cacheServiceErrorMapper.returnOrThrowError(
+          err as Error,
+          err => new GenerateApiKey.Error(err)
+        );
       }
 
       const grpcExpires = new Expires();
@@ -129,13 +138,18 @@ export class InternalWebGrpcAuthClient<
       request.setNever(new Never());
     }
 
-    return await new Promise<GenerateApiKey.Response>(resolve => {
+    return await new Promise<GenerateApiKey.Response>((resolve, reject) => {
       this.authClient.generateApiToken(
         request,
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
           if (err || !resp) {
-            resolve(new GenerateApiKey.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new GenerateApiKey.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(
               new GenerateApiKey.Success(
@@ -168,13 +182,18 @@ export class InternalWebGrpcAuthClient<
     request.setApiKey(this.creds.getAuthToken());
     request.setRefreshToken(refreshToken);
 
-    return await new Promise<RefreshApiKey.Response>(resolve => {
+    return await new Promise<RefreshApiKey.Response>((resolve, reject) => {
       this.authClient.refreshApiToken(
         request,
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
           if (err || !resp) {
-            resolve(new RefreshApiKey.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new RefreshApiKey.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(
               new RefreshApiKey.Success(
@@ -211,7 +230,10 @@ export class InternalWebGrpcAuthClient<
     try {
       permissions = permissionsFromScope(scope);
     } catch (err) {
-      return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new GenerateDisposableToken.Error(err)
+      );
     }
 
     request.setPermissions(permissions);
@@ -221,8 +243,9 @@ export class InternalWebGrpcAuthClient<
       try {
         validateDisposableTokenTokenID(tokenId);
       } catch (err) {
-        return new GenerateDisposableToken.Error(
-          normalizeSdkError(err as Error)
+        return this.cacheServiceErrorMapper.returnOrThrowError(
+          err as Error,
+          err => new GenerateDisposableToken.Error(err)
         );
       }
       request.setTokenId(tokenId);
@@ -231,34 +254,43 @@ export class InternalWebGrpcAuthClient<
     try {
       validateDisposableTokenExpiry(expiresIn);
     } catch (err) {
-      return new GenerateDisposableToken.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new GenerateDisposableToken.Error(err)
+      );
     }
 
     const grpcExpires = new _GenerateDisposableTokenRequest.Expires();
     grpcExpires.setValidForSeconds(expiresIn.seconds());
     request.setExpires(grpcExpires);
 
-    return await new Promise<GenerateDisposableToken.Response>(resolve => {
-      this.tokenClient.generateDisposableToken(
-        request,
-        this.clientMetadataProvider.createClientMetadata(),
-        (err, resp) => {
-          if (err || !resp) {
-            resolve(
-              new GenerateDisposableToken.Error(cacheServiceErrorMapper(err))
-            );
-          } else {
-            resolve(
-              new GenerateDisposableToken.Success(
-                resp.getApiKey(),
-                resp.getEndpoint(),
-                ExpiresAt.fromEpoch(resp.getValidUntil())
-              )
-            );
+    return await new Promise<GenerateDisposableToken.Response>(
+      (resolve, reject) => {
+        this.tokenClient.generateDisposableToken(
+          request,
+          this.clientMetadataProvider.createClientMetadata(),
+          (err, resp) => {
+            if (err || !resp) {
+              this.cacheServiceErrorMapper.resolveOrRejectError({
+                err: err,
+                errorResponseFactoryFn: e =>
+                  new GenerateDisposableToken.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
+            } else {
+              resolve(
+                new GenerateDisposableToken.Success(
+                  resp.getApiKey(),
+                  resp.getEndpoint(),
+                  ExpiresAt.fromEpoch(resp.getValidUntil())
+                )
+              );
+            }
           }
-        }
-      );
-    });
+        );
+      }
+    );
   }
 }
 

@@ -49,6 +49,7 @@ export class Laptop extends CacheConfiguration {
       loggerFactory: loggerFactory,
       transportStrategy: transportStrategy,
       middlewares: [],
+      throwOnErrors: false,
     });
   }
 }
@@ -91,6 +92,7 @@ export class Browser extends CacheConfiguration {
       loggerFactory: loggerFactory,
       transportStrategy: transportStrategy,
       middlewares: [],
+      throwOnErrors: false,
     });
   }
 }

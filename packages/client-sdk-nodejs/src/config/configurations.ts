@@ -69,6 +69,7 @@ export class Laptop extends CacheConfiguration {
       retryStrategy: defaultRetryStrategy(loggerFactory),
       transportStrategy: transportStrategy,
       middlewares: defaultMiddlewares,
+      throwOnErrors: false,
     });
   }
 }
@@ -98,6 +99,7 @@ export class Lambda extends CacheConfiguration {
       retryStrategy: defaultRetryStrategy(loggerFactory),
       transportStrategy: transportStrategy,
       middlewares: defaultMiddlewares,
+      throwOnErrors: false,
     });
   }
 }
@@ -138,6 +140,7 @@ class InRegionDefault extends CacheConfiguration {
       retryStrategy: defaultRetryStrategy(loggerFactory),
       transportStrategy: transportStrategy,
       middlewares: defaultMiddlewares,
+      throwOnErrors: false,
     });
   }
 }
@@ -179,6 +182,7 @@ class InRegionLowLatency extends CacheConfiguration {
       retryStrategy: defaultRetryStrategy(loggerFactory),
       transportStrategy: transportStrategy,
       middlewares: defaultMiddlewares,
+      throwOnErrors: false,
     });
   }
 }

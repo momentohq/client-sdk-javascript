@@ -7,6 +7,7 @@ import {
   TopicPublish,
   TopicSubscribe,
   SubscribeCallOptions,
+  NotFoundError,
 } from '@gomomento/sdk-core';
 import {
   expectWithMessage,
@@ -34,6 +35,7 @@ const STREAM_WAIT_TIME_MS = 2000;
 
 export function runTopicClientTests(
   topicClient: ITopicClient,
+  topicClientWithThrowOnErrors: ITopicClient,
   cacheClient: ICacheClient,
   integrationTestCacheName: string
 ) {
@@ -288,6 +290,14 @@ export function runTopicClientTests(
           subscribeResponse.unsubscribe();
         }
       }
+    });
+  });
+
+  describe('when client is configured to throw on errors', () => {
+    it('should throw when publishing to a cache that does not exist', async () => {
+      await expect(async () => {
+        await topicClientWithThrowOnErrors.publish(v4(), 'topic', 'value');
+      }).rejects.toThrow(NotFoundError);
     });
   });
 }

@@ -1,7 +1,14 @@
 import {runLeaderboardClientTests} from '@gomomento/common-integration-tests';
 import {SetupLeaderboardIntegrationTest} from '../integration-setup';
 
-const {leaderboardClient, integrationTestCacheName} =
-  SetupLeaderboardIntegrationTest();
+const {
+  leaderboardClient,
+  leaderboardClientWithThrowOnErrors,
+  integrationTestCacheName,
+} = SetupLeaderboardIntegrationTest();
 
-runLeaderboardClientTests(leaderboardClient, integrationTestCacheName);
+runLeaderboardClientTests(
+  leaderboardClient,
+  leaderboardClientWithThrowOnErrors,
+  integrationTestCacheName
+);

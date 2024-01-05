@@ -18,18 +18,18 @@ import {IWebhookClient} from '@gomomento/sdk-core/dist/src/internal/clients/pubs
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {version} from '../../package.json';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
-import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   validateCacheName,
   validateTopicName,
   validateWebhookName,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 
 export class WebhookClient implements IWebhookClient {
   private readonly webhookClient: grpcWebhook.WebhookClient;
   protected readonly credentialProvider: CredentialProvider;
   private readonly logger: MomentoLogger;
+  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   private readonly unaryInterceptors: Interceptor[];
 
@@ -39,6 +39,9 @@ export class WebhookClient implements IWebhookClient {
   constructor(props: TopicClientProps) {
     this.credentialProvider = props.credentialProvider;
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
+    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
+      props.configuration.getThrowOnErrors()
+    );
     const headers = [
       new Header('Authorization', props.credentialProvider.getAuthToken()),
       new Header('Agent', `nodejs:${version}`),
@@ -57,7 +60,10 @@ export class WebhookClient implements IWebhookClient {
     try {
       validateCacheName(id.cacheName);
     } catch (err) {
-      return new DeleteWebhook.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new DeleteWebhook.Error(err)
+      );
     }
     const request = new grpcWebhook._DeleteWebhookRequest({
       webhook_id: new grpcWebhook._WebhookId({
@@ -67,13 +73,18 @@ export class WebhookClient implements IWebhookClient {
     });
     this.logger.debug('issuing "DeleteWebhook" request');
 
-    return await new Promise<DeleteWebhook.Response>(resolve => {
+    return await new Promise<DeleteWebhook.Response>((resolve, reject) => {
       this.webhookClient.DeleteWebhook(
         request,
         {interceptors: this.unaryInterceptors},
         (err, _resp) => {
           if (err) {
-            resolve(new DeleteWebhook.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new DeleteWebhook.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new DeleteWebhook.Success());
           }
@@ -86,18 +97,26 @@ export class WebhookClient implements IWebhookClient {
     try {
       validateCacheName(cache);
     } catch (err) {
-      return new ListWebhooks.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new ListWebhooks.Error(err)
+      );
     }
     const request = new grpcWebhook._ListWebhookRequest({cache_name: cache});
     this.logger.debug('issuing "ListWebhooks" request');
 
-    return await new Promise<ListWebhooks.Response>(resolve => {
+    return await new Promise<ListWebhooks.Response>((resolve, reject) => {
       this.webhookClient.ListWebhooks(
         request,
         {interceptors: this.unaryInterceptors},
         (err, resp) => {
           if (err || !resp) {
-            resolve(new ListWebhooks.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new ListWebhooks.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             const webhooks = resp.webhook.map(wh => {
               const webhook: Webhook = {
@@ -125,7 +144,10 @@ export class WebhookClient implements IWebhookClient {
       validateTopicName(webhook.topicName);
       validateWebhookName(webhook.id.webhookName);
     } catch (err) {
-      return new PutWebhook.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new PutWebhook.Error(err)
+      );
     }
 
     const request = new grpcWebhook._PutWebhookRequest({
@@ -142,13 +164,18 @@ export class WebhookClient implements IWebhookClient {
     });
     this.logger.debug('issuing "PutWebhook" request');
 
-    return await new Promise<PutWebhook.Response>(resolve => {
+    return await new Promise<PutWebhook.Response>((resolve, reject) => {
       this.webhookClient.PutWebhook(
         request,
         {interceptors: this.unaryInterceptors},
         (err, resp) => {
           if (err || !resp) {
-            resolve(new PutWebhook.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new PutWebhook.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new PutWebhook.Success(resp.secret_string));
           }
@@ -162,7 +189,10 @@ export class WebhookClient implements IWebhookClient {
       validateCacheName(id.cacheName);
       validateWebhookName(id.webhookName);
     } catch (err) {
-      return new GetWebhookSecret.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new GetWebhookSecret.Error(err)
+      );
     }
 
     const request = new grpcWebhook._GetWebhookSecretRequest({
@@ -171,13 +201,18 @@ export class WebhookClient implements IWebhookClient {
     });
     this.logger.debug('issuing "GetWebhookSecret" request');
 
-    return await new Promise<GetWebhookSecret.Response>(resolve => {
+    return await new Promise<GetWebhookSecret.Response>((resolve, reject) => {
       this.webhookClient.GetWebhookSecret(
         request,
         {interceptors: this.unaryInterceptors},
         (err, resp) => {
           if (err || !resp) {
-            resolve(new GetWebhookSecret.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new GetWebhookSecret.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(
               new GetWebhookSecret.Success({
@@ -199,7 +234,10 @@ export class WebhookClient implements IWebhookClient {
       validateCacheName(id.cacheName);
       validateWebhookName(id.webhookName);
     } catch (err) {
-      return new RotateWebhookSecret.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new RotateWebhookSecret.Error(err)
+      );
     }
 
     const webhookId = grpcWebhook._WebhookId.fromObject({
@@ -211,26 +249,31 @@ export class WebhookClient implements IWebhookClient {
     });
     this.logger.debug('issuing "RotateWebhookSecret" request');
 
-    return await new Promise<RotateWebhookSecret.Response>(resolve => {
-      this.webhookClient.RotateWebhookSecret(
-        request,
-        {interceptors: this.unaryInterceptors},
-        (err, resp) => {
-          if (err || !resp) {
-            resolve(
-              new RotateWebhookSecret.Error(cacheServiceErrorMapper(err))
-            );
-          } else {
-            resolve(
-              new RotateWebhookSecret.Success({
-                secret: resp.secret_string,
-                webhookName: id.webhookName,
-                cacheName: id.cacheName,
-              })
-            );
+    return await new Promise<RotateWebhookSecret.Response>(
+      (resolve, reject) => {
+        this.webhookClient.RotateWebhookSecret(
+          request,
+          {interceptors: this.unaryInterceptors},
+          (err, resp) => {
+            if (err || !resp) {
+              this.cacheServiceErrorMapper.resolveOrRejectError({
+                err: err,
+                errorResponseFactoryFn: e => new RotateWebhookSecret.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
+            } else {
+              resolve(
+                new RotateWebhookSecret.Success({
+                  secret: resp.secret_string,
+                  webhookName: id.webhookName,
+                  cacheName: id.cacheName,
+                })
+              );
+            }
           }
-        }
-      );
-    });
+        );
+      }
+    );
   }
 }

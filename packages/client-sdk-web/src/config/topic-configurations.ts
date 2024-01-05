@@ -25,6 +25,7 @@ export class Default extends TopicClientConfiguration {
   ): TopicConfiguration {
     return new TopicClientConfiguration({
       loggerFactory: loggerFactory,
+      throwOnErrors: false,
     });
   }
 }
@@ -58,6 +59,7 @@ export class Laptop extends TopicClientConfiguration {
   ): TopicConfiguration {
     return new Laptop({
       loggerFactory: loggerFactory,
+      throwOnErrors: false,
     });
   }
 }
@@ -91,6 +93,7 @@ export class Browser extends TopicClientConfiguration {
   ): TopicConfiguration {
     return new Browser({
       loggerFactory: loggerFactory,
+      throwOnErrors: false,
     });
   }
 }
