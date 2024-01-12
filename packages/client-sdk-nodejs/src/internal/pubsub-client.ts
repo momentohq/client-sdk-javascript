@@ -7,7 +7,6 @@ import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, ServiceError} from '@grpc/grpc-js';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {version} from '../../package.json';
-import {TopicClientProps} from '../topic-client-props';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {
   CredentialProvider,
@@ -24,6 +23,7 @@ import {
   PrepareSubscribeCallbackOptions,
 } from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/AbstractPubsubClient';
 import {TopicConfiguration} from '../config/topic-configuration';
+import {TopicClientPropsWithConfiguration} from './topic-client-props-with-config';
 
 export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   private readonly client: grpcPubsub.PubsubClient;
@@ -43,7 +43,7 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   /**
    * @param {TopicClientProps} props
    */
-  constructor(props: TopicClientProps) {
+  constructor(props: TopicClientPropsWithConfiguration) {
     super();
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;

@@ -7,7 +7,6 @@ import {
   UnknownError,
 } from '@gomomento/sdk-core';
 import {Request, RpcError, StatusCode, UnaryResponse} from 'grpc-web';
-import {TopicClientProps} from '../topic-client-props';
 import {truncateString} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {TopicPublish, TopicSubscribe} from '../index';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
@@ -23,6 +22,7 @@ import {
 } from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {TopicConfiguration} from '../config/topic-configuration';
+import {TopicClientPropsWithConfiguration} from './topic-client-props-with-config';
 
 export class PubsubClient<
   REQ extends Request<REQ, RESP>,
@@ -42,7 +42,7 @@ export class PubsubClient<
   private static readonly BROWSER_DISCONNECT =
     'Http response at 400 or 500 level, http status code: 0';
 
-  constructor(props: TopicClientProps) {
+  constructor(props: TopicClientPropsWithConfiguration) {
     super();
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
