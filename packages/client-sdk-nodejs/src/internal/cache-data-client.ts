@@ -1564,7 +1564,8 @@ export class CacheDataClient implements IDataClient {
     dictionaryName: string,
     elements:
       | Map<string | Uint8Array, string | Uint8Array>
-      | Record<string, string | Uint8Array>,
+      | Record<string, string | Uint8Array>
+      | Array<[string, string | Uint8Array]>,
     ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheDictionarySetFields.Response> {
     try {
@@ -1582,7 +1583,7 @@ export class CacheDataClient implements IDataClient {
       }`
     );
 
-    const dictionaryFieldValuePairs = this.convertMapOrRecord(elements);
+    const dictionaryFieldValuePairs = this.convertElements(elements);
 
     const result = await this.sendDictionarySetFields(
       cacheName,
@@ -3127,12 +3128,15 @@ export class CacheDataClient implements IDataClient {
     return v.map(i => this.convert(i));
   }
 
-  private convertMapOrRecord(
+  private convertElements(
     elements:
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>
+      | Array<[string, string | Uint8Array]>
   ): grpcCache._DictionaryFieldValuePair[] {
-    if (elements instanceof Map) {
+    if (elements instanceof Array) {
+      return this.convertElements(new Map(elements));
+    } else if (elements instanceof Map) {
       return [...elements.entries()].map(
         element =>
           new grpcCache._DictionaryFieldValuePair({

@@ -747,7 +747,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
     dictionaryName: string,
     elements:
       | Map<string | Uint8Array, string | Uint8Array>
-      | Record<string, string | Uint8Array>,
+      | Record<string, string | Uint8Array>
+      | Array<[string, string | Uint8Array]>,
     options?: DictionarySetFieldOptions
   ): Promise<CacheDictionarySetFields.Response> {
     const client = this.getNextDataClient();

@@ -1496,7 +1496,8 @@ export class CacheDataClient<
     dictionaryName: string,
     elements:
       | Map<string | Uint8Array, string | Uint8Array>
-      | Record<string, string | Uint8Array>,
+      | Record<string, string | Uint8Array>
+      | Array<[string, string | Uint8Array]>,
     ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheDictionarySetFields.Response> {
     try {
@@ -1514,7 +1515,7 @@ export class CacheDataClient<
       }`
     );
 
-    const dictionaryFieldValuePairs = this.convertMapOrRecord(elements);
+    const dictionaryFieldValuePairs = this.convertElements(elements);
 
     const result = await this.sendDictionarySetFields(
       cacheName,
@@ -3472,12 +3473,15 @@ export class CacheDataClient<
     return v.map(i => this.convertToUint8Array(i));
   }
 
-  private convertMapOrRecord(
+  private convertElements(
     elements:
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>
+      | Array<[string, string | Uint8Array]>
   ): _DictionaryFieldValuePairGrpc[] {
-    if (elements instanceof Map) {
+    if (elements instanceof Array) {
+      return this.convertElements(new Map(elements));
+    } else if (elements instanceof Map) {
       return [...elements.entries()].map(element =>
         new _DictionaryFieldValuePairGrpc()
           .setField(convertToB64String(element[0]))
