@@ -192,7 +192,8 @@ export interface ICacheClient extends IControlClient, IPingClient {
     dictionaryName: string,
     elements:
       | Map<string | Uint8Array, string | Uint8Array>
-      | Record<string, string | Uint8Array>,
+      | Record<string, string | Uint8Array>
+      | Array<[string, string | Uint8Array]>,
     options?: DictionarySetFieldsOptions
   ): Promise<CacheDictionarySetFields.Response>;
   dictionaryGetField(

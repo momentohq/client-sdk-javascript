@@ -153,7 +153,8 @@ export interface IDataClient {
     dictionaryName: string,
     elements:
       | Map<string | Uint8Array, string | Uint8Array>
-      | Record<string, string | Uint8Array>,
+      | Record<string, string | Uint8Array>
+      | Array<[string, string | Uint8Array]>,
     ttl?: CollectionTtl
   ): Promise<CacheDictionarySetFields.Response>;
   dictionaryGetField(
