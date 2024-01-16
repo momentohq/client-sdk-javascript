@@ -16,7 +16,6 @@ import {
   VectorGetItemBatch,
   VectorGetItemMetadataBatch,
 } from '@gomomento/sdk-core';
-import {VectorIndexClientProps} from '../vector-index-client-props';
 import {VectorIndexConfiguration} from '../config/vector-index-configuration';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {vectorindex} from '@gomomento/generated-types/dist/vectorindex';
@@ -29,6 +28,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {UnknownError} from '@gomomento/sdk-core/dist/src/errors';
 import {ALL_VECTOR_METADATA} from '@gomomento/sdk-core/dist/src/clients/IVectorIndexClient';
+import {VectorIndexClientPropsWithConfig} from './vector-index-client-props-with-config';
 
 export class VectorIndexDataClient implements IVectorIndexDataClient {
   private readonly configuration: VectorIndexConfiguration;
@@ -39,12 +39,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   private readonly client: vectorindex.VectorIndexClient;
   private readonly interceptors: Interceptor[];
 
-  constructor(props: VectorIndexClientProps) {
+  constructor(props: VectorIndexClientPropsWithConfig) {
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
-      props.configuration.getThrowOnErrors()
+      this.configuration.getThrowOnErrors()
     );
     const grpcConfig = this.configuration
       .getTransportStrategy()

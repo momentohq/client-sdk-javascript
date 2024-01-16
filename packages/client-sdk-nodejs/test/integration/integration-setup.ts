@@ -1,4 +1,3 @@
-import {CacheClientProps} from '../../src/cache-client-props';
 import {testCacheName} from '@gomomento/common-integration-tests';
 import {
   AuthClient,
@@ -17,6 +16,7 @@ import {
 } from '../../src';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
+import {CacheClientPropsWithConfig} from '../../src/internal/cache-client-props-with-config';
 
 export const deleteCacheIfExists = async (
   momento: CacheClient,
@@ -45,7 +45,7 @@ export async function WithCache(
 }
 
 let _credsProvider: CredentialProvider | undefined = undefined;
-function credsProvider(): CredentialProvider {
+export function credsProvider(): CredentialProvider {
   if (_credsProvider === undefined) {
     _credsProvider = CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'TEST_AUTH_TOKEN',
@@ -73,7 +73,7 @@ function sessionCredsProvider(): CredentialProvider {
   return _sessionCredsProvider;
 }
 
-export function integrationTestCacheClientProps(): CacheClientProps {
+export function integrationTestCacheClientProps(): CacheClientPropsWithConfig {
   return {
     configuration:
       Configurations.Laptop.latest().withClientTimeoutMillis(60000),

@@ -1,6 +1,5 @@
 import {webhook} from '@gomomento/generated-types';
 import grpcWebhook = webhook.webhook;
-import {TopicClientProps} from '../topic-client-props';
 import {
   CredentialProvider,
   MomentoLogger,
@@ -24,6 +23,7 @@ import {
   validateTopicName,
   validateWebhookName,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
+import {TopicClientPropsWithConfiguration} from './topic-client-props-with-config';
 
 export class WebhookClient implements IWebhookClient {
   private readonly webhookClient: grpcWebhook.WebhookClient;
@@ -36,7 +36,7 @@ export class WebhookClient implements IWebhookClient {
   /**
    * @param {TopicClientProps} props
    */
-  constructor(props: TopicClientProps) {
+  constructor(props: TopicClientPropsWithConfiguration) {
     this.credentialProvider = props.credentialProvider;
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(

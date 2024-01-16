@@ -7,6 +7,9 @@ import {VectorIndexClientProps} from './vector-index-client-props';
 import {IVectorIndexDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/vector/IVectorIndexDataClient';
 import {VectorIndexDataClient} from './internal/vector-index-data-client';
 import {VectorIndexControlClient} from './internal/vector-index-control-client';
+import {VectorIndexClientPropsWithConfig} from './internal/vector-index-client-props-with-config';
+import {VectorIndexConfiguration} from './config/vector-index-configuration';
+import {VectorIndexConfigurations} from './index';
 
 /**
  * PREVIEW Vector Index Client
@@ -21,14 +24,24 @@ export class PreviewVectorIndexClient
   implements IVectorIndexClient
 {
   constructor(props: VectorIndexClientProps) {
-    const controlClient: IVectorIndexControlClient = createControlClient(props);
-    const dataClient = createDataClient(props);
+    const config =
+      props.configuration ?? getDefaultVectorIndexClientConfiguration();
+
+    const propsWithConfiguration: VectorIndexClientPropsWithConfig = {
+      ...props,
+      configuration: config,
+    };
+
+    const controlClient: IVectorIndexControlClient = createControlClient(
+      propsWithConfiguration
+    );
+    const dataClient = createDataClient(propsWithConfiguration);
     super(controlClient, dataClient);
   }
 }
 
 function createControlClient(
-  props: VectorIndexClientProps
+  props: VectorIndexClientPropsWithConfig
 ): IVectorIndexControlClient {
   return new VectorIndexControlClient({
     configuration: props.configuration,
@@ -37,7 +50,11 @@ function createControlClient(
 }
 
 function createDataClient(
-  props: VectorIndexClientProps
+  props: VectorIndexClientPropsWithConfig
 ): IVectorIndexDataClient {
   return new VectorIndexDataClient(props);
+}
+
+function getDefaultVectorIndexClientConfiguration(): VectorIndexConfiguration {
+  return VectorIndexConfigurations.Browser.latest();
 }

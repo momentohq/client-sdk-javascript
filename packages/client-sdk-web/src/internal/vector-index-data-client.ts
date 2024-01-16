@@ -16,7 +16,6 @@ import {
   InvalidArgumentError,
   UnknownError,
 } from '@gomomento/sdk-core';
-import {VectorIndexClientProps} from '../vector-index-client-props';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   validateIndexName,
@@ -25,6 +24,7 @@ import {
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {getWebVectorEndpoint} from '../utils/web-client-utils';
 import {ALL_VECTOR_METADATA} from '@gomomento/sdk-core/dist/src/clients/IVectorIndexClient';
+import {VectorIndexClientPropsWithConfig} from './vector-index-client-props-with-config';
 
 export class VectorIndexDataClient implements IVectorIndexDataClient {
   private readonly client: VectorIndexClient;
@@ -33,7 +33,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   private readonly clientMetadataProvider: ClientMetadataProvider;
   private readonly deadlineMillis: number;
 
-  constructor(props: VectorIndexClientProps) {
+  constructor(props: VectorIndexClientPropsWithConfig) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
       props.configuration.getThrowOnErrors()

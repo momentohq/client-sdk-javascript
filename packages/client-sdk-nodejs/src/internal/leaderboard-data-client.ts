@@ -10,7 +10,6 @@ import {
   MomentoLoggerFactory,
   LeaderboardOrder,
 } from '@gomomento/sdk-core';
-import {LeaderboardClientProps} from '../leaderboard-client-props';
 import {
   validateLeaderboardNumberOfElements,
   validateSortedSetScores,
@@ -35,6 +34,7 @@ import {
 } from '@grpc/grpc-js';
 import {version} from '../../package.json';
 import {ILeaderboardDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/leaderboard/ILeaderboardDataClient';
+import {LeaderboardClientPropsWithConfig} from './leaderboard-client-props-with-config';
 
 export class LeaderboardDataClient implements ILeaderboardDataClient {
   private readonly configuration: LeaderboardConfiguration;
@@ -46,7 +46,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
   protected nextDataClientIndex: number;
   private readonly interceptors: Interceptor[];
 
-  constructor(props: LeaderboardClientProps) {
+  constructor(props: LeaderboardClientPropsWithConfig) {
     this.configuration = props.configuration;
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
       props.configuration.getThrowOnErrors()

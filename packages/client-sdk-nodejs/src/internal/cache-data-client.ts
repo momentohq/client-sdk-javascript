@@ -64,7 +64,6 @@ import {
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
-import {CacheClientProps} from '../cache-client-props';
 import {
   Middleware,
   MiddlewareRequestHandlerContext,
@@ -97,6 +96,7 @@ import ECacheResult = cache_client.ECacheResult;
 import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
+import {CacheClientPropsWithConfig} from './cache-client-props-with-config';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -116,7 +116,7 @@ export class CacheDataClient implements IDataClient {
    * @param {CacheClientProps} props
    * @param dataClientID
    */
-  constructor(props: CacheClientProps, dataClientID: string) {
+  constructor(props: CacheClientPropsWithConfig, dataClientID: string) {
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
