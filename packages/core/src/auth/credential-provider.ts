@@ -74,13 +74,19 @@ export abstract class CredentialProvider {
   abstract areEndpointsOverridden(): boolean;
 
   static fromEnvironmentVariable(
-    props: EnvMomentoTokenProviderProps
+    props: EnvMomentoTokenProviderProps | string
+  ): CredentialProvider {
+    return new EnvMomentoTokenProvider(props);
+  }
+
+  static fromEnvVar(
+    props: EnvMomentoTokenProviderProps | string
   ): CredentialProvider {
     return new EnvMomentoTokenProvider(props);
   }
 
   static fromString(
-    props: StringMomentoTokenProviderProps
+    props: StringMomentoTokenProviderProps | string
   ): CredentialProvider {
     return new StringMomentoTokenProvider(props);
   }
@@ -140,7 +146,10 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
   /**
    * @param {StringMomentoTokenProviderProps} props configuration options for the token provider
    */
-  constructor(props: StringMomentoTokenProviderProps) {
+  constructor(props: StringMomentoTokenProviderProps | string) {
+    if (typeof props === 'string') {
+      props = {apiKey: props};
+    }
     super();
     let key: string;
     if ('authToken' in props) {
@@ -238,7 +247,10 @@ export class EnvMomentoTokenProvider extends StringMomentoTokenProvider {
   /**
    * @param {EnvMomentoTokenProviderProps} props configuration options for the token provider
    */
-  constructor(props: EnvMomentoTokenProviderProps) {
+  constructor(props: EnvMomentoTokenProviderProps | string) {
+    if (typeof props === 'string') {
+      props = {environmentVariableName: props};
+    }
     const authToken = process.env[props.environmentVariableName];
     if (!authToken) {
       throw new Error(

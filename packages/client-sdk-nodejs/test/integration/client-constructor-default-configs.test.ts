@@ -3,6 +3,7 @@ import {
   TopicClient,
   PreviewVectorIndexClient,
   PreviewLeaderboardClient,
+  CredentialProvider,
 } from '../../src';
 import {credsProvider} from './integration-setup';
 
@@ -19,6 +20,31 @@ describe('default configurations', () => {
       defaultTtlSeconds: 60,
     });
     expect(cacheClientViaFactory).toBeInstanceOf(CacheClient);
+  });
+
+  it('CacheClient should be able to be constructed with a simple string for env var', () => {
+    const cacheClientViaConstructor = new CacheClient({
+      credentialProvider:
+        CredentialProvider.fromEnvironmentVariable('TEST_AUTH_TOKEN'),
+      defaultTtlSeconds: 60,
+    });
+    expect(cacheClientViaConstructor).toBeInstanceOf(CacheClient);
+  });
+
+  it('CacheClient should be able to be constructed with a simple string for env var, using short function name', () => {
+    const cacheClientViaConstructor = new CacheClient({
+      credentialProvider: CredentialProvider.fromEnvVar('TEST_AUTH_TOKEN'),
+      defaultTtlSeconds: 60,
+    });
+    expect(cacheClientViaConstructor).toBeInstanceOf(CacheClient);
+  });
+
+  it('CacheClient should be able to be constructed with a simple string for fromString', () => {
+    const cacheClientViaConstructor = new CacheClient({
+      credentialProvider: CredentialProvider.fromString(''),
+      defaultTtlSeconds: 60,
+    });
+    expect(cacheClientViaConstructor).toBeInstanceOf(CacheClient);
   });
 
   it('TopicClient should be able to be constructed with a default configuration', () => {
