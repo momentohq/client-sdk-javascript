@@ -3,7 +3,7 @@ import {
   validateCacheName,
   validateTopicName,
 } from '../../utils';
-import {MomentoErrorCode, normalizeSdkError} from '../../../errors';
+import {MomentoErrorCode} from '../../../errors';
 import {
   CredentialProvider,
   TopicPublish,
@@ -14,6 +14,7 @@ import {
 } from '../../../index';
 import {SubscriptionState} from '../../subscription-state';
 import {IPubsubClient} from './IPubsubClient';
+import {ICacheServiceErrorMapper} from '../../../errors/ICacheServiceErrorMapper';
 
 /**
  * Encapsulates parameters for the `sendSubscribe` method.
@@ -51,9 +52,12 @@ export interface PrepareSubscribeCallbackOptions extends SendSubscribeOptions {
   firstMessage: boolean;
 }
 
-export abstract class AbstractPubsubClient implements IPubsubClient {
+export abstract class AbstractPubsubClient<TGrpcError>
+  implements IPubsubClient
+{
   protected readonly logger: MomentoLogger;
   protected readonly credentialProvider: CredentialProvider;
+  protected readonly cacheServiceErrorMapper: ICacheServiceErrorMapper<TGrpcError>;
 
   public getEndpoint(): string {
     const endpoint = this.credentialProvider.getCacheEndpoint();
@@ -70,7 +74,11 @@ export abstract class AbstractPubsubClient implements IPubsubClient {
       validateCacheName(cacheName);
       validateTopicName(topicName);
     } catch (err) {
-      return new TopicPublish.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new TopicPublish.Error(err)
+      );
+      // )  new TopicPublish.Error(normalizeSdkError(err as Error));
     }
     this.logger.trace(
       'Issuing publish request; topic: %s, message length: %s',
@@ -96,7 +104,10 @@ export abstract class AbstractPubsubClient implements IPubsubClient {
       validateCacheName(cacheName);
       validateTopicName(topicName);
     } catch (err) {
-      return new TopicSubscribe.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new TopicSubscribe.Error(err)
+      );
     }
     this.logger.trace(
       'Issuing subscribe request; topic: %s',

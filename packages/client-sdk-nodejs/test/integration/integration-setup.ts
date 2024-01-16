@@ -1,4 +1,3 @@
-import {CacheClientProps} from '../../src/cache-client-props';
 import {testCacheName} from '@gomomento/common-integration-tests';
 import {
   AuthClient,
@@ -17,6 +16,7 @@ import {
 } from '../../src';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
+import {CacheClientPropsWithConfig} from '../../src/internal/cache-client-props-with-config';
 
 export const deleteCacheIfExists = async (
   momento: CacheClient,
@@ -45,7 +45,7 @@ export async function WithCache(
 }
 
 let _credsProvider: CredentialProvider | undefined = undefined;
-function credsProvider(): CredentialProvider {
+export function credsProvider(): CredentialProvider {
   if (_credsProvider === undefined) {
     _credsProvider = CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'TEST_AUTH_TOKEN',
@@ -73,7 +73,7 @@ function sessionCredsProvider(): CredentialProvider {
   return _sessionCredsProvider;
 }
 
-export function integrationTestCacheClientProps(): CacheClientProps {
+export function integrationTestCacheClientProps(): CacheClientPropsWithConfig {
   return {
     configuration:
       Configurations.Laptop.latest().withClientTimeoutMillis(60000),
@@ -84,6 +84,12 @@ export function integrationTestCacheClientProps(): CacheClientProps {
 
 function momentoClientForTesting(): CacheClient {
   return new CacheClient(integrationTestCacheClientProps());
+}
+
+function momentoClientForTestingWithThrowOnErrors(): CacheClient {
+  const props = integrationTestCacheClientProps();
+  props.configuration = props.configuration.withThrowOnErrors(true);
+  return new CacheClient(props);
 }
 
 function momentoClientForTestingWithSessionToken(): CacheClient {
@@ -102,6 +108,14 @@ function momentoTopicClientForTesting(): TopicClient {
   });
 }
 
+function momentoTopicClientWithThrowOnErrorsForTesting(): TopicClient {
+  return new TopicClient({
+    configuration:
+      integrationTestCacheClientProps().configuration.withThrowOnErrors(true),
+    credentialProvider: integrationTestCacheClientProps().credentialProvider,
+  });
+}
+
 function momentoTopicClientForTestingWithSessionToken(): TopicClient {
   return new TopicClient({
     configuration: integrationTestCacheClientProps().configuration,
@@ -116,6 +130,14 @@ function momentoVectorClientForTesting(): PreviewVectorIndexClient {
   });
 }
 
+function momentoVectorClientWithThrowsOnErrorsForTesting(): PreviewVectorIndexClient {
+  return new PreviewVectorIndexClient({
+    credentialProvider: credsProvider(),
+    configuration:
+      VectorIndexConfigurations.Laptop.latest().withThrowOnErrors(true),
+  });
+}
+
 function momentoLeaderboardClientForTesting(): PreviewLeaderboardClient {
   return new PreviewLeaderboardClient({
     credentialProvider: credsProvider(),
@@ -123,8 +145,17 @@ function momentoLeaderboardClientForTesting(): PreviewLeaderboardClient {
   });
 }
 
+function momentoLeaderboardClientWithThrowOnErrorsForTesting(): PreviewLeaderboardClient {
+  return new PreviewLeaderboardClient({
+    credentialProvider: credsProvider(),
+    configuration:
+      LeaderboardConfigurations.Laptop.latest().withThrowOnErrors(true),
+  });
+}
+
 export function SetupIntegrationTest(): {
   cacheClient: CacheClient;
+  cacheClientWithThrowOnErrors: CacheClient;
   integrationTestCacheName: string;
 } {
   const cacheName = testCacheName();
@@ -149,18 +180,27 @@ export function SetupIntegrationTest(): {
   });
 
   const client = momentoClientForTesting();
-  return {cacheClient: client, integrationTestCacheName: cacheName};
+  const clientWithThrowOnErrors = momentoClientForTestingWithThrowOnErrors();
+  return {
+    cacheClient: client,
+    cacheClientWithThrowOnErrors: clientWithThrowOnErrors,
+    integrationTestCacheName: cacheName,
+  };
 }
 
 export function SetupTopicIntegrationTest(): {
   topicClient: TopicClient;
+  topicClientWithThrowOnErrors: TopicClient;
   cacheClient: CacheClient;
   integrationTestCacheName: string;
 } {
   const {cacheClient, integrationTestCacheName} = SetupIntegrationTest();
   const topicClient = momentoTopicClientForTesting();
+  const topicClientWithThrowOnErrors =
+    momentoTopicClientWithThrowOnErrorsForTesting();
   return {
     topicClient,
+    topicClientWithThrowOnErrors,
     cacheClient: cacheClient,
     integrationTestCacheName: integrationTestCacheName,
   };
@@ -168,19 +208,26 @@ export function SetupTopicIntegrationTest(): {
 
 export function SetupVectorIntegrationTest(): {
   vectorClient: PreviewVectorIndexClient;
+  vectorClientWithThrowOnErrors: PreviewVectorIndexClient;
 } {
   const vectorClient = momentoVectorClientForTesting();
-  return {vectorClient};
+  const vectorClientWithThrowOnErrors =
+    momentoVectorClientWithThrowsOnErrorsForTesting();
+  return {vectorClient, vectorClientWithThrowOnErrors};
 }
 
 export function SetupLeaderboardIntegrationTest(): {
   leaderboardClient: PreviewLeaderboardClient;
+  leaderboardClientWithThrowOnErrors: PreviewLeaderboardClient;
   integrationTestCacheName: string;
 } {
   const {integrationTestCacheName} = SetupIntegrationTest();
   const leaderboardClient = momentoLeaderboardClientForTesting();
+  const leaderboardClientWithThrowOnErrors =
+    momentoLeaderboardClientWithThrowOnErrorsForTesting();
   return {
     leaderboardClient,
+    leaderboardClientWithThrowOnErrors,
     integrationTestCacheName: integrationTestCacheName,
   };
 }

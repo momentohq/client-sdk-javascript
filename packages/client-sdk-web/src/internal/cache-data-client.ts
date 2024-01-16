@@ -55,7 +55,7 @@ import {
 } from '..';
 import {Configuration} from '../config/configuration';
 import {Request, UnaryResponse} from 'grpc-web';
-import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   _DictionaryFieldValuePair,
   _DictionaryGetResponsePart,
@@ -122,7 +122,6 @@ import {
   validateSortedSetScores,
   validateValidForSeconds,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {normalizeSdkError} from '@gomomento/sdk-core/dist/src/errors';
 import {
   convertToB64String,
   createCallMetadata,
@@ -149,6 +148,7 @@ export class CacheDataClient<
   private readonly clientWrapper: cache.ScsClient;
   private readonly textEncoder: TextEncoder;
   private readonly logger: MomentoLogger;
+  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly clientMetadataProvider: ClientMetadataProvider;
   private readonly defaultTtlSeconds: number;
   private readonly deadlineMillis: number;
@@ -158,6 +158,9 @@ export class CacheDataClient<
    */
   constructor(props: DataClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
+    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
+      props.configuration.getThrowOnErrors()
+    );
     this.logger.debug(
       `Creating data client using endpoint: '${getWebCacheEndpoint(
         props.credentialProvider
@@ -197,7 +200,10 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheGet.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheGet.Error(err)
+      );
     }
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
     const result = await this.sendGet(cacheName, convertToB64String(key));
@@ -212,7 +218,7 @@ export class CacheDataClient<
     const request = new _GetRequest();
     request.setCacheKey(key);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.get(
         request,
         {
@@ -245,7 +251,12 @@ export class CacheDataClient<
                 break;
             }
           } else {
-            resolve(new CacheGet.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheGet.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -261,11 +272,15 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheSet.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSet.Error(err)
+      );
     }
     if (ttl && ttl < 0) {
-      return new CacheSet.Error(
-        new InvalidArgumentError('ttl must be a positive integer')
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        new InvalidArgumentError('ttl must be a positive integer'),
+        err => new CacheSet.Error(err)
       );
     }
     const ttlToUse = ttl || this.defaultTtlSeconds;
@@ -294,7 +309,7 @@ export class CacheDataClient<
     request.setCacheBody(value);
     request.setTtlMilliseconds(this.convertSecondsToMilliseconds(ttlSeconds));
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.set(
         request,
         {
@@ -305,7 +320,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheSet.Success());
           } else {
-            resolve(new CacheSet.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSet.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -321,11 +341,15 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheSetIfNotExists.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetIfNotExists.Error(err)
+      );
     }
     if (ttl && ttl < 0) {
-      return new CacheSetIfNotExists.Error(
-        new InvalidArgumentError('ttl must be a positive integer')
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        new InvalidArgumentError('ttl must be a positive integer'),
+        err => new CacheSetIfNotExists.Error(err)
       );
     }
     this.logger.trace(
@@ -355,7 +379,7 @@ export class CacheDataClient<
     request.setCacheBody(field);
     request.setTtlMilliseconds(ttlMilliseconds);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.setIfNotExists(
         request,
         {
@@ -382,9 +406,12 @@ export class CacheDataClient<
                 break;
             }
           } else {
-            resolve(
-              new CacheSetIfNotExists.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetIfNotExists.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -398,7 +425,10 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheDelete.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDelete.Error(err)
+      );
     }
     this.logger.trace(`Issuing 'delete' request; key: ${key.toString()}`);
     return await this.sendDelete(cacheName, convertToB64String(key));
@@ -411,7 +441,7 @@ export class CacheDataClient<
     const request = new _DeleteRequest();
     request.setCacheKey(key);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.delete(
         request,
         {
@@ -422,7 +452,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheDelete.Success());
           } else {
-            resolve(new CacheDelete.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheDelete.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -438,7 +473,10 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheIncrement.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheIncrement.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'increment' request; field: ${field.toString()}, amount : ${amount}, ttl: ${
@@ -467,7 +505,7 @@ export class CacheDataClient<
     request.setAmount(amount);
     request.setTtlMilliseconds(ttlMilliseconds);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.increment(
         request,
         {
@@ -482,7 +520,12 @@ export class CacheDataClient<
               resolve(new CacheIncrement.Success(0));
             }
           } else {
-            resolve(new CacheIncrement.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheIncrement.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -497,7 +540,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSetName(setName);
     } catch (err) {
-      return new CacheSetFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetFetch.Error(err)
+      );
     }
     return await this.sendSetFetch(cacheName, convertToB64String(setName));
   }
@@ -509,7 +555,7 @@ export class CacheDataClient<
     const request = new _SetFetchRequest();
     request.setSetName(setName);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.setFetch(
         request,
         {
@@ -524,7 +570,12 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheSetFetch.Miss());
           } else {
-            resolve(new CacheSetFetch.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetFetch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -541,7 +592,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSetName(setName);
     } catch (err) {
-      return new CacheSetAddElements.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetAddElements.Error(err)
+      );
     }
     return await this.sendSetAddElements(
       cacheName,
@@ -565,7 +619,7 @@ export class CacheDataClient<
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.setUnion(
         request,
         {
@@ -574,9 +628,12 @@ export class CacheDataClient<
         },
         err => {
           if (err) {
-            resolve(
-              new CacheSetAddElements.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetAddElements.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new CacheSetAddElements.Success());
           }
@@ -594,7 +651,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSetName(setName);
     } catch (err) {
-      return new CacheSetRemoveElements.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetRemoveElements.Error(err)
+      );
     }
     return await this.sendSetRemoveElements(
       cacheName,
@@ -616,7 +676,7 @@ export class CacheDataClient<
     request.setSetName(setName);
     request.setSubtrahend(subtrahend);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.setDifference(
         request,
         {
@@ -625,9 +685,12 @@ export class CacheDataClient<
         },
         err => {
           if (err) {
-            resolve(
-              new CacheSetRemoveElements.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetRemoveElements.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new CacheSetRemoveElements.Success());
           }
@@ -647,8 +710,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListConcatenateBack.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListConcatenateBack.Error(err)
       );
     }
 
@@ -689,7 +753,7 @@ export class CacheDataClient<
     request.setRefreshTtl(refreshTtl);
     request.setTruncateFrontToSize(truncateFrontToSize || 0);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.listConcatenateBack(
         request,
         {
@@ -700,9 +764,13 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheListConcatenateBack.Success(resp.getListLength()));
           } else {
-            resolve(
-              new CacheListConcatenateBack.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheListConcatenateBack.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -720,8 +788,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListConcatenateFront.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListConcatenateFront.Error(err)
       );
     }
 
@@ -762,7 +831,7 @@ export class CacheDataClient<
     request.setRefreshTtl(refreshTtl);
     request.setTruncateBackToSize(truncateBackToSize || 0);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.listConcatenateFront(
         request,
         {
@@ -775,9 +844,13 @@ export class CacheDataClient<
               new CacheListConcatenateFront.Success(resp.getListLength())
             );
           } else {
-            resolve(
-              new CacheListConcatenateFront.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheListConcatenateFront.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -795,7 +868,10 @@ export class CacheDataClient<
       validateListName(listName);
       validateListSliceStartEnd(startIndex, endIndex);
     } catch (err) {
-      return new CacheListFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListFetch.Error(err)
+      );
     }
     this.logger.trace(
       "Issuing 'listFetch' request; listName: %s, startIndex: %s, endIndex: %s",
@@ -832,7 +908,7 @@ export class CacheDataClient<
       request.setUnboundedEnd(new _Unbounded());
     }
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.listFetch(
         request,
         {
@@ -853,7 +929,12 @@ export class CacheDataClient<
               resolve(new CacheListFetch.Miss());
             }
           } else {
-            resolve(new CacheListFetch.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheListFetch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -872,7 +953,10 @@ export class CacheDataClient<
       validateListName(listName);
       validateListSliceStartEnd(startIndex, endIndex);
     } catch (err) {
-      return new CacheListRetain.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListRetain.Error(err)
+      );
     }
     this.logger.trace(
       "Issuing 'listRetain' request; listName: %s, startIndex: %s, endIndex: %s, ttl: %s",
@@ -918,7 +1002,7 @@ export class CacheDataClient<
       request.setUnboundedEnd(new _Unbounded());
     }
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.listRetain(
         request,
         {
@@ -929,7 +1013,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheListRetain.Success());
           } else {
-            resolve(new CacheListRetain.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheListRetain.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -944,7 +1033,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListLength.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListLength.Error(err)
+      );
     }
     this.logger.trace(`Issuing 'listLength' request; listName: ${listName}`);
     const result = await this.sendListLength(
@@ -962,7 +1054,7 @@ export class CacheDataClient<
     const request = new _ListLengthRequest();
     request.setListName(listName);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.listLength(
         request,
         {
@@ -982,7 +1074,12 @@ export class CacheDataClient<
               resolve(new CacheListLength.Hit(len));
             }
           } else {
-            resolve(new CacheListLength.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheListLength.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -997,7 +1094,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListPopBack.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListPopBack.Error(err)
+      );
     }
 
     this.logger.trace("Issuing 'listPopBack' request");
@@ -1016,7 +1116,7 @@ export class CacheDataClient<
     const request = new _ListPopBackRequest();
     request.setListName(listName);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.listPopBack(
         request,
         {
@@ -1034,7 +1134,12 @@ export class CacheDataClient<
               resolve(new CacheListPopBack.Hit(this.convertToUint8Array(val)));
             }
           } else {
-            resolve(new CacheListPopBack.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheListPopBack.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1049,7 +1154,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListPopFront.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListPopFront.Error(err)
+      );
     }
 
     this.logger.trace("Issuing 'listPopFront' request");
@@ -1068,7 +1176,7 @@ export class CacheDataClient<
     const request = new _ListPopFrontRequest();
     request.setListName(listName);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.listPopFront(
         request,
         {
@@ -1086,7 +1194,12 @@ export class CacheDataClient<
               resolve(new CacheListPopFront.Hit(this.convertToUint8Array(val)));
             }
           } else {
-            resolve(new CacheListPopFront.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheListPopFront.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1104,7 +1217,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListPushBack.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListPushBack.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -1142,7 +1258,7 @@ export class CacheDataClient<
     request.setRefreshTtl(refreshTtl);
     request.setTruncateFrontToSize(truncateFrontToSize || 0);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.listPushBack(
         request,
         {
@@ -1153,7 +1269,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheListPushBack.Success(resp.getListLength()));
           } else {
-            resolve(new CacheListPushBack.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheListPushBack.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1171,7 +1292,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListPushFront.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListPushFront.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -1209,7 +1333,7 @@ export class CacheDataClient<
     request.setRefreshTtl(refreshTtl);
     request.setTruncateBackToSize(truncateBackToSize || 0);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.listPushFront(
         request,
         {
@@ -1220,7 +1344,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheListPushFront.Success(resp.getListLength()));
           } else {
-            resolve(new CacheListPushFront.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheListPushFront.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1236,7 +1365,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateListName(listName);
     } catch (err) {
-      return new CacheListRemoveValue.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheListRemoveValue.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -1261,7 +1393,7 @@ export class CacheDataClient<
     request.setListName(listName);
     request.setAllElementsWithValue(value);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.listRemove(
         request,
         {
@@ -1272,9 +1404,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheListRemoveValue.Success());
           } else {
-            resolve(
-              new CacheListRemoveValue.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheListRemoveValue.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1292,7 +1427,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionarySetField.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDictionarySetField.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'dictionarySetField' request; field: ${field.toString()}, value length: ${
@@ -1330,7 +1468,7 @@ export class CacheDataClient<
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.dictionarySet(
         request,
         {
@@ -1341,9 +1479,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheDictionarySetField.Success());
           } else {
-            resolve(
-              new CacheDictionarySetField.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheDictionarySetField.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1355,15 +1496,17 @@ export class CacheDataClient<
     dictionaryName: string,
     elements:
       | Map<string | Uint8Array, string | Uint8Array>
-      | Record<string, string | Uint8Array>,
+      | Record<string, string | Uint8Array>
+      | Array<[string, string | Uint8Array]>,
     ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheDictionarySetFields.Response> {
     try {
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionarySetFields.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDictionarySetFields.Error(err)
       );
     }
     this.logger.trace(
@@ -1372,7 +1515,7 @@ export class CacheDataClient<
       }`
     );
 
-    const dictionaryFieldValuePairs = this.convertMapOrRecord(elements);
+    const dictionaryFieldValuePairs = this.convertElements(elements);
 
     const result = await this.sendDictionarySetFields(
       cacheName,
@@ -1400,7 +1543,7 @@ export class CacheDataClient<
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.dictionarySet(
         request,
         {
@@ -1411,9 +1554,13 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheDictionarySetFields.Success());
           } else {
-            resolve(
-              new CacheDictionarySetFields.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheDictionarySetFields.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1429,9 +1576,13 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionaryGetField.Error(
-        normalizeSdkError(err as Error),
-        this.convertToUint8Array(field)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err =>
+          new CacheDictionaryGetField.Error(
+            err,
+            this.convertToUint8Array(field)
+          )
       );
     }
     this.logger.trace(
@@ -1457,7 +1608,7 @@ export class CacheDataClient<
     request.setDictionaryName(dictionaryName);
     request.setFieldsList([field]);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.dictionaryGet(
         request,
         {
@@ -1498,12 +1649,16 @@ export class CacheDataClient<
               );
             }
           } else {
-            resolve(
-              new CacheDictionaryGetField.Error(
-                cacheServiceErrorMapper(err),
-                this.convertToUint8Array(field)
-              )
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheDictionaryGetField.Error(
+                  e,
+                  this.convertToUint8Array(field)
+                ),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1519,8 +1674,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionaryGetFields.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDictionaryGetFields.Error(err)
       );
     }
     this.logger.trace(
@@ -1546,7 +1702,7 @@ export class CacheDataClient<
     request.setDictionaryName(dictionaryName);
     request.setFieldsList(this.convertArrayToB64Strings(fields));
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.dictionaryGet(
         request,
         {
@@ -1572,9 +1728,13 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheDictionaryGetFields.Miss());
           } else {
-            resolve(
-              new CacheDictionaryGetFields.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheDictionaryGetFields.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1589,7 +1749,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionaryFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDictionaryFetch.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'dictionaryFetch' request; dictionaryName: ${dictionaryName}`
@@ -1609,7 +1772,7 @@ export class CacheDataClient<
     const request = new _DictionaryFetchRequest();
     request.setDictionaryName(dictionaryName);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.dictionaryFetch(
         request,
         {
@@ -1632,9 +1795,12 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheDictionaryFetch.Miss());
           } else {
-            resolve(
-              new CacheDictionaryFetch.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheDictionaryFetch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1652,8 +1818,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionaryIncrement.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDictionaryIncrement.Error(err)
       );
     }
     this.logger.trace(
@@ -1691,7 +1858,7 @@ export class CacheDataClient<
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.dictionaryIncrement(
         request,
         {
@@ -1706,9 +1873,13 @@ export class CacheDataClient<
               resolve(new CacheDictionaryIncrement.Success(0));
             }
           } else {
-            resolve(
-              new CacheDictionaryIncrement.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheDictionaryIncrement.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1724,8 +1895,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionaryRemoveField.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDictionaryRemoveField.Error(err)
       );
     }
     this.logger.trace(
@@ -1751,7 +1923,7 @@ export class CacheDataClient<
     request.setDictionaryName(dictionaryName);
     request.setSome(new _DictionaryDeleteRequest.Some().addFields(field));
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.dictionaryDelete(
         request,
         {
@@ -1762,9 +1934,13 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheDictionaryRemoveField.Success());
           } else {
-            resolve(
-              new CacheDictionaryRemoveField.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheDictionaryRemoveField.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1780,8 +1956,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionaryRemoveFields.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDictionaryRemoveFields.Error(err)
       );
     }
     this.logger.trace(
@@ -1807,7 +1984,7 @@ export class CacheDataClient<
     request.setDictionaryName(dictionaryName);
     request.setSome(new _DictionaryDeleteRequest.Some().setFieldsList(fields));
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.dictionaryDelete(
         request,
         {
@@ -1818,11 +1995,13 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheDictionaryRemoveFields.Success());
           } else {
-            resolve(
-              new CacheDictionaryRemoveFields.Error(
-                cacheServiceErrorMapper(err)
-              )
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheDictionaryRemoveFields.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1837,7 +2016,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateDictionaryName(dictionaryName);
     } catch (err) {
-      return new CacheDictionaryLength.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDictionaryLength.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'dictionaryLength' request; dictionaryName: ${dictionaryName}`
@@ -1859,7 +2041,7 @@ export class CacheDataClient<
     const request = new _DictionaryLengthRequest();
     request.setDictionaryName(dictionaryName);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.dictionaryLength(
         request,
         {
@@ -1877,9 +2059,12 @@ export class CacheDataClient<
               resolve(new CacheDictionaryLength.Hit(len));
             }
           } else {
-            resolve(
-              new CacheDictionaryLength.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheDictionaryLength.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -1898,7 +2083,10 @@ export class CacheDataClient<
       validateSortedSetName(sortedSetName);
       validateSortedSetRanks(startRank, endRank);
     } catch (err) {
-      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetFetch.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -1952,7 +2140,7 @@ export class CacheDataClient<
     request.setWithScores(true);
     request.setByIndex(by_index);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.sortedSetFetch(
         request,
         {
@@ -1983,9 +2171,12 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheSortedSetFetch.Miss());
           } else {
-            resolve(
-              new CacheSortedSetFetch.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSortedSetFetch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2012,7 +2203,10 @@ export class CacheDataClient<
         validateSortedSetCount(count);
       }
     } catch (err) {
-      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetFetch.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -2085,7 +2279,7 @@ export class CacheDataClient<
     request.setWithScores(true);
     request.setByScore(by_score);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.sortedSetFetch(
         request,
         {
@@ -2126,9 +2320,12 @@ export class CacheDataClient<
               );
             }
           } else {
-            resolve(
-              new CacheSortedSetFetch.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSortedSetFetch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2146,8 +2343,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetPutElement.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetPutElement.Error(err)
       );
     }
     this.logger.trace(
@@ -2189,7 +2387,7 @@ export class CacheDataClient<
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.sortedSetPut(
         request,
         {
@@ -2200,9 +2398,13 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheSortedSetPutElement.Success());
           } else {
-            resolve(
-              new CacheSortedSetPutElement.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSortedSetPutElement.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2222,8 +2424,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetPutElements.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetPutElements.Error(err)
       );
     }
     this.logger.trace(
@@ -2261,7 +2464,7 @@ export class CacheDataClient<
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.sortedSetPut(
         request,
         {
@@ -2272,9 +2475,13 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheSortedSetPutElements.Success());
           } else {
-            resolve(
-              new CacheSortedSetPutElements.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSortedSetPutElements.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2294,15 +2501,17 @@ export class CacheDataClient<
     } else if (responses instanceof CacheSortedSetGetScores.Miss) {
       return new CacheSortedSetGetScore.Miss(this.convertToUint8Array(value));
     } else if (responses instanceof CacheSortedSetGetScores.Error) {
-      return new CacheSortedSetGetScore.Error(
+      return this.cacheServiceErrorMapper.returnOrThrowError(
         responses.innerException(),
-        this.convertToUint8Array(value)
+        err =>
+          new CacheSortedSetGetScore.Error(err, this.convertToUint8Array(value))
       );
     }
 
-    return new CacheSortedSetGetScore.Error(
+    return this.cacheServiceErrorMapper.returnOrThrowError(
       new UnknownError('Unknown response type'),
-      this.convertToUint8Array(value)
+      err =>
+        new CacheSortedSetGetScore.Error(err, this.convertToUint8Array(value))
     );
   }
 
@@ -2315,7 +2524,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetGetScores.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetGetScores.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -2345,7 +2557,7 @@ export class CacheDataClient<
     request.setSetName(sortedSetName);
     request.setValuesList(values);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.sortedSetGetScore(
         request,
         {
@@ -2381,9 +2593,12 @@ export class CacheDataClient<
               );
             }
           } else {
-            resolve(
-              new CacheSortedSetGetScores.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSortedSetGetScores.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2399,7 +2614,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetGetRank.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetGetRank.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -2429,7 +2647,7 @@ export class CacheDataClient<
     request.setSetName(sortedSetName);
     request.setValue(value);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.sortedSetGetRank(
         request,
         {
@@ -2450,9 +2668,12 @@ export class CacheDataClient<
               resolve(new CacheSortedSetGetRank.Miss());
             }
           } else {
-            resolve(
-              new CacheSortedSetGetRank.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSortedSetGetRank.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2470,8 +2691,9 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetIncrementScore.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetIncrementScore.Error(err)
       );
     }
 
@@ -2511,7 +2733,7 @@ export class CacheDataClient<
     request.setTtlMilliseconds(ttlMilliseconds);
     request.setRefreshTtl(refreshTtl);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.sortedSetIncrement(
         request,
         {
@@ -2528,11 +2750,13 @@ export class CacheDataClient<
               resolve(new CacheSortedSetIncrementScore.Success(0));
             }
           } else {
-            resolve(
-              new CacheSortedSetIncrementScore.Error(
-                cacheServiceErrorMapper(err)
-              )
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSortedSetIncrementScore.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2548,7 +2772,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetFetch.Error(err)
+      );
     }
 
     this.logger.trace("Issuing 'sortedSetRemoveElement' request");
@@ -2575,7 +2802,7 @@ export class CacheDataClient<
     request.setSetName(sortedSetName);
     request.setSome(new _SortedSetRemoveRequest._Some().setValuesList([value]));
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.sortedSetRemove(
         request,
         {
@@ -2584,11 +2811,13 @@ export class CacheDataClient<
         },
         err => {
           if (err) {
-            resolve(
-              new CacheSortedSetRemoveElement.Error(
-                cacheServiceErrorMapper(err)
-              )
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSortedSetRemoveElement.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new CacheSortedSetRemoveElement.Success());
           }
@@ -2606,7 +2835,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetFetch.Error(err)
+      );
     }
 
     this.logger.trace("Issuing 'sortedSetRemoveElements' request");
@@ -2633,7 +2865,7 @@ export class CacheDataClient<
     request.setSetName(sortedSetName);
     request.setSome(new _SortedSetRemoveRequest._Some().setValuesList(values));
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.sortedSetRemove(
         request,
         {
@@ -2642,11 +2874,13 @@ export class CacheDataClient<
         },
         err => {
           if (err) {
-            resolve(
-              new CacheSortedSetRemoveElements.Error(
-                cacheServiceErrorMapper(err)
-              )
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSortedSetRemoveElements.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new CacheSortedSetRemoveElements.Success());
           }
@@ -2663,7 +2897,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
     } catch (err) {
-      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetFetch.Error(err)
+      );
     }
 
     this.logger.trace("Issuing 'sortedSetLength' request");
@@ -2687,7 +2924,7 @@ export class CacheDataClient<
     const request = new _SortedSetLengthRequest();
     request.setSetName(sortedSetName);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.sortedSetLength(
         request,
         {
@@ -2705,9 +2942,12 @@ export class CacheDataClient<
               resolve(new CacheSortedSetLength.Hit(len));
             }
           } else {
-            resolve(
-              new CacheSortedSetLength.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSortedSetLength.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2725,7 +2965,10 @@ export class CacheDataClient<
       validateSortedSetName(sortedSetName);
       validateSortedSetScores(minScore, maxScore);
     } catch (err) {
-      return new CacheSortedSetFetch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetFetch.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -2769,7 +3012,7 @@ export class CacheDataClient<
       request.setInclusiveMax(maxScore);
     }
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.sortedSetLengthByScore(
         request,
         {
@@ -2787,11 +3030,13 @@ export class CacheDataClient<
               resolve(new CacheSortedSetLengthByScore.Hit(len));
             }
           } else {
-            resolve(
-              new CacheSortedSetLengthByScore.Error(
-                cacheServiceErrorMapper(err)
-              )
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSortedSetLengthByScore.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2805,7 +3050,10 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheItemGetType.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheItemGetType.Error(err)
+      );
     }
     return await this.sendItemGetType(cacheName, convertToB64String(key));
   }
@@ -2817,7 +3065,7 @@ export class CacheDataClient<
     const request = new _ItemGetTypeRequest();
     request.setCacheKey(key);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.itemGetType(
         request,
         {
@@ -2834,7 +3082,12 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheItemGetType.Miss());
           } else {
-            resolve(new CacheItemGetType.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheItemGetType.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2848,7 +3101,10 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheItemGetTtl.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheItemGetTtl.Error(err)
+      );
     }
     return await this.sendItemGetTtl(cacheName, convertToB64String(key));
   }
@@ -2860,7 +3116,7 @@ export class CacheDataClient<
     const request = new _ItemGetTtlRequest();
     request.setCacheKey(key);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.itemGetTtl(
         request,
         {
@@ -2874,7 +3130,12 @@ export class CacheDataClient<
           } else if (resp?.getMissing()) {
             resolve(new CacheItemGetTtl.Miss());
           } else {
-            resolve(new CacheItemGetTtl.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheItemGetTtl.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2888,7 +3149,10 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheKeyExists.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheKeyExists.Error(err)
+      );
     }
 
     this.logger.trace("Issuing 'keyExists' request");
@@ -2909,7 +3173,7 @@ export class CacheDataClient<
     const request = new _KeysExistRequest();
     request.setCacheKeysList([key]);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.keysExist(
         request,
         {
@@ -2920,7 +3184,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheKeyExists.Success(resp.getExistsList()));
           } else {
-            resolve(new CacheKeyExists.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheKeyExists.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2934,7 +3203,10 @@ export class CacheDataClient<
     try {
       validateCacheName(cacheName);
     } catch (err) {
-      return new CacheKeysExist.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheKeysExist.Error(err)
+      );
     }
 
     this.logger.trace("Issuing 'keysExist' request");
@@ -2958,7 +3230,7 @@ export class CacheDataClient<
     const request = new _KeysExistRequest();
     request.setCacheKeysList(keys);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.keysExist(
         request,
         {
@@ -2969,7 +3241,12 @@ export class CacheDataClient<
           if (resp) {
             resolve(new CacheKeysExist.Success(resp.getExistsList()));
           } else {
-            resolve(new CacheKeysExist.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheKeysExist.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -2985,7 +3262,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateValidForSeconds(ttlMilliseconds);
     } catch (err) {
-      return new CacheUpdateTtl.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheUpdateTtl.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -3015,7 +3295,7 @@ export class CacheDataClient<
     request.setCacheKey(key);
     request.setOverwriteToMilliseconds(ttlMilliseconds);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.updateTtl(
         request,
         {
@@ -3028,7 +3308,12 @@ export class CacheDataClient<
           } else if (resp?.getSet()) {
             resolve(new CacheUpdateTtl.Set());
           } else {
-            resolve(new CacheUpdateTtl.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheUpdateTtl.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -3044,7 +3329,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateValidForSeconds(ttlMilliseconds);
     } catch (err) {
-      return new CacheIncreaseTtl.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheIncreaseTtl.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -3074,7 +3362,7 @@ export class CacheDataClient<
     request.setCacheKey(key);
     request.setIncreaseToMilliseconds(ttlMilliseconds);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.updateTtl(
         request,
         {
@@ -3087,7 +3375,12 @@ export class CacheDataClient<
           } else if (resp?.getSet()) {
             resolve(new CacheIncreaseTtl.Set());
           } else {
-            resolve(new CacheIncreaseTtl.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheIncreaseTtl.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -3103,7 +3396,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateValidForSeconds(ttlMilliseconds);
     } catch (err) {
-      return new CacheDecreaseTtl.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheDecreaseTtl.Error(err)
+      );
     }
 
     this.logger.trace(
@@ -3133,7 +3429,7 @@ export class CacheDataClient<
     request.setCacheKey(key);
     request.setDecreaseToMilliseconds(ttlMilliseconds);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.clientWrapper.updateTtl(
         request,
         {
@@ -3146,7 +3442,12 @@ export class CacheDataClient<
           } else if (resp?.getSet()) {
             resolve(new CacheDecreaseTtl.Set());
           } else {
-            resolve(new CacheDecreaseTtl.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheDecreaseTtl.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -3172,12 +3473,15 @@ export class CacheDataClient<
     return v.map(i => this.convertToUint8Array(i));
   }
 
-  private convertMapOrRecord(
+  private convertElements(
     elements:
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>
+      | Array<[string, string | Uint8Array]>
   ): _DictionaryFieldValuePairGrpc[] {
-    if (elements instanceof Map) {
+    if (elements instanceof Array) {
+      return this.convertElements(new Map(elements));
+    } else if (elements instanceof Map) {
       return [...elements.entries()].map(element =>
         new _DictionaryFieldValuePairGrpc()
           .setField(convertToB64String(element[0]))

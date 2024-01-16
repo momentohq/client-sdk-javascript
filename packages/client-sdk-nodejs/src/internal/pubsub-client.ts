@@ -3,11 +3,10 @@ import grpcPubsub = pubsub.cache_client.pubsub;
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
-import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, ServiceError} from '@grpc/grpc-js';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {version} from '../../package.json';
-import {TopicClientProps} from '../topic-client-props';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {
   CredentialProvider,
@@ -24,8 +23,9 @@ import {
   PrepareSubscribeCallbackOptions,
 } from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/AbstractPubsubClient';
 import {TopicConfiguration} from '../config/topic-configuration';
+import {TopicClientPropsWithConfiguration} from './topic-client-props-with-config';
 
-export class PubsubClient extends AbstractPubsubClient {
+export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   private readonly client: grpcPubsub.PubsubClient;
   private readonly configuration: TopicConfiguration;
   protected readonly credentialProvider: CredentialProvider;
@@ -33,6 +33,7 @@ export class PubsubClient extends AbstractPubsubClient {
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   private static readonly DEFAULT_MAX_SESSION_MEMORY_MB: number = 256;
   protected readonly logger: MomentoLogger;
+  protected readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly unaryInterceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
 
@@ -42,11 +43,14 @@ export class PubsubClient extends AbstractPubsubClient {
   /**
    * @param {TopicClientProps} props
    */
-  constructor(props: TopicClientProps) {
+  constructor(props: TopicClientPropsWithConfiguration) {
     super();
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
+    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
+      this.configuration.getThrowOnErrors()
+    );
     this.unaryRequestTimeoutMs = PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
     this.logger.debug(
       `Creating topic client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
@@ -105,7 +109,7 @@ export class PubsubClient extends AbstractPubsubClient {
       value: topicValue,
     });
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.client.Publish(
         request,
         {
@@ -115,7 +119,12 @@ export class PubsubClient extends AbstractPubsubClient {
           if (resp) {
             resolve(new TopicPublish.Success());
           } else {
-            resolve(new TopicPublish.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new TopicPublish.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -158,7 +167,7 @@ export class PubsubClient extends AbstractPubsubClient {
       call.cancel();
     };
 
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       const prepareCallbackOptions: PrepareSubscribeCallbackOptions = {
         ...options,
         restartedDueToError: false,
@@ -244,7 +253,7 @@ export class PubsubClient extends AbstractPubsubClient {
         serviceError.code === Status.INTERNAL &&
         serviceError.details === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE;
       const momentoError = new TopicSubscribe.Error(
-        cacheServiceErrorMapper(serviceError)
+        this.cacheServiceErrorMapper.convertError(serviceError)
       );
       this.handleSubscribeError(options, momentoError, isRstStreamNoError);
     };

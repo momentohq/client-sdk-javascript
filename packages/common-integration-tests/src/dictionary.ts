@@ -1730,6 +1730,48 @@ export function runDictionaryTests(
         }
       });
 
+      it('should set fields with string items Array', async () => {
+        const dictionaryName = v4();
+        const field1 = 'foo';
+        const value1 = v4();
+        const field2 = 'bar';
+        const value2 = v4();
+        const response = await cacheClient.dictionarySetFields(
+          integrationTestCacheName,
+          dictionaryName,
+          [
+            ['foo', value1],
+            ['bar', value2],
+          ],
+          {ttl: CollectionTtl.of(10)}
+        );
+        expectWithMessage(() => {
+          expect(response).toBeInstanceOf(CacheDictionarySetFields.Success);
+        }, `expected SUCCESS but got ${response.toString()}`);
+        let getResponse = await cacheClient.dictionaryGetField(
+          integrationTestCacheName,
+          dictionaryName,
+          field1
+        );
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
+        if (getResponse instanceof CacheDictionaryGetField.Hit) {
+          expect(getResponse.valueString()).toEqual(value1);
+        }
+        getResponse = await cacheClient.dictionaryGetField(
+          integrationTestCacheName,
+          dictionaryName,
+          field2
+        );
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
+        }, `expected HIT but got ${getResponse.toString()}`);
+        if (getResponse instanceof CacheDictionaryGetField.Hit) {
+          expect(getResponse.valueString()).toEqual(value2);
+        }
+      });
+
       it('should set fields with string field/Uint8Array value items', async () => {
         const dictionaryName = v4();
         const field1 = v4();

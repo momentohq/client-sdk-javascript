@@ -13,15 +13,12 @@ import {
   _DeleteIndexRequest,
   _SimilarityMetric,
 } from '@gomomento/generated-types-webtext/dist/controlclient_pb';
-import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   IVectorIndexControlClient,
   VectorSimilarityMetric,
 } from '@gomomento/sdk-core/dist/src/internal/clients';
-import {
-  normalizeSdkError,
-  UnknownError,
-} from '@gomomento/sdk-core/dist/src/errors';
+import {UnknownError} from '@gomomento/sdk-core/dist/src/errors';
 import {
   validateIndexName,
   validateNumDimensions,
@@ -46,6 +43,7 @@ export class VectorIndexControlClient<
 {
   private readonly clientWrapper: control.ScsControlClient;
   private readonly logger: MomentoLogger;
+  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
 
   private readonly clientMetadataProvider: ClientMetadataProvider;
 
@@ -54,6 +52,9 @@ export class VectorIndexControlClient<
    */
   constructor(props: ControlClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
+    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
+      props.configuration.getThrowOnErrors()
+    );
     this.logger.debug(
       `Creating control client using endpoint: '${getWebControlEndpoint(
         props.credentialProvider
@@ -80,7 +81,10 @@ export class VectorIndexControlClient<
       validateIndexName(indexName);
       validateNumDimensions(numDimensions);
     } catch (err) {
-      return new CreateVectorIndex.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CreateVectorIndex.Error(err)
+      );
     }
     const request = new _CreateIndexRequest();
     request.setIndexName(indexName);
@@ -106,17 +110,18 @@ export class VectorIndexControlClient<
         );
         break;
       default:
-        return new CreateVectorIndex.Error(
+        return this.cacheServiceErrorMapper.returnOrThrowError(
           new InvalidArgumentError(
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             `Invalid similarity metric: ${similarityMetric}`
-          )
+          ),
+          err => new CreateVectorIndex.Error(err)
         );
     }
     request.setSimilarityMetric(similarityMetricPb);
 
     this.logger.debug("Issuing 'createIndex' request");
-    return await new Promise<CreateVectorIndex.Response>(resolve => {
+    return await new Promise<CreateVectorIndex.Response>((resolve, reject) => {
       this.clientWrapper.createIndex(
         request,
         this.clientMetadataProvider.createClientMetadata(),
@@ -125,9 +130,12 @@ export class VectorIndexControlClient<
             if (err.code === StatusCode.ALREADY_EXISTS) {
               resolve(new CreateVectorIndex.AlreadyExists());
             } else {
-              resolve(
-                new CreateVectorIndex.Error(cacheServiceErrorMapper(err))
-              );
+              this.cacheServiceErrorMapper.resolveOrRejectError({
+                err: err,
+                errorResponseFactoryFn: e => new CreateVectorIndex.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
             }
           } else {
             resolve(new CreateVectorIndex.Success());
@@ -140,13 +148,18 @@ export class VectorIndexControlClient<
   public async listIndexes(): Promise<ListVectorIndexes.Response> {
     const request = new _ListIndexesRequest();
     this.logger.debug("Issuing 'listIndexes' request");
-    return await new Promise<ListVectorIndexes.Response>(resolve => {
+    return await new Promise<ListVectorIndexes.Response>((resolve, reject) => {
       this.clientWrapper.listIndexes(
         request,
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
           if (err) {
-            resolve(new ListVectorIndexes.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new ListVectorIndexes.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             const indexes: VectorIndexInfo[] = resp
               .getIndexesList()
@@ -199,17 +212,25 @@ export class VectorIndexControlClient<
     try {
       validateIndexName(indexName);
     } catch (err) {
-      return new CreateVectorIndex.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CreateVectorIndex.Error(err)
+      );
     }
     request.setIndexName(indexName);
     this.logger.debug("Issuing 'deleteIndex' request");
-    return await new Promise<DeleteVectorIndex.Response>(resolve => {
+    return await new Promise<DeleteVectorIndex.Response>((resolve, reject) => {
       this.clientWrapper.deleteIndex(
         request,
         this.clientMetadataProvider.createClientMetadata(),
         (err, _resp) => {
           if (err) {
-            resolve(new DeleteVectorIndex.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new DeleteVectorIndex.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new DeleteVectorIndex.Success());
           }

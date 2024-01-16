@@ -20,6 +20,10 @@ export interface ConfigurationProps {
    * Configures middleware functions that will wrap each request
    */
   middlewares: Middleware[];
+  /**
+   * Configures whether the client should return a Momento Error object or throw an exception when an error occurs.
+   */
+  throwOnErrors: boolean;
 }
 
 /**
@@ -83,6 +87,22 @@ export interface Configuration {
    * @returns {Configuration} a new Configuration object with its TransportStrategy updated to use the specified client timeout
    */
   withClientTimeoutMillis(clientTimeoutMillis: number): Configuration;
+
+  /**
+   * @returns {boolean} Configures whether the client should return a Momento Error object or throw an exception when an
+   * error occurs. By default, this is set to false, and the client will return a Momento Error object on errors. Set it
+   * to true if you prefer for exceptions to be thrown.
+   */
+  getThrowOnErrors(): boolean;
+
+  /**
+   * Copy constructor for configuring whether the client should return a Momento Error object or throw an exception when an
+   * error occurs. By default, this is set to false, and the client will return a Momento Error object on errors. Set it
+   * to true if you prefer for exceptions to be thrown.
+   * @param {boolean} throwOnErrors
+   * @returns {Configuration} a new Configuration object with the specified throwOnErrors setting
+   */
+  withThrowOnErrors(throwOnErrors: boolean): Configuration;
 }
 
 export class CacheConfiguration implements Configuration {
@@ -90,12 +110,14 @@ export class CacheConfiguration implements Configuration {
   private readonly retryStrategy: RetryStrategy;
   private readonly transportStrategy: TransportStrategy;
   private readonly middlewares: Middleware[];
+  private readonly throwOnErrors: boolean;
 
   constructor(props: ConfigurationProps) {
     this.loggerFactory = props.loggerFactory;
     this.retryStrategy = props.retryStrategy;
     this.transportStrategy = props.transportStrategy;
     this.middlewares = props.middlewares;
+    this.throwOnErrors = props.throwOnErrors;
   }
 
   getLoggerFactory(): MomentoLoggerFactory {
@@ -112,6 +134,7 @@ export class CacheConfiguration implements Configuration {
       retryStrategy: retryStrategy,
       transportStrategy: this.transportStrategy,
       middlewares: this.middlewares,
+      throwOnErrors: this.throwOnErrors,
     });
   }
 
@@ -125,6 +148,7 @@ export class CacheConfiguration implements Configuration {
       retryStrategy: this.retryStrategy,
       transportStrategy: transportStrategy,
       middlewares: this.middlewares,
+      throwOnErrors: this.throwOnErrors,
     });
   }
 
@@ -138,6 +162,7 @@ export class CacheConfiguration implements Configuration {
       retryStrategy: this.retryStrategy,
       transportStrategy: this.transportStrategy,
       middlewares: middlewares,
+      throwOnErrors: this.throwOnErrors,
     });
   }
 
@@ -147,6 +172,7 @@ export class CacheConfiguration implements Configuration {
       retryStrategy: this.retryStrategy,
       transportStrategy: this.transportStrategy,
       middlewares: [middleware, ...this.middlewares],
+      throwOnErrors: this.throwOnErrors,
     });
   }
 
@@ -157,6 +183,21 @@ export class CacheConfiguration implements Configuration {
       transportStrategy:
         this.transportStrategy.withClientTimeoutMillis(clientTimeout),
       middlewares: this.middlewares,
+      throwOnErrors: this.throwOnErrors,
+    });
+  }
+
+  getThrowOnErrors(): boolean {
+    return this.throwOnErrors;
+  }
+
+  withThrowOnErrors(throwOnErrors: boolean): Configuration {
+    return new CacheConfiguration({
+      loggerFactory: this.loggerFactory,
+      retryStrategy: this.retryStrategy,
+      transportStrategy: this.transportStrategy,
+      middlewares: this.middlewares,
+      throwOnErrors: throwOnErrors,
     });
   }
 }

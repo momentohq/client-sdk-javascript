@@ -6,6 +6,8 @@ import {
   RevokeSigningKey,
   CacheFlush,
   MomentoLogger,
+  Configuration,
+  Configurations,
 } from '.';
 import {CacheClientProps, EagerCacheClientProps} from './cache-client-props';
 import {
@@ -14,8 +16,10 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {AbstractCacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/AbstractCacheClient';
+import {CacheClientPropsWithConfig} from './internal/cache-client-props-with-config';
 
 const EAGER_CONNECTION_DEFAULT_TIMEOUT_SECONDS = 30;
+
 /**
  * Momento Cache Client.
  *
@@ -32,23 +36,31 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
    * @param {CacheClientProps} props configuration and credentials for creating a CacheClient.
    */
   constructor(props: CacheClientProps) {
+    const configuration: Configuration =
+      props.configuration ?? getDefaultCacheClientConfiguration();
+
+    const propsWithConfig: CacheClientPropsWithConfig = {
+      ...props,
+      configuration: configuration,
+    };
+
     const controlClient = new CacheControlClient({
-      configuration: props.configuration,
+      configuration: configuration,
       credentialProvider: props.credentialProvider,
     });
 
-    const numClients = props.configuration
+    const numClients = configuration
       .getTransportStrategy()
       .getGrpcConfig()
       .getNumClients();
     const dataClients = range(numClients).map(
-      (_, id) => new CacheDataClient(props, String(id))
+      (_, id) => new CacheDataClient(propsWithConfig, String(id))
     );
     super(controlClient, dataClients);
 
     this.notYetAbstractedControlClient = controlClient;
 
-    this.logger = props.configuration.getLoggerFactory().getLogger(this);
+    this.logger = configuration.getLoggerFactory().getLogger(this);
     this.logger.debug('Creating Momento CacheClient');
   }
 
@@ -144,6 +156,15 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
       (this.nextDataClientIndex + 1) % this.dataClients.length;
     return client as CacheDataClient;
   }
+}
+
+function getDefaultCacheClientConfiguration(): Configuration {
+  const config = Configurations.Laptop.latest();
+  const logger = config.getLoggerFactory().getLogger('CacheClient');
+  logger.info(
+    'No configuration provided to CacheClient. Using default "Laptop" configuration, suitable for development. For production use, consider specifying an explicit configuration.'
+  );
+  return config;
 }
 
 /**

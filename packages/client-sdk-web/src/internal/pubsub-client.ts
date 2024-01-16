@@ -7,10 +7,9 @@ import {
   UnknownError,
 } from '@gomomento/sdk-core';
 import {Request, RpcError, StatusCode, UnaryResponse} from 'grpc-web';
-import {TopicClientProps} from '../topic-client-props';
 import {truncateString} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {TopicPublish, TopicSubscribe} from '../index';
-import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   AbstractPubsubClient,
   PrepareSubscribeCallbackOptions,
@@ -23,17 +22,19 @@ import {
 } from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {TopicConfiguration} from '../config/topic-configuration';
+import {TopicClientPropsWithConfiguration} from './topic-client-props-with-config';
 
 export class PubsubClient<
   REQ extends Request<REQ, RESP>,
   RESP extends UnaryResponse<REQ, RESP>
-> extends AbstractPubsubClient {
+> extends AbstractPubsubClient<RpcError> {
   private readonly client: pubsub.PubsubClient;
   private readonly configuration: TopicConfiguration;
   protected readonly credentialProvider: CredentialProvider;
   private readonly requestTimeoutMs: number;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   protected readonly logger: MomentoLogger;
+  protected readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly clientMetadataProvider: ClientMetadataProvider;
 
   private static readonly RST_STREAM_NO_ERROR_MESSAGE =
@@ -41,11 +42,14 @@ export class PubsubClient<
   private static readonly BROWSER_DISCONNECT =
     'Http response at 400 or 500 level, http status code: 0';
 
-  constructor(props: TopicClientProps) {
+  constructor(props: TopicClientPropsWithConfiguration) {
     super();
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
+    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
+      props.configuration.getThrowOnErrors()
+    );
 
     this.requestTimeoutMs = PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
     this.logger.debug(
@@ -88,7 +92,7 @@ export class PubsubClient<
     request.setTopic(topicName);
     request.setValue(topicValue);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.client.publish(
         request,
         {
@@ -99,7 +103,12 @@ export class PubsubClient<
           if (resp) {
             resolve(new TopicPublish.Success());
           } else {
-            resolve(new TopicPublish.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new TopicPublish.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -233,7 +242,7 @@ export class PubsubClient<
       const shouldReconnectSubscription =
         isBrowserDisconnect || isRstStreamNoError;
       const momentoError = new TopicSubscribe.Error(
-        cacheServiceErrorMapper(serviceError)
+        this.cacheServiceErrorMapper.convertError(serviceError)
       );
       this.handleSubscribeError(
         options,

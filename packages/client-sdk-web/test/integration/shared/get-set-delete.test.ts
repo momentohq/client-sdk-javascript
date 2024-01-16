@@ -1,6 +1,11 @@
 import {runGetSetDeleteTests} from '@gomomento/common-integration-tests';
 import {SetupIntegrationTest} from '../integration-setup';
 
-const {cacheClient, integrationTestCacheName} = SetupIntegrationTest();
+const {cacheClient, cacheClientWithThrowOnErrors, integrationTestCacheName} =
+  SetupIntegrationTest();
 
-runGetSetDeleteTests(cacheClient, integrationTestCacheName);
+runGetSetDeleteTests(
+  cacheClient,
+  cacheClientWithThrowOnErrors,
+  integrationTestCacheName
+);

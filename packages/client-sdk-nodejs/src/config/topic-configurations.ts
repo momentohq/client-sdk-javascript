@@ -25,6 +25,7 @@ export class Default extends TopicClientConfiguration {
   ): TopicConfiguration {
     return new TopicClientConfiguration({
       loggerFactory: loggerFactory,
+      throwOnErrors: false,
     });
   }
 }

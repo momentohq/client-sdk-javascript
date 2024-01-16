@@ -2,7 +2,7 @@ import {control} from '@gomomento/generated-types';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {Status} from '@grpc/grpc-js/build/src/constants';
-import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {
   CredentialProvider,
@@ -18,10 +18,7 @@ import {
   validateIndexName,
   validateNumDimensions,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {
-  normalizeSdkError,
-  UnknownError,
-} from '@gomomento/sdk-core/dist/src/errors';
+import {UnknownError} from '@gomomento/sdk-core/dist/src/errors';
 import {
   CreateVectorIndex,
   DeleteVectorIndex,
@@ -43,12 +40,16 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
   private readonly interceptors: Interceptor[];
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
   private readonly logger: MomentoLogger;
+  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
 
   /**
    * @param {ControlClientProps} props
    */
   constructor(props: ControlClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
+    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
+      props.configuration.getThrowOnErrors()
+    );
     const headers = [
       new Header('Authorization', props.credentialProvider.getAuthToken()),
       new Header('Agent', `nodejs:${version}`),
@@ -82,7 +83,10 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
       validateIndexName(indexName);
       validateNumDimensions(numDimensions);
     } catch (err) {
-      return new CreateVectorIndex.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CreateVectorIndex.Error(err)
+      );
     }
     this.logger.debug("Issuing 'createIndex' request");
     const request = new grpcControl._CreateIndexRequest();
@@ -106,17 +110,18 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
           new grpcControl._SimilarityMetric._CosineSimilarity();
         break;
       default:
-        return new CreateVectorIndex.Error(
+        this.cacheServiceErrorMapper.returnOrThrowError(
           new InvalidArgumentError(
             `Invalid similarity metric: ${
               similarityMetric as unknown as string
             }`
-          )
+          ),
+          err => new CreateVectorIndex.Error(err)
         );
     }
     request.similarity_metric = similarityMetricPb;
 
-    return await new Promise<CreateVectorIndex.Response>(resolve => {
+    return await new Promise<CreateVectorIndex.Response>((resolve, reject) => {
       this.clientWrapper.getClient().CreateIndex(
         request,
         {interceptors: this.interceptors},
@@ -126,9 +131,12 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
             if (err.code === Status.ALREADY_EXISTS) {
               resolve(new CreateVectorIndex.AlreadyExists());
             } else {
-              resolve(
-                new CreateVectorIndex.Error(cacheServiceErrorMapper(err))
-              );
+              this.cacheServiceErrorMapper.resolveOrRejectError({
+                err: err,
+                errorResponseFactoryFn: e => new CreateVectorIndex.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
             }
           } else {
             resolve(new CreateVectorIndex.Success());
@@ -141,7 +149,7 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
   public async listIndexes(): Promise<ListVectorIndexes.Response> {
     const request = new grpcControl._ListIndexesRequest();
     this.logger.debug("Issuing 'listIndexes' request");
-    return await new Promise<ListVectorIndexes.Response>(resolve => {
+    return await new Promise<ListVectorIndexes.Response>((resolve, reject) => {
       this.clientWrapper
         .getClient()
         .ListIndexes(
@@ -151,9 +159,12 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
             if (err || !resp) {
               // TODO: `Argument of type 'unknown' is not assignable to parameter of type 'Error'.`
               //  I don't see how this is different from the other methods here. So, yeah, what?
-              resolve(
-                new ListVectorIndexes.Error(cacheServiceErrorMapper(err))
-              );
+              this.cacheServiceErrorMapper.resolveOrRejectError({
+                err: err,
+                errorResponseFactoryFn: e => new ListVectorIndexes.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
             } else {
               const indexes = resp.indexes.map(index => {
                 let similarityMetric: VectorSimilarityMetric =
@@ -196,20 +207,28 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
     try {
       validateIndexName(name);
     } catch (err) {
-      return new DeleteVectorIndex.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new DeleteVectorIndex.Error(err)
+      );
     }
     const request = new grpcControl._DeleteIndexRequest({
       index_name: name,
     });
     this.logger.info(`Deleting index: ${name}`);
-    return await new Promise<DeleteVectorIndex.Response>(resolve => {
+    return await new Promise<DeleteVectorIndex.Response>((resolve, reject) => {
       this.clientWrapper.getClient().DeleteIndex(
         request,
         {interceptors: this.interceptors},
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (err, resp) => {
           if (err) {
-            resolve(new DeleteVectorIndex.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new DeleteVectorIndex.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new DeleteVectorIndex.Success());
           }

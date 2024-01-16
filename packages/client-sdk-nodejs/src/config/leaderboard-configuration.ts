@@ -26,6 +26,22 @@ export interface LeaderboardConfiguration {
   withTransportStrategy(
     transportStrategy: TransportStrategy
   ): LeaderboardConfiguration;
+
+  /**
+   * @returns {boolean} Configures whether the client should return a Momento Error object or throw an exception when an
+   * error occurs. By default, this is set to false, and the client will return a Momento Error object on errors. Set it
+   * to true if you prefer for exceptions to be thrown.
+   */
+  getThrowOnErrors(): boolean;
+
+  /**
+   * Copy constructor for configuring whether the client should return a Momento Error object or throw an exception when an
+   * error occurs. By default, this is set to false, and the client will return a Momento Error object on errors. Set it
+   * to true if you prefer for exceptions to be thrown.
+   * @param {boolean} throwOnErrors
+   * @returns {Configuration} a new Configuration object with the specified throwOnErrors setting
+   */
+  withThrowOnErrors(throwOnErrors: boolean): LeaderboardConfiguration;
 }
 
 export interface LeaderboardConfigurationProps {
@@ -37,6 +53,11 @@ export interface LeaderboardConfigurationProps {
    * Configures low-level options for network interactions with the Momento service
    */
   transportStrategy: TransportStrategy;
+
+  /**
+   * Configures whether the client should return a Momento Error object or throw an exception when an error occurs.
+   */
+  throwOnErrors: boolean;
 }
 
 export class LeaderboardClientConfiguration
@@ -44,10 +65,12 @@ export class LeaderboardClientConfiguration
 {
   private readonly loggerFactory: MomentoLoggerFactory;
   private readonly transportStrategy: TransportStrategy;
+  private readonly throwOnErrors: boolean;
 
   constructor(props: LeaderboardConfigurationProps) {
     this.loggerFactory = props.loggerFactory;
     this.transportStrategy = props.transportStrategy;
+    this.throwOnErrors = props.throwOnErrors;
   }
 
   getLoggerFactory(): MomentoLoggerFactory {
@@ -65,6 +88,7 @@ export class LeaderboardClientConfiguration
       loggerFactory: this.loggerFactory,
       transportStrategy:
         this.transportStrategy.withClientTimeoutMillis(clientTimeoutMillis),
+      throwOnErrors: this.throwOnErrors,
     });
   }
 
@@ -74,6 +98,19 @@ export class LeaderboardClientConfiguration
     return new LeaderboardClientConfiguration({
       loggerFactory: this.loggerFactory,
       transportStrategy: transportStrategy,
+      throwOnErrors: this.throwOnErrors,
+    });
+  }
+
+  getThrowOnErrors(): boolean {
+    return this.throwOnErrors;
+  }
+
+  withThrowOnErrors(throwOnErrors: boolean): LeaderboardConfiguration {
+    return new LeaderboardClientConfiguration({
+      loggerFactory: this.loggerFactory,
+      transportStrategy: this.transportStrategy,
+      throwOnErrors: throwOnErrors,
     });
   }
 }

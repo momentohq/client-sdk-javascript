@@ -16,35 +16,36 @@ import {
   VectorGetItemBatch,
   VectorGetItemMetadataBatch,
 } from '@gomomento/sdk-core';
-import {VectorIndexClientProps} from '../vector-index-client-props';
 import {VectorIndexConfiguration} from '../config/vector-index-configuration';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {vectorindex} from '@gomomento/generated-types/dist/vectorindex';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
-import {cacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   validateIndexName,
   validateTopK,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {
-  UnknownError,
-  normalizeSdkError,
-} from '@gomomento/sdk-core/dist/src/errors';
+import {UnknownError} from '@gomomento/sdk-core/dist/src/errors';
 import {ALL_VECTOR_METADATA} from '@gomomento/sdk-core/dist/src/clients/IVectorIndexClient';
+import {VectorIndexClientPropsWithConfig} from './vector-index-client-props-with-config';
 
 export class VectorIndexDataClient implements IVectorIndexDataClient {
   private readonly configuration: VectorIndexConfiguration;
   private readonly credentialProvider: CredentialProvider;
   private readonly logger: MomentoLogger;
+  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly requestTimeoutMs: number;
   private readonly client: vectorindex.VectorIndexClient;
   private readonly interceptors: Interceptor[];
 
-  constructor(props: VectorIndexClientProps) {
+  constructor(props: VectorIndexClientPropsWithConfig) {
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
+    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
+      this.configuration.getThrowOnErrors()
+    );
     const grpcConfig = this.configuration
       .getTransportStrategy()
       .getGrpcConfig();
@@ -95,7 +96,10 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
         items
       );
     } catch (err) {
-      return new VectorUpsertItemBatch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new VectorUpsertItemBatch.Error(err)
+      );
     }
     return await this.sendUpsertItemBatch(indexName, request);
   }
@@ -168,7 +172,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     indexName: string,
     request: vectorindex._UpsertItemBatchRequest
   ): Promise<VectorUpsertItemBatch.Response> {
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.client.UpsertItemBatch(
         request,
         {interceptors: this.interceptors},
@@ -176,9 +180,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           if (resp) {
             resolve(new VectorUpsertItemBatch.Success());
           } else {
-            resolve(
-              new VectorUpsertItemBatch.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new VectorUpsertItemBatch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -192,7 +199,10 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     try {
       validateIndexName(indexName);
     } catch (err) {
-      return new VectorDeleteItemBatch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new VectorDeleteItemBatch.Error(err)
+      );
     }
     return await this.sendDeleteItemBatch(indexName, ids);
   }
@@ -205,7 +215,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       index_name: indexName,
       ids: ids,
     });
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.client.DeleteItemBatch(
         request,
         {interceptors: this.interceptors},
@@ -213,9 +223,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           if (resp) {
             resolve(new VectorDeleteItemBatch.Success());
           } else {
-            resolve(
-              new VectorDeleteItemBatch.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new VectorDeleteItemBatch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -233,7 +246,10 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
         validateTopK(options.topK);
       }
     } catch (err) {
-      return new VectorSearch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new VectorSearch.Error(err)
+      );
     }
     return await this.sendSearch(indexName, queryVector, options);
   }
@@ -309,7 +325,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     });
     VectorIndexDataClient.applyScoreThreshold(request, options);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.client.Search(
         request,
         {interceptors: this.interceptors},
@@ -335,7 +351,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               )
             );
           } else {
-            resolve(new VectorSearch.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new VectorSearch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -353,8 +374,9 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
         validateTopK(options.topK);
       }
     } catch (err) {
-      return new VectorSearchAndFetchVectors.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new VectorSearchAndFetchVectors.Error(err)
       );
     }
     return await this.sendSearchAndFetchVectors(
@@ -377,7 +399,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     });
     VectorIndexDataClient.applyScoreThreshold(request, options);
 
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.client.SearchAndFetchVectors(
         request,
         {interceptors: this.interceptors},
@@ -404,11 +426,13 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               )
             );
           } else {
-            resolve(
-              new VectorSearchAndFetchVectors.Error(
-                cacheServiceErrorMapper(err)
-              )
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new VectorSearchAndFetchVectors.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -422,7 +446,10 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     try {
       validateIndexName(indexName);
     } catch (err) {
-      return new VectorGetItemBatch.Error(normalizeSdkError(err as Error));
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new VectorGetItemBatch.Error(err)
+      );
     }
     return await this.sendGetItemBatch(indexName, ids);
   }
@@ -438,7 +465,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
         metadataFields: ALL_VECTOR_METADATA,
       }),
     });
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.client.GetItemBatch(
         request,
         {interceptors: this.interceptors},
@@ -482,7 +509,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               )
             );
           } else {
-            resolve(new VectorGetItemBatch.Error(cacheServiceErrorMapper(err)));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new VectorGetItemBatch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -496,8 +528,9 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     try {
       validateIndexName(indexName);
     } catch (err) {
-      return new VectorGetItemMetadataBatch.Error(
-        normalizeSdkError(err as Error)
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new VectorGetItemMetadataBatch.Error(err)
       );
     }
     return await this.sendGetItemMetadataBatch(indexName, ids);
@@ -514,7 +547,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
         metadataFields: ALL_VECTOR_METADATA,
       }),
     });
-    return await new Promise(resolve => {
+    return await new Promise((resolve, reject) => {
       this.client.GetItemMetadataBatch(
         request,
         {interceptors: this.interceptors},
@@ -555,9 +588,13 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
               )
             );
           } else {
-            resolve(
-              new VectorGetItemMetadataBatch.Error(cacheServiceErrorMapper(err))
-            );
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new VectorGetItemMetadataBatch.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );

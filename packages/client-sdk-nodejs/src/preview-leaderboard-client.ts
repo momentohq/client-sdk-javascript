@@ -7,6 +7,8 @@ import {LeaderboardDataClient} from './internal/leaderboard-data-client';
 import {LeaderboardClientProps} from './leaderboard-client-props';
 import {Leaderboard} from './internal/leaderboard';
 import {ILeaderboardDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/leaderboard/ILeaderboardDataClient';
+import {LeaderboardConfiguration, LeaderboardConfigurations} from './index';
+import {LeaderboardClientPropsWithConfig} from './internal/leaderboard-client-props-with-config';
 
 /**
  * PREVIEW Momento Leaderboard Client
@@ -19,14 +21,19 @@ import {ILeaderboardDataClient} from '@gomomento/sdk-core/dist/src/internal/clie
  */
 export class PreviewLeaderboardClient implements ILeaderboardClient {
   protected readonly logger: MomentoLogger;
-  protected readonly props: LeaderboardClientProps;
   private dataClient: ILeaderboardDataClient;
 
   constructor(props: LeaderboardClientProps) {
-    this.logger = props.configuration.getLoggerFactory().getLogger(this);
+    const configuration =
+      props.configuration ?? getDefaultLeaderboardConfiguration();
+    const propsWithConfig: LeaderboardClientPropsWithConfig = {
+      ...props,
+      configuration: configuration,
+    };
+
+    this.logger = configuration.getLoggerFactory().getLogger(this);
     this.logger.debug('Creating Momento LeaderboardClient');
-    this.props = props;
-    this.dataClient = new LeaderboardDataClient(this.props);
+    this.dataClient = new LeaderboardDataClient(propsWithConfig);
   }
 
   /**
@@ -35,4 +42,8 @@ export class PreviewLeaderboardClient implements ILeaderboardClient {
   public leaderboard(cacheName: string, leaderboardName: string): ILeaderboard {
     return new Leaderboard(this.dataClient, cacheName, leaderboardName);
   }
+}
+
+function getDefaultLeaderboardConfiguration(): LeaderboardConfiguration {
+  return LeaderboardConfigurations.Laptop.latest();
 }
