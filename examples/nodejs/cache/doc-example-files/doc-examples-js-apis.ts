@@ -120,6 +120,10 @@ function example_API_ConfigurationInRegionLowLatency() {
   Configurations.InRegion.LowLatency.v1();
 }
 
+function example_API_ConfigurationLambdaLatest() {
+  Configurations.Lambda.latest();
+}
+
 async function example_API_InstantiateCacheClient() {
   return await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
@@ -1165,7 +1169,6 @@ async function example_API_LeaderboardUpsert(leaderboard: ILeaderboard) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function example_API_LeaderboardUpsertPagination(leaderboard: ILeaderboard) {
   // To upsert a large number of elements, you must upsert
   // in batches of up to 8192 elements at a time.
@@ -1260,7 +1263,6 @@ async function example_API_LeaderboardFetchByRank(leaderboard: ILeaderboard) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function example_API_LeaderboardFetchByRankPagination(leaderboard: ILeaderboard) {
   // Use the startRank and endRank options to paginate through your leaderboard
   // if your leaderboard has more than 8192 elements
@@ -1314,7 +1316,6 @@ async function example_API_LeaderboardRemoveElements(leaderboard: ILeaderboard) 
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function example_API_LeaderboardRemoveElementsPagination(leaderboard: ILeaderboard) {
   // You can remove batches of 8192 elements at a time
   const ids = [...Array(20000).keys()];
@@ -1348,6 +1349,7 @@ async function main() {
   example_API_ConfigurationInRegionDefault();
   example_API_ConfigurationInRegionDefaultLatest();
   example_API_ConfigurationInRegionLowLatency();
+  example_API_ConfigurationLambdaLatest();
 
   await example_API_InstantiateCacheClient();
 
@@ -1455,6 +1457,10 @@ async function main() {
   await example_API_LeaderboardLength(leaderboard);
   await example_API_LeaderboardRemoveElements(leaderboard);
   await example_API_LeaderboardDelete(leaderboard);
+  await example_API_LeaderboardFetchByRankPagination(leaderboard);
+  await example_API_LeaderboardFetchByScorePagination(leaderboard);
+  await example_API_LeaderboardUpsertPagination(leaderboard);
+  await example_API_LeaderboardUpsertPagination(leaderboard);
 }
 
 main().catch(e => {
