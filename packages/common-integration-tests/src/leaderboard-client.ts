@@ -1017,4 +1017,55 @@ export function runLeaderboardClientTests(
       );
     });
   });
+
+  describe('Leaderboard should be able to upsert and fetch double precision floats', () => {
+    const leaderboardName = `test-leaderboard-${v4()}`;
+
+    const upsertsAndFetchesDoubles = async (leaderboard: ILeaderboard) => {
+      const elements = new Map([
+        [123, 27.004309862363737],
+        [456, 16777217],
+        [789, 300.5],
+      ]);
+
+      const response = await leaderboard.upsert(elements);
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(LeaderboardUpsert.Success);
+      }, `expected Success but got ${response.toString()}`);
+
+      const fetchResponse = await leaderboard.fetchByScore();
+      expectWithMessage(() => {
+        expect(fetchResponse).toBeInstanceOf(LeaderboardFetch.Success);
+      }, `expected Found but got ${fetchResponse.toString()}`);
+      const receivedElements = (
+        fetchResponse as LeaderboardFetch.Success
+      ).values();
+      const expectedElements = [
+        {
+          id: 123,
+          score: 27.004309862363737,
+          rank: 0,
+        },
+        {
+          id: 789,
+          score: 300.5,
+          rank: 1,
+        },
+        {
+          id: 456,
+          score: 16777217,
+          rank: 2,
+        },
+      ];
+      expect(receivedElements).toEqual(expectedElements);
+    };
+    it('upserts and fetches doubles with correct precision', async () => {
+      await withTemporaryLeaderboard(
+        leaderboardClient,
+        leaderboardName,
+        integrationTestCacheName,
+        upsertsAndFetchesDoubles
+      );
+    });
+  });
 }
