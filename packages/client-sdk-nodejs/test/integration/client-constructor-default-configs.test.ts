@@ -7,6 +7,10 @@ import {
 } from '../../src';
 import {credsProvider} from './integration-setup';
 
+// These tokens have valid syntax, but they don't actually have valid credentials.  Just used for unit testing.
+const fakeTestV1ApiKey =
+  'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE2NzgzMDU4MTIsImV4cCI6NDg2NTUxNTQxMiwiYXVkIjoiIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSJ9.8Iy8q84Lsr-D3YCo_HP4d-xjHdT8UCIuvAYcxhFMyz8';
+
 describe('default configurations', () => {
   it('CacheClient should be able to be constructed with a default configuration', async () => {
     const cacheClientViaConstructor = new CacheClient({
@@ -41,7 +45,7 @@ describe('default configurations', () => {
 
   it('CacheClient should be able to be constructed with a simple string for fromString', () => {
     const cacheClientViaConstructor = new CacheClient({
-      credentialProvider: CredentialProvider.fromString(''),
+      credentialProvider: CredentialProvider.fromString(fakeTestV1ApiKey),
       defaultTtlSeconds: 60,
     });
     expect(cacheClientViaConstructor).toBeInstanceOf(CacheClient);
