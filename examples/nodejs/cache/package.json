@@ -10,7 +10,7 @@
     "advanced": "tsc && node dist/advanced.js",
     "dictionary": "tsc && node dist/dictionary.js",
     "doc-examples": "tsc && node dist/doc-example-files/doc-examples-js-apis.js",
-    "validate-examples": "tsc && node dist/readme.js && node dist/basic.js && node dist/advanced.js && node dist/dictionary.js && node dist/doc-example-files/doc-examples-js-apis.js && node dist/doc-example-files/cheat-sheet-main.js && node dist/batchutils.js && node dist/leaderboard.js && node dist/doc-example-files/collection-ttl.js",
+    "validate-examples": "tsc && node dist/readme.js && node dist/basic.js && node dist/advanced.js && node dist/dictionary.js && node dist/doc-example-files/doc-examples-js-apis.js && node dist/doc-example-files/cheat-sheet-main.js && node dist/batchutils.js && node dist/leaderboard.js && node dist/doc-example-files/collection-ttl.js && node dist/doc-example-files/config-and-error-handling.js",
     "leaderboard": "tsc && node dist/leaderboard.js",
     "batchutils": "tsc && node dist/batchutils.js",
     "test": "jest",
