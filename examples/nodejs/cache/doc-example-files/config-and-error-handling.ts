@@ -11,7 +11,7 @@
 import {CacheClient, Configurations, CredentialProvider, CacheGet, SdkError, MomentoErrorCode} from '@gomomento/sdk';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-async function configuration_ConstructWithNoConfig() {
+async function example_configuration_ConstructWithNoConfig() {
   const cacheClient = await CacheClient.create({
     credentialProvider: CredentialProvider.fromEnvVar('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
@@ -20,7 +20,7 @@ async function configuration_ConstructWithNoConfig() {
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-async function configuration_ConstructWithLambdaConfig() {
+async function example_configuration_ConstructWithLambdaConfig() {
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Lambda.latest(),
     credentialProvider: CredentialProvider.fromEnvVar('MOMENTO_API_KEY'),
@@ -29,7 +29,7 @@ async function configuration_ConstructWithLambdaConfig() {
 }
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
-async function configuration_ErrorHandlingHitMiss(cacheClient: CacheClient) {
+async function example_configuration_ErrorHandlingHitMiss(cacheClient: CacheClient) {
   const result = await cacheClient.get('test-cache', 'test-key');
   if (result instanceof CacheGet.Hit) {
     console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
@@ -43,7 +43,7 @@ async function configuration_ErrorHandlingHitMiss(cacheClient: CacheClient) {
 }
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-async function configuration_ConstructWithThrowOnErrorsConfig() {
+async function example_configuration_ConstructWithThrowOnErrorsConfig() {
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Lambda.latest().withThrowOnErrors(true),
     credentialProvider: CredentialProvider.fromEnvVar('MOMENTO_API_KEY'),
@@ -52,7 +52,7 @@ async function configuration_ConstructWithThrowOnErrorsConfig() {
 }
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
-async function configuration_ErrorHandlingExceptionErrorCode(cacheClient: CacheClient) {
+async function example_configuration_ErrorHandlingExceptionErrorCode(cacheClient: CacheClient) {
   try {
     const result = await cacheClient.get('test-cache', 'test-key');
     if (result instanceof CacheGet.Hit) {
@@ -81,10 +81,10 @@ async function main() {
     defaultTtlSeconds: 60,
   });
 
-  await configuration_ConstructWithNoConfig();
-  await configuration_ConstructWithLambdaConfig();
-  await configuration_ErrorHandlingHitMiss(cacheClient);
-  await configuration_ConstructWithThrowOnErrorsConfig();
+  await example_configuration_ConstructWithNoConfig();
+  await example_configuration_ConstructWithLambdaConfig();
+  await example_configuration_ErrorHandlingHitMiss(cacheClient);
+  await example_configuration_ConstructWithThrowOnErrorsConfig();
 
   const cacheClientWithThrowOnErrors = await CacheClient.create({
     configuration: Configurations.Lambda.latest().withThrowOnErrors(true),
@@ -92,7 +92,7 @@ async function main() {
     defaultTtlSeconds: 60,
   });
 
-  await configuration_ErrorHandlingExceptionErrorCode(cacheClientWithThrowOnErrors);
+  await example_configuration_ErrorHandlingExceptionErrorCode(cacheClientWithThrowOnErrors);
 }
 
 main().catch(e => {
