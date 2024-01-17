@@ -8,87 +8,7 @@
  * a second file in the future if desired.
  *
  */
-import {
-  CacheClient,
-  Configurations,
-  CredentialProvider,
-  CreateCache,
-  DeleteCache,
-  CacheFlush,
-  ListCaches,
-  CacheSet,
-  CacheGet,
-  CacheDelete,
-  AuthClient,
-  AllDataReadWrite,
-  ExpiresIn,
-  TokenScopes,
-  DisposableTokenScopes,
-  AllCaches,
-  AllTopics,
-  CacheRole,
-  TopicRole,
-  GenerateApiKey,
-  RefreshApiKey,
-  GenerateDisposableToken,
-  CacheIncrement,
-  CacheItemGetType,
-  CacheSetIfNotExists,
-  CacheListFetch,
-  CacheListConcatenateBack,
-  CacheListConcatenateFront,
-  CacheListLength,
-  CacheListPopBack,
-  CacheListPopFront,
-  CacheListPushBack,
-  CacheListPushFront,
-  CacheListRemoveValue,
-  CacheListRetain,
-  ItemType,
-  CacheDictionaryFetch,
-  CacheDictionaryGetField,
-  CacheDictionaryGetFields,
-  CacheDictionarySetField,
-  CacheDictionarySetFields,
-  CacheDictionaryIncrement,
-  CacheDictionaryRemoveField,
-  CacheDictionaryRemoveFields,
-  CacheSetAddElement,
-  CacheSetAddElements,
-  CacheSetFetch,
-  CacheSetRemoveElement,
-  CacheSetRemoveElements,
-  CacheSortedSetPutElement,
-  CacheSortedSetPutElements,
-  CacheSortedSetFetch,
-  CacheSortedSetGetRank,
-  CacheSortedSetGetScore,
-  CacheSortedSetGetScores,
-  CacheSortedSetIncrementScore,
-  CacheSortedSetRemoveElement,
-  CacheSortedSetRemoveElements,
-  TopicClient,
-  TopicPublish,
-  TopicSubscribe,
-  TopicItem,
-  TopicConfigurations,
-  PreviewLeaderboardClient,
-  LeaderboardConfigurations,
-  ILeaderboard,
-  LeaderboardDelete,
-  LeaderboardFetch,
-  LeaderboardLength,
-  LeaderboardOrder,
-  LeaderboardRemoveElements,
-  LeaderboardUpsert,
-  ListWebhooks,
-  DeleteWebhook,
-  PutWebhook,
-  RotateWebhookSecret,
-  GetWebhookSecret,
-  SdkError,
-  MomentoErrorCode,
-} from '@gomomento/sdk';
+import {CacheClient, Configurations, CredentialProvider, CacheGet, SdkError, MomentoErrorCode} from '@gomomento/sdk';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 async function configuration_ConstructWithNoConfig() {
@@ -165,7 +85,14 @@ async function main() {
   await configuration_ConstructWithLambdaConfig();
   await configuration_ErrorHandlingHitMiss(cacheClient);
   await configuration_ConstructWithThrowOnErrorsConfig();
-  await configuration_ErrorHandlingExceptionErrorCode(cacheClient);
+
+  const cacheClientWithThrowOnErrors = await CacheClient.create({
+    configuration: Configurations.Lambda.latest().withThrowOnErrors(true),
+    credentialProvider: CredentialProvider.fromEnvVar('MOMENTO_API_KEY'),
+    defaultTtlSeconds: 60,
+  });
+
+  await configuration_ErrorHandlingExceptionErrorCode(cacheClientWithThrowOnErrors);
 }
 
 main().catch(e => {
