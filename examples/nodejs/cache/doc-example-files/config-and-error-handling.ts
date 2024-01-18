@@ -54,10 +54,10 @@ async function example_configuration_ConstructWithThrowOnErrorsConfig() {
 
 async function example_configuration_ErrorHandlingExceptionErrorCode(cacheClient: CacheClient) {
   try {
-    const result = await cacheClient.get('test-cache', 'test-key');
-    if (result instanceof CacheGet.Hit) {
-      console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
-    } else if (result instanceof CacheGet.Miss) {
+    const result = (await cacheClient.get('test-cache', 'test-key')).value();
+    if (result !== undefined) {
+      console.log(`Retrieved value for key 'test-key': ${result}`);
+    } else {
       console.log("Key 'test-key' was not found in cache 'test-cache'");
     }
   } catch (e) {
