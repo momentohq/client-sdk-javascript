@@ -21,7 +21,14 @@ import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
  * }
  * ```
  */
-export abstract class Response extends ResponseBase {}
+export abstract class Response extends ResponseBase {
+  getIndexes(): VectorIndexInfo[] | undefined {
+    if (this instanceof Success) {
+      return this.getIndexes();
+    }
+    return undefined;
+  }
+}
 
 class _Success extends Response {
   private readonly indexes: VectorIndexInfo[];
