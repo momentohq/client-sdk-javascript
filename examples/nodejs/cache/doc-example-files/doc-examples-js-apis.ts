@@ -87,6 +87,7 @@ import {
   RotateWebhookSecret,
   GetWebhookSecret,
 } from '@gomomento/sdk';
+import {delay} from '../utils/time';
 
 function retrieveApiKeyFromYourSecretsManager(): string {
   // this is not a valid API key but conforms to the syntax requirements.
@@ -118,6 +119,10 @@ function example_API_ConfigurationInRegionDefaultLatest() {
 
 function example_API_ConfigurationInRegionLowLatency() {
   Configurations.InRegion.LowLatency.v1();
+}
+
+function example_API_ConfigurationLambdaLatest() {
+  Configurations.Lambda.latest();
 }
 
 async function example_API_InstantiateCacheClient() {
@@ -1165,7 +1170,6 @@ async function example_API_LeaderboardUpsert(leaderboard: ILeaderboard) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function example_API_LeaderboardUpsertPagination(leaderboard: ILeaderboard) {
   // To upsert a large number of elements, you must upsert
   // in batches of up to 8192 elements at a time.
@@ -1230,7 +1234,6 @@ function processBatch(
   console.log('Empty function', values.length);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function example_API_LeaderboardFetchByScorePagination(leaderboard: ILeaderboard) {
   // Use the offset option to paginate through your results if your leaderboard
   // has more than 8192 elements.
@@ -1239,7 +1242,9 @@ async function example_API_LeaderboardFetchByScorePagination(leaderboard: ILeade
     if (result instanceof LeaderboardFetch.Success) {
       processBatch(result.values());
     } else if (result instanceof LeaderboardFetch.Error) {
-      console.log(`Error fetching batch [${offset}, ${offset + 8192})`);
+      console.log(
+        `Error fetching batch by score [${offset}, ${offset + 8192}) (${result.errorCode()}: ${result.message()})`
+      );
     }
   }
 }
@@ -1260,7 +1265,6 @@ async function example_API_LeaderboardFetchByRank(leaderboard: ILeaderboard) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function example_API_LeaderboardFetchByRankPagination(leaderboard: ILeaderboard) {
   // Use the startRank and endRank options to paginate through your leaderboard
   // if your leaderboard has more than 8192 elements
@@ -1269,7 +1273,9 @@ async function example_API_LeaderboardFetchByRankPagination(leaderboard: ILeader
     if (result instanceof LeaderboardFetch.Success) {
       processBatch(result.values());
     } else if (result instanceof LeaderboardFetch.Error) {
-      console.log(`Error fetching batch [${rank}, ${rank + 8192})`);
+      console.log(
+        `Error fetching batch by rank [${rank}, ${rank + 8192}) (${result.errorCode()}: ${result.message()})`
+      );
     }
   }
 }
@@ -1314,14 +1320,13 @@ async function example_API_LeaderboardRemoveElements(leaderboard: ILeaderboard) 
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function example_API_LeaderboardRemoveElementsPagination(leaderboard: ILeaderboard) {
   // You can remove batches of 8192 elements at a time
   const ids = [...Array(20000).keys()];
   for (let i = 0; i < 20000; i += 8192) {
     const result = await leaderboard.removeElements(ids.slice(i, i + 8192));
     if (result instanceof LeaderboardRemoveElements.Error) {
-      console.log(`Error removing batch [${i}, ${i + 8192})`);
+      console.log(`Error removing batch [${i}, ${i + 8192}) (${result.errorCode()}: ${result.message()})`);
     }
   }
 }
@@ -1348,6 +1353,7 @@ async function main() {
   example_API_ConfigurationInRegionDefault();
   example_API_ConfigurationInRegionDefaultLatest();
   example_API_ConfigurationInRegionLowLatency();
+  example_API_ConfigurationLambdaLatest();
 
   await example_API_InstantiateCacheClient();
 
@@ -1358,6 +1364,9 @@ async function main() {
     }),
     defaultTtlSeconds: 60,
   });
+
+  // Sleep for a sec to make sure we don't hit rate limits
+  await delay(5_000);
 
   await example_API_CreateCache(cacheClient);
   await example_API_ErrorHandlingHitMiss(cacheClient);
@@ -1455,6 +1464,34 @@ async function main() {
   await example_API_LeaderboardLength(leaderboard);
   await example_API_LeaderboardRemoveElements(leaderboard);
   await example_API_LeaderboardDelete(leaderboard);
+
+  // Sleep for a while to replenish rate limits before running other tests
+  await delay(20_000);
+
+  await example_API_LeaderboardFetchByRankPagination(leaderboard);
+
+  // Sleep for a while to replenish rate limits before running other tests
+  await delay(20_000);
+
+  await example_API_LeaderboardFetchByScorePagination(leaderboard);
+
+  // Sleep for a while to replenish rate limits before running other tests
+  await delay(20_000);
+
+  await example_API_LeaderboardUpsertPagination(leaderboard);
+
+  // Sleep for a while to replenish rate limits before running other tests
+  await delay(20_000);
+
+  await example_API_LeaderboardRemoveElementsPagination(leaderboard);
+
+  // Sleep for a while to replenish rate limits before running other tests
+  await delay(20_000);
+
+  await example_API_LeaderboardUpsertPagination(leaderboard);
+
+  // Sleep for a while to replenish rate limits before running other tests
+  await delay(60_000);
 }
 
 main().catch(e => {
