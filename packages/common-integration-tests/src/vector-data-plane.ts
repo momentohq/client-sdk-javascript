@@ -1,12 +1,14 @@
 import {
   InvalidArgumentError,
   IVectorIndexClient,
+  MomentoErrorCode,
   VectorDeleteItemBatch,
   VectorSearch,
   VectorUpsertItemBatch,
   ALL_VECTOR_METADATA,
   VectorSimilarityMetric,
   SearchOptions,
+  VectorCountItems,
   VectorSearchAndFetchVectors,
   VectorIndexItem,
   VectorGetItemBatch,
@@ -26,6 +28,22 @@ export function runVectorDataPlaneTest(
   vectorClient: IVectorIndexClient,
   vectorClientWithThrowOnErrors: IVectorIndexClient
 ) {
+  describe('countItems validation', () => {
+    ItBehavesLikeItValidatesIndexName((props: ValidateVectorProps) => {
+      return vectorClient.countItems(props.indexName);
+    });
+  });
+
+  describe('getItemBatch and getItemMetadataBatch validation', () => {
+    ItBehavesLikeItValidatesIndexName((props: ValidateVectorProps) => {
+      return vectorClient.getItemBatch(props.indexName, ['']);
+    });
+
+    ItBehavesLikeItValidatesIndexName((props: ValidateVectorProps) => {
+      return vectorClient.getItemMetadataBatch(props.indexName, ['']);
+    });
+  });
+
   describe('upsertItem validation', () => {
     ItBehavesLikeItValidatesIndexName((props: ValidateVectorProps) => {
       return vectorClient.upsertItemBatch(props.indexName, []);
@@ -1188,6 +1206,88 @@ export function runVectorDataPlaneTest(
                 {id: 'test_item', vector: [1.0, 2.0, 3.0]},
               ])
           ).rejects.toThrow(InvalidArgumentError);
+        }
+      );
+    });
+  });
+
+  describe('countItems', () => {
+    it('should return a not found error when the index does not exist', async () => {
+      const indexName = testIndexName('data-count-items-not-found');
+      const response = await vectorClient.countItems(indexName);
+      expect(response).toBeInstanceOf(VectorCountItems.Error);
+
+      const errorResponse = response as VectorCountItems.Error;
+      expect(errorResponse.errorCode()).toEqual(
+        MomentoErrorCode.NOT_FOUND_ERROR
+      );
+    });
+
+    it('should return an item count of zero for an empty index', async () => {
+      const indexName = testIndexName('data-count-items-empty-index');
+      await WithIndex(
+        vectorClient,
+        indexName,
+        2,
+        VectorSimilarityMetric.INNER_PRODUCT,
+        async () => {
+          const response = await vectorClient.countItems(indexName);
+          expect(response).toBeInstanceOf(VectorCountItems.Success);
+          expect((response as VectorCountItems.Success).itemCount()).toEqual(0);
+        }
+      );
+    });
+
+    it('should count the correct number of items in an index', async () => {
+      const indexName = testIndexName('data-count-items');
+      const itemCount = 10;
+      await WithIndex(
+        vectorClient,
+        indexName,
+        2,
+        VectorSimilarityMetric.INNER_PRODUCT,
+        async () => {
+          const items: VectorIndexItem[] = [];
+          for (let i = 0; i < itemCount; i++) {
+            items.push({
+              id: `test_item_${i}`,
+              vector: [i, i],
+            });
+          }
+
+          const upsertResponse = await vectorClient.upsertItemBatch(
+            indexName,
+            items
+          );
+          expect(upsertResponse).toBeInstanceOf(VectorUpsertItemBatch.Success);
+
+          await sleep(2_000);
+
+          const countResponse = await vectorClient.countItems(indexName);
+          expect(countResponse).toBeInstanceOf(VectorCountItems.Success);
+          expect(
+            (countResponse as VectorCountItems.Success).itemCount()
+          ).toEqual(itemCount);
+
+          const itemsToDelete: string[] = [];
+          const numItemsToDelete = 5;
+          for (let i = 0; i < numItemsToDelete; i++) {
+            itemsToDelete.push(`test_item_${i}`);
+          }
+
+          const deleteResponse = await vectorClient.deleteItemBatch(
+            indexName,
+            itemsToDelete
+          );
+          expect(deleteResponse).toBeInstanceOf(VectorDeleteItemBatch.Success);
+
+          await sleep(2_000);
+
+          const countResponse2 = await vectorClient.countItems(indexName);
+          expect(countResponse2).toBeInstanceOf(VectorCountItems.Success);
+          expect(
+            (countResponse2 as VectorCountItems.Success).itemCount()
+          ).toEqual(itemCount - numItemsToDelete);
         }
       );
     });
