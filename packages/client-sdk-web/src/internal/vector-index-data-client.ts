@@ -4,6 +4,7 @@ import {IVectorIndexDataClient} from '@gomomento/sdk-core/dist/src/internal/clie
 import {
   MomentoLogger,
   SearchOptions,
+  VectorCountItems,
   VectorDeleteItemBatch,
   VectorSearch,
   VectorSearchAndFetchVectors,
@@ -51,6 +52,50 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       authToken: props.credentialProvider.getAuthToken(),
     });
     this.client = new VectorIndexClient(vectorEndpoint, null, {});
+  }
+
+  public async countItems(
+    indexName: string
+  ): Promise<VectorCountItems.Response> {
+    try {
+      validateIndexName(indexName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new VectorCountItems.Error(err)
+      );
+    }
+    return await this.sendCountItems(indexName);
+  }
+
+  private async sendCountItems(
+    indexName: string
+  ): Promise<VectorCountItems.Response> {
+    const request = new vectorindex._CountItemsRequest();
+    request.setIndexName(indexName);
+    request.setAll(new vectorindex._CountItemsRequest.All());
+
+    return await new Promise((resolve, reject) => {
+      this.client.countItems(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...this.createVectorCallMetadata(this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new VectorCountItems.Success(resp.getItemCount()));
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new VectorCountItems.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
   }
 
   public async upsertItemBatch(

@@ -1,4 +1,5 @@
 import {
+  VectorCountItems,
   VectorUpsertItemBatch,
   VectorDeleteItemBatch,
   VectorSearch,
@@ -10,6 +11,7 @@ import {VectorIndexItem} from '../../../messages/vector-index';
 import {SearchOptions} from '../../../clients/IVectorIndexClient';
 
 export interface IVectorIndexDataClient {
+  countItems(indexName: string): Promise<VectorCountItems.Response>;
   upsertItemBatch(
     indexName: string,
     items: Array<VectorIndexItem>

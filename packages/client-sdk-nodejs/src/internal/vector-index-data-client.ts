@@ -6,6 +6,7 @@ import {
   MomentoLogger,
   MomentoLoggerFactory,
   SearchOptions,
+  VectorCountItems,
   VectorDeleteItemBatch,
   VectorSearch,
   VectorSearchAndFetchVectors,
@@ -80,6 +81,47 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     this.interceptors = this.initializeInterceptors(
       this.configuration.getLoggerFactory()
     );
+  }
+
+  public async countItems(
+    indexName: string
+  ): Promise<VectorCountItems.Response> {
+    try {
+      validateIndexName(indexName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new VectorCountItems.Error(err)
+      );
+    }
+    return await this.sendCountItems(indexName);
+  }
+
+  private async sendCountItems(
+    indexName: string
+  ): Promise<VectorCountItems.Response> {
+    const request = new vectorindex._CountItemsRequest({
+      index_name: indexName,
+      all: new vectorindex._CountItemsRequest.All(),
+    });
+    return await new Promise((resolve, reject) => {
+      this.client.CountItems(
+        request,
+        {interceptors: this.interceptors},
+        (err, resp) => {
+          if (resp) {
+            resolve(new VectorCountItems.Success(resp.item_count));
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new VectorCountItems.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
   }
 
   public async upsertItemBatch(
