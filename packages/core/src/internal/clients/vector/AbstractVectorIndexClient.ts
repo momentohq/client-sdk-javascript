@@ -2,6 +2,7 @@ import {
   CreateVectorIndex,
   DeleteVectorIndex,
   ListVectorIndexes,
+  VectorCountItems,
   VectorUpsertItemBatch,
   VectorSearch,
   VectorSearchAndFetchVectors,
@@ -93,6 +94,23 @@ export abstract class AbstractVectorIndexClient
     indexName: string
   ): Promise<DeleteVectorIndex.Response> {
     return await this.controlClient.deleteIndex(indexName);
+  }
+
+  /**
+   * Counts the number of items in a vector index.
+   *
+   * Note that if the index does not exist, an error with
+   * {@link MomentoErrorCode} `NOT_FOUND` error will be returned.
+   *
+   * @param indexName - Name of the index to count the items in.
+   * @returns {Promise<VectorCountItems.Response>} -
+   * {@link VectorCountItems.Success} on success.
+   * {@link VectorCountItems.Error} on error.
+   */
+  public async countItems(
+    indexName: string
+  ): Promise<VectorCountItems.Response> {
+    return await this.dataClient.countItems(indexName);
   }
 
   /**
