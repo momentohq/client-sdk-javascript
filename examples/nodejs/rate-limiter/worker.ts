@@ -8,6 +8,7 @@ import {DummyService} from './service';
 import {MomentoRateLimiter} from './momento-rate-limiter';
 import {RateLimiter} from './rate-limiter';
 import {Metrics} from './metrics';
+import {SlidingWindowLogRateLimiter} from "./sset-rate-limiter";
 
 async function main() {
   const momento = await CacheClient.create({
@@ -37,14 +38,18 @@ async function main() {
 
   const service = new DummyService();
   const rateLimiterMetrics = new Metrics();
-  const cacheName = 'rate-limiter';
+  const cacheName = 'cache';
 
   const resp = await momento.createCache(cacheName);
   if (resp instanceof CreateCache.Error) {
     throw new Error(`Failed to create cache ${cacheName}`);
   }
 
-  const rateLimiter = new MomentoRateLimiter(momento, tpmLimit, cacheName);
+  const rateLimiter = new SlidingWindowLogRateLimiter(
+    momento,
+    tpmLimit,
+    cacheName
+  );
 
   const userIDs = ['user1', 'user2', 'user3', 'user4', 'user5'];
   const tasks = [];
