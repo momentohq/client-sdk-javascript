@@ -26,7 +26,6 @@ export class MomentoClient {
       console.error(`Error while calling dictionaryIncrement: ${r.errorCode()}: ${r.toString()}`);
       return false;
     }
-    this.ccli.sortedSetRemoveElements()
     return true;
   }
 
