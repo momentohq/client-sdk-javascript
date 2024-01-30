@@ -1,16 +1,16 @@
 import * as AWS from 'aws-sdk';
 
 // Configure the AWS SDK
-AWS.config.update({ region: 'us-west-2' }); // Change to your region
+AWS.config.update({ region: 'us-west-2' });
 
 const lambda = new AWS.Lambda();
 
-// Function to invoke the Lambda
-async function invokeLambda(tntid: string, metricId: string) {
+// Function to invoke the Lambda with multiple metrics
+async function invokeLambda(tntid: string, metricIds: string[]) {
   const params = {
     FunctionName: 'MomentoCDT', // Replace with your Lambda function name
     InvocationType: 'Event', // Async invocation
-    Payload: JSON.stringify({ tntid, metricId }),
+    Payload: JSON.stringify({ tntid, metricIds }),
   };
 
   try {
@@ -21,9 +21,15 @@ async function invokeLambda(tntid: string, metricId: string) {
   }
 }
 
-// Generate a random user or metric
+// Generate a random user or metrics
 function getRandomElement(array: string[]) {
   return array[Math.floor(Math.random() * array.length)];
+}
+
+// Generate a random number of metrics
+function getRandomMetrics(metricsArray: string[], min: number, max: number) {
+  const numberOfMetrics = Math.floor(Math.random() * (max - min + 1)) + min;
+  return Array.from({ length: numberOfMetrics }, () => getRandomElement(metricsArray));
 }
 
 // Users and metrics arrays
@@ -34,9 +40,8 @@ const metrics = Array.from({ length: 100 }, (_, i) => `metric${i + 1}`);
 setInterval(() => {
   for (let i = 0; i < 100; i++) {
     const tntid = getRandomElement(users);
-    const metricId = getRandomElement(metrics);
-    console.log(`Calling Lambda with tntid: ${tntid} and metricId: ${metricId}`);
-    invokeLambda(tntid, metricId);
+    const metricIds = getRandomMetrics(metrics, 2, 8); // Get 2-8 random metrics
+    console.log(`Calling Lambda with tntid: ${tntid} and metricIds: ${metricIds.join(', ')}`);
+    invokeLambda(tntid, metricIds);
   }
-}, 100);
-
+}, 1000 /* interval */);
