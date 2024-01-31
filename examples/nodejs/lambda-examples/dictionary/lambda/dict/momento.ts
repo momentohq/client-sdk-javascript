@@ -2,10 +2,18 @@ import {GetSecretValueCommand, SecretsManagerClient} from "@aws-sdk/client-secre
 import {
   CacheClient,
   CacheConfiguration,
-  CacheDictionaryIncrement, Configuration,
+  CacheDictionaryIncrement,
+  Configuration,
   Configurations,
-  CredentialProvider
+  CredentialProvider,
+  DefaultMomentoLoggerFactory,
+  DefaultMomentoLoggerLevel,
+  ExperimentalMetricsLoggingMiddleware,
+  MomentoLoggerFactory
 } from "@gomomento/sdk";
+import {
+  ExperimentalMetricsMiddleware
+} from "@gomomento/sdk/dist/src/config/middleware/impl/experimental-metrics-middleware";
 
 let cli: MomentoClient | null = null;
 const CACHENAME='cache';
@@ -39,9 +47,14 @@ export class MomentoClient {
       let momentoConfiguration: Configuration = Configurations.Lambda.latest();
       const grpcConfig = momentoConfiguration.getTransportStrategy().getGrpcConfig().withNumClients(1);
       momentoConfiguration = momentoConfiguration.withTransportStrategy(momentoConfiguration.getTransportStrategy().withGrpcConfig(grpcConfig));
+      const middlewaresExampleloggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory(
+        DefaultMomentoLoggerLevel.DEBUG
+      );
 
       cli = new MomentoClient(await CacheClient.create({
-          configuration: momentoConfiguration,
+          configuration: momentoConfiguration.withMiddlewares([
+            new ExperimentalMetricsLoggingMiddleware(middlewaresExampleloggerFactory),
+          ]),
           credentialProvider: CredentialProvider.fromString({authToken: await MomentoClient.getSecret(apiKeySecretName)}),
           defaultTtlSeconds: 86400*30, // set to 30 days - Requires contacting Momento and requesting an increase
         }));

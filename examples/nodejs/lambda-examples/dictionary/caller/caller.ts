@@ -37,11 +37,14 @@ const users = Array.from({ length: 20 }, (_, i) => `user${i + 1}`);
 const metrics = Array.from({ length: 100 }, (_, i) => `metric${i + 1}`);
 
 // Main loop to achieve around 100 TPS
-setInterval(() => {
+async function mainLoop() {
+  const promises = [];
   for (let i = 0; i < 100; i++) {
     const tntid = getRandomElement(users);
     const metricIds = getRandomMetrics(metrics, 2, 8); // Get 2-8 random metrics
     console.log(`Calling Lambda with tntid: ${tntid} and metricIds: ${metricIds.join(', ')}`);
-    invokeLambda(tntid, metricIds);
+    promises.push(invokeLambda(tntid, metricIds));
   }
-}, 1000 /* interval */);
+}
+
+setInterval(mainLoop, 0);

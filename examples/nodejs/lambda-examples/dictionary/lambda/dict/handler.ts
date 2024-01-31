@@ -1,14 +1,34 @@
+process.env.GRPC_VERBOSITY = 'DEBUG';
+process.env.GRPC_TRACE = 'all';
+
 import { getGlobalCache } from "./global";
 
 export const handler = async function(batch: any = {}) {
-  console.log('request: ', JSON.stringify(batch, undefined, 2));
+
+  if (!batch.Records) {
+    console.error('No records found in the batch');
+    return;
+  }
 
   const cache = await getGlobalCache();
 
-  // Check if metricIds is an array and iterate over it
-  if (Array.isArray(batch.metricIds)) {
-    for (const metricId of batch.metricIds) {
-      await cache.dayBucketInc(batch.tntid, metricId);
+  console.log(JSON.stringify({batchSize: batch.Records.length}));
+
+  for (const record of batch.Records) {
+    try {
+      const messageBody = JSON.parse(record.body);
+      const tntid = messageBody.tntid;
+      const metricId = messageBody.metricId;
+
+      if (!tntid || !metricId) {
+        console.error('tntid or metricId missing in the message', record);
+        continue;
+      }
+
+      // Assuming dayBucketInc needs tntid and metricId as arguments
+      await cache.dayBucketInc(tntid, metricId);
+    } catch (error) {
+      console.error('Error processing record', record, error);
     }
   }
-}
+};

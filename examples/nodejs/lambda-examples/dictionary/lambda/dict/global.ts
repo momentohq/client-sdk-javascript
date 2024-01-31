@@ -37,12 +37,15 @@ export class CvGlobalCache {
 }
 
 let _cache:CvGlobalCache|null = null;
+let counter  = 0;
 
 export async function getGlobalCache() {
   if (_cache !== null) {
     return _cache;
   }
 
+  counter++;
+  console.log(JSON.stringify({'cache-init-counter': counter}));
   const mcache = await MomentoClient.getClient();
   _cache = new CvGlobalCache(mcache);
   return _cache;
