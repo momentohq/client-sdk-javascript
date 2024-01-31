@@ -1,5 +1,4 @@
-process.env.GRPC_VERBOSITY = 'DEBUG';
-process.env.GRPC_TRACE = 'all';
+
 
 import { getGlobalCache } from "./global";
 

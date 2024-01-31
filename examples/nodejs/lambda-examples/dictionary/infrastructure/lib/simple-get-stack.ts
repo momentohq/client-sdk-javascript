@@ -31,6 +31,8 @@ export class MomentoCDT extends cdk.Stack {
       memorySize: 512,
       environment: {
         MOMENTO_API_KEY_SECRET_NAME: apiKeySecret.secretName,
+        GRPC_TRACE: "call_stream,resolving_load_balancer,dns_resolver",
+        GRPC_VERBOSITY: "DEBUG",
       },
     });
 
