@@ -19,6 +19,15 @@ export interface LeaderboardConfiguration {
   getTransportStrategy(): TransportStrategy;
 
   /**
+   * Convenience copy constructor that updates the client-side timeout setting in the TransportStrategy
+   * @param {number} clientTimeoutMillis
+   * @returns {LeaderboardConfiguration} a new Configuration object with its TransportStrategy updated to use the specified client timeout
+   */
+  withClientTimeoutMillis(
+    clientTimeoutMillis: number
+  ): LeaderboardConfiguration;
+
+  /**
    * Copy constructor for overriding TransportStrategy
    * @param {TransportStrategy} transportStrategy
    * @returns {Configuration} a new Configuration object with the specified TransportStrategy

@@ -45,7 +45,7 @@ export class Laptop extends LeaderboardClientConfiguration {
   static v1(
     loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
   ): LeaderboardConfiguration {
-    const deadlineMillis = 5000;
+    const deadlineMillis = 15000;
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
       maxSessionMemoryMb: defaultMaxSessionMemoryMb,
