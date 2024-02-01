@@ -13,6 +13,7 @@ import {
   VectorIndexItem,
   VectorGetItemBatch,
   VectorGetItemMetadataBatch,
+  VECTOR_DEFAULT_TOPK,
 } from '@gomomento/sdk-core';
 import {
   expectWithMessage,
@@ -131,6 +132,55 @@ export function runVectorDataPlaneTest(
         throw new Error(`unknown search method ${searchMethodName}`);
       }
     }
+
+    it('should support use a default topk when not supplied', async () => {
+      const indexName = testIndexName('data-default-topk');
+      await WithIndex(
+        vectorClient,
+        indexName,
+        2,
+        VectorSimilarityMetric.INNER_PRODUCT,
+        async () => {
+          const items = [];
+          for (let i = 0; i < 15; i++) {
+            items.push({id: `test_item_${i}`, vector: [i, i]});
+          }
+
+          const upsertResponse = await vectorClient.upsertItemBatch(
+            indexName,
+            items
+          );
+          expectWithMessage(() => {
+            expect(upsertResponse).toBeInstanceOf(
+              VectorUpsertItemBatch.Success
+            );
+          }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
+
+          await sleep(2_000);
+
+          const searchResponse = await vectorClient.search(
+            indexName,
+            [1.0, 2.0]
+          );
+          expectWithMessage(() => {
+            expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
+          }, `expected SUCCESS but got ${searchResponse.toString()}}`);
+          const successResponse = searchResponse as VectorSearch.Success;
+          expect(successResponse.hits().length).toEqual(VECTOR_DEFAULT_TOPK);
+
+          const searchAndFetchVectorsResponse =
+            await vectorClient.searchAndFetchVectors(indexName, [1.0, 2.0]);
+          expectWithMessage(() => {
+            expect(searchAndFetchVectorsResponse).toBeInstanceOf(
+              VectorSearchAndFetchVectors.Success
+            );
+          }, `expected SUCCESS but got ${searchAndFetchVectorsResponse.toString()}}`);
+          const successResponse2 =
+            searchResponse as VectorSearchAndFetchVectors.Success;
+          expect(successResponse2.hits().length).toEqual(VECTOR_DEFAULT_TOPK);
+        }
+      );
+    });
 
     it.each([
       {searchMethodName: 'search', response: VectorSearch.Success},
