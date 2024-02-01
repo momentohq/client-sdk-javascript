@@ -1,5 +1,6 @@
-import {MomentoLoggerFactory} from '@gomomento/sdk-core';
+import {MomentoLoggerFactory} from '../';
 import {TransportStrategy} from './transport';
+import {Middleware} from './middleware/middleware';
 
 /**
  * Configuration options for Momento LeaderboardClient
@@ -51,6 +52,25 @@ export interface LeaderboardConfiguration {
    * @returns {Configuration} a new Configuration object with the specified throwOnErrors setting
    */
   withThrowOnErrors(throwOnErrors: boolean): LeaderboardConfiguration;
+
+  /**
+   * @returns {Middleware[]} the middleware functions that will wrap each request
+   */
+  getMiddlewares(): Middleware[];
+
+  /**
+   * Copy constructor for overriding Middlewares
+   * @param {Middleware[]} middlewares
+   * @returns {Configuration} a new Configuration object with the specified Middlewares
+   */
+  withMiddlewares(middlewares: Middleware[]): LeaderboardConfiguration;
+
+  /**
+   * Copy constructor that adds a single middleware to the existing middlewares
+   * @param {Middleware} middleware
+   * @returns {Configuration} a new Configuration object with the specified Middleware appended to the list of existing Middlewares
+   */
+  addMiddleware(middleware: Middleware): LeaderboardConfiguration;
 }
 
 export interface LeaderboardConfigurationProps {
@@ -67,6 +87,11 @@ export interface LeaderboardConfigurationProps {
    * Configures whether the client should return a Momento Error object or throw an exception when an error occurs.
    */
   throwOnErrors: boolean;
+
+  /**
+   * Configures middleware functions that will wrap each request
+   */
+  middlewares: Middleware[];
 }
 
 export class LeaderboardClientConfiguration
@@ -75,11 +100,13 @@ export class LeaderboardClientConfiguration
   private readonly loggerFactory: MomentoLoggerFactory;
   private readonly transportStrategy: TransportStrategy;
   private readonly throwOnErrors: boolean;
+  private readonly middlewares: Middleware[];
 
   constructor(props: LeaderboardConfigurationProps) {
     this.loggerFactory = props.loggerFactory;
     this.transportStrategy = props.transportStrategy;
     this.throwOnErrors = props.throwOnErrors;
+    this.middlewares = props.middlewares;
   }
 
   getLoggerFactory(): MomentoLoggerFactory {
@@ -98,6 +125,7 @@ export class LeaderboardClientConfiguration
       transportStrategy:
         this.transportStrategy.withClientTimeoutMillis(clientTimeoutMillis),
       throwOnErrors: this.throwOnErrors,
+      middlewares: this.middlewares,
     });
   }
 
@@ -108,6 +136,7 @@ export class LeaderboardClientConfiguration
       loggerFactory: this.loggerFactory,
       transportStrategy: transportStrategy,
       throwOnErrors: this.throwOnErrors,
+      middlewares: this.middlewares,
     });
   }
 
@@ -120,6 +149,29 @@ export class LeaderboardClientConfiguration
       loggerFactory: this.loggerFactory,
       transportStrategy: this.transportStrategy,
       throwOnErrors: throwOnErrors,
+      middlewares: this.middlewares,
+    });
+  }
+
+  getMiddlewares(): Middleware[] {
+    return this.middlewares;
+  }
+
+  withMiddlewares(middlewares: Middleware[]): LeaderboardConfiguration {
+    return new LeaderboardClientConfiguration({
+      loggerFactory: this.loggerFactory,
+      transportStrategy: this.transportStrategy,
+      middlewares: middlewares,
+      throwOnErrors: this.throwOnErrors,
+    });
+  }
+
+  addMiddleware(middleware: Middleware): LeaderboardConfiguration {
+    return new LeaderboardClientConfiguration({
+      loggerFactory: this.loggerFactory,
+      transportStrategy: this.transportStrategy,
+      middlewares: [middleware, ...this.middlewares],
+      throwOnErrors: this.throwOnErrors,
     });
   }
 }

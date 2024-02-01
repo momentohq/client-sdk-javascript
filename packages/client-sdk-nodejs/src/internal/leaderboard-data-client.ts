@@ -35,6 +35,13 @@ import {
 import {version} from '../../package.json';
 import {ILeaderboardDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/leaderboard/ILeaderboardDataClient';
 import {LeaderboardClientPropsWithConfig} from './leaderboard-client-props-with-config';
+import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
+import {
+  Middleware,
+  MiddlewareRequestHandlerContext,
+} from '../config/middleware/middleware';
+
+export const CONNECTION_ID_KEY = Symbol('connectionID');
 
 export class LeaderboardDataClient implements ILeaderboardDataClient {
   private readonly configuration: LeaderboardConfiguration;
@@ -46,7 +53,11 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
   protected nextDataClientIndex: number;
   private readonly interceptors: Interceptor[];
 
-  constructor(props: LeaderboardClientPropsWithConfig) {
+  /**
+   * @param {LeaderboardClientPropsWithConfig} props
+   * @param dataClientID
+   */
+  constructor(props: LeaderboardClientPropsWithConfig, dataClientID: string) {
     this.configuration = props.configuration;
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
       props.configuration.getThrowOnErrors()
@@ -102,8 +113,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
         })
     );
 
+    const context: MiddlewareRequestHandlerContext = {};
+    context[CONNECTION_ID_KEY] = dataClientID;
     this.interceptors = this.initializeInterceptors(
-      this.configuration.getLoggerFactory()
+      this.configuration.getLoggerFactory(),
+      this.configuration.getMiddlewares(),
+      context
     );
   }
 
@@ -117,13 +132,20 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
   }
 
   private initializeInterceptors(
-    _loggerFactory: MomentoLoggerFactory
+    _loggerFactory: MomentoLoggerFactory,
+    middlewares: Middleware[],
+    middlewareRequestContext: MiddlewareRequestHandlerContext
   ): Interceptor[] {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
       new Header('Agent', `nodejs:${version}`),
     ];
     return [
+      middlewaresInterceptor(
+        _loggerFactory,
+        middlewares,
+        middlewareRequestContext
+      ),
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
       ClientTimeoutInterceptor(this.requestTimeoutMs),
     ];

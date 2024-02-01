@@ -11,12 +11,14 @@ import {
   TransportStrategy,
 } from './transport';
 import {DefaultMomentoLoggerFactory} from './logging/default-momento-logger';
+import {Middleware} from './middleware/middleware';
 
 // 4 minutes.  We want to remain comfortably underneath the idle timeout for AWS NLB, which is 350s.
 const defaultMaxIdleMillis = 4 * 60 * 1_000;
 const defaultMaxSessionMemoryMb = 256;
 const defaultLoggerFactory: MomentoLoggerFactory =
   new DefaultMomentoLoggerFactory();
+const defaultMiddlewares: Middleware[] = [];
 
 /**
  * Laptop config provides defaults suitable for a medium-to-high-latency dev environment.
@@ -58,6 +60,7 @@ export class Laptop extends LeaderboardClientConfiguration {
       loggerFactory: loggerFactory,
       transportStrategy: transportStrategy,
       throwOnErrors: false,
+      middlewares: defaultMiddlewares,
     });
   }
 }
