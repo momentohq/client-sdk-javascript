@@ -33,7 +33,7 @@ export class PreviewLeaderboardClient implements ILeaderboardClient {
 
     this.logger = configuration.getLoggerFactory().getLogger(this);
     this.logger.debug('Creating Momento LeaderboardClient');
-    this.dataClient = new LeaderboardDataClient(propsWithConfig);
+    this.dataClient = new LeaderboardDataClient(propsWithConfig, '0'); // only creating one leaderboard client
   }
 
   /**
