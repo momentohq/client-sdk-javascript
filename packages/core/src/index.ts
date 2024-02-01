@@ -145,6 +145,7 @@ export {
   IVectorIndexClient,
   SearchOptions,
   ALL_VECTOR_METADATA,
+  VECTOR_DEFAULT_TOPK,
 } from './clients/IVectorIndexClient';
 
 export {VectorSimilarityMetric} from './internal/clients';
