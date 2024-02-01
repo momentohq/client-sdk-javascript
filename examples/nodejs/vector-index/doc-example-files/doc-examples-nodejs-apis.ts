@@ -4,6 +4,7 @@ import {
   DeleteVectorIndex,
   ListVectorIndexes,
   PreviewVectorIndexClient,
+  VectorCountItems,
   VectorIndexConfigurations,
   VectorSearch,
   VectorSearchAndFetchVectors,
@@ -58,6 +59,15 @@ async function example_API_DeleteIndex(vectorClient: PreviewVectorIndexClient) {
     throw new Error(
       `An error occurred while attempting to delete index 'test-index': ${result.errorCode()}: ${result.toString()}`
     );
+  }
+}
+
+async function example_API_CountItems(vectorClient: PreviewVectorIndexClient) {
+  const result = await vectorClient.countItems('test-index');
+  if (result instanceof VectorCountItems.Success) {
+    console.log(`Found ${result.itemCount()} items`);
+  } else if (result instanceof VectorCountItems.Error) {
+    throw new Error(`An error occurred while counting items: ${result.errorCode()}: ${result.toString()}`);
   }
 }
 
@@ -142,6 +152,7 @@ async function main() {
   example_API_InstantiateVectorClient();
   await example_API_CreateIndex(vectorClient);
   await example_API_ListIndexes(vectorClient);
+  await example_API_CountItems(vectorClient);
   await example_API_UpsertItemBatch(vectorClient);
   await example_API_Search(vectorClient);
   await example_API_SearchAndFetchVectors(vectorClient);
