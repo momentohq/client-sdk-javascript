@@ -24,7 +24,9 @@ class BasicLoadGen {
   private readonly delayMillisBetweenRequests: number;
   private readonly cacheValue: string;
 
-  private readonly cacheName: string = 'js-loadgen';
+  private readonly cacheName: string = 'cache';
+  private clients: CacheClient[] = [];
+  private currentClientIndex = 0;
 
   constructor(options: BasicLoadGenOptions) {
     this.loggerFactory = options.loggerFactory;
@@ -38,7 +40,11 @@ class BasicLoadGen {
   async run(): Promise<void> {
     const momento = await getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
 
-    await createCache(momento, this.cacheName, this.logger);
+    for (let i = 0; i < 2; i++) { // Easily changeable to add more clients
+      const client = await getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
+      this.clients.push(client);
+      if (i == 0) await createCache(client, this.cacheName, this.logger);
+    }
 
     this.logger.trace(`delayMillisBetweenRequests: ${this.delayMillisBetweenRequests}`);
 
@@ -70,8 +76,13 @@ class BasicLoadGen {
     await delay(500);
   }
 
+  private getNextClient(): CacheClient {
+    const client = this.clients[this.currentClientIndex];
+    this.currentClientIndex = (this.currentClientIndex + 1) % this.clients.length;
+    return client;
+  }
+
   private async launchAndRunWorkers(
-    client: CacheClient,
     loadGenContext: BasicLoadGenContext,
     workerId: number
   ): Promise<void> {
@@ -81,7 +92,7 @@ class BasicLoadGen {
 
     let i = 1;
     for (;;) {
-      await this.issueAsyncSetGet(client, loadGenContext, workerId, i);
+      await this.issueAsyncSetGet(loadGenContext, workerId, i);
 
       if (finished) {
         return;
@@ -92,11 +103,11 @@ class BasicLoadGen {
   }
 
   private async issueAsyncSetGet(
-    client: CacheClient,
     loadGenContext: BasicLoadGenContext,
     workerId: number,
     operationId: number
   ): Promise<void> {
+    const client = this.getNextClient();
     const cacheKey = `worker${workerId}operation${operationId}`;
 
     const setStartTime = process.hrtime();
