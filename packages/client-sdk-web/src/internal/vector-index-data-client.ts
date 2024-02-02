@@ -311,7 +311,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       return undefined;
     }
 
-    if (filterExpression instanceof F.VectorAndExpression) {
+    if (filterExpression instanceof F.VectorFilterAndExpression) {
       const and = new vectorindex._AndExpression();
       and.setFirstExpression(
         VectorIndexDataClient.buildFilterExpression(
@@ -326,7 +326,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       const expression = new vectorindex._FilterExpression();
       expression.setAndExpression(and);
       return expression;
-    } else if (filterExpression instanceof F.VectorOrExpression) {
+    } else if (filterExpression instanceof F.VectorFilterOrExpression) {
       const or = new vectorindex._OrExpression();
       or.setFirstExpression(
         VectorIndexDataClient.buildFilterExpression(
@@ -341,7 +341,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       const expression = new vectorindex._FilterExpression();
       expression.setOrExpression(or);
       return expression;
-    } else if (filterExpression instanceof F.VectorNotExpression) {
+    } else if (filterExpression instanceof F.VectorFilterNotExpression) {
       const not = new vectorindex._NotExpression();
       not.setExpressionToNegate(
         VectorIndexDataClient.buildFilterExpression(filterExpression.Expression)
@@ -349,7 +349,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       const expression = new vectorindex._FilterExpression();
       expression.setNotExpression(not);
       return expression;
-    } else if (filterExpression instanceof F.VectorEqualsExpression) {
+    } else if (filterExpression instanceof F.VectorFilterEqualsExpression) {
       const equals = new vectorindex._EqualsExpression();
       equals.setField(filterExpression.Field);
       if (typeof filterExpression.Value === 'string') {

@@ -331,7 +331,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   ): vectorindex._FilterExpression | undefined {
     if (filterExpression === undefined) {
       return undefined;
-    } else if (filterExpression instanceof F.VectorAndExpression) {
+    } else if (filterExpression instanceof F.VectorFilterAndExpression) {
       return new vectorindex._FilterExpression({
         and_expression: new vectorindex._AndExpression({
           first_expression: VectorIndexDataClient.buildFilterExpression(
@@ -342,7 +342,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           ),
         }),
       });
-    } else if (filterExpression instanceof F.VectorOrExpression) {
+    } else if (filterExpression instanceof F.VectorFilterOrExpression) {
       return new vectorindex._FilterExpression({
         or_expression: new vectorindex._OrExpression({
           first_expression: VectorIndexDataClient.buildFilterExpression(
@@ -353,7 +353,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           ),
         }),
       });
-    } else if (filterExpression instanceof F.VectorNotExpression) {
+    } else if (filterExpression instanceof F.VectorFilterNotExpression) {
       return new vectorindex._FilterExpression({
         not_expression: new vectorindex._NotExpression({
           expression_to_negate: VectorIndexDataClient.buildFilterExpression(
@@ -361,7 +361,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           ),
         }),
       });
-    } else if (filterExpression instanceof F.VectorEqualsExpression) {
+    } else if (filterExpression instanceof F.VectorFilterEqualsExpression) {
       // test if the Value is a string or a number
       if (typeof filterExpression.Value === 'string') {
         return new vectorindex._FilterExpression({

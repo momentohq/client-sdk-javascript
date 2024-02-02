@@ -5,7 +5,7 @@ export abstract class VectorFilterExpression {
   public abstract toString(): string;
 
   /**
-   * Creates an {@link VectorAndExpression} between two vector filter expressions.
+   * Creates an {@link VectorFilterAndExpression} between two vector filter expressions.
    * @param firstExpression The first expression.
    * @param secondExpression The second expression.
    * @returns The AND expression.
@@ -14,11 +14,11 @@ export abstract class VectorFilterExpression {
     firstExpression: VectorFilterExpression,
     secondExpression: VectorFilterExpression
   ): VectorFilterExpression {
-    return new VectorAndExpression(firstExpression, secondExpression);
+    return new VectorFilterAndExpression(firstExpression, secondExpression);
   }
 
   /**
-   * Creates an {@link VectorOrExpression} between a field and a value.
+   * Creates an {@link VectorFilterOrExpression} between a field and a value.
    * @param firstExpression The first expression.
    * @param secondExpression The second expression.
    * @returns The OR expression.
@@ -27,22 +27,22 @@ export abstract class VectorFilterExpression {
     firstExpression: VectorFilterExpression,
     secondExpression: VectorFilterExpression
   ): VectorFilterExpression {
-    return new VectorOrExpression(firstExpression, secondExpression);
+    return new VectorFilterOrExpression(firstExpression, secondExpression);
   }
 
   /**
-   * Creates a {@link VectorNotExpression} expression of a vector filter expression.
+   * Creates a {@link VectorFilterNotExpression} expression of a vector filter expression.
    * @param expression The expression.
    * @returns The NOT expression.
    */
   public static not(
     expression: VectorFilterExpression
   ): VectorFilterExpression {
-    return new VectorNotExpression(expression);
+    return new VectorFilterNotExpression(expression);
   }
 
   /**
-   * Creates a {@link VectorEqualsExpression} between a field and a value.
+   * Creates a {@link VectorFilterEqualsExpression} between a field and a value.
    * @param field The field.
    * @param value The value.
    * @returns The equals expression.
@@ -51,14 +51,14 @@ export abstract class VectorFilterExpression {
     field: string,
     value: string | number | boolean
   ): VectorFilterExpression {
-    return new VectorEqualsExpression(field, value);
+    return new VectorFilterEqualsExpression(field, value);
   }
 }
 
 /**
  * Represents an AND expression between two vector filter expressions.
  */
-export class VectorAndExpression extends VectorFilterExpression {
+export class VectorFilterAndExpression extends VectorFilterExpression {
   private readonly firstExpression: VectorFilterExpression;
   private readonly secondExpression: VectorFilterExpression;
 
@@ -87,7 +87,7 @@ export class VectorAndExpression extends VectorFilterExpression {
 /**
  * Represents an OR expression between two vector filter expressions.
  */
-export class VectorOrExpression extends VectorFilterExpression {
+export class VectorFilterOrExpression extends VectorFilterExpression {
   private readonly firstExpression: VectorFilterExpression;
   private readonly secondExpression: VectorFilterExpression;
 
@@ -116,7 +116,7 @@ export class VectorOrExpression extends VectorFilterExpression {
 /**
  * Represents a NOT expression of a vector filter expression.
  */
-export class VectorNotExpression extends VectorFilterExpression {
+export class VectorFilterNotExpression extends VectorFilterExpression {
   private readonly expression: VectorFilterExpression;
 
   constructor(expression: VectorFilterExpression) {
@@ -136,7 +136,7 @@ export class VectorNotExpression extends VectorFilterExpression {
 /**
  * Represents an equals expression between a field and a value.
  */
-export class VectorEqualsExpression extends VectorFilterExpression {
+export class VectorFilterEqualsExpression extends VectorFilterExpression {
   private readonly field: string;
   private readonly value: string | number | boolean;
 
