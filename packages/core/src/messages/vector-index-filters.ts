@@ -13,7 +13,7 @@ export abstract class VectorFilterExpression {
   public static and(
     firstExpression: VectorFilterExpression,
     secondExpression: VectorFilterExpression
-  ): VectorFilterExpression {
+  ): VectorFilterAndExpression {
     return new VectorFilterAndExpression(firstExpression, secondExpression);
   }
 
@@ -26,7 +26,7 @@ export abstract class VectorFilterExpression {
   public static or(
     firstExpression: VectorFilterExpression,
     secondExpression: VectorFilterExpression
-  ): VectorFilterExpression {
+  ): VectorFilterOrExpression {
     return new VectorFilterOrExpression(firstExpression, secondExpression);
   }
 
@@ -37,7 +37,7 @@ export abstract class VectorFilterExpression {
    */
   public static not(
     expression: VectorFilterExpression
-  ): VectorFilterExpression {
+  ): VectorFilterNotExpression {
     return new VectorFilterNotExpression(expression);
   }
 
@@ -50,7 +50,7 @@ export abstract class VectorFilterExpression {
   public static equals(
     field: string,
     value: string | number | boolean
-  ): VectorFilterExpression {
+  ): VectorFilterEqualsExpression {
     return new VectorFilterEqualsExpression(field, value);
   }
 }
