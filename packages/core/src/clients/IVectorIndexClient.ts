@@ -9,6 +9,7 @@ import {
   VectorGetItemMetadataBatch,
 } from '../messages/responses/vector';
 import {VectorIndexItem} from '../messages/vector-index';
+import {VectorFilterExpression} from '../messages/vector-index-filters';
 
 /**
  * A special value to request all metadata fields.
@@ -41,6 +42,10 @@ export interface SearchOptions {
    *   are excluded.
    */
   scoreThreshold?: number;
+  /**
+   * A filter expression to filter results by. Defaults to no filter.
+   */
+  filterExpression?: VectorFilterExpression;
 }
 
 export interface IVectorIndexClient extends IVectorIndexControlClient {

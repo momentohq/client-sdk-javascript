@@ -2,22 +2,23 @@ import {VectorIndexClient} from '@gomomento/generated-types-webtext/dist/Vectori
 import * as vectorindex from '@gomomento/generated-types-webtext/dist/vectorindex_pb';
 import {IVectorIndexDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/vector/IVectorIndexDataClient';
 import {
+  ALL_VECTOR_METADATA,
+  InvalidArgumentError,
   MomentoLogger,
   SearchOptions,
+  UnknownError,
+  VECTOR_DEFAULT_TOPK,
   VectorCountItems,
   VectorDeleteItemBatch,
-  VectorSearch,
-  VectorSearchAndFetchVectors,
-  VectorIndexMetadata,
-  VectorIndexItem,
-  VectorUpsertItemBatch,
-  VectorIndexStoredItem,
+  vectorFilters as F,
   VectorGetItemBatch,
   VectorGetItemMetadataBatch,
-  InvalidArgumentError,
-  UnknownError,
-  ALL_VECTOR_METADATA,
-  VECTOR_DEFAULT_TOPK,
+  VectorIndexItem,
+  VectorIndexMetadata,
+  VectorIndexStoredItem,
+  VectorSearch,
+  VectorSearchAndFetchVectors,
+  VectorUpsertItemBatch,
 } from '@gomomento/sdk-core';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
@@ -273,7 +274,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     return await this.sendSearch(indexName, queryVector, options);
   }
 
-  private static prepareMetadataRequest(
+  private static buildMetadataRequest(
     options?: SearchOptions
   ): vectorindex._MetadataRequest {
     const metadataRequest = new vectorindex._MetadataRequest();
@@ -301,6 +302,81 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     } else {
       request.setNoScoreThreshold(new vectorindex._NoScoreThreshold());
     }
+  }
+
+  private static buildFilterExpression(
+    filterExpression?: F.VectorFilterExpression
+  ): vectorindex._FilterExpression | undefined {
+    if (filterExpression === undefined) {
+      return undefined;
+    }
+
+    if (filterExpression instanceof F.VectorFilterAndExpression) {
+      const and = new vectorindex._AndExpression();
+      and.setFirstExpression(
+        VectorIndexDataClient.buildFilterExpression(
+          filterExpression.FirstExpression
+        )
+      );
+      and.setSecondExpression(
+        VectorIndexDataClient.buildFilterExpression(
+          filterExpression.SecondExpression
+        )
+      );
+      const expression = new vectorindex._FilterExpression();
+      expression.setAndExpression(and);
+      return expression;
+    } else if (filterExpression instanceof F.VectorFilterOrExpression) {
+      const or = new vectorindex._OrExpression();
+      or.setFirstExpression(
+        VectorIndexDataClient.buildFilterExpression(
+          filterExpression.FirstExpression
+        )
+      );
+      or.setSecondExpression(
+        VectorIndexDataClient.buildFilterExpression(
+          filterExpression.SecondExpression
+        )
+      );
+      const expression = new vectorindex._FilterExpression();
+      expression.setOrExpression(or);
+      return expression;
+    } else if (filterExpression instanceof F.VectorFilterNotExpression) {
+      const not = new vectorindex._NotExpression();
+      not.setExpressionToNegate(
+        VectorIndexDataClient.buildFilterExpression(filterExpression.Expression)
+      );
+      const expression = new vectorindex._FilterExpression();
+      expression.setNotExpression(not);
+      return expression;
+    } else if (filterExpression instanceof F.VectorFilterEqualsExpression) {
+      const equals = new vectorindex._EqualsExpression();
+      equals.setField(filterExpression.Field);
+
+      if (typeof filterExpression.Value === 'string') {
+        equals.setStringValue(filterExpression.Value);
+      } else if (typeof filterExpression.Value === 'number') {
+        if (Number.isInteger(filterExpression.Value)) {
+          equals.setIntegerValue(filterExpression.Value);
+        } else {
+          equals.setFloatValue(filterExpression.Value);
+        }
+      } else if (typeof filterExpression.Value === 'boolean') {
+        equals.setBooleanValue(filterExpression.Value);
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a string, number, or boolean.'`
+        );
+      }
+
+      const expression = new vectorindex._FilterExpression();
+      expression.setEqualsExpression(equals);
+      return expression;
+    }
+
+    throw new InvalidArgumentError('Filter expression is not a valid type.');
   }
 
   private static deserializeMetadata(
@@ -345,9 +421,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     request.setQueryVector(vector);
     request.setTopK(options?.topK ?? VECTOR_DEFAULT_TOPK);
     request.setMetadataFields(
-      VectorIndexDataClient.prepareMetadataRequest(options)
+      VectorIndexDataClient.buildMetadataRequest(options)
     );
     VectorIndexDataClient.applyScoreThreshold(request, options);
+    request.setFilterExpression(
+      VectorIndexDataClient.buildFilterExpression(options?.filterExpression)
+    );
 
     return await new Promise((resolve, reject) => {
       this.client.search(
@@ -425,9 +504,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     request.setQueryVector(vector);
     request.setTopK(options?.topK ?? VECTOR_DEFAULT_TOPK);
     request.setMetadataFields(
-      VectorIndexDataClient.prepareMetadataRequest(options)
+      VectorIndexDataClient.buildMetadataRequest(options)
     );
     VectorIndexDataClient.applyScoreThreshold(request, options);
+    request.setFilterExpression(
+      VectorIndexDataClient.buildFilterExpression(options?.filterExpression)
+    );
 
     return await new Promise((resolve, reject) => {
       this.client.searchAndFetchVectors(
@@ -495,7 +577,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     request.setIndexName(indexName);
     request.setIdsList(ids);
     request.setMetadataFields(
-      VectorIndexDataClient.prepareMetadataRequest({
+      VectorIndexDataClient.buildMetadataRequest({
         metadataFields: ALL_VECTOR_METADATA,
       })
     );
@@ -584,7 +666,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     request.setIndexName(indexName);
     request.setIdsList(ids);
     request.setMetadataFields(
-      VectorIndexDataClient.prepareMetadataRequest({
+      VectorIndexDataClient.buildMetadataRequest({
         metadataFields: ALL_VECTOR_METADATA,
       })
     );
