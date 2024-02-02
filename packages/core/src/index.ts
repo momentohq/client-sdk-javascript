@@ -73,6 +73,8 @@ export {
   VectorIndexItem,
   VectorIndexStoredItem,
 } from './messages/vector-index';
+export * as vectorFilters from './messages/vector-index-filters';
+export {VectorFilterExpression} from './messages/vector-index-filters';
 
 // Leaderboard Response Types
 export * as leaderboard from './messages/responses/leaderboard';

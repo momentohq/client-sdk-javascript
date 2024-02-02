@@ -1,19 +1,20 @@
 import {
+  ALL_VECTOR_METADATA,
   InvalidArgumentError,
   IVectorIndexClient,
   MomentoErrorCode,
-  VectorDeleteItemBatch,
-  VectorSearch,
-  VectorUpsertItemBatch,
-  ALL_VECTOR_METADATA,
-  VectorSimilarityMetric,
   SearchOptions,
+  VECTOR_DEFAULT_TOPK,
   VectorCountItems,
-  VectorSearchAndFetchVectors,
-  VectorIndexItem,
+  VectorDeleteItemBatch,
+  VectorFilterExpression as F,
   VectorGetItemBatch,
   VectorGetItemMetadataBatch,
-  VECTOR_DEFAULT_TOPK,
+  VectorIndexItem,
+  VectorSearch,
+  VectorSearchAndFetchVectors,
+  VectorSimilarityMetric,
+  VectorUpsertItemBatch,
 } from '@gomomento/sdk-core';
 import {
   expectWithMessage,
@@ -1021,6 +1022,127 @@ export function runVectorDataPlaneTest(
         );
       }
     );
+  });
+
+  describe('search filters', () => {
+    it('should support search with filter expression', async () => {
+      const indexName = testIndexName('data-search-filter-expression');
+      await WithIndex(
+        vectorClient,
+        indexName,
+        2,
+        VectorSimilarityMetric.INNER_PRODUCT,
+        async () => {
+          const items = [
+            {
+              id: 'test_item_1',
+              vector: [1.0, 1.0],
+              metadata: {
+                str: 'value1',
+                int: 0,
+                float: 0.0,
+                bool: true,
+                tags: ['a', 'b', 'c'],
+              },
+            },
+            {
+              id: 'test_item_2',
+              vector: [-1.0, 1.0],
+              metadata: {
+                str: 'value2',
+                int: 5,
+                float: 5.0,
+                bool: false,
+                tags: ['a', 'b'],
+              },
+            },
+            {
+              id: 'test_item_3',
+              vector: [-1.0, -1.0],
+              metadata: {
+                str: 'value3',
+                int: 10,
+                float: 10.0,
+                bool: true,
+                tags: ['a', 'd'],
+              },
+            },
+          ];
+          const upsertResponse = await vectorClient.upsertItemBatch(
+            indexName,
+            items
+          );
+          expectWithMessage(() => {
+            expect(upsertResponse).toBeInstanceOf(
+              VectorUpsertItemBatch.Success
+            );
+          }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
+
+          await sleep(2_000);
+
+          for (const {filterExpression, expectedIds, testCaseName} of [
+            {
+              filterExpression: F.equals('str', 'value1'),
+              expectedIds: ['test_item_1'],
+              testCaseName: 'string equality',
+            },
+            {
+              filterExpression: F.not(F.equals('str', 'value1')),
+              expectedIds: ['test_item_2', 'test_item_3'],
+              testCaseName: 'string inequality',
+            },
+            {
+              filterExpression: F.equals('int', 0),
+              expectedIds: ['test_item_1'],
+              testCaseName: 'int equality',
+            },
+            {
+              filterExpression: F.equals('float', 0.0),
+              expectedIds: ['test_item_1'],
+              testCaseName: 'float equality',
+            },
+            {
+              filterExpression: F.equals('bool', true),
+              expectedIds: ['test_item_1', 'test_item_3'],
+              testCaseName: 'bool equality',
+            },
+            {
+              filterExpression: F.not(F.equals('bool', true)),
+              expectedIds: ['test_item_2'],
+              testCaseName: 'bool inequality',
+            },
+          ]) {
+            const searchResponse = await vectorClient.search(
+              indexName,
+              [2.0, 2.0],
+              {filterExpression}
+            );
+            expectWithMessage(() => {
+              expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
+            }, `expected search ${testCaseName} SUCCESS but got ${searchResponse.toString()}}`);
+            const searchSuccess = searchResponse as VectorSearch.Success;
+            expect(searchSuccess.hits().map(hit => hit.id)).toEqual(
+              expectedIds
+            );
+
+            const searchAndFetchVectorsResponse =
+              await vectorClient.searchAndFetchVectors(indexName, [2.0, 2.0], {
+                filterExpression,
+              });
+            expectWithMessage(() => {
+              expect(searchAndFetchVectorsResponse).toBeInstanceOf(
+                VectorSearchAndFetchVectors.Success
+              );
+            }, `expected searchAndFetchVectors ${testCaseName} SUCCESS but got ${searchAndFetchVectorsResponse.toString()}}`);
+            const searchAndFetchVectorsSuccess =
+              searchAndFetchVectorsResponse as VectorSearchAndFetchVectors.Success;
+            expect(
+              searchAndFetchVectorsSuccess.hits().map(hit => hit.id)
+            ).toEqual(expectedIds);
+          }
+        }
+      );
+    });
   });
 
   describe('deleteItem', () => {
