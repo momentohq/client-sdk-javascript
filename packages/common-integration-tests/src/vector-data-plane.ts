@@ -1116,6 +1116,36 @@ export function runVectorDataPlaneTest(
               expectedIds: ['test_item_2'],
               testCaseName: 'bool inequality',
             },
+            {
+              filterExpression: F.and(
+                F.equals('str', 'value1'),
+                F.equals('int', 0)
+              ),
+              expectedIds: ['test_item_1'],
+              testCaseName: 'and',
+            },
+            {
+              filterExpression: F.equals('str', 'value1').and(
+                F.equals('int', 0)
+              ),
+              expectedIds: ['test_item_1'],
+              testCaseName: 'and-chained',
+            },
+            {
+              filterExpression: F.or(
+                F.equals('str', 'value1'),
+                F.equals('int', 5)
+              ),
+              expectedIds: ['test_item_1', 'test_item_2'],
+              testCaseName: 'or',
+            },
+            {
+              filterExpression: F.equals('str', 'value1').or(
+                F.equals('int', 5)
+              ),
+              expectedIds: ['test_item_1', 'test_item_2'],
+              testCaseName: 'or-chained',
+            },
           ]) {
             const searchResponse = await vectorClient.search(
               indexName,
