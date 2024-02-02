@@ -7,7 +7,7 @@ import {
   VECTOR_DEFAULT_TOPK,
   VectorCountItems,
   VectorDeleteItemBatch,
-  VectorFilterExpression as F,
+  VectorFilterExpressionFactory as F,
   VectorGetItemBatch,
   VectorGetItemMetadataBatch,
   VectorIndexItem,
@@ -1108,6 +1108,11 @@ export function runVectorDataPlaneTest(
             },
             {
               filterExpression: F.not(F.equals('bool', true)),
+              expectedIds: ['test_item_2'],
+              testCaseName: 'bool inequality',
+            },
+            {
+              filterExpression: F.equals('bool', true).not(),
               expectedIds: ['test_item_2'],
               testCaseName: 'bool inequality',
             },

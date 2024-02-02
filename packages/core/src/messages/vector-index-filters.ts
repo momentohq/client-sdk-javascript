@@ -5,6 +5,40 @@ export abstract class VectorFilterExpression {
   public abstract toString(): string;
 
   /**
+   * Creates an AND expression between this expression and another one.
+   * @param other The other expression.
+   * @returns The AND expression.
+   */
+  public and(other: VectorFilterExpression): VectorFilterAndExpression {
+    return VectorFilterExpressionFactory.and(this, other);
+  }
+
+  /**
+   * Creates an OR expression between this expression and another one.
+   * @param other The other expression.
+   * @returns The OR expression.
+   */
+  public or(other: VectorFilterExpression): VectorFilterOrExpression {
+    return VectorFilterExpressionFactory.or(this, other);
+  }
+
+  /**
+   * Negates this expression.
+   * @returns The negated expression.
+   */
+  public not(): VectorFilterNotExpression {
+    return VectorFilterExpressionFactory.not(this);
+  }
+}
+
+/**
+ * Factory for creating vector filter expressions.
+ */
+export class VectorFilterExpressionFactory {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  private constructor() {}
+
+  /**
    * Creates an {@link VectorFilterAndExpression} between two vector filter expressions.
    * @param firstExpression The first expression.
    * @param secondExpression The second expression.
