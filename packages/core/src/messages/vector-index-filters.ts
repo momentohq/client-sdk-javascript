@@ -1,5 +1,5 @@
 /**
- * Base class for all vector index filters.
+ * Base class for all vector index filter expressions.
  */
 export abstract class VectorFilterExpression {
   public abstract toString(): string;

@@ -362,7 +362,6 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
         }),
       });
     } else if (filterExpression instanceof F.VectorFilterEqualsExpression) {
-      // test if the Value is a string or a number
       if (typeof filterExpression.Value === 'string') {
         return new vectorindex._FilterExpression({
           equals_expression: new vectorindex._EqualsExpression({

@@ -352,6 +352,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     } else if (filterExpression instanceof F.VectorFilterEqualsExpression) {
       const equals = new vectorindex._EqualsExpression();
       equals.setField(filterExpression.Field);
+
       if (typeof filterExpression.Value === 'string') {
         equals.setStringValue(filterExpression.Value);
       } else if (typeof filterExpression.Value === 'number') {
@@ -369,6 +370,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a string, number, or boolean.'`
         );
       }
+
       const expression = new vectorindex._FilterExpression();
       expression.setEqualsExpression(equals);
       return expression;
