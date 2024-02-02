@@ -41,6 +41,7 @@ class BasicLoadGen {
     const momento = await getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
 
     for (let i = 0; i < 2; i++) { // Easily changeable to add more clients
+      console.log("Creating client");
       const client = await getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
       this.clients.push(client);
       if (i == 0) await createCache(client, this.cacheName, this.logger);
