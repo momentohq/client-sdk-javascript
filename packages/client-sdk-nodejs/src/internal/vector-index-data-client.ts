@@ -16,6 +16,8 @@ import {
   VectorIndexStoredItem,
   VectorGetItemBatch,
   VectorGetItemMetadataBatch,
+  ALL_VECTOR_METADATA,
+  VECTOR_DEFAULT_TOPK,
 } from '@gomomento/sdk-core';
 import {VectorIndexConfiguration} from '../config/vector-index-configuration';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
@@ -28,7 +30,6 @@ import {
   validateTopK,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {UnknownError} from '@gomomento/sdk-core/dist/src/errors';
-import {ALL_VECTOR_METADATA} from '@gomomento/sdk-core/dist/src/clients/IVectorIndexClient';
 import {VectorIndexClientPropsWithConfig} from './vector-index-client-props-with-config';
 
 export class VectorIndexDataClient implements IVectorIndexDataClient {
@@ -362,7 +363,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     const request = new vectorindex._SearchRequest({
       index_name: indexName,
       query_vector: new vectorindex._Vector({elements: queryVector}),
-      top_k: options?.topK,
+      top_k: options?.topK ?? VECTOR_DEFAULT_TOPK,
       metadata_fields: VectorIndexDataClient.prepareMetadataRequest(options),
     });
     VectorIndexDataClient.applyScoreThreshold(request, options);
@@ -436,7 +437,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     const request = new vectorindex._SearchAndFetchVectorsRequest({
       index_name: indexName,
       query_vector: new vectorindex._Vector({elements: queryVector}),
-      top_k: options?.topK,
+      top_k: options?.topK ?? VECTOR_DEFAULT_TOPK,
       metadata_fields: VectorIndexDataClient.prepareMetadataRequest(options),
     });
     VectorIndexDataClient.applyScoreThreshold(request, options);

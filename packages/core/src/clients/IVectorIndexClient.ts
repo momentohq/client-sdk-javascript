@@ -16,11 +16,16 @@ import {VectorIndexItem} from '../messages/vector-index';
 export const ALL_VECTOR_METADATA = Symbol('ALL_VECTOR_METADATA');
 
 /**
+ * The default number of results to return.
+ */
+export const VECTOR_DEFAULT_TOPK = 10;
+
+/**
  * Options for the search operation.
  */
 export interface SearchOptions {
   /**
-   * The number of results to return. Defaults to 10.
+   * The number of results to return. Defaults to {@link VECTOR_DEFAULT_TOPK}.
    */
   topK?: number;
   /**

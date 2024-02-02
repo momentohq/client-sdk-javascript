@@ -16,6 +16,8 @@ import {
   VectorGetItemMetadataBatch,
   InvalidArgumentError,
   UnknownError,
+  ALL_VECTOR_METADATA,
+  VECTOR_DEFAULT_TOPK,
 } from '@gomomento/sdk-core';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
@@ -24,7 +26,6 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {getWebVectorEndpoint} from '../utils/web-client-utils';
-import {ALL_VECTOR_METADATA} from '@gomomento/sdk-core/dist/src/clients/IVectorIndexClient';
 import {VectorIndexClientPropsWithConfig} from './vector-index-client-props-with-config';
 
 export class VectorIndexDataClient implements IVectorIndexDataClient {
@@ -342,9 +343,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     const vector = new vectorindex._Vector();
     vector.setElementsList(queryVector);
     request.setQueryVector(vector);
-    if (options?.topK !== undefined) {
-      request.setTopK(options.topK);
-    }
+    request.setTopK(options?.topK ?? VECTOR_DEFAULT_TOPK);
     request.setMetadataFields(
       VectorIndexDataClient.prepareMetadataRequest(options)
     );
@@ -424,9 +423,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     const vector = new vectorindex._Vector();
     vector.setElementsList(queryVector);
     request.setQueryVector(vector);
-    if (options?.topK !== undefined) {
-      request.setTopK(options.topK);
-    }
+    request.setTopK(options?.topK ?? VECTOR_DEFAULT_TOPK);
     request.setMetadataFields(
       VectorIndexDataClient.prepareMetadataRequest(options)
     );
