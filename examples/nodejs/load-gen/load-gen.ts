@@ -204,7 +204,7 @@ const loadGeneratorOptions: BasicLoadGenOptions = {
    * so if you raise this, you may observe throttled requests.  Contact
    * support@momentohq.com to inquire about raising your limits.
    */
-  maxRequestsPerSecond: 100,
+  maxRequestsPerSecond: 300,
   /**
    * Controls the number of concurrent requests that will be made (via asynchronous
    * function calls) by the load test.  Increasing this number may improve throughput,
@@ -215,7 +215,7 @@ const loadGeneratorOptions: BasicLoadGenOptions = {
    * **Note**: You are likely to see degraded performance if you increase this above 50
    * and observe elevated client-side latencies.
    */
-  numberOfConcurrentRequests: 10,
+  numberOfConcurrentRequests: 20,
   /**
    * Controls how long the load test will run, in milliseconds. We will execute operations
    * for this long and the exit.
