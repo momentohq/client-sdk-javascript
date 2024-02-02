@@ -55,7 +55,7 @@ class BasicLoadGen {
     const loadGenContext = initiateLoadGenContext();
 
     const asyncGetSetResults = range(this.options.numberOfConcurrentRequests).map(workerId =>
-      this.launchAndRunWorkers(momento, loadGenContext, workerId + 1)
+      this.launchAndRunWorkers(loadGenContext, workerId + 1)
     );
 
     // Show stats periodically.
