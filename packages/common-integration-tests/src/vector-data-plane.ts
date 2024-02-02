@@ -7,7 +7,7 @@ import {
   VECTOR_DEFAULT_TOPK,
   VectorCountItems,
   VectorDeleteItemBatch,
-  VectorFilterExpressionFactory as F,
+  VectorFilterExpressions as F,
   VectorGetItemBatch,
   VectorGetItemMetadataBatch,
   VectorIndexItem,

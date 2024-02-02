@@ -10,7 +10,7 @@ export abstract class VectorFilterExpression {
    * @returns The AND expression.
    */
   public and(other: VectorFilterExpression): VectorFilterAndExpression {
-    return VectorFilterExpressionFactory.and(this, other);
+    return VectorFilterExpressions.and(this, other);
   }
 
   /**
@@ -19,7 +19,7 @@ export abstract class VectorFilterExpression {
    * @returns The OR expression.
    */
   public or(other: VectorFilterExpression): VectorFilterOrExpression {
-    return VectorFilterExpressionFactory.or(this, other);
+    return VectorFilterExpressions.or(this, other);
   }
 
   /**
@@ -27,14 +27,14 @@ export abstract class VectorFilterExpression {
    * @returns The negated expression.
    */
   public not(): VectorFilterNotExpression {
-    return VectorFilterExpressionFactory.not(this);
+    return VectorFilterExpressions.not(this);
   }
 }
 
 /**
  * Factory for creating vector filter expressions.
  */
-export class VectorFilterExpressionFactory {
+export class VectorFilterExpressions {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {}
 

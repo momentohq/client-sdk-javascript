@@ -76,7 +76,7 @@ export {
 export * as vectorFilters from './messages/vector-index-filters';
 export {
   VectorFilterExpression,
-  VectorFilterExpressionFactory,
+  VectorFilterExpressions,
 } from './messages/vector-index-filters';
 
 // Leaderboard Response Types
