@@ -1117,6 +1117,61 @@ export function runVectorDataPlaneTest(
               testCaseName: 'bool inequality',
             },
             {
+              filterExpression: F.greaterThan('int', 5),
+              expectedIds: ['test_item_3'],
+              testCaseName: 'int greater than',
+            },
+            {
+              filterExpression: F.greaterThanOrEqual('int', 5),
+              expectedIds: ['test_item_2', 'test_item_3'],
+              testCaseName: 'int greater than or equal',
+            },
+            {
+              filterExpression: F.greaterThan('float', 5.0),
+              expectedIds: ['test_item_3'],
+              testCaseName: 'float greater than',
+            },
+            {
+              filterExpression: F.greaterThanOrEqual('float', 5.0),
+              expectedIds: ['test_item_2', 'test_item_3'],
+              testCaseName: 'float greater than or equal',
+            },
+            {
+              filterExpression: F.lessThan('int', 5),
+              expectedIds: ['test_item_1'],
+              testCaseName: 'int less than',
+            },
+            {
+              filterExpression: F.lessThanOrEqual('int', 5),
+              expectedIds: ['test_item_1', 'test_item_2'],
+              testCaseName: 'int less than or equal',
+            },
+            {
+              filterExpression: F.lessThan('float', 5.0),
+              expectedIds: ['test_item_1'],
+              testCaseName: 'float less than',
+            },
+            {
+              filterExpression: F.lessThanOrEqual('float', 5.0),
+              expectedIds: ['test_item_1', 'test_item_2'],
+              testCaseName: 'float less than or equal',
+            },
+            {
+              filterExpression: F.listContains('tags', 'a'),
+              expectedIds: ['test_item_1', 'test_item_2', 'test_item_3'],
+              testCaseName: 'list contains a',
+            },
+            {
+              filterExpression: F.listContains('tags', 'b'),
+              expectedIds: ['test_item_1', 'test_item_2'],
+              testCaseName: 'list contains b',
+            },
+            {
+              filterExpression: F.listContains('tags', 'm'),
+              expectedIds: [],
+              testCaseName: 'list contains m',
+            },
+            {
               filterExpression: F.and(
                 F.equals('str', 'value1'),
                 F.equals('int', 0)
@@ -1145,6 +1200,20 @@ export function runVectorDataPlaneTest(
               ),
               expectedIds: ['test_item_1', 'test_item_2'],
               testCaseName: 'or-chained',
+            },
+            {
+              filterExpression: F.listContains('tags', 'b').and(
+                F.greaterThan('int', 1)
+              ),
+              expectedIds: ['test_item_2'],
+              testCaseName: 'list contains b and int greater than 1',
+            },
+            {
+              filterExpression: F.listContains('tags', 'b').or(
+                F.greaterThan('int', 1)
+              ),
+              expectedIds: ['test_item_1', 'test_item_2', 'test_item_3'],
+              testCaseName: 'list contains b or int greater than 1',
             },
           ]) {
             const searchResponse = await vectorClient.search(

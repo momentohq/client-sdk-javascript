@@ -374,6 +374,116 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       const expression = new vectorindex._FilterExpression();
       expression.setEqualsExpression(equals);
       return expression;
+    } else if (
+      filterExpression instanceof F.VectorFilterGreaterThanExpression
+    ) {
+      const greaterThan = new vectorindex._GreaterThanExpression();
+      greaterThan.setField(filterExpression.Field);
+
+      if (typeof filterExpression.Value === 'number') {
+        if (Number.isInteger(filterExpression.Value)) {
+          greaterThan.setIntegerValue(filterExpression.Value);
+        } else {
+          greaterThan.setFloatValue(filterExpression.Value);
+        }
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a number.'`
+        );
+      }
+
+      const expression = new vectorindex._FilterExpression();
+      expression.setGreaterThanExpression(greaterThan);
+      return expression;
+    } else if (
+      filterExpression instanceof F.VectorFilterGreaterThanOrEqualExpression
+    ) {
+      const greaterThanOrEqual =
+        new vectorindex._GreaterThanOrEqualExpression();
+      greaterThanOrEqual.setField(filterExpression.Field);
+
+      if (typeof filterExpression.Value === 'number') {
+        if (Number.isInteger(filterExpression.Value)) {
+          greaterThanOrEqual.setIntegerValue(filterExpression.Value);
+        } else {
+          greaterThanOrEqual.setFloatValue(filterExpression.Value);
+        }
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a number.'`
+        );
+      }
+
+      const expression = new vectorindex._FilterExpression();
+      expression.setGreaterThanOrEqualExpression(greaterThanOrEqual);
+      return expression;
+    } else if (filterExpression instanceof F.VectorFilterLessThanExpression) {
+      const lessThan = new vectorindex._LessThanExpression();
+      lessThan.setField(filterExpression.Field);
+
+      if (typeof filterExpression.Value === 'number') {
+        if (Number.isInteger(filterExpression.Value)) {
+          lessThan.setIntegerValue(filterExpression.Value);
+        } else {
+          lessThan.setFloatValue(filterExpression.Value);
+        }
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a number.'`
+        );
+      }
+
+      const expression = new vectorindex._FilterExpression();
+      expression.setLessThanExpression(lessThan);
+      return expression;
+    } else if (
+      filterExpression instanceof F.VectorFilterLessThanOrEqualExpression
+    ) {
+      const lessThanOrEqual = new vectorindex._LessThanOrEqualExpression();
+      lessThanOrEqual.setField(filterExpression.Field);
+
+      if (typeof filterExpression.Value === 'number') {
+        if (Number.isInteger(filterExpression.Value)) {
+          lessThanOrEqual.setIntegerValue(filterExpression.Value);
+        } else {
+          lessThanOrEqual.setFloatValue(filterExpression.Value);
+        }
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a number.'`
+        );
+      }
+
+      const expression = new vectorindex._FilterExpression();
+      expression.setLessThanOrEqualExpression(lessThanOrEqual);
+      return expression;
+    } else if (
+      filterExpression instanceof F.VectorFilterListContainsExpression
+    ) {
+      const listContains = new vectorindex._ListContainsExpression();
+      listContains.setField(filterExpression.Field);
+
+      if (typeof filterExpression.Value === 'string') {
+        listContains.setStringValue(filterExpression.Value);
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a string or number.'`
+        );
+      }
+
+      const expression = new vectorindex._FilterExpression();
+      expression.setListContainsExpression(listContains);
+      return expression;
     }
 
     throw new InvalidArgumentError('Filter expression is not a valid type.');
