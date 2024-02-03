@@ -19,7 +19,7 @@ import {
 import {Message} from 'google-protobuf';
 import {MomentoLoggerFactory} from '../../';
 import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
-import { Status } from '@grpc/grpc-js/build/src/constants';
+import {Status} from '@grpc/grpc-js/build/src/constants';
 
 export function middlewaresInterceptor(
   loggerFactory: MomentoLoggerFactory,
