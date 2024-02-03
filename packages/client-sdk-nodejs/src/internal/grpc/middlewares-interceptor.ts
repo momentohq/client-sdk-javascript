@@ -19,6 +19,7 @@ import {
 import {Message} from 'google-protobuf';
 import {MomentoLoggerFactory} from '../../';
 import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
+import { Status } from '@grpc/grpc-js/build/src/constants';
 
 export function middlewaresInterceptor(
   loggerFactory: MomentoLoggerFactory,
@@ -26,6 +27,8 @@ export function middlewaresInterceptor(
   middlewareRequestContext: MiddlewareRequestHandlerContext,
   grpcClient: cache_client.ScsClient | null = null
 ): Interceptor {
+  const logger = loggerFactory.getLogger('grpc-interceptor');
+
   return (options: InterceptorOptions, nextCall: NextCall) => {
     const middlewareRequestHandlers = middlewares.map(m =>
       m.onNewRequest(middlewareRequestContext)
@@ -77,8 +80,7 @@ export function middlewaresInterceptor(
             status: StatusObject,
             next: (status: StatusObject) => void
           ): void {
-            if (status.code === 4) {
-              const logger = loggerFactory.getLogger('grpc-interceptor');
+            if (status.code === Status.DEADLINE_EXCEEDED) {
               logger.debug(
                 `Received status: ${status.code} ${
                   status.details
