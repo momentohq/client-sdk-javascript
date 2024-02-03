@@ -20,6 +20,7 @@ import {Message} from 'google-protobuf';
 import {MomentoLoggerFactory} from '../../';
 import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 import {Status} from '@grpc/grpc-js/build/src/constants';
+import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
 
 export function middlewaresInterceptor(
   loggerFactory: MomentoLoggerFactory,
@@ -80,13 +81,16 @@ export function middlewaresInterceptor(
             status: StatusObject,
             next: (status: StatusObject) => void
           ): void {
+            const connectionStatus =
+              grpcClient?.getChannel()?.getConnectivityState(false) ?? null;
             if (status.code === Status.DEADLINE_EXCEEDED) {
               logger.debug(
                 `Received status: ${status.code} ${
                   status.details
                 } and grpc connection status: ${
-                  grpcClient?.getChannel()?.getConnectivityState(false) ??
-                  'unable to get connection status'
+                  connectionStatus
+                    ? ConnectivityState[connectionStatus]
+                    : 'unable to get connection status'
                 }`
               );
             }
