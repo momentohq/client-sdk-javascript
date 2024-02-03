@@ -79,8 +79,7 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
     this.unaryInterceptors = PubsubClient.initializeUnaryInterceptors(
       headers,
       props.configuration,
-      this.unaryRequestTimeoutMs,
-      this.client
+      this.unaryRequestTimeoutMs
     );
     this.streamingInterceptors =
       PubsubClient.initializeStreamingInterceptors(headers);
@@ -263,11 +262,10 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   private static initializeUnaryInterceptors(
     headers: Header[],
     configuration: TopicConfiguration,
-    requestTimeoutMs: number,
-    client: grpcPubsub.PubsubClient
+    requestTimeoutMs: number
   ): Interceptor[] {
     return [
-      middlewaresInterceptor(client, configuration.getLoggerFactory(), [], {}),
+      middlewaresInterceptor(configuration.getLoggerFactory(), [], {}),
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
       ClientTimeoutInterceptor(requestTimeoutMs),
     ];

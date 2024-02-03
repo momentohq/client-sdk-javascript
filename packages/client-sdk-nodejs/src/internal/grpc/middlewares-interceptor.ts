@@ -19,14 +19,12 @@ import {
 import {Message} from 'google-protobuf';
 import {MomentoLoggerFactory} from '../../';
 import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
-import {pubsub} from '@gomomento/generated-types';
-import grpcPubsub = pubsub.cache_client.pubsub;
 
 export function middlewaresInterceptor(
-  grpcConnection: cache_client.ScsClient | grpcPubsub.PubsubClient,
   loggerFactory: MomentoLoggerFactory,
   middlewares: Middleware[],
-  middlewareRequestContext: MiddlewareRequestHandlerContext
+  middlewareRequestContext: MiddlewareRequestHandlerContext,
+  grpcClient: cache_client.ScsClient | null = null
 ): Interceptor {
   return (options: InterceptorOptions, nextCall: NextCall) => {
     const middlewareRequestHandlers = middlewares.map(m =>
@@ -82,11 +80,12 @@ export function middlewaresInterceptor(
             if (status.code === 4) {
               const logger = loggerFactory.getLogger('grpc-interceptor');
               logger.debug(
-                `Received status ${status.code} ${
+                `Received status: ${status.code} ${
                   status.details
-                } and connection status ${grpcConnection
-                  .getChannel()
-                  .getConnectivityState(false)}`
+                } and grpc connection status: ${
+                  grpcClient?.getChannel()?.getConnectivityState(false) ??
+                  'unable to get connection status'
+                }`
               );
             }
             applyMiddlewareHandlers(
