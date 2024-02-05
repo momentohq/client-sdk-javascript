@@ -9,6 +9,7 @@ import {
   VectorGetItemMetadataBatch,
 } from '../messages/responses/vector';
 import {VectorIndexItem} from '../messages/vector-index';
+import {VectorFilterExpression} from '../messages/vector-index-filters';
 
 /**
  * A special value to request all metadata fields.
@@ -16,11 +17,16 @@ import {VectorIndexItem} from '../messages/vector-index';
 export const ALL_VECTOR_METADATA = Symbol('ALL_VECTOR_METADATA');
 
 /**
+ * The default number of results to return.
+ */
+export const VECTOR_DEFAULT_TOPK = 10;
+
+/**
  * Options for the search operation.
  */
 export interface SearchOptions {
   /**
-   * The number of results to return. Defaults to 10.
+   * The number of results to return. Defaults to {@link VECTOR_DEFAULT_TOPK}.
    */
   topK?: number;
   /**
@@ -36,6 +42,10 @@ export interface SearchOptions {
    *   are excluded.
    */
   scoreThreshold?: number;
+  /**
+   * A filter expression to filter results by. Defaults to no filter.
+   */
+  filterExpression?: VectorFilterExpression;
 }
 
 export interface IVectorIndexClient extends IVectorIndexControlClient {

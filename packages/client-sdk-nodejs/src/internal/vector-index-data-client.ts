@@ -1,21 +1,24 @@
 import {version} from '../../package.json';
 import {IVectorIndexDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/vector/IVectorIndexDataClient';
 import {
+  ALL_VECTOR_METADATA,
   CredentialProvider,
   InvalidArgumentError,
   MomentoLogger,
   MomentoLoggerFactory,
   SearchOptions,
+  VECTOR_DEFAULT_TOPK,
   VectorCountItems,
   VectorDeleteItemBatch,
-  VectorSearch,
-  VectorSearchAndFetchVectors,
-  VectorIndexMetadata,
-  VectorIndexItem,
-  VectorUpsertItemBatch,
-  VectorIndexStoredItem,
+  vectorFilters as F,
   VectorGetItemBatch,
   VectorGetItemMetadataBatch,
+  VectorIndexItem,
+  VectorIndexMetadata,
+  VectorIndexStoredItem,
+  VectorSearch,
+  VectorSearchAndFetchVectors,
+  VectorUpsertItemBatch,
 } from '@gomomento/sdk-core';
 import {VectorIndexConfiguration} from '../config/vector-index-configuration';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
@@ -28,7 +31,6 @@ import {
   validateTopK,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {UnknownError} from '@gomomento/sdk-core/dist/src/errors';
-import {ALL_VECTOR_METADATA} from '@gomomento/sdk-core/dist/src/clients/IVectorIndexClient';
 import {VectorIndexClientPropsWithConfig} from './vector-index-client-props-with-config';
 
 export class VectorIndexDataClient implements IVectorIndexDataClient {
@@ -296,7 +298,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     return await this.sendSearch(indexName, queryVector, options);
   }
 
-  private static prepareMetadataRequest(
+  private static buildMetadataRequest(
     options?: SearchOptions
   ): vectorindex._MetadataRequest {
     const metadataRequest = new vectorindex._MetadataRequest();
@@ -322,6 +324,207 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     } else {
       request.no_score_threshold = new vectorindex._NoScoreThreshold();
     }
+  }
+
+  private static buildFilterExpression(
+    filterExpression?: F.VectorFilterExpression
+  ): vectorindex._FilterExpression | undefined {
+    if (filterExpression === undefined) {
+      return undefined;
+    } else if (filterExpression instanceof F.VectorFilterAndExpression) {
+      return new vectorindex._FilterExpression({
+        and_expression: new vectorindex._AndExpression({
+          first_expression: VectorIndexDataClient.buildFilterExpression(
+            filterExpression.FirstExpression
+          ),
+          second_expression: VectorIndexDataClient.buildFilterExpression(
+            filterExpression.SecondExpression
+          ),
+        }),
+      });
+    } else if (filterExpression instanceof F.VectorFilterOrExpression) {
+      return new vectorindex._FilterExpression({
+        or_expression: new vectorindex._OrExpression({
+          first_expression: VectorIndexDataClient.buildFilterExpression(
+            filterExpression.FirstExpression
+          ),
+          second_expression: VectorIndexDataClient.buildFilterExpression(
+            filterExpression.SecondExpression
+          ),
+        }),
+      });
+    } else if (filterExpression instanceof F.VectorFilterNotExpression) {
+      return new vectorindex._FilterExpression({
+        not_expression: new vectorindex._NotExpression({
+          expression_to_negate: VectorIndexDataClient.buildFilterExpression(
+            filterExpression.Expression
+          ),
+        }),
+      });
+    } else if (filterExpression instanceof F.VectorFilterEqualsExpression) {
+      if (typeof filterExpression.Value === 'string') {
+        return new vectorindex._FilterExpression({
+          equals_expression: new vectorindex._EqualsExpression({
+            field: filterExpression.Field,
+            string_value: filterExpression.Value,
+          }),
+        });
+      } else if (typeof filterExpression.Value === 'number') {
+        if (Number.isInteger(filterExpression.Value)) {
+          return new vectorindex._FilterExpression({
+            equals_expression: new vectorindex._EqualsExpression({
+              field: filterExpression.Field,
+              integer_value: filterExpression.Value,
+            }),
+          });
+        } else {
+          return new vectorindex._FilterExpression({
+            equals_expression: new vectorindex._EqualsExpression({
+              field: filterExpression.Field,
+              float_value: filterExpression.Value,
+            }),
+          });
+        }
+      } else if (typeof filterExpression.Value === 'boolean') {
+        return new vectorindex._FilterExpression({
+          equals_expression: new vectorindex._EqualsExpression({
+            field: filterExpression.Field,
+            boolean_value: filterExpression.Value,
+          }),
+        });
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a string, number, or boolean.'`
+        );
+      }
+    } else if (
+      filterExpression instanceof F.VectorFilterGreaterThanExpression
+    ) {
+      if (typeof filterExpression.Value === 'number') {
+        if (Number.isInteger(filterExpression.Value)) {
+          return new vectorindex._FilterExpression({
+            greater_than_expression: new vectorindex._GreaterThanExpression({
+              field: filterExpression.Field,
+              integer_value: filterExpression.Value,
+            }),
+          });
+        } else {
+          return new vectorindex._FilterExpression({
+            greater_than_expression: new vectorindex._GreaterThanExpression({
+              field: filterExpression.Field,
+              float_value: filterExpression.Value,
+            }),
+          });
+        }
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a number.'`
+        );
+      }
+    } else if (
+      filterExpression instanceof F.VectorFilterGreaterThanOrEqualExpression
+    ) {
+      if (typeof filterExpression.Value === 'number') {
+        if (Number.isInteger(filterExpression.Value)) {
+          return new vectorindex._FilterExpression({
+            greater_than_or_equal_expression:
+              new vectorindex._GreaterThanOrEqualExpression({
+                field: filterExpression.Field,
+                integer_value: filterExpression.Value,
+              }),
+          });
+        } else {
+          return new vectorindex._FilterExpression({
+            greater_than_or_equal_expression:
+              new vectorindex._GreaterThanOrEqualExpression({
+                field: filterExpression.Field,
+                float_value: filterExpression.Value,
+              }),
+          });
+        }
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a number.'`
+        );
+      }
+    } else if (filterExpression instanceof F.VectorFilterLessThanExpression) {
+      if (typeof filterExpression.Value === 'number') {
+        if (Number.isInteger(filterExpression.Value)) {
+          return new vectorindex._FilterExpression({
+            less_than_expression: new vectorindex._LessThanExpression({
+              field: filterExpression.Field,
+              integer_value: filterExpression.Value,
+            }),
+          });
+        } else {
+          return new vectorindex._FilterExpression({
+            less_than_expression: new vectorindex._LessThanExpression({
+              field: filterExpression.Field,
+              float_value: filterExpression.Value,
+            }),
+          });
+        }
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a number.'`
+        );
+      }
+    } else if (
+      filterExpression instanceof F.VectorFilterLessThanOrEqualExpression
+    ) {
+      if (typeof filterExpression.Value === 'number') {
+        if (Number.isInteger(filterExpression.Value)) {
+          return new vectorindex._FilterExpression({
+            less_than_or_equal_expression:
+              new vectorindex._LessThanOrEqualExpression({
+                field: filterExpression.Field,
+                integer_value: filterExpression.Value,
+              }),
+          });
+        } else {
+          return new vectorindex._FilterExpression({
+            less_than_or_equal_expression:
+              new vectorindex._LessThanOrEqualExpression({
+                field: filterExpression.Field,
+                float_value: filterExpression.Value,
+              }),
+          });
+        }
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a number.'`
+        );
+      }
+    } else if (
+      filterExpression instanceof F.VectorFilterListContainsExpression
+    ) {
+      if (typeof filterExpression.Value === 'string') {
+        return new vectorindex._FilterExpression({
+          list_contains_expression: new vectorindex._ListContainsExpression({
+            field: filterExpression.Field,
+            string_value: filterExpression.Value,
+          }),
+        });
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a string.'`
+        );
+      }
+    }
+
+    throw new InvalidArgumentError('Filter expression is not a valid type.');
   }
 
   private static deserializeMetadata(
@@ -362,8 +565,11 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     const request = new vectorindex._SearchRequest({
       index_name: indexName,
       query_vector: new vectorindex._Vector({elements: queryVector}),
-      top_k: options?.topK,
-      metadata_fields: VectorIndexDataClient.prepareMetadataRequest(options),
+      top_k: options?.topK ?? VECTOR_DEFAULT_TOPK,
+      metadata_fields: VectorIndexDataClient.buildMetadataRequest(options),
+      filter_expression: VectorIndexDataClient.buildFilterExpression(
+        options?.filterExpression
+      ),
     });
     VectorIndexDataClient.applyScoreThreshold(request, options);
 
@@ -436,8 +642,11 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     const request = new vectorindex._SearchAndFetchVectorsRequest({
       index_name: indexName,
       query_vector: new vectorindex._Vector({elements: queryVector}),
-      top_k: options?.topK,
-      metadata_fields: VectorIndexDataClient.prepareMetadataRequest(options),
+      top_k: options?.topK ?? VECTOR_DEFAULT_TOPK,
+      metadata_fields: VectorIndexDataClient.buildMetadataRequest(options),
+      filter_expression: VectorIndexDataClient.buildFilterExpression(
+        options?.filterExpression
+      ),
     });
     VectorIndexDataClient.applyScoreThreshold(request, options);
 
@@ -503,7 +712,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     const request = new vectorindex._GetItemBatchRequest({
       index_name: indexName,
       ids: ids,
-      metadata_fields: VectorIndexDataClient.prepareMetadataRequest({
+      metadata_fields: VectorIndexDataClient.buildMetadataRequest({
         metadataFields: ALL_VECTOR_METADATA,
       }),
     });
@@ -585,7 +794,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     const request = new vectorindex._GetItemMetadataBatchRequest({
       index_name: indexName,
       ids: ids,
-      metadata_fields: VectorIndexDataClient.prepareMetadataRequest({
+      metadata_fields: VectorIndexDataClient.buildMetadataRequest({
         metadataFields: ALL_VECTOR_METADATA,
       }),
     });

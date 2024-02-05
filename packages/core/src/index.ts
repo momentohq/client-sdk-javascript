@@ -73,6 +73,11 @@ export {
   VectorIndexItem,
   VectorIndexStoredItem,
 } from './messages/vector-index';
+export * as vectorFilters from './messages/vector-index-filters';
+export {
+  VectorFilterExpression,
+  VectorFilterExpressions,
+} from './messages/vector-index-filters';
 
 // Leaderboard Response Types
 export * as leaderboard from './messages/responses/leaderboard';
@@ -145,6 +150,7 @@ export {
   IVectorIndexClient,
   SearchOptions,
   ALL_VECTOR_METADATA,
+  VECTOR_DEFAULT_TOPK,
 } from './clients/IVectorIndexClient';
 
 export {VectorSimilarityMetric} from './internal/clients';
