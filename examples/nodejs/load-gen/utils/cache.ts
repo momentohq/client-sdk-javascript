@@ -16,7 +16,7 @@ export function getCacheClient(
 ): Promise<CacheClient> {
   return CacheClient.create({
     configuration: Configurations.Lambda.latest().withMiddlewares(
-      [],
+      [new ExperimentalMetricsLoggingMiddleware(loggerFactory)],
     ),
     credentialProvider: new EnvMomentoTokenProvider({
       environmentVariableName: 'MOMENTO_API_KEY',
