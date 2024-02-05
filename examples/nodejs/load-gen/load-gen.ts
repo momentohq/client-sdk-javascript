@@ -40,7 +40,7 @@ class BasicLoadGen {
   async run(): Promise<void> {
     const momento = await getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
 
-    for (let i = 0; i < 3; i++) { // Easily changeable to add more clients
+    for (let i = 0; i < 4; i++) { // Easily changeable to add more clients
       console.log("Creating client");
       const client = await getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
       this.clients.push(client);
