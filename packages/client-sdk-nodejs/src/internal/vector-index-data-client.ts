@@ -522,6 +522,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a string.'`
         );
       }
+    } else if (filterExpression instanceof F.VectorFilterIdInSetExpression) {
+      return new vectorindex._FilterExpression({
+        id_in_set_expression: new vectorindex._IdInSetExpression({
+          ids: filterExpression.Ids,
+        }),
+      });
     }
 
     throw new InvalidArgumentError('Filter expression is not a valid type.');
