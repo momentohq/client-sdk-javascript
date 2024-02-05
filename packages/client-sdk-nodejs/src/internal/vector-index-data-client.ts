@@ -399,6 +399,129 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a string, number, or boolean.'`
         );
       }
+    } else if (
+      filterExpression instanceof F.VectorFilterGreaterThanExpression
+    ) {
+      if (typeof filterExpression.Value === 'number') {
+        if (Number.isInteger(filterExpression.Value)) {
+          return new vectorindex._FilterExpression({
+            greater_than_expression: new vectorindex._GreaterThanExpression({
+              field: filterExpression.Field,
+              integer_value: filterExpression.Value,
+            }),
+          });
+        } else {
+          return new vectorindex._FilterExpression({
+            greater_than_expression: new vectorindex._GreaterThanExpression({
+              field: filterExpression.Field,
+              float_value: filterExpression.Value,
+            }),
+          });
+        }
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a number.'`
+        );
+      }
+    } else if (
+      filterExpression instanceof F.VectorFilterGreaterThanOrEqualExpression
+    ) {
+      if (typeof filterExpression.Value === 'number') {
+        if (Number.isInteger(filterExpression.Value)) {
+          return new vectorindex._FilterExpression({
+            greater_than_or_equal_expression:
+              new vectorindex._GreaterThanOrEqualExpression({
+                field: filterExpression.Field,
+                integer_value: filterExpression.Value,
+              }),
+          });
+        } else {
+          return new vectorindex._FilterExpression({
+            greater_than_or_equal_expression:
+              new vectorindex._GreaterThanOrEqualExpression({
+                field: filterExpression.Field,
+                float_value: filterExpression.Value,
+              }),
+          });
+        }
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a number.'`
+        );
+      }
+    } else if (filterExpression instanceof F.VectorFilterLessThanExpression) {
+      if (typeof filterExpression.Value === 'number') {
+        if (Number.isInteger(filterExpression.Value)) {
+          return new vectorindex._FilterExpression({
+            less_than_expression: new vectorindex._LessThanExpression({
+              field: filterExpression.Field,
+              integer_value: filterExpression.Value,
+            }),
+          });
+        } else {
+          return new vectorindex._FilterExpression({
+            less_than_expression: new vectorindex._LessThanExpression({
+              field: filterExpression.Field,
+              float_value: filterExpression.Value,
+            }),
+          });
+        }
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a number.'`
+        );
+      }
+    } else if (
+      filterExpression instanceof F.VectorFilterLessThanOrEqualExpression
+    ) {
+      if (typeof filterExpression.Value === 'number') {
+        if (Number.isInteger(filterExpression.Value)) {
+          return new vectorindex._FilterExpression({
+            less_than_or_equal_expression:
+              new vectorindex._LessThanOrEqualExpression({
+                field: filterExpression.Field,
+                integer_value: filterExpression.Value,
+              }),
+          });
+        } else {
+          return new vectorindex._FilterExpression({
+            less_than_or_equal_expression:
+              new vectorindex._LessThanOrEqualExpression({
+                field: filterExpression.Field,
+                float_value: filterExpression.Value,
+              }),
+          });
+        }
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a number.'`
+        );
+      }
+    } else if (
+      filterExpression instanceof F.VectorFilterListContainsExpression
+    ) {
+      if (typeof filterExpression.Value === 'string') {
+        return new vectorindex._FilterExpression({
+          list_contains_expression: new vectorindex._ListContainsExpression({
+            field: filterExpression.Field,
+            string_value: filterExpression.Value,
+          }),
+        });
+      } else {
+        throw new InvalidArgumentError(
+          `Filter value for field '${
+            filterExpression.Field
+          }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a string.'`
+        );
+      }
     }
 
     throw new InvalidArgumentError('Filter expression is not a valid type.');
