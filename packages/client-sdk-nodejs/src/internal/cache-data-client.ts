@@ -3106,7 +3106,8 @@ export class CacheDataClient implements IDataClient {
       middlewaresInterceptor(
         loggerFactory,
         middlewares,
-        middlewareRequestContext
+        middlewareRequestContext,
+        this.clientWrapper.getClient()
       ),
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
       ClientTimeoutInterceptor(this.requestTimeoutMs),

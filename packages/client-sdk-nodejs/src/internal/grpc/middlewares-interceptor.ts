@@ -18,12 +18,18 @@ import {
 } from '../../config/middleware/middleware';
 import {Message} from 'google-protobuf';
 import {MomentoLoggerFactory} from '../../';
+import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
+import {Status} from '@grpc/grpc-js/build/src/constants';
+import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
 
 export function middlewaresInterceptor(
   loggerFactory: MomentoLoggerFactory,
   middlewares: Middleware[],
-  middlewareRequestContext: MiddlewareRequestHandlerContext
+  middlewareRequestContext: MiddlewareRequestHandlerContext,
+  grpcClient: cache_client.ScsClient | null = null
 ): Interceptor {
+  const logger = loggerFactory.getLogger('grpc-interceptor');
+
   return (options: InterceptorOptions, nextCall: NextCall) => {
     const middlewareRequestHandlers = middlewares.map(m =>
       m.onNewRequest(middlewareRequestContext)
@@ -75,6 +81,21 @@ export function middlewaresInterceptor(
             status: StatusObject,
             next: (status: StatusObject) => void
           ): void {
+            // getConnectivityState(true) will return state of connection and
+            // also try to connect if it's idle
+            const connectionStatus =
+              grpcClient?.getChannel()?.getConnectivityState(true) ?? null;
+            if (status.code === Status.DEADLINE_EXCEEDED) {
+              logger.debug(
+                `Received status: ${status.code} ${
+                  status.details
+                } and grpc connection status: ${
+                  connectionStatus
+                    ? ConnectivityState[connectionStatus]
+                    : 'unable to get connection status'
+                }`
+              );
+            }
             applyMiddlewareHandlers(
               'onResponseStatus',
               reversedMiddlewareRequestHandlers,
