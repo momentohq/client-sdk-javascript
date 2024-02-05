@@ -1,8 +1,23 @@
-import {CacheGet, CreateCache, CacheSet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
+import {
+  CacheClient,
+  CacheGet,
+  CacheSet,
+  Configurations,
+  CreateCache,
+  CredentialProvider,
+  DefaultMomentoLoggerFactory,
+  DefaultMomentoLoggerLevel,
+  ExperimentalMetricsLoggingMiddleware
+} from '@gomomento/sdk';
 
 async function main() {
   const momento = await CacheClient.create({
-    configuration: Configurations.Laptop.v1(),
+    configuration: Configurations.Laptop.v1()
+      .withMiddlewares(
+        [new ExperimentalMetricsLoggingMiddleware(
+            new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.INFO)
+        )]
+      ),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_API_KEY',
     }),
@@ -25,8 +40,9 @@ async function main() {
   }
 
   const getResponse = await momento.get('cache', 'foo');
+  console.log(getResponse)
   if (getResponse instanceof CacheGet.Hit) {
-    console.log(`cache hit: ${getResponse.valueString()}`);
+    console.log(`cache hit: ${getResponse.valueUint8Array()}`);
   } else if (getResponse instanceof CacheGet.Miss) {
     console.log('cache miss');
   } else if (getResponse instanceof CacheGet.Error) {

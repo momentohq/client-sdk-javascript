@@ -40,7 +40,7 @@ class BasicLoadGen {
   async run(): Promise<void> {
     const momento = await getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
 
-    for (let i = 0; i < 2; i++) { // Easily changeable to add more clients
+    for (let i = 0; i < 3; i++) { // Easily changeable to add more clients
       console.log("Creating client");
       const client = await getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
       this.clients.push(client);
@@ -216,12 +216,12 @@ const loadGeneratorOptions: BasicLoadGenOptions = {
    * **Note**: You are likely to see degraded performance if you increase this above 50
    * and observe elevated client-side latencies.
    */
-  numberOfConcurrentRequests: 20,
+  numberOfConcurrentRequests: 4,
   /**
    * Controls how long the load test will run, in milliseconds. We will execute operations
    * for this long and the exit.
    */
-  totalSecondsToRun: 60,
+  totalSecondsToRun: 12000,
 };
 
 main(loadGeneratorOptions)

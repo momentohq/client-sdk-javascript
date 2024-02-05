@@ -6,7 +6,7 @@ import {
   DefaultMomentoLoggerFactory,
   DefaultMomentoLoggerLevel,
   MomentoLogger,
-  MomentoLoggerFactory,
+  MomentoLoggerFactory, ExperimentalMetricsLoggingMiddleware,
 } from '@gomomento/sdk';
 
 export function getCacheClient(
@@ -15,7 +15,9 @@ export function getCacheClient(
   cacheItemTtlSeconds: number
 ): Promise<CacheClient> {
   return CacheClient.create({
-    configuration: Configurations.Lambda.latest(),
+    configuration: Configurations.Lambda.latest().withMiddlewares(
+      [],
+    ),
     credentialProvider: new EnvMomentoTokenProvider({
       environmentVariableName: 'MOMENTO_API_KEY',
     }),

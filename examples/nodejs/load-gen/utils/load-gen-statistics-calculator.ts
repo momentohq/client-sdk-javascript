@@ -54,6 +54,14 @@ resource exhausted: ${loadGenContext.globalResourceExhaustedCount} (${percentReq
     loadGenContext,
     loadGenContext.globalResourceExhaustedCount
   )}%)
+  cancelled: ${loadGenContext.cancelledCount} (${percentRequests(
+    loadGenContext,
+    loadGenContext.cancelledCount
+  )}%)
+    undefined: ${loadGenContext.undefinedCount} (${percentRequests(
+    loadGenContext,
+    loadGenContext.undefinedCount
+  )}%)
     rst stream: ${loadGenContext.globalRstStreamCount} (${percentRequests(
     loadGenContext,
     loadGenContext.globalRstStreamCount

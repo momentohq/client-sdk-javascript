@@ -25,6 +25,8 @@ export enum AsyncSetGetResult {
   DEADLINE_EXCEEDED = 'DEADLINE_EXCEEDED',
   RESOURCE_EXHAUSTED = 'RESOURCE_EXHAUSTED',
   RST_STREAM = 'RST_STREAM',
+  CANCELLED = 'CANCELLED',
+  UNDEFINED = 'UNDEFINED',
 }
 
 export interface BasicLoadGenContext {
@@ -40,6 +42,8 @@ export interface BasicLoadGenContext {
   globalDeadlineExceededCount: number;
   globalResourceExhaustedCount: number;
   globalRstStreamCount: number;
+  cancelledCount: number;
+  undefinedCount: number;
 }
 
 export interface RequestCoalescerContext {
@@ -63,6 +67,12 @@ export function updateContextCountsForRequest(context: BasicLoadGenContext, resu
       break;
     case AsyncSetGetResult.RESOURCE_EXHAUSTED:
       context.globalResourceExhaustedCount++;
+      break;
+    case AsyncSetGetResult.CANCELLED:
+      context.cancelledCount++;
+      break;
+    case AsyncSetGetResult.UNDEFINED:
+      context.undefinedCount++;
       break;
     case AsyncSetGetResult.RST_STREAM:
       context.globalRstStreamCount++;
@@ -97,26 +107,33 @@ export async function executeRequest<T>(
       } else if (e.message.includes('RST_STREAM')) {
         logger.error(`Caught RST_STREAM error; swallowing: ${e.name}, ${e.message}`);
         return [AsyncSetGetResult.RST_STREAM, undefined];
+      } else if (e.message.includes('CANCELLED')) {
+        return [AsyncSetGetResult.CANCELLED, undefined];
       } else {
-        throw e;
+        logger.error('Uncaught error', e);
+        return [AsyncSetGetResult.UNDEFINED, undefined];
       }
     } else if (e instanceof LimitExceededError) {
       if (e.message.includes('RESOURCE_EXHAUSTED')) {
         logger.error(`Caught RESOURCE_EXHAUSTED error; swallowing: ${e.name}, ${e.message}`);
         return [AsyncSetGetResult.RESOURCE_EXHAUSTED, undefined];
       } else {
-        throw e;
+        logger.error('Uncaught error', e);
+        return [AsyncSetGetResult.UNDEFINED, undefined];
       }
     } else if (e instanceof TimeoutError) {
       if (e.message.includes('DEADLINE_EXCEEDED')) {
         return [AsyncSetGetResult.DEADLINE_EXCEEDED, undefined];
       } else {
-        throw e;
+        logger.error('Uncaught error', e);
+        return [AsyncSetGetResult.UNDEFINED, undefined];
       }
     } else {
-      throw e;
+      logger.error('Uncaught error', e);
+      return [AsyncSetGetResult.UNDEFINED, undefined];
     }
   }
+
 }
 
 export function initiateLoadGenContext(): BasicLoadGenContext {
@@ -130,6 +147,8 @@ export function initiateLoadGenContext(): BasicLoadGenContext {
     globalDeadlineExceededCount: 0,
     globalResourceExhaustedCount: 0,
     globalRstStreamCount: 0,
+    cancelledCount: 0,
+    undefinedCount: 0
   };
   return loadGenContext;
 }
