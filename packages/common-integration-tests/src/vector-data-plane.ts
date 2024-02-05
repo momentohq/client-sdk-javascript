@@ -1215,6 +1215,21 @@ export function runVectorDataPlaneTest(
               expectedIds: ['test_item_1', 'test_item_2', 'test_item_3'],
               testCaseName: 'list contains b or int greater than 1',
             },
+            {
+              filterExpression: F.idInSet([]),
+              expectedIds: [],
+              testCaseName: 'id in empty set',
+            },
+            {
+              filterExpression: F.idInSet(['not there']),
+              expectedIds: [],
+              testCaseName: 'id not in set not there',
+            },
+            {
+              filterExpression: F.idInSet(['test_item_1', 'test_item_3']),
+              expectedIds: ['test_item_1', 'test_item_3'],
+              testCaseName: 'id in set test_item_1 test_item_3',
+            },
           ]) {
             const searchResponse = await vectorClient.search(
               indexName,
