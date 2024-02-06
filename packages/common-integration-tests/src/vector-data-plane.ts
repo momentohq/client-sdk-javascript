@@ -1080,146 +1080,147 @@ export function runVectorDataPlaneTest(
 
           await sleep(2_000);
 
-          for (const {filterExpression, expectedIds, testCaseName} of [
+          for (const {filter, expectedIds, testCaseName} of [
             {
-              filterExpression: F.equals('str', 'value1'),
+              filter: F.equals('str', 'value1'),
               expectedIds: ['test_item_1'],
               testCaseName: 'string equality',
             },
             {
-              filterExpression: F.not(F.equals('str', 'value1')),
+              filter: F.not(F.equals('str', 'value1')),
               expectedIds: ['test_item_2', 'test_item_3'],
               testCaseName: 'string inequality',
             },
             {
-              filterExpression: F.equals('int', 0),
+              filter: F.equals('int', 0),
               expectedIds: ['test_item_1'],
               testCaseName: 'int equality',
             },
             {
-              filterExpression: F.equals('float', 0.0),
+              filter: F.equals('float', 0.0),
               expectedIds: ['test_item_1'],
               testCaseName: 'float equality',
             },
             {
-              filterExpression: F.equals('bool', true),
+              filter: F.equals('bool', true),
               expectedIds: ['test_item_1', 'test_item_3'],
               testCaseName: 'bool equality',
             },
             {
-              filterExpression: F.not(F.equals('bool', true)),
+              filter: F.not(F.equals('bool', true)),
               expectedIds: ['test_item_2'],
               testCaseName: 'bool inequality',
             },
             {
-              filterExpression: F.equals('bool', true).not(),
+              filter: F.equals('bool', true).not(),
               expectedIds: ['test_item_2'],
               testCaseName: 'bool inequality',
             },
             {
-              filterExpression: F.greaterThan('int', 5),
+              filter: F.greaterThan('int', 5),
               expectedIds: ['test_item_3'],
               testCaseName: 'int greater than',
             },
             {
-              filterExpression: F.greaterThanOrEqual('int', 5),
+              filter: F.greaterThanOrEqual('int', 5),
               expectedIds: ['test_item_2', 'test_item_3'],
               testCaseName: 'int greater than or equal',
             },
             {
-              filterExpression: F.greaterThan('float', 5.0),
+              filter: F.greaterThan('float', 5.0),
               expectedIds: ['test_item_3'],
               testCaseName: 'float greater than',
             },
             {
-              filterExpression: F.greaterThanOrEqual('float', 5.0),
+              filter: F.greaterThanOrEqual('float', 5.0),
               expectedIds: ['test_item_2', 'test_item_3'],
               testCaseName: 'float greater than or equal',
             },
             {
-              filterExpression: F.lessThan('int', 5),
+              filter: F.lessThan('int', 5),
               expectedIds: ['test_item_1'],
               testCaseName: 'int less than',
             },
             {
-              filterExpression: F.lessThanOrEqual('int', 5),
+              filter: F.lessThanOrEqual('int', 5),
               expectedIds: ['test_item_1', 'test_item_2'],
               testCaseName: 'int less than or equal',
             },
             {
-              filterExpression: F.lessThan('float', 5.0),
+              filter: F.lessThan('float', 5.0),
               expectedIds: ['test_item_1'],
               testCaseName: 'float less than',
             },
             {
-              filterExpression: F.lessThanOrEqual('float', 5.0),
+              filter: F.lessThanOrEqual('float', 5.0),
               expectedIds: ['test_item_1', 'test_item_2'],
               testCaseName: 'float less than or equal',
             },
             {
-              filterExpression: F.listContains('tags', 'a'),
+              filter: F.listContains('tags', 'a'),
               expectedIds: ['test_item_1', 'test_item_2', 'test_item_3'],
               testCaseName: 'list contains a',
             },
             {
-              filterExpression: F.listContains('tags', 'b'),
+              filter: F.listContains('tags', 'b'),
               expectedIds: ['test_item_1', 'test_item_2'],
               testCaseName: 'list contains b',
             },
             {
-              filterExpression: F.listContains('tags', 'm'),
+              filter: F.listContains('tags', 'm'),
               expectedIds: [],
               testCaseName: 'list contains m',
             },
             {
-              filterExpression: F.and(
-                F.equals('str', 'value1'),
-                F.equals('int', 0)
-              ),
+              filter: F.and(F.equals('str', 'value1'), F.equals('int', 0)),
               expectedIds: ['test_item_1'],
               testCaseName: 'and',
             },
             {
-              filterExpression: F.equals('str', 'value1').and(
-                F.equals('int', 0)
-              ),
+              filter: F.equals('str', 'value1').and(F.equals('int', 0)),
               expectedIds: ['test_item_1'],
               testCaseName: 'and-chained',
             },
             {
-              filterExpression: F.or(
-                F.equals('str', 'value1'),
-                F.equals('int', 5)
-              ),
+              filter: F.or(F.equals('str', 'value1'), F.equals('int', 5)),
               expectedIds: ['test_item_1', 'test_item_2'],
               testCaseName: 'or',
             },
             {
-              filterExpression: F.equals('str', 'value1').or(
-                F.equals('int', 5)
-              ),
+              filter: F.equals('str', 'value1').or(F.equals('int', 5)),
               expectedIds: ['test_item_1', 'test_item_2'],
               testCaseName: 'or-chained',
             },
             {
-              filterExpression: F.listContains('tags', 'b').and(
-                F.greaterThan('int', 1)
-              ),
+              filter: F.listContains('tags', 'b').and(F.greaterThan('int', 1)),
               expectedIds: ['test_item_2'],
               testCaseName: 'list contains b and int greater than 1',
             },
             {
-              filterExpression: F.listContains('tags', 'b').or(
-                F.greaterThan('int', 1)
-              ),
+              filter: F.listContains('tags', 'b').or(F.greaterThan('int', 1)),
               expectedIds: ['test_item_1', 'test_item_2', 'test_item_3'],
               testCaseName: 'list contains b or int greater than 1',
+            },
+            {
+              filter: F.idInSet([]),
+              expectedIds: [],
+              testCaseName: 'id in empty set',
+            },
+            {
+              filter: F.idInSet(['not there']),
+              expectedIds: [],
+              testCaseName: 'id not in set not there',
+            },
+            {
+              filter: F.idInSet(['test_item_1', 'test_item_3']),
+              expectedIds: ['test_item_1', 'test_item_3'],
+              testCaseName: 'id in set test_item_1 test_item_3',
             },
           ]) {
             const searchResponse = await vectorClient.search(
               indexName,
               [2.0, 2.0],
-              {filterExpression}
+              {filter}
             );
             expectWithMessage(() => {
               expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
@@ -1231,7 +1232,7 @@ export function runVectorDataPlaneTest(
 
             const searchAndFetchVectorsResponse =
               await vectorClient.searchAndFetchVectors(indexName, [2.0, 2.0], {
-                filterExpression,
+                filter,
               });
             expectWithMessage(() => {
               expect(searchAndFetchVectorsResponse).toBeInstanceOf(

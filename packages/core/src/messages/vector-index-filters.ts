@@ -152,6 +152,14 @@ export class VectorFilterExpressions {
   ): VectorFilterListContainsExpression {
     return new VectorFilterListContainsExpression(field, value);
   }
+
+  /**
+   * Creates a {@link VectorFilterIdInSetExpression} for a set of ids.
+   * @param ids The ids.
+   */
+  public static idInSet(ids: string[]): VectorFilterIdInSetExpression {
+    return new VectorFilterIdInSetExpression(ids);
+  }
 }
 
 /**
@@ -453,5 +461,34 @@ export class VectorFilterListContainsExpression extends VectorFilterExpression {
 
   public override toString(): string {
     return `${this.field} contains ${this.value.toString()}`;
+  }
+}
+
+/**
+ * Represents an id in set expression.
+ * An item is considered a match if its id is in the set of ids.
+ */
+export class VectorFilterIdInSetExpression extends VectorFilterExpression {
+  /**
+   * The ids to test for membership.
+   * @private
+   */
+  private readonly ids: string[];
+
+  constructor(ids: string[]) {
+    super();
+    this.ids = ids;
+  }
+
+  /**
+   * The ids to test for membership.
+   * @constructor
+   */
+  public get Ids(): string[] {
+    return this.ids;
+  }
+
+  public override toString(): string {
+    return `id in [${this.ids.join(', ')}]`;
   }
 }

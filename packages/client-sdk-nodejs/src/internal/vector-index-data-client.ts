@@ -522,6 +522,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
           }' is not a valid type. Value is of type '${typeof filterExpression.Value} and is not a string.'`
         );
       }
+    } else if (filterExpression instanceof F.VectorFilterIdInSetExpression) {
+      return new vectorindex._FilterExpression({
+        id_in_set_expression: new vectorindex._IdInSetExpression({
+          ids: filterExpression.Ids,
+        }),
+      });
     }
 
     throw new InvalidArgumentError('Filter expression is not a valid type.');
@@ -567,9 +573,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       query_vector: new vectorindex._Vector({elements: queryVector}),
       top_k: options?.topK ?? VECTOR_DEFAULT_TOPK,
       metadata_fields: VectorIndexDataClient.buildMetadataRequest(options),
-      filter_expression: VectorIndexDataClient.buildFilterExpression(
-        options?.filterExpression
-      ),
+      filter: VectorIndexDataClient.buildFilterExpression(options?.filter),
     });
     VectorIndexDataClient.applyScoreThreshold(request, options);
 
@@ -644,9 +648,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       query_vector: new vectorindex._Vector({elements: queryVector}),
       top_k: options?.topK ?? VECTOR_DEFAULT_TOPK,
       metadata_fields: VectorIndexDataClient.buildMetadataRequest(options),
-      filter_expression: VectorIndexDataClient.buildFilterExpression(
-        options?.filterExpression
-      ),
+      filter: VectorIndexDataClient.buildFilterExpression(options?.filter),
     });
     VectorIndexDataClient.applyScoreThreshold(request, options);
 
