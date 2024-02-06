@@ -484,6 +484,13 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       const expression = new vectorindex._FilterExpression();
       expression.setListContainsExpression(listContains);
       return expression;
+    } else if (filterExpression instanceof F.VectorFilterIdInSetExpression) {
+      const idInSet = new vectorindex._IdInSetExpression();
+      idInSet.setIdsList(filterExpression.Ids);
+
+      const expression = new vectorindex._FilterExpression();
+      expression.setIdInSetExpression(idInSet);
+      return expression;
     }
 
     throw new InvalidArgumentError('Filter expression is not a valid type.');
