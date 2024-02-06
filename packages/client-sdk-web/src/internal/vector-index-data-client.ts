@@ -542,7 +542,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     );
     VectorIndexDataClient.applyScoreThreshold(request, options);
     request.setFilter(
-      VectorIndexDataClient.buildFilterExpression(options?.filterExpression)
+      VectorIndexDataClient.buildFilterExpression(options?.filter)
     );
 
     return await new Promise((resolve, reject) => {
@@ -625,7 +625,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     );
     VectorIndexDataClient.applyScoreThreshold(request, options);
     request.setFilter(
-      VectorIndexDataClient.buildFilterExpression(options?.filterExpression)
+      VectorIndexDataClient.buildFilterExpression(options?.filter)
     );
 
     return await new Promise((resolve, reject) => {

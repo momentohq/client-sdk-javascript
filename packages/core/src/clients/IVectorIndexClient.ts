@@ -1,12 +1,12 @@
 import {IVectorIndexControlClient} from '../internal/clients';
 import {
   VectorCountItems,
-  VectorUpsertItemBatch,
   VectorDeleteItemBatch,
-  VectorSearch,
-  VectorSearchAndFetchVectors,
   VectorGetItemBatch,
   VectorGetItemMetadataBatch,
+  VectorSearch,
+  VectorSearchAndFetchVectors,
+  VectorUpsertItemBatch,
 } from '../messages/responses/vector';
 import {VectorIndexItem} from '../messages/vector-index';
 import {VectorFilterExpression} from '../messages/vector-index-filters';
@@ -45,11 +45,12 @@ export interface SearchOptions {
   /**
    * A filter expression to filter results by. Defaults to no filter.
    */
-  filterExpression?: VectorFilterExpression;
+  filter?: VectorFilterExpression;
 }
 
 export interface IVectorIndexClient extends IVectorIndexControlClient {
   countItems(indexName: string): Promise<VectorCountItems.Response>;
+
   upsertItemBatch(
     indexName: string,
     items: Array<VectorIndexItem>
