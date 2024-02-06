@@ -573,7 +573,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       query_vector: new vectorindex._Vector({elements: queryVector}),
       top_k: options?.topK ?? VECTOR_DEFAULT_TOPK,
       metadata_fields: VectorIndexDataClient.buildMetadataRequest(options),
-      filter_expression: VectorIndexDataClient.buildFilterExpression(
+      filter: VectorIndexDataClient.buildFilterExpression(
         options?.filterExpression
       ),
     });
@@ -650,7 +650,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       query_vector: new vectorindex._Vector({elements: queryVector}),
       top_k: options?.topK ?? VECTOR_DEFAULT_TOPK,
       metadata_fields: VectorIndexDataClient.buildMetadataRequest(options),
-      filter_expression: VectorIndexDataClient.buildFilterExpression(
+      filter: VectorIndexDataClient.buildFilterExpression(
         options?.filterExpression
       ),
     });

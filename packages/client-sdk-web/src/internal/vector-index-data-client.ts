@@ -541,7 +541,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       VectorIndexDataClient.buildMetadataRequest(options)
     );
     VectorIndexDataClient.applyScoreThreshold(request, options);
-    request.setFilterExpression(
+    request.setFilter(
       VectorIndexDataClient.buildFilterExpression(options?.filterExpression)
     );
 
@@ -624,7 +624,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       VectorIndexDataClient.buildMetadataRequest(options)
     );
     VectorIndexDataClient.applyScoreThreshold(request, options);
-    request.setFilterExpression(
+    request.setFilter(
       VectorIndexDataClient.buildFilterExpression(options?.filterExpression)
     );
 
