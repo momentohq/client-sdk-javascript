@@ -541,8 +541,8 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       VectorIndexDataClient.buildMetadataRequest(options)
     );
     VectorIndexDataClient.applyScoreThreshold(request, options);
-    request.setFilterExpression(
-      VectorIndexDataClient.buildFilterExpression(options?.filterExpression)
+    request.setFilter(
+      VectorIndexDataClient.buildFilterExpression(options?.filter)
     );
 
     return await new Promise((resolve, reject) => {
@@ -624,8 +624,8 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       VectorIndexDataClient.buildMetadataRequest(options)
     );
     VectorIndexDataClient.applyScoreThreshold(request, options);
-    request.setFilterExpression(
-      VectorIndexDataClient.buildFilterExpression(options?.filterExpression)
+    request.setFilter(
+      VectorIndexDataClient.buildFilterExpression(options?.filter)
     );
 
     return await new Promise((resolve, reject) => {
