@@ -218,8 +218,8 @@ async function main() {
   await example_API_Search(vectorClient);
   await example_API_SearchAndFetchVectors(vectorClient);
   await example_API_GetItemBatch(vectorClient);
-  example_API_FilterExpressionOverview();
   await example_API_GetItemMetadataBatch(vectorClient);
+  example_API_FilterExpressionOverview();
   await example_API_DeleteItemBatch(vectorClient);
   await example_API_DeleteIndex(vectorClient);
 }
