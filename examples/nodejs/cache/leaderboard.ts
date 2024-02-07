@@ -59,7 +59,7 @@ async function main() {
 
   // Or upsert elements using a Record
   const elements2: Record<number, number> = {
-    1234: 111,
+    1234: 9.0448862417396469,
     5678: 222,
   };
   const upsertResp2 = await leaderboard.upsert(elements2);
@@ -71,10 +71,10 @@ async function main() {
 
   // Fetch by score example specifying all options.
   const fetchByScore = await leaderboard.fetchByScore({
-    minScore: 100,
+    minScore: 0,
     maxScore: 500,
     order: LeaderboardOrder.Ascending,
-    offset: 10,
+    offset: 0,
     count: 100,
   });
   if (fetchByScore instanceof LeaderboardFetch.Success) {

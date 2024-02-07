@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@gomomento/generated-types": "0.105.3",
-    "@gomomento/sdk-core": "file:../core",
+    "@gomomento/sdk-core": "1.63.0",
     "@grpc/grpc-js": "1.9.0",
     "@types/google-protobuf": "3.15.10",
     "google-protobuf": "3.21.2",
