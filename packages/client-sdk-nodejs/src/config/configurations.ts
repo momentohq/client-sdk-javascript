@@ -70,6 +70,14 @@ export class Laptop extends CacheConfiguration {
       transportStrategy: transportStrategy,
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
+      channelConfiguration: {
+        maxSessionMemoryMB: grpcConfig.getMaxSessionMemoryMb(),
+        useLocalSubchannelPool: 1,
+        useKeepAlive: true,
+        keepAlivePermitWithoutCalls: 1,
+        keepAliveTimeMs: 5000,
+        keepAliveTimeoutMs: 1000,
+      },
     });
   }
 }
@@ -100,6 +108,11 @@ export class Lambda extends CacheConfiguration {
       transportStrategy: transportStrategy,
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
+      channelConfiguration: {
+        maxSessionMemoryMB: grpcConfig.getMaxSessionMemoryMb(),
+        useLocalSubchannelPool: 1,
+        useKeepAlive: false,
+      },
     });
   }
 }
@@ -141,6 +154,14 @@ class InRegionDefault extends CacheConfiguration {
       transportStrategy: transportStrategy,
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
+      channelConfiguration: {
+        maxSessionMemoryMB: grpcConfig.getMaxSessionMemoryMb(),
+        useLocalSubchannelPool: 1,
+        useKeepAlive: true,
+        keepAlivePermitWithoutCalls: 1,
+        keepAliveTimeMs: 5000,
+        keepAliveTimeoutMs: 1000,
+      },
     });
   }
 }
@@ -183,6 +204,14 @@ class InRegionLowLatency extends CacheConfiguration {
       transportStrategy: transportStrategy,
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
+      channelConfiguration: {
+        maxSessionMemoryMB: grpcConfig.getMaxSessionMemoryMb(),
+        useLocalSubchannelPool: 1,
+        useKeepAlive: true,
+        keepAlivePermitWithoutCalls: 1,
+        keepAliveTimeMs: 5000,
+        keepAliveTimeoutMs: 1000,
+      },
     });
   }
 }

@@ -60,6 +60,7 @@ import {
   MomentoLoggerFactory,
   SortedSetOrder,
   UnknownError,
+  Configurations,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -97,6 +98,7 @@ import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
 import {CacheClientPropsWithConfig} from './cache-client-props-with-config';
+import {ChannelConfiguration} from '../config/transport/channel-configuration';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -136,32 +138,54 @@ export class CacheDataClient implements IDataClient {
       `Creating cache client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
     );
 
+    const channelConfig: ChannelConfiguration =
+      this.configuration.getChannelConfiguration();
+
+    const channelOptions: Record<string, number> = {
+      'grpc-node.max_session_memory': channelConfig.maxSessionMemoryMB,
+      'grpc.use_local_subchannel_pool': channelConfig.useLocalSubchannelPool
+        ? 1
+        : 0,
+    };
+
+    // Apply keepalive settings only if useKeepAlive is true
+    if (channelConfig.useKeepAlive) {
+      // Assert that keepalive configurations are not undefined
+      if (
+        channelConfig.keepAlivePermitWithoutCalls === undefined ||
+        channelConfig.keepAliveTimeoutMs === undefined ||
+        channelConfig.keepAliveTimeMs === undefined
+      ) {
+        throw new Error(
+          'Keepalive settings must be defined when useKeepAlive is enabled.'
+        );
+      }
+
+      // Default values for keepalive options can be set here, if desired
+      channelOptions['grpc.keepalive_permit_without_calls'] =
+        channelConfig.keepAlivePermitWithoutCalls;
+      channelOptions['grpc.keepalive_timeout_ms'] =
+        channelConfig.keepAliveTimeoutMs;
+      channelOptions['grpc.keepalive_time_ms'] = channelConfig.keepAliveTimeMs;
+    }
+
+    let reinitializeClientEveryInterval = false;
+    if (this.configuration instanceof Configurations.Lambda) {
+      reinitializeClientEveryInterval = true;
+    }
+
     this.clientWrapper = new IdleGrpcClientWrapper({
       clientFactoryFn: () =>
         new grpcCache.ScsClient(
           this.credentialProvider.getCacheEndpoint(),
           ChannelCredentials.createSsl(),
-          {
-            // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
-            // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
-            'grpc-node.max_session_memory': grpcConfig.getMaxSessionMemoryMb(),
-            // This flag controls whether channels use a shared global pool of subchannels, or whether
-            // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
-            // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
-            // than one grpc client.
-            'grpc.use_local_subchannel_pool': 1,
-            // The following settings are based on https://github.com/grpc/grpc/blob/e35db43c07f27cc13ec061520da1ed185f36abd4/doc/keepalive.md ,
-            // and guidance provided on various github issues for grpc-node. They will enable keepalive pings when a
-            // client connection is idle.
-            'grpc.keepalive_permit_without_calls': 1,
-            'grpc.keepalive_timeout_ms': 1000,
-            'grpc.keepalive_time_ms': 5000,
-          }
+          channelOptions
         ),
       loggerFactory: this.configuration.getLoggerFactory(),
       maxIdleMillis: this.configuration
         .getTransportStrategy()
         .getMaxIdleMillis(),
+      reinitializeClientEveryInterval: reinitializeClientEveryInterval
     });
 
     this.textEncoder = new TextEncoder();
