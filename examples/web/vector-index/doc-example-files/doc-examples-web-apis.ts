@@ -166,10 +166,10 @@ function example_API_FilterExpressionOverview() {
   // Was the movie in theaters?
   F.equals('in_theaters', true);
 
-  // Was the movie not in theaters?
+  // Was the movie released after 1990?
   F.greaterThan('year', 1990);
 
-  // Was the movie released after 2020?
+  // Was the movie released in or after 2020?
   F.greaterThanOrEqual('year', 2020);
 
   // Was the movie released before 2000?
