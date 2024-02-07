@@ -157,10 +157,21 @@ import {
 } from './config/leaderboard-configuration';
 
 // VectorClient Request Types
-export {ALL_VECTOR_METADATA, VectorSimilarityMetric} from '@gomomento/sdk-core';
+export {
+  ALL_VECTOR_METADATA,
+  VectorSimilarityMetric,
+  VectorFilterExpression,
+  VectorFilterExpressions,
+} from '@gomomento/sdk-core';
 
 // VectorClient Response Types
-export {vector, VectorIndexItem} from '@gomomento/sdk-core';
+export {
+  vector,
+  vectorFilters,
+  VectorIndexMetadata,
+  VectorIndexItem,
+  VectorIndexStoredItem,
+} from '@gomomento/sdk-core';
 export * from '@gomomento/sdk-core/dist/src/messages/responses/vector';
 
 export {
