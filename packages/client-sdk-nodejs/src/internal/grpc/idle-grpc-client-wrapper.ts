@@ -33,6 +33,7 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
 
   private readonly maxIdleMillis: number;
   private lastAccessTime: number;
+  private clientCreatedTime: number;
 
   constructor(props: IdleGrpcClientWrapperProps<T>) {
     this.logger = props.loggerFactory.getLogger(this);
@@ -40,20 +41,34 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
     this.client = this.clientFactoryFn();
     this.maxIdleMillis = props.maxIdleMillis;
     this.lastAccessTime = Date.now();
+    this.clientCreatedTime = Date.now();
   }
 
   getClient(): T {
+    const currentTime = Date.now();
+
     this.logger.trace(
       `Checking to see if client has been idle for more than ${this.maxIdleMillis} ms`
     );
-    if (Date.now() - this.lastAccessTime > this.maxIdleMillis) {
+
+    if (currentTime - this.lastAccessTime > this.maxIdleMillis) {
       this.logger.info(
         `Client has been idle for more than ${this.maxIdleMillis} ms; reconnecting.`
       );
       this.client.close();
       this.client = this.clientFactoryFn();
+      this.lastAccessTime = Date.now();
+    } else if (currentTime - this.clientCreatedTime > 240000) {
+      this.logger.trace(
+        `Checking to see if client was created more than ${this.maxIdleMillis} ms`
+      );
+      this.logger.info(
+        'Client was created more than 4 minutes ago; reconnecting.'
+      );
+      this.client.close();
+      this.client = this.clientFactoryFn();
+      this.clientCreatedTime = Date.now();
     }
-    this.lastAccessTime = Date.now();
     return this.client;
   }
 }

@@ -81,11 +81,11 @@ export function middlewaresInterceptor(
             status: StatusObject,
             next: (status: StatusObject) => void
           ): void {
-            // getConnectivityState(true) will return state of connection and
-            // also try to connect if it's idle
-            const connectionStatus =
-              grpcClient?.getChannel()?.getConnectivityState(true) ?? null;
             if (status.code === Status.DEADLINE_EXCEEDED) {
+              // getConnectivityState(true) will return state of connection and
+              // also try to connect if it's idle
+              const connectionStatus =
+                grpcClient?.getChannel()?.getConnectivityState(false) ?? null;
               logger.debug(
                 `Received status: ${status.code} ${
                   status.details

@@ -153,9 +153,6 @@ export class CacheDataClient implements IDataClient {
             // The following settings are based on https://github.com/grpc/grpc/blob/e35db43c07f27cc13ec061520da1ed185f36abd4/doc/keepalive.md ,
             // and guidance provided on various github issues for grpc-node. They will enable keepalive pings when a
             // client connection is idle.
-            'grpc.keepalive_permit_without_calls': 1,
-            'grpc.keepalive_timeout_ms': 1800000,
-            'grpc.keepalive_time_ms': 5000,
           }
         ),
       loggerFactory: this.configuration.getLoggerFactory(),
