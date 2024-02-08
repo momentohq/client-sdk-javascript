@@ -225,7 +225,8 @@ export class CacheDataClient implements IDataClient {
         .watchConnectivityState(currentState, deadline, (error?: Error) => {
           if (error) {
             this.logger.error(
-              `Unable to connect to Momento: ${error.name}. Please contact Momento if this persists.`
+              `Unable to connect to Momento: ${error.name}. currentState: ${currentState} :
+              Please contact Momento if this persists. `
             );
             resolve();
             return;
@@ -242,10 +243,12 @@ export class CacheDataClient implements IDataClient {
           } else if (newState === ConnectivityState.CONNECTING) {
             // The connection goes through the CONNECTING state before becoming READY,
             // so we must watch it twice.
+            this.logger.debug(`Connecting! Current state: ${newState}`);
             this.connectWithinDeadline(deadline).then(resolve).catch(reject);
           } else {
             this.logger.error(
-              `Unable to connect to Momento: Unexpected connection state: ${newState}. Please contact Momento if this persists.`
+              `Unable to connect to Momento: Unexpected connection state: ${newState}., oldState: ${currentState}
+              Please contact Momento if this persists.`
             );
             resolve();
           }
