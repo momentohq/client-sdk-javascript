@@ -36,7 +36,7 @@ export interface TransportStrategy {
   /**
    * @returns {number} the interval time in seconds for when each cache client should be re-initialized.
    */
-  getMaxClientAgeSeconds(): number | undefined;
+  getMaxClientAgeMillis(): number | undefined;
 
   /**
    * Copy constructor to update the max idle connection timeout.  (See {getMaxIdleMillis}.)
@@ -47,7 +47,7 @@ export interface TransportStrategy {
 
   /**
    * Copy constructor to update the max age for a client.  (See {getMaxClientAgeSeconds}.)
-   * @param {number} maxIdleMillis
+   * @param {number} maxClientAgeMillis
    * @returns {TransportStrategy} a new TransportStrategy with the specified max idle connection timeout.
    */
   withMaxClientAgeMillis(maxClientAgeMillis: number): TransportStrategy;
@@ -161,7 +161,7 @@ export class StaticTransportStrategy implements TransportStrategy {
     return this.grpcConfig;
   }
 
-  getMaxClientAgeSeconds(): number | undefined {
+  getMaxClientAgeMillis(): number | undefined {
     return this.maxClientAgeMillis;
   }
 
