@@ -97,7 +97,6 @@ import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
 import {CacheClientPropsWithConfig} from './cache-client-props-with-config';
-import {ChannelConfiguration} from '../config/transport/channel-configuration';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -148,14 +147,20 @@ export class CacheDataClient implements IDataClient {
       'grpc.use_local_subchannel_pool': 1,
     };
 
-    const channelConfig: ChannelConfiguration | undefined =
-      grpcConfig.getChannelConfiguration();
-    if (channelConfig !== undefined) {
-      channelOptions['grpc.keepalive_permit_without_calls'] =
-        channelConfig.keepAlivePermitWithoutCalls;
-      channelOptions['grpc.keepalive_timeout_ms'] =
-        channelConfig.keepAliveTimeoutMs;
-      channelOptions['grpc.keepalive_time_ms'] = channelConfig.keepAliveTimeMs;
+    if (grpcConfig.getKeepAlivePermitWithoutCalls() !== undefined) {
+      channelOptions['grpc.keepalive_permit_without_calls'] = <number>(
+        grpcConfig.getKeepAlivePermitWithoutCalls()
+      );
+    }
+    if (grpcConfig.getKeepAliveTimeMS() !== undefined) {
+      channelOptions['grpc.keepalive_time_ms'] = <number>(
+        grpcConfig.getKeepAliveTimeMS()
+      );
+    }
+    if (grpcConfig.getKeepAliveTimeoutMS() !== undefined) {
+      channelOptions['grpc.keepalive_timeout_ms'] = <number>(
+        grpcConfig.getKeepAliveTimeoutMS()
+      );
     }
 
     this.clientWrapper = new IdleGrpcClientWrapper({

@@ -1,5 +1,4 @@
 import {GrpcConfiguration, GrpcConfigurationProps} from './grpc-configuration';
-import {ChannelConfiguration} from './channel-configuration';
 
 export interface TransportStrategy {
   /**
@@ -63,7 +62,9 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
   private readonly deadlineMillis: number;
   private readonly maxSessionMemoryMb: number;
   private readonly numClients: number;
-  private readonly channelConfiguration?: ChannelConfiguration;
+  private keepAlivePermitWithoutCalls?: number;
+  private keepAliveTimeoutMs?: number;
+  private keepAliveTimeMs?: number;
 
   constructor(props: GrpcConfigurationProps) {
     this.deadlineMillis = props.deadlineMillis;
@@ -74,7 +75,9 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
       // This is the previously hardcoded value and a safe default for most environments.
       this.numClients = 6;
     }
-    this.channelConfiguration = props.channelConfiguration;
+    this.keepAliveTimeMs = props.keepAliveTimeMs;
+    this.keepAliveTimeoutMs = props.keepAliveTimeoutMs;
+    this.keepAlivePermitWithoutCalls = props.keepAlivePermitWithoutCalls;
   }
 
   getDeadlineMillis(): number {
@@ -85,8 +88,16 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
     return this.maxSessionMemoryMb;
   }
 
-  getChannelConfiguration(): ChannelConfiguration | undefined {
-    return this.channelConfiguration;
+  getKeepAliveTimeoutMS(): number | undefined {
+    return this.keepAliveTimeoutMs;
+  }
+
+  getKeepAliveTimeMS(): number | undefined {
+    return this.keepAliveTimeMs;
+  }
+
+  getKeepAlivePermitWithoutCalls(): number | undefined {
+    return this.keepAlivePermitWithoutCalls;
   }
 
   withDeadlineMillis(deadlineMillis: number): StaticGrpcConfiguration {
@@ -94,7 +105,6 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
       deadlineMillis: deadlineMillis,
       maxSessionMemoryMb: this.maxSessionMemoryMb,
       numClients: this.numClients,
-      channelConfiguration: this.channelConfiguration,
     });
   }
 
@@ -103,7 +113,6 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
       deadlineMillis: this.deadlineMillis,
       maxSessionMemoryMb: maxSessionMemoryMb,
       numClients: this.numClients,
-      channelConfiguration: this.channelConfiguration,
     });
   }
 
@@ -116,7 +125,6 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
       deadlineMillis: this.deadlineMillis,
       maxSessionMemoryMb: this.maxSessionMemoryMb,
       numClients: numClients,
-      channelConfiguration: this.channelConfiguration,
     });
   }
 }
