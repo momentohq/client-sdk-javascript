@@ -34,7 +34,7 @@ export interface TransportStrategy {
   getMaxIdleMillis(): number;
 
   /**
-   * @returns {number} the interval time in seconds for when each cache client should be re-initialized.
+   * @returns {number} the interval time in milliseconds for when each cache client should be re-initialized.
    */
   getMaxClientAgeMillis(): number | undefined;
 
@@ -46,7 +46,7 @@ export interface TransportStrategy {
   withMaxIdleMillis(maxIdleMillis: number): TransportStrategy;
 
   /**
-   * Copy constructor to update the max age for a client.  (See {getMaxClientAgeSeconds}.)
+   * Copy constructor to update the max age for a client.  (See {getMaxClientAgeMillis}.)
    * @param {number} maxClientAgeMillis
    * @returns {TransportStrategy} a new TransportStrategy with the specified max idle connection timeout.
    */
@@ -70,7 +70,7 @@ export interface TransportStrategyProps {
   maxIdleMillis: number;
 
   /**
-   * Specifies the interval time in seconds for when each cache client should be re-initialized.
+   * Specifies the interval time in milliseconds for when each cache client should be re-initialized.
    */
   maxClientAgeMillis?: number;
 }
