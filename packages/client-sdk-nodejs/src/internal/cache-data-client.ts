@@ -174,6 +174,9 @@ export class CacheDataClient implements IDataClient {
       maxIdleMillis: this.configuration
         .getTransportStrategy()
         .getMaxIdleMillis(),
+      maxClientAgeMillis: this.configuration
+        .getTransportStrategy()
+        .getMaxClientAgeMillis(),
     });
 
     this.textEncoder = new TextEncoder();
