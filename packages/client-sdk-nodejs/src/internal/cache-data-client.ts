@@ -60,7 +60,6 @@ import {
   MomentoLoggerFactory,
   SortedSetOrder,
   UnknownError,
-  Configurations,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -138,40 +137,25 @@ export class CacheDataClient implements IDataClient {
       `Creating cache client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
     );
 
-    const channelConfig: ChannelConfiguration =
-      this.configuration.getChannelConfiguration();
-
     const channelOptions: Record<string, number> = {
-      'grpc-node.max_session_memory': channelConfig.maxSessionMemoryMB,
-      'grpc.use_local_subchannel_pool': channelConfig.useLocalSubchannelPool
-        ? 1
-        : 0,
+      // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
+      // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
+      'grpc-node.max_session_memory': grpcConfig.getMaxSessionMemoryMb(),
+      // This flag controls whether channels use a shared global pool of subchannels, or whether
+      // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
+      // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
+      // than one grpc client.
+      'grpc.use_local_subchannel_pool': 1,
     };
 
-    // Apply keepalive settings only if useKeepAlive is true
-    if (channelConfig.useKeepAlive) {
-      // Assert that keepalive configurations are not undefined
-      if (
-        channelConfig.keepAlivePermitWithoutCalls === undefined ||
-        channelConfig.keepAliveTimeoutMs === undefined ||
-        channelConfig.keepAliveTimeMs === undefined
-      ) {
-        throw new Error(
-          'Keepalive settings must be defined when useKeepAlive is enabled.'
-        );
-      }
-
-      // Default values for keepalive options can be set here, if desired
+    const channelConfig: ChannelConfiguration | undefined =
+      grpcConfig.getChannelConfiguration();
+    if (channelConfig !== undefined) {
       channelOptions['grpc.keepalive_permit_without_calls'] =
         channelConfig.keepAlivePermitWithoutCalls;
       channelOptions['grpc.keepalive_timeout_ms'] =
         channelConfig.keepAliveTimeoutMs;
       channelOptions['grpc.keepalive_time_ms'] = channelConfig.keepAliveTimeMs;
-    }
-
-    let reinitializeClientEveryInterval = false;
-    if (this.configuration instanceof Configurations.Lambda) {
-      reinitializeClientEveryInterval = true;
     }
 
     this.clientWrapper = new IdleGrpcClientWrapper({
@@ -185,7 +169,6 @@ export class CacheDataClient implements IDataClient {
       maxIdleMillis: this.configuration
         .getTransportStrategy()
         .getMaxIdleMillis(),
-      reinitializeClientEveryInterval: reinitializeClientEveryInterval
     });
 
     this.textEncoder = new TextEncoder();

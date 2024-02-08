@@ -1,3 +1,5 @@
+import {ChannelConfiguration} from './channel-configuration';
+
 export interface GrpcConfigurationProps {
   /**
    * number of milliseconds the client is willing to wait for an RPC to complete before it is terminated
@@ -15,6 +17,8 @@ export interface GrpcConfigurationProps {
    * more concurrent requests, at the cost of more open connections and the latency of setting up each client.
    */
   numClients?: number;
+
+  channelConfiguration?: ChannelConfiguration;
 }
 
 /**
@@ -28,6 +32,8 @@ export interface GrpcConfiguration {
    *    with a DeadlineExceeded error.
    */
   getDeadlineMillis(): number;
+
+  getChannelConfiguration(): ChannelConfiguration | undefined;
 
   /**
    * Copy constructor for overriding the client-side deadline

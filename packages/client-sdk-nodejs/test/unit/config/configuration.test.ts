@@ -30,14 +30,6 @@ describe('configuration.ts', () => {
     transportStrategy: testTransportStrategy,
     middlewares: testMiddlewares,
     throwOnErrors: false,
-    channelConfiguration: {
-      maxSessionMemoryMB: 100,
-      useLocalSubchannelPool: 1,
-      useKeepAlive: true,
-      keepAlivePermitWithoutCalls: 1,
-      keepAliveTimeMs: 5000,
-      keepAliveTimeoutMs: 1000,
-    },
   });
 
   it('should support overriding retry strategy', () => {

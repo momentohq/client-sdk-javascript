@@ -5,7 +5,6 @@ export interface IdleGrpcClientWrapperProps<T extends CloseableGrpcClient> {
   clientFactoryFn: () => T;
   loggerFactory: MomentoLoggerFactory;
   maxIdleMillis: number;
-  reinitializeClientEveryInterval?: boolean;
 }
 
 /**
@@ -33,8 +32,6 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
   private readonly clientFactoryFn: () => T;
 
   private readonly maxIdleMillis: number;
-  private clientCreatedTime: number;
-  private readonly reinitializeClientEveryInterval: boolean;
   private lastAccessTime: number;
 
   constructor(props: IdleGrpcClientWrapperProps<T>) {
@@ -42,7 +39,6 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
     this.clientFactoryFn = props.clientFactoryFn;
     this.client = this.clientFactoryFn();
     this.maxIdleMillis = props.maxIdleMillis;
-    this.reinitializeClientEveryInterval = props.reinitializeClientEveryInterval ?? false;
     this.lastAccessTime = Date.now();
   }
 
@@ -58,22 +54,6 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
       this.client = this.clientFactoryFn();
     }
 
-    if (
-      this.reinitializeClientEveryInterval !== undefined &&
-      this.reinitializeClientEveryInterval
-    ) {
-      if (Date.now() - this.clientCreatedTime > 240000) {
-        this.logger.trace(
-          `Checking to see if client was created more than ${this.maxIdleMillis} ms`
-        );
-        this.logger.info(
-          'Client was created more than 4 minutes ago; reconnecting.'
-        );
-        this.client.close();
-        this.client = this.clientFactoryFn();
-        this.clientCreatedTime = Date.now();
-      }
-    }
     this.lastAccessTime = Date.now();
     return this.client;
   }

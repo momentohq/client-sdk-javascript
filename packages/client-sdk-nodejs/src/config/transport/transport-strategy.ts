@@ -1,4 +1,5 @@
 import {GrpcConfiguration, GrpcConfigurationProps} from './grpc-configuration';
+import {ChannelConfiguration} from './channel-configuration';
 
 export interface TransportStrategy {
   /**
@@ -62,6 +63,8 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
   private readonly deadlineMillis: number;
   private readonly maxSessionMemoryMb: number;
   private readonly numClients: number;
+  private readonly channelConfiguration?: ChannelConfiguration;
+
   constructor(props: GrpcConfigurationProps) {
     this.deadlineMillis = props.deadlineMillis;
     this.maxSessionMemoryMb = props.maxSessionMemoryMb;
@@ -71,6 +74,7 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
       // This is the previously hardcoded value and a safe default for most environments.
       this.numClients = 6;
     }
+    this.channelConfiguration = props.channelConfiguration;
   }
 
   getDeadlineMillis(): number {
@@ -81,11 +85,16 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
     return this.maxSessionMemoryMb;
   }
 
+  getChannelConfiguration(): ChannelConfiguration | undefined {
+    return this.channelConfiguration;
+  }
+
   withDeadlineMillis(deadlineMillis: number): StaticGrpcConfiguration {
     return new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
       maxSessionMemoryMb: this.maxSessionMemoryMb,
       numClients: this.numClients,
+      channelConfiguration: this.channelConfiguration,
     });
   }
 
@@ -94,6 +103,7 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
       deadlineMillis: this.deadlineMillis,
       maxSessionMemoryMb: maxSessionMemoryMb,
       numClients: this.numClients,
+      channelConfiguration: this.channelConfiguration,
     });
   }
 
@@ -106,6 +116,7 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
       deadlineMillis: this.deadlineMillis,
       maxSessionMemoryMb: this.maxSessionMemoryMb,
       numClients: numClients,
+      channelConfiguration: this.channelConfiguration,
     });
   }
 }

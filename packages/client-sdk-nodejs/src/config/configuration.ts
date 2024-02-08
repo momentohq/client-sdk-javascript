@@ -2,7 +2,6 @@ import {RetryStrategy} from './retry/retry-strategy';
 import {Middleware} from './middleware/middleware';
 import {MomentoLoggerFactory} from '../';
 import {TransportStrategy} from './transport';
-import {ChannelConfiguration} from './transport/channel-configuration';
 
 export interface ConfigurationProps {
   /**
@@ -21,8 +20,6 @@ export interface ConfigurationProps {
    * Configures middleware functions that will wrap each request
    */
   middlewares: Middleware[];
-
-  channelConfiguration: ChannelConfiguration;
   /**
    * Configures whether the client should return a Momento Error object or throw an exception when an error occurs.
    */
@@ -45,8 +42,6 @@ export interface Configuration {
    * @returns {RetryStrategy} the current configuration options for how and when failed requests will be retried
    */
   getRetryStrategy(): RetryStrategy;
-
-  getChannelConfiguration(): ChannelConfiguration;
 
   /**
    * Copy constructor for overriding RetryStrategy
@@ -116,7 +111,6 @@ export class CacheConfiguration implements Configuration {
   private readonly transportStrategy: TransportStrategy;
   private readonly middlewares: Middleware[];
   private readonly throwOnErrors: boolean;
-  private readonly channelConfiguration: ChannelConfiguration;
 
   constructor(props: ConfigurationProps) {
     this.loggerFactory = props.loggerFactory;
@@ -141,7 +135,6 @@ export class CacheConfiguration implements Configuration {
       transportStrategy: this.transportStrategy,
       middlewares: this.middlewares,
       throwOnErrors: this.throwOnErrors,
-      channelConfiguration: this.channelConfiguration,
     });
   }
 
@@ -156,7 +149,6 @@ export class CacheConfiguration implements Configuration {
       transportStrategy: transportStrategy,
       middlewares: this.middlewares,
       throwOnErrors: this.throwOnErrors,
-      channelConfiguration: this.channelConfiguration,
     });
   }
 
@@ -171,7 +163,6 @@ export class CacheConfiguration implements Configuration {
       transportStrategy: this.transportStrategy,
       middlewares: middlewares,
       throwOnErrors: this.throwOnErrors,
-      channelConfiguration: this.channelConfiguration,
     });
   }
 
@@ -182,7 +173,6 @@ export class CacheConfiguration implements Configuration {
       transportStrategy: this.transportStrategy,
       middlewares: [middleware, ...this.middlewares],
       throwOnErrors: this.throwOnErrors,
-      channelConfiguration: this.channelConfiguration,
     });
   }
 
@@ -194,7 +184,6 @@ export class CacheConfiguration implements Configuration {
         this.transportStrategy.withClientTimeoutMillis(clientTimeout),
       middlewares: this.middlewares,
       throwOnErrors: this.throwOnErrors,
-      channelConfiguration: this.channelConfiguration,
     });
   }
 
@@ -209,11 +198,6 @@ export class CacheConfiguration implements Configuration {
       transportStrategy: this.transportStrategy,
       middlewares: this.middlewares,
       throwOnErrors: throwOnErrors,
-      channelConfiguration: this.channelConfiguration,
     });
-  }
-
-  getChannelConfiguration(): ChannelConfiguration {
-    return this.channelConfiguration;
   }
 }
