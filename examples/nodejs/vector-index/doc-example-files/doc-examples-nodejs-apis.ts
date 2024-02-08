@@ -144,19 +144,8 @@ async function example_API_SearchAndFetchVectors(vectorClient: PreviewVectorInde
 
 function example_API_FilterExpressionOverview() {
   /*
-   * For convenience, the filter expressions can be imported as follows:
+   * For convenience, a filter expression factory can be imported as follows:
    * import { VectorFilterExpressions as F } from '@gomomento/sdk';
-   *
-   * To demonstrate the various filter expressions, suppose we have a
-   * dataset of movies with the following schema:
-   * {
-   *  movie_title: string,
-   *  year: int,
-   *  gross_revenue_millions: float,
-   *  in_theaters: bool,
-   *  actors: list<string>,
-   *  directors: list<string>,
-   * }
    */
 
   // Is the movie titled "The Matrix"?
