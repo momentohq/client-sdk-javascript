@@ -7,18 +7,24 @@ import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
 import {
+  CacheDecreaseTtl,
   CacheDelete,
   CacheDictionaryFetch,
   CacheDictionaryGetField,
   CacheDictionaryGetFields,
   CacheDictionaryIncrement,
+  CacheDictionaryLength,
   CacheDictionaryRemoveField,
   CacheDictionaryRemoveFields,
   CacheDictionarySetField,
   CacheDictionarySetFields,
-  CacheDictionaryLength,
   CacheGet,
+  CacheIncreaseTtl,
   CacheIncrement,
+  CacheItemGetTtl,
+  CacheItemGetType,
+  CacheKeyExists,
+  CacheKeysExist,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
   CacheListFetch,
@@ -39,23 +45,17 @@ import {
   CacheSortedSetGetScore,
   CacheSortedSetGetScores,
   CacheSortedSetIncrementScore,
+  CacheSortedSetLength,
+  CacheSortedSetLengthByScore,
   CacheSortedSetPutElement,
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
-  CacheSortedSetLength,
-  CacheSortedSetLengthByScore,
-  CacheItemGetType,
-  CacheItemGetTtl,
-  CacheKeyExists,
-  CacheKeysExist,
   CacheUpdateTtl,
-  CacheIncreaseTtl,
-  CacheDecreaseTtl,
   CollectionTtl,
-  ItemType,
   CredentialProvider,
   InvalidArgumentError,
+  ItemType,
   MomentoLogger,
   MomentoLoggerFactory,
   SortedSetOrder,
@@ -90,13 +90,13 @@ import {
   _ECacheResult,
   _SortedSetGetScoreResponsePart,
 } from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
+import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
+import {CacheClientPropsWithConfig} from './cache-client-props-with-config';
 import grpcCache = cache.cache_client;
 import _Unbounded = cache_client._Unbounded;
 import ECacheResult = cache_client.ECacheResult;
 import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
-import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
-import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
-import {CacheClientPropsWithConfig} from './cache-client-props-with-config';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -164,12 +164,14 @@ export class CacheDataClient implements IDataClient {
     }
 
     this.clientWrapper = new IdleGrpcClientWrapper({
-      clientFactoryFn: () =>
-        new grpcCache.ScsClient(
+      clientFactoryFn: () => {
+        this.logger.debug(`Constructing channel for clientID ${dataClientID}`);
+        return new grpcCache.ScsClient(
           this.credentialProvider.getCacheEndpoint(),
           ChannelCredentials.createSsl(),
           channelOptions
-        ),
+        );
+      },
       loggerFactory: this.configuration.getLoggerFactory(),
       maxIdleMillis: this.configuration
         .getTransportStrategy()
@@ -190,6 +192,7 @@ export class CacheDataClient implements IDataClient {
     );
   }
   public connect(timeoutSeconds = 10): Promise<void> {
+    this.logger.debug('Attempting to eagerly connect to channel');
     const deadline = new Date();
     deadline.setSeconds(deadline.getSeconds() + timeoutSeconds);
 
