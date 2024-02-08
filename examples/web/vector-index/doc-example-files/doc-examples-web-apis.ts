@@ -1,18 +1,19 @@
 import {
+  ALL_VECTOR_METADATA,
+  Configurations,
   CreateVectorIndex,
+  CredentialProvider,
   DeleteVectorIndex,
   ListVectorIndexes,
   PreviewVectorIndexClient,
   VectorCountItems,
-  VectorSearch,
-  VectorSearchAndFetchVectors,
   VectorDeleteItemBatch,
-  VectorUpsertItemBatch,
+  VectorFilterExpressions as F,
   VectorGetItemBatch,
   VectorGetItemMetadataBatch,
-  ALL_VECTOR_METADATA,
-  Configurations,
-  CredentialProvider,
+  VectorSearch,
+  VectorSearchAndFetchVectors,
+  VectorUpsertItemBatch,
 } from '@gomomento/sdk-web';
 import {initJSDom} from '../utils/jsdom';
 
@@ -133,6 +134,66 @@ async function example_API_SearchAndFetchVectors(vectorClient: PreviewVectorInde
   }
 }
 
+function example_API_FilterExpressionOverview() {
+  /*
+   * For convenience, the filter expressions can be imported as follows:
+   * import { VectorFilterExpressions as F } from '@gomomento/sdk';
+   *
+   * To demonstrate the various filter expressions, suppose we have a
+   * dataset of movies with the following schema:
+   * {
+   *  movie_title: string,
+   *  year: int,
+   *  gross_revenue_millions: float,
+   *  in_theaters: bool,
+   *  actors: list<string>,
+   *  directors: list<string>,
+   * }
+   */
+
+  // Is the movie titled "The Matrix"?
+  F.equals('movie_title', 'The Matrix');
+
+  // Is the movie not titled "The Matrix"?
+  F.not(F.equals('movie_title', 'The Matrix'));
+
+  // Was the movie released in 1999?
+  F.equals('year', 1999);
+
+  // Did the movie gross 463.5 million dollars?
+  F.equals('gross_revenue_millions', 463.5);
+
+  // Was the movie in theaters?
+  F.equals('in_theaters', true);
+
+  // Was the movie released after 1990?
+  F.greaterThan('year', 1990);
+
+  // Was the movie released in or after 2020?
+  F.greaterThanOrEqual('year', 2020);
+
+  // Was the movie released before 2000?
+  F.lessThan('year', 2000);
+
+  // Was the movie released in or before 2000?
+  F.lessThanOrEqual('year', 2000);
+
+  // Was "Keanu Reeves" one of the actors?
+  F.listContains('actors', 'Keanu Reeves');
+
+  // Is the ID one of the following?
+  F.idInSet(['tt0133093', 'tt0234215', 'tt0242653']);
+
+  // Was the movie directed by "Lana Wachowski" and released after 2000?
+  F.and(F.listContains('directors', 'Lana Wachowski'), F.greaterThan('year', 2000));
+
+  // Was the movie directed by "Lana Wachowski" or released after 2000?
+  F.or(F.listContains('directors', 'Lana Wachowski'), F.greaterThan('year', 2000));
+
+  // Was "Keanu Reeves" not one of the actors?
+  F.not(F.listContains('actors', 'Keanu Reeves'));
+}
+
 async function main() {
   // Because the Momento Web SDK is intended for use in a browser, we use the JSDom library to set up an environment
   // that will allow us to use it in a node.js program.
@@ -149,6 +210,7 @@ async function main() {
   await example_API_SearchAndFetchVectors(vectorClient);
   await example_API_GetItemBatch(vectorClient);
   await example_API_GetItemMetadataBatch(vectorClient);
+  example_API_FilterExpressionOverview();
   await example_API_DeleteItemBatch(vectorClient);
   await example_API_DeleteIndex(vectorClient);
 }
