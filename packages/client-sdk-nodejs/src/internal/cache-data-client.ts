@@ -136,27 +136,39 @@ export class CacheDataClient implements IDataClient {
       `Creating cache client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
     );
 
+    const channelOptions: Record<string, number> = {
+      // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
+      // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
+      'grpc-node.max_session_memory': grpcConfig.getMaxSessionMemoryMb(),
+      // This flag controls whether channels use a shared global pool of subchannels, or whether
+      // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
+      // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
+      // than one grpc client.
+      'grpc.use_local_subchannel_pool': 1,
+    };
+
+    if (grpcConfig.getKeepAlivePermitWithoutCalls() !== undefined) {
+      channelOptions['grpc.keepalive_permit_without_calls'] = <number>(
+        grpcConfig.getKeepAlivePermitWithoutCalls()
+      );
+    }
+    if (grpcConfig.getKeepAliveTimeMS() !== undefined) {
+      channelOptions['grpc.keepalive_time_ms'] = <number>(
+        grpcConfig.getKeepAliveTimeMS()
+      );
+    }
+    if (grpcConfig.getKeepAliveTimeoutMS() !== undefined) {
+      channelOptions['grpc.keepalive_timeout_ms'] = <number>(
+        grpcConfig.getKeepAliveTimeoutMS()
+      );
+    }
+
     this.clientWrapper = new IdleGrpcClientWrapper({
       clientFactoryFn: () =>
         new grpcCache.ScsClient(
           this.credentialProvider.getCacheEndpoint(),
           ChannelCredentials.createSsl(),
-          {
-            // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
-            // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
-            'grpc-node.max_session_memory': grpcConfig.getMaxSessionMemoryMb(),
-            // This flag controls whether channels use a shared global pool of subchannels, or whether
-            // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
-            // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
-            // than one grpc client.
-            'grpc.use_local_subchannel_pool': 1,
-            // The following settings are based on https://github.com/grpc/grpc/blob/e35db43c07f27cc13ec061520da1ed185f36abd4/doc/keepalive.md ,
-            // and guidance provided on various github issues for grpc-node. They will enable keepalive pings when a
-            // client connection is idle.
-            'grpc.keepalive_permit_without_calls': 1,
-            'grpc.keepalive_timeout_ms': 1000,
-            'grpc.keepalive_time_ms': 5000,
-          }
+          channelOptions
         ),
       loggerFactory: this.configuration.getLoggerFactory(),
       maxIdleMillis: this.configuration

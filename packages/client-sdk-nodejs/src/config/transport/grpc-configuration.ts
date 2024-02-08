@@ -15,6 +15,22 @@ export interface GrpcConfigurationProps {
    * more concurrent requests, at the cost of more open connections and the latency of setting up each client.
    */
   numClients?: number;
+
+  /**
+   * Indicates if it permissible to send keepalive pings from the client without any outstanding streams.
+   */
+  keepAlivePermitWithoutCalls?: number;
+
+  /**
+   * After waiting for a duration of this time, if the keepalive ping sender does not receive the ping ack,
+   * it will close the transport.
+   */
+  keepAliveTimeoutMs?: number;
+
+  /**
+   * After a duration of this time the client/server pings its peer to see if the transport is still alive.
+   */
+  keepAliveTimeMs?: number;
 }
 
 /**
@@ -28,6 +44,21 @@ export interface GrpcConfiguration {
    *    with a DeadlineExceeded error.
    */
   getDeadlineMillis(): number;
+
+  /**
+   * @returns {number} 0 or 1, if it is permissible to send a keepalive/ping without any outstanding calls.
+   */
+  getKeepAlivePermitWithoutCalls(): number | undefined;
+
+  /**
+   * @returns {number} the time to wait for a response from a keepalive or ping.
+   */
+  getKeepAliveTimeoutMS(): number | undefined;
+
+  /**
+   * @returns {number} the interval at which to send the keepalive or ping.
+   */
+  getKeepAliveTimeMS(): number | undefined;
 
   /**
    * Copy constructor for overriding the client-side deadline
