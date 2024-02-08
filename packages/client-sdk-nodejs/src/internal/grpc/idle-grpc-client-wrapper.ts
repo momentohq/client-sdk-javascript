@@ -5,7 +5,7 @@ export interface IdleGrpcClientWrapperProps<T extends CloseableGrpcClient> {
   clientFactoryFn: () => T;
   loggerFactory: MomentoLoggerFactory;
   maxIdleMillis: number;
-  reinitializeClientIntervalSeconds?: number;
+  maxClientAgeMillis?: number;
 }
 
 /**
@@ -35,7 +35,7 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
   private readonly maxIdleMillis: number;
   private lastAccessTime: number;
   private clientCreatedTime: number;
-  private readonly reinitializeClientIntervalSeconds?: number;
+  private readonly maxClientAgeMillis?: number;
 
   constructor(props: IdleGrpcClientWrapperProps<T>) {
     this.logger = props.loggerFactory.getLogger(this);
@@ -43,8 +43,7 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
     this.client = this.clientFactoryFn();
     this.maxIdleMillis = props.maxIdleMillis;
     this.lastAccessTime = Date.now();
-    this.reinitializeClientIntervalSeconds =
-      props.reinitializeClientIntervalSeconds;
+    this.maxClientAgeMillis = props.maxClientAgeMillis;
     this.clientCreatedTime = Date.now();
   }
 
@@ -60,17 +59,13 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
       this.client = this.clientFactoryFn();
     }
 
-    if (this.reinitializeClientIntervalSeconds !== undefined) {
+    if (this.maxClientAgeMillis !== undefined) {
       this.logger.trace(
-        `Checking to see if client was created more than ${this.maxIdleMillis} ms`
+        `Checking to see if client was created more than ${this.maxClientAgeMillis} ms`
       );
-      if (
-        Date.now() - this.clientCreatedTime >
-        // multiplying by 1000 as date returns millis in the difference
-        this.reinitializeClientIntervalSeconds * 1000
-      ) {
+      if (Date.now() - this.clientCreatedTime > this.maxClientAgeMillis) {
         this.logger.info(
-          `Client was created more than ${this.reinitializeClientIntervalSeconds} seconds ago; recreating as asked.`
+          `Client was created more than ${this.maxClientAgeMillis} millis ago; recreating as asked.`
         );
         this.client.close();
         this.client = this.clientFactoryFn();
