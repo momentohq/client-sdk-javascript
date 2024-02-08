@@ -53,6 +53,7 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
       this.client.close();
       this.client = this.clientFactoryFn();
     }
+
     this.lastAccessTime = Date.now();
     return this.client;
   }

@@ -59,6 +59,9 @@ export class Laptop extends CacheConfiguration {
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
       maxSessionMemoryMb: defaultMaxSessionMemoryMb,
+      keepAlivePermitWithoutCalls: 1,
+      keepAliveTimeMs: 5000,
+      keepAliveTimeoutMs: 1000,
     });
     const transportStrategy: TransportStrategy = new StaticTransportStrategy({
       grpcConfiguration: grpcConfig,
@@ -130,6 +133,9 @@ class InRegionDefault extends CacheConfiguration {
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
       maxSessionMemoryMb: defaultMaxSessionMemoryMb,
+      keepAlivePermitWithoutCalls: 1,
+      keepAliveTimeMs: 5000,
+      keepAliveTimeoutMs: 1000,
     });
     const transportStrategy: TransportStrategy = new StaticTransportStrategy({
       grpcConfiguration: grpcConfig,
@@ -172,6 +178,9 @@ class InRegionLowLatency extends CacheConfiguration {
     const grpcConfig: GrpcConfiguration = new StaticGrpcConfiguration({
       deadlineMillis: deadlineMillis,
       maxSessionMemoryMb: defaultMaxSessionMemoryMb,
+      keepAlivePermitWithoutCalls: 1,
+      keepAliveTimeMs: 5000,
+      keepAliveTimeoutMs: 1000,
     });
     const transportStrategy: TransportStrategy = new StaticTransportStrategy({
       grpcConfiguration: grpcConfig,
