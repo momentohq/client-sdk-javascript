@@ -18,6 +18,9 @@ export interface GrpcConfigurationProps {
    */
   numClients?: number;
 
+  /**
+   * The gRPC channel configuration, for example, keep alive settings.
+   */
   channelConfiguration?: ChannelConfiguration;
 }
 
@@ -33,6 +36,9 @@ export interface GrpcConfiguration {
    */
   getDeadlineMillis(): number;
 
+  /**
+   * @returns {ChannelConfiguration} configuration options for the gRPC channel
+   */
   getChannelConfiguration(): ChannelConfiguration | undefined;
 
   /**
