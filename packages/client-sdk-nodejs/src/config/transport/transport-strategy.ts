@@ -34,11 +34,23 @@ export interface TransportStrategy {
   getMaxIdleMillis(): number;
 
   /**
+   * @returns {number} the interval time in milliseconds for when each cache client should be re-initialized.
+   */
+  getMaxClientAgeMillis(): number | undefined;
+
+  /**
    * Copy constructor to update the max idle connection timeout.  (See {getMaxIdleMillis}.)
    * @param {number} maxIdleMillis
    * @returns {TransportStrategy} a new TransportStrategy with the specified max idle connection timeout.
    */
   withMaxIdleMillis(maxIdleMillis: number): TransportStrategy;
+
+  /**
+   * Copy constructor to update the max client age in millis.  (See {getMaxClientAgeMillis}.)
+   * @param {number} maxClientAgeMillis
+   * @returns {TransportStrategy} a new TransportStrategy with the specified max client age.
+   */
+  withMaxClientAgeMillis(maxClientAgeMillis: number): TransportStrategy;
 }
 
 export interface TransportStrategyProps {
@@ -56,15 +68,20 @@ export interface TransportStrategyProps {
    * @returns {number}
    */
   maxIdleMillis: number;
+
+  /**
+   * Specifies the interval time in milliseconds for when each cache client should be re-initialized.
+   */
+  maxClientAgeMillis?: number;
 }
 
 export class StaticGrpcConfiguration implements GrpcConfiguration {
   private readonly deadlineMillis: number;
   private readonly maxSessionMemoryMb: number;
   private readonly numClients: number;
-  private keepAlivePermitWithoutCalls?: number;
-  private keepAliveTimeoutMs?: number;
-  private keepAliveTimeMs?: number;
+  private readonly keepAlivePermitWithoutCalls?: number;
+  private readonly keepAliveTimeoutMs?: number;
+  private readonly keepAliveTimeMs?: number;
 
   constructor(props: GrpcConfigurationProps) {
     this.deadlineMillis = props.deadlineMillis;
@@ -132,20 +149,27 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
 export class StaticTransportStrategy implements TransportStrategy {
   private readonly grpcConfig: GrpcConfiguration;
   private readonly maxIdleMillis: number;
+  private readonly maxClientAgeMillis?: number;
 
   constructor(props: TransportStrategyProps) {
     this.grpcConfig = props.grpcConfiguration;
     this.maxIdleMillis = props.maxIdleMillis;
+    this.maxClientAgeMillis = props.maxClientAgeMillis;
   }
 
   getGrpcConfig(): GrpcConfiguration {
     return this.grpcConfig;
   }
 
+  getMaxClientAgeMillis(): number | undefined {
+    return this.maxClientAgeMillis;
+  }
+
   withGrpcConfig(grpcConfig: GrpcConfiguration): StaticTransportStrategy {
     return new StaticTransportStrategy({
       grpcConfiguration: grpcConfig,
       maxIdleMillis: this.maxIdleMillis,
+      maxClientAgeMillis: this.maxClientAgeMillis,
     });
   }
 
@@ -157,6 +181,15 @@ export class StaticTransportStrategy implements TransportStrategy {
     return new StaticTransportStrategy({
       grpcConfiguration: this.grpcConfig,
       maxIdleMillis: maxIdleMillis,
+      maxClientAgeMillis: this.maxClientAgeMillis,
+    });
+  }
+
+  withMaxClientAgeMillis(maxClientAgeMillis: number): TransportStrategy {
+    return new StaticTransportStrategy({
+      grpcConfiguration: this.grpcConfig,
+      maxIdleMillis: this.maxIdleMillis,
+      maxClientAgeMillis: maxClientAgeMillis,
     });
   }
 

@@ -5,6 +5,7 @@ export interface IdleGrpcClientWrapperProps<T extends CloseableGrpcClient> {
   clientFactoryFn: () => T;
   loggerFactory: MomentoLoggerFactory;
   maxIdleMillis: number;
+  maxClientAgeMillis?: number;
 }
 
 /**
@@ -33,6 +34,8 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
 
   private readonly maxIdleMillis: number;
   private lastAccessTime: number;
+  private clientCreatedTime: number;
+  private readonly maxClientAgeMillis?: number;
 
   constructor(props: IdleGrpcClientWrapperProps<T>) {
     this.logger = props.loggerFactory.getLogger(this);
@@ -40,6 +43,8 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
     this.client = this.clientFactoryFn();
     this.maxIdleMillis = props.maxIdleMillis;
     this.lastAccessTime = Date.now();
+    this.maxClientAgeMillis = props.maxClientAgeMillis;
+    this.clientCreatedTime = Date.now();
   }
 
   getClient(): T {
@@ -52,6 +57,20 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
       );
       this.client.close();
       this.client = this.clientFactoryFn();
+    }
+
+    if (this.maxClientAgeMillis !== undefined) {
+      this.logger.trace(
+        `Checking to see if client was created more than ${this.maxClientAgeMillis} ms`
+      );
+      if (Date.now() - this.clientCreatedTime > this.maxClientAgeMillis) {
+        this.logger.info(
+          `Client was created more than ${this.maxClientAgeMillis} millis ago; recreating as asked.`
+        );
+        this.client.close();
+        this.client = this.clientFactoryFn();
+        this.clientCreatedTime = Date.now();
+      }
     }
 
     this.lastAccessTime = Date.now();
