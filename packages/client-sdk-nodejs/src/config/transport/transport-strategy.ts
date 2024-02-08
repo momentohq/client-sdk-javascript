@@ -83,7 +83,6 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
   private readonly keepAliveTimeoutMs?: number;
   private readonly keepAliveTimeMs?: number;
 
-
   constructor(props: GrpcConfigurationProps) {
     this.deadlineMillis = props.deadlineMillis;
     this.maxSessionMemoryMb = props.maxSessionMemoryMb;
