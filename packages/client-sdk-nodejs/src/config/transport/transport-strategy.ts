@@ -46,9 +46,9 @@ export interface TransportStrategy {
   withMaxIdleMillis(maxIdleMillis: number): TransportStrategy;
 
   /**
-   * Copy constructor to update the max age client age in millis.  (See {getMaxClientAgeMillis}.)
+   * Copy constructor to update the max client age in millis.  (See {getMaxClientAgeMillis}.)
    * @param {number} maxClientAgeMillis
-   * @returns {TransportStrategy} a new TransportStrategy with the specified max idle connection timeout.
+   * @returns {TransportStrategy} a new TransportStrategy with the specified max client age.
    */
   withMaxClientAgeMillis(maxClientAgeMillis: number): TransportStrategy;
 }
