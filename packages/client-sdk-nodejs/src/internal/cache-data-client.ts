@@ -174,6 +174,8 @@ export class CacheDataClient implements IDataClient {
       maxIdleMillis: this.configuration
         .getTransportStrategy()
         .getMaxIdleMillis(),
+      reinitializeClientIntervalSeconds:
+        grpcConfig.getReinitializeClientIntervalSeconds(),
     });
 
     this.textEncoder = new TextEncoder();

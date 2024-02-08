@@ -92,6 +92,8 @@ export class Lambda extends CacheConfiguration {
       deadlineMillis: deadlineMillis,
       maxSessionMemoryMb: defaultMaxSessionMemoryMb,
       numClients: 1,
+      // we reinitialize clients every 4 mins in lambda
+      reinitializeClientIntervalSeconds: 240,
     });
     const transportStrategy: TransportStrategy = new StaticTransportStrategy({
       grpcConfiguration: grpcConfig,

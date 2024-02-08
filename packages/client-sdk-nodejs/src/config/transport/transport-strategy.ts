@@ -62,9 +62,10 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
   private readonly deadlineMillis: number;
   private readonly maxSessionMemoryMb: number;
   private readonly numClients: number;
-  private keepAlivePermitWithoutCalls?: number;
-  private keepAliveTimeoutMs?: number;
-  private keepAliveTimeMs?: number;
+  private readonly keepAlivePermitWithoutCalls?: number;
+  private readonly keepAliveTimeoutMs?: number;
+  private readonly keepAliveTimeMs?: number;
+  private readonly reinitializeClientIntervalSeconds?: number;
 
   constructor(props: GrpcConfigurationProps) {
     this.deadlineMillis = props.deadlineMillis;
@@ -78,6 +79,8 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
     this.keepAliveTimeMs = props.keepAliveTimeMs;
     this.keepAliveTimeoutMs = props.keepAliveTimeoutMs;
     this.keepAlivePermitWithoutCalls = props.keepAlivePermitWithoutCalls;
+    this.reinitializeClientIntervalSeconds =
+      props.reinitializeClientIntervalSeconds;
   }
 
   getDeadlineMillis(): number {
@@ -98,6 +101,10 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
 
   getKeepAlivePermitWithoutCalls(): number | undefined {
     return this.keepAlivePermitWithoutCalls;
+  }
+
+  getReinitializeClientIntervalSeconds(): number | undefined {
+    return this.reinitializeClientIntervalSeconds;
   }
 
   withDeadlineMillis(deadlineMillis: number): StaticGrpcConfiguration {

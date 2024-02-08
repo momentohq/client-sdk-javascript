@@ -31,6 +31,11 @@ export interface GrpcConfigurationProps {
    * After a duration of this time the client/server pings its peer to see if the transport is still alive.
    */
   keepAliveTimeMs?: number;
+
+  /**
+   * Specifies the interval time in seconds for when each cache client should be re-initialized.
+   */
+  reinitializeClientIntervalSeconds?: number;
 }
 
 /**
@@ -59,6 +64,11 @@ export interface GrpcConfiguration {
    * @returns {number} the interval at which to send the keepalive or ping.
    */
   getKeepAliveTimeMS(): number | undefined;
+
+  /**
+   * @returns {number} the interval time in seconds for when each cache client should be re-initialized.
+   */
+  getReinitializeClientIntervalSeconds(): number | undefined;
 
   /**
    * Copy constructor for overriding the client-side deadline
