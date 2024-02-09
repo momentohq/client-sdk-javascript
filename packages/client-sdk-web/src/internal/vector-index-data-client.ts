@@ -797,7 +797,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   ): Promise<VectorGetItemMetadataBatch.Response> {
     const request = new vectorindex._GetItemMetadataBatchRequest();
     request.setIndexName(indexName);
-    request.setIdsList(ids);
+    request.setFilter(VectorIndexDataClient.idsToFilterExpression(ids));
     request.setMetadataFields(
       VectorIndexDataClient.buildMetadataRequest({
         metadataFields: ALL_VECTOR_METADATA,
