@@ -742,36 +742,21 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
             resolve(
               new VectorGetItemBatch.Success(
                 resp.item_response.reduce((acc, itemResponse) => {
-                  switch (itemResponse.response) {
-                    case 'hit':
-                      acc[itemResponse.hit.id] = {
-                        id: itemResponse.hit.id,
-                        vector: itemResponse.hit.vector.elements,
-                        metadata: VectorIndexDataClient.deserializeMetadata(
-                          itemResponse.hit.metadata,
-                          () =>
-                            resolve(
-                              new VectorGetItemBatch.Error(
-                                new UnknownError(
-                                  'GetItemBatch responded with an unknown result'
-                                )
-                              )
+                  acc[itemResponse.id] = {
+                    id: itemResponse.id,
+                    vector: itemResponse.vector.elements,
+                    metadata: VectorIndexDataClient.deserializeMetadata(
+                      itemResponse.metadata,
+                      () =>
+                        resolve(
+                          new VectorGetItemBatch.Error(
+                            new UnknownError(
+                              'GetItemBatch responded with an unknown result'
                             )
-                        ),
-                      };
-                      break;
-                    case 'miss':
-                      break;
-                    default:
-                      resolve(
-                        new VectorGetItemBatch.Error(
-                          new UnknownError(
-                            'GetItemBatch responded with an unknown result'
                           )
                         )
-                      );
-                      break;
-                  }
+                    ),
+                  };
                   return acc;
                 }, {} as Record<string, VectorIndexStoredItem>)
               )
