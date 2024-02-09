@@ -727,38 +727,21 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
             resolve(
               new VectorGetItemBatch.Success(
                 resp.getItemResponseList().reduce((acc, itemResponse) => {
-                  let hit: vectorindex._ItemResponse._Hit | undefined;
-                  switch (itemResponse.getResponseCase()) {
-                    case vectorindex._ItemResponse.ResponseCase.HIT:
-                      hit = itemResponse.getHit();
-                      acc[hit?.getId() ?? ''] = {
-                        id: hit?.getId() ?? '',
-                        vector: hit?.getVector()?.getElementsList() ?? [],
-                        metadata: VectorIndexDataClient.deserializeMetadata(
-                          hit?.getMetadataList() ?? [],
-                          () =>
-                            resolve(
-                              new VectorGetItemBatch.Error(
-                                new UnknownError(
-                                  'GetItemBatch responded with an unknown result'
-                                )
-                              )
+                  acc[itemResponse.getId()] = {
+                    id: itemResponse.getId(),
+                    vector: itemResponse.getVector()?.getElementsList() ?? [],
+                    metadata: VectorIndexDataClient.deserializeMetadata(
+                      itemResponse.getMetadataList(),
+                      () =>
+                        resolve(
+                          new VectorGetItemBatch.Error(
+                            new UnknownError(
+                              'GetItemBatch responded with an unknown result'
                             )
-                        ),
-                      };
-                      break;
-                    case vectorindex._ItemResponse.ResponseCase.MISS:
-                      break;
-                    default:
-                      resolve(
-                        new VectorGetItemBatch.Error(
-                          new UnknownError(
-                            'GetItemBatch responded with an unknown result'
                           )
                         )
-                      );
-                      break;
-                  }
+                    ),
+                  };
                   return acc;
                 }, {} as Record<string, VectorIndexStoredItem>)
               )
