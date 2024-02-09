@@ -801,35 +801,18 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
                 resp
                   .getItemMetadataResponseList()
                   .reduce((acc, itemResponse) => {
-                    let hit: vectorindex._ItemMetadataResponse._Hit | undefined;
-                    switch (itemResponse.getResponseCase()) {
-                      case vectorindex._ItemMetadataResponse.ResponseCase.HIT:
-                        hit = itemResponse.getHit();
-                        acc[hit?.getId() ?? ''] =
-                          VectorIndexDataClient.deserializeMetadata(
-                            hit?.getMetadataList() ?? [],
-                            () =>
-                              resolve(
-                                new VectorGetItemMetadataBatch.Error(
-                                  new UnknownError(
-                                    'GetItemMetadataBatch responded with an unknown result'
-                                  )
-                                )
+                    acc[itemResponse.getId()] =
+                      VectorIndexDataClient.deserializeMetadata(
+                        itemResponse.getMetadataList(),
+                        () =>
+                          resolve(
+                            new VectorGetItemMetadataBatch.Error(
+                              new UnknownError(
+                                'GetItemMetadataBatch responded with an unknown result'
                               )
-                          );
-                        break;
-                      case vectorindex._ItemResponse.ResponseCase.MISS:
-                        break;
-                      default:
-                        resolve(
-                          new VectorGetItemMetadataBatch.Error(
-                            new UnknownError(
-                              'GetItemMetadataBatch responded with an unknown result'
                             )
                           )
-                        );
-                        break;
-                    }
+                      );
                     return acc;
                   }, {} as Record<string, VectorIndexMetadata>)
               )
