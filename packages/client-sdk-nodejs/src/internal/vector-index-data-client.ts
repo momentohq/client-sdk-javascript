@@ -809,33 +809,18 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
             resolve(
               new VectorGetItemMetadataBatch.Success(
                 resp.item_metadata_response.reduce((acc, itemResponse) => {
-                  switch (itemResponse.response) {
-                    case 'hit':
-                      acc[itemResponse.hit.id] =
-                        VectorIndexDataClient.deserializeMetadata(
-                          itemResponse.hit.metadata,
-                          () =>
-                            resolve(
-                              new VectorGetItemMetadataBatch.Error(
-                                new UnknownError(
-                                  'GetItemMetadataBatch responded with an unknown result'
-                                )
-                              )
+                  acc[itemResponse.id] =
+                    VectorIndexDataClient.deserializeMetadata(
+                      itemResponse.metadata,
+                      () =>
+                        resolve(
+                          new VectorGetItemMetadataBatch.Error(
+                            new UnknownError(
+                              'GetItemMetadataBatch responded with an unknown result'
                             )
-                        );
-                      break;
-                    case 'miss':
-                      break;
-                    default:
-                      resolve(
-                        new VectorGetItemMetadataBatch.Error(
-                          new UnknownError(
-                            'GetItemMetadataBatch responded with an unknown result'
                           )
                         )
-                      );
-                      break;
-                  }
+                    );
                   return acc;
                 }, {} as Record<string, VectorIndexMetadata>)
               )
