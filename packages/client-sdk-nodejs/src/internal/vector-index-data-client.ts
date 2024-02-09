@@ -534,7 +534,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   }
 
   /**
-   * Convert a list of ids to a filter expression requiring the id to be in the list.
+   * Convert a list of ids to a filter expression that matches the ids.
    * @param ids
    * @private
    */
