@@ -32,6 +32,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {UnknownError} from '@gomomento/sdk-core/dist/src/errors';
 import {VectorIndexClientPropsWithConfig} from './vector-index-client-props-with-config';
+import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 
 export class VectorIndexDataClient implements IVectorIndexDataClient {
   private readonly configuration: VectorIndexConfiguration;
@@ -59,25 +60,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       `Creating vector index client using endpoint: '${this.credentialProvider.getVectorEndpoint()}'`
     );
 
+    const channelOptions = grpcChannelOptionsFromGrpcConfig(grpcConfig);
+
     this.client = new vectorindex.VectorIndexClient(
       this.credentialProvider.getVectorEndpoint(),
       ChannelCredentials.createSsl(),
-      {
-        // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
-        // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
-        'grpc-node.max_session_memory': grpcConfig.getMaxSessionMemoryMb(),
-        // This flag controls whether channels use a shared global pool of subchannels, or whether
-        // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
-        // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
-        // than one grpc client.
-        'grpc.use_local_subchannel_pool': 1,
-        // The following settings are based on https://github.com/grpc/grpc/blob/e35db43c07f27cc13ec061520da1ed185f36abd4/doc/keepalive.md ,
-        // and guidance provided on various github issues for grpc-node. They will enable keepalive pings when a
-        // client connection is idle.
-        'grpc.keepalive_permit_without_calls': 1,
-        'grpc.keepalive_timeout_ms': 1000,
-        'grpc.keepalive_time_ms': 5000,
-      }
+      channelOptions
     );
 
     this.interceptors = this.initializeInterceptors(
