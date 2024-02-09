@@ -257,7 +257,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   ): Promise<VectorDeleteItemBatch.Response> {
     const request = new vectorindex._DeleteItemBatchRequest({
       index_name: indexName,
-      ids: ids,
+      filter: VectorIndexDataClient.idsToFilterExpression(ids),
     });
     return await new Promise((resolve, reject) => {
       this.client.DeleteItemBatch(
@@ -531,6 +531,21 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     }
 
     throw new InvalidArgumentError('Filter expression is not a valid type.');
+  }
+
+  /**
+   * Convert a list of ids to a filter expression requiring the id to be in the list.
+   * @param ids
+   * @private
+   */
+  private static idsToFilterExpression(
+    ids: string[]
+  ): vectorindex._FilterExpression {
+    return new vectorindex._FilterExpression({
+      id_in_set_expression: new vectorindex._IdInSetExpression({
+        ids: ids,
+      }),
+    });
   }
 
   private static deserializeMetadata(
