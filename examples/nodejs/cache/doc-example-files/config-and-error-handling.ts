@@ -52,6 +52,15 @@ async function example_configuration_ConstructWithThrowOnErrorsConfig() {
 }
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
+async function example_configuration_SimplifiedGet(cacheClient: CacheClient) {
+  const result = (await cacheClient.get('test-cache', 'test-key')).value();
+  if (result !== undefined) {
+    console.log(`Retrieved value for key 'test-key': ${result}`);
+  } else {
+    console.log("Key 'test-key' was not found in cache 'test-cache'");
+  }
+}
+
 async function example_configuration_ErrorHandlingExceptionErrorCode(cacheClient: CacheClient) {
   try {
     const result = (await cacheClient.get('test-cache', 'test-key')).value();
@@ -83,6 +92,7 @@ async function main() {
 
   await example_configuration_ConstructWithNoConfig();
   await example_configuration_ConstructWithLambdaConfig();
+  await example_configuration_SimplifiedGet(cacheClient);
   await example_configuration_ErrorHandlingHitMiss(cacheClient);
   await example_configuration_ConstructWithThrowOnErrorsConfig();
 
