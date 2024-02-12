@@ -3,12 +3,12 @@ import {
   DeleteVectorIndex,
   ListVectorIndexes,
   VectorCountItems,
-  VectorUpsertItemBatch,
-  VectorSearch,
-  VectorSearchAndFetchVectors,
   VectorDeleteItemBatch,
   VectorGetItemBatch,
   VectorGetItemMetadataBatch,
+  VectorSearch,
+  VectorSearchAndFetchVectors,
+  VectorUpsertItemBatch,
 } from '../../..';
 import {
   IVectorIndexClient,
@@ -83,7 +83,7 @@ export abstract class AbstractVectorIndexClient
   }
 
   /**
-   * Deletes a vector index and all the vectors stored in it.
+   * Deletes a vector index and all the items stored in it.
    *
    * @param {string} indexName - The name of the vector index to delete.
    * @returns {Promise<DeleteVectorIndex.Response>} -
@@ -188,47 +188,47 @@ export abstract class AbstractVectorIndexClient
    * Deletes any and all items with the given IDs from the index.
    *
    * @param {string} indexName - Name of the index to delete the items from.
-   * @param {Array<string>} ids - The IDs of the items to be deleted from the index.
+   * @param {Array<string>} filter - The IDs of the items to be deleted from the index.
    * @returns {Promise<VectorDeleteItemBatch.Response>}
    * {@link VectorDeleteItemBatch.Success} on success.
    * {@link VectorDeleteItemBatch.Error} on error.
    */
   public async deleteItemBatch(
     indexName: string,
-    ids: Array<string>
+    filter: Array<string>
   ): Promise<VectorDeleteItemBatch.Response> {
-    return await this.dataClient.deleteItemBatch(indexName, ids);
+    return await this.dataClient.deleteItemBatch(indexName, filter);
   }
 
   /**
    * Gets a batch of items from a vector index by ID.
    *
    * @param indexName - Name of the index to get the items from.
-   * @param ids - The IDs of the items to be retrieved from the index.
+   * @param filter - The IDs of the items to be retrieved from the index.
    * @returns {Promise<VectorGetItemBatch.Response>}
    * {@link VectorGetItemBatch.Success} on success, with the found items.
    * {@link VectorGetItemBatch.Error} on error.
    */
   public async getItemBatch(
     indexName: string,
-    ids: string[]
+    filter: string[]
   ): Promise<VectorGetItemBatch.Response> {
-    return await this.dataClient.getItemBatch(indexName, ids);
+    return await this.dataClient.getItemBatch(indexName, filter);
   }
 
   /**
    * Gets metadata for a batch of items from a vector index by ID.
    *
    * @param indexName - Name of the index to get the items from.
-   * @param ids - The IDs of the items to be retrieved from the index.
+   * @param filter - The IDs of the items to be retrieved from the index.
    * @returns {Promise<VectorGetItemMetadataBatch.Response>}
    * {@link VectorGetItemMetadataBatch.Success} on success, with the found item metadata.
    * {@link VectorGetItemMetadataBatch.Error} on error.
    */
   public async getItemMetadataBatch(
     indexName: string,
-    ids: string[]
+    filter: string[]
   ): Promise<VectorGetItemMetadataBatch.Response> {
-    return await this.dataClient.getItemMetadataBatch(indexName, ids);
+    return await this.dataClient.getItemMetadataBatch(indexName, filter);
   }
 }

@@ -70,17 +70,17 @@ export interface IVectorIndexClient extends IVectorIndexControlClient {
 
   deleteItemBatch(
     indexName: string,
-    ids: Array<string>
+    filter: Array<string>
   ): Promise<VectorDeleteItemBatch.Response>;
 
   getItemBatch(
     indexName: string,
-    ids: Array<string>
+    filter: Array<string>
   ): Promise<VectorGetItemBatch.Response>;
 
   getItemMetadataBatch(
     indexName: string,
-    ids: Array<string>,
+    filter: Array<string>,
     metadataFields?: Array<string>
   ): Promise<VectorGetItemMetadataBatch.Response>;
 }
