@@ -1,0 +1,115 @@
+{
+  "version": "36.0.0",
+  "artifacts": {
+    "MomentoCDT.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "MomentoCDT.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "MomentoCDT": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/unknown-region",
+      "properties": {
+        "templateFile": "MomentoCDT.template.json",
+        "terminationProtection": false,
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/d65ed2710e4f22290c1fb40b18ed112c39a038d850e05d009a2be14fd1b98750.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "MomentoCDT.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "MomentoCDT.assets"
+      ],
+      "metadata": {
+        "/MomentoCDT/MomentoApiKey": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MomentoApiKey"
+          }
+        ],
+        "/MomentoCDT/MomentoCDTApiKey/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MomentoCDTApiKeyF666679E"
+          }
+        ],
+        "/MomentoCDT/CoursesComments": [
+          {
+            "type": "aws:cdk:hasPhysicalName",
+            "data": {
+              "Ref": "CoursesCommentsFA1C61D4"
+            }
+          }
+        ],
+        "/MomentoCDT/CoursesComments/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CoursesCommentsFA1C61D4"
+          }
+        ],
+        "/MomentoCDT/MomentoCDT/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MomentoCDTServiceRole3B066870"
+          }
+        ],
+        "/MomentoCDT/MomentoCDT/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MomentoCDTServiceRoleDefaultPolicy38EC7962"
+          }
+        ],
+        "/MomentoCDT/MomentoCDT/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MomentoCDTE1BB1B46"
+          }
+        ],
+        "/MomentoCDT/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/MomentoCDT/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/MomentoCDT/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/MomentoCDT/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "MomentoCDT"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}

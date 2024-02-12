@@ -1,10 +1,26 @@
+<<<<<<< Updated upstream
 
 
 import {CacheGet, CreateCache, CacheSet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
+=======
+import {
+  CacheClient,
+  CacheGet,
+  CacheSet,
+  Configurations,
+  CreateCache,
+  CredentialProvider,
+  DefaultMomentoLoggerFactory,
+  DefaultMomentoLoggerLevel, ExperimentalMetricsLoggingMiddleware, MomentoLoggerFactory
+} from '@gomomento/sdk';
+>>>>>>> Stashed changes
 
 async function main() {
+  const logger: MomentoLoggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.DEBUG);
   const momento = await CacheClient.create({
-    configuration: Configurations.Laptop.v1(),
+    configuration: Configurations.Lambda.latest(logger)
+      .withMiddlewares([new ExperimentalMetricsLoggingMiddleware(logger)])
+      .withClientTimeoutMillis(2000),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_API_KEY',
     }),

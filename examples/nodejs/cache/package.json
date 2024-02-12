@@ -32,7 +32,11 @@
     "typescript": "4.4.3"
   },
   "dependencies": {
+<<<<<<< Updated upstream
     "@gomomento/sdk": "^1.60.0"
+=======
+    "@gomomento/sdk": "file:../../../packages/client-sdk-nodejs"
+>>>>>>> Stashed changes
   },
   "engines": {
     "node": ">=10.4.0"
