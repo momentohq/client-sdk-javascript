@@ -230,7 +230,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   ): Promise<VectorDeleteItemBatch.Response> {
     const request = new vectorindex._DeleteItemBatchRequest();
     request.setIndexName(indexName);
-    request.setIdsList(ids);
+    request.setFilter(VectorIndexDataClient.idsToFilterExpression(ids));
 
     return await new Promise((resolve, reject) => {
       this.client.deleteItemBatch(
@@ -496,6 +496,22 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     throw new InvalidArgumentError('Filter expression is not a valid type.');
   }
 
+  /**
+   * Converts a list of ids to a filter expression that matches the ids.
+   * @param ids
+   * @private
+   */
+  private static idsToFilterExpression(
+    ids: string[]
+  ): vectorindex._FilterExpression {
+    const idInSet = new vectorindex._IdInSetExpression();
+    idInSet.setIdsList(ids);
+
+    const expression = new vectorindex._FilterExpression();
+    expression.setIdInSetExpression(idInSet);
+    return expression;
+  }
+
   private static deserializeMetadata(
     metadata: vectorindex._Metadata[],
     errorCallback: () => void
@@ -692,7 +708,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   ): Promise<VectorGetItemBatch.Response> {
     const request = new vectorindex._GetItemBatchRequest();
     request.setIndexName(indexName);
-    request.setIdsList(ids);
+    request.setFilter(VectorIndexDataClient.idsToFilterExpression(ids));
     request.setMetadataFields(
       VectorIndexDataClient.buildMetadataRequest({
         metadataFields: ALL_VECTOR_METADATA,
@@ -711,38 +727,21 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
             resolve(
               new VectorGetItemBatch.Success(
                 resp.getItemResponseList().reduce((acc, itemResponse) => {
-                  let hit: vectorindex._ItemResponse._Hit | undefined;
-                  switch (itemResponse.getResponseCase()) {
-                    case vectorindex._ItemResponse.ResponseCase.HIT:
-                      hit = itemResponse.getHit();
-                      acc[hit?.getId() ?? ''] = {
-                        id: hit?.getId() ?? '',
-                        vector: hit?.getVector()?.getElementsList() ?? [],
-                        metadata: VectorIndexDataClient.deserializeMetadata(
-                          hit?.getMetadataList() ?? [],
-                          () =>
-                            resolve(
-                              new VectorGetItemBatch.Error(
-                                new UnknownError(
-                                  'GetItemBatch responded with an unknown result'
-                                )
-                              )
+                  acc[itemResponse.getId()] = {
+                    id: itemResponse.getId(),
+                    vector: itemResponse.getVector()?.getElementsList() ?? [],
+                    metadata: VectorIndexDataClient.deserializeMetadata(
+                      itemResponse.getMetadataList(),
+                      () =>
+                        resolve(
+                          new VectorGetItemBatch.Error(
+                            new UnknownError(
+                              'GetItemBatch responded with an unknown result'
                             )
-                        ),
-                      };
-                      break;
-                    case vectorindex._ItemResponse.ResponseCase.MISS:
-                      break;
-                    default:
-                      resolve(
-                        new VectorGetItemBatch.Error(
-                          new UnknownError(
-                            'GetItemBatch responded with an unknown result'
                           )
                         )
-                      );
-                      break;
-                  }
+                    ),
+                  };
                   return acc;
                 }, {} as Record<string, VectorIndexStoredItem>)
               )
@@ -781,7 +780,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   ): Promise<VectorGetItemMetadataBatch.Response> {
     const request = new vectorindex._GetItemMetadataBatchRequest();
     request.setIndexName(indexName);
-    request.setIdsList(ids);
+    request.setFilter(VectorIndexDataClient.idsToFilterExpression(ids));
     request.setMetadataFields(
       VectorIndexDataClient.buildMetadataRequest({
         metadataFields: ALL_VECTOR_METADATA,
@@ -802,35 +801,18 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
                 resp
                   .getItemMetadataResponseList()
                   .reduce((acc, itemResponse) => {
-                    let hit: vectorindex._ItemMetadataResponse._Hit | undefined;
-                    switch (itemResponse.getResponseCase()) {
-                      case vectorindex._ItemMetadataResponse.ResponseCase.HIT:
-                        hit = itemResponse.getHit();
-                        acc[hit?.getId() ?? ''] =
-                          VectorIndexDataClient.deserializeMetadata(
-                            hit?.getMetadataList() ?? [],
-                            () =>
-                              resolve(
-                                new VectorGetItemMetadataBatch.Error(
-                                  new UnknownError(
-                                    'GetItemMetadataBatch responded with an unknown result'
-                                  )
-                                )
+                    acc[itemResponse.getId()] =
+                      VectorIndexDataClient.deserializeMetadata(
+                        itemResponse.getMetadataList(),
+                        () =>
+                          resolve(
+                            new VectorGetItemMetadataBatch.Error(
+                              new UnknownError(
+                                'GetItemMetadataBatch responded with an unknown result'
                               )
-                          );
-                        break;
-                      case vectorindex._ItemResponse.ResponseCase.MISS:
-                        break;
-                      default:
-                        resolve(
-                          new VectorGetItemMetadataBatch.Error(
-                            new UnknownError(
-                              'GetItemMetadataBatch responded with an unknown result'
                             )
                           )
-                        );
-                        break;
-                    }
+                      );
                     return acc;
                   }, {} as Record<string, VectorIndexMetadata>)
               )

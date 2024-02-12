@@ -32,6 +32,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {UnknownError} from '@gomomento/sdk-core/dist/src/errors';
 import {VectorIndexClientPropsWithConfig} from './vector-index-client-props-with-config';
+import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 
 export class VectorIndexDataClient implements IVectorIndexDataClient {
   private readonly configuration: VectorIndexConfiguration;
@@ -59,25 +60,12 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
       `Creating vector index client using endpoint: '${this.credentialProvider.getVectorEndpoint()}'`
     );
 
+    const channelOptions = grpcChannelOptionsFromGrpcConfig(grpcConfig);
+
     this.client = new vectorindex.VectorIndexClient(
       this.credentialProvider.getVectorEndpoint(),
       ChannelCredentials.createSsl(),
-      {
-        // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
-        // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
-        'grpc-node.max_session_memory': grpcConfig.getMaxSessionMemoryMb(),
-        // This flag controls whether channels use a shared global pool of subchannels, or whether
-        // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
-        // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
-        // than one grpc client.
-        'grpc.use_local_subchannel_pool': 1,
-        // The following settings are based on https://github.com/grpc/grpc/blob/e35db43c07f27cc13ec061520da1ed185f36abd4/doc/keepalive.md ,
-        // and guidance provided on various github issues for grpc-node. They will enable keepalive pings when a
-        // client connection is idle.
-        'grpc.keepalive_permit_without_calls': 1,
-        'grpc.keepalive_timeout_ms': 1000,
-        'grpc.keepalive_time_ms': 5000,
-      }
+      channelOptions
     );
 
     this.interceptors = this.initializeInterceptors(
@@ -257,7 +245,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   ): Promise<VectorDeleteItemBatch.Response> {
     const request = new vectorindex._DeleteItemBatchRequest({
       index_name: indexName,
-      ids: ids,
+      filter: VectorIndexDataClient.idsToFilterExpression(ids),
     });
     return await new Promise((resolve, reject) => {
       this.client.DeleteItemBatch(
@@ -533,6 +521,21 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
     throw new InvalidArgumentError('Filter expression is not a valid type.');
   }
 
+  /**
+   * Convert a list of ids to a filter expression that matches the ids.
+   * @param ids
+   * @private
+   */
+  private static idsToFilterExpression(
+    ids: string[]
+  ): vectorindex._FilterExpression {
+    return new vectorindex._FilterExpression({
+      id_in_set_expression: new vectorindex._IdInSetExpression({
+        ids: ids,
+      }),
+    });
+  }
+
   private static deserializeMetadata(
     metadata: vectorindex._Metadata[],
     errorCallback: () => void
@@ -713,7 +716,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   ): Promise<VectorGetItemBatch.Response> {
     const request = new vectorindex._GetItemBatchRequest({
       index_name: indexName,
-      ids: ids,
+      filter: VectorIndexDataClient.idsToFilterExpression(ids),
       metadata_fields: VectorIndexDataClient.buildMetadataRequest({
         metadataFields: ALL_VECTOR_METADATA,
       }),
@@ -727,36 +730,21 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
             resolve(
               new VectorGetItemBatch.Success(
                 resp.item_response.reduce((acc, itemResponse) => {
-                  switch (itemResponse.response) {
-                    case 'hit':
-                      acc[itemResponse.hit.id] = {
-                        id: itemResponse.hit.id,
-                        vector: itemResponse.hit.vector.elements,
-                        metadata: VectorIndexDataClient.deserializeMetadata(
-                          itemResponse.hit.metadata,
-                          () =>
-                            resolve(
-                              new VectorGetItemBatch.Error(
-                                new UnknownError(
-                                  'GetItemBatch responded with an unknown result'
-                                )
-                              )
+                  acc[itemResponse.id] = {
+                    id: itemResponse.id,
+                    vector: itemResponse.vector.elements,
+                    metadata: VectorIndexDataClient.deserializeMetadata(
+                      itemResponse.metadata,
+                      () =>
+                        resolve(
+                          new VectorGetItemBatch.Error(
+                            new UnknownError(
+                              'GetItemBatch responded with an unknown result'
                             )
-                        ),
-                      };
-                      break;
-                    case 'miss':
-                      break;
-                    default:
-                      resolve(
-                        new VectorGetItemBatch.Error(
-                          new UnknownError(
-                            'GetItemBatch responded with an unknown result'
                           )
                         )
-                      );
-                      break;
-                  }
+                    ),
+                  };
                   return acc;
                 }, {} as Record<string, VectorIndexStoredItem>)
               )
@@ -795,7 +783,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
   ): Promise<VectorGetItemMetadataBatch.Response> {
     const request = new vectorindex._GetItemMetadataBatchRequest({
       index_name: indexName,
-      ids: ids,
+      filter: VectorIndexDataClient.idsToFilterExpression(ids),
       metadata_fields: VectorIndexDataClient.buildMetadataRequest({
         metadataFields: ALL_VECTOR_METADATA,
       }),
@@ -809,33 +797,18 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
             resolve(
               new VectorGetItemMetadataBatch.Success(
                 resp.item_metadata_response.reduce((acc, itemResponse) => {
-                  switch (itemResponse.response) {
-                    case 'hit':
-                      acc[itemResponse.hit.id] =
-                        VectorIndexDataClient.deserializeMetadata(
-                          itemResponse.hit.metadata,
-                          () =>
-                            resolve(
-                              new VectorGetItemMetadataBatch.Error(
-                                new UnknownError(
-                                  'GetItemMetadataBatch responded with an unknown result'
-                                )
-                              )
+                  acc[itemResponse.id] =
+                    VectorIndexDataClient.deserializeMetadata(
+                      itemResponse.metadata,
+                      () =>
+                        resolve(
+                          new VectorGetItemMetadataBatch.Error(
+                            new UnknownError(
+                              'GetItemMetadataBatch responded with an unknown result'
                             )
-                        );
-                      break;
-                    case 'miss':
-                      break;
-                    default:
-                      resolve(
-                        new VectorGetItemMetadataBatch.Error(
-                          new UnknownError(
-                            'GetItemMetadataBatch responded with an unknown result'
                           )
                         )
-                      );
-                      break;
-                  }
+                    );
                   return acc;
                 }, {} as Record<string, VectorIndexMetadata>)
               )

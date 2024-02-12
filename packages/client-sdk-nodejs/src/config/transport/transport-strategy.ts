@@ -82,6 +82,8 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
   private readonly keepAlivePermitWithoutCalls?: number;
   private readonly keepAliveTimeoutMs?: number;
   private readonly keepAliveTimeMs?: number;
+  private readonly maxSendMessageLength?: number;
+  private readonly maxReceiveMessageLength?: number;
 
   constructor(props: GrpcConfigurationProps) {
     this.deadlineMillis = props.deadlineMillis;
@@ -95,6 +97,8 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
     this.keepAliveTimeMs = props.keepAliveTimeMs;
     this.keepAliveTimeoutMs = props.keepAliveTimeoutMs;
     this.keepAlivePermitWithoutCalls = props.keepAlivePermitWithoutCalls;
+    this.maxSendMessageLength = props.maxSendMessageLength;
+    this.maxReceiveMessageLength = props.maxReceiveMessageLength;
   }
 
   getDeadlineMillis(): number {
@@ -131,6 +135,14 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
       maxSessionMemoryMb: maxSessionMemoryMb,
       numClients: this.numClients,
     });
+  }
+
+  getMaxSendMessageLength(): number | undefined {
+    return this.maxSendMessageLength;
+  }
+
+  getMaxReceiveMessageLength(): number | undefined {
+    return this.maxReceiveMessageLength;
   }
 
   getNumClients(): number {

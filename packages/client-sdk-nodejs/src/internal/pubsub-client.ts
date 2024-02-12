@@ -11,6 +11,7 @@ import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {
   CredentialProvider,
   MomentoLogger,
+  StaticGrpcConfiguration,
   TopicItem,
   TopicPublish,
   TopicSubscribe,
@@ -24,6 +25,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/AbstractPubsubClient';
 import {TopicConfiguration} from '../config/topic-configuration';
 import {TopicClientPropsWithConfiguration} from './topic-client-props-with-config';
+import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 
 export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   private readonly client: grpcPubsub.PubsubClient;
@@ -56,20 +58,19 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
       `Creating topic client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
     );
 
+    // NOTE: This is hard-coded for now but we may want to expose it via TopicConfiguration in the
+    // future, as we do with some of the other clients.
+    const grpcConfig = new StaticGrpcConfiguration({
+      deadlineMillis: this.unaryRequestTimeoutMs,
+      maxSessionMemoryMb: PubsubClient.DEFAULT_MAX_SESSION_MEMORY_MB,
+    });
+
+    const channelOptions = grpcChannelOptionsFromGrpcConfig(grpcConfig);
+
     this.client = new grpcPubsub.PubsubClient(
       this.credentialProvider.getCacheEndpoint(),
       ChannelCredentials.createSsl(),
-      {
-        // default value for max session memory is 10mb.  Under high load, it is easy to exceed this,
-        // after which point all requests will fail with a client-side RESOURCE_EXHAUSTED exception.
-        'grpc-node.max_session_memory':
-          PubsubClient.DEFAULT_MAX_SESSION_MEMORY_MB,
-        // This flag controls whether channels use a shared global pool of subchannels, or whether
-        // each channel gets its own subchannel pool.  The default value is 0, meaning a single global
-        // pool.  Setting it to 1 provides significant performance improvements when we instantiate more
-        // than one grpc client.
-        'grpc.use_local_subchannel_pool': 1,
-      }
+      channelOptions
     );
 
     const headers: Header[] = [
