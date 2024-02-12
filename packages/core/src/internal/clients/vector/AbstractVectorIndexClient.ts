@@ -83,7 +83,7 @@ export abstract class AbstractVectorIndexClient
   }
 
   /**
-   * Deletes a vector index and all the vectors stored in it.
+   * Deletes a vector index and all the items stored in it.
    *
    * @param {string} indexName - The name of the vector index to delete.
    * @returns {Promise<DeleteVectorIndex.Response>} -
