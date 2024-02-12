@@ -1,9 +1,9 @@
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import {ToyCDT} from "../lib/simple-get-stack";
+import {ToyLambda} from "../lib/simple-get-stack";
 
 const app = new cdk.App();
-new ToyCDT(app, 'MomentoCDT', {
+new ToyLambda(app, 'ToyLambda', {
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */
