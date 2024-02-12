@@ -211,7 +211,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
 
   public async deleteItemBatch(
     indexName: string,
-    ids: Array<string>
+    filter: Array<string>
   ): Promise<VectorDeleteItemBatch.Response> {
     try {
       validateIndexName(indexName);
@@ -221,16 +221,16 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
         err => new VectorDeleteItemBatch.Error(err)
       );
     }
-    return await this.sendDeleteItemBatch(indexName, ids);
+    return await this.sendDeleteItemBatch(indexName, filter);
   }
 
   private async sendDeleteItemBatch(
     indexName: string,
-    ids: Array<string>
+    filter: Array<string>
   ): Promise<VectorDeleteItemBatch.Response> {
     const request = new vectorindex._DeleteItemBatchRequest();
     request.setIndexName(indexName);
-    request.setFilter(VectorIndexDataClient.idsToFilterExpression(ids));
+    request.setFilter(VectorIndexDataClient.idsToFilterExpression(filter));
 
     return await new Promise((resolve, reject) => {
       this.client.deleteItemBatch(
@@ -689,7 +689,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
 
   public async getItemBatch(
     indexName: string,
-    ids: string[]
+    filter: string[]
   ): Promise<VectorGetItemBatch.Response> {
     try {
       validateIndexName(indexName);
@@ -699,16 +699,16 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
         err => new VectorGetItemBatch.Error(err)
       );
     }
-    return await this.sendGetItemBatch(indexName, ids);
+    return await this.sendGetItemBatch(indexName, filter);
   }
 
   private async sendGetItemBatch(
     indexName: string,
-    ids: string[]
+    filter: string[]
   ): Promise<VectorGetItemBatch.Response> {
     const request = new vectorindex._GetItemBatchRequest();
     request.setIndexName(indexName);
-    request.setFilter(VectorIndexDataClient.idsToFilterExpression(ids));
+    request.setFilter(VectorIndexDataClient.idsToFilterExpression(filter));
     request.setMetadataFields(
       VectorIndexDataClient.buildMetadataRequest({
         metadataFields: ALL_VECTOR_METADATA,
@@ -761,7 +761,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
 
   public async getItemMetadataBatch(
     indexName: string,
-    ids: string[]
+    filter: string[]
   ): Promise<VectorGetItemMetadataBatch.Response> {
     try {
       validateIndexName(indexName);
@@ -771,16 +771,16 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
         err => new VectorGetItemMetadataBatch.Error(err)
       );
     }
-    return await this.sendGetItemMetadataBatch(indexName, ids);
+    return await this.sendGetItemMetadataBatch(indexName, filter);
   }
 
   private async sendGetItemMetadataBatch(
     indexName: string,
-    ids: string[]
+    filter: string[]
   ): Promise<VectorGetItemMetadataBatch.Response> {
     const request = new vectorindex._GetItemMetadataBatchRequest();
     request.setIndexName(indexName);
-    request.setFilter(VectorIndexDataClient.idsToFilterExpression(ids));
+    request.setFilter(VectorIndexDataClient.idsToFilterExpression(filter));
     request.setMetadataFields(
       VectorIndexDataClient.buildMetadataRequest({
         metadataFields: ALL_VECTOR_METADATA,
