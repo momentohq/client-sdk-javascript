@@ -4,6 +4,7 @@ import {
   ListVectorIndexes,
   VectorCountItems,
   VectorDeleteItemBatch,
+  VectorFilterExpression,
   VectorGetItemBatch,
   VectorGetItemMetadataBatch,
   VectorSearch,
@@ -188,14 +189,15 @@ export abstract class AbstractVectorIndexClient
    * Deletes any and all items with the given IDs from the index.
    *
    * @param {string} indexName - Name of the index to delete the items from.
-   * @param {Array<string>} filter - The IDs of the items to be deleted from the index.
+   * @param {VectorFilterExpression | Array<string>} filter - A filter expression to match the items to be deleted
+   * or an array of item IDs to be deleted.
    * @returns {Promise<VectorDeleteItemBatch.Response>}
    * {@link VectorDeleteItemBatch.Success} on success.
    * {@link VectorDeleteItemBatch.Error} on error.
    */
   public async deleteItemBatch(
     indexName: string,
-    filter: Array<string>
+    filter: VectorFilterExpression | Array<string>
   ): Promise<VectorDeleteItemBatch.Response> {
     return await this.dataClient.deleteItemBatch(indexName, filter);
   }
