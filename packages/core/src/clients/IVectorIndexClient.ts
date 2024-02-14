@@ -70,7 +70,7 @@ export interface IVectorIndexClient extends IVectorIndexControlClient {
 
   deleteItemBatch(
     indexName: string,
-    filter: Array<string>
+    filter: VectorFilterExpression | Array<string>
   ): Promise<VectorDeleteItemBatch.Response>;
 
   getItemBatch(

@@ -10,6 +10,7 @@ import {
   VECTOR_DEFAULT_TOPK,
   VectorCountItems,
   VectorDeleteItemBatch,
+  VectorFilterExpression,
   vectorFilters as F,
   VectorGetItemBatch,
   VectorGetItemMetadataBatch,
@@ -226,7 +227,7 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
 
   public async deleteItemBatch(
     indexName: string,
-    filter: Array<string>
+    filter: VectorFilterExpression | Array<string>
   ): Promise<VectorDeleteItemBatch.Response> {
     try {
       validateIndexName(indexName);
@@ -241,11 +242,15 @@ export class VectorIndexDataClient implements IVectorIndexDataClient {
 
   private async sendDeleteItemBatch(
     indexName: string,
-    filter: Array<string>
+    filter: VectorFilterExpression | Array<string>
   ): Promise<VectorDeleteItemBatch.Response> {
+    const filterProtobuf =
+      filter instanceof VectorFilterExpression
+        ? VectorIndexDataClient.buildFilterExpression(filter)
+        : VectorIndexDataClient.idsToFilterExpression(filter);
     const request = new vectorindex._DeleteItemBatchRequest({
       index_name: indexName,
-      filter: VectorIndexDataClient.idsToFilterExpression(filter),
+      filter: filterProtobuf,
     });
     return await new Promise((resolve, reject) => {
       this.client.DeleteItemBatch(
