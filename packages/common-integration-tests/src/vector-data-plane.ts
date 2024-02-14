@@ -1251,7 +1251,7 @@ export function runVectorDataPlaneTest(
   });
 
   describe('deleteItem', () => {
-    it('should delete ids', async () => {
+    it('should delete items by id', async () => {
       const indexName = testIndexName('data-delete-ids');
       await WithIndex(
         vectorClient,
@@ -1260,10 +1260,10 @@ export function runVectorDataPlaneTest(
         VectorSimilarityMetric.INNER_PRODUCT,
         async () => {
           const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
-            {id: 'test_item_1', vector: [1.0, 2.0]},
-            {id: 'test_item_2', vector: [3.0, 4.0]},
-            {id: 'test_item_3', vector: [5.0, 6.0]},
-            {id: 'test_item_3', vector: [7.0, 8.0]},
+            {id: 'test_item_1', vector: [1.0, 2.0], metadata: {key: 'value1'}},
+            {id: 'test_item_2', vector: [3.0, 4.0], metadata: {key: 'value2'}},
+            {id: 'test_item_3', vector: [5.0, 6.0], metadata: {key: 'value3'}},
+            {id: 'test_item_4', vector: [7.0, 8.0], metadata: {key: 'value4'}},
           ]);
 
           expectWithMessage(() => {
@@ -1286,7 +1286,8 @@ export function runVectorDataPlaneTest(
           }, `expected SUCCESS but got ${searchResponse.toString()}}`);
           let successResponse = searchResponse as VectorSearch.Success;
           expect(successResponse.hits()).toEqual([
-            {id: 'test_item_3', score: 23.0, metadata: {}},
+            {id: 'test_item_4', score: 23.0, metadata: {}},
+            {id: 'test_item_3', score: 17.0, metadata: {}},
             {id: 'test_item_2', score: 11.0, metadata: {}},
             {id: 'test_item_1', score: 5.0, metadata: {}},
           ]);
@@ -1309,6 +1310,72 @@ export function runVectorDataPlaneTest(
           });
           successResponse = searchResponse as VectorSearch.Success;
           expect(successResponse.hits()).toEqual([
+            {id: 'test_item_4', score: 23.0, metadata: {}},
+            {id: 'test_item_2', score: 11.0, metadata: {}},
+          ]);
+        }
+      );
+    });
+    it('should delete items by filter', async () => {
+      const indexName = testIndexName('data-delete-filter');
+      await WithIndex(
+        vectorClient,
+        indexName,
+        2,
+        VectorSimilarityMetric.INNER_PRODUCT,
+        async () => {
+          const upsertResponse = await vectorClient.upsertItemBatch(indexName, [
+            {id: 'test_item_1', vector: [1.0, 2.0], metadata: {key: 'value1'}},
+            {id: 'test_item_2', vector: [3.0, 4.0], metadata: {key: 'value2'}},
+            {id: 'test_item_3', vector: [5.0, 6.0], metadata: {key: 'value3'}},
+            {id: 'test_item_4', vector: [7.0, 8.0], metadata: {key: 'value4'}},
+          ]);
+
+          expectWithMessage(() => {
+            expect(upsertResponse).toBeInstanceOf(
+              VectorUpsertItemBatch.Success
+            );
+          }, `expected SUCCESS but got ${upsertResponse.toString()}}`);
+
+          await sleep(2_000);
+
+          let searchResponse = await vectorClient.search(
+            indexName,
+            [1.0, 2.0],
+            {
+              topK: 10,
+            }
+          );
+          expectWithMessage(() => {
+            expect(searchResponse).toBeInstanceOf(VectorSearch.Success);
+          }, `expected SUCCESS but got ${searchResponse.toString()}}`);
+          let successResponse = searchResponse as VectorSearch.Success;
+          expect(successResponse.hits()).toEqual([
+            {id: 'test_item_4', score: 23.0, metadata: {}},
+            {id: 'test_item_3', score: 17.0, metadata: {}},
+            {id: 'test_item_2', score: 11.0, metadata: {}},
+            {id: 'test_item_1', score: 5.0, metadata: {}},
+          ]);
+
+          const deleteResponse = await vectorClient.deleteItemBatch(
+            indexName,
+            F.equals('key', 'value1').or(F.equals('key', 'value3'))
+          );
+
+          expectWithMessage(() => {
+            expect(deleteResponse).toBeInstanceOf(
+              VectorDeleteItemBatch.Success
+            );
+          }, `expected SUCCESS but got ${deleteResponse.toString()}}`);
+
+          await sleep(2_000);
+
+          searchResponse = await vectorClient.search(indexName, [1.0, 2.0], {
+            topK: 10,
+          });
+          successResponse = searchResponse as VectorSearch.Success;
+          expect(successResponse.hits()).toEqual([
+            {id: 'test_item_4', score: 23.0, metadata: {}},
             {id: 'test_item_2', score: 11.0, metadata: {}},
           ]);
         }
