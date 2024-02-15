@@ -83,7 +83,7 @@ import {
   validateSortedSetOffset,
   validateSortedSetRanks,
   validateSortedSetScores,
-  validateTtl,
+  validateTtlSeconds,
   validateValidForSeconds,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
@@ -293,7 +293,7 @@ export class CacheDataClient implements IDataClient {
     try {
       validateCacheName(cacheName);
       if (ttl !== undefined) {
-        validateTtl(ttl);
+        validateTtlSeconds(ttl);
       }
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
@@ -527,7 +527,7 @@ export class CacheDataClient implements IDataClient {
     try {
       validateCacheName(cacheName);
       if (ttl !== undefined) {
-        validateTtl(ttl);
+        validateTtlSeconds(ttl);
       }
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
@@ -1979,7 +1979,7 @@ export class CacheDataClient implements IDataClient {
     try {
       validateCacheName(cacheName);
       if (ttl !== undefined) {
-        validateTtl(ttl);
+        validateTtlSeconds(ttl);
       }
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
