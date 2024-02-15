@@ -1,6 +1,6 @@
 import {CollectionTtl} from '../../../src/utils/collection-ttl';
 
-const ttl = 1.23;
+const ttl = 2;
 
 describe('CollectionTtl', () => {
   describe('.fromCacheTtl', () => {
