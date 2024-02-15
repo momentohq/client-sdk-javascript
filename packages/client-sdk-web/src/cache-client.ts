@@ -11,7 +11,7 @@ import {
 import {CacheClientProps} from './cache-client-props';
 import {getWebCacheEndpoint} from './utils/web-client-utils';
 import {Configuration, Configurations} from './index';
-import { validateTtlSeconds } from '@gomomento/sdk-core/dist/src/internal/utils';
+import {validateTtlSeconds} from '@gomomento/sdk-core/dist/src/internal/utils';
 
 interface CacheClientPropsWithConfiguration extends CacheClientProps {
   configuration: Configuration;
