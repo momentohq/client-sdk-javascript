@@ -119,8 +119,14 @@ export function validateTopK(topK: number) {
 }
 
 export function validateTtlMinutes(ttlMinutes: number) {
-  if (ttlMinutes < 0) {
-    throw new InvalidArgumentError('ttlMinutes must be positive');
+  if (ttlMinutes < 0 || !Number.isInteger(ttlMinutes)) {
+    throw new InvalidArgumentError('ttlMinutes must be a positive integer');
+  }
+}
+
+export function validateTtl(ttl: number) {
+  if (ttl < 0 || !Number.isInteger(ttl)) {
+    throw new InvalidArgumentError('ttl must be a positive integer');
   }
 }
 
