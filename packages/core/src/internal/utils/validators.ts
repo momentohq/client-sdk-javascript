@@ -126,7 +126,9 @@ export function validateTtlMinutes(ttlMinutes: number) {
 
 export function validateTtl(ttl: number) {
   if (ttl < 0 || !Number.isInteger(ttl)) {
-    throw new InvalidArgumentError('ttl must be a positive integer');
+    throw new InvalidArgumentError(
+      `ttl must be a positive integer, received ${ttl}`
+    );
   }
 }
 
