@@ -174,12 +174,27 @@ export function runGetSetDeleteTests(
       expect(getMiss).toBeInstanceOf(CacheGet.Miss);
     });
 
-    it('should return INVALID_ARGUMENT_ERROR for invalid ttl when set with string key/value', async () => {
+    it('should return INVALID_ARGUMENT_ERROR for negative ttl when set with string key/value', async () => {
       const setResponse = await cacheClient.set(
         integrationTestCacheName,
         v4(),
         v4(),
         {ttl: -1}
+      );
+      expect(setResponse).toBeInstanceOf(CacheSet.Error);
+      if (setResponse instanceof CacheSet.Error) {
+        expect(setResponse.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }
+    });
+
+    it('should return INVALID_ARGUMENT_ERROR for float ttl when set with string key/value', async () => {
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        v4(),
+        v4(),
+        {ttl: 1.5}
       );
       expect(setResponse).toBeInstanceOf(CacheSet.Error);
       if (setResponse instanceof CacheSet.Error) {
@@ -481,6 +496,44 @@ export function runGetSetDeleteTests(
       const successResponse = response as CacheIncrement.Success;
       expect(successResponse.value()).toEqual(52);
       expect(successResponse.valueNumber()).toEqual(52);
+    });
+
+    it('fails with negative ttl', async () => {
+      const field = v4();
+
+      await cacheClient.set(integrationTestCacheName, field, '10');
+      const response = await cacheClient.increment(
+        integrationTestCacheName,
+        field,
+        10,
+        {ttl: -1}
+      );
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(CacheIncrement.Error);
+      }, `expected ERROR but got ${response.toString()}`);
+      const errorResponse = response as CacheIncrement.Error;
+      expect(errorResponse.errorCode()).toEqual(
+        MomentoErrorCode.INVALID_ARGUMENT_ERROR
+      );
+    });
+
+    it('fails with float ttl', async () => {
+      const field = v4();
+
+      await cacheClient.set(integrationTestCacheName, field, '10');
+      const response = await cacheClient.increment(
+        integrationTestCacheName,
+        field,
+        10,
+        {ttl: 1.5}
+      );
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(CacheIncrement.Error);
+      }, `expected ERROR but got ${response.toString()}`);
+      const errorResponse = response as CacheIncrement.Error;
+      expect(errorResponse.errorCode()).toEqual(
+        MomentoErrorCode.INVALID_ARGUMENT_ERROR
+      );
     });
   });
 

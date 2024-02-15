@@ -83,6 +83,7 @@ import {
   validateSortedSetOffset,
   validateSortedSetRanks,
   validateSortedSetScores,
+  validateTtl,
   validateValidForSeconds,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
@@ -291,15 +292,12 @@ export class CacheDataClient implements IDataClient {
   ): Promise<CacheSet.Response> {
     try {
       validateCacheName(cacheName);
+      if (ttl !== undefined) {
+        validateTtl(ttl);
+      }
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new CacheSet.Error(err)
-      );
-    }
-    if (ttl && ttl < 0) {
-      return this.cacheServiceErrorMapper.returnOrThrowError(
-        new InvalidArgumentError('ttl must be a positive integer'),
         err => new CacheSet.Error(err)
       );
     }
@@ -528,15 +526,12 @@ export class CacheDataClient implements IDataClient {
   ): Promise<CacheSetIfNotExists.Response> {
     try {
       validateCacheName(cacheName);
+      if (ttl !== undefined) {
+        validateTtl(ttl);
+      }
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new CacheSetIfNotExists.Error(err)
-      );
-    }
-    if (ttl && ttl < 0) {
-      return this.cacheServiceErrorMapper.returnOrThrowError(
-        new InvalidArgumentError('ttl must be a positive integer'),
         err => new CacheSetIfNotExists.Error(err)
       );
     }
@@ -1983,6 +1978,9 @@ export class CacheDataClient implements IDataClient {
   ): Promise<CacheIncrement.Response> {
     try {
       validateCacheName(cacheName);
+      if (ttl !== undefined) {
+        validateTtl(ttl);
+      }
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,

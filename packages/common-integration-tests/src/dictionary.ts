@@ -197,6 +197,18 @@ export function runDictionaryTests(
           expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Hit);
         }, `expected HIT but got ${getResponse.toString()}`);
       });
+
+      it('does not allow negative ttl', () => {
+        expect(() => {
+          CollectionTtl.of(-1);
+        }).toThrow('ttl must be a positive integer');
+      });
+
+      it('does not allow float ttl', () => {
+        expect(() => {
+          CollectionTtl.of(1.5);
+        }).toThrow('ttl must be a positive integer');
+      });
     };
 
     describe('#dictionaryFetch', () => {
