@@ -11,6 +11,7 @@ import {
 import {CacheClientProps} from './cache-client-props';
 import {getWebCacheEndpoint} from './utils/web-client-utils';
 import {Configuration, Configurations} from './index';
+import { validateTtlSeconds } from '@gomomento/sdk-core/dist/src/internal/utils';
 
 interface CacheClientPropsWithConfiguration extends CacheClientProps {
   configuration: Configuration;
@@ -18,6 +19,7 @@ interface CacheClientPropsWithConfiguration extends CacheClientProps {
 
 export class CacheClient extends AbstractCacheClient implements ICacheClient {
   constructor(props: CacheClientProps) {
+    validateTtlSeconds(props.defaultTtlSeconds);
     const configuration =
       props.configuration ?? getDefaultCacheClientConfiguration();
     const propsWithConfiguration: CacheClientPropsWithConfiguration = {
