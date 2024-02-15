@@ -119,7 +119,7 @@ export function validateTopK(topK: number) {
 }
 
 export function validateTtlMinutes(ttlMinutes: number) {
-  if (ttlMinutes < 0 || !Number.isInteger(ttlMinutes)) {
+  if (ttlMinutes < 0 || !Number.isSafeInteger(ttlMinutes)) {
     throw new InvalidArgumentError('ttlMinutes must be a positive integer');
   }
 }
