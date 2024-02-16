@@ -1,6 +1,6 @@
 import {CollectionTtl} from '../../../src/utils/collection-ttl';
 
-const ttl = 1.23;
+const ttl = 2;
 
 describe('CollectionTtl', () => {
   describe('.fromCacheTtl', () => {
@@ -18,6 +18,18 @@ describe('CollectionTtl', () => {
 
       expect(cttl.refreshTtl()).toBe(true);
       expect(cttl.ttlSeconds()).toEqual(ttl);
+    });
+
+    it('does not allow negative ttl', () => {
+      expect(() => {
+        CollectionTtl.of(-1);
+      }).toThrow('ttl must be a positive integer');
+    });
+
+    it('does not allow float ttl', () => {
+      expect(() => {
+        CollectionTtl.of(1.5);
+      }).toThrow('ttl must be a positive integer');
     });
   });
 
@@ -59,9 +71,9 @@ describe('CollectionTtl', () => {
 
   describe('#ttlMilliseconds', () => {
     test('converts to milliseconds', () => {
-      const cttl = new CollectionTtl(1.23);
+      const cttl = new CollectionTtl(2);
 
-      expect(cttl.ttlMilliseconds()).toEqual(1230);
+      expect(cttl.ttlMilliseconds()).toEqual(2000);
     });
 
     test('handles null', () => {
@@ -79,9 +91,9 @@ describe('CollectionTtl', () => {
     });
 
     test('when ttlSeconds is set', () => {
-      const cttl = new CollectionTtl(1.23, false);
+      const cttl = new CollectionTtl(2, false);
 
-      expect(cttl.toString()).toMatch('ttl: 1.23, refreshTtl: false');
+      expect(cttl.toString()).toMatch('ttl: 2, refreshTtl: false');
     });
   });
 });

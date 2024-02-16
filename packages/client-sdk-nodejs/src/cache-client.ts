@@ -13,6 +13,7 @@ import {CacheClientProps, EagerCacheClientProps} from './cache-client-props';
 import {
   range,
   validateTimeout,
+  validateTtlSeconds,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {AbstractCacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/AbstractCacheClient';
@@ -36,6 +37,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
    * @param {CacheClientProps} props configuration and credentials for creating a CacheClient.
    */
   constructor(props: CacheClientProps) {
+    validateTtlSeconds(props.defaultTtlSeconds);
     const configuration: Configuration =
       props.configuration ?? getDefaultCacheClientConfiguration();
 

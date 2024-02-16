@@ -67,7 +67,7 @@ export function runListTests(
       it('sets ttl', async () => {
         const listName = v4();
         const values = ['one', 'two', 'three'];
-        const ttl = new CollectionTtl(0.5, false);
+        const ttl = new CollectionTtl(1, false);
 
         for (const value of values) {
           await addValue({

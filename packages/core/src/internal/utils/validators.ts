@@ -119,8 +119,18 @@ export function validateTopK(topK: number) {
 }
 
 export function validateTtlMinutes(ttlMinutes: number) {
-  if (ttlMinutes < 0) {
-    throw new InvalidArgumentError('ttlMinutes must be positive');
+  if (ttlMinutes < 0 || !Number.isSafeInteger(ttlMinutes)) {
+    throw new InvalidArgumentError('ttlMinutes must be a positive integer');
+  }
+}
+
+// Currently accepting ttl in seconds, but if someone requests support for millis,
+// the validator will need to check for Number.isSafeInteger(ttl * 1000).
+export function validateTtlSeconds(ttl: number) {
+  if (ttl < 0 || !Number.isSafeInteger(ttl)) {
+    throw new InvalidArgumentError(
+      `ttl must be a positive integer, received ${ttl}`
+    );
   }
 }
 

@@ -1,3 +1,5 @@
+import {validateTtlSeconds} from '../internal/utils';
+
 /** Represents the desired behavior for managing the TTL on collection
  *  objects (dictionaries, lists, sets) in your cache.
  *
@@ -26,6 +28,9 @@ export class CollectionTtl {
    * @param {boolean} [refreshTtl=true]
    */
   constructor(ttlSeconds: number | null = null, refreshTtl = true) {
+    if (ttlSeconds !== null) {
+      validateTtlSeconds(ttlSeconds);
+    }
     this._refreshTtl = refreshTtl;
     this._ttlSeconds = ttlSeconds;
   }
