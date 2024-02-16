@@ -9,6 +9,7 @@ import {
 } from '../../../messages/responses/vector';
 import {VectorIndexItem} from '../../../messages/vector-index';
 import {SearchOptions} from '../../../clients/IVectorIndexClient';
+import {VectorFilterExpression} from '../../../messages/vector-index-filters';
 
 export interface IVectorIndexDataClient {
   countItems(indexName: string): Promise<VectorCountItems.Response>;
@@ -32,7 +33,7 @@ export interface IVectorIndexDataClient {
 
   deleteItemBatch(
     indexName: string,
-    filter: Array<string>
+    filter: VectorFilterExpression | Array<string>
   ): Promise<VectorDeleteItemBatch.Response>;
 
   getItemBatch(

@@ -47,7 +47,6 @@ import {
   CollectionTtl,
   ItemType,
   CredentialProvider,
-  InvalidArgumentError,
   MomentoLogger,
   SortedSetOrder,
   UnknownError,
@@ -120,6 +119,7 @@ import {
   validateSortedSetOffset,
   validateSortedSetRanks,
   validateSortedSetScores,
+  validateTtlSeconds,
   validateValidForSeconds,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
@@ -271,15 +271,12 @@ export class CacheDataClient<
   ): Promise<CacheSet.Response> {
     try {
       validateCacheName(cacheName);
+      if (ttl !== undefined) {
+        validateTtlSeconds(ttl);
+      }
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new CacheSet.Error(err)
-      );
-    }
-    if (ttl && ttl < 0) {
-      return this.cacheServiceErrorMapper.returnOrThrowError(
-        new InvalidArgumentError('ttl must be a positive integer'),
         err => new CacheSet.Error(err)
       );
     }
@@ -340,15 +337,12 @@ export class CacheDataClient<
   ): Promise<CacheSetIfNotExists.Response> {
     try {
       validateCacheName(cacheName);
+      if (ttl !== undefined) {
+        validateTtlSeconds(ttl);
+      }
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new CacheSetIfNotExists.Error(err)
-      );
-    }
-    if (ttl && ttl < 0) {
-      return this.cacheServiceErrorMapper.returnOrThrowError(
-        new InvalidArgumentError('ttl must be a positive integer'),
         err => new CacheSetIfNotExists.Error(err)
       );
     }
@@ -472,6 +466,9 @@ export class CacheDataClient<
   ): Promise<CacheIncrement.Response> {
     try {
       validateCacheName(cacheName);
+      if (ttl !== undefined) {
+        validateTtlSeconds(ttl);
+      }
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,

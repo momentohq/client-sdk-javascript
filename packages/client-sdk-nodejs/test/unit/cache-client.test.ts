@@ -77,4 +77,31 @@ describe('CacheClient', () => {
       );
     }
   });
+  it('cannot create a client with an invalid default TTL', async () => {
+    try {
+      await CacheClient.create({
+        configuration: configuration,
+        credentialProvider: credentialProvider,
+        defaultTtlSeconds: -100,
+      });
+      fail(new Error('Expected InvalidArgumentError to be thrown!'));
+    } catch (e) {
+      if (!(e instanceof InvalidArgumentError)) {
+        fail(new Error('Expected InvalidArgumentError to be thrown!'));
+      }
+    }
+
+    try {
+      await CacheClient.create({
+        configuration: configuration,
+        credentialProvider: credentialProvider,
+        defaultTtlSeconds: 10.5,
+      });
+      fail(new Error('Expected InvalidArgumentError to be thrown!'));
+    } catch (e) {
+      if (!(e instanceof InvalidArgumentError)) {
+        fail(new Error('Expected InvalidArgumentError to be thrown!'));
+      }
+    }
+  });
 });
