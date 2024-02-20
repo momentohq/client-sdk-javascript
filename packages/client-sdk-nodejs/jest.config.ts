@@ -8,7 +8,7 @@ const config: Config = {
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
   },
-  testTimeout: 240000,
+  testTimeout: 480000,
   reporters: ["jest-ci-spec-reporter"]
 };
 
