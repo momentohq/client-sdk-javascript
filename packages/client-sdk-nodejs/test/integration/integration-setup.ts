@@ -76,7 +76,7 @@ function sessionCredsProvider(): CredentialProvider {
 export function integrationTestCacheClientProps(): CacheClientPropsWithConfig {
   return {
     configuration:
-      Configurations.Laptop.latest().withClientTimeoutMillis(60000),
+      Configurations.Laptop.latest().withClientTimeoutMillis(90000),
     credentialProvider: credsProvider(),
     defaultTtlSeconds: 1111,
   };
@@ -95,7 +95,7 @@ function momentoClientForTestingWithThrowOnErrors(): CacheClient {
 function momentoClientForTestingWithSessionToken(): CacheClient {
   return new CacheClient({
     configuration:
-      Configurations.Laptop.latest().withClientTimeoutMillis(60000),
+      Configurations.Laptop.latest().withClientTimeoutMillis(90000),
     credentialProvider: sessionCredsProvider(),
     defaultTtlSeconds: 1111,
   });
