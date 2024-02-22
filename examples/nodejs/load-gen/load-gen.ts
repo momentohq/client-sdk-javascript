@@ -15,6 +15,19 @@ import {
 } from './utils/load-gen';
 import {getElapsedMillis, logStats} from './utils/load-gen-statistics-calculator';
 import {createCache, getCacheClient} from './utils/cache';
+import * as heapdump from 'heapdump';
+
+// Function to trigger heapdump
+function writeHeapSnapshot(interval: number) {
+  setInterval(() => {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `heapdump-${timestamp}.heapsnapshot`;
+    heapdump.writeSnapshot(filename, (err, filename) => {
+      if (err) console.error(err);
+      else console.log(`Heapdump written to ${filename}`);
+    });
+  }, interval);
+}
 
 class BasicLoadGen {
   private readonly loggerFactory: MomentoLoggerFactory;
@@ -26,6 +39,7 @@ class BasicLoadGen {
 
   private readonly cacheName: string = 'js-loadgen';
 
+
   constructor(options: BasicLoadGenOptions) {
     this.loggerFactory = options.loggerFactory;
     this.logger = this.loggerFactory.getLogger('load-gen');
@@ -36,6 +50,8 @@ class BasicLoadGen {
   }
 
   async run(): Promise<void> {
+    writeHeapSnapshot(60000);
+
     const momento = await getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
 
     await createCache(momento, this.cacheName, this.logger);

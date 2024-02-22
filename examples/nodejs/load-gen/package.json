@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/heapdump": "^0.3.4",
     "@types/node": "^16.11.4",
     "@typescript-eslint/eslint-plugin": "5.30.5",
     "@typescript-eslint/parser": "^5.0.0",
@@ -28,6 +29,7 @@
   },
   "dependencies": {
     "@gomomento/sdk": "^1.58.0",
-    "hdr-histogram-js": "3.0.0"
+    "hdr-histogram-js": "3.0.0",
+    "heapdump": "^0.3.15"
   }
 }
