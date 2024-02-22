@@ -65,6 +65,8 @@ import {
   MomentoLoggerFactory,
   SortedSetOrder,
   UnknownError,
+  GetBatch,
+  SetBatch,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -104,7 +106,6 @@ import _Unbounded = cache_client._Unbounded;
 import ECacheResult = cache_client.ECacheResult;
 import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
-import {GetBatch, SetBatch} from '@gomomento/sdk-core';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -119,6 +120,7 @@ export class CacheDataClient implements IDataClient {
   private readonly logger: MomentoLogger;
   private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly interceptors: Interceptor[];
+  private readonly streamingInterceptors: Interceptor[];
 
   /**
    * @param {CacheClientProps} props
@@ -171,11 +173,19 @@ export class CacheDataClient implements IDataClient {
     // to be able to set it.
     const context: MiddlewareRequestHandlerContext = {};
     context[CONNECTION_ID_KEY] = dataClientID;
+
+    const headers = [
+      new Header('Authorization', this.credentialProvider.getAuthToken()),
+      new Header('Agent', `nodejs:${version}`),
+    ];
+
     this.interceptors = this.initializeInterceptors(
+      headers,
       this.configuration.getLoggerFactory(),
       this.configuration.getMiddlewares(),
       context
     );
+    this.streamingInterceptors = this.initializeStreamingInterceptors(headers);
   }
   public connect(timeoutSeconds = 10): Promise<void> {
     this.logger.debug('Attempting to eagerly connect to channel');
@@ -764,7 +774,7 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     const call = this.clientWrapper.getClient().GetBatch(request, metadata, {
-      interceptors: this.interceptors,
+      interceptors: this.streamingInterceptors,
     });
 
     return await new Promise((resolve, reject) => {
@@ -852,7 +862,7 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     const call = this.clientWrapper.getClient().SetBatch(request, metadata, {
-      interceptors: this.interceptors,
+      interceptors: this.streamingInterceptors,
     });
 
     return await new Promise((resolve, reject) => {
@@ -3254,14 +3264,11 @@ export class CacheDataClient implements IDataClient {
   }
 
   private initializeInterceptors(
+    headers: Header[],
     loggerFactory: MomentoLoggerFactory,
     middlewares: Middleware[],
     middlewareRequestContext: MiddlewareRequestHandlerContext
   ): Interceptor[] {
-    const headers = [
-      new Header('Authorization', this.credentialProvider.getAuthToken()),
-      new Header('Agent', `nodejs:${version}`),
-    ];
     return [
       middlewaresInterceptor(
         loggerFactory,
@@ -3276,6 +3283,12 @@ export class CacheDataClient implements IDataClient {
         this.configuration.getRetryStrategy()
       ),
     ];
+  }
+
+  // TODO https://github.com/momentohq/client-sdk-nodejs/issues/349
+  // decide on streaming interceptors and middlewares
+  private initializeStreamingInterceptors(headers: Header[]): Interceptor[] {
+    return [new HeaderInterceptorProvider(headers).createHeadersInterceptor()];
   }
 
   private convert(v: string | Uint8Array): Uint8Array {
