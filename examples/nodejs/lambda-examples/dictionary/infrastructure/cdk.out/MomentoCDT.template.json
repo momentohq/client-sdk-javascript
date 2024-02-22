@@ -148,7 +148,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
      },
-     "S3Key": "2ba280d8063ca2714d46affdf85abfb02acd710f903eba896a32880810ea6a63.zip"
+     "S3Key": "4f1f395659209652df37f34dc8785ebd2478fd0098bffdc7ee00247d8ccddae9.zip"
     },
     "Environment": {
      "Variables": {
@@ -198,7 +198,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "MomentoCDT/MomentoCDT/Resource",
-    "aws:asset:path": "asset.2ba280d8063ca2714d46affdf85abfb02acd710f903eba896a32880810ea6a63",
+    "aws:asset:path": "asset.4f1f395659209652df37f34dc8785ebd2478fd0098bffdc7ee00247d8ccddae9",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }

@@ -7,41 +7,44 @@ const dynamoDb = new DynamoDB.DocumentClient({});
 
 export const handler = async function(batch: any = {}) {
   if (!batch.Records) {
-    console.error('No records found in the batch');
-    return;
+    console.warn('No records found in the batch');
+
+    // Check if the required properties exist in the batch object
+    if (batch.tntid && batch.metricId) {
+      // Transform the input into the expected batch.Records format
+      batch.Records = [{
+        body: JSON.stringify({ tntid: batch.tntid, metricId: batch.metricId })
+      }];
+    } else {
+      console.error('Invalid input format');
+      return; // Exit the function if the required properties are missing
+    }
   }
 
   const cache = await getGlobalCache();
-
-  // Create an HTTP client and invoke www.google.com
-  await new Promise((resolve, reject) => {
-    https.get('https://www.google.com', (res) => {
-      console.log('Status Code:', res.statusCode);
-      res.on('data', (d) => {
-        process.stdout.write(d);
-      });
-      res.on('end', resolve);
-    }).on('error', (e) => {
-      console.error(e);
-      reject(e);
-    });
-  });
 
   console.log(JSON.stringify({batchSize: batch.Records.length}));
 
   for (const record of batch.Records) {
     try {
-      const messageBody = JSON.parse(record.body);
-      const tntid = messageBody.tntid;
-      const metricId = messageBody.metricId;
+        const messageBody = JSON.parse(record.body);
+        const tntid = messageBody.tntid;
+        const metricId = messageBody.metricId;
 
-      if (!tntid || !metricId) {
-        console.error('tntid or metricId missing in the message', record);
-        continue;
-      }
+        if (!tntid || !metricId) {
+          console.error('tntid or metricId missing in the message', record);
+          continue;
+        }
 
-      // Assuming dayBucketInc needs tntid and metricId as arguments
-      await cache.dayBucketInc(tntid, metricId);
+      const currentDate = new Date();
+      const year = currentDate.getFullYear().toString();
+      const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // getMonth() is zero-based; add 1 to make it 1-indexed
+      const day = currentDate.getDate().toString().padStart(2, '0');
+
+        // Assuming dayBucketInc needs tntid and metricId as arguments
+      await cache.dayBucketInc(tntid, `${metricId}_${year}`);
+      await cache.dayBucketInc(tntid, `${metricId}_${year}_${month}`);
+      await cache.dayBucketInc(tntid, `${metricId}_${year}_${month}_${day}`);
 
       // Randomly write to DynamoDB with a probability of 10%
       if (Math.random() < 0.5) {

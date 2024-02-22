@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "eslint . --ext .ts",
     "build": "tsc",
-    "load-gen": "tsc && node dist/load-gen.js",
+    "load-gen": "tsc && node --inspect dist/load-gen.js",
     "request-coalescing": "tsc && node dist/request-coalescing.js",
     "test": "jest",
     "lint": "eslint . --ext .ts",
