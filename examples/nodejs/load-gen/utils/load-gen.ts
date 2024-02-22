@@ -98,23 +98,28 @@ export async function executeRequest<T>(
         logger.error(`Caught RST_STREAM error; swallowing: ${e.name}, ${e.message}`);
         return [AsyncSetGetResult.RST_STREAM, undefined];
       } else {
-        throw e;
+        logger.error('Unknown error');
+        return [AsyncSetGetResult.UNAVAILABLE, undefined];
       }
     } else if (e instanceof LimitExceededError) {
       if (e.message.includes('RESOURCE_EXHAUSTED')) {
         logger.error(`Caught RESOURCE_EXHAUSTED error; swallowing: ${e.name}, ${e.message}`);
         return [AsyncSetGetResult.RESOURCE_EXHAUSTED, undefined];
       } else {
-        throw e;
+        logger.error('Unknown error');
+        return [AsyncSetGetResult.UNAVAILABLE, undefined];
       }
     } else if (e instanceof TimeoutError) {
       if (e.message.includes('DEADLINE_EXCEEDED')) {
         return [AsyncSetGetResult.DEADLINE_EXCEEDED, undefined];
       } else {
-        throw e;
+        logger.error('Unknown error');
+        return [AsyncSetGetResult.UNAVAILABLE, undefined];
       }
     } else {
-      throw e;
+      logger.error('Unknown error');
+      return [AsyncSetGetResult.UNAVAILABLE, undefined];
+
     }
   }
 }
