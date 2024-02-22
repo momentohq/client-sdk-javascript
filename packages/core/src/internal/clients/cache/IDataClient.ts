@@ -45,6 +45,8 @@ import {
   CacheDecreaseTtl,
   CacheDictionaryLength,
   CacheDictionaryGetFields,
+  SetBatch,
+  GetBatch,
 } from '../../../index';
 
 export interface IDataClient {
@@ -71,6 +73,17 @@ export interface IDataClient {
     field: string | Uint8Array,
     ttl?: number
   ): Promise<CacheSetIfNotExists.Response>;
+  getBatch(
+    cacheName: string,
+    keys: string[] | Uint8Array[]
+  ): Promise<GetBatch.Response>;
+  setBatch(
+    cacheName: string,
+    items:
+      | Record<string, string | Uint8Array>
+      | Map<string | Uint8Array, string | Uint8Array>,
+    ttl?: number
+  ): Promise<SetBatch.Response>;
   setFetch(cacheName: string, setName: string): Promise<CacheSetFetch.Response>;
   setAddElements(
     cacheName: string,

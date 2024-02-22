@@ -14,3 +14,4 @@ export * from './vector-control-plane';
 export * from './vector-data-plane';
 export * from './leaderboard-client';
 export * from './webhooks';
+export * from './batch-get-set';
