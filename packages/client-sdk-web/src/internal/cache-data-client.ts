@@ -418,7 +418,7 @@ export class CacheDataClient<
 
   public async getBatch(
     cacheName: string,
-    keys: string[] | Uint8Array[]
+    keys: Array<string | Uint8Array>
   ): Promise<GetBatch.Response> {
     try {
       validateCacheName(cacheName);

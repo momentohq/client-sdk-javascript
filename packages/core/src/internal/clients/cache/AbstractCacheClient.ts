@@ -223,7 +223,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async getBatch(
     cacheName: string,
-    keys: string[] | Uint8Array[]
+    keys: Array<string | Uint8Array>
   ): Promise<GetBatch.Response> {
     return await this.getNextDataClient().getBatch(cacheName, keys);
   }

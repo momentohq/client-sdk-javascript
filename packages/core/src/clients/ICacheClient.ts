@@ -111,7 +111,7 @@ export interface ICacheClient extends IControlClient, IPingClient {
   ): Promise<CacheSetIfNotExists.Response>;
   getBatch(
     cacheName: string,
-    keys: string[] | Uint8Array[]
+    keys: Array<string | Uint8Array>
   ): Promise<GetBatch.Response>;
   setBatch(
     cacheName: string,
