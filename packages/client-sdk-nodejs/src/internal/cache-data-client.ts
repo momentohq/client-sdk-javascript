@@ -796,7 +796,7 @@ export class CacheDataClient implements IDataClient {
       });
 
       call.on('end', () => {
-        resolve(new GetBatch.Success(results));
+        resolve(new GetBatch.Success(results, keys));
       });
 
       call.on('error', (err: ServiceError | null) => {

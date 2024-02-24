@@ -27,19 +27,15 @@ export function runBatchGetSetTests(
       }, `expected SUCCESS for keys ${keys.toString()}, received ${response.toString()}`);
 
       // Check each response in the batch
-      const getResults = response.results();
-      if (getResults === undefined) {
-        fail('expected getResults array to be defined');
-      } else {
-        expectWithMessage(() => {
-          expect(getResults.length).toEqual(keys.length);
-        }, `expected non-empty results, received ${getResults.toString()}`);
+      const getResults = (response as GetBatch.Success).results();
+      expectWithMessage(() => {
+        expect(getResults.length).toEqual(keys.length);
+      }, `expected non-empty results, received ${getResults.toString()}`);
 
-        for (const [index, resp] of getResults.entries()) {
-          expectWithMessage(() => {
-            expect(resp).toBeInstanceOf(CacheGet.Miss);
-          }, `expected MISS for getting key ${keys[index]}, received ${resp.toString()}`);
-        }
+      for (const [index, resp] of getResults.entries()) {
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheGet.Miss);
+        }, `expected MISS for getting key ${keys[index]}, received ${resp.toString()}`);
       }
     });
 
@@ -62,20 +58,16 @@ export function runBatchGetSetTests(
       }, `expected SUCCESS, received ${response.toString()}`);
 
       // Check each response in the set batch
-      const setResults = response.results();
+      const setResults = (response as SetBatch.Success).results();
       const keys = [...items.keys()];
-      if (setResults === undefined) {
-        fail('expected setResults array to be defined');
-      } else {
-        expectWithMessage(() => {
-          expect(setResults.length).toEqual(keys.length);
-        }, `expected non-empty results, received ${setResults.toString()}`);
+      expectWithMessage(() => {
+        expect(setResults.length).toEqual(keys.length);
+      }, `expected non-empty results, received ${setResults.toString()}`);
 
-        for (const [index, resp] of setResults.entries()) {
-          expectWithMessage(() => {
-            expect(resp).toBeInstanceOf(CacheSet.Success);
-          }, `expected SUCCESS for setting key ${keys[index]} but received ${resp.toString()}`);
-        }
+      for (const [index, resp] of setResults.entries()) {
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheSet.Success);
+        }, `expected SUCCESS for setting key ${keys[index]} but received ${resp.toString()}`);
       }
     });
 
@@ -99,20 +91,16 @@ export function runBatchGetSetTests(
       }, `expected SUCCESS, received ${response.toString()}`);
 
       // Check each response in the set batch
-      const setResults = response.results();
+      const setResults = (response as SetBatch.Success).results();
       const keys = [...items.keys()];
-      if (setResults === undefined) {
-        fail('expected setResults array to be defined');
-      } else {
-        expectWithMessage(() => {
-          expect(setResults.length).toEqual(keys.length);
-        }, `expected non-empty results, received ${setResults.toString()}`);
+      expectWithMessage(() => {
+        expect(setResults.length).toEqual(keys.length);
+      }, `expected non-empty results, received ${setResults.toString()}`);
 
-        for (const [index, resp] of setResults.entries()) {
-          expectWithMessage(() => {
-            expect(resp).toBeInstanceOf(CacheSet.Success);
-          }, `expected SUCCESS for setting key ${keys[index]} but received ${resp.toString()}`);
-        }
+      for (const [index, resp] of setResults.entries()) {
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheSet.Success);
+        }, `expected SUCCESS for setting key ${keys[index]} but received ${resp.toString()}`);
       }
 
       await delay(5000);
@@ -127,19 +115,15 @@ export function runBatchGetSetTests(
       }, `expected SUCCESS for keys ${keys.toString()}, received ${getResponse.toString()}`);
 
       // Check each response in the get batch
-      const getResults = getResponse.results();
-      if (getResults === undefined) {
-        fail('expected getResults array to be defined');
-      } else {
-        expectWithMessage(() => {
-          expect(getResults.length).toEqual(keys.length);
-        }, `expected non-empty results, received ${getResults.toString()}`);
+      const getResults = (getResponse as GetBatch.Success).results();
+      expectWithMessage(() => {
+        expect(getResults.length).toEqual(keys.length);
+      }, `expected non-empty results, received ${getResults.toString()}`);
 
-        for (const [index, resp] of getResults.entries()) {
-          expectWithMessage(() => {
-            expect(resp).toBeInstanceOf(CacheGet.Miss);
-          }, `expected MISS for getting key ${keys[index]}, received ${resp.toString()}`);
-        }
+      for (const [index, resp] of getResults.entries()) {
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheGet.Miss);
+        }, `expected MISS for getting key ${keys[index]}, received ${resp.toString()}`);
       }
     });
 
@@ -162,53 +146,45 @@ export function runBatchGetSetTests(
       }, `expected SUCCESS, received ${setResponse.toString()}`);
 
       // Check each response in the set batch
-      const setResults = setResponse.results();
+      const setResults = (setResponse as SetBatch.Success).results();
       const keys = [...items.keys()];
-      if (setResults === undefined) {
-        fail('expected setResults array to be defined');
-      } else {
+      expectWithMessage(() => {
+        expect(setResults.length).toEqual(keys.length);
+      }, `expected non-empty results, received ${setResults.toString()}`);
+
+      for (const [index, resp] of setResults.entries()) {
         expectWithMessage(() => {
-          expect(setResults.length).toEqual(keys.length);
-        }, `expected non-empty results, received ${setResults.toString()}`);
+          expect(resp).toBeInstanceOf(CacheSet.Success);
+        }, `expected SUCCESS for setting key ${keys[index]} but received ${resp.toString()}`);
+      }
 
-        for (const [index, resp] of setResults.entries()) {
-          expectWithMessage(() => {
-            expect(resp).toBeInstanceOf(CacheSet.Success);
-          }, `expected SUCCESS for setting key ${keys[index]} but received ${resp.toString()}`);
-        }
+      // Fetch values and check get batch response
+      const getResponse = await cacheClient.getBatch(
+        integrationTestCacheName,
+        keys
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(GetBatch.Success);
+      }, `expected SUCCESS for keys ${keys.toString()}, received ${getResponse.toString()}`);
 
-        // Fetch values and check get batch response
-        const getResponse = await cacheClient.getBatch(
-          integrationTestCacheName,
-          keys
-        );
+      // Check each response in the get batch
+      const getResults = (getResponse as GetBatch.Success).results();
+      expectWithMessage(() => {
+        expect(getResults.length).toEqual(keys.length);
+      }, `expected non-empty results, received ${getResults.toString()}`);
+
+      for (const [index, resp] of getResults.entries()) {
+        const key = keys[index];
         expectWithMessage(() => {
-          expect(getResponse).toBeInstanceOf(GetBatch.Success);
-        }, `expected SUCCESS for keys ${keys.toString()}, received ${getResponse.toString()}`);
+          expect(resp).toBeInstanceOf(CacheGet.Hit);
+        }, `expected HIT for getting key ${key}, received ${resp.toString()}`);
 
-        // Check each response in the get batch
-        const getResults = getResponse.results();
-        if (getResults === undefined) {
-          fail('expected getResults array to be defined');
-        } else {
-          expectWithMessage(() => {
-            expect(getResults.length).toEqual(keys.length);
-          }, `expected non-empty results, received ${getResults.toString()}`);
-
-          for (const [index, resp] of getResults.entries()) {
-            const key = keys[index];
-            expectWithMessage(() => {
-              expect(resp).toBeInstanceOf(CacheGet.Hit);
-            }, `expected HIT for getting key ${key}, received ${resp.toString()}`);
-
-            const expectedValue = items.get(key) ?? 'value not in items map';
-            const receivedValue =
-              resp.value() ?? 'value could not be retrieved from response';
-            expectWithMessage(() => {
-              expect(receivedValue).toEqual(expectedValue);
-            }, `expected key ${key} to be set to ${expectedValue} but received ${receivedValue}`);
-          }
-        }
+        const expectedValue = items.get(key) ?? 'value not in items map';
+        const receivedValue =
+          resp.value() ?? 'value could not be retrieved from response';
+        expectWithMessage(() => {
+          expect(receivedValue).toEqual(expectedValue);
+        }, `expected key ${key} to be set to ${expectedValue} but received ${receivedValue}`);
       }
     });
 
@@ -231,20 +207,16 @@ export function runBatchGetSetTests(
       }, `expected SUCCESS, received ${setResponse.toString()}`);
 
       // Check each response in the set batch
-      const setResults = setResponse.results();
-      if (setResults === undefined) {
-        fail('expected setResults array to be defined');
-      } else {
-        const keys = [...items.keys()];
-        expectWithMessage(() => {
-          expect(setResults.length).toEqual(keys.length);
-        }, `expected non-empty results, received ${setResults.toString()}`);
+      const setResults = (setResponse as SetBatch.Success).results();
+      const setKeys = [...items.keys()];
+      expectWithMessage(() => {
+        expect(setResults.length).toEqual(setKeys.length);
+      }, `expected non-empty results, received ${setResults.toString()}`);
 
-        for (const [index, resp] of setResults.entries()) {
-          expectWithMessage(() => {
-            expect(resp).toBeInstanceOf(CacheSet.Success);
-          }, `expected SUCCESS for key ${keys[index]} but received ${resp.toString()}`);
-        }
+      for (const [index, resp] of setResults.entries()) {
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheSet.Success);
+        }, `expected SUCCESS for key ${setKeys[index]} but received ${resp.toString()}`);
       }
 
       // Fetch values and check get batch response
@@ -258,33 +230,29 @@ export function runBatchGetSetTests(
       }, `expected SUCCESS for keys ${keys.toString()}, received ${getResponse.toString()}`);
 
       // Check each response in the get batch
-      const getResults = getResponse.results();
-      if (getResults === undefined) {
-        fail('expected getResults array to be defined');
-      } else {
-        expectWithMessage(() => {
-          expect(getResults.length).toEqual(keys.length);
-        }, `expected non-empty results, received ${getResults.toString()}`);
+      const getResults = (getResponse as GetBatch.Success).results();
+      expectWithMessage(() => {
+        expect(getResults.length).toEqual(keys.length);
+      }, `expected non-empty results, received ${getResults.toString()}`);
 
-        for (const [index, resp] of getResults.entries()) {
-          const key = keys[index];
+      for (const [index, resp] of getResults.entries()) {
+        const key = keys[index];
 
-          if (['a', 'b', 'c'].includes(key)) {
-            expectWithMessage(() => {
-              expect(resp).toBeInstanceOf(CacheGet.Hit);
-            }, `expected HIT for key ${key} but received ${resp.toString()}`);
+        if (['a', 'b', 'c'].includes(key)) {
+          expectWithMessage(() => {
+            expect(resp).toBeInstanceOf(CacheGet.Hit);
+          }, `expected HIT for key ${key} but received ${resp.toString()}`);
 
-            const expectedValue = items.get(key) ?? 'value not in items map';
-            const receivedValue =
-              resp.value() ?? 'value could not be retrieved from response';
-            expectWithMessage(() => {
-              expect(receivedValue).toEqual(expectedValue);
-            }, `expected key ${key} to be set to ${expectedValue} but received ${receivedValue}`);
-          } else {
-            expectWithMessage(() => {
-              expect(resp).toBeInstanceOf(CacheGet.Miss);
-            }, `expected MISS for key ${key} but received ${resp.toString()}`);
-          }
+          const expectedValue = items.get(key) ?? 'value not in items map';
+          const receivedValue =
+            resp.value() ?? 'value could not be retrieved from response';
+          expectWithMessage(() => {
+            expect(receivedValue).toEqual(expectedValue);
+          }, `expected key ${key} to be set to ${expectedValue} but received ${receivedValue}`);
+        } else {
+          expectWithMessage(() => {
+            expect(resp).toBeInstanceOf(CacheGet.Miss);
+          }, `expected MISS for key ${key} but received ${resp.toString()}`);
         }
       }
     });

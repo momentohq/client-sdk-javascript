@@ -474,7 +474,12 @@ export class CacheDataClient<
       });
 
       call.on('end', () => {
-        resolve(new GetBatch.Success(results));
+        resolve(
+          new GetBatch.Success(
+            results,
+            keys.map(key => this.convertToUint8Array(key))
+          )
+        );
       });
 
       call.on('error', (err: RpcError) => {

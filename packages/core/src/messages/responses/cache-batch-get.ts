@@ -1,7 +1,8 @@
 import {SdkError} from '../../errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
-import {truncateString} from '../../internal/utils';
 import {CacheGet} from '../..';
+
+const TEXT_DECODER = new TextDecoder();
 
 /**
  * Parent response type for a cache get batch request.  The
@@ -23,7 +24,7 @@ import {CacheGet} from '../..';
  * ```
  */
 export abstract class Response extends ResponseBase {
-  public values(): (string | undefined)[] | undefined {
+  public values(): Record<string, string> | undefined {
     if (this instanceof Success) {
       return (this as Success).values();
     }
@@ -39,28 +40,13 @@ export abstract class Response extends ResponseBase {
 }
 
 class _Success extends Response {
-  private readonly body: CacheGet.Response[];
-  constructor(body: CacheGet.Response[]) {
+  private readonly items: CacheGet.Response[];
+  private readonly keys: Uint8Array[];
+
+  constructor(items: CacheGet.Response[], keys: Uint8Array[]) {
     super();
-    this.body = body;
-  }
-
-  /**
-   * Returns the data as a list of utf-8 strings, decoded from the underlying byte array.
-   * May contain nulls corresponding to cache misses.
-   * @returns {(string | undefined)[]}
-   */
-  public values(): (string | undefined)[] {
-    return this.body.map(getResponse => {
-      return getResponse.value();
-    });
-  }
-
-  public override toString(): string {
-    const display = this.values()
-      .map(value => (value !== undefined ? truncateString(value) : undefined))
-      .toString();
-    return `${super.toString()}: ${display}`;
+    this.items = items;
+    this.keys = keys;
   }
 
   /**
@@ -68,7 +54,104 @@ class _Success extends Response {
    * @returns {CacheGet.Response[]}
    */
   public results(): CacheGet.Response[] {
-    return this.body;
+    return this.items;
+  }
+
+  /**
+   * Returns the data as a Record whose keys and values are utf-8 strings, decoded from the underlying byte arrays.
+   * This can be used in most places where an Object is desired.  This is a convenience alias for
+   * {valueRecordStringString}.
+   * @returns {Record<string, string>}
+   */
+  public values(): Record<string, string> {
+    return this.valuesRecordStringString();
+  }
+
+  /**
+   * Returns the data as a Record whose keys and values are utf-8 strings, decoded from the underlying byte arrays.
+   * This can be used in most places where an Object is desired.  This is a convenience alias for
+   * {valueRecordStringString}.
+   * @returns {Record<string, string>}
+   */
+  public valuesRecord(): Record<string, string> {
+    return this.valuesRecordStringString();
+  }
+
+  /**
+   * Returns the data as a Record whose keys and values are utf-8 strings, decoded from the underlying byte arrays.
+   * This can be used in most places where an Object is desired.
+   * @returns {Record<string, string>}
+   */
+  public valuesRecordStringString(): Record<string, string> {
+    return this.items.reduce<Record<string, string>>((acc, item, index) => {
+      if (item.value() !== undefined) {
+        acc[TEXT_DECODER.decode(this.keys[index])] = (
+          item as CacheGet.Hit
+        ).valueString();
+      }
+      return acc;
+    }, {});
+  }
+
+  /**
+   * Returns the data as a Record whose keys are utf-8 strings, decoded from the underlying byte array, and whose
+   * values are byte arrays.  This can be used in most places where an Object is desired.
+   * @returns {Record<string, Uint8Array>}
+   */
+  public valuesRecordStringUint8Array(): Record<string, Uint8Array> {
+    return this.items.reduce<Record<string, Uint8Array>>((acc, item, index) => {
+      if (item.value() !== undefined) {
+        acc[TEXT_DECODER.decode(this.keys[index])] = (
+          item as CacheGet.Hit
+        ).valueUint8Array();
+      }
+      return acc;
+    }, {});
+  }
+
+  /**
+   * Returns the data as a Map whose keys and values are utf-8 strings, decoded from the underlying byte arrays.
+   * This is a convenience alias for {valueMapStringString}.
+   * @returns {Map<string, string>}
+   */
+  public valuesMap(): Map<string, string> {
+    return this.valuesMapStringString();
+  }
+
+  /**
+   * Returns the data as a Map whose keys and values are utf-8 strings, decoded from the underlying byte arrays.
+   * @returns {Map<string, string>}
+   */
+  public valuesMapStringString(): Map<string, string> {
+    return this.items.reduce((acc, item, index) => {
+      if (item.value() !== undefined) {
+        acc.set(
+          TEXT_DECODER.decode(this.keys[index]),
+          (item as CacheGet.Hit).valueString()
+        );
+      }
+      return acc;
+    }, new Map<string, string>());
+  }
+
+  /**
+   * Returns the data as a Map whose keys and values are byte arrays.
+   * @returns {Map<Uint8Array, Uint8Array>}
+   */
+  public valuesMapUint8ArrayUint8Array(): Map<Uint8Array, Uint8Array> {
+    return this.items.reduce((acc, item, index) => {
+      if (item.value() !== undefined) {
+        acc.set(this.keys[index], (item as CacheGet.Hit).valueUint8Array());
+      }
+      return acc;
+    }, new Map<Uint8Array, Uint8Array>());
+  }
+
+  public override toString(): string {
+    const display = this.results()
+      .map(result => result.toString())
+      .toString();
+    return `${super.toString()}: ${display}`;
   }
 }
 
