@@ -53,6 +53,8 @@ import * as CacheKeysExist from './messages/responses/cache-keys-exist';
 import * as CacheUpdateTtl from './messages/responses/cache-ttl-update';
 import * as CacheIncreaseTtl from './messages/responses/cache-ttl-increase';
 import * as CacheDecreaseTtl from './messages/responses/cache-ttl-decrease';
+import * as SetBatch from './messages/responses/cache-batch-set';
+import * as GetBatch from './messages/responses/cache-batch-get';
 
 // TopicClient Response Types
 import * as TopicPublish from './messages/responses/topic-publish';
@@ -268,6 +270,8 @@ export {
   CacheIncreaseTtl,
   CacheDecreaseTtl,
   CacheInfo,
+  SetBatch,
+  GetBatch,
   // TopicClient Response Types
   TopicPublish,
   TopicSubscribe,

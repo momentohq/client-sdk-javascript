@@ -5,7 +5,12 @@ import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-import {ChannelCredentials, Interceptor, Metadata} from '@grpc/grpc-js';
+import {
+  ChannelCredentials,
+  Interceptor,
+  Metadata,
+  ServiceError,
+} from '@grpc/grpc-js';
 import {
   CacheDecreaseTtl,
   CacheDelete,
@@ -60,6 +65,8 @@ import {
   MomentoLoggerFactory,
   SortedSetOrder,
   UnknownError,
+  GetBatch,
+  SetBatch,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -113,6 +120,7 @@ export class CacheDataClient implements IDataClient {
   private readonly logger: MomentoLogger;
   private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly interceptors: Interceptor[];
+  private readonly streamingInterceptors: Interceptor[];
 
   /**
    * @param {CacheClientProps} props
@@ -165,11 +173,19 @@ export class CacheDataClient implements IDataClient {
     // to be able to set it.
     const context: MiddlewareRequestHandlerContext = {};
     context[CONNECTION_ID_KEY] = dataClientID;
+
+    const headers = [
+      new Header('Authorization', this.credentialProvider.getAuthToken()),
+      new Header('Agent', `nodejs:${version}`),
+    ];
+
     this.interceptors = this.initializeInterceptors(
+      headers,
       this.configuration.getLoggerFactory(),
       this.configuration.getMiddlewares(),
       context
     );
+    this.streamingInterceptors = this.initializeStreamingInterceptors(headers);
   }
   public connect(timeoutSeconds = 10): Promise<void> {
     this.logger.debug('Attempting to eagerly connect to channel');
@@ -717,6 +733,165 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+    });
+  }
+
+  public async getBatch(
+    cacheName: string,
+    keys: Array<string | Uint8Array>
+  ): Promise<GetBatch.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new GetBatch.Error(err)
+      );
+    }
+    this.logger.trace(`Issuing 'getBatch' request; keys: ${keys.toString()}`);
+    const result = await this.sendGetBatch(
+      cacheName,
+      keys.map(key => this.convert(key))
+    );
+    this.logger.trace(`'getBatch' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendGetBatch(
+    cacheName: string,
+    keys: Uint8Array[]
+  ): Promise<GetBatch.Response> {
+    const getRequests = [];
+    for (const k of keys) {
+      const getRequest = new grpcCache._GetRequest({
+        cache_key: k,
+      });
+      getRequests.push(getRequest);
+    }
+    const request = new grpcCache._GetBatchRequest({
+      items: getRequests,
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    const call = this.clientWrapper.getClient().GetBatch(request, metadata, {
+      interceptors: this.streamingInterceptors,
+    });
+
+    return await new Promise((resolve, reject) => {
+      const results: CacheGet.Response[] = [];
+      call.on('data', (getResponse: grpcCache._GetResponse) => {
+        const result = getResponse.result;
+        switch (result) {
+          case grpcCache.ECacheResult.Hit:
+            results.push(new CacheGet.Hit(getResponse.cache_body));
+            break;
+          case grpcCache.ECacheResult.Miss:
+            results.push(new CacheGet.Miss());
+            break;
+          default:
+            results.push(
+              new CacheGet.Error(new UnknownError(getResponse.message))
+            );
+        }
+      });
+
+      call.on('end', () => {
+        resolve(new GetBatch.Success(results, keys));
+      });
+
+      call.on('error', (err: ServiceError | null) => {
+        this.cacheServiceErrorMapper.resolveOrRejectError({
+          err: err,
+          errorResponseFactoryFn: e => new GetBatch.Error(e),
+          resolveFn: resolve,
+          rejectFn: reject,
+        });
+      });
+    });
+  }
+
+  public async setBatch(
+    cacheName: string,
+    items:
+      | Record<string, string | Uint8Array>
+      | Map<string | Uint8Array, string | Uint8Array>,
+    ttl?: number
+  ): Promise<SetBatch.Response> {
+    try {
+      validateCacheName(cacheName);
+      if (ttl !== undefined) {
+        validateTtlSeconds(ttl);
+      }
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new SetBatch.Error(err)
+      );
+    }
+
+    const itemsToUse = this.convertSetBatchElements(items);
+
+    const ttlToUse = ttl || this.defaultTtlSeconds;
+    this.logger.trace(
+      `Issuing 'setBatch' request; items length: ${
+        itemsToUse.length
+      }, ttl: ${ttlToUse.toString()}`
+    );
+
+    return await this.sendSetBatch(cacheName, itemsToUse, ttlToUse);
+  }
+
+  private async sendSetBatch(
+    cacheName: string,
+    items: Record<string, Uint8Array>[],
+    ttlSeconds: number
+  ): Promise<SetBatch.Response> {
+    const setRequests = [];
+    for (const item of items) {
+      const setRequest = new grpcCache._SetRequest({
+        cache_key: item.key,
+        cache_body: item.value,
+        ttl_milliseconds: ttlSeconds * 1000,
+      });
+      setRequests.push(setRequest);
+    }
+    const request = new grpcCache._SetBatchRequest({
+      items: setRequests,
+    });
+
+    const metadata = this.createMetadata(cacheName);
+
+    const call = this.clientWrapper.getClient().SetBatch(request, metadata, {
+      interceptors: this.streamingInterceptors,
+    });
+
+    return await new Promise((resolve, reject) => {
+      const results: CacheSet.Response[] = [];
+      call.on('data', (setResponse: grpcCache._SetResponse) => {
+        const result = setResponse.result;
+        switch (result) {
+          case grpcCache.ECacheResult.Ok:
+            results.push(new CacheSet.Success());
+            break;
+          default:
+            results.push(
+              new CacheSet.Error(new UnknownError(setResponse.message))
+            );
+        }
+      });
+
+      call.on('end', () => {
+        resolve(new SetBatch.Success(results));
+      });
+
+      call.on('error', (err: ServiceError | null) => {
+        this.cacheServiceErrorMapper.resolveOrRejectError({
+          err: err,
+          errorResponseFactoryFn: e => new SetBatch.Error(e),
+          resolveFn: resolve,
+          rejectFn: reject,
+        });
+      });
     });
   }
 
@@ -3089,14 +3264,11 @@ export class CacheDataClient implements IDataClient {
   }
 
   private initializeInterceptors(
+    headers: Header[],
     loggerFactory: MomentoLoggerFactory,
     middlewares: Middleware[],
     middlewareRequestContext: MiddlewareRequestHandlerContext
   ): Interceptor[] {
-    const headers = [
-      new Header('Authorization', this.credentialProvider.getAuthToken()),
-      new Header('Agent', `nodejs:${version}`),
-    ];
     return [
       middlewaresInterceptor(
         loggerFactory,
@@ -3111,6 +3283,12 @@ export class CacheDataClient implements IDataClient {
         this.configuration.getRetryStrategy()
       ),
     ];
+  }
+
+  // TODO https://github.com/momentohq/client-sdk-nodejs/issues/349
+  // decide on streaming interceptors and middlewares
+  private initializeStreamingInterceptors(headers: Header[]): Interceptor[] {
+    return [new HeaderInterceptorProvider(headers).createHeadersInterceptor()];
   }
 
   private convert(v: string | Uint8Array): Uint8Array {
@@ -3175,6 +3353,28 @@ export class CacheDataClient implements IDataClient {
             score: element[1],
           })
       );
+    }
+  }
+
+  private convertSetBatchElements(
+    elements:
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Record<string, string | Uint8Array>
+  ): Record<string, Uint8Array>[] {
+    if (elements instanceof Map) {
+      return [...elements.entries()].map(element => {
+        return {
+          key: this.convert(element[0]),
+          value: this.convert(element[1]),
+        };
+      });
+    } else {
+      return Object.entries(elements).map(element => {
+        return {
+          key: this.convert(element[0]),
+          value: this.convert(element[1]),
+        };
+      });
     }
   }
 
