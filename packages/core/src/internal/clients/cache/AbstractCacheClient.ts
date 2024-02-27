@@ -53,6 +53,8 @@ import {
   CacheUpdateTtl,
   CacheIncreaseTtl,
   CacheDecreaseTtl,
+  GetBatch,
+  SetBatch,
 } from '../../../index';
 import {ListFetchCallOptions, ListRetainCallOptions} from '../../../utils';
 import {
@@ -72,6 +74,7 @@ import {
   SortedSetFetchByScoreOptions,
   SortedSetIncrementOptions,
   SortedSetLengthByScoreOptions,
+  SetBatchOptions,
 } from '../../../clients/ICacheClient';
 import {IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
@@ -207,6 +210,46 @@ export abstract class AbstractCacheClient implements ICacheClient {
   ): Promise<CacheDelete.Response> {
     const client = this.getNextDataClient();
     return await client.delete(cacheName, key);
+  }
+
+  /**
+   * Gets the value stored for the given keys.
+   *
+   * @param {string} cacheName - The cache to perform the lookup in.
+   * @param {string[] | Uint8Array[]} keys - The list of keys to look up.
+   * @returns {Promise<GetBatch.Response>} -
+   * {@link GetBatch.Success} containing the values if they were found.
+   * {@link GetBatch.Error} on failure.
+   */
+  public async getBatch(
+    cacheName: string,
+    keys: Array<string | Uint8Array>
+  ): Promise<GetBatch.Response> {
+    return await this.getNextDataClient().getBatch(cacheName, keys);
+  }
+
+  /**
+   * Associates the given keys with the given values. If a value for the key is
+   * already present it is replaced with the new value.
+   *
+   * @param {string} cacheName - The cache to store the values in.
+   * @param {Record<string, string | Uint8Array> | Map<string | Uint8Array, string | Uint8Array>} items - The key-value pairs to be stored.
+   * @param {SetOptions} [options]
+   * @param {number} [options.ttl] - The time to live for the items in the cache.
+   * Uses the client's default TTL if this is not supplied.
+   * @returns {Promise<CacheSet.Response>} -
+   * {@link SetBatch.Success} on success.
+   * {@link SetBatch.Error} on failure.
+   */
+  public async setBatch(
+    cacheName: string,
+    items:
+      | Record<string, string | Uint8Array>
+      | Map<string | Uint8Array, string | Uint8Array>,
+    options?: SetBatchOptions
+  ): Promise<SetBatch.Response> {
+    const client = this.getNextDataClient();
+    return await client.setBatch(cacheName, items, options?.ttl);
   }
 
   /**

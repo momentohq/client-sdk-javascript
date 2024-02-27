@@ -86,8 +86,8 @@ export function middlewaresInterceptor(
               // also try to connect if it's idle, false will just get the status
               const connectionStatus =
                 grpcClient?.getChannel()?.getConnectivityState(false) ?? null;
-              logger.debug(
-                `Received status: ${status.code} ${
+              logger.warn(
+                `Deadline Exceeded! Received status: ${status.code} ${
                   status.details
                 } and grpc connection status: ${
                   connectionStatus

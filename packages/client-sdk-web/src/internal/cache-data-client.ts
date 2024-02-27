@@ -53,7 +53,7 @@ import {
   CacheDictionaryLength,
 } from '..';
 import {Configuration} from '../config/configuration';
-import {Request, UnaryResponse} from 'grpc-web';
+import {Request, RpcError, UnaryResponse} from 'grpc-web';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   _DictionaryFieldValuePair,
@@ -105,6 +105,9 @@ import {
   ECacheResult,
   _UpdateTtlRequest,
   _DictionaryLengthRequest,
+  _GetBatchRequest,
+  _SetBatchRequest,
+  _SetResponse,
 } from '@gomomento/generated-types-webtext/dist/cacheclient_pb';
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {
@@ -130,6 +133,7 @@ import {
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {MiddlewareRequestHandlerContext} from '../config/middleware/middleware';
+import {GetBatch, SetBatch} from '@gomomento/sdk-core';
 
 export interface DataClientProps {
   configuration: Configuration;
@@ -409,6 +413,167 @@ export class CacheDataClient<
           }
         }
       );
+    });
+  }
+
+  public async getBatch(
+    cacheName: string,
+    keys: Array<string | Uint8Array>
+  ): Promise<GetBatch.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new GetBatch.Error(err)
+      );
+    }
+    this.logger.trace(`Issuing 'getBatch' request; keys: ${keys.toString()}`);
+    const result = await this.sendGetBatch(
+      cacheName,
+      keys.map(key => convertToB64String(key))
+    );
+    this.logger.trace(`'getBatch' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendGetBatch(
+    cacheName: string,
+    keys: string[]
+  ): Promise<GetBatch.Response> {
+    const getRequests = [];
+    for (const k of keys) {
+      const getRequest = new _GetRequest();
+      getRequest.setCacheKey(k);
+      getRequests.push(getRequest);
+    }
+    const request = new _GetBatchRequest();
+    request.setItemsList(getRequests);
+
+    const call = this.clientWrapper.getBatch(request, {
+      ...this.clientMetadataProvider.createClientMetadata(),
+      ...createCallMetadata(cacheName, this.deadlineMillis),
+    });
+
+    return await new Promise((resolve, reject) => {
+      const results: CacheGet.Response[] = [];
+      call.on('data', getResponse => {
+        const result = getResponse.getResult();
+        switch (result) {
+          case ECacheResult.HIT:
+            results.push(new CacheGet.Hit(getResponse.getCacheBody_asU8()));
+            break;
+          case ECacheResult.MISS:
+            results.push(new CacheGet.Miss());
+            break;
+          default:
+            results.push(
+              new CacheGet.Error(new UnknownError(getResponse.getMessage()))
+            );
+        }
+      });
+
+      call.on('end', () => {
+        resolve(
+          new GetBatch.Success(
+            results,
+            keys.map(key => this.convertToUint8Array(key))
+          )
+        );
+      });
+
+      call.on('error', (err: RpcError) => {
+        this.cacheServiceErrorMapper.resolveOrRejectError({
+          err: err,
+          errorResponseFactoryFn: e => new GetBatch.Error(e),
+          resolveFn: resolve,
+          rejectFn: reject,
+        });
+      });
+    });
+  }
+
+  public async setBatch(
+    cacheName: string,
+    items:
+      | Record<string, string | Uint8Array>
+      | Map<string | Uint8Array, string | Uint8Array>,
+    ttl?: number
+  ): Promise<SetBatch.Response> {
+    try {
+      validateCacheName(cacheName);
+      if (ttl !== undefined) {
+        validateTtlSeconds(ttl);
+      }
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new SetBatch.Error(err)
+      );
+    }
+
+    const itemsToUse = this.convertSetBatchElements(items);
+
+    const ttlToUse = ttl || this.defaultTtlSeconds;
+    this.logger.trace(
+      `Issuing 'setBatch' request; items length: ${
+        itemsToUse.length
+      }, ttl: ${ttlToUse.toString()}`
+    );
+
+    return await this.sendSetBatch(cacheName, itemsToUse, ttlToUse);
+  }
+
+  private async sendSetBatch(
+    cacheName: string,
+    items: Record<string, string>[],
+    ttlSeconds: number
+  ): Promise<SetBatch.Response> {
+    const setRequests = [];
+    for (const item of items) {
+      const setRequest = new _SetRequest();
+      setRequest.setCacheKey(item.key);
+      setRequest.setCacheBody(item.value);
+      setRequest.setTtlMilliseconds(
+        this.convertSecondsToMilliseconds(ttlSeconds)
+      );
+      setRequests.push(setRequest);
+    }
+    const request = new _SetBatchRequest();
+    request.setItemsList(setRequests);
+
+    const call = this.clientWrapper.setBatch(request, {
+      ...this.clientMetadataProvider.createClientMetadata(),
+      ...createCallMetadata(cacheName, this.deadlineMillis),
+    });
+
+    return await new Promise((resolve, reject) => {
+      const results: CacheSet.Response[] = [];
+      call.on('data', setResponse => {
+        const result = setResponse.getResult();
+        switch (result) {
+          case ECacheResult.OK:
+            results.push(new CacheSet.Success());
+            break;
+          default:
+            results.push(
+              new CacheSet.Error(new UnknownError(setResponse.getMessage()))
+            );
+        }
+      });
+
+      call.on('end', () => {
+        resolve(new SetBatch.Success(results));
+      });
+
+      call.on('error', (err: RpcError) => {
+        this.cacheServiceErrorMapper.resolveOrRejectError({
+          err: err,
+          errorResponseFactoryFn: e => new SetBatch.Error(e),
+          resolveFn: resolve,
+          rejectFn: reject,
+        });
+      });
     });
   }
 
@@ -3513,6 +3678,28 @@ export class CacheDataClient<
           .setValue(convertToB64String(element[0]))
           .setScore(element[1])
       );
+    }
+  }
+
+  private convertSetBatchElements(
+    elements:
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Record<string, string | Uint8Array>
+  ): Record<string, string>[] {
+    if (elements instanceof Map) {
+      return [...elements.entries()].map(element => {
+        return {
+          key: convertToB64String(element[0]),
+          value: convertToB64String(element[1]),
+        };
+      });
+    } else {
+      return Object.entries(elements).map(element => {
+        return {
+          key: convertToB64String(element[0]),
+          value: convertToB64String(element[1]),
+        };
+      });
     }
   }
 
