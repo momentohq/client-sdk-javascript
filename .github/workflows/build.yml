@@ -122,7 +122,6 @@ jobs:
       matrix:
         node: [14, 16, 18]
       fail-fast: true
-      max-parallel: 1
     name: Test examples on node ${{ matrix.node }}
     runs-on: macos-latest
     env:
@@ -205,7 +204,6 @@ jobs:
       matrix:
         node: [ 16, 18 ]
       fail-fast: true
-      max-parallel: 1
     name: Test web examples on node ${{ matrix.node }}
     runs-on: macos-latest
     env:
@@ -261,7 +259,6 @@ jobs:
       matrix:
         node: [ 16, 18 ]
       fail-fast: true
-      max-parallel: 1
     name: Test Deno examples on node ${{ matrix.node }}
     runs-on: macos-latest
     env:
@@ -309,7 +306,6 @@ jobs:
       matrix:
         node: [ 18 ]
       fail-fast: true
-      max-parallel: 1
     name: Verify packages are installable on node ${{ matrix.node }}
     runs-on: ubuntu-latest
 
