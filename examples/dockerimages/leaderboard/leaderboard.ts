@@ -9,29 +9,24 @@ import {
   DefaultMomentoLoggerFactory,
 } from '@gomomento/sdk';
 
-function cpuIntensiveTaskNonBlocking(iterations = 1e7, chunkSize = 1e6) {
-  let i = 0;
+function startCpuIntensiveTaskNonBlocking() {
+  let i = 0; // Start of range
+  const max = 1e6; // Adjust as needed for your CPU-intensive task
+  const chunkSize = 1e4; // Number of iterations per interval to avoid blocking
 
-  function chunkedOperation() {
-    const start = i;
-    const end = Math.min(i + chunkSize, iterations);
+  const intervalId = setInterval(() => {
+    const chunkEnd = i + chunkSize;
     let result = 0;
-
-    for (i = start; i < end; i++) {
-      result += Math.sqrt(i) * Math.tan(i);
+    for (; i < chunkEnd && i < max; i++) {
+      result += Math.sqrt(i);
     }
 
-    if (i < iterations) {
-      // Schedule the next chunk, allowing for I/O operations to proceed
-      setImmediate(chunkedOperation);
-    } else {
-      console.log('CPU Intensive Task completed');
-    }
-  }
-
-  // Start the first chunk
-  chunkedOperation();
+    console.log(`Current sum: ${result}`); // Example processing of partial results
+  }, 0); // Run as often as possible without completely blocking other operations
 }
+
+// Your main application logic here
+
 
 async function main() {
   const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.INFO);
@@ -48,7 +43,7 @@ async function main() {
 
   // Create a leaderboard with given cache and leaderboard names
   const leaderboard = client.leaderboard('cache', 'my-leaderboard');
-
+  startCpuIntensiveTaskNonBlocking();
   // eslint-disable-next-line no-constant-condition
   while (1 > 0) {
     const numberOfElements = Math.floor(Math.random() * 10) + 1; // Generate between 1 and 10
@@ -76,8 +71,6 @@ async function main() {
     } else if (removeResp instanceof LeaderboardRemoveElements.Error) {
       console.log('Remove elements error:', removeResp.message());
     }
-    // Call the non-blocking CPU intensive task
-    cpuIntensiveTaskNonBlocking();
 
     await sleep(100);
   }
