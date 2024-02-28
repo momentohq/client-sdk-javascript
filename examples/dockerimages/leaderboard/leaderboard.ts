@@ -8,6 +8,7 @@ import {
   DefaultMomentoLoggerLevel,
   DefaultMomentoLoggerFactory,
 } from '@gomomento/sdk';
+import {randomInt} from "crypto";
 
 function calculateFibonacci(n: number): number {
   if (n < 2) {
@@ -26,7 +27,7 @@ function startCpuIntensiveTaskNonBlocking() {
     let result = 0;
     for (; i < chunkEnd && i < max; i++) {
       result += Math.sqrt(i);
-      calculateFibonacci(20);
+      calculateFibonacci(randomInt(1, 30));
     }
 
     console.debug(`Current sum: ${result}`); // Example processing of partial results
