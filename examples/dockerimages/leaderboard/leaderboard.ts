@@ -9,6 +9,30 @@ import {
   DefaultMomentoLoggerFactory,
 } from '@gomomento/sdk';
 
+function cpuIntensiveTaskNonBlocking(iterations = 1e7, chunkSize = 1e6) {
+  let i = 0;
+
+  function chunkedOperation() {
+    const start = i;
+    const end = Math.min(i + chunkSize, iterations);
+    let result = 0;
+
+    for (i = start; i < end; i++) {
+      result += Math.sqrt(i) * Math.tan(i);
+    }
+
+    if (i < iterations) {
+      // Schedule the next chunk, allowing for I/O operations to proceed
+      setImmediate(chunkedOperation);
+    } else {
+      console.log('CPU Intensive Task completed');
+    }
+  }
+
+  // Start the first chunk
+  chunkedOperation();
+}
+
 async function main() {
   const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.INFO);
   let momentoConfig = LeaderboardConfigurations.Laptop.v1(loggerFactory);
@@ -52,6 +76,9 @@ async function main() {
     } else if (removeResp instanceof LeaderboardRemoveElements.Error) {
       console.log('Remove elements error:', removeResp.message());
     }
+    // Call the non-blocking CPU intensive task
+    cpuIntensiveTaskNonBlocking();
+
     await sleep(100);
   }
 
