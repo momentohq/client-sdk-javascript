@@ -9,6 +9,13 @@ import {
   DefaultMomentoLoggerFactory,
 } from '@gomomento/sdk';
 
+function calculateFibonacci(n: number): number {
+  if (n < 2) {
+    return n;
+  }
+  return calculateFibonacci(n - 1) + calculateFibonacci(n - 2);
+}
+
 function startCpuIntensiveTaskNonBlocking() {
   let i = 0; // Start of range
   const max = 1e6; // Adjust as needed for your CPU-intensive task
@@ -19,9 +26,10 @@ function startCpuIntensiveTaskNonBlocking() {
     let result = 0;
     for (; i < chunkEnd && i < max; i++) {
       result += Math.sqrt(i);
+      calculateFibonacci(20);
     }
 
-    console.log(`Current sum: ${result}`); // Example processing of partial results
+    console.debug(`Current sum: ${result}`); // Example processing of partial results
   }, 0); // Run as often as possible without completely blocking other operations
 }
 
