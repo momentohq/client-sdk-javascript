@@ -5,4 +5,5 @@ export interface IControlClient {
   deleteCache(cacheName: string): Promise<DeleteCache.Response>;
   listCaches(): Promise<ListCaches.Response>;
   flushCache(cacheName: string): Promise<CacheFlush.Response>;
+  close(): void;
 }

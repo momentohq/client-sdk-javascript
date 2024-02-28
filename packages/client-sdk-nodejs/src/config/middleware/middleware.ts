@@ -62,4 +62,5 @@ export interface Middleware {
   onNewRequest(
     context?: MiddlewareRequestHandlerContext
   ): MiddlewareRequestHandler;
+  close?(): void;
 }

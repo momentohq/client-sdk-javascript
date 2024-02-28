@@ -77,6 +77,13 @@ export class LeaderboardDataClient<
     );
   }
 
+  close() {
+    this.logger.debug('Closing cache control client');
+    // do nothing as gRPC web version doesn't expose a close() yet.
+    // this is needed as we have added close to `IControlClient` extended
+    // by both nodejs and web SDKs
+  }
+
   private convertMapOrRecordToElementsList(
     elements: Record<number, number> | Map<number, number>
   ): _Element[] {

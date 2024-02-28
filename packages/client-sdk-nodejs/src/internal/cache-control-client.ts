@@ -74,6 +74,10 @@ export class CacheControlClient {
         .getMaxIdleMillis(),
     });
   }
+  close() {
+    this.logger.debug('Closing cache control client');
+    this.clientWrapper.getClient().close();
+  }
 
   public async createCache(name: string): Promise<CreateCache.Response> {
     try {
