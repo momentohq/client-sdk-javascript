@@ -6,9 +6,10 @@ import {
   LeaderboardRemoveElements,
   LeaderboardUpsert,
   DefaultMomentoLoggerLevel,
-  DefaultMomentoLoggerFactory,
+  DefaultMomentoLoggerFactory, ExperimentalMetricsLoggingMiddleware,
 } from '@gomomento/sdk';
 import {randomInt} from "crypto";
+import Redis from "ioredis";
 
 function calculateFibonacci(n: number): number {
   if (n < 2) {
@@ -38,23 +39,89 @@ function startCpuIntensiveTaskNonBlocking() {
 
 
 async function main() {
-  const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.INFO);
-  let momentoConfig = LeaderboardConfigurations.Laptop.v1(loggerFactory);
-  const grpcConfig = momentoConfig.getTransportStrategy().getGrpcConfig().withNumClients(1);
-  momentoConfig = momentoConfig.withTransportStrategy(momentoConfig.getTransportStrategy().withGrpcConfig(grpcConfig));
 
-  const client = new PreviewLeaderboardClient({
-    configuration: momentoConfig,
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
-  });
 
+  const useRedis = process.env.useRedis === 'true';
+  let leaderboardClient;
+
+  if (useRedis) {
+
+    // Initialize Redis client
+    const redisClient = new Redis({host: 'raider-repro-tlghey.serverless.usw2.cache.amazonaws.com', port: 6379});
+    redisClient.on('error', function (error) {
+      console.error(error);
+    });
+    const elementsToUpsert = new Map<number, number>();
+    const elementsToRemove: number[] = [];
+    for (let i = 0; i < 10; i++) {
+      const randomKey = Math.floor(Math.random() * 1000);
+      const randomScore = Math.random() * 100;
+      elementsToUpsert.set(randomKey, randomScore);
+      elementsToRemove.push(randomKey);
+    }
+    const scoreMemberPairs: string[] = [];
+
+    elementsToUpsert.forEach((score, key) => {
+      // Convert both score and key to string and add to the array
+      // Note: The score is converted to string to match ioredis's expected input
+      scoreMemberPairs.push(score.toString(), key.toString());
+    });
+
+    // Use the spread operator to pass the score-member pairs to zadd
+    const result = await redisClient.zadd('my-leaderboard', ...scoreMemberPairs);
+    console.log(`successfully inserted into redis ${result}`);
+
+    leaderboardClient = {
+      async upsert(elementsToUpsert: Map<number, number>) {
+        // Explicitly type scoreMemberPairs as an array of strings
+        const scoreMemberPairs: string[] = [];
+        elementsToUpsert.forEach((score, key) => {
+          // Convert both score and key to string and add to the array
+          // Note: The score is converted to string to match ioredis's expected input
+          scoreMemberPairs.push(score.toString(), key.toString());
+        });
+
+        // Use the spread operator to pass the score-member pairs to zadd
+        const result = await redisClient.zadd('my-leaderboard', ...scoreMemberPairs);
+        console.log(`successfully inserted into redis ${result}`);
+
+      },
+      async removeElements(elementsToRemove: number[]) {
+        for (const key of elementsToRemove) {
+          const result = await redisClient.zrem('my-leaderboard', key.toString());
+          console.log(`successfully removed from redis ${result}`);
+        }
+      },
+      async delete() {
+        await redisClient.del('my-leaderboard');
+      },
+    };
+  } else {
+
+    const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.INFO);
+    let momentoConfig = LeaderboardConfigurations.Laptop.v1(loggerFactory);
+    const grpcConfig = momentoConfig.getTransportStrategy().getGrpcConfig().withNumClients(1);
+    momentoConfig = momentoConfig.withTransportStrategy(momentoConfig.getTransportStrategy().withGrpcConfig(grpcConfig));
+
+    const client = new PreviewLeaderboardClient({
+      configuration: momentoConfig.withMiddlewares([new ExperimentalMetricsLoggingMiddleware(loggerFactory)]),
+      credentialProvider: CredentialProvider.fromEnvironmentVariable({
+        environmentVariableName: 'MOMENTO_API_KEY',
+      }),
+    });
+    leaderboardClient = client.leaderboard('cache', 'my-leaderboard');
+  }
+
+  let taskStarted = false;
+  let startTime = Date.now();
   // Create a leaderboard with given cache and leaderboard names
-  const leaderboard = client.leaderboard('cache', 'my-leaderboard');
-  startCpuIntensiveTaskNonBlocking();
+
   // eslint-disable-next-line no-constant-condition
   while (1 > 0) {
+    if (!taskStarted && Date.now() - startTime > 300000) {
+      taskStarted = true;
+      startCpuIntensiveTaskNonBlocking();
+    }
     const numberOfElements = Math.floor(Math.random() * 10) + 1; // Generate between 1 and 10
     const elementsToUpsert = new Map<number, number>();
     const elementsToRemove: number[] = [];
@@ -66,7 +133,7 @@ async function main() {
       elementsToUpsert.set(randomKey, randomScore);
       elementsToRemove.push(randomKey);
     }
-    const upsertResp = await leaderboard.upsert(elementsToUpsert);
+    const upsertResp = await leaderboardClient.upsert(elementsToUpsert);
     if (upsertResp instanceof LeaderboardUpsert.Success) {
       console.log('Upsert success');
     } else if (upsertResp instanceof LeaderboardUpsert.Error) {
@@ -74,7 +141,7 @@ async function main() {
     }
 
     // Remove elements by providing a list of element IDs.
-    const removeResp = await leaderboard.removeElements(elementsToRemove);
+    const removeResp = await leaderboardClient.removeElements(elementsToRemove);
     if (removeResp instanceof LeaderboardRemoveElements.Success) {
       console.log('Remove elements success');
     } else if (removeResp instanceof LeaderboardRemoveElements.Error) {
@@ -88,7 +155,7 @@ async function main() {
   // Delete will remove theh entire leaderboard.
   // Leaderboard items have no TTL so make sure to clean up
   // all unnecessary elements when no longer needed.
-  const deleteResp = await leaderboard.delete();
+  const deleteResp = await leaderboardClient.delete();
   if (deleteResp instanceof LeaderboardDelete.Success) {
     console.log('Delete leaderboard success');
   } else if (deleteResp instanceof LeaderboardDelete.Error) {
