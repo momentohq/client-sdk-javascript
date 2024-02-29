@@ -46,8 +46,18 @@ async function main() {
 
   if (useRedis) {
 
-    // Initialize Redis client
-    const redisClient = new Redis({host: 'raider-repro-tlghey.serverless.usw2.cache.amazonaws.com', port: 6379});
+    const redisClient = new Redis({
+      host: 'raider-repro-lbrd-tlghey.serverless.usw2.cache.amazonaws.com:6379',
+      port: 6379,
+      connectTimeout: 17000,
+      maxRetriesPerRequest: 4,
+      retryStrategy: (times) => Math.min(times * 30, 1000),
+      reconnectOnError: (error)  => {
+        const targetErrors = [/READONLY/, /ETIMEDOUT/];
+        return targetErrors.some((targetError) => targetError.test(error.message));
+      }
+    });
+
     redisClient.on('error', function (error) {
       console.error(error);
     });
