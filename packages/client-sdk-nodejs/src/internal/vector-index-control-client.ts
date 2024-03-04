@@ -29,6 +29,7 @@ import {
   VectorSimilarityMetric,
 } from '@gomomento/sdk-core/dist/src/internal/clients';
 import grpcControl = control.control_client;
+import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 
 export interface ControlClientProps {
   configuration: VectorIndexConfiguration;
@@ -61,11 +62,16 @@ export class VectorIndexControlClient implements IVectorIndexControlClient {
     this.logger.debug(
       `Creating control client using endpoint: '${props.credentialProvider.getControlEndpoint()}`
     );
+    const grpcConfig = props.configuration
+      .getTransportStrategy()
+      .getGrpcConfig();
+    const channelOptions = grpcChannelOptionsFromGrpcConfig(grpcConfig);
     this.clientWrapper = new IdleGrpcClientWrapper({
       clientFactoryFn: () =>
         new grpcControl.ScsControlClient(
           props.credentialProvider.getControlEndpoint(),
-          ChannelCredentials.createSsl()
+          ChannelCredentials.createSsl(),
+          channelOptions
         ),
       loggerFactory: props.configuration.getLoggerFactory(),
       maxIdleMillis: props.configuration
