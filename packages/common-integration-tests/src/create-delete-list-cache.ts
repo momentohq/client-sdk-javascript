@@ -63,7 +63,7 @@ export function runCreateDeleteListCacheTests(cacheClient: ICacheClient) {
           const cache = knownCaches[0];
           const limitsMessage =
             'test/canary cache limits must be: throughput_throttling_limit=1024, item_size_limit=1024, ' +
-            'throttling_limit=100, max_ttl=86400000; topic limits must be: publish_rate=100, ' +
+            'throttling_limit=500, max_ttl=86400000; topic limits must be: publish_rate=100, ' +
             'subscription_count=100, publish_message_size=100.';
 
           // checking that cache limits are equal to or greater than default limits
@@ -74,7 +74,7 @@ export function runCreateDeleteListCacheTests(cacheClient: ICacheClient) {
             expect(cache.getCacheLimits().maxItemSizeKb).toEqual(1024);
           }, `invalid item_size_limit. ${limitsMessage}`);
           expectWithMessage(() => {
-            expect(cache.getCacheLimits().maxTrafficRate).toEqual(100);
+            expect(cache.getCacheLimits().maxTrafficRate).toEqual(500);
           }, `invalid throttling_limit. ${limitsMessage}`);
           expectWithMessage(() => {
             expect(cache.getCacheLimits().maxTtlSeconds).toEqual(86400);
