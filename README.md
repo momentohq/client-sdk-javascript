@@ -19,6 +19,8 @@ To get started with Momento you will need a Momento Auth Token. You can get one 
 * JavaScript SDK Documentation: [https://docs.momentohq.com/develop/sdks/nodejs](https://docs.momentohq.com/develop/sdks/nodejs)
 * Discuss: [Momento Discord](https://discord.gg/3HkAKjUZGq)
 
+* 
+
 ## Packages
 
 There are two different JavaScript SDKs available for Momento on npmjs.  The API is identical in both SDKs, but each
