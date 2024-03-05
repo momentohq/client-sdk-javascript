@@ -61,35 +61,58 @@ export function runCreateDeleteListCacheTests(cacheClient: ICacheClient) {
           const knownCaches = caches.filter(c => c.getName() === cacheName);
           expect(knownCaches.length === 1).toBeTrue();
           const cache = knownCaches[0];
-          const limitsMessage =
-            'test/canary cache limits must be: throughput_throttling_limit=1024, item_size_limit=1024, ' +
-            'throttling_limit=100, max_ttl=86400000; topic limits must be: publish_rate=100, ' +
-            'subscription_count=100, publish_message_size=100.';
+
+          const expectedThroughputLimit = 1024;
+          const expectedItemSizeLimit = 1024;
+          const expectedThrottlingLimit = 100;
+          const expectedMaxTtl = 86400;
+          const expectedPublishRate = 100;
+          const expectedSubscriptionCount = 100;
+          const expectedPublishMessageSize = 100;
+
+          const limitsMessage = `test/canary cache limits must be: throughput_throttling_limit=${expectedThroughputLimit}, item_size_limit=${expectedItemSizeLimit}, throttling_limit=${expectedThrottlingLimit}, max_ttl=${expectedMaxTtl}; topic limits must be: publish_rate=${expectedPublishRate}, subscription_count=${expectedSubscriptionCount}, publish_message_size=${expectedPublishMessageSize}.`;
 
           // checking that cache limits are equal to or greater than default limits
           expectWithMessage(() => {
-            expect(cache.getCacheLimits().maxThroughputKbps).toEqual(1024);
-          }, `invalid throughput_throttling_limit. ${limitsMessage}`);
+            expect(cache.getCacheLimits().maxThroughputKbps).toEqual(
+              expectedThroughputLimit
+            );
+          }, `invalid throughput_throttling_limit (${cache.getCacheLimits().maxThroughputKbps}). ${limitsMessage}`);
           expectWithMessage(() => {
-            expect(cache.getCacheLimits().maxItemSizeKb).toEqual(1024);
-          }, `invalid item_size_limit. ${limitsMessage}`);
+            expect(cache.getCacheLimits().maxItemSizeKb).toEqual(
+              expectedItemSizeLimit
+            );
+          }, `invalid item_size_limit (${cache.getCacheLimits().maxItemSizeKb}). ${limitsMessage}`);
           expectWithMessage(() => {
-            expect(cache.getCacheLimits().maxTrafficRate).toEqual(100);
-          }, `invalid throttling_limit. ${limitsMessage}`);
+            expect(
+              cache.getCacheLimits().maxTrafficRate
+              // TODO: normally we would do a full equality assertion here, just to ensure that the configurations
+              // are uniform across all canary environments, but we are in the process of updating the limits to allow
+              // more parallelization of tests. Therefore we are temporarily relaxing this until we find the right value.
+            ).toBeGreaterThanOrEqual(expectedThrottlingLimit);
+          }, `invalid throttling_limit (${cache.getCacheLimits().maxTrafficRate}). ${limitsMessage}`);
           expectWithMessage(() => {
-            expect(cache.getCacheLimits().maxTtlSeconds).toEqual(86400);
-          }, `invalid max_ttl. ${limitsMessage}`);
+            expect(cache.getCacheLimits().maxTtlSeconds).toEqual(
+              expectedMaxTtl
+            );
+          }, `invalid max_ttl (${cache.getCacheLimits().maxTtlSeconds}). ${limitsMessage}`);
 
-          // checking that topic limits are equal to or greater than default limits
+          // topic limits
           expectWithMessage(() => {
-            expect(cache.getTopicLimits().maxPublishMessageSizeKb).toEqual(100);
-          }, `invalid publish_message_size. ${limitsMessage}`);
+            expect(cache.getTopicLimits().maxPublishMessageSizeKb).toEqual(
+              expectedPublishMessageSize
+            );
+          }, `invalid publish_message_size (${cache.getTopicLimits().maxPublishMessageSizeKb}). ${limitsMessage}`);
           expectWithMessage(() => {
-            expect(cache.getTopicLimits().maxPublishRate).toEqual(100);
-          }, `invalid publish_rate. ${limitsMessage}`);
+            expect(cache.getTopicLimits().maxPublishRate).toEqual(
+              expectedPublishRate
+            );
+          }, `invalid publish_rate (${cache.getTopicLimits().maxPublishRate}). ${limitsMessage}`);
           expectWithMessage(() => {
-            expect(cache.getTopicLimits().maxSubscriptionCount).toEqual(100);
-          }, `invalid subscription_count. ${limitsMessage}`);
+            expect(cache.getTopicLimits().maxSubscriptionCount).toEqual(
+              expectedSubscriptionCount
+            );
+          }, `invalid subscription_count (${cache.getTopicLimits().maxSubscriptionCount}). ${limitsMessage}`);
         }
       });
     });
