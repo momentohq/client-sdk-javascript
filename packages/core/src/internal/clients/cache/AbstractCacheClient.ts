@@ -54,7 +54,7 @@ import {
   CacheIncreaseTtl,
   CacheDecreaseTtl,
   GetBatch,
-  SetBatch,
+  SetBatch, InvalidArgumentError,
 } from '../../../index';
 import {ListFetchCallOptions, ListRetainCallOptions} from '../../../utils';
 import {
@@ -191,7 +191,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
     options?: SetOptions
   ): Promise<CacheSet.Response> {
     if (typeof options === 'number') {
-      throw new Error('Options must be an object with a ttl property.');
+      throw new InvalidArgumentError('Options must be an object with a ttl property.');
     }
     const client = this.getNextDataClient();
     return await client.set(cacheName, key, value, options?.ttl);
