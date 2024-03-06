@@ -112,11 +112,6 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
   close() {
     this.logger.debug('Closing leaderboard data clients');
     this.clientWrappers.map(wrapper => wrapper.getClient().close());
-    this.configuration.getMiddlewares().forEach(m => {
-      if (m.close) {
-        m.close();
-      }
-    });
   }
 
   private validateRequestTimeout(timeout?: number) {

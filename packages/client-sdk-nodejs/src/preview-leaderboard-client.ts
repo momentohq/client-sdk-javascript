@@ -7,7 +7,7 @@ import {LeaderboardDataClient} from './internal/leaderboard-data-client';
 import {LeaderboardClientProps} from './leaderboard-client-props';
 import {Leaderboard} from './internal/leaderboard';
 import {ILeaderboardDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/leaderboard/ILeaderboardDataClient';
-import {LeaderboardConfiguration, LeaderboardConfigurations} from './index';
+import {Configuration, LeaderboardConfiguration, LeaderboardConfigurations} from './index';
 import {LeaderboardClientPropsWithConfig} from './internal/leaderboard-client-props-with-config';
 
 /**
@@ -21,7 +21,8 @@ import {LeaderboardClientPropsWithConfig} from './internal/leaderboard-client-pr
  */
 export class PreviewLeaderboardClient implements ILeaderboardClient {
   protected readonly logger: MomentoLogger;
-  private dataClient: ILeaderboardDataClient;
+  private readonly dataClient: ILeaderboardDataClient;
+  private readonly configuration: LeaderboardConfiguration;
 
   constructor(props: LeaderboardClientProps) {
     const configuration =
@@ -30,6 +31,7 @@ export class PreviewLeaderboardClient implements ILeaderboardClient {
       ...props,
       configuration: configuration,
     };
+    this.configuration = configuration;
 
     this.logger = configuration.getLoggerFactory().getLogger(this);
     this.logger.debug('Creating Momento LeaderboardClient');
@@ -38,6 +40,11 @@ export class PreviewLeaderboardClient implements ILeaderboardClient {
 
   public close() {
     this.dataClient.close();
+    this.configuration.getMiddlewares().forEach(m => {
+      if (m.close) {
+        m.close();
+      }
+    });
   }
 
   /**
