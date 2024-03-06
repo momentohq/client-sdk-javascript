@@ -7,7 +7,7 @@ import {LeaderboardDataClient} from './internal/leaderboard-data-client';
 import {LeaderboardClientProps} from './leaderboard-client-props';
 import {Leaderboard} from './internal/leaderboard';
 import {ILeaderboardDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/leaderboard/ILeaderboardDataClient';
-import {Configuration, LeaderboardConfiguration, LeaderboardConfigurations} from './index';
+import {LeaderboardConfiguration, LeaderboardConfigurations} from './index';
 import {LeaderboardClientPropsWithConfig} from './internal/leaderboard-client-props-with-config';
 
 /**
