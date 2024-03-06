@@ -62,7 +62,7 @@ export function runCreateDeleteListCacheTests(cacheClient: ICacheClient) {
           expect(knownCaches.length === 1).toBeTrue();
           const cache = knownCaches[0];
 
-          const expectedThroughputLimit = 1024;
+          const expectedThroughputLimit = 10240;
           const expectedItemSizeLimit = 4883;
           const expectedThrottlingLimit = 500;
           const expectedMaxTtl = 86400;
