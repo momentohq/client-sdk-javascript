@@ -48,4 +48,5 @@ export interface ILeaderboardDataClient {
     cacheName: string,
     leaderboardName: string
   ): Promise<LeaderboardDelete.Response>;
+  close(): void;
 }

@@ -105,6 +105,9 @@ export class ExperimentalMetricsLoggingMiddleware extends ExperimentalMetricsMid
   private static elu: EventLoopUtilization;
   private static isLoggingStarted = false;
   static numActiveRequests = 0;
+  // this is typed as any because JS returns a number for intervalId but
+  // TS returns a NodeJS.Timeout.
+  private static intervalId: any | null = null; // Store the interval ID
 
   constructor(loggerFactory: MomentoLoggerFactory) {
     super(
@@ -125,7 +128,7 @@ export class ExperimentalMetricsLoggingMiddleware extends ExperimentalMetricsMid
     this.eldMonitor.enable();
     this.elu = performance.eventLoopUtilization();
 
-    setInterval(() => {
+    this.intervalId = setInterval(() => {
       this.elu = performance.eventLoopUtilization(this.elu);
       const metrics: StateMetrics = {
         eventLoopUtilization: this.elu.utilization,
@@ -141,5 +144,16 @@ export class ExperimentalMetricsLoggingMiddleware extends ExperimentalMetricsMid
       logger.info(JSON.stringify(metrics));
       this.eldMonitor.reset();
     }, this.metricsLogInterval);
+  }
+
+  close() {
+    if (ExperimentalMetricsLoggingMiddleware.intervalId) {
+      this.logger.debug('Stopping Metrics logging.');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      clearInterval(ExperimentalMetricsLoggingMiddleware.intervalId);
+      ExperimentalMetricsLoggingMiddleware.intervalId = null;
+      ExperimentalMetricsLoggingMiddleware.isLoggingStarted = false;
+      this.logger.debug('Metrics logging stopped.');
+    }
   }
 }

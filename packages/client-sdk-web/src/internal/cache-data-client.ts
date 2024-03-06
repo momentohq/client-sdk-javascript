@@ -197,6 +197,13 @@ export class CacheDataClient<
     this.textEncoder = new TextEncoder();
   }
 
+  close() {
+    this.logger.debug('Closing cache control client');
+    // do nothing as gRPC web version doesn't expose a close() yet.
+    // this is needed as we have added close to `IControlClient` extended
+    // by both nodejs and web SDKs
+  }
+
   public async get(
     cacheName: string,
     key: string | Uint8Array

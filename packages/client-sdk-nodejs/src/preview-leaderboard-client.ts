@@ -36,6 +36,10 @@ export class PreviewLeaderboardClient implements ILeaderboardClient {
     this.dataClient = new LeaderboardDataClient(propsWithConfig, '0'); // only creating one leaderboard client
   }
 
+  public close() {
+    this.dataClient.close();
+  }
+
   /**
    * Creates an instance of LeaderboardClient with 32-bit float scores.
    */

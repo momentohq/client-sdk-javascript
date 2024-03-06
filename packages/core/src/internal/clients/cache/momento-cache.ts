@@ -497,4 +497,7 @@ export class MomentoCache implements IMomentoCache {
   ): Promise<CacheDecreaseTtl.Response> {
     return this.cacheClient.decreaseTtl(this.cacheName, key, ttlMilliseconds);
   }
+  close() {
+    this.cacheClient.close();
+  }
 }

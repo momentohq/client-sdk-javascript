@@ -1408,4 +1408,6 @@ export abstract class AbstractCacheClient implements ICacheClient {
       (this.nextDataClientIndex + 1) % this.dataClients.length;
     return client;
   }
+
+  abstract close(): void;
 }

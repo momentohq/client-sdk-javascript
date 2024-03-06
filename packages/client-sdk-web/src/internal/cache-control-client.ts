@@ -25,7 +25,6 @@ import {
   CacheLimits,
   TopicLimits,
 } from '@gomomento/sdk-core/dist/src/messages/cache-info';
-
 export interface ControlClientProps {
   configuration: Configuration;
   credentialProvider: CredentialProvider;
@@ -65,6 +64,13 @@ export class CacheControlClient<
       null,
       {}
     );
+  }
+
+  close() {
+    this.logger.debug('Closing cache control client');
+    // do nothing as gRPC web version doesn't expose a close() yet.
+    // this is needed as we have added close to `IControlClient` extended
+    // by both nodejs and web SDKs
   }
 
   public async createCache(name: string): Promise<CreateCache.Response> {
