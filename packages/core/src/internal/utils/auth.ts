@@ -46,7 +46,7 @@ export function populateAllEndpointsFromBaseEndpoint(
   endpointOverride: BaseEndpointOverride
 ): AllEndpoints {
   let prefix = '';
-  if (endpointOverride.endpointPrefix !== undefined) {
+  if (endpointOverride.endpointPrefix) {
     prefix = `${endpointOverride.endpointPrefix}.`;
   }
   return {
