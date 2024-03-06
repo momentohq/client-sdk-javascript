@@ -105,8 +105,7 @@ export class ExperimentalMetricsLoggingMiddleware extends ExperimentalMetricsMid
   private static elu: EventLoopUtilization;
   private static isLoggingStarted = false;
   static numActiveRequests = 0;
-  // this is typed as any because JS returns a number for intervalId but
-  // TS returns a NodeJS.Timeout.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static intervalId: any | null = null; // Store the interval ID
 
   constructor(loggerFactory: MomentoLoggerFactory) {

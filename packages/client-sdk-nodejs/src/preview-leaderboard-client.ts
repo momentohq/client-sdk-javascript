@@ -48,7 +48,7 @@ export class PreviewLeaderboardClient implements ILeaderboardClient {
   }
 
   /**
-   * Creates an instance of LeaderboardClient with 32-bit float scores.
+   * Creates an instance of LeaderboardClient with floating point scores up until 53 bits of precision.
    */
   public leaderboard(cacheName: string, leaderboardName: string): ILeaderboard {
     return new Leaderboard(this.dataClient, cacheName, leaderboardName);
