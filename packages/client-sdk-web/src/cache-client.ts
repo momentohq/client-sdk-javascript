@@ -33,6 +33,11 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
     const pingClient: IPingClient = createPingClient(propsWithConfiguration);
     super(controlClient, [dataClient], pingClient);
   }
+
+  public close() {
+    this.controlClient.close();
+    this.dataClients.map(dc => dc.close());
+  }
 }
 
 function createControlClient(

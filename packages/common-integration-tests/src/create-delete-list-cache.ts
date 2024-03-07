@@ -62,9 +62,9 @@ export function runCreateDeleteListCacheTests(cacheClient: ICacheClient) {
           expect(knownCaches.length === 1).toBeTrue();
           const cache = knownCaches[0];
 
-          const expectedThroughputLimit = 1024;
-          const expectedItemSizeLimit = 1024;
-          const expectedThrottlingLimit = 100;
+          const expectedThroughputLimit = 10240;
+          const expectedItemSizeLimit = 4883;
+          const expectedThrottlingLimit = 500;
           const expectedMaxTtl = 86400;
           const expectedPublishRate = 100;
           const expectedSubscriptionCount = 100;
@@ -74,9 +74,9 @@ export function runCreateDeleteListCacheTests(cacheClient: ICacheClient) {
 
           // checking that cache limits are equal to or greater than default limits
           expectWithMessage(() => {
-            expect(cache.getCacheLimits().maxThroughputKbps).toEqual(
-              expectedThroughputLimit
-            );
+            expect(
+              cache.getCacheLimits().maxThroughputKbps
+            ).toBeGreaterThanOrEqual(expectedThroughputLimit);
           }, `invalid throughput_throttling_limit (${cache.getCacheLimits().maxThroughputKbps}). ${limitsMessage}`);
           expectWithMessage(() => {
             expect(cache.getCacheLimits().maxItemSizeKb).toEqual(

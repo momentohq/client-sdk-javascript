@@ -3,6 +3,7 @@ import jwtDecode from 'jwt-decode';
 import {isBase64} from './validators';
 import {decodeFromBase64} from './string';
 import {PredefinedScope} from '../../auth/tokens/permission-scope';
+import {BaseEndpointOverride} from '../../auth';
 
 export interface LegacyClaims {
   /**
@@ -42,13 +43,17 @@ export interface AllEndpoints {
 }
 
 export function populateAllEndpointsFromBaseEndpoint(
-  baseEndpoint: string
+  endpointOverride: BaseEndpointOverride
 ): AllEndpoints {
+  let prefix = '';
+  if (endpointOverride.endpointPrefix) {
+    prefix = `${endpointOverride.endpointPrefix}.`;
+  }
   return {
-    controlEndpoint: `control.${baseEndpoint}`,
-    cacheEndpoint: `cache.${baseEndpoint}`,
-    tokenEndpoint: `token.${baseEndpoint}`,
-    vectorEndpoint: `vector.${baseEndpoint}`,
+    controlEndpoint: `${prefix}control.${endpointOverride.baseEndpoint}`,
+    cacheEndpoint: `${prefix}cache.${endpointOverride.baseEndpoint}`,
+    tokenEndpoint: `${prefix}token.${endpointOverride.baseEndpoint}`,
+    vectorEndpoint: `${prefix}vector.${endpointOverride.baseEndpoint}`,
   };
 }
 
@@ -75,7 +80,9 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
         throw new InvalidArgumentError('failed to parse token');
       }
       return {
-        ...populateAllEndpointsFromBaseEndpoint(base64DecodedToken.endpoint),
+        ...populateAllEndpointsFromBaseEndpoint({
+          baseEndpoint: base64DecodedToken.endpoint,
+        }),
         authToken: base64DecodedToken.api_key,
       };
     } else {

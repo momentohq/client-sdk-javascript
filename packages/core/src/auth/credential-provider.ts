@@ -7,6 +7,7 @@ import {
 
 export interface BaseEndpointOverride {
   baseEndpoint: string;
+  endpointPrefix?: string;
 }
 
 export type EndpointOverrides = BaseEndpointOverride | AllEndpoints;
@@ -195,7 +196,7 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
     } else if (isBaseEndpointOverride(props.endpointOverrides)) {
       this.endpointsOverridden = true;
       this.allEndpoints = populateAllEndpointsFromBaseEndpoint(
-        props.endpointOverrides.baseEndpoint
+        props.endpointOverrides
       );
     } else {
       throw new Error(

@@ -109,6 +109,11 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     );
   }
 
+  close() {
+    this.logger.debug('Closing leaderboard data clients');
+    this.clientWrappers.map(wrapper => wrapper.getClient().close());
+  }
+
   private validateRequestTimeout(timeout?: number) {
     this.logger.debug(`Request timeout ms: ${String(timeout)}`);
     if (timeout !== undefined && timeout <= 0) {
