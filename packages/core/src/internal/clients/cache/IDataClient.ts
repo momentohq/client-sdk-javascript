@@ -310,4 +310,5 @@ export interface IDataClient {
     key: string | Uint8Array,
     ttlMilliseconds: number
   ): Promise<CacheDecreaseTtl.Response>;
+  close(): void;
 }

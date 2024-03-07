@@ -187,6 +187,11 @@ export class CacheDataClient implements IDataClient {
     );
     this.streamingInterceptors = this.initializeStreamingInterceptors(headers);
   }
+  close() {
+    this.logger.debug('Closing cache data client');
+    this.clientWrapper.getClient().close();
+  }
+
   public connect(timeoutSeconds = 10): Promise<void> {
     this.logger.debug('Attempting to eagerly connect to channel');
     const deadline = new Date();

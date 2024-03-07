@@ -343,4 +343,5 @@ export interface ICacheClient extends IControlClient, IPingClient {
     key: string | Uint8Array,
     ttlMilliseconds: number
   ): Promise<CacheDecreaseTtl.Response>;
+  close(): void;
 }

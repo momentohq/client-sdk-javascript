@@ -21,7 +21,8 @@ import {LeaderboardClientPropsWithConfig} from './internal/leaderboard-client-pr
  */
 export class PreviewLeaderboardClient implements ILeaderboardClient {
   protected readonly logger: MomentoLogger;
-  private dataClient: ILeaderboardDataClient;
+  private readonly dataClient: ILeaderboardDataClient;
+  private readonly configuration: LeaderboardConfiguration;
 
   constructor(props: LeaderboardClientProps) {
     const configuration =
@@ -30,14 +31,24 @@ export class PreviewLeaderboardClient implements ILeaderboardClient {
       ...props,
       configuration: configuration,
     };
+    this.configuration = configuration;
 
     this.logger = configuration.getLoggerFactory().getLogger(this);
     this.logger.debug('Creating Momento LeaderboardClient');
     this.dataClient = new LeaderboardDataClient(propsWithConfig, '0'); // only creating one leaderboard client
   }
 
+  public close() {
+    this.dataClient.close();
+    this.configuration.getMiddlewares().forEach(m => {
+      if (m.close) {
+        m.close();
+      }
+    });
+  }
+
   /**
-   * Creates an instance of LeaderboardClient with 32-bit float scores.
+   * Creates an instance of LeaderboardClient with floating point scores up until 53 bits of precision.
    */
   public leaderboard(cacheName: string, leaderboardName: string): ILeaderboard {
     return new Leaderboard(this.dataClient, cacheName, leaderboardName);
