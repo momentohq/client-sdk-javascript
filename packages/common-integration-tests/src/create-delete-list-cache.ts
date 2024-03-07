@@ -74,9 +74,9 @@ export function runCreateDeleteListCacheTests(cacheClient: ICacheClient) {
 
           // checking that cache limits are equal to or greater than default limits
           expectWithMessage(() => {
-            expect(cache.getCacheLimits().maxThroughputKbps).toEqual(
-              expectedThroughputLimit
-            );
+            expect(
+              cache.getCacheLimits().maxThroughputKbps
+            ).toBeGreaterThanOrEqual(expectedThroughputLimit);
           }, `invalid throughput_throttling_limit (${cache.getCacheLimits().maxThroughputKbps}). ${limitsMessage}`);
           expectWithMessage(() => {
             expect(cache.getCacheLimits().maxItemSizeKb).toEqual(

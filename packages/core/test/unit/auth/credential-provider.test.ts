@@ -242,4 +242,39 @@ describe('EnvMomentoTokenProvider', () => {
     expect(v1AuthProvider.getVectorEndpoint()).toEqual('vector.foo');
     expect(v1AuthProvider.areEndpointsOverridden()).toEqual(true);
   });
+
+  it('supports adding a prefix to baseEndpoint derived endpoints', () => {
+    const testEnvVarName = 'TEST_AUTH_TOKEN_ENV_VAR';
+    process.env[testEnvVarName] = fakeTestLegacyToken;
+    const legacyAuthProvider = CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: testEnvVarName,
+      endpointOverrides: {
+        baseEndpoint: 'foo',
+        endpointPrefix: 'prefix',
+      },
+    });
+    expect(legacyAuthProvider.getAuthToken()).toEqual(fakeTestLegacyToken);
+    expect(legacyAuthProvider.getControlEndpoint()).toEqual(
+      'prefix.control.foo'
+    );
+    expect(legacyAuthProvider.getCacheEndpoint()).toEqual('prefix.cache.foo');
+    expect(legacyAuthProvider.getTokenEndpoint()).toEqual('prefix.token.foo');
+    expect(legacyAuthProvider.getVectorEndpoint()).toEqual('prefix.vector.foo');
+    expect(legacyAuthProvider.areEndpointsOverridden()).toEqual(true);
+
+    process.env[testEnvVarName] = base64EncodedFakeV1AuthToken;
+    const v1AuthProvider = CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: testEnvVarName,
+      endpointOverrides: {
+        baseEndpoint: 'foo',
+        endpointPrefix: 'prefix',
+      },
+    });
+    expect(v1AuthProvider.getAuthToken()).toEqual(fakeTestV1ApiKey);
+    expect(v1AuthProvider.getControlEndpoint()).toEqual('prefix.control.foo');
+    expect(v1AuthProvider.getCacheEndpoint()).toEqual('prefix.cache.foo');
+    expect(v1AuthProvider.getTokenEndpoint()).toEqual('prefix.token.foo');
+    expect(v1AuthProvider.getVectorEndpoint()).toEqual('prefix.vector.foo');
+    expect(v1AuthProvider.areEndpointsOverridden()).toEqual(true);
+  });
 });
