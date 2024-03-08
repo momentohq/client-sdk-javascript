@@ -4,6 +4,7 @@ import {
   CacheIncrement,
   CacheSet,
   CacheSetIfNotExists,
+  CacheSetIfAbsent,
   CacheSetFetch,
   CacheSetAddElements,
   CacheSetAddElement,
@@ -66,6 +67,7 @@ import {IMomentoCache} from '../../../clients/IMomentoCache';
 // Type aliases to differentiate the different methods' optional arguments.
 export type SetOptions = ScalarCallOptions;
 export type SetIfNotExistsOptions = ScalarCallOptions;
+export type SetIfAbsentOptions = ScalarCallOptions;
 export type SetBatchOptions = ScalarCallOptions;
 export type ListConcatenateBackOptions = FrontTruncatableCallOptions;
 export type ListConcatenateFrontOptions = BackTruncatableCallOptions;
@@ -118,6 +120,13 @@ export class MomentoCache implements IMomentoCache {
     options?: SetIfNotExistsOptions
   ): Promise<CacheSetIfNotExists.Response> {
     return this.cacheClient.setIfNotExists(this.cacheName, key, field, options);
+  }
+  setIfAbsent(
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    options?: SetIfAbsentOptions
+  ): Promise<CacheSetIfAbsent.Response> {
+    return this.cacheClient.setIfAbsent(this.cacheName, key, field, options);
   }
   getBatch(keys: string[] | Uint8Array[]): Promise<GetBatch.Response> {
     return this.cacheClient.getBatch(this.cacheName, keys);

@@ -44,6 +44,7 @@ import {
   CacheSetAddElements,
   CacheSetFetch,
   CacheSetIfNotExists,
+  CacheSetIfAbsent,
   CacheSetRemoveElements,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
@@ -102,11 +103,13 @@ import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
 import {CacheClientPropsWithConfig} from './cache-client-props-with-config';
 import grpcCache = cache.cache_client;
-import _Unbounded = cache_client._Unbounded;
 import ECacheResult = cache_client.ECacheResult;
 import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {ConnectionError} from '@gomomento/sdk-core/dist/src/errors';
+import {common} from '@gomomento/generated-types/dist/common';
+import _Unbounded = common._Unbounded;
+import Absent = common.Absent;
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -619,6 +622,92 @@ export class CacheDataClient implements IDataClient {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSetIfNotExists.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
+  public async setIfAbsent(
+    cacheName: string,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfAbsent.Response> {
+    try {
+      validateCacheName(cacheName);
+      if (ttl !== undefined) {
+        validateTtlSeconds(ttl);
+      }
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetIfAbsent.Error(err)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'setIfAbsent' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
+        ttl?.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendSetIfAbsent(
+      cacheName,
+      this.convert(key),
+      this.convert(value),
+      ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+    );
+    this.logger.trace(`'setIfAbsent' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendSetIfAbsent(
+    cacheName: string,
+    key: Uint8Array,
+    value: Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheSetIfAbsent.Response> {
+    const request = new grpcCache._SetIfRequest({
+      cache_key: key,
+      cache_body: value,
+      ttl_milliseconds: ttlMilliseconds,
+      absent: new Absent(),
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.getClient().SetIf(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            switch (resp.result) {
+              case 'stored':
+                resolve(new CacheSetIfAbsent.Stored());
+                break;
+              case 'not_stored':
+                resolve(new CacheSetIfAbsent.NotStored());
+                break;
+              default:
+                resolve(
+                  new CacheGet.Error(
+                    new UnknownError(
+                      'SetIfAbsent responded with an unknown result'
+                    )
+                  )
+                );
+                break;
+            }
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetIfAbsent.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
@@ -2512,12 +2601,12 @@ export class CacheDataClient implements IDataClient {
     if (startRank) {
       by_index.inclusive_start_index = startRank;
     } else {
-      by_index.unbounded_start = new grpcCache._Unbounded();
+      by_index.unbounded_start = new _Unbounded();
     }
     if (endRank) {
       by_index.exclusive_end_index = endRank;
     } else {
-      by_index.unbounded_end = new grpcCache._Unbounded();
+      by_index.unbounded_end = new _Unbounded();
     }
 
     const protoBufOrder =
@@ -2650,7 +2739,7 @@ export class CacheDataClient implements IDataClient {
         }
       );
     } else {
-      by_score.unbounded_min = new grpcCache._Unbounded();
+      by_score.unbounded_min = new _Unbounded();
     }
     if (maxScore !== undefined) {
       by_score.max_score = new grpcCache._SortedSetFetchRequest._ByScore._Score(
@@ -2660,7 +2749,7 @@ export class CacheDataClient implements IDataClient {
         }
       );
     } else {
-      by_score.unbounded_max = new grpcCache._Unbounded();
+      by_score.unbounded_max = new _Unbounded();
     }
     by_score.offset = offset ?? 0;
     // Note: the service reserves negative counts to mean all elements in the
@@ -3230,13 +3319,13 @@ export class CacheDataClient implements IDataClient {
     });
 
     if (minScore === undefined) {
-      request.unbounded_min = new grpcCache._Unbounded();
+      request.unbounded_min = new _Unbounded();
     } else {
       request.inclusive_min = minScore;
     }
 
     if (maxScore === undefined) {
-      request.unbounded_max = new grpcCache._Unbounded();
+      request.unbounded_max = new _Unbounded();
     } else {
       request.inclusive_max = maxScore;
     }

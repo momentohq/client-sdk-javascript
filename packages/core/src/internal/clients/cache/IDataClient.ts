@@ -47,6 +47,7 @@ import {
   CacheDictionaryGetFields,
   SetBatch,
   GetBatch,
+  CacheSetIfAbsent,
 } from '../../../index';
 
 export interface IDataClient {
@@ -73,6 +74,12 @@ export interface IDataClient {
     field: string | Uint8Array,
     ttl?: number
   ): Promise<CacheSetIfNotExists.Response>;
+  setIfAbsent(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfAbsent.Response>;
   getBatch(
     cacheName: string,
     keys: Array<string | Uint8Array>

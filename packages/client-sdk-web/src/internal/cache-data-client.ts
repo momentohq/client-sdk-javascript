@@ -25,6 +25,7 @@ import {
   CacheSetAddElements,
   CacheSetFetch,
   CacheSetIfNotExists,
+  CacheSetIfAbsent,
   CacheSetRemoveElements,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
@@ -89,6 +90,8 @@ import {
   _SetFetchRequest,
   _SetIfNotExistsRequest,
   _SetIfNotExistsResponse,
+  _SetIfRequest,
+  _SetIfResponse,
   _SetRequest,
   _SetUnionRequest,
   _SortedSetElement as _SortedSetElementGrpc,
@@ -101,13 +104,11 @@ import {
   _SortedSetLengthRequest,
   _SortedSetLengthByScoreRequest,
   _KeysExistRequest,
-  _Unbounded,
   ECacheResult,
   _UpdateTtlRequest,
   _DictionaryLengthRequest,
   _GetBatchRequest,
   _SetBatchRequest,
-  _SetResponse,
 } from '@gomomento/generated-types-webtext/dist/cacheclient_pb';
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {
@@ -134,6 +135,7 @@ import {ClientMetadataProvider} from './client-metadata-provider';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {MiddlewareRequestHandlerContext} from '../config/middleware/middleware';
 import {GetBatch, SetBatch} from '@gomomento/sdk-core';
+import {_Unbounded} from '@gomomento/generated-types-webtext/dist/common_pb';
 
 export interface DataClientProps {
   configuration: Configuration;
@@ -414,6 +416,89 @@ export class CacheDataClient<
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSetIfNotExists.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
+  public async setIfAbsent(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfAbsent.Response> {
+    try {
+      validateCacheName(cacheName);
+      if (ttl !== undefined) {
+        validateTtlSeconds(ttl);
+      }
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetIfAbsent.Error(err)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'setIfAbsent' request; key: ${key.toString()}, field: ${field.toString()}, ttlSeconds: ${
+        ttl?.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendSetIfAbsent(
+      cacheName,
+      convertToB64String(key),
+      convertToB64String(field),
+      ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+    );
+    this.logger.trace(`'setIfAbsent' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendSetIfAbsent(
+    cacheName: string,
+    key: string,
+    field: string,
+    ttlMilliseconds: number
+  ): Promise<CacheSetIfAbsent.Response> {
+    const request = new _SetIfRequest();
+    request.setCacheKey(key);
+    request.setCacheBody(field);
+    request.setTtlMilliseconds(ttlMilliseconds);
+
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.setIf(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            switch (resp.getResultCase()) {
+              case _SetIfResponse.ResultCase.STORED:
+                resolve(new CacheSetIfAbsent.Stored());
+                break;
+              case _SetIfResponse.ResultCase.NOT_STORED:
+                resolve(new CacheSetIfAbsent.NotStored());
+                break;
+              default:
+                resolve(
+                  new CacheGet.Error(
+                    new UnknownError(
+                      'SetIfAbsent responded with an unknown result'
+                    )
+                  )
+                );
+                break;
+            }
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetIfAbsent.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
