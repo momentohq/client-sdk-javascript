@@ -229,7 +229,11 @@ export class CacheDataClient implements IDataClient {
         .watchConnectivityState(currentState, deadline, (error?: Error) => {
           if (error) {
             this.logger.error(
-              `Unable to eagerly connect to Momento. Please contact Momento if this persists. currentState: ${currentState}, ${error.name} : ${error.message}, stack: ${error.stack ? error.stack : 'Stack trace undefined'}`
+              `Unable to eagerly connect to Momento. Please contact Momento if this persists. currentState: ${currentState}, errorName: ${
+                error.name
+              } : errorMessage: ${error.message}, errorStack: ${
+                error.stack ? error.stack : 'Stack trace undefined'
+              }`
             );
             resolve();
             return;
