@@ -229,8 +229,7 @@ export class CacheDataClient implements IDataClient {
         .watchConnectivityState(currentState, deadline, (error?: Error) => {
           if (error) {
             this.logger.error(
-              `Unable to connect to Momento: ${error.name}. currentState: ${currentState} :
-              Please contact Momento if this persists. `
+              `Unable to eagerly connect to Momento. Please contact Momento if this persists. currentState: ${currentState}, ${error.name} : ${error.message} `
             );
             resolve();
             return;
