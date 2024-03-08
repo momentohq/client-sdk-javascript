@@ -546,6 +546,8 @@ export class CacheDataClient implements IDataClient {
     });
   }
 
+  // setIfNotExists is deprecated on the service. Here we call the new `SetIf` method with the absent field set
+  // and return `CacheSetIfNotExists` responses.
   public async setIfNotExists(
     cacheName: string,
     key: string | Uint8Array,
@@ -585,15 +587,16 @@ export class CacheDataClient implements IDataClient {
     value: Uint8Array,
     ttlMilliseconds: number
   ): Promise<CacheSetIfNotExists.Response> {
-    const request = new grpcCache._SetIfNotExistsRequest({
+    const request = new grpcCache._SetIfRequest({
       cache_key: key,
       cache_body: value,
       ttl_milliseconds: ttlMilliseconds,
+      absent: new Absent(),
     });
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetIfNotExists(
+      this.clientWrapper.getClient().SetIf(
         request,
         metadata,
         {

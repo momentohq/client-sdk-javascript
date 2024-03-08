@@ -663,6 +663,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * Associates the given key with the given value. If a value for the key is
    * already present it is not replaced with the new value.
    *
+   * @deprecated Use setIfAbsent instead.
    * @param {string} cacheName - The cache to store the value in.
    * @param {string | Uint8Array} key - The key to set.
    * @param {string | Uint8Array} field - The value to be stored.
