@@ -32,7 +32,6 @@ import {
   _RankedElement as _RankedElementGrpc,
   _RemoveElementsRequest,
   _ScoreRange,
-  _Unbounded,
   _UpsertElementsRequest,
 } from '@gomomento/generated-types-webtext/dist/leaderboard_pb';
 import {ClientMetadataProvider} from './client-metadata-provider';
@@ -40,6 +39,7 @@ import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {_RankedElement} from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
 import {ILeaderboardDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/leaderboard/ILeaderboardDataClient';
 import {LeaderboardClientPropsWithConfig} from './leaderboard-client-props-with-config';
+import {_Unbounded} from '@gomomento/generated-types-webtext/dist/common_pb';
 
 export class LeaderboardDataClient<
   REQ extends Request<REQ, RESP>,
