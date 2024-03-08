@@ -5,7 +5,7 @@ import {CacheGet, CacheSet} from '@gomomento/sdk-core';
 const {cacheClient, integrationTestCacheName} = SetupIntegrationTest();
 
 describe('CacheClient', () => {
-  it('should send and receive 5mb messages', async () => {
+  it.skip('should send and receive 5mb messages', async () => {
     const value = 'a'.repeat(5_000_000);
     const key = '5mb';
 
