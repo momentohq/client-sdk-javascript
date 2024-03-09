@@ -86,6 +86,8 @@ import {
   PutWebhook,
   RotateWebhookSecret,
   GetWebhookSecret,
+  GetBatch,
+  SetBatch,
 } from '@gomomento/sdk';
 import {delay} from '../utils/time';
 
@@ -277,6 +279,38 @@ async function example_API_SetIfNotExists(cacheClient: CacheClient) {
   } else if (result instanceof CacheSetIfNotExists.Error) {
     throw new Error(
       `An error occurred while attempting to call setIfNotExists for the key 'test-key' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SetBatch(cacheClient: CacheClient) {
+  const values = new Map<string, string>([
+    ['abc', '123'],
+    ['xyz', '321'],
+    ['123', 'xyz'],
+    ['321', 'abc'],
+  ]);
+  const result = await cacheClient.setBatch('test-cache', values);
+  if (result instanceof SetBatch.Success) {
+    console.log('Keys and values stored successfully');
+  } else if (result instanceof SetBatch.Error) {
+    throw new Error(
+      `An error occurred while attempting to batch set in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_GetBatch(cacheClient: CacheClient) {
+  const keys = ['abc', 'xyz', '123', '321'];
+  const result = await cacheClient.getBatch('test-cache', keys);
+  if (result instanceof GetBatch.Success) {
+    const values = result.values();
+    for (const key of keys) {
+      console.log(`Retrieved value for key '${key}': ${values[key]}`);
+    }
+  } else if (result instanceof GetBatch.Error) {
+    throw new Error(
+      `An error occurred while attempting to batch get in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
@@ -1383,6 +1417,8 @@ async function main() {
   await example_API_Increment(cacheClient);
   await example_API_ItemGetType(cacheClient);
   await example_API_SetIfNotExists(cacheClient);
+  await example_API_SetBatch(cacheClient);
+  await example_API_GetBatch(cacheClient);
 
   await example_API_ListFetch(cacheClient);
   await example_API_ListConcatenateBack(cacheClient);
