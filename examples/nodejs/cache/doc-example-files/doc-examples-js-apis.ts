@@ -175,12 +175,12 @@ async function example_API_CreateCache(cacheClient: CacheClient) {
 }
 
 async function example_API_DeleteCache(cacheClient: CacheClient) {
-  const result = await cacheClient.deleteCache('test-cache');
+  const result = await cacheClient.deleteCache('cache-to-delete');
   if (result instanceof DeleteCache.Success) {
-    console.log("Cache 'test-cache' deleted");
+    console.log("Cache 'cache-to-delete' deleted");
   } else if (result instanceof DeleteCache.Error) {
     throw new Error(
-      `An error occurred while attempting to delete cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to delete cache 'cache-to-delete': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
