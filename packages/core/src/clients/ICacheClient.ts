@@ -48,6 +48,7 @@ import {
   GetBatch,
   SetBatch,
   CacheSetIfAbsent,
+  CacheSetIfPresent,
 } from '../index';
 import {
   ScalarCallOptions,
@@ -67,6 +68,7 @@ import {IMomentoCache} from './IMomentoCache';
 export type SetOptions = ScalarCallOptions;
 export type SetIfNotExistsOptions = ScalarCallOptions;
 export type SetIfAbsentOptions = ScalarCallOptions;
+export type SetIfPresentOptions = ScalarCallOptions;
 export type SetBatchOptions = ScalarCallOptions;
 export type ListConcatenateBackOptions = FrontTruncatableCallOptions;
 export type ListConcatenateFrontOptions = BackTruncatableCallOptions;
@@ -117,6 +119,12 @@ export interface ICacheClient extends IControlClient, IPingClient {
     field: string | Uint8Array,
     options?: SetIfAbsentOptions
   ): Promise<CacheSetIfAbsent.Response>;
+  setIfPresent(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    options?: SetIfPresentOptions
+  ): Promise<CacheSetIfPresent.Response>;
   getBatch(
     cacheName: string,
     keys: Array<string | Uint8Array>

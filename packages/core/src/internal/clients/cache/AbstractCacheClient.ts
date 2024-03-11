@@ -11,6 +11,7 @@ import {
   CacheSetIfNotExists,
   SetIfNotExistsOptions,
   SetIfAbsentOptions,
+  SetIfPresentOptions,
   CacheSetFetch,
   CacheSetAddElement,
   CacheSetAddElements,
@@ -58,6 +59,7 @@ import {
   SetBatch,
   InvalidArgumentError,
   CacheSetIfAbsent,
+  CacheSetIfPresent,
 } from '../../../index';
 import {ListFetchCallOptions, ListRetainCallOptions} from '../../../utils';
 import {
@@ -708,6 +710,31 @@ export abstract class AbstractCacheClient implements ICacheClient {
   ): Promise<CacheSetIfAbsent.Response> {
     const client = this.getNextDataClient();
     return await client.setIfAbsent(cacheName, key, field, options?.ttl);
+  }
+
+  /**
+   * Associates the given key with the given value. If a value for the key is
+   * not already present it is not replaced with the new value.
+   *
+   * @param {string} cacheName - The cache to store the value in.
+   * @param {string | Uint8Array} key - The key to set.
+   * @param {string | Uint8Array} field - The value to be stored.
+   * @param {SetIfAbsentOptions} [options]
+   * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * Uses the client's default TTL if this is not supplied.
+   * @returns {Promise<CacheSetIfAbsent.Response>} -
+   * {@link CacheSetIfAbsent.Stored} on storing the new value.
+   * {@link CacheSetIfAbsent.NotStored} on not storing the new value.
+   * {@link CacheSetIfAbsent.Error} on failure.
+   */
+  public async setIfPresent(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    options?: SetIfPresentOptions
+  ): Promise<CacheSetIfPresent.Response> {
+    const client = this.getNextDataClient();
+    return await client.setIfPresent(cacheName, key, field, options?.ttl);
   }
 
   /**

@@ -45,6 +45,7 @@ import {
   CacheSetFetch,
   CacheSetIfNotExists,
   CacheSetIfAbsent,
+  CacheSetIfPresent,
   CacheSetRemoveElements,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
@@ -110,6 +111,7 @@ import {ConnectionError} from '@gomomento/sdk-core/dist/src/errors';
 import {common} from '@gomomento/generated-types/dist/common';
 import _Unbounded = common._Unbounded;
 import Absent = common.Absent;
+import Present = common.Present;
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -711,6 +713,92 @@ export class CacheDataClient implements IDataClient {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSetIfAbsent.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
+  public async setIfPresent(
+    cacheName: string,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfPresent.Response> {
+    try {
+      validateCacheName(cacheName);
+      if (ttl !== undefined) {
+        validateTtlSeconds(ttl);
+      }
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetIfPresent.Error(err)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'setIfPresent' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
+        ttl?.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendSetIfPresent(
+      cacheName,
+      this.convert(key),
+      this.convert(value),
+      ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+    );
+    this.logger.trace(`'setIfPresent' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendSetIfPresent(
+    cacheName: string,
+    key: Uint8Array,
+    value: Uint8Array,
+    ttlMilliseconds: number
+  ): Promise<CacheSetIfPresent.Response> {
+    const request = new grpcCache._SetIfRequest({
+      cache_key: key,
+      cache_body: value,
+      ttl_milliseconds: ttlMilliseconds,
+      present: new Present(),
+    });
+    const metadata = this.createMetadata(cacheName);
+
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.getClient().SetIf(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            switch (resp.result) {
+              case 'stored':
+                resolve(new CacheSetIfPresent.Stored());
+                break;
+              case 'not_stored':
+                resolve(new CacheSetIfPresent.NotStored());
+                break;
+              default:
+                resolve(
+                  new CacheGet.Error(
+                    new UnknownError(
+                      'SetIfPresent responded with an unknown result'
+                    )
+                  )
+                );
+                break;
+            }
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetIfPresent.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });

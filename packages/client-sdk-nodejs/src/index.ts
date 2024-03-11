@@ -49,6 +49,7 @@ import * as CacheSetRemoveElement from '@gomomento/sdk-core/dist/src/messages/re
 import * as CacheIncrement from '@gomomento/sdk-core/dist/src/messages/responses/cache-increment';
 import * as CacheSetIfNotExists from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-not-exists';
 import * as CacheSetIfAbsent from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-absent';
+import * as CacheSetIfPresent from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-present';
 import * as CacheSortedSetPutElement from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-put-element';
 import * as CacheSortedSetPutElements from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-put-elements';
 import * as CacheSortedSetFetch from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-fetch';
@@ -292,6 +293,7 @@ export {
   CacheSet,
   CacheSetIfNotExists,
   CacheSetIfAbsent,
+  CacheSetIfPresent,
   CacheDelete,
   CacheFlush,
   CreateCache,
