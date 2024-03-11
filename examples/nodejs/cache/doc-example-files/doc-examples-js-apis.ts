@@ -1406,7 +1406,12 @@ async function main() {
   await example_API_ErrorHandlingHitMiss(cacheClient);
   await example_API_ErrorHandlingSuccess(cacheClient);
 
-  await example_API_DeleteCache(cacheClient);
+  try {
+    await example_API_DeleteCache(cacheClient);
+  } catch (error) {
+    // this error is expected; the cache doesn't exist, we are just illustrating how to delete a cache for documentation
+    //  purposes
+  }
   await example_API_CreateCache(cacheClient);
   await example_API_ListCaches(cacheClient);
   await example_API_FlushCache(cacheClient);
