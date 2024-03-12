@@ -256,7 +256,7 @@ export class CacheDataClient implements IDataClient {
             const errorMessage = `Unable to connect to Momento: Unexpected connection state: ${newState}., oldState: ${currentState}
               Please contact Momento if this persists.`;
             this.logger.error(errorMessage);
-            reject(errorMessage);
+            resolve();
             return;
           }
         });
