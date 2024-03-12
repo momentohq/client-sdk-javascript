@@ -45,7 +45,7 @@ describe('CacheClient', () => {
       }
     }
   });
-  it('cannot create a client with an invalid request timeout', async () => {
+  it('can not create a client with an invalid request timeout', async () => {
     try {
       const invalidTimeoutConfig = configuration.withTransportStrategy(
         configuration.getTransportStrategy().withClientTimeoutMillis(-1)
