@@ -8,6 +8,10 @@ import {
   CacheSetIfNotExists,
   CacheSetIfAbsent,
   CacheSetIfPresent,
+  CacheSetIfEqual,
+  CacheSetIfNotEqual,
+  CacheSetIfPresentAndNotEqual,
+  CacheSetIfAbsentOrEqual,
   MomentoErrorCode,
   FailedPreconditionError,
 } from '@gomomento/sdk-core';
@@ -1054,7 +1058,7 @@ export function runGetSetDeleteTests(
       return cacheClient.setIfPresent(props.cacheName, v4(), v4());
     });
 
-    it('should set and get string from cache', async () => {
+    it('should set string key if key is present', async () => {
       const cacheKey = v4();
       const cacheValue = v4();
       const initialCacheValue = v4();
@@ -1365,6 +1369,1366 @@ export function runGetSetDeleteTests(
       expectWithMessage(() => {
         expect(setIfPresentResponse).toBeInstanceOf(CacheSetIfPresent.Stored);
       }, `expected STORED but got ${setIfPresentResponse.toString()}`);
+      const getResponse = await cache.get(cacheKey);
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+  });
+
+  describe('#setIfEqual', () => {
+    ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+      return cacheClient.setIfEqual(props.cacheName, v4(), v4(), v4());
+    });
+
+    it('should set cache key if value to check is equal', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfEqualResponse = await cacheClient.setIfEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setIfEqualResponse).toBeInstanceOf(CacheSetIfEqual.Stored);
+      }, `expected STORED but got ${setIfEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should get remaining ttl from cache greater than expected', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfEqualResponse = await cacheClient.setIfEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        initialCacheValue,
+        {ttl: 1000}
+      );
+      expectWithMessage(() => {
+        expect(setIfEqualResponse).toBeInstanceOf(CacheSetIfEqual.Stored);
+      }, `expected STORED but got ${setIfEqualResponse.toString()}`);
+      const getTTLResponse = await cacheClient.itemGetTtl(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getTTLResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+      }, `expected HIT but got ${getTTLResponse.toString()}`);
+      if (getTTLResponse instanceof CacheItemGetTtl.Hit) {
+        // we sent the ttl as 1000 seconds, so it's reasonable to expect the remaining TTL
+        // will be greater than 950 seconds at least
+        expect(getTTLResponse.remainingTtlMillis()).toBeGreaterThan(950 * 1000);
+      }
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should not set string when the current value is not equal to value to check', async () => {
+      const cacheKey = v4();
+      const initialCacheValue = v4();
+      const cacheValue = v4();
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfEqualResponse = await cacheClient.setIfEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setIfEqualResponse).toBeInstanceOf(CacheSetIfEqual.NotStored);
+      }, `expected NOTSTORED but got ${setIfEqualResponse.toString()}`);
+    });
+
+    it('should set and get bytes', async () => {
+      const cacheKey = new TextEncoder().encode(v4());
+      const cacheValue = new TextEncoder().encode(v4());
+      const initialCacheValue = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfEqualResponse = await cacheClient.setIfEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setIfEqualResponse).toBeInstanceOf(CacheSetIfEqual.Stored);
+      }, `expected STORED but got ${setIfEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      expectWithMessage(() => {
+        expect(new TextEncoder().encode(getResponse.value())).toEqual(
+          cacheValue
+        );
+      }, `expected ${cacheValue.toString()} but got ${getResponse.value() || 'undefined'}`);
+    });
+
+    it('should set string key with bytes value', async () => {
+      const cacheKey = v4();
+      const cacheValue = new TextEncoder().encode(v4());
+      const decodedValue = new TextDecoder().decode(cacheValue);
+      const initialCacheValue = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfEqualResponse = await cacheClient.setIfEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setIfEqualResponse).toBeInstanceOf(CacheSetIfEqual.Stored);
+      }, `expected STORED but got ${setIfEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(decodedValue);
+      }
+    });
+
+    it('should set byte key with string value', async () => {
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const cacheKey = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfEqualResponse = await cacheClient.setIfEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setIfEqualResponse).toBeInstanceOf(CacheSetIfEqual.Stored);
+      }, `expected STORED but got ${setIfEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should return INVALID_ARGUMENT_ERROR for invalid ttl when set with string key/value', async () => {
+      const setResponse = await cacheClient.setIfEqual(
+        integrationTestCacheName,
+        v4(),
+        v4(),
+        v4(),
+        {ttl: -1}
+      );
+      expect(setResponse).toBeInstanceOf(CacheSetIfEqual.Error);
+      if (setResponse instanceof CacheSetIfEqual.Error) {
+        expect(setResponse.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }
+    });
+
+    it('should set string key/value with valid ttl and get successfully', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfEqualResponse = await cacheClient.setIfEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        initialCacheValue,
+        {ttl: 15}
+      );
+      expectWithMessage(() => {
+        expect(setIfEqualResponse).toBeInstanceOf(CacheSetIfEqual.Stored);
+      }, `expected STORED but got ${setIfEqualResponse.toString()}`);
+
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should set with valid ttl and should return miss when ttl is expired', async () => {
+      const cacheKey = v4();
+      const initalCacheValue = v4();
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initalCacheValue,
+        {ttl: 100}
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfEqualResponse = await cacheClient.setIfEqual(
+        integrationTestCacheName,
+        cacheKey,
+        v4(),
+        initalCacheValue,
+        {ttl: 1}
+      );
+      expectWithMessage(() => {
+        expect(setIfEqualResponse).toBeInstanceOf(CacheSetIfEqual.Stored);
+      }, `expected STORED but got ${setIfEqualResponse.toString()}`);
+      await sleep(1500);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Miss);
+      }, `expected MISS but got ${getResponse.toString()}`);
+    });
+
+    it('should support happy path for setIfEqual via curried cache via ICache interface', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const cache = cacheClient.cache(integrationTestCacheName);
+      const setResponse = await cache.set(cacheKey, initialCacheValue);
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfEqualResponse = await cache.setIfEqual(
+        cacheKey,
+        cacheValue,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setIfEqualResponse).toBeInstanceOf(CacheSetIfEqual.Stored);
+      }, `expected STORED but got ${setIfEqualResponse.toString()}`);
+      const getResponse = await cache.get(cacheKey);
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+  });
+
+  describe('#setIfNotEqual', () => {
+    ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+      return cacheClient.setIfNotEqual(props.cacheName, v4(), v4(), v4());
+    });
+
+    it('should not set cache key if value to check is equal', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfNotEqualResponse = await cacheClient.setIfNotEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setIfNotEqualResponse).toBeInstanceOf(
+          CacheSetIfNotEqual.NotStored
+        );
+      }, `expected NOTSTORED but got ${setIfNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(initialCacheValue);
+      }
+    });
+
+    it('should get remaining ttl from cache greater than expected', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfNotEqualResponse = await cacheClient.setIfNotEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        v4(),
+        {ttl: 1000}
+      );
+      expectWithMessage(() => {
+        expect(setIfNotEqualResponse).toBeInstanceOf(CacheSetIfNotEqual.Stored);
+      }, `expected STORED but got ${setIfNotEqualResponse.toString()}`);
+      const getTTLResponse = await cacheClient.itemGetTtl(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getTTLResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+      }, `expected HIT but got ${getTTLResponse.toString()}`);
+      if (getTTLResponse instanceof CacheItemGetTtl.Hit) {
+        // we sent the ttl as 1000 seconds, so it's reasonable to expect the remaining TTL
+        // will be greater than 950 seconds at least
+        expect(getTTLResponse.remainingTtlMillis()).toBeGreaterThan(950 * 1000);
+      }
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should not set string when the current value is equal to value to check', async () => {
+      const cacheKey = v4();
+      const initialCacheValue = v4();
+      const cacheValue = v4();
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfNotEqualResponse = await cacheClient.setIfNotEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setIfNotEqualResponse).toBeInstanceOf(
+          CacheSetIfNotEqual.NotStored
+        );
+      }, `expected NOTSTORED but got ${setIfNotEqualResponse.toString()}`);
+    });
+
+    it('should set and get bytes', async () => {
+      const cacheKey = new TextEncoder().encode(v4());
+      const cacheValue = new TextEncoder().encode(v4());
+      const initialCacheValue = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfNotEqualResponse = await cacheClient.setIfNotEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setIfNotEqualResponse).toBeInstanceOf(CacheSetIfNotEqual.Stored);
+      }, `expected STORED but got ${setIfNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      expectWithMessage(() => {
+        expect(new TextEncoder().encode(getResponse.value())).toEqual(
+          cacheValue
+        );
+      }, `expected ${cacheValue.toString()} but got ${getResponse.value() || 'undefined'}`);
+    });
+
+    it('should set string key with bytes value', async () => {
+      const cacheKey = v4();
+      const cacheValue = new TextEncoder().encode(v4());
+      const decodedValue = new TextDecoder().decode(cacheValue);
+      const initialCacheValue = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfNotEqualResponse = await cacheClient.setIfNotEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setIfNotEqualResponse).toBeInstanceOf(CacheSetIfNotEqual.Stored);
+      }, `expected STORED but got ${setIfNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(decodedValue);
+      }
+    });
+
+    it('should set byte key with string value', async () => {
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const cacheKey = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfNotEqualResponse = await cacheClient.setIfNotEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setIfNotEqualResponse).toBeInstanceOf(CacheSetIfNotEqual.Stored);
+      }, `expected STORED but got ${setIfNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should return INVALID_ARGUMENT_ERROR for invalid ttl when set with string key/value', async () => {
+      const setResponse = await cacheClient.setIfNotEqual(
+        integrationTestCacheName,
+        v4(),
+        v4(),
+        v4(),
+        {ttl: -1}
+      );
+      expect(setResponse).toBeInstanceOf(CacheSetIfNotEqual.Error);
+      if (setResponse instanceof CacheSetIfNotEqual.Error) {
+        expect(setResponse.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }
+    });
+
+    it('should set string key/value with valid ttl and get successfully', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfNotEqualResponse = await cacheClient.setIfNotEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        v4(),
+        {ttl: 15}
+      );
+      expectWithMessage(() => {
+        expect(setIfNotEqualResponse).toBeInstanceOf(CacheSetIfNotEqual.Stored);
+      }, `expected STORED but got ${setIfNotEqualResponse.toString()}`);
+
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should set with valid ttl and should return miss when ttl is expired', async () => {
+      const cacheKey = v4();
+      const initalCacheValue = v4();
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initalCacheValue,
+        {ttl: 100}
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfNotEqualResponse = await cacheClient.setIfNotEqual(
+        integrationTestCacheName,
+        cacheKey,
+        v4(),
+        v4(),
+        {ttl: 1}
+      );
+      expectWithMessage(() => {
+        expect(setIfNotEqualResponse).toBeInstanceOf(CacheSetIfNotEqual.Stored);
+      }, `expected STORED but got ${setIfNotEqualResponse.toString()}`);
+      await sleep(1500);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Miss);
+      }, `expected MISS but got ${getResponse.toString()}`);
+    });
+
+    it('should support happy path for setIfNotEqual via curried cache via ICache interface', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const cache = cacheClient.cache(integrationTestCacheName);
+      const setResponse = await cache.set(cacheKey, initialCacheValue);
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfNotEqualResponse = await cache.setIfNotEqual(
+        cacheKey,
+        cacheValue,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setIfNotEqualResponse).toBeInstanceOf(CacheSetIfNotEqual.Stored);
+      }, `expected STORED but got ${setIfNotEqualResponse.toString()}`);
+      const getResponse = await cache.get(cacheKey);
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+  });
+
+  describe('#setIfPresentAndNotEqual', () => {
+    ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+      return cacheClient.setIfPresentAndNotEqual(
+        props.cacheName,
+        v4(),
+        v4(),
+        v4()
+      );
+    });
+
+    it('should set cache key if key is present and value to check is not equal', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfPresentAndNotEqualResponse =
+        await cacheClient.setIfPresentAndNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          v4()
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should not set cache key if key is present and value to check is equal', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfPresentAndNotEqualResponse =
+        await cacheClient.setIfPresentAndNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          initialCacheValue
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndNotEqual.NotStored
+        );
+      }, `expected NOTSTORED but got ${setIfPresentAndNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(initialCacheValue);
+      }
+    });
+
+    it('should not set cache key if key is not present', async () => {
+      const cacheKey = v4();
+
+      const setIfPresentAndNotEqualResponse =
+        await cacheClient.setIfPresentAndNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          v4(),
+          v4()
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndNotEqual.NotStored
+        );
+      }, `expected NOTSTORED but got ${setIfPresentAndNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Miss);
+      }, `expected MISS but got ${getResponse.toString()}`);
+    });
+
+    it('should get remaining ttl from cache greater than expected', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfPresentAndNotEqualResponse =
+        await cacheClient.setIfPresentAndNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          v4(),
+          {ttl: 1000}
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndNotEqualResponse.toString()}`);
+      const getTTLResponse = await cacheClient.itemGetTtl(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getTTLResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+      }, `expected HIT but got ${getTTLResponse.toString()}`);
+      if (getTTLResponse instanceof CacheItemGetTtl.Hit) {
+        // we sent the ttl as 1000 seconds, so it's reasonable to expect the remaining TTL
+        // will be greater than 950 seconds at least
+        expect(getTTLResponse.remainingTtlMillis()).toBeGreaterThan(950 * 1000);
+      }
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should not set string when the key is present and current value is equal to value to check', async () => {
+      const cacheKey = v4();
+      const initialCacheValue = v4();
+      const cacheValue = v4();
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfPresentAndNotEqualResponse =
+        await cacheClient.setIfPresentAndNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          initialCacheValue
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndNotEqual.NotStored
+        );
+      }, `expected NOTSTORED but got ${setIfPresentAndNotEqualResponse.toString()}`);
+    });
+
+    it('should set and get bytes', async () => {
+      const cacheKey = new TextEncoder().encode(v4());
+      const cacheValue = new TextEncoder().encode(v4());
+      const initialCacheValue = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfPresentAndNotEqualResponse =
+        await cacheClient.setIfPresentAndNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          v4()
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      expectWithMessage(() => {
+        expect(new TextEncoder().encode(getResponse.value())).toEqual(
+          cacheValue
+        );
+      }, `expected ${cacheValue.toString()} but got ${getResponse.value() || 'undefined'}`);
+    });
+
+    it('should set string key with bytes value', async () => {
+      const cacheKey = v4();
+      const cacheValue = new TextEncoder().encode(v4());
+      const decodedValue = new TextDecoder().decode(cacheValue);
+      const initialCacheValue = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfPresentAndNotEqualResponse =
+        await cacheClient.setIfPresentAndNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          v4()
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(decodedValue);
+      }
+    });
+
+    it('should set byte key with string value', async () => {
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const cacheKey = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfPresentAndNotEqualResponse =
+        await cacheClient.setIfPresentAndNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          v4()
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should return INVALID_ARGUMENT_ERROR for invalid ttl when set with string key/value', async () => {
+      const setResponse = await cacheClient.setIfPresentAndNotEqual(
+        integrationTestCacheName,
+        v4(),
+        v4(),
+        v4(),
+        {ttl: -1}
+      );
+      expect(setResponse).toBeInstanceOf(CacheSetIfPresentAndNotEqual.Error);
+      if (setResponse instanceof CacheSetIfPresentAndNotEqual.Error) {
+        expect(setResponse.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }
+    });
+
+    it('should set string key/value with valid ttl and get successfully', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfPresentAndNotEqualResponse =
+        await cacheClient.setIfPresentAndNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          v4(),
+          {ttl: 15}
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndNotEqualResponse.toString()}`);
+
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should set with valid ttl and should return miss when ttl is expired', async () => {
+      const cacheKey = v4();
+      const initalCacheValue = v4();
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initalCacheValue,
+        {ttl: 100}
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfPresentAndNotEqualResponse =
+        await cacheClient.setIfPresentAndNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          v4(),
+          v4(),
+          {ttl: 1}
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndNotEqualResponse.toString()}`);
+      await sleep(1500);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Miss);
+      }, `expected MISS but got ${getResponse.toString()}`);
+    });
+
+    it('should support happy path for setIfPresentAndNotEqual via curried cache via ICache interface', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const cache = cacheClient.cache(integrationTestCacheName);
+      const setResponse = await cache.set(cacheKey, initialCacheValue);
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfPresentAndNotEqualResponse =
+        await cache.setIfPresentAndNotEqual(cacheKey, cacheValue, v4());
+      expectWithMessage(() => {
+        expect(setIfPresentAndNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndNotEqualResponse.toString()}`);
+      const getResponse = await cache.get(cacheKey);
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+  });
+
+  describe('#setIfAbsentOrEqual', () => {
+    ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+      return cacheClient.setIfAbsentOrEqual(props.cacheName, v4(), v4(), v4());
+    });
+
+    it('should not set cache key if key is present and value to check is not equal to cached value', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfAbsentOrEqualResponse = await cacheClient.setIfAbsentOrEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrEqual.NotStored
+        );
+      }, `expected NOTSTORED but got ${setIfAbsentOrEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(initialCacheValue);
+      }
+    });
+
+    it('should set cache key if key is present and value to check is equal', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const setIfAbsentOrEqualResponse = await cacheClient.setIfAbsentOrEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should set cache key if key is not present', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+
+      const setIfAbsentOrEqualResponse = await cacheClient.setIfAbsentOrEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should get remaining ttl from cache greater than expected', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const setIfAbsentOrEqualResponse = await cacheClient.setIfAbsentOrEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        v4(),
+        {ttl: 1000}
+      );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrEqualResponse.toString()}`);
+      const getTTLResponse = await cacheClient.itemGetTtl(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getTTLResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+      }, `expected HIT but got ${getTTLResponse.toString()}`);
+      if (getTTLResponse instanceof CacheItemGetTtl.Hit) {
+        // we sent the ttl as 1000 seconds, so it's reasonable to expect the remaining TTL
+        // will be greater than 950 seconds at least
+        expect(getTTLResponse.remainingTtlMillis()).toBeGreaterThan(950 * 1000);
+      }
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should set and get bytes', async () => {
+      const cacheKey = new TextEncoder().encode(v4());
+      const cacheValue = new TextEncoder().encode(v4());
+      const setIfAbsentOrEqualResponse = await cacheClient.setIfAbsentOrEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      expectWithMessage(() => {
+        expect(new TextEncoder().encode(getResponse.value())).toEqual(
+          cacheValue
+        );
+      }, `expected ${cacheValue.toString()} but got ${getResponse.value() || 'undefined'}`);
+    });
+
+    it('should set string key with bytes value', async () => {
+      const cacheKey = v4();
+      const cacheValue = new TextEncoder().encode(v4());
+      const decodedValue = new TextDecoder().decode(cacheValue);
+      const setIfAbsentOrEqualResponse = await cacheClient.setIfAbsentOrEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(decodedValue);
+      }
+    });
+
+    it('should set byte key with string value', async () => {
+      const cacheValue = v4();
+      const cacheKey = new TextEncoder().encode(v4());
+      const setIfAbsentOrEqualResponse = await cacheClient.setIfAbsentOrEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrEqualResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should return INVALID_ARGUMENT_ERROR for invalid ttl when set with string key/value', async () => {
+      const setResponse = await cacheClient.setIfAbsentOrEqual(
+        integrationTestCacheName,
+        v4(),
+        v4(),
+        v4(),
+        {ttl: -1}
+      );
+      expect(setResponse).toBeInstanceOf(CacheSetIfAbsentOrEqual.Error);
+      if (setResponse instanceof CacheSetIfAbsentOrEqual.Error) {
+        expect(setResponse.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }
+    });
+
+    it('should set string key/value with valid ttl and get successfully', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const setIfAbsentOrEqualResponse = await cacheClient.setIfAbsentOrEqual(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        v4(),
+        {ttl: 15}
+      );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrEqualResponse.toString()}`);
+
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should set with valid ttl and should return miss when ttl is expired', async () => {
+      const cacheKey = v4();
+      const setIfAbsentOrEqualResponse = await cacheClient.setIfAbsentOrEqual(
+        integrationTestCacheName,
+        cacheKey,
+        v4(),
+        v4(),
+        {ttl: 1}
+      );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrEqualResponse.toString()}`);
+      await sleep(1500);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Miss);
+      }, `expected MISS but got ${getResponse.toString()}`);
+    });
+
+    it('should support happy path for setIfAbsentOrEqual via curried cache via ICache interface', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const cache = cacheClient.cache(integrationTestCacheName);
+      const setIfAbsentOrEqualResponse = await cache.setIfAbsentOrEqual(
+        cacheKey,
+        cacheValue,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrEqualResponse.toString()}`);
       const getResponse = await cache.get(cacheKey);
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);

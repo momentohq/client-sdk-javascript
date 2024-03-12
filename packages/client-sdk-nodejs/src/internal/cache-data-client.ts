@@ -909,7 +909,7 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     key: string | Uint8Array,
     value: string | Uint8Array,
-    equal: string | Uint8Array,
+    notEqual: string | Uint8Array,
     ttl?: number
   ): Promise<CacheSetIfNotEqual.Response> {
     try {
@@ -933,7 +933,7 @@ export class CacheDataClient implements IDataClient {
       cacheName,
       this.convert(key),
       this.convert(value),
-      this.convert(equal),
+      this.convert(notEqual),
       ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
     );
     this.logger.trace(`'setIfNotEqual' request result: ${result.toString()}`);

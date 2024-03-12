@@ -796,7 +796,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
     options?: SetIfNotEqualOptions
   ): Promise<CacheSetIfNotEqual.Response> {
     const client = this.getNextDataClient();
-    return await client.setIfEqual(
+    return await client.setIfNotEqual(
       cacheName,
       key,
       field,
