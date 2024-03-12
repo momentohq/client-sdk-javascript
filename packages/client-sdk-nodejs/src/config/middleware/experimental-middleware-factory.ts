@@ -6,7 +6,7 @@ import {ExperimentalActiveRequestCountLoggingMiddleware} from './experimental-ac
 import {Middleware} from './middleware';
 import {ExperimentalMetricsCsvMiddleware} from './experimental-metrics-csv-middleware';
 
-interface MiddlewareOptions {
+interface ExperimenalMetricsMiddlewareOptions {
   eventLoopMetrics?: boolean;
   perRequestMetrics?: boolean;
   activeRequestCountMetrics?: boolean;
@@ -17,7 +17,7 @@ interface MiddlewareOptions {
 export class MiddlewareFactory {
   public static createMetricsMiddlewares(
     loggerFactory: MomentoLoggerFactory,
-    options: MiddlewareOptions
+    options: ExperimenalMetricsMiddlewareOptions
   ): Middleware[] {
     const middlewares = [];
 
