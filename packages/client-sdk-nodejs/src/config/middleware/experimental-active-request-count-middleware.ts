@@ -15,6 +15,10 @@ class ExperimentalActiveRequestCountLoggingMiddlewareRequestHandler extends Expe
     super(parent, logger, context);
   }
 
+  protected recordMetrics(): void {
+    this.parent.decrementActiveRequestCount();
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   emitMetrics(metrics: ExperimentalRequestMetrics): Promise<void> {
     return Promise.resolve();
