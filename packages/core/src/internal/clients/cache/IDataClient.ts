@@ -49,6 +49,10 @@ import {
   GetBatch,
   CacheSetIfAbsent,
   CacheSetIfPresent,
+  CacheSetIfEqual,
+  CacheSetIfNotEqual,
+  CacheSetIfPresentAndNotEqual,
+  CacheSetIfAbsentOrEqual,
 } from '../../../index';
 
 export interface IDataClient {
@@ -87,6 +91,34 @@ export interface IDataClient {
     field: string | Uint8Array,
     ttl?: number
   ): Promise<CacheSetIfPresent.Response>;
+  setIfEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    equal: string | Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfEqual.Response>;
+  setIfNotEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    notEqual: string | Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfNotEqual.Response>;
+  setIfPresentAndNotEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    notEqual: string | Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfPresentAndNotEqual.Response>;
+  setIfAbsentOrEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    equal: string | Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfAbsentOrEqual.Response>;
   getBatch(
     cacheName: string,
     keys: Array<string | Uint8Array>

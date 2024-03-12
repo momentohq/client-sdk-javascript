@@ -6,6 +6,10 @@ import {
   CacheSetIfNotExists,
   CacheSetIfAbsent,
   CacheSetIfPresent,
+  CacheSetIfEqual,
+  CacheSetIfNotEqual,
+  CacheSetIfPresentAndNotEqual,
+  CacheSetIfAbsentOrEqual,
   CacheSetFetch,
   CacheSetAddElements,
   CacheSetAddElement,
@@ -70,6 +74,10 @@ export type SetOptions = ScalarCallOptions;
 export type SetIfNotExistsOptions = ScalarCallOptions;
 export type SetIfAbsentOptions = ScalarCallOptions;
 export type SetIfPresentOptions = ScalarCallOptions;
+export type SetIfEqualOptions = ScalarCallOptions;
+export type SetIfNotEqualOptions = ScalarCallOptions;
+export type SetIfPresentAndNotEqualOptions = ScalarCallOptions;
+export type SetIfAbsentOrEqualOptions = ScalarCallOptions;
 export type SetBatchOptions = ScalarCallOptions;
 export type ListConcatenateBackOptions = FrontTruncatableCallOptions;
 export type ListConcatenateFrontOptions = BackTruncatableCallOptions;
@@ -136,6 +144,62 @@ export class MomentoCache implements IMomentoCache {
     options?: SetIfPresentOptions
   ): Promise<CacheSetIfPresent.Response> {
     return this.cacheClient.setIfPresent(this.cacheName, key, value, options);
+  }
+  setIfEqual(
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    equal: string | Uint8Array,
+    options?: SetIfEqualOptions
+  ): Promise<CacheSetIfEqual.Response> {
+    return this.cacheClient.setIfEqual(
+      this.cacheName,
+      key,
+      value,
+      equal,
+      options
+    );
+  }
+  setIfNotEqual(
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    notEqual: string | Uint8Array,
+    options?: SetIfNotEqualOptions
+  ): Promise<CacheSetIfNotEqual.Response> {
+    return this.cacheClient.setIfNotEqual(
+      this.cacheName,
+      key,
+      value,
+      notEqual,
+      options
+    );
+  }
+  setIfPresentAndNotEqual(
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    notEqual: string | Uint8Array,
+    options?: SetIfPresentAndNotEqualOptions
+  ): Promise<CacheSetIfPresentAndNotEqual.Response> {
+    return this.cacheClient.setIfPresentAndNotEqual(
+      this.cacheName,
+      key,
+      value,
+      notEqual,
+      options
+    );
+  }
+  setIfAbsentOrEqual(
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    equal: string | Uint8Array,
+    options?: SetIfAbsentOrEqualOptions
+  ): Promise<CacheSetIfAbsentOrEqual.Response> {
+    return this.cacheClient.setIfAbsentOrEqual(
+      this.cacheName,
+      key,
+      value,
+      equal,
+      options
+    );
   }
   getBatch(keys: string[] | Uint8Array[]): Promise<GetBatch.Response> {
     return this.cacheClient.getBatch(this.cacheName, keys);

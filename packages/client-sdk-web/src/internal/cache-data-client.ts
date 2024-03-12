@@ -26,6 +26,11 @@ import {
   CacheSetFetch,
   CacheSetIfNotExists,
   CacheSetIfAbsent,
+  CacheSetIfPresent,
+  CacheSetIfEqual,
+  CacheSetIfNotEqual,
+  CacheSetIfPresentAndNotEqual,
+  CacheSetIfAbsentOrEqual,
   CacheSetRemoveElements,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
@@ -52,7 +57,6 @@ import {
   SortedSetOrder,
   UnknownError,
   CacheDictionaryLength,
-  CacheSetIfPresent,
 } from '..';
 import {Configuration} from '../config/configuration';
 import {Request, RpcError, UnaryResponse} from 'grpc-web';
@@ -136,7 +140,15 @@ import {ClientMetadataProvider} from './client-metadata-provider';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {MiddlewareRequestHandlerContext} from '../config/middleware/middleware';
 import {GetBatch, SetBatch} from '@gomomento/sdk-core';
-import {_Unbounded} from '@gomomento/generated-types-webtext/dist/common_pb';
+import {
+  _Unbounded,
+  Absent,
+  AbsentOrEqual,
+  Present,
+  PresentAndNotEqual,
+  Equal,
+  NotEqual,
+} from '@gomomento/generated-types-webtext/dist/common_pb';
 
 export interface DataClientProps {
   configuration: Configuration;
@@ -469,7 +481,7 @@ export class CacheDataClient<
     request.setCacheKey(key);
     request.setCacheBody(field);
     request.setTtlMilliseconds(ttlMilliseconds);
-    request.setAbsent();
+    request.setAbsent(new Absent());
 
     return await new Promise((resolve, reject) => {
       this.clientWrapper.setIf(
@@ -553,7 +565,7 @@ export class CacheDataClient<
     request.setCacheKey(key);
     request.setCacheBody(field);
     request.setTtlMilliseconds(ttlMilliseconds);
-    request.setPresent();
+    request.setPresent(new Present());
 
     return await new Promise((resolve, reject) => {
       this.clientWrapper.setIf(
@@ -585,6 +597,361 @@ export class CacheDataClient<
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSetIfPresent.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
+  public async setIfEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    equal: string | Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfEqual.Response> {
+    try {
+      validateCacheName(cacheName);
+      if (ttl !== undefined) {
+        validateTtlSeconds(ttl);
+      }
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetIfEqual.Error(err)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'setIfEqual' request; key: ${key.toString()}, field: ${field.toString()}, ttlSeconds: ${
+        ttl?.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendSetIfEqual(
+      cacheName,
+      convertToB64String(key),
+      convertToB64String(field),
+      convertToB64String(equal),
+      ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+    );
+    this.logger.trace(`'setIfEqual' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendSetIfEqual(
+    cacheName: string,
+    key: string,
+    field: string,
+    equal: string,
+    ttlMilliseconds: number
+  ): Promise<CacheSetIfEqual.Response> {
+    const request = new _SetIfRequest();
+    request.setCacheKey(key);
+    request.setCacheBody(field);
+    request.setTtlMilliseconds(ttlMilliseconds);
+    request.setEqual(new Equal().setValueToCheck(equal));
+
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.setIf(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            switch (resp.getResultCase()) {
+              case _SetIfResponse.ResultCase.STORED:
+                resolve(new CacheSetIfEqual.Stored());
+                break;
+              case _SetIfResponse.ResultCase.NOT_STORED:
+                resolve(new CacheSetIfEqual.NotStored());
+                break;
+              default:
+                resolve(
+                  new CacheGet.Error(
+                    new UnknownError(
+                      'SetIfEqual responded with an unknown result'
+                    )
+                  )
+                );
+                break;
+            }
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetIfEqual.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
+  public async setIfNotEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    notEqual: string | Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfNotEqual.Response> {
+    try {
+      validateCacheName(cacheName);
+      if (ttl !== undefined) {
+        validateTtlSeconds(ttl);
+      }
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetIfNotEqual.Error(err)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'setIfNotEqual' request; key: ${key.toString()}, field: ${field.toString()}, ttlSeconds: ${
+        ttl?.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendSetIfNotEqual(
+      cacheName,
+      convertToB64String(key),
+      convertToB64String(field),
+      convertToB64String(notEqual),
+      ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+    );
+    this.logger.trace(`'setIfNotEqual' request result: ${result.toString()}`);
+    return result;
+  }
+
+  private async sendSetIfNotEqual(
+    cacheName: string,
+    key: string,
+    field: string,
+    notEqual: string,
+    ttlMilliseconds: number
+  ): Promise<CacheSetIfNotEqual.Response> {
+    const request = new _SetIfRequest();
+    request.setCacheKey(key);
+    request.setCacheBody(field);
+    request.setTtlMilliseconds(ttlMilliseconds);
+    request.setNotEqual(new NotEqual().setValueToCheck(notEqual));
+
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.setIf(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            switch (resp.getResultCase()) {
+              case _SetIfResponse.ResultCase.STORED:
+                resolve(new CacheSetIfNotEqual.Stored());
+                break;
+              case _SetIfResponse.ResultCase.NOT_STORED:
+                resolve(new CacheSetIfNotEqual.NotStored());
+                break;
+              default:
+                resolve(
+                  new CacheGet.Error(
+                    new UnknownError(
+                      'SetIfNotEqual responded with an unknown result'
+                    )
+                  )
+                );
+                break;
+            }
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetIfNotEqual.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
+  public async setIfPresentAndNotEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    notEqual: string | Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfPresentAndNotEqual.Response> {
+    try {
+      validateCacheName(cacheName);
+      if (ttl !== undefined) {
+        validateTtlSeconds(ttl);
+      }
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetIfPresentAndNotEqual.Error(err)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'setIfPresentAndNotEqual' request; key: ${key.toString()}, field: ${field.toString()}, ttlSeconds: ${
+        ttl?.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendSetIfPresentAndNotEqual(
+      cacheName,
+      convertToB64String(key),
+      convertToB64String(field),
+      convertToB64String(notEqual),
+      ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+    );
+    this.logger.trace(
+      `'setIfPresentAndNotEqual' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendSetIfPresentAndNotEqual(
+    cacheName: string,
+    key: string,
+    field: string,
+    notEqual: string,
+    ttlMilliseconds: number
+  ): Promise<CacheSetIfPresentAndNotEqual.Response> {
+    const request = new _SetIfRequest();
+    request.setCacheKey(key);
+    request.setCacheBody(field);
+    request.setTtlMilliseconds(ttlMilliseconds);
+    request.setPresentAndNotEqual(
+      new PresentAndNotEqual().setValueToCheck(notEqual)
+    );
+
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.setIf(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            switch (resp.getResultCase()) {
+              case _SetIfResponse.ResultCase.STORED:
+                resolve(new CacheSetIfPresentAndNotEqual.Stored());
+                break;
+              case _SetIfResponse.ResultCase.NOT_STORED:
+                resolve(new CacheSetIfPresentAndNotEqual.NotStored());
+                break;
+              default:
+                resolve(
+                  new CacheGet.Error(
+                    new UnknownError(
+                      'SetIfPresentAndNotEqual responded with an unknown result'
+                    )
+                  )
+                );
+                break;
+            }
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSetIfPresentAndNotEqual.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
+  public async setIfAbsentOrEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    equal: string | Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfAbsentOrEqual.Response> {
+    try {
+      validateCacheName(cacheName);
+      if (ttl !== undefined) {
+        validateTtlSeconds(ttl);
+      }
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetIfAbsentOrEqual.Error(err)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'setIfAbsentOrEqual' request; key: ${key.toString()}, field: ${field.toString()}, ttlSeconds: ${
+        ttl?.toString() ?? 'null'
+      }`
+    );
+
+    const result = await this.sendSetIfAbsentOrEqual(
+      cacheName,
+      convertToB64String(key),
+      convertToB64String(field),
+      convertToB64String(equal),
+      ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+    );
+    this.logger.trace(
+      `'setIfAbsentOrEqual' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendSetIfAbsentOrEqual(
+    cacheName: string,
+    key: string,
+    field: string,
+    equal: string,
+    ttlMilliseconds: number
+  ): Promise<CacheSetIfAbsentOrEqual.Response> {
+    const request = new _SetIfRequest();
+    request.setCacheKey(key);
+    request.setCacheBody(field);
+    request.setTtlMilliseconds(ttlMilliseconds);
+    request.setAbsentOrEqual(new AbsentOrEqual().setValueToCheck(equal));
+
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.setIf(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            switch (resp.getResultCase()) {
+              case _SetIfResponse.ResultCase.STORED:
+                resolve(new CacheSetIfAbsentOrEqual.Stored());
+                break;
+              case _SetIfResponse.ResultCase.NOT_STORED:
+                resolve(new CacheSetIfAbsentOrEqual.NotStored());
+                break;
+              default:
+                resolve(
+                  new CacheGet.Error(
+                    new UnknownError(
+                      'SetIfAbsentOrEqual responded with an unknown result'
+                    )
+                  )
+                );
+                break;
+            }
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetIfAbsentOrEqual.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });

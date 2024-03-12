@@ -6,10 +6,10 @@ import {
   CacheSetIfNotExists,
   CacheSetIfPresent,
   CacheSetIfAbsent,
-  // CacheSetIfEqual,
-  // CacheSetIfNotEqual,
-  // CacheSetIfPresentAndNotEqual,
-  // CacheSetIfAbsentOrEqual,
+  CacheSetIfEqual,
+  CacheSetIfNotEqual,
+  CacheSetIfPresentAndNotEqual,
+  CacheSetIfAbsentOrEqual,
   CacheSetFetch,
   CacheSetAddElements,
   CacheSetAddElement,
@@ -71,6 +71,10 @@ export type SetOptions = ScalarCallOptions;
 export type SetIfNotExistsOptions = ScalarCallOptions;
 export type SetIfAbsentOptions = ScalarCallOptions;
 export type SetIfPresentOptions = ScalarCallOptions;
+export type SetIfEqualOptions = ScalarCallOptions;
+export type SetIfNotEqualOptions = ScalarCallOptions;
+export type SetIfPresentAndNotEqualOptions = ScalarCallOptions;
+export type SetIfAbsentOrEqualOptions = ScalarCallOptions;
 export type SetBatchOptions = ScalarCallOptions;
 export type ListConcatenateBackOptions = FrontTruncatableCallOptions;
 export type ListConcatenateFrontOptions = BackTruncatableCallOptions;
@@ -117,6 +121,30 @@ export interface IMomentoCache {
     value: string | Uint8Array,
     options?: SetIfPresentOptions
   ): Promise<CacheSetIfPresent.Response>;
+  setIfEqual(
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    equal: string | Uint8Array,
+    options?: SetIfEqualOptions
+  ): Promise<CacheSetIfEqual.Response>;
+  setIfNotEqual(
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    notEqual: string | Uint8Array,
+    options?: SetIfNotEqualOptions
+  ): Promise<CacheSetIfNotEqual.Response>;
+  setIfPresentAndNotEqual(
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    notEqual: string | Uint8Array,
+    options?: SetIfPresentAndNotEqualOptions
+  ): Promise<CacheSetIfPresentAndNotEqual.Response>;
+  setIfAbsentOrEqual(
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    equal: string | Uint8Array,
+    options?: SetIfAbsentOrEqualOptions
+  ): Promise<CacheSetIfAbsentOrEqual.Response>;
   getBatch(keys: string[] | Uint8Array[]): Promise<GetBatch.Response>;
   setBatch(
     items:
