@@ -5,7 +5,7 @@ import {
   Configurations,
   DefaultMomentoLoggerFactory,
   DefaultMomentoLoggerLevel,
-  ExperimentalEventLoopPerformanceMetricsMiddleware,
+  MiddlewareFactory,
 } from '../../src';
 
 describe("Test exercises closing a client and jest doesn't hang", () => {
@@ -24,9 +24,12 @@ function integrationTestCacheClientPropsWithExperimentalMetricsMiddleware(): Cac
   return {
     configuration: Configurations.Laptop.latest(loggerFactory)
       .withClientTimeoutMillis(90000)
-      .withMiddlewares([
-        new ExperimentalEventLoopPerformanceMetricsMiddleware(loggerFactory),
-      ]),
+      .withMiddlewares(
+        MiddlewareFactory.createMetricsMiddlewares(loggerFactory, {
+          eventLoopMetricsLog: true,
+          activeRequestCountMetricsLog: true,
+        })
+      ),
     credentialProvider: credsProvider(),
     defaultTtlSeconds: 1111,
   };

@@ -7,9 +7,9 @@ import {Middleware} from './middleware';
 import {ExperimentalMetricsCsvMiddleware} from './experimental-metrics-csv-middleware';
 
 interface ExperimenalMetricsMiddlewareOptions {
-  eventLoopMetrics?: boolean;
-  perRequestMetrics?: boolean;
-  activeRequestCountMetrics?: boolean;
+  eventLoopMetricsLog?: boolean;
+  perRequestMetricsLog?: boolean;
+  activeRequestCountMetricsLog?: boolean;
   perRequestMetricsCSVPath?: string;
 }
 
@@ -21,7 +21,7 @@ export class MiddlewareFactory {
   ): Middleware[] {
     const middlewares: Middleware[] = [];
 
-    if (options.eventLoopMetrics === true) {
+    if (options.eventLoopMetricsLog === true) {
       middlewares.push(
         new ExperimentalEventLoopPerformanceMetricsMiddleware(loggerFactory)
       );
@@ -33,11 +33,11 @@ export class MiddlewareFactory {
           loggerFactory
         )
       );
-    } else if (options.perRequestMetrics === true) {
+    } else if (options.perRequestMetricsLog === true) {
       middlewares.push(new ExperimentalMetricsLoggingMiddleware(loggerFactory));
     }
 
-    if (options.activeRequestCountMetrics === true) {
+    if (options.activeRequestCountMetricsLog === true) {
       middlewares.push(
         new ExperimentalActiveRequestCountLoggingMiddleware(loggerFactory)
       );
