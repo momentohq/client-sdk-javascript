@@ -19,7 +19,7 @@ export class MiddlewareFactory {
     loggerFactory: MomentoLoggerFactory,
     options: ExperimenalMetricsMiddlewareOptions
   ): Middleware[] {
-    const middlewares = [];
+    const middlewares: Middleware[] = [];
 
     if (options.eventLoopMetrics === true) {
       middlewares.push(
