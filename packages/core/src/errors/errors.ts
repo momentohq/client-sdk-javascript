@@ -15,6 +15,8 @@ export enum MomentoErrorCode {
   AUTHENTICATION_ERROR = 'AUTHENTICATION_ERROR',
   // Request was cancelled by the server
   CANCELLED_ERROR = 'CANCELLED_ERROR',
+  // Error connecting to Momento servers
+  CONNECTION_ERROR = 'CONNECTION_ERROR',
   // Request rate, bandwidth, or object size exceeded the limits for the account
   LIMIT_EXCEEDED_ERROR = 'LIMIT_EXCEEDED_ERROR',
   // Request was invalid
@@ -116,6 +118,13 @@ export class CancelledError extends SdkError {
   _errorCode = MomentoErrorCode.CANCELLED_ERROR;
   _messageWrapper =
     'The request was cancelled by the server; please contact us at support@momentohq.com';
+}
+
+/**
+ * Error when there's a failure to connect to Momento servers.
+ */
+export class ConnectionError extends SdkError {
+  _errorCode = MomentoErrorCode.CONNECTION_ERROR;
 }
 
 /**

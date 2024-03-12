@@ -106,6 +106,7 @@ import _Unbounded = cache_client._Unbounded;
 import ECacheResult = cache_client.ECacheResult;
 import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
+import {ConnectionError} from '@gomomento/sdk-core/dist/src/errors';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -220,7 +221,7 @@ export class CacheDataClient implements IDataClient {
       if (now >= deadline) {
         const errorMessage = 'Unable to connect to Momento: deadline exceeded.';
         this.logger.error(errorMessage);
-        reject(new Error(errorMessage));
+        reject(new ConnectionError(errorMessage));
         return;
       }
 
@@ -235,7 +236,7 @@ export class CacheDataClient implements IDataClient {
               error.stack ? error.stack : 'Stack trace undefined'
             }`;
             this.logger.error(errorMessage);
-            reject(new Error(errorMessage));
+            reject(new ConnectionError(errorMessage));
             return;
           }
 
@@ -256,7 +257,7 @@ export class CacheDataClient implements IDataClient {
             const errorMessage = `Unable to connect to Momento: Unexpected connection state: ${newState}., oldState: ${currentState}
               Please contact Momento if this persists.`;
             this.logger.error(errorMessage);
-            reject(new Error(errorMessage));
+            reject(new ConnectionError(errorMessage));
             return;
           }
         });
