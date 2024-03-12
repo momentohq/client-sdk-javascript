@@ -1,18 +1,33 @@
-import {expectWithMessage} from '@gomomento/common-integration-tests';
-
-import {GetBatch} from '@gomomento/sdk-core';
-import {SetupIntegrationTestWithMiddleware} from './integration-setup';
-
-const {cacheClient, cacheName} = SetupIntegrationTestWithMiddleware();
+import {credsProvider} from './integration-setup';
+import {CacheClientPropsWithConfig} from '../../src/internal/cache-client-props-with-config';
+import {
+  CacheClient,
+  Configurations,
+  DefaultMomentoLoggerFactory,
+  DefaultMomentoLoggerLevel,
+  ExperimentalEventLoopPerformanceMetricsMiddleware,
+} from '../../src';
 
 describe("Test exercises closing a client and jest doesn't hang", () => {
-  it('getBatch happy path with all misses', async () => {
-    const keys = ['a', 'b', 'c', '1', '2', '3'];
-    const response = await cacheClient.getBatch(cacheName, keys);
-
-    // Check get batch response
-    expectWithMessage(() => {
-      expect(response).toBeInstanceOf(GetBatch.Success);
-    }, `expected SUCCESS for keys ${keys.toString()}, received ${response.toString()}`);
+  it('constructs a client with background task and closes it', () => {
+    const client = new CacheClient(
+      integrationTestCacheClientPropsWithExperimentalMetricsMiddleware()
+    );
+    client.close();
   });
 });
+
+function integrationTestCacheClientPropsWithExperimentalMetricsMiddleware(): CacheClientPropsWithConfig {
+  const loggerFactory = new DefaultMomentoLoggerFactory(
+    DefaultMomentoLoggerLevel.INFO
+  );
+  return {
+    configuration: Configurations.Laptop.latest(loggerFactory)
+      .withClientTimeoutMillis(90000)
+      .withMiddlewares([
+        new ExperimentalEventLoopPerformanceMetricsMiddleware(loggerFactory),
+      ]),
+    credentialProvider: credsProvider(),
+    defaultTtlSeconds: 1111,
+  };
+}
