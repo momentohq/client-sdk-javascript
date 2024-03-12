@@ -218,8 +218,9 @@ export class CacheDataClient implements IDataClient {
       const now = new Date();
 
       if (now >= deadline) {
-        this.logger.error('Unable to connect to Momento: deadline exceeded.');
-        resolve();
+        const errorMessage = 'Unable to connect to Momento: deadline exceeded.';
+        this.logger.error(errorMessage);
+        reject(errorMessage);
         return;
       }
 
@@ -228,14 +229,13 @@ export class CacheDataClient implements IDataClient {
         .getChannel()
         .watchConnectivityState(currentState, deadline, (error?: Error) => {
           if (error) {
-            this.logger.error(
-              `Unable to eagerly connect to Momento. Please contact Momento if this persists. currentState: ${currentState}, errorName: ${
-                error.name
-              } : errorMessage: ${error.message}, errorStack: ${
-                error.stack ? error.stack : 'Stack trace undefined'
-              }`
-            );
-            resolve();
+            const errorMessage = `Unable to eagerly connect to Momento. Please contact Momento if this persists. currentState: ${currentState}, errorName: ${
+              error.name
+            } : errorMessage: ${error.message}, errorStack: ${
+              error.stack ? error.stack : 'Stack trace undefined'
+            }`;
+            this.logger.error(errorMessage);
+            reject(errorMessage);
             return;
           }
 
@@ -253,11 +253,11 @@ export class CacheDataClient implements IDataClient {
             this.logger.debug(`Connecting! Current state: ${newState}`);
             this.connectWithinDeadline(deadline).then(resolve).catch(reject);
           } else {
-            this.logger.error(
-              `Unable to connect to Momento: Unexpected connection state: ${newState}., oldState: ${currentState}
-              Please contact Momento if this persists.`
-            );
-            resolve();
+            const errorMessage = `Unable to connect to Momento: Unexpected connection state: ${newState}., oldState: ${currentState}
+              Please contact Momento if this persists.`;
+            this.logger.error(errorMessage);
+            reject(errorMessage);
+            return;
           }
         });
     });
