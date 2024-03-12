@@ -220,7 +220,7 @@ export class CacheDataClient implements IDataClient {
       if (now >= deadline) {
         const errorMessage = 'Unable to connect to Momento: deadline exceeded.';
         this.logger.error(errorMessage);
-        reject(errorMessage);
+        reject(new Error(errorMessage));
         return;
       }
 
@@ -235,7 +235,7 @@ export class CacheDataClient implements IDataClient {
               error.stack ? error.stack : 'Stack trace undefined'
             }`;
             this.logger.error(errorMessage);
-            reject(errorMessage);
+            reject(new Error(errorMessage));
             return;
           }
 
@@ -256,7 +256,7 @@ export class CacheDataClient implements IDataClient {
             const errorMessage = `Unable to connect to Momento: Unexpected connection state: ${newState}., oldState: ${currentState}
               Please contact Momento if this persists.`;
             this.logger.error(errorMessage);
-            resolve();
+            reject(new Error(errorMessage));
             return;
           }
         });

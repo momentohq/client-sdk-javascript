@@ -4,10 +4,9 @@ import {
   CacheClient,
   SimpleCacheClient,
   CreateCache,
-  StringMomentoTokenProvider,
+  StringMomentoTokenProvider, CredentialProvider,
 } from '../../src';
 import {SimpleCacheClientProps} from '../../src/cache-client-props';
-import {CacheSet, ServerUnavailableError} from '@gomomento/sdk-core';
 
 // This auth token is syntactically correct but not actually valid; it won't work with the real Momento Servers.
 // Used only for unit testing the constructors etc.
@@ -32,7 +31,9 @@ describe('CacheClient', () => {
     const invalidCacheNames = ['', '    '];
     const momento = await CacheClient.create({
       configuration: configuration,
-      credentialProvider: credentialProvider,
+      credentialProvider: CredentialProvider.fromEnvironmentVariable({
+        environmentVariableName: 'TEST_AUTH_TOKEN',
+      }),
       defaultTtlSeconds: 100,
     });
     for (const name of invalidCacheNames) {
@@ -62,19 +63,23 @@ describe('CacheClient', () => {
       }
     }
   });
-  it('createWithEagerConnection returns a client even if it cannot connect', async () => {
-    const momento = await CacheClient.create({
-      configuration: configuration,
-      credentialProvider: credentialProvider,
-      defaultTtlSeconds: 100,
-      eagerConnectTimeout: 1000,
-    });
-    const setResponse = await momento.set('cache', 'key', 'value');
-    expect(setResponse).toBeInstanceOf(CacheSet.Error);
-    if (setResponse instanceof CacheSet.Error) {
-      expect(setResponse.innerException()).toBeInstanceOf(
-        ServerUnavailableError
-      );
+  it('createWithEagerConnection throws if it cannot connect', async () => {
+    try {
+      await CacheClient.create({
+        configuration: configuration,
+        credentialProvider: credentialProvider,
+        defaultTtlSeconds: 100,
+      });
+      // If the function call above does not throw, explicitly fail the test.
+      expect('Expected error was not thrown').toBeUndefined();
+    } catch (e) {
+      if (e instanceof Error) {
+        // Now TypeScript knows 'e' is an Error, so 'message' is accessible.
+        expect(e.message).toContain('Unable to connect to Momento');
+      } else {
+        // Handle the case where 'e' is not an Error object.
+        expect('Error is not an instance of Error').toBeUndefined();
+      }
     }
   });
   it('cannot create a client with an invalid default TTL', async () => {
