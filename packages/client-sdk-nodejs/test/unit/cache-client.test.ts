@@ -4,7 +4,8 @@ import {
   CacheClient,
   SimpleCacheClient,
   CreateCache,
-  StringMomentoTokenProvider, CredentialProvider,
+  StringMomentoTokenProvider,
+  CredentialProvider,
 } from '../../src';
 import {SimpleCacheClientProps} from '../../src/cache-client-props';
 
