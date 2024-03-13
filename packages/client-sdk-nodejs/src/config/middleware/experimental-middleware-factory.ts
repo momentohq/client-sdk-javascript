@@ -7,11 +7,30 @@ import {Middleware} from './middleware';
 import {ExperimentalMetricsCsvMiddleware} from './experimental-metrics-csv-middleware';
 import {ExperimentalGarbageCollectionPerformanceMetricsMiddleware} from './experimental-garbage-collection-middleware';
 
-interface ExperimenalMetricsMiddlewareOptions {
+interface ExperimentalMetricsMiddlewareOptions {
+  /**
+   * Setting this to true will emit a periodic JSON log for the event loop profile of the nodeJS process.
+   */
   eventLoopMetricsLog?: boolean;
+  /**
+   * Setting this to true will emit a JSON log during major GC events, as observed by node's perf_hooks.
+   */
   garbageCollectionMetricsLog?: boolean;
+  /**
+   * Setting this to true will emit a JSON log for each Momento request, that includes the client-side latency
+   * among other request profile statistics.
+   */
   perRequestMetricsLog?: boolean;
+  /**
+   * Setting this to true will emit a periodic JSON log for active Momento request count on the nodeJS process
+   * as observed when the periodic task wakes up. This can be handy with eventLoopMetricsLog to observe the event loop
+   * delay against the maximum number of concurrent connections the application is observing.
+   */
   activeRequestCountMetricsLog?: boolean;
+  /**
+   * Setting this to true will write a CSV recrd for each Momento request, that includes the client-side latency
+   * among other request profile statistics. The path is the file path on your disk where the CSV file is stored.
+   */
   perRequestMetricsCSVPath?: string;
 }
 
@@ -19,7 +38,7 @@ interface ExperimenalMetricsMiddlewareOptions {
 export class MiddlewareFactory {
   public static createMetricsMiddlewares(
     loggerFactory: MomentoLoggerFactory,
-    options: ExperimenalMetricsMiddlewareOptions
+    options: ExperimentalMetricsMiddlewareOptions
   ): Middleware[] {
     const middlewares: Middleware[] = [];
 
