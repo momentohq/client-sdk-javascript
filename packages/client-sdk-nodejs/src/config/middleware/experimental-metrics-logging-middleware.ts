@@ -5,59 +5,6 @@ import {
   ExperimentalRequestMetrics,
 } from './impl/experimental-metrics-middleware';
 import {MiddlewareRequestHandlerContext} from './middleware';
-import {
-  EventLoopDelayMonitor,
-  EventLoopUtilization,
-  monitorEventLoopDelay,
-  performance,
-} from 'perf_hooks';
-
-interface StateMetrics {
-  /**
-   * The proportion of time the event loop was busy over the last second.
-   */
-  eventLoopUtilization: number;
-
-  /**
-   * The average event loop delay over the last second, measured in 20ms increments.
-   */
-  eventLoopDelayMean: number;
-
-  /**
-   * The minimum event loop delay over the last second, measured in 20ms increments.
-   */
-  eventLoopDelayMin: number;
-
-  /**
-   * The 50th percentile event loop delay over the last second, measured in 20ms increments.
-   */
-  eventLoopDelayP50: number;
-
-  /**
-   * The 75th percentile event loop delay over the last second, measured in 20ms increments.
-   */
-  eventLoopDelayP75: number;
-
-  /**
-   * The 90th percentile event loop delay over the last second, measured in 20ms increments.
-   */
-  eventLoopDelayP90: number;
-
-  /**
-   * The 95th percentile event loop delay over the last second, measured in 20ms increments.
-   */
-  eventLoopDelayP95: number;
-
-  /**
-   * The 99th percentile event loop delay over the last second, measured in 20ms increments.
-   */
-  eventLoopDelayP99: number;
-
-  /**
-   * The maximum event loop delay over the last second, measured in 20ms increments.
-   */
-  eventLoopDelayMax: number;
-}
 
 class ExperimentalMetricsLoggingMiddlewareRequestHandler extends ExperimentalMetricsMiddlewareRequestHandler {
   constructor(
@@ -99,60 +46,11 @@ class ExperimentalMetricsLoggingMiddlewareRequestHandler extends ExperimentalMet
  * your {Configuration} to enable this middleware.
  */
 export class ExperimentalMetricsLoggingMiddleware extends ExperimentalMetricsMiddleware {
-  private static readonly metricsLogInterval = 1000;
-  private static readonly eventLoopDelayInterval = 20;
-  private static eldMonitor: EventLoopDelayMonitor;
-  private static elu: EventLoopUtilization;
-  private static isLoggingStarted = false;
-  static numActiveRequests = 0;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private static intervalId: any | null = null; // Store the interval ID
-
   constructor(loggerFactory: MomentoLoggerFactory) {
     super(
       loggerFactory,
       (p, l, c) =>
         new ExperimentalMetricsLoggingMiddlewareRequestHandler(p, l, c)
     );
-    if (!ExperimentalMetricsLoggingMiddleware.isLoggingStarted) {
-      ExperimentalMetricsLoggingMiddleware.isLoggingStarted = true;
-      ExperimentalMetricsLoggingMiddleware.startLogging(this.logger);
-    }
-  }
-
-  private static startLogging(logger: MomentoLogger): void {
-    this.eldMonitor = monitorEventLoopDelay({
-      resolution: this.eventLoopDelayInterval,
-    });
-    this.eldMonitor.enable();
-    this.elu = performance.eventLoopUtilization();
-
-    this.intervalId = setInterval(() => {
-      this.elu = performance.eventLoopUtilization(this.elu);
-      const metrics: StateMetrics = {
-        eventLoopUtilization: this.elu.utilization,
-        eventLoopDelayMean: this.eldMonitor.mean,
-        eventLoopDelayMin: this.eldMonitor.min,
-        eventLoopDelayP50: this.eldMonitor.percentile(50),
-        eventLoopDelayP75: this.eldMonitor.percentile(75),
-        eventLoopDelayP90: this.eldMonitor.percentile(90),
-        eventLoopDelayP95: this.eldMonitor.percentile(95),
-        eventLoopDelayP99: this.eldMonitor.percentile(99),
-        eventLoopDelayMax: this.eldMonitor.max,
-      };
-      logger.info(JSON.stringify(metrics));
-      this.eldMonitor.reset();
-    }, this.metricsLogInterval);
-  }
-
-  close() {
-    if (ExperimentalMetricsLoggingMiddleware.intervalId) {
-      this.logger.debug('Stopping Metrics logging.');
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      clearInterval(ExperimentalMetricsLoggingMiddleware.intervalId);
-      ExperimentalMetricsLoggingMiddleware.intervalId = null;
-      ExperimentalMetricsLoggingMiddleware.isLoggingStarted = false;
-      this.logger.debug('Metrics logging stopped.');
-    }
   }
 }

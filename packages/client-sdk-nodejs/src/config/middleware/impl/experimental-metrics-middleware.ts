@@ -75,7 +75,7 @@ export interface ExperimentalRequestMetrics {
 export abstract class ExperimentalMetricsMiddlewareRequestHandler
   implements MiddlewareRequestHandler
 {
-  private readonly parent: ExperimentalMetricsMiddleware;
+  protected readonly parent: ExperimentalMetricsMiddleware;
   protected readonly logger: MomentoLogger;
   private readonly connectionID: string;
 
@@ -149,7 +149,7 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
     return this.receivedResponseBody && this.receivedResponseStatus;
   }
 
-  private recordMetrics(): void {
+  protected recordMetrics(): void {
     const endTime = new Date().getTime();
     const metrics: ExperimentalRequestMetrics = {
       momento: {

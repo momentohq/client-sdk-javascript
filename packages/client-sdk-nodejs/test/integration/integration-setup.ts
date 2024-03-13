@@ -13,9 +13,6 @@ import {
   VectorIndexConfigurations,
   PreviewLeaderboardClient,
   LeaderboardConfigurations,
-  ExperimentalMetricsLoggingMiddleware,
-  DefaultMomentoLoggerFactory,
-  DefaultMomentoLoggerLevel,
 } from '../../src';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
@@ -83,27 +80,6 @@ export function integrationTestCacheClientProps(): CacheClientPropsWithConfig {
     credentialProvider: credsProvider(),
     defaultTtlSeconds: 1111,
   };
-}
-
-export function integrationTestCacheClientPropsWithExperimentalMetricsMiddleware(): CacheClientPropsWithConfig {
-  const loggerFactory = new DefaultMomentoLoggerFactory(
-    DefaultMomentoLoggerLevel.INFO
-  );
-  return {
-    configuration: Configurations.Laptop.latest()
-      .withClientTimeoutMillis(90000)
-      .withMiddlewares([
-        new ExperimentalMetricsLoggingMiddleware(loggerFactory),
-      ]),
-    credentialProvider: credsProvider(),
-    defaultTtlSeconds: 1111,
-  };
-}
-
-function momentoClientForTestingWithMiddleware(): CacheClient {
-  return new CacheClient(
-    integrationTestCacheClientPropsWithExperimentalMetricsMiddleware()
-  );
 }
 
 function momentoClientForTesting(): CacheClient {
@@ -209,39 +185,6 @@ export function SetupIntegrationTest(): {
     cacheClient: client,
     cacheClientWithThrowOnErrors: clientWithThrowOnErrors,
     integrationTestCacheName: cacheName,
-  };
-}
-
-export function SetupIntegrationTestWithMiddleware(): {
-  cacheClient: CacheClient;
-  cacheName: string;
-} {
-  const cacheName = testCacheName().concat('with-middleware');
-
-  beforeAll(async () => {
-    // Use a fresh client to avoid test interference with setup.
-    const momento = momentoClientForTestingWithMiddleware();
-    await deleteCacheIfExists(momento, cacheName);
-    const createResponse = await momento.createCache(cacheName);
-    if (createResponse instanceof CreateCache.Error) {
-      throw createResponse.innerException();
-    }
-  });
-
-  afterAll(async () => {
-    // Use a fresh client to avoid test interference with teardown.
-    const momento = momentoClientForTestingWithMiddleware();
-    const deleteResponse = await momento.deleteCache(cacheName);
-    if (deleteResponse instanceof DeleteCache.Error) {
-      throw deleteResponse.innerException();
-    }
-    momento.close();
-  });
-
-  const client = momentoClientForTestingWithMiddleware();
-  return {
-    cacheClient: client,
-    cacheName: cacheName,
   };
 }
 
