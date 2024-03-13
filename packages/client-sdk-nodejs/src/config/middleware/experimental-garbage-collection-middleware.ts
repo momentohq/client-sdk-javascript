@@ -38,7 +38,18 @@ class ExperimentalGarbageCollectionPerformanceMetricsMiddlewareRequestHandler
 
 /**
  * This middleware enables garbage collection metrics. It subscribers to a GC performance observer provided by
- * node's built-in performance hooks, and logs key GC events.
+ * node's built-in performance hooks, and logs key GC events. A sample log looks like:
+ *
+ * {
+ *     "entryType": "gc",
+ *     "startTime": 8221.879917,
+ *     "duration": 2.8905000016093254,  <-- most important field to analyze for stop the world events, measured in milliseconds.
+ *     "detail": {
+ *         "kind": 4,  <-- constant for NODE_PERFORMANCE_GC_MAJOR. `MAJOR` events might point to GC events causing long delays.
+ *         "flags": 32
+ *     },
+ *     "timestamp": 1710300309368
+ * }
  */
 export class ExperimentalGarbageCollectionPerformanceMetricsMiddleware
   implements Middleware
