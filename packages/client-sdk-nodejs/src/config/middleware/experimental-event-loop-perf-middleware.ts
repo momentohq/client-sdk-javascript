@@ -97,6 +97,8 @@ class ExperimentalEventLoopPerformanceMetricsMiddlewareRequestHandler
  * This middleware enables event-loop performance metrics.It runs a periodic task specified by metricsLogInterval
  * to gather various event-loop metrics that can be correlated with the overall application's performance. This is
  * particularly helpful to analyze and correlate resource contention with higher network latencies.
+ *
+ * See {@link StateMetrics} for each heuristic/metric and their description.
  */
 export class ExperimentalEventLoopPerformanceMetricsMiddleware
   implements Middleware
