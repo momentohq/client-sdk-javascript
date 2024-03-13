@@ -5,7 +5,7 @@ import {
   MiddlewareRequestHandler,
   MiddlewareStatus,
 } from './middleware';
-import {constants, PerformanceEntry} from 'perf_hooks';
+import {constants, PerformanceEntry, PerformanceObserver} from 'perf_hooks';
 import {MomentoLogger, MomentoLoggerFactory} from '@gomomento/sdk-core';
 
 interface GCEvent extends PerformanceEntry {
@@ -60,15 +60,11 @@ export class ExperimentalGarbageCollectionPerformanceMetricsMiddleware
           // NODE_PERFORMANCE_GC_MAJOR indicates a major GC event such as STW (stop-the-world) pauses
           // and other long delays. This filter is to control the volume of GC logs if we were to enable
           // this on a customer's client.
-          item =>
-            (item as PerformanceEntry).kind ===
-            constants.NODE_PERFORMANCE_GC_MAJOR
+          item => item.kind === constants.NODE_PERFORMANCE_GC_MAJOR
         )
         .forEach(item => {
-          const performanceEntry: PerformanceEntry =
-            item.toJSON() as PerformanceEntry;
           const gcEvent: GCEvent = {
-            ...performanceEntry,
+            ...item,
             timestamp: Date.now(),
           };
           this.logger.info(JSON.stringify(gcEvent));

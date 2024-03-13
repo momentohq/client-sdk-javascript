@@ -9,11 +9,16 @@ import {
 } from '../../src';
 
 describe("Test exercises closing a client and jest doesn't hang", () => {
-  it('constructs a client with background task and closes it', () => {
-    const client = new CacheClient(
-      integrationTestCacheClientPropsWithExperimentalMetricsMiddleware()
-    );
-    client.close();
+  it('constructs a client with background task and closes it', async () => {
+    let client;
+    try {
+      client = await CacheClient.create(
+        integrationTestCacheClientPropsWithExperimentalMetricsMiddleware()
+      );
+      client.close();
+    } finally {
+      if (client) client.close();
+    }
   });
 });
 
