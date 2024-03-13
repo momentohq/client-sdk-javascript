@@ -11,7 +11,7 @@ import {
   DefaultMomentoLoggerLevel,
   ExperimentalMetricsCsvMiddleware,
   ExperimentalRequestLoggingMiddleware,
-  CredentialProvider,
+  CredentialProvider, MiddlewareFactory,
 } from '@gomomento/sdk';
 import {range} from './utils/collections';
 import * as fs from 'fs';
@@ -134,10 +134,15 @@ async function middlewaresExample() {
   const metricsCsvPath = './advanced-middlewares-example-metrics.csv';
 
   const middlewaresExampleClient = await CacheClient.create({
-    configuration: Configurations.Laptop.v1(middlewaresExampleloggerFactory).withMiddlewares([
-      new ExperimentalRequestLoggingMiddleware(middlewaresExampleloggerFactory),
-      new ExperimentalMetricsCsvMiddleware(metricsCsvPath, middlewaresExampleloggerFactory),
-    ]),
+    configuration: Configurations.Laptop.v1(middlewaresExampleloggerFactory).withMiddlewares(
+      MiddlewareFactory.createMetricsMiddlewares(loggerFactory, {
+        // this logs a periodic JSON for the event loop statistics of your nodejs process
+        eventLoopMetricsLog: true,
+        // this writes a unique row for each Momento request (latency, activeRequestCount) to
+        // a csv file as specified by this path
+        perRequestMetricsCSVPath: metricsCsvPath,
+      })
+    ),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_API_KEY',
     }),
@@ -151,6 +156,7 @@ async function middlewaresExample() {
   for (let i = 0; i < 2; i++) {
     await middlewaresExampleClient.set(cacheName, `middleware${i}`, 'VALUE');
     await middlewaresExampleClient.get(cacheName, `middleware${i}`);
+    await delay(500);
   }
 
   // wait for metrics to flush to disk
@@ -159,6 +165,8 @@ async function middlewaresExample() {
   logger.info(`Here are the contents of the metrics csv file:\n\n${fs.readFileSync(metricsCsvPath).toString()}`);
 
   middlewaresExamplelogger.info('Middlewares example complete!');
+  // close the client to gracefully shut down connection and middlewares
+  middlewaresExampleClient.close();
 }
 
 main()
