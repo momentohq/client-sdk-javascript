@@ -5,12 +5,8 @@ import {
   MiddlewareRequestHandler,
   MiddlewareStatus,
 } from './middleware';
-import {constants, PerformanceEntry, PerformanceObserver} from 'perf_hooks';
+import {constants, PerformanceObserver} from 'perf_hooks';
 import {MomentoLogger, MomentoLoggerFactory} from '@gomomento/sdk-core';
-
-interface GCEvent extends PerformanceEntry {
-  timestamp: number;
-}
 
 class ExperimentalGarbageCollectionPerformanceMetricsMiddlewareRequestHandler
   implements MiddlewareRequestHandler
@@ -63,11 +59,15 @@ export class ExperimentalGarbageCollectionPerformanceMetricsMiddleware
           item => item.kind === constants.NODE_PERFORMANCE_GC_MAJOR
         )
         .forEach(item => {
-          const gcEvent: GCEvent = {
-            ...item,
+          const gcEventObject = {
+            entryType: item.entryType,
+            startTime: item.startTime,
+            duration: item.duration,
+            kind: item.kind,
+            flags: item.flags,
             timestamp: Date.now(),
           };
-          this.logger.info(JSON.stringify(gcEvent));
+          this.logger.info(JSON.stringify(gcEventObject));
         });
     });
     this.gcObserver.observe({entryTypes: ['gc']});
