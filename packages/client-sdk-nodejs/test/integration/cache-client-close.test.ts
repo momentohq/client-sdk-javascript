@@ -15,7 +15,6 @@ describe("Test exercises closing a client and jest doesn't hang", () => {
       client = await CacheClient.create(
         integrationTestCacheClientPropsWithExperimentalMetricsMiddleware()
       );
-      client.close();
     } finally {
       if (client) client.close();
     }
