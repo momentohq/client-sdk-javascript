@@ -9,9 +9,8 @@ import {
   MomentoLoggerFactory,
   DefaultMomentoLoggerFactory,
   DefaultMomentoLoggerLevel,
-  ExperimentalMetricsCsvMiddleware,
-  ExperimentalRequestLoggingMiddleware,
-  CredentialProvider, MiddlewareFactory,
+  CredentialProvider,
+  MiddlewareFactory,
 } from '@gomomento/sdk';
 import {range} from './utils/collections';
 import * as fs from 'fs';
