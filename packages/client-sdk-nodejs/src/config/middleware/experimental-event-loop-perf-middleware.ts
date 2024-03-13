@@ -6,11 +6,9 @@ import {
   MiddlewareStatus,
 } from './middleware';
 import {
-  constants,
   EventLoopDelayMonitor,
   EventLoopUtilization,
   monitorEventLoopDelay,
-  PerformanceEntry,
   performance,
 } from 'perf_hooks';
 import {MomentoLogger, MomentoLoggerFactory} from '@gomomento/sdk-core';
@@ -120,21 +118,6 @@ export class ExperimentalEventLoopPerformanceMetricsMiddleware
       this.isLoggingStarted = true;
       this.startLogging();
     }
-
-    const obs = new PerformanceObserver(items => {
-      items
-        .getEntries()
-        .filter(
-          item =>
-            (item as PerformanceEntry).kind ===
-            constants.NODE_PERFORMANCE_GC_MAJOR
-        )
-        .forEach(item => {
-          console.log(`Major GC event`);
-          console.log(JSON.stringify(item));
-        });
-    });
-    obs.observe({entryTypes: ['gc']});
   }
 
   private startLogging(): void {
