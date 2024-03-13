@@ -5,9 +5,11 @@ import {ExperimentalMetricsLoggingMiddleware} from './experimental-metrics-loggi
 import {ExperimentalActiveRequestCountLoggingMiddleware} from './experimental-active-request-count-middleware';
 import {Middleware} from './middleware';
 import {ExperimentalMetricsCsvMiddleware} from './experimental-metrics-csv-middleware';
+import {ExperimentalGarbageCollectionPerformanceMetricsMiddleware} from './experimental-garbage-collection-middleware';
 
 interface ExperimenalMetricsMiddlewareOptions {
   eventLoopMetricsLog?: boolean;
+  garbageCollectionMetricsLog?: boolean;
   perRequestMetricsLog?: boolean;
   activeRequestCountMetricsLog?: boolean;
   perRequestMetricsCSVPath?: string;
@@ -40,6 +42,14 @@ export class MiddlewareFactory {
     if (options.activeRequestCountMetricsLog === true) {
       middlewares.push(
         new ExperimentalActiveRequestCountLoggingMiddleware(loggerFactory)
+      );
+    }
+
+    if (options.garbageCollectionMetricsLog === true) {
+      middlewares.push(
+        new ExperimentalGarbageCollectionPerformanceMetricsMiddleware(
+          loggerFactory
+        )
       );
     }
 

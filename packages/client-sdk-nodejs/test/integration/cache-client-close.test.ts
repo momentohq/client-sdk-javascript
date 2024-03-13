@@ -27,6 +27,7 @@ function integrationTestCacheClientPropsWithExperimentalMetricsMiddleware(): Cac
       .withMiddlewares(
         MiddlewareFactory.createMetricsMiddlewares(loggerFactory, {
           eventLoopMetricsLog: true,
+          garbageCollectionMetricsLog: true,
           activeRequestCountMetricsLog: true,
         })
       ),

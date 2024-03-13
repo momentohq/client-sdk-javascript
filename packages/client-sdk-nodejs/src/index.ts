@@ -228,6 +228,7 @@ export {ExperimentalMetricsCsvMiddleware} from './config/middleware/experimental
 export {ExperimentalMetricsLoggingMiddleware} from './config/middleware/experimental-metrics-logging-middleware';
 export {ExperimentalActiveRequestCountLoggingMiddleware} from './config/middleware/experimental-active-request-count-middleware';
 export {ExperimentalEventLoopPerformanceMetricsMiddleware} from './config/middleware/experimental-event-loop-perf-middleware';
+export {ExperimentalGarbageCollectionPerformanceMetricsMiddleware} from './config/middleware/experimental-garbage-collection-middleware';
 export {ExampleAsyncMiddleware} from './config/middleware/example-async-middleware';
 export {MiddlewareFactory} from './config/middleware/experimental-middleware-factory';
 
