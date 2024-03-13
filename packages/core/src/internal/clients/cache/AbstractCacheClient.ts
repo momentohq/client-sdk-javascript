@@ -670,8 +670,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
   }
 
   /**
-   * Associates the given key with the given value. If a value for the key is
-   * already present it is not replaced with the new value.
+   * Associates the given key with the given value if key is not already present in the cache.
    *
    * @deprecated Use setIfAbsent instead.
    * @param {string} cacheName - The cache to store the value in.
@@ -696,8 +695,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
   }
 
   /**
-   * Associates the given key with the given value. If a value for the key is
-   * already present it is not replaced with the new value.
+   * Associates the given key with the given value if key is not already present in the cache.
    *
    * @param {string} cacheName - The cache to store the value in.
    * @param {string | Uint8Array} key - The key to set.
@@ -721,8 +719,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
   }
 
   /**
-   * Associates the given key with the given value. If a value for the key is
-   * not already present it is not replaced with the new value.
+   * Associates the given key with the given value if the key is present in the cache.
    *
    * @param {string} cacheName - The cache to store the value in.
    * @param {string | Uint8Array} key - The key to set.
@@ -746,8 +743,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
   }
 
   /**
-   * Associates the given key with the given value. If a value for the key is
-   * not equal to the supplied `equal` parameter it is not replaced with the new value.
+   * Associates the given key with the given value if the key is present in the cache
+   * and its value is equal to the supplied `equal` value.
    *
    * @param {string} cacheName - The cache to store the value in.
    * @param {string | Uint8Array} key - The key to set.
@@ -773,8 +770,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
   }
 
   /**
-   * Associates the given key with the given value. If a value for the key is
-   * equal to the supplied `notEqual` parameter it is not replaced with the new value.
+   * Associates the given key with the given value if the key does not exist in the cache or
+   * if the value for the key is not equal to the supplied `notEqual` parameter.
    *
    * @param {string} cacheName - The cache to store the value in.
    * @param {string | Uint8Array} key - The key to set.
@@ -806,8 +803,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
   }
 
   /**
-   * Associates the given key with the given value. If a value for the key is
-   * not already present or is equal to the supplied `notEqual` parameter it is not replaced with the new value.
+   * Associates the given key with the given value if key is present in the cache
+   * and its value is not equal to the supplied `notEqual` value.
    *
    * @param {string} cacheName - The cache to store the value in.
    * @param {string | Uint8Array} key - The key to set.
@@ -839,8 +836,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
   }
 
   /**
-   * Associates the given key with the given value. If a value for the key is
-   * already present or is not equal to the supplied `equal` parameter it is not replaced with the new value.
+   * Associates the given key with the given value if key is absent or if the key is
+   * present and its value is equal to the given value.
    *
    * @param {string} cacheName - The cache to store the value in.
    * @param {string | Uint8Array} key - The key to set.

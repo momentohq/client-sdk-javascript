@@ -355,6 +355,8 @@ export class CacheDataClient<
     });
   }
 
+  // setIfNotExists is deprecated on the service. Here we call the new `SetIf` method with the absent field set
+  // and return `CacheSetIfNotExists` responses.
   public async setIfNotExists(
     cacheName: string,
     key: string | Uint8Array,

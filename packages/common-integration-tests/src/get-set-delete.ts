@@ -1156,7 +1156,7 @@ export function runGetSetDeleteTests(
       );
       expectWithMessage(() => {
         expect(setIfPresentResponse).toBeInstanceOf(CacheSetIfPresent.Stored);
-      }, `expected NOTSTORED but got ${setIfPresentResponse.toString()}`);
+      }, `expected STORED but got ${setIfPresentResponse.toString()}`);
       const getResponse = await cacheClient.get(
         integrationTestCacheName,
         cacheKey
