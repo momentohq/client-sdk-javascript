@@ -1265,7 +1265,7 @@ function processBatch(
     rank: number;
   }[]
 ) {
-  console.log('Empty function', values.length);
+  console.log(`Processing batch of ${values.length} leaderboard elements`);
 }
 
 async function example_API_LeaderboardFetchByScorePagination(leaderboard: ILeaderboard) {
