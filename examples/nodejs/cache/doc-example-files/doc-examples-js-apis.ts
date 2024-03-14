@@ -1204,13 +1204,14 @@ async function example_API_LeaderboardUpsert(leaderboard: ILeaderboard) {
   }
 }
 
-async function example_API_LeaderboardUpsertPagination(leaderboard: ILeaderboard) {
+async function example_API_LeaderboardUpsertPagination(leaderboard: ILeaderboard, totalNumElements: number) {
   // To upsert a large number of elements, you must upsert
   // in batches of up to 8192 elements at a time.
-  const elements = [...Array(20000).keys()].map(i => {
+  // This example shows how to paginate for a large value of `totalNumElements`, such as `20000`.
+  const elements = [...Array(totalNumElements).keys()].map(i => {
     return {id: i + 1, score: i * Math.random()};
   });
-  for (let i = 0; i < 20000; i += 8192) {
+  for (let i = 0; i < totalNumElements; i += 8192) {
     // Create a Map containing 8192 elements at a time
     const batch = new Map(elements.slice(i, i + 8192).map(obj => [obj['id'], obj['score']]));
 
@@ -1268,10 +1269,11 @@ function processBatch(
   console.log(`Processing batch of ${values.length} leaderboard elements`);
 }
 
-async function example_API_LeaderboardFetchByScorePagination(leaderboard: ILeaderboard) {
+async function example_API_LeaderboardFetchByScorePagination(leaderboard: ILeaderboard, totalNumElements: number) {
   // Use the offset option to paginate through your results if your leaderboard
   // has more than 8192 elements.
-  for (let offset = 0; offset < 20000; offset += 8192) {
+  // This example shows how to paginate for a large value of `totalNumElements`, such as `20000`.
+  for (let offset = 0; offset < totalNumElements; offset += 8192) {
     const result = await leaderboard.fetchByScore({offset});
     if (result instanceof LeaderboardFetch.Success) {
       processBatch(result.values());
@@ -1299,10 +1301,11 @@ async function example_API_LeaderboardFetchByRank(leaderboard: ILeaderboard) {
   }
 }
 
-async function example_API_LeaderboardFetchByRankPagination(leaderboard: ILeaderboard) {
+async function example_API_LeaderboardFetchByRankPagination(leaderboard: ILeaderboard, totalNumElements: number) {
   // Use the startRank and endRank options to paginate through your leaderboard
   // if your leaderboard has more than 8192 elements
-  for (let rank = 0; rank < 20000; rank += 8192) {
+  // This example shows how to paginate for a large value of `totalNumElements`, such as `20000`.
+  for (let rank = 0; rank < totalNumElements; rank += 8192) {
     const result = await leaderboard.fetchByRank(rank, rank + 8192, {order: LeaderboardOrder.Descending});
     if (result instanceof LeaderboardFetch.Success) {
       processBatch(result.values());
@@ -1354,10 +1357,11 @@ async function example_API_LeaderboardRemoveElements(leaderboard: ILeaderboard) 
   }
 }
 
-async function example_API_LeaderboardRemoveElementsPagination(leaderboard: ILeaderboard) {
-  // You can remove batches of 8192 elements at a time
-  const ids = [...Array(20000).keys()];
-  for (let i = 0; i < 20000; i += 8192) {
+async function example_API_LeaderboardRemoveElementsPagination(leaderboard: ILeaderboard, totalNumElements: number) {
+  // You can remove batches of 8192 elements at a time.
+  // This example shows how to paginate for a large value of `totalNumElements`, such as `20000`.
+  const ids = [...Array(totalNumElements).keys()];
+  for (let i = 0; i < totalNumElements; i += 8192) {
     const result = await leaderboard.removeElements(ids.slice(i, i + 8192));
     if (result instanceof LeaderboardRemoveElements.Error) {
       console.log(`Error removing batch [${i}, ${i + 8192}) (${result.errorCode()}: ${result.message()})`);
@@ -1509,27 +1513,27 @@ async function main() {
   // Sleep for a while to replenish rate limits before running other tests
   await delay(20_000);
 
-  await example_API_LeaderboardFetchByRankPagination(leaderboard);
+  await example_API_LeaderboardFetchByRankPagination(leaderboard, 10);
 
   // Sleep for a while to replenish rate limits before running other tests
   await delay(20_000);
 
-  await example_API_LeaderboardFetchByScorePagination(leaderboard);
+  await example_API_LeaderboardFetchByScorePagination(leaderboard, 10);
 
   // Sleep for a while to replenish rate limits before running other tests
   await delay(20_000);
 
-  await example_API_LeaderboardUpsertPagination(leaderboard);
+  await example_API_LeaderboardUpsertPagination(leaderboard, 10);
 
   // Sleep for a while to replenish rate limits before running other tests
   await delay(20_000);
 
-  await example_API_LeaderboardRemoveElementsPagination(leaderboard);
+  await example_API_LeaderboardRemoveElementsPagination(leaderboard, 10);
 
   // Sleep for a while to replenish rate limits before running other tests
   await delay(20_000);
 
-  await example_API_LeaderboardUpsertPagination(leaderboard);
+  await example_API_LeaderboardUpsertPagination(leaderboard, 10);
 
   // Sleep for a while to replenish rate limits before running other tests
   await delay(60_000);
