@@ -13,8 +13,8 @@ export function getCacheClient(
   loggerFactory: MomentoLoggerFactory,
   requestTimeoutMs: number,
   cacheItemTtlSeconds: number
-): Promise<CacheClient> {
-  return CacheClient.create({
+): CacheClient {
+  return new CacheClient({
     configuration: Configurations.Laptop.v1(loggerFactory).withClientTimeoutMillis(requestTimeoutMs),
     credentialProvider: new EnvMomentoTokenProvider({
       environmentVariableName: 'MOMENTO_API_KEY',
@@ -34,7 +34,7 @@ export async function createCache(momentCacheClient: CacheClient, cacheName: str
 
 export async function ensureCacheExists(cacheName: string): Promise<void> {
   const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.INFO);
-  const momento = await getCacheClient(loggerFactory, 5000, 60);
+  const momento = getCacheClient(loggerFactory, 5000, 60);
   const createCacheResponse = await momento.createCache(cacheName);
   if (createCacheResponse instanceof CreateCache.Success) {
     console.log('Cache created successfully. Continuing.');

@@ -43,7 +43,7 @@ class RequestCoalescerLoadGen {
   }
 
   async run(): Promise<void> {
-    const momento = await getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
+    const momento = getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
 
     await createCache(momento, this.cacheName, this.logger);
 
