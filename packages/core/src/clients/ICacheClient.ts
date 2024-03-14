@@ -47,6 +47,12 @@ import {
   CacheDictionaryGetFields,
   GetBatch,
   SetBatch,
+  CacheSetIfAbsent,
+  CacheSetIfPresent,
+  CacheSetIfEqual,
+  CacheSetIfNotEqual,
+  CacheSetIfPresentAndNotEqual,
+  CacheSetIfAbsentOrEqual,
 } from '../index';
 import {
   ScalarCallOptions,
@@ -65,6 +71,12 @@ import {IMomentoCache} from './IMomentoCache';
 // Type aliases to differentiate the different methods' optional arguments.
 export type SetOptions = ScalarCallOptions;
 export type SetIfNotExistsOptions = ScalarCallOptions;
+export type SetIfAbsentOptions = ScalarCallOptions;
+export type SetIfPresentOptions = ScalarCallOptions;
+export type SetIfEqualOptions = ScalarCallOptions;
+export type SetIfNotEqualOptions = ScalarCallOptions;
+export type SetIfPresentAndNotEqualOptions = ScalarCallOptions;
+export type SetIfAbsentOrEqualOptions = ScalarCallOptions;
 export type SetBatchOptions = ScalarCallOptions;
 export type ListConcatenateBackOptions = FrontTruncatableCallOptions;
 export type ListConcatenateFrontOptions = BackTruncatableCallOptions;
@@ -103,12 +115,55 @@ export interface ICacheClient extends IControlClient, IPingClient {
     amount: number,
     options?: IncrementOptions
   ): Promise<CacheIncrement.Response>;
+  /**
+   * @deprecated use setIfAbsent instead.
+   */
   setIfNotExists(
     cacheName: string,
     key: string | Uint8Array,
     field: string | Uint8Array,
     options?: SetIfNotExistsOptions
   ): Promise<CacheSetIfNotExists.Response>;
+  setIfAbsent(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    options?: SetIfAbsentOptions
+  ): Promise<CacheSetIfAbsent.Response>;
+  setIfPresent(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    options?: SetIfPresentOptions
+  ): Promise<CacheSetIfPresent.Response>;
+  setIfEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    equal: string | Uint8Array,
+    options?: SetIfEqualOptions
+  ): Promise<CacheSetIfEqual.Response>;
+  setIfNotEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    notEqual: string | Uint8Array,
+    options?: SetIfNotEqualOptions
+  ): Promise<CacheSetIfNotEqual.Response>;
+  setIfPresentAndNotEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    notEqual: string | Uint8Array,
+    options?: SetIfPresentAndNotEqualOptions
+  ): Promise<CacheSetIfPresentAndNotEqual.Response>;
+  setIfAbsentOrEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    equal: string | Uint8Array,
+    options?: SetIfAbsentOrEqualOptions
+  ): Promise<CacheSetIfAbsentOrEqual.Response>;
   getBatch(
     cacheName: string,
     keys: Array<string | Uint8Array>

@@ -41,6 +41,7 @@ import {
   MiddlewareRequestHandlerContext,
 } from '../config/middleware/middleware';
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
+import {common} from '@gomomento/generated-types/dist/common';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -280,12 +281,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     if (minScore !== undefined) {
       protoBufScoreRange.min_inclusive = minScore;
     } else {
-      protoBufScoreRange.unbounded_min = new leaderboard._Unbounded();
+      protoBufScoreRange.unbounded_min = new common._Unbounded();
     }
     if (maxScore !== undefined) {
       protoBufScoreRange.max_exclusive = maxScore;
     } else {
-      protoBufScoreRange.unbounded_max = new leaderboard._Unbounded();
+      protoBufScoreRange.unbounded_max = new common._Unbounded();
     }
 
     const request = new leaderboard._GetByScoreRequest({
