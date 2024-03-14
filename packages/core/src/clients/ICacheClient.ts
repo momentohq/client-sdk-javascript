@@ -115,6 +115,9 @@ export interface ICacheClient extends IControlClient, IPingClient {
     amount: number,
     options?: IncrementOptions
   ): Promise<CacheIncrement.Response>;
+  /**
+   * @deprecated use setIfAbsent instead.
+   */
   setIfNotExists(
     cacheName: string,
     key: string | Uint8Array,
