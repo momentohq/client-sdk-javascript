@@ -34,6 +34,12 @@ import {
   CacheIncrement,
   CacheItemGetType,
   CacheSetIfNotExists,
+  CacheSetIfPresent,
+  CacheSetIfAbsent,
+  CacheSetIfEqual,
+  CacheSetIfNotEqual,
+  CacheSetIfPresentAndNotEqual,
+  CacheSetIfAbsentOrEqual,
   CacheListFetch,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
@@ -279,6 +285,84 @@ async function example_API_SetIfNotExists(cacheClient: CacheClient) {
   } else if (result instanceof CacheSetIfNotExists.Error) {
     throw new Error(
       `An error occurred while attempting to call setIfNotExists for the key 'test-key' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SetIfPresent(cacheClient: CacheClient) {
+  const result = await cacheClient.setIfPresent('test-cache', 'test-key', 'test-field');
+  if (result instanceof CacheSetIfPresent.Stored) {
+    console.log("Field 'test-field' set in key 'test-key'");
+  } else if (result instanceof CacheSetIfPresent.NotStored) {
+    console.log("Key 'test-key' does not exist in cache 'test-cache', so we did not set the field");
+  } else if (result instanceof CacheSetIfPresent.Error) {
+    throw new Error(
+      `An error occurred while attempting to call setIfPresent for the key 'test-key' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SetIfAbsent(cacheClient: CacheClient) {
+  const result = await cacheClient.setIfAbsent('test-cache', 'test-key', 'test-field');
+  if (result instanceof CacheSetIfAbsent.Stored) {
+    console.log("Field 'test-field' set in key 'test-key'");
+  } else if (result instanceof CacheSetIfAbsent.NotStored) {
+    console.log("Key 'test-key' already exists in cache 'test-cache', so we did not overwrite it");
+  } else if (result instanceof CacheSetIfAbsent.Error) {
+    throw new Error(
+      `An error occurred while attempting to call setIfAbsent for the key 'test-key' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SetIfEqual(cacheClient: CacheClient) {
+  const result = await cacheClient.setIfEqual('test-cache', 'test-key', 'test-field', 'value-to-check');
+  if (result instanceof CacheSetIfEqual.Stored) {
+    console.log("Field 'test-field' set in key 'test-key'");
+  } else if (result instanceof CacheSetIfEqual.NotStored) {
+    console.log("Key 'test-key' does not exist in cache 'test-cache', so we did not set the field");
+  } else if (result instanceof CacheSetIfEqual.Error) {
+    throw new Error(
+      `An error occurred while attempting to call setIfEqual for the key 'test-key' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SetIfNotEqual(cacheClient: CacheClient) {
+  const result = await cacheClient.setIfNotEqual('test-cache', 'test-key', 'test-field', 'value-to-check');
+  if (result instanceof CacheSetIfNotEqual.Stored) {
+    console.log("Field 'test-field' set in key 'test-key'");
+  } else if (result instanceof CacheSetIfNotEqual.NotStored) {
+    console.log("Key 'test-key' does not exist in cache 'test-cache', so we did not set the field");
+  } else if (result instanceof CacheSetIfNotEqual.Error) {
+    throw new Error(
+      `An error occurred while attempting to call setIfNotEqual for the key 'test-key' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SetIfPresentAndNotEqual(cacheClient: CacheClient) {
+  const result = await cacheClient.setIfPresentAndNotEqual('test-cache', 'test-key', 'test-field', 'value-to-check');
+  if (result instanceof CacheSetIfPresentAndNotEqual.Stored) {
+    console.log("Field 'test-field' set in key 'test-key'");
+  } else if (result instanceof CacheSetIfPresentAndNotEqual.NotStored) {
+    console.log("Key 'test-key' does not exist in cache 'test-cache', so we did not set the field");
+  } else if (result instanceof CacheSetIfPresentAndNotEqual.Error) {
+    throw new Error(
+      `An error occurred while attempting to call setIfPresentAndNotEqual for the key 'test-key' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SetIfAbsentOrEqual(cacheClient: CacheClient) {
+  const result = await cacheClient.setIfAbsentOrEqual('test-cache', 'test-key', 'test-field', 'value-to-check');
+  if (result instanceof CacheSetIfAbsentOrEqual.Stored) {
+    console.log("Field 'test-field' set in key 'test-key'");
+  } else if (result instanceof CacheSetIfAbsentOrEqual.NotStored) {
+    console.log("Key 'test-key' does not exist in cache 'test-cache', so we did not set the field");
+  } else if (result instanceof CacheSetIfAbsentOrEqual.Error) {
+    throw new Error(
+      `An error occurred while attempting to call setIfAbsentOrEqual for the key 'test-key' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
@@ -1417,6 +1501,12 @@ async function main() {
   await example_API_Increment(cacheClient);
   await example_API_ItemGetType(cacheClient);
   await example_API_SetIfNotExists(cacheClient);
+  await example_API_SetIfAbsent(cacheClient);
+  await example_API_SetIfPresent(cacheClient);
+  await example_API_SetIfEqual(cacheClient);
+  await example_API_SetIfNotEqual(cacheClient);
+  await example_API_SetIfPresentAndNotEqual(cacheClient);
+  await example_API_SetIfAbsentOrEqual(cacheClient);
   await example_API_SetBatch(cacheClient);
   await example_API_GetBatch(cacheClient);
 
