@@ -724,13 +724,13 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache to store the value in.
    * @param {string | Uint8Array} key - The key to set.
    * @param {string | Uint8Array} field - The value to be stored.
-   * @param {SetIfAbsentOptions} [options]
+   * @param {SetIfPresentOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
    * Uses the client's default TTL if this is not supplied.
-   * @returns {Promise<CacheSetIfAbsent.Response>} -
-   * {@link CacheSetIfAbsent.Stored} on storing the new value.
-   * {@link CacheSetIfAbsent.NotStored} on not storing the new value.
-   * {@link CacheSetIfAbsent.Error} on failure.
+   * @returns {Promise<CacheSetIfPresent.Response>} -
+   * {@link CacheSetIfPresent.Stored} on storing the new value.
+   * {@link CacheSetIfPresent.NotStored} on not storing the new value.
+   * {@link CacheSetIfPresent.Error} on failure.
    */
   public async setIfPresent(
     cacheName: string,
@@ -780,7 +780,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {SetIfNotEqualOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
    * Uses the client's default TTL if this is not supplied.
-   * @returns {Promise<CacheSetIfAbsent.Response>} -
+   * @returns {Promise<CacheSetIfNotEqual.Response>} -
    * {@link CacheSetIfNotEqual.Stored} on storing the new value.
    * {@link CacheSetIfNotEqual.NotStored} on not storing the new value.
    * {@link CacheSetIfNotEqual.Error} on failure.
@@ -813,10 +813,10 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {SetIfAbsentOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
    * Uses the client's default TTL if this is not supplied.
-   * @returns {Promise<CacheSetIfAbsent.Response>} -
-   * {@link CacheSetIfAbsent.Stored} on storing the new value.
-   * {@link CacheSetIfAbsent.NotStored} on not storing the new value.
-   * {@link CacheSetIfAbsent.Error} on failure.
+   * @returns {Promise<CacheSetIfPresentAndNotEqual.Response>} -
+   * {@link CacheSetIfPresentAndNotEqual.Stored} on storing the new value.
+   * {@link CacheSetIfPresentAndNotEqual.NotStored} on not storing the new value.
+   * {@link CacheSetIfPresentAndNotEqual.Error} on failure.
    */
   public async setIfPresentAndNotEqual(
     cacheName: string,

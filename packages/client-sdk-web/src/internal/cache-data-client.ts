@@ -396,13 +396,14 @@ export class CacheDataClient<
     field: string,
     ttlMilliseconds: number
   ): Promise<CacheSetIfNotExists.Response> {
-    const request = new _SetIfNotExistsRequest();
+    const request = new _SetIfRequest();
     request.setCacheKey(key);
     request.setCacheBody(field);
     request.setTtlMilliseconds(ttlMilliseconds);
+    request.setAbsent(new Absent());
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.setIfNotExists(
+      this.clientWrapper.setIf(
         request,
         {
           ...this.clientMetadataProvider.createClientMetadata(),
@@ -411,10 +412,10 @@ export class CacheDataClient<
         (err, resp) => {
           if (resp) {
             switch (resp.getResultCase()) {
-              case _SetIfNotExistsResponse.ResultCase.STORED:
+              case _SetIfResponse.ResultCase.STORED:
                 resolve(new CacheSetIfNotExists.Stored());
                 break;
-              case _SetIfNotExistsResponse.ResultCase.NOT_STORED:
+              case _SetIfResponse.ResultCase.NOT_STORED:
                 resolve(new CacheSetIfNotExists.NotStored());
                 break;
               default:
