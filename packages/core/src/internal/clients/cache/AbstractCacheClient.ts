@@ -10,6 +10,12 @@ import {
   IncrementOptions,
   CacheSetIfNotExists,
   SetIfNotExistsOptions,
+  SetIfAbsentOptions,
+  SetIfPresentOptions,
+  SetIfEqualOptions,
+  SetIfNotEqualOptions,
+  SetIfPresentAndNotEqualOptions,
+  SetIfAbsentOrEqualOptions,
   CacheSetFetch,
   CacheSetAddElement,
   CacheSetAddElements,
@@ -56,6 +62,12 @@ import {
   GetBatch,
   SetBatch,
   InvalidArgumentError,
+  CacheSetIfAbsent,
+  CacheSetIfPresent,
+  CacheSetIfEqual,
+  CacheSetIfNotEqual,
+  CacheSetIfPresentAndNotEqual,
+  CacheSetIfAbsentOrEqual,
 } from '../../../index';
 import {ListFetchCallOptions, ListRetainCallOptions} from '../../../utils';
 import {
@@ -658,9 +670,9 @@ export abstract class AbstractCacheClient implements ICacheClient {
   }
 
   /**
-   * Associates the given key with the given value. If a value for the key is
-   * already present it is not replaced with the new value.
+   * Associates the given key with the given value if key is not already present in the cache.
    *
+   * @deprecated Use setIfAbsent instead.
    * @param {string} cacheName - The cache to store the value in.
    * @param {string | Uint8Array} key - The key to set.
    * @param {string | Uint8Array} field - The value to be stored.
@@ -680,6 +692,180 @@ export abstract class AbstractCacheClient implements ICacheClient {
   ): Promise<CacheSetIfNotExists.Response> {
     const client = this.getNextDataClient();
     return await client.setIfNotExists(cacheName, key, field, options?.ttl);
+  }
+
+  /**
+   * Associates the given key with the given value if key is not already present in the cache.
+   *
+   * @param {string} cacheName - The cache to store the value in.
+   * @param {string | Uint8Array} key - The key to set.
+   * @param {string | Uint8Array} field - The value to be stored.
+   * @param {SetIfAbsentOptions} [options]
+   * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * Uses the client's default TTL if this is not supplied.
+   * @returns {Promise<CacheSetIfAbsent.Response>} -
+   * {@link CacheSetIfAbsent.Stored} on storing the new value.
+   * {@link CacheSetIfAbsent.NotStored} on not storing the new value.
+   * {@link CacheSetIfAbsent.Error} on failure.
+   */
+  public async setIfAbsent(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    options?: SetIfAbsentOptions
+  ): Promise<CacheSetIfAbsent.Response> {
+    const client = this.getNextDataClient();
+    return await client.setIfAbsent(cacheName, key, field, options?.ttl);
+  }
+
+  /**
+   * Associates the given key with the given value if the key is present in the cache.
+   *
+   * @param {string} cacheName - The cache to store the value in.
+   * @param {string | Uint8Array} key - The key to set.
+   * @param {string | Uint8Array} field - The value to be stored.
+   * @param {SetIfPresentOptions} [options]
+   * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * Uses the client's default TTL if this is not supplied.
+   * @returns {Promise<CacheSetIfPresent.Response>} -
+   * {@link CacheSetIfPresent.Stored} on storing the new value.
+   * {@link CacheSetIfPresent.NotStored} on not storing the new value.
+   * {@link CacheSetIfPresent.Error} on failure.
+   */
+  public async setIfPresent(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    options?: SetIfPresentOptions
+  ): Promise<CacheSetIfPresent.Response> {
+    const client = this.getNextDataClient();
+    return await client.setIfPresent(cacheName, key, field, options?.ttl);
+  }
+
+  /**
+   * Associates the given key with the given value if the key is present in the cache
+   * and its value is equal to the supplied `equal` value.
+   *
+   * @param {string} cacheName - The cache to store the value in.
+   * @param {string | Uint8Array} key - The key to set.
+   * @param {string | Uint8Array} field - The value to be stored.
+   * @param {string | Uint8Array} equal - The value to compare to the cached value.
+   * @param {SetIfEqualOptions} [options]
+   * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * Uses the client's default TTL if this is not supplied.
+   * @returns {Promise<CacheSetIfEqual.Response>} -
+   * {@link CacheSetIfEqual.Stored} on storing the new value.
+   * {@link CacheSetIfEqual.NotStored} on not storing the new value.
+   * {@link CacheSetIfEqual.Error} on failure.
+   */
+  public async setIfEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    equal: string | Uint8Array,
+    options?: SetIfEqualOptions
+  ): Promise<CacheSetIfEqual.Response> {
+    const client = this.getNextDataClient();
+    return await client.setIfEqual(cacheName, key, field, equal, options?.ttl);
+  }
+
+  /**
+   * Associates the given key with the given value if the key does not exist in the cache or
+   * if the value for the key is not equal to the supplied `notEqual` parameter.
+   *
+   * @param {string} cacheName - The cache to store the value in.
+   * @param {string | Uint8Array} key - The key to set.
+   * @param {string | Uint8Array} field - The value to be stored.
+   * @param {string | Uint8Array} notEqual - The value to compare to the cached value.
+   * @param {SetIfNotEqualOptions} [options]
+   * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * Uses the client's default TTL if this is not supplied.
+   * @returns {Promise<CacheSetIfNotEqual.Response>} -
+   * {@link CacheSetIfNotEqual.Stored} on storing the new value.
+   * {@link CacheSetIfNotEqual.NotStored} on not storing the new value.
+   * {@link CacheSetIfNotEqual.Error} on failure.
+   */
+  public async setIfNotEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    notEqual: string | Uint8Array,
+    options?: SetIfNotEqualOptions
+  ): Promise<CacheSetIfNotEqual.Response> {
+    const client = this.getNextDataClient();
+    return await client.setIfNotEqual(
+      cacheName,
+      key,
+      field,
+      notEqual,
+      options?.ttl
+    );
+  }
+
+  /**
+   * Associates the given key with the given value if key is present in the cache
+   * and its value is not equal to the supplied `notEqual` value.
+   *
+   * @param {string} cacheName - The cache to store the value in.
+   * @param {string | Uint8Array} key - The key to set.
+   * @param {string | Uint8Array} field - The value to be stored.
+   * @param {string | Uint8Array} notEqual - The value to compare to the cached value.
+   * @param {SetIfAbsentOptions} [options]
+   * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * Uses the client's default TTL if this is not supplied.
+   * @returns {Promise<CacheSetIfPresentAndNotEqual.Response>} -
+   * {@link CacheSetIfPresentAndNotEqual.Stored} on storing the new value.
+   * {@link CacheSetIfPresentAndNotEqual.NotStored} on not storing the new value.
+   * {@link CacheSetIfPresentAndNotEqual.Error} on failure.
+   */
+  public async setIfPresentAndNotEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    notEqual: string | Uint8Array,
+    options?: SetIfPresentAndNotEqualOptions
+  ): Promise<CacheSetIfPresentAndNotEqual.Response> {
+    const client = this.getNextDataClient();
+    return await client.setIfPresentAndNotEqual(
+      cacheName,
+      key,
+      field,
+      notEqual,
+      options?.ttl
+    );
+  }
+
+  /**
+   * Associates the given key with the given value if key is absent or if the key is
+   * present and its value is equal to the given value.
+   *
+   * @param {string} cacheName - The cache to store the value in.
+   * @param {string | Uint8Array} key - The key to set.
+   * @param {string | Uint8Array} field - The value to be stored.
+   * @param {string | Uint8Array} equal - The value to compare to the cached value.
+   * @param {SetIfAbsentOrEqualOptions} [options]
+   * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * Uses the client's default TTL if this is not supplied.
+   * @returns {Promise<CacheSetIfAbsentOrEqual.Response>} -
+   * {@link CacheSetIfAbsentOrEqual.Stored} on storing the new value.
+   * {@link CacheSetIfAbsentOrEqual.NotStored} on not storing the new value.
+   * {@link CacheSetIfAbsentOrEqual.Error} on failure.
+   */
+  public async setIfAbsentOrEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    field: string | Uint8Array,
+    equal: string | Uint8Array,
+    options?: SetIfAbsentOrEqualOptions
+  ): Promise<CacheSetIfAbsentOrEqual.Response> {
+    const client = this.getNextDataClient();
+    return await client.setIfAbsentOrEqual(
+      cacheName,
+      key,
+      field,
+      equal,
+      options?.ttl
+    );
   }
 
   /**

@@ -48,6 +48,12 @@ import * as CacheSetRemoveElements from '@gomomento/sdk-core/dist/src/messages/r
 import * as CacheSetRemoveElement from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-remove-element';
 import * as CacheIncrement from '@gomomento/sdk-core/dist/src/messages/responses/cache-increment';
 import * as CacheSetIfNotExists from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-not-exists';
+import * as CacheSetIfAbsent from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-absent';
+import * as CacheSetIfPresent from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-present';
+import * as CacheSetIfEqual from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-equal';
+import * as CacheSetIfNotEqual from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-not-equal';
+import * as CacheSetIfAbsentOrEqual from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-absent-or-equal';
+import * as CacheSetIfPresentAndNotEqual from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-present-and-not-equal';
 import * as CacheSortedSetPutElement from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-put-element';
 import * as CacheSortedSetPutElements from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-put-elements';
 import * as CacheSortedSetFetch from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-fetch';
@@ -291,6 +297,12 @@ export {
   CacheListRetain,
   CacheSet,
   CacheSetIfNotExists,
+  CacheSetIfAbsent,
+  CacheSetIfPresent,
+  CacheSetIfEqual,
+  CacheSetIfNotEqual,
+  CacheSetIfAbsentOrEqual,
+  CacheSetIfPresentAndNotEqual,
   CacheDelete,
   CacheFlush,
   CreateCache,

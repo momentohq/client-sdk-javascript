@@ -35,6 +35,12 @@ import * as CacheSetRemoveElements from './messages/responses/cache-set-remove-e
 import * as CacheSetRemoveElement from './messages/responses/cache-set-remove-element';
 import * as CacheIncrement from './messages/responses/cache-increment';
 import * as CacheSetIfNotExists from './messages/responses/cache-set-if-not-exists';
+import * as CacheSetIfAbsent from './messages/responses/cache-set-if-absent';
+import * as CacheSetIfPresent from './messages/responses/cache-set-if-present';
+import * as CacheSetIfEqual from './messages/responses/cache-set-if-equal';
+import * as CacheSetIfNotEqual from './messages/responses/cache-set-if-not-equal';
+import * as CacheSetIfPresentAndNotEqual from './messages/responses/cache-set-if-present-and-not-equal';
+import * as CacheSetIfAbsentOrEqual from './messages/responses/cache-set-if-absent-or-equal';
 import * as CacheSortedSetPutElement from './messages/responses/cache-sorted-set-put-element';
 import * as CacheSortedSetPutElements from './messages/responses/cache-sorted-set-put-elements';
 import * as CacheSortedSetFetch from './messages/responses/cache-sorted-set-fetch';
@@ -144,6 +150,12 @@ export {
   ICacheClient,
   SetOptions,
   SetIfNotExistsOptions,
+  SetIfAbsentOptions,
+  SetIfPresentOptions,
+  SetIfEqualOptions,
+  SetIfNotEqualOptions,
+  SetIfPresentAndNotEqualOptions,
+  SetIfAbsentOrEqualOptions,
   IncrementOptions,
 } from './clients/ICacheClient';
 
@@ -229,6 +241,12 @@ export {
   CacheListRetain,
   CacheSet,
   CacheSetIfNotExists,
+  CacheSetIfPresent,
+  CacheSetIfAbsent,
+  CacheSetIfEqual,
+  CacheSetIfNotEqual,
+  CacheSetIfPresentAndNotEqual,
+  CacheSetIfAbsentOrEqual,
   CacheDelete,
   CacheFlush,
   CreateCache,
