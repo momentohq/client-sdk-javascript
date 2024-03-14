@@ -154,7 +154,7 @@ export class CacheDataClient implements IDataClient {
         this.logger.debug(`Constructing channel for clientID ${dataClientID}`);
         return new grpcCache.ScsClient(
           this.credentialProvider.getCacheEndpoint(),
-          ChannelCredentials.createInsecure(),
+          ChannelCredentials.createSsl(),
           channelOptions
         );
       },

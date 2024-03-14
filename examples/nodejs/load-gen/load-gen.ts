@@ -36,7 +36,7 @@ class BasicLoadGen {
   }
 
   async run(): Promise<void> {
-    const momento = getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
+    const momento = await getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
 
     await createCache(momento, this.cacheName, this.logger);
 
@@ -209,7 +209,7 @@ const loadGeneratorOptions: BasicLoadGenOptions = {
    * Controls how long the load test will run, in milliseconds. We will execute operations
    * for this long and the exit.
    */
-  totalSecondsToRun: 600000,
+  totalSecondsToRun: 60,
 };
 
 main(loadGeneratorOptions)
