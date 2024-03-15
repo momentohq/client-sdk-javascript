@@ -89,7 +89,7 @@ import {
   GetBatch,
   SetBatch,
 } from '@gomomento/sdk';
-import {delay} from '../utils/time';
+import * as crypto from 'crypto';
 
 function retrieveApiKeyFromYourSecretsManager(): string {
   // this is not a valid API key but conforms to the syntax requirements.
@@ -137,50 +137,50 @@ async function example_API_InstantiateCacheClient() {
   });
 }
 
-async function example_API_ErrorHandlingHitMiss(cacheClient: CacheClient) {
-  const result = await cacheClient.get('test-cache', 'test-key');
+async function example_API_ErrorHandlingHitMiss(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.get(cacheName, 'test-key');
   if (result instanceof CacheGet.Hit) {
     console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
   } else if (result instanceof CacheGet.Miss) {
-    console.log("Key 'test-key' was not found in cache 'test-cache'");
+    console.log(`Key 'test-key' was not found in cache '${cacheName}'`);
   } else if (result instanceof CacheGet.Error) {
     throw new Error(
-      `An error occurred while attempting to get key 'test-key' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to get key 'test-key' from cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_ErrorHandlingSuccess(cacheClient: CacheClient) {
-  const result = await cacheClient.set('test-cache', 'test-key', 'test-value');
+async function example_API_ErrorHandlingSuccess(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.set(cacheName, 'test-key', 'test-value');
   if (result instanceof CacheSet.Success) {
     console.log("Key 'test-key' stored successfully");
   } else if (result instanceof CacheSet.Error) {
     throw new Error(
-      `An error occurred while attempting to store key 'test-key' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to store key 'test-key' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_CreateCache(cacheClient: CacheClient) {
-  const result = await cacheClient.createCache('test-cache');
+async function example_API_CreateCache(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.createCache(cacheName);
   if (result instanceof CreateCache.Success) {
-    console.log("Cache 'test-cache' created");
+    console.log(`Cache '${cacheName}' created`);
   } else if (result instanceof CreateCache.AlreadyExists) {
-    console.log("Cache 'test-cache' already exists");
+    console.log(`Cache '${cacheName}' already exists`);
   } else if (result instanceof CreateCache.Error) {
     throw new Error(
-      `An error occurred while attempting to create cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to create cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_DeleteCache(cacheClient: CacheClient) {
-  const result = await cacheClient.deleteCache('test-cache');
+async function example_API_DeleteCache(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.deleteCache(cacheName);
   if (result instanceof DeleteCache.Success) {
-    console.log("Cache 'test-cache' deleted");
+    console.log(`Cache '${cacheName}' deleted`);
   } else if (result instanceof DeleteCache.Error) {
     throw new Error(
-      `An error occurred while attempting to delete cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to delete cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
@@ -199,110 +199,110 @@ async function example_API_ListCaches(cacheClient: CacheClient) {
   }
 }
 
-async function example_API_FlushCache(cacheClient: CacheClient) {
-  const result = await cacheClient.flushCache('test-cache');
+async function example_API_FlushCache(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.flushCache(cacheName);
   if (result instanceof CacheFlush.Success) {
-    console.log("Cache 'test-cache' flushed");
+    console.log(`Cache '${cacheName}' flushed`);
   } else if (result instanceof CacheFlush.Error) {
     throw new Error(
-      `An error occurred while attempting to flush cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to flush cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_Set(cacheClient: CacheClient) {
-  const result = await cacheClient.set('test-cache', 'test-key', 'test-value');
+async function example_API_Set(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.set(cacheName, 'test-key', 'test-value');
   if (result instanceof CacheSet.Success) {
     console.log("Key 'test-key' stored successfully");
   } else if (result instanceof CacheSet.Error) {
     throw new Error(
-      `An error occurred while attempting to store key 'test-key' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to store key 'test-key' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_Get(cacheClient: CacheClient) {
-  const result = await cacheClient.get('test-cache', 'test-key');
+async function example_API_Get(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.get(cacheName, 'test-key');
   if (result instanceof CacheGet.Hit) {
     console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
   } else if (result instanceof CacheGet.Miss) {
-    console.log("Key 'test-key' was not found in cache 'test-cache'");
+    console.log(`Key 'test-key' was not found in cache '${cacheName}'`);
   } else if (result instanceof CacheGet.Error) {
     throw new Error(
-      `An error occurred while attempting to get key 'test-key' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to get key 'test-key' from cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_Delete(cacheClient: CacheClient) {
-  const result = await cacheClient.delete('test-cache', 'test-key');
+async function example_API_Delete(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.delete(cacheName, 'test-key');
   if (result instanceof CacheDelete.Success) {
     console.log("Key 'test-key' deleted successfully");
   } else if (result instanceof CacheDelete.Error) {
     throw new Error(
-      `An error occurred while attempting to delete key 'test-key' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to delete key 'test-key' from cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_Increment(cacheClient: CacheClient) {
-  await cacheClient.set('test-cache', 'test-key', '10');
-  const result = await cacheClient.increment('test-cache', 'test-key', 1);
+async function example_API_Increment(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.set(cacheName, 'test-key', '10');
+  const result = await cacheClient.increment(cacheName, 'test-key', 1);
   if (result instanceof CacheIncrement.Success) {
     console.log(`Key 'test-key' incremented successfully. New value in key test-key: ${result.valueNumber()}`);
   } else if (result instanceof CacheIncrement.Error) {
     throw new Error(
-      `An error occurred while attempting to increment the value of key 'test-key' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to increment the value of key 'test-key' from cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_ItemGetType(cacheClient: CacheClient) {
-  const result = await cacheClient.itemGetType('test-cache', 'test-key');
+async function example_API_ItemGetType(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.itemGetType(cacheName, 'test-key');
   if (result instanceof CacheItemGetType.Hit) {
     console.log(`Item type retrieved successfully: ${ItemType[result.itemType()]}`);
   } else if (result instanceof CacheItemGetType.Miss) {
-    console.log("Key 'test-key' was not found in cache 'test-cache'");
+    console.log("Key 'test-key' was not found in cache '${cacheName}'");
   } else if (result instanceof CacheItemGetType.Error) {
     throw new Error(
-      `An error occurred while attempting to get the type of key 'test-key' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to get the type of key 'test-key' from cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SetIfNotExists(cacheClient: CacheClient) {
-  const result = await cacheClient.setIfNotExists('test-cache', 'test-key', 'test-field');
+async function example_API_SetIfNotExists(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.setIfNotExists(cacheName, 'test-key', 'test-field');
   if (result instanceof CacheSetIfNotExists.Stored) {
     console.log("Field 'test-field' set in key 'test-key'");
   } else if (result instanceof CacheSetIfNotExists.NotStored) {
-    console.log("Key 'test-key' already exists in cache 'test-cache', so we did not overwrite it");
+    console.log(`Key 'test-key' already exists in cache '${cacheName}', so we did not overwrite it`);
   } else if (result instanceof CacheSetIfNotExists.Error) {
     throw new Error(
-      `An error occurred while attempting to call setIfNotExists for the key 'test-key' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call setIfNotExists for the key 'test-key' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SetBatch(cacheClient: CacheClient) {
+async function example_API_SetBatch(cacheClient: CacheClient, cacheName: string) {
   const values = new Map<string, string>([
     ['abc', '123'],
     ['xyz', '321'],
     ['123', 'xyz'],
     ['321', 'abc'],
   ]);
-  const result = await cacheClient.setBatch('test-cache', values);
+  const result = await cacheClient.setBatch(cacheName, values);
   if (result instanceof SetBatch.Success) {
     console.log('Keys and values stored successfully');
   } else if (result instanceof SetBatch.Error) {
     throw new Error(
-      `An error occurred while attempting to batch set in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to batch set in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_GetBatch(cacheClient: CacheClient) {
+async function example_API_GetBatch(cacheClient: CacheClient, cacheName: string) {
   const keys = ['abc', 'xyz', '123', '321'];
-  const result = await cacheClient.getBatch('test-cache', keys);
+  const result = await cacheClient.getBatch(cacheName, keys);
   if (result instanceof GetBatch.Success) {
     const values = result.values();
     for (const key of keys) {
@@ -310,211 +310,211 @@ async function example_API_GetBatch(cacheClient: CacheClient) {
     }
   } else if (result instanceof GetBatch.Error) {
     throw new Error(
-      `An error occurred while attempting to batch get in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to batch get in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_ListFetch(cacheClient: CacheClient) {
-  await cacheClient.listConcatenateBack('test-cache', 'test-list', ['a', 'b', 'c']);
-  const result = await cacheClient.listFetch('test-cache', 'test-list');
+async function example_API_ListFetch(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.listConcatenateBack(cacheName, 'test-list', ['a', 'b', 'c']);
+  const result = await cacheClient.listFetch(cacheName, 'test-list');
   if (result instanceof CacheListFetch.Hit) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     console.log(`List fetched successfully: ${result.valueList()}`);
   } else if (result instanceof CacheListFetch.Miss) {
-    console.log("List 'test-list' was not found in cache 'test-cache'");
+    console.log(`List 'test-list' was not found in cache '${cacheName}'`);
   } else if (result instanceof CacheListFetch.Error) {
     throw new Error(
-      `An error occurred while attempting to fetch the list 'test-list' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to fetch the list 'test-list' from cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_ListConcatenateBack(cacheClient: CacheClient) {
-  await cacheClient.listConcatenateBack('test-cache', 'test-list', ['a', 'b', 'c']);
-  const result = await cacheClient.listConcatenateBack('test-cache', 'test-list', ['x', 'y', 'z']);
+async function example_API_ListConcatenateBack(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.listConcatenateBack(cacheName, 'test-list', ['a', 'b', 'c']);
+  const result = await cacheClient.listConcatenateBack(cacheName, 'test-list', ['x', 'y', 'z']);
   if (result instanceof CacheListConcatenateBack.Success) {
     console.log(`Values added successfully to the back of the list 'test-list'. Result - ${result.toString()}`);
   } else if (result instanceof CacheListConcatenateBack.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheListConcatenateBack on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheListConcatenateBack on list 'test-list' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_ListConcatenateFront(cacheClient: CacheClient) {
-  await cacheClient.listConcatenateFront('test-cache', 'test-list', ['a', 'b', 'c']);
-  const result = await cacheClient.listConcatenateFront('test-cache', 'test-list', ['x', 'y', 'z']);
+async function example_API_ListConcatenateFront(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.listConcatenateFront(cacheName, 'test-list', ['a', 'b', 'c']);
+  const result = await cacheClient.listConcatenateFront(cacheName, 'test-list', ['x', 'y', 'z']);
   if (result instanceof CacheListConcatenateFront.Success) {
     console.log(`Values added successfully to the front of the list 'test-list'. Result - ${result.toString()}`);
   } else if (result instanceof CacheListConcatenateFront.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheListConcatenateFront on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheListConcatenateFront on list 'test-list' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_ListLength(cacheClient: CacheClient) {
-  await cacheClient.listConcatenateBack('test-cache', 'test-list', ['one', 'two', 'three']);
-  const result = await cacheClient.listLength('test-cache', 'test-list');
+async function example_API_ListLength(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.listConcatenateBack(cacheName, 'test-list', ['one', 'two', 'three']);
+  const result = await cacheClient.listLength(cacheName, 'test-list');
   if (result instanceof CacheListLength.Hit) {
     console.log(`Length of list 'test-list' is ${result.length()}`);
   } else if (result instanceof CacheListLength.Miss) {
-    console.log("List 'test-list' was not found in cache 'test-cache'");
+    console.log(`List 'test-list' was not found in cache '${cacheName}'`);
   } else if (result instanceof CacheListLength.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheListLength on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheListLength on list 'test-list' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_ListPopBack(cacheClient: CacheClient) {
-  await cacheClient.listConcatenateBack('test-cache', 'test-list', ['one', 'two', 'three']);
-  const result = await cacheClient.listPopBack('test-cache', 'test-list');
+async function example_API_ListPopBack(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.listConcatenateBack(cacheName, 'test-list', ['one', 'two', 'three']);
+  const result = await cacheClient.listPopBack(cacheName, 'test-list');
   if (result instanceof CacheListPopBack.Hit) {
     console.log(`Last value was removed successfully from list 'test-list': ${result.valueString()}`);
   } else if (result instanceof CacheListPopBack.Miss) {
-    console.log("List 'test-list' was not found in cache 'test-cache'");
+    console.log(`List 'test-list' was not found in cache '${cacheName}'`);
   } else if (result instanceof CacheListPopBack.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheListPopBack on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheListPopBack on list 'test-list' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_ListPopFront(cacheClient: CacheClient) {
-  await cacheClient.listConcatenateFront('test-cache', 'test-list', ['one', 'two', 'three']);
-  const result = await cacheClient.listPopFront('test-cache', 'test-list');
+async function example_API_ListPopFront(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.listConcatenateFront(cacheName, 'test-list', ['one', 'two', 'three']);
+  const result = await cacheClient.listPopFront(cacheName, 'test-list');
   if (result instanceof CacheListPopFront.Hit) {
     console.log(`First value was removed successfully from list 'test-list': ${result.valueString()}`);
   } else if (result instanceof CacheListPopFront.Miss) {
-    console.log("List 'test-list' was not found in cache 'test-cache'");
+    console.log(`List 'test-list' was not found in cache '${cacheName}'`);
   } else if (result instanceof CacheListPopFront.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheListPopFront on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheListPopFront on list 'test-list' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_ListPushBack(cacheClient: CacheClient) {
-  await cacheClient.listConcatenateBack('test-cache', 'test-list', ['a', 'b', 'c']);
-  const result = await cacheClient.listPushBack('test-cache', 'test-list', 'x');
+async function example_API_ListPushBack(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.listConcatenateBack(cacheName, 'test-list', ['a', 'b', 'c']);
+  const result = await cacheClient.listPushBack(cacheName, 'test-list', 'x');
   if (result instanceof CacheListPushBack.Success) {
     console.log("Value 'x' added successfully to back of list 'test-list'");
   } else if (result instanceof CacheListPushBack.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheListPushBack on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheListPushBack on list 'test-list' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_ListPushFront(cacheClient: CacheClient) {
-  await cacheClient.listConcatenateFront('test-cache', 'test-list', ['a', 'b', 'c']);
-  const result = await cacheClient.listPushFront('test-cache', 'test-list', 'x');
+async function example_API_ListPushFront(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.listConcatenateFront(cacheName, 'test-list', ['a', 'b', 'c']);
+  const result = await cacheClient.listPushFront(cacheName, 'test-list', 'x');
   if (result instanceof CacheListPushFront.Success) {
     console.log("Value 'x' added successfully to front of list 'test-list'");
   } else if (result instanceof CacheListPushFront.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheListPushFront on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheListPushFront on list 'test-list' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_ListRemoveValue(cacheClient: CacheClient) {
-  await cacheClient.listConcatenateFront('test-cache', 'test-list', ['a', 'b', 'c']);
-  const result = await cacheClient.listRemoveValue('test-cache', 'test-list', 'b');
+async function example_API_ListRemoveValue(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.listConcatenateFront(cacheName, 'test-list', ['a', 'b', 'c']);
+  const result = await cacheClient.listRemoveValue(cacheName, 'test-list', 'b');
   if (result instanceof CacheListRemoveValue.Success) {
     console.log("Value 'b' removed successfully from list 'test-list'");
   } else if (result instanceof CacheListRemoveValue.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheListRemoveValue on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheListRemoveValue on list 'test-list' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_ListRetain(cacheClient: CacheClient) {
-  await cacheClient.listConcatenateFront('test-cache', 'test-list', ['a', 'b', 'c', 'd', 'e', 'f']);
-  const result = await cacheClient.listRetain('test-cache', 'test-list', {startIndex: 1, endIndex: 4});
+async function example_API_ListRetain(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.listConcatenateFront(cacheName, 'test-list', ['a', 'b', 'c', 'd', 'e', 'f']);
+  const result = await cacheClient.listRetain(cacheName, 'test-list', {startIndex: 1, endIndex: 4});
   if (result instanceof CacheListRetain.Success) {
     console.log("Retaining elements from index 1 to 4 from list 'test-list'");
   } else if (result instanceof CacheListRetain.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheListRetain on list 'test-list' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheListRetain on list 'test-list' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_DictionaryFetch(cacheClient: CacheClient) {
-  await cacheClient.dictionarySetField('test-cache', 'test-dictionary', 'test-field', 'test-value');
-  const result = await cacheClient.dictionaryFetch('test-cache', 'test-dictionary');
+async function example_API_DictionaryFetch(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.dictionarySetField(cacheName, 'test-dictionary', 'test-field', 'test-value');
+  const result = await cacheClient.dictionaryFetch(cacheName, 'test-dictionary');
   if (result instanceof CacheDictionaryFetch.Hit) {
     console.log('Dictionary fetched successfully- ');
     result.valueMapStringString().forEach((value, key) => {
       console.log(`${key} : ${value}`);
     });
   } else if (result instanceof CacheDictionaryFetch.Miss) {
-    console.log("Dictionary 'test-dictionary' was not found in cache 'test-cache'");
+    console.log(`Dictionary 'test-dictionary' was not found in cache '${cacheName}'`);
   } else if (result instanceof CacheDictionaryFetch.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheDictionaryFetch on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheDictionaryFetch on dictionary 'test-dictionary' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_DictionaryGetField(cacheClient: CacheClient) {
-  await cacheClient.dictionarySetField('test-cache', 'test-dictionary', 'test-field', 'test-value');
-  const result = await cacheClient.dictionaryGetField('test-cache', 'test-dictionary', 'test-field');
+async function example_API_DictionaryGetField(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.dictionarySetField(cacheName, 'test-dictionary', 'test-field', 'test-value');
+  const result = await cacheClient.dictionaryGetField(cacheName, 'test-dictionary', 'test-field');
   if (result instanceof CacheDictionaryGetField.Hit) {
     console.log(
-      `Field ${result.fieldString()} fetched successfully from cache 'test-cache' with value: ${result.valueString()}`
+      `Field ${result.fieldString()} fetched successfully from cache '${cacheName}' with value: ${result.valueString()}`
     );
   } else if (result instanceof CacheDictionaryGetField.Miss) {
-    console.log("Dictionary 'test-dictionary' was not found in cache 'test-cache'");
+    console.log(`Dictionary 'test-dictionary' was not found in cache '${cacheName}'`);
   } else if (result instanceof CacheDictionaryGetField.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheDictionaryGetField on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheDictionaryGetField on dictionary 'test-dictionary' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_DictionaryGetFields(cacheClient: CacheClient) {
+async function example_API_DictionaryGetFields(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.dictionarySetFields(
-    'test-cache',
+    cacheName,
     'test-dictionary',
     new Map<string, string>([
       ['key1', 'value1'],
       ['key2', 'value2'],
     ])
   );
-  const result = await cacheClient.dictionaryGetFields('test-cache', 'test-dictionary', ['key1', 'key2']);
+  const result = await cacheClient.dictionaryGetFields(cacheName, 'test-dictionary', ['key1', 'key2']);
   if (result instanceof CacheDictionaryGetFields.Hit) {
     console.log('Values fetched successfully- ');
     result.valueMapStringString().forEach((value, key) => {
       console.log(`${key} : ${value}`);
     });
   } else if (result instanceof CacheDictionaryGetFields.Miss) {
-    console.log("Dictionary 'test-dictionary' was not found in cache 'test-cache'");
+    console.log(`Dictionary 'test-dictionary' was not found in cache '${cacheName}'`);
   } else if (result instanceof CacheDictionaryGetFields.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheDictionaryGetFields on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheDictionaryGetFields on dictionary 'test-dictionary' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_DictionarySetField(cacheClient: CacheClient) {
-  const result = await cacheClient.dictionarySetField('test-cache', 'test-dictionary', 'test-field', 'test-value');
+async function example_API_DictionarySetField(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.dictionarySetField(cacheName, 'test-dictionary', 'test-field', 'test-value');
   if (result instanceof CacheDictionarySetField.Success) {
-    console.log("Field set successfully into cache 'test-cache'");
+    console.log(`Field set successfully into cache '${cacheName}'`);
   } else if (result instanceof CacheDictionarySetField.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheDictionarySetField on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheDictionarySetField on dictionary 'test-dictionary' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_DictionarySetFields(cacheClient: CacheClient) {
+async function example_API_DictionarySetFields(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.dictionarySetFields(
-    'test-cache',
+    cacheName,
     'test-dictionary',
     new Map<string, string>([
       ['key1', 'value1'],
@@ -522,134 +522,134 @@ async function example_API_DictionarySetFields(cacheClient: CacheClient) {
     ])
   );
   if (result instanceof CacheDictionarySetFields.Success) {
-    console.log("Fields set successfully into cache 'test-cache'");
+    console.log(`Fields set successfully into cache '${cacheName}'`);
   } else if (result instanceof CacheDictionarySetFields.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheDictionarySetFields on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheDictionarySetFields on dictionary 'test-dictionary' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_DictionaryIncrement(cacheClient: CacheClient) {
-  await cacheClient.dictionarySetField('test-cache', 'test-dictionary', 'test-field', '10');
-  const result = await cacheClient.dictionaryIncrement('test-cache', 'test-dictionary', 'test-field', 1);
+async function example_API_DictionaryIncrement(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.dictionarySetField(cacheName, 'test-dictionary', 'test-field', '10');
+  const result = await cacheClient.dictionaryIncrement(cacheName, 'test-dictionary', 'test-field', 1);
   if (result instanceof CacheDictionaryIncrement.Success) {
     console.log(`Field value incremented by 1. Result - ${result.valueNumber()}`);
   } else if (result instanceof CacheDictionaryIncrement.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheDictionaryIncrement on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheDictionaryIncrement on dictionary 'test-dictionary' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_DictionaryRemoveField(cacheClient: CacheClient) {
-  await cacheClient.dictionarySetField('test-cache', 'test-dictionary', 'test-field', '10');
-  const result = await cacheClient.dictionaryRemoveField('test-cache', 'test-dictionary', 'test-field');
+async function example_API_DictionaryRemoveField(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.dictionarySetField(cacheName, 'test-dictionary', 'test-field', '10');
+  const result = await cacheClient.dictionaryRemoveField(cacheName, 'test-dictionary', 'test-field');
   if (result instanceof CacheDictionaryRemoveField.Success) {
     console.log("Field removed successfully from dictionary 'test-dictionary'");
   } else if (result instanceof CacheDictionaryRemoveField.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheDictionaryRemoveField on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheDictionaryRemoveField on dictionary 'test-dictionary' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_DictionaryRemoveFields(cacheClient: CacheClient) {
+async function example_API_DictionaryRemoveFields(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.dictionarySetFields(
-    'test-cache',
+    cacheName,
     'test-dictionary',
     new Map<string, string>([
       ['key1', 'value1'],
       ['key2', 'value2'],
     ])
   );
-  const result = await cacheClient.dictionaryRemoveFields('test-cache', 'test-dictionary', ['key1', 'key2']);
+  const result = await cacheClient.dictionaryRemoveFields(cacheName, 'test-dictionary', ['key1', 'key2']);
   if (result instanceof CacheDictionaryRemoveFields.Success) {
     console.log("Fields removed successfully from dictionary 'test-dictionary'");
   } else if (result instanceof CacheDictionaryRemoveFields.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheDictionaryRemoveFields on dictionary 'test-dictionary' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheDictionaryRemoveFields on dictionary 'test-dictionary' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SetAddElement(cacheClient: CacheClient) {
-  const result = await cacheClient.setAddElement('test-cache', 'test-set', 'test-element');
+async function example_API_SetAddElement(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.setAddElement(cacheName, 'test-set', 'test-element');
   if (result instanceof CacheSetAddElement.Success) {
     console.log("Element added successfully to set 'test-set'");
   } else if (result instanceof CacheSetAddElement.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSetAddElement on set 'test-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSetAddElement on set 'test-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SetAddElements(cacheClient: CacheClient) {
-  const result = await cacheClient.setAddElements('test-cache', 'test-set', ['test-element1', 'test-element2']);
+async function example_API_SetAddElements(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.setAddElements(cacheName, 'test-set', ['test-element1', 'test-element2']);
   if (result instanceof CacheSetAddElements.Success) {
     console.log("Elements added successfully to set 'test-set'");
   } else if (result instanceof CacheSetAddElements.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSetAddElements on set 'test-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSetAddElements on set 'test-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SetFetch(cacheClient: CacheClient) {
-  await cacheClient.setAddElements('test-cache', 'test-set', ['test-element1', 'test-element2']);
-  const result = await cacheClient.setFetch('test-cache', 'test-set');
+async function example_API_SetFetch(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.setAddElements(cacheName, 'test-set', ['test-element1', 'test-element2']);
+  const result = await cacheClient.setFetch(cacheName, 'test-set');
   if (result instanceof CacheSetFetch.Hit) {
     console.log('Set fetched successfully- ');
     result.valueSet().forEach((value, key) => {
       console.log(`${key} : ${value}`);
     });
   } else if (result instanceof CacheSetFetch.Miss) {
-    console.log("Set 'test-set' was not found in cache 'test-cache'");
+    console.log(`Set 'test-set' was not found in cache '${cacheName}'`);
   } else if (result instanceof CacheSetFetch.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSetFetch on set 'test-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSetFetch on set 'test-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SetRemoveElement(cacheClient: CacheClient) {
-  await cacheClient.setAddElement('test-cache', 'test-set', 'test-element');
-  const result = await cacheClient.setRemoveElement('test-cache', 'test-set', 'test-element');
+async function example_API_SetRemoveElement(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.setAddElement(cacheName, 'test-set', 'test-element');
+  const result = await cacheClient.setRemoveElement(cacheName, 'test-set', 'test-element');
   if (result instanceof CacheSetRemoveElement.Success) {
     console.log("Element 'test-element' removed successfully from set 'test-set'");
   } else if (result instanceof CacheSetRemoveElement.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSetRemoveElement on set 'test-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSetRemoveElement on set 'test-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SetRemoveElements(cacheClient: CacheClient) {
-  await cacheClient.setAddElements('test-cache', 'test-set', ['test-element1', 'test-element2']);
-  const result = await cacheClient.setRemoveElements('test-cache', 'test-set', ['test-element1', 'test-element2']);
+async function example_API_SetRemoveElements(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.setAddElements(cacheName, 'test-set', ['test-element1', 'test-element2']);
+  const result = await cacheClient.setRemoveElements(cacheName, 'test-set', ['test-element1', 'test-element2']);
   if (result instanceof CacheSetRemoveElements.Success) {
     console.log("Elements 'test-element1' and 'test-element2' removed successfully from set 'test-set'");
   } else if (result instanceof CacheSetRemoveElements.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSetRemoveElements on set 'test-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSetRemoveElements on set 'test-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SortedSetPutElement(cacheClient: CacheClient) {
-  const result = await cacheClient.sortedSetPutElement('test-cache', 'test-sorted-set', 'test-value', 5);
+async function example_API_SortedSetPutElement(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.sortedSetPutElement(cacheName, 'test-sorted-set', 'test-value', 5);
   if (result instanceof CacheSortedSetPutElement.Success) {
     console.log("Value 'test-value' with score '5' added successfully to sorted set 'test-sorted-set'");
   } else if (result instanceof CacheSortedSetPutElement.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSortedSetPutElement on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSortedSetPutElement on sorted set 'test-sorted-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SortedSetPutElements(cacheClient: CacheClient) {
+async function example_API_SortedSetPutElements(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.sortedSetPutElements(
-    'test-cache',
+    cacheName,
     'test-sorted-set',
     new Map<string, number>([
       ['key1', 10],
@@ -660,62 +660,62 @@ async function example_API_SortedSetPutElements(cacheClient: CacheClient) {
     console.log("Elements added successfully to sorted set 'test-sorted-set'");
   } else if (result instanceof CacheSortedSetPutElements.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSortedSetPutElements on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSortedSetPutElements on sorted set 'test-sorted-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SortedSetFetchByRank(cacheClient: CacheClient) {
+async function example_API_SortedSetFetchByRank(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.sortedSetPutElements(
-    'test-cache',
+    cacheName,
     'test-sorted-set',
     new Map<string, number>([
       ['key1', 10],
       ['key2', 20],
     ])
   );
-  const result = await cacheClient.sortedSetFetchByRank('test-cache', 'test-sorted-set');
+  const result = await cacheClient.sortedSetFetchByRank(cacheName, 'test-sorted-set');
   if (result instanceof CacheSortedSetFetch.Hit) {
     console.log("Values from sorted set 'test-sorted-set' fetched by rank successfully- ");
     result.valueArray().forEach(res => {
       console.log(`${res.value} : ${res.score}`);
     });
   } else if (result instanceof CacheSortedSetFetch.Miss) {
-    console.log("Sorted Set 'test-sorted-set' was not found in cache 'test-cache'");
+    console.log(`Sorted Set 'test-sorted-set' was not found in cache '${cacheName}'`);
   } else if (result instanceof CacheSortedSetFetch.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSortedSetFetchByRank on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSortedSetFetchByRank on sorted set 'test-sorted-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SortedSetFetchByScore(cacheClient: CacheClient) {
+async function example_API_SortedSetFetchByScore(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.sortedSetPutElements(
-    'test-cache',
+    cacheName,
     'test-sorted-set',
     new Map<string, number>([
       ['key1', 100],
       ['key2', 25],
     ])
   );
-  const result = await cacheClient.sortedSetFetchByScore('test-cache', 'test-sorted-set');
+  const result = await cacheClient.sortedSetFetchByScore(cacheName, 'test-sorted-set');
   if (result instanceof CacheSortedSetFetch.Hit) {
     console.log("Values from sorted set 'test-sorted-set' fetched by score successfully- ");
     result.valueArray().forEach(res => {
       console.log(`${res.value} : ${res.score}`);
     });
   } else if (result instanceof CacheSortedSetFetch.Miss) {
-    console.log("Sorted Set 'test-sorted-set' was not found in cache 'test-cache'");
+    console.log(`Sorted Set 'test-sorted-set' was not found in cache '${cacheName}'`);
   } else if (result instanceof CacheSortedSetFetch.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSortedSetFetchByScore on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSortedSetFetchByScore on sorted set 'test-sorted-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SortedSetGetRank(cacheClient: CacheClient) {
+async function example_API_SortedSetGetRank(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.sortedSetPutElements(
-    'test-cache',
+    cacheName,
     'test-sorted-set',
     new Map<string, number>([
       ['key1', 10],
@@ -723,102 +723,102 @@ async function example_API_SortedSetGetRank(cacheClient: CacheClient) {
       ['key3', 30],
     ])
   );
-  const result = await cacheClient.sortedSetGetRank('test-cache', 'test-sorted-set', 'key2');
+  const result = await cacheClient.sortedSetGetRank(cacheName, 'test-sorted-set', 'key2');
   if (result instanceof CacheSortedSetGetRank.Hit) {
     console.log(`Element with value 'key1' has rank: ${result.rank()}`);
   } else if (result instanceof CacheSortedSetGetRank.Miss) {
-    console.log("Sorted Set 'test-sorted-set' was not found in cache 'test-cache'");
+    console.log(`Sorted Set 'test-sorted-set' was not found in cache '${cacheName}'`);
   } else if (result instanceof CacheSortedSetGetRank.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSortedSetFetchGetRank on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSortedSetFetchGetRank on sorted set 'test-sorted-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SortedSetGetScore(cacheClient: CacheClient) {
+async function example_API_SortedSetGetScore(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.sortedSetPutElements(
-    'test-cache',
+    cacheName,
     'test-sorted-set',
     new Map<string, number>([
       ['key1', 10],
       ['key2', 20],
     ])
   );
-  const result = await cacheClient.sortedSetGetScore('test-cache', 'test-sorted-set', 'key1');
+  const result = await cacheClient.sortedSetGetScore(cacheName, 'test-sorted-set', 'key1');
   if (result instanceof CacheSortedSetGetScore.Hit) {
     console.log(`Element with value 'key1' has score: ${result.score()}`);
   } else if (result instanceof CacheSortedSetGetScore.Miss) {
-    console.log("Sorted Set 'test-sorted-set' was not found in cache 'test-cache'");
+    console.log(`Sorted Set 'test-sorted-set' was not found in cache '${cacheName}'`);
   } else if (result instanceof CacheSortedSetGetScore.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSortedSetFetchGetScore on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSortedSetFetchGetScore on sorted set 'test-sorted-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SortedSetGetScores(cacheClient: CacheClient) {
+async function example_API_SortedSetGetScores(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.sortedSetPutElements(
-    'test-cache',
+    cacheName,
     'test-sorted-set',
     new Map<string, number>([
       ['key1', 10],
       ['key2', 20],
     ])
   );
-  const result = await cacheClient.sortedSetGetScores('test-cache', 'test-sorted-set', ['key1', 'key2']);
+  const result = await cacheClient.sortedSetGetScores(cacheName, 'test-sorted-set', ['key1', 'key2']);
   if (result instanceof CacheSortedSetGetScores.Hit) {
     console.log('Element scores retrieved successfully -');
     result.valueMap().forEach((value, key) => {
       console.log(`${key} : ${value}`);
     });
   } else if (result instanceof CacheSortedSetGetScores.Miss) {
-    console.log("Sorted Set 'test-sorted-set' was not found in cache 'test-cache'");
+    console.log(`Sorted Set 'test-sorted-set' was not found in cache '${cacheName}'`);
   } else if (result instanceof CacheSortedSetGetScores.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSortedSetFetchGetScores on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSortedSetFetchGetScores on sorted set 'test-sorted-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SortedSetIncrementScore(cacheClient: CacheClient) {
-  await cacheClient.sortedSetPutElement('test-cache', 'test-sorted-set', 'test-value', 10);
-  const result = await cacheClient.sortedSetIncrementScore('test-cache', 'test-sorted-set', 'test-value', 1);
+async function example_API_SortedSetIncrementScore(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.sortedSetPutElement(cacheName, 'test-sorted-set', 'test-value', 10);
+  const result = await cacheClient.sortedSetIncrementScore(cacheName, 'test-sorted-set', 'test-value', 1);
   if (result instanceof CacheSortedSetIncrementScore.Success) {
     console.log(`Score for value 'test-value' incremented successfully. New score - ${result.score()}`);
   } else if (result instanceof CacheSortedSetIncrementScore.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSortedSetIncrementScore on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSortedSetIncrementScore on sorted set 'test-sorted-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SortedSetRemoveElement(cacheClient: CacheClient) {
-  await cacheClient.sortedSetPutElement('test-cache', 'test-sorted-set', 'test-value', 10);
-  const result = await cacheClient.sortedSetRemoveElement('test-cache', 'test-sorted-set', 'test-value');
+async function example_API_SortedSetRemoveElement(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.sortedSetPutElement(cacheName, 'test-sorted-set', 'test-value', 10);
+  const result = await cacheClient.sortedSetRemoveElement(cacheName, 'test-sorted-set', 'test-value');
   if (result instanceof CacheSortedSetRemoveElement.Success) {
     console.log("Element with value 'test-value' removed successfully");
   } else if (result instanceof CacheSortedSetRemoveElement.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSortedSetRemoveElement on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSortedSetRemoveElement on sorted set 'test-sorted-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_SortedSetRemoveElements(cacheClient: CacheClient) {
+async function example_API_SortedSetRemoveElements(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.sortedSetPutElements(
-    'test-cache',
+    cacheName,
     'test-sorted-set',
     new Map<string, number>([
       ['key1', 10],
       ['key2', 20],
     ])
   );
-  const result = await cacheClient.sortedSetRemoveElements('test-cache', 'test-sorted-set', ['key1', 'key2']);
+  const result = await cacheClient.sortedSetRemoveElements(cacheName, 'test-sorted-set', ['key1', 'key2']);
   if (result instanceof CacheSortedSetRemoveElements.Success) {
     console.log("Elements with value 'key1' and 'key2 removed successfully");
   } else if (result instanceof CacheSortedSetRemoveElements.Error) {
     throw new Error(
-      `An error occurred while attempting to call cacheSortedSetRemoveElements on sorted set 'test-sorted-set' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to call cacheSortedSetRemoveElements on sorted set 'test-sorted-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
@@ -1045,19 +1045,19 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
   }
 }
 
-async function example_API_TopicPublish(topicClient: TopicClient) {
-  const result = await topicClient.publish('test-cache', 'test-topic', 'test-topic-value');
+async function example_API_TopicPublish(topicClient: TopicClient, cacheName: string) {
+  const result = await topicClient.publish(cacheName, 'test-topic', 'test-topic-value');
   if (result instanceof TopicPublish.Success) {
     console.log("Value published to topic 'test-topic'");
   } else if (result instanceof TopicPublish.Error) {
     throw new Error(
-      `An error occurred while attempting to publish to the topic 'test-topic' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to publish to the topic 'test-topic' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_TopicSubscribe(topicClient: TopicClient) {
-  const result = await topicClient.subscribe('test-cache', 'test-topic', {
+async function example_API_TopicSubscribe(topicClient: TopicClient, cacheName: string) {
+  const result = await topicClient.subscribe(cacheName, 'test-topic', {
     onError: () => {
       return;
     },
@@ -1070,7 +1070,7 @@ async function example_API_TopicSubscribe(topicClient: TopicClient) {
     console.log("Successfully subscribed to topic 'test-topic'");
 
     // Publish a value
-    await topicClient.publish('test-cache', 'test-topic', 'test-value');
+    await topicClient.publish(cacheName, 'test-topic', 'test-value');
 
     // Wait for published values to be received.
     setTimeout(() => {
@@ -1081,36 +1081,36 @@ async function example_API_TopicSubscribe(topicClient: TopicClient) {
     result.unsubscribe();
   } else if (result instanceof TopicSubscribe.Error) {
     throw new Error(
-      `An error occurred while attempting to subscribe to the topic 'test-topic' in cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to subscribe to the topic 'test-topic' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_ListWebhooks(topicClient: TopicClient) {
-  const result = await topicClient.listWebhooks('test-cache');
+async function example_API_ListWebhooks(topicClient: TopicClient, cacheName: string) {
+  const result = await topicClient.listWebhooks(cacheName);
   if (result instanceof ListWebhooks.Success) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     console.log(`listed webhooks: ${result.getWebhooks()}`);
   } else if (result instanceof ListWebhooks.Error) {
     throw new Error(
-      `An error occurred while attempting to list webhooks for cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to list webhooks for cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_DeleteWebhook(topicClient: TopicClient) {
-  const result = await topicClient.deleteWebhook('test-cache', 'a webhook');
+async function example_API_DeleteWebhook(topicClient: TopicClient, cacheName: string) {
+  const result = await topicClient.deleteWebhook(cacheName, 'a webhook');
   if (result instanceof DeleteWebhook.Success) {
     console.log('successfully deleted webhook');
   } else if (result instanceof ListWebhooks.Error) {
     throw new Error(
-      `An error occurred while attempting to delete webhook 'a webhook' inside of cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to delete webhook 'a webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_PutWebhook(topicClient: TopicClient) {
-  const result = await topicClient.putWebhook('test-cache', 'examples webhook', {
+async function example_API_PutWebhook(topicClient: TopicClient, cacheName: string) {
+  const result = await topicClient.putWebhook(cacheName, 'examples webhook', {
     topicName: 'a topic',
     destination: 'https://www.thisisawebhookurl.com/v1/webhook',
   });
@@ -1118,29 +1118,29 @@ async function example_API_PutWebhook(topicClient: TopicClient) {
     console.log('successfully created webhook');
   } else if (result instanceof PutWebhook.Error) {
     throw new Error(
-      `An error occurred while attempting to create a webhook 'examples webhook' inside of cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to create a webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_RotateWebhookSecret(topicClient: TopicClient) {
-  const result = await topicClient.rotateWebhookSecret('test-cache', 'examples webhook');
+async function example_API_RotateWebhookSecret(topicClient: TopicClient, cacheName: string) {
+  const result = await topicClient.rotateWebhookSecret(cacheName, 'examples webhook');
   if (result instanceof RotateWebhookSecret.Success) {
     console.log('successfully rotated the webhook secret');
   } else if (result instanceof RotateWebhookSecret.Error) {
     throw new Error(
-      `An error occurred while attempting to rotate the secret for the webhook 'examples webhook' inside of cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to rotate the secret for the webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
 
-async function example_API_GetWebhookSecret(topicClient: TopicClient) {
-  const result = await topicClient.getWebhookSecret('test-cache', 'examples webhook');
+async function example_API_GetWebhookSecret(topicClient: TopicClient, cacheName: string) {
+  const result = await topicClient.getWebhookSecret(cacheName, 'examples webhook');
   if (result instanceof GetWebhookSecret.Success) {
     console.log('successfully retrieved the webhook secret');
   } else if (result instanceof GetWebhookSecret.Error) {
     throw new Error(
-      `An error occurred while attempting to fetch the secret for the webhook 'examples webhook' inside of cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      `An error occurred while attempting to fetch the secret for the webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
@@ -1154,21 +1154,21 @@ function example_API_InstantiateLeaderboardClient() {
   });
 }
 
-function example_API_CreateLeaderboard(leaderboardClient: PreviewLeaderboardClient) {
+function example_API_CreateLeaderboard(leaderboardClient: PreviewLeaderboardClient, cacheName: string) {
   // You can create multiple leaderboards using the same leaderboard client
   // but with different cache and leaderboard names
-  leaderboardClient.leaderboard('test-cache', 'momento-leaderboard');
-  leaderboardClient.leaderboard('test-cache', 'acorns-leaderboard');
+  leaderboardClient.leaderboard(cacheName, 'momento-leaderboard');
+  leaderboardClient.leaderboard(cacheName, 'acorns-leaderboard');
 
   // Leaderboard and cache names must be non-empty strings
   try {
-    leaderboardClient.leaderboard('test-cache', '   ');
+    leaderboardClient.leaderboard(cacheName, '   ');
   } catch (error) {
     console.log('Expected error creating a leaderboard with invalid leaderboard name:', error);
   }
 }
 
-async function example_API_LeaderboardUpsert(leaderboard: ILeaderboard) {
+async function example_API_LeaderboardUpsert(leaderboard: ILeaderboard, cacheName: string) {
   // Upsert a set of elements as a Map
   const elements1: Map<number, number> = new Map([
     [123, 100.0],
@@ -1182,7 +1182,7 @@ async function example_API_LeaderboardUpsert(leaderboard: ILeaderboard) {
   } else if (result1 instanceof LeaderboardUpsert.Error) {
     console.log('Upsert error:', result1.message());
     throw new Error(
-      `An error occurred while attempting to call upsert on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result1.errorCode()}: ${result1.message()}`
+      `An error occurred while attempting to call upsert on leaderboard 'momento-leaderboard' in cache '${cacheName}': ${result1.errorCode()}: ${result1.message()}`
     );
   }
 
@@ -1199,18 +1199,19 @@ async function example_API_LeaderboardUpsert(leaderboard: ILeaderboard) {
   } else if (result2 instanceof LeaderboardUpsert.Error) {
     console.log('Upsert error:', result2.message());
     throw new Error(
-      `An error occurred while attempting to call upsert on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result2.errorCode()}: ${result2.message()}`
+      `An error occurred while attempting to call upsert on leaderboard 'momento-leaderboard' in cache '${cacheName}': ${result2.errorCode()}: ${result2.message()}`
     );
   }
 }
 
-async function example_API_LeaderboardUpsertPagination(leaderboard: ILeaderboard) {
+async function example_API_LeaderboardUpsertPagination(leaderboard: ILeaderboard, totalNumElements: number) {
   // To upsert a large number of elements, you must upsert
   // in batches of up to 8192 elements at a time.
-  const elements = [...Array(20000).keys()].map(i => {
+  // This example shows how to paginate for a large value of `totalNumElements`, such as `20000`.
+  const elements = [...Array(totalNumElements).keys()].map(i => {
     return {id: i + 1, score: i * Math.random()};
   });
-  for (let i = 0; i < 20000; i += 8192) {
+  for (let i = 0; i < totalNumElements; i += 8192) {
     // Create a Map containing 8192 elements at a time
     const batch = new Map(elements.slice(i, i + 8192).map(obj => [obj['id'], obj['score']]));
 
@@ -1222,7 +1223,7 @@ async function example_API_LeaderboardUpsertPagination(leaderboard: ILeaderboard
   }
 }
 
-async function example_API_LeaderboardFetchByScore(leaderboard: ILeaderboard) {
+async function example_API_LeaderboardFetchByScore(leaderboard: ILeaderboard, cacheName: string) {
   // By default, FetchByScore will fetch the elements from the entire score range
   // with zero offset in ascending order. It can return 8192 elements at a time.
   const result1 = await leaderboard.fetchByScore();
@@ -1233,7 +1234,7 @@ async function example_API_LeaderboardFetchByScore(leaderboard: ILeaderboard) {
     });
   } else if (result1 instanceof LeaderboardFetch.Error) {
     throw new Error(
-      `An error occurred while attempting to call fetchByScore with no options on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result1.errorCode()}: ${result1.message()}`
+      `An error occurred while attempting to call fetchByScore with no options on leaderboard 'momento-leaderboard' in cache '${cacheName}': ${result1.errorCode()}: ${result1.message()}`
     );
   }
 
@@ -1253,7 +1254,7 @@ async function example_API_LeaderboardFetchByScore(leaderboard: ILeaderboard) {
     });
   } else if (result2 instanceof LeaderboardFetch.Error) {
     throw new Error(
-      `An error occurred while attempting to call fetchByScore with all options on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result2.errorCode()}: ${result2.message()}`
+      `An error occurred while attempting to call fetchByScore with all options on leaderboard 'momento-leaderboard' in cache '${cacheName}': ${result2.errorCode()}: ${result2.message()}`
     );
   }
 }
@@ -1265,13 +1266,14 @@ function processBatch(
     rank: number;
   }[]
 ) {
-  console.log('Empty function', values.length);
+  console.log(`Processing batch of ${values.length} leaderboard elements`);
 }
 
-async function example_API_LeaderboardFetchByScorePagination(leaderboard: ILeaderboard) {
+async function example_API_LeaderboardFetchByScorePagination(leaderboard: ILeaderboard, totalNumElements: number) {
   // Use the offset option to paginate through your results if your leaderboard
   // has more than 8192 elements.
-  for (let offset = 0; offset < 20000; offset += 8192) {
+  // This example shows how to paginate for a large value of `totalNumElements`, such as `20000`.
+  for (let offset = 0; offset < totalNumElements; offset += 8192) {
     const result = await leaderboard.fetchByScore({offset});
     if (result instanceof LeaderboardFetch.Success) {
       processBatch(result.values());
@@ -1283,7 +1285,7 @@ async function example_API_LeaderboardFetchByScorePagination(leaderboard: ILeade
   }
 }
 
-async function example_API_LeaderboardFetchByRank(leaderboard: ILeaderboard) {
+async function example_API_LeaderboardFetchByRank(leaderboard: ILeaderboard, cacheName: string) {
   // By default, FetchByRank will fetch the elements in the range [startRank, endRank)
   // in ascending order, meaning rank 0 is for the lowest score.
   const result1 = await leaderboard.fetchByRank(0, 10);
@@ -1294,15 +1296,16 @@ async function example_API_LeaderboardFetchByRank(leaderboard: ILeaderboard) {
     });
   } else if (result1 instanceof LeaderboardFetch.Error) {
     throw new Error(
-      `An error occurred while attempting to call fetchByRank with no options on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result1.errorCode()}: ${result1.message()}`
+      `An error occurred while attempting to call fetchByRank with no options on leaderboard 'momento-leaderboard' in cache '${cacheName}': ${result1.errorCode()}: ${result1.message()}`
     );
   }
 }
 
-async function example_API_LeaderboardFetchByRankPagination(leaderboard: ILeaderboard) {
+async function example_API_LeaderboardFetchByRankPagination(leaderboard: ILeaderboard, totalNumElements: number) {
   // Use the startRank and endRank options to paginate through your leaderboard
   // if your leaderboard has more than 8192 elements
-  for (let rank = 0; rank < 20000; rank += 8192) {
+  // This example shows how to paginate for a large value of `totalNumElements`, such as `20000`.
+  for (let rank = 0; rank < totalNumElements; rank += 8192) {
     const result = await leaderboard.fetchByRank(rank, rank + 8192, {order: LeaderboardOrder.Descending});
     if (result instanceof LeaderboardFetch.Success) {
       processBatch(result.values());
@@ -1314,7 +1317,7 @@ async function example_API_LeaderboardFetchByRankPagination(leaderboard: ILeader
   }
 }
 
-async function example_API_LeaderboardGetRank(leaderboard: ILeaderboard) {
+async function example_API_LeaderboardGetRank(leaderboard: ILeaderboard, cacheName: string) {
   // Provide a list of element IDs to get their ranks in ascending or descending order
   const result = await leaderboard.getRank([123, 456, 789], {
     order: LeaderboardOrder.Descending,
@@ -1326,38 +1329,39 @@ async function example_API_LeaderboardGetRank(leaderboard: ILeaderboard) {
     });
   } else if (result instanceof LeaderboardFetch.Error) {
     throw new Error(
-      `An error occurred while attempting to call getRank on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
+      `An error occurred while attempting to call getRank on leaderboard 'momento-leaderboard' in cache '${cacheName}': ${result.errorCode()}: ${result.message()}`
     );
   }
 }
 
-async function example_API_LeaderboardLength(leaderboard: ILeaderboard) {
+async function example_API_LeaderboardLength(leaderboard: ILeaderboard, cacheName: string) {
   const result = await leaderboard.length();
   if (result instanceof LeaderboardLength.Success) {
     console.log('Successfully retrieved leaderboard length:', result.length());
   } else if (result instanceof LeaderboardLength.Error) {
     throw new Error(
-      `An error occurred while attempting to call length on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
+      `An error occurred while attempting to call length on leaderboard 'momento-leaderboard' in cache '${cacheName}': ${result.errorCode()}: ${result.message()}`
     );
   }
 }
 
-async function example_API_LeaderboardRemoveElements(leaderboard: ILeaderboard) {
+async function example_API_LeaderboardRemoveElements(leaderboard: ILeaderboard, cacheName: string) {
   // Provide a list of element IDs to delete those elements
   const result = await leaderboard.removeElements([123, 456, 789]);
   if (result instanceof LeaderboardRemoveElements.Success) {
     console.log('Successfully removed elements');
   } else if (result instanceof LeaderboardRemoveElements.Error) {
     throw new Error(
-      `An error occurred while attempting to call removeElements on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
+      `An error occurred while attempting to call removeElements on leaderboard 'momento-leaderboard' in cache '${cacheName}': ${result.errorCode()}: ${result.message()}`
     );
   }
 }
 
-async function example_API_LeaderboardRemoveElementsPagination(leaderboard: ILeaderboard) {
-  // You can remove batches of 8192 elements at a time
-  const ids = [...Array(20000).keys()];
-  for (let i = 0; i < 20000; i += 8192) {
+async function example_API_LeaderboardRemoveElementsPagination(leaderboard: ILeaderboard, totalNumElements: number) {
+  // You can remove batches of 8192 elements at a time.
+  // This example shows how to paginate for a large value of `totalNumElements`, such as `20000`.
+  const ids = [...Array(totalNumElements).keys()];
+  for (let i = 0; i < totalNumElements; i += 8192) {
     const result = await leaderboard.removeElements(ids.slice(i, i + 8192));
     if (result instanceof LeaderboardRemoveElements.Error) {
       console.log(`Error removing batch [${i}, ${i + 8192}) (${result.errorCode()}: ${result.message()})`);
@@ -1365,13 +1369,13 @@ async function example_API_LeaderboardRemoveElementsPagination(leaderboard: ILea
   }
 }
 
-async function example_API_LeaderboardDelete(leaderboard: ILeaderboard) {
+async function example_API_LeaderboardDelete(leaderboard: ILeaderboard, cacheName: string) {
   const result = await leaderboard.delete();
   if (result instanceof LeaderboardDelete.Success) {
     console.log('Successfully deleted the leaderboard');
   } else if (result instanceof LeaderboardDelete.Error) {
     throw new Error(
-      `An error occurred while attempting to call delete on leaderboard 'momento-leaderboard' in cache 'test-cache': ${result.errorCode()}: ${result.message()}`
+      `An error occurred while attempting to call delete on leaderboard 'momento-leaderboard' in cache '${cacheName}': ${result.errorCode()}: ${result.message()}`
     );
   }
 }
@@ -1399,135 +1403,116 @@ async function main() {
     defaultTtlSeconds: 60,
   });
 
-  // Sleep for a sec to make sure we don't hit rate limits
-  await delay(5_000);
+  const cacheName = `js-sdk-doc-examples-cache-${crypto.randomBytes(8).toString('hex')}`;
 
-  await example_API_CreateCache(cacheClient);
-  await example_API_ErrorHandlingHitMiss(cacheClient);
-  await example_API_ErrorHandlingSuccess(cacheClient);
+  await example_API_CreateCache(cacheClient, cacheName);
 
-  await example_API_DeleteCache(cacheClient);
-  await example_API_CreateCache(cacheClient);
-  await example_API_ListCaches(cacheClient);
-  await example_API_FlushCache(cacheClient);
+  try {
+    await example_API_ErrorHandlingHitMiss(cacheClient, cacheName);
+    await example_API_ErrorHandlingSuccess(cacheClient, cacheName);
 
-  await example_API_Set(cacheClient);
-  await example_API_Get(cacheClient);
-  await example_API_Delete(cacheClient);
-  await example_API_Increment(cacheClient);
-  await example_API_ItemGetType(cacheClient);
-  await example_API_SetIfNotExists(cacheClient);
-  await example_API_SetBatch(cacheClient);
-  await example_API_GetBatch(cacheClient);
+    await example_API_CreateCache(cacheClient, cacheName);
+    await example_API_ListCaches(cacheClient);
+    await example_API_FlushCache(cacheClient, cacheName);
 
-  await example_API_ListFetch(cacheClient);
-  await example_API_ListConcatenateBack(cacheClient);
-  await example_API_ListConcatenateFront(cacheClient);
-  await example_API_ListLength(cacheClient);
-  await example_API_ListPopBack(cacheClient);
-  await example_API_ListPopFront(cacheClient);
-  await example_API_ListPushBack(cacheClient);
-  await example_API_ListPushFront(cacheClient);
-  await example_API_ListRemoveValue(cacheClient);
-  await example_API_ListRetain(cacheClient);
+    await example_API_Set(cacheClient, cacheName);
+    await example_API_Get(cacheClient, cacheName);
+    await example_API_Delete(cacheClient, cacheName);
+    await example_API_Increment(cacheClient, cacheName);
+    await example_API_ItemGetType(cacheClient, cacheName);
+    await example_API_SetIfNotExists(cacheClient, cacheName);
+    await example_API_SetBatch(cacheClient, cacheName);
+    await example_API_GetBatch(cacheClient, cacheName);
 
-  await example_API_DictionaryFetch(cacheClient);
-  await example_API_DictionaryGetField(cacheClient);
-  await example_API_DictionaryGetFields(cacheClient);
-  await example_API_DictionarySetField(cacheClient);
-  await example_API_DictionarySetFields(cacheClient);
-  await example_API_DictionaryIncrement(cacheClient);
-  await example_API_DictionaryRemoveField(cacheClient);
-  await example_API_DictionaryRemoveFields(cacheClient);
+    await example_API_ListFetch(cacheClient, cacheName);
+    await example_API_ListConcatenateBack(cacheClient, cacheName);
+    await example_API_ListConcatenateFront(cacheClient, cacheName);
+    await example_API_ListLength(cacheClient, cacheName);
+    await example_API_ListPopBack(cacheClient, cacheName);
+    await example_API_ListPopFront(cacheClient, cacheName);
+    await example_API_ListPushBack(cacheClient, cacheName);
+    await example_API_ListPushFront(cacheClient, cacheName);
+    await example_API_ListRemoveValue(cacheClient, cacheName);
+    await example_API_ListRetain(cacheClient, cacheName);
 
-  await example_API_SetAddElement(cacheClient);
-  await example_API_SetAddElements(cacheClient);
-  await example_API_SetFetch(cacheClient);
-  await example_API_SetRemoveElement(cacheClient);
-  await example_API_SetRemoveElements(cacheClient);
+    await example_API_DictionaryFetch(cacheClient, cacheName);
+    await example_API_DictionaryGetField(cacheClient, cacheName);
+    await example_API_DictionaryGetFields(cacheClient, cacheName);
+    await example_API_DictionarySetField(cacheClient, cacheName);
+    await example_API_DictionarySetFields(cacheClient, cacheName);
+    await example_API_DictionaryIncrement(cacheClient, cacheName);
+    await example_API_DictionaryRemoveField(cacheClient, cacheName);
+    await example_API_DictionaryRemoveFields(cacheClient, cacheName);
 
-  await example_API_SortedSetPutElement(cacheClient);
-  await example_API_SortedSetPutElements(cacheClient);
-  await example_API_SortedSetFetchByRank(cacheClient);
-  await example_API_SortedSetFetchByScore(cacheClient);
-  await example_API_SortedSetGetRank(cacheClient);
-  await example_API_SortedSetGetScore(cacheClient);
-  await example_API_SortedSetGetScores(cacheClient);
-  await example_API_SortedSetIncrementScore(cacheClient);
-  await example_API_SortedSetRemoveElement(cacheClient);
-  await example_API_SortedSetRemoveElements(cacheClient);
+    await example_API_SetAddElement(cacheClient, cacheName);
+    await example_API_SetAddElements(cacheClient, cacheName);
+    await example_API_SetFetch(cacheClient, cacheName);
+    await example_API_SetRemoveElement(cacheClient, cacheName);
+    await example_API_SetRemoveElements(cacheClient, cacheName);
 
-  example_API_InstantiateAuthClient();
-  const authClient = new AuthClient({
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
-  });
-  await example_API_GenerateApiKey(authClient);
-  await example_API_RefreshApiKey(authClient);
-  await example_API_GenerateDisposableToken(authClient);
+    await example_API_SortedSetPutElement(cacheClient, cacheName);
+    await example_API_SortedSetPutElements(cacheClient, cacheName);
+    await example_API_SortedSetFetchByRank(cacheClient, cacheName);
+    await example_API_SortedSetFetchByScore(cacheClient, cacheName);
+    await example_API_SortedSetGetRank(cacheClient, cacheName);
+    await example_API_SortedSetGetScore(cacheClient, cacheName);
+    await example_API_SortedSetGetScores(cacheClient, cacheName);
+    await example_API_SortedSetIncrementScore(cacheClient, cacheName);
+    await example_API_SortedSetRemoveElement(cacheClient, cacheName);
+    await example_API_SortedSetRemoveElements(cacheClient, cacheName);
 
-  example_API_InstantiateTopicClient();
-  const topicClient = new TopicClient({
-    configuration: TopicConfigurations.Default.latest(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
-  });
-  await example_API_TopicPublish(topicClient);
-  await example_API_TopicSubscribe(topicClient);
+    example_API_InstantiateAuthClient();
+    const authClient = new AuthClient({
+      credentialProvider: CredentialProvider.fromEnvironmentVariable({
+        environmentVariableName: 'MOMENTO_API_KEY',
+      }),
+    });
+    await example_API_GenerateApiKey(authClient);
+    await example_API_RefreshApiKey(authClient);
+    await example_API_GenerateDisposableToken(authClient);
 
-  // Webhooks
-  await example_API_ListWebhooks(topicClient);
-  await example_API_DeleteWebhook(topicClient);
-  await example_API_PutWebhook(topicClient);
-  await example_API_RotateWebhookSecret(topicClient);
-  await example_API_GetWebhookSecret(topicClient);
+    example_API_InstantiateTopicClient();
+    const topicClient = new TopicClient({
+      configuration: TopicConfigurations.Default.latest(),
+      credentialProvider: CredentialProvider.fromEnvironmentVariable({
+        environmentVariableName: 'MOMENTO_API_KEY',
+      }),
+    });
+    await example_API_TopicPublish(topicClient, cacheName);
+    await example_API_TopicSubscribe(topicClient, cacheName);
 
-  example_API_InstantiateLeaderboardClient();
-  const leaderboardClient = new PreviewLeaderboardClient({
-    configuration: LeaderboardConfigurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
-  });
-  const leaderboard = leaderboardClient.leaderboard('test-cache', 'momento-leaderboard');
-  example_API_CreateLeaderboard(leaderboardClient);
-  await example_API_LeaderboardUpsert(leaderboard);
-  await example_API_LeaderboardFetchByScore(leaderboard);
-  await example_API_LeaderboardFetchByRank(leaderboard);
-  await example_API_LeaderboardGetRank(leaderboard);
-  await example_API_LeaderboardLength(leaderboard);
-  await example_API_LeaderboardRemoveElements(leaderboard);
-  await example_API_LeaderboardDelete(leaderboard);
+    // Webhooks
+    await example_API_ListWebhooks(topicClient, cacheName);
+    await example_API_DeleteWebhook(topicClient, cacheName);
+    await example_API_PutWebhook(topicClient, cacheName);
+    await example_API_RotateWebhookSecret(topicClient, cacheName);
+    await example_API_GetWebhookSecret(topicClient, cacheName);
 
-  // Sleep for a while to replenish rate limits before running other tests
-  await delay(20_000);
+    example_API_InstantiateLeaderboardClient();
+    const leaderboardClient = new PreviewLeaderboardClient({
+      configuration: LeaderboardConfigurations.Laptop.v1(),
+      credentialProvider: CredentialProvider.fromEnvironmentVariable({
+        environmentVariableName: 'MOMENTO_API_KEY',
+      }),
+    });
+    const leaderboard = leaderboardClient.leaderboard(cacheName, 'momento-leaderboard');
+    example_API_CreateLeaderboard(leaderboardClient, cacheName);
+    await example_API_LeaderboardUpsert(leaderboard, cacheName);
+    await example_API_LeaderboardFetchByScore(leaderboard, cacheName);
+    await example_API_LeaderboardFetchByRank(leaderboard, cacheName);
+    await example_API_LeaderboardGetRank(leaderboard, cacheName);
+    await example_API_LeaderboardLength(leaderboard, cacheName);
+    await example_API_LeaderboardRemoveElements(leaderboard, cacheName);
+    await example_API_LeaderboardDelete(leaderboard, cacheName);
 
-  await example_API_LeaderboardFetchByRankPagination(leaderboard);
-
-  // Sleep for a while to replenish rate limits before running other tests
-  await delay(20_000);
-
-  await example_API_LeaderboardFetchByScorePagination(leaderboard);
-
-  // Sleep for a while to replenish rate limits before running other tests
-  await delay(20_000);
-
-  await example_API_LeaderboardUpsertPagination(leaderboard);
-
-  // Sleep for a while to replenish rate limits before running other tests
-  await delay(20_000);
-
-  await example_API_LeaderboardRemoveElementsPagination(leaderboard);
-
-  // Sleep for a while to replenish rate limits before running other tests
-  await delay(20_000);
-
-  await example_API_LeaderboardUpsertPagination(leaderboard);
-
-  // Sleep for a while to replenish rate limits before running other tests
-  await delay(60_000);
+    await example_API_LeaderboardFetchByRankPagination(leaderboard, 10);
+    await example_API_LeaderboardFetchByScorePagination(leaderboard, 10);
+    await example_API_LeaderboardUpsertPagination(leaderboard, 10);
+    await example_API_LeaderboardRemoveElementsPagination(leaderboard, 10);
+    await example_API_LeaderboardUpsertPagination(leaderboard, 10);
+  } finally {
+    await example_API_DeleteCache(cacheClient, cacheName);
+  }
 }
 
 main().catch(e => {
