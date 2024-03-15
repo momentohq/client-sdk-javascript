@@ -1,6 +1,7 @@
 import {
   CacheGet,
   CacheSet,
+  CancelledError,
   InternalServerError,
   LimitExceededError,
   MomentoLogger,
@@ -25,6 +26,7 @@ export enum AsyncSetGetResult {
   DEADLINE_EXCEEDED = 'DEADLINE_EXCEEDED',
   RESOURCE_EXHAUSTED = 'RESOURCE_EXHAUSTED',
   RST_STREAM = 'RST_STREAM',
+  CANCELLED = 'CANCELLED',
 }
 
 export interface BasicLoadGenContext {
@@ -40,6 +42,7 @@ export interface BasicLoadGenContext {
   globalDeadlineExceededCount: number;
   globalResourceExhaustedCount: number;
   globalRstStreamCount: number;
+  globalCancelledCount: number;
 }
 
 export interface RequestCoalescerContext {
@@ -66,6 +69,9 @@ export function updateContextCountsForRequest(context: BasicLoadGenContext, resu
       break;
     case AsyncSetGetResult.RST_STREAM:
       context.globalRstStreamCount++;
+      break;
+    case AsyncSetGetResult.CANCELLED:
+      context.globalCancelledCount++;
       break;
   }
 }
@@ -113,6 +119,12 @@ export async function executeRequest<T>(
       } else {
         throw e;
       }
+    } else if (e instanceof CancelledError) {
+      if (e.message.includes('CANCELLED')) {
+        return [AsyncSetGetResult.CANCELLED, undefined];
+      } else {
+        throw e;
+      }
     } else {
       throw e;
     }
@@ -130,6 +142,7 @@ export function initiateLoadGenContext(): BasicLoadGenContext {
     globalDeadlineExceededCount: 0,
     globalResourceExhaustedCount: 0,
     globalRstStreamCount: 0,
+    globalCancelledCount: 0,
   };
   return loadGenContext;
 }
