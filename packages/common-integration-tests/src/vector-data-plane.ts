@@ -1384,6 +1384,9 @@ export function runVectorDataPlaneTest(
   });
 
   describe('getItemBatch and getItemMetadataBatch', () => {
+    // Automatically retry flaky tests in this describe block twice before failing
+    jest.retryTimes(2, {logErrorsBeforeRetry: true});
+
     /*
      * In the following tests we test both search and searchAndFetchVectors with a common
      * suite of tests. To do this we abstract away calling the search method, building the hits

@@ -58,6 +58,10 @@ resource exhausted: ${loadGenContext.globalResourceExhaustedCount} (${percentReq
     loadGenContext,
     loadGenContext.globalRstStreamCount
   )}%)
+    cancelled: ${loadGenContext.globalCancelledCount} (${percentRequests(
+    loadGenContext,
+    loadGenContext.globalCancelledCount
+  )}%)
 
 cumulative set latencies:
 ${outputHistogramSummary(loadGenContext.setLatencies)}
