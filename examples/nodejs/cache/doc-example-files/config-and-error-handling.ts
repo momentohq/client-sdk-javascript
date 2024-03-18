@@ -89,6 +89,7 @@ async function main() {
     }),
     defaultTtlSeconds: 60,
   });
+  await cacheClient.createCache('test-cache');
 
   await example_configuration_ConstructWithNoConfig();
   await example_configuration_ConstructWithLambdaConfig();
