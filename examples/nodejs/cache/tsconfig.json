@@ -22,6 +22,6 @@
     "typeRoots": [
       "./node_modules/@types"
     ],
-    "outDir": "./dist"
+    "outDir": "./dist",
   }
 }
