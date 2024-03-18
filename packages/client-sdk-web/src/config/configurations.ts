@@ -1,5 +1,5 @@
 import {CacheConfiguration} from './configuration';
-import {MomentoLoggerFactory} from '@gomomento/sdk-core';
+import {MomentoLoggerFactory, ReadConcern} from '@gomomento/sdk-core';
 import {
   GrpcConfiguration,
   StaticGrpcConfiguration,
@@ -50,6 +50,7 @@ export class Laptop extends CacheConfiguration {
       transportStrategy: transportStrategy,
       middlewares: [],
       throwOnErrors: false,
+      readConcern: ReadConcern.BALANCED,
     });
   }
 }
@@ -93,6 +94,7 @@ export class Browser extends CacheConfiguration {
       transportStrategy: transportStrategy,
       middlewares: [],
       throwOnErrors: false,
+      readConcern: ReadConcern.BALANCED,
     });
   }
 }

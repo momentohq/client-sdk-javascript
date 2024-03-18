@@ -2,6 +2,7 @@ import {RetryStrategy} from './retry/retry-strategy';
 import {Middleware} from './middleware/middleware';
 import {MomentoLoggerFactory} from '../';
 import {TransportStrategy} from './transport';
+import {ReadConcern} from '@gomomento/sdk-core';
 
 export interface ConfigurationProps {
   /**
@@ -24,6 +25,10 @@ export interface ConfigurationProps {
    * Configures whether the client should return a Momento Error object or throw an exception when an error occurs.
    */
   throwOnErrors: boolean;
+  /**
+   * Configures the read concern for the client.
+   */
+  readConcern: ReadConcern;
 }
 
 /**
@@ -103,6 +108,18 @@ export interface Configuration {
    * @returns {Configuration} a new Configuration object with the specified throwOnErrors setting
    */
   withThrowOnErrors(throwOnErrors: boolean): Configuration;
+
+  /**
+   * @returns {ReadConcern} the current configuration option for read consistency
+   */
+  getReadConcern(): ReadConcern;
+
+  /**
+   * Copy constructor for overriding ReadConcern
+   * @param {ReadConcern} readConcern
+   * @returns {Configuration} a new Configuration object with the specified ReadConcern
+   */
+  withReadConcern(readConcern: ReadConcern): Configuration;
 }
 
 export class CacheConfiguration implements Configuration {
@@ -111,6 +128,7 @@ export class CacheConfiguration implements Configuration {
   private readonly transportStrategy: TransportStrategy;
   private readonly middlewares: Middleware[];
   private readonly throwOnErrors: boolean;
+  private readonly readConcern: ReadConcern;
 
   constructor(props: ConfigurationProps) {
     this.loggerFactory = props.loggerFactory;
@@ -118,6 +136,7 @@ export class CacheConfiguration implements Configuration {
     this.transportStrategy = props.transportStrategy;
     this.middlewares = props.middlewares;
     this.throwOnErrors = props.throwOnErrors;
+    this.readConcern = props.readConcern;
   }
 
   getLoggerFactory(): MomentoLoggerFactory {
@@ -135,6 +154,7 @@ export class CacheConfiguration implements Configuration {
       transportStrategy: this.transportStrategy,
       middlewares: this.middlewares,
       throwOnErrors: this.throwOnErrors,
+      readConcern: this.readConcern,
     });
   }
 
@@ -149,6 +169,7 @@ export class CacheConfiguration implements Configuration {
       transportStrategy: transportStrategy,
       middlewares: this.middlewares,
       throwOnErrors: this.throwOnErrors,
+      readConcern: this.readConcern,
     });
   }
 
@@ -163,6 +184,7 @@ export class CacheConfiguration implements Configuration {
       transportStrategy: this.transportStrategy,
       middlewares: middlewares,
       throwOnErrors: this.throwOnErrors,
+      readConcern: this.readConcern,
     });
   }
 
@@ -173,6 +195,7 @@ export class CacheConfiguration implements Configuration {
       transportStrategy: this.transportStrategy,
       middlewares: [middleware, ...this.middlewares],
       throwOnErrors: this.throwOnErrors,
+      readConcern: this.readConcern,
     });
   }
 
@@ -184,6 +207,7 @@ export class CacheConfiguration implements Configuration {
         this.transportStrategy.withClientTimeoutMillis(clientTimeout),
       middlewares: this.middlewares,
       throwOnErrors: this.throwOnErrors,
+      readConcern: this.readConcern,
     });
   }
 
@@ -198,6 +222,22 @@ export class CacheConfiguration implements Configuration {
       transportStrategy: this.transportStrategy,
       middlewares: this.middlewares,
       throwOnErrors: throwOnErrors,
+      readConcern: this.readConcern,
+    });
+  }
+
+  getReadConcern(): ReadConcern {
+    return this.readConcern;
+  }
+
+  withReadConcern(readConcern: ReadConcern): Configuration {
+    return new CacheConfiguration({
+      loggerFactory: this.loggerFactory,
+      retryStrategy: this.retryStrategy,
+      transportStrategy: this.transportStrategy,
+      middlewares: this.middlewares,
+      throwOnErrors: this.throwOnErrors,
+      readConcern: readConcern,
     });
   }
 }
