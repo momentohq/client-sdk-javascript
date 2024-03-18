@@ -13,8 +13,8 @@ export function getCacheClient(
   loggerFactory: MomentoLoggerFactory,
   requestTimeoutMs: number,
   cacheItemTtlSeconds: number
-): Promise<CacheClient> {
-  return CacheClient.create({
+): CacheClient {
+  return new CacheClient({
     configuration: Configurations.Laptop.v1(loggerFactory).withClientTimeoutMillis(requestTimeoutMs),
     credentialProvider: new EnvMomentoTokenProvider({
       environmentVariableName: 'MOMENTO_API_KEY',

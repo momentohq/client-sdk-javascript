@@ -1,6 +1,8 @@
 import {CacheGet, CreateCache, CacheSet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
+import pMap from 'p-map';
 
 async function main() {
+
   const momento = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
@@ -9,12 +11,13 @@ async function main() {
     defaultTtlSeconds: 60,
   });
 
-  const createCacheResponse = await momento.createCache('cache');
-  if (createCacheResponse instanceof CreateCache.AlreadyExists) {
-    console.log('cache already exists');
-  } else if (createCacheResponse instanceof CreateCache.Error) {
-    throw createCacheResponse.innerException();
-  }
+
+  const actions = [
+    () => momento.set('cache', 'foo', 'FOO'),
+    () => momento.get('cache', 'foo')
+  ];
+  const mapper = (action: () => Promise<any>): Promise<any> => action();
+  console.log(await pMap(actions, mapper, {concurrency: 2}));
 
   console.log('Storing key=foo, value=FOO');
   const setResponse = await momento.set('cache', 'foo', 'FOO');

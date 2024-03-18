@@ -33,7 +33,8 @@
     "typescript": "4.4.3"
   },
   "dependencies": {
-    "@gomomento/sdk": "^1.68.2"
+    "@gomomento/sdk": "^1.68.2",
+    "p-map": "^7.0.1"
   },
   "engines": {
     "node": ">=10.4.0"

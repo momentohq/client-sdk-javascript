@@ -209,7 +209,7 @@ const loadGeneratorOptions: BasicLoadGenOptions = {
    * Controls how long the load test will run, in milliseconds. We will execute operations
    * for this long and the exit.
    */
-  totalSecondsToRun: 60,
+  totalSecondsToRun: 60000,
 };
 
 main(loadGeneratorOptions)
