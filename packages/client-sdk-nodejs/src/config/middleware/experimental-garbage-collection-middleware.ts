@@ -67,7 +67,11 @@ export class ExperimentalGarbageCollectionPerformanceMetricsMiddleware
           // NODE_PERFORMANCE_GC_MAJOR indicates a major GC event such as STW (stop-the-world) pauses
           // and other long delays. This filter is to control the volume of GC logs if we were to enable
           // this on a customer's client.
-          item => item.kind === constants.NODE_PERFORMANCE_GC_MAJOR
+          // NODE_PERFORMANCE_GC_INCREMENTAL prints incremental GC stream of logs when the process is approaching
+          // max memory.
+          item =>
+            item.kind === constants.NODE_PERFORMANCE_GC_MAJOR ||
+            item.kind === constants.NODE_PERFORMANCE_GC_INCREMENTAL
         )
         .forEach(item => {
           const gcEventObject = {
