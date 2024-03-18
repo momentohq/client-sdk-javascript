@@ -1,8 +1,8 @@
 import {CacheGet, CreateCache, CacheSet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
-import pMap from 'p-map';
+import pmap from 'p-map';
+import pall from 'p-all';
 
 async function main() {
-
   const momento = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
@@ -11,13 +11,10 @@ async function main() {
     defaultTtlSeconds: 60,
   });
 
-
-  const actions = [
-    () => momento.set('cache', 'foo', 'FOO'),
-    () => momento.get('cache', 'foo')
-  ];
+  const actions = [() => momento.set('cache', 'foo', 'FOO'), () => momento.get('cache', 'foo')];
   const mapper = (action: () => Promise<any>): Promise<any> => action();
-  console.log(await pMap(actions, mapper,{concurrency: 1}));
+  console.log(await pmap(actions, mapper, {concurrency: 1}));
+  await pall(actions.map(action => () => action()));
 
   console.log('Storing key=foo, value=FOO');
   const setResponse = await momento.set('cache', 'foo', 'FOO');
