@@ -172,7 +172,7 @@ export function runAuthClientTests(
       }, `Unexpected response: ${generateResponse.toString()}`);
       const generateSuccessRst = generateResponse as GenerateApiKey.Success;
 
-      // Wait 1sec for the token to expire
+      // Wait 62 sec for the token to expire (mr2rs has a 60 sec leeway)
       await delay(62000);
 
       const authTokenAuthClient = authTokenAuthClientFactory(
@@ -252,7 +252,7 @@ export function runAuthClientTests(
       }, `Unexpected response: ${generateResponse.toString()}`);
       const generateSuccessRst = generateResponse as GenerateApiKey.Success;
 
-      // Wait 1sec for the token to expire
+      // Wait 62 sec for the token to expire (mr2rs has a 60 sec leeway)
       await delay(62000);
 
       const cacheClient = cacheClientFactory(generateSuccessRst.apiKey);
