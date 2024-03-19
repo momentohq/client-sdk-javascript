@@ -55,6 +55,7 @@ import {
   CacheDictionaryLength,
   GetBatch,
   SetBatch,
+  CacheSetSample,
 } from '../../../index';
 import {
   ScalarCallOptions,
@@ -254,6 +255,9 @@ export class MomentoCache implements IMomentoCache {
       setName,
       elements
     );
+  }
+  setSample(setName: string, limit: number): Promise<CacheSetSample.Response> {
+    return this.cacheClient.setSample(this.cacheName, setName, limit);
   }
   listFetch(
     listName: string,

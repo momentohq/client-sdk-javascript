@@ -53,6 +53,7 @@ import {
   CacheSetIfNotEqual,
   CacheSetIfPresentAndNotEqual,
   CacheSetIfAbsentOrEqual,
+  CacheSetSample,
 } from '../../../index';
 
 export interface IDataClient {
@@ -142,6 +143,11 @@ export interface IDataClient {
     setName: string,
     elements: string[] | Uint8Array[]
   ): Promise<CacheSetRemoveElements.Response>;
+  setSample(
+    cacheName: string,
+    setName: string,
+    limit: number
+  ): Promise<CacheSetSample.Response>;
   listFetch(
     cacheName: string,
     listName: string,

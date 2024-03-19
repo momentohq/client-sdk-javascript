@@ -53,6 +53,7 @@ import {
   CacheSetIfNotEqual,
   CacheSetIfPresentAndNotEqual,
   CacheSetIfAbsentOrEqual,
+  CacheSetSample,
 } from '../index';
 import {
   ScalarCallOptions,
@@ -198,6 +199,11 @@ export interface ICacheClient extends IControlClient, IPingClient {
     setName: string,
     elements: string[] | Uint8Array[]
   ): Promise<CacheSetRemoveElements.Response>;
+  setSample(
+    cacheName: string,
+    setName: string,
+    limit: number
+  ): Promise<CacheSetSample.Response>;
   listFetch(
     cacheName: string,
     listName: string,

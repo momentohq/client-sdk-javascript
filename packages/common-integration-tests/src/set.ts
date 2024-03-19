@@ -6,6 +6,7 @@ import {
   CacheSetFetch,
   CacheSetRemoveElements,
   CacheSetRemoveElement,
+  CacheSetSample,
   CollectionTtl,
   MomentoErrorCode,
 } from '@gomomento/sdk-core';
@@ -62,6 +63,9 @@ export function runSetTests(
       return cacheClient.setRemoveElements(props.cacheName, props.setName, [
         v4(),
       ]);
+    });
+    itBehavesLikeItValidates((props: ValidateSetProps) => {
+      return cacheClient.setSample(props.cacheName, props.setName, 0);
     });
   });
 
@@ -658,6 +662,142 @@ export function runSetTests(
       }, `expected a MISS but got ${fetchResponse.toString()}`);
 
       expect(fetchResponse.value()).toEqual(undefined);
+    });
+  });
+
+  describe('#setSample', () => {
+    it('validates limit', async () => {
+      const response = await cacheClient.setSample(
+        integrationTestCacheName,
+        'this-set-doesnt-exist',
+        -1
+      );
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(CacheSetSample.Error);
+      }, `expected an error but got ${response.toString()}`);
+      expect((response as CacheSetSample.Error).errorCode()).toEqual(
+        MomentoErrorCode.INVALID_ARGUMENT_ERROR
+      );
+    });
+
+    it('should return MISS if set does not exist', async () => {
+      const response = await cacheClient.setSample(
+        integrationTestCacheName,
+        'this-set-doesnt-exist',
+        10
+      );
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(CacheSetSample.Miss);
+      }, `expected MISS but got ${response.toString()}`);
+    });
+
+    it('should return HIT when set exists', async () => {
+      // Add some elements
+      const setName = v4();
+      const addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
+        setName,
+        ['apples', 'bananas', 'carrots', 'dates', 'elderberries']
+      );
+      expectWithMessage(() => {
+        expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+      }, `expected SUCCESS but got ${addResponse.toString()}`);
+
+      // Fetch with sample size 0
+      const responseZero = await cacheClient.setSample(
+        integrationTestCacheName,
+        setName,
+        0
+      );
+      expectWithMessage(() => {
+        expect(responseZero).toBeInstanceOf(CacheSetSample.Hit);
+      }, `expected HIT but got ${responseZero.toString()}`);
+
+      // Fetch with sample size < set size
+      const responseLess = await cacheClient.setSample(
+        integrationTestCacheName,
+        setName,
+        3
+      );
+      expectWithMessage(() => {
+        expect(responseLess).toBeInstanceOf(CacheSetSample.Hit);
+      }, `expected HIT but got ${responseLess.toString()}`);
+      expect((responseLess as CacheSetSample.Hit).valueArray()).toBeArrayOfSize(
+        3
+      );
+
+      // Fetch with sample size == set size
+      const responseEqual = await cacheClient.setSample(
+        integrationTestCacheName,
+        setName,
+        5
+      );
+      expectWithMessage(() => {
+        expect(responseEqual).toBeInstanceOf(CacheSetSample.Hit);
+      }, `expected HIT but got ${responseEqual.toString()}`);
+      expect(
+        (responseEqual as CacheSetSample.Hit).valueArray()
+      ).toBeArrayOfSize(5);
+
+      // Fetch with sample size > set size
+      const responseMore = await cacheClient.setSample(
+        integrationTestCacheName,
+        setName,
+        10
+      );
+      expectWithMessage(() => {
+        expect(responseMore).toBeInstanceOf(CacheSetSample.Hit);
+      }, `expected HIT but got ${responseMore.toString()}`);
+      expect((responseMore as CacheSetSample.Hit).valueArray()).toBeArrayOfSize(
+        5
+      );
+    });
+
+    it('should support happy path via curried cache via ICache interface', async () => {
+      const setName = v4();
+      const cache = cacheClient.cache(integrationTestCacheName);
+      await cache.setAddElements(setName, ['foo', 'bar']);
+
+      const response = await cache.setSample(setName, 2);
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(CacheSetSample.Hit);
+      }, `expected a HIT but got ${response.toString()}`);
+      expect((response as CacheSetSample.Hit).valueSet()).toEqual(
+        new Set(['foo', 'bar'])
+      );
+    });
+
+    it('should support accessing value for CacheSetSample.Hit without instanceof check', async () => {
+      const setName = v4();
+      const elements = ['foo', 'bar'];
+
+      await cacheClient.setAddElements(
+        integrationTestCacheName,
+        setName,
+        elements
+      );
+
+      let response = await cacheClient.setSample(
+        integrationTestCacheName,
+        setName,
+        2
+      );
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(CacheSetSample.Hit);
+      }, `expected a HIT but got ${response.toString()}`);
+
+      expect(new Set(response.value())).toEqual(new Set(elements));
+
+      const hit = response as CacheSetSample.Hit;
+      expect(new Set(hit.value())).toEqual(new Set(elements));
+      expect(new Set(hit.valueArray())).toEqual(new Set(elements));
+
+      response = await cacheClient.setSample(integrationTestCacheName, v4(), 2);
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(CacheSetSample.Miss);
+      }, `expected a MISS but got ${response.toString()}`);
+
+      expect(response.value()).toEqual(undefined);
     });
   });
 }
