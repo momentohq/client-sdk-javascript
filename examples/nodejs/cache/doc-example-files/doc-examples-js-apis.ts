@@ -320,7 +320,7 @@ async function example_API_SetIfEqual(cacheClient: CacheClient, cacheName: strin
   if (result instanceof CacheSetIfEqual.Stored) {
     console.log("Field 'test-field' set in key 'test-key'");
   } else if (result instanceof CacheSetIfEqual.NotStored) {
-    console.log(`Key 'test-key' does not exist in cache ${cacheName}, so we did not set the field`);
+    console.log("Value of key 'test-key' does not equal 'value-to-check', so we did not set the field");
   } else if (result instanceof CacheSetIfEqual.Error) {
     throw new Error(
       `An error occurred while attempting to call setIfEqual for the key 'test-key' in cache cacheName: ${result.errorCode()}: ${result.toString()}`
@@ -333,7 +333,7 @@ async function example_API_SetIfNotEqual(cacheClient: CacheClient, cacheName: st
   if (result instanceof CacheSetIfNotEqual.Stored) {
     console.log("Field 'test-field' set in key 'test-key'");
   } else if (result instanceof CacheSetIfNotEqual.NotStored) {
-    console.log(`Key 'test-key' does not exist in cache ${cacheName}, so we did not set the field`);
+    console.log("Value of key 'test-key' equals 'value-to-check', so we did not set the field");
   } else if (result instanceof CacheSetIfNotEqual.Error) {
     throw new Error(
       `An error occurred while attempting to call setIfNotEqual for the key 'test-key' in cache cacheName: ${result.errorCode()}: ${result.toString()}`
@@ -346,7 +346,9 @@ async function example_API_SetIfPresentAndNotEqual(cacheClient: CacheClient, cac
   if (result instanceof CacheSetIfPresentAndNotEqual.Stored) {
     console.log("Field 'test-field' set in key 'test-key'");
   } else if (result instanceof CacheSetIfPresentAndNotEqual.NotStored) {
-    console.log(`Key 'test-key' does not exist in cache ${cacheName}, so we did not set the field`);
+    console.log(
+      `Key 'test-key' does not exist in cache ${cacheName} or equals 'value-to-check', so we did not set the field`
+    );
   } else if (result instanceof CacheSetIfPresentAndNotEqual.Error) {
     throw new Error(
       `An error occurred while attempting to call setIfPresentAndNotEqual for the key 'test-key' in cache cacheName: ${result.errorCode()}: ${result.toString()}`
@@ -359,7 +361,9 @@ async function example_API_SetIfAbsentOrEqual(cacheClient: CacheClient, cacheNam
   if (result instanceof CacheSetIfAbsentOrEqual.Stored) {
     console.log("Field 'test-field' set in key 'test-key'");
   } else if (result instanceof CacheSetIfAbsentOrEqual.NotStored) {
-    console.log(`Key 'test-key' does not exist in cache ${cacheName}, so we did not set the field`);
+    console.log(
+      `Key 'test-key' exists in cache ${cacheName} and is not equal to 'value-to-check', so we did not set the field`
+    );
   } else if (result instanceof CacheSetIfAbsentOrEqual.Error) {
     throw new Error(
       `An error occurred while attempting to call setIfAbsentOrEqual for the key 'test-key' in cache cacheName: ${result.errorCode()}: ${result.toString()}`
