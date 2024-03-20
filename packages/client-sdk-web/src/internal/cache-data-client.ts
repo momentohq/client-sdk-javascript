@@ -197,6 +197,7 @@ export class CacheDataClient<
     this.defaultTtlSeconds = props.defaultTtlSeconds;
     this.clientMetadataProvider = new ClientMetadataProvider({
       authToken: props.credentialProvider.getAuthToken(),
+      readConcern: props.configuration.getReadConcern(),
     });
     const context: MiddlewareRequestHandlerContext = {};
     this.clientWrapper = new cache.ScsClient(

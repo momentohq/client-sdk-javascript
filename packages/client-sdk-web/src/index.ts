@@ -150,6 +150,7 @@ import {
   GetWebhookSecret,
   RotateWebhookSecret,
   WebhookDestinationType,
+  ReadConcern,
 } from '@gomomento/sdk-core';
 
 import {Configuration} from './config/configuration';
@@ -353,4 +354,5 @@ export {
   GetWebhookSecret,
   RotateWebhookSecret,
   WebhookDestinationType,
+  ReadConcern,
 };

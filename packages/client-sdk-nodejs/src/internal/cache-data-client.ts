@@ -193,6 +193,7 @@ export class CacheDataClient implements IDataClient {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
       new Header('Agent', `nodejs:${version}`),
+      new Header('read-concern', this.configuration.getReadConcern()),
     ];
 
     this.interceptors = this.initializeInterceptors(

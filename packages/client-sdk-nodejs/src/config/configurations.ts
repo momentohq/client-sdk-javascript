@@ -2,7 +2,7 @@ import {CacheConfiguration} from './configuration';
 import {FixedCountRetryStrategy} from './retry/fixed-count-retry-strategy';
 import {RetryStrategy} from './retry/retry-strategy';
 import {Middleware} from './middleware/middleware';
-import {MomentoLoggerFactory} from '@gomomento/sdk-core';
+import {MomentoLoggerFactory, ReadConcern} from '@gomomento/sdk-core';
 import {
   GrpcConfiguration,
   StaticGrpcConfiguration,
@@ -73,6 +73,7 @@ export class Laptop extends CacheConfiguration {
       transportStrategy: transportStrategy,
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
+      readConcern: ReadConcern.BALANCED,
     });
   }
 }
@@ -103,6 +104,7 @@ export class Lambda extends CacheConfiguration {
       transportStrategy: transportStrategy,
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
+      readConcern: ReadConcern.BALANCED,
     });
   }
 }
@@ -147,6 +149,7 @@ class InRegionDefault extends CacheConfiguration {
       transportStrategy: transportStrategy,
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
+      readConcern: ReadConcern.BALANCED,
     });
   }
 }
@@ -192,6 +195,7 @@ class InRegionLowLatency extends CacheConfiguration {
       transportStrategy: transportStrategy,
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
+      readConcern: ReadConcern.BALANCED,
     });
   }
 }

@@ -1,7 +1,9 @@
+import {ReadConcern} from '@gomomento/sdk-core';
 import {version} from '../../package.json';
 
 export interface ClientMetadataProps {
   authToken?: string;
+  readConcern?: ReadConcern;
 }
 
 /**
@@ -11,8 +13,10 @@ export class ClientMetadataProvider {
   private static readonly agentName: string = 'js-web';
   private readonly authToken?: string;
   private isAgentSent = false;
+  private readConcern?: ReadConcern;
   constructor(props: ClientMetadataProps) {
     this.authToken = props.authToken;
+    this.readConcern = props.readConcern;
   }
 
   /**
@@ -27,6 +31,9 @@ export class ClientMetadataProvider {
     if (!this.isAgentSent) {
       this.isAgentSent = true;
       metadata['Agent'] = `${ClientMetadataProvider.agentName}:${version}`;
+    }
+    if (this.readConcern) {
+      metadata['read-concern'] = this.readConcern;
     }
     return metadata;
   }

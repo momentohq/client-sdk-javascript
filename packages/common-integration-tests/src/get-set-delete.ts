@@ -27,6 +27,9 @@ import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache'
 export function runGetSetDeleteTests(
   cacheClient: ICacheClient,
   cacheClientWithThrowOnErrors: ICacheClient,
+  cacheClientWithExpressReadConcern: ICacheClient,
+  cacheClientWithBalancedReadConcern: ICacheClient,
+  cacheClientWithConsistentReadConcern: ICacheClient,
   integrationTestCacheName: string
 ) {
   describe('get/set/delete', () => {
@@ -2757,6 +2760,98 @@ export function runGetSetDeleteTests(
           1
         );
       }).rejects.toBeInstanceOf(FailedPreconditionError);
+    });
+  });
+
+  describe('when ReadConcern is specified', () => {
+    it('gets, sets, and deletes with Balanced ReadConcern', async () => {
+      const cacheKey = v4();
+      const cacheValue = new TextEncoder().encode(v4());
+      await cacheClientWithBalancedReadConcern.set(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue
+      );
+      const getResponse = await cacheClientWithBalancedReadConcern.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+
+      const deleteResponse = await cacheClientWithBalancedReadConcern.delete(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
+      }, `expected SUCCESS but got ${deleteResponse.toString()}`);
+      const getMiss = await cacheClientWithBalancedReadConcern.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expect(getMiss).toBeInstanceOf(CacheGet.Miss);
+    });
+
+    it('gets, sets, and deletes with Express ReadConcern', async () => {
+      const cacheKey = v4();
+      const cacheValue = new TextEncoder().encode(v4());
+      await cacheClientWithExpressReadConcern.set(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue
+      );
+      const getResponse = await cacheClientWithExpressReadConcern.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+
+      const deleteResponse = await cacheClientWithExpressReadConcern.delete(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
+      }, `expected SUCCESS but got ${deleteResponse.toString()}`);
+      const getMiss = await cacheClientWithExpressReadConcern.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expect(getMiss).toBeInstanceOf(CacheGet.Miss);
+    });
+
+    it('gets, sets, and deletes with Consistent ReadConcern', async () => {
+      const cacheKey = v4();
+      const cacheValue = new TextEncoder().encode(v4());
+      await cacheClientWithConsistentReadConcern.set(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue
+      );
+      const getResponse = await cacheClientWithConsistentReadConcern.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+
+      const deleteResponse = await cacheClientWithConsistentReadConcern.delete(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
+      }, `expected SUCCESS but got ${deleteResponse.toString()}`);
+      const getMiss = await cacheClientWithConsistentReadConcern.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expect(getMiss).toBeInstanceOf(CacheGet.Miss);
     });
   });
 }

@@ -6,6 +6,7 @@ import {
   StaticGrpcConfiguration,
   StaticTransportStrategy,
 } from '../../../src/config/transport/transport-strategy';
+import {ReadConcern} from '@gomomento/sdk-core';
 
 describe('configuration.ts', () => {
   const testLoggerFactory = new DefaultMomentoLoggerFactory();
@@ -30,6 +31,7 @@ describe('configuration.ts', () => {
     transportStrategy: testTransportStrategy,
     middlewares: testMiddlewares,
     throwOnErrors: false,
+    readConcern: ReadConcern.BALANCED,
   });
 
   it('should support overriding retry strategy', () => {
