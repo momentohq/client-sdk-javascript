@@ -94,6 +94,8 @@ import {
   GetWebhookSecret,
   GetBatch,
   SetBatch,
+  ReadConcern,
+  CacheSetSample,
 } from '@gomomento/sdk';
 import * as crypto from 'crypto';
 
@@ -136,6 +138,16 @@ function example_API_ConfigurationLambdaLatest() {
 async function example_API_InstantiateCacheClient() {
   return await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_API_KEY',
+    }),
+    defaultTtlSeconds: 60,
+  });
+}
+
+async function example_API_InstantiateCacheClientWithReadConcern() {
+  return await CacheClient.create({
+    configuration: Configurations.Laptop.v1().withReadConcern(ReadConcern.CONSISTENT),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_API_KEY',
     }),
@@ -720,6 +732,23 @@ async function example_API_SetRemoveElements(cacheClient: CacheClient, cacheName
   } else if (result instanceof CacheSetRemoveElements.Error) {
     throw new Error(
       `An error occurred while attempting to call cacheSetRemoveElements on set 'test-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_SetSample(cacheClient: CacheClient, cacheName: string) {
+  await cacheClient.setAddElements(cacheName, 'test-set', ['test-element1', 'test-element2', 'test-element3']);
+  const result = await cacheClient.setSample(cacheName, 'test-set', 2);
+  if (result instanceof CacheSetSample.Hit) {
+    console.log('Sample of 2 elements fetched successfully- ');
+    result.valueSet().forEach((value, key) => {
+      console.log(`${key} : ${value}`);
+    });
+  } else if (result instanceof CacheSetSample.Miss) {
+    console.log(`Set 'test-set' was not found in cache '${cacheName}'`);
+  } else if (result instanceof CacheSetSample.Error) {
+    throw new Error(
+      `An error occurred while attempting to call cacheSetSample on set 'test-set' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
 }
@@ -1481,6 +1510,7 @@ async function main() {
   example_API_ConfigurationLambdaLatest();
 
   await example_API_InstantiateCacheClient();
+  await example_API_InstantiateCacheClientWithReadConcern();
 
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
@@ -1542,6 +1572,7 @@ async function main() {
     await example_API_SetFetch(cacheClient, cacheName);
     await example_API_SetRemoveElement(cacheClient, cacheName);
     await example_API_SetRemoveElements(cacheClient, cacheName);
+    await example_API_SetSample(cacheClient, cacheName);
 
     await example_API_SortedSetPutElement(cacheClient, cacheName);
     await example_API_SortedSetPutElements(cacheClient, cacheName);
