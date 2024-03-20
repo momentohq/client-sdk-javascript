@@ -694,10 +694,17 @@ export function runSetTests(
     it('should return HIT when set exists', async () => {
       // Add some elements
       const setName = v4();
+      const elements = [
+        'apples',
+        'bananas',
+        'carrots',
+        'dates',
+        'elderberries',
+      ];
       const addResponse = await cacheClient.setAddElements(
         integrationTestCacheName,
         setName,
-        ['apples', 'bananas', 'carrots', 'dates', 'elderberries']
+        elements
       );
       expectWithMessage(() => {
         expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
@@ -722,9 +729,11 @@ export function runSetTests(
       expectWithMessage(() => {
         expect(responseLess).toBeInstanceOf(CacheSetSample.Hit);
       }, `expected HIT but got ${responseLess.toString()}`);
-      expect((responseLess as CacheSetSample.Hit).valueArray()).toBeArrayOfSize(
-        3
-      );
+      const valuesArrayLess = (responseLess as CacheSetSample.Hit).valueArray();
+      expect(valuesArrayLess).toBeArrayOfSize(3);
+      for (const value of valuesArrayLess) {
+        expect(elements).toContain(value);
+      }
 
       // Fetch with sample size == set size
       const responseEqual = await cacheClient.setSample(
@@ -735,9 +744,13 @@ export function runSetTests(
       expectWithMessage(() => {
         expect(responseEqual).toBeInstanceOf(CacheSetSample.Hit);
       }, `expected HIT but got ${responseEqual.toString()}`);
-      expect(
-        (responseEqual as CacheSetSample.Hit).valueArray()
-      ).toBeArrayOfSize(5);
+      const valuesArrayEqual = (
+        responseEqual as CacheSetSample.Hit
+      ).valueArray();
+      expect(valuesArrayEqual).toBeArrayOfSize(5);
+      for (const value of valuesArrayEqual) {
+        expect(elements).toContain(value);
+      }
 
       // Fetch with sample size > set size
       const responseMore = await cacheClient.setSample(
@@ -748,9 +761,11 @@ export function runSetTests(
       expectWithMessage(() => {
         expect(responseMore).toBeInstanceOf(CacheSetSample.Hit);
       }, `expected HIT but got ${responseMore.toString()}`);
-      expect((responseMore as CacheSetSample.Hit).valueArray()).toBeArrayOfSize(
-        5
-      );
+      const valuesArrayMore = (responseMore as CacheSetSample.Hit).valueArray();
+      expect(valuesArrayMore).toBeArrayOfSize(5);
+      for (const value of valuesArrayMore) {
+        expect(elements).toContain(value);
+      }
     });
 
     it('should support happy path via curried cache via ICache interface', async () => {
