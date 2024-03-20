@@ -17,6 +17,7 @@ import {
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {CacheClientPropsWithConfig} from '../../src/internal/cache-client-props-with-config';
+import {ReadConcern} from '@gomomento/sdk-core';
 
 export const deleteCacheIfExists = async (
   momento: CacheClient,
@@ -92,6 +93,30 @@ function momentoClientForTestingWithThrowOnErrors(): CacheClient {
   return new CacheClient(props);
 }
 
+function momentoClientForTestingBalancedReadConcern(): CacheClient {
+  const props = integrationTestCacheClientProps();
+  props.configuration = props.configuration.withReadConcern(
+    ReadConcern.BALANCED
+  );
+  return new CacheClient(props);
+}
+
+function momentoClientForTestingExpressReadConcern(): CacheClient {
+  const props = integrationTestCacheClientProps();
+  props.configuration = props.configuration.withReadConcern(
+    ReadConcern.EXPRESS
+  );
+  return new CacheClient(props);
+}
+
+function momentoClientForTestingConsistentReadConcern(): CacheClient {
+  const props = integrationTestCacheClientProps();
+  props.configuration = props.configuration.withReadConcern(
+    ReadConcern.CONSISTENT
+  );
+  return new CacheClient(props);
+}
+
 function momentoClientForTestingWithSessionToken(): CacheClient {
   return new CacheClient({
     configuration:
@@ -156,6 +181,9 @@ function momentoLeaderboardClientWithThrowOnErrorsForTesting(): PreviewLeaderboa
 export function SetupIntegrationTest(): {
   cacheClient: CacheClient;
   cacheClientWithThrowOnErrors: CacheClient;
+  cacheClientWithExpressReadConcern: CacheClient;
+  cacheClientWithBalancedReadConcern: CacheClient;
+  cacheClientWithConsistentReadConcern: CacheClient;
   integrationTestCacheName: string;
 } {
   const cacheName = testCacheName();
@@ -181,9 +209,18 @@ export function SetupIntegrationTest(): {
 
   const client = momentoClientForTesting();
   const clientWithThrowOnErrors = momentoClientForTestingWithThrowOnErrors();
+  const clientWithExpressReadConcern =
+    momentoClientForTestingExpressReadConcern();
+  const clientWithBalancedReadConcern =
+    momentoClientForTestingBalancedReadConcern();
+  const clientWithConsistentReadConcern =
+    momentoClientForTestingConsistentReadConcern();
   return {
     cacheClient: client,
     cacheClientWithThrowOnErrors: clientWithThrowOnErrors,
+    cacheClientWithExpressReadConcern: clientWithExpressReadConcern,
+    cacheClientWithBalancedReadConcern: clientWithBalancedReadConcern,
+    cacheClientWithConsistentReadConcern: clientWithConsistentReadConcern,
     integrationTestCacheName: cacheName,
   };
 }

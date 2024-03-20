@@ -15,6 +15,7 @@ import {
   CacheSetAddElement,
   CacheSetRemoveElements,
   CacheSetRemoveElement,
+  CacheSetSample,
   CacheListFetch,
   CacheListLength,
   CacheListPushFront,
@@ -171,6 +172,7 @@ export interface IMomentoCache {
     setName: string,
     elements: string[] | Uint8Array[]
   ): Promise<CacheSetRemoveElements.Response>;
+  setSample(setName: string, limit: number): Promise<CacheSetSample.Response>;
   listFetch(
     listName: string,
     options?: ListFetchCallOptions

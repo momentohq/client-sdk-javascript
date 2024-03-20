@@ -46,6 +46,7 @@ import * as CacheSetAddElements from '@gomomento/sdk-core/dist/src/messages/resp
 import * as CacheSetAddElement from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-add-element';
 import * as CacheSetRemoveElements from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-remove-elements';
 import * as CacheSetRemoveElement from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-remove-element';
+import * as CacheSetSample from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-sample';
 import * as CacheIncrement from '@gomomento/sdk-core/dist/src/messages/responses/cache-increment';
 import * as CacheSetIfNotExists from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-not-exists';
 import * as CacheSetIfAbsent from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-absent';
@@ -176,6 +177,7 @@ import {
   GetWebhookSecret,
   RotateWebhookSecret,
   WebhookDestinationType,
+  ReadConcern,
 } from '@gomomento/sdk-core';
 
 import {Configuration, CacheConfiguration} from './config/configuration';
@@ -326,6 +328,7 @@ export {
   CacheSetAddElement,
   CacheSetRemoveElements,
   CacheSetRemoveElement,
+  CacheSetSample,
   CacheSortedSetPutElement,
   CacheSortedSetPutElements,
   CacheSortedSetFetch,
@@ -413,4 +416,5 @@ export {
   NoopMomentoLoggerFactory,
   BatchUtils,
   WebhookUtils,
+  ReadConcern,
 };

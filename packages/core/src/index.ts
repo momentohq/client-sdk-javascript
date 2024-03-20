@@ -33,6 +33,7 @@ import * as CacheSetAddElements from './messages/responses/cache-set-add-element
 import * as CacheSetAddElement from './messages/responses/cache-set-add-element';
 import * as CacheSetRemoveElements from './messages/responses/cache-set-remove-elements';
 import * as CacheSetRemoveElement from './messages/responses/cache-set-remove-element';
+import * as CacheSetSample from './messages/responses/cache-set-sample';
 import * as CacheIncrement from './messages/responses/cache-increment';
 import * as CacheSetIfNotExists from './messages/responses/cache-set-if-not-exists';
 import * as CacheSetIfAbsent from './messages/responses/cache-set-if-absent';
@@ -213,6 +214,8 @@ export * as PermissionScopes from './auth/tokens/permission-scopes';
 export * as TokenScopes from './auth/tokens/permission-scopes';
 export * as DisposableTokenScopes from './auth/tokens/disposable-token-scopes';
 
+export {ReadConcern} from './config/read-concern';
+
 export {
   ExpiresIn,
   ExpiresAt,
@@ -270,6 +273,7 @@ export {
   CacheSetAddElement,
   CacheSetRemoveElements,
   CacheSetRemoveElement,
+  CacheSetSample,
   CacheSortedSetPutElement,
   CacheSortedSetPutElements,
   CacheSortedSetFetch,

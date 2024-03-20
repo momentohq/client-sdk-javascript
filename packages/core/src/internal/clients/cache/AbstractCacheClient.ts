@@ -68,6 +68,7 @@ import {
   CacheSetIfNotEqual,
   CacheSetIfPresentAndNotEqual,
   CacheSetIfAbsentOrEqual,
+  CacheSetSample,
 } from '../../../index';
 import {ListFetchCallOptions, ListRetainCallOptions} from '../../../utils';
 import {
@@ -667,6 +668,28 @@ export abstract class AbstractCacheClient implements ICacheClient {
   ): Promise<CacheSetRemoveElements.Response> {
     const client = this.getNextDataClient();
     return await client.setRemoveElements(cacheName, setName, elements);
+  }
+
+  /**
+   * Fetch a random sample of elements from the set.
+   * Returns a different random sample for each call.
+   *
+   * @param {string} cacheName - The cache containing the set.
+   * @param {string} setName - The set to remove from.
+   * @param {number} limit - The maximum number of elements to return.
+   * If the set contains fewer than 'limit' elements, the entire set will be returned.
+   * @returns {Promise<CacheSetSample.Response>} -
+   * {@link CacheSetSample.Hit} containing the set elements if the set exists.
+   * {@link CacheSetSample.Miss} if the set does not exist.
+   * {@link CacheSetSample.Error} on failure.
+   */
+  public async setSample(
+    cacheName: string,
+    setName: string,
+    limit: number
+  ): Promise<CacheSetSample.Response> {
+    const client = this.getNextDataClient();
+    return await client.setSample(cacheName, setName, limit);
   }
 
   /**
