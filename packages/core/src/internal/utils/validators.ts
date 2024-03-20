@@ -20,6 +20,12 @@ export function validateSetName(name: string) {
   }
 }
 
+export function validateSetSampleLimit(limit: number) {
+  if (limit < 0) {
+    throw new InvalidArgumentError('limit must be non-negative (>= 0)');
+  }
+}
+
 export function validateSortedSetName(name: string) {
   if (isEmpty(name)) {
     throw new InvalidArgumentError('sorted set name must not be empty');

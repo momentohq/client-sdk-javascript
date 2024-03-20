@@ -43,6 +43,7 @@ import * as CacheSetAddElements from '@gomomento/sdk-core/dist/src/messages/resp
 import * as CacheSetAddElement from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-add-element';
 import * as CacheSetRemoveElements from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-remove-elements';
 import * as CacheSetRemoveElement from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-remove-element';
+import * as CacheSetSample from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-sample';
 import * as CacheIncrement from '@gomomento/sdk-core/dist/src/messages/responses/cache-increment';
 import * as CacheSetIfNotExists from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-not-exists';
 import * as CacheSetIfAbsent from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-absent';
@@ -69,6 +70,8 @@ import * as CacheKeysExist from '@gomomento/sdk-core/dist/src/messages/responses
 import * as CacheUpdateTtl from '@gomomento/sdk-core/dist/src/messages/responses/cache-ttl-update';
 import * as CacheIncreaseTtl from '@gomomento/sdk-core/dist/src/messages/responses/cache-ttl-increase';
 import * as CacheDecreaseTtl from '@gomomento/sdk-core/dist/src/messages/responses/cache-ttl-decrease';
+import * as GetBatch from '@gomomento/sdk-core/dist/src/messages/responses/cache-batch-get';
+import * as SetBatch from '@gomomento/sdk-core/dist/src/messages/responses/cache-batch-set';
 
 // TopicClient Response Types
 import * as TopicPublish from '@gomomento/sdk-core/dist/src/messages/responses/topic-publish';
@@ -248,6 +251,8 @@ export {
   CacheSetIfNotEqual,
   CacheSetIfPresentAndNotEqual,
   CacheSetIfAbsentOrEqual,
+  SetBatch,
+  GetBatch,
   CacheDelete,
   CacheFlush,
   CreateCache,
@@ -271,6 +276,7 @@ export {
   CacheSetAddElement,
   CacheSetRemoveElements,
   CacheSetRemoveElement,
+  CacheSetSample,
   CacheSortedSetPutElement,
   CacheSortedSetPutElements,
   CacheSortedSetFetch,

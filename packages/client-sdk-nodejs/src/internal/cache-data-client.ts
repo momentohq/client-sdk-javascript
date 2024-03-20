@@ -51,6 +51,7 @@ import {
   CacheSetIfPresentAndNotEqual,
   CacheSetIfAbsentOrEqual,
   CacheSetRemoveElements,
+  CacheSetSample,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
@@ -91,6 +92,7 @@ import {
   validateListName,
   validateListSliceStartEnd,
   validateSetName,
+  validateSetSampleLimit,
   validateSortedSetCount,
   validateSortedSetName,
   validateSortedSetOffset,
@@ -550,6 +552,59 @@ export class CacheDataClient implements IDataClient {
             });
           } else {
             resolve(new CacheSetRemoveElements.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async setSample(
+    cacheName: string,
+    setName: string,
+    limit: number
+  ): Promise<CacheSetSample.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+      validateSetSampleLimit(limit);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetSample.Error(err)
+      );
+    }
+    return await this.sendSetSample(cacheName, this.convert(setName), limit);
+  }
+
+  private async sendSetSample(
+    cacheName: string,
+    setName: Uint8Array,
+    limit: number
+  ): Promise<CacheSetFetch.Response> {
+    const request = new grpcCache._SetSampleRequest({
+      set_name: setName,
+      limit: limit,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.getClient().SetSample(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheSetSample.Miss());
+          } else if (resp?.found) {
+            resolve(new CacheSetSample.Hit(resp.found.elements));
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetSample.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );

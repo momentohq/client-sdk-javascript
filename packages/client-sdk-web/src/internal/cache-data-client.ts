@@ -32,6 +32,7 @@ import {
   CacheSetIfPresentAndNotEqual,
   CacheSetIfAbsentOrEqual,
   CacheSetRemoveElements,
+  CacheSetSample,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
@@ -57,6 +58,8 @@ import {
   SortedSetOrder,
   UnknownError,
   CacheDictionaryLength,
+  GetBatch,
+  SetBatch,
 } from '..';
 import {Configuration} from '../config/configuration';
 import {Request, RpcError, UnaryResponse} from 'grpc-web';
@@ -114,6 +117,7 @@ import {
   _DictionaryLengthRequest,
   _GetBatchRequest,
   _SetBatchRequest,
+  _SetSampleRequest,
 } from '@gomomento/generated-types-webtext/dist/cacheclient_pb';
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {
@@ -130,6 +134,7 @@ import {
   validateSortedSetScores,
   validateTtlSeconds,
   validateValidForSeconds,
+  validateSetSampleLimit,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
   convertToB64String,
@@ -139,7 +144,6 @@ import {
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {MiddlewareRequestHandlerContext} from '../config/middleware/middleware';
-import {GetBatch, SetBatch} from '@gomomento/sdk-core';
 import {
   _Unbounded,
   Absent,
@@ -1403,6 +1407,64 @@ export class CacheDataClient<
             });
           } else {
             resolve(new CacheSetRemoveElements.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async setSample(
+    cacheName: string,
+    setName: string,
+    limit: number
+  ): Promise<CacheSetSample.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+      validateSetSampleLimit(limit);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetSample.Error(err)
+      );
+    }
+    return await this.sendSetSample(
+      cacheName,
+      convertToB64String(setName),
+      limit
+    );
+  }
+
+  private async sendSetSample(
+    cacheName: string,
+    setName: string,
+    limit: number
+  ): Promise<CacheSetSample.Response> {
+    const request = new _SetSampleRequest();
+    request.setSetName(setName);
+    request.setLimit(limit);
+
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.setSample(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          const theSet = resp?.getFound();
+          if (theSet && theSet.getElementsList()) {
+            const found = theSet.getElementsList();
+            resolve(new CacheSetSample.Hit(this.convertArrayToUint8(found)));
+          } else if (resp?.getMissing()) {
+            resolve(new CacheSetSample.Miss());
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetSample.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
