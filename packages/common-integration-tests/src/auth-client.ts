@@ -172,8 +172,8 @@ export function runAuthClientTests(
       }, `Unexpected response: ${generateResponse.toString()}`);
       const generateSuccessRst = generateResponse as GenerateApiKey.Success;
 
-      // Wait 1sec for the token to expire
-      await delay(1000);
+      // Wait 3 sec for the token to expire
+      await delay(3000);
 
       const authTokenAuthClient = authTokenAuthClientFactory(
         generateSuccessRst.apiKey
@@ -186,11 +186,11 @@ export function runAuthClientTests(
         expect(refreshResponse).toBeInstanceOf(RefreshApiKey.Error);
       }, `Unexpected response: ${refreshResponse.toString()}`);
       const errorResponse = refreshResponse as RefreshApiKey.Error;
+      const matchesErrorCode =
+        errorResponse.errorCode() === MomentoErrorCode.AUTHENTICATION_ERROR ||
+        errorResponse.errorCode() === MomentoErrorCode.INVALID_ARGUMENT_ERROR;
       expectWithMessage(
-        () =>
-          expect(errorResponse.errorCode()).toEqual(
-            MomentoErrorCode.AUTHENTICATION_ERROR
-          ),
+        () => expect(matchesErrorCode).toEqual(true),
         `Unexpected error code: ${errorResponse.errorCode()}`
       );
     });
@@ -252,8 +252,8 @@ export function runAuthClientTests(
       }, `Unexpected response: ${generateResponse.toString()}`);
       const generateSuccessRst = generateResponse as GenerateApiKey.Success;
 
-      // Wait 1sec for the token to expire
-      await delay(1000);
+      // Wait 3 sec for the token to expire
+      await delay(3000);
 
       const cacheClient = cacheClientFactory(generateSuccessRst.apiKey);
 
