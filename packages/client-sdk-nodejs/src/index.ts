@@ -176,6 +176,7 @@ import {
   GetWebhookSecret,
   RotateWebhookSecret,
   WebhookDestinationType,
+  ReadConcern,
 } from '@gomomento/sdk-core';
 
 import {Configuration, CacheConfiguration} from './config/configuration';
@@ -413,4 +414,5 @@ export {
   NoopMomentoLoggerFactory,
   BatchUtils,
   WebhookUtils,
+  ReadConcern,
 };
