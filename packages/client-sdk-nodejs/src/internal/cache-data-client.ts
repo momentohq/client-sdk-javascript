@@ -51,6 +51,7 @@ import {
   CacheSetIfPresentAndNotEqual,
   CacheSetIfAbsentOrEqual,
   CacheSetRemoveElements,
+  CacheSetSample,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
@@ -121,7 +122,6 @@ import Equal = common.Equal;
 import NotEqual = common.NotEqual;
 import PresentAndNotEqual = common.PresentAndNotEqual;
 import AbsentOrEqual = common.AbsentOrEqual;
-import {CacheSetSample} from '@gomomento/sdk-core';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
