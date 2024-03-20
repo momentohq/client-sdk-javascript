@@ -32,6 +32,7 @@ import {
   CacheSetIfPresentAndNotEqual,
   CacheSetIfAbsentOrEqual,
   CacheSetRemoveElements,
+  CacheSetSample,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
@@ -57,6 +58,8 @@ import {
   SortedSetOrder,
   UnknownError,
   CacheDictionaryLength,
+  GetBatch,
+  SetBatch,
 } from '..';
 import {Configuration} from '../config/configuration';
 import {Request, RpcError, UnaryResponse} from 'grpc-web';
@@ -141,7 +144,6 @@ import {
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {MiddlewareRequestHandlerContext} from '../config/middleware/middleware';
-import {CacheSetSample, GetBatch, SetBatch} from '@gomomento/sdk-core';
 import {
   _Unbounded,
   Absent,
