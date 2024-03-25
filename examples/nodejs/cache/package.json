@@ -7,6 +7,7 @@
     "prebuild": "eslint . --ext .ts",
     "build": "tsc",
     "basic": "tsc && node dist/basic.js",
+    "load-gen": "tsc && node dist/load-gen.js",
     "advanced": "tsc && node dist/advanced.js",
     "dictionary": "tsc && node dist/dictionary.js",
     "sharded-dictionary": "tsc && node dist/sharded-dictionary.js",
@@ -33,7 +34,8 @@
     "typescript": "4.4.3"
   },
   "dependencies": {
-    "@gomomento/sdk": "^1.71.0"
+    "@gomomento/sdk": "file:../../../packages/client-sdk-nodejs",
+    "hdr-histogram-js": "3.0.0"
   },
   "engines": {
     "node": ">=10.4.0"
