@@ -19,11 +19,9 @@ async function main() {
 
   let promises = [];
   for (let i = 0; i < 10000; i++) {
-    // Wrap each `redisClient.set` operation to individually handle its resolution and rejection.
     const promise = redisClient.set('foo'.concat(String(i)), 'FOO')
       .then(result => {
         // Log success status or value, if necessary.
-        // console.log(`Success for key foo${i}:`, result);
       })
       .catch(error => {
         // Log the error status here.
@@ -33,21 +31,21 @@ async function main() {
     promises.push(promise);
   }
 
-  // Use Promise.allSettled to wait for all promises to either resolve or reject.
-  // This method allows handling of each promise's outcome individually.
   await Promise.all(promises)
     .then((results) => {
-      // Optionally, process the results array if you need to perform any aggregated analysis.
       console.log('All operations have been processed.');
     });
-}
 
+  // Once all operations are complete, close the Redis connection.
+  await redisClient.quit();  // or redisClient.disconnect();
+  console.log('Redis client disconnected, exiting...');
+}
 
 main()
   .then(() => {
     console.log('success!!');
   })
-  .catch((e: Error) => {
-    console.error(`Uncaught exception while running example: ${e.message}`);
-    throw e;
+  .catch((error) => {
+    console.error(`Uncaught exception while running example: ${error.message}`);
+    throw error;
   });
