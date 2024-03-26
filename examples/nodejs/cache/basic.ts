@@ -56,6 +56,8 @@ async function main() {
   } else if (getResponse instanceof CacheGet.Error) {
     console.log(`Error: ${getResponse.message()}`);
   }
+
+  momento.close();
 }
 
 main()
