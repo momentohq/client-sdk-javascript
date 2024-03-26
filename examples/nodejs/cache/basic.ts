@@ -17,12 +17,36 @@ async function main() {
   }
 
   console.log('Storing key=foo, value=FOO');
-  const setResponse = await momento.set('cache', 'foo', 'FOO');
-  if (setResponse instanceof CacheSet.Success) {
-    console.log('Key stored successfully!');
-  } else {
-    console.log(`Error setting key: ${setResponse.toString()}`);
+  const promises = [];
+  for (let i = 0; i < 100000; i++) {
+    // Wrap each `momento.set` call in a function that logs the outcome.
+    const promise = momento.set('cache', 'foo', 'FOO')
+      .then(response => {
+        // Assuming the response can be directly checked to be an instance of CacheSet.Success or CacheSet.Error.
+        if (response instanceof CacheSet.Error) {
+          console.log(`Request ${i}: Error`, response);
+        }
+        return response; // Return response to keep the chain correct.
+      })
+      // If `momento.set` can reject, catch and log the rejection.
+      .catch(error => {
+        console.log(`Request ${i}: Failed with exception`, error);
+        // Rethrow or return an error response to handle it in the outer Promise.all() resolution.
+        throw error;
+      });
+
+    promises.push(promise);
   }
+
+  // Wait for all promises to resolve or reject.
+  Promise.all(promises)
+    .then(() => {
+      console.log('All promises have been processed.');
+    })
+    .catch(error => {
+      // This will catch any rejections that were re-thrown in the catch blocks above.
+      console.log('One or more promises failed.', error);
+    });
 
   const getResponse = await momento.get('cache', 'foo');
   if (getResponse instanceof CacheGet.Hit) {
