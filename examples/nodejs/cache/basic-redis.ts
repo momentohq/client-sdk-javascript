@@ -3,7 +3,7 @@ import Redis from "ioredis";
 async function main() {
 
   const redisClient = new Redis({
-    host: 'raider-repro-lbrd-tlghey.serverless.usw2.cache.amazonaws.com:6379',
+    host: 'raider-repro.tlghey.ng.0001.usw2.cache.amazonaws.com:6379',
     port: 6379,
     connectTimeout: 17000,
     maxRetriesPerRequest: 4,
