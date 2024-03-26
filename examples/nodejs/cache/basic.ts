@@ -18,7 +18,7 @@ async function main() {
 
   console.log('Storing key=foo, value=FOO');
   const promises = [];
-  for (let i = 0; i < 100000; i++) {
+  for (let i = 0; i < 10000; i++) {
     // Wrap each `momento.set` call in a function that logs the outcome.
     const promise = momento.set('cache', 'foo'.concat(String(i)), 'FOO')
       .then(response => {
