@@ -1,4 +1,5 @@
-import {CacheGet, CreateCache, CacheSet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
+import { CacheGet, CreateCache, CacheSet, CacheClient, Configurations, CredentialProvider } from '@gomomento/sdk';
+import { build, Histogram } from 'hdr-histogram-js';
 
 async function main() {
   const momento = await CacheClient.create({
@@ -11,58 +12,60 @@ async function main() {
 
   const createCacheResponse = await momento.createCache('cache');
   if (createCacheResponse instanceof CreateCache.AlreadyExists) {
-    console.log('cache already exists');
+    console.log('Cache already exists');
   } else if (createCacheResponse instanceof CreateCache.Error) {
     throw createCacheResponse.innerException();
   }
 
-  console.log('Storing key=foo, value=FOO');
+  // Initialize a histogram for recording latencies.
+  const histogram: Histogram = build({
+    lowestDiscernibleValue: 1,
+    highestTrackableValue: 10000,
+    numberOfSignificantValueDigits: 3
+  });
+
   const promises = [];
   for (let i = 0; i < 10000; i++) {
-    // Wrap each `momento.set` call in a function that logs the outcome.
-    const promise = momento.set('cache', 'foo'.concat(String(i)), 'FOO')
+    const startTime = process.hrtime.bigint(); // Start timing
+
+    const promise = momento.set('cache', `foo${i}`, 'FOO')
       .then(response => {
-        // Assuming the response can be directly checked to be an instance of CacheSet.Success or CacheSet.Error.
+        const endTime = process.hrtime.bigint(); // End timing
+        const latency = Number((endTime - startTime) / BigInt(1000000)); // Convert to milliseconds
+        histogram.recordValue(latency); // Record latency
+
         if (response instanceof CacheSet.Error) {
           console.log(`Request ${i}: Error`, response);
         }
-        return response; // Return response to keep the chain correct.
       })
-      // If `momento.set` can reject, catch and log the rejection.
       .catch(error => {
         console.log(`Request ${i}: Failed with exception`, error);
-        // Rethrow or return an error response to handle it in the outer Promise.all() resolution.
         throw error;
       });
 
     promises.push(promise);
   }
 
-  // Wait for all promises to resolve or reject.
   await Promise.all(promises)
     .then(() => {
       console.log('All promises have been processed.');
+
+      // Log computed statistics
+      console.log(`Latency p50: ${histogram.getValueAtPercentile(50)} ms`);
+      console.log(`Latency p90: ${histogram.getValueAtPercentile(90)} ms`);
+      console.log(`Latency p99: ${histogram.getValueAtPercentile(99)} ms`);
+      console.log(`Latency p100: ${histogram.getValueAtPercentile(100)} ms`);
     })
     .catch(error => {
-      // This will catch any rejections that were re-thrown in the catch blocks above.
       console.log('One or more promises failed.', error);
     });
-
-  const getResponse = await momento.get('cache', 'foo');
-  if (getResponse instanceof CacheGet.Hit) {
-    console.log(`cache hit: ${getResponse.valueString()}`);
-  } else if (getResponse instanceof CacheGet.Miss) {
-    console.log('cache miss');
-  } else if (getResponse instanceof CacheGet.Error) {
-    console.log(`Error: ${getResponse.message()}`);
-  }
 
   momento.close();
 }
 
 main()
   .then(() => {
-    console.log('success!!');
+    console.log('Success!!');
   })
   .catch((e: Error) => {
     console.error(`Uncaught exception while running example: ${e.message}`);
