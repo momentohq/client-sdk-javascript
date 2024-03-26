@@ -4,3 +4,4 @@ dist
 .idea
 .node-version
 *.tgz
+!.vscode/*code-workspace

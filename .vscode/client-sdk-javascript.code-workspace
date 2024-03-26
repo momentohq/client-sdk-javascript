@@ -1,0 +1,24 @@
+{
+  "folders": [
+    {
+      "path": "..",
+      "name": "<root>",
+    },
+    {
+      "path": "../packages/core",
+      "name": "packages/core",
+    },
+    {
+      "path": "../packages/client-sdk-nodejs",
+      "name": "packages/client-sdk-nodejs",
+    },
+    {
+      "path": "../packages/client-sdk-web",
+      "name": "packages/client-sdk-web",
+    },
+    {
+      "path": "../packages/common-integration-tests",
+      "name": "packages/common-integration-tests",
+    },
+  ]
+}
