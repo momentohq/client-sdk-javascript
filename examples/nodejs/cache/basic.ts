@@ -39,7 +39,7 @@ async function main() {
   }
 
   // Wait for all promises to resolve or reject.
-  Promise.all(promises)
+  await Promise.all(promises)
     .then(() => {
       console.log('All promises have been processed.');
     })
