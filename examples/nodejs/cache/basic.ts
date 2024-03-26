@@ -20,7 +20,7 @@ async function main() {
   const promises = [];
   for (let i = 0; i < 100000; i++) {
     // Wrap each `momento.set` call in a function that logs the outcome.
-    const promise = momento.set('cache', 'foo', 'FOO')
+    const promise = momento.set('cache', 'foo'.concat(String(i)), 'FOO')
       .then(response => {
         // Assuming the response can be directly checked to be an instance of CacheSet.Success or CacheSet.Error.
         if (response instanceof CacheSet.Error) {
