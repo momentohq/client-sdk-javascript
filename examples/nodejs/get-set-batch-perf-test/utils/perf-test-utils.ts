@@ -1,11 +1,5 @@
 import {MomentoLogger} from '@gomomento/sdk';
-
-export enum RequestType {
-  ASYNC_GETS = 'ASYNC_GETS',
-  ASYNC_SETS = 'ASYNC_SETS',
-  GET_BATCH = 'GET_BATCH',
-  SET_BATCH = 'SET_BATCH',
-}
+import {RequestType} from './perf-test-options';
 
 export function getElapsedMillis(startTime: [number, number]): number {
   const endTime = process.hrtime(startTime);
@@ -13,35 +7,38 @@ export function getElapsedMillis(startTime: [number, number]): number {
 }
 
 export function calculateSummary(
-  completionTimes: number[],
-  elapsedMillis: number,
+  totalRequests: number,
+  totalItemSizeBytes: number,
+  runDurationForTests: number,
   batchSize: number,
-  totalRequestSizeInMb: number,
-  logger: MomentoLogger,
-  requestType: RequestType
+  itemSizeBytes: number,
+  completionTimes: number[],
+  requestType: RequestType,
+  logger: MomentoLogger
 ): void {
-  // Calculate summary statistics
-  const totalTime = elapsedMillis;
   const minTime = Math.min(...completionTimes);
   const maxTime = Math.max(...completionTimes);
   const averageTime = completionTimes.reduce((acc, curr) => acc + curr, 0) / completionTimes.length;
-  const totalCount = batchSize;
-  let summaryMessage = `\n======= Summary of ${requestType} requests =======`;
-  // Log summary statistics
+  let summaryMessage = '';
   if (requestType === RequestType.ASYNC_GETS || requestType === RequestType.ASYNC_SETS) {
-    // Construct summary message
-    summaryMessage += `\nTotal requests         : ${totalCount}`;
-    summaryMessage += `\nTotal Request Size     : ${totalRequestSizeInMb} MB`;
-    summaryMessage += `\nMin time               : ${minTime.toFixed(2)} milliseconds`;
-    summaryMessage += `\nMax time               : ${maxTime.toFixed(2)} milliseconds`;
-    summaryMessage += `\nAverage time           : ${averageTime.toFixed(2)} milliseconds`;
-    summaryMessage += `\nTotal time             : ${totalTime.toFixed(2)} milliseconds`;
-    summaryMessage += '\n' + '='.repeat(50) + '\n';
+    summaryMessage += `
+\n======= Summary of ${requestType} requests for batch size ${batchSize} and item size ${itemSizeBytes} bytes  =======
+Min time: ${minTime.toFixed(2)} milliseconds
+Max time: ${maxTime.toFixed(2)} milliseconds
+Average time: ${averageTime.toFixed(2)} milliseconds
+Total requests: ${totalRequests}
+Total item size in bytes: ${totalItemSizeBytes} bytes
+Total run duration: ${runDurationForTests} seconds
+====================================================================================================================\n
+`;
   } else {
-    summaryMessage += `\nTotal requests         : ${totalCount}`;
-    summaryMessage += `\nTotal Request Size     : ${totalRequestSizeInMb} MB`;
-    summaryMessage += `\nTotal time             : ${totalTime.toFixed(2)} milliseconds`;
-    summaryMessage += '\n' + '='.repeat(50) + '\n';
+    summaryMessage += `
+\n======= Summary of ${requestType} requests for batch size ${batchSize} and item size ${itemSizeBytes} bytes  =======
+Total requests: ${totalRequests}
+Total item size in bytes: ${totalItemSizeBytes} bytes
+Total run duration: ${runDurationForTests} seconds
+====================================================================================================================\n
+`;
   }
   logger.info(summaryMessage);
 }
