@@ -3,10 +3,9 @@ import {
   Configurations,
   CreateCache,
   EnvMomentoTokenProvider,
-  DefaultMomentoLoggerFactory,
-  DefaultMomentoLoggerLevel,
   MomentoLogger,
   MomentoLoggerFactory,
+  CacheFlush,
 } from '@gomomento/sdk';
 
 export function getCacheClient(
@@ -32,17 +31,11 @@ export async function createCache(momentCacheClient: CacheClient, cacheName: str
   }
 }
 
-export async function ensureCacheExists(cacheName: string): Promise<void> {
-  const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.INFO);
-  const momento = await getCacheClient(loggerFactory, 5000, 60);
-  const createCacheResponse = await momento.createCache(cacheName);
-  if (createCacheResponse instanceof CreateCache.Success) {
-    console.log('Cache created successfully. Continuing.');
-  } else if (createCacheResponse instanceof CreateCache.AlreadyExists) {
-    console.log('Cache already exists. Continuing.');
-  } else if (createCacheResponse instanceof CreateCache.Error) {
-    throw createCacheResponse.innerException();
-  } else {
-    throw new Error(`Unknown create cache response type: ${createCacheResponse.toString()}`);
+export async function flushCache(momentCacheClient: CacheClient, cacheName: string, logger: MomentoLogger) {
+  const flushCacheResponse = await momentCacheClient.flushCache(cacheName);
+  if (flushCacheResponse instanceof CacheFlush.Success) {
+    logger.info('Cache flushed successfully');
+  } else if (flushCacheResponse instanceof CacheFlush.Error) {
+    throw flushCacheResponse.innerException();
   }
 }

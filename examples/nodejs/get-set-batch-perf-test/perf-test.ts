@@ -1,244 +1,232 @@
 import {
   CacheClient,
-  CacheFlush,
   CacheSet,
   DefaultMomentoLoggerFactory,
   DefaultMomentoLoggerLevel,
   MomentoLogger,
   MomentoLoggerFactory,
 } from '@gomomento/sdk';
-import {createCache, getCacheClient} from './utils/cache';
-import {GetSetConfig, PerfTestConfiguration, PerfTestOptions, RequestType} from './utils/perf-test-options';
+import {createCache, flushCache, getCacheClient} from './utils/cache';
+import {
+  GetSetConfig,
+  initiatePerfTestContext,
+  PerfTestConfiguration,
+  PerfTestContext,
+  PerfTestOptions,
+  RequestType,
+} from './utils/perf-test-options';
 import {calculateSummary, getElapsedMillis} from './utils/perf-test-utils';
 
 class PerfTest {
-  private readonly momentoClientPromise: Promise<CacheClient>;
-  private momento: CacheClient;
   private readonly loggerFactory: MomentoLoggerFactory;
   private readonly logger: MomentoLogger;
   private readonly cacheItemTtlSeconds = 600;
   private readonly options: PerfTestOptions;
-  private readonly testConfiguration: PerfTestConfiguration;
-  private readonly cacheName: string = 'js-perf-test';
-  private totalRequests = 0;
-  private totalItemSizeBytes = 0;
-  private completionTimes: number[] = [];
+  private readonly cacheName = 'js-perf-test';
+  private testConfiguration: PerfTestConfiguration;
 
   constructor(options: PerfTestOptions, testConfiguration: PerfTestConfiguration) {
     this.loggerFactory = options.loggerFactory;
     this.logger = this.loggerFactory.getLogger('get-set-batch-perf-test');
     this.options = options;
     this.testConfiguration = testConfiguration;
-    this.momentoClientPromise = this.createMomentoClient(options);
   }
 
-  private createMomentoClient(options: PerfTestOptions): Promise<CacheClient> {
-    return getCacheClient(options.loggerFactory, options.requestTimeoutMs, this.cacheItemTtlSeconds);
-  }
-  async createCache(): Promise<void> {
-    this.momento = await this.momentoClientPromise;
-    await createCache(this.momento, this.cacheName, this.logger);
+  async run(): Promise<void> {
+    const momento = await getCacheClient(
+      this.options.loggerFactory,
+      this.options.requestTimeoutMs,
+      this.cacheItemTtlSeconds
+    );
+    await createCache(momento, this.cacheName, this.logger);
+
+    this.logger.info('Starting async set requests');
+    await this.runAsyncSetRequests(momento);
+
+    this.logger.info('Starting async get requests');
+    await this.runAsyncGetRequests(momento);
+
+    this.logger.info('Starting set batch requests');
+    await this.runSetBatchTests(momento);
+
+    this.logger.info('Starting get batch requests');
+    await this.runGetBatchTests(momento);
+
+    // flush the cache
+    await flushCache(momento, this.cacheName, this.logger);
   }
 
-  async flushCache(): Promise<void> {
-    const res = await this.momento.flushCache(this.cacheName);
-    if (res instanceof CacheFlush.Success) {
-      this.logger.info('Cache flushed successfully');
-    } else if (res instanceof CacheFlush.Error) {
-      throw res.innerException();
-    }
-  }
-
-  async runAsyncSetRequests(): Promise<void> {
+  async runAsyncSetRequests(momento: CacheClient): Promise<void> {
     for (const setConfig of this.testConfiguration.sets) {
-      const startTime = process.hrtime();
-      while (getElapsedMillis(startTime) < this.testConfiguration.minimumRunDurationSecondsForTests * 1000) {
-        await this.sendAsyncSetRequests(this.momento, setConfig);
+      const context = initiatePerfTestContext();
+      while (getElapsedMillis(context.startTime) < this.testConfiguration.minimumRunDurationSecondsForTests * 1000) {
+        await this.sendAsyncSetRequests(momento, context, setConfig);
       }
-
-      calculateSummary(
-        this.totalRequests,
-        this.totalItemSizeBytes,
-        this.testConfiguration.minimumRunDurationSecondsForTests,
-        setConfig.batchSize,
-        setConfig.itemSizeBytes,
-        this.completionTimes,
-        RequestType.ASYNC_SETS,
-        this.logger
-      );
-      this.totalRequests = 0;
-      this.totalItemSizeBytes = 0;
-      this.completionTimes = [];
+      calculateSummary(context, setConfig.batchSize, setConfig.itemSizeBytes, RequestType.ASYNC_SETS, this.logger);
     }
   }
 
-  async runAsyncGetRequests(): Promise<void> {
+  async runAsyncGetRequests(momento: CacheClient): Promise<void> {
     for (const getConfig of this.testConfiguration.gets) {
-      const startTime = process.hrtime();
-      while (getElapsedMillis(startTime) < this.testConfiguration.minimumRunDurationSecondsForTests * 1000) {
-        await this.sendAsyncGetRequests(this.momento, getConfig);
+      // ensure that the cache is populated with the keys
+      await this.ensureCacheIsPopulated(momento, getConfig);
+      const context = initiatePerfTestContext();
+      while (getElapsedMillis(context.startTime) < this.testConfiguration.minimumRunDurationSecondsForTests * 1000) {
+        await this.sendAsyncGetRequests(momento, context, getConfig);
       }
-
-      calculateSummary(
-        this.totalRequests,
-        this.totalItemSizeBytes,
-        this.testConfiguration.minimumRunDurationSecondsForTests,
-        getConfig.batchSize,
-        getConfig.itemSizeBytes,
-        this.completionTimes,
-        RequestType.ASYNC_GETS,
-        this.logger
-      );
-      this.totalRequests = 0;
-      this.totalItemSizeBytes = 0;
-      this.completionTimes = [];
+      calculateSummary(context, getConfig.batchSize, getConfig.itemSizeBytes, RequestType.ASYNC_GETS, this.logger);
     }
   }
 
-  async runSetBatchTests(): Promise<void> {
+  async runSetBatchTests(momento: CacheClient): Promise<void> {
     for (const setConfig of this.testConfiguration.sets) {
-      const startTime = process.hrtime();
-      while (getElapsedMillis(startTime) < this.testConfiguration.minimumRunDurationSecondsForTests * 1000) {
-        await this.sendSetBatchRequests(this.momento, setConfig);
+      const context = initiatePerfTestContext();
+      while (getElapsedMillis(context.startTime) < this.testConfiguration.minimumRunDurationSecondsForTests * 1000) {
+        await this.sendSetBatchRequests(momento, context, setConfig);
       }
-
-      calculateSummary(
-        this.totalRequests,
-        this.totalItemSizeBytes,
-        this.testConfiguration.minimumRunDurationSecondsForTests,
-        setConfig.batchSize,
-        setConfig.itemSizeBytes,
-        this.completionTimes,
-        RequestType.SET_BATCH,
-        this.logger
-      );
-      this.totalRequests = 0;
-      this.totalItemSizeBytes = 0;
-      this.completionTimes = [];
+      calculateSummary(context, setConfig.batchSize, setConfig.itemSizeBytes, RequestType.SET_BATCH, this.logger);
     }
   }
 
-  async runGetBatchTests(): Promise<void> {
+  async runGetBatchTests(momento: CacheClient): Promise<void> {
     for (const getConfig of this.testConfiguration.gets) {
-      const startTime = process.hrtime();
-      while (getElapsedMillis(startTime) < this.testConfiguration.minimumRunDurationSecondsForTests * 1000) {
-        await this.sendGetBatchRequests(this.momento, getConfig);
+      // ensure that the cache is populated with the keys
+      await this.ensureCacheIsPopulated(momento, getConfig);
+      const context = initiatePerfTestContext();
+      while (getElapsedMillis(context.startTime) < this.testConfiguration.minimumRunDurationSecondsForTests * 1000) {
+        await this.sendGetBatchRequests(momento, context, getConfig);
       }
-
-      calculateSummary(
-        this.totalRequests,
-        this.totalItemSizeBytes,
-        this.testConfiguration.minimumRunDurationSecondsForTests,
-        getConfig.batchSize,
-        getConfig.itemSizeBytes,
-        this.completionTimes,
-        RequestType.GET_BATCH,
-        this.logger
-      );
-      this.totalRequests = 0;
-      this.totalItemSizeBytes = 0;
-      this.completionTimes = [];
+      calculateSummary(context, getConfig.batchSize, getConfig.itemSizeBytes, RequestType.GET_BATCH, this.logger);
     }
   }
 
-  private async sendAsyncSetRequests(momento: CacheClient, setConfig: GetSetConfig): Promise<void> {
+  private async sendAsyncSetRequests(
+    momento: CacheClient,
+    context: PerfTestContext,
+    setConfig: GetSetConfig
+  ): Promise<void> {
     const setPromises: Promise<CacheSet.Response>[] = [];
     for (let i = 0; i < setConfig.batchSize; i++) {
       const key = `key-${i}`;
       const value = 'x'.repeat(setConfig.itemSizeBytes);
-      const setPromise = this.asyncSet(momento, key, value);
+      const setPromise = this.asyncSet(momento, context, key, value);
       setPromises.push(setPromise);
-      this.totalRequests++;
-      this.totalItemSizeBytes += setConfig.itemSizeBytes;
+      context.totalItemSizeBytes += setConfig.itemSizeBytes;
     }
     await Promise.all(setPromises);
   }
 
-  private async sendAsyncGetRequests(momento: CacheClient, getConfig: GetSetConfig): Promise<void> {
+  private async sendAsyncGetRequests(
+    momento: CacheClient,
+    context: PerfTestContext,
+    getConfig: GetSetConfig
+  ): Promise<void> {
     const getPromises: Promise<CacheSet.Response>[] = [];
     for (let i = 0; i < getConfig.batchSize; i++) {
       const key = `key-${i}`;
-      const getPromise = this.asyncGet(momento, key);
+      const getPromise = this.asyncGet(momento, context, key);
       getPromises.push(getPromise);
-      this.totalRequests++;
-      this.totalItemSizeBytes += getConfig.itemSizeBytes;
+      context.totalItemSizeBytes += getConfig.itemSizeBytes;
     }
     await Promise.all(getPromises);
   }
 
-  private async sendSetBatchRequests(momento: CacheClient, setConfig: GetSetConfig): Promise<void> {
+  private async sendSetBatchRequests(
+    momento: CacheClient,
+    context: PerfTestContext,
+    setConfig: GetSetConfig
+  ): Promise<void> {
     const keys = Array.from({length: setConfig.batchSize}, (_, i) => `key-${i}`);
     const values = Array.from({length: setConfig.batchSize}, () => 'x'.repeat(setConfig.itemSizeBytes));
     const items = new Map<string, string>();
     keys.forEach((key, index) => {
       items.set(key, values[index]);
     });
+    const setBatchStartTime = process.hrtime();
     const setBatchPromise = momento.setBatch(this.cacheName, items);
-    this.totalRequests += setConfig.batchSize;
-    this.totalItemSizeBytes += setConfig.batchSize * setConfig.itemSizeBytes;
+
+    void setBatchPromise.then(() => {
+      const setBatchDuration = getElapsedMillis(setBatchStartTime);
+      context.setBatchLatencies.recordValue(setBatchDuration);
+    });
+    context.totalItemSizeBytes += setConfig.batchSize * setConfig.itemSizeBytes;
     await setBatchPromise;
   }
 
-  private async sendGetBatchRequests(momento: CacheClient, getConfig: GetSetConfig): Promise<void> {
+  private async sendGetBatchRequests(
+    momento: CacheClient,
+    context: PerfTestContext,
+    getConfig: GetSetConfig
+  ): Promise<void> {
     const keys = Array.from({length: getConfig.batchSize}, (_, i) => `key-${i}`);
+    const getBatchStartTime = process.hrtime();
     const getBatchPromise = momento.getBatch(this.cacheName, keys);
-    this.totalRequests += getConfig.batchSize;
-    this.totalItemSizeBytes += getConfig.batchSize * getConfig.itemSizeBytes;
+    void getBatchPromise.then(() => {
+      const getBatchDuration = getElapsedMillis(getBatchStartTime);
+      context.getBatchLatencies.recordValue(getBatchDuration);
+    });
+    context.totalItemSizeBytes += getConfig.batchSize * getConfig.itemSizeBytes;
     await getBatchPromise;
   }
 
-  private asyncSet(momento: CacheClient, key: string, value: string): Promise<CacheSet.Response> {
+  private asyncSet(
+    momento: CacheClient,
+    context: PerfTestContext,
+    key: string,
+    value: string
+  ): Promise<CacheSet.Response> {
     const startTime = process.hrtime();
     const setPromise = momento.set(this.cacheName, key, value);
     void setPromise.then(() => {
-      const elapsedMillis = getElapsedMillis(startTime);
-      this.completionTimes.push(elapsedMillis);
+      const setDuration = getElapsedMillis(startTime);
+      context.asyncSetLatencies.recordValue(setDuration);
     });
     return setPromise;
   }
 
-  private asyncGet(momento: CacheClient, key: string): Promise<CacheSet.Response> {
+  private asyncGet(momento: CacheClient, context: PerfTestContext, key: string): Promise<CacheSet.Response> {
     const startTime = process.hrtime();
     const getPromise = momento.get(this.cacheName, key);
     void getPromise.then(() => {
-      const elapsedMillis = getElapsedMillis(startTime);
-      this.completionTimes.push(elapsedMillis);
+      const getDuration = getElapsedMillis(startTime);
+      context.asyncGetLatencies.recordValue(getDuration);
     });
     return getPromise;
+  }
+
+  private async ensureCacheIsPopulated(momento: CacheClient, getConfig: GetSetConfig) {
+    const keys = Array.from({length: getConfig.batchSize}, (_, i) => `key-${i}`);
+    const values = Array.from({length: getConfig.batchSize}, () => 'x'.repeat(getConfig.itemSizeBytes));
+
+    for (let i = 0; i < keys.length; i++) {
+      await momento.setIfAbsent(this.cacheName, keys[i], values[i]);
+    }
   }
 }
 
 async function main(perfTestOptions: PerfTestOptions, testConfiguration: PerfTestConfiguration): Promise<void> {
   const perfTest = new PerfTest(perfTestOptions, testConfiguration);
-  await perfTest.createCache();
-
-  // Run async set requests and record the result
-  await perfTest.runAsyncSetRequests();
-
-  // Run async get requests and record the result
-  await perfTest.runAsyncGetRequests();
-
-  // Run setBatch requests and record the result
-  await perfTest.runSetBatchTests();
-
-  // Run getBatch requests and record the result
-  await perfTest.runGetBatchTests();
-
-  // flush cache
-  await perfTest.flushCache();
+  await perfTest.run();
 }
 
+const batchSizeOptions = [5, 10, 100, 500, 1_000, 5_000, 10_000];
+const itemSizeOptions = [10, 100, 1024, 1024 * 10, 1024 * 100, 1024 * 1024];
+
 const testConfiguration: PerfTestConfiguration = {
-  minimumRunDurationSecondsForTests: 15,
-  sets: [
-    {batchSize: 5, itemSizeBytes: 500},
-    {batchSize: 5, itemSizeBytes: 1_000},
-  ],
-  gets: [
-    {batchSize: 5, itemSizeBytes: 500},
-    {batchSize: 5, itemSizeBytes: 1_000},
-  ],
+  minimumRunDurationSecondsForTests: 5,
+  sets: generateConfigurations(batchSizeOptions, itemSizeOptions),
+  gets: generateConfigurations(batchSizeOptions, itemSizeOptions),
 };
+
+function generateConfigurations(batchSizes: number[], itemSizes: number[]): GetSetConfig[] {
+  const configurations: GetSetConfig[] = [];
+  for (const batchSize of batchSizes) {
+    for (const itemSize of itemSizes) {
+      configurations.push({batchSize, itemSizeBytes: itemSize});
+    }
+  }
+  return configurations;
+}
 
 const perfTestOptions: PerfTestOptions = {
   loggerFactory: new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.DEBUG),

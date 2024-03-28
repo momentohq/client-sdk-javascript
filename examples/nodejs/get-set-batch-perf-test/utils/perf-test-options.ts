@@ -1,4 +1,25 @@
 import {MomentoLoggerFactory} from '@gomomento/sdk';
+import * as hdr from 'hdr-histogram-js';
+
+export interface PerfTestContext {
+  startTime: [number, number];
+  totalItemSizeBytes: number;
+  asyncGetLatencies: hdr.Histogram;
+  asyncSetLatencies: hdr.Histogram;
+  setBatchLatencies: hdr.Histogram;
+  getBatchLatencies: hdr.Histogram;
+}
+
+export function initiatePerfTestContext(): PerfTestContext {
+  return {
+    startTime: process.hrtime(),
+    totalItemSizeBytes: 0,
+    asyncGetLatencies: hdr.build(),
+    asyncSetLatencies: hdr.build(),
+    setBatchLatencies: hdr.build(),
+    getBatchLatencies: hdr.build(),
+  };
+}
 
 export enum RequestType {
   ASYNC_GETS = 'ASYNC_GETS',
