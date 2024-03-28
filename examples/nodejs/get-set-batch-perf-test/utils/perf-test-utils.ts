@@ -82,9 +82,7 @@ function writeStatsToCSV(
   histogram: hdr.Histogram,
   totalItemSizeBytes: number
 ): void {
-  const currentDate = new Date();
-  const dateTimeString = currentDate.toLocaleString().replace(/[/,\s:]/g, '_');
-  const filename = `perf_test_stats_${dateTimeString}.csv`;
+  const filename = 'perf_test_stats.csv';
   const header = 'requestType,BatchSize,itemSize,TotalCount,Min,p50,p90,p99,p99.9,Max,TotalItemSizeBytes\n';
   const stats =
     `${requestType},${batchSize},${itemSize},${histogram.totalCount},${histogram.minNonZeroValue},` +
