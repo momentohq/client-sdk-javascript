@@ -8,14 +8,9 @@ export function getElapsedMillis(startTime: [number, number]): number {
   return (endTime[0] * 1e9 + endTime[1]) / 1e6;
 }
 
-export function outputHistogramSummary(histogram: hdr.Histogram, requestType: RequestType, batchSize: number): string {
-  const totalCount =
-    requestType === RequestType.ASYNC_SETS || requestType === RequestType.ASYNC_GETS
-      ? histogram.totalCount
-      : histogram.totalCount * batchSize;
-
+export function outputHistogramSummary(histogram: hdr.Histogram): string {
   return `
-    count: ${totalCount}
+    count: ${histogram.totalCount}
     min: ${histogram.minNonZeroValue}
     p50: ${histogram.getValueAtPercentile(50)}
     p90: ${histogram.getValueAtPercentile(90)}
@@ -68,7 +63,7 @@ function generateSummaryMessage(
   totalItemSizeBytes: number
 ): string {
   const summaryTitle = `======= Summary of ${requestType} requests for batch size ${batchSize} and item size ${itemSizeBytes} bytes  =======`;
-  const histogramSummary = `Cumulative latencies: ${outputHistogramSummary(histogram, requestType, batchSize)}`;
+  const histogramSummary = `Cumulative latencies: ${outputHistogramSummary(histogram)}`;
   const totalItemSize = `Total item size in bytes: ${totalItemSizeBytes} bytes`;
   const separator = `${'='.repeat(150)}\n\n`;
 

@@ -106,14 +106,18 @@ class PerfTest {
     setConfig: GetSetConfig
   ): Promise<void> {
     const setPromises: Promise<CacheSet.Response>[] = [];
+    const value = 'x'.repeat(setConfig.itemSizeBytes);
+    const setStartTime = process.hrtime();
     for (let i = 0; i < setConfig.batchSize; i++) {
       const key = `key-${i}`;
-      const value = 'x'.repeat(setConfig.itemSizeBytes);
-      const setPromise = this.asyncSet(momento, context, key, value);
+      const setPromise = momento.set(this.cacheName, key, value);
       setPromises.push(setPromise);
       context.totalItemSizeBytes += setConfig.itemSizeBytes;
     }
-    await Promise.all(setPromises);
+    await Promise.all(setPromises).then(() => {
+      const setDuration = getElapsedMillis(setStartTime);
+      context.asyncSetLatencies.recordValue(setDuration);
+    });
   }
 
   private async sendAsyncGetRequests(
@@ -122,13 +126,17 @@ class PerfTest {
     getConfig: GetSetConfig
   ): Promise<void> {
     const getPromises: Promise<CacheSet.Response>[] = [];
+    const getStartTime = process.hrtime();
     for (let i = 0; i < getConfig.batchSize; i++) {
       const key = `key-${i}`;
-      const getPromise = this.asyncGet(momento, context, key);
+      const getPromise = momento.get(this.cacheName, key);
       getPromises.push(getPromise);
       context.totalItemSizeBytes += getConfig.itemSizeBytes;
     }
-    await Promise.all(getPromises);
+    await Promise.all(getPromises).then(() => {
+      const setDuration = getElapsedMillis(getStartTime);
+      context.asyncGetLatencies.recordValue(setDuration);
+    });
   }
 
   private async sendSetBatchRequests(
@@ -167,31 +175,6 @@ class PerfTest {
     });
     context.totalItemSizeBytes += getConfig.batchSize * getConfig.itemSizeBytes;
     await getBatchPromise;
-  }
-
-  private asyncSet(
-    momento: CacheClient,
-    context: PerfTestContext,
-    key: string,
-    value: string
-  ): Promise<CacheSet.Response> {
-    const startTime = process.hrtime();
-    const setPromise = momento.set(this.cacheName, key, value);
-    void setPromise.then(() => {
-      const setDuration = getElapsedMillis(startTime);
-      context.asyncSetLatencies.recordValue(setDuration);
-    });
-    return setPromise;
-  }
-
-  private asyncGet(momento: CacheClient, context: PerfTestContext, key: string): Promise<CacheSet.Response> {
-    const startTime = process.hrtime();
-    const getPromise = momento.get(this.cacheName, key);
-    void getPromise.then(() => {
-      const getDuration = getElapsedMillis(startTime);
-      context.asyncGetLatencies.recordValue(getDuration);
-    });
-    return getPromise;
   }
 
   private async ensureCacheIsPopulated(momento: CacheClient, getConfig: GetSetConfig) {
