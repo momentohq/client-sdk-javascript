@@ -65,12 +65,13 @@ import {
   SortedSetFetchByRankCallOptions,
   SortedSetFetchByScoreCallOptions,
   SortedSetLengthByScoreCallOptions,
+  SetCallOptions,
 } from '../utils';
 import {IControlClient, IPingClient} from '../internal/clients';
 import {IMomentoCache} from './IMomentoCache';
 
 // Type aliases to differentiate the different methods' optional arguments.
-export type SetOptions = ScalarCallOptions;
+export type SetOptions = SetCallOptions;
 export type SetIfNotExistsOptions = ScalarCallOptions;
 export type SetIfAbsentOptions = ScalarCallOptions;
 export type SetIfPresentOptions = ScalarCallOptions;

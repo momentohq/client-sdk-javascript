@@ -10,6 +10,7 @@ import {
   TransportStrategy,
 } from './transport';
 import {DefaultMomentoLoggerFactory} from './logging/default-momento-logger';
+import {AutomaticDecompression} from './compression/compression';
 
 // 4 minutes.  We want to remain comfortably underneath the idle timeout for AWS NLB, which is 350s.
 const defaultMaxIdleMillis = 4 * 60 * 1_000;
@@ -74,6 +75,10 @@ export class Laptop extends CacheConfiguration {
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
       readConcern: ReadConcern.BALANCED,
+      compression: {
+        compressionExtensions: undefined,
+        automaticDecompression: AutomaticDecompression.Disabled,
+      },
     });
   }
 }
@@ -105,6 +110,10 @@ export class Lambda extends CacheConfiguration {
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
       readConcern: ReadConcern.BALANCED,
+      compression: {
+        compressionExtensions: undefined,
+        automaticDecompression: AutomaticDecompression.Disabled,
+      },
     });
   }
 }
@@ -150,6 +159,10 @@ class InRegionDefault extends CacheConfiguration {
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
       readConcern: ReadConcern.BALANCED,
+      compression: {
+        compressionExtensions: undefined,
+        automaticDecompression: AutomaticDecompression.Disabled,
+      },
     });
   }
 }
@@ -196,6 +209,10 @@ class InRegionLowLatency extends CacheConfiguration {
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
       readConcern: ReadConcern.BALANCED,
+      compression: {
+        compressionExtensions: undefined,
+        automaticDecompression: AutomaticDecompression.Disabled,
+      },
     });
   }
 }

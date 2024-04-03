@@ -36,6 +36,15 @@ jobs:
           template_file: ./packages/client-sdk-nodejs/README.template.md
           output_file: ./packages/client-sdk-nodejs/README.md
 
+      - name: Verify README generation for nodejs compression extension
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./packages/client-sdk-nodejs-compression/README.template.md
+          output_file: ./packages/client-sdk-nodejs-compression/README.md
+
       - name: Verify README generation for web
         uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
         with:

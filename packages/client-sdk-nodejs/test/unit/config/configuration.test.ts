@@ -1,12 +1,13 @@
 import {CacheConfiguration} from '../../../src/config/configuration';
 import {FixedCountRetryStrategy} from '../../../src/config/retry/fixed-count-retry-strategy';
-import {DefaultMomentoLoggerFactory, Configurations} from '../../../src';
+import {Configurations, DefaultMomentoLoggerFactory} from '../../../src';
 import {Middleware} from '../../../src/config/middleware/middleware';
 import {
   StaticGrpcConfiguration,
   StaticTransportStrategy,
 } from '../../../src/config/transport/transport-strategy';
 import {ReadConcern} from '@gomomento/sdk-core';
+import {AutomaticDecompression} from '../../../src/config/compression/compression';
 
 describe('configuration.ts', () => {
   const testLoggerFactory = new DefaultMomentoLoggerFactory();
@@ -32,6 +33,10 @@ describe('configuration.ts', () => {
     middlewares: testMiddlewares,
     throwOnErrors: false,
     readConcern: ReadConcern.BALANCED,
+    compression: {
+      compressionExtensions: undefined,
+      automaticDecompression: AutomaticDecompression.Disabled,
+    },
   });
 
   it('should support overriding retry strategy', () => {

@@ -204,13 +204,14 @@ export abstract class AbstractCacheClient implements ICacheClient {
     value: string | Uint8Array,
     options?: SetOptions
   ): Promise<CacheSet.Response> {
+    // this typeof check wouldn't be necessary in TS, but it can help catch bugs in JS code at runtime.
     if (typeof options === 'number') {
       throw new InvalidArgumentError(
         'Options must be an object with a ttl property.'
       );
     }
     const client = this.getNextDataClient();
-    return await client.set(cacheName, key, value, options?.ttl);
+    return await client.set(cacheName, key, value, options);
   }
 
   /**

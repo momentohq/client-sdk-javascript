@@ -43,13 +43,13 @@ import {
   CacheSet,
   CacheSetAddElements,
   CacheSetFetch,
-  CacheSetIfNotExists,
   CacheSetIfAbsent,
-  CacheSetIfPresent,
+  CacheSetIfAbsentOrEqual,
   CacheSetIfEqual,
   CacheSetIfNotEqual,
+  CacheSetIfNotExists,
+  CacheSetIfPresent,
   CacheSetIfPresentAndNotEqual,
-  CacheSetIfAbsentOrEqual,
   CacheSetRemoveElements,
   CacheSetSample,
   CacheSortedSetFetch,
@@ -66,14 +66,14 @@ import {
   CacheUpdateTtl,
   CollectionTtl,
   CredentialProvider,
+  GetBatch,
   InvalidArgumentError,
   ItemType,
   MomentoLogger,
   MomentoLoggerFactory,
+  SetBatch,
   SortedSetOrder,
   UnknownError,
-  GetBatch,
-  SetBatch,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -109,12 +109,17 @@ import {
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
 import {CacheClientPropsWithConfig} from './cache-client-props-with-config';
-import grpcCache = cache.cache_client;
-import ECacheResult = cache_client.ECacheResult;
-import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {ConnectionError} from '@gomomento/sdk-core/dist/src/errors';
 import {common} from '@gomomento/generated-types/dist/common';
+import {SetCallOptions} from '@gomomento/sdk-core/dist/src/utils';
+import {
+  AutomaticDecompression,
+  Compression,
+} from '../config/compression/compression';
+import grpcCache = cache.cache_client;
+import ECacheResult = cache_client.ECacheResult;
+import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
 import _Unbounded = common._Unbounded;
 import Absent = common.Absent;
 import Present = common.Present;
@@ -137,6 +142,8 @@ export class CacheDataClient implements IDataClient {
   private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly interceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
+  private readonly automaticDecompression: AutomaticDecompression;
+  private readonly valueCompressor?: Compression;
 
   /**
    * @param {CacheClientProps} props
@@ -149,6 +156,14 @@ export class CacheDataClient implements IDataClient {
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
       props.configuration.getThrowOnErrors()
     );
+    if (
+      this.configuration.getCompression().compressionExtensions !== undefined
+    ) {
+      this.valueCompressor =
+        this.configuration.getCompression().compressionExtensions;
+    }
+    this.automaticDecompression =
+      this.configuration.getCompression().automaticDecompression;
 
     const grpcConfig = this.configuration
       .getTransportStrategy()
@@ -329,12 +344,12 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     key: string | Uint8Array,
     value: string | Uint8Array,
-    ttl?: number
+    options?: SetCallOptions
   ): Promise<CacheSet.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
-        validateTtlSeconds(ttl);
+      if (options?.ttl !== undefined) {
+        validateTtlSeconds(options.ttl);
       }
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
@@ -342,14 +357,31 @@ export class CacheDataClient implements IDataClient {
         err => new CacheSet.Error(err)
       );
     }
-    const ttlToUse = ttl || this.defaultTtlSeconds;
+    const ttlToUse = options?.ttl || this.defaultTtlSeconds;
     this.logger.trace(
       `Issuing 'set' request; key: ${key.toString()}, value length: ${
         value.length
       }, ttl: ${ttlToUse.toString()}`
     );
     const encodedKey = this.convert(key);
-    const encodedValue = this.convert(value);
+    let encodedValue = this.convert(value);
+    if (options?.compression) {
+      this.logger.trace(
+        'CacheClient.set; compression enabled, calling value compressor'
+      );
+      if (this.valueCompressor === undefined) {
+        return this.cacheServiceErrorMapper.returnOrThrowError(
+          new InvalidArgumentError(
+            'Compression extension is not loaded, but `CacheClient.set` was called with the `compression` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompression` to enable compression.'
+          ),
+          err => new CacheSet.Error(err)
+        );
+      }
+      encodedValue = await this.valueCompressor.compress(
+        options.compression,
+        encodedValue
+      );
+    }
 
     return await this.sendSet(cacheName, encodedKey, encodedValue, ttlToUse);
   }
@@ -1320,9 +1352,29 @@ export class CacheDataClient implements IDataClient {
               case grpcCache.ECacheResult.Miss:
                 resolve(new CacheGet.Miss());
                 break;
-              case grpcCache.ECacheResult.Hit:
-                resolve(new CacheGet.Hit(resp.cache_body));
+              case grpcCache.ECacheResult.Hit: {
+                if (
+                  this.automaticDecompression ===
+                  AutomaticDecompression.Disabled
+                ) {
+                  resolve(new CacheGet.Hit(resp.cache_body));
+                } else {
+                  if (this.valueCompressor === undefined) {
+                    resolve(
+                      new CacheGet.Error(
+                        new InvalidArgumentError(
+                          'Compression extension is not loaded, but `automaticCompression` was configured; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompression` to enable compression.'
+                        )
+                      )
+                    );
+                  } else {
+                    void this.valueCompressor
+                      .decompressIfCompressed(resp.cache_body)
+                      .then(v => resolve(new CacheGet.Hit(v)));
+                  }
+                }
                 break;
+              }
               case grpcCache.ECacheResult.Invalid:
               case grpcCache.ECacheResult.Ok:
                 resolve(new CacheGet.Error(new UnknownError(resp.message)));
