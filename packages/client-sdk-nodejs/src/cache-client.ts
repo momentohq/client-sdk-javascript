@@ -12,6 +12,7 @@ import {
 import {CacheClientProps, EagerCacheClientProps} from './cache-client-props';
 import {
   range,
+  Semaphore,
   validateTimeout,
   validateTtlSeconds,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
@@ -33,6 +34,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
   private readonly logger: MomentoLogger;
   private readonly notYetAbstractedControlClient: CacheControlClient;
   private readonly _configuration: Configuration;
+  static semaphore: Semaphore;
 
   /**
    * Creates an instance of CacheClient.
@@ -46,6 +48,12 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
       ...props,
       configuration: configuration,
     };
+
+    const numConcurrentRequests = configuration
+      .getTransportStrategy()
+      .getGrpcConfig()
+      .getConcurrentRequestsLimit();
+    CacheClient.semaphore = new Semaphore(numConcurrentRequests);
 
     const controlClient = new CacheControlClient({
       configuration: configuration,
@@ -68,6 +76,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
   }
 
   public close() {
+    CacheClient.semaphore.purge();
     this.controlClient.close();
     this.dataClients.map(dc => dc.close());
     this._configuration.getMiddlewares().map(m => {

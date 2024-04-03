@@ -79,6 +79,7 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
   private readonly deadlineMillis: number;
   private readonly maxSessionMemoryMb: number;
   private readonly numClients: number;
+  private readonly concurrentRequestsLimit: number;
   private readonly keepAlivePermitWithoutCalls?: number;
   private readonly keepAliveTimeoutMs?: number;
   private readonly keepAliveTimeMs?: number;
@@ -93,6 +94,15 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
     } else {
       // This is the previously hardcoded value and a safe default for most environments.
       this.numClients = 6;
+    }
+    if (
+      props.concurrentRequestsLimit !== undefined &&
+      props.concurrentRequestsLimit !== null
+    ) {
+      this.concurrentRequestsLimit = props.concurrentRequestsLimit;
+    } else {
+      // This is a hardcoded limit that can be tuned, but it likely a safe default for most environments.
+      this.concurrentRequestsLimit = 100;
     }
     this.keepAliveTimeMs = props.keepAliveTimeMs;
     this.keepAliveTimeoutMs = props.keepAliveTimeoutMs;
@@ -154,6 +164,21 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
       deadlineMillis: this.deadlineMillis,
       maxSessionMemoryMb: this.maxSessionMemoryMb,
       numClients: numClients,
+    });
+  }
+
+  getConcurrentRequestsLimit(): number {
+    return this.concurrentRequestsLimit;
+  }
+
+  withConcurrentRequestsLimit(
+    concurrentRequestsLimit: number
+  ): GrpcConfiguration {
+    return new StaticGrpcConfiguration({
+      deadlineMillis: this.deadlineMillis,
+      maxSessionMemoryMb: this.maxSessionMemoryMb,
+      numClients: this.numClients,
+      concurrentRequestsLimit: concurrentRequestsLimit,
     });
   }
 }
