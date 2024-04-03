@@ -40,7 +40,7 @@ jobs:
         uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
         with:
           project_status: official
-          project_stability: stable
+          project_stability: alpha
           project_type: other
           template_file: ./packages/client-sdk-nodejs-compression/README.template.md
           output_file: ./packages/client-sdk-nodejs-compression/README.md
