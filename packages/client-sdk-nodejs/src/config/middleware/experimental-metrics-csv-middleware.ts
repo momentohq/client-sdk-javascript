@@ -61,7 +61,7 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler extends ExperimentalMetrics
  * so enable with caution.
  *
  * WARNING: depending on your request volume, the CSV file size may grow quickly;
- * neither sampling nor file compressionLevel / rotation are included at this time
+ * neither sampling nor file compression / rotation are included at this time
  * (though they may be added in the future).
  *
  * See `advanced.ts` in the examples directory for an example of how to set up

@@ -39,7 +39,7 @@ class ExperimentalMetricsLoggingMiddlewareRequestHandler extends ExperimentalMet
  *
  * WARNING: depending on your request volume, this middleware will produce a high
  * volume of log output. If you are writing logs directly to local disk, be aware
- * of disk usage and make sure you have log rotation / compressionLevel enabled via a
+ * of disk usage and make sure you have log rotation / compression enabled via a
  * tool such as `logrotate`.
  *
  * See `advanced.ts` in the examples directory for an example of how to set up

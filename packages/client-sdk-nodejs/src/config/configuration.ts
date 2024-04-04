@@ -31,7 +31,7 @@ export interface ConfigurationProps {
    */
   readConcern: ReadConcern;
   /**
-   * Configures compressionLevel capabilities for the client.
+   * Configures compression capabilities for the client.
    */
   compression: CompressionProps | undefined;
 }
@@ -127,14 +127,14 @@ export interface Configuration {
   withReadConcern(readConcern: ReadConcern): Configuration;
 
   /**
-   * @returns {ICompression} the current configuration settings for compressionLevel
+   * @returns {ICompression} the current configuration settings for compression
    */
   getCompression(): CompressionProps | undefined;
 
   /**
-   * Copy constructor for overriding compressionLevel settings
+   * Copy constructor for overriding compression settings
    * @param {ICompression} compressor
-   * @returns {Configuration} a new Configuration object with the specified compressionLevel settings
+   * @returns {Configuration} a new Configuration object with the specified compression settings
    */
   withCompression(compressor: CompressionProps): Configuration;
 }
