@@ -2,7 +2,7 @@ import {CompressionLevel} from '@gomomento/sdk-core';
 
 export interface ICompression {
   compress(
-    compression: CompressionLevel,
+    compressionLevel: CompressionLevel,
     value: Uint8Array
   ): Promise<Uint8Array>;
 

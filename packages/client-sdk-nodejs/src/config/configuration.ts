@@ -133,10 +133,10 @@ export interface Configuration {
 
   /**
    * Copy constructor for overriding compression settings
-   * @param {ICompression} compressor
+   * @param {ICompression} compression
    * @returns {Configuration} a new Configuration object with the specified compression settings
    */
-  withCompression(compressor: CompressionProps): Configuration;
+  withCompression(compression: CompressionProps): Configuration;
 }
 
 export class CacheConfiguration implements Configuration {
@@ -271,7 +271,7 @@ export class CacheConfiguration implements Configuration {
     return this.compression;
   }
 
-  withCompression(compressor: CompressionProps): Configuration {
+  withCompression(compression: CompressionProps): Configuration {
     return new CacheConfiguration({
       loggerFactory: this.loggerFactory,
       retryStrategy: this.retryStrategy,
@@ -279,7 +279,7 @@ export class CacheConfiguration implements Configuration {
       middlewares: this.middlewares,
       throwOnErrors: this.throwOnErrors,
       readConcern: this.readConcern,
-      compression: compressor,
+      compression: compression,
     });
   }
 }

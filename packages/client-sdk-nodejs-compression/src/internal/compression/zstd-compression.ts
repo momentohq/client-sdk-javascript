@@ -14,11 +14,11 @@ class ZtsdCompressor implements ICompression {
   }
 
   async compress(
-    compression: CompressionLevel,
+    compressionLevel: CompressionLevel,
     value: Uint8Array
   ): Promise<Uint8Array> {
     let level;
-    switch (compression) {
+    switch (compressionLevel) {
       case CompressionLevel.Default:
         level = 3;
         break;
