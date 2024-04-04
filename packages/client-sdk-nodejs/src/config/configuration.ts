@@ -31,7 +31,7 @@ export interface ConfigurationProps {
    */
   readConcern: ReadConcern;
   /**
-   * Configures compression capabilities for the client.
+   * Configures compressionLevel capabilities for the client.
    */
   compression: CompressionProps | undefined;
 }
@@ -127,16 +127,16 @@ export interface Configuration {
   withReadConcern(readConcern: ReadConcern): Configuration;
 
   /**
-   * @returns {Compression} the current configuration settings for compression
+   * @returns {ICompression} the current configuration settings for compressionLevel
    */
   getCompression(): CompressionProps | undefined;
 
   /**
-   * Copy constructor for overriding compression settings
-   * @param {Compression} compression
-   * @returns {Configuration} a new Configuration object with the specified compression settings
+   * Copy constructor for overriding compressionLevel settings
+   * @param {ICompression} compressor
+   * @returns {Configuration} a new Configuration object with the specified compressionLevel settings
    */
-  withCompression(compression: CompressionProps): Configuration;
+  withCompression(compressor: CompressionProps): Configuration;
 }
 
 export class CacheConfiguration implements Configuration {
@@ -271,7 +271,7 @@ export class CacheConfiguration implements Configuration {
     return this.compression;
   }
 
-  withCompression(compression: CompressionProps): Configuration {
+  withCompression(compressor: CompressionProps): Configuration {
     return new CacheConfiguration({
       loggerFactory: this.loggerFactory,
       retryStrategy: this.retryStrategy,
@@ -279,7 +279,7 @@ export class CacheConfiguration implements Configuration {
       middlewares: this.middlewares,
       throwOnErrors: this.throwOnErrors,
       readConcern: this.readConcern,
-      compression: compression,
+      compression: compressor,
     });
   }
 }

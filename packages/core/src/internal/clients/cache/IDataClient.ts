@@ -55,10 +55,14 @@ import {
   CacheSetIfAbsentOrEqual,
   CacheSetSample,
 } from '../../../index';
-import {SetCallOptions} from '../../../utils';
+import {GetCallOptions, SetCallOptions} from '../../../utils';
 
 export interface IDataClient {
-  get(cacheName: string, key: string | Uint8Array): Promise<CacheGet.Response>;
+  get(
+    cacheName: string,
+    key: string | Uint8Array,
+    options?: GetCallOptions
+  ): Promise<CacheGet.Response>;
   set(
     cacheName: string,
     key: string | Uint8Array,

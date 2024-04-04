@@ -1,1 +1,1 @@
-export {CompressionExtensions} from './compression-extensions';
+export {CompressorFactory} from './compressor-factory';

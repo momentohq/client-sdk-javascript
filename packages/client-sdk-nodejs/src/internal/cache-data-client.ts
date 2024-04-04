@@ -12,7 +12,6 @@ import {
   ServiceError,
 } from '@grpc/grpc-js';
 import {
-  AutomaticDecompression,
   CacheDecreaseTtl,
   CacheDelete,
   CacheDictionaryFetch,
@@ -66,9 +65,9 @@ import {
   CacheSortedSetRemoveElements,
   CacheUpdateTtl,
   CollectionTtl,
-  Compression,
   CredentialProvider,
   GetBatch,
+  ICompression,
   InvalidArgumentError,
   ItemType,
   MomentoLogger,
@@ -114,7 +113,11 @@ import {CacheClientPropsWithConfig} from './cache-client-props-with-config';
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {ConnectionError} from '@gomomento/sdk-core/dist/src/errors';
 import {common} from '@gomomento/generated-types/dist/common';
-import {SetCallOptions} from '@gomomento/sdk-core/dist/src/utils';
+import {
+  GetCallOptions,
+  SetCallOptions,
+} from '@gomomento/sdk-core/dist/src/utils';
+import {DecompressionMode} from '@gomomento/sdk-core';
 import grpcCache = cache.cache_client;
 import ECacheResult = cache_client.ECacheResult;
 import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
@@ -140,8 +143,7 @@ export class CacheDataClient implements IDataClient {
   private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly interceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
-  private readonly automaticDecompression: AutomaticDecompression;
-  private readonly valueCompressor?: Compression;
+  private readonly valueCompressor?: ICompression;
 
   /**
    * @param {CacheClientProps} props
@@ -156,11 +158,9 @@ export class CacheDataClient implements IDataClient {
     );
     const compression = this.configuration.getCompression();
     if (compression !== undefined) {
-      this.valueCompressor = compression.compressionExtensions;
-      this.automaticDecompression = compression.automaticDecompression;
+      this.valueCompressor = compression.compressorFactory;
     } else {
       this.valueCompressor = undefined;
-      this.automaticDecompression = AutomaticDecompression.Disabled;
     }
 
     const grpcConfig = this.configuration
@@ -363,20 +363,20 @@ export class CacheDataClient implements IDataClient {
     );
     const encodedKey = this.convert(key);
     let encodedValue = this.convert(value);
-    if (options?.compression) {
+    if (options?.compressionLevel) {
       this.logger.trace(
-        'CacheClient.set; compression enabled, calling value compressor'
+        'CacheClient.set; compressionLevel enabled, calling value compressor'
       );
       if (this.valueCompressor === undefined) {
         return this.cacheServiceErrorMapper.returnOrThrowError(
           new InvalidArgumentError(
-            'Compression extension is not loaded, but `CacheClient.set` was called with the `compression` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompression` to enable compression.'
+            'Compression extension is not loaded, but `CacheClient.set` was called with the `compressionLevel` option; please install @gomomento/sdk-nodejs-compressionLevel and call `Configuration.withCompression` to enable compressionLevel.'
           ),
           err => new CacheSet.Error(err)
         );
       }
       encodedValue = await this.valueCompressor.compress(
-        options.compression,
+        options.compressionLevel,
         encodedValue
       );
     }
@@ -1312,7 +1312,8 @@ export class CacheDataClient implements IDataClient {
 
   public async get(
     cacheName: string,
-    key: string | Uint8Array
+    key: string | Uint8Array,
+    options?: GetCallOptions
   ): Promise<CacheGet.Response> {
     try {
       validateCacheName(cacheName);
@@ -1323,14 +1324,15 @@ export class CacheDataClient implements IDataClient {
       );
     }
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
-    const result = await this.sendGet(cacheName, this.convert(key));
+    const result = await this.sendGet(cacheName, this.convert(key), options);
     this.logger.trace(`'get' request result: ${result.toString()}`);
     return result;
   }
 
   private async sendGet(
     cacheName: string,
-    key: Uint8Array
+    key: Uint8Array,
+    options?: GetCallOptions
   ): Promise<CacheGet.Response> {
     const request = new grpcCache._GetRequest({
       cache_key: key,
@@ -1352,8 +1354,8 @@ export class CacheDataClient implements IDataClient {
                 break;
               case grpcCache.ECacheResult.Hit: {
                 if (
-                  this.automaticDecompression ===
-                  AutomaticDecompression.Disabled
+                  options?.decompressionMode === DecompressionMode.Disabled ||
+                  options?.decompressionMode === undefined
                 ) {
                   resolve(new CacheGet.Hit(resp.cache_body));
                 } else {
@@ -1361,7 +1363,7 @@ export class CacheDataClient implements IDataClient {
                     resolve(
                       new CacheGet.Error(
                         new InvalidArgumentError(
-                          'Compression extension is not loaded, but `automaticCompression` was configured; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompression` to enable compression.'
+                          'Compression extension is not loaded, but `automaticCompression` was configured; please install @gomomento/sdk-nodejs-compressionLevel and call `Configuration.withCompression` to enable compressionLevel.'
                         )
                       )
                     );

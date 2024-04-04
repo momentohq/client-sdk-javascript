@@ -66,12 +66,14 @@ import {
   SortedSetFetchByScoreCallOptions,
   SortedSetLengthByScoreCallOptions,
   SetCallOptions,
+  GetCallOptions,
 } from '../utils';
 import {IControlClient, IPingClient} from '../internal/clients';
 import {IMomentoCache} from './IMomentoCache';
 
 // Type aliases to differentiate the different methods' optional arguments.
 export type SetOptions = SetCallOptions;
+export type GetOptions = GetCallOptions;
 export type SetIfNotExistsOptions = ScalarCallOptions;
 export type SetIfAbsentOptions = ScalarCallOptions;
 export type SetIfPresentOptions = ScalarCallOptions;
@@ -100,7 +102,11 @@ export type SortedSetLengthByScoreOptions = SortedSetLengthByScoreCallOptions;
 export interface ICacheClient extends IControlClient, IPingClient {
   cache(cacheName: string): IMomentoCache;
 
-  get(cacheName: string, key: string | Uint8Array): Promise<CacheGet.Response>;
+  get(
+    cacheName: string,
+    key: string | Uint8Array,
+    options?: GetOptions
+  ): Promise<CacheGet.Response>;
   set(
     cacheName: string,
     key: string | Uint8Array,

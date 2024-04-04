@@ -178,7 +178,8 @@ import {
   RotateWebhookSecret,
   WebhookDestinationType,
   ReadConcern,
-  CompressionMode,
+  CompressionLevel,
+  DecompressionMode,
 } from '@gomomento/sdk-core';
 
 import {Configuration, CacheConfiguration} from './config/configuration';
@@ -241,11 +242,7 @@ export {ExperimentalGarbageCollectionPerformanceMetricsMiddleware} from './confi
 export {ExampleAsyncMiddleware} from './config/middleware/example-async-middleware';
 export {MiddlewareFactory} from './config/middleware/experimental-middleware-factory';
 
-export {
-  Compression,
-  CompressionProps,
-  AutomaticDecompression,
-} from './config/compression/compression';
+export {ICompression, CompressionProps} from './config/compression/compression';
 
 export {
   ICacheClient,
@@ -424,5 +421,6 @@ export {
   BatchUtils,
   WebhookUtils,
   ReadConcern,
-  CompressionMode,
+  CompressionLevel,
+  DecompressionMode,
 };

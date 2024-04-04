@@ -89,6 +89,7 @@ import {
   SortedSetIncrementOptions,
   SortedSetLengthByScoreOptions,
   SetBatchOptions,
+  GetOptions,
 } from '../../../clients/ICacheClient';
 import {IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
@@ -172,6 +173,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    *
    * @param {string} cacheName - The cache to perform the lookup in.
    * @param {string | Uint8Array} key - The key to look up.
+   * @param {GetOptions} [options]
+   * @param {DecompressionMode} [options.decompressionMode] - The decompression mode to use.
    * @returns {Promise<CacheGet.Response>} -
    * {@link CacheGet.Hit} containing the value if one is found.
    * {@link CacheGet.Miss} if the key does not exist.
@@ -179,9 +182,10 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async get(
     cacheName: string,
-    key: string | Uint8Array
+    key: string | Uint8Array,
+    options?: GetOptions
   ): Promise<CacheGet.Response> {
-    return await this.getNextDataClient().get(cacheName, key);
+    return await this.getNextDataClient().get(cacheName, key, options);
   }
 
   /**
@@ -193,6 +197,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string | Uint8Array} value - The value to be stored.
    * @param {SetOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * @param {CompressionLevel} [options.compressionLevel] - The level of compression to use.
    * Uses the client's default TTL if this is not supplied.
    * @returns {Promise<CacheSet.Response>} -
    * {@link CacheSet.Success} on success.

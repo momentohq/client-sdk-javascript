@@ -1,12 +1,12 @@
 import {
-  Compression,
   DefaultMomentoLoggerFactory,
+  ICompression,
   MomentoLoggerFactory,
 } from '@gomomento/sdk';
 import {loadZstdCompression} from './internal/compression/zstd-compression';
 
-export class CompressionExtensions {
-  static load(loggerFactory?: MomentoLoggerFactory): Compression {
+export class CompressorFactory {
+  static default(loggerFactory?: MomentoLoggerFactory): ICompression {
     return loadZstdCompression(
       loggerFactory ?? new DefaultMomentoLoggerFactory()
     );
