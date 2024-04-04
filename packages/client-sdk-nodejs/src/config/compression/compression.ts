@@ -10,7 +10,7 @@ export interface Compression {
 }
 
 export interface CompressionProps {
-  compressionExtensions?: Compression;
+  compressionExtensions: Compression;
   automaticDecompression: AutomaticDecompression;
 }
 

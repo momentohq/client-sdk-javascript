@@ -12,6 +12,7 @@ import {
   ServiceError,
 } from '@grpc/grpc-js';
 import {
+  AutomaticDecompression,
   CacheDecreaseTtl,
   CacheDelete,
   CacheDictionaryFetch,
@@ -65,6 +66,7 @@ import {
   CacheSortedSetRemoveElements,
   CacheUpdateTtl,
   CollectionTtl,
+  Compression,
   CredentialProvider,
   GetBatch,
   InvalidArgumentError,
@@ -113,10 +115,6 @@ import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {ConnectionError} from '@gomomento/sdk-core/dist/src/errors';
 import {common} from '@gomomento/generated-types/dist/common';
 import {SetCallOptions} from '@gomomento/sdk-core/dist/src/utils';
-import {
-  AutomaticDecompression,
-  Compression,
-} from '../config/compression/compression';
 import grpcCache = cache.cache_client;
 import ECacheResult = cache_client.ECacheResult;
 import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
@@ -156,14 +154,14 @@ export class CacheDataClient implements IDataClient {
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
       props.configuration.getThrowOnErrors()
     );
-    if (
-      this.configuration.getCompression().compressionExtensions !== undefined
-    ) {
-      this.valueCompressor =
-        this.configuration.getCompression().compressionExtensions;
+    const compression = this.configuration.getCompression();
+    if (compression !== undefined) {
+      this.valueCompressor = compression.compressionExtensions;
+      this.automaticDecompression = compression.automaticDecompression;
+    } else {
+      this.valueCompressor = undefined;
+      this.automaticDecompression = AutomaticDecompression.Disabled;
     }
-    this.automaticDecompression =
-      this.configuration.getCompression().automaticDecompression;
 
     const grpcConfig = this.configuration
       .getTransportStrategy()
@@ -1368,9 +1366,15 @@ export class CacheDataClient implements IDataClient {
                       )
                     );
                   } else {
-                    void this.valueCompressor
+                    this.valueCompressor
                       .decompressIfCompressed(resp.cache_body)
-                      .then(v => resolve(new CacheGet.Hit(v)));
+                      .then(v => resolve(new CacheGet.Hit(v)))
+                      .catch(e =>
+                        resolve(
+                          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                          new CacheGet.Error(new InvalidArgumentError(`${e}`))
+                        )
+                      );
                   }
                 }
                 break;

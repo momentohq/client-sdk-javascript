@@ -7,7 +7,6 @@ import {
   StaticTransportStrategy,
 } from '../../../src/config/transport/transport-strategy';
 import {ReadConcern} from '@gomomento/sdk-core';
-import {AutomaticDecompression} from '../../../src/config/compression/compression';
 
 describe('configuration.ts', () => {
   const testLoggerFactory = new DefaultMomentoLoggerFactory();
@@ -33,10 +32,7 @@ describe('configuration.ts', () => {
     middlewares: testMiddlewares,
     throwOnErrors: false,
     readConcern: ReadConcern.BALANCED,
-    compression: {
-      compressionExtensions: undefined,
-      automaticDecompression: AutomaticDecompression.Disabled,
-    },
+    compression: undefined,
   });
 
   it('should support overriding retry strategy', () => {

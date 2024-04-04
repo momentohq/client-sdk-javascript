@@ -38,9 +38,21 @@ class ZtsdCompressor implements Compression {
 
   async decompressIfCompressed(value: Uint8Array): Promise<Uint8Array> {
     this.logger.info('Attempting to decompress value');
-    // TODO: check bytes to see if it is compressed
-    // TODO: handle error
-    return await zstd.decompress(Buffer.from(value));
+    const buffer = Buffer.from(value);
+    this.logger.info('Buffer created');
+    try {
+      // TODO: check bytes to see if it is compressed before calling decompress
+      const decompressed = await zstd.decompress(buffer);
+      this.logger.info('Decompressed buffer');
+      return decompressed;
+    } catch (e) {
+      // TODO: once we have added the code to check the BOM bytes, we should change the following line to log at ERROR level.
+      // TODO: and/or we might want to actually reject the promise here.
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      this.logger.error(`Failed to decompress buffer: ${e}`);
+      // return Promise.reject(e);
+      return Promise.resolve(value);
+    }
   }
 }
 

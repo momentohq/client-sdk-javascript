@@ -33,7 +33,7 @@ export interface ConfigurationProps {
   /**
    * Configures compression capabilities for the client.
    */
-  compression: CompressionProps;
+  compression: CompressionProps | undefined;
 }
 
 /**
@@ -129,7 +129,7 @@ export interface Configuration {
   /**
    * @returns {Compression} the current configuration settings for compression
    */
-  getCompression(): CompressionProps;
+  getCompression(): CompressionProps | undefined;
 
   /**
    * Copy constructor for overriding compression settings
@@ -146,7 +146,7 @@ export class CacheConfiguration implements Configuration {
   private readonly middlewares: Middleware[];
   private readonly throwOnErrors: boolean;
   private readonly readConcern: ReadConcern;
-  private readonly compression: CompressionProps;
+  private readonly compression: CompressionProps | undefined;
 
   constructor(props: ConfigurationProps) {
     this.loggerFactory = props.loggerFactory;
@@ -267,7 +267,7 @@ export class CacheConfiguration implements Configuration {
     });
   }
 
-  getCompression(): CompressionProps {
+  getCompression(): CompressionProps | undefined {
     return this.compression;
   }
 
