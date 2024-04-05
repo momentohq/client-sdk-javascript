@@ -151,7 +151,6 @@ import {
   RotateWebhookSecret,
   WebhookDestinationType,
   ReadConcern,
-  CompressionLevel,
 } from '@gomomento/sdk-core';
 
 import {Configuration} from './config/configuration';
@@ -356,5 +355,4 @@ export {
   RotateWebhookSecret,
   WebhookDestinationType,
   ReadConcern,
-  CompressionLevel,
 };

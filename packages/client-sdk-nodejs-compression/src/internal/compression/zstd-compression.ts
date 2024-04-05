@@ -31,7 +31,7 @@ class ZtsdCompressor implements ICompression {
     }
     const compressed = await zstd.compress(Buffer.from(convert(value)), level);
 
-    this.logger.trace(`Compressed value: ${compressed.toString()}`);
+    this.logger.trace('Compressed value: %s', compressed.toString());
 
     return compressed;
   }
