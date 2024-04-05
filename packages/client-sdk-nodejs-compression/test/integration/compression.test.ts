@@ -107,7 +107,7 @@ describe('CompressorFactory', () => {
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSet.Error);
         expect((setResponse as CacheSet.Error).toString()).toEqual(
-          'Invalid argument passed to Momento client: Compressor is not set, but `decompressionMode` was configured; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+          'Invalid argument passed to Momento client: Compressor is not set, but `CacheClient.set` was called with the `compressionLevel` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
         );
       }, `Expected CacheClient.set to be an Error with compression disabled and CompressionMode specified, got: '${setResponse.toString()}'`);
     });
