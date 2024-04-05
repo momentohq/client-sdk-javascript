@@ -1,21 +1,21 @@
 // Unit test the semaphore class
 
-import { Semaphore } from "../../../src/internal/utils";
+import {Semaphore} from '../../../src/internal/utils';
 
 describe('Semaphore', () => {
-  let asyncTaskWithoutSemaphore = async () => {
-    return new Promise<void>((resolve) => {
+  const asyncTaskWithoutSemaphore = () => {
+    return new Promise<void>(resolve => {
       setTimeout(() => {
         resolve();
       }, 1000);
     });
-  }
+  };
 
-  let asyncTaskWithSemaphore = async (semaphore: Semaphore) => {
+  const asyncTaskWithSemaphore = async (semaphore: Semaphore) => {
     await semaphore.acquire();
     await asyncTaskWithoutSemaphore();
     semaphore.release();
-  }
+  };
 
   it('Tasks without semaphore should complete concurrently', async () => {
     const startTime = Date.now();
