@@ -49,7 +49,7 @@
   "dependencies": {
     "@gomomento/generated-types": "0.107.4",
     "@gomomento/sdk": "file:../client-sdk-nodejs",
-    "@mongodb-js/zstd": "^1.2.0"
+    "@mongodb-js/zstd": "1.2.0"
   },
   "engines": {
     "node": ">= 14"
