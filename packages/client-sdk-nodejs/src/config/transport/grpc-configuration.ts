@@ -20,6 +20,7 @@ export interface GrpcConfigurationProps {
    * The maximum number of concurrent requests that can be made to the server.
    * This limit is independent of the number of internal clients, meaning this limit is the maximum
    * number of requests that will be made concurrently across all of the internal clients.
+   * If this is not set, it will default to the defaultRequestConcurrencyLimit.
    */
   concurrentRequestsLimit?: number;
 

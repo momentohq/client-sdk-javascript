@@ -1,5 +1,7 @@
 import {GrpcConfiguration, GrpcConfigurationProps} from './grpc-configuration';
 
+const defaultRequestConcurrencyLimit = 100;
+
 export interface TransportStrategy {
   /**
    * Configures the low-level gRPC settings for the Momento client's communication
@@ -101,8 +103,7 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
     ) {
       this.concurrentRequestsLimit = props.concurrentRequestsLimit;
     } else {
-      // This is a hardcoded limit that can be tuned, but it likely a safe default for most environments.
-      this.concurrentRequestsLimit = 100;
+      this.concurrentRequestsLimit = defaultRequestConcurrencyLimit;
     }
     this.keepAliveTimeMs = props.keepAliveTimeMs;
     this.keepAliveTimeoutMs = props.keepAliveTimeoutMs;
