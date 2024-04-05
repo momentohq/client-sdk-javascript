@@ -19,13 +19,13 @@ class ZtsdCompressor implements ICompression {
   ): Promise<Uint8Array> {
     let level;
     switch (compressionLevel) {
-      case CompressionLevel.Default:
+      case CompressionLevel.Balanced:
         level = 3;
         break;
-      case CompressionLevel.Fast:
+      case CompressionLevel.Fastest:
         level = 1;
         break;
-      case CompressionLevel.Best:
+      case CompressionLevel.SmallestSize:
         level = 9;
         break;
     }

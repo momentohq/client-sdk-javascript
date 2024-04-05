@@ -37,7 +37,7 @@ describe('CompressorFactory', () => {
         'my-key',
         testValue,
         {
-          compressionLevel: CompressionLevel.Default,
+          compressionLevel: CompressionLevel.Balanced,
         }
       );
       expectWithMessage(() => {
@@ -54,7 +54,7 @@ describe('CompressorFactory', () => {
         'my-key',
         testValue,
         {
-          compressionLevel: CompressionLevel.Default,
+          compressionLevel: CompressionLevel.Balanced,
         }
       );
       expectWithMessage(() => {
@@ -100,7 +100,7 @@ describe('CompressorFactory', () => {
         'my-key',
         testValue,
         {
-          compressionLevel: CompressionLevel.Default,
+          compressionLevel: CompressionLevel.Balanced,
         }
       );
       expectWithMessage(() => {
@@ -119,7 +119,7 @@ describe('CompressorFactory', () => {
         'my-key',
         testValue,
         {
-          compressionLevel: CompressionLevel.Default,
+          compressionLevel: CompressionLevel.Balanced,
         }
       );
       expectWithMessage(() => {
@@ -142,7 +142,7 @@ describe('CompressorFactory', () => {
         'my-key',
         testValue,
         {
-          compressionLevel: CompressionLevel.Default,
+          compressionLevel: CompressionLevel.Balanced,
         }
       );
       expectWithMessage(() => {

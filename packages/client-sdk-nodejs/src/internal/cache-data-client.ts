@@ -1363,7 +1363,7 @@ export class CacheDataClient implements IDataClient {
                     resolve(
                       new CacheGet.Error(
                         new InvalidArgumentError(
-                          'Compression extension is not loaded, but `automaticCompression` was configured; please install @gomomento/sdk-nodejs-compressionLevel and call `Configuration.withCompression` to enable compressionLevel.'
+                          'Compression factory is not loaded, but `decompressionMode` was configured; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompression` to enable compression.'
                         )
                       )
                     );
