@@ -3,17 +3,17 @@
  */
 export enum CompressionLevel {
   /**
-   * The balanced compressionLevel mode; provides a good balance between speed and compressionLevel ratio.
-   * @type {CompressionLevel.Default}
+   * Provides a good balance between compression speed and compression ratio.
+   * @type {CompressionLevel.Balanced}
    */
   Balanced = 'Balanced',
   /**
-   * The fastest compressionLevel mode; provides the fastest compressionLevel speed, prioritizing reduction in CPU usage over compressionLevel ratio.
+   * Provides the fastest compression speed, prioritizing reduction in CPU usage over compression ratio.
    * @type {CompressionLevel.Fastest}
    */
   Fastest = 'Fastest',
   /**
-   * The smallest compressionLevel mode; provides the best compressionLevel ratio, prioritizing reduction in storage space over compressionLevel speed.
+   * Provides the best compression ratio, prioritizing reduction in storage space over compression speed.
    * @type {CompressionLevel.SmallestSize}
    */
   SmallestSize = 'SmallestSize',

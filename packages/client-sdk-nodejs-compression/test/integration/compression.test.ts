@@ -11,9 +11,10 @@ import {CompressorFactory} from '../../src';
 const {cacheClientPropsWithConfig, cacheName} = setupIntegrationTest();
 
 const cacheClientWithDefaultCompressorFactory = new CacheClient({
-  configuration: cacheClientPropsWithConfig.configuration.withCompression({
-    compressorFactory: CompressorFactory.default(),
-  }),
+  configuration:
+    cacheClientPropsWithConfig.configuration.withCompressionStrategy({
+      compressorFactory: CompressorFactory.default(),
+    }),
   credentialProvider: cacheClientPropsWithConfig.credentialProvider,
   defaultTtlSeconds: cacheClientPropsWithConfig.defaultTtlSeconds,
 });
@@ -43,9 +44,9 @@ describe('CompressorFactory', () => {
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSet.Error);
         expect((setResponse as CacheSet.Error).toString()).toEqual(
-          'Invalid argument passed to Momento client: Compression extension is not loaded, but `CacheClient.set` was called with the `compressionLevel` option; please install @gomomento/sdk-nodejs-compressionLevel and call `Configuration.withCompression` to enable compressionLevel.'
+          'Invalid argument passed to Momento client: Compressor is not set, but `CacheClient.set` was called with the `compressionLevel` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
         );
-      }, `Expected CacheClient.set to return an error if a CompressionMode is specified without compression extensions loaded, but got: ${setResponse.toString()}`);
+      }, `Expected CacheClient.set to return an error if a CompressionMode is specified without compression factory loaded, but got: ${setResponse.toString()}`);
     });
     it('should compress the value if CompressionLevel is specified', async () => {
       const cacheClient = cacheClientWithDefaultCompressorFactory;
@@ -106,7 +107,7 @@ describe('CompressorFactory', () => {
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSet.Error);
         expect((setResponse as CacheSet.Error).toString()).toEqual(
-          'Invalid argument passed to Momento client: Compression extension is not loaded, but `CacheClient.set` was called with the `compressionLevel` option; please install @gomomento/sdk-nodejs-compressionLevel and call `Configuration.withCompression` to enable compressionLevel.'
+          'Invalid argument passed to Momento client: Compressor is not set, but `decompressionMode` was configured; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
         );
       }, `Expected CacheClient.set to be an Error with compression disabled and CompressionMode specified, got: '${setResponse.toString()}'`);
     });

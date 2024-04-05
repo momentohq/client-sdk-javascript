@@ -242,7 +242,10 @@ export {ExperimentalGarbageCollectionPerformanceMetricsMiddleware} from './confi
 export {ExampleAsyncMiddleware} from './config/middleware/example-async-middleware';
 export {MiddlewareFactory} from './config/middleware/experimental-middleware-factory';
 
-export {ICompression, CompressionProps} from './config/compression/compression';
+export {
+  ICompression,
+  CompressionStrategy,
+} from './config/compression/compression';
 
 export {
   ICacheClient,

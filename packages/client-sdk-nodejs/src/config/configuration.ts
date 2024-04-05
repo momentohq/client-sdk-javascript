@@ -3,7 +3,7 @@ import {Middleware} from './middleware/middleware';
 import {MomentoLoggerFactory} from '../';
 import {TransportStrategy} from './transport';
 import {ReadConcern} from '@gomomento/sdk-core';
-import {CompressionProps} from './compression/compression';
+import {CompressionStrategy} from './compression/compression';
 
 export interface ConfigurationProps {
   /**
@@ -33,7 +33,7 @@ export interface ConfigurationProps {
   /**
    * Configures compression capabilities for the client.
    */
-  compression: CompressionProps | undefined;
+  compression: CompressionStrategy | undefined;
 }
 
 /**
@@ -129,14 +129,14 @@ export interface Configuration {
   /**
    * @returns {ICompression} the current configuration settings for compression
    */
-  getCompression(): CompressionProps | undefined;
+  getCompressionStrategy(): CompressionStrategy | undefined;
 
   /**
    * Copy constructor for overriding compression settings
    * @param {ICompression} compression
    * @returns {Configuration} a new Configuration object with the specified compression settings
    */
-  withCompression(compression: CompressionProps): Configuration;
+  withCompressionStrategy(compression: CompressionStrategy): Configuration;
 }
 
 export class CacheConfiguration implements Configuration {
@@ -146,7 +146,7 @@ export class CacheConfiguration implements Configuration {
   private readonly middlewares: Middleware[];
   private readonly throwOnErrors: boolean;
   private readonly readConcern: ReadConcern;
-  private readonly compression: CompressionProps | undefined;
+  private readonly compression: CompressionStrategy | undefined;
 
   constructor(props: ConfigurationProps) {
     this.loggerFactory = props.loggerFactory;
@@ -267,11 +267,13 @@ export class CacheConfiguration implements Configuration {
     });
   }
 
-  getCompression(): CompressionProps | undefined {
+  getCompressionStrategy(): CompressionStrategy | undefined {
     return this.compression;
   }
 
-  withCompression(compression: CompressionProps): Configuration {
+  withCompressionStrategy(
+    compressionStrategy: CompressionStrategy
+  ): Configuration {
     return new CacheConfiguration({
       loggerFactory: this.loggerFactory,
       retryStrategy: this.retryStrategy,
@@ -279,7 +281,7 @@ export class CacheConfiguration implements Configuration {
       middlewares: this.middlewares,
       throwOnErrors: this.throwOnErrors,
       readConcern: this.readConcern,
-      compression: compression,
+      compression: compressionStrategy,
     });
   }
 }

@@ -12,9 +12,9 @@ export interface ICompression {
 /**
  * Configuration options for compression capabilities.
  */
-export interface CompressionProps {
+export interface CompressionStrategy {
   /**
-   * This property is used to register the compression extensions from the add-on library. To use this feature,
+   * This property is used to register the compression factory from the add-on library. To use this feature,
    * you will need to install the compression extensions library `@gomomento/sdk-nodejs-compression`, and then
    * import and call `CompressorFactory.default()`.
    */

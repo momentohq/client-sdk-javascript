@@ -1,5 +1,5 @@
 /**
- * When compressing a value, you may choose between these different modes to control the trade-off between compressionLevel speed and compressionLevel ratio.
+ * When compressing a value, you may choose between these different modes to control the trade-off between compression speed and compression ratio.
  */
 export enum DecompressionMode {
   /**

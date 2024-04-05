@@ -156,7 +156,7 @@ export class CacheDataClient implements IDataClient {
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
       props.configuration.getThrowOnErrors()
     );
-    const compression = this.configuration.getCompression();
+    const compression = this.configuration.getCompressionStrategy();
     if (compression !== undefined) {
       this.valueCompressor = compression.compressorFactory;
     } else {
@@ -370,7 +370,7 @@ export class CacheDataClient implements IDataClient {
       if (this.valueCompressor === undefined) {
         return this.cacheServiceErrorMapper.returnOrThrowError(
           new InvalidArgumentError(
-            'Compression extension is not loaded, but `CacheClient.set` was called with the `compressionLevel` option; please install @gomomento/sdk-nodejs-compressionLevel and call `Configuration.withCompression` to enable compressionLevel.'
+            'Compressor is not set, but `CacheClient.set` was called with the `compressionLevel` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
           ),
           err => new CacheSet.Error(err)
         );
@@ -1363,7 +1363,7 @@ export class CacheDataClient implements IDataClient {
                     resolve(
                       new CacheGet.Error(
                         new InvalidArgumentError(
-                          'Compression factory is not loaded, but `decompressionMode` was configured; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompression` to enable compression.'
+                          'Compressor is not set, but `decompressionMode` was configured; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
                         )
                       )
                     );
