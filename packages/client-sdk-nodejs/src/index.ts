@@ -179,7 +179,6 @@ import {
   WebhookDestinationType,
   ReadConcern,
   CompressionLevel,
-  DecompressionMode,
 } from '@gomomento/sdk-core';
 
 import {Configuration, CacheConfiguration} from './config/configuration';
@@ -425,5 +424,4 @@ export {
   WebhookUtils,
   ReadConcern,
   CompressionLevel,
-  DecompressionMode,
 };

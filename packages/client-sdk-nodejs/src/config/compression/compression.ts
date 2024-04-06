@@ -19,4 +19,9 @@ export interface CompressionStrategy {
    * import and call `CompressorFactory.default()`.
    */
   compressorFactory: ICompression;
+
+  /**
+   * This property is used to set the default compression level for the client. The default value is `CompressionLevel.Balanced`.
+   */
+  compressionLevel?: CompressionLevel;
 }

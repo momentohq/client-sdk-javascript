@@ -1,6 +1,4 @@
 import {CollectionTtl} from './collection-ttl';
-import {CompressionLevel} from '../compression/compression-level';
-import {DecompressionMode} from '../compression/decompression-mode';
 
 export interface ScalarCallOptions {
   /**
@@ -10,11 +8,11 @@ export interface ScalarCallOptions {
 }
 
 export interface SetCallOptions extends ScalarCallOptions {
-  compressionLevel?: CompressionLevel;
+  compress?: boolean;
 }
 
 export interface GetCallOptions {
-  decompressionMode?: DecompressionMode;
+  decompress?: boolean;
 }
 
 export interface CollectionCallOptions {

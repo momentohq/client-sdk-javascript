@@ -216,7 +216,6 @@ export * as DisposableTokenScopes from './auth/tokens/disposable-token-scopes';
 
 export {ReadConcern} from './config/read-concern';
 export {CompressionLevel} from './compression/compression-level';
-export {DecompressionMode} from './compression/decompression-mode';
 
 export {
   ExpiresIn,

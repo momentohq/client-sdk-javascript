@@ -174,7 +174,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache to perform the lookup in.
    * @param {string | Uint8Array} key - The key to look up.
    * @param {GetOptions} [options]
-   * @param {DecompressionMode} [options.decompressionMode] - The decompression mode to use.
+   * @param {decompress} [options.decompress] - Whether to decompress the value. Defaults to false.
    * @returns {Promise<CacheGet.Response>} -
    * {@link CacheGet.Hit} containing the value if one is found.
    * {@link CacheGet.Miss} if the key does not exist.
@@ -197,7 +197,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string | Uint8Array} value - The value to be stored.
    * @param {SetOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
-   * @param {CompressionLevel} [options.compressionLevel] - The level of compression to use.
+   * @param {compress} [options.compress] - Whether to compress the value. Defaults to false.
    * Uses the client's default TTL if this is not supplied.
    * @returns {Promise<CacheSet.Response>} -
    * {@link CacheSet.Success} on success.

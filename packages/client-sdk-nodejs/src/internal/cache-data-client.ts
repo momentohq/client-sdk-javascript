@@ -65,6 +65,7 @@ import {
   CacheSortedSetRemoveElements,
   CacheUpdateTtl,
   CollectionTtl,
+  CompressionLevel,
   CredentialProvider,
   GetBatch,
   ICompression,
@@ -117,7 +118,6 @@ import {
   GetCallOptions,
   SetCallOptions,
 } from '@gomomento/sdk-core/dist/src/utils';
-import {DecompressionMode} from '@gomomento/sdk-core';
 import grpcCache = cache.cache_client;
 import ECacheResult = cache_client.ECacheResult;
 import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
@@ -363,20 +363,21 @@ export class CacheDataClient implements IDataClient {
     );
     const encodedKey = this.convert(key);
     let encodedValue = this.convert(value);
-    if (options?.compressionLevel) {
+    if (options?.compress) {
       this.logger.trace(
-        'CacheClient.set; compressionLevel enabled, calling value compressor'
+        'CacheClient.set; compression enabled, calling value compressor'
       );
       if (this.valueCompressor === undefined) {
         return this.cacheServiceErrorMapper.returnOrThrowError(
           new InvalidArgumentError(
-            'Compressor is not set, but `CacheClient.set` was called with the `compressionLevel` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+            'Compressor is not set, but `CacheClient.set` was called with the `compress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
           ),
           err => new CacheSet.Error(err)
         );
       }
       encodedValue = await this.valueCompressor.compress(
-        options.compressionLevel,
+        this.configuration.getCompressionStrategy()?.compressionLevel ??
+          CompressionLevel.Balanced,
         encodedValue
       );
     }
@@ -1353,17 +1354,14 @@ export class CacheDataClient implements IDataClient {
                 resolve(new CacheGet.Miss());
                 break;
               case grpcCache.ECacheResult.Hit: {
-                if (
-                  options?.decompressionMode === DecompressionMode.Disabled ||
-                  options?.decompressionMode === undefined
-                ) {
+                if (!options?.decompress) {
                   resolve(new CacheGet.Hit(resp.cache_body));
                 } else {
                   if (this.valueCompressor === undefined) {
                     resolve(
                       new CacheGet.Error(
                         new InvalidArgumentError(
-                          'Compressor is not set, but `decompressionMode` was configured; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+                          'Compressor is not set, but decompress was configured; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
                         )
                       )
                     );
