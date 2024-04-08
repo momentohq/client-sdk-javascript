@@ -1,6 +1,6 @@
 import {CacheConfiguration} from '../../../src/config/configuration';
 import {FixedCountRetryStrategy} from '../../../src/config/retry/fixed-count-retry-strategy';
-import {DefaultMomentoLoggerFactory, Configurations} from '../../../src';
+import {Configurations, DefaultMomentoLoggerFactory} from '../../../src';
 import {Middleware} from '../../../src/config/middleware/middleware';
 import {
   StaticGrpcConfiguration,
@@ -32,6 +32,7 @@ describe('configuration.ts', () => {
     middlewares: testMiddlewares,
     throwOnErrors: false,
     readConcern: ReadConcern.BALANCED,
+    compression: undefined,
   });
 
   it('should support overriding retry strategy', () => {

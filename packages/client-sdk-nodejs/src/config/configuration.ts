@@ -3,6 +3,7 @@ import {Middleware} from './middleware/middleware';
 import {MomentoLoggerFactory} from '../';
 import {TransportStrategy} from './transport';
 import {ReadConcern} from '@gomomento/sdk-core';
+import {CompressionStrategy} from './compression/compression';
 
 export interface ConfigurationProps {
   /**
@@ -29,6 +30,10 @@ export interface ConfigurationProps {
    * Configures the read concern for the client.
    */
   readConcern: ReadConcern;
+  /**
+   * Configures compression capabilities for the client.
+   */
+  compression: CompressionStrategy | undefined;
 }
 
 /**
@@ -120,6 +125,18 @@ export interface Configuration {
    * @returns {Configuration} a new Configuration object with the specified ReadConcern
    */
   withReadConcern(readConcern: ReadConcern): Configuration;
+
+  /**
+   * @returns {ICompression} the current configuration settings for compression
+   */
+  getCompressionStrategy(): CompressionStrategy | undefined;
+
+  /**
+   * Copy constructor for overriding compression settings
+   * @param {ICompression} compression
+   * @returns {Configuration} a new Configuration object with the specified compression settings
+   */
+  withCompressionStrategy(compression: CompressionStrategy): Configuration;
 }
 
 export class CacheConfiguration implements Configuration {
@@ -129,6 +146,7 @@ export class CacheConfiguration implements Configuration {
   private readonly middlewares: Middleware[];
   private readonly throwOnErrors: boolean;
   private readonly readConcern: ReadConcern;
+  private readonly compression: CompressionStrategy | undefined;
 
   constructor(props: ConfigurationProps) {
     this.loggerFactory = props.loggerFactory;
@@ -137,6 +155,7 @@ export class CacheConfiguration implements Configuration {
     this.middlewares = props.middlewares;
     this.throwOnErrors = props.throwOnErrors;
     this.readConcern = props.readConcern;
+    this.compression = props.compression;
   }
 
   getLoggerFactory(): MomentoLoggerFactory {
@@ -155,6 +174,7 @@ export class CacheConfiguration implements Configuration {
       middlewares: this.middlewares,
       throwOnErrors: this.throwOnErrors,
       readConcern: this.readConcern,
+      compression: this.compression,
     });
   }
 
@@ -170,6 +190,7 @@ export class CacheConfiguration implements Configuration {
       middlewares: this.middlewares,
       throwOnErrors: this.throwOnErrors,
       readConcern: this.readConcern,
+      compression: this.compression,
     });
   }
 
@@ -185,6 +206,7 @@ export class CacheConfiguration implements Configuration {
       middlewares: middlewares,
       throwOnErrors: this.throwOnErrors,
       readConcern: this.readConcern,
+      compression: this.compression,
     });
   }
 
@@ -196,6 +218,7 @@ export class CacheConfiguration implements Configuration {
       middlewares: [middleware, ...this.middlewares],
       throwOnErrors: this.throwOnErrors,
       readConcern: this.readConcern,
+      compression: this.compression,
     });
   }
 
@@ -208,6 +231,7 @@ export class CacheConfiguration implements Configuration {
       middlewares: this.middlewares,
       throwOnErrors: this.throwOnErrors,
       readConcern: this.readConcern,
+      compression: this.compression,
     });
   }
 
@@ -223,6 +247,7 @@ export class CacheConfiguration implements Configuration {
       middlewares: this.middlewares,
       throwOnErrors: throwOnErrors,
       readConcern: this.readConcern,
+      compression: this.compression,
     });
   }
 
@@ -238,6 +263,25 @@ export class CacheConfiguration implements Configuration {
       middlewares: this.middlewares,
       throwOnErrors: this.throwOnErrors,
       readConcern: readConcern,
+      compression: this.compression,
+    });
+  }
+
+  getCompressionStrategy(): CompressionStrategy | undefined {
+    return this.compression;
+  }
+
+  withCompressionStrategy(
+    compressionStrategy: CompressionStrategy
+  ): Configuration {
+    return new CacheConfiguration({
+      loggerFactory: this.loggerFactory,
+      retryStrategy: this.retryStrategy,
+      transportStrategy: this.transportStrategy,
+      middlewares: this.middlewares,
+      throwOnErrors: this.throwOnErrors,
+      readConcern: this.readConcern,
+      compression: compressionStrategy,
     });
   }
 }

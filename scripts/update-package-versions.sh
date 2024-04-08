@@ -48,6 +48,12 @@ pushd ${ROOT_DIR}/packages/${PACKAGE}
       npm uninstall @gomomento/sdk-core
       npm install -E @gomomento/sdk-core@${CORE_VERSION}
     fi
+    has_dependency_on_nodejs_sdk=$(cat package.json|jq '.dependencies."@gomomento/sdk" != null')
+        if [ "${has_dependency_on_nodejs_sdk}" == "true" ];
+        then
+          npm uninstall @gomomento/sdk
+          npm install -E @gomomento/sdk@${CORE_VERSION}
+        fi
     has_dependency_on_common_int_tests=$(cat package.json|jq '.devDependencies."@gomomento/common-integration-tests" != null')
     if [ "${has_dependency_on_common_int_tests}" == "true" ];
     then

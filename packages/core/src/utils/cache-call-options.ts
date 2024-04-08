@@ -7,6 +7,14 @@ export interface ScalarCallOptions {
   ttl?: number;
 }
 
+export interface SetCallOptions extends ScalarCallOptions {
+  compress?: boolean;
+}
+
+export interface GetCallOptions {
+  decompress?: boolean;
+}
+
 export interface CollectionCallOptions {
   /**
    * The length of the TTL and whether it should be refreshed when the collection is modified.

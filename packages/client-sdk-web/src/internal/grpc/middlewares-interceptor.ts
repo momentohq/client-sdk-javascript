@@ -114,6 +114,7 @@ class MiddlewareInterceptedStream implements ClientReadableStream<Message> {
   on(eventType: 'end', callback: () => void): ClientReadableStream<Message>;
   on(
     eventType: 'error' | 'status' | 'metadata' | 'data' | 'end',
+    /* eslint-disable  @typescript-eslint/no-explicit-any */
     callback: (arg: any) => void
   ): ClientReadableStream<Message> {
     switch (eventType) {
@@ -123,7 +124,6 @@ class MiddlewareInterceptedStream implements ClientReadableStream<Message> {
         return this.onResponseStatus(eventType, callback);
       case 'metadata':
         return this.onResponseMetadata(eventType, callback);
-        break;
       case 'data':
         return this.onResponseData(eventType, callback);
       case 'end':
@@ -145,8 +145,8 @@ class MiddlewareInterceptedStream implements ClientReadableStream<Message> {
   ): void;
   removeListener(eventType: 'end', callback: () => void): void;
   removeListener(
-    eventType: 'error' | 'status' | 'metadata' | 'data' | 'end',
-    callback: (arg: any) => void
+    _eventType: 'error' | 'status' | 'metadata' | 'data' | 'end',
+    _callback: (arg: any) => void
   ): void {
     return;
   }
@@ -159,7 +159,7 @@ class MiddlewareInterceptedStream implements ClientReadableStream<Message> {
     eventType: 'error',
     callback: (err: RpcError) => void
   ): ClientReadableStream<Message> {
-    return this.stream.on('error', callback);
+    return this.stream.on(eventType, callback);
   }
 
   private onResponseStatus(

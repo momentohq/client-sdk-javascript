@@ -16,7 +16,7 @@ To get started with Momento you will need a Momento Auth Token. You can get one 
 * Website: [https://www.gomomento.com/](https://www.gomomento.com/)
 * Momento Documentation: [https://docs.momentohq.com/](https://docs.momentohq.com/)
 * Getting Started: [https://docs.momentohq.com/getting-started](https://docs.momentohq.com/getting-started)
-* JavaScript Web SDK Documentation: [https://docs.momentohq.com/develop/sdks/web](https://docs.momentohq.com/develop/sdks/web)
+* JavaScript Web SDK Documentation: [https://docs.momentohq.com/sdks/web](https://docs.momentohq.com/sdks/web)
 * Discuss: [Momento Discord](https://discord.gg/3HkAKjUZGq)
 
 ## Packages
