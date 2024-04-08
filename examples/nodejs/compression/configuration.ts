@@ -1,3 +1,4 @@
 configuration.withCompressionStrategy({
-  compressorFactory: CompressorFactory.default()
+  compressorFactory: CompressorFactory.default(),
+  compressionLevel: CompressionLevel.SmallestSize,
 })

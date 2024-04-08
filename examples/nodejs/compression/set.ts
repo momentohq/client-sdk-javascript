@@ -3,6 +3,6 @@ const setResponse = await cacheClient.set(
   'my-key',
   'my-value',
   {
-    compressionLevel: CompressionLevel.Balanced,
+    compress: true,
   }
 );

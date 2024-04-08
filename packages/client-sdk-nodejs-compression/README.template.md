@@ -17,13 +17,13 @@ Then, you can configure the Momento cache client to enable compression:
 {% include "./examples/nodejs/compression/configuration.ts" %}
 ```
 
-To compress a value when calling `CacheClient.set`, use the `compressionLevel` option:
+To compress a value when calling `CacheClient.set`, use the `compress` option:
 
 ```javascript
 {% include "./examples/nodejs/compression/set.ts" %}
 ```
 
-To decompress a value when calling `CacheClient.get`, use the `decompressionMode` option:
+To decompress a value when calling `CacheClient.get`, use the `decompress` option:
 
 ```javascript
 {% include "./examples/nodejs/compression/get.ts" %}
