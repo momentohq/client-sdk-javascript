@@ -38,7 +38,6 @@ ${ROOT_DIR}/scripts/publish-package.sh "client-sdk-nodejs" "${VERSION}" "${CORE_
 # before attempting to publish the compression package
 ${ROOT_DIR}/scripts/wait-for-npmjs-release.sh "@gomomento/sdk" "${VERSION}"
 
-echo "Not publishing the compression extensions yet, but if we uncomment the line below, we will publish them as version: ${NODEJS_COMPRESSION_EXTENSIONS_VERSION}"
-#${ROOT_DIR}/scripts/publish-package.sh "client-sdk-nodejs-compression" "${NODEJS_COMPRESSION_EXTENSIONS_VERSION}" "${CORE_VERSION}"
+${ROOT_DIR}/scripts/publish-package.sh "client-sdk-nodejs-compression" "${NODEJS_COMPRESSION_EXTENSIONS_VERSION}" "${CORE_VERSION}"
 
 ${ROOT_DIR}/scripts/publish-package.sh "client-sdk-web" "${VERSION}" "${CORE_VERSION}"
