@@ -32,7 +32,7 @@ const EAGER_CONNECTION_DEFAULT_TIMEOUT_SECONDS = 30;
 export class CacheClient extends AbstractCacheClient implements ICacheClient {
   private readonly logger: MomentoLogger;
   private readonly notYetAbstractedControlClient: CacheControlClient;
-  private readonly configuration: Configuration;
+  private readonly _configuration: Configuration;
 
   /**
    * Creates an instance of CacheClient.
@@ -60,7 +60,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
       (_, id) => new CacheDataClient(propsWithConfig, String(id))
     );
     super(controlClient, dataClients);
-    this.configuration = configuration;
+    this._configuration = configuration;
     this.notYetAbstractedControlClient = controlClient;
 
     this.logger = configuration.getLoggerFactory().getLogger(this);
@@ -70,7 +70,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
   public close() {
     this.controlClient.close();
     this.dataClients.map(dc => dc.close());
-    this.configuration.getMiddlewares().map(m => {
+    this._configuration.getMiddlewares().map(m => {
       if (m.close) {
         m.close();
       }
@@ -98,6 +98,17 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
       );
     }
     return client;
+  }
+
+  /**
+   * Returns the configuration used to create the CacheClient.
+   *
+   * @readonly
+   * @type {Configuration} - The configuration used to create the CacheClient.
+   * @memberof CacheClient
+   */
+  public get configuration(): Configuration {
+    return this._configuration;
   }
 
   /**

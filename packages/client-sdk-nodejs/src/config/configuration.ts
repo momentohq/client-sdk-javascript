@@ -137,6 +137,11 @@ export interface Configuration {
    * @returns {Configuration} a new Configuration object with the specified compression settings
    */
   withCompressionStrategy(compression: CompressionStrategy): Configuration;
+
+  /**
+   * @returns {boolean} whether the client has a compression strategy configured.
+   */
+  hasCompressionStrategy(): boolean;
 }
 
 export class CacheConfiguration implements Configuration {
@@ -283,5 +288,9 @@ export class CacheConfiguration implements Configuration {
       readConcern: this.readConcern,
       compression: compressionStrategy,
     });
+  }
+
+  hasCompressionStrategy(): boolean {
+    return this.compression !== undefined;
   }
 }
