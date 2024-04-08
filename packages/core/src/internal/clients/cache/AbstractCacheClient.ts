@@ -1531,7 +1531,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache to look in.
    * @param {string | Uint8Array} key - The key to look up.
    * @returns {Promise<CacheKeyExists.Response>}
-   * {@link CacheKeyExists.Success} if key is found? or if key is checked?
+   * {@link CacheKeyExists.Success} returns boolean indicating whether the key was found.
    * {@link CacheKeyExists.Error} on failure.
    */
   public async keyExists(
@@ -1547,7 +1547,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache to look in.
    * @param {string[] | Uint8Array[]} keys - The keys to look up.
    * @returns {Promise<CacheKeysExist.Response>}
-   * {@link CacheKeysExist.Success} if at least one key is found? if all keys checked?
+   * {@link CacheKeysExist.Success} returns list of booleans indicating whether each key was found.
    * {@link CacheKeysExist.Error} on failure.
    */
   public async keysExist(
