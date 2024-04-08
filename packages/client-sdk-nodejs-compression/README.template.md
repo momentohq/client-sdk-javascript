@@ -14,19 +14,37 @@ npm install @gomomento/sdk-compression
 Then, you can configure the Momento cache client to enable compression:
 
 ```javascript
-{% include "./examples/nodejs/compression/configuration.ts" %}
+configuration.withCompressionStrategy({
+  compressorFactory: CompressorFactory.default(),
+  compressionLevel: CompressionLevel.SmallestSize,
+})
+
 ```
 
 To compress a value when calling `CacheClient.set`, use the `compress` option:
 
 ```javascript
-{% include "./examples/nodejs/compression/set.ts" %}
+const setResponse = await cacheClient.set(
+  'my-cache',
+  'my-key',
+  'my-value',
+  {
+    compress: true,
+  }
+);
+
 ```
 
 To decompress a value when calling `CacheClient.get`, use the `decompress` option:
 
 ```javascript
-{% include "./examples/nodejs/compression/get.ts" %}
+const getResponse = await cacheClient.get(
+  'my-cache',
+  'my-key',
+  {
+    decompress: true,
+  }
+);
 ```
 
 {{ ossFooter }}
