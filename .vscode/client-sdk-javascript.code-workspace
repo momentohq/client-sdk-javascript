@@ -13,6 +13,10 @@
       "name": "packages/client-sdk-nodejs",
     },
     {
+      "path": "../packages/client-sdk-nodejs-compression",
+      "name": "packages/client-sdk-nodejs-compression",
+    },
+    {
       "path": "../packages/client-sdk-web",
       "name": "packages/client-sdk-web",
     },
