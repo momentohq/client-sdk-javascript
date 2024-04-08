@@ -150,7 +150,7 @@ describe('EnvMomentoTokenProvider', () => {
   });
 
   it('parses a valid legacy token', () => {
-    const testEnvVarName = 'TEST_AUTH_TOKEN_ENV_VAR';
+    const testEnvVarName = 'TEST_API_KEY_ENV_VAR';
     process.env[testEnvVarName] = fakeTestLegacyToken;
     const authProvider = CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: testEnvVarName,
@@ -161,7 +161,7 @@ describe('EnvMomentoTokenProvider', () => {
   });
 
   it('parses a valid v1 auth token', () => {
-    const testEnvVarName = 'TEST_AUTH_TOKEN_ENV_VAR';
+    const testEnvVarName = 'TEST_API_KEY_ENV_VAR';
     process.env[testEnvVarName] = base64EncodedFakeV1AuthToken;
     const authProvider = CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: testEnvVarName,
@@ -176,7 +176,7 @@ describe('EnvMomentoTokenProvider', () => {
   });
 
   it('supports overriding endpoints via base endpoint', () => {
-    const testEnvVarName = 'TEST_AUTH_TOKEN_ENV_VAR';
+    const testEnvVarName = 'TEST_API_KEY_ENV_VAR';
     process.env[testEnvVarName] = fakeTestLegacyToken;
     const authProvider = CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: testEnvVarName,
@@ -207,7 +207,7 @@ describe('EnvMomentoTokenProvider', () => {
   });
 
   it('supports overriding all endpoints explicitly', () => {
-    const testEnvVarName = 'TEST_AUTH_TOKEN_ENV_VAR';
+    const testEnvVarName = 'TEST_API_KEY_ENV_VAR';
     process.env[testEnvVarName] = fakeTestLegacyToken;
     const legacyAuthProvider = CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: testEnvVarName,
@@ -244,7 +244,7 @@ describe('EnvMomentoTokenProvider', () => {
   });
 
   it('supports adding a prefix to baseEndpoint derived endpoints', () => {
-    const testEnvVarName = 'TEST_AUTH_TOKEN_ENV_VAR';
+    const testEnvVarName = 'TEST_API_KEY_ENV_VAR';
     process.env[testEnvVarName] = fakeTestLegacyToken;
     const legacyAuthProvider = CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: testEnvVarName,
