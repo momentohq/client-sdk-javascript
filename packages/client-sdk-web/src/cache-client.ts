@@ -18,6 +18,8 @@ interface CacheClientPropsWithConfiguration extends CacheClientProps {
 }
 
 export class CacheClient extends AbstractCacheClient implements ICacheClient {
+  private readonly _configuration: Configuration;
+
   constructor(props: CacheClientProps) {
     validateTtlSeconds(props.defaultTtlSeconds);
     const configuration =
@@ -37,6 +39,17 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
   public close() {
     this.controlClient.close();
     this.dataClients.map(dc => dc.close());
+  }
+
+  /**
+   * The configuration used by this client.
+   *
+   * @readonly
+   * @type {Configuration} the configuration used by this client
+   * @memberof CacheClient
+   */
+  public get configuration(): Configuration {
+    return this._configuration;
   }
 }
 
