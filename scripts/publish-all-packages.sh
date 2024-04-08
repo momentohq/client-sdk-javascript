@@ -34,6 +34,9 @@ pushd ${ROOT_DIR}/packages/common-integration-tests
   npm pack
 popd
 ${ROOT_DIR}/scripts/publish-package.sh "client-sdk-nodejs" "${VERSION}" "${CORE_VERSION}"
+# The compression library has a dependency on the nodejs package, so we need to wait for it to release
+# before attempting to publish the compression package
+${ROOT_DIR}/scripts/wait-for-npmjs-release.sh "@gomomento/sdk" "${VERSION}"
 
 echo "Not publishing the compression extensions yet, but if we uncomment the line below, we will publish them as version: ${NODEJS_COMPRESSION_EXTENSIONS_VERSION}"
 #${ROOT_DIR}/scripts/publish-package.sh "client-sdk-nodejs-compression" "${NODEJS_COMPRESSION_EXTENSIONS_VERSION}" "${CORE_VERSION}"
