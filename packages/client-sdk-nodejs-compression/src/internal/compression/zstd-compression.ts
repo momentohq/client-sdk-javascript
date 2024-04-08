@@ -59,7 +59,7 @@ class ZtsdCompressor implements ICompression {
 export function loadZstdCompression(
   loggerFactory: MomentoLoggerFactory
 ): ICompression {
-  const logger = loggerFactory.getLogger('zstd-compressionLevel');
-  logger.trace('Zstd-compressionLevel module loading compressor');
+  const logger = loggerFactory.getLogger('zstd-compression');
+  logger.trace('Zstd-compression module loading compressor');
   return new ZtsdCompressor(logger);
 }
