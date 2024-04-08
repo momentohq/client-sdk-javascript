@@ -168,7 +168,7 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
       call.cancel();
     };
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       const prepareCallbackOptions: PrepareSubscribeCallbackOptions = {
         ...options,
         restartedDueToError: false,
