@@ -153,6 +153,7 @@ import {
   Equal,
   NotEqual,
 } from '@gomomento/generated-types-webtext/dist/common_pb';
+import {SetCallOptions} from '@gomomento/sdk-core/dist/src/utils';
 
 export interface DataClientProps {
   configuration: Configuration;
@@ -298,12 +299,12 @@ export class CacheDataClient<
     cacheName: string,
     key: string | Uint8Array,
     value: string | Uint8Array,
-    ttl?: number
+    options?: SetCallOptions
   ): Promise<CacheSet.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
-        validateTtlSeconds(ttl);
+      if (options?.ttl !== undefined) {
+        validateTtlSeconds(options?.ttl);
       }
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
@@ -311,7 +312,7 @@ export class CacheDataClient<
         err => new CacheSet.Error(err)
       );
     }
-    const ttlToUse = ttl || this.defaultTtlSeconds;
+    const ttlToUse = options?.ttl || this.defaultTtlSeconds;
     this.logger.trace(
       `Issuing 'set' request; key: ${key.toString()}, value length: ${
         value.length

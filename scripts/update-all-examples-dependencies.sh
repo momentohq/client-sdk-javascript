@@ -19,6 +19,14 @@ pushd ${ROOT_DIR}/examples
              echo "need to upgrade node sdk"
              npm install @gomomento/sdk
           fi
+          has_nodejs_compression=$(grep '"@gomomento/sdk-nodejs-compression"' package.json || true)
+          if [ "$has_nodejs_compression" == "" ]
+          then
+             echo "do not need to upgrade nodejs compression extension"
+          else
+             echo "need to upgrade nodejs compression extension"
+             npm install @gomomento/sdk-nodejs-compression
+          fi
           has_web_sdk=$(grep '"@gomomento/sdk-web"' package.json || true)
           if [ "$has_web_sdk" == "" ]
           then
