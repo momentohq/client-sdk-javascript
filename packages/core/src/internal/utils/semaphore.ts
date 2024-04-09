@@ -3,8 +3,8 @@
 export class Semaphore {
   private counter = 0;
   private waiting: {
-    resolve: (value: unknown) => void;
-    err: (reason?: any) => void;
+    resolve: (value?: unknown) => void;
+    err: (reason?: string) => void;
   }[] = [];
   private max: number;
 
@@ -17,7 +17,7 @@ export class Semaphore {
       this.counter += 1;
       const promise = this.waiting.shift();
       if (promise) {
-        promise.resolve(undefined);
+        promise.resolve();
       }
     }
   }
