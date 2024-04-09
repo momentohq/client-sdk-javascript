@@ -1408,7 +1408,7 @@ export class CacheDataClient implements IDataClient {
     try {
       await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
-      const result = await this.sendGet(cacheName, this.convert(key));
+      const result = await this.sendGet(cacheName, this.convert(key), options);
       this.logger.trace(`'get' request result: ${result.toString()}`);
       return result;
     } finally {
