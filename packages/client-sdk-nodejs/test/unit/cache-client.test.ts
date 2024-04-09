@@ -35,7 +35,7 @@ describe('CacheClient', () => {
     const momento = await CacheClient.create({
       configuration: configuration,
       credentialProvider: CredentialProvider.fromEnvironmentVariable({
-        environmentVariableName: 'TEST_AUTH_TOKEN',
+        environmentVariableName: 'TEST_API_KEY',
       }),
       defaultTtlSeconds: 100,
     });
