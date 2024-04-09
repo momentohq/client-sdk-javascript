@@ -2505,6 +2505,26 @@ export class CacheDataClient implements IDataClient {
 
     const ttl = ttlOrFromCacheTtl(options);
 
+    let encodedValue = this.convert(value);
+    if (options?.compress) {
+      this.logger.trace(
+        'CacheClient.dictionarySetField; compression enabled, calling value compressor'
+      );
+      if (this.valueCompressor === undefined) {
+        return this.cacheServiceErrorMapper.returnOrThrowError(
+          new InvalidArgumentError(
+            'Compressor is not set, but `CacheClient.dictionarySetField` was called with the `compress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+          ),
+          err => new CacheDictionarySetField.Error(err)
+        );
+      }
+      encodedValue = await this.valueCompressor.compress(
+        this.configuration.getCompressionStrategy()?.compressionLevel ??
+          CompressionLevel.Balanced,
+        encodedValue
+      );
+    }
+
     try {
       await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
@@ -2517,7 +2537,7 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(dictionaryName),
         this.convert(field),
-        this.convert(value),
+        encodedValue,
         ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
         ttl.refreshTtl()
       );
@@ -2598,6 +2618,26 @@ export class CacheDataClient implements IDataClient {
       );
 
       const dictionaryFieldValuePairs = this.convertElements(elements);
+      if (options?.compress) {
+        this.logger.trace(
+          'CacheClient.dictionarySetFields; compression enabled, calling value compressor'
+        );
+        if (this.valueCompressor === undefined) {
+          return this.cacheServiceErrorMapper.returnOrThrowError(
+            new InvalidArgumentError(
+              'Compressor is not set, but `CacheClient.dictionarySetFields` was called with the `compress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+            ),
+            err => new CacheDictionarySetFields.Error(err)
+          );
+        }
+        for (const pair of dictionaryFieldValuePairs) {
+          pair.value = await this.valueCompressor.compress(
+            this.configuration.getCompressionStrategy()?.compressionLevel ??
+              CompressionLevel.Balanced,
+            pair.value
+          );
+        }
+      }
 
       const result = await this.sendDictionarySetFields(
         cacheName,
