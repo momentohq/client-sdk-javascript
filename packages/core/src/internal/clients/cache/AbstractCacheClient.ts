@@ -1005,7 +1005,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} dictionaryName - The dictionary to add to.
    * @param {Map<string | Uint8Array, string | Uint8Array>} elements - The
    * elements to set.
-   * @param {DictionarySetFieldsOptions} options
+   * @param {DictionarySetFieldsOptions} [options]
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the dictionary's TTL using the client's default if this is not
    * supplied.
@@ -1038,7 +1038,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the dictionary.
    * @param {string} dictionaryName - The dictionary to look up.
    * @param {string | Uint8Array} field - The field to look up.
-   * @param {DictionaryGetFieldOptions} options
+   * @param {DictionaryGetFieldOptions} [options]
    * @param {boolean} [options.decompress=false] - Whether to decompress the value. Defaults to false.
    * @returns {Promise<CacheDictionaryGetField.Response>} -
    * {@link CacheDictionaryGetField.Hit} containing the dictionary element if
@@ -1067,7 +1067,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the dictionary.
    * @param {string} dictionaryName - The dictionary to look up.
    * @param {string[] | Uint8Array[]} fields - The fields to look up.
-   * @param {DictionaryGetFieldsOptions} options
+   * @param {DictionaryGetFieldsOptions} [options]
    * @param {boolean} [options.decompress=false] - Whether to decompress the values. Defaults to false.
    * @returns {Promise<CacheDictionaryGetFields.Response>} -
    * {@link CacheDictionaryGetFields.Hit} containing the dictionary elements if
