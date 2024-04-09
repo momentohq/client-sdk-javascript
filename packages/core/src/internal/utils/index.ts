@@ -5,3 +5,4 @@ export * from './object';
 export * from './sleep';
 export * from './string';
 export * from './validators';
+export * from './semaphore';
