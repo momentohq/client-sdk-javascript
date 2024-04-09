@@ -754,7 +754,7 @@ export class CacheDataClient implements IDataClient {
                 break;
               default:
                 resolve(
-                  new CacheGet.Error(
+                  new CacheSetIfNotExists.Error(
                     new UnknownError(
                       'SetIfNotExists responded with an unknown result'
                     )
@@ -845,7 +845,7 @@ export class CacheDataClient implements IDataClient {
                 break;
               default:
                 resolve(
-                  new CacheGet.Error(
+                  new CacheSetIfAbsent.Error(
                     new UnknownError(
                       'SetIfAbsent responded with an unknown result'
                     )
@@ -936,7 +936,7 @@ export class CacheDataClient implements IDataClient {
                 break;
               default:
                 resolve(
-                  new CacheGet.Error(
+                  new CacheSetIfPresent.Error(
                     new UnknownError(
                       'SetIfPresent responded with an unknown result'
                     )
@@ -1030,7 +1030,7 @@ export class CacheDataClient implements IDataClient {
                 break;
               default:
                 resolve(
-                  new CacheGet.Error(
+                  new CacheSetIfEqual.Error(
                     new UnknownError(
                       'SetIfEqual responded with an unknown result'
                     )
@@ -1124,7 +1124,7 @@ export class CacheDataClient implements IDataClient {
                 break;
               default:
                 resolve(
-                  new CacheGet.Error(
+                  new CacheSetIfNotEqual.Error(
                     new UnknownError(
                       'SetIfNotEqual responded with an unknown result'
                     )
@@ -1220,7 +1220,7 @@ export class CacheDataClient implements IDataClient {
                 break;
               default:
                 resolve(
-                  new CacheGet.Error(
+                  new CacheSetIfPresentAndNotEqual.Error(
                     new UnknownError(
                       'SetIfPresentAndNotEqual responded with an unknown result'
                     )
@@ -1317,7 +1317,7 @@ export class CacheDataClient implements IDataClient {
                 break;
               default:
                 resolve(
-                  new CacheGet.Error(
+                  new CacheSetIfAbsentOrEqual.Error(
                     new UnknownError(
                       'SetIfAbsentOrEqual responded with an unknown result'
                     )
