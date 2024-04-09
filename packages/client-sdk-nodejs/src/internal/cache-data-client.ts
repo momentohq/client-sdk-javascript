@@ -116,6 +116,7 @@ import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {ConnectionError} from '@gomomento/sdk-core/dist/src/errors';
 import {common} from '@gomomento/generated-types/dist/common';
 import {
+  DictionaryFetchCallOptions,
   DictionaryGetFieldCallOptions,
   DictionaryGetFieldsCallOptions,
   DictionarySetFieldCallOptions,
@@ -2425,7 +2426,8 @@ export class CacheDataClient implements IDataClient {
 
   public async dictionaryFetch(
     cacheName: string,
-    dictionaryName: string
+    dictionaryName: string,
+    options?: DictionaryFetchCallOptions
   ): Promise<CacheDictionaryFetch.Response> {
     try {
       validateCacheName(cacheName);
@@ -2444,7 +2446,8 @@ export class CacheDataClient implements IDataClient {
       );
       const result = await this.sendDictionaryFetch(
         cacheName,
-        this.convert(dictionaryName)
+        this.convert(dictionaryName),
+        options
       );
       this.logger.trace(
         `'dictionaryFetch' request result: ${result.toString()}`
@@ -2457,7 +2460,8 @@ export class CacheDataClient implements IDataClient {
 
   private async sendDictionaryFetch(
     cacheName: string,
-    dictionaryName: Uint8Array
+    dictionaryName: Uint8Array,
+    options?: DictionaryFetchCallOptions
   ): Promise<CacheDictionaryFetch.Response> {
     const request = new grpcCache._DictionaryFetchRequest({
       dictionary_name: dictionaryName,
@@ -2472,7 +2476,48 @@ export class CacheDataClient implements IDataClient {
         },
         (err, resp) => {
           if (resp?.found) {
-            resolve(new CacheDictionaryFetch.Hit(resp.found.items));
+            if (!options?.decompress) {
+              resolve(new CacheDictionaryFetch.Hit(resp.found.items));
+            } else {
+              if (this.valueCompressor === undefined) {
+                resolve(
+                  new CacheDictionaryFetch.Error(
+                    new InvalidArgumentError(
+                      'Compressor is not set, but `CacheClient.dictionaryFetch` was called with the `decompress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+                    )
+                  )
+                );
+              } else {
+                const decompressedItemPromises = resp.found.items.map(item => {
+                  // This check shouldn't be necessary given the one in the outer scope,
+                  // but the TypeScript compiler doesn't seem to understand that.
+                  if (this.valueCompressor === undefined) {
+                    throw new InvalidArgumentError(
+                      'Compressor is not set, but `CacheClient.dictionaryFetch` was called with the `decompress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+                    );
+                  }
+
+                  return this.valueCompressor
+                    .decompressIfCompressed(item.value)
+                    .then(v => {
+                      item.value = v;
+                      return item;
+                    })
+                    .catch(e => {
+                      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                      throw new InvalidArgumentError(`${e}`);
+                    });
+                });
+
+                Promise.all(decompressedItemPromises)
+                  .then(items => {
+                    resolve(new CacheDictionaryFetch.Hit(items));
+                  })
+                  .catch((e: InvalidArgumentError) => {
+                    resolve(new CacheDictionaryFetch.Error(e));
+                  });
+              }
+            }
           } else if (resp?.missing) {
             resolve(new CacheDictionaryFetch.Miss());
           } else {
@@ -2891,14 +2936,9 @@ export class CacheDataClient implements IDataClient {
                   )
                 );
               } else {
-                const decompressedItems = items.map(item => {
+                const decompressedItemPromises = items.map(item => {
                   if (item.result === _ECacheResult.Miss) {
-                    return Promise.resolve(
-                      new _DictionaryGetResponsePart(
-                        item.result,
-                        item.cacheBody
-                      )
-                    );
+                    return Promise.resolve(item);
                   }
 
                   // This check shouldn't be necessary given the one in the outer scope,
@@ -2918,7 +2958,7 @@ export class CacheDataClient implements IDataClient {
                     });
                 });
 
-                Promise.all(decompressedItems)
+                Promise.all(decompressedItemPromises)
                   .then(decompressedItems => {
                     resolve(
                       new CacheDictionaryGetFields.Hit(
