@@ -53,6 +53,20 @@ export interface TransportStrategy {
    * @returns {TransportStrategy} a new TransportStrategy with the specified max client age.
    */
   withMaxClientAgeMillis(maxClientAgeMillis: number): TransportStrategy;
+
+  /**
+   * @returns {number} the maximum number of concurrent requests that can be made by the client.
+   */
+  getConcurrentRequestsLimit(): number;
+
+  /**
+   * Copy constructor to update the maximum number of concurrent requests that can be made by the client.
+   * @param {number} concurrentRequestsLimit
+   * @returns {TransportStrategy} a new TransportStrategy with the specified concurrent requests limit.
+   */
+  withConcurrentRequestsLimit(
+    concurrentRequestsLimit: number
+  ): TransportStrategy;
 }
 
 export interface TransportStrategyProps {
@@ -234,6 +248,21 @@ export class StaticTransportStrategy implements TransportStrategy {
   withClientTimeoutMillis(clientTimeout: number): StaticTransportStrategy {
     return new StaticTransportStrategy({
       grpcConfiguration: this.grpcConfig.withDeadlineMillis(clientTimeout),
+      maxIdleMillis: this.maxIdleMillis,
+    });
+  }
+
+  getConcurrentRequestsLimit(): number {
+    return this.grpcConfig.getConcurrentRequestsLimit();
+  }
+
+  withConcurrentRequestsLimit(
+    concurrentRequestsLimit: number
+  ): StaticTransportStrategy {
+    return new StaticTransportStrategy({
+      grpcConfiguration: this.grpcConfig.withConcurrentRequestsLimit(
+        concurrentRequestsLimit
+      ),
       maxIdleMillis: this.maxIdleMillis,
     });
   }

@@ -219,3 +219,11 @@ export function validateLeaderboardNumberOfElements(numElements: number) {
     throw new InvalidArgumentError('must provide at least one element');
   }
 }
+
+export function validateConcurrentRequestsLimit(limit: number) {
+  if (limit < 1) {
+    throw new InvalidArgumentError(
+      'concurrent requests limit must be strictly positive (> 0)'
+    );
+  }
+}
