@@ -42,7 +42,7 @@ export function credsProvider(): CredentialProvider {
       });
     } else {
       _credsProvider = CredentialProvider.fromEnvironmentVariable({
-        environmentVariableName: 'TEST_API_KEY',
+        environmentVariableName: 'TEST_AUTH_TOKEN',
       });
     }
   }
