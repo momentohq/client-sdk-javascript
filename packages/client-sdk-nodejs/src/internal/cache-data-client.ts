@@ -116,8 +116,11 @@ import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {ConnectionError} from '@gomomento/sdk-core/dist/src/errors';
 import {common} from '@gomomento/generated-types/dist/common';
 import {
+  DictionarySetFieldCallOptions,
+  DictionarySetFieldsCallOptions,
   GetCallOptions,
   SetCallOptions,
+  ttlOrFromCacheTtl,
 } from '@gomomento/sdk-core/dist/src/utils';
 import grpcCache = cache.cache_client;
 import ECacheResult = cache_client.ECacheResult;
@@ -2488,7 +2491,7 @@ export class CacheDataClient implements IDataClient {
     dictionaryName: string,
     field: string | Uint8Array,
     value: string | Uint8Array,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    options?: DictionarySetFieldCallOptions
   ): Promise<CacheDictionarySetField.Response> {
     try {
       validateCacheName(cacheName);
@@ -2499,6 +2502,8 @@ export class CacheDataClient implements IDataClient {
         err => new CacheDictionarySetField.Error(err)
       );
     }
+
+    const ttl = ttlOrFromCacheTtl(options);
 
     try {
       await this.requestConcurrencySemaphore.acquire();
@@ -2570,7 +2575,7 @@ export class CacheDataClient implements IDataClient {
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>
       | Array<[string, string | Uint8Array]>,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    options?: DictionarySetFieldsCallOptions
   ): Promise<CacheDictionarySetFields.Response> {
     try {
       validateCacheName(cacheName);
@@ -2581,6 +2586,8 @@ export class CacheDataClient implements IDataClient {
         err => new CacheDictionarySetFields.Error(err)
       );
     }
+
+    const ttl = ttlOrFromCacheTtl(options);
 
     try {
       await this.requestConcurrencySemaphore.acquire();

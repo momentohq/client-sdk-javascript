@@ -80,7 +80,11 @@ import {
   ListPushBackOptions,
   ListConcatenateBackOptions,
   ListConcatenateFrontOptions,
+  DictionaryGetFieldOptions,
+  DictionaryGetFieldsOptions,
+  DictionaryFetchOptions,
   DictionarySetFieldOptions,
+  DictionarySetFieldsOptions,
   DictionaryIncrementOptions,
   SortedSetFetchByRankOptions,
   SortedSetPutElementOptions,
@@ -174,7 +178,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache to perform the lookup in.
    * @param {string | Uint8Array} key - The key to look up.
    * @param {GetOptions} [options]
-   * @param {decompress} [options.decompress] - Whether to decompress the value. Defaults to false.
+   * @param {decompress} [options.decompress=false] - Whether to decompress the value. Defaults to false.
    * @returns {Promise<CacheGet.Response>} -
    * {@link CacheGet.Hit} containing the value if one is found.
    * {@link CacheGet.Miss} if the key does not exist.
@@ -197,8 +201,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string | Uint8Array} value - The value to be stored.
    * @param {SetOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
-   * @param {compress} [options.compress] - Whether to compress the value. Defaults to false.
    * Uses the client's default TTL if this is not supplied.
+   * @param {boolean} [options.compress=false] - Whether to compress the value. Defaults to false.
    * @returns {Promise<CacheSet.Response>} -
    * {@link CacheSet.Success} on success.
    * {@link CacheSet.Error} on failure.
@@ -914,6 +918,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    *
    * @param {string} cacheName - The cache to perform the lookup in.
    * @param {string} dictionaryName - The dictionary to fetch.
+   * @param {DictionaryFetchOptions} [options]
+   * @param {boolean} [options.decompress=false] - Whether to decompress the values. Defaults to false.
    * @returns {Promise<CacheDictionaryFetch.Response>} -
    * {@link CacheDictionaryFetch.Hit} containing the dictionary elements if the
    * dictionary exists.
@@ -922,10 +928,11 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async dictionaryFetch(
     cacheName: string,
-    dictionaryName: string
+    dictionaryName: string,
+    options?: DictionaryFetchOptions
   ): Promise<CacheDictionaryFetch.Response> {
     const client = this.getNextDataClient();
-    return await client.dictionaryFetch(cacheName, dictionaryName);
+    return await client.dictionaryFetch(cacheName, dictionaryName, options);
   }
 
   /**
@@ -965,10 +972,10 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} dictionaryName - The dictionary to add to.
    * @param {string | Uint8Array} field - The field to set.
    * @param {string | Uint8Array} value - The value to store.
-   * @param {DictionarySetFieldOptions} options
+   * @param {DictionarySetFieldOptions} [options]
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
-   * Refreshes the dictionary's TTL using the client's default if this is not
-   * supplied.
+   *  Refreshes the dictionary's TTL using the client's default if this is not supplied.
+   * @param {boolean} [options.compress=false] - Whether to compress the value. Defaults to false.
    * @returns {Promise<CacheDictionarySetField.Response>} -
    * {@link CacheDictionarySetField.Success} on success.
    * {@link CacheDictionarySetField.Error} on failure.
@@ -986,7 +993,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
       dictionaryName,
       field,
       value,
-      options?.ttl
+      options
     );
   }
 
@@ -1002,6 +1009,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the dictionary's TTL using the client's default if this is not
    * supplied.
+   * @param {boolean} [options.compress=false] - Whether to compress the values. Defaults to false.
    * @returns {Promise<CacheDictionarySetFields.Response>} -
    * {@link CacheDictionarySetFields.Success} on success.
    * {@link CacheDictionarySetFields.Error} on failure.
@@ -1013,14 +1021,14 @@ export abstract class AbstractCacheClient implements ICacheClient {
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>
       | Array<[string, string | Uint8Array]>,
-    options?: DictionarySetFieldOptions
+    options?: DictionarySetFieldsOptions
   ): Promise<CacheDictionarySetFields.Response> {
     const client = this.getNextDataClient();
     return await client.dictionarySetFields(
       cacheName,
       dictionaryName,
       elements,
-      options?.ttl
+      options
     );
   }
 
@@ -1030,6 +1038,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the dictionary.
    * @param {string} dictionaryName - The dictionary to look up.
    * @param {string | Uint8Array} field - The field to look up.
+   * @param {DictionaryGetFieldOptions} options
+   * @param {boolean} [options.decompress=false] - Whether to decompress the value. Defaults to false.
    * @returns {Promise<CacheDictionaryGetField.Response>} -
    * {@link CacheDictionaryGetField.Hit} containing the dictionary element if
    * one is found.
@@ -1039,10 +1049,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async dictionaryGetField(
     cacheName: string,
     dictionaryName: string,
-    field: string | Uint8Array
+    field: string | Uint8Array,
+    options?: DictionaryGetFieldOptions
   ): Promise<CacheDictionaryGetField.Response> {
     const client = this.getNextDataClient();
-    return await client.dictionaryGetField(cacheName, dictionaryName, field);
+    return await client.dictionaryGetField(
+      cacheName,
+      dictionaryName,
+      field,
+      options
+    );
   }
 
   /**
@@ -1051,6 +1067,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the dictionary.
    * @param {string} dictionaryName - The dictionary to look up.
    * @param {string[] | Uint8Array[]} fields - The fields to look up.
+   * @param {DictionaryGetFieldsOptions} options
+   * @param {boolean} [options.decompress=false] - Whether to decompress the values. Defaults to false.
    * @returns {Promise<CacheDictionaryGetFields.Response>} -
    * {@link CacheDictionaryGetFields.Hit} containing the dictionary elements if
    * the dictionary exists.
@@ -1060,10 +1078,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async dictionaryGetFields(
     cacheName: string,
     dictionaryName: string,
-    fields: string[] | Uint8Array[]
+    fields: string[] | Uint8Array[],
+    options?: DictionaryGetFieldsOptions
   ): Promise<CacheDictionaryGetFields.Response> {
     const client = this.getNextDataClient();
-    return await client.dictionaryGetFields(cacheName, dictionaryName, fields);
+    return await client.dictionaryGetFields(
+      cacheName,
+      dictionaryName,
+      fields,
+      options
+    );
   }
 
   /**
