@@ -135,6 +135,7 @@ import Equal = common.Equal;
 import NotEqual = common.NotEqual;
 import PresentAndNotEqual = common.PresentAndNotEqual;
 import AbsentOrEqual = common.AbsentOrEqual;
+import {CompressionError} from '../errors/compression-error';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -378,9 +379,7 @@ export class CacheDataClient implements IDataClient {
       );
       if (this.valueCompressor === undefined) {
         return this.cacheServiceErrorMapper.returnOrThrowError(
-          new InvalidArgumentError(
-            'Compressor is not set, but `CacheClient.set` was called with the `compress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
-          ),
+          new CompressionError('CacheClient.set', 'compress'),
           err => new CacheSet.Error(err)
         );
       }
@@ -1452,9 +1451,7 @@ export class CacheDataClient implements IDataClient {
                   if (this.valueCompressor === undefined) {
                     resolve(
                       new CacheGet.Error(
-                        new InvalidArgumentError(
-                          'Compressor is not set, but `CacheClient.get` was called with the `decompress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
-                        )
+                        new CompressionError('CacheClient.Get', 'decompress')
                       )
                     );
                   } else {
@@ -2482,8 +2479,9 @@ export class CacheDataClient implements IDataClient {
               if (this.valueCompressor === undefined) {
                 resolve(
                   new CacheDictionaryFetch.Error(
-                    new InvalidArgumentError(
-                      'Compressor is not set, but `CacheClient.dictionaryFetch` was called with the `decompress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+                    new CompressionError(
+                      'CacheClient.dictionaryFetch',
+                      'decompress'
                     )
                   )
                 );
@@ -2492,8 +2490,9 @@ export class CacheDataClient implements IDataClient {
                   // This check shouldn't be necessary given the one in the outer scope,
                   // but the TypeScript compiler doesn't seem to understand that.
                   if (this.valueCompressor === undefined) {
-                    throw new InvalidArgumentError(
-                      'Compressor is not set, but `CacheClient.dictionaryFetch` was called with the `decompress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+                    throw new CompressionError(
+                      'CacheClient.dictionaryFetch',
+                      'decompress'
                     );
                   }
 
@@ -2559,9 +2558,7 @@ export class CacheDataClient implements IDataClient {
       );
       if (this.valueCompressor === undefined) {
         return this.cacheServiceErrorMapper.returnOrThrowError(
-          new InvalidArgumentError(
-            'Compressor is not set, but `CacheClient.dictionarySetField` was called with the `compress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
-          ),
+          new CompressionError('CacheClient.dictionarySetField', 'compress'),
           err => new CacheDictionarySetField.Error(err)
         );
       }
@@ -2671,9 +2668,7 @@ export class CacheDataClient implements IDataClient {
         );
         if (this.valueCompressor === undefined) {
           return this.cacheServiceErrorMapper.returnOrThrowError(
-            new InvalidArgumentError(
-              'Compressor is not set, but `CacheClient.dictionarySetFields` was called with the `compress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
-            ),
+            new CompressionError('CacheClient.dictionarySetFields', 'compress'),
             err => new CacheDictionarySetFields.Error(err)
           );
         }
@@ -2824,8 +2819,9 @@ export class CacheDataClient implements IDataClient {
                 if (this.valueCompressor === undefined) {
                   resolve(
                     new CacheDictionaryGetField.Error(
-                      new InvalidArgumentError(
-                        'Compressor is not set, but `CacheClient.dictionaryGetField` was called with the `decompress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+                      new CompressionError(
+                        'CacheClient.dictionaryGetField',
+                        'decompress'
                       ),
                       field
                     )
@@ -2930,8 +2926,9 @@ export class CacheDataClient implements IDataClient {
               if (this.valueCompressor === undefined) {
                 resolve(
                   new CacheDictionaryGetFields.Error(
-                    new InvalidArgumentError(
-                      'Compressor is not set, but `CacheClient.dictionaryGetFields` was called with the `decompress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+                    new CompressionError(
+                      'CacheClient.dictionaryGetFields',
+                      'decompress'
                     )
                   )
                 );
@@ -2944,8 +2941,9 @@ export class CacheDataClient implements IDataClient {
                   // This check shouldn't be necessary given the one in the outer scope,
                   // but the TypeScript compiler doesn't seem to understand that.
                   if (this.valueCompressor === undefined) {
-                    throw new InvalidArgumentError(
-                      'Compressor is not set, but `CacheClient.dictionaryGetFields` was called with the `decompress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+                    throw new CompressionError(
+                      'CacheClient.dictionaryGetFields',
+                      'decompress'
                     );
                   }
 
