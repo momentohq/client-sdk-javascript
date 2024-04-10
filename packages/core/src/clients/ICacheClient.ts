@@ -72,6 +72,7 @@ import {
   DictionaryFetchCallOptions,
   DictionarySetFieldCallOptions,
   DictionarySetFieldsCallOptions,
+  SetIfAbsentCallOptions,
 } from '../utils';
 import {IControlClient, IPingClient} from '../internal/clients';
 import {IMomentoCache} from './IMomentoCache';
@@ -80,7 +81,7 @@ import {IMomentoCache} from './IMomentoCache';
 export type SetOptions = SetCallOptions;
 export type GetOptions = GetCallOptions;
 export type SetIfNotExistsOptions = ScalarCallOptions;
-export type SetIfAbsentOptions = ScalarCallOptions;
+export type SetIfAbsentOptions = SetIfAbsentCallOptions;
 export type SetIfPresentOptions = ScalarCallOptions;
 export type SetIfEqualOptions = ScalarCallOptions;
 export type SetIfNotEqualOptions = ScalarCallOptions;

@@ -736,6 +736,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {SetIfAbsentOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
    * Uses the client's default TTL if this is not supplied.
+   * @param {boolean} [options.compress=false] - Whether to compress the value. Defaults to false.
    * @returns {Promise<CacheSetIfAbsent.Response>} -
    * {@link CacheSetIfAbsent.Stored} on storing the new value.
    * {@link CacheSetIfAbsent.NotStored} on not storing the new value.
@@ -748,7 +749,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
     options?: SetIfAbsentOptions
   ): Promise<CacheSetIfAbsent.Response> {
     const client = this.getNextDataClient();
-    return await client.setIfAbsent(cacheName, key, field, options?.ttl);
+    return await client.setIfAbsent(cacheName, key, field, options);
   }
 
   /**

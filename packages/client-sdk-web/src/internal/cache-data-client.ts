@@ -158,6 +158,7 @@ import {
   DictionarySetFieldCallOptions,
   DictionarySetFieldsCallOptions,
   ttlOrFromCacheTtl,
+  SetIfAbsentCallOptions,
 } from '@gomomento/sdk-core/dist/src/utils';
 
 export interface DataClientProps {
@@ -456,8 +457,9 @@ export class CacheDataClient<
     cacheName: string,
     key: string | Uint8Array,
     field: string | Uint8Array,
-    ttl?: number
+    options?: SetIfAbsentCallOptions
   ): Promise<CacheSetIfAbsent.Response> {
+    const ttl = options?.ttl;
     try {
       validateCacheName(cacheName);
       if (ttl !== undefined) {

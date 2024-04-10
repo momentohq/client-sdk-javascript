@@ -3,6 +3,7 @@ import {
   CacheClient,
   CacheGet,
   CacheSet,
+  CacheSetIfAbsent,
   CacheDictionarySetField,
   CacheDictionarySetFields,
   CacheDictionaryGetField,
@@ -108,6 +109,67 @@ describe('CompressorFactory', () => {
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `Expected CacheClient.get to be a hit after CacheClient.set with no compression specified, got: '${getResponse.toString()}'`);
+
+      expect((getResponse as CacheGet.Hit).valueString()).toEqual(testValue);
+    });
+  });
+  describe('Cache.setIfAbsent', () => {
+    it('should return an error if compress is true but compression is not enabled', async () => {
+      const setResponse = await cacheClientWithoutCompressorFactory.setIfAbsent(
+        cacheName,
+        randomString(),
+        testValue,
+        {
+          compress: true,
+        }
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetIfAbsent.Error);
+        expect((setResponse as CacheSetIfAbsent.Error).toString()).toEqual(
+          'Invalid argument passed to Momento client: Compressor is not set, but `CacheClient.setIfAbsent` was called with the `compress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+        );
+      }, `Expected CacheClient.setIfAbsent to return an error if compression is specified without compressor set, but got: ${setResponse.toString()}`);
+    });
+    it('should compress the value if compress is true', async () => {
+      const cacheClient = cacheClientWithDefaultCompressorFactory;
+      const key = randomString();
+      const setResponse = await cacheClient.setIfAbsent(
+        cacheName,
+        key,
+        testValue,
+        {
+          compress: true,
+        }
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetIfAbsent.Stored);
+      }, `Expected CacheClient.setIfAbsent to be a success with compression specified, got: '${setResponse.toString()}'`);
+
+      const getResponse = await cacheClient.get(cacheName, key);
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `Expected CacheClient.get to be a hit after CacheClient.setIfAbsent with compression specified, got: '${getResponse.toString()}'`);
+
+      expect((getResponse as CacheGet.Hit).valueUint8Array()).toEqual(
+        testValueCompressed
+      );
+    });
+    it('should not compress the value if compress is not specified', async () => {
+      const cacheClient = cacheClientWithDefaultCompressorFactory;
+      const key = randomString();
+      const setResponse = await cacheClient.setIfAbsent(
+        cacheName,
+        key,
+        testValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetIfAbsent.Stored);
+      }, `Expected CacheClient.setIfAbsent to be a success with no compression specified, got: '${setResponse.toString()}'`);
+
+      const getResponse = await cacheClient.get(cacheName, key);
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `Expected CacheClient.get to be a hit after CacheClient.setIfAbsent with no compression specified, got: '${getResponse.toString()}'`);
 
       expect((getResponse as CacheGet.Hit).valueString()).toEqual(testValue);
     });
