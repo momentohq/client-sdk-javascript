@@ -1,5 +1,7 @@
 import {GrpcConfiguration, GrpcConfigurationProps} from './grpc-configuration';
 
+const defaultRequestConcurrencyLimit = 100;
+
 export interface TransportStrategy {
   /**
    * Configures the low-level gRPC settings for the Momento client's communication
@@ -51,6 +53,20 @@ export interface TransportStrategy {
    * @returns {TransportStrategy} a new TransportStrategy with the specified max client age.
    */
   withMaxClientAgeMillis(maxClientAgeMillis: number): TransportStrategy;
+
+  /**
+   * @returns {number} the maximum number of concurrent requests that can be made by the client.
+   */
+  getConcurrentRequestsLimit(): number;
+
+  /**
+   * Copy constructor to update the maximum number of concurrent requests that can be made by the client.
+   * @param {number} concurrentRequestsLimit
+   * @returns {TransportStrategy} a new TransportStrategy with the specified concurrent requests limit.
+   */
+  withConcurrentRequestsLimit(
+    concurrentRequestsLimit: number
+  ): TransportStrategy;
 }
 
 export interface TransportStrategyProps {
@@ -79,6 +95,7 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
   private readonly deadlineMillis: number;
   private readonly maxSessionMemoryMb: number;
   private readonly numClients: number;
+  private readonly concurrentRequestsLimit: number;
   private readonly keepAlivePermitWithoutCalls?: number;
   private readonly keepAliveTimeoutMs?: number;
   private readonly keepAliveTimeMs?: number;
@@ -93,6 +110,14 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
     } else {
       // This is the previously hardcoded value and a safe default for most environments.
       this.numClients = 6;
+    }
+    if (
+      props.concurrentRequestsLimit !== undefined &&
+      props.concurrentRequestsLimit !== null
+    ) {
+      this.concurrentRequestsLimit = props.concurrentRequestsLimit;
+    } else {
+      this.concurrentRequestsLimit = defaultRequestConcurrencyLimit;
     }
     this.keepAliveTimeMs = props.keepAliveTimeMs;
     this.keepAliveTimeoutMs = props.keepAliveTimeoutMs;
@@ -156,6 +181,21 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
       numClients: numClients,
     });
   }
+
+  getConcurrentRequestsLimit(): number {
+    return this.concurrentRequestsLimit;
+  }
+
+  withConcurrentRequestsLimit(
+    concurrentRequestsLimit: number
+  ): GrpcConfiguration {
+    return new StaticGrpcConfiguration({
+      deadlineMillis: this.deadlineMillis,
+      maxSessionMemoryMb: this.maxSessionMemoryMb,
+      numClients: this.numClients,
+      concurrentRequestsLimit: concurrentRequestsLimit,
+    });
+  }
 }
 
 export class StaticTransportStrategy implements TransportStrategy {
@@ -208,6 +248,21 @@ export class StaticTransportStrategy implements TransportStrategy {
   withClientTimeoutMillis(clientTimeout: number): StaticTransportStrategy {
     return new StaticTransportStrategy({
       grpcConfiguration: this.grpcConfig.withDeadlineMillis(clientTimeout),
+      maxIdleMillis: this.maxIdleMillis,
+    });
+  }
+
+  getConcurrentRequestsLimit(): number {
+    return this.grpcConfig.getConcurrentRequestsLimit();
+  }
+
+  withConcurrentRequestsLimit(
+    concurrentRequestsLimit: number
+  ): StaticTransportStrategy {
+    return new StaticTransportStrategy({
+      grpcConfiguration: this.grpcConfig.withConcurrentRequestsLimit(
+        concurrentRequestsLimit
+      ),
       maxIdleMillis: this.maxIdleMillis,
     });
   }

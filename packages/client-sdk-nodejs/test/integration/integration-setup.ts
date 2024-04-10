@@ -49,7 +49,7 @@ let _credsProvider: CredentialProvider | undefined = undefined;
 export function credsProvider(): CredentialProvider {
   if (_credsProvider === undefined) {
     _credsProvider = CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'TEST_AUTH_TOKEN',
+      environmentVariableName: 'TEST_API_KEY',
     });
   }
   return _credsProvider;

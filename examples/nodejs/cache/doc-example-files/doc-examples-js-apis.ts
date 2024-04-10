@@ -96,6 +96,8 @@ import {
   SetBatch,
   ReadConcern,
   CacheSetSample,
+  CacheKeyExists,
+  CacheKeysExist,
 } from '@gomomento/sdk';
 import * as crypto from 'crypto';
 
@@ -940,6 +942,28 @@ async function example_API_SortedSetRemoveElements(cacheClient: CacheClient, cac
   }
 }
 
+async function example_API_KeyExists(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.keyExists(cacheName, 'test-key');
+  if (result instanceof CacheKeyExists.Success) {
+    console.log("Does 'test-key' exists in the cache?", result.exists());
+  } else if (result instanceof CacheKeyExists.Error) {
+    throw new Error(
+      `An error occurred while attempting to call keyExists on key 'test-key' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_KeysExist(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.keysExist(cacheName, ['test-key1', 'test-key2']);
+  if (result instanceof CacheKeysExist.Success) {
+    console.log("Do 'test-key1' and 'test-key2' exist in the cache?", result.exists());
+  } else if (result instanceof CacheKeysExist.Error) {
+    throw new Error(
+      `An error occurred while attempting to call keysExist on keys 'test-key1' and 'test-key2' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
 function example_API_InstantiateAuthClient() {
   new AuthClient({
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
@@ -1584,6 +1608,9 @@ async function main() {
     await example_API_SortedSetIncrementScore(cacheClient, cacheName);
     await example_API_SortedSetRemoveElement(cacheClient, cacheName);
     await example_API_SortedSetRemoveElements(cacheClient, cacheName);
+
+    await example_API_KeyExists(cacheClient, cacheName);
+    await example_API_KeysExist(cacheClient, cacheName);
 
     example_API_InstantiateAuthClient();
     const authClient = new AuthClient({

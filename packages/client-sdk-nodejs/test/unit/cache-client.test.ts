@@ -35,7 +35,7 @@ describe('CacheClient', () => {
     const momento = await CacheClient.create({
       configuration: configuration,
       credentialProvider: CredentialProvider.fromEnvironmentVariable({
-        environmentVariableName: 'TEST_AUTH_TOKEN',
+        environmentVariableName: 'TEST_API_KEY',
       }),
       defaultTtlSeconds: 100,
     });
@@ -105,6 +105,39 @@ describe('CacheClient', () => {
         configuration: configuration,
         credentialProvider: credentialProvider,
         defaultTtlSeconds: 10.5,
+      });
+      fail(new Error('Expected InvalidArgumentError to be thrown!'));
+    } catch (e) {
+      if (!(e instanceof InvalidArgumentError)) {
+        fail(new Error('Expected InvalidArgumentError to be thrown!'));
+      }
+    }
+  });
+  it('cannot create a client with concurrent requests limit below 1', async () => {
+    try {
+      const negativeLimitConfig = configuration.withTransportStrategy(
+        configuration.getTransportStrategy().withConcurrentRequestsLimit(-1)
+      );
+      await CacheClient.create({
+        configuration: negativeLimitConfig,
+        credentialProvider: credentialProvider,
+        defaultTtlSeconds: 100,
+      });
+      fail(new Error('Expected InvalidArgumentError to be thrown!'));
+    } catch (e) {
+      if (!(e instanceof InvalidArgumentError)) {
+        fail(new Error('Expected InvalidArgumentError to be thrown!'));
+      }
+    }
+
+    try {
+      const zeroLimitConfig = configuration.withTransportStrategy(
+        configuration.getTransportStrategy().withConcurrentRequestsLimit(0)
+      );
+      await CacheClient.create({
+        configuration: zeroLimitConfig,
+        credentialProvider: credentialProvider,
+        defaultTtlSeconds: 100,
       });
       fail(new Error('Expected InvalidArgumentError to be thrown!'));
     } catch (e) {

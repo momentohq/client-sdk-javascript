@@ -12,6 +12,8 @@ import {
 import {CacheClientProps, EagerCacheClientProps} from './cache-client-props';
 import {
   range,
+  Semaphore,
+  validateConcurrentRequestsLimit,
   validateTimeout,
   validateTtlSeconds,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
@@ -33,6 +35,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
   private readonly logger: MomentoLogger;
   private readonly notYetAbstractedControlClient: CacheControlClient;
   private readonly _configuration: Configuration;
+  private dataRequestConcurrencySemaphore: Semaphore;
 
   /**
    * Creates an instance of CacheClient.
@@ -47,6 +50,13 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
       configuration: configuration,
     };
 
+    const numConcurrentRequests = configuration
+      .getTransportStrategy()
+      .getGrpcConfig()
+      .getConcurrentRequestsLimit();
+    validateConcurrentRequestsLimit(numConcurrentRequests);
+    const semaphore = new Semaphore(numConcurrentRequests);
+
     const controlClient = new CacheControlClient({
       configuration: configuration,
       credentialProvider: props.credentialProvider,
@@ -57,17 +67,19 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
       .getGrpcConfig()
       .getNumClients();
     const dataClients = range(numClients).map(
-      (_, id) => new CacheDataClient(propsWithConfig, String(id))
+      (_, id) => new CacheDataClient(propsWithConfig, String(id), semaphore)
     );
     super(controlClient, dataClients);
     this._configuration = configuration;
     this.notYetAbstractedControlClient = controlClient;
+    this.dataRequestConcurrencySemaphore = semaphore;
 
     this.logger = configuration.getLoggerFactory().getLogger(this);
     this.logger.debug('Creating Momento CacheClient');
   }
 
   public close() {
+    this.dataRequestConcurrencySemaphore.purge();
     this.controlClient.close();
     this.dataClients.map(dc => dc.close());
     this._configuration.getMiddlewares().map(m => {

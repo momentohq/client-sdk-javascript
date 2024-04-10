@@ -17,6 +17,14 @@ export interface GrpcConfigurationProps {
   numClients?: number;
 
   /**
+   * The maximum number of concurrent requests that can be made to the server.
+   * This limit is independent of the number of internal clients, meaning this limit is the maximum
+   * number of requests that will be made concurrently across all of the internal clients.
+   * If this is not set, it will default to the defaultRequestConcurrencyLimit.
+   */
+  concurrentRequestsLimit?: number;
+
+  /**
    * Indicates if it permissible to send keepalive pings from the client without any outstanding streams.
    *
    * NOTE: keep-alives are very important for long-lived server environments where there may be periods of time
@@ -152,4 +160,18 @@ export interface GrpcConfiguration {
    * @returns {GrpcConfiguration} a new GrpcConfiguration with the specified number of clients
    */
   withNumClients(numClients: number): GrpcConfiguration;
+
+  /**
+   * @returns {number} the maximum number of concurrent requests that can be made to the server.
+   */
+  getConcurrentRequestsLimit(): number;
+
+  /**
+   * Copy constructor for overriding the maximum number of concurrent requests
+   * @param {number} concurrentRequestsLimit the maximum number of concurrent requests that can be made to the server
+   * @returns {GrpcConfiguration} a new GrpcConfiguration with the specified maximum number of concurrent requests
+   */
+  withConcurrentRequestsLimit(
+    concurrentRequestsLimit: number
+  ): GrpcConfiguration;
 }

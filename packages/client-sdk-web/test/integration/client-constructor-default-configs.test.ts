@@ -23,7 +23,7 @@ describe('default configurations', () => {
   it('CacheClient should be able to be constructed with a simple string for env var', () => {
     const cacheClientViaConstructor = new CacheClient({
       credentialProvider:
-        CredentialProvider.fromEnvironmentVariable('TEST_AUTH_TOKEN'),
+        CredentialProvider.fromEnvironmentVariable('TEST_API_KEY'),
       defaultTtlSeconds: 60,
     });
     expect(cacheClientViaConstructor).toBeInstanceOf(CacheClient);
@@ -31,7 +31,7 @@ describe('default configurations', () => {
 
   it('CacheClient should be able to be constructed with a simple string for env var, using short function name', () => {
     const cacheClientViaConstructor = new CacheClient({
-      credentialProvider: CredentialProvider.fromEnvVar('TEST_AUTH_TOKEN'),
+      credentialProvider: CredentialProvider.fromEnvVar('TEST_API_KEY'),
       defaultTtlSeconds: 60,
     });
     expect(cacheClientViaConstructor).toBeInstanceOf(CacheClient);

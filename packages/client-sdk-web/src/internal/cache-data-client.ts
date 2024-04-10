@@ -153,7 +153,12 @@ import {
   Equal,
   NotEqual,
 } from '@gomomento/generated-types-webtext/dist/common_pb';
-import {SetCallOptions} from '@gomomento/sdk-core/dist/src/utils';
+import {
+  SetCallOptions,
+  DictionarySetFieldCallOptions,
+  DictionarySetFieldsCallOptions,
+  ttlOrFromCacheTtl,
+} from '@gomomento/sdk-core/dist/src/utils';
 
 export interface DataClientProps {
   configuration: Configuration;
@@ -2195,7 +2200,7 @@ export class CacheDataClient<
     dictionaryName: string,
     field: string | Uint8Array,
     value: string | Uint8Array,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    options?: DictionarySetFieldCallOptions
   ): Promise<CacheDictionarySetField.Response> {
     try {
       validateCacheName(cacheName);
@@ -2206,6 +2211,9 @@ export class CacheDataClient<
         err => new CacheDictionarySetField.Error(err)
       );
     }
+
+    const ttl = ttlOrFromCacheTtl(options);
+
     this.logger.trace(
       `Issuing 'dictionarySetField' request; field: ${field.toString()}, value length: ${
         value.length
@@ -2272,7 +2280,7 @@ export class CacheDataClient<
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>
       | Array<[string, string | Uint8Array]>,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    options?: DictionarySetFieldsCallOptions
   ): Promise<CacheDictionarySetFields.Response> {
     try {
       validateCacheName(cacheName);
@@ -2283,6 +2291,9 @@ export class CacheDataClient<
         err => new CacheDictionarySetFields.Error(err)
       );
     }
+
+    const ttl = ttlOrFromCacheTtl(options);
+
     this.logger.trace(
       `Issuing 'dictionarySetFields' request; elements: ${elements.toString()}, ttl: ${
         ttl.ttlSeconds.toString() ?? 'null'
