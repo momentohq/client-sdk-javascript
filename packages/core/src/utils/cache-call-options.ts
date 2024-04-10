@@ -28,6 +28,10 @@ export interface SetCallOptions
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface GetCallOptions extends DecompressableCallOptions {}
 
+export interface SetIfAbsentCallOptions
+  extends ScalarCallOptions,
+    CompressableCallOptions {}
+
 export interface CollectionCallOptions {
   /**
    * The length of the TTL and whether it should be refreshed when the collection is modified.

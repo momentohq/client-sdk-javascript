@@ -123,6 +123,7 @@ import {
   DictionarySetFieldsCallOptions,
   GetCallOptions,
   SetCallOptions,
+  SetIfAbsentCallOptions,
   ttlOrFromCacheTtl,
 } from '@gomomento/sdk-core/dist/src/utils';
 import grpcCache = cache.cache_client;
@@ -785,8 +786,9 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     key: string | Uint8Array,
     value: string | Uint8Array,
-    ttl?: number
+    options?: SetIfAbsentCallOptions
   ): Promise<CacheSetIfAbsent.Response> {
+    const ttl = options?.ttl;
     try {
       validateCacheName(cacheName);
       if (ttl !== undefined) {
@@ -806,10 +808,31 @@ export class CacheDataClient implements IDataClient {
           ttl?.toString() ?? 'null'
         }`
       );
+
+      let encodedValue = this.convert(value);
+      if (options?.compress) {
+        this.logger.trace(
+          'CacheClient.setIfAbsent; compression enabled, calling value compressor'
+        );
+        if (this.valueCompressor === undefined) {
+          return this.cacheServiceErrorMapper.returnOrThrowError(
+            new InvalidArgumentError(
+              'Compressor is not set, but `CacheClient.setIfAbsent` was called with the `compress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+            ),
+            err => new CacheSetIfAbsent.Error(err)
+          );
+        }
+        encodedValue = await this.valueCompressor.compress(
+          this.configuration.getCompressionStrategy()?.compressionLevel ??
+            CompressionLevel.Balanced,
+          encodedValue
+        );
+      }
+
       const result = await this.sendSetIfAbsent(
         cacheName,
         this.convert(key),
-        this.convert(value),
+        encodedValue,
         ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
       );
       this.logger.trace(`'setIfAbsent' request result: ${result.toString()}`);

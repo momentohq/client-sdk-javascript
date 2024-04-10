@@ -63,6 +63,7 @@ import {
   DictionaryGetFieldsCallOptions,
   DictionarySetFieldCallOptions,
   DictionarySetFieldsCallOptions,
+  SetIfAbsentCallOptions,
 } from '../../../utils';
 
 export interface IDataClient {
@@ -97,7 +98,7 @@ export interface IDataClient {
     cacheName: string,
     key: string | Uint8Array,
     field: string | Uint8Array,
-    ttl?: number
+    options?: SetIfAbsentCallOptions
   ): Promise<CacheSetIfAbsent.Response>;
   setIfPresent(
     cacheName: string,
