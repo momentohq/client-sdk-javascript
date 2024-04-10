@@ -13,6 +13,7 @@ import {
 } from '@gomomento/sdk';
 import {CompressorFactory} from '../../src';
 import {v4} from 'uuid';
+import {CompressionError} from '@gomomento/sdk/dist/src/errors/compression-error';
 
 const {cacheClientPropsWithConfig, cacheName} = setupIntegrationTest();
 
@@ -75,7 +76,10 @@ describe('CompressorFactory', () => {
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSet.Error);
         expect((setResponse as CacheSet.Error).toString()).toEqual(
-          'Invalid argument passed to Momento client: Compressor is not set, but `CacheClient.set` was called with the `compress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+          new CompressionError(
+            'CacheClient.set',
+            'compress'
+          ).wrappedErrorMessage()
         );
       }, `Expected CacheClient.set to return an error if compression is specified without compressor set, but got: ${setResponse.toString()}`);
     });
@@ -201,7 +205,10 @@ describe('CompressorFactory', () => {
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Error);
         expect((getResponse as CacheGet.Error).toString()).toEqual(
-          'Invalid argument passed to Momento client: Compressor is not set, but `CacheClient.get` was called with the `decompress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+          new CompressionError(
+            'CacheClient.Get',
+            'decompress'
+          ).wrappedErrorMessage()
         );
       }, `Expected CacheClient.get to return an error if decompression is specified without compressor set, but got: ${getResponse.toString()}`);
     });
@@ -281,7 +288,10 @@ describe('CompressorFactory', () => {
         expect(
           (setResponse as CacheDictionarySetField.Error).toString()
         ).toEqual(
-          'Invalid argument passed to Momento client: Compressor is not set, but `CacheClient.dictionarySetField` was called with the `compress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+          new CompressionError(
+            'CacheClient.dictionarySetField',
+            'compress'
+          ).wrappedErrorMessage()
         );
       }, `Expected CacheClient.dictionarySetField to return an error if compression is specified without compressor set, but got: ${setResponse.toString()}`);
     });
@@ -382,7 +392,10 @@ describe('CompressorFactory', () => {
         expect(
           (getResponse as CacheDictionaryGetField.Error).toString()
         ).toEqual(
-          'Invalid argument passed to Momento client: Compressor is not set, but `CacheClient.dictionaryGetField` was called with the `decompress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+          new CompressionError(
+            'CacheClient.dictionaryGetField',
+            'decompress'
+          ).wrappedErrorMessage()
         );
       }, `Expected CacheClient.dictionaryGetField to return an error if decompression is specified without compressor set, but got: ${getResponse.toString()}`);
     });
@@ -495,7 +508,10 @@ describe('CompressorFactory', () => {
         expect(
           (setResponse as CacheDictionarySetFields.Error).toString()
         ).toEqual(
-          'Invalid argument passed to Momento client: Compressor is not set, but `CacheClient.dictionarySetFields` was called with the `compress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+          new CompressionError(
+            'CacheClient.dictionarySetFields',
+            'compress'
+          ).wrappedErrorMessage()
         );
       }, `Expected CacheClient.dictionarySetFields to return an error if compression is specified without compressor set, but got: ${setResponse.toString()}`);
     });
@@ -612,7 +628,10 @@ describe('CompressorFactory', () => {
         expect(
           (getResponse as CacheDictionaryGetFields.Error).toString()
         ).toEqual(
-          'Invalid argument passed to Momento client: Compressor is not set, but `CacheClient.dictionaryGetFields` was called with the `decompress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+          new CompressionError(
+            'CacheClient.dictionaryGetFields',
+            'decompress'
+          ).wrappedErrorMessage()
         );
       }, `Expected CacheClient.dictionaryGetFields to return an error if decompression is specified without compressor set, but got: ${getResponse.toString()}`);
     });
@@ -760,7 +779,10 @@ describe('CompressorFactory', () => {
         expect(
           (fetchResponse as CacheDictionaryFetch.Error).toString()
         ).toEqual(
-          'Invalid argument passed to Momento client: Compressor is not set, but `CacheClient.dictionaryFetch` was called with the `decompress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+          new CompressionError(
+            'CacheClient.dictionaryFetch',
+            'decompress'
+          ).wrappedErrorMessage()
         );
       }, `Expected CacheClient.dictionaryFetch to return an error if decompression is specified without compressor set, but got: ${fetchResponse.toString()}`);
     });
