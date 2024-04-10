@@ -2576,7 +2576,7 @@ export class CacheDataClient implements IDataClient {
       await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'dictionarySetField' request; field: ${field.toString()}, value length: ${
-          value.length
+          encodedValue.length
         }, ttl: ${ttl.ttlSeconds.toString() ?? 'null'}`
       );
 
