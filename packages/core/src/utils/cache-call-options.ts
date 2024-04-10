@@ -7,13 +7,26 @@ export interface ScalarCallOptions {
   ttl?: number;
 }
 
-export interface SetCallOptions extends ScalarCallOptions {
+export interface CompressableCallOptions {
+  /**
+   * Whether to compress the data.
+   */
   compress?: boolean;
 }
 
-export interface GetCallOptions {
+export interface DecompressableCallOptions {
+  /**
+   * Whether to decompress the data.
+   */
   decompress?: boolean;
 }
+
+export interface SetCallOptions
+  extends ScalarCallOptions,
+    CompressableCallOptions {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface GetCallOptions extends DecompressableCallOptions {}
 
 export interface CollectionCallOptions {
   /**
@@ -21,6 +34,37 @@ export interface CollectionCallOptions {
    */
   ttl?: CollectionTtl;
 }
+
+/**
+ * Returns the TTL from the options or refresh with the cache TTL.
+ *
+ * @param options The options to get the TTL from.
+ * @returns The TTL from the options or a default value.
+ */
+export function ttlOrFromCacheTtl(
+  options?: CollectionCallOptions
+): CollectionTtl {
+  return options?.ttl ?? CollectionTtl.fromCacheTtl();
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface DictionaryGetFieldCallOptions
+  extends DecompressableCallOptions {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface DictionaryGetFieldsCallOptions
+  extends DecompressableCallOptions {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface DictionaryFetchCallOptions extends DecompressableCallOptions {}
+
+export interface DictionarySetFieldCallOptions
+  extends CollectionCallOptions,
+    CompressableCallOptions {}
+
+export interface DictionarySetFieldsCallOptions
+  extends CollectionCallOptions,
+    CompressableCallOptions {}
 
 export interface FrontTruncatableCallOptions extends CollectionCallOptions {
   /**

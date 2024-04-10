@@ -55,7 +55,15 @@ import {
   CacheSetIfAbsentOrEqual,
   CacheSetSample,
 } from '../../../index';
-import {GetCallOptions, SetCallOptions} from '../../../utils';
+import {
+  GetCallOptions,
+  SetCallOptions,
+  DictionaryFetchCallOptions,
+  DictionaryGetFieldCallOptions,
+  DictionaryGetFieldsCallOptions,
+  DictionarySetFieldCallOptions,
+  DictionarySetFieldsCallOptions,
+} from '../../../utils';
 
 export interface IDataClient {
   get(
@@ -216,7 +224,7 @@ export interface IDataClient {
     dictionaryName: string,
     field: string | Uint8Array,
     value: string | Uint8Array,
-    ttl?: CollectionTtl
+    options?: DictionarySetFieldCallOptions
   ): Promise<CacheDictionarySetField.Response>;
   dictionarySetFields(
     cacheName: string,
@@ -225,21 +233,24 @@ export interface IDataClient {
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>
       | Array<[string, string | Uint8Array]>,
-    ttl?: CollectionTtl
+    options?: DictionarySetFieldsCallOptions
   ): Promise<CacheDictionarySetFields.Response>;
   dictionaryGetField(
     cacheName: string,
     dictionaryName: string,
-    field: string | Uint8Array
+    field: string | Uint8Array,
+    options?: DictionaryGetFieldCallOptions
   ): Promise<CacheDictionaryGetField.Response>;
   dictionaryGetFields(
     cacheName: string,
     dictionaryName: string,
-    fields: string[] | Uint8Array[]
+    fields: string[] | Uint8Array[],
+    options?: DictionaryGetFieldsCallOptions
   ): Promise<CacheDictionaryGetFields.Response>;
   dictionaryFetch(
     cacheName: string,
-    dictionaryName: string
+    dictionaryName: string,
+    options?: DictionaryFetchCallOptions
   ): Promise<CacheDictionaryFetch.Response>;
   dictionaryIncrement(
     cacheName: string,
