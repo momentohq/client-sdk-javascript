@@ -116,15 +116,9 @@ import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {ConnectionError} from '@gomomento/sdk-core/dist/src/errors';
 import {common} from '@gomomento/generated-types/dist/common';
 import {
-  DictionaryFetchCallOptions,
-  DictionaryGetFieldCallOptions,
-  DictionaryGetFieldsCallOptions,
-  DictionarySetFieldCallOptions,
-  DictionarySetFieldsCallOptions,
   GetCallOptions,
   SetCallOptions,
   SetIfAbsentCallOptions,
-  ttlOrFromCacheTtl,
 } from '@gomomento/sdk-core/dist/src/utils';
 import grpcCache = cache.cache_client;
 import ECacheResult = cache_client.ECacheResult;
@@ -2446,8 +2440,7 @@ export class CacheDataClient implements IDataClient {
 
   public async dictionaryFetch(
     cacheName: string,
-    dictionaryName: string,
-    options?: DictionaryFetchCallOptions
+    dictionaryName: string
   ): Promise<CacheDictionaryFetch.Response> {
     try {
       validateCacheName(cacheName);
@@ -2466,8 +2459,7 @@ export class CacheDataClient implements IDataClient {
       );
       const result = await this.sendDictionaryFetch(
         cacheName,
-        this.convert(dictionaryName),
-        options
+        this.convert(dictionaryName)
       );
       this.logger.trace(
         `'dictionaryFetch' request result: ${result.toString()}`
@@ -2480,8 +2472,7 @@ export class CacheDataClient implements IDataClient {
 
   private async sendDictionaryFetch(
     cacheName: string,
-    dictionaryName: Uint8Array,
-    options?: DictionaryFetchCallOptions
+    dictionaryName: Uint8Array
   ): Promise<CacheDictionaryFetch.Response> {
     const request = new grpcCache._DictionaryFetchRequest({
       dictionary_name: dictionaryName,
@@ -2496,50 +2487,7 @@ export class CacheDataClient implements IDataClient {
         },
         (err, resp) => {
           if (resp?.found) {
-            if (!options?.decompress) {
-              resolve(new CacheDictionaryFetch.Hit(resp.found.items));
-            } else {
-              if (this.valueCompressor === undefined) {
-                resolve(
-                  new CacheDictionaryFetch.Error(
-                    new CompressionError(
-                      'CacheClient.dictionaryFetch',
-                      'decompress'
-                    )
-                  )
-                );
-              } else {
-                const decompressedItemPromises = resp.found.items.map(item => {
-                  // This check shouldn't be necessary given the one in the outer scope,
-                  // but the TypeScript compiler doesn't seem to understand that.
-                  if (this.valueCompressor === undefined) {
-                    throw new CompressionError(
-                      'CacheClient.dictionaryFetch',
-                      'decompress'
-                    );
-                  }
-
-                  return this.valueCompressor
-                    .decompressIfCompressed(item.value)
-                    .then(v => {
-                      item.value = v;
-                      return item;
-                    })
-                    .catch(e => {
-                      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                      throw new InvalidArgumentError(`${e}`);
-                    });
-                });
-
-                Promise.all(decompressedItemPromises)
-                  .then(items => {
-                    resolve(new CacheDictionaryFetch.Hit(items));
-                  })
-                  .catch((e: InvalidArgumentError) => {
-                    resolve(new CacheDictionaryFetch.Error(e));
-                  });
-              }
-            }
+            resolve(new CacheDictionaryFetch.Hit(resp.found.items));
           } else if (resp?.missing) {
             resolve(new CacheDictionaryFetch.Miss());
           } else {
@@ -2560,7 +2508,7 @@ export class CacheDataClient implements IDataClient {
     dictionaryName: string,
     field: string | Uint8Array,
     value: string | Uint8Array,
-    options?: DictionarySetFieldCallOptions
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheDictionarySetField.Response> {
     try {
       validateCacheName(cacheName);
@@ -2572,31 +2520,11 @@ export class CacheDataClient implements IDataClient {
       );
     }
 
-    const ttl = ttlOrFromCacheTtl(options);
-
-    let encodedValue = this.convert(value);
-    if (options?.compress) {
-      this.logger.trace(
-        'CacheClient.dictionarySetField; compression enabled, calling value compressor'
-      );
-      if (this.valueCompressor === undefined) {
-        return this.cacheServiceErrorMapper.returnOrThrowError(
-          new CompressionError('CacheClient.dictionarySetField', 'compress'),
-          err => new CacheDictionarySetField.Error(err)
-        );
-      }
-      encodedValue = await this.valueCompressor.compress(
-        this.configuration.getCompressionStrategy()?.compressionLevel ??
-          CompressionLevel.Balanced,
-        encodedValue
-      );
-    }
-
     try {
       await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'dictionarySetField' request; field: ${field.toString()}, value length: ${
-          encodedValue.length
+          value.length
         }, ttl: ${ttl.ttlSeconds.toString() ?? 'null'}`
       );
 
@@ -2604,7 +2532,7 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(dictionaryName),
         this.convert(field),
-        encodedValue,
+        this.convert(value),
         ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
         ttl.refreshTtl()
       );
@@ -2662,7 +2590,7 @@ export class CacheDataClient implements IDataClient {
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>
       | Array<[string, string | Uint8Array]>,
-    options?: DictionarySetFieldsCallOptions
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheDictionarySetFields.Response> {
     try {
       validateCacheName(cacheName);
@@ -2674,8 +2602,6 @@ export class CacheDataClient implements IDataClient {
       );
     }
 
-    const ttl = ttlOrFromCacheTtl(options);
-
     try {
       await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
@@ -2685,24 +2611,6 @@ export class CacheDataClient implements IDataClient {
       );
 
       const dictionaryFieldValuePairs = this.convertElements(elements);
-      if (options?.compress) {
-        this.logger.trace(
-          'CacheClient.dictionarySetFields; compression enabled, calling value compressor'
-        );
-        if (this.valueCompressor === undefined) {
-          return this.cacheServiceErrorMapper.returnOrThrowError(
-            new CompressionError('CacheClient.dictionarySetFields', 'compress'),
-            err => new CacheDictionarySetFields.Error(err)
-          );
-        }
-        for (const pair of dictionaryFieldValuePairs) {
-          pair.value = await this.valueCompressor.compress(
-            this.configuration.getCompressionStrategy()?.compressionLevel ??
-              CompressionLevel.Balanced,
-            pair.value
-          );
-        }
-      }
 
       const result = await this.sendDictionarySetFields(
         cacheName,
@@ -2761,8 +2669,7 @@ export class CacheDataClient implements IDataClient {
   public async dictionaryGetField(
     cacheName: string,
     dictionaryName: string,
-    field: string | Uint8Array,
-    options?: DictionaryGetFieldCallOptions
+    field: string | Uint8Array
   ): Promise<CacheDictionaryGetField.Response> {
     try {
       validateCacheName(cacheName);
@@ -2782,8 +2689,7 @@ export class CacheDataClient implements IDataClient {
       const result = await this.sendDictionaryGetField(
         cacheName,
         this.convert(dictionaryName),
-        this.convert(field),
-        options
+        this.convert(field)
       );
       this.logger.trace(
         `'dictionaryGetField' request result: ${result.toString()}`
@@ -2797,8 +2703,7 @@ export class CacheDataClient implements IDataClient {
   private async sendDictionaryGetField(
     cacheName: string,
     dictionaryName: Uint8Array,
-    field: Uint8Array,
-    options?: DictionaryGetFieldCallOptions
+    field: Uint8Array
   ): Promise<CacheDictionaryGetField.Response> {
     const request = new grpcCache._DictionaryGetRequest({
       dictionary_name: dictionaryName,
@@ -2831,41 +2736,12 @@ export class CacheDataClient implements IDataClient {
             ) {
               resolve(new CacheDictionaryGetField.Miss(field));
             } else {
-              if (!options?.decompress) {
-                resolve(
-                  new CacheDictionaryGetField.Hit(
-                    resp?.found.items[0].cache_body,
-                    field
-                  )
-                );
-              } else {
-                if (this.valueCompressor === undefined) {
-                  resolve(
-                    new CacheDictionaryGetField.Error(
-                      new CompressionError(
-                        'CacheClient.dictionaryGetField',
-                        'decompress'
-                      ),
-                      field
-                    )
-                  );
-                } else {
-                  this.valueCompressor
-                    .decompressIfCompressed(resp?.found.items[0].cache_body)
-                    .then(v => {
-                      resolve(new CacheDictionaryGetField.Hit(v, field));
-                    })
-                    .catch(e =>
-                      resolve(
-                        new CacheDictionaryGetField.Error(
-                          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                          new InvalidArgumentError(`${e}`),
-                          field
-                        )
-                      )
-                    );
-                }
-              }
+              resolve(
+                new CacheDictionaryGetField.Hit(
+                  resp?.found.items[0].cache_body,
+                  field
+                )
+              );
             }
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
@@ -2884,8 +2760,7 @@ export class CacheDataClient implements IDataClient {
   public async dictionaryGetFields(
     cacheName: string,
     dictionaryName: string,
-    fields: string[] | Uint8Array[],
-    options?: DictionaryGetFieldsCallOptions
+    fields: string[] | Uint8Array[]
   ): Promise<CacheDictionaryGetFields.Response> {
     try {
       validateCacheName(cacheName);
@@ -2905,8 +2780,7 @@ export class CacheDataClient implements IDataClient {
       const result = await this.sendDictionaryGetFields(
         cacheName,
         this.convert(dictionaryName),
-        this.convertArray(fields),
-        options
+        this.convertArray(fields)
       );
       this.logger.trace(
         `'dictionaryGetFields' request result: ${result.toString()}`
@@ -2920,8 +2794,7 @@ export class CacheDataClient implements IDataClient {
   private async sendDictionaryGetFields(
     cacheName: string,
     dictionaryName: Uint8Array,
-    fields: Uint8Array[],
-    options?: DictionaryGetFieldsCallOptions
+    fields: Uint8Array[]
   ): Promise<CacheDictionaryGetFields.Response> {
     const request = new grpcCache._DictionaryGetRequest({
       dictionary_name: dictionaryName,
@@ -2942,57 +2815,7 @@ export class CacheDataClient implements IDataClient {
               const result = this.convertECacheResult(item.result);
               return new _DictionaryGetResponsePart(result, item.cache_body);
             });
-
-            if (!options?.decompress) {
-              resolve(new CacheDictionaryGetFields.Hit(items, fields));
-            } else {
-              if (this.valueCompressor === undefined) {
-                resolve(
-                  new CacheDictionaryGetFields.Error(
-                    new CompressionError(
-                      'CacheClient.dictionaryGetFields',
-                      'decompress'
-                    )
-                  )
-                );
-              } else {
-                const decompressedItemPromises = items.map(item => {
-                  if (item.result === _ECacheResult.Miss) {
-                    return Promise.resolve(item);
-                  }
-
-                  // This check shouldn't be necessary given the one in the outer scope,
-                  // but the TypeScript compiler doesn't seem to understand that.
-                  if (this.valueCompressor === undefined) {
-                    throw new CompressionError(
-                      'CacheClient.dictionaryGetFields',
-                      'decompress'
-                    );
-                  }
-
-                  return this.valueCompressor
-                    .decompressIfCompressed(item.cacheBody)
-                    .then(v => new _DictionaryGetResponsePart(item.result, v))
-                    .catch(e => {
-                      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                      throw new InvalidArgumentError(`${e}`);
-                    });
-                });
-
-                Promise.all(decompressedItemPromises)
-                  .then(decompressedItems => {
-                    resolve(
-                      new CacheDictionaryGetFields.Hit(
-                        decompressedItems,
-                        fields
-                      )
-                    );
-                  })
-                  .catch((e: InvalidArgumentError) => {
-                    resolve(new CacheDictionaryGetFields.Error(e));
-                  });
-              }
-            }
+            resolve(new CacheDictionaryGetFields.Hit(items, fields));
           } else if (resp?.dictionary === 'missing') {
             resolve(new CacheDictionaryGetFields.Miss());
           } else {

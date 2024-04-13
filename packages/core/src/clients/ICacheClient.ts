@@ -67,11 +67,6 @@ import {
   SortedSetLengthByScoreCallOptions,
   SetCallOptions,
   GetCallOptions,
-  DictionaryGetFieldCallOptions,
-  DictionaryGetFieldsCallOptions,
-  DictionaryFetchCallOptions,
-  DictionarySetFieldCallOptions,
-  DictionarySetFieldsCallOptions,
   SetIfAbsentCallOptions,
 } from '../utils';
 import {IControlClient, IPingClient} from '../internal/clients';
@@ -94,11 +89,8 @@ export type ListPushBackOptions = FrontTruncatableCallOptions;
 export type ListPushFrontOptions = BackTruncatableCallOptions;
 export type SetAddElementOptions = CollectionCallOptions;
 export type SetAddElementsOptions = CollectionCallOptions;
-export type DictionaryGetFieldOptions = DictionaryGetFieldCallOptions;
-export type DictionaryGetFieldsOptions = DictionaryGetFieldsCallOptions;
-export type DictionaryFetchOptions = DictionaryFetchCallOptions;
-export type DictionarySetFieldOptions = DictionarySetFieldCallOptions;
-export type DictionarySetFieldsOptions = DictionarySetFieldsCallOptions;
+export type DictionarySetFieldOptions = CollectionCallOptions;
+export type DictionarySetFieldsOptions = CollectionCallOptions;
 export type DictionaryIncrementOptions = CollectionCallOptions;
 export type IncrementOptions = ScalarCallOptions;
 export type SortedSetPutElementOptions = CollectionCallOptions;
@@ -290,8 +282,7 @@ export interface ICacheClient extends IControlClient, IPingClient {
   dictionaryGetField(
     cacheName: string,
     dictionaryName: string,
-    field: string | Uint8Array,
-    options?: DictionaryGetFieldOptions
+    field: string | Uint8Array
   ): Promise<CacheDictionaryGetField.Response>;
   dictionaryGetFields(
     cacheName: string,
