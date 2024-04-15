@@ -1,9 +1,9 @@
 import {
   CacheGet,
   CacheSet,
-  GetBatch,
+  CacheGetBatch,
   ICacheClient,
-  SetBatch,
+  CacheSetBatch,
 } from '@gomomento/sdk-core';
 import {expectWithMessage} from './common-int-test-utils';
 import {delay} from './auth-client';
@@ -23,11 +23,11 @@ export function runBatchGetSetTests(
 
       // Check get batch response
       expectWithMessage(() => {
-        expect(response).toBeInstanceOf(GetBatch.Success);
+        expect(response).toBeInstanceOf(CacheGetBatch.Success);
       }, `expected SUCCESS for keys ${keys.toString()}, received ${response.toString()}`);
 
       // Check each response in the batch
-      const getResults = (response as GetBatch.Success).results();
+      const getResults = (response as CacheGetBatch.Success).results();
       expectWithMessage(() => {
         expect(getResults.length).toEqual(keys.length);
       }, `expected non-empty results, received ${getResults.toString()}`);
@@ -54,11 +54,11 @@ export function runBatchGetSetTests(
         items
       );
       expectWithMessage(() => {
-        expect(response).toBeInstanceOf(SetBatch.Success);
+        expect(response).toBeInstanceOf(CacheSetBatch.Success);
       }, `expected SUCCESS, received ${response.toString()}`);
 
       // Check each response in the set batch
-      const setResults = (response as SetBatch.Success).results();
+      const setResults = (response as CacheSetBatch.Success).results();
       const keys = [...items.keys()];
       expectWithMessage(() => {
         expect(setResults.length).toEqual(keys.length);
@@ -87,11 +87,11 @@ export function runBatchGetSetTests(
         {ttl: 3}
       );
       expectWithMessage(() => {
-        expect(response).toBeInstanceOf(SetBatch.Success);
+        expect(response).toBeInstanceOf(CacheSetBatch.Success);
       }, `expected SUCCESS, received ${response.toString()}`);
 
       // Check each response in the set batch
-      const setResults = (response as SetBatch.Success).results();
+      const setResults = (response as CacheSetBatch.Success).results();
       const keys = [...items.keys()];
       expectWithMessage(() => {
         expect(setResults.length).toEqual(keys.length);
@@ -111,11 +111,11 @@ export function runBatchGetSetTests(
         keys
       );
       expectWithMessage(() => {
-        expect(getResponse).toBeInstanceOf(GetBatch.Success);
+        expect(getResponse).toBeInstanceOf(CacheGetBatch.Success);
       }, `expected SUCCESS for keys ${keys.toString()}, received ${getResponse.toString()}`);
 
       // Check each response in the get batch
-      const getResults = (getResponse as GetBatch.Success).results();
+      const getResults = (getResponse as CacheGetBatch.Success).results();
       expectWithMessage(() => {
         expect(getResults.length).toEqual(keys.length);
       }, `expected non-empty results, received ${getResults.toString()}`);
@@ -142,11 +142,11 @@ export function runBatchGetSetTests(
         items
       );
       expectWithMessage(() => {
-        expect(setResponse).toBeInstanceOf(SetBatch.Success);
+        expect(setResponse).toBeInstanceOf(CacheSetBatch.Success);
       }, `expected SUCCESS, received ${setResponse.toString()}`);
 
       // Check each response in the set batch
-      const setResults = (setResponse as SetBatch.Success).results();
+      const setResults = (setResponse as CacheSetBatch.Success).results();
       const keys = [...items.keys()];
       expectWithMessage(() => {
         expect(setResults.length).toEqual(keys.length);
@@ -164,11 +164,11 @@ export function runBatchGetSetTests(
         keys
       );
       expectWithMessage(() => {
-        expect(getResponse).toBeInstanceOf(GetBatch.Success);
+        expect(getResponse).toBeInstanceOf(CacheGetBatch.Success);
       }, `expected SUCCESS for keys ${keys.toString()}, received ${getResponse.toString()}`);
 
       // Check each response in the get batch
-      const getResults = (getResponse as GetBatch.Success).results();
+      const getResults = (getResponse as CacheGetBatch.Success).results();
       expectWithMessage(() => {
         expect(getResults.length).toEqual(keys.length);
       }, `expected non-empty results, received ${getResults.toString()}`);
@@ -203,11 +203,11 @@ export function runBatchGetSetTests(
         items
       );
       expectWithMessage(() => {
-        expect(setResponse).toBeInstanceOf(SetBatch.Success);
+        expect(setResponse).toBeInstanceOf(CacheSetBatch.Success);
       }, `expected SUCCESS, received ${setResponse.toString()}`);
 
       // Check each response in the set batch
-      const setResults = (setResponse as SetBatch.Success).results();
+      const setResults = (setResponse as CacheSetBatch.Success).results();
       const setKeys = [...items.keys()];
       expectWithMessage(() => {
         expect(setResults.length).toEqual(setKeys.length);
@@ -226,11 +226,11 @@ export function runBatchGetSetTests(
         keys
       );
       expectWithMessage(() => {
-        expect(getResponse).toBeInstanceOf(GetBatch.Success);
+        expect(getResponse).toBeInstanceOf(CacheGetBatch.Success);
       }, `expected SUCCESS for keys ${keys.toString()}, received ${getResponse.toString()}`);
 
       // Check each response in the get batch
-      const getResults = (getResponse as GetBatch.Success).results();
+      const getResults = (getResponse as CacheGetBatch.Success).results();
       expectWithMessage(() => {
         expect(getResults.length).toEqual(keys.length);
       }, `expected non-empty results, received ${getResults.toString()}`);

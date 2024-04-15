@@ -59,8 +59,8 @@ import {
   CacheUpdateTtl,
   CacheIncreaseTtl,
   CacheDecreaseTtl,
-  GetBatch,
-  SetBatch,
+  CacheGetBatch,
+  CacheSetBatch,
   InvalidArgumentError,
   CacheSetIfAbsent,
   CacheSetIfPresent,
@@ -243,14 +243,14 @@ export abstract class AbstractCacheClient implements ICacheClient {
    *
    * @param {string} cacheName - The cache to perform the lookup in.
    * @param {string[] | Uint8Array[]} keys - The list of keys to look up.
-   * @returns {Promise<GetBatch.Response>} -
-   * {@link GetBatch.Success} containing the values if they were found.
-   * {@link GetBatch.Error} on failure.
+   * @returns {Promise<CacheGetBatch.Response>} -
+   * {@link CacheGetBatch.Success} containing the values if they were found.
+   * {@link CacheGetBatch.Error} on failure.
    */
   public async getBatch(
     cacheName: string,
     keys: Array<string | Uint8Array>
-  ): Promise<GetBatch.Response> {
+  ): Promise<CacheGetBatch.Response> {
     return await this.getNextDataClient().getBatch(cacheName, keys);
   }
 
@@ -263,9 +263,9 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {SetOptions} [options]
    * @param {number} [options.ttl] - The time to live for the items in the cache.
    * Uses the client's default TTL if this is not supplied.
-   * @returns {Promise<CacheSet.Response>} -
-   * {@link SetBatch.Success} on success.
-   * {@link SetBatch.Error} on failure.
+   * @returns {Promise<CacheSetBatch.Response>} -
+   * {@link CacheSetBatch.Success} on success.
+   * {@link CacheSetBatch.Error} on failure.
    */
   public async setBatch(
     cacheName: string,
@@ -273,7 +273,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
       | Record<string, string | Uint8Array>
       | Map<string | Uint8Array, string | Uint8Array>,
     options?: SetBatchOptions
-  ): Promise<SetBatch.Response> {
+  ): Promise<CacheSetBatch.Response> {
     const client = this.getNextDataClient();
     return await client.setBatch(cacheName, items, options?.ttl);
   }

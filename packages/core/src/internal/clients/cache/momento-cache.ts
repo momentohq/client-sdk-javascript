@@ -53,8 +53,8 @@ import {
   CacheSortedSetRemoveElements,
   CacheDictionaryGetFields,
   CacheDictionaryLength,
-  GetBatch,
-  SetBatch,
+  CacheGetBatch,
+  CacheSetBatch,
   CacheSetSample,
 } from '../../../index';
 import {
@@ -202,7 +202,7 @@ export class MomentoCache implements IMomentoCache {
       options
     );
   }
-  getBatch(keys: string[] | Uint8Array[]): Promise<GetBatch.Response> {
+  getBatch(keys: string[] | Uint8Array[]): Promise<CacheGetBatch.Response> {
     return this.cacheClient.getBatch(this.cacheName, keys);
   }
   setBatch(
@@ -210,7 +210,7 @@ export class MomentoCache implements IMomentoCache {
       | Record<string, string | Uint8Array>
       | Map<string | Uint8Array, string | Uint8Array>,
     options?: SetBatchOptions
-  ): Promise<SetBatch.Response> {
+  ): Promise<CacheSetBatch.Response> {
     return this.cacheClient.setBatch(this.cacheName, items, options);
   }
   setFetch(setName: string): Promise<CacheSetFetch.Response> {

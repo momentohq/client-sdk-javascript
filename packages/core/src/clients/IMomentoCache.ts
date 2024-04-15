@@ -52,8 +52,8 @@ import {
   CacheDecreaseTtl,
   CacheDictionaryGetFields,
   CacheDictionaryLength,
-  GetBatch,
-  SetBatch,
+  CacheGetBatch,
+  CacheSetBatch,
 } from '../index';
 import {
   ScalarCallOptions,
@@ -146,13 +146,13 @@ export interface IMomentoCache {
     equal: string | Uint8Array,
     options?: SetIfAbsentOrEqualOptions
   ): Promise<CacheSetIfAbsentOrEqual.Response>;
-  getBatch(keys: string[] | Uint8Array[]): Promise<GetBatch.Response>;
+  getBatch(keys: string[] | Uint8Array[]): Promise<CacheGetBatch.Response>;
   setBatch(
     items:
       | Record<string, string | Uint8Array>
       | Map<string | Uint8Array, string | Uint8Array>,
     options?: SetBatchOptions
-  ): Promise<SetBatch.Response>;
+  ): Promise<CacheSetBatch.Response>;
   setFetch(setName: string): Promise<CacheSetFetch.Response>;
   setAddElement(
     setName: string,
