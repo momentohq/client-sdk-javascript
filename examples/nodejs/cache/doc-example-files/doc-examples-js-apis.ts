@@ -101,7 +101,6 @@ import {
 } from '@gomomento/sdk';
 import * as crypto from 'crypto';
 
-
 function retrieveApiKeyFromYourSecretsManager(): string {
   // this is not a valid API key but conforms to the syntax requirements.
   const fakeTestV1ApiKey =
