@@ -80,6 +80,8 @@ import {
   ListPushBackOptions,
   ListConcatenateBackOptions,
   ListConcatenateFrontOptions,
+  DictionarySetFieldOptions,
+  DictionarySetFieldsOptions,
   DictionaryIncrementOptions,
   SortedSetFetchByRankOptions,
   SortedSetPutElementOptions,
@@ -965,9 +967,10 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} dictionaryName - The dictionary to add to.
    * @param {string | Uint8Array} field - The field to set.
    * @param {string | Uint8Array} value - The value to store.
-   * @param {DictionarySetFieldOptions} [options]
+   * @param {DictionarySetFieldOptions} options
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
-   *  Refreshes the dictionary's TTL using the client's default if this is not supplied.
+   * Refreshes the dictionary's TTL using the client's default if this is not
+   * supplied.
    * @returns {Promise<CacheDictionarySetField.Response>} -
    * {@link CacheDictionarySetField.Success} on success.
    * {@link CacheDictionarySetField.Error} on failure.
@@ -976,14 +979,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
     cacheName: string,
     dictionaryName: string,
     field: string | Uint8Array,
-    value: string | Uint8Array
+    value: string | Uint8Array,
+    options?: DictionarySetFieldOptions
   ): Promise<CacheDictionarySetField.Response> {
     const client = this.getNextDataClient();
     return await client.dictionarySetField(
       cacheName,
       dictionaryName,
       field,
-      value
+      value,
+      options?.ttl
     );
   }
 
@@ -995,7 +1000,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} dictionaryName - The dictionary to add to.
    * @param {Map<string | Uint8Array, string | Uint8Array>} elements - The
    * elements to set.
-   * @param {DictionarySetFieldsOptions} [options]
+   * @param {DictionarySetFieldsOptions} options
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the dictionary's TTL using the client's default if this is not
    * supplied.
@@ -1009,13 +1014,15 @@ export abstract class AbstractCacheClient implements ICacheClient {
     elements:
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>
-      | Array<[string, string | Uint8Array]>
+      | Array<[string, string | Uint8Array]>,
+    options?: DictionarySetFieldsOptions
   ): Promise<CacheDictionarySetFields.Response> {
     const client = this.getNextDataClient();
     return await client.dictionarySetFields(
       cacheName,
       dictionaryName,
-      elements
+      elements,
+      options?.ttl
     );
   }
 

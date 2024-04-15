@@ -219,7 +219,8 @@ export interface IDataClient {
     cacheName: string,
     dictionaryName: string,
     field: string | Uint8Array,
-    value: string | Uint8Array
+    value: string | Uint8Array,
+    ttl?: CollectionTtl
   ): Promise<CacheDictionarySetField.Response>;
   dictionarySetFields(
     cacheName: string,
@@ -227,7 +228,8 @@ export interface IDataClient {
     elements:
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>
-      | Array<[string, string | Uint8Array]>
+      | Array<[string, string | Uint8Array]>,
+    ttl?: CollectionTtl
   ): Promise<CacheDictionarySetFields.Response>;
   dictionaryGetField(
     cacheName: string,
