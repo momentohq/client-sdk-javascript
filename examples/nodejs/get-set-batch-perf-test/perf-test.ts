@@ -3,8 +3,10 @@ import {
   CacheSet,
   DefaultMomentoLoggerFactory,
   DefaultMomentoLoggerLevel,
+  GetBatch,
   MomentoLogger,
   MomentoLoggerFactory,
+  SetBatch,
 } from '@gomomento/sdk';
 import {createCache, flushCache, getCacheClient} from './utils/cache';
 import {
@@ -125,10 +127,13 @@ class PerfTest {
       setPromises.push(setPromise);
       context.totalItemSizeBytes += setConfig.itemSizeBytes;
     }
-    await Promise.all(setPromises).then(() => {
-      const setDuration = getElapsedMillis(setStartTime);
-      context.asyncSetLatencies.recordValue(setDuration);
-    });
+    const setResponses = await Promise.all(setPromises);
+    const setDuration = getElapsedMillis(setStartTime);
+    const error = setResponses.find(response => response instanceof CacheSet.Error);
+    if (error !== undefined) {
+      throw new Error(`Error in async sets: ${error.toString()}`);
+    }
+    context.asyncSetLatencies.recordValue(setDuration);
   }
 
   private async sendAsyncGetRequests(
@@ -144,10 +149,13 @@ class PerfTest {
       getPromises.push(getPromise);
       context.totalItemSizeBytes += getConfig.itemSizeBytes;
     }
-    await Promise.all(getPromises).then(() => {
-      const setDuration = getElapsedMillis(getStartTime);
-      context.asyncGetLatencies.recordValue(setDuration);
-    });
+    const getResponses = await Promise.all(getPromises);
+    const getDuration = getElapsedMillis(getStartTime);
+    const error = getResponses.find(response => response instanceof CacheSet.Error);
+    if (error !== undefined) {
+      throw new Error(`Error in async gets: ${error.toString()}`);
+    }
+    context.asyncGetLatencies.recordValue(getDuration);
   }
 
   private async sendSetBatchRequests(
@@ -164,12 +172,13 @@ class PerfTest {
     const setBatchStartTime = process.hrtime();
     const setBatchPromise = momento.setBatch(this.cacheName, items);
 
-    void setBatchPromise.then(() => {
-      const setBatchDuration = getElapsedMillis(setBatchStartTime);
-      context.setBatchLatencies.recordValue(setBatchDuration);
-    });
     context.totalItemSizeBytes += setConfig.batchSize * setConfig.itemSizeBytes;
-    await setBatchPromise;
+    const setBatchResponse = await setBatchPromise;
+    if (setBatchResponse instanceof SetBatch.Error) {
+      throw new Error(`Error setting batch: ${setBatchResponse.toString()}`);
+    }
+    const setBatchDuration = getElapsedMillis(setBatchStartTime);
+    context.setBatchLatencies.recordValue(setBatchDuration);
   }
 
   private async sendGetBatchRequests(
@@ -180,12 +189,13 @@ class PerfTest {
     const keys = Array.from({length: getConfig.batchSize}, (_, i) => `key-${i}`);
     const getBatchStartTime = process.hrtime();
     const getBatchPromise = momento.getBatch(this.cacheName, keys);
-    void getBatchPromise.then(() => {
-      const getBatchDuration = getElapsedMillis(getBatchStartTime);
-      context.getBatchLatencies.recordValue(getBatchDuration);
-    });
     context.totalItemSizeBytes += getConfig.batchSize * getConfig.itemSizeBytes;
-    await getBatchPromise;
+    const getBatchResponse = await getBatchPromise;
+    if (getBatchResponse instanceof GetBatch.Error) {
+      throw new Error(`Error getting batch: ${getBatchResponse.toString()}`);
+    }
+    const getBatchDuration = getElapsedMillis(getBatchStartTime);
+    context.getBatchLatencies.recordValue(getBatchDuration);
   }
 
   private async ensureCacheIsPopulated(momento: CacheClient, getConfig: GetSetConfig) {
