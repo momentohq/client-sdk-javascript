@@ -32,6 +32,15 @@ class PerfTest {
     this.testConfiguration = testConfiguration;
   }
 
+  private logMemoryUsage() {
+    setInterval(() => {
+      // const memoryUsage = process.memoryUsage();
+      for (const [key, value] of Object.entries(process.memoryUsage())) {
+        console.log(`Memory usage by ${key}, ${value / 1000000}MB `);
+      }
+    }, 5000); // Log memory usage every 5 seconds
+  }
+
   async run(): Promise<void> {
     const momento = await getCacheClient(
       this.options.loggerFactory,
@@ -39,6 +48,8 @@ class PerfTest {
       this.cacheItemTtlSeconds
     );
     await createCache(momento, this.cacheName, this.logger);
+
+    this.logMemoryUsage();
 
     this.logger.info('Starting async set requests');
     await this.runAsyncSetRequests(momento);
