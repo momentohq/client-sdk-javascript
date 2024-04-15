@@ -34,11 +34,10 @@ class PerfTest {
     this.testConfiguration = testConfiguration;
   }
 
-  private logMemoryUsage() {
-    setInterval(() => {
-      // const memoryUsage = process.memoryUsage();
+  private logMemoryUsage(): NodeJS.Timer {
+    return setInterval(() => {
       for (const [key, value] of Object.entries(process.memoryUsage())) {
-        console.log(`Memory usage by ${key}, ${value / 1000000}MB `);
+        // this.logger.info(`Memory usage by ${key}, ${value / 1000000}MB `);
       }
     }, 5000); // Log memory usage every 5 seconds
   }
@@ -51,65 +50,134 @@ class PerfTest {
     );
     await createCache(momento, this.cacheName, this.logger);
 
-    this.logMemoryUsage();
+    const memoryUsageLogger = this.logMemoryUsage();
 
-    this.logger.info('Starting async set requests');
-    await this.runAsyncSetRequests(momento);
+    try {
+      this.logger.info('Starting async set requests');
+      await this.runAsyncSetRequests(momento);
 
-    this.logger.info('Starting async get requests');
-    await this.runAsyncGetRequests(momento);
+      this.logger.info('Starting async get requests');
+      await this.runAsyncGetRequests(momento);
 
-    this.logger.info('Starting set batch requests');
-    await this.runSetBatchTests(momento);
+      this.logger.info('Starting set batch requests');
+      await this.runSetBatchTests(momento);
 
-    this.logger.info('Starting get batch requests');
-    await this.runGetBatchTests(momento);
+      this.logger.info('Starting get batch requests');
+      await this.runGetBatchTests(momento);
 
-    // flush the cache
-    await flushCache(momento, this.cacheName, this.logger);
+      // flush the cache
+      await flushCache(momento, this.cacheName, this.logger);
+    } finally {
+      clearInterval(memoryUsageLogger);
+    }
   }
 
   async runAsyncSetRequests(momento: CacheClient): Promise<void> {
     for (const setConfig of this.testConfiguration.sets) {
+      this.logger.info(
+        `Beginning run for ASYNC_SETS, batch size ${setConfig.batchSize}, item size ${setConfig.itemSizeBytes}`
+      );
+      let numLoops = 0;
       const context = initiatePerfTestContext();
       while (getElapsedMillis(context.startTime) < this.testConfiguration.minimumRunDurationSecondsForTests * 1000) {
+        numLoops++;
         await this.sendAsyncSetRequests(momento, context, setConfig);
       }
       calculateSummary(context, setConfig.batchSize, setConfig.itemSizeBytes, RequestType.ASYNC_SETS, this.logger);
+      this.logger.info(
+        `Completed run for ASYNC_SETS, batch size ${setConfig.batchSize}, item size ${
+          setConfig.itemSizeBytes
+        }; num loops: ${numLoops}, elapsed duration: ${getElapsedMillis(context.startTime)}ms`
+      );
     }
   }
 
   async runAsyncGetRequests(momento: CacheClient): Promise<void> {
     for (const getConfig of this.testConfiguration.gets) {
+      this.logger.info(
+        `Populating cache for ASYNC_GETS, batch size ${getConfig.batchSize}, item size ${getConfig.itemSizeBytes}`
+      );
+      const cachePopulationStartTime = process.hrtime();
       // ensure that the cache is populated with the keys
       await this.ensureCacheIsPopulated(momento, getConfig);
+      this.logger.info(
+        `Populated cache for ASYNC_GETS, batch size ${getConfig.batchSize}, item size ${
+          getConfig.itemSizeBytes
+        } in ${getElapsedMillis(cachePopulationStartTime)}ms`
+      );
+      this.logger.info(
+        `Beginning run for ASYNC_GETS, batch size ${getConfig.batchSize}, item size ${getConfig.itemSizeBytes}`
+      );
+      let numLoops = 0;
       const context = initiatePerfTestContext();
       while (getElapsedMillis(context.startTime) < this.testConfiguration.minimumRunDurationSecondsForTests * 1000) {
+        // this.logger.info(`Looping; elapsed millis: ${getElapsedMillis(context.startTime)}`);
+        numLoops++;
         await this.sendAsyncGetRequests(momento, context, getConfig);
       }
       calculateSummary(context, getConfig.batchSize, getConfig.itemSizeBytes, RequestType.ASYNC_GETS, this.logger);
+      this.logger.info(
+        `Completed run for ASYNC_GETS, batch size ${getConfig.batchSize}, item size ${
+          getConfig.itemSizeBytes
+        }; num loops: ${numLoops}, elapsed duration: ${getElapsedMillis(context.startTime)}ms`
+      );
     }
   }
 
   async runSetBatchTests(momento: CacheClient): Promise<void> {
     for (const setConfig of this.testConfiguration.sets) {
+      if (setConfig.batchSize * setConfig.itemSizeBytes >= 5 * 1024 * 1024) {
+        this.logger.info(
+          `Skipping run for SET_BATCH, batch size ${setConfig.batchSize}, item size ${setConfig.itemSizeBytes} would exceed max request size of 5MB`
+        );
+        continue;
+      }
+      this.logger.info(
+        `Beginning run for SET_BATCH, batch size ${setConfig.batchSize}, item size ${setConfig.itemSizeBytes}`
+      );
+      let numLoops = 0;
       const context = initiatePerfTestContext();
       while (getElapsedMillis(context.startTime) < this.testConfiguration.minimumRunDurationSecondsForTests * 1000) {
+        numLoops++;
         await this.sendSetBatchRequests(momento, context, setConfig);
       }
       calculateSummary(context, setConfig.batchSize, setConfig.itemSizeBytes, RequestType.SET_BATCH, this.logger);
+      this.logger.info(
+        `Completed run for SET_BATCH, batch size ${setConfig.batchSize}, item size ${
+          setConfig.itemSizeBytes
+        }; num loops: ${numLoops}, elapsed duration: ${getElapsedMillis(context.startTime)}ms`
+      );
     }
   }
 
   async runGetBatchTests(momento: CacheClient): Promise<void> {
     for (const getConfig of this.testConfiguration.gets) {
+      this.logger.info(
+        `Populating cache for GET_BATCH, batch size ${getConfig.batchSize}, item size ${getConfig.itemSizeBytes}`
+      );
+      const cachePopulationStartTime = process.hrtime();
       // ensure that the cache is populated with the keys
       await this.ensureCacheIsPopulated(momento, getConfig);
+      this.logger.info(
+        `Populated cache for GET_BATCH, batch size ${getConfig.batchSize}, item size ${
+          getConfig.itemSizeBytes
+        } in ${getElapsedMillis(cachePopulationStartTime)}ms`
+      );
+      this.logger.info(
+        `Beginning run for GET_BATCH, batch size ${getConfig.batchSize}, item size ${getConfig.itemSizeBytes}`
+      );
+      let numLoops = 0;
       const context = initiatePerfTestContext();
       while (getElapsedMillis(context.startTime) < this.testConfiguration.minimumRunDurationSecondsForTests * 1000) {
+        numLoops++;
         await this.sendGetBatchRequests(momento, context, getConfig);
       }
       calculateSummary(context, getConfig.batchSize, getConfig.itemSizeBytes, RequestType.GET_BATCH, this.logger);
+      this.logger.info(
+        `Completed run for GET_BATCH, batch size ${getConfig.batchSize}, item size ${
+          getConfig.itemSizeBytes
+        }; num loops: ${numLoops}, elapsed duration: ${getElapsedMillis(context.startTime)}ms`
+      );
     }
   }
 
@@ -226,7 +294,11 @@ function generateConfigurations(batchSizes: number[], itemSizes: number[]): GetS
   const configurations: GetSetConfig[] = [];
   for (const batchSize of batchSizes) {
     for (const itemSize of itemSizes) {
-      configurations.push({batchSize, itemSizeBytes: itemSize});
+      // exclude permutations where the total payload is greater than 1GB, they are not realistic and
+      // will cause memory issues
+      if (batchSize * itemSize < 1024 * 1024 * 1024) {
+        configurations.push({batchSize, itemSizeBytes: itemSize});
+      }
     }
   }
   return configurations;
