@@ -1208,7 +1208,7 @@ export class CacheDataClient<
       cacheName,
       convertToB64String(field),
       amount,
-      ttl || this.defaultTtlSeconds * 1000
+      (ttl || this.defaultTtlSeconds) * 1000
     );
     this.logger.trace(`'increment' request result: ${result.toString()}`);
     return result;

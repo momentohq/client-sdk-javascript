@@ -3068,7 +3068,7 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(field),
         amount,
-        ttl || this.defaultTtlSeconds * 1000
+        (ttl || this.defaultTtlSeconds) * 1000
       );
       this.logger.trace(`'increment' request result: ${result.toString()}`);
       return result;

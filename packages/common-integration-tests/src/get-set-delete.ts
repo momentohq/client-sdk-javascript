@@ -544,6 +544,29 @@ export function runGetSetDeleteTests(
         MomentoErrorCode.INVALID_ARGUMENT_ERROR
       );
     });
+
+    it('expires after ttl duration', async () => {
+      const field = v4();
+      await cacheClient.set(integrationTestCacheName, field, '10');
+      const response = await cacheClient.increment(
+        integrationTestCacheName,
+        field,
+        10,
+        {ttl: 1}
+      );
+      expectWithMessage(() => {
+        expect(response).toBeInstanceOf(CacheIncrement.Success);
+      }, `expected SUCCESS but got ${response.toString()}`);
+
+      await sleep(3000);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        field
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Miss);
+      }, `expected MISS but got ${getResponse.toString()}`);
+    });
   });
 
   describe('#setIfNotExists', () => {
