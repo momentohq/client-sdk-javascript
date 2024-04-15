@@ -92,14 +92,15 @@ import {
   PutWebhook,
   RotateWebhookSecret,
   GetWebhookSecret,
-  GetBatch,
-  SetBatch,
+  // GetBatch,
+  // SetBatch,
   ReadConcern,
   CacheSetSample,
   CacheKeyExists,
   CacheKeysExist,
 } from '@gomomento/sdk';
 import * as crypto from 'crypto';
+
 
 function retrieveApiKeyFromYourSecretsManager(): string {
   // this is not a valid API key but conforms to the syntax requirements.
@@ -385,37 +386,37 @@ async function example_API_SetIfAbsentOrEqual(cacheClient: CacheClient, cacheNam
   }
 }
 
-async function example_API_SetBatch(cacheClient: CacheClient, cacheName: string) {
-  const values = new Map<string, string>([
-    ['abc', '123'],
-    ['xyz', '321'],
-    ['123', 'xyz'],
-    ['321', 'abc'],
-  ]);
-  const result = await cacheClient.setBatch(cacheName, values);
-  if (result instanceof SetBatch.Success) {
-    console.log('Keys and values stored successfully');
-  } else if (result instanceof SetBatch.Error) {
-    throw new Error(
-      `An error occurred while attempting to batch set in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
-  }
-}
+// async function example_API_SetBatch(cacheClient: CacheClient, cacheName: string) {
+//   const values = new Map<string, string>([
+//     ['abc', '123'],
+//     ['xyz', '321'],
+//     ['123', 'xyz'],
+//     ['321', 'abc'],
+//   ]);
+//   const result = await cacheClient.setBatch(cacheName, values);
+//   if (result instanceof SetBatch.Success) {
+//     console.log('Keys and values stored successfully');
+//   } else if (result instanceof SetBatch.Error) {
+//     throw new Error(
+//       `An error occurred while attempting to batch set in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+//     );
+//   }
+// }
 
-async function example_API_GetBatch(cacheClient: CacheClient, cacheName: string) {
-  const keys = ['abc', 'xyz', '123', '321'];
-  const result = await cacheClient.getBatch(cacheName, keys);
-  if (result instanceof GetBatch.Success) {
-    const values = result.values();
-    for (const key of keys) {
-      console.log(`Retrieved value for key '${key}': ${values[key]}`);
-    }
-  } else if (result instanceof GetBatch.Error) {
-    throw new Error(
-      `An error occurred while attempting to batch get in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
-  }
-}
+// async function example_API_GetBatch(cacheClient: CacheClient, cacheName: string) {
+//   const keys = ['abc', 'xyz', '123', '321'];
+//   const result = await cacheClient.getBatch(cacheName, keys);
+//   if (result instanceof GetBatch.Success) {
+//     const values = result.values();
+//     for (const key of keys) {
+//       console.log(`Retrieved value for key '${key}': ${values[key]}`);
+//     }
+//   } else if (result instanceof GetBatch.Error) {
+//     throw new Error(
+//       `An error occurred while attempting to batch get in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+//     );
+//   }
+// }
 
 async function example_API_ListFetch(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.listConcatenateBack(cacheName, 'test-list', ['a', 'b', 'c']);
@@ -1568,8 +1569,8 @@ async function main() {
     await example_API_SetIfNotEqual(cacheClient, cacheName);
     await example_API_SetIfPresentAndNotEqual(cacheClient, cacheName);
     await example_API_SetIfAbsentOrEqual(cacheClient, cacheName);
-    await example_API_SetBatch(cacheClient, cacheName);
-    await example_API_GetBatch(cacheClient, cacheName);
+    // await example_API_SetBatch(cacheClient, cacheName);
+    // await example_API_GetBatch(cacheClient, cacheName);
 
     await example_API_ListFetch(cacheClient, cacheName);
     await example_API_ListConcatenateBack(cacheClient, cacheName);
