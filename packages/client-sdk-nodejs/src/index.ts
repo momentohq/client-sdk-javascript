@@ -73,8 +73,8 @@ import * as CacheKeysExist from '@gomomento/sdk-core/dist/src/messages/responses
 import * as CacheUpdateTtl from '@gomomento/sdk-core/dist/src/messages/responses/cache-ttl-update';
 import * as CacheIncreaseTtl from '@gomomento/sdk-core/dist/src/messages/responses/cache-ttl-increase';
 import * as CacheDecreaseTtl from '@gomomento/sdk-core/dist/src/messages/responses/cache-ttl-decrease';
-import * as GetBatch from '@gomomento/sdk-core/dist/src/messages/responses/cache-batch-get';
-import * as SetBatch from '@gomomento/sdk-core/dist/src/messages/responses/cache-batch-set';
+import * as CacheGetBatch from '@gomomento/sdk-core/dist/src/messages/responses/cache-batch-get';
+import * as CacheSetBatch from '@gomomento/sdk-core/dist/src/messages/responses/cache-batch-set';
 
 // TopicClient Response Types
 import * as TopicPublish from '@gomomento/sdk-core/dist/src/messages/responses/topic-publish';
@@ -353,8 +353,8 @@ export {
   CacheUpdateTtl,
   CacheIncreaseTtl,
   CacheDecreaseTtl,
-  GetBatch,
-  SetBatch,
+  CacheGetBatch,
+  CacheSetBatch,
   // TopicClient
   TopicConfigurations,
   TopicConfiguration,
