@@ -58,8 +58,8 @@ import {
   SortedSetOrder,
   UnknownError,
   CacheDictionaryLength,
-  GetBatch,
-  SetBatch,
+  CacheGetBatch,
+  CacheSetBatch,
 } from '..';
 import {Configuration} from '../config/configuration';
 import {Request, RpcError, UnaryResponse} from 'grpc-web';
@@ -977,13 +977,13 @@ export class CacheDataClient<
   public async getBatch(
     cacheName: string,
     keys: Array<string | Uint8Array>
-  ): Promise<GetBatch.Response> {
+  ): Promise<CacheGetBatch.Response> {
     try {
       validateCacheName(cacheName);
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new GetBatch.Error(err)
+        err => new CacheGetBatch.Error(err)
       );
     }
     this.logger.trace(`Issuing 'getBatch' request; keys: ${keys.toString()}`);
@@ -998,7 +998,7 @@ export class CacheDataClient<
   private async sendGetBatch(
     cacheName: string,
     keys: string[]
-  ): Promise<GetBatch.Response> {
+  ): Promise<CacheGetBatch.Response> {
     const getRequests = [];
     for (const k of keys) {
       const getRequest = new _GetRequest();
@@ -1033,7 +1033,7 @@ export class CacheDataClient<
 
       call.on('end', () => {
         resolve(
-          new GetBatch.Success(
+          new CacheGetBatch.Success(
             results,
             keys.map(key => this.convertToUint8Array(key))
           )
@@ -1043,7 +1043,7 @@ export class CacheDataClient<
       call.on('error', (err: RpcError) => {
         this.cacheServiceErrorMapper.resolveOrRejectError({
           err: err,
-          errorResponseFactoryFn: e => new GetBatch.Error(e),
+          errorResponseFactoryFn: e => new CacheGetBatch.Error(e),
           resolveFn: resolve,
           rejectFn: reject,
         });
@@ -1057,7 +1057,7 @@ export class CacheDataClient<
       | Record<string, string | Uint8Array>
       | Map<string | Uint8Array, string | Uint8Array>,
     ttl?: number
-  ): Promise<SetBatch.Response> {
+  ): Promise<CacheSetBatch.Response> {
     try {
       validateCacheName(cacheName);
       if (ttl !== undefined) {
@@ -1066,7 +1066,7 @@ export class CacheDataClient<
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new SetBatch.Error(err)
+        err => new CacheSetBatch.Error(err)
       );
     }
 
@@ -1086,7 +1086,7 @@ export class CacheDataClient<
     cacheName: string,
     items: Record<string, string>[],
     ttlSeconds: number
-  ): Promise<SetBatch.Response> {
+  ): Promise<CacheSetBatch.Response> {
     const setRequests = [];
     for (const item of items) {
       const setRequest = new _SetRequest();
@@ -1121,13 +1121,13 @@ export class CacheDataClient<
       });
 
       call.on('end', () => {
-        resolve(new SetBatch.Success(results));
+        resolve(new CacheSetBatch.Success(results));
       });
 
       call.on('error', (err: RpcError) => {
         this.cacheServiceErrorMapper.resolveOrRejectError({
           err: err,
-          errorResponseFactoryFn: e => new SetBatch.Error(e),
+          errorResponseFactoryFn: e => new CacheSetBatch.Error(e),
           resolveFn: resolve,
           rejectFn: reject,
         });

@@ -67,13 +67,13 @@ import {
   CollectionTtl,
   CompressionLevel,
   CredentialProvider,
-  GetBatch,
+  CacheGetBatch,
   ICompression,
   InvalidArgumentError,
   ItemType,
   MomentoLogger,
   MomentoLoggerFactory,
-  SetBatch,
+  CacheSetBatch,
   SortedSetOrder,
   UnknownError,
 } from '..';
@@ -1515,13 +1515,13 @@ export class CacheDataClient implements IDataClient {
   public async getBatch(
     cacheName: string,
     keys: Array<string | Uint8Array>
-  ): Promise<GetBatch.Response> {
+  ): Promise<CacheGetBatch.Response> {
     try {
       validateCacheName(cacheName);
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new GetBatch.Error(err)
+        err => new CacheGetBatch.Error(err)
       );
     }
 
@@ -1542,7 +1542,7 @@ export class CacheDataClient implements IDataClient {
   private async sendGetBatch(
     cacheName: string,
     keys: Uint8Array[]
-  ): Promise<GetBatch.Response> {
+  ): Promise<CacheGetBatch.Response> {
     const getRequests = [];
     for (const k of keys) {
       const getRequest = new grpcCache._GetRequest({
@@ -1578,13 +1578,13 @@ export class CacheDataClient implements IDataClient {
       });
 
       call.on('end', () => {
-        resolve(new GetBatch.Success(results, keys));
+        resolve(new CacheGetBatch.Success(results, keys));
       });
 
       call.on('error', (err: ServiceError | null) => {
         this.cacheServiceErrorMapper.resolveOrRejectError({
           err: err,
-          errorResponseFactoryFn: e => new GetBatch.Error(e),
+          errorResponseFactoryFn: e => new CacheGetBatch.Error(e),
           resolveFn: resolve,
           rejectFn: reject,
         });
@@ -1598,7 +1598,7 @@ export class CacheDataClient implements IDataClient {
       | Record<string, string | Uint8Array>
       | Map<string | Uint8Array, string | Uint8Array>,
     ttl?: number
-  ): Promise<SetBatch.Response> {
+  ): Promise<CacheSetBatch.Response> {
     try {
       validateCacheName(cacheName);
       if (ttl !== undefined) {
@@ -1607,7 +1607,7 @@ export class CacheDataClient implements IDataClient {
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new SetBatch.Error(err)
+        err => new CacheSetBatch.Error(err)
       );
     }
 
@@ -1630,7 +1630,7 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     items: Record<string, Uint8Array>[],
     ttlSeconds: number
-  ): Promise<SetBatch.Response> {
+  ): Promise<CacheSetBatch.Response> {
     const setRequests = [];
     for (const item of items) {
       const setRequest = new grpcCache._SetRequest({
@@ -1666,13 +1666,13 @@ export class CacheDataClient implements IDataClient {
       });
 
       call.on('end', () => {
-        resolve(new SetBatch.Success(results));
+        resolve(new CacheSetBatch.Success(results));
       });
 
       call.on('error', (err: ServiceError | null) => {
         this.cacheServiceErrorMapper.resolveOrRejectError({
           err: err,
-          errorResponseFactoryFn: e => new SetBatch.Error(e),
+          errorResponseFactoryFn: e => new CacheSetBatch.Error(e),
           resolveFn: resolve,
           rejectFn: reject,
         });
