@@ -147,7 +147,7 @@ export class CacheDataClient implements IDataClient {
   private readonly interceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
   private readonly valueCompressor?: ICompression;
-  private requestConcurrencySemaphore: Semaphore;
+  private requestConcurrencySemaphore: Semaphore | undefined;
 
   /**
    * @param {CacheClientProps} props
@@ -156,7 +156,7 @@ export class CacheDataClient implements IDataClient {
   constructor(
     props: CacheClientPropsWithConfig,
     dataClientID: string,
-    semaphore: Semaphore
+    semaphore: Semaphore | undefined
   ) {
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
@@ -386,7 +386,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'set' request; key: ${key.toString()}, value length: ${
           value.length
@@ -394,7 +396,9 @@ export class CacheDataClient implements IDataClient {
       );
       return await this.sendSet(cacheName, encodedKey, encodedValue, ttlToUse);
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -448,10 +452,14 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       return await this.sendSetFetch(cacheName, this.convert(setName));
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -505,7 +513,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       return await this.sendSetAddElements(
         cacheName,
         this.convert(setName),
@@ -514,7 +524,9 @@ export class CacheDataClient implements IDataClient {
         ttl.refreshTtl()
       );
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -571,14 +583,18 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       return await this.sendSetRemoveElements(
         cacheName,
         this.convert(setName),
         this.convertArray(elements)
       );
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -638,10 +654,14 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       return await this.sendSetSample(cacheName, this.convert(setName), limit);
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -701,7 +721,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'setIfNotExists' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
           ttl?.toString() ?? 'null'
@@ -718,7 +740,9 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -795,7 +819,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'setIfAbsent' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
           ttl?.toString() ?? 'null'
@@ -831,7 +857,9 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace(`'setIfAbsent' request result: ${result.toString()}`);
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -907,7 +935,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'setIfPresent' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
           ttl?.toString() ?? 'null'
@@ -922,7 +952,9 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace(`'setIfPresent' request result: ${result.toString()}`);
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -999,7 +1031,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'setIfEqual' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
           ttl?.toString() ?? 'null'
@@ -1015,7 +1049,9 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace(`'setIfEqual' request result: ${result.toString()}`);
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -1093,7 +1129,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'setIfNotEqual' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
           ttl?.toString() ?? 'null'
@@ -1109,7 +1147,9 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace(`'setIfNotEqual' request result: ${result.toString()}`);
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -1187,7 +1227,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'setIfPresentAndNotEqual' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
           ttl?.toString() ?? 'null'
@@ -1205,7 +1247,9 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -1284,7 +1328,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'setIfAbsentOrEqual' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
           ttl?.toString() ?? 'null'
@@ -1302,7 +1348,9 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -1374,11 +1422,15 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(`Issuing 'delete' request; key: ${key.toString()}`);
       return await this.sendDelete(cacheName, this.convert(key));
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -1428,13 +1480,17 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
       const result = await this.sendGet(cacheName, this.convert(key), options);
       this.logger.trace(`'get' request result: ${result.toString()}`);
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -1526,7 +1582,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(`Issuing 'getBatch' request; keys: ${keys.toString()}`);
       const result = await this.sendGetBatch(
         cacheName,
@@ -1535,7 +1593,9 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace(`'getBatch' request result: ${result.toString()}`);
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -1612,7 +1672,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       const itemsToUse = this.convertSetBatchElements(items);
       const ttlToUse = ttl || this.defaultTtlSeconds;
       this.logger.trace(
@@ -1622,7 +1684,9 @@ export class CacheDataClient implements IDataClient {
       );
       return await this.sendSetBatch(cacheName, itemsToUse, ttlToUse);
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -1698,7 +1762,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'listConcatenateBack' request; listName: ${listName}, values length: ${
           values.length
@@ -1720,7 +1786,9 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -1782,7 +1850,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'listConcatenateFront' request; listName: ${listName}, values length: ${
           values.length
@@ -1804,7 +1874,9 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -1866,7 +1938,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         "Issuing 'listFetch' request; listName: %s, startIndex: %s, endIndex: %s",
         listName,
@@ -1882,7 +1956,9 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace("'listFetch' request result: %s", result.toString());
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -1951,7 +2027,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         "Issuing 'listRetain' request; listName: %s, startIndex: %s, endIndex: %s, ttl: %s",
         listName,
@@ -1970,7 +2048,9 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace("'listRetain' request result: %s", result.toString());
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -2037,7 +2117,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(`Issuing 'listLength' request; listName: ${listName}`);
       const result = await this.sendListLength(
         cacheName,
@@ -2046,7 +2128,9 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace(`'listLength' request result: ${result.toString()}`);
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -2099,7 +2183,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace("Issuing 'listPopBack' request");
       const result = await this.sendListPopBack(
         cacheName,
@@ -2108,7 +2194,9 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace(`'listPopBack' request result: ${result.toString()}`);
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -2161,7 +2249,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace("Issuing 'listPopFront' request");
       const result = await this.sendListPopFront(
         cacheName,
@@ -2170,7 +2260,9 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace(`'listPopFront' request result: ${result.toString()}`);
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -2226,7 +2318,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'listPushBack' request; listName: ${listName}, value length: ${
           value.length
@@ -2246,7 +2340,9 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace(`'listPushBack' request result: ${result.toString()}`);
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -2307,7 +2403,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'listPushFront' request; listName: ${listName}, value length: ${
           value.length
@@ -2327,7 +2425,9 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace(`'listPushFront' request result: ${result.toString()}`);
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -2386,7 +2486,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'listRemoveValue' request; listName: ${listName}, value length: ${value.length}`
       );
@@ -2401,7 +2503,9 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -2453,7 +2557,9 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'dictionaryFetch' request; dictionaryName: ${dictionaryName}`
       );
@@ -2466,7 +2572,9 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        if (this.requestConcurrencySemaphore !== undefined)
+          this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -2521,7 +2629,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'dictionarySetField' request; field: ${field.toString()}, value length: ${
           value.length
@@ -2541,7 +2650,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -2603,7 +2713,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'dictionarySetFields' request; elements: ${elements.toString()}, ttl: ${
           ttl.ttlSeconds.toString() ?? 'null'
@@ -2624,7 +2735,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -2682,7 +2794,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'dictionaryGetField' request; field: ${field.toString()}`
       );
@@ -2696,7 +2809,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -2773,7 +2887,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'dictionaryGetFields' request; fields: ${fields.toString()}`
       );
@@ -2787,7 +2902,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -2848,7 +2964,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'dictionaryRemoveField' request; field: ${field.toString()}`
       );
@@ -2862,7 +2979,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -2918,7 +3036,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'dictionaryRemoveFields' request; fields: ${fields.toString()}`
       );
@@ -2932,7 +3051,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -2987,7 +3107,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'dictionaryLength' request; dictionaryName: ${dictionaryName}`
       );
@@ -3000,7 +3121,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -3057,7 +3179,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'increment' request; field: ${field.toString()}, amount : ${amount}, ttl: ${
           ttl?.toString() ?? 'null'
@@ -3073,7 +3196,8 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace(`'increment' request result: ${result.toString()}`);
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -3135,7 +3259,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         `Issuing 'dictionaryIncrement' request; field: ${field.toString()}, amount : ${amount}, ttl: ${
           ttl.ttlSeconds.toString() ?? 'null'
@@ -3155,7 +3280,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -3221,7 +3347,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         "Issuing 'sortedSetPutElement' request; value: %s, score : %s, ttl: %s",
         truncateString(value.toString()),
@@ -3243,7 +3370,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -3306,7 +3434,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         "Issuing 'sortedSetPutElements' request; elements : %s, ttl: %s",
         elements.toString(),
@@ -3329,7 +3458,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -3390,7 +3520,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         "Issuing 'sortedSetFetchByRank' request; startRank: %s, endRank : %s, order: %s",
         startRank.toString() ?? 'null',
@@ -3411,7 +3542,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -3521,7 +3653,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         "Issuing 'sortedSetFetchByScore' request; minScore: %s, maxScore : %s, order: %s, offset: %s, count: %s",
         minScore?.toString() ?? 'null',
@@ -3547,7 +3680,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -3662,7 +3796,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         "Issuing 'sortedSetGetRank' request; value: %s",
         truncateString(value.toString())
@@ -3680,7 +3815,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -3767,7 +3903,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         "Issuing 'sortedSetGetScores' request; values: %s",
         truncateString(values.toString())
@@ -3785,7 +3922,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -3847,7 +3985,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         "Issuing 'sortedSetIncrementScore' request; value: %s",
         truncateString(value.toString())
@@ -3868,7 +4007,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -3932,7 +4072,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace("Issuing 'sortedSetRemoveElement' request");
 
       const result = await this.sendSortedSetRemoveElement(
@@ -3947,7 +4088,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -4004,7 +4146,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace("Issuing 'sortedSetRemoveElements' request");
 
       const result = await this.sendSortedSetRemoveElements(
@@ -4019,7 +4162,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -4075,7 +4219,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace("Issuing 'sortedSetLength' request");
 
       const result = await this.sendSortedSetLength(
@@ -4089,7 +4234,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -4149,7 +4295,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         "Issuing 'sortedSetLengthByScore' request; minScore: %s, maxScore: %s",
         minScore?.toString() ?? 'null',
@@ -4169,7 +4316,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -4355,10 +4503,12 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       return await this.sendItemGetType(cacheName, this.convert(key));
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -4412,10 +4562,12 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       return await this.sendItemGetTtl(cacheName, this.convert(key));
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -4466,7 +4618,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace("Issuing 'keyExists' request");
 
       const result = await this.sendKeyExists(cacheName, this.convert(key));
@@ -4477,7 +4630,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -4528,7 +4682,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         "Issuing 'updateTtl' request; ttlMilliseconds: %s",
         ttlMilliseconds?.toString() ?? 'null'
@@ -4546,7 +4701,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -4599,7 +4755,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace("Issuing 'keysExist' request");
 
       const result = await this.sendKeysExist(
@@ -4613,7 +4770,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -4664,7 +4822,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         "Issuing 'increaseTtl' request; ttlMilliseconds: %s",
         ttlMilliseconds?.toString() ?? 'null'
@@ -4682,7 +4841,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 
@@ -4737,7 +4897,8 @@ export class CacheDataClient implements IDataClient {
     }
 
     try {
-      await this.requestConcurrencySemaphore.acquire();
+      if (this.requestConcurrencySemaphore !== undefined)
+        await this.requestConcurrencySemaphore.acquire();
       this.logger.trace(
         "Issuing 'decreaseTtl' request; ttlMilliseconds: %s",
         ttlMilliseconds?.toString() ?? 'null'
@@ -4755,7 +4916,8 @@ export class CacheDataClient implements IDataClient {
       );
       return result;
     } finally {
-      this.requestConcurrencySemaphore.release();
+      if (this.requestConcurrencySemaphore !== undefined)
+        this.requestConcurrencySemaphore.release();
     }
   }
 

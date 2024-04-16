@@ -162,9 +162,9 @@ export interface GrpcConfiguration {
   withNumClients(numClients: number): GrpcConfiguration;
 
   /**
-   * @returns {number} the maximum number of concurrent requests that can be made to the server.
+   * returns the maximum number of concurrent requests that can be made to the server.
    */
-  getConcurrentRequestsLimit(): number;
+  getConcurrentRequestsLimit(): number | undefined;
 
   /**
    * Copy constructor for overriding the maximum number of concurrent requests

@@ -1,7 +1,5 @@
 import {GrpcConfiguration, GrpcConfigurationProps} from './grpc-configuration';
 
-const defaultRequestConcurrencyLimit = 100;
-
 export interface TransportStrategy {
   /**
    * Configures the low-level gRPC settings for the Momento client's communication
@@ -55,9 +53,9 @@ export interface TransportStrategy {
   withMaxClientAgeMillis(maxClientAgeMillis: number): TransportStrategy;
 
   /**
-   * @returns {number} the maximum number of concurrent requests that can be made by the client.
+   * returns the maximum number of concurrent requests that can be made by the client.
    */
-  getConcurrentRequestsLimit(): number;
+  getConcurrentRequestsLimit(): number | undefined;
 
   /**
    * Copy constructor to update the maximum number of concurrent requests that can be made by the client.
@@ -95,7 +93,7 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
   private readonly deadlineMillis: number;
   private readonly maxSessionMemoryMb: number;
   private readonly numClients: number;
-  private readonly concurrentRequestsLimit: number;
+  private readonly concurrentRequestsLimit?: number;
   private readonly keepAlivePermitWithoutCalls?: number;
   private readonly keepAliveTimeoutMs?: number;
   private readonly keepAliveTimeMs?: number;
@@ -111,14 +109,7 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
       // This is the previously hardcoded value and a safe default for most environments.
       this.numClients = 6;
     }
-    if (
-      props.concurrentRequestsLimit !== undefined &&
-      props.concurrentRequestsLimit !== null
-    ) {
-      this.concurrentRequestsLimit = props.concurrentRequestsLimit;
-    } else {
-      this.concurrentRequestsLimit = defaultRequestConcurrencyLimit;
-    }
+    this.concurrentRequestsLimit = props.concurrentRequestsLimit;
     this.keepAliveTimeMs = props.keepAliveTimeMs;
     this.keepAliveTimeoutMs = props.keepAliveTimeoutMs;
     this.keepAlivePermitWithoutCalls = props.keepAlivePermitWithoutCalls;
@@ -182,7 +173,7 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
     });
   }
 
-  getConcurrentRequestsLimit(): number {
+  getConcurrentRequestsLimit(): number | undefined {
     return this.concurrentRequestsLimit;
   }
 
@@ -252,7 +243,7 @@ export class StaticTransportStrategy implements TransportStrategy {
     });
   }
 
-  getConcurrentRequestsLimit(): number {
+  getConcurrentRequestsLimit(): number | undefined {
     return this.grpcConfig.getConcurrentRequestsLimit();
   }
 
