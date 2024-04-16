@@ -1,12 +1,12 @@
 import {
   CacheClient,
+  CacheGetBatch,
   CacheSet,
+  CacheSetBatch,
   DefaultMomentoLoggerFactory,
   DefaultMomentoLoggerLevel,
-  GetBatch,
   MomentoLogger,
   MomentoLoggerFactory,
-  SetBatch,
 } from '@gomomento/sdk';
 import {createCache, flushCache, getCacheClient} from './utils/cache';
 import {
@@ -242,7 +242,8 @@ class PerfTest {
 
     context.totalItemSizeBytes += setConfig.batchSize * setConfig.itemSizeBytes;
     const setBatchResponse = await setBatchPromise;
-    if (setBatchResponse instanceof SetBatch.Error) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (setBatchResponse instanceof CacheSetBatch.Error) {
       throw new Error(`Error setting batch: ${setBatchResponse.toString()}`);
     }
     const setBatchDuration = getElapsedMillis(setBatchStartTime);
@@ -259,7 +260,8 @@ class PerfTest {
     const getBatchPromise = momento.getBatch(this.cacheName, keys);
     context.totalItemSizeBytes += getConfig.batchSize * getConfig.itemSizeBytes;
     const getBatchResponse = await getBatchPromise;
-    if (getBatchResponse instanceof GetBatch.Error) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (getBatchResponse instanceof CacheGetBatch.Error) {
       throw new Error(`Error getting batch: ${getBatchResponse.toString()}`);
     }
     const getBatchDuration = getElapsedMillis(getBatchStartTime);
