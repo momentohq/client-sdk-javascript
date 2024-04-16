@@ -55,16 +55,14 @@ export interface TransportStrategy {
   /**
    * returns the maximum number of concurrent requests that can be made by the client.
    */
-  getConcurrentRequestsLimit(): number | undefined;
+  getMaxConcurrentRequests(): number | undefined;
 
   /**
    * Copy constructor to update the maximum number of concurrent requests that can be made by the client.
-   * @param {number} concurrentRequestsLimit
+   * @param {number} maxConcurrentRequests
    * @returns {TransportStrategy} a new TransportStrategy with the specified concurrent requests limit.
    */
-  withConcurrentRequestsLimit(
-    concurrentRequestsLimit: number
-  ): TransportStrategy;
+  withMaxConcurrentRequests(maxConcurrentRequests: number): TransportStrategy;
 }
 
 export interface TransportStrategyProps {
@@ -93,7 +91,7 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
   private readonly deadlineMillis: number;
   private readonly maxSessionMemoryMb: number;
   private readonly numClients: number;
-  private readonly concurrentRequestsLimit?: number;
+  private readonly maxConcurrentRequests?: number;
   private readonly keepAlivePermitWithoutCalls?: number;
   private readonly keepAliveTimeoutMs?: number;
   private readonly keepAliveTimeMs?: number;
@@ -109,7 +107,7 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
       // This is the previously hardcoded value and a safe default for most environments.
       this.numClients = 6;
     }
-    this.concurrentRequestsLimit = props.concurrentRequestsLimit;
+    this.maxConcurrentRequests = props.maxConcurrentRequests;
     this.keepAliveTimeMs = props.keepAliveTimeMs;
     this.keepAliveTimeoutMs = props.keepAliveTimeoutMs;
     this.keepAlivePermitWithoutCalls = props.keepAlivePermitWithoutCalls;
@@ -173,18 +171,16 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
     });
   }
 
-  getConcurrentRequestsLimit(): number | undefined {
-    return this.concurrentRequestsLimit;
+  getMaxConcurrentRequests(): number | undefined {
+    return this.maxConcurrentRequests;
   }
 
-  withConcurrentRequestsLimit(
-    concurrentRequestsLimit: number
-  ): GrpcConfiguration {
+  withMaxConcurrentRequests(maxConcurrentRequests: number): GrpcConfiguration {
     return new StaticGrpcConfiguration({
       deadlineMillis: this.deadlineMillis,
       maxSessionMemoryMb: this.maxSessionMemoryMb,
       numClients: this.numClients,
-      concurrentRequestsLimit: concurrentRequestsLimit,
+      maxConcurrentRequests: maxConcurrentRequests,
     });
   }
 }
@@ -243,16 +239,16 @@ export class StaticTransportStrategy implements TransportStrategy {
     });
   }
 
-  getConcurrentRequestsLimit(): number | undefined {
-    return this.grpcConfig.getConcurrentRequestsLimit();
+  getMaxConcurrentRequests(): number | undefined {
+    return this.grpcConfig.getMaxConcurrentRequests();
   }
 
-  withConcurrentRequestsLimit(
-    concurrentRequestsLimit: number
+  withMaxConcurrentRequests(
+    maxConcurrentRequests: number
   ): StaticTransportStrategy {
     return new StaticTransportStrategy({
-      grpcConfiguration: this.grpcConfig.withConcurrentRequestsLimit(
-        concurrentRequestsLimit
+      grpcConfiguration: this.grpcConfig.withMaxConcurrentRequests(
+        maxConcurrentRequests
       ),
       maxIdleMillis: this.maxIdleMillis,
     });

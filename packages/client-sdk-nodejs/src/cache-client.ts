@@ -13,7 +13,7 @@ import {CacheClientProps, EagerCacheClientProps} from './cache-client-props';
 import {
   range,
   Semaphore,
-  validateConcurrentRequestsLimit,
+  validateMaxConcurrentRequests,
   validateTimeout,
   validateTtlSeconds,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
@@ -54,9 +54,9 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
     const numConcurrentRequests = configuration
       .getTransportStrategy()
       .getGrpcConfig()
-      .getConcurrentRequestsLimit();
+      .getMaxConcurrentRequests();
     if (numConcurrentRequests !== null && numConcurrentRequests !== undefined) {
-      validateConcurrentRequestsLimit(numConcurrentRequests);
+      validateMaxConcurrentRequests(numConcurrentRequests);
       semaphore = new Semaphore(numConcurrentRequests);
     }
 
