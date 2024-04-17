@@ -13,7 +13,7 @@ import {CacheClientProps, EagerCacheClientProps} from './cache-client-props';
 import {
   range,
   Semaphore,
-  validateConcurrentRequestsLimit,
+  validateMaxConcurrentRequests,
   validateTimeout,
   validateTtlSeconds,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
@@ -35,7 +35,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
   private readonly logger: MomentoLogger;
   private readonly notYetAbstractedControlClient: CacheControlClient;
   private readonly _configuration: Configuration;
-  private dataRequestConcurrencySemaphore: Semaphore;
+  private dataRequestConcurrencySemaphore: Semaphore | undefined = undefined;
 
   /**
    * Creates an instance of CacheClient.
@@ -50,12 +50,15 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
       configuration: configuration,
     };
 
+    let semaphore: Semaphore | undefined = undefined;
     const numConcurrentRequests = configuration
       .getTransportStrategy()
       .getGrpcConfig()
-      .getConcurrentRequestsLimit();
-    validateConcurrentRequestsLimit(numConcurrentRequests);
-    const semaphore = new Semaphore(numConcurrentRequests);
+      .getMaxConcurrentRequests();
+    if (numConcurrentRequests !== null && numConcurrentRequests !== undefined) {
+      validateMaxConcurrentRequests(numConcurrentRequests);
+      semaphore = new Semaphore(numConcurrentRequests);
+    }
 
     const controlClient = new CacheControlClient({
       configuration: configuration,
@@ -79,7 +82,9 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
   }
 
   public close() {
-    this.dataRequestConcurrencySemaphore.purge();
+    if (this.dataRequestConcurrencySemaphore !== undefined) {
+      this.dataRequestConcurrencySemaphore.purge();
+    }
     this.controlClient.close();
     this.dataClients.map(dc => dc.close());
     this._configuration.getMiddlewares().map(m => {
