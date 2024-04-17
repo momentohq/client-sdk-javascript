@@ -12,6 +12,7 @@ import {
   ServiceError,
 } from '@grpc/grpc-js';
 import {
+  AutomaticDecompression,
   CacheDecreaseTtl,
   CacheDelete,
   CacheDictionaryFetch,
@@ -24,6 +25,7 @@ import {
   CacheDictionarySetField,
   CacheDictionarySetFields,
   CacheGet,
+  CacheGetBatch,
   CacheIncreaseTtl,
   CacheIncrement,
   CacheItemGetTtl,
@@ -42,6 +44,7 @@ import {
   CacheListRetain,
   CacheSet,
   CacheSetAddElements,
+  CacheSetBatch,
   CacheSetFetch,
   CacheSetIfAbsent,
   CacheSetIfAbsentOrEqual,
@@ -67,13 +70,11 @@ import {
   CollectionTtl,
   CompressionLevel,
   CredentialProvider,
-  CacheGetBatch,
   ICompression,
   InvalidArgumentError,
   ItemType,
   MomentoLogger,
   MomentoLoggerFactory,
-  CacheSetBatch,
   SortedSetOrder,
   UnknownError,
 } from '..';
@@ -116,10 +117,10 @@ import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {ConnectionError} from '@gomomento/sdk-core/dist/src/errors';
 import {common} from '@gomomento/generated-types/dist/common';
 import {
-  GetCallOptions,
   SetCallOptions,
   SetIfAbsentCallOptions,
 } from '@gomomento/sdk-core/dist/src/utils';
+import {CompressionError} from '../errors/compression-error';
 import grpcCache = cache.cache_client;
 import ECacheResult = cache_client.ECacheResult;
 import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
@@ -130,7 +131,6 @@ import Equal = common.Equal;
 import NotEqual = common.NotEqual;
 import PresentAndNotEqual = common.PresentAndNotEqual;
 import AbsentOrEqual = common.AbsentOrEqual;
-import {CompressionError} from '../errors/compression-error';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -147,6 +147,7 @@ export class CacheDataClient implements IDataClient {
   private readonly interceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
   private readonly valueCompressor?: ICompression;
+  private readonly decompress: boolean;
   private requestConcurrencySemaphore: Semaphore | undefined;
 
   /**
@@ -167,8 +168,11 @@ export class CacheDataClient implements IDataClient {
     const compression = this.configuration.getCompressionStrategy();
     if (compression !== undefined) {
       this.valueCompressor = compression.compressorFactory;
+      this.decompress =
+        compression.automaticDecompression === AutomaticDecompression.Enabled;
     } else {
       this.valueCompressor = undefined;
+      this.decompress = false;
     }
     this.requestConcurrencySemaphore = semaphore;
 
@@ -1391,8 +1395,7 @@ export class CacheDataClient implements IDataClient {
 
   public async get(
     cacheName: string,
-    key: string | Uint8Array,
-    options?: GetCallOptions
+    key: string | Uint8Array
   ): Promise<CacheGet.Response> {
     try {
       validateCacheName(cacheName);
@@ -1405,7 +1408,7 @@ export class CacheDataClient implements IDataClient {
 
     return await this.rateLimited(async () => {
       this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
-      const result = await this.sendGet(cacheName, this.convert(key), options);
+      const result = await this.sendGet(cacheName, this.convert(key));
       this.logger.trace(`'get' request result: ${result.toString()}`);
       return result;
     });
@@ -1413,8 +1416,7 @@ export class CacheDataClient implements IDataClient {
 
   private async sendGet(
     cacheName: string,
-    key: Uint8Array,
-    options?: GetCallOptions
+    key: Uint8Array
   ): Promise<CacheGet.Response> {
     const request = new grpcCache._GetRequest({
       cache_key: key,
@@ -1435,7 +1437,7 @@ export class CacheDataClient implements IDataClient {
                 resolve(new CacheGet.Miss());
                 break;
               case grpcCache.ECacheResult.Hit: {
-                if (!options?.decompress) {
+                if (!this.decompress) {
                   resolve(new CacheGet.Hit(resp.cache_body));
                 } else {
                   if (this.valueCompressor === undefined) {

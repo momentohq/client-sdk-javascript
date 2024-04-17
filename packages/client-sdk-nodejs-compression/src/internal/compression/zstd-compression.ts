@@ -8,6 +8,8 @@ import * as zstd from '@mongodb-js/zstd';
 import {convert} from '@gomomento/sdk/dist/src/internal/utils';
 
 class ZtsdCompressor implements ICompression {
+  private static readonly MAGIC_NUMBER = 0xfd2fb528;
+
   private readonly logger;
   constructor(logger: MomentoLogger) {
     this.logger = logger;
@@ -38,21 +40,33 @@ class ZtsdCompressor implements ICompression {
 
   async decompressIfCompressed(value: Uint8Array): Promise<Uint8Array> {
     this.logger.trace('Attempting to decompress value');
+    if (!this.isZstdCompressed(value)) {
+      return Promise.resolve(value);
+    }
+
     const buffer = Buffer.from(value);
     this.logger.trace('Buffer created');
+
     try {
-      // TODO: check bytes to see if it is compressed before calling decompress
       const decompressed = await zstd.decompress(buffer);
       this.logger.trace('Decompressed buffer');
       return decompressed;
     } catch (e) {
-      // TODO: once we have added the code to check the BOM bytes, we should change the following line to log at ERROR level.
-      // TODO: and/or we might want to actually reject the promise here.
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       this.logger.error(`Failed to decompress buffer: ${e}`);
-      // return Promise.reject(e);
-      return Promise.resolve(value);
+      return Promise.reject(e);
     }
+  }
+
+  private isZstdCompressed(data: Uint8Array): boolean {
+    if (data.length < 4) {
+      return false;
+    }
+
+    // Extract the first 4 bytes in little endian order to compare.
+    const firstFourBytes =
+      ((data[3] << 24) | (data[2] << 16) | (data[1] << 8) | data[0]) >>> 0;
+    return firstFourBytes === ZtsdCompressor.MAGIC_NUMBER;
   }
 }
 

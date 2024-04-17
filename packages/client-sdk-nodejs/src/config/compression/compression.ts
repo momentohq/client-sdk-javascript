@@ -24,4 +24,14 @@ export interface CompressionStrategy {
    * This property is used to set the default compression level for the client. The default value is `CompressionLevel.Balanced`.
    */
   compressionLevel?: CompressionLevel;
+
+  /**
+   * This property represents whether the SDK will decompress data returned by calls that support compression.
+   */
+  automaticDecompression: AutomaticDecompression;
+}
+
+export enum AutomaticDecompression {
+  Enabled = 'Enabled',
+  Disabled = 'Disabled',
 }
