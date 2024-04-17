@@ -220,7 +220,7 @@ export function validateLeaderboardNumberOfElements(numElements: number) {
   }
 }
 
-export function validateConcurrentRequestsLimit(limit: number) {
+export function validateMaxConcurrentRequests(limit: number) {
   if (limit < 1) {
     throw new InvalidArgumentError(
       'concurrent requests limit must be strictly positive (> 0)'

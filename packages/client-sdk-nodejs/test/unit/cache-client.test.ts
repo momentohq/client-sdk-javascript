@@ -116,7 +116,7 @@ describe('CacheClient', () => {
   it('cannot create a client with concurrent requests limit below 1', async () => {
     try {
       const negativeLimitConfig = configuration.withTransportStrategy(
-        configuration.getTransportStrategy().withConcurrentRequestsLimit(-1)
+        configuration.getTransportStrategy().withMaxConcurrentRequests(-1)
       );
       await CacheClient.create({
         configuration: negativeLimitConfig,
@@ -132,7 +132,7 @@ describe('CacheClient', () => {
 
     try {
       const zeroLimitConfig = configuration.withTransportStrategy(
-        configuration.getTransportStrategy().withConcurrentRequestsLimit(0)
+        configuration.getTransportStrategy().withMaxConcurrentRequests(0)
       );
       await CacheClient.create({
         configuration: zeroLimitConfig,
