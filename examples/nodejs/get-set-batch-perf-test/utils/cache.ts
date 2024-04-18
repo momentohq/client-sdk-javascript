@@ -11,10 +11,19 @@ import {
 export function getCacheClient(
   loggerFactory: MomentoLoggerFactory,
   requestTimeoutMs: number,
-  cacheItemTtlSeconds: number
+  cacheItemTtlSeconds: number,
+  options?: {
+    maxConcurrentRequests: number;
+  }
 ): Promise<CacheClient> {
+  let config = Configurations.Laptop.v1(loggerFactory).withClientTimeoutMillis(requestTimeoutMs);
+  if (options !== undefined) {
+    config = config.withTransportStrategy(
+      config.getTransportStrategy().withMaxConcurrentRequests(options.maxConcurrentRequests)
+    );
+  }
   return CacheClient.create({
-    configuration: Configurations.Laptop.v1(loggerFactory).withClientTimeoutMillis(requestTimeoutMs),
+    configuration: config,
     credentialProvider: new EnvMomentoTokenProvider({
       environmentVariableName: 'MOMENTO_API_KEY',
     }),

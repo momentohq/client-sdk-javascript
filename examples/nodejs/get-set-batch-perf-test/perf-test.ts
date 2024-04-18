@@ -34,8 +34,9 @@ class PerfTest {
     this.testConfiguration = testConfiguration;
   }
 
-  private logMemoryUsage(): NodeJS.Timer {
+  private logMemoryUsage(): NodeJS.Timeout {
     return setInterval(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for (const [key, value] of Object.entries(process.memoryUsage())) {
         // this.logger.info(`Memory usage by ${key}, ${value / 1000000}MB `);
       }
@@ -43,39 +44,50 @@ class PerfTest {
   }
 
   async run(): Promise<void> {
-    const momento = await getCacheClient(
+    const defaultCacheClient = await getCacheClient(
       this.options.loggerFactory,
       this.options.requestTimeoutMs,
       this.cacheItemTtlSeconds
     );
-    await createCache(momento, this.cacheName, this.logger);
+    await createCache(defaultCacheClient, this.cacheName, this.logger);
+    const cacheClientWithMaxConcurrentRequests = await getCacheClient(
+      this.options.loggerFactory,
+      this.options.requestTimeoutMs,
+      this.cacheItemTtlSeconds,
+      {maxConcurrentRequests: 100}
+    );
 
+    await this.runWithCacheClient(defaultCacheClient, false);
+    await this.runWithCacheClient(cacheClientWithMaxConcurrentRequests, true);
+  }
+
+  async runWithCacheClient(cacheClient: CacheClient, useMaxConcurrentRequests: boolean): Promise<void> {
     const memoryUsageLogger = this.logMemoryUsage();
 
     try {
       this.logger.info('Starting async set requests');
-      await this.runAsyncSetRequests(momento);
+      await this.runAsyncSetRequests(cacheClient, useMaxConcurrentRequests);
 
       this.logger.info('Starting async get requests');
-      await this.runAsyncGetRequests(momento);
+      await this.runAsyncGetRequests(cacheClient, useMaxConcurrentRequests);
 
       this.logger.info('Starting set batch requests');
-      await this.runSetBatchTests(momento);
+      await this.runSetBatchTests(cacheClient, useMaxConcurrentRequests);
 
       this.logger.info('Starting get batch requests');
-      await this.runGetBatchTests(momento);
+      await this.runGetBatchTests(cacheClient, useMaxConcurrentRequests);
 
       // flush the cache
-      await flushCache(momento, this.cacheName, this.logger);
+      await flushCache(cacheClient, this.cacheName, this.logger);
     } finally {
       clearInterval(memoryUsageLogger);
     }
   }
 
-  async runAsyncSetRequests(momento: CacheClient): Promise<void> {
+  async runAsyncSetRequests(momento: CacheClient, useMaxConcurrentRequests: boolean): Promise<void> {
     for (const setConfig of this.testConfiguration.sets) {
       this.logger.info(
-        `Beginning run for ASYNC_SETS, batch size ${setConfig.batchSize}, item size ${setConfig.itemSizeBytes}`
+        `Beginning run for ASYNC_SETS, batch size ${setConfig.batchSize}, item size ${setConfig.itemSizeBytes}, use max concurrent requests: ${useMaxConcurrentRequests}`
       );
       let numLoops = 0;
       const context = initiatePerfTestContext();
@@ -83,19 +95,26 @@ class PerfTest {
         numLoops++;
         await this.sendAsyncSetRequests(momento, context, setConfig);
       }
-      calculateSummary(context, setConfig.batchSize, setConfig.itemSizeBytes, RequestType.ASYNC_SETS, this.logger);
+      calculateSummary(
+        context,
+        setConfig.batchSize,
+        setConfig.itemSizeBytes,
+        RequestType.ASYNC_SETS,
+        this.logger,
+        useMaxConcurrentRequests
+      );
       this.logger.info(
         `Completed run for ASYNC_SETS, batch size ${setConfig.batchSize}, item size ${
           setConfig.itemSizeBytes
-        }; num loops: ${numLoops}, elapsed duration: ${getElapsedMillis(context.startTime)}ms`
+        }, use max concurrent requests: ${useMaxConcurrentRequests}; num loops: ${numLoops}, elapsed duration: ${getElapsedMillis(context.startTime)}ms`
       );
     }
   }
 
-  async runAsyncGetRequests(momento: CacheClient): Promise<void> {
+  async runAsyncGetRequests(momento: CacheClient, useMaxConcurrentRequests: boolean): Promise<void> {
     for (const getConfig of this.testConfiguration.gets) {
       this.logger.info(
-        `Populating cache for ASYNC_GETS, batch size ${getConfig.batchSize}, item size ${getConfig.itemSizeBytes}`
+        `Populating cache for ASYNC_GETS, batch size ${getConfig.batchSize}, item size ${getConfig.itemSizeBytes}, use max concurrent requests: ${useMaxConcurrentRequests}`
       );
       const cachePopulationStartTime = process.hrtime();
       // ensure that the cache is populated with the keys
@@ -103,10 +122,10 @@ class PerfTest {
       this.logger.info(
         `Populated cache for ASYNC_GETS, batch size ${getConfig.batchSize}, item size ${
           getConfig.itemSizeBytes
-        } in ${getElapsedMillis(cachePopulationStartTime)}ms`
+        }, use max concurrent requests: ${useMaxConcurrentRequests} in ${getElapsedMillis(cachePopulationStartTime)}ms`
       );
       this.logger.info(
-        `Beginning run for ASYNC_GETS, batch size ${getConfig.batchSize}, item size ${getConfig.itemSizeBytes}`
+        `Beginning run for ASYNC_GETS, batch size ${getConfig.batchSize}, item size ${getConfig.itemSizeBytes}, use max concurrent requests: ${useMaxConcurrentRequests}`
       );
       let numLoops = 0;
       const context = initiatePerfTestContext();
@@ -115,16 +134,23 @@ class PerfTest {
         numLoops++;
         await this.sendAsyncGetRequests(momento, context, getConfig);
       }
-      calculateSummary(context, getConfig.batchSize, getConfig.itemSizeBytes, RequestType.ASYNC_GETS, this.logger);
+      calculateSummary(
+        context,
+        getConfig.batchSize,
+        getConfig.itemSizeBytes,
+        RequestType.ASYNC_GETS,
+        this.logger,
+        useMaxConcurrentRequests
+      );
       this.logger.info(
         `Completed run for ASYNC_GETS, batch size ${getConfig.batchSize}, item size ${
           getConfig.itemSizeBytes
-        }; num loops: ${numLoops}, elapsed duration: ${getElapsedMillis(context.startTime)}ms`
+        }, use max concurrent requests: ${useMaxConcurrentRequests}; num loops: ${numLoops}, elapsed duration: ${getElapsedMillis(context.startTime)}ms`
       );
     }
   }
 
-  async runSetBatchTests(momento: CacheClient): Promise<void> {
+  async runSetBatchTests(momento: CacheClient, useMaxConcurrentRequests: boolean): Promise<void> {
     for (const setConfig of this.testConfiguration.sets) {
       if (setConfig.batchSize * setConfig.itemSizeBytes >= 5 * 1024 * 1024) {
         this.logger.info(
@@ -133,7 +159,7 @@ class PerfTest {
         continue;
       }
       this.logger.info(
-        `Beginning run for SET_BATCH, batch size ${setConfig.batchSize}, item size ${setConfig.itemSizeBytes}`
+        `Beginning run for SET_BATCH, batch size ${setConfig.batchSize}, item size ${setConfig.itemSizeBytes}, use max concurrent requests: ${useMaxConcurrentRequests}`
       );
       let numLoops = 0;
       const context = initiatePerfTestContext();
@@ -141,19 +167,26 @@ class PerfTest {
         numLoops++;
         await this.sendSetBatchRequests(momento, context, setConfig);
       }
-      calculateSummary(context, setConfig.batchSize, setConfig.itemSizeBytes, RequestType.SET_BATCH, this.logger);
+      calculateSummary(
+        context,
+        setConfig.batchSize,
+        setConfig.itemSizeBytes,
+        RequestType.SET_BATCH,
+        this.logger,
+        useMaxConcurrentRequests
+      );
       this.logger.info(
         `Completed run for SET_BATCH, batch size ${setConfig.batchSize}, item size ${
           setConfig.itemSizeBytes
-        }; num loops: ${numLoops}, elapsed duration: ${getElapsedMillis(context.startTime)}ms`
+        }, use max concurrent requests: ${useMaxConcurrentRequests} ; num loops: ${numLoops}, elapsed duration: ${getElapsedMillis(context.startTime)}ms`
       );
     }
   }
 
-  async runGetBatchTests(momento: CacheClient): Promise<void> {
+  async runGetBatchTests(momento: CacheClient, useMaxConcurrentRequests: boolean): Promise<void> {
     for (const getConfig of this.testConfiguration.gets) {
       this.logger.info(
-        `Populating cache for GET_BATCH, batch size ${getConfig.batchSize}, item size ${getConfig.itemSizeBytes}`
+        `Populating cache for GET_BATCH, batch size ${getConfig.batchSize}, item size ${getConfig.itemSizeBytes}, use max concurrent requests: ${useMaxConcurrentRequests}`
       );
       const cachePopulationStartTime = process.hrtime();
       // ensure that the cache is populated with the keys
@@ -161,10 +194,10 @@ class PerfTest {
       this.logger.info(
         `Populated cache for GET_BATCH, batch size ${getConfig.batchSize}, item size ${
           getConfig.itemSizeBytes
-        } in ${getElapsedMillis(cachePopulationStartTime)}ms`
+        }, use max concurrent requests: ${useMaxConcurrentRequests} in ${getElapsedMillis(cachePopulationStartTime)}ms`
       );
       this.logger.info(
-        `Beginning run for GET_BATCH, batch size ${getConfig.batchSize}, item size ${getConfig.itemSizeBytes}`
+        `Beginning run for GET_BATCH, batch size ${getConfig.batchSize}, item size ${getConfig.itemSizeBytes}, use max concurrent requests: ${useMaxConcurrentRequests}`
       );
       let numLoops = 0;
       const context = initiatePerfTestContext();
@@ -172,11 +205,18 @@ class PerfTest {
         numLoops++;
         await this.sendGetBatchRequests(momento, context, getConfig);
       }
-      calculateSummary(context, getConfig.batchSize, getConfig.itemSizeBytes, RequestType.GET_BATCH, this.logger);
+      calculateSummary(
+        context,
+        getConfig.batchSize,
+        getConfig.itemSizeBytes,
+        RequestType.GET_BATCH,
+        this.logger,
+        useMaxConcurrentRequests
+      );
       this.logger.info(
         `Completed run for GET_BATCH, batch size ${getConfig.batchSize}, item size ${
           getConfig.itemSizeBytes
-        }; num loops: ${numLoops}, elapsed duration: ${getElapsedMillis(context.startTime)}ms`
+        }, use max concurrent requests: ${useMaxConcurrentRequests}; num loops: ${numLoops}, elapsed duration: ${getElapsedMillis(context.startTime)}ms`
       );
     }
   }
