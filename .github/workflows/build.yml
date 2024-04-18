@@ -156,11 +156,6 @@ jobs:
             npm ci
             npm run build
           popd
-          pushd examples/nodejs/vector-index
-            npm ci
-            npm run build
-            npm run validate-examples
-          popd
           pushd examples/nodejs/rate-limiter
             npm ci
             npm run build
@@ -215,11 +210,6 @@ jobs:
           pushd examples/web/vite-chat-app
             npm ci
             npm run build
-          popd
-          pushd examples/web/vector-index
-            npm ci
-            npm run build
-            npm run validate-examples
           popd
 
       - name: Send CI failure mail
