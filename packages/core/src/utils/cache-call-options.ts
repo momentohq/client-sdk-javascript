@@ -14,9 +14,18 @@ export interface CompressableCallOptions {
   compress?: boolean;
 }
 
+export interface DecompressableCallOptions {
+  /**
+   * Whether to decompress the data. Overrides the client-wide automatic decompression setting.
+   */
+  decompress?: boolean;
+}
+
 export interface SetCallOptions
   extends ScalarCallOptions,
     CompressableCallOptions {}
+
+export type GetCallOptions = DecompressableCallOptions;
 
 export interface SetIfAbsentCallOptions
   extends ScalarCallOptions,

@@ -90,6 +90,7 @@ import {
   SortedSetIncrementOptions,
   SortedSetLengthByScoreOptions,
   SetBatchOptions,
+  GetOptions,
 } from '../../../clients/ICacheClient';
 import {IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
@@ -173,6 +174,9 @@ export abstract class AbstractCacheClient implements ICacheClient {
    *
    * @param {string} cacheName - The cache to perform the lookup in.
    * @param {string | Uint8Array} key - The key to look up.
+   * @param {GetOptions} [options]
+   * @param {decompress} [options.decompress=false] - Whether to decompress the value. Overrides the client-wide
+   * automatic decompression setting.
    * @returns {Promise<CacheGet.Response>} -
    * {@link CacheGet.Hit} containing the value if one is found.
    * {@link CacheGet.Miss} if the key does not exist.
@@ -180,9 +184,10 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async get(
     cacheName: string,
-    key: string | Uint8Array
+    key: string | Uint8Array,
+    options?: GetOptions
   ): Promise<CacheGet.Response> {
-    return await this.getNextDataClient().get(cacheName, key);
+    return await this.getNextDataClient().get(cacheName, key, options);
   }
 
   /**

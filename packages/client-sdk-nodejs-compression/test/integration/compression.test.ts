@@ -29,7 +29,6 @@ const cacheClientWithDefaultCompressorFactoryDecompress = new CacheClient({
     cacheClientPropsWithConfig.configuration.withCompressionStrategy({
       compressorFactory: CompressorFactory.default(),
       compressionLevel: CompressionLevel.SmallestSize,
-      automaticDecompression: AutomaticDecompression.Enabled,
     }),
   credentialProvider: cacheClientPropsWithConfig.credentialProvider,
   defaultTtlSeconds: cacheClientPropsWithConfig.defaultTtlSeconds,
@@ -169,6 +168,58 @@ describe('CompressorFactory', () => {
     });
   });
   describe('CacheClient.get', () => {
+    it('should not return an error if decompress is true and compression is not enabled and it is a miss', async () => {
+      const getResponse = await cacheClientWithoutCompressorFactory.get(
+        cacheName,
+        randomString(),
+        {
+          decompress: true,
+        }
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Miss);
+      }, `Expected CacheClient.get to be a miss with decompression specified and no compression enabled, got: '${getResponse.toString()}'`);
+    });
+    it('should return an error if decompress is true and compression is not enabled and it is a hit', async () => {
+      const cacheClient = cacheClientWithoutCompressorFactory;
+      const key = randomString();
+      const setResponse = await cacheClient.set(cacheName, key, testValue);
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `Expected CacheClient.set to be a success with no compression specified, got: '${setResponse.toString()}'`);
+
+      const getResponse = await cacheClient.get(cacheName, key, {
+        decompress: true,
+      });
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Error);
+        expect((getResponse as CacheGet.Error).toString()).toEqual(
+          new CompressionError(
+            'CacheClient.Get',
+            'decompress'
+          ).wrappedErrorMessage()
+        );
+      }, `Expected CacheClient.get to return an error if decompression is specified without compressor set, but got: ${getResponse.toString()}`);
+    });
+    it('should decompress the value if decompress is true', async () => {
+      const cacheClient = cacheClientWithDefaultCompressorFactoryNoDecompress;
+      const key = randomString();
+      const setResponse = await cacheClient.set(cacheName, key, testValue, {
+        compress: true,
+      });
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `Expected CacheClient.set to be a success with compression specified, got: '${setResponse.toString()}'`);
+
+      const getResponse = await cacheClient.get(cacheName, key, {
+        decompress: true,
+      });
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `Expected CacheClient.get to be a hit after CacheClient.set with compression specified, got: '${getResponse.toString()}'`);
+
+      expect((getResponse as CacheGet.Hit).valueString()).toEqual(testValue);
+    });
     it('should decompress the value if decompression is enabled', async () => {
       const cacheClient = cacheClientWithDefaultCompressorFactoryDecompress;
       const key = randomString();
@@ -197,6 +248,27 @@ describe('CompressorFactory', () => {
       }, `Expected CacheClient.set to be a success with compression specified, got: '${setResponse.toString()}'`);
 
       const getResponse = await cacheClient.get(cacheName, key);
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `Expected CacheClient.get to be a hit after CacheClient.set with compression specified, got: '${getResponse.toString()}'`);
+
+      expect((getResponse as CacheGet.Hit).valueUint8Array()).toEqual(
+        testValueCompressed
+      );
+    });
+    it('should not decompress the value if decompression is enabled but decompress is false', async () => {
+      const cacheClient = cacheClientWithDefaultCompressorFactoryDecompress;
+      const key = randomString();
+      const setResponse = await cacheClient.set(cacheName, key, testValue, {
+        compress: true,
+      });
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `Expected CacheClient.set to be a success with compression specified, got: '${setResponse.toString()}'`);
+
+      const getResponse = await cacheClient.get(cacheName, key, {
+        decompress: false,
+      });
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `Expected CacheClient.get to be a hit after CacheClient.set with compression specified, got: '${getResponse.toString()}'`);

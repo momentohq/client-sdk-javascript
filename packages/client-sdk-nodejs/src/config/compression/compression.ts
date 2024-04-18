@@ -27,8 +27,9 @@ export interface CompressionStrategy {
 
   /**
    * This property represents whether the SDK will decompress data returned by calls that support compression.
+   * The default value is `AutomaticDecompression.Enabled`.
    */
-  automaticDecompression: AutomaticDecompression;
+  automaticDecompression?: AutomaticDecompression;
 }
 
 export enum AutomaticDecompression {
