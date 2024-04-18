@@ -1,11 +1,9 @@
 import {CacheClient} from './cache-client';
 import {AuthClient} from './auth-client';
 import {TopicClient} from './topic-client';
-import {PreviewVectorIndexClient} from './preview-vector-index-client';
 import {PreviewLeaderboardClient} from './preview-leaderboard-client';
 import * as Configurations from './config/configurations';
 import * as TopicConfigurations from './config/topic-configurations';
-import * as VectorIndexConfigurations from './config/vector-index-configurations';
 import * as LeaderboardConfigurations from './config/leaderboard-configurations';
 
 // Cache Client Response Types
@@ -88,7 +86,6 @@ import {
   IMomentoCache,
   SubscribeCallOptions,
   CacheInfo,
-  VectorIndexInfo,
   CollectionTtl,
   ItemType,
   SortedSetOrder,
@@ -160,29 +157,10 @@ import {
   TopicClientConfiguration,
 } from './config/topic-configuration';
 
-import {VectorIndexConfiguration} from './config/vector-index-configuration';
 import {
   LeaderboardClientConfiguration,
   LeaderboardConfiguration,
 } from './config/leaderboard-configuration';
-
-// VectorClient Request Types
-export {
-  ALL_VECTOR_METADATA,
-  VectorSimilarityMetric,
-  VectorFilterExpression,
-  VectorFilterExpressions,
-} from '@gomomento/sdk-core';
-
-// VectorClient Response Types
-export {
-  vector,
-  vectorFilters,
-  VectorIndexMetadata,
-  VectorIndexItem,
-  VectorIndexStoredItem,
-} from '@gomomento/sdk-core';
-export * from '@gomomento/sdk-core/dist/src/messages/responses/vector';
 
 export {
   DefaultMomentoLoggerFactory,
@@ -200,11 +178,7 @@ export {
   Configurations,
   CacheClient,
   AuthClient,
-  PreviewVectorIndexClient,
-  VectorIndexConfiguration,
-  VectorIndexConfigurations,
   CacheInfo,
-  VectorIndexInfo,
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,

@@ -96,36 +96,6 @@ jobs:
           node -v
           ./scripts/test-leaderboard-packages.sh
 
-  vector-tests:
-    strategy:
-      matrix:
-        node: [18]
-    name: Test MVI on Node ${{ matrix.node }}
-    runs-on: macos-latest
-    env:
-      TEST_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
-      TEST_SESSION_TOKEN: ${{ secrets.MOMENTO_PREPROD_SESSION_TOKEN }}
-      TEST_LEGACY_AUTH_TOKEN: ${{ secrets.ALPHA_LEGACY_TEST_AUTH_TOKEN }}
-
-    steps:
-      - name: Setup repo
-        uses: actions/checkout@v3
-
-      - name: Install Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node }}
-
-      - name: Build all packages
-        run: |
-          node -v
-          ./scripts/build-all-packages.sh
-
-      - name: Run vector tests for packages
-        run: |
-          node -v
-          ./scripts/test-vector-packages.sh
-
   test-examples:
     strategy:
       matrix:

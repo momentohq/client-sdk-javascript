@@ -9,8 +9,6 @@ import {
   CredentialProvider,
   CollectionTtl,
   TopicClient,
-  PreviewVectorIndexClient,
-  VectorIndexConfigurations,
   PreviewLeaderboardClient,
   LeaderboardConfigurations,
 } from '../../src';
@@ -67,7 +65,6 @@ function sessionCredsProvider(): CredentialProvider {
         cacheEndpoint: credsProvider().getCacheEndpoint(),
         controlEndpoint: credsProvider().getControlEndpoint(),
         tokenEndpoint: credsProvider().getTokenEndpoint(),
-        vectorEndpoint: credsProvider().getVectorEndpoint(),
       },
     });
   }
@@ -145,21 +142,6 @@ function momentoTopicClientForTestingWithSessionToken(): TopicClient {
   return new TopicClient({
     configuration: integrationTestCacheClientProps().configuration,
     credentialProvider: sessionCredsProvider(),
-  });
-}
-
-function momentoVectorClientForTesting(): PreviewVectorIndexClient {
-  return new PreviewVectorIndexClient({
-    credentialProvider: credsProvider(),
-    configuration: VectorIndexConfigurations.Laptop.latest(),
-  });
-}
-
-function momentoVectorClientWithThrowsOnErrorsForTesting(): PreviewVectorIndexClient {
-  return new PreviewVectorIndexClient({
-    credentialProvider: credsProvider(),
-    configuration:
-      VectorIndexConfigurations.Laptop.latest().withThrowOnErrors(true),
   });
 }
 
@@ -241,16 +223,6 @@ export function SetupTopicIntegrationTest(): {
     cacheClient: cacheClient,
     integrationTestCacheName: integrationTestCacheName,
   };
-}
-
-export function SetupVectorIntegrationTest(): {
-  vectorClient: PreviewVectorIndexClient;
-  vectorClientWithThrowOnErrors: PreviewVectorIndexClient;
-} {
-  const vectorClient = momentoVectorClientForTesting();
-  const vectorClientWithThrowOnErrors =
-    momentoVectorClientWithThrowsOnErrorsForTesting();
-  return {vectorClient, vectorClientWithThrowOnErrors};
 }
 
 export function SetupLeaderboardIntegrationTest(): {
