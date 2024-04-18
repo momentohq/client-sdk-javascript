@@ -13,11 +13,9 @@ import {
 import {
   CacheClient,
   TopicClient,
-  PreviewVectorIndexClient,
   Configurations,
   AuthClient,
   TopicConfigurations,
-  VectorIndexConfigurations,
   PreviewLeaderboardClient,
   LeaderboardConfigurations,
 } from '../../src';
@@ -37,7 +35,6 @@ export function credsProvider(): CredentialProvider {
           controlEndpoint: 'https://no-controlplane-requests-allowed:9001',
           cacheEndpoint: 'https://localhost:9001',
           tokenEndpoint: 'https://localhost:9001',
-          vectorEndpoint: 'https://localhost:9001',
         },
       });
     } else {
@@ -59,7 +56,6 @@ function sessionCredsProvider(): CredentialProvider {
         cacheEndpoint: credsProvider().getCacheEndpoint(),
         controlEndpoint: credsProvider().getControlEndpoint(),
         tokenEndpoint: credsProvider().getTokenEndpoint(),
-        vectorEndpoint: credsProvider().getVectorEndpoint(),
       },
     });
   }
@@ -139,21 +135,6 @@ function momentoTopicClientForTestingWithSessionToken(): TopicClient {
   });
 }
 
-function momentoVectorClientForTesting(): PreviewVectorIndexClient {
-  return new PreviewVectorIndexClient({
-    configuration: VectorIndexConfigurations.Laptop.latest(),
-    credentialProvider: credsProvider(),
-  });
-}
-
-function momentoVectorClientWithThrowsOnErrorsForTesting(): PreviewVectorIndexClient {
-  return new PreviewVectorIndexClient({
-    credentialProvider: credsProvider(),
-    configuration:
-      VectorIndexConfigurations.Laptop.latest().withThrowOnErrors(true),
-  });
-}
-
 function momentoLeaderboardClientForTesting(): PreviewLeaderboardClient {
   return new PreviewLeaderboardClient({
     credentialProvider: credsProvider(),
@@ -229,16 +210,6 @@ export function SetupTopicIntegrationTest(): {
     cacheClient: cacheClient,
     integrationTestCacheName: integrationTestCacheName,
   };
-}
-
-export function SetupVectorIntegrationTest(): {
-  vectorClient: PreviewVectorIndexClient;
-  vectorClientWithThrowOnErrors: PreviewVectorIndexClient;
-} {
-  const vectorClient = momentoVectorClientForTesting();
-  const vectorClientWithThrowOnErrors =
-    momentoVectorClientWithThrowsOnErrorsForTesting();
-  return {vectorClient, vectorClientWithThrowOnErrors};
 }
 
 export function SetupLeaderboardIntegrationTest(): {

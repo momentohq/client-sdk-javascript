@@ -10,8 +10,6 @@ export * from './item-get-type';
 export * from './topic-client';
 export * from './keys-exist';
 export * from './update-ttl';
-export * from './vector-control-plane';
-export * from './vector-data-plane';
 export * from './leaderboard-client';
 export * from './webhooks';
 export * from './batch-get-set';

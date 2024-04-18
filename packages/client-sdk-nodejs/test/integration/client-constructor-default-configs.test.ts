@@ -1,7 +1,6 @@
 import {
   CacheClient,
   TopicClient,
-  PreviewVectorIndexClient,
   PreviewLeaderboardClient,
   CredentialProvider,
 } from '../../src';
@@ -56,15 +55,6 @@ describe('default configurations', () => {
       credentialProvider: credsProvider(),
     });
     expect(topicClientViaConstructor).toBeInstanceOf(TopicClient);
-  });
-
-  it('VectorIndexClient should be able to be constructed with a default configuration', () => {
-    const vectorIndexClientViaConstructor = new PreviewVectorIndexClient({
-      credentialProvider: credsProvider(),
-    });
-    expect(vectorIndexClientViaConstructor).toBeInstanceOf(
-      PreviewVectorIndexClient
-    );
   });
 
   it('LeaderboardClient should be able to be constructed with a default configuration', () => {

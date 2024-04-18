@@ -1,15 +1,12 @@
 import {CacheClient, SimpleCacheClient} from './cache-client';
 import {TopicClient} from './topic-client';
-import {PreviewVectorIndexClient} from './preview-vector-index-client';
 import * as Configurations from './config/configurations';
 import * as TopicConfigurations from './config/topic-configurations';
-import * as VectorIndexConfigurations from './config/vector-index-configurations';
 import * as LeaderboardConfigurations from './config/leaderboard-configurations';
 import * as BatchUtils from './batchutils/batch-functions';
 import * as WebhookUtils from './webhookutils';
 
 import {TopicClientProps} from './topic-client-props';
-import {VectorIndexConfiguration} from './config/vector-index-configuration';
 
 // Cache Client Response Types
 import * as CacheGet from '@gomomento/sdk-core/dist/src/messages/responses/cache-get';
@@ -88,24 +85,6 @@ import * as RefreshApiKey from '@gomomento/sdk-core/dist/src/messages/responses/
 
 import * as GenerateDisposableToken from '@gomomento/sdk-core/dist/src/messages/responses/generate-disposable-token';
 
-// VectorClient Request Types
-export {
-  ALL_VECTOR_METADATA,
-  VectorSimilarityMetric,
-  VectorFilterExpression,
-  VectorFilterExpressions,
-} from '@gomomento/sdk-core';
-
-// VectorClient Response Types
-export {
-  vector,
-  vectorFilters,
-  VectorIndexMetadata,
-  VectorIndexItem,
-  VectorIndexStoredItem,
-} from '@gomomento/sdk-core';
-export * from '@gomomento/sdk-core/dist/src/messages/responses/vector';
-
 // LeaderboardClient Response Types
 export {leaderboard} from '@gomomento/sdk-core';
 export * from '@gomomento/sdk-core/dist/src/messages/responses/leaderboard';
@@ -115,7 +94,6 @@ import {
   IMomentoCache,
   SubscribeCallOptions,
   CacheInfo,
-  VectorIndexInfo,
   CollectionTtl,
   ItemType,
   SortedSetOrder,
@@ -255,13 +233,9 @@ export {
   Configurations,
   Configuration,
   CacheConfiguration,
-  PreviewVectorIndexClient,
-  VectorIndexConfigurations,
-  VectorIndexConfiguration,
   CacheClient,
   SimpleCacheClient,
   CacheInfo,
-  VectorIndexInfo,
   // Credentials / Auth
   CredentialProvider,
   StringMomentoTokenProvider,

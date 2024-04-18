@@ -1,12 +1,8 @@
 import {
   CollectionTtl,
   CreateCache,
-  CreateVectorIndex,
   DeleteCache,
-  DeleteVectorIndex,
-  IVectorIndexClient,
   MomentoErrorCode,
-  VectorSimilarityMetric,
   DeleteWebhook,
   Webhook,
   PutWebhook,
@@ -169,67 +165,6 @@ export async function WithWebhook(
   }
 }
 
-export const deleteIndexIfExists = async (
-  client: IVectorIndexClient,
-  indexName: string
-) => {
-  if (isLocalhostDevelopmentMode()) {
-    console.log(
-      `LOCALHOST DEVELOPMENT MODE: skipping delete index command for index '${indexName}`
-    );
-    return;
-  }
-  const deleteResponse = await client.deleteIndex(indexName);
-  if (deleteResponse instanceof DeleteVectorIndex.Error) {
-    if (deleteResponse.errorCode() !== MomentoErrorCode.NOT_FOUND_ERROR) {
-      throw deleteResponse.innerException();
-    }
-  }
-};
-
-export const createIndexIfNotExists = async (
-  client: IVectorIndexClient,
-  indexName: string,
-  numDimensions: number,
-  similarityMetric: VectorSimilarityMetric
-) => {
-  if (isLocalhostDevelopmentMode()) {
-    console.log(
-      `LOCALHOST DEVELOPMENT MODE: skipping create index command for index '${indexName}`
-    );
-    return;
-  }
-  const createResponse = await client.createIndex(
-    indexName,
-    numDimensions,
-    similarityMetric
-  );
-  if (createResponse instanceof CreateVectorIndex.Error) {
-    throw createResponse.innerException();
-  }
-};
-
-export async function WithIndex(
-  client: IVectorIndexClient,
-  indexName: string,
-  numDimensions: number,
-  similarityMetric: VectorSimilarityMetric,
-  block: () => Promise<void>
-) {
-  await deleteIndexIfExists(client, indexName);
-  await createIndexIfNotExists(
-    client,
-    indexName,
-    numDimensions,
-    similarityMetric
-  );
-  try {
-    await block();
-  } finally {
-    await deleteIndexIfExists(client, indexName);
-  }
-}
-
 export interface ValidateCacheProps {
   cacheName: string;
 }
@@ -267,12 +202,6 @@ export interface ValidateTopicProps {
   topicName: string;
 }
 
-export interface ValidateVectorProps {
-  indexName: string;
-  numDimensions: number;
-  topK: number;
-}
-
 export function ItBehavesLikeItValidatesCacheName(
   getResponse: (props: ValidateCacheProps) => Promise<ResponseBase>
 ) {
@@ -298,60 +227,6 @@ export function ItBehavesLikeItValidatesTopicName(
     );
     expect((response as IResponseError).message()).toEqual(
       'Invalid argument passed to Momento client: topic name must not be empty'
-    );
-  });
-}
-
-export function ItBehavesLikeItValidatesIndexName(
-  getResponse: (props: ValidateVectorProps) => Promise<ResponseBase>
-) {
-  it('validates its index name', async () => {
-    const response = await getResponse({
-      indexName: '   ',
-      numDimensions: 1,
-      topK: 10,
-    });
-    expect((response as IResponseError).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    expect((response as IResponseError).message()).toEqual(
-      'Invalid argument passed to Momento client: index name must not be empty'
-    );
-  });
-}
-
-export function ItBehavesLikeItValidatesTopK(
-  getResponse: (props: ValidateVectorProps) => Promise<ResponseBase>
-) {
-  it('validates its topK', async () => {
-    const response = await getResponse({
-      indexName: v4(),
-      numDimensions: 2,
-      topK: 0,
-    });
-    expect((response as IResponseError).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    expect((response as IResponseError).message()).toEqual(
-      'Invalid argument passed to Momento client: topK must be greater than zero'
-    );
-  });
-}
-
-export function ItBehavesLikeItValidatesNumDimensions(
-  getResponse: (props: ValidateVectorProps) => Promise<ResponseBase>
-) {
-  it('validates its numDimensions', async () => {
-    const response = await getResponse({
-      indexName: v4(),
-      numDimensions: 0,
-      topK: 10,
-    });
-    expect((response as IResponseError).errorCode()).toEqual(
-      MomentoErrorCode.INVALID_ARGUMENT_ERROR
-    );
-    expect((response as IResponseError).message()).toEqual(
-      'Invalid argument passed to Momento client: numDimensions must be greater than zero'
     );
   });
 }

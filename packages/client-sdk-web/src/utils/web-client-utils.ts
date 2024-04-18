@@ -44,15 +44,6 @@ export function getWebTokenEndpoint(
   return withProtocolPrefix(`web.${credentialProvider.getTokenEndpoint()}`);
 }
 
-export function getWebVectorEndpoint(
-  credentialProvider: CredentialProvider
-): string {
-  if (credentialProvider.areEndpointsOverridden()) {
-    return withProtocolPrefix(credentialProvider.getVectorEndpoint());
-  }
-  return withProtocolPrefix(`web.${credentialProvider.getVectorEndpoint()}`);
-}
-
 function withProtocolPrefix(endpoint: string): string {
   if (endpoint.match(/^http(?:s)?:\/\//)) {
     return endpoint;

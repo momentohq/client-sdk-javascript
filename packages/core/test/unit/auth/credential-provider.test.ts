@@ -67,7 +67,6 @@ describe('StringMomentoTokenProvider', () => {
     expect(legacyAuthProvider.getControlEndpoint()).toEqual('control.base.foo');
     expect(legacyAuthProvider.getCacheEndpoint()).toEqual('cache.base.foo');
     expect(legacyAuthProvider.getTokenEndpoint()).toEqual('token.base.foo');
-    expect(legacyAuthProvider.getVectorEndpoint()).toEqual('vector.base.foo');
     expect(legacyAuthProvider.areEndpointsOverridden()).toEqual(true);
 
     const v1AuthProvider = CredentialProvider.fromString({
@@ -80,7 +79,6 @@ describe('StringMomentoTokenProvider', () => {
     expect(v1AuthProvider.getControlEndpoint()).toEqual('control.base.foo');
     expect(v1AuthProvider.getCacheEndpoint()).toEqual('cache.base.foo');
     expect(v1AuthProvider.getTokenEndpoint()).toEqual('token.base.foo');
-    expect(v1AuthProvider.getVectorEndpoint()).toEqual('vector.base.foo');
     expect(v1AuthProvider.areEndpointsOverridden()).toEqual(true);
   });
 
@@ -91,13 +89,11 @@ describe('StringMomentoTokenProvider', () => {
         controlEndpoint: 'control.foo',
         cacheEndpoint: 'cache.foo',
         tokenEndpoint: 'token.foo',
-        vectorEndpoint: 'vector.foo',
       },
     });
     expect(legacyAuthProvider.getControlEndpoint()).toEqual('control.foo');
     expect(legacyAuthProvider.getCacheEndpoint()).toEqual('cache.foo');
     expect(legacyAuthProvider.getTokenEndpoint()).toEqual('token.foo');
-    expect(legacyAuthProvider.getVectorEndpoint()).toEqual('vector.foo');
     expect(legacyAuthProvider.areEndpointsOverridden()).toEqual(true);
 
     const v1AuthProvider = CredentialProvider.fromString({
@@ -106,14 +102,12 @@ describe('StringMomentoTokenProvider', () => {
         controlEndpoint: 'control.foo',
         cacheEndpoint: 'cache.foo',
         tokenEndpoint: 'token.foo',
-        vectorEndpoint: 'vector.foo',
       },
     });
     expect(v1AuthProvider.getAuthToken()).toEqual(fakeTestV1ApiKey);
     expect(v1AuthProvider.getControlEndpoint()).toEqual('control.foo');
     expect(v1AuthProvider.getCacheEndpoint()).toEqual('cache.foo');
     expect(v1AuthProvider.getTokenEndpoint()).toEqual('token.foo');
-    expect(v1AuthProvider.getVectorEndpoint()).toEqual('vector.foo');
     expect(v1AuthProvider.areEndpointsOverridden()).toEqual(true);
   });
 
@@ -124,14 +118,12 @@ describe('StringMomentoTokenProvider', () => {
         controlEndpoint: 'control.foo',
         cacheEndpoint: 'cache.foo',
         tokenEndpoint: 'token.foo',
-        vectorEndpoint: 'vector.foo',
       },
     });
     expect(sessionTokenProvider.getAuthToken()).toEqual(fakeSessionToken);
     expect(sessionTokenProvider.getControlEndpoint()).toEqual('control.foo');
     expect(sessionTokenProvider.getCacheEndpoint()).toEqual('cache.foo');
     expect(sessionTokenProvider.getTokenEndpoint()).toEqual('token.foo');
-    expect(sessionTokenProvider.getVectorEndpoint()).toEqual('vector.foo');
     expect(sessionTokenProvider.areEndpointsOverridden()).toEqual(true);
   });
 
@@ -188,7 +180,6 @@ describe('EnvMomentoTokenProvider', () => {
     expect(authProvider.getControlEndpoint()).toEqual('control.base.foo');
     expect(authProvider.getCacheEndpoint()).toEqual('cache.base.foo');
     expect(authProvider.getTokenEndpoint()).toEqual('token.base.foo');
-    expect(authProvider.getVectorEndpoint()).toEqual('vector.base.foo');
     expect(authProvider.areEndpointsOverridden()).toEqual(true);
 
     process.env[testEnvVarName] = base64EncodedFakeV1AuthToken;
@@ -202,7 +193,6 @@ describe('EnvMomentoTokenProvider', () => {
     expect(v1AuthProvider.getControlEndpoint()).toEqual('control.base.foo');
     expect(v1AuthProvider.getCacheEndpoint()).toEqual('cache.base.foo');
     expect(v1AuthProvider.getTokenEndpoint()).toEqual('token.base.foo');
-    expect(v1AuthProvider.getVectorEndpoint()).toEqual('vector.base.foo');
     expect(v1AuthProvider.areEndpointsOverridden()).toEqual(true);
   });
 
@@ -215,14 +205,12 @@ describe('EnvMomentoTokenProvider', () => {
         controlEndpoint: 'control.foo',
         cacheEndpoint: 'cache.foo',
         tokenEndpoint: 'token.foo',
-        vectorEndpoint: 'vector.foo',
       },
     });
     expect(legacyAuthProvider.getAuthToken()).toEqual(fakeTestLegacyToken);
     expect(legacyAuthProvider.getControlEndpoint()).toEqual('control.foo');
     expect(legacyAuthProvider.getCacheEndpoint()).toEqual('cache.foo');
     expect(legacyAuthProvider.getTokenEndpoint()).toEqual('token.foo');
-    expect(legacyAuthProvider.getVectorEndpoint()).toEqual('vector.foo');
     expect(legacyAuthProvider.areEndpointsOverridden()).toEqual(true);
 
     process.env[testEnvVarName] = base64EncodedFakeV1AuthToken;
@@ -232,14 +220,12 @@ describe('EnvMomentoTokenProvider', () => {
         controlEndpoint: 'control.foo',
         cacheEndpoint: 'cache.foo',
         tokenEndpoint: 'token.foo',
-        vectorEndpoint: 'vector.foo',
       },
     });
     expect(v1AuthProvider.getAuthToken()).toEqual(fakeTestV1ApiKey);
     expect(v1AuthProvider.getControlEndpoint()).toEqual('control.foo');
     expect(v1AuthProvider.getCacheEndpoint()).toEqual('cache.foo');
     expect(v1AuthProvider.getTokenEndpoint()).toEqual('token.foo');
-    expect(v1AuthProvider.getVectorEndpoint()).toEqual('vector.foo');
     expect(v1AuthProvider.areEndpointsOverridden()).toEqual(true);
   });
 
@@ -259,7 +245,6 @@ describe('EnvMomentoTokenProvider', () => {
     );
     expect(legacyAuthProvider.getCacheEndpoint()).toEqual('prefix.cache.foo');
     expect(legacyAuthProvider.getTokenEndpoint()).toEqual('prefix.token.foo');
-    expect(legacyAuthProvider.getVectorEndpoint()).toEqual('prefix.vector.foo');
     expect(legacyAuthProvider.areEndpointsOverridden()).toEqual(true);
 
     process.env[testEnvVarName] = base64EncodedFakeV1AuthToken;
@@ -274,7 +259,6 @@ describe('EnvMomentoTokenProvider', () => {
     expect(v1AuthProvider.getControlEndpoint()).toEqual('prefix.control.foo');
     expect(v1AuthProvider.getCacheEndpoint()).toEqual('prefix.cache.foo');
     expect(v1AuthProvider.getTokenEndpoint()).toEqual('prefix.token.foo');
-    expect(v1AuthProvider.getVectorEndpoint()).toEqual('prefix.vector.foo');
     expect(v1AuthProvider.areEndpointsOverridden()).toEqual(true);
   });
 });
