@@ -25,6 +25,7 @@ function integrationTestCacheClientPropsWithExperimentalMetricsMiddleware(): Cac
   const loggerFactory = new DefaultMomentoLoggerFactory(
     DefaultMomentoLoggerLevel.INFO
   );
+  const credentialProvider = credsProvider();
   return {
     configuration: Configurations.Laptop.latest(loggerFactory)
       .withClientTimeoutMillis(90000)
@@ -35,7 +36,7 @@ function integrationTestCacheClientPropsWithExperimentalMetricsMiddleware(): Cac
           activeRequestCountMetricsLog: true,
         })
       ),
-    credentialProvider: credsProvider(),
+    credentialProvider: credentialProvider,
     defaultTtlSeconds: 1111,
   };
 }
