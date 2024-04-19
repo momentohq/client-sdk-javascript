@@ -148,7 +148,7 @@ export class CacheDataClient implements IDataClient {
   private readonly interceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
   private readonly valueCompressor?: ICompression;
-  private readonly decompress: boolean;
+  private readonly autoDecompressEnabled: boolean;
   private requestConcurrencySemaphore: Semaphore | undefined;
 
   /**
@@ -170,12 +170,12 @@ export class CacheDataClient implements IDataClient {
     const compression = this.configuration.getCompressionStrategy();
     if (compression !== undefined) {
       this.valueCompressor = compression.compressorFactory;
-      this.decompress =
+      this.autoDecompressEnabled =
         (compression.automaticDecompression ??
           AutomaticDecompression.Enabled) === AutomaticDecompression.Enabled;
     } else {
       this.valueCompressor = undefined;
-      this.decompress = false;
+      this.autoDecompressEnabled = false;
     }
     this.requestConcurrencySemaphore = semaphore;
 
@@ -1442,7 +1442,8 @@ export class CacheDataClient implements IDataClient {
                 resolve(new CacheGet.Miss());
                 break;
               case grpcCache.ECacheResult.Hit: {
-                const shouldDecompress = options?.decompress ?? this.decompress;
+                const shouldDecompress =
+                  options?.decompress ?? this.autoDecompressEnabled;
                 if (!shouldDecompress) {
                   resolve(new CacheGet.Hit(resp.cache_body));
                 } else {

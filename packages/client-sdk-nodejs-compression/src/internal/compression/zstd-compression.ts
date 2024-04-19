@@ -8,6 +8,8 @@ import * as zstd from '@mongodb-js/zstd';
 import {convert} from '@gomomento/sdk/dist/src/internal/utils';
 
 class ZtsdCompressor implements ICompression {
+  // The byte sequence that begins a ZSTD compressed data frame.
+  // https://github.com/facebook/zstd/blob/dev/doc/zstd_compression_format.md
   private static readonly MAGIC_NUMBER = 0xfd2fb528;
 
   private readonly logger;
