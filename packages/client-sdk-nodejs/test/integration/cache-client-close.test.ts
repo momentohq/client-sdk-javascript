@@ -5,38 +5,51 @@ import {
   Configurations,
   DefaultMomentoLoggerFactory,
   DefaultMomentoLoggerLevel,
+  Middleware,
   MiddlewareFactory,
 } from '../../src';
 
 describe("Test exercises closing a client and jest doesn't hang", () => {
   it('constructs a client with background task and closes it', async () => {
     let client;
+    let middleware;
     try {
-      client = await CacheClient.create(
-        integrationTestCacheClientPropsWithExperimentalMetricsMiddleware()
+      const loggerFactory = new DefaultMomentoLoggerFactory(
+        DefaultMomentoLoggerLevel.INFO
       );
+      middleware = MiddlewareFactory.createMetricsMiddlewares(loggerFactory, {
+        eventLoopMetricsLog: true,
+        garbageCollectionMetricsLog: true,
+        activeRequestCountMetricsLog: true,
+      });
+      client = await CacheClient.create(
+        integrationTestCacheClientPropsWithExperimentalMetricsMiddleware(
+          loggerFactory,
+          middleware
+        )
+      );
+    } catch (e) {
+      middleware?.forEach(m => {
+        if (m.close !== undefined) {
+          m.close();
+        }
+      });
+      throw e;
     } finally {
       if (client) client.close();
     }
   });
 });
 
-function integrationTestCacheClientPropsWithExperimentalMetricsMiddleware(): CacheClientPropsWithConfig {
-  const loggerFactory = new DefaultMomentoLoggerFactory(
-    DefaultMomentoLoggerLevel.INFO
-  );
-  const credentialProvider = credsProvider();
+function integrationTestCacheClientPropsWithExperimentalMetricsMiddleware(
+  loggerFactory: DefaultMomentoLoggerFactory,
+  middleware: Middleware[]
+): CacheClientPropsWithConfig {
   return {
     configuration: Configurations.Laptop.latest(loggerFactory)
       .withClientTimeoutMillis(90000)
-      .withMiddlewares(
-        MiddlewareFactory.createMetricsMiddlewares(loggerFactory, {
-          eventLoopMetricsLog: true,
-          garbageCollectionMetricsLog: true,
-          activeRequestCountMetricsLog: true,
-        })
-      ),
-    credentialProvider: credentialProvider,
+      .withMiddlewares(middleware),
+    credentialProvider: credsProvider(),
     defaultTtlSeconds: 1111,
   };
 }
