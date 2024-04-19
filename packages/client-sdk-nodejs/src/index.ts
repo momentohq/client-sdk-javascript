@@ -222,6 +222,7 @@ export {MiddlewareFactory} from './config/middleware/experimental-middleware-fac
 export {
   ICompression,
   CompressionStrategy,
+  AutomaticDecompression,
 } from './config/compression/compression';
 
 export {

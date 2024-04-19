@@ -16,7 +16,7 @@ export interface CompressableCallOptions {
 
 export interface DecompressableCallOptions {
   /**
-   * Whether to decompress the data.
+   * Whether to decompress the data. Overrides the client-wide automatic decompression setting.
    */
   decompress?: boolean;
 }

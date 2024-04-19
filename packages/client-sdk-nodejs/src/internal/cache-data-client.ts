@@ -12,6 +12,7 @@ import {
   ServiceError,
 } from '@grpc/grpc-js';
 import {
+  AutomaticDecompression,
   CacheDecreaseTtl,
   CacheDelete,
   CacheDictionaryFetch,
@@ -120,6 +121,7 @@ import {
   SetCallOptions,
   SetIfAbsentCallOptions,
 } from '@gomomento/sdk-core/dist/src/utils';
+import {CompressionError} from '../errors/compression-error';
 import grpcCache = cache.cache_client;
 import ECacheResult = cache_client.ECacheResult;
 import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
@@ -130,7 +132,6 @@ import Equal = common.Equal;
 import NotEqual = common.NotEqual;
 import PresentAndNotEqual = common.PresentAndNotEqual;
 import AbsentOrEqual = common.AbsentOrEqual;
-import {CompressionError} from '../errors/compression-error';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -147,11 +148,13 @@ export class CacheDataClient implements IDataClient {
   private readonly interceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
   private readonly valueCompressor?: ICompression;
+  private readonly autoDecompressEnabled: boolean;
   private requestConcurrencySemaphore: Semaphore | undefined;
 
   /**
    * @param {CacheClientProps} props
    * @param dataClientID
+   * @param semaphore
    */
   constructor(
     props: CacheClientPropsWithConfig,
@@ -167,8 +170,12 @@ export class CacheDataClient implements IDataClient {
     const compression = this.configuration.getCompressionStrategy();
     if (compression !== undefined) {
       this.valueCompressor = compression.compressorFactory;
+      this.autoDecompressEnabled =
+        (compression.automaticDecompression ??
+          AutomaticDecompression.Enabled) === AutomaticDecompression.Enabled;
     } else {
       this.valueCompressor = undefined;
+      this.autoDecompressEnabled = false;
     }
     this.requestConcurrencySemaphore = semaphore;
 
@@ -1435,7 +1442,9 @@ export class CacheDataClient implements IDataClient {
                 resolve(new CacheGet.Miss());
                 break;
               case grpcCache.ECacheResult.Hit: {
-                if (!options?.decompress) {
+                const shouldDecompress =
+                  options?.decompress ?? this.autoDecompressEnabled;
+                if (!shouldDecompress) {
                   resolve(new CacheGet.Hit(resp.cache_body));
                 } else {
                   if (this.valueCompressor === undefined) {
