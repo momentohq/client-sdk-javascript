@@ -30,7 +30,7 @@ export function credsProvider(): CredentialProvider {
   if (_credsProvider === undefined) {
     if (isLocalhostDevelopmentMode()) {
       _credsProvider = CredentialProvider.fromEnvironmentVariable({
-        environmentVariableName: 'TEST_API_KEY',
+        environmentVariableName: 'MOMENTO_API_KEY',
         endpointOverrides: {
           controlEndpoint: 'https://no-controlplane-requests-allowed:9001',
           cacheEndpoint: 'https://localhost:9001',
@@ -39,7 +39,7 @@ export function credsProvider(): CredentialProvider {
       });
     } else {
       _credsProvider = CredentialProvider.fromEnvironmentVariable({
-        environmentVariableName: 'TEST_API_KEY',
+        environmentVariableName: 'MOMENTO_API_KEY',
       });
     }
   }
