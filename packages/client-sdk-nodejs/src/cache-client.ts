@@ -80,6 +80,12 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
     this.logger = configuration.getLoggerFactory().getLogger(this);
     this.logger.debug('Creating Momento CacheClient');
 
+    // Initialize middlewares that have init methods. These currently start
+    // background tasks for logging that will execute until they are explicitly
+    // stopped. This is usually handled by the client's close method, but if
+    // there is ever a chance that this client constructor may fail after these
+    // methods are called, it is up to you to catch the exception and call close
+    // on each of these manually.
     this._configuration.getMiddlewares().forEach(m => {
       if (m.init) {
         m.init();
@@ -108,19 +114,24 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
    */
   static async create(props: EagerCacheClientProps): Promise<CacheClient> {
     const client = new CacheClient(props);
-    const timeout =
-      props.eagerConnectTimeout !== undefined
-        ? props.eagerConnectTimeout
-        : EAGER_CONNECTION_DEFAULT_TIMEOUT_SECONDS;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    validateTimeout(timeout);
-    // client need to explicitly set the value as 0 to disable eager connection.
-    if (props.eagerConnectTimeout !== 0) {
-      await Promise.all(
-        client.dataClients.map(dc => (dc as CacheDataClient).connect(timeout))
-      );
+    try {
+      const timeout =
+        props.eagerConnectTimeout !== undefined
+          ? props.eagerConnectTimeout
+          : EAGER_CONNECTION_DEFAULT_TIMEOUT_SECONDS;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      validateTimeout(timeout);
+      // client need to explicitly set the value as 0 to disable eager connection.
+      if (props.eagerConnectTimeout !== 0) {
+        await Promise.all(
+          client.dataClients.map(dc => (dc as CacheDataClient).connect(timeout))
+        );
+      }
+      return client;
+    } catch (e) {
+      client.close();
+      throw e;
     }
-    return client;
   }
 
   /**
