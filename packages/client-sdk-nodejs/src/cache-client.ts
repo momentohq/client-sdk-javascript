@@ -80,7 +80,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
     this.logger = configuration.getLoggerFactory().getLogger(this);
     this.logger.debug('Creating Momento CacheClient');
 
-    this._configuration.getMiddlewares().map(m => {
+    this._configuration.getMiddlewares().forEach(m => {
       if (m.init) {
         m.init();
       }
@@ -93,7 +93,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
     }
     this.controlClient.close();
     this.dataClients.map(dc => dc.close());
-    this._configuration.getMiddlewares().map(m => {
+    this._configuration.getMiddlewares().forEach(m => {
       if (m.close) {
         m.close();
       }
