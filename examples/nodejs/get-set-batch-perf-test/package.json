@@ -26,11 +26,11 @@
     "typescript": "5.4.5"
   },
   "dependencies": {
-    "@gomomento/sdk": "1.80.0",
+    "@gomomento/sdk": "^1.80.0",
     "hdr-histogram-js": "3.0.0"
   },
-  "engines" : {
-    "npm" : ">=8.0.0",
-    "node" : ">=18.0.0"
+  "engines": {
+    "npm": ">=8.0.0",
+    "node": ">=18.0.0"
   }
 }
