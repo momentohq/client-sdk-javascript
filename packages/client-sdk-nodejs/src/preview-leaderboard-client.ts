@@ -36,6 +36,18 @@ export class PreviewLeaderboardClient implements ILeaderboardClient {
     this.logger = configuration.getLoggerFactory().getLogger(this);
     this.logger.debug('Creating Momento LeaderboardClient');
     this.dataClient = new LeaderboardDataClient(propsWithConfig, '0'); // only creating one leaderboard client
+
+    // Initialize middlewares that have init methods. These currently start
+    // background tasks for logging that will execute until they are explicitly
+    // stopped. This is usually handled by the client's close method, but if
+    // there is ever a chance that this client constructor may fail after these
+    // methods are called, it is up to you to catch the exception and call close
+    // on each of these manually.
+    this.configuration.getMiddlewares().forEach(m => {
+      if (m.init) {
+        m.init();
+      }
+    });
   }
 
   public close() {
