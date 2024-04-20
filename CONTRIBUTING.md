@@ -56,13 +56,13 @@ Most packages.json files have script targets like `unit-test` and `integration-t
 For example, you will probably need to limit Jest `maxWorkers` to avoid throttling errors due to concurrency, and you will want to skip the auth tests unless you have a session token, etc. So here is an example command you might use to run all the integration tests other than the auth tests:
 
 ```
-TEST_API_KEY=<your_api_key_here> npx jest integration --maxWorkers 1 --testPathIgnorePatterns auth-client-test.ts
+MOMENTO_API_KEY=<your_api_key_here> npx jest integration --maxWorkers 1 --testPathIgnorePatterns auth-client-test.ts
 ```
 
 Or, if you only want to run the dictionary tests:
 
 ```
-TEST_API_KEY=<your_api_key_here> npx jest dictionary
+MOMENTO_API_KEY=<your_api_key_here> npx jest dictionary
 ```
 
 **NOTE**: if you make changes in the `core` or `common-integration-tests` packages, you will need to build your changes before the SDK packages can pick them up. You can do this via `npm run build` in the shared package directory, or `./scripts/build-all-packages.sh` from the root dir.
@@ -72,7 +72,7 @@ TEST_API_KEY=<your_api_key_here> npx jest dictionary
 In either the `client-sdk-nodejs` or `client-sdk-web` directories:
 
 ```
-export TEST_API_KEY=<YOUR_API_KEY>
+export MOMENTO_API_KEY=<YOUR_API_KEY>
 export TEST_SESSION_TOKEN=<YOUR_SESSION_TOKEN>
 npm run integration-test-auth
 ```
@@ -84,7 +84,7 @@ will hit Momento throttling limits.  To limit the concurrency to ensure you don'
 you can use jest's `--maxWorkers` flag:
 
 ```
-export TEST_API_KEY=<YOUR_API_KEY>
+export MOMENTO_API_KEY=<YOUR_API_KEY>
 npx jest --maxWorkers 1
 ```
 
@@ -98,7 +98,7 @@ to jest in order to limit the set of tests that you want to run.
 e.g. to re-build and run the integration tests, and filter to only the dictionary tests:
 
 ```
-export TEST_API_KEY=<YOUR_API_KEY>
+export MOMENTO_API_KEY=<YOUR_API_KEY>
 npm run build-and-run-tests -- dictionary
 ```
 
