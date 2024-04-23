@@ -137,6 +137,12 @@ import AbsentOrEqual = common.AbsentOrEqual;
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
+interface CompressionDetails {
+  valueCompressor: ICompression;
+  compressionLevel: CompressionLevel;
+  autoDecompressEnabled: boolean;
+}
+
 export class CacheDataClient implements IDataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
   private readonly textEncoder: TextEncoder;
@@ -149,8 +155,7 @@ export class CacheDataClient implements IDataClient {
   private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly interceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
-  private readonly valueCompressor?: ICompression;
-  private readonly autoDecompressEnabled: boolean;
+  private readonly compressionDetails?: CompressionDetails;
   private requestConcurrencySemaphore: Semaphore | undefined;
 
   /**
@@ -171,13 +176,16 @@ export class CacheDataClient implements IDataClient {
     );
     const compression = this.configuration.getCompressionStrategy();
     if (compression !== undefined) {
-      this.valueCompressor = compression.compressorFactory;
-      this.autoDecompressEnabled =
-        (compression.automaticDecompression ??
-          AutomaticDecompression.Enabled) === AutomaticDecompression.Enabled;
+      this.compressionDetails = {
+        valueCompressor: compression.compressorFactory,
+        compressionLevel:
+          compression.compressionLevel ?? CompressionLevel.Balanced,
+        autoDecompressEnabled:
+          (compression.automaticDecompression ??
+            AutomaticDecompression.Enabled) === AutomaticDecompression.Enabled,
+      };
     } else {
-      this.valueCompressor = undefined;
-      this.autoDecompressEnabled = false;
+      this.compressionDetails = undefined;
     }
     this.requestConcurrencySemaphore = semaphore;
 
@@ -396,15 +404,14 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace(
         'CacheClient.set; compression enabled, calling value compressor'
       );
-      if (this.valueCompressor === undefined) {
+      if (this.compressionDetails === undefined) {
         return this.cacheServiceErrorMapper.returnOrThrowError(
           new CompressionError('CacheClient.set', 'compress'),
           err => new CacheSet.Error(err)
         );
       }
-      encodedValue = await this.valueCompressor.compress(
-        this.configuration.getCompressionStrategy()?.compressionLevel ??
-          CompressionLevel.Balanced,
+      encodedValue = await this.compressionDetails.valueCompressor.compress(
+        this.compressionDetails.compressionLevel,
         encodedValue
       );
     }
@@ -812,7 +819,7 @@ export class CacheDataClient implements IDataClient {
         this.logger.trace(
           'CacheClient.setIfAbsent; compression enabled, calling value compressor'
         );
-        if (this.valueCompressor === undefined) {
+        if (this.compressionDetails === undefined) {
           return this.cacheServiceErrorMapper.returnOrThrowError(
             new InvalidArgumentError(
               'Compressor is not set, but `CacheClient.setIfAbsent` was called with the `compress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
@@ -820,9 +827,8 @@ export class CacheDataClient implements IDataClient {
             err => new CacheSetIfAbsent.Error(err)
           );
         }
-        encodedValue = await this.valueCompressor.compress(
-          this.configuration.getCompressionStrategy()?.compressionLevel ??
-            CompressionLevel.Balanced,
+        encodedValue = await this.compressionDetails.valueCompressor.compress(
+          this.compressionDetails.compressionLevel,
           encodedValue
         );
       }
@@ -1445,18 +1451,19 @@ export class CacheDataClient implements IDataClient {
                 break;
               case grpcCache.ECacheResult.Hit: {
                 const shouldDecompress =
-                  options?.decompress ?? this.autoDecompressEnabled;
+                  options?.decompress ??
+                  this.compressionDetails?.autoDecompressEnabled === true;
                 if (!shouldDecompress) {
                   resolve(new CacheGet.Hit(resp.cache_body));
                 } else {
-                  if (this.valueCompressor === undefined) {
+                  if (this.compressionDetails === undefined) {
                     resolve(
                       new CacheGet.Error(
                         new CompressionError('CacheClient.Get', 'decompress')
                       )
                     );
                   } else {
-                    this.valueCompressor
+                    this.compressionDetails.valueCompressor
                       .decompressIfCompressed(resp.cache_body)
                       .then(v => resolve(new CacheGet.Hit(v)))
                       .catch(e =>
@@ -1562,18 +1569,20 @@ export class CacheDataClient implements IDataClient {
       });
 
       call.on('end', () => {
-        const shouldDecompress = decompress ?? this.autoDecompressEnabled;
+        const shouldDecompress =
+          decompress ?? this.compressionDetails?.autoDecompressEnabled === true;
         if (!shouldDecompress) {
           resolve(new CacheGetBatch.Success(results, keys));
         } else {
-          if (this.valueCompressor === undefined) {
+          if (this.compressionDetails === undefined) {
             resolve(
               new CacheGetBatch.Error(
                 new CompressionError('CacheClient.Get', 'decompress')
               )
             );
           } else {
-            const compressor: ICompression = this.valueCompressor;
+            const compressor: ICompression =
+              this.compressionDetails.valueCompressor;
             Promise.all(
               results.map(async r => {
                 if (r instanceof CacheGet.Hit) {
@@ -1632,42 +1641,24 @@ export class CacheDataClient implements IDataClient {
         this.logger.trace(
           'CacheClient.setBatch; compression enabled, calling value compressor'
         );
-        if (this.valueCompressor === undefined) {
+        if (this.compressionDetails === undefined) {
           return this.cacheServiceErrorMapper.returnOrThrowError(
             new CompressionError('CacheClient.setBatch', 'compress'),
             err => new CacheSetBatch.Error(err)
           );
+        } else {
+          const compressor: ICompression =
+            this.compressionDetails.valueCompressor;
+          const compressionLevel: CompressionLevel =
+            this.compressionDetails.compressionLevel;
+          itemsToUse = await Promise.all(
+            itemsToUse.map(async ([key, value]) => {
+              return [key, await compressor.compress(compressionLevel, value)];
+            })
+          );
         }
-        const compressor: ICompression = this.valueCompressor;
-        itemsToUse = await Promise.all(
-          itemsToUse.map(async ([key, value]) => {
-            return [
-              key,
-              await compressor.compress(
-                this.configuration.getCompressionStrategy()?.compressionLevel ??
-                  CompressionLevel.Balanced,
-                value
-              ),
-            ];
-          })
-        );
       }
-      //
-      //     this.valueCompressor.compressMultiple(
-      //   itemsToUse = itemsToUse. await this.valueCompressor.compressMultiple(
-      //     this.configuration.getCompressionStrategy()?.compressionLevel ?? CompressionLevel.Balanced,
-      //     itemsToUse
-      //   );
-      //   encodedValue = await this.valueCompressor.compress(
-      //     this.configuration.getCompressionStrategy()?.compressionLevel ??
-      //     CompressionLevel.Balanced,
-      //     encodedValue
-      //   );
-      // }
-      //
-      // if (this.valueCompressor !== undefined && options?.compress) {
-      //   itemsToUse = await this.valueCompressor.compress(this.) compressSetBatchElements(itemsToUse);
-      // }
+
       const ttlToUse = options?.ttl || this.defaultTtlSeconds;
       this.logger.trace(
         `Issuing 'setBatch' request; items length: ${
