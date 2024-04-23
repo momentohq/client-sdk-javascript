@@ -24,8 +24,10 @@ export interface DecompressableCallOptions {
 export interface SetCallOptions
   extends ScalarCallOptions,
     CompressableCallOptions {}
+export type SetBatchCallOptions = SetCallOptions;
 
 export type GetCallOptions = DecompressableCallOptions;
+export type GetBatchCallOptions = GetCallOptions;
 
 export interface SetIfAbsentCallOptions
   extends ScalarCallOptions,
