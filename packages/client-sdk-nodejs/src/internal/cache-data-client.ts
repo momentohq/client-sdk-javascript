@@ -25,6 +25,7 @@ import {
   CacheDictionarySetField,
   CacheDictionarySetFields,
   CacheGet,
+  CacheGetBatch,
   CacheIncreaseTtl,
   CacheIncrement,
   CacheItemGetTtl,
@@ -43,6 +44,7 @@ import {
   CacheListRetain,
   CacheSet,
   CacheSetAddElements,
+  CacheSetBatch,
   CacheSetFetch,
   CacheSetIfAbsent,
   CacheSetIfAbsentOrEqual,
@@ -68,13 +70,11 @@ import {
   CollectionTtl,
   CompressionLevel,
   CredentialProvider,
-  CacheGetBatch,
   ICompression,
   InvalidArgumentError,
   ItemType,
   MomentoLogger,
   MomentoLoggerFactory,
-  CacheSetBatch,
   SortedSetOrder,
   UnknownError,
 } from '..';
@@ -117,7 +117,9 @@ import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {ConnectionError} from '@gomomento/sdk-core/dist/src/errors';
 import {common} from '@gomomento/generated-types/dist/common';
 import {
+  GetBatchCallOptions,
   GetCallOptions,
+  SetBatchCallOptions,
   SetCallOptions,
   SetIfAbsentCallOptions,
 } from '@gomomento/sdk-core/dist/src/utils';
@@ -135,6 +137,12 @@ import AbsentOrEqual = common.AbsentOrEqual;
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
+interface CompressionDetails {
+  valueCompressor: ICompression;
+  compressionLevel: CompressionLevel;
+  autoDecompressEnabled: boolean;
+}
+
 export class CacheDataClient implements IDataClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcCache.ScsClient>;
   private readonly textEncoder: TextEncoder;
@@ -147,8 +155,7 @@ export class CacheDataClient implements IDataClient {
   private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly interceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
-  private readonly valueCompressor?: ICompression;
-  private readonly autoDecompressEnabled: boolean;
+  private readonly compressionDetails?: CompressionDetails;
   private requestConcurrencySemaphore: Semaphore | undefined;
 
   /**
@@ -169,13 +176,16 @@ export class CacheDataClient implements IDataClient {
     );
     const compression = this.configuration.getCompressionStrategy();
     if (compression !== undefined) {
-      this.valueCompressor = compression.compressorFactory;
-      this.autoDecompressEnabled =
-        (compression.automaticDecompression ??
-          AutomaticDecompression.Enabled) === AutomaticDecompression.Enabled;
+      this.compressionDetails = {
+        valueCompressor: compression.compressorFactory,
+        compressionLevel:
+          compression.compressionLevel ?? CompressionLevel.Balanced,
+        autoDecompressEnabled:
+          (compression.automaticDecompression ??
+            AutomaticDecompression.Enabled) === AutomaticDecompression.Enabled,
+      };
     } else {
-      this.valueCompressor = undefined;
-      this.autoDecompressEnabled = false;
+      this.compressionDetails = undefined;
     }
     this.requestConcurrencySemaphore = semaphore;
 
@@ -394,15 +404,14 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace(
         'CacheClient.set; compression enabled, calling value compressor'
       );
-      if (this.valueCompressor === undefined) {
+      if (this.compressionDetails === undefined) {
         return this.cacheServiceErrorMapper.returnOrThrowError(
           new CompressionError('CacheClient.set', 'compress'),
           err => new CacheSet.Error(err)
         );
       }
-      encodedValue = await this.valueCompressor.compress(
-        this.configuration.getCompressionStrategy()?.compressionLevel ??
-          CompressionLevel.Balanced,
+      encodedValue = await this.compressionDetails.valueCompressor.compress(
+        this.compressionDetails.compressionLevel,
         encodedValue
       );
     }
@@ -810,7 +819,7 @@ export class CacheDataClient implements IDataClient {
         this.logger.trace(
           'CacheClient.setIfAbsent; compression enabled, calling value compressor'
         );
-        if (this.valueCompressor === undefined) {
+        if (this.compressionDetails === undefined) {
           return this.cacheServiceErrorMapper.returnOrThrowError(
             new InvalidArgumentError(
               'Compressor is not set, but `CacheClient.setIfAbsent` was called with the `compress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
@@ -818,9 +827,8 @@ export class CacheDataClient implements IDataClient {
             err => new CacheSetIfAbsent.Error(err)
           );
         }
-        encodedValue = await this.valueCompressor.compress(
-          this.configuration.getCompressionStrategy()?.compressionLevel ??
-            CompressionLevel.Balanced,
+        encodedValue = await this.compressionDetails.valueCompressor.compress(
+          this.compressionDetails.compressionLevel,
           encodedValue
         );
       }
@@ -1443,18 +1451,19 @@ export class CacheDataClient implements IDataClient {
                 break;
               case grpcCache.ECacheResult.Hit: {
                 const shouldDecompress =
-                  options?.decompress ?? this.autoDecompressEnabled;
+                  options?.decompress ??
+                  this.compressionDetails?.autoDecompressEnabled === true;
                 if (!shouldDecompress) {
                   resolve(new CacheGet.Hit(resp.cache_body));
                 } else {
-                  if (this.valueCompressor === undefined) {
+                  if (this.compressionDetails === undefined) {
                     resolve(
                       new CacheGet.Error(
                         new CompressionError('CacheClient.Get', 'decompress')
                       )
                     );
                   } else {
-                    this.valueCompressor
+                    this.compressionDetails.valueCompressor
                       .decompressIfCompressed(resp.cache_body)
                       .then(v => resolve(new CacheGet.Hit(v)))
                       .catch(e =>
@@ -1496,7 +1505,8 @@ export class CacheDataClient implements IDataClient {
 
   public async getBatch(
     cacheName: string,
-    keys: Array<string | Uint8Array>
+    keys: Array<string | Uint8Array>,
+    options?: GetBatchCallOptions
   ): Promise<CacheGetBatch.Response> {
     try {
       validateCacheName(cacheName);
@@ -1511,7 +1521,8 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace(`Issuing 'getBatch' request; keys: ${keys.toString()}`);
       const result = await this.sendGetBatch(
         cacheName,
-        keys.map(key => this.convert(key))
+        keys.map(key => this.convert(key)),
+        options?.decompress
       );
       this.logger.trace(`'getBatch' request result: ${result.toString()}`);
       return result;
@@ -1520,7 +1531,8 @@ export class CacheDataClient implements IDataClient {
 
   private async sendGetBatch(
     cacheName: string,
-    keys: Uint8Array[]
+    keys: Uint8Array[],
+    decompress?: boolean
   ): Promise<CacheGetBatch.Response> {
     const getRequests = [];
     for (const k of keys) {
@@ -1557,7 +1569,39 @@ export class CacheDataClient implements IDataClient {
       });
 
       call.on('end', () => {
-        resolve(new CacheGetBatch.Success(results, keys));
+        const shouldDecompress =
+          decompress ?? this.compressionDetails?.autoDecompressEnabled === true;
+        if (!shouldDecompress) {
+          resolve(new CacheGetBatch.Success(results, keys));
+        } else {
+          if (this.compressionDetails === undefined) {
+            resolve(
+              new CacheGetBatch.Error(
+                new CompressionError('CacheClient.Get', 'decompress')
+              )
+            );
+          } else {
+            const compressor: ICompression =
+              this.compressionDetails.valueCompressor;
+            Promise.all(
+              results.map(async r => {
+                if (r instanceof CacheGet.Hit) {
+                  return new CacheGet.Hit(
+                    await compressor.decompressIfCompressed(r.valueUint8Array())
+                  );
+                }
+                return r;
+              })
+            )
+              .then(decompressedResults =>
+                resolve(new CacheGetBatch.Success(decompressedResults, keys))
+              )
+              .catch(e =>
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                resolve(new CacheGetBatch.Error(new UnknownError(`${e}`)))
+              );
+          }
+        }
       });
 
       call.on('error', (err: ServiceError | null) => {
@@ -1576,12 +1620,12 @@ export class CacheDataClient implements IDataClient {
     items:
       | Record<string, string | Uint8Array>
       | Map<string | Uint8Array, string | Uint8Array>,
-    ttl?: number
+    options?: SetBatchCallOptions
   ): Promise<CacheSetBatch.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
-        validateTtlSeconds(ttl);
+      if (options?.ttl !== undefined) {
+        validateTtlSeconds(options?.ttl);
       }
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
@@ -1591,8 +1635,31 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      const itemsToUse = this.convertSetBatchElements(items);
-      const ttlToUse = ttl || this.defaultTtlSeconds;
+      let itemsToUse: [Uint8Array, Uint8Array][] =
+        this.convertSetBatchElements(items);
+      if (options?.compress) {
+        this.logger.trace(
+          'CacheClient.setBatch; compression enabled, calling value compressor'
+        );
+        if (this.compressionDetails === undefined) {
+          return this.cacheServiceErrorMapper.returnOrThrowError(
+            new CompressionError('CacheClient.setBatch', 'compress'),
+            err => new CacheSetBatch.Error(err)
+          );
+        } else {
+          const compressor: ICompression =
+            this.compressionDetails.valueCompressor;
+          const compressionLevel: CompressionLevel =
+            this.compressionDetails.compressionLevel;
+          itemsToUse = await Promise.all(
+            itemsToUse.map(async ([key, value]) => {
+              return [key, await compressor.compress(compressionLevel, value)];
+            })
+          );
+        }
+      }
+
+      const ttlToUse = options?.ttl || this.defaultTtlSeconds;
       this.logger.trace(
         `Issuing 'setBatch' request; items length: ${
           itemsToUse.length
@@ -1604,14 +1671,14 @@ export class CacheDataClient implements IDataClient {
 
   private async sendSetBatch(
     cacheName: string,
-    items: Record<string, Uint8Array>[],
+    items: [Uint8Array, Uint8Array][],
     ttlSeconds: number
   ): Promise<CacheSetBatch.Response> {
     const setRequests = [];
     for (const item of items) {
       const setRequest = new grpcCache._SetRequest({
-        cache_key: item.key,
-        cache_body: item.value,
+        cache_key: item[0],
+        cache_body: item[1],
         ttl_milliseconds: ttlSeconds * 1000,
       });
       setRequests.push(setRequest);
@@ -4206,21 +4273,17 @@ export class CacheDataClient implements IDataClient {
     elements:
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>
-  ): Record<string, Uint8Array>[] {
+  ): [Uint8Array, Uint8Array][] {
     if (elements instanceof Map) {
-      return [...elements.entries()].map(element => {
-        return {
-          key: this.convert(element[0]),
-          value: this.convert(element[1]),
-        };
-      });
+      return [...elements.entries()].map(([k, v]) => [
+        this.convert(k),
+        this.convert(v),
+      ]);
     } else {
-      return Object.entries(elements).map(element => {
-        return {
-          key: this.convert(element[0]),
-          value: this.convert(element[1]),
-        };
-      });
+      return Object.entries(elements).map(element => [
+        this.convert(element[0]),
+        this.convert(element[1]),
+      ]);
     }
   }
 
