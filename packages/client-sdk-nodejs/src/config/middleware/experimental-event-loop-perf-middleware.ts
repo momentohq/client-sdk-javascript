@@ -116,6 +116,9 @@ export class ExperimentalEventLoopPerformanceMetricsMiddleware
 
   constructor(loggerFactory: MomentoLoggerFactory) {
     this.logger = loggerFactory.getLogger(this);
+  }
+
+  init() {
     if (!this.isLoggingStarted) {
       this.isLoggingStarted = true;
       this.startLogging();

@@ -56,7 +56,9 @@ import {
   CacheSetSample,
 } from '../../../index';
 import {
+  GetBatchCallOptions,
   GetCallOptions,
+  SetBatchCallOptions,
   SetCallOptions,
   SetIfAbsentCallOptions,
 } from '../../../utils';
@@ -131,14 +133,15 @@ export interface IDataClient {
   ): Promise<CacheSetIfAbsentOrEqual.Response>;
   getBatch(
     cacheName: string,
-    keys: Array<string | Uint8Array>
+    keys: Array<string | Uint8Array>,
+    options?: GetBatchCallOptions
   ): Promise<CacheGetBatch.Response>;
   setBatch(
     cacheName: string,
     items:
       | Record<string, string | Uint8Array>
       | Map<string | Uint8Array, string | Uint8Array>,
-    ttl?: number
+    options?: SetBatchCallOptions
   ): Promise<CacheSetBatch.Response>;
   setFetch(cacheName: string, setName: string): Promise<CacheSetFetch.Response>;
   setAddElements(

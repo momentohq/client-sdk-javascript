@@ -2,7 +2,7 @@ import {LeaderboardConfiguration, CredentialProvider} from '.';
 
 export interface LeaderboardClientProps {
   /**
-   * Configuration settings for the vector client
+   * Configuration settings for the leaderboard client
    */
   configuration?: LeaderboardConfiguration;
   /**

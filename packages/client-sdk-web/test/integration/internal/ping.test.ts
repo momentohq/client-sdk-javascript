@@ -9,7 +9,7 @@ describe('ping service', () => {
     const cacheClientProps: CacheClientProps = {
       configuration: Configurations.Laptop.latest(),
       credentialProvider: CredentialProvider.fromEnvironmentVariable({
-        environmentVariableName: 'TEST_API_KEY',
+        environmentVariableName: 'MOMENTO_API_KEY',
       }),
       defaultTtlSeconds: 1111,
     };

@@ -25,7 +25,8 @@ export function calculateSummary(
   batchSize: number,
   itemSizeBytes: number,
   requestType: RequestType,
-  logger: MomentoLogger
+  logger: MomentoLogger,
+  useMaxConcurrentRequests: boolean
 ): void {
   const histogram = getRequestHistogram(context, requestType);
   const summaryMessage = generateSummaryMessage(
@@ -33,13 +34,21 @@ export function calculateSummary(
     histogram,
     batchSize,
     itemSizeBytes,
-    context.totalItemSizeBytes
+    context.totalItemSizeBytes,
+    useMaxConcurrentRequests
   );
 
   logger.info(summaryMessage);
 
   // Write the statistics to a CSV file
-  writeStatsToCSV(requestType, batchSize, itemSizeBytes, histogram, context.totalItemSizeBytes);
+  writeStatsToCSV(
+    requestType,
+    batchSize,
+    itemSizeBytes,
+    histogram,
+    context.totalItemSizeBytes,
+    useMaxConcurrentRequests
+  );
 }
 
 function getRequestHistogram(context: PerfTestContext, requestType: RequestType): hdr.Histogram {
@@ -60,9 +69,10 @@ function generateSummaryMessage(
   histogram: hdr.Histogram,
   batchSize: number,
   itemSizeBytes: number,
-  totalItemSizeBytes: number
+  totalItemSizeBytes: number,
+  useConcurrentRequests: boolean
 ): string {
-  const summaryTitle = `======= Summary of ${requestType} requests for batch size ${batchSize} and item size ${itemSizeBytes} bytes  =======`;
+  const summaryTitle = `======= Summary of ${requestType} requests for batch size ${batchSize} and item size ${itemSizeBytes} bytes, use max concurrent requests: ${useConcurrentRequests} =======`;
   const histogramSummary = `Cumulative latencies: ${outputHistogramSummary(histogram)}`;
   const totalItemSize = `Total item size in bytes: ${totalItemSizeBytes} bytes`;
   const separator = `${'='.repeat(150)}\n\n`;
@@ -75,16 +85,18 @@ function writeStatsToCSV(
   batchSize: number,
   itemSize: number,
   histogram: hdr.Histogram,
-  totalItemSizeBytes: number
+  totalItemSizeBytes: number,
+  useMaxConcurrentRequests: boolean
 ): void {
   const filename = 'perf_test_stats.csv';
-  const header = 'requestType,BatchSize,itemSize,TotalCount,Min,p50,p90,p99,p99.9,Max,TotalItemSizeBytes\n';
+  const header =
+    'requestType,BatchSize,itemSize,TotalCount,Min,p50,p90,p99,p99.9,Max,TotalItemSizeBytes,UseMaxConcurrentRequests\n';
   const stats =
     `${requestType},${batchSize},${itemSize},${histogram.totalCount},${histogram.minNonZeroValue},` +
     `${histogram.getValueAtPercentile(50)},${histogram.getValueAtPercentile(90)},${histogram.getValueAtPercentile(
       99
     )},` +
-    `${histogram.getValueAtPercentile(99.9)},${histogram.maxValue},${totalItemSizeBytes}\n`;
+    `${histogram.getValueAtPercentile(99.9)},${histogram.maxValue},${totalItemSizeBytes},${useMaxConcurrentRequests}\n`;
 
   // Check if the file exists
   if (!fs.existsSync(filename)) {

@@ -135,6 +135,22 @@ class _Success extends Response {
   }
 
   /**
+   * Returns the data as a Map whose keys are strings and whose values are byte arrays.
+   * @returns {Map<string, Uint8Array>}
+   */
+  public valuesMapStringUint8Array(): Map<string, Uint8Array> {
+    return this.items.reduce((acc, item, index) => {
+      if (item.value() !== undefined) {
+        acc.set(
+          TEXT_DECODER.decode(this.keys[index]),
+          (item as CacheGet.Hit).valueUint8Array()
+        );
+      }
+      return acc;
+    }, new Map<string, Uint8Array>());
+  }
+
+  /**
    * Returns the data as a Map whose keys and values are byte arrays.
    * @returns {Map<Uint8Array, Uint8Array>}
    */

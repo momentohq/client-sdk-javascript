@@ -91,6 +91,7 @@ import {
   SortedSetLengthByScoreOptions,
   SetBatchOptions,
   GetOptions,
+  GetBatchOptions,
 } from '../../../clients/ICacheClient';
 import {IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
@@ -175,7 +176,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache to perform the lookup in.
    * @param {string | Uint8Array} key - The key to look up.
    * @param {GetOptions} [options]
-   * @param {decompress} [options.decompress=false] - Whether to decompress the value. Defaults to false.
+   * @param {decompress} [options.decompress=false] - Whether to decompress the value. Overrides the client-wide
+   * automatic decompression setting.
    * @returns {Promise<CacheGet.Response>} -
    * {@link CacheGet.Hit} containing the value if one is found.
    * {@link CacheGet.Miss} if the key does not exist.
@@ -243,15 +245,19 @@ export abstract class AbstractCacheClient implements ICacheClient {
    *
    * @param {string} cacheName - The cache to perform the lookup in.
    * @param {string[] | Uint8Array[]} keys - The list of keys to look up.
+   * @param {GetBatchOptions} [options]
+   * @param {decompress} [options.decompress=false] - Whether to decompress the value. Overrides the client-wide
+   * automatic decompression setting.
    * @returns {Promise<CacheGetBatch.Response>} -
    * {@link CacheGetBatch.Success} containing the values if they were found.
    * {@link CacheGetBatch.Error} on failure.
    */
   public async getBatch(
     cacheName: string,
-    keys: Array<string | Uint8Array>
+    keys: Array<string | Uint8Array>,
+    options?: GetBatchOptions
   ): Promise<CacheGetBatch.Response> {
-    return await this.getNextDataClient().getBatch(cacheName, keys);
+    return await this.getNextDataClient().getBatch(cacheName, keys, options);
   }
 
   /**
@@ -260,9 +266,10 @@ export abstract class AbstractCacheClient implements ICacheClient {
    *
    * @param {string} cacheName - The cache to store the values in.
    * @param {Record<string, string | Uint8Array> | Map<string | Uint8Array, string | Uint8Array>} items - The key-value pairs to be stored.
-   * @param {SetOptions} [options]
+   * @param {SetBatchOptions} [options]
    * @param {number} [options.ttl] - The time to live for the items in the cache.
    * Uses the client's default TTL if this is not supplied.
+   * @param {boolean} [options.compress=false] - Whether to compress the value. Defaults to false.
    * @returns {Promise<CacheSetBatch.Response>} -
    * {@link CacheSetBatch.Success} on success.
    * {@link CacheSetBatch.Error} on failure.
@@ -275,7 +282,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
     options?: SetBatchOptions
   ): Promise<CacheSetBatch.Response> {
     const client = this.getNextDataClient();
-    return await client.setBatch(cacheName, items, options?.ttl);
+    return await client.setBatch(cacheName, items, options);
   }
 
   /**

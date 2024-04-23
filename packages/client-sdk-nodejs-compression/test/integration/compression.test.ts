@@ -1,8 +1,11 @@
 import {expectWithMessage, setupIntegrationTest} from './integration-setup';
 import {
+  AutomaticDecompression,
   CacheClient,
   CacheGet,
+  CacheGetBatch,
   CacheSet,
+  CacheSetBatch,
   CacheSetIfAbsent,
   CompressionLevel,
 } from '@gomomento/sdk';
@@ -12,7 +15,18 @@ import {CompressionError} from '@gomomento/sdk/dist/src/errors/compression-error
 
 const {cacheClientPropsWithConfig, cacheName} = setupIntegrationTest();
 
-const cacheClientWithDefaultCompressorFactory = new CacheClient({
+const cacheClientWithCompressor_AutoDecompressionDisabled = new CacheClient({
+  configuration:
+    cacheClientPropsWithConfig.configuration.withCompressionStrategy({
+      compressorFactory: CompressorFactory.default(),
+      compressionLevel: CompressionLevel.SmallestSize,
+      automaticDecompression: AutomaticDecompression.Disabled,
+    }),
+  credentialProvider: cacheClientPropsWithConfig.credentialProvider,
+  defaultTtlSeconds: cacheClientPropsWithConfig.defaultTtlSeconds,
+});
+
+const cacheClientWithCompressor_AutoDecompressionEnabled = new CacheClient({
   configuration:
     cacheClientPropsWithConfig.configuration.withCompressionStrategy({
       compressorFactory: CompressorFactory.default(),
@@ -22,7 +36,7 @@ const cacheClientWithDefaultCompressorFactory = new CacheClient({
   defaultTtlSeconds: cacheClientPropsWithConfig.defaultTtlSeconds,
 });
 
-const cacheClientWithoutCompressorFactory = new CacheClient({
+const cacheClientWithoutCompressor = new CacheClient({
   configuration: cacheClientPropsWithConfig.configuration,
   credentialProvider: cacheClientPropsWithConfig.credentialProvider,
   defaultTtlSeconds: cacheClientPropsWithConfig.defaultTtlSeconds,
@@ -32,15 +46,24 @@ function randomString() {
   return v4();
 }
 
+const textEncoder = new TextEncoder();
 const testValue = 'my-value';
+const testValueBytes = textEncoder.encode(testValue);
+
 const testValueCompressed = Uint8Array.from([
   40, 181, 47, 253, 0, 96, 65, 0, 0, 109, 121, 45, 118, 97, 108, 117, 101,
 ]);
+const testValue2 = 'my-value2';
+const testValue2Compressed = Uint8Array.from([
+  40, 181, 47, 253, 0, 96, 73, 0, 0, 109, 121, 45, 118, 97, 108, 117, 101, 50,
+]);
+
+const invalidCompressed = Uint8Array.from([40, 181, 47, 253, 0]);
 
 describe('CompressorFactory', () => {
   describe('CacheClient.set', () => {
     it('should return an error if compress is true but compression is not enabled', async () => {
-      const setResponse = await cacheClientWithoutCompressorFactory.set(
+      const setResponse = await cacheClientWithoutCompressor.set(
         cacheName,
         randomString(),
         testValue,
@@ -59,7 +82,7 @@ describe('CompressorFactory', () => {
       }, `Expected CacheClient.set to return an error if compression is specified without compressor set, but got: ${setResponse.toString()}`);
     });
     it('should compress the value if compress is true', async () => {
-      const cacheClient = cacheClientWithDefaultCompressorFactory;
+      const cacheClient = cacheClientWithCompressor_AutoDecompressionDisabled;
       const key = randomString();
       const setResponse = await cacheClient.set(cacheName, key, testValue, {
         compress: true,
@@ -77,7 +100,7 @@ describe('CompressorFactory', () => {
       );
     });
     it('should not compress the value if compress is not specified', async () => {
-      const cacheClient = cacheClientWithDefaultCompressorFactory;
+      const cacheClient = cacheClientWithCompressor_AutoDecompressionDisabled;
       const key = randomString();
       const setResponse = await cacheClient.set(cacheName, key, testValue);
       expectWithMessage(() => {
@@ -94,7 +117,7 @@ describe('CompressorFactory', () => {
   });
   describe('Cache.setIfAbsent', () => {
     it('should return an error if compress is true but compression is not enabled', async () => {
-      const setResponse = await cacheClientWithoutCompressorFactory.setIfAbsent(
+      const setResponse = await cacheClientWithoutCompressor.setIfAbsent(
         cacheName,
         randomString(),
         testValue,
@@ -110,7 +133,7 @@ describe('CompressorFactory', () => {
       }, `Expected CacheClient.setIfAbsent to return an error if compression is specified without compressor set, but got: ${setResponse.toString()}`);
     });
     it('should compress the value if compress is true', async () => {
-      const cacheClient = cacheClientWithDefaultCompressorFactory;
+      const cacheClient = cacheClientWithCompressor_AutoDecompressionDisabled;
       const key = randomString();
       const setResponse = await cacheClient.setIfAbsent(
         cacheName,
@@ -134,7 +157,7 @@ describe('CompressorFactory', () => {
       );
     });
     it('should not compress the value if compress is not specified', async () => {
-      const cacheClient = cacheClientWithDefaultCompressorFactory;
+      const cacheClient = cacheClientWithCompressor_AutoDecompressionDisabled;
       const key = randomString();
       const setResponse = await cacheClient.setIfAbsent(
         cacheName,
@@ -155,7 +178,7 @@ describe('CompressorFactory', () => {
   });
   describe('CacheClient.get', () => {
     it('should not return an error if decompress is true and compression is not enabled and it is a miss', async () => {
-      const getResponse = await cacheClientWithoutCompressorFactory.get(
+      const getResponse = await cacheClientWithoutCompressor.get(
         cacheName,
         randomString(),
         {
@@ -167,7 +190,7 @@ describe('CompressorFactory', () => {
       }, `Expected CacheClient.get to be a miss with decompression specified and no compression enabled, got: '${getResponse.toString()}'`);
     });
     it('should return an error if decompress is true and compression is not enabled and it is a hit', async () => {
-      const cacheClient = cacheClientWithoutCompressorFactory;
+      const cacheClient = cacheClientWithoutCompressor;
       const key = randomString();
       const setResponse = await cacheClient.set(cacheName, key, testValue);
       expectWithMessage(() => {
@@ -188,7 +211,7 @@ describe('CompressorFactory', () => {
       }, `Expected CacheClient.get to return an error if decompression is specified without compressor set, but got: ${getResponse.toString()}`);
     });
     it('should decompress the value if decompress is true', async () => {
-      const cacheClient = cacheClientWithDefaultCompressorFactory;
+      const cacheClient = cacheClientWithCompressor_AutoDecompressionDisabled;
       const key = randomString();
       const setResponse = await cacheClient.set(cacheName, key, testValue, {
         compress: true,
@@ -206,8 +229,44 @@ describe('CompressorFactory', () => {
 
       expect((getResponse as CacheGet.Hit).valueString()).toEqual(testValue);
     });
-    it('should not decompress the value if decompress is false', async () => {
-      const cacheClient = cacheClientWithDefaultCompressorFactory;
+    it('should decompress the value if decompression is enabled', async () => {
+      const cacheClient = cacheClientWithCompressor_AutoDecompressionEnabled;
+      const key = randomString();
+      const setResponse = await cacheClient.set(cacheName, key, testValue, {
+        compress: true,
+      });
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `Expected CacheClient.set to be a success with compression specified, got: '${setResponse.toString()}'`);
+
+      const getResponse = await cacheClient.get(cacheName, key);
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `Expected CacheClient.get to be a hit after CacheClient.set with compression specified, got: '${getResponse.toString()}'`);
+
+      expect((getResponse as CacheGet.Hit).valueString()).toEqual(testValue);
+    });
+    it('should not decompress the value if decompression is disabled', async () => {
+      const cacheClient = cacheClientWithCompressor_AutoDecompressionDisabled;
+      const key = randomString();
+      const setResponse = await cacheClient.set(cacheName, key, testValue, {
+        compress: true,
+      });
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `Expected CacheClient.set to be a success with compression specified, got: '${setResponse.toString()}'`);
+
+      const getResponse = await cacheClient.get(cacheName, key);
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `Expected CacheClient.get to be a hit after CacheClient.set with compression specified, got: '${getResponse.toString()}'`);
+
+      expect((getResponse as CacheGet.Hit).valueUint8Array()).toEqual(
+        testValueCompressed
+      );
+    });
+    it('should not decompress the value if decompression is enabled but decompress is false', async () => {
+      const cacheClient = cacheClientWithCompressor_AutoDecompressionEnabled;
       const key = randomString();
       const setResponse = await cacheClient.set(cacheName, key, testValue, {
         compress: true,
@@ -227,22 +286,660 @@ describe('CompressorFactory', () => {
         testValueCompressed
       );
     });
-    it('should return the value if it is not compressed and decompress is true', async () => {
-      const cacheClient = cacheClientWithDefaultCompressorFactory;
+    it('should return the value if it is not compressed and decompression is enabled', async () => {
+      const cacheClient = cacheClientWithCompressor_AutoDecompressionEnabled;
       const key = randomString();
       const setResponse = await cacheClient.set(cacheName, key, testValue);
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSet.Success);
       }, `Expected CacheClient.set to be a success with compression specified, got: '${setResponse.toString()}'`);
 
-      const getResponse = await cacheClient.get(cacheName, key, {
-        decompress: true,
-      });
+      const getResponse = await cacheClient.get(cacheName, key);
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `Expected CacheClient.get to be a hit after CacheClient.set with compression specified, got: '${getResponse.toString()}'`);
 
       expect((getResponse as CacheGet.Hit).valueString()).toEqual(testValue);
     });
+    it('should return an error if decompression is enabled and the client receives invalid ZSTD data', async () => {
+      const noCompressCacheClient = cacheClientWithoutCompressor;
+      const key = randomString();
+      const setResponse = await noCompressCacheClient.set(
+        cacheName,
+        key,
+        invalidCompressed
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `Expected CacheClient.set to be a success, got: '${setResponse.toString()}'`);
+
+      const getResponse =
+        await cacheClientWithCompressor_AutoDecompressionEnabled.get(
+          cacheName,
+          key
+        );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Error);
+      }, `Expected CacheClient.get to be an Error when receiving invalid ZSTD data, got: '${getResponse.toString()}'`);
+    });
+  });
+  describe('CacheClient.setBatch', () => {
+    describe('with compression disabled', () => {
+      it('should return an error if compress is true', async () => {
+        const setBatchResponse = await cacheClientWithoutCompressor.setBatch(
+          cacheName,
+          new Map([[randomString(), testValue]]),
+          {compress: true}
+        );
+        expectWithMessage(() => {
+          expect(setBatchResponse).toBeInstanceOf(CacheSetBatch.Error);
+          expect(setBatchResponse.toString()).toEqual(
+            'Compression Error: Compressor is not set, but `CacheClient.setBatch` was called with the `compress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+          );
+        }, 'Compression Error: Compressor is not set, but `CacheClient.setBatch` was called with the `compress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.');
+      });
+    });
+    describe('with compression enabled', () => {
+      it('should compress values if compress is true', async () => {
+        const key1 = randomString();
+        const key2 = randomString();
+        const key3 = randomString();
+        const setBatchResponse =
+          await cacheClientWithCompressor_AutoDecompressionDisabled.setBatch(
+            cacheName,
+            new Map([
+              [key1, testValue],
+              [key2, testValue2],
+              [key3, testValue],
+            ]),
+            {
+              compress: true,
+            }
+          );
+        expectWithMessage(() => {
+          expect(setBatchResponse).toBeInstanceOf(CacheSetBatch.Success);
+        }, `Expected CacheClient.setBatch to return Success, but got: ${setBatchResponse.toString()}`);
+
+        const getResponse =
+          await cacheClientWithCompressor_AutoDecompressionDisabled.get(
+            cacheName,
+            key1
+          );
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+        }, `Expected CacheClient.get to be a Hit, got: '${getResponse.toString()}'`);
+        expect((getResponse as CacheGet.Hit).valueUint8Array()).toEqual(
+          testValueCompressed
+        );
+        const getResponse2 =
+          await cacheClientWithCompressor_AutoDecompressionDisabled.get(
+            cacheName,
+            key2
+          );
+        expectWithMessage(() => {
+          expect(getResponse2).toBeInstanceOf(CacheGet.Hit);
+        }, `Expected CacheClient.get to be a Hit, got: '${getResponse2.toString()}'`);
+        expect((getResponse2 as CacheGet.Hit).valueUint8Array()).toEqual(
+          testValue2Compressed
+        );
+        const getResponse3 =
+          await cacheClientWithCompressor_AutoDecompressionDisabled.get(
+            cacheName,
+            key3
+          );
+        expectWithMessage(() => {
+          expect(getResponse3).toBeInstanceOf(CacheGet.Hit);
+        }, `Expected CacheClient.get to be a Hit, got: '${getResponse3.toString()}'`);
+        expect((getResponse3 as CacheGet.Hit).valueUint8Array()).toEqual(
+          testValueCompressed
+        );
+      });
+
+      it('should not compress values if compress false', async () => {
+        const key1 = randomString();
+        const key2 = randomString();
+        const key3 = randomString();
+        const setBatchResponse =
+          await cacheClientWithCompressor_AutoDecompressionDisabled.setBatch(
+            cacheName,
+            new Map([
+              [key1, testValue],
+              [key2, testValue2],
+              [key3, testValue],
+            ]),
+            {
+              compress: false,
+            }
+          );
+        expectWithMessage(() => {
+          expect(setBatchResponse).toBeInstanceOf(CacheSetBatch.Success);
+        }, `Expected CacheClient.setBatch to return Success, but got: ${setBatchResponse.toString()}`);
+
+        const getResponse =
+          await cacheClientWithCompressor_AutoDecompressionDisabled.get(
+            cacheName,
+            key1
+          );
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+        }, `Expected CacheClient.get to be a Hit, got: '${getResponse.toString()}'`);
+        expect((getResponse as CacheGet.Hit).valueString()).toEqual(testValue);
+        const getResponse2 =
+          await cacheClientWithCompressor_AutoDecompressionDisabled.get(
+            cacheName,
+            key2
+          );
+        expectWithMessage(() => {
+          expect(getResponse2).toBeInstanceOf(CacheGet.Hit);
+        }, `Expected CacheClient.get to be a Hit, got: '${getResponse2.toString()}'`);
+        expect((getResponse2 as CacheGet.Hit).valueString()).toEqual(
+          testValue2
+        );
+        const getResponse3 =
+          await cacheClientWithCompressor_AutoDecompressionDisabled.get(
+            cacheName,
+            key3
+          );
+        expectWithMessage(() => {
+          expect(getResponse3).toBeInstanceOf(CacheGet.Hit);
+        }, `Expected CacheClient.get to be a Hit, got: '${getResponse3.toString()}'`);
+        expect((getResponse3 as CacheGet.Hit).valueString()).toEqual(testValue);
+      });
+
+      it('should not compress values if compress omitted', async () => {
+        const key1 = randomString();
+        const key2 = randomString();
+        const key3 = randomString();
+        const setBatchResponse =
+          await cacheClientWithCompressor_AutoDecompressionDisabled.setBatch(
+            cacheName,
+            new Map([
+              [key1, testValue],
+              [key2, testValue2],
+              [key3, testValue],
+            ])
+          );
+        expectWithMessage(() => {
+          expect(setBatchResponse).toBeInstanceOf(CacheSetBatch.Success);
+        }, `Expected CacheClient.setBatch to return Success, but got: ${setBatchResponse.toString()}`);
+
+        const getResponse =
+          await cacheClientWithCompressor_AutoDecompressionDisabled.get(
+            cacheName,
+            key1
+          );
+        expectWithMessage(() => {
+          expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+        }, `Expected CacheClient.get to be a Hit, got: '${getResponse.toString()}'`);
+        expect((getResponse as CacheGet.Hit).valueString()).toEqual(testValue);
+        const getResponse2 =
+          await cacheClientWithCompressor_AutoDecompressionDisabled.get(
+            cacheName,
+            key2
+          );
+        expectWithMessage(() => {
+          expect(getResponse2).toBeInstanceOf(CacheGet.Hit);
+        }, `Expected CacheClient.get to be a Hit, got: '${getResponse2.toString()}'`);
+        expect((getResponse2 as CacheGet.Hit).valueString()).toEqual(
+          testValue2
+        );
+        const getResponse3 =
+          await cacheClientWithCompressor_AutoDecompressionDisabled.get(
+            cacheName,
+            key3
+          );
+        expectWithMessage(() => {
+          expect(getResponse3).toBeInstanceOf(CacheGet.Hit);
+        }, `Expected CacheClient.get to be a Hit, got: '${getResponse3.toString()}'`);
+        expect((getResponse3 as CacheGet.Hit).valueString()).toEqual(testValue);
+      });
+    });
+  });
+  describe('CacheClient.getBatch', () => {
+    describe('with compression disabled', () => {
+      it('should return an error if decompress is true', async () => {
+        const getBatchResponse = await cacheClientWithoutCompressor.getBatch(
+          cacheName,
+          [randomString()],
+          {decompress: true}
+        );
+        expectWithMessage(() => {
+          expect(getBatchResponse).toBeInstanceOf(CacheGetBatch.Error);
+          expect(getBatchResponse.toString()).toEqual(
+            'Compression Error: Compressor is not set, but `CacheClient.Get` was called with the `decompress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
+          );
+        }, `Expected CacheClient.getBatch to return an error if compression is specified without compressor set, but got: ${getBatchResponse.toString()}`);
+      });
+    });
+    describe('with compression enabled and autodecompression enabled', () => {
+      describe('when all values are compressed', () => {
+        it('should decompress values if decompress is true', async () => {
+          const [key1, key2, key3] = await storeTestData(
+            [
+              [randomString(), testValue],
+              [randomString(), testValue2],
+              [randomString(), testValue],
+            ],
+            true
+          );
+          const getBatchResponse =
+            await cacheClientWithCompressor_AutoDecompressionEnabled.getBatch(
+              cacheName,
+              [key1, key2, key3],
+              {decompress: true}
+            );
+
+          expectWithMessage(() => {
+            expect(getBatchResponse).toBeInstanceOf(CacheGetBatch.Success);
+          }, `Expected CacheClient.getBatch to return Success, but got: ${getBatchResponse.toString()}`);
+
+          const values = (
+            getBatchResponse as CacheGetBatch.Success
+          ).valuesMap();
+          expect(values).toEqual(
+            new Map([
+              [key1, testValue],
+              [key2, testValue2],
+              [key3, testValue],
+            ])
+          );
+        });
+
+        it('should decompress values if decompress is not set', async () => {
+          const [key1, key2, key3] = await storeTestData(
+            [
+              [randomString(), testValue],
+              [randomString(), testValue2],
+              [randomString(), testValue],
+            ],
+            true
+          );
+
+          const getBatchResponse =
+            await cacheClientWithCompressor_AutoDecompressionEnabled.getBatch(
+              cacheName,
+              [key1, key2, key3]
+            );
+
+          expectWithMessage(() => {
+            expect(getBatchResponse).toBeInstanceOf(CacheGetBatch.Success);
+          }, `Expected CacheClient.getBatch to return Success, but got: ${getBatchResponse.toString()}`);
+
+          const values = (
+            getBatchResponse as CacheGetBatch.Success
+          ).valuesMap();
+          expect(values).toEqual(
+            new Map([
+              [key1, testValue],
+              [key2, testValue2],
+              [key3, testValue],
+            ])
+          );
+        });
+
+        it('should not decompress values if decompress is false', async () => {
+          const [key1, key2, key3] = await storeTestData(
+            [
+              [randomString(), testValue],
+              [randomString(), testValue2],
+              [randomString(), testValue],
+            ],
+            true
+          );
+
+          const getBatchResponse =
+            await cacheClientWithCompressor_AutoDecompressionEnabled.getBatch(
+              cacheName,
+              [key1, key2, key3],
+              {decompress: false}
+            );
+
+          expectWithMessage(() => {
+            expect(getBatchResponse).toBeInstanceOf(CacheGetBatch.Success);
+          }, `Expected CacheClient.getBatch to return Success, but got: ${getBatchResponse.toString()}`);
+
+          const values = (
+            getBatchResponse as CacheGetBatch.Success
+          ).valuesMapStringUint8Array();
+          expect(values).toEqual(
+            new Map([
+              [key1, testValueCompressed],
+              [key2, testValue2Compressed],
+              [key3, testValueCompressed],
+            ])
+          );
+        });
+      });
+
+      describe('when some values are compressed', () => {
+        it('should decompress values if decompress is true', async () => {
+          const [key1, key2] = await storeTestData(
+            [
+              [randomString(), testValue],
+              [randomString(), testValue2],
+            ],
+            true
+          );
+          const [key3] = await storeTestData(
+            [[randomString(), testValue]],
+            false
+          );
+
+          const getBatchResponse =
+            await cacheClientWithCompressor_AutoDecompressionEnabled.getBatch(
+              cacheName,
+              [key1, key2, key3],
+              {decompress: true}
+            );
+          expectWithMessage(() => {
+            expect(getBatchResponse).toBeInstanceOf(CacheGetBatch.Success);
+          }, `Expected CacheClient.getBatch to return Success, but got: ${getBatchResponse.toString()}`);
+
+          const values = (
+            getBatchResponse as CacheGetBatch.Success
+          ).valuesMapStringString();
+          expect(values).toEqual(
+            new Map([
+              [key1, testValue],
+              [key2, testValue2],
+              [key3, testValue],
+            ])
+          );
+        });
+
+        it('should decompress values if decompress is not set', async () => {
+          const [key1, key2] = await storeTestData(
+            [
+              [randomString(), testValue],
+              [randomString(), testValue2],
+            ],
+            true
+          );
+          const [key3] = await storeTestData(
+            [[randomString(), testValue]],
+            false
+          );
+
+          const getBatchResponse =
+            await cacheClientWithCompressor_AutoDecompressionEnabled.getBatch(
+              cacheName,
+              [key1, key2, key3]
+            );
+          expectWithMessage(() => {
+            expect(getBatchResponse).toBeInstanceOf(CacheGetBatch.Success);
+          }, `Expected CacheClient.getBatch to return Success, but got: ${getBatchResponse.toString()}`);
+
+          const values = (
+            getBatchResponse as CacheGetBatch.Success
+          ).valuesMapStringString();
+          expect(values).toEqual(
+            new Map([
+              [key1, testValue],
+              [key2, testValue2],
+              [key3, testValue],
+            ])
+          );
+        });
+
+        it('should not decompress values if decompress is false', async () => {
+          const [key1, key2] = await storeTestData(
+            [
+              [randomString(), testValue],
+              [randomString(), testValue2],
+            ],
+            true
+          );
+          const [key3] = await storeTestData(
+            [[randomString(), testValue]],
+            false
+          );
+
+          const getBatchResponse =
+            await cacheClientWithCompressor_AutoDecompressionEnabled.getBatch(
+              cacheName,
+              [key1, key2, key3],
+              {decompress: false}
+            );
+          expectWithMessage(() => {
+            expect(getBatchResponse).toBeInstanceOf(CacheGetBatch.Success);
+          }, `Expected CacheClient.getBatch to return Success, but got: ${getBatchResponse.toString()}`);
+
+          const values = (
+            getBatchResponse as CacheGetBatch.Success
+          ).valuesMapStringUint8Array();
+          expect(values).toEqual(
+            new Map([
+              [key1, testValueCompressed],
+              [key2, testValue2Compressed],
+              [key3, testValueBytes],
+            ])
+          );
+        });
+      });
+    });
+
+    describe('with compression enabled and autodecompression disabled', () => {
+      describe('when all values are compressed', () => {
+        it('should decompress values if decompress is true', async () => {
+          const [key1, key2, key3] = await storeTestData(
+            [
+              [randomString(), testValue],
+              [randomString(), testValue2],
+              [randomString(), testValue],
+            ],
+            true
+          );
+          const getBatchResponse =
+            await cacheClientWithCompressor_AutoDecompressionDisabled.getBatch(
+              cacheName,
+              [key1, key2, key3],
+              {decompress: true}
+            );
+
+          expectWithMessage(() => {
+            expect(getBatchResponse).toBeInstanceOf(CacheGetBatch.Success);
+          }, `Expected CacheClient.getBatch to return Success, but got: ${getBatchResponse.toString()}`);
+
+          const values = (
+            getBatchResponse as CacheGetBatch.Success
+          ).valuesMap();
+          expect(values).toEqual(
+            new Map([
+              [key1, testValue],
+              [key2, testValue2],
+              [key3, testValue],
+            ])
+          );
+        });
+
+        it('should not decompress values if decompress is not set', async () => {
+          const [key1, key2, key3] = await storeTestData(
+            [
+              [randomString(), testValue],
+              [randomString(), testValue2],
+              [randomString(), testValue],
+            ],
+            true
+          );
+          const getBatchResponse =
+            await cacheClientWithCompressor_AutoDecompressionDisabled.getBatch(
+              cacheName,
+              [key1, key2, key3]
+            );
+
+          expectWithMessage(() => {
+            expect(getBatchResponse).toBeInstanceOf(CacheGetBatch.Success);
+          }, `Expected CacheClient.getBatch to return Success, but got: ${getBatchResponse.toString()}`);
+
+          const values = (
+            getBatchResponse as CacheGetBatch.Success
+          ).valuesMapStringUint8Array();
+          expect(values).toEqual(
+            new Map([
+              [key1, testValueCompressed],
+              [key2, testValue2Compressed],
+              [key3, testValueCompressed],
+            ])
+          );
+        });
+
+        it('should not decompress values if decompress is false', async () => {
+          const [key1, key2, key3] = await storeTestData(
+            [
+              [randomString(), testValue],
+              [randomString(), testValue2],
+              [randomString(), testValue],
+            ],
+            true
+          );
+          const getBatchResponse =
+            await cacheClientWithCompressor_AutoDecompressionDisabled.getBatch(
+              cacheName,
+              [key1, key2, key3],
+              {decompress: false}
+            );
+
+          expectWithMessage(() => {
+            expect(getBatchResponse).toBeInstanceOf(CacheGetBatch.Success);
+          }, `Expected CacheClient.getBatch to return Success, but got: ${getBatchResponse.toString()}`);
+
+          const values = (
+            getBatchResponse as CacheGetBatch.Success
+          ).valuesMapStringUint8Array();
+          expect(values).toEqual(
+            new Map([
+              [key1, testValueCompressed],
+              [key2, testValue2Compressed],
+              [key3, testValueCompressed],
+            ])
+          );
+        });
+      });
+
+      describe('when some values are compressed', () => {
+        it('should decompress values if decompress is true', async () => {
+          const [key1, key2] = await storeTestData(
+            [
+              [randomString(), testValue],
+              [randomString(), testValue2],
+            ],
+            true
+          );
+          const [key3] = await storeTestData(
+            [[randomString(), testValue]],
+            false
+          );
+
+          const getBatchResponse =
+            await cacheClientWithCompressor_AutoDecompressionDisabled.getBatch(
+              cacheName,
+              [key1, key2, key3],
+              {decompress: true}
+            );
+
+          expectWithMessage(() => {
+            expect(getBatchResponse).toBeInstanceOf(CacheGetBatch.Success);
+          }, `Expected CacheClient.getBatch to return Success, but got: ${getBatchResponse.toString()}`);
+
+          const values = (
+            getBatchResponse as CacheGetBatch.Success
+          ).valuesMapStringString();
+          expect(values).toEqual(
+            new Map([
+              [key1, testValue],
+              [key2, testValue2],
+              [key3, testValue],
+            ])
+          );
+        });
+
+        it('should not decompress values if decompress is not set', async () => {
+          const [key1, key2] = await storeTestData(
+            [
+              [randomString(), testValue],
+              [randomString(), testValue2],
+            ],
+            true
+          );
+          const [key3] = await storeTestData(
+            [[randomString(), testValue]],
+            false
+          );
+
+          const getBatchResponse =
+            await cacheClientWithCompressor_AutoDecompressionDisabled.getBatch(
+              cacheName,
+              [key1, key2, key3]
+            );
+
+          expectWithMessage(() => {
+            expect(getBatchResponse).toBeInstanceOf(CacheGetBatch.Success);
+          }, `Expected CacheClient.getBatch to return Success, but got: ${getBatchResponse.toString()}`);
+
+          const values = (
+            getBatchResponse as CacheGetBatch.Success
+          ).valuesMapStringUint8Array();
+          expect(values).toEqual(
+            new Map([
+              [key1, testValueCompressed],
+              [key2, testValue2Compressed],
+              [key3, testValueBytes],
+            ])
+          );
+        });
+        it('should not decompress values if decompress is false', async () => {
+          const [key1, key2] = await storeTestData(
+            [
+              [randomString(), testValue],
+              [randomString(), testValue2],
+            ],
+            true
+          );
+          const [key3] = await storeTestData(
+            [[randomString(), testValue]],
+            false
+          );
+
+          const getBatchResponse =
+            await cacheClientWithCompressor_AutoDecompressionDisabled.getBatch(
+              cacheName,
+              [key1, key2, key3],
+              {decompress: false}
+            );
+
+          expectWithMessage(() => {
+            expect(getBatchResponse).toBeInstanceOf(CacheGetBatch.Success);
+          }, `Expected CacheClient.getBatch to return Success, but got: ${getBatchResponse.toString()}`);
+
+          const values = (
+            getBatchResponse as CacheGetBatch.Success
+          ).valuesMapStringUint8Array();
+          expect(values).toEqual(
+            new Map([
+              [key1, testValueCompressed],
+              [key2, testValue2Compressed],
+              [key3, testValueBytes],
+            ])
+          );
+        });
+      });
+    });
   });
 });
+
+async function storeTestData(
+  data: [string, string][],
+  compress: boolean
+): Promise<string[]> {
+  const keys = data.map(([key]) => key);
+  const setBatchResponse =
+    await cacheClientWithCompressor_AutoDecompressionEnabled.setBatch(
+      cacheName,
+      new Map(data),
+      {compress: compress}
+    );
+  expectWithMessage(() => {
+    expect(setBatchResponse).toBeInstanceOf(CacheSetBatch.Success);
+  }, `Expected CacheClient.setBatch to return Success, but got: ${setBatchResponse.toString()}`);
+  return keys;
+}

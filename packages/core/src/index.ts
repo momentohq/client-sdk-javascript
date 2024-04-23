@@ -74,20 +74,6 @@ import * as RefreshApiKey from './messages/responses/refresh-api-key';
 
 import * as GenerateDisposableToken from './messages/responses/generate-disposable-token';
 
-// VectorClient Response Types
-export * as vector from './messages/responses/vector';
-export * from './messages/responses/vector';
-export {
-  VectorIndexMetadata,
-  VectorIndexItem,
-  VectorIndexStoredItem,
-} from './messages/vector-index';
-export * as vectorFilters from './messages/vector-index-filters';
-export {
-  VectorFilterExpression,
-  VectorFilterExpressions,
-} from './messages/vector-index-filters';
-
 // Leaderboard Response Types
 export * as leaderboard from './messages/responses/leaderboard';
 export * from './messages/responses/leaderboard';
@@ -97,7 +83,6 @@ export * from './messages/responses/webhook';
 export {Webhook, WebhookId} from './messages/webhook';
 
 import {CacheInfo} from './messages/cache-info';
-export {VectorIndexInfo} from './messages/vector-index-info';
 import {
   SubscribeCallOptions,
   CollectionTtl,
@@ -161,15 +146,6 @@ export {
 } from './clients/ICacheClient';
 
 export {IMomentoCache} from './clients/IMomentoCache';
-
-export {
-  IVectorIndexClient,
-  SearchOptions,
-  ALL_VECTOR_METADATA,
-  VECTOR_DEFAULT_TOPK,
-} from './clients/IVectorIndexClient';
-
-export {VectorSimilarityMetric} from './internal/clients';
 
 export {ILeaderboardClient} from './clients/ILeaderboardClient';
 export {ILeaderboard} from './clients/ILeaderboard';

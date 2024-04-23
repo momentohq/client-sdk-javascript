@@ -25,8 +25,7 @@ function isAllEndpoints(
   return (
     allEndpoints.cacheEndpoint !== undefined &&
     allEndpoints.controlEndpoint !== undefined &&
-    allEndpoints.tokenEndpoint !== undefined &&
-    allEndpoints.vectorEndpoint !== undefined
+    allEndpoints.tokenEndpoint !== undefined
   );
 }
 
@@ -65,11 +64,6 @@ export abstract class CredentialProvider {
   abstract getTokenEndpoint(): string;
 
   /**
-   * @returns {string} The host which the Momento client will connect to for Momento vector index operations
-   */
-  abstract getVectorEndpoint(): string;
-
-  /**
    * @returns {boolean} true if the endpoints were manually overridden at construction time; false otherwise
    */
   abstract areEndpointsOverridden(): boolean;
@@ -101,8 +95,6 @@ abstract class CredentialProviderBase implements CredentialProvider {
   abstract getControlEndpoint(): string;
 
   abstract getTokenEndpoint(): string;
-
-  abstract getVectorEndpoint(): string;
 
   abstract areEndpointsOverridden(): boolean;
 
@@ -179,16 +171,10 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
           'Malformed token; unable to determine token endpoint.  Depending on the type of token you are using, you may need to specify the tokenEndpoint explicitly.'
         );
       }
-      if (decodedToken.vectorEndpoint === undefined) {
-        throw new Error(
-          'Malformed token; unable to determine vector endpoint.  Depending on the type of token you are using, you may need to specify the vectorEndpoint explicitly.'
-        );
-      }
       this.allEndpoints = {
         controlEndpoint: decodedToken.controlEndpoint,
         cacheEndpoint: decodedToken.cacheEndpoint,
         tokenEndpoint: decodedToken.tokenEndpoint,
-        vectorEndpoint: decodedToken.vectorEndpoint,
       };
     } else if (isAllEndpoints(props.endpointOverrides)) {
       this.endpointsOverridden = true;
@@ -220,10 +206,6 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
 
   getTokenEndpoint(): string {
     return this.allEndpoints.tokenEndpoint;
-  }
-
-  getVectorEndpoint(): string {
-    return this.allEndpoints.vectorEndpoint;
   }
 
   areEndpointsOverridden(): boolean {

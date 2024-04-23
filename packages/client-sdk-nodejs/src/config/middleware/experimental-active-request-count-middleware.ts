@@ -49,6 +49,9 @@ export class ExperimentalActiveRequestCountLoggingMiddleware extends Experimenta
           c
         )
     );
+  }
+
+  init() {
     if (!this.isLoggingStarted) {
       this.isLoggingStarted = true;
       this.startLogging();

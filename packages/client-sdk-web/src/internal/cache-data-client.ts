@@ -154,6 +154,7 @@ import {
   NotEqual,
 } from '@gomomento/generated-types-webtext/dist/common_pb';
 import {
+  SetBatchCallOptions,
   SetCallOptions,
   SetIfAbsentCallOptions,
 } from '@gomomento/sdk-core/dist/src/utils';
@@ -1056,12 +1057,12 @@ export class CacheDataClient<
     items:
       | Record<string, string | Uint8Array>
       | Map<string | Uint8Array, string | Uint8Array>,
-    ttl?: number
+    options?: SetBatchCallOptions
   ): Promise<CacheSetBatch.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
-        validateTtlSeconds(ttl);
+      if (options?.ttl !== undefined) {
+        validateTtlSeconds(options?.ttl);
       }
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
@@ -1072,7 +1073,7 @@ export class CacheDataClient<
 
     const itemsToUse = this.convertSetBatchElements(items);
 
-    const ttlToUse = ttl || this.defaultTtlSeconds;
+    const ttlToUse = options?.ttl || this.defaultTtlSeconds;
     this.logger.trace(
       `Issuing 'setBatch' request; items length: ${
         itemsToUse.length

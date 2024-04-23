@@ -1,7 +1,6 @@
 import {
   CacheClient,
   TopicClient,
-  PreviewVectorIndexClient,
   PreviewLeaderboardClient,
   CredentialProvider,
 } from '../../src';
@@ -29,7 +28,7 @@ describe('default configurations', () => {
   it('CacheClient should be able to be constructed with a simple string for env var', () => {
     const cacheClientViaConstructor = new CacheClient({
       credentialProvider:
-        CredentialProvider.fromEnvironmentVariable('TEST_API_KEY'),
+        CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
       defaultTtlSeconds: 60,
     });
     expect(cacheClientViaConstructor).toBeInstanceOf(CacheClient);
@@ -37,7 +36,7 @@ describe('default configurations', () => {
 
   it('CacheClient should be able to be constructed with a simple string for env var, using short function name', () => {
     const cacheClientViaConstructor = new CacheClient({
-      credentialProvider: CredentialProvider.fromEnvVar('TEST_API_KEY'),
+      credentialProvider: CredentialProvider.fromEnvVar('MOMENTO_API_KEY'),
       defaultTtlSeconds: 60,
     });
     expect(cacheClientViaConstructor).toBeInstanceOf(CacheClient);
@@ -56,15 +55,6 @@ describe('default configurations', () => {
       credentialProvider: credsProvider(),
     });
     expect(topicClientViaConstructor).toBeInstanceOf(TopicClient);
-  });
-
-  it('VectorIndexClient should be able to be constructed with a default configuration', () => {
-    const vectorIndexClientViaConstructor = new PreviewVectorIndexClient({
-      credentialProvider: credsProvider(),
-    });
-    expect(vectorIndexClientViaConstructor).toBeInstanceOf(
-      PreviewVectorIndexClient
-    );
   });
 
   it('LeaderboardClient should be able to be constructed with a default configuration', () => {
