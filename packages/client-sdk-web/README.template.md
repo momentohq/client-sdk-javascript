@@ -19,7 +19,7 @@ Documentation is available on the [Momento Docs website](https://docs.momentohq.
 
 ## Examples
 
-Working example projects, with all required build configuration files, are available in the [examples](../../examples/web) subdirectory.
+Working example projects, with all required build configuration files, are available in the [examples](https://github.com/momentohq/client-sdk-javascript/tree/main/examples/web) subdirectory.
 
 ## Developing
 
