@@ -94,6 +94,7 @@ import {
   WebhookDestination,
   PostUrlWebhookDestination,
   WebhookDestinationType,
+  SetBatchItem,
 } from './utils';
 
 import {
@@ -206,6 +207,7 @@ export {
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
+  SetBatchItem,
 
   // CacheClient Response Types
   CacheGet,

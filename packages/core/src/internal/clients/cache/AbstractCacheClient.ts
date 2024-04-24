@@ -70,7 +70,11 @@ import {
   CacheSetIfAbsentOrEqual,
   CacheSetSample,
 } from '../../../index';
-import {ListFetchCallOptions, ListRetainCallOptions} from '../../../utils';
+import {
+  ListFetchCallOptions,
+  ListRetainCallOptions,
+  SetBatchItem,
+} from '../../../utils';
 import {
   ICacheClient,
   SetOptions,
@@ -265,7 +269,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * already present it is replaced with the new value.
    *
    * @param {string} cacheName - The cache to store the values in.
-   * @param {Record<string, string | Uint8Array> | Map<string | Uint8Array, string | Uint8Array>} items - The key-value pairs to be stored.
+   * @param {Record<string, string | Uint8Array | SetBatchItem> | Map<string | Uint8Array, string | Uint8Array | SetBatchItem>} items - The key-value pairs to be stored, with the option to set a TTL per item.
    * @param {SetBatchOptions} [options]
    * @param {number} [options.ttl] - The time to live for the items in the cache.
    * Uses the client's default TTL if this is not supplied.
@@ -278,7 +282,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
     cacheName: string,
     items:
       | Record<string, string | Uint8Array>
-      | Map<string | Uint8Array, string | Uint8Array>,
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Array<SetBatchItem>,
     options?: SetBatchOptions
   ): Promise<CacheSetBatch.Response> {
     const client = this.getNextDataClient();

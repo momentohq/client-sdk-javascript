@@ -68,6 +68,7 @@ import {
   SetCallOptions,
   GetCallOptions,
   SetIfAbsentCallOptions,
+  SetBatchItem,
 } from '../utils';
 import {IControlClient, IPingClient} from '../internal/clients';
 import {IMomentoCache} from './IMomentoCache';
@@ -182,7 +183,8 @@ export interface ICacheClient extends IControlClient, IPingClient {
     cacheName: string,
     items:
       | Record<string, string | Uint8Array>
-      | Map<string | Uint8Array, string | Uint8Array>,
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Array<SetBatchItem>,
     options?: SetBatchOptions
   ): Promise<CacheSetBatch.Response>;
   setFetch(cacheName: string, setName: string): Promise<CacheSetFetch.Response>;

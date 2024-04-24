@@ -120,6 +120,7 @@ import {
   GetBatchCallOptions,
   GetCallOptions,
   SetBatchCallOptions,
+  SetBatchItem,
   SetCallOptions,
   SetIfAbsentCallOptions,
 } from '@gomomento/sdk-core/dist/src/utils';
@@ -1619,7 +1620,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     items:
       | Record<string, string | Uint8Array>
-      | Map<string | Uint8Array, string | Uint8Array>,
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Array<SetBatchItem>,
     options?: SetBatchCallOptions
   ): Promise<CacheSetBatch.Response> {
     try {
@@ -1634,9 +1636,11 @@ export class CacheDataClient implements IDataClient {
       );
     }
 
+    const ttlToUse = options?.ttl || this.defaultTtlSeconds;
+
     return await this.rateLimited(async () => {
-      let itemsToUse: [Uint8Array, Uint8Array][] =
-        this.convertSetBatchElements(items);
+      let itemsToUse: [Uint8Array, Uint8Array, number][] =
+        this.convertSetBatchElements(items, ttlToUse);
       if (options?.compress) {
         this.logger.trace(
           'CacheClient.setBatch; compression enabled, calling value compressor'
@@ -1652,34 +1656,36 @@ export class CacheDataClient implements IDataClient {
           const compressionLevel: CompressionLevel =
             this.compressionDetails.compressionLevel;
           itemsToUse = await Promise.all(
-            itemsToUse.map(async ([key, value]) => {
-              return [key, await compressor.compress(compressionLevel, value)];
+            itemsToUse.map(async ([key, value, ttl]) => {
+              return [
+                key,
+                await compressor.compress(compressionLevel, value),
+                ttl,
+              ];
             })
           );
         }
       }
 
-      const ttlToUse = options?.ttl || this.defaultTtlSeconds;
       this.logger.trace(
         `Issuing 'setBatch' request; items length: ${
           itemsToUse.length
         }, ttl: ${ttlToUse.toString()}`
       );
-      return await this.sendSetBatch(cacheName, itemsToUse, ttlToUse);
+      return await this.sendSetBatch(cacheName, itemsToUse);
     });
   }
 
   private async sendSetBatch(
     cacheName: string,
-    items: [Uint8Array, Uint8Array][],
-    ttlSeconds: number
+    items: [Uint8Array, Uint8Array, number][]
   ): Promise<CacheSetBatch.Response> {
     const setRequests = [];
     for (const item of items) {
       const setRequest = new grpcCache._SetRequest({
         cache_key: item[0],
         cache_body: item[1],
-        ttl_milliseconds: ttlSeconds * 1000,
+        ttl_milliseconds: item[2] * 1000,
       });
       setRequests.push(setRequest);
     }
@@ -4273,16 +4279,26 @@ export class CacheDataClient implements IDataClient {
     elements:
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>
-  ): [Uint8Array, Uint8Array][] {
-    if (elements instanceof Map) {
+      | Array<SetBatchItem>,
+    ttl: number
+  ): [Uint8Array, Uint8Array, number][] {
+    if (elements instanceof Array) {
+      return elements.map(element => [
+        this.convert(element.key),
+        this.convert(element.value),
+        element.ttl,
+      ]);
+    } else if (elements instanceof Map) {
       return [...elements.entries()].map(([k, v]) => [
         this.convert(k),
         this.convert(v),
+        ttl,
       ]);
     } else {
       return Object.entries(elements).map(element => [
         this.convert(element[0]),
         this.convert(element[1]),
+        ttl,
       ]);
     }
   }

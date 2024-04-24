@@ -155,6 +155,7 @@ import {
 } from '@gomomento/generated-types-webtext/dist/common_pb';
 import {
   SetBatchCallOptions,
+  SetBatchItem,
   SetCallOptions,
   SetIfAbsentCallOptions,
 } from '@gomomento/sdk-core/dist/src/utils';
@@ -1056,7 +1057,8 @@ export class CacheDataClient<
     cacheName: string,
     items:
       | Record<string, string | Uint8Array>
-      | Map<string | Uint8Array, string | Uint8Array>,
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Array<SetBatchItem>,
     options?: SetBatchCallOptions
   ): Promise<CacheSetBatch.Response> {
     try {
@@ -1071,22 +1073,21 @@ export class CacheDataClient<
       );
     }
 
-    const itemsToUse = this.convertSetBatchElements(items);
-
     const ttlToUse = options?.ttl || this.defaultTtlSeconds;
+    const itemsToUse = this.convertSetBatchElements(items, ttlToUse);
+
     this.logger.trace(
       `Issuing 'setBatch' request; items length: ${
         itemsToUse.length
       }, ttl: ${ttlToUse.toString()}`
     );
 
-    return await this.sendSetBatch(cacheName, itemsToUse, ttlToUse);
+    return await this.sendSetBatch(cacheName, itemsToUse);
   }
 
   private async sendSetBatch(
     cacheName: string,
-    items: Record<string, string>[],
-    ttlSeconds: number
+    items: SetBatchItem[]
   ): Promise<CacheSetBatch.Response> {
     const setRequests = [];
     for (const item of items) {
@@ -1094,7 +1095,7 @@ export class CacheDataClient<
       setRequest.setCacheKey(item.key);
       setRequest.setCacheBody(item.value);
       setRequest.setTtlMilliseconds(
-        this.convertSecondsToMilliseconds(ttlSeconds)
+        this.convertSecondsToMilliseconds(item.ttl)
       );
       setRequests.push(setRequest);
     }
@@ -4302,12 +4303,17 @@ export class CacheDataClient<
     elements:
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>
-  ): Record<string, string>[] {
-    if (elements instanceof Map) {
+      | Array<SetBatchItem>,
+    ttl: number
+  ): SetBatchItem[] {
+    if (elements instanceof Array) {
+      return elements;
+    } else if (elements instanceof Map) {
       return [...elements.entries()].map(element => {
         return {
           key: convertToB64String(element[0]),
           value: convertToB64String(element[1]),
+          ttl: ttl,
         };
       });
     } else {
@@ -4315,6 +4321,7 @@ export class CacheDataClient<
         return {
           key: convertToB64String(element[0]),
           value: convertToB64String(element[1]),
+          ttl: ttl,
         };
       });
     }
