@@ -8,7 +8,8 @@
     "build": "tsc",
     "test": "jest",
     "lint": "eslint . --ext .ts",
-    "format": "eslint . --ext .ts --fix"
+    "format": "eslint . --ext .ts --fix",
+    "user-program": "tsc && node dist/user-program.js"
   },
   "author": "",
   "license": "ISC",
