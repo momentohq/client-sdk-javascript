@@ -48,15 +48,20 @@ async function main() {
         default:
           console.error('Unknown type');
       }
-      // An alternative to this switch we have derive subclases of StoreGet.Success:
-      // StoreStringValue, StoreIntegerValue, StoreFloatValue, etc.
-      //In that world the developer can use more instanceof checks:
+      // An alternative to this switch is:
+      // - StoreGet.Success has a `value` field which is of type `StoreValue`
+      // `StoreValue` is a base class with derived types, each with a `value` field.
+      // - StoreStringValue with a string-valued `value` field,
+      // - StoreIntegerValue with an integer-valued `value` field,
+      // - StoreFloatValue, etc.
+      // In that world the developer can use more instanceof checks:
       // if (getResponse instanceof StoreGet.Success) {
-      //    if (getResponse instanceof StoreStringValue) {
-      //      console.log('The value is a string:', getResponse.value);
-      //    } else if (getResponse instanceof StoreIntegerValue) {
-      //      console.log('The value is an integer:', getResponse.value);
-      //    } else if (getResponse instanceof StoreFloatValue) {
+      //    const storeValue = getResponse.value;
+      //    if (storeValue instanceof StoreStringValue) {
+      //      console.log('The value is a string:', storeValue.value);
+      //    } else if (storeValue instanceof StoreIntegerValue) {
+      //      console.log('The value is an integer:', storeValue.value);
+      //    } else if (storeValue instanceof StoreFloatValue) {
       //      // ...
       //    } else {
       //      console.error('Unknown type');
@@ -66,6 +71,8 @@ async function main() {
       // I feel this pattern makes sense in a language with first-class pattern matching, such as
       // Rust, Scala, Kotlin, etc.
       // But in JavaScript, I feel the switch is at the right level of complexity.
+      // This introduces an extra level of indirection where the dev has to access the `Success`
+      // value and then the `value` field of the `StoreValue` object.
     } else if (getResponse instanceof StoreGet.Error) {
       console.error('Error:', getResponse.message);
     } else {
