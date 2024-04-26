@@ -1,7 +1,6 @@
 export enum StoreValueType {
   STRING = 'string',
   INTEGER = 'integer',
-  FLOAT = 'float',
   BOOLEAN = 'boolean',
 }
 

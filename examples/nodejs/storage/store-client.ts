@@ -9,17 +9,15 @@ export class StoreClient {
   public async listStores(): Promise<void> {}
   public async get(storeName: string, key: string): Promise<StoreGet.Response> {
     if (key === 'string-key') {
-      return new StoreGet.Success('string-value');
+      return new StoreGet.StringValue('string-value');
     } else if (key === 'integer-key') {
-      return new StoreGet.Success(42);
-    } else if (key === 'float-key') {
-      return new StoreGet.Success(3.14);
+      return new StoreGet.IntegerValue(42);
     } else if (key === 'boolean-key') {
-      return new StoreGet.Success(true);
+      return new StoreGet.BooleanValue(true);
     } else {
       return new StoreGet.Error('Key not found');
     }
   }
-  public async put(storeName: string, key: string, value: string | number | boolean): Promise<void> {}
-  public async delete(storeName: string, key: string): Promise<void> {}
+  // public async put(storeName: string, key: string, value: string | number | boolean): Promise<void> {}
+  // public async delete(storeName: string, key: string): Promise<void> {}
 }
