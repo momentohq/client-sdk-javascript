@@ -989,22 +989,19 @@ export class CacheDataClient<
       );
     }
     this.logger.trace(`Issuing 'getBatch' request; keys: ${keys.toString()}`);
-    const result = await this.sendGetBatch(
-      cacheName,
-      keys.map(key => convertToB64String(key))
-    );
+    const result = await this.sendGetBatch(cacheName, keys);
     this.logger.trace(`'getBatch' request result: ${result.toString()}`);
     return result;
   }
 
   private async sendGetBatch(
     cacheName: string,
-    keys: string[]
+    keys: Array<string | Uint8Array>
   ): Promise<CacheGetBatch.Response> {
     const getRequests = [];
     for (const k of keys) {
       const getRequest = new _GetRequest();
-      getRequest.setCacheKey(k);
+      getRequest.setCacheKey(convertToB64String(k));
       getRequests.push(getRequest);
     }
     const request = new _GetBatchRequest();
@@ -2566,7 +2563,7 @@ export class CacheDataClient<
             items.forEach(val => {
               const fvp = new _DictionaryFieldValuePair({
                 field: val.getField_asU8(),
-                value: this.convertToUint8Array(val.getValue()),
+                value: val.getValue_asU8(),
               });
               retDict.push(fvp);
             });

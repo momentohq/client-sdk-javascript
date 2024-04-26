@@ -4,8 +4,9 @@ import {
   CacheGetBatch,
   ICacheClient,
   CacheSetBatch,
+  SetBatchItem,
 } from '@gomomento/sdk-core';
-import {expectWithMessage} from './common-int-test-utils';
+import {expectWithMessage, uint8ArrayForTest} from './common-int-test-utils';
 import {delay} from './auth-client';
 
 export function runBatchGetSetTests(
@@ -26,8 +27,10 @@ export function runBatchGetSetTests(
         expect(response).toBeInstanceOf(CacheGetBatch.Success);
       }, `expected SUCCESS for keys ${keys.toString()}, received ${response.toString()}`);
 
+      const getBatchSuccess = response as CacheGetBatch.Success;
+
       // Check each response in the batch
-      const getResults = (response as CacheGetBatch.Success).results();
+      const getResults = getBatchSuccess.results();
       expectWithMessage(() => {
         expect(getResults.length).toEqual(keys.length);
       }, `expected non-empty results, received ${getResults.toString()}`);
@@ -37,6 +40,14 @@ export function runBatchGetSetTests(
           expect(resp).toBeInstanceOf(CacheGet.Miss);
         }, `expected MISS for getting key ${keys[index]}, received ${resp.toString()}`);
       }
+
+      expect(getBatchSuccess.values()).toEqual({});
+      expect(getBatchSuccess.valuesRecord()).toEqual({});
+      expect(getBatchSuccess.valuesRecordStringString()).toEqual({});
+      expect(getBatchSuccess.valuesRecordStringUint8Array()).toEqual({});
+      expect(getBatchSuccess.valuesMap()).toEqual(new Map());
+      expect(getBatchSuccess.valuesMapStringString()).toEqual(new Map());
+      expect(getBatchSuccess.valuesMapStringUint8Array()).toEqual(new Map());
     });
 
     it('setBatch happy path', async () => {
@@ -187,7 +198,261 @@ export function runBatchGetSetTests(
       );
     });
 
-    it('getBatch happy path with all hits', async () => {
+    it('getBatch happy path with all hits with input as Array of SetBatchItem', async () => {
+      // Set some values and check set batch response
+      const items: Array<SetBatchItem> = [
+        {key: 'a', value: 'apple'},
+        {key: 'b', value: 'berry'},
+        {key: 'c', value: 'cantaloupe'},
+        {key: '1', value: 'first'},
+        {key: '2', value: 'second'},
+        {key: '3', value: 'third'},
+      ];
+      const setResponse = await cacheClient.setBatch(
+        integrationTestCacheName,
+        items
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetBatch.Success);
+      }, `expected SUCCESS, received ${setResponse.toString()}`);
+
+      // Check each response in the set batch
+      const setResults = (setResponse as CacheSetBatch.Success).results();
+      const keys = items.map(i => i.key as string);
+      const values = items.map(i => i.value as string);
+      expectWithMessage(() => {
+        expect(setResults.length).toEqual(keys.length);
+      }, `expected non-empty results, received ${setResults.toString()}`);
+
+      for (const [index, resp] of setResults.entries()) {
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheSet.Success);
+        }, `expected SUCCESS for setting key ${keys[index]} but received ${resp.toString()}`);
+      }
+
+      // Fetch values and check get batch response
+      const getResponse = await cacheClient.getBatch(
+        integrationTestCacheName,
+        keys
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetBatch.Success);
+      }, `expected SUCCESS for keys ${keys.toString()}, received ${getResponse.toString()}`);
+
+      const getBatchSuccess = getResponse as CacheGetBatch.Success;
+
+      // Check each response in the get batch
+      const getResults = getBatchSuccess.results();
+      expectWithMessage(() => {
+        expect(getResults.length).toEqual(keys.length);
+      }, `expected non-empty results, received ${getResults.toString()}`);
+
+      for (const [index, resp] of getResults.entries()) {
+        const key = keys[index];
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheGet.Hit);
+        }, `expected HIT for getting key ${key}, received ${resp.toString()}`);
+
+        const expectedValue = values[index] ?? 'value not in items map';
+        const receivedValue =
+          resp.value() ?? 'value could not be retrieved from response';
+        expectWithMessage(() => {
+          expect(receivedValue).toEqual(expectedValue);
+        }, `expected key ${key} to be set to ${expectedValue} but received ${receivedValue}`);
+      }
+
+      expect(getBatchSuccess.values()).toEqual({
+        a: 'apple',
+        b: 'berry',
+        c: 'cantaloupe',
+        '1': 'first',
+        '2': 'second',
+        '3': 'third',
+      });
+      expect(getBatchSuccess.valuesRecord()).toEqual({
+        a: 'apple',
+        b: 'berry',
+        c: 'cantaloupe',
+        '1': 'first',
+        '2': 'second',
+        '3': 'third',
+      });
+      expect(getBatchSuccess.valuesRecordStringString()).toEqual({
+        a: 'apple',
+        b: 'berry',
+        c: 'cantaloupe',
+        '1': 'first',
+        '2': 'second',
+        '3': 'third',
+      });
+      expect(getBatchSuccess.valuesRecordStringUint8Array()).toEqual({
+        a: uint8ArrayForTest('apple'),
+        b: uint8ArrayForTest('berry'),
+        c: uint8ArrayForTest('cantaloupe'),
+        '1': uint8ArrayForTest('first'),
+        '2': uint8ArrayForTest('second'),
+        '3': uint8ArrayForTest('third'),
+      });
+      expect(getBatchSuccess.valuesMap()).toEqual(
+        new Map([
+          ['a', 'apple'],
+          ['b', 'berry'],
+          ['c', 'cantaloupe'],
+          ['1', 'first'],
+          ['2', 'second'],
+          ['3', 'third'],
+        ])
+      );
+      expect(getBatchSuccess.valuesMapStringString()).toEqual(
+        new Map([
+          ['a', 'apple'],
+          ['b', 'berry'],
+          ['c', 'cantaloupe'],
+          ['1', 'first'],
+          ['2', 'second'],
+          ['3', 'third'],
+        ])
+      );
+      expect(getBatchSuccess.valuesMapStringUint8Array()).toEqual(
+        new Map([
+          ['a', uint8ArrayForTest('apple')],
+          ['b', uint8ArrayForTest('berry')],
+          ['c', uint8ArrayForTest('cantaloupe')],
+          ['1', uint8ArrayForTest('first')],
+          ['2', uint8ArrayForTest('second')],
+          ['3', uint8ArrayForTest('third')],
+        ])
+      );
+    });
+
+    it('getBatch happy path with all hits with input as Record', async () => {
+      // Set some values and check set batch response
+      const items = {
+        a: 'apple',
+        b: 'berry',
+        c: 'cantaloupe',
+        '1': 'first',
+        '2': 'second',
+        '3': 'third',
+      };
+      const setResponse = await cacheClient.setBatch(
+        integrationTestCacheName,
+        items
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetBatch.Success);
+      }, `expected SUCCESS, received ${setResponse.toString()}`);
+
+      // Check each response in the set batch
+      const setResults = (setResponse as CacheSetBatch.Success).results();
+      const keys = Object.entries(items).map(([k, _]) => k);
+      const values = Object.entries(items).map(([_, v]) => v);
+      expectWithMessage(() => {
+        expect(setResults.length).toEqual(keys.length);
+      }, `expected non-empty results, received ${setResults.toString()}`);
+
+      for (const [index, resp] of setResults.entries()) {
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheSet.Success);
+        }, `expected SUCCESS for setting key ${keys[index]} but received ${resp.toString()}`);
+      }
+
+      // Fetch values and check get batch response
+      const getResponse = await cacheClient.getBatch(
+        integrationTestCacheName,
+        keys
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetBatch.Success);
+      }, `expected SUCCESS for keys ${keys.toString()}, received ${getResponse.toString()}`);
+
+      const getBatchSuccess = getResponse as CacheGetBatch.Success;
+
+      // Check each response in the get batch
+      const getResults = getBatchSuccess.results();
+      expectWithMessage(() => {
+        expect(getResults.length).toEqual(keys.length);
+      }, `expected non-empty results, received ${getResults.toString()}`);
+
+      for (const [index, resp] of getResults.entries()) {
+        const key = keys[index];
+        expectWithMessage(() => {
+          expect(resp).toBeInstanceOf(CacheGet.Hit);
+        }, `expected HIT for getting key ${key}, received ${resp.toString()}`);
+
+        const expectedValue = values[index] ?? 'value not in items map';
+        const receivedValue =
+          resp.value() ?? 'value could not be retrieved from response';
+        expectWithMessage(() => {
+          expect(receivedValue).toEqual(expectedValue);
+        }, `expected key ${key} to be set to ${expectedValue} but received ${receivedValue}`);
+      }
+
+      expect(getBatchSuccess.values()).toEqual({
+        a: 'apple',
+        b: 'berry',
+        c: 'cantaloupe',
+        '1': 'first',
+        '2': 'second',
+        '3': 'third',
+      });
+      expect(getBatchSuccess.valuesRecord()).toEqual({
+        a: 'apple',
+        b: 'berry',
+        c: 'cantaloupe',
+        '1': 'first',
+        '2': 'second',
+        '3': 'third',
+      });
+      expect(getBatchSuccess.valuesRecordStringString()).toEqual({
+        a: 'apple',
+        b: 'berry',
+        c: 'cantaloupe',
+        '1': 'first',
+        '2': 'second',
+        '3': 'third',
+      });
+      expect(getBatchSuccess.valuesRecordStringUint8Array()).toEqual({
+        a: uint8ArrayForTest('apple'),
+        b: uint8ArrayForTest('berry'),
+        c: uint8ArrayForTest('cantaloupe'),
+        '1': uint8ArrayForTest('first'),
+        '2': uint8ArrayForTest('second'),
+        '3': uint8ArrayForTest('third'),
+      });
+      expect(getBatchSuccess.valuesMap()).toEqual(
+        new Map([
+          ['a', 'apple'],
+          ['b', 'berry'],
+          ['c', 'cantaloupe'],
+          ['1', 'first'],
+          ['2', 'second'],
+          ['3', 'third'],
+        ])
+      );
+      expect(getBatchSuccess.valuesMapStringString()).toEqual(
+        new Map([
+          ['a', 'apple'],
+          ['b', 'berry'],
+          ['c', 'cantaloupe'],
+          ['1', 'first'],
+          ['2', 'second'],
+          ['3', 'third'],
+        ])
+      );
+      expect(getBatchSuccess.valuesMapStringUint8Array()).toEqual(
+        new Map([
+          ['a', uint8ArrayForTest('apple')],
+          ['b', uint8ArrayForTest('berry')],
+          ['c', uint8ArrayForTest('cantaloupe')],
+          ['1', uint8ArrayForTest('first')],
+          ['2', uint8ArrayForTest('second')],
+          ['3', uint8ArrayForTest('third')],
+        ])
+      );
+    });
+
+    it('getBatch happy path with all hits with input as Map', async () => {
       // Set some values and check set batch response
       const items = new Map<string, string>([
         ['a', 'apple'],
@@ -227,8 +492,10 @@ export function runBatchGetSetTests(
         expect(getResponse).toBeInstanceOf(CacheGetBatch.Success);
       }, `expected SUCCESS for keys ${keys.toString()}, received ${getResponse.toString()}`);
 
+      const getBatchSuccess = getResponse as CacheGetBatch.Success;
+
       // Check each response in the get batch
-      const getResults = (getResponse as CacheGetBatch.Success).results();
+      const getResults = getBatchSuccess.results();
       expectWithMessage(() => {
         expect(getResults.length).toEqual(keys.length);
       }, `expected non-empty results, received ${getResults.toString()}`);
@@ -246,6 +513,69 @@ export function runBatchGetSetTests(
           expect(receivedValue).toEqual(expectedValue);
         }, `expected key ${key} to be set to ${expectedValue} but received ${receivedValue}`);
       }
+
+      expect(getBatchSuccess.values()).toEqual({
+        a: 'apple',
+        b: 'berry',
+        c: 'cantaloupe',
+        '1': 'first',
+        '2': 'second',
+        '3': 'third',
+      });
+      expect(getBatchSuccess.valuesRecord()).toEqual({
+        a: 'apple',
+        b: 'berry',
+        c: 'cantaloupe',
+        '1': 'first',
+        '2': 'second',
+        '3': 'third',
+      });
+      expect(getBatchSuccess.valuesRecordStringString()).toEqual({
+        a: 'apple',
+        b: 'berry',
+        c: 'cantaloupe',
+        '1': 'first',
+        '2': 'second',
+        '3': 'third',
+      });
+      expect(getBatchSuccess.valuesRecordStringUint8Array()).toEqual({
+        a: uint8ArrayForTest('apple'),
+        b: uint8ArrayForTest('berry'),
+        c: uint8ArrayForTest('cantaloupe'),
+        '1': uint8ArrayForTest('first'),
+        '2': uint8ArrayForTest('second'),
+        '3': uint8ArrayForTest('third'),
+      });
+      expect(getBatchSuccess.valuesMap()).toEqual(
+        new Map([
+          ['a', 'apple'],
+          ['b', 'berry'],
+          ['c', 'cantaloupe'],
+          ['1', 'first'],
+          ['2', 'second'],
+          ['3', 'third'],
+        ])
+      );
+      expect(getBatchSuccess.valuesMapStringString()).toEqual(
+        new Map([
+          ['a', 'apple'],
+          ['b', 'berry'],
+          ['c', 'cantaloupe'],
+          ['1', 'first'],
+          ['2', 'second'],
+          ['3', 'third'],
+        ])
+      );
+      expect(getBatchSuccess.valuesMapStringUint8Array()).toEqual(
+        new Map([
+          ['a', uint8ArrayForTest('apple')],
+          ['b', uint8ArrayForTest('berry')],
+          ['c', uint8ArrayForTest('cantaloupe')],
+          ['1', uint8ArrayForTest('first')],
+          ['2', uint8ArrayForTest('second')],
+          ['3', uint8ArrayForTest('third')],
+        ])
+      );
     });
 
     it('getBatch happy path with some hits and misses', async () => {
