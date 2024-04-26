@@ -131,15 +131,16 @@ export function runBatchGetSetTests(
       // Create list of SetBatchItems and check set batch response
       const items = [
         {key: 'a', value: 'apple', ttl: 3},
-        {key: 'b', value: 'berry', ttl: 3},
-        {key: 'c', value: 'cantaloupe', ttl: 3},
-        {key: '1', value: 'first', ttl: 3},
-        {key: '2', value: 'second', ttl: 3},
+        {key: 'b', value: 'berry', ttl: 1},
+        {key: 'c', value: 'cantaloupe', ttl: 20},
+        {key: '1', value: 'first'},
+        {key: '2', value: 'second', ttl: 2},
         {key: '3', value: 'third', ttl: 3},
       ];
       const response = await cacheClient.setBatch(
         integrationTestCacheName,
-        items
+        items,
+        {ttl: 15}
       );
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(CacheSetBatch.Success);
@@ -175,11 +176,15 @@ export function runBatchGetSetTests(
         expect(getResults.length).toEqual(keys.length);
       }, `expected non-empty results, received ${getResults.toString()}`);
 
-      for (const [index, resp] of getResults.entries()) {
-        expectWithMessage(() => {
-          expect(resp).toBeInstanceOf(CacheGet.Miss);
-        }, `expected MISS for getting key ${keys[index]}, received ${resp.toString()}`);
-      }
+      const getResultsMap = (
+        getResponse as CacheGetBatch.Success
+      ).valuesMapStringString();
+      expect(getResultsMap).toEqual(
+        new Map([
+          ['c', 'cantaloupe'],
+          ['1', 'first'],
+        ])
+      );
     });
 
     it('getBatch happy path with all hits', async () => {

@@ -1087,16 +1087,15 @@ export class CacheDataClient<
 
   private async sendSetBatch(
     cacheName: string,
-    items: SetBatchItem[]
+    items: [string, string, number][]
   ): Promise<CacheSetBatch.Response> {
     const setRequests = [];
     for (const item of items) {
+      const [key, value, ttl] = item;
       const setRequest = new _SetRequest();
-      setRequest.setCacheKey(item.key);
-      setRequest.setCacheBody(item.value);
-      setRequest.setTtlMilliseconds(
-        this.convertSecondsToMilliseconds(item.ttl)
-      );
+      setRequest.setCacheKey(key);
+      setRequest.setCacheBody(value);
+      setRequest.setTtlMilliseconds(this.convertSecondsToMilliseconds(ttl));
       setRequests.push(setRequest);
     }
     const request = new _SetBatchRequest();
@@ -4305,24 +4304,28 @@ export class CacheDataClient<
       | Record<string, string | Uint8Array>
       | Array<SetBatchItem>,
     ttl: number
-  ): SetBatchItem[] {
+  ): [string, string, number][] {
     if (elements instanceof Array) {
-      return elements;
+      return elements.map(element => [
+        convertToB64String(element.key),
+        convertToB64String(element.value),
+        element.ttl ?? ttl,
+      ]);
     } else if (elements instanceof Map) {
       return [...elements.entries()].map(element => {
-        return {
-          key: convertToB64String(element[0]),
-          value: convertToB64String(element[1]),
-          ttl: ttl,
-        };
+        return [
+          convertToB64String(element[0]),
+          convertToB64String(element[1]),
+          ttl,
+        ];
       });
     } else {
       return Object.entries(elements).map(element => {
-        return {
-          key: convertToB64String(element[0]),
-          value: convertToB64String(element[1]),
-          ttl: ttl,
-        };
+        return [
+          convertToB64String(element[0]),
+          convertToB64String(element[1]),
+          ttl,
+        ];
       });
     }
   }

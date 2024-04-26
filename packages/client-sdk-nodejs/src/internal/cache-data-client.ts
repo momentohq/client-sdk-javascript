@@ -4286,7 +4286,7 @@ export class CacheDataClient implements IDataClient {
       return elements.map(element => [
         this.convert(element.key),
         this.convert(element.value),
-        element.ttl,
+        element.ttl ?? ttl,
       ]);
     } else if (elements instanceof Map) {
       return [...elements.entries()].map(([k, v]) => [
