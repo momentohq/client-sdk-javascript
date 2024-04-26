@@ -63,6 +63,9 @@ export class BooleanValue implements ISuccess<boolean> {
   response: ResponseType.Success;
 }
 
-type Success = InstanceType<typeof StringValue> | InstanceType<typeof IntegerValue> | InstanceType<typeof BooleanValue>;
+export type Success =
+  | InstanceType<typeof StringValue>
+  | InstanceType<typeof IntegerValue>
+  | InstanceType<typeof BooleanValue>;
 
 export type Response = Success | Error;

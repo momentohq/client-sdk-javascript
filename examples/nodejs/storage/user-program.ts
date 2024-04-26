@@ -1,5 +1,6 @@
 import {StoreClient} from './store-client';
 import * as StoreGet from './store-get';
+import {Success} from './store-get';
 import {StoreValueType} from './store-value-type';
 
 async function main() {
@@ -9,6 +10,7 @@ async function main() {
   for (const key of ['string-key', 'integer-key', 'float-key', 'boolean-key', 'unknown-key']) {
     console.log(`====== Getting key: ${key} ======`);
     const getResponse = await client.get(storeName, key);
+
     switch (getResponse.response) {
       case StoreGet.ResponseType.Success:
         switch (getResponse.type) {
@@ -30,5 +32,19 @@ async function main() {
     }
   }
 }
+
+const func = (param: Success) => {
+  switch (param.type) {
+    case StoreValueType.STRING:
+      console.log('The value is a string:', param.value);
+      break;
+    case StoreValueType.INTEGER:
+      console.log('The value is an integer:', param.value);
+      break;
+    case StoreValueType.BOOLEAN:
+      console.log('The value is a boolean:', param.value);
+      break;
+  }
+};
 
 main().then().catch(console.error);
