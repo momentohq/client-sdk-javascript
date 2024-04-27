@@ -4,3 +4,4 @@ export * from './topic-call-options';
 export * from './expiration';
 export * from './itemType';
 export * from './webhook-destination';
+export * from './set-batch-item';

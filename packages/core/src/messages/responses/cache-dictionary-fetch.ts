@@ -57,17 +57,6 @@ class _Hit extends Response {
   }
 
   /**
-   * Returns the data as a Map whose keys and values are byte arrays.
-   * @returns {Map<Uint8Array, Uint8Array>}
-   */
-  public valueMapUint8ArrayUint8Array(): Map<Uint8Array, Uint8Array> {
-    return this.items.reduce((acc, item) => {
-      acc.set(item.field, item.value);
-      return acc;
-    }, new Map<Uint8Array, Uint8Array>());
-  }
-
-  /**
    * Returns the data as a Map whose keys and values are utf-8 strings, decoded from the underlying byte arrays.
    * @returns {Map<string, string>}
    */

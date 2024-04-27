@@ -75,19 +75,6 @@ class _Hit extends Response {
   }
 
   /**
-   * Returns the data as a Map whose keys are byte arrays and values numbers.
-   * @returns {Map<Uint8Array, number>}
-   */
-  public valueMapUint8Array(): Map<Uint8Array, number> {
-    return this._responses.reduce((acc, response) => {
-      if (response instanceof CacheSortedSetGetScoreResponse.Hit) {
-        acc.set(response.valueUint8Array(), response.score());
-      }
-      return acc;
-    }, new Map<Uint8Array, number>());
-  }
-
-  /**
    * Returns the data as a Map whose keys are utf-8 strings, decoded from the underlying byte arrays and values are numbers.
    * @returns {Map<string, number>}
    */
