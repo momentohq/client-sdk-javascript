@@ -67,6 +67,7 @@ import {
   SortedSetFetchByRankCallOptions,
   SortedSetFetchByScoreCallOptions,
   SortedSetLengthByScoreCallOptions,
+  SetBatchItem,
 } from '../../../utils';
 import {IMomentoCache} from '../../../clients/IMomentoCache';
 
@@ -208,7 +209,8 @@ export class MomentoCache implements IMomentoCache {
   setBatch(
     items:
       | Record<string, string | Uint8Array>
-      | Map<string | Uint8Array, string | Uint8Array>,
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Array<SetBatchItem>,
     options?: SetBatchOptions
   ): Promise<CacheSetBatch.Response> {
     return this.cacheClient.setBatch(this.cacheName, items, options);

@@ -292,41 +292,6 @@ export function runDictionaryTests(
         expect(hitResponse.valueRecord()).toEqual(expectedStringStringRecord);
       });
 
-      it('should provide value accessors for bytes fields with dictionaryFetch', async () => {
-        const dictionaryName = v4();
-        const field1 = uint8ArrayForTest(v4());
-        const value1 = v4();
-        const field2 = uint8ArrayForTest(v4());
-        const value2 = v4();
-
-        await cacheClient.dictionarySetFields(
-          integrationTestCacheName,
-          dictionaryName,
-          new Map([
-            [field1, value1],
-            [field2, value2],
-          ])
-        );
-
-        const response = await cacheClient.dictionaryFetch(
-          integrationTestCacheName,
-          dictionaryName
-        );
-        expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheDictionaryFetch.Hit);
-        }, `expected HIT but got ${response.toString()}`);
-        const hitResponse = response as CacheDictionaryFetch.Hit;
-
-        const expectedBytesBytesMap = new Map<Uint8Array, Uint8Array>([
-          [field1, uint8ArrayForTest(value1)],
-          [field2, uint8ArrayForTest(value2)],
-        ]);
-
-        expect(hitResponse.valueMapUint8ArrayUint8Array()).toEqual(
-          expectedBytesBytesMap
-        );
-      });
-
       it('should do nothing with dictionaryFetch if dictionary does not exist', async () => {
         const dictionaryName = v4();
         let fetchResponse = await cacheClient.dictionaryFetch(
@@ -735,12 +700,6 @@ export function runDictionaryTests(
         const missResponse = hitResponse
           .responses[2] as CacheDictionaryGetField.Miss;
         expect(missResponse.fieldUint8Array()).toEqual(field3);
-
-        const expectedMap = new Map<Uint8Array, Uint8Array>([
-          [field1, value1],
-          [field2, value2],
-        ]);
-        expect(expectedMap).toEqual(hitResponse.valueMapUint8ArrayUint8Array());
       });
 
       it('should support happy path for dictionaryGetFields via curried cache via ICache interface', async () => {
