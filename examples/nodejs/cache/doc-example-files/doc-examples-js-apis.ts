@@ -259,6 +259,17 @@ async function example_API_Set(cacheClient: CacheClient, cacheName: string) {
   }
 }
 
+async function example_API_SetWithCompression(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.set(cacheName, 'test-key', 'test-value', {compress: true});
+  if (result instanceof CacheSet.Success) {
+    console.log("Key 'test-key' stored successfully");
+  } else if (result instanceof CacheSet.Error) {
+    throw new Error(
+      `An error occurred while attempting to store key 'test-key' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
 async function example_API_Get(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.get(cacheName, 'test-key');
   if (result instanceof CacheGet.Hit) {
@@ -1590,6 +1601,7 @@ async function main() {
     await example_API_FlushCache(cacheClient, cacheName);
 
     await example_API_Set(cacheClient, cacheName);
+    await example_API_SetWithCompression(cacheClient, cacheName);
     await example_API_Get(cacheClient, cacheName);
     await example_API_GetNoDecompress(cacheClient, cacheName);
     await example_API_Delete(cacheClient, cacheName);
