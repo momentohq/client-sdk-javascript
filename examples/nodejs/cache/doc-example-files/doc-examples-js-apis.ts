@@ -9,40 +9,31 @@
  *
  */
 import {
-  CacheClient,
-  Configurations,
-  CredentialProvider,
-  CreateCache,
-  DeleteCache,
-  CacheFlush,
-  ListCaches,
-  CacheSet,
-  CacheGet,
-  CacheDelete,
-  AuthClient,
-  AllDataReadWrite,
-  ExpiresIn,
-  TokenScopes,
-  DisposableTokenScopes,
   AllCaches,
+  AllDataReadWrite,
   AllTopics,
-  CacheRole,
-  TopicRole,
-  GenerateApiKey,
-  RefreshApiKey,
-  GenerateDisposableToken,
+  AuthClient,
+  AutomaticDecompression,
+  CacheClient,
+  CacheDelete,
+  CacheDictionaryFetch,
+  CacheDictionaryGetField,
+  CacheDictionaryGetFields,
+  CacheDictionaryIncrement,
+  CacheDictionaryRemoveField,
+  CacheDictionaryRemoveFields,
+  CacheDictionarySetField,
+  CacheDictionarySetFields,
+  CacheFlush,
+  CacheGet,
+  CacheGetBatch,
   CacheIncrement,
   CacheItemGetType,
-  CacheSetIfNotExists,
-  CacheSetIfPresent,
-  CacheSetIfAbsent,
-  CacheSetIfEqual,
-  CacheSetIfNotEqual,
-  CacheSetIfPresentAndNotEqual,
-  CacheSetIfAbsentOrEqual,
-  CacheListFetch,
+  CacheKeyExists,
+  CacheKeysExist,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
+  CacheListFetch,
   CacheListLength,
   CacheListPopBack,
   CacheListPopFront,
@@ -50,56 +41,68 @@ import {
   CacheListPushFront,
   CacheListRemoveValue,
   CacheListRetain,
-  ItemType,
-  CacheDictionaryFetch,
-  CacheDictionaryGetField,
-  CacheDictionaryGetFields,
-  CacheDictionarySetField,
-  CacheDictionarySetFields,
-  CacheDictionaryIncrement,
-  CacheDictionaryRemoveField,
-  CacheDictionaryRemoveFields,
+  CacheRole,
+  CacheSet,
   CacheSetAddElement,
   CacheSetAddElements,
+  CacheSetBatch,
   CacheSetFetch,
+  CacheSetIfAbsent,
+  CacheSetIfAbsentOrEqual,
+  CacheSetIfEqual,
+  CacheSetIfNotEqual,
+  CacheSetIfNotExists,
+  CacheSetIfPresent,
+  CacheSetIfPresentAndNotEqual,
   CacheSetRemoveElement,
   CacheSetRemoveElements,
-  CacheSortedSetPutElement,
-  CacheSortedSetPutElements,
+  CacheSetSample,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
   CacheSortedSetGetScores,
   CacheSortedSetIncrementScore,
+  CacheSortedSetPutElement,
+  CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
-  TopicClient,
-  TopicPublish,
-  TopicSubscribe,
-  TopicItem,
-  TopicConfigurations,
-  PreviewLeaderboardClient,
-  LeaderboardConfigurations,
+  CompressionLevel,
+  Configurations,
+  CreateCache,
+  CredentialProvider,
+  DeleteCache,
+  DeleteWebhook,
+  DisposableTokenScopes,
+  ExpiresIn,
+  GenerateApiKey,
+  GenerateDisposableToken,
+  GetWebhookSecret,
   ILeaderboard,
+  ItemType,
+  LeaderboardConfigurations,
   LeaderboardDelete,
   LeaderboardFetch,
   LeaderboardLength,
   LeaderboardOrder,
   LeaderboardRemoveElements,
   LeaderboardUpsert,
+  ListCaches,
   ListWebhooks,
-  DeleteWebhook,
+  PreviewLeaderboardClient,
   PutWebhook,
-  RotateWebhookSecret,
-  GetWebhookSecret,
-  CacheGetBatch,
-  CacheSetBatch,
   ReadConcern,
-  CacheSetSample,
-  CacheKeyExists,
-  CacheKeysExist,
+  RefreshApiKey,
+  RotateWebhookSecret,
+  TokenScopes,
+  TopicClient,
+  TopicConfigurations,
+  TopicItem,
+  TopicPublish,
+  TopicRole,
+  TopicSubscribe,
 } from '@gomomento/sdk';
 import * as crypto from 'crypto';
+import {CompressorFactory} from '@gomomento/sdk-nodejs-compression';
 
 function retrieveApiKeyFromYourSecretsManager(): string {
   // this is not a valid API key but conforms to the syntax requirements.
@@ -135,6 +138,21 @@ function example_API_ConfigurationInRegionLowLatency() {
 
 function example_API_ConfigurationLambdaLatest() {
   Configurations.Lambda.latest();
+}
+
+function example_API_ConfigurationWithCompression() {
+  Configurations.InRegion.Default.latest().withCompressionStrategy({
+    compressorFactory: CompressorFactory.default(),
+    compressionLevel: CompressionLevel.SmallestSize,
+  });
+}
+
+function example_API_ConfigurationWithCompressionNoAutomatic() {
+  Configurations.InRegion.Default.latest().withCompressionStrategy({
+    compressorFactory: CompressorFactory.default(),
+    compressionLevel: CompressionLevel.SmallestSize,
+    automaticDecompression: AutomaticDecompression.Disabled,
+  });
 }
 
 async function example_API_InstantiateCacheClient() {
@@ -243,6 +261,19 @@ async function example_API_Set(cacheClient: CacheClient, cacheName: string) {
 
 async function example_API_Get(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.get(cacheName, 'test-key');
+  if (result instanceof CacheGet.Hit) {
+    console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
+  } else if (result instanceof CacheGet.Miss) {
+    console.log(`Key 'test-key' was not found in cache '${cacheName}'`);
+  } else if (result instanceof CacheGet.Error) {
+    throw new Error(
+      `An error occurred while attempting to get key 'test-key' from cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
+
+async function example_API_GetNoDecompress(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.get(cacheName, 'test-key', {decompress: false});
   if (result instanceof CacheGet.Hit) {
     console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
   } else if (result instanceof CacheGet.Miss) {
@@ -1532,6 +1563,8 @@ async function main() {
   example_API_ConfigurationInRegionDefaultLatest();
   example_API_ConfigurationInRegionLowLatency();
   example_API_ConfigurationLambdaLatest();
+  example_API_ConfigurationWithCompression();
+  example_API_ConfigurationWithCompressionNoAutomatic();
 
   await example_API_InstantiateCacheClient();
   await example_API_InstantiateCacheClientWithReadConcern();
@@ -1558,6 +1591,7 @@ async function main() {
 
     await example_API_Set(cacheClient, cacheName);
     await example_API_Get(cacheClient, cacheName);
+    await example_API_GetNoDecompress(cacheClient, cacheName);
     await example_API_Delete(cacheClient, cacheName);
     await example_API_Increment(cacheClient, cacheName);
     await example_API_ItemGetType(cacheClient, cacheName);
