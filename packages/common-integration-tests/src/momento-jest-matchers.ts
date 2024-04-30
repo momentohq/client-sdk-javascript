@@ -13,7 +13,11 @@ import {toBeWithin} from 'jest-extended';
 const toBePermissionDeniedForCacheGet: MatcherFunction = function (
   received: unknown
 ) {
-  if (!(received instanceof CacheGet.Response)) {
+  const isCacheGetResponse =
+    received instanceof CacheGet.Hit ||
+    received instanceof CacheGet.Miss ||
+    received instanceof CacheGet.Error;
+  if (!isCacheGetResponse) {
     throw new Error('Expected CacheGet.Response');
   }
   const pass =
@@ -122,7 +126,11 @@ const toBeHit: MatcherFunction<[expected: string]> = function (
   received: unknown,
   expected: string
 ) {
-  if (!(received instanceof CacheGet.Response)) {
+  const isCacheGetResponse =
+    received instanceof CacheGet.Hit ||
+    received instanceof CacheGet.Miss ||
+    received instanceof CacheGet.Error;
+  if (!isCacheGetResponse) {
     throw new Error('Expected CacheGet.Response');
   }
   const pass =
