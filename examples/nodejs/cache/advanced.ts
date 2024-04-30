@@ -91,8 +91,6 @@ async function setGetDeleteExample() {
     logger.info('cache miss');
   } else if (getResponse instanceof CacheGet.Error) {
     logger.info(`Error: ${getResponse.message()}`);
-  } else {
-    throw new Error(`Unrecognized response: ${getResponse.toString()}`);
   }
 
   const deleteResponse = await momento.delete(cacheName, cacheKey);
