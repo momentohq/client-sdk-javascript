@@ -1588,6 +1588,17 @@ async function main() {
     defaultTtlSeconds: 60,
   });
 
+  const cacheClientWithCompression = await CacheClient.create({
+    configuration: Configurations.InRegion.Default.latest().withCompressionStrategy({
+      compressorFactory: CompressorFactory.default(),
+      compressionLevel: CompressionLevel.SmallestSize,
+    }),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: 'MOMENTO_API_KEY',
+    }),
+    defaultTtlSeconds: 60,
+  });
+
   const cacheName = `js-sdk-doc-examples-cache-${crypto.randomBytes(8).toString('hex')}`;
 
   await example_API_CreateCache(cacheClient, cacheName);
@@ -1601,9 +1612,9 @@ async function main() {
     await example_API_FlushCache(cacheClient, cacheName);
 
     await example_API_Set(cacheClient, cacheName);
-    await example_API_SetWithCompression(cacheClient, cacheName);
+    await example_API_SetWithCompression(cacheClientWithCompression, cacheName);
     await example_API_Get(cacheClient, cacheName);
-    await example_API_GetNoDecompress(cacheClient, cacheName);
+    await example_API_GetNoDecompress(cacheClientWithCompression, cacheName);
     await example_API_Delete(cacheClient, cacheName);
     await example_API_Increment(cacheClient, cacheName);
     await example_API_ItemGetType(cacheClient, cacheName);
