@@ -1,13 +1,23 @@
 import {SdkError} from '../../errors';
 import {
-  ResponseBase,
-  ResponseError,
-  ResponseHit,
-  ResponseMiss,
+  BaseResponseError,
+  BaseResponseHit,
+  BaseResponseMiss,
 } from './response-base';
 import {truncateString} from '../../internal/utils';
 
 const TEXT_DECODER = new TextDecoder();
+
+interface IResponse {
+  value(): string | undefined;
+  responseType: ResponseType;
+}
+
+export enum ResponseType {
+  Hit = 'Hit',
+  Miss = 'Miss',
+  Error = 'Error',
+}
 
 /**
  * Parent response type for a cache get request.  The
@@ -29,16 +39,12 @@ const TEXT_DECODER = new TextDecoder();
  * }
  * ```
  */
-export abstract class Response extends ResponseBase {
-  public value(): string | undefined {
-    if (this instanceof Hit) {
-      return (this as Hit).value();
-    }
-    return undefined;
-  }
-}
 
-class _Hit extends Response {
+/**
+ * Indicates that the requested data was successfully retrieved from the cache.  Provides
+ * `value*` accessors to retrieve the data in the appropriate format.
+ */
+export class Hit extends BaseResponseHit implements IResponse {
   private readonly body: Uint8Array;
   constructor(body: Uint8Array) {
     super();
@@ -73,24 +79,18 @@ class _Hit extends Response {
     const display = truncateString(this.valueString());
     return `${super.toString()}: ${display}`;
   }
+
+  responseType: ResponseType.Hit;
 }
-
-/**
- * Indicates that the requested data was successfully retrieved from the cache.  Provides
- * `value*` accessors to retrieve the data in the appropriate format.
- */
-export class Hit extends ResponseHit(_Hit) {}
-
-class _Miss extends Response {}
 
 /**
  * Indicates that the requested data was not available in the cache.
  */
-export class Miss extends ResponseMiss(_Miss) {}
+export class Miss extends BaseResponseMiss implements IResponse {
+  responseType: ResponseType.Miss;
 
-class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
-    super();
+  value(): string | undefined {
+    return undefined;
   }
 }
 
@@ -104,4 +104,31 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  constructor(_innerException: SdkError) {
+    super(_innerException);
+  }
+
+  responseType: ResponseType.Error;
+
+  value(): string | undefined {
+    return undefined;
+  }
+}
+
+export type Response = Hit | Miss | Error;
+
+const miss: Response = new Miss();
+const r = miss as Response;
+
+switch (r.responseType) {
+  case ResponseType.Hit:
+    r.value();
+    break;
+  case ResponseType.Miss:
+    r.is_miss;
+    break;
+  case ResponseType.Error:
+    r.innerException();
+    break;
+}
