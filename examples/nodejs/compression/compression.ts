@@ -11,6 +11,10 @@ import {CompressorFactory} from '@gomomento/sdk-nodejs-compression';
 
 async function main() {
   const configuration = Configurations.Laptop.latest().withClientTimeoutMillis(90000);
+
+  // This configuration will enable compression and automatically decompress any compressed values for
+  // supported operations. If you don't want to automatically decompress, add
+  // automaticDecompression: AutomaticDecompression.Disabled to the compression strategy.
   const configurationWithCompression = configuration.withCompressionStrategy({
     compressorFactory: CompressorFactory.default(),
     compressionLevel: CompressionLevel.SmallestSize,
@@ -33,8 +37,11 @@ async function main() {
     console.log(`Error creating cache: ${createResponse.toString()}`);
   }
 
+  // This string is long and repetitive enough to be compressible.
+  const compressibleValue = 'compress compress compress';
+
   // set value with compression
-  const setResponse = await cacheClientWithDefaultCompressorFactory.set(cacheName, 'my-key', 'my-value', {
+  const setResponse = await cacheClientWithDefaultCompressorFactory.set(cacheName, 'my-key', compressibleValue, {
     compress: true,
   });
   if (setResponse instanceof CacheSet.Success) {
@@ -43,10 +50,20 @@ async function main() {
     console.log(`Error setting key: ${setResponse.toString()}`);
   }
 
-  // get decompressed value
-  const getResponse = await cacheClientWithDefaultCompressorFactory.get(cacheName, 'my-key', {
-    decompress: true,
+  // get the value without decompressing
+  const noDecompressResponse = await cacheClientWithDefaultCompressorFactory.get(cacheName, 'my-key', {
+    decompress: false,
   });
+  if (noDecompressResponse instanceof CacheGet.Hit) {
+    console.log(`cache hit, compressed value: ${noDecompressResponse.valueString()}`);
+  } else if (noDecompressResponse instanceof CacheGet.Miss) {
+    console.log('cache miss');
+  } else if (noDecompressResponse instanceof CacheGet.Error) {
+    console.log(`Error: ${noDecompressResponse.message()}`);
+  }
+
+  // get decompressed value
+  const getResponse = await cacheClientWithDefaultCompressorFactory.get(cacheName, 'my-key');
   if (getResponse instanceof CacheGet.Hit) {
     console.log(`cache hit, decompressed value: ${getResponse.valueString()}`);
   } else if (getResponse instanceof CacheGet.Miss) {
