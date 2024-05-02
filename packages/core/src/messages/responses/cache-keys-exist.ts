@@ -1,6 +1,8 @@
 import {SdkError} from '../../errors';
 import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 
+const TEXT_DECODER = new TextDecoder();
+
 /**
  * Parent response type for a cache keys exist request. The
  * response object is resolved to a type-safe object of one of
@@ -23,10 +25,12 @@ import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 export abstract class Response extends ResponseBase {}
 
 class _Success extends Response {
+  private readonly _fields: Uint8Array[];
   private readonly _exists: boolean[];
 
-  constructor(exists: boolean[]) {
+  constructor(fields: Uint8Array[], exists: boolean[]) {
     super();
+    this._fields = fields;
     this._exists = exists;
   }
 
@@ -36,6 +40,18 @@ class _Success extends Response {
    */
   public exists(): boolean[] {
     return this._exists;
+  }
+
+  /**
+   * A record of key-value pairs indicating whether each given key was found in the cache.
+   * @returns {Record<string, boolean>}
+   */
+  public valueRecord(): Record<string, boolean> {
+    const record: Record<string, boolean> = {};
+    this._fields.forEach((field, index) => {
+      record[TEXT_DECODER.decode(field)] = this._exists[index];
+    });
+    return record;
   }
 
   public override toString(): string {

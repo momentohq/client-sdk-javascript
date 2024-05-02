@@ -116,8 +116,13 @@ export function runKeysExistTest(
         expect(responseOrdering1).toBeInstanceOf(CacheKeysExist.Success);
       }, `expected SUCCESS but got ${responseOrdering1.toString()}`);
 
-      const successOrdering1 = responseOrdering1 as CacheKeyExists.Success;
+      const successOrdering1 = responseOrdering1 as CacheKeysExist.Success;
       expect(successOrdering1.exists()).toEqual([true, false, true]);
+      expect(successOrdering1.valueRecord()).toEqual({
+        [key1]: true,
+        [key2]: false,
+        [key3]: true,
+      });
 
       const responseOrdering2 = await cacheClient.keysExist(
         integrationTestCacheName,
@@ -128,8 +133,13 @@ export function runKeysExistTest(
         expect(responseOrdering2).toBeInstanceOf(CacheKeysExist.Success);
       }, `expected SUCCESS but got ${responseOrdering2.toString()}`);
 
-      const successOrdering2 = responseOrdering2 as CacheKeyExists.Success;
+      const successOrdering2 = responseOrdering2 as CacheKeysExist.Success;
       expect(successOrdering2.exists()).toEqual([false, true, true]);
+      expect(successOrdering2.valueRecord()).toEqual({
+        [key2]: false,
+        [key3]: true,
+        [key1]: true,
+      });
 
       const responseOrdering3 = await cacheClient.keysExist(
         integrationTestCacheName,
@@ -140,8 +150,12 @@ export function runKeysExistTest(
         expect(responseOrdering3).toBeInstanceOf(CacheKeysExist.Success);
       }, `expected SUCCESS but got ${responseOrdering3.toString()}`);
 
-      const successOrdering3 = responseOrdering3 as CacheKeyExists.Success;
+      const successOrdering3 = responseOrdering3 as CacheKeysExist.Success;
       expect(successOrdering3.exists()).toEqual([false, false]);
+      expect(successOrdering3.valueRecord()).toEqual({
+        [key2]: false,
+        [key4]: false,
+      });
     });
 
     it('should support happy path for keysExist via curried cache via ICache interface', async () => {

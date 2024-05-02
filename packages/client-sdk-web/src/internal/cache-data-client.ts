@@ -4015,7 +4015,12 @@ export class CacheDataClient<
         },
         (err, resp) => {
           if (resp) {
-            resolve(new CacheKeysExist.Success(resp.getExistsList()));
+            resolve(
+              new CacheKeysExist.Success(
+                this.convertArrayToUint8(keys),
+                resp.getExistsList()
+              )
+            );
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
