@@ -119,9 +119,9 @@ export function runKeysExistTest(
       const successOrdering1 = responseOrdering1 as CacheKeysExist.Success;
       expect(successOrdering1.exists()).toEqual([true, false, true]);
       expect(successOrdering1.valueRecord()).toEqual({
-        [key1]: true,
-        [key2]: false,
-        [key3]: true,
+        key1: true,
+        key2: false,
+        key3: true,
       });
 
       const responseOrdering2 = await cacheClient.keysExist(
@@ -136,9 +136,9 @@ export function runKeysExistTest(
       const successOrdering2 = responseOrdering2 as CacheKeysExist.Success;
       expect(successOrdering2.exists()).toEqual([false, true, true]);
       expect(successOrdering2.valueRecord()).toEqual({
-        [key2]: false,
-        [key3]: true,
-        [key1]: true,
+        key2: false,
+        key3: true,
+        key1: true,
       });
 
       const responseOrdering3 = await cacheClient.keysExist(
@@ -153,8 +153,8 @@ export function runKeysExistTest(
       const successOrdering3 = responseOrdering3 as CacheKeysExist.Success;
       expect(successOrdering3.exists()).toEqual([false, false]);
       expect(successOrdering3.valueRecord()).toEqual({
-        [key2]: false,
-        [key4]: false,
+        key2: false,
+        key4: false,
       });
     });
 
