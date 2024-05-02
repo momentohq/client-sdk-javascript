@@ -6,6 +6,14 @@ import {
 } from './common-int-test-utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
 import {CacheKeyExists, CacheKeysExist} from '@gomomento/sdk-core';
+
+function zipToRecord<V>(keys: string[], values: V[]): Record<string, V> {
+  return keys.reduce<Record<string, V>>((acc, key, index) => {
+    acc[key] = values[index];
+    return acc;
+  }, {} as Record<string, V>);
+}
+
 export function runKeysExistTest(
   cacheClient: ICacheClient,
   integrationTestCacheName: string
@@ -107,6 +115,8 @@ export function runKeysExistTest(
       await cacheClient.set(integrationTestCacheName, key1, key1);
       await cacheClient.set(integrationTestCacheName, key3, key3);
 
+      let keysList = [key1, key2, key3];
+      let existsMask = [true, false, true];
       const responseOrdering1 = await cacheClient.keysExist(
         integrationTestCacheName,
         [key1, key2, key3]
@@ -117,16 +127,17 @@ export function runKeysExistTest(
       }, `expected SUCCESS but got ${responseOrdering1.toString()}`);
 
       const successOrdering1 = responseOrdering1 as CacheKeysExist.Success;
-      expect(successOrdering1.exists()).toEqual([true, false, true]);
-      expect(successOrdering1.valueRecord()).toEqual({
-        [key1]: true,
-        [key2]: false,
-        [key3]: true,
-      });
+      expect(successOrdering1.exists()).toEqual(existsMask);
 
+      expect(successOrdering1.valueRecord()).toEqual(
+        zipToRecord(keysList, existsMask)
+      );
+
+      keysList = [key2, key3, key1];
+      existsMask = [false, true, true];
       const responseOrdering2 = await cacheClient.keysExist(
         integrationTestCacheName,
-        [key2, key3, key1]
+        keysList
       );
 
       expectWithMessage(() => {
@@ -134,16 +145,16 @@ export function runKeysExistTest(
       }, `expected SUCCESS but got ${responseOrdering2.toString()}`);
 
       const successOrdering2 = responseOrdering2 as CacheKeysExist.Success;
-      expect(successOrdering2.exists()).toEqual([false, true, true]);
-      expect(successOrdering2.valueRecord()).toEqual({
-        [key1]: true,
-        [key2]: false,
-        [key3]: true,
-      });
+      expect(successOrdering2.exists()).toEqual(existsMask);
+      expect(successOrdering2.valueRecord()).toEqual(
+        zipToRecord(keysList, existsMask)
+      );
 
+      keysList = [key2, key4];
+      existsMask = [false, false];
       const responseOrdering3 = await cacheClient.keysExist(
         integrationTestCacheName,
-        [key2, key4]
+        keysList
       );
 
       expectWithMessage(() => {
@@ -151,11 +162,10 @@ export function runKeysExistTest(
       }, `expected SUCCESS but got ${responseOrdering3.toString()}`);
 
       const successOrdering3 = responseOrdering3 as CacheKeysExist.Success;
-      expect(successOrdering3.exists()).toEqual([false, false]);
-      expect(successOrdering3.valueRecord()).toEqual({
-        [key2]: false,
-        [key4]: false,
-      });
+      expect(successOrdering3.exists()).toEqual(existsMask);
+      expect(successOrdering3.valueRecord()).toEqual(
+        zipToRecord(keysList, existsMask)
+      );
     });
 
     it('should support happy path for keysExist via curried cache via ICache interface', async () => {

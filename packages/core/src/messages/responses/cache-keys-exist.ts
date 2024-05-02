@@ -25,12 +25,12 @@ const TEXT_DECODER = new TextDecoder();
 export abstract class Response extends ResponseBase {}
 
 class _Success extends Response {
-  private readonly _fields: Uint8Array[];
+  private readonly _keys: Uint8Array[];
   private readonly _exists: boolean[];
 
-  constructor(fields: Uint8Array[], exists: boolean[]) {
+  constructor(keys: Uint8Array[], exists: boolean[]) {
     super();
-    this._fields = fields;
+    this._keys = keys;
     this._exists = exists;
   }
 
@@ -47,7 +47,7 @@ class _Success extends Response {
    * @returns {Record<string, boolean>}
    */
   public valueRecord(): Record<string, boolean> {
-    return this._fields.reduce<Record<string, boolean>>((acc, field, index) => {
+    return this._keys.reduce<Record<string, boolean>>((acc, field, index) => {
       acc[TEXT_DECODER.decode(field)] = this._exists[index];
       return acc;
     }, {});
