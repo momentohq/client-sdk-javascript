@@ -3987,10 +3987,7 @@ export class CacheDataClient<
 
     this.logger.trace("Issuing 'keysExist' request");
 
-    const result = await this.sendKeysExist(
-      cacheName,
-      this.convertArrayToB64Strings(keys)
-    );
+    const result = await this.sendKeysExist(cacheName, keys);
 
     this.logger.trace(
       "'keysExist' request result: %s",
@@ -4001,10 +3998,10 @@ export class CacheDataClient<
 
   private async sendKeysExist(
     cacheName: string,
-    keys: string[]
+    keys: string[] | Uint8Array[]
   ): Promise<CacheKeysExist.Response> {
     const request = new _KeysExistRequest();
-    request.setCacheKeysList(keys);
+    request.setCacheKeysList(this.convertArrayToB64Strings(keys));
 
     return await new Promise((resolve, reject) => {
       this.clientWrapper.keysExist(
