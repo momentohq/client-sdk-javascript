@@ -47,11 +47,10 @@ class _Success extends Response {
    * @returns {Record<string, boolean>}
    */
   public valueRecord(): Record<string, boolean> {
-    const record: Record<string, boolean> = {};
-    this._fields.forEach((field, index) => {
-      record[TEXT_DECODER.decode(field)] = this._exists[index];
-    });
-    return record;
+    return this._fields.reduce<Record<string, boolean>>((acc, field, index) => {
+      acc[TEXT_DECODER.decode(field)] = this._exists[index];
+      return acc;
+    }, {});
   }
 
   public override toString(): string {
