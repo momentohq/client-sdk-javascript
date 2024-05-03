@@ -208,3 +208,5 @@ export class Error extends BaseResponseError implements IResponse {
     return undefined;
   }
 }
+
+export type Response = Hit | Miss | Error;
