@@ -44,7 +44,9 @@ const toBePermissionDeniedForCacheGet: MatcherFunction = function (
 const toBePermissionDeniedForCacheSet: MatcherFunction = function (
   received: unknown
 ) {
-  if (!(received instanceof CacheSet.Response)) {
+  const isCacheSetResponse =
+    received instanceof CacheSet.Success || received instanceof CacheSet.Error;
+  if (!isCacheSetResponse) {
     throw new Error('Expected CacheSet.Response');
   }
   const pass =
