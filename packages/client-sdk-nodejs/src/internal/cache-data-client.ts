@@ -4582,7 +4582,7 @@ export class CacheDataClient implements IDataClient {
         },
         (err, resp) => {
           if (resp) {
-            resolve(new CacheKeysExist.Success(resp.exists));
+            resolve(new CacheKeysExist.Success(keys, resp.exists));
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
