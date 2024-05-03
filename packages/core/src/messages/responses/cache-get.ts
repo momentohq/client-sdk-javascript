@@ -1,8 +1,8 @@
 import {SdkError} from '../../errors';
 import {
   BaseResponseError,
-  BaseResponseHit,
   BaseResponseMiss,
+  ResponseBase,
 } from './response-base';
 import {truncateString} from '../../internal/utils';
 
@@ -44,7 +44,7 @@ export enum ResponseType {
  * Indicates that the requested data was successfully retrieved from the cache.  Provides
  * `value*` accessors to retrieve the data in the appropriate format.
  */
-export class Hit extends BaseResponseHit implements IResponse {
+export class Hit extends ResponseBase implements IResponse {
   private readonly body: Uint8Array;
   constructor(body: Uint8Array) {
     super();

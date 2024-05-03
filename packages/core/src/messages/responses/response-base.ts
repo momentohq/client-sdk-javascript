@@ -78,10 +78,6 @@ export function ResponseError<TBase extends Constructor>(Base: TBase) {
   };
 }
 
-export abstract class BaseResponseHit extends ResponseBase {
-  public readonly is_hit: boolean = true;
-}
-
 export function ResponseHit<TBase extends Constructor>(Base: TBase) {
   return class ResponseHit extends Base {};
 }

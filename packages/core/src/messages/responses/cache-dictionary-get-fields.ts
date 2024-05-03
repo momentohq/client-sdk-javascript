@@ -1,49 +1,35 @@
 import {SdkError, UnknownError} from '../../errors';
 import {
   ResponseBase,
-  ResponseHit,
-  ResponseMiss,
-  ResponseError,
+  BaseResponseMiss,
+  BaseResponseError,
 } from './response-base';
-import * as CacheDictionaryGetFieldResponse from './cache-dictionary-get-field';
+import {
+  type Response as CacheDictionaryGetFieldResponseType,
+  Hit as CacheDictionaryGetFieldResponseHit,
+  Miss as CacheDictionaryGetFieldResponseMiss,
+  Error as CacheDictionaryGetFieldResponseError,
+} from './cache-dictionary-get-field';
 import {_DictionaryGetResponsePart, _ECacheResult} from './grpc-response-types';
 
 const TEXT_DECODER = new TextDecoder();
-type CacheDictionaryGetFieldResponseType =
-  | CacheDictionaryGetFieldResponse.Hit
-  | CacheDictionaryGetFieldResponse.Miss
-  | CacheDictionaryGetFieldResponse.Error;
 
-/**
- * Parent response type for a dictionary get fields request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Hit}
- * - {Miss}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof CacheDictionaryGetFields.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheDictionaryGetFields.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
- */
-export abstract class Response extends ResponseBase {
-  public value(): Record<string, string> | undefined {
-    if (this instanceof Hit) {
-      return (this as Hit).value();
-    }
-    return undefined;
-  }
+interface IResponse {
+  value(): Record<string, string> | undefined;
+  responseType: ResponseType;
 }
 
-class _Hit extends Response {
+export enum ResponseType {
+  Hit = 'Hit',
+  Miss = 'Miss',
+  Error = 'Error',
+}
+
+/**
+ * Indicates that the requested data was successfully retrieved from the cache.  Provides
+ * `value*` accessors to retrieve the data in the appropriate format.
+ */
+export class Hit extends ResponseBase implements IResponse {
   private readonly items: _DictionaryGetResponsePart[];
   private readonly fields: Uint8Array[];
   public responses: CacheDictionaryGetFieldResponseType[] = [];
@@ -56,15 +42,15 @@ class _Hit extends Response {
     items.forEach((item, index) => {
       if (item.result === _ECacheResult.Hit) {
         this.responses.push(
-          new CacheDictionaryGetFieldResponse.Hit(item.cacheBody, fields[index])
+          new CacheDictionaryGetFieldResponseHit(item.cacheBody, fields[index])
         );
       } else if (item.result === _ECacheResult.Miss) {
         this.responses.push(
-          new CacheDictionaryGetFieldResponse.Miss(fields[index])
+          new CacheDictionaryGetFieldResponseMiss(fields[index])
         );
       } else {
         this.responses.push(
-          new CacheDictionaryGetFieldResponse.Error(
+          new CacheDictionaryGetFieldResponseError(
             new UnknownError(item.result.toString()),
             fields[index]
           )
@@ -186,24 +172,18 @@ class _Hit extends Response {
       -2
     )}`;
   }
+
+  responseType: ResponseType.Hit;
 }
-
-/**
- * Indicates that the requested data was successfully retrieved from the cache.  Provides
- * `value*` accessors to retrieve the data in the appropriate format.
- */
-export class Hit extends ResponseHit(_Hit) {}
-
-class _Miss extends Response {}
 
 /**
  * Indicates that the requested data was not available in the cache.
  */
-export class Miss extends ResponseMiss(_Miss) {}
+export class Miss extends BaseResponseMiss implements IResponse {
+  responseType = ResponseType.Miss;
 
-class _Error extends Response {
-  constructor(public _innerException: SdkError) {
-    super();
+  value(): Record<string, string> | undefined {
+    return undefined;
   }
 }
 
@@ -217,4 +197,14 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  constructor(_innerException: SdkError) {
+    super(_innerException);
+  }
+
+  responseType = ResponseType.Error;
+
+  value(): Record<string, string> | undefined {
+    return undefined;
+  }
+}

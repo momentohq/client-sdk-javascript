@@ -80,8 +80,6 @@ async function setGetDeleteExample() {
     logger.info('Key stored successfully!');
   } else if (setResponse instanceof CacheSet.Error) {
     logger.info(`Error setting key: ${setResponse.message()}`);
-  } else {
-    throw new Error(`Unrecognized response: ${setResponse.toString()}`);
   }
 
   const getResponse = await momento.get(cacheName, cacheKey);
