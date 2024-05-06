@@ -1,7 +1,7 @@
 {
   "name": "@gomomento/sdk-nodejs-compression-zstd",
   "version": "0.0.1",
-  "description": "Compression extensions for Momento node.js SDK",
+  "description": "Compression extensions (zstd version) for Momento node.js SDK",
   "main": "dist/src/index.js",
   "files": [
     "dist/src",
