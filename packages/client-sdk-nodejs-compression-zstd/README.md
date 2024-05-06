@@ -4,22 +4,24 @@
 [![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 
 
-# Compression Extensions for Momento Node.js SDK
+# `zstd` Compression Extensions for Momento Node.js SDK
 
-This package provides extensions for the Momento Node.js SDK to support compression and decompression of data that
+This package provides extensions for the Momento Node.js SDK to support `zstd` compression and decompression of data that
 is stored using the `CacheClient.set` function and accessed through the `CacheClient.get` function.
+
+This is an alternative to the main `@gomomento/sdk-nodejs-compression` package, which provides similar extensions but uses the `gzip` compression library rather than `zstd`.  `zstd` may be slightly faster than `gzip` for certain types of workloads, but it is not yet supported in the node.js standard library, so this extension requires an additional binary dependency that may require extra steps to package into your production environment.
 
 To use the library, you will need to install it from npm:
 
 ```bash
-npm install @gomomento/sdk-compression
+npm install @gomomento/sdk-compression-zstd
 ```
 
 Then, you can configure the Momento cache client to enable compression:
 
 ```javascript
 configuration.withCompressionStrategy({
-  compressorFactory: CompressorFactory.default(),
+  compressorFactory: CompressorFactory.zstd(),
   compressionLevel: CompressionLevel.SmallestSize,
 })
 
