@@ -8,7 +8,7 @@
  * a second file in the future if desired.
  *
  */
-import {CacheClient, Configurations, CredentialProvider, CacheGet, SdkError, MomentoErrorCode} from '@gomomento/sdk';
+import {CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
 
 const database: Map<string, string> = new Map();
 database.set('test-key', 'test-value');
@@ -21,6 +21,7 @@ async function example_patterns_ReadAsideCaching(cacheClient: CacheClient): Prom
     return cachedValue;
   } else {
     console.log("Key 'test-key' was not found in cache 'test-cache', checking in database...");
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const actualValue = database.get('test-key')!;
     await cacheClient.set('test-cache', 'test-key', actualValue);
     return actualValue;
