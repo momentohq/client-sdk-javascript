@@ -51,16 +51,13 @@ const testValue = 'my-value';
 const testValueBytes = textEncoder.encode(testValue);
 
 const testValueCompressed = Uint8Array.from([
-  // 40, 181, 47, 253, 0, 96, 65, 0, 0, 109, 121, 45, 118, 97, 108, 117, 101,
   31, 139, 8, 0, 0, 0, 0, 0, 2, 19, 203, 173, 212, 45, 75, 204, 41, 77, 5, 0,
   58, 70, 91, 55, 8, 0, 0, 0,
 ]);
 const testValue2 = 'my-value2';
 const testValue2Compressed = Uint8Array.from([
-  // 40, 181, 47, 253, 0, 96, 73, 0, 0, 109, 121, 45, 118, 97, 108, 117, 101, 50,
-  31,
-  139, 8, 0, 0, 0, 0, 0, 2, 19, 203, 173, 212, 45, 75, 204, 41, 77, 53, 2, 0,
-  249, 60, 238, 220, 9, 0, 0, 0,
+  31, 139, 8, 0, 0, 0, 0, 0, 2, 19, 203, 173, 212, 45, 75, 204, 41, 77, 53, 2,
+  0, 249, 60, 238, 220, 9, 0, 0, 0,
 ]);
 
 const invalidCompressed = Uint8Array.from([31, 139, 0, 0, 0, 0]);
