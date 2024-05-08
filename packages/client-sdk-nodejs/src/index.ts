@@ -219,7 +219,7 @@ export {
   MiddlewareRequestHandler,
 } from './config/middleware/middleware';
 
-export {ExperimentalRequestLoggingMiddleware} from './config/middleware/experimental-request-logging-middleware';
+export {RequestLoggingMiddleware} from './config/middleware/request-logging-middleware';
 export {ExperimentalMetricsCsvMiddleware} from './config/middleware/experimental-metrics-csv-middleware';
 export {ExperimentalMetricsLoggingMiddleware} from './config/middleware/experimental-metrics-logging-middleware';
 export {ExperimentalActiveRequestCountLoggingMiddleware} from './config/middleware/experimental-active-request-count-middleware';

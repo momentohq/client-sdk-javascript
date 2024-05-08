@@ -5,11 +5,9 @@ import {
   MiddlewareRequestHandler,
   MiddlewareStatus,
 } from './middleware';
-import {MomentoLogger, MomentoLoggerFactory} from '../../';
+import {MomentoLogger, MomentoLoggerFactory} from '../..';
 
-class ExperimentalLoggingMiddlewareRequestHandler
-  implements MiddlewareRequestHandler
-{
+class LoggingMiddlewareRequestHandler implements MiddlewareRequestHandler {
   private readonly logger: MomentoLogger;
   private readonly requestId: string;
   constructor(logger: MomentoLogger, requestId: string) {
@@ -27,11 +25,12 @@ class ExperimentalLoggingMiddlewareRequestHandler
   }
   onRequestBody(request: MiddlewareMessage): Promise<MiddlewareMessage> {
     this.logger.debug(
-      'Logging middleware: request %s onRequestBody: request type: %s, request size: %s',
+      'Logging middleware: request %s onRequestBody: request type: %s, request size: %s, details: %s',
       this.requestId,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      request.constructor.name,
-      request.messageLength()
+      request.constructorName(),
+      request.messageLength(),
+      request.toString()
     );
     return Promise.resolve(request);
   }
@@ -54,7 +53,7 @@ class ExperimentalLoggingMiddlewareRequestHandler
       'Logging middleware: request %s onResponseBody: response type: %s, response size: %s',
       this.requestId,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      response?.constructor?.name ?? 'null',
+      response?.constructorName(),
       response?.messageLength() ?? 0
     );
     return Promise.resolve(response);
@@ -85,7 +84,7 @@ class ExperimentalLoggingMiddlewareRequestHandler
  * examples directory for an example of how to set up your {Configuration} to
  * enable this middleware.
  */
-export class ExperimentalRequestLoggingMiddleware implements Middleware {
+export class RequestLoggingMiddleware implements Middleware {
   private readonly logger: MomentoLogger;
   private nextRequestId: number;
   constructor(loggerFactory: MomentoLoggerFactory) {
@@ -95,7 +94,7 @@ export class ExperimentalRequestLoggingMiddleware implements Middleware {
 
   onNewRequest(): MiddlewareRequestHandler {
     this.nextRequestId++;
-    return new ExperimentalLoggingMiddlewareRequestHandler(
+    return new LoggingMiddlewareRequestHandler(
       this.logger,
       this.nextRequestId.toString()
     );
