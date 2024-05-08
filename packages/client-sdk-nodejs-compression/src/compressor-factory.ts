@@ -3,11 +3,11 @@ import {
   ICompression,
   MomentoLoggerFactory,
 } from '@gomomento/sdk';
-import {loadZstdCompression} from './internal/compression/zstd-compression';
+import {loadGzipCompression} from './internal/compression/gzip-compression';
 
 export class CompressorFactory {
   static default(loggerFactory?: MomentoLoggerFactory): ICompression {
-    return loadZstdCompression(
+    return loadGzipCompression(
       loggerFactory ?? new DefaultMomentoLoggerFactory()
     );
   }
