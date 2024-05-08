@@ -5,7 +5,11 @@ import {
   MiddlewareRequestHandler,
   MiddlewareStatus,
 } from './middleware';
-import {MomentoLogger, MomentoLoggerFactory} from '../..';
+import {
+  DefaultMomentoLoggerFactory,
+  MomentoLogger,
+  MomentoLoggerFactory,
+} from '../..';
 
 class LoggingMiddlewareRequestHandler implements MiddlewareRequestHandler {
   private readonly logger: MomentoLogger;
@@ -16,21 +20,23 @@ class LoggingMiddlewareRequestHandler implements MiddlewareRequestHandler {
   }
 
   onRequestMetadata(metadata: MiddlewareMetadata): Promise<MiddlewareMetadata> {
-    this.logger.debug(
-      'Logging middleware: request %s onRequestMetadata: %s',
-      this.requestId,
-      metadata.toJsonString()
+    this.logger.info(
+      JSON.stringify({
+        event: 'onRequestMetadata',
+        requestId: this.requestId,
+        ...metadata.toJsonObject(),
+      })
     );
     return Promise.resolve(metadata);
   }
   onRequestBody(request: MiddlewareMessage): Promise<MiddlewareMessage> {
-    this.logger.debug(
-      'Logging middleware: request %s onRequestBody: request type: %s, request size: %s, details: %s',
-      this.requestId,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      request.constructorName(),
-      request.messageLength(),
-      request.toString()
+    this.logger.info(
+      JSON.stringify({
+        event: 'onRequestBody',
+        requestId: this.requestId,
+        requestSize: request.messageLength(),
+        ...request.toLogFormat(),
+      })
     );
     return Promise.resolve(request);
   }
@@ -38,10 +44,12 @@ class LoggingMiddlewareRequestHandler implements MiddlewareRequestHandler {
   onResponseMetadata(
     metadata: MiddlewareMetadata
   ): Promise<MiddlewareMetadata> {
-    this.logger.debug(
-      'Logging middleware: request %s onResponseMetadata: %s',
-      this.requestId,
-      metadata.toJsonString()
+    this.logger.info(
+      JSON.stringify({
+        event: 'onResponseMetadata',
+        requestId: this.requestId,
+        ...metadata.toJsonObject(),
+      })
     );
     return Promise.resolve(metadata);
   }
@@ -49,21 +57,23 @@ class LoggingMiddlewareRequestHandler implements MiddlewareRequestHandler {
   onResponseBody(
     response: MiddlewareMessage | null
   ): Promise<MiddlewareMessage | null> {
-    this.logger.debug(
-      'Logging middleware: request %s onResponseBody: response type: %s, response size: %s',
-      this.requestId,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      response?.constructorName(),
-      response?.messageLength() ?? 0
+    this.logger.info(
+      JSON.stringify({
+        event: 'onResponseBody',
+        requestId: this.requestId,
+        ...response?._grpcMessage?.toObject(),
+      })
     );
     return Promise.resolve(response);
   }
 
   onResponseStatus(status: MiddlewareStatus): Promise<MiddlewareStatus> {
-    this.logger.debug(
-      'Logging middleware: request %s onResponseStatus: status code: %s',
-      this.requestId,
-      status.code()
+    this.logger.info(
+      JSON.stringify({
+        event: 'onResponseStatus',
+        requestId: this.requestId,
+        status: status.code(),
+      })
     );
     return Promise.resolve(status);
   }
@@ -87,7 +97,9 @@ class LoggingMiddlewareRequestHandler implements MiddlewareRequestHandler {
 export class RequestLoggingMiddleware implements Middleware {
   private readonly logger: MomentoLogger;
   private nextRequestId: number;
-  constructor(loggerFactory: MomentoLoggerFactory) {
+  constructor(
+    loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory()
+  ) {
     this.logger = loggerFactory.getLogger(this);
     this.nextRequestId = 0;
   }
