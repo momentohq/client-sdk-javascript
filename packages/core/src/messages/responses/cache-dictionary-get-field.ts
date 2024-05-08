@@ -5,18 +5,13 @@ import {
   ResponseBase,
 } from './response-base';
 import {truncateString} from '../../internal/utils';
+import {DictionaryGetFieldResponse} from './enums';
 
 const TEXT_DECODER = new TextDecoder();
 
 interface IResponse {
   value(): string | undefined;
-  responseType: ResponseType;
-}
-
-export enum ResponseType {
-  Hit = 'Hit',
-  Miss = 'Miss',
-  Error = 'Error',
+  type: DictionaryGetFieldResponse;
 }
 
 /**
@@ -26,6 +21,8 @@ export enum ResponseType {
 export class Hit extends ResponseBase implements IResponse {
   private readonly body: Uint8Array;
   private readonly field: Uint8Array;
+  readonly type: DictionaryGetFieldResponse.Hit =
+    DictionaryGetFieldResponse.Hit;
 
   constructor(body: Uint8Array, field: Uint8Array) {
     super();
@@ -77,8 +74,6 @@ export class Hit extends ResponseBase implements IResponse {
   public fieldUint8Array(): Uint8Array {
     return this.field;
   }
-
-  responseType: ResponseType.Hit;
 }
 
 /**
@@ -86,6 +81,8 @@ export class Hit extends ResponseBase implements IResponse {
  */
 export class Miss extends BaseResponseMiss implements IResponse {
   private readonly field: Uint8Array;
+  readonly type: DictionaryGetFieldResponse.Miss =
+    DictionaryGetFieldResponse.Miss;
 
   constructor(field: Uint8Array) {
     super();
@@ -108,7 +105,6 @@ export class Miss extends BaseResponseMiss implements IResponse {
     return this.field;
   }
 
-  responseType: ResponseType.Miss;
   value(): string | undefined {
     return undefined;
   }
@@ -126,6 +122,8 @@ export class Miss extends BaseResponseMiss implements IResponse {
  */
 export class Error extends BaseResponseError implements IResponse {
   private readonly field: Uint8Array;
+  readonly type: DictionaryGetFieldResponse.Error =
+    DictionaryGetFieldResponse.Error;
 
   constructor(_innerException: SdkError, field: Uint8Array) {
     super(_innerException);
@@ -147,8 +145,6 @@ export class Error extends BaseResponseError implements IResponse {
   public fieldUint8Array(): Uint8Array {
     return this.field;
   }
-
-  responseType: ResponseType.Error;
 
   value(): string | undefined {
     return undefined;

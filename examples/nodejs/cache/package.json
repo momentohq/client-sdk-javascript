@@ -33,7 +33,7 @@
     "typescript": "4.9.5"
   },
   "dependencies": {
-    "@gomomento/sdk": "^1.81.0"
+    "@gomomento/sdk": "file:../../../packages/client-sdk-nodejs"
   },
   "engines": {
     "node": ">=10.4.0"

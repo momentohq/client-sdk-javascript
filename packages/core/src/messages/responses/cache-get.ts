@@ -5,18 +5,13 @@ import {
   ResponseBase,
 } from './response-base';
 import {truncateString} from '../../internal/utils';
+import {CacheGetResponse} from './enums';
 
 const TEXT_DECODER = new TextDecoder();
 
 interface IResponse {
   value(): string | undefined;
-  responseType: ResponseType;
-}
-
-export enum ResponseType {
-  Hit = 'Hit',
-  Miss = 'Miss',
-  Error = 'Error',
+  type: CacheGetResponse;
 }
 
 /**
@@ -44,7 +39,13 @@ export enum ResponseType {
  * Indicates that the requested data was successfully retrieved from the cache.  Provides
  * `value*` accessors to retrieve the data in the appropriate format.
  */
+
+// interface IGetResponse {
+//   value(): string;
+//   type: CacheGetResponse.Hit;
+// }
 export class Hit extends ResponseBase implements IResponse {
+  readonly type: CacheGetResponse.Hit = CacheGetResponse.Hit;
   private readonly body: Uint8Array;
   constructor(body: Uint8Array) {
     super();
@@ -79,21 +80,31 @@ export class Hit extends ResponseBase implements IResponse {
     const display = truncateString(this.valueString());
     return `${super.toString()}: ${display}`;
   }
-
-  responseType: ResponseType.Hit;
 }
 
 /**
  * Indicates that the requested data was not available in the cache.
  */
+// interface IMissResponse {
+//   value(): undefined;
+//   type: CacheGetResponse.Miss;
+// }
 export class Miss extends BaseResponseMiss implements IResponse {
-  responseType: ResponseType.Miss;
+  readonly type: CacheGetResponse.Miss = CacheGetResponse.Miss;
 
-  value(): string | undefined {
+  constructor() {
+    super();
+  }
+
+  value(): undefined {
     return undefined;
   }
 }
 
+// interface IErrorResponse {
+//   value(): undefined;
+//   type: CacheGetResponse.Error;
+// }
 /**
  * Indicates that an error occurred during the cache get request.
  *
@@ -105,13 +116,12 @@ export class Miss extends BaseResponseMiss implements IResponse {
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
 export class Error extends BaseResponseError implements IResponse {
+  readonly type: CacheGetResponse.Error = CacheGetResponse.Error;
   constructor(_innerException: SdkError) {
     super(_innerException);
   }
 
-  responseType: ResponseType.Error;
-
-  value(): string | undefined {
+  value(): undefined {
     return undefined;
   }
 }
@@ -121,14 +131,11 @@ export type Response = Hit | Miss | Error;
 const miss: Response = new Miss();
 const r = miss as Response;
 
-switch (r.responseType) {
-  case ResponseType.Hit:
-    r.value();
+switch (r.type) {
+  case CacheGetResponse.Miss:
     break;
-  case ResponseType.Miss:
-    r.is_miss;
+  case CacheGetResponse.Hit:
     break;
-  case ResponseType.Error:
-    r.innerException();
+  case CacheGetResponse.Error:
     break;
 }

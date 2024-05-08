@@ -1,20 +1,16 @@
 import {SdkError} from '../../errors';
 import {BaseResponseError, BaseResponseSuccess} from './response-base';
-
-export enum ResponseType {
-  Success = 'Success',
-  Error = 'Error',
-}
+import {MomentoResponse} from './enums';
 
 interface IResponse {
-  responseType: ResponseType;
+  type: MomentoResponse;
 }
 
 /**
  * Indicates a Successful cache set request.
  */
 export class Success extends BaseResponseSuccess implements IResponse {
-  responseType = ResponseType.Success;
+  readonly type: MomentoResponse.Success = MomentoResponse.Success;
 }
 
 /**
@@ -32,7 +28,7 @@ export class Error extends BaseResponseError implements IResponse {
     super(_innerException);
   }
 
-  responseType = ResponseType.Error;
+  readonly type: MomentoResponse.Error;
 }
 
 export type Response = Success | Error;

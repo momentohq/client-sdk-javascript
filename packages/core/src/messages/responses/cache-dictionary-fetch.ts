@@ -5,18 +5,13 @@ import {
 } from './response-base';
 import {SdkError} from '../../errors';
 import {_DictionaryFieldValuePair} from './grpc-response-types';
+import {DictionaryFetchResponse} from './enums';
 
 const TEXT_DECODER = new TextDecoder();
 
 interface IResponse {
   value(): Record<string, string> | undefined;
-  responseType: ResponseType;
-}
-
-export enum ResponseType {
-  Hit = 'Hit',
-  Miss = 'Miss',
-  Error = 'Error',
+  type: DictionaryFetchResponse;
 }
 
 /**
@@ -47,6 +42,7 @@ export enum ResponseType {
 export class Hit extends ResponseBase implements IResponse {
   private readonly items: _DictionaryFieldValuePair[];
   private readonly _displayListSizeLimit = 5;
+  readonly type: DictionaryFetchResponse.Hit = DictionaryFetchResponse.Hit;
 
   constructor(items: _DictionaryFieldValuePair[]) {
     super();
@@ -162,15 +158,13 @@ export class Hit extends ResponseBase implements IResponse {
   public override toString(): string {
     return `${super.toString()}: valueDictionaryStringString: ${this.truncateValueStrings()}`;
   }
-
-  responseType: ResponseType.Hit;
 }
 
 /**
  * Indicates that the requested data was not available in the cache.
  */
 export class Miss extends BaseResponseMiss implements IResponse {
-  responseType: ResponseType.Miss;
+  readonly type: DictionaryFetchResponse.Miss = DictionaryFetchResponse.Miss;
 
   value(): Record<string, string> | undefined {
     return undefined;
@@ -188,11 +182,10 @@ export class Miss extends BaseResponseMiss implements IResponse {
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
 export class Error extends BaseResponseError implements IResponse {
+  readonly type: DictionaryFetchResponse.Error = DictionaryFetchResponse.Error;
   constructor(_innerException: SdkError) {
     super(_innerException);
   }
-
-  responseType = ResponseType.Error;
 
   value(): Record<string, string> | undefined {
     return undefined;
