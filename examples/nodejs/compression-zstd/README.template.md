@@ -1,9 +1,10 @@
-# `zstd` Compression Extensions for Momento Node.js SDK
+{{ ossHeader }}
+
+# Momento Node.js SDK - `zstd` Compression Extensions Examples
 
 Compressing data before storing it in a cache can significantly reduce your data transfer costs if your cache values are large text values, such as JSON objects. This example shows how to enable compression via the `@gomomento/sdk-nodejs-compression-zstd` package, which provides extensions for the Momento Node.js SDK to support compression and decompression of data that is stored using the `CacheClient.set` function and accessed through the `CacheClient.get` function.
 
-This `@gomomento/sdk-nodejs-compression-zstd` library an alternative to the main [`@gomomento/sdk-nodejs-compression`](https://github.com/momentohq/client-sdk-javascript/tree/main/packages/client-sdk-nodejs-compression) package, which provides similar extensions but uses the `gzip` compression library rather than `zstd`.  `zstd` may be slightly faster than `gzip` for certain types of workloads, but it is not yet supported in the node.js standard library, so this extension requires an additional binary dependency that may require extra steps to package into your production environment.
-
+This `@gomomento/sdk-nodejs-compression-zstd` library is an alternative to the main [`@gomomento/sdk-nodejs-compression`](https://github.com/momentohq/client-sdk-javascript/tree/main/packages/client-sdk-nodejs-compression) package, which provides similar extensions but uses the `gzip` compression library rather than `zstd`.  `zstd` may be slightly faster than `gzip` for certain types of workloads, but it is not yet supported in the node.js standard library, so this extension requires an additional binary dependency that may require extra steps to package into your production environment. If you do not need to squeeze out the extra bit of performance, we recommend using the default [`@gomomento/sdk-nodejs-compression`](https://github.com/momentohq/client-sdk-javascript/tree/main/packages/client-sdk-nodejs-compression) instead.
 
 ## Example Requirements
 
@@ -30,5 +31,4 @@ Example Code: [compression.ts](compression.ts)
 
 If you have questions or need help experimenting further, please reach out to us!
 
-
-
+{{ ossFooter }}

@@ -25,7 +25,7 @@ The HTTP API is lightweight in that you won't need any additional dependencies b
     MOMENTO_HTTP_ENDPOINT="<your-http-endpoint>"
     ```
 
-4. Run the program from the terminal then checkout http://localhost:8000 in your browser:
+4. Run the program from the terminal then checkout [http://localhost:8000](http://localhost:8000) in your browser:
 
     ```bash
     deno task start

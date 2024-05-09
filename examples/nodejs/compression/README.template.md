@@ -1,4 +1,6 @@
-# Compression Extensions for Momento Node.js SDK
+{{ ossHeader }}
+
+#  Momento Node.js SDK - Compression Extensions Examples
 
 Compressing data before storing it in a cache can significantly reduce your data transfer costs if your cache values are large text values, such as JSON objects. This example shows how to enable compression via the `@gomomento/sdk-nodejs-compression` package, which provides extensions for the Momento Node.js SDK to support compression and decompression of data that is stored using the `CacheClient.set` function and accessed through the `CacheClient.get` function.
 
@@ -24,8 +26,7 @@ MOMENTO_API_KEY=<YOUR API KEY> npm run compression
 
 Example Code: [compression.ts](compression.ts)
 
-
 If you have questions or need help experimenting further, please reach out to us!
 
-
+{{ ossFooter }}
 

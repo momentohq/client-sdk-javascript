@@ -155,15 +155,6 @@ jobs:
           template_file: ./examples/nodejs/token-vending-machine/README.template.md
           output_file: ./examples/nodejs/token-vending-machine/README.md
 
-      - name: Verify README generation for examples/nodejs/token-vending-machine/infrastructure
-        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
-        with:
-          project_status: official
-          project_stability: beta
-          project_type: other
-          template_file: ./examples/nodejs/token-vending-machine/infrastructure/README.template.md
-          output_file: ./examples/nodejs/token-vending-machine/infrastructure/README.md
-
       - name: Verify README generation for examples/nodejs/rate-limiter
         uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
         with:
