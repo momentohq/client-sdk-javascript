@@ -95,7 +95,7 @@ Stats should like:
 
 It's only about 50 lines of code to create a coalescing wrapper for the Momento cache client.  You can see our
 implementation here:
-https://github.com/momentohq/client-sdk-nodejs/blob/main/examples/utils/momento-client-with-coalescing.ts
+[https://github.com/momentohq/client-sdk-nodejs/blob/main/examples/utils/momento-client-with-coalescing.ts](https://github.com/momentohq/client-sdk-nodejs/blob/main/examples/utils/momento-client-with-coalescing.ts)
 
 ### Run the above example:
 
@@ -110,4 +110,3 @@ settings are at the bottom of the file.
 If you have questions or need help experimenting further, please reach out to us!
 
 {{ ossFooter }}
-
