@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@gomomento/sdk": "^1.83.0",
-    "@gomomento/sdk-nodejs-compression": "^0.74.0"
+    "@gomomento/sdk-nodejs-compression-zstd": "^0.84.0"
   },
   "engines": {
     "node": ">=10.4.0"
