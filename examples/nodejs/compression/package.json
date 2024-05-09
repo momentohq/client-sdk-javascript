@@ -8,6 +8,7 @@
     "build": "tsc",
     "compression": "tsc && node dist/compression.js",
     "test": "jest",
+    "validate-examples": "tsc && node dist/compression.js",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix"
   },
