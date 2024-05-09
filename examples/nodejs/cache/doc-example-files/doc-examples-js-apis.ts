@@ -102,7 +102,6 @@ import {
   TopicSubscribe,
 } from '@gomomento/sdk';
 import * as crypto from 'crypto';
-import {CompressorFactory} from '@gomomento/sdk-nodejs-compression';
 
 function retrieveApiKeyFromYourSecretsManager(): string {
   // this is not a valid API key but conforms to the syntax requirements.
@@ -138,21 +137,6 @@ function example_API_ConfigurationInRegionLowLatency() {
 
 function example_API_ConfigurationLambdaLatest() {
   Configurations.Lambda.latest();
-}
-
-function example_API_ConfigurationWithCompression() {
-  Configurations.InRegion.Default.latest().withCompressionStrategy({
-    compressorFactory: CompressorFactory.default(),
-    compressionLevel: CompressionLevel.SmallestSize,
-  });
-}
-
-function example_API_ConfigurationWithCompressionNoAutomatic() {
-  Configurations.InRegion.Default.latest().withCompressionStrategy({
-    compressorFactory: CompressorFactory.default(),
-    compressionLevel: CompressionLevel.SmallestSize,
-    automaticDecompression: AutomaticDecompression.Disabled,
-  });
 }
 
 async function example_API_InstantiateCacheClient() {
@@ -1574,25 +1558,12 @@ async function main() {
   example_API_ConfigurationInRegionDefaultLatest();
   example_API_ConfigurationInRegionLowLatency();
   example_API_ConfigurationLambdaLatest();
-  example_API_ConfigurationWithCompression();
-  example_API_ConfigurationWithCompressionNoAutomatic();
 
   await example_API_InstantiateCacheClient();
   await example_API_InstantiateCacheClientWithReadConcern();
 
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
-    defaultTtlSeconds: 60,
-  });
-
-  const cacheClientWithCompression = await CacheClient.create({
-    configuration: Configurations.InRegion.Default.latest().withCompressionStrategy({
-      compressorFactory: CompressorFactory.default(),
-      compressionLevel: CompressionLevel.SmallestSize,
-    }),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_API_KEY',
     }),
@@ -1612,9 +1583,7 @@ async function main() {
     await example_API_FlushCache(cacheClient, cacheName);
 
     await example_API_Set(cacheClient, cacheName);
-    await example_API_SetWithCompression(cacheClientWithCompression, cacheName);
     await example_API_Get(cacheClient, cacheName);
-    await example_API_GetNoDecompress(cacheClientWithCompression, cacheName);
     await example_API_Delete(cacheClient, cacheName);
     await example_API_Increment(cacheClient, cacheName);
     await example_API_ItemGetType(cacheClient, cacheName);
