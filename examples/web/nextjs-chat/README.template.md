@@ -18,7 +18,7 @@ You will need a Momento API key and a cache, both of which you can create in the
 
 First, create a new file called `.env.local` that looks like:
 
-```
+```bash
 MOMENTO_API_KEY=<Put your token here>
 NEXT_PUBLIC_MOMENTO_CACHE_NAME=<Put your cache name here>
 ```
@@ -27,7 +27,7 @@ Second, go to the [config.ts file](./src/app/api/momento/token/config.ts) and co
 
 You may also configure the authentication method in the [config.ts file](./src/app/api/momento/token/config.ts) and by adding additional environment variables:
 
-```
+```bash
 NEXT_PUBLIC_AUTH_METHOD=<"open" or "credentials">
 MOMENTO_AUTH_USERNAME=<Choose a username>
 MOMENTO_AUTH_PASSWORD=<Choose a password>

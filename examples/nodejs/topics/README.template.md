@@ -50,4 +50,3 @@ MOMENTO_API_KEY=<YOUR API KEY> npm run topic-publish my-cache dogs poodle
 If you have questions or need help experimenting further, please reach out to us!
 
 {{ ossFooter }}
-
