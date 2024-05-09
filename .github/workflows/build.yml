@@ -164,15 +164,6 @@ jobs:
           template_file: ./examples/nodejs/rate-limiter/README.template.md
           output_file: ./examples/nodejs/rate-limiter/README.md
 
-      - name: Verify README generation for examples/nodejs/aws
-        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
-        with:
-          project_status: official
-          project_stability: stable
-          project_type: other
-          template_file: ./examples/nodejs/aws/README.template.md
-          output_file: ./examples/nodejs/aws/README.md
-
       - name: Verify README generation for examples/nodejs/access-control
         uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
         with:
@@ -182,32 +173,50 @@ jobs:
           template_file: ./examples/nodejs/access-control/README.template.md
           output_file: ./examples/nodejs/access-control/README.md
 
-      - name: Verify README generation for examples/nodejs/lambda-examples
+      - name: Verify README generation for examples/nodejs/aws
         uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
         with:
           project_status: official
           project_stability: stable
           project_type: other
-          template_file: ./examples/nodejs/lambda-examples/README.template.md
-          output_file: ./examples/nodejs/lambda-examples/README.md
+          template_file: ./examples/nodejs/aws/README.template.md
+          output_file: ./examples/nodejs/aws/README.md
 
-      - name: Verify README generation for examples/nodejs/lambda-examples/simple-get
+      - name: Verify README generation for examples/nodejs/aws/secrets-manager
         uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
         with:
           project_status: official
           project_stability: stable
           project_type: other
-          template_file: ./examples/nodejs/lambda-examples/simple-get/README.template.md
-          output_file: ./examples/nodejs/lambda-examples/simple-get/README.md
+          template_file: ./examples/nodejs/aws/secrets-manager/README.template.md
+          output_file: ./examples/nodejs/aws/secrets-manager/README.md
 
-      - name: Verify README generation for examples/nodejs/lambda-examples/cloudwatch-metrics
+      - name: Verify README generation for examples/nodejs/aws/lambda-examples
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/aws/lambda-examples/README.template.md
+          output_file: ./examples/nodejs/aws/lambda-examples/README.md
+
+      - name: Verify README generation for examples/nodejs/aws/lambda-examples/simple-get
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/aws/lambda-examples/simple-get/README.template.md
+          output_file: ./examples/nodejs/aws/lambda-examples/simple-get/README.md
+
+      - name: Verify README generation for examples/nodejs/aws/lambda-examples/cloudwatch-metrics
         uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
         with:
           project_status: official
           project_stability: beta
           project_type: other
-          template_file: ./examples/nodejs/lambda-examples/cloudwatch-metrics/README.template.md
-          output_file: ./examples/nodejs/lambda-examples/cloudwatch-metrics/README.md
+          template_file: ./examples/nodejs/aws/lambda-examples/cloudwatch-metrics/README.template.md
+          output_file: ./examples/nodejs/aws/lambda-examples/cloudwatch-metrics/README.md
 
       - name: Verify README generation for examples/nodejs/topics
         uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2

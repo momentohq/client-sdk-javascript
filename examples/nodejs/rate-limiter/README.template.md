@@ -1,10 +1,6 @@
-<head>
-  <meta name="Momento Node.js Client Library Documentation" content="Node.js client software development kit for Momento Cache">
-</head>
-<img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
+{{ ossHeader }}
 
-[![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
-[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
+# Momento Node.js SDK - Rate Limiter Examples
 
 ## Why rate-limiters?
 
@@ -114,3 +110,5 @@ Read our [blog post](https://www.gomomento.com/blog/did-you-say-you-want-a-distr
 ## Conclusion
 
 In conclusion, Momento's Node.js Client Library empowers developers to implement efficient rate-limiting with ease, ensuring service stability and equitable resource distribution. It exemplifies how modern solutions can elegantly address classical challenges in distributed systems.
+
+{{ ossFooter }}
