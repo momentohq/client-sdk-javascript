@@ -402,11 +402,11 @@ jobs:
             npm ci
             npm run build
           popd
-          pushd examples/nodejs/lambda-examples/simple-get
+          pushd examples/nodejs/aws/lambda-examples/simple-get/infrastructure
             npm ci
             npm run build
           popd
-          pushd examples/nodejs/lambda-examples/cloudwatch-metrics
+          pushd examples/nodejs/aws/lambda-examples/cloudwatch-metrics/infrastructure
             npm ci
             npm run build
           popd
@@ -419,7 +419,7 @@ jobs:
             npm run build
             npm run validate-examples
           popd
-          pushd examples/nodejs/aws
+          pushd examples/nodejs/aws/secrets-manager
             npm ci
             npm run build
           popd
