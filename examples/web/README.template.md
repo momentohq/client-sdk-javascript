@@ -1,10 +1,4 @@
-<head>
-  <meta name="Momento Node.js Client Library Documentation" content="Node.js client software development kit for Momento Cache">
-</head>
-<img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
-
-[![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
-[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
+{{ ossHeader }}
 
 # Momento JavaScript Web SDK Examples
 
@@ -20,3 +14,5 @@ This directory contains several subdirectories with different types of example p
 - [Cache Examples](./cache) - How to use Momento Cache
 - [Next.js Chat](./nextjs-chat) - How to use Momento topics and secure tokens within a Next.js application
 - [Vite Chat](./vite-chat-app) - How to use Momento topics and secure tokens within a static web application
+
+{{ ossFooter }}

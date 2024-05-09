@@ -1,3 +1,7 @@
+{{ ossHeader }}
+
+# Momento JavaScript Web SDK - Next.js Chat Example
+
 ## About
 
 This is an example project showing how Momento topics and secure tokens can be used within a nextjs application. A deployed example can be found [here](https://momento-nextjs-chat.vercel.app).
@@ -53,3 +57,4 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
+{{ ossFooter }}

@@ -1,3 +1,7 @@
+{{ ossHeader }}
+
+# Momento Javascript Web SDK - Vite Chat App Example
+
 ## About
 
 This example project is a browser-based chat application that allows pub/sub communication between your users via [Momento Topics](https://docs.momentohq.com/introduction/momento-topics). Each browser will need a Momento API key in order to communicate with the Momento Topics server, and Momento's [Token Vending Machine application](https://github.com/momentohq/client-sdk-javascript/tree/main/examples/nodejs/token-vending-machine) can provide those tokens, which can be scoped to provide permissions to only the necessary caches and topics.
@@ -82,3 +86,4 @@ The client ID should be the string that's printed out after you deploy the CDK s
 MomentoTokenVendingMachine.UserPoolClientId = <cdk-generated-client-id>
 ```
 
+{{ ossFooter }}
