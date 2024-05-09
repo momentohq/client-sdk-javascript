@@ -32,10 +32,10 @@ Example Code: [basic.ts](basic.ts)
 
 This example demonstrates several slightly more advanced concepts, including:
 
-* creating and listing caches
-* deleting a key
-* issuing multiple concurrent get requests
-* using the Middleware API to wrap requests
+- creating and listing caches
+- deleting a key
+- issuing multiple concurrent get requests
+- using the Middleware API to wrap requests
 
 ```bash
 # Run example code

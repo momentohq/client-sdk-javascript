@@ -1,16 +1,8 @@
-<head>
-  <meta name="Momento Node.js Client Library Documentation" content="Node.js client software development kit for Momento Cache">
-</head>
-<img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
+{{ ossHeader }}
 
-[![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
-[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
-
-# Node.js Client SDK
+# Momento Node.js SDK - Basic Load Generator Example
 
 _Read this in other languages_: [日本語](README.ja.md)
-
-<br>
 
 This directory contains example code illustrating how to generate load against Momento.
 It also includes an example that shows how request coalescing can reduce latencies and
@@ -116,5 +108,5 @@ settings are at the bottom of the file.
 
 If you have questions or need help experimenting further, please reach out to us!
 
-
+{{ ossFooter }}
 
