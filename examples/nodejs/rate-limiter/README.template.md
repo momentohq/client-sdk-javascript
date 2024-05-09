@@ -20,6 +20,7 @@ We provide a `MomentoRateLimiter` class that uses Momento's `increment` and `upd
 Incorporating the `MomentoRateLimiter` class into your application is a straightforward process. Begin by setting up a Momento cache client, then link it to the rate-limiter, specifying the user-specific limits. This rate-limiter operates with minute-level precision, meaning that the defined limits will be enforced on a per-minute basis for each user or entity.
 
 To get started with the rate-limiter:
+
 - You will need a Momento API key. You can obtain one from the [Momento Console](https://console.gomomento.com).
 - You will need to create a cache called `rate-limiter` from the console as well! You can choose a different cache name and pass it to the rate-limiter constructor if you'd like.
 
