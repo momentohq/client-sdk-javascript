@@ -1,16 +1,8 @@
-<head>
-  <meta name="Momento Node.js Client Library Documentation" content="Node.js client software development kit for Momento Cache">
-</head>
-<img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
+{{ ossHeader }}
 
-[![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
-[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
+# Momento Node.js SDK - CloudWatch Metrics using Momento's Experimental Metrics Middleware
 
-<br>
-
-## CloudWatch Metrics using Momento's Experimental Metrics Middleware
-
-This directory contains an AWS CDK stack that will create and populate a custom CloudWatch dashboard for Momento client-side metrics. These metrics measure latency between your client and Momento's servers and can be useful for debugging performance issues. 
+This directory contains an AWS CDK stack that will create and populate a custom CloudWatch dashboard for Momento client-side metrics. These metrics measure latency between your client and Momento's servers and can be useful for debugging performance issues.
 
 With the code in this directory, you can deploy an example Lambda function or ECS cluster that uses the Momento Node.js SDK's Experimental Metrics Middleware to generate example dashboard data for 5 minutes at a time. Or you can deploy just the CloudWatch dashboard and use your own application to emit Momento metrics.
 
@@ -24,7 +16,7 @@ With the code in this directory, you can deploy an example Lambda function or EC
 
 Follow the instructions in this section to deploy a CloudWatch dashboard along with a Node.js Lambda function that uses Momento's Experimental Metrics Middleware.
 
-First make sure to start Docker. Then create a `.env` file in the `infrastructure` directory, which is where you will paste your Momento Super User API key that you generated from the [Momento Console](https://console.gomomento.com). 
+First make sure to start Docker. Then create a `.env` file in the `infrastructure` directory, which is where you will paste your Momento Super User API key that you generated from the [Momento Console](https://console.gomomento.com).
 
 ```bash
 MOMENTO_API_KEY=<YOUR_MOMENTO_API_KEY>
@@ -44,7 +36,7 @@ After a few minutes, you should be able to see the metrics populating several ch
 
 Follow the instructions in this section to deploy a CloudWatch dashboard along with a small ECS cluster for a Node.js Docker image that uses Momento's Experimental Metrics Middleware.
 
-First make sure to start Docker. Then create a `.env` file in the `infrastructure` directory, which is where you will paste your Momento Super User API key that you generated from the [Momento Console](https://console.gomomento.com). 
+First make sure to start Docker. Then create a `.env` file in the `infrastructure` directory, which is where you will paste your Momento Super User API key that you generated from the [Momento Console](https://console.gomomento.com).
 
 ```bash
 MOMENTO_API_KEY=<YOUR_MOMENTO_API_KEY>
@@ -62,7 +54,7 @@ The ECS cluster should automatically start running the task and generating logs.
 
 Follow the instructions in this section to deploy only the CloudWatch metric filters and dashboard. This configuration option assumes you have an existing application that uses the Node.js or .NET Momento SDK Experimental Metrics Middleware that will emit metrics to the log group created by this CDK stack.
 
-First make sure to start Docker. Then create a `.env` file in the `infrastructure` directory, which is where you will define all required configuration variables. 
+First make sure to start Docker. Then create a `.env` file in the `infrastructure` directory, which is where you will define all required configuration variables.
 You will need the Super User API key you generated from the [Momento Console](https://console.gomomento.com). You will also set the `LOG_GROUP_NAME` variable to the log group name you want the dashboard to use:
 
 ```bash
@@ -77,3 +69,5 @@ npm run deploy-dashboard-only
 ```
 
 And then finally deploy your existing application in the usual way. Please note that this setup assumes your application will emit logs to the log group created for the dashboard, so be sure to double check that the log group names are aligned.
+
+{{ ossFooter }}

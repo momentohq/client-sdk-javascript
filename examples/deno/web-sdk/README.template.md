@@ -12,21 +12,21 @@ The Web SDK supports the full Momento API (including collections like Dictionari
 
 2. Clone this repo and navigate to the deno example directory:
 
-    ```
+    ```bash
     git clone https://github.com/momentohq/client-sdk-javascript.git
     cd client-sdk-javascript/examples/deno
     ```
 
 3. Create a `.env` file and provide the name of your Momento Cache and a corresponding fine-grained access key. You can create a both a cache and an API key in the [Momento Console](https://console.gomomento.com/). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on creating a cache and API key.
 
-    ```
+    ```bash
     MOMENTO_API_KEY="<your-api-key>"
     MOMENTO_CACHE_NAME="<your-cache-name>"
     ```
 
-4. Run the program from the terminal then checkout http://localhost:8000 in your browser:
+4. Run the program from the terminal then checkout [http://localhost:8000](http://localhost:8000) in your browser:
 
-    ```
+    ```bash
     deno task start
     ```
 

@@ -1,12 +1,6 @@
-<head>
-  <meta name="Momento Node.js Client Library Documentation" content="Node.js client software development kit for Momento Cache">
-</head>
-<img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
+{{ ossHeader }}
 
-[![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
-[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
-
-# Node.js Client SDK
+# Node.js Client SDK - Basic cache Examples
 
 _Read this in other languages_: [日本語](README.ja.md)
 
@@ -81,5 +75,4 @@ MOMENTO_API_KEY=<YOUR API KEY> npm run leaderboard
 
 If you have questions or need help experimenting further, please reach out to us!
 
-
-
+{{ ossFooter }}
