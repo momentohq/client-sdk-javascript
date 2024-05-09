@@ -24,7 +24,7 @@ MOMENTO_API_KEY=<YOUR_MOMENTO_API_KEY>
 
 Then deploy the CDK stack for the example Lambda function and CloudWatch dashboard:
 
-```
+```bash
 npm run deploy-dashboard-with-lambda
 ```
 
@@ -44,7 +44,7 @@ MOMENTO_API_KEY=<YOUR_MOMENTO_API_KEY>
 
 Then deploy the CDK stack for the example Lambda function and CloudWatch dashboard:
 
-```
+```bash
 npm run deploy-dashboard-with-ecs
 ```
 
@@ -64,7 +64,7 @@ LOG_GROUP_NAME="<YOUR_LOG_GROUP_NAME>"
 
 Deploy the CDK stack for the metric filters and CloudWatch dashboard:
 
-```
+```bash
 npm run deploy-dashboard-only
 ```
 
