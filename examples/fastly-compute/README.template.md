@@ -42,7 +42,7 @@ This example shows how to use the Momento HTTP API inside of a [Fastly Compute@E
 
     **Note**: for production environments, the Momento API key should be saved in a [Fastly Secret Store](https://developer.fastly.com/reference/api/services/resources/secret-store/). However, this is a feature currently restricted to beta users, so this example saves the API key in a [Config Store](https://developer.fastly.com/reference/api/services/resources/config-store/) instead.
 
-6. Start a local server to check that it's running at http://127.0.0.1:7676
+6. Start a local server to check that it's running at [http://127.0.0.1:7676](http://127.0.0.1:7676)
 
     ```bash
     fastly compute serve
