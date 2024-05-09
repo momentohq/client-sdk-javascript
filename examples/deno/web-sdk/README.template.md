@@ -1,3 +1,5 @@
+{{ ossHeader }}
+
 # Using Momento Cache and Web SDK Inside a Deno Runtime
 
 This example shows how to use Momento Cache via the Momento Web SDK inside of a [Deno](https://deno.land/) runtime.
@@ -30,3 +32,5 @@ The Web SDK supports the full Momento API (including collections like Dictionari
 [Deno Deploy](https://deno.com/deploy) does not yet support npm specifiers so this example can't be deployed there.
 
 You can use Deno's [other suggested methods](https://deno.land/manual@v1.36.1/advanced/deploying_deno) for deploying your runtime on the edge instead.
+
+{{ ossFooter }}

@@ -1,10 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2021",
     "module": "commonjs",
     "lib": [
-      "es2020",
-      "dom"
+      "es2021",
     ],
     "declaration": true,
     "strict": true,
@@ -22,10 +21,7 @@
     "strictPropertyInitialization": false,
     "typeRoots": [
       "./node_modules/@types"
-    ]
-  },
-  "exclude": [
-    "node_modules",
-    "cdk.out"
-  ]
+    ],
+    "outDir": "./dist"
+  }
 }

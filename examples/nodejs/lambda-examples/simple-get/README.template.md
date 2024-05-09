@@ -16,7 +16,7 @@ The primary use is to provide a base for testing Momento performance in a lambda
 
 ## Prerequisites
 
-- Node version 14 or higher is required
+- Node version 16 or higher is required
 - To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining an API key.
 
 ## Deploying the Simple Get Lambda

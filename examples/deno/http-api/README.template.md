@@ -1,3 +1,5 @@
+{{ ossHeader }}
+
 # Using Momento Cache and HTTP API Inside a Deno Runtime
 
 This example shows how to use Momento Cache via the Momento HTTP API inside of a [Deno](https://deno.land/) runtime. We use the HttpClient wrapper class provided by the [momento-http-client Deno package](https://deno.land/x/momento_http) to make the API calls.
@@ -57,3 +59,5 @@ We will deploy this example using [Deno Deploy](https://deno.com/deploy/docs/get
   This command will upload all files from your curent directory, including the `.env` file. If you prefer, you can set [environment variables](https://deno.com/deploy/docs/environment-variables) using the Deno Deploy console instead. More information about using the `deployctl` command can be found [here](https://deno.com/deploy/docs/deployctl).
 
   Your deployed project will be published to a URL that begins with your project name, such as [https://lucky-spider-92.deno.dev/](https://lucky-spider-92.deno.dev/). This URL can be easily shared with others to show what you've built!
+
+{{ ossFooter }}

@@ -1,14 +1,6 @@
-<head>
-  <meta name="Momento Node.js Client Library Documentation" content="Node.js client software development kit for Momento Cache">
-</head>
-<img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
+{{ ossHeader }}
 
-[![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
-[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
-
-<br>
-
-## Token Vending Machine
+# Momento Node.js SDK - Token Vending Machine Example
 
 This repo contains an example Token Vending Machine application, built using AWS CDK, API Gateway and Lambda.
 
@@ -16,7 +8,7 @@ The primary use for the Token Vending Machine is to provide temporary, restricte
 
 ## Prerequisites
 
-- Node version 14 or higher is required
+- Node version 16 or higher is required
 - To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining an API key.
 
 ## Configuring the Token Vending Machine App
@@ -73,5 +65,4 @@ You can also pass a tokenId as a query string to your curl command to add contex
 
 If you have questions or need help experimenting further, please reach out to us!
 
-
-
+{{ ossFooter }}

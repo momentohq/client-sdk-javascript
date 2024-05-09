@@ -62,7 +62,7 @@ generateMinuteKey(baseKey: string): string {
 
 To run the example, you'll need:
 
-- Node version 14 or higher
+- Node version 16 or higher
 - A Momento API key, which you can obtain from the [Momento Console](https://console.gomomento.com).
 
 ```bash

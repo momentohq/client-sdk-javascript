@@ -6,35 +6,17 @@
 [![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 [![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 
-# Node.js Client SDK
-
-_Read this in other languages_: Coming Soon
-
-<br>
+# Momento JavaScript Web SDK Examples
 
 ## Example Requirements
 
-- Node version 14 or higher is required
+- Node version 16 or higher is required
 - A Momento API key is required, you can generate one using the [Momento Console](https://console.gomomento.com)
 
-To run any of the examples you will need to install the dependencies once first:
+## Examples
 
-```bash
-npm install
-```
+This directory contains several subdirectories with different types of example projects:
 
-## Running the Example
-
-This example demonstrates creating and using Momento API keys with different permissions
-
-```bash
-# Run example code
-MOMENTO_API_KEY=<YOUR API KEY> npm run access-control
-```
-
-Example Code: [access-control.ts](access-control.ts)
-
-If you have questions or need help experimenting further, please reach out to us!
-
-
-
+- [Cache Examples](./cache) - How to use Momento Cache
+- [Next.js Chat](./nextjs-chat) - How to use Momento topics and secure tokens within a Next.js application
+- [Vite Chat](./vite-chat-app) - How to use Momento topics and secure tokens within a static web application

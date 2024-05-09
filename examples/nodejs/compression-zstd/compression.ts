@@ -7,18 +7,18 @@ import {
   CreateCache,
   CredentialProvider,
 } from '@gomomento/sdk';
-import {CompressorFactory} from '@gomomento/sdk-nodejs-compression';
+import {CompressorFactory} from '@gomomento/sdk-nodejs-compression-zstd';
 
 async function main() {
   const configuration = Configurations.Laptop.latest().withClientTimeoutMillis(90000).withCompressionStrategy(
-    // This configuration will enable compression and automatically decompress any compressed values for
-    // supported operations. If you don't want to automatically decompress, add
-    // automaticDecompression: AutomaticDecompression.Disabled to the compression strategy.
-    {
-      compressorFactory: CompressorFactory.default(),
-      compressionLevel: CompressionLevel.SmallestSize,
-    }
-  );
+
+  // This configuration will enable compression and automatically decompress any compressed values for
+  // supported operations. If you don't want to automatically decompress, add
+  // automaticDecompression: AutomaticDecompression.Disabled to the compression strategy.
+  {
+    compressorFactory: CompressorFactory.default(),
+    compressionLevel: CompressionLevel.SmallestSize,
+  });
 
   const cacheClient = new CacheClient({
     configuration: configuration,
