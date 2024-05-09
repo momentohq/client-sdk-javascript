@@ -1,14 +1,6 @@
-<head>
-  <meta name="Momento Node.js Client Library Documentation" content="Node.js client software development kit for Momento Cache">
-</head>
-<img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
+{{ ossHeader }}
 
-[![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
-[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
-
-<br>
-
-## Simple Get Lambda
+## Momento Node.js SDK - AWS Lambda Simple Cache `get` Example
 
 This repo contains an example lambda, built using AWS CDK, that repeatedly calls get on a Momento cache.
 
@@ -42,7 +34,7 @@ You will also need a superuser API key generated from the [Momento Console](http
 
 Then run:
 
-```
+```bash
 npm run cdk -- deploy --parameters MomentoApiKey=<YOUR_MOMENTO_API_KEY>
 ```
 
@@ -63,3 +55,5 @@ momento cache set key value
 ```
 
 You can edit [handler.ts](lambda/simple-get/handler.ts) to change the cache and key the lambda looks for.
+
+{{ ossFooter }}
