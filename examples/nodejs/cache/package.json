@@ -33,7 +33,7 @@
     "typescript": "4.4.3"
   },
   "dependencies": {
-    "@gomomento/sdk": "^1.83.0",
+    "@gomomento/sdk": "^1.84.0",
     "@gomomento/sdk-nodejs-compression": "^0.74.0"
   },
   "engines": {
