@@ -20,8 +20,8 @@ This directory contains several subdirectories with different types of example p
 - [Compression Examples](./compression) - How to use compression with Momento Cache, to reduce bandwidth and data transfer costs
 - [`zstd` Compression Examples](./compression-zstd) - Advanced compession example, using native zstd binaries for compression
 - [Access Control](./access-control) - How to implement access control using Momento API keys
-- [AWS Secrets Manager](./aws) - How to retrieve a Momento API key stored as a secret in AWS Secrets Manager and use it to create a cache
-- [AWS Lambda Examples](./lambda-examples/) - How to use the Momento Node.js SDK in AWS Lambda functions
+- [AWS Secrets Manager](./aws/secrets-manager) - How to retrieve a Momento API key stored as a secret in AWS Secrets Manager and use it to create a cache
+- [AWS Lambda Examples](./aws/lambda-examples) - How to use the Momento Node.js SDK in AWS Lambda functions
 - [Load Generator](./load-gen) - An example load generator for observing Momento performance
 - [Observability](./observability) - How to configure logging, metrics and traces
 - [MongoDB + Momento Cache Read-aside Example](./mongodb-examples/simple-read-aside) - A simple example of using Momento Cache as a read-aside cache for simple MongoDB calls
