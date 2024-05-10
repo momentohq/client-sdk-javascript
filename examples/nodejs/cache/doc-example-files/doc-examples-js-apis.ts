@@ -13,7 +13,6 @@ import {
   AllDataReadWrite,
   AllTopics,
   AuthClient,
-  AutomaticDecompression,
   CacheClient,
   CacheDelete,
   CacheDictionaryFetch,
@@ -66,7 +65,6 @@ import {
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
-  CompressionLevel,
   Configurations,
   CreateCache,
   CredentialProvider,
@@ -243,32 +241,8 @@ async function example_API_Set(cacheClient: CacheClient, cacheName: string) {
   }
 }
 
-async function example_API_SetWithCompression(cacheClient: CacheClient, cacheName: string) {
-  const result = await cacheClient.set(cacheName, 'test-key', 'test-value', {compress: true});
-  if (result instanceof CacheSet.Success) {
-    console.log("Key 'test-key' stored successfully");
-  } else if (result instanceof CacheSet.Error) {
-    throw new Error(
-      `An error occurred while attempting to store key 'test-key' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
-  }
-}
-
 async function example_API_Get(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.get(cacheName, 'test-key');
-  if (result instanceof CacheGet.Hit) {
-    console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
-  } else if (result instanceof CacheGet.Miss) {
-    console.log(`Key 'test-key' was not found in cache '${cacheName}'`);
-  } else if (result instanceof CacheGet.Error) {
-    throw new Error(
-      `An error occurred while attempting to get key 'test-key' from cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
-  }
-}
-
-async function example_API_GetNoDecompress(cacheClient: CacheClient, cacheName: string) {
-  const result = await cacheClient.get(cacheName, 'test-key', {decompress: false});
   if (result instanceof CacheGet.Hit) {
     console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
   } else if (result instanceof CacheGet.Miss) {
