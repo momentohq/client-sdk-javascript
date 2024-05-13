@@ -195,12 +195,24 @@ export {
   StaticTransportStrategy,
   TransportStrategy,
   TransportStrategyProps,
-} from './config/transport/transport-strategy';
+} from './config/transport/cache/transport-strategy';
 
 export {
   GrpcConfiguration,
   GrpcConfigurationProps,
-} from './config/transport/grpc-configuration';
+} from './config/transport/cache/grpc-configuration';
+
+export {
+  StaticTopicGrpcConfiguration,
+  StaticTopicTransportStrategy,
+  TopicTransportStrategy,
+  TopicTransportStrategyProps,
+} from './config/transport/topics/transport-strategy';
+
+export {
+  TopicGrpcConfiguration,
+  TopicGrpcConfigurationProps,
+} from './config/transport/topics/grpc-configuration';
 
 export {
   Middleware,

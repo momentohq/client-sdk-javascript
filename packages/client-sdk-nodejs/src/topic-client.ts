@@ -6,6 +6,7 @@ import {IPubsubClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {IWebhookClient} from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/IWebhookClient';
 import {WebhookClient} from './internal/webhook-client';
 import {TopicClientPropsWithConfiguration} from './internal/topic-client-props-with-config';
+import {range} from '@gomomento/sdk-core/dist/src/internal/utils';
 
 /**
  * Momento Topic Client.
@@ -14,7 +15,7 @@ import {TopicClientPropsWithConfiguration} from './internal/topic-client-props-w
  */
 export class TopicClient extends AbstractTopicClient {
   protected readonly logger: MomentoLogger;
-  protected readonly pubsubClient: IPubsubClient;
+  protected readonly pubsubClients: IPubsubClient[];
   protected readonly webhookClient: IWebhookClient;
 
   /**
@@ -33,7 +34,14 @@ export class TopicClient extends AbstractTopicClient {
     this.logger = configuration.getLoggerFactory().getLogger(this);
     this.logger.debug('Creating Momento TopicClient');
 
-    this.pubsubClient = new PubsubClient(propsWithConfiguration);
+    const numClients = configuration
+      .getTransportStrategy()
+      .getGrpcConfig()
+      .getNumClients();
+
+    this.pubsubClients = range(numClients).map(
+      _ => new PubsubClient(propsWithConfiguration)
+    );
     this.webhookClient = new WebhookClient(propsWithConfiguration);
   }
 }

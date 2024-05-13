@@ -1631,7 +1631,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
     return await client.decreaseTtl(cacheName, key, ttlMilliseconds);
   }
 
-  protected getNextDataClient(): IDataClient {
+  private getNextDataClient(): IDataClient {
     const client = this.dataClients[this.nextDataClientIndex];
     this.nextDataClientIndex =
       (this.nextDataClientIndex + 1) % this.dataClients.length;
