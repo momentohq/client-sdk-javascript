@@ -16,9 +16,6 @@ import * as CacheFlush from './messages/responses/cache-flush';
 import * as CreateCache from './messages/responses/create-cache';
 import * as DeleteCache from './messages/responses/delete-cache';
 import * as ListCaches from './messages/responses/list-caches';
-import * as CreateSigningKey from './messages/responses/create-signing-key';
-import * as ListSigningKeys from './messages/responses/list-signing-keys';
-import * as RevokeSigningKey from './messages/responses/revoke-signing-key';
 import * as CacheSetFetch from './messages/responses/cache-set-fetch';
 import * as CacheDictionaryFetch from './messages/responses/cache-dictionary-fetch';
 import * as CacheDictionarySetField from './messages/responses/cache-dictionary-set-field';
@@ -235,9 +232,6 @@ export {
   DeleteCache,
   ListCaches,
   CacheIncrement,
-  CreateSigningKey,
-  ListSigningKeys,
-  RevokeSigningKey,
   CacheSetFetch,
   CacheDictionaryFetch,
   CacheDictionarySetField,
