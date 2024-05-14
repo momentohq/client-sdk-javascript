@@ -29,7 +29,7 @@
   "devDependencies": {
     "@jest/globals": "29.7.0",
     "@types/jest": "29.5.7",
-    "@types/node": "14.18.3",
+    "@types/node": "16.18.97",
     "@types/uuid": "9.0.1",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
@@ -50,6 +50,6 @@
     "uuid": "9.0.0"
   },
   "engines": {
-    "node": ">= 14"
+    "node": ">= 16"
   }
 }

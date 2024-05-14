@@ -110,7 +110,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
   // TODO: Make pingClient required if and when the nodejs side starts adding
   //  one as well
   protected readonly pingClient?: IPingClient;
-  protected nextDataClientIndex: number;
+  private nextDataClientIndex: number;
 
   protected constructor(
     controlClient: IControlClient,

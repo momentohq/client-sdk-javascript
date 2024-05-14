@@ -9,9 +9,6 @@ import {
   CreateCache,
   DeleteCache,
   ListCaches,
-  CreateSigningKey,
-  ListSigningKeys,
-  RevokeSigningKey,
   CacheFlush,
   CredentialProvider,
   MomentoLogger,
@@ -21,11 +18,7 @@ import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {Configuration} from '../config/configuration';
-import {
-  validateCacheName,
-  validateTtlMinutes,
-} from '@gomomento/sdk-core/dist/src/internal/utils';
-import {_SigningKey} from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
+import {validateCacheName} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
   CacheLimits,
   TopicLimits,
@@ -230,105 +223,6 @@ export class CacheControlClient {
             resolve(new ListCaches.Success(caches));
           }
         });
-    });
-  }
-
-  public async createSigningKey(
-    ttlMinutes: number,
-    endpoint: string
-  ): Promise<CreateSigningKey.Response> {
-    try {
-      validateTtlMinutes(ttlMinutes);
-    } catch (err) {
-      return this.cacheServiceErrorMapper.returnOrThrowError(
-        err as Error,
-        err => new CreateSigningKey.Error(err)
-      );
-    }
-    this.logger.debug("Issuing 'createSigningKey' request");
-    const request = new grpcControl._CreateSigningKeyRequest();
-    request.ttl_minutes = ttlMinutes;
-    return await new Promise<CreateSigningKey.Response>((resolve, reject) => {
-      this.clientWrapper
-        .getClient()
-        .CreateSigningKey(
-          request,
-          {interceptors: this.interceptors},
-          (err, resp) => {
-            if (err) {
-              this.cacheServiceErrorMapper.resolveOrRejectError({
-                err: err,
-                errorResponseFactoryFn: e => new CreateSigningKey.Error(e),
-                resolveFn: resolve,
-                rejectFn: reject,
-              });
-            } else {
-              const signingKey = new _SigningKey(resp?.key, resp?.expires_at);
-              resolve(new CreateSigningKey.Success(endpoint, signingKey));
-            }
-          }
-        );
-    });
-  }
-
-  public async revokeSigningKey(
-    keyId: string
-  ): Promise<RevokeSigningKey.Response> {
-    const request = new grpcControl._RevokeSigningKeyRequest();
-    request.key_id = keyId;
-    this.logger.debug("Issuing 'revokeSigningKey' request");
-    return await new Promise<RevokeSigningKey.Response>((resolve, reject) => {
-      this.clientWrapper
-        .getClient()
-        .RevokeSigningKey(request, {interceptors: this.interceptors}, err => {
-          if (err) {
-            this.cacheServiceErrorMapper.resolveOrRejectError({
-              err: err,
-              errorResponseFactoryFn: e => new RevokeSigningKey.Error(e),
-              resolveFn: resolve,
-              rejectFn: reject,
-            });
-          } else {
-            resolve(new RevokeSigningKey.Success());
-          }
-        });
-    });
-  }
-
-  public async listSigningKeys(
-    endpoint: string
-  ): Promise<ListSigningKeys.Response> {
-    const request = new grpcControl._ListSigningKeysRequest();
-    request.next_token = '';
-    this.logger.debug("Issuing 'listSigningKeys' request");
-    return await new Promise<ListSigningKeys.Response>((resolve, reject) => {
-      this.clientWrapper
-        .getClient()
-        .ListSigningKeys(
-          request,
-          {interceptors: this.interceptors},
-          (err, resp) => {
-            if (err || !resp) {
-              this.cacheServiceErrorMapper.resolveOrRejectError({
-                err: err,
-                errorResponseFactoryFn: e => new ListSigningKeys.Error(e),
-                resolveFn: resolve,
-                rejectFn: reject,
-              });
-            } else {
-              const signingKeys = resp.signing_key.map(
-                sk => new _SigningKey(sk.key_id, sk.expires_at)
-              );
-              resolve(
-                new ListSigningKeys.Success(
-                  endpoint,
-                  signingKeys,
-                  resp.next_token
-                )
-              );
-            }
-          }
-        );
     });
   }
 }

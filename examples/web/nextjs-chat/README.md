@@ -1,3 +1,11 @@
+<img src="https://docs.momentohq.com/img/momento-logo-forest.svg" alt="logo" width="400"/>
+
+[![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
+[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
+
+
+# Momento JavaScript Web SDK - Next.js Chat Example
+
 ## About
 
 This is an example project showing how Momento topics and secure tokens can be used within a nextjs application. A deployed example can be found [here](https://momento-nextjs-chat.vercel.app).
@@ -14,7 +22,7 @@ You will need a Momento API key and a cache, both of which you can create in the
 
 First, create a new file called `.env.local` that looks like:
 
-```
+```bash
 MOMENTO_API_KEY=<Put your token here>
 NEXT_PUBLIC_MOMENTO_CACHE_NAME=<Put your cache name here>
 ```
@@ -23,7 +31,7 @@ Second, go to the [config.ts file](./src/app/api/momento/token/config.ts) and co
 
 You may also configure the authentication method in the [config.ts file](./src/app/api/momento/token/config.ts) and by adding additional environment variables:
 
-```
+```bash
 NEXT_PUBLIC_AUTH_METHOD=<"open" or "credentials">
 MOMENTO_AUTH_USERNAME=<Choose a username>
 MOMENTO_AUTH_PASSWORD=<Choose a password>
@@ -53,3 +61,5 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
+----------------------------------------------------------------------------------------
+For more info, visit our website at [https://gomomento.com](https://gomomento.com)!

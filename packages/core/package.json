@@ -26,7 +26,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@types/jest": "27.5.2",
-    "@types/node": "14.18.3",
+    "@types/node": "16.18.97",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
     "eslint": "7.32.0",
@@ -47,6 +47,6 @@
     "jwt-decode": "3.1.2"
   },
   "engines": {
-    "node": ">= 14"
+    "node": ">= 16"
   }
 }

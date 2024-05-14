@@ -34,7 +34,7 @@
     "@gomomento/common-integration-tests": "file:../common-integration-tests",
     "@happy-dom/jest-environment": "^12.10.3",
     "@types/jest": "27.5.2",
-    "@types/node": "14.18.3",
+    "@types/node": "16.18.97",
     "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
@@ -63,6 +63,6 @@
     "jwt-decode": "3.1.2"
   },
   "engines": {
-    "node": ">= 14"
+    "node": ">= 16"
   }
 }

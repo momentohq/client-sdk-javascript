@@ -3,9 +3,10 @@
 # `zstd` Compression Extensions for Momento Node.js SDK
 
 This package provides extensions for the Momento Node.js SDK to support `zstd` compression and decompression of data that
-is stored using the `CacheClient.set` function and accessed through the `CacheClient.get` function.
+is stored using the `CacheClient.set` function and accessed through the `CacheClient.get` function. Using compression
+can significantly reduce your data transfer costs if your cache values are large text values, such as JSON objects.
 
-This is an alternative to the main `@gomomento/sdk-nodejs-compression` package, which provides similar extensions but uses the `gzip` compression library rather than `zstd`.  `zstd` may be slightly faster than `gzip` for certain types of workloads, but it is not yet supported in the node.js standard library, so this extension requires an additional binary dependency that may require extra steps to package into your production environment.
+This is an alternative to the main [`@gomomento/sdk-nodejs-compression`](https://github.com/momentohq/client-sdk-javascript/tree/main/packages/client-sdk-nodejs-compression) package, which provides similar extensions but uses the `gzip` compression library rather than `zstd`.  `zstd` may be slightly faster than `gzip` for certain types of workloads, but it is not yet supported in the node.js standard library, so this extension requires an additional binary dependency that may require extra steps to package into your production environment.
 
 To use the library, you will need to install it from npm:
 
@@ -13,40 +14,9 @@ To use the library, you will need to install it from npm:
 npm install @gomomento/sdk-compression-zstd
 ```
 
-Then, you can configure the Momento cache client to enable compression:
+For more information, see:
 
-```javascript
-configuration.withCompressionStrategy({
-  compressorFactory: CompressorFactory.zstd(),
-  compressionLevel: CompressionLevel.SmallestSize,
-})
-
-```
-
-To compress a value when calling `CacheClient.set`, use the `compress` option:
-
-```javascript
-const setResponse = await cacheClient.set(
-  'my-cache',
-  'my-key',
-  'my-value',
-  {
-    compress: true,
-  }
-);
-
-```
-
-To decompress a value when calling `CacheClient.get`, use the `decompress` option:
-
-```javascript
-const getResponse = await cacheClient.get(
-  'my-cache',
-  'my-key',
-  {
-    decompress: true,
-  }
-);
-```
+* [Momento Developer Docs - Node JS SDK Compression](https://docs.momentohq.com/sdks/nodejs/compression.html)
+* [NodeJS zstd compression example](https://github.com/momentohq/client-sdk-javascript/tree/main/examples/nodejs/compression-zstd)
 
 {{ ossFooter }}
