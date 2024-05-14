@@ -21,6 +21,16 @@ export abstract class AbstractTopicClient implements ITopicClient {
   protected readonly webhookClient: IWebhookClient;
   private nextPubsubClientIndex = 0;
 
+  protected constructor(
+    logger: MomentoLogger,
+    pubsubClients: IPubsubClient[],
+    webhookClient: IWebhookClient
+  ) {
+    this.logger = logger;
+    this.pubsubClients = pubsubClients;
+    this.webhookClient = webhookClient;
+  }
+
   /**
    * Publishes a value to a topic.
    *
