@@ -231,6 +231,15 @@ jobs:
           template_file: ./examples/nodejs/aws/lambda-examples/cloudwatch-metrics/README.template.md
           output_file: ./examples/nodejs/aws/lambda-examples/cloudwatch-metrics/README.md
 
+      - name: Generate README for examples/nodejs/aws/lambda-examples/advanced-compression
+        uses: momentohq/standards-and-practices/github-actions/generate-and-commit-oss-readme@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/aws/lambda-examples/advanced-compression/README.template.md
+          output_file: ./examples/nodejs/aws/lambda-examples/advanced-compression/README.md
+
       - name: Generate README for examples/nodejs/topics
         uses: momentohq/standards-and-practices/github-actions/generate-and-commit-oss-readme@gh-actions-v2
         with:

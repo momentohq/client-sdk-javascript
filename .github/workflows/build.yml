@@ -218,6 +218,15 @@ jobs:
           template_file: ./examples/nodejs/aws/lambda-examples/cloudwatch-metrics/README.template.md
           output_file: ./examples/nodejs/aws/lambda-examples/cloudwatch-metrics/README.md
 
+      - name: Verify README generation for examples/nodejs/aws/lambda-examples/advanced-compression
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: beta
+          project_type: other
+          template_file: ./examples/nodejs/aws/lambda-examples/advanced-compression/README.template.md
+          output_file: ./examples/nodejs/aws/lambda-examples/advanced-compression/README.md
+
       - name: Verify README generation for examples/nodejs/topics
         uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
         with:
@@ -407,6 +416,10 @@ jobs:
             npm run build
           popd
           pushd examples/nodejs/aws/lambda-examples/cloudwatch-metrics/infrastructure
+            npm ci
+            npm run build
+          popd
+          pushd examples/nodejs/aws/lambda-examples/advanced-compression/infrastructure
             npm ci
             npm run build
           popd

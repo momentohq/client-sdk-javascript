@@ -1,0 +1,28 @@
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  MomentoApiKey:
+    Type: String
+    Description: API key for Momento
+Resources:
+  ExampleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: function.zip
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      Architectures:
+        - x86_64
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: get
+      Environment:
+        Variables:
+          NODE_OPTIONS: --enable-source-maps
+          MOMENTO_API_KEY: !Ref MomentoApiKey
+    Metadata:
+      SkipBuild: True
+
