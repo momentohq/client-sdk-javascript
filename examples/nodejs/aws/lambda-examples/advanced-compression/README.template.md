@@ -4,11 +4,19 @@
 
 ## What's this example all about?
 
-Enabling compression in the Momento SDK can result in significant reductions in bandwidth consumption and costs, if your cache values are, for example, large text strings (such as JSON objects). The default Momento compression extensions library (`@gomomento/sdk-nodejs-compression`) uses the `zlib` library, which is built-in to the Node.js standard library, so it doesn't require any special packaging considerations when running in a lambda environment.
+Enabling compression in the Momento SDK can result in significant reductions in bandwidth consumption and costs, if your
+cache values are, for example, large text strings (such as JSON objects). The default Momento compression extensions
+library (`@gomomento/sdk-nodejs-compression`) uses the `zlib` library, which is built-in to the Node.js standard library,
+so it doesn't require any special packaging considerations when running in a lambda environment.
 
-For advanced use cases, the `@gomomento/sdk-nodejs-compression-zstd` library offers support for compression via `zstd`, which can offer some amount of performance benefits for especially large payloads (100kb or more). However, this extension relies on a native binary that must match the architecture of your target deployment environment, so it requires some special packaging considerations.
+For advanced use cases, the `@gomomento/sdk-nodejs-compression-zstd` library offers support for compression via `zstd`,
+which can offer some amount of performance benefits for especially large payloads (100kb or more). However, this extension
+relies on a native binary that must match the architecture of your target deployment environment, so it requires some
+special packaging considerations.
 
-Unless you are certain that the extra performance is important, we recommend that you stick with the simpler `@gomomento/sdk-nodejs-compression` package. For advanced use cases, this directory contains an example of how to deploy the `@gomomento/sdk-nodejs-compression-zstd` dependency in your lambda.
+Unless you are certain that the extra performance is important, we recommend that you stick with the simpler
+`@gomomento/sdk-nodejs-compression` package. For advanced use cases, this directory contains an example of how to deploy
+the `@gomomento/sdk-nodejs-compression-zstd` dependency in your lambda.
 
 **NOTE: this binary will increase the size of your deployed lambda by approximately 1MB.**
 

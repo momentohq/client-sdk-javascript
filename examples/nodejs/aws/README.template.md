@@ -11,7 +11,6 @@ Examples include:
 - [AWS Lambda - CloudWatch Metrics Example](./lambda-examples/cloudwatch-metrics) - an example of how to use Momento middleware to generate client-side metrics for interactions with the Momento cache, and publish them to a CloudWatch dashboard.
 - [AWS Lambda - Advanced compression](./lambda-examples/advanced-compression) - a lambda that demonstrates how to package the `@gomomento/sdk-nodejs-compression-zstd` dependency in your lambda, if you have an advanced compression use case that requires the `zstd` extension rather than the default `@gomomento/sdk-nodejs-compression` extension.
 
-
 If you have questions or need help experimenting further, please reach out to us!
 
 {{ ossFooter }}
