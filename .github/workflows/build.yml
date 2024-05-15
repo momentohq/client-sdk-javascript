@@ -218,6 +218,15 @@ jobs:
           template_file: ./examples/nodejs/aws/lambda-examples/cloudwatch-metrics/README.template.md
           output_file: ./examples/nodejs/aws/lambda-examples/cloudwatch-metrics/README.md
 
+      - name: Verify README generation for examples/nodejs/aws/lambda-examples/advanced-compression
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: beta
+          project_type: other
+          template_file: ./examples/nodejs/aws/lambda-examples/advanced-compression/README.template.md
+          output_file: ./examples/nodejs/aws/lambda-examples/advanced-compression/README.md
+
       - name: Verify README generation for examples/nodejs/topics
         uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
         with:
@@ -408,6 +417,12 @@ jobs:
           popd
           pushd examples/nodejs/aws/lambda-examples/cloudwatch-metrics/infrastructure
             npm ci
+            npm run build
+          popd
+          pushd examples/nodejs/aws/lambda-examples/advanced-compression
+            # This example shows how to build and package a lambda function for a different target architecture,
+            # and thus it requires this `--force` flag.
+            npm ci --force
             npm run build
           popd
           pushd examples/nodejs/mongodb-examples/simple-read-aside
