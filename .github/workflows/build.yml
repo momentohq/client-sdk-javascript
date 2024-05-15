@@ -420,7 +420,9 @@ jobs:
             npm run build
           popd
           pushd examples/nodejs/aws/lambda-examples/advanced-compression/infrastructure
-            npm ci
+            # This example shows how to build and package a lambda function for a different target architecture,
+            # and thus it requires this `--force` flag.
+            npm ci --force
             npm run build
           popd
           pushd examples/nodejs/mongodb-examples/simple-read-aside

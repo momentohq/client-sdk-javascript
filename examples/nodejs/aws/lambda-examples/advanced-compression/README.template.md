@@ -115,7 +115,6 @@ tab in the AWS Console.
 
 Once you have created your lambda function, you can deploy the code to it with this command:
 
-
 ```bash
 aws lambda update-function-code --function-name <YOUR FUNCTION NAME HERE> --zip-file fileb://function.zip
 ```
