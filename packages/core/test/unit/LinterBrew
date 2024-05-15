@@ -1,0 +1,4 @@
+brew tap momentohq/tap
+brew update
+brew install momento-cli
+AWS_PROFILE=dev momento preview cloud-linter --region us-west-2
