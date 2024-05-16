@@ -23,14 +23,14 @@ import * as crypto from 'node:crypto';
 function example_API_ConfigurationWithCompression() {
   Configurations.InRegion.Default.latest().withCompressionStrategy({
     compressorFactory: CompressorFactory.default(),
-    compressionLevel: CompressionLevel.SmallestSize,
+    compressionLevel: CompressionLevel.Balanced,
   });
 }
 
 function example_API_ConfigurationWithCompressionNoAutomatic() {
   Configurations.InRegion.Default.latest().withCompressionStrategy({
     compressorFactory: CompressorFactory.default(),
-    compressionLevel: CompressionLevel.SmallestSize,
+    compressionLevel: CompressionLevel.Balanced,
     automaticDecompression: AutomaticDecompression.Disabled,
   });
 }
