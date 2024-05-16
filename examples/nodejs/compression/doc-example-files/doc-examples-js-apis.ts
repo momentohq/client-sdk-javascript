@@ -47,7 +47,7 @@ async function example_API_SetWithCompression(cacheClient: CacheClient, cacheNam
 }
 
 async function example_API_GetNoDecompress(cacheClient: CacheClient, cacheName: string) {
-  const result = await cacheClient.get(cacheName, 'test-key', {decompress: false});
+  const result = await cacheClient.get(cacheName, 'test-key', {decompress: true});
   if (result instanceof CacheGet.Hit) {
     console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
   } else if (result instanceof CacheGet.Miss) {
