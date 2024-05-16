@@ -23,7 +23,6 @@ particular SDK, see the [Node.js SDK documentation](https://docs.momentohq.com/s
 [Web SDK documentation](https://docs.momentohq.com/sdks/web). We also have quickstart guides for both
 [Cache](https://docs.momentohq.com/sdks/nodejs/cache.html) and [Topics](https://docs.momentohq.com/sdks/nodejs/topics.html).
 
-
 ## Examples
 
 Working example projects, with all required build configuration files, are available for both the node.js and web SDKs:
