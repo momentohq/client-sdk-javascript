@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   verify:
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
@@ -75,7 +75,7 @@ jobs:
       matrix:
         node: [18]
     name: Test Cache on Node ${{ matrix.node }}
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04
     env:
       MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
       TEST_SESSION_TOKEN: ${{ secrets.MOMENTO_PREPROD_SESSION_TOKEN }}
@@ -111,7 +111,7 @@ jobs:
         node: [16, 18, 20]
       fail-fast: true
     name: Test examples on node ${{ matrix.node }}
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04
     env:
       # TODO: remove token stored as secret in favor of using a
       # momento-local instance that can be spun up for testing
@@ -188,7 +188,7 @@ jobs:
         node: [ 16, 18 ]
       fail-fast: true
     name: Test web examples on node ${{ matrix.node }}
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04
     env:
       # TODO: remove token stored as secret in favor of using a
       # momento-local instance that can be spun up for testing
@@ -238,7 +238,7 @@ jobs:
         node: [ 16, 18 ]
       fail-fast: true
     name: Test Deno examples on node ${{ matrix.node }}
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04
     env:
       # TODO: remove token stored as secret in favor of using a
       # momento-local instance that can be spun up for testing
