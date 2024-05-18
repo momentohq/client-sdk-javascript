@@ -1,20 +1,14 @@
-<head>
-  <meta name="Momento Node.js Client Library Documentation" content="Node.js client software development kit for Momento Cache">
-</head>
-<img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
+<img src="https://docs.momentohq.com/img/momento-logo-forest.svg" alt="logo" width="400"/>
 
 [![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 [![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 
-# Node.js Client SDK
 
-_Read this in other languages_: Coming Soon
-
-<br>
+# Momento Node.js SDK - Access Control Examples
 
 ## Example Requirements
 
-- Node version 14 or higher is required
+- Node version 16 or higher is required
 - A Momento API key is required, you can generate one using the [Momento Console](https://console.gomomento.com)
 
 To run any of the examples you will need to install the dependencies once first:
@@ -36,5 +30,5 @@ Example Code: [access-control.ts](access-control.ts)
 
 If you have questions or need help experimenting further, please reach out to us!
 
-
-
+----------------------------------------------------------------------------------------
+For more info, visit our website at [https://gomomento.com](https://gomomento.com)!

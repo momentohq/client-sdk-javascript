@@ -18,7 +18,7 @@ improve throughput for workloads that it is suitable for.
 
 ## Example Requirements
 
-- Node version 14 or higher is required
+- Node version 16 or higher is required
 - To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com).
 
 To run any of the examples you will need to install the dependencies once first:

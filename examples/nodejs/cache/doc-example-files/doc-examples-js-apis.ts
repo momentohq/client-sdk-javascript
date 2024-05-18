@@ -13,7 +13,6 @@ import {
   AllDataReadWrite,
   AllTopics,
   AuthClient,
-  AutomaticDecompression,
   CacheClient,
   CacheDelete,
   CacheDictionaryFetch,
@@ -66,7 +65,6 @@ import {
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
-  CompressionLevel,
   Configurations,
   CreateCache,
   CredentialProvider,
@@ -102,7 +100,6 @@ import {
   TopicSubscribe,
 } from '@gomomento/sdk';
 import * as crypto from 'crypto';
-import {CompressorFactory} from '@gomomento/sdk-nodejs-compression';
 
 function retrieveApiKeyFromYourSecretsManager(): string {
   // this is not a valid API key but conforms to the syntax requirements.
@@ -138,21 +135,6 @@ function example_API_ConfigurationInRegionLowLatency() {
 
 function example_API_ConfigurationLambdaLatest() {
   Configurations.Lambda.latest();
-}
-
-function example_API_ConfigurationWithCompression() {
-  Configurations.InRegion.Default.latest().withCompressionStrategy({
-    compressorFactory: CompressorFactory.default(),
-    compressionLevel: CompressionLevel.SmallestSize,
-  });
-}
-
-function example_API_ConfigurationWithCompressionNoAutomatic() {
-  Configurations.InRegion.Default.latest().withCompressionStrategy({
-    compressorFactory: CompressorFactory.default(),
-    compressionLevel: CompressionLevel.SmallestSize,
-    automaticDecompression: AutomaticDecompression.Disabled,
-  });
 }
 
 async function example_API_InstantiateCacheClient() {
@@ -259,32 +241,8 @@ async function example_API_Set(cacheClient: CacheClient, cacheName: string) {
   }
 }
 
-async function example_API_SetWithCompression(cacheClient: CacheClient, cacheName: string) {
-  const result = await cacheClient.set(cacheName, 'test-key', 'test-value', {compress: true});
-  if (result instanceof CacheSet.Success) {
-    console.log("Key 'test-key' stored successfully");
-  } else if (result instanceof CacheSet.Error) {
-    throw new Error(
-      `An error occurred while attempting to store key 'test-key' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
-  }
-}
-
 async function example_API_Get(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.get(cacheName, 'test-key');
-  if (result instanceof CacheGet.Hit) {
-    console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
-  } else if (result instanceof CacheGet.Miss) {
-    console.log(`Key 'test-key' was not found in cache '${cacheName}'`);
-  } else if (result instanceof CacheGet.Error) {
-    throw new Error(
-      `An error occurred while attempting to get key 'test-key' from cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
-  }
-}
-
-async function example_API_GetNoDecompress(cacheClient: CacheClient, cacheName: string) {
-  const result = await cacheClient.get(cacheName, 'test-key', {decompress: false});
   if (result instanceof CacheGet.Hit) {
     console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
   } else if (result instanceof CacheGet.Miss) {
@@ -1574,25 +1532,12 @@ async function main() {
   example_API_ConfigurationInRegionDefaultLatest();
   example_API_ConfigurationInRegionLowLatency();
   example_API_ConfigurationLambdaLatest();
-  example_API_ConfigurationWithCompression();
-  example_API_ConfigurationWithCompressionNoAutomatic();
 
   await example_API_InstantiateCacheClient();
   await example_API_InstantiateCacheClientWithReadConcern();
 
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
-    defaultTtlSeconds: 60,
-  });
-
-  const cacheClientWithCompression = await CacheClient.create({
-    configuration: Configurations.InRegion.Default.latest().withCompressionStrategy({
-      compressorFactory: CompressorFactory.default(),
-      compressionLevel: CompressionLevel.SmallestSize,
-    }),
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_API_KEY',
     }),
@@ -1612,9 +1557,7 @@ async function main() {
     await example_API_FlushCache(cacheClient, cacheName);
 
     await example_API_Set(cacheClient, cacheName);
-    await example_API_SetWithCompression(cacheClientWithCompression, cacheName);
     await example_API_Get(cacheClient, cacheName);
-    await example_API_GetNoDecompress(cacheClientWithCompression, cacheName);
     await example_API_Delete(cacheClient, cacheName);
     await example_API_Increment(cacheClient, cacheName);
     await example_API_ItemGetType(cacheClient, cacheName);

@@ -51,14 +51,16 @@ const testValue = 'my-value';
 const testValueBytes = textEncoder.encode(testValue);
 
 const testValueCompressed = Uint8Array.from([
-  40, 181, 47, 253, 0, 96, 65, 0, 0, 109, 121, 45, 118, 97, 108, 117, 101,
+  31, 139, 8, 0, 0, 0, 0, 0, 2, 19, 203, 173, 212, 45, 75, 204, 41, 77, 5, 0,
+  58, 70, 91, 55, 8, 0, 0, 0,
 ]);
 const testValue2 = 'my-value2';
 const testValue2Compressed = Uint8Array.from([
-  40, 181, 47, 253, 0, 96, 73, 0, 0, 109, 121, 45, 118, 97, 108, 117, 101, 50,
+  31, 139, 8, 0, 0, 0, 0, 0, 2, 19, 203, 173, 212, 45, 75, 204, 41, 77, 53, 2,
+  0, 249, 60, 238, 220, 9, 0, 0, 0,
 ]);
 
-const invalidCompressed = Uint8Array.from([40, 181, 47, 253, 0]);
+const invalidCompressed = Uint8Array.from([31, 139, 0, 0, 0, 0]);
 
 describe('CompressorFactory', () => {
   describe('CacheClient.set', () => {
@@ -301,7 +303,7 @@ describe('CompressorFactory', () => {
 
       expect((getResponse as CacheGet.Hit).valueString()).toEqual(testValue);
     });
-    it('should return an error if decompression is enabled and the client receives invalid ZSTD data', async () => {
+    it('should return an error if decompression is enabled and the client receives invalid gzip data', async () => {
       const noCompressCacheClient = cacheClientWithoutCompressor;
       const key = randomString();
       const setResponse = await noCompressCacheClient.set(
@@ -313,6 +315,9 @@ describe('CompressorFactory', () => {
         expect(setResponse).toBeInstanceOf(CacheSet.Success);
       }, `Expected CacheClient.set to be a success, got: '${setResponse.toString()}'`);
 
+      console.warn(
+        'Hello developer! We are about to test an error case. Please ignore the following error message!'
+      );
       const getResponse =
         await cacheClientWithCompressor_AutoDecompressionEnabled.get(
           cacheName,
@@ -320,7 +325,7 @@ describe('CompressorFactory', () => {
         );
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Error);
-      }, `Expected CacheClient.get to be an Error when receiving invalid ZSTD data, got: '${getResponse.toString()}'`);
+      }, `Expected CacheClient.get to be an Error when receiving invalid gzip data, got: '${getResponse.toString()}'`);
     });
   });
   describe('CacheClient.setBatch', () => {

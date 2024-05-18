@@ -6,12 +6,12 @@ import {
   MiddlewareStatus,
 } from './middleware';
 import {
-  EventLoopDelayMonitor,
   EventLoopUtilization,
   monitorEventLoopDelay,
   performance,
 } from 'perf_hooks';
 import {MomentoLogger, MomentoLoggerFactory} from '@gomomento/sdk-core';
+import {IntervalHistogram} from 'node:perf_hooks';
 
 interface StateMetrics {
   /**
@@ -105,7 +105,7 @@ export class ExperimentalEventLoopPerformanceMetricsMiddleware
 {
   private readonly metricsLogInterval = 1000;
   private readonly eventLoopDelayInterval = 20;
-  private eldMonitor: EventLoopDelayMonitor;
+  private eldMonitor: IntervalHistogram;
   private elu: EventLoopUtilization;
   private isLoggingStarted = false;
   // this is typed as any because JS returns a number for intervalId but

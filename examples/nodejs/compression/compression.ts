@@ -10,18 +10,18 @@ import {
 import {CompressorFactory} from '@gomomento/sdk-nodejs-compression';
 
 async function main() {
-  const configuration = Configurations.Laptop.latest().withClientTimeoutMillis(90000);
+  const configuration = Configurations.Laptop.latest().withClientTimeoutMillis(90000).withCompressionStrategy(
+    // This configuration will enable compression and automatically decompress any compressed values for
+    // supported operations. If you don't want to automatically decompress, add
+    // automaticDecompression: AutomaticDecompression.Disabled to the compression strategy.
+    {
+      compressorFactory: CompressorFactory.default(),
+      compressionLevel: CompressionLevel.SmallestSize,
+    }
+  );
 
-  // This configuration will enable compression and automatically decompress any compressed values for
-  // supported operations. If you don't want to automatically decompress, add
-  // automaticDecompression: AutomaticDecompression.Disabled to the compression strategy.
-  const configurationWithCompression = configuration.withCompressionStrategy({
-    compressorFactory: CompressorFactory.default(),
-    compressionLevel: CompressionLevel.SmallestSize,
-  });
-
-  const cacheClientWithDefaultCompressorFactory = new CacheClient({
-    configuration: configurationWithCompression,
+  const cacheClient = new CacheClient({
+    configuration: configuration,
     credentialProvider: CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: 'MOMENTO_API_KEY',
     }),
@@ -30,7 +30,7 @@ async function main() {
 
   // create cache
   const cacheName = 'cache';
-  const createResponse = await cacheClientWithDefaultCompressorFactory.createCache(cacheName);
+  const createResponse = await cacheClient.createCache(cacheName);
   if (createResponse instanceof CreateCache.Success) {
     console.log('Cache created successfully!');
   } else {
@@ -41,7 +41,7 @@ async function main() {
   const compressibleValue = 'compress compress compress';
 
   // set value with compression
-  const setResponse = await cacheClientWithDefaultCompressorFactory.set(cacheName, 'my-key', compressibleValue, {
+  const setResponse = await cacheClient.set(cacheName, 'my-key', compressibleValue, {
     compress: true,
   });
   if (setResponse instanceof CacheSet.Success) {
@@ -51,7 +51,7 @@ async function main() {
   }
 
   // get the value without decompressing
-  const noDecompressResponse = await cacheClientWithDefaultCompressorFactory.get(cacheName, 'my-key', {
+  const noDecompressResponse = await cacheClient.get(cacheName, 'my-key', {
     decompress: false,
   });
   if (noDecompressResponse instanceof CacheGet.Hit) {
@@ -63,7 +63,7 @@ async function main() {
   }
 
   // get decompressed value
-  const getResponse = await cacheClientWithDefaultCompressorFactory.get(cacheName, 'my-key');
+  const getResponse = await cacheClient.get(cacheName, 'my-key');
   if (getResponse instanceof CacheGet.Hit) {
     console.log(`cache hit, decompressed value: ${getResponse.valueString()}`);
   } else if (getResponse instanceof CacheGet.Miss) {

@@ -8,7 +8,7 @@ import {
   StaticGrpcConfiguration,
   StaticTransportStrategy,
   TransportStrategy,
-} from './transport';
+} from '..';
 import {DefaultMomentoLoggerFactory} from './logging/default-momento-logger';
 
 // 4 minutes.  We want to remain comfortably underneath the idle timeout for AWS NLB, which is 350s.

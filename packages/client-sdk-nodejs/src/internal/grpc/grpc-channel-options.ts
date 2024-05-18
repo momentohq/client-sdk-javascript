@@ -1,4 +1,4 @@
-import {GrpcConfiguration} from '../../config/transport';
+import {GrpcConfiguration} from '../..';
 import {ChannelOptions} from '@grpc/grpc-js';
 
 // The default value for max_send_message_length is 4mb.  We need to increase this to 5mb in order to

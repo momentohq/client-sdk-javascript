@@ -65,6 +65,258 @@ jobs:
           template_file: ./packages/client-sdk-web/README.template.md
           output_file: ./packages/client-sdk-web/README.md
 
+      - name: Verify README generation for examples
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/README.template.md
+          output_file: ./examples/README.md
+
+      - name: Verify README generation for examples/deno
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: incubating
+          project_stability: alpha
+          project_type: other
+          template_file: ./examples/deno/README.template.md
+          output_file: ./examples/deno/README.md
+
+      - name: Verify README generation for examples/deno/web-sdk
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: incubating
+          project_stability: alpha
+          project_type: other
+          template_file: ./examples/deno/web-sdk/README.template.md
+          output_file: ./examples/deno/web-sdk/README.md
+
+      - name: Verify README generation for examples/deno/http-api
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: incubating
+          project_stability: alpha
+          project_type: other
+          template_file: ./examples/deno/http-api/README.template.md
+          output_file: ./examples/deno/http-api/README.md
+
+      - name: Verify README generation for examples/nodejs
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/README.template.md
+          output_file: ./examples/nodejs/README.md
+
+      - name: Verify README generation for examples/nodejs/cache
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/cache/README.template.md
+          output_file: ./examples/nodejs/cache/README.md
+
+      - name: Verify README generation for examples/nodejs/observability
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: beta
+          project_type: other
+          template_file: ./examples/nodejs/observability/README.template.md
+          output_file: ./examples/nodejs/observability/README.md
+
+      - name: Verify README generation for examples/nodejs/compression
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/compression/README.template.md
+          output_file: ./examples/nodejs/compression/README.md
+
+      - name: Verify README generation for examples/nodejs/compression-zstd
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/compression-zstd/README.template.md
+          output_file: ./examples/nodejs/compression-zstd/README.md
+
+      - name: Verify README generation for examples/nodejs/token-vending-machine
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: beta
+          project_type: other
+          template_file: ./examples/nodejs/token-vending-machine/README.template.md
+          output_file: ./examples/nodejs/token-vending-machine/README.md
+
+      - name: Verify README generation for examples/nodejs/rate-limiter
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: incubating
+          project_stability: beta
+          project_type: other
+          template_file: ./examples/nodejs/rate-limiter/README.template.md
+          output_file: ./examples/nodejs/rate-limiter/README.md
+
+      - name: Verify README generation for examples/nodejs/access-control
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/access-control/README.template.md
+          output_file: ./examples/nodejs/access-control/README.md
+
+      - name: Verify README generation for examples/nodejs/aws
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/aws/README.template.md
+          output_file: ./examples/nodejs/aws/README.md
+
+      - name: Verify README generation for examples/nodejs/aws/secrets-manager
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/aws/secrets-manager/README.template.md
+          output_file: ./examples/nodejs/aws/secrets-manager/README.md
+
+      - name: Verify README generation for examples/nodejs/aws/lambda-examples
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/aws/lambda-examples/README.template.md
+          output_file: ./examples/nodejs/aws/lambda-examples/README.md
+
+      - name: Verify README generation for examples/nodejs/aws/lambda-examples/simple-get
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/aws/lambda-examples/simple-get/README.template.md
+          output_file: ./examples/nodejs/aws/lambda-examples/simple-get/README.md
+
+      - name: Verify README generation for examples/nodejs/aws/lambda-examples/cloudwatch-metrics
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: beta
+          project_type: other
+          template_file: ./examples/nodejs/aws/lambda-examples/cloudwatch-metrics/README.template.md
+          output_file: ./examples/nodejs/aws/lambda-examples/cloudwatch-metrics/README.md
+
+      - name: Verify README generation for examples/nodejs/aws/lambda-examples/advanced-compression
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: beta
+          project_type: other
+          template_file: ./examples/nodejs/aws/lambda-examples/advanced-compression/README.template.md
+          output_file: ./examples/nodejs/aws/lambda-examples/advanced-compression/README.md
+
+      - name: Verify README generation for examples/nodejs/topics
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/topics/README.template.md
+          output_file: ./examples/nodejs/topics/README.md
+
+      - name: Verify README generation for examples/nodejs/load-gen
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/load-gen/README.template.md
+          output_file: ./examples/nodejs/load-gen/README.md
+
+      - name: Verify README generation for examples/fastly-compute
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: incubating
+          project_stability: alpha
+          project_type: other
+          template_file: ./examples/fastly-compute/README.template.md
+          output_file: ./examples/fastly-compute/README.md
+
+      - name: Verify README generation for examples/web
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/web/README.template.md
+          output_file: ./examples/web/README.md
+
+      - name: Verify README generation for examples/web/cache
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/web/cache/README.template.md
+          output_file: ./examples/web/cache/README.md
+
+      - name: Verify README generation for examples/web/nextjs-chat
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/web/nextjs-chat/README.template.md
+          output_file: ./examples/web/nextjs-chat/README.md
+
+      - name: Verify README generation for examples/web/vite-chat-app
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/web/vite-chat-app/README.template.md
+          output_file: ./examples/web/vite-chat-app/README.md
+
+      - name: Verify README generation for examples/cloudflare-workers
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: incubating
+          project_stability: alpha
+          project_type: other
+          template_file: ./examples/cloudflare-workers/README.template.md
+          output_file: ./examples/cloudflare-workers/README.md
+
+      - name: Verify README generation for examples/cloudflare-workers/http-api
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: incubating
+          project_stability: alpha
+          project_type: other
+          template_file: ./examples/cloudflare-workers/http-api/README.template.md
+          output_file: ./examples/cloudflare-workers/http-api/README.md
+
+      - name: Verify README generation for examples/cloudflare-workers/web-sdk
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: incubating
+          project_stability: alpha
+          project_type: other
+          template_file: ./examples/cloudflare-workers/web-sdk/README.template.md
+          output_file: ./examples/cloudflare-workers/web-sdk/README.md
+
       - name: Commitlint and Other Shared Build Steps
         uses: momentohq/standards-and-practices/github-actions/shared-build@gh-actions-v2
         env:
@@ -135,6 +387,21 @@ jobs:
             npm run build
             npm run validate-examples
           popd
+          pushd examples/nodejs/topics
+            npm ci
+            npm run build
+            npm run validate-examples
+          popd
+          pushd examples/nodejs/compression
+            npm ci
+            npm run build
+            npm run validate-examples
+          popd
+          pushd examples/nodejs/compression-zstd
+            npm ci
+            npm run build
+            npm run validate-examples
+          popd
           pushd examples/nodejs/observability
             npm ci
             npm run build
@@ -144,12 +411,18 @@ jobs:
             npm ci
             npm run build
           popd
-          pushd examples/nodejs/topics
+          pushd examples/nodejs/aws/lambda-examples/simple-get/infrastructure
             npm ci
             npm run build
           popd
-          pushd examples/nodejs/lambda-examples/topics-microservice
+          pushd examples/nodejs/aws/lambda-examples/cloudwatch-metrics/infrastructure
             npm ci
+            npm run build
+          popd
+          pushd examples/nodejs/aws/lambda-examples/advanced-compression
+            # This example shows how to build and package a lambda function for a different target architecture,
+            # and thus it requires this `--force` flag.
+            npm ci --force
             npm run build
           popd
           pushd examples/nodejs/mongodb-examples/simple-read-aside
@@ -161,7 +434,7 @@ jobs:
             npm run build
             npm run validate-examples
           popd
-          pushd examples/nodejs/aws
+          pushd examples/nodejs/aws/secrets-manager
             npm ci
             npm run build
           popd

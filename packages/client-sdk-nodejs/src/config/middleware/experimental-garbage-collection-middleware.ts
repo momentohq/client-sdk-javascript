@@ -7,6 +7,7 @@ import {
 } from './middleware';
 import {constants, PerformanceObserver} from 'perf_hooks';
 import {MomentoLogger, MomentoLoggerFactory} from '@gomomento/sdk-core';
+import {NodeGCPerformanceDetail} from 'node:perf_hooks';
 
 class ExperimentalGarbageCollectionPerformanceMetricsMiddlewareRequestHandler
   implements MiddlewareRequestHandler
@@ -69,17 +70,25 @@ export class ExperimentalGarbageCollectionPerformanceMetricsMiddleware
           // this on a customer's client.
           // NODE_PERFORMANCE_GC_INCREMENTAL prints incremental GC stream of logs when the process is approaching
           // max memory.
-          item =>
-            item.kind === constants.NODE_PERFORMANCE_GC_MAJOR ||
-            item.kind === constants.NODE_PERFORMANCE_GC_INCREMENTAL
+          item => {
+            if (item.entryType !== 'gc') {
+              return false;
+            }
+            const gcPerfDetail = item.detail as NodeGCPerformanceDetail;
+            return (
+              gcPerfDetail.kind === constants.NODE_PERFORMANCE_GC_MAJOR ||
+              gcPerfDetail.kind === constants.NODE_PERFORMANCE_GC_INCREMENTAL
+            );
+          }
         )
         .forEach(item => {
+          const gcPerfDetail = item.detail as NodeGCPerformanceDetail;
           const gcEventObject = {
             entryType: item.entryType,
             startTime: item.startTime,
             duration: item.duration,
-            kind: item.kind,
-            flags: item.flags,
+            kind: gcPerfDetail.kind,
+            flags: gcPerfDetail.flags,
             timestamp: Date.now(),
           };
           this.logger.info(JSON.stringify(gcEventObject));

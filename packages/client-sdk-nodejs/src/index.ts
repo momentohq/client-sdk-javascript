@@ -26,9 +26,6 @@ import * as CacheFlush from '@gomomento/sdk-core/dist/src/messages/responses/cac
 import * as CreateCache from '@gomomento/sdk-core/dist/src/messages/responses/create-cache';
 import * as DeleteCache from '@gomomento/sdk-core/dist/src/messages/responses/delete-cache';
 import * as ListCaches from '@gomomento/sdk-core/dist/src/messages/responses/list-caches';
-import * as CreateSigningKey from '@gomomento/sdk-core/dist/src/messages/responses/create-signing-key';
-import * as ListSigningKeys from '@gomomento/sdk-core/dist/src/messages/responses/list-signing-keys';
-import * as RevokeSigningKey from '@gomomento/sdk-core/dist/src/messages/responses/revoke-signing-key';
 import * as CacheSetFetch from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-fetch';
 import * as CacheDictionaryFetch from '@gomomento/sdk-core/dist/src/messages/responses/cache-dictionary-fetch';
 import * as CacheDictionarySetField from '@gomomento/sdk-core/dist/src/messages/responses/cache-dictionary-set-field';
@@ -198,12 +195,24 @@ export {
   StaticTransportStrategy,
   TransportStrategy,
   TransportStrategyProps,
-} from './config/transport/transport-strategy';
+} from './config/transport/cache/transport-strategy';
 
 export {
   GrpcConfiguration,
   GrpcConfigurationProps,
-} from './config/transport/grpc-configuration';
+} from './config/transport/cache/grpc-configuration';
+
+export {
+  StaticTopicGrpcConfiguration,
+  StaticTopicTransportStrategy,
+  TopicTransportStrategy,
+  TopicTransportStrategyProps,
+} from './config/transport/topics/transport-strategy';
+
+export {
+  TopicGrpcConfiguration,
+  TopicGrpcConfigurationProps,
+} from './config/transport/topics/grpc-configuration';
 
 export {
   Middleware,
@@ -292,9 +301,6 @@ export {
   DeleteCache,
   ListCaches,
   CacheIncrement,
-  CreateSigningKey,
-  ListSigningKeys,
-  RevokeSigningKey,
   CacheSetFetch,
   CacheDictionaryFetch,
   CacheDictionarySetField,

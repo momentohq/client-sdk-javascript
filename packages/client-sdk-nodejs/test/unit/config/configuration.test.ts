@@ -1,11 +1,12 @@
-import {CacheConfiguration} from '../../../src/config/configuration';
-import {FixedCountRetryStrategy} from '../../../src/config/retry/fixed-count-retry-strategy';
-import {Configurations, DefaultMomentoLoggerFactory} from '../../../src';
-import {Middleware} from '../../../src/config/middleware/middleware';
 import {
+  Configurations,
+  CacheConfiguration,
+  FixedCountRetryStrategy,
+  DefaultMomentoLoggerFactory,
+  Middleware,
   StaticGrpcConfiguration,
   StaticTransportStrategy,
-} from '../../../src/config/transport/transport-strategy';
+} from '../../../src';
 import {ReadConcern} from '@gomomento/sdk-core';
 
 describe('configuration.ts', () => {
