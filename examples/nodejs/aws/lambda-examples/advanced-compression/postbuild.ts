@@ -1,18 +1,18 @@
 import {execSync} from 'child_process';
 import * as fs from "node:fs";
-import * as os from "node:os";
 
 function findZstdBinaryFiles() {
   const files = fs.readdirSync('dist');
   return files.filter(f => f.endsWith('.node'));
 }
 
-function removeExtraZstdBinaryIfNecessary() {
+function removeExtraZstdBinariesIfNecessary() {
   const initialZstdBinaryFiles = findZstdBinaryFiles();
-  console.info(`Checking for zstd binaries (platform: ${os.platform()}, arch: ${os.arch()}): ${JSON.stringify(initialZstdBinaryFiles)}`);
+  const targetPlatform = 'linux-x64-gnu';
+  console.info(`Checking for superfluous zstd binaries: ${JSON.stringify(initialZstdBinaryFiles)}`);
   if (initialZstdBinaryFiles.length > 1) {
     for (const fileName of initialZstdBinaryFiles) {
-      if (fileName.includes(`${os.platform()}-${os.arch()}`)) {
+      if (!fileName.includes(targetPlatform)) {
         console.info(`Removing superfluous zstd binary from the dist: ${fileName}`);
         fs.unlinkSync(`dist/${fileName}`);
       }
@@ -34,7 +34,7 @@ const commands = [
     'popd',
 ];
 
-removeExtraZstdBinaryIfNecessary();
+removeExtraZstdBinariesIfNecessary();
 
 execSync(commands.join(' && '), {
     stdio: 'inherit',
