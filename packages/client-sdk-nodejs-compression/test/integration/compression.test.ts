@@ -21,7 +21,7 @@ const cacheClientWithCompressor_AutoDecompressionDisabled = new CacheClient({
   configuration:
     cacheClientPropsWithConfig.configuration.withCompressionStrategy({
       compressorFactory: CompressorFactory.default(),
-      compressionLevel: CompressionLevel.SmallestSize,
+      compressionLevel: CompressionLevel.Balanced,
       automaticDecompression: AutomaticDecompression.Disabled,
     }),
   credentialProvider: cacheClientPropsWithConfig.credentialProvider,
@@ -32,7 +32,7 @@ const cacheClientWithCompressor_AutoDecompressionEnabled = new CacheClient({
   configuration:
     cacheClientPropsWithConfig.configuration.withCompressionStrategy({
       compressorFactory: CompressorFactory.default(),
-      compressionLevel: CompressionLevel.SmallestSize,
+      compressionLevel: CompressionLevel.Balanced,
     }),
   credentialProvider: cacheClientPropsWithConfig.credentialProvider,
   defaultTtlSeconds: cacheClientPropsWithConfig.defaultTtlSeconds,
