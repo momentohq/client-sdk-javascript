@@ -53,6 +53,17 @@ build output. Therefore we need to configure `esbuild` to include these files.
 For example code on how to achieve this, see the `esbuild.ts` file. If you are using another build system besides esbuild,
 you will need to take similar steps to ensure that the `.node` files are included and accessible in your final lambda package.
 
+### `postbuild.ts`: Building the final `.zip` artifact
+
+This script is responsible for creating the final `.zip` artifact that we will deploy to the lambda. It processes the
+`dist` directory created by `esbuild` and ensures that all the required files are present, and then produces the `.zip`.
+It also removes any unnecessary native binaries (`.node` files) that are not necessary for the target platform, to ensure
+that the final `.zip` is as small as possible.
+
+**NOTE: this script has another hard coded reference to 'linux-x64-gnu' so that it knows the correct `.node` files to keep or
+remove. Therefore if you want to change the target platform, you will need to update the target architecture information in both
+the `package.json` file and the `postbuild.ts` file.**
+
 ## Building the Example
 
 **NOTE: the `--force` flag is necessary on the `npm install` command if you are building from a different platform than
