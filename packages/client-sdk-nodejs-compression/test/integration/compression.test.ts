@@ -12,6 +12,8 @@ import {
 import {CompressorFactory} from '../../src';
 import {v4} from 'uuid';
 import {CompressionError} from '@gomomento/sdk/dist/src/errors/compression-error';
+import * as zlib from 'node:zlib';
+import {convert} from '@gomomento/sdk/dist/src/internal/utils';
 
 const {cacheClientPropsWithConfig, cacheName} = setupIntegrationTest();
 
@@ -49,20 +51,34 @@ function randomString() {
 const textEncoder = new TextEncoder();
 const testValue = 'my-value';
 const testValueBytes = textEncoder.encode(testValue);
-
-const testValueCompressed = Uint8Array.from([
-  31, 139, 8, 0, 0, 0, 0, 0, 2, 19, 203, 173, 212, 45, 75, 204, 41, 77, 5, 0,
-  58, 70, 91, 55, 8, 0, 0, 0,
-]);
 const testValue2 = 'my-value2';
-const testValue2Compressed = Uint8Array.from([
-  31, 139, 8, 0, 0, 0, 0, 0, 2, 19, 203, 173, 212, 45, 75, 204, 41, 77, 53, 2,
-  0, 249, 60, 238, 220, 9, 0, 0, 0,
-]);
 
 const invalidCompressed = Uint8Array.from([31, 139, 0, 0, 0, 0]);
 
+function compressValueForTestComparisons(value: string): Promise<Uint8Array> {
+  return new Promise<Uint8Array>((resolve, reject) => {
+    zlib.gzip(
+      Buffer.from(convert(value)),
+      {level: zlib.constants.Z_DEFAULT_COMPRESSION},
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+  });
+}
+
 describe('CompressorFactory', () => {
+  let testValueCompressed: Uint8Array;
+  let testValue2Compressed: Uint8Array;
+  beforeAll(async () => {
+    testValueCompressed = await compressValueForTestComparisons(testValue);
+    testValue2Compressed = await compressValueForTestComparisons(testValue2);
+  });
+
   describe('CacheClient.set', () => {
     it('should return an error if compress is true but compression is not enabled', async () => {
       const setResponse = await cacheClientWithoutCompressor.set(
