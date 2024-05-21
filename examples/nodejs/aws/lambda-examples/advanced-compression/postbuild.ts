@@ -27,11 +27,11 @@ function removeExtraZstdBinariesIfNecessary() {
 const functionsDir = 'src';
 const commands = [
     'ls -lah',
-    `pushd dist/`,
+    `cd dist/`,
     `echo "zipping ${functionsDir} lambda"`,
     `zip -R function.zip *`,
     `mv function.zip ../`,
-    'popd',
+    'cd ..',
 ];
 
 removeExtraZstdBinariesIfNecessary();
