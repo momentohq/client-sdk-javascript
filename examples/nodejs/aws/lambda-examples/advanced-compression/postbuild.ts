@@ -9,6 +9,7 @@ function findZstdBinaryFiles() {
 
 function removeExtraZstdBinaryIfNecessary() {
   const initialZstdBinaryFiles = findZstdBinaryFiles();
+  console.info(`Checking for zstd binaries (platform: ${os.platform()}, arch: ${os.arch()}): ${JSON.stringify(initialZstdBinaryFiles)}`);
   if (initialZstdBinaryFiles.length > 1) {
     for (const fileName of initialZstdBinaryFiles) {
       if (fileName.includes(`${os.platform()}-${os.arch()}`)) {
