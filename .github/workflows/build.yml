@@ -398,9 +398,9 @@ jobs:
             npm run validate-examples
           popd
           pushd examples/nodejs/compression-zstd
-            #npm ci
-            #npm run build
-            #npm run validate-examples
+            npm ci
+            npm run build
+            npm run validate-examples
           popd
           pushd examples/nodejs/observability
             npm ci
@@ -422,8 +422,8 @@ jobs:
           pushd examples/nodejs/aws/lambda-examples/advanced-compression
             # This example shows how to build and package a lambda function for a different target architecture,
             # and thus it requires this `--force` flag.
-            #npm ci --force
-            #npm run build
+            npm ci --force
+            npm run build
           popd
           pushd examples/nodejs/mongodb-examples/simple-read-aside
             npm ci
