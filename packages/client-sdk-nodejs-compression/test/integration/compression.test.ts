@@ -64,7 +64,7 @@ function compressValueForTestComparisons(value: string): Promise<Uint8Array> {
         if (err) {
           reject(err);
         } else {
-          resolve(result);
+          resolve(new Uint8Array(result));
         }
       }
     );
