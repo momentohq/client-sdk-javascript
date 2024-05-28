@@ -50,9 +50,18 @@ describe('getWeb*Endpoint', () => {
     const credProvider = CredentialProvider.fromString({
       authToken: base64EncodedFakeV1AuthToken,
       endpointOverrides: {
-        controlEndpoint: 'some-control-endpoint',
-        cacheEndpoint: 'some-cache-endpoint',
-        tokenEndpoint: 'some-token-endpoint',
+        controlEndpoint: {
+          endpoint: 'some-control-endpoint',
+          insecureConnection: false,
+        },
+        cacheEndpoint: {
+          endpoint: 'some-cache-endpoint',
+          insecureConnection: false,
+        },
+        tokenEndpoint: {
+          endpoint: 'some-token-endpoint',
+          insecureConnection: false,
+        },
       },
     });
     const webControlEndpoint = getWebControlEndpoint(credProvider);
@@ -66,9 +75,18 @@ describe('getWeb*Endpoint', () => {
     const credProvider = CredentialProvider.fromString({
       authToken: base64EncodedFakeV1AuthToken,
       endpointOverrides: {
-        controlEndpoint: 'https://some-control-endpoint',
-        cacheEndpoint: 'https://some-cache-endpoint',
-        tokenEndpoint: 'http://some-token-endpoint',
+        controlEndpoint: {
+          endpoint: 'https://some-control-endpoint',
+          insecureConnection: false,
+        },
+        cacheEndpoint: {
+          endpoint: 'https://some-cache-endpoint',
+          insecureConnection: false,
+        },
+        tokenEndpoint: {
+          endpoint: 'https://some-token-endpoint',
+          insecureConnection: false,
+        },
       },
     });
     const webControlEndpoint = getWebControlEndpoint(credProvider);
@@ -83,9 +101,18 @@ describe('getWeb*Endpoint', () => {
       const credProvider = CredentialProvider.fromString({
         authToken: base64EncodedFakeV1AuthToken,
         endpointOverrides: {
-          controlEndpoint: 'some-control-endpoint:9001',
-          cacheEndpoint: 'some-cache-endpoint:9001',
-          tokenEndpoint: 'some-token-endpoint:9001',
+          controlEndpoint: {
+            endpoint: 'some-control-endpoint:9001',
+            insecureConnection: false,
+          },
+          cacheEndpoint: {
+            endpoint: 'some-cache-endpoint:9001',
+            insecureConnection: false,
+          },
+          tokenEndpoint: {
+            endpoint: 'some-token-endpoint:9001',
+            insecureConnection: false,
+          },
         },
       });
       const webControlEndpoint = getWebControlEndpoint(credProvider);
@@ -99,9 +126,18 @@ describe('getWeb*Endpoint', () => {
       const credProvider = CredentialProvider.fromString({
         authToken: base64EncodedFakeV1AuthToken,
         endpointOverrides: {
-          controlEndpoint: 'https://some-control-endpoint:9001',
-          cacheEndpoint: 'https://some-cache-endpoint:9001',
-          tokenEndpoint: 'http://some-token-endpoint:9001',
+          controlEndpoint: {
+            endpoint: 'https://some-control-endpoint:9001',
+            insecureConnection: false,
+          },
+          cacheEndpoint: {
+            endpoint: 'https://some-cache-endpoint:9001',
+            insecureConnection: false,
+          },
+          tokenEndpoint: {
+            endpoint: 'https://some-token-endpoint:9001',
+            insecureConnection: false,
+          },
         },
       });
       const webControlEndpoint = getWebControlEndpoint(credProvider);
