@@ -1,14 +1,6 @@
 import {CacheControlClient} from './internal/cache-control-client';
 import {CacheDataClient} from './internal/cache-data-client';
-import {
-  CreateSigningKey,
-  ListSigningKeys,
-  RevokeSigningKey,
-  CacheFlush,
-  MomentoLogger,
-  Configuration,
-  Configurations,
-} from '.';
+import {CacheFlush, MomentoLogger, Configuration, Configurations} from '.';
 import {CacheClientProps, EagerCacheClientProps} from './cache-client-props';
 import {
   range,
@@ -155,64 +147,6 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
    */
   public async flushCache(cacheName: string): Promise<CacheFlush.Response> {
     return await this.notYetAbstractedControlClient.flushCache(cacheName);
-  }
-
-  /**
-   * Creates a Momento signing key.
-   *
-   * @param {number} ttlMinutes - The time to live in minutes until the Momento
-   * signing key expires.
-   * @returns {Promise<CreateSigningKey.Response>} -
-   * {@link CreateSigningKey.Success} containing the key, key ID, endpoint, and
-   * expiration date on success.
-   * {@link CreateSigningKey.Error} on failure.
-   */
-  public async createSigningKey(
-    ttlMinutes: number
-  ): Promise<CreateSigningKey.Response> {
-    const client = this.getNextDataClient();
-    return await this.notYetAbstractedControlClient.createSigningKey(
-      ttlMinutes,
-      client.getEndpoint()
-    );
-  }
-
-  /**
-   * Revokes a Momento signing key.
-   *
-   * @remarks
-   * All tokens signed by this key will be invalid.
-   *
-   * @param {string} keyId - The ID of the key to revoke.
-   * @returns {Promise<RevokeSigningKey.Response>} -
-   * {@link RevokeSigningKey.Success} on success.
-   * {@link RevokeSigningKey.Error} on failure.
-   */
-  public async revokeSigningKey(
-    keyId: string
-  ): Promise<RevokeSigningKey.Response> {
-    return await this.notYetAbstractedControlClient.revokeSigningKey(keyId);
-  }
-
-  /**
-   * Lists all Momento signing keys for the provided auth token.
-   *
-   * @returns {Promise<ListSigningKeys.Response>} -
-   * {@link ListSigningKeys.Success} containing the keys on success.
-   * {@link ListSigningKeys.Error} on failure.
-   */
-  public async listSigningKeys(): Promise<ListSigningKeys.Response> {
-    const client = this.getNextDataClient();
-    return await this.notYetAbstractedControlClient.listSigningKeys(
-      client.getEndpoint()
-    );
-  }
-
-  protected getNextDataClient(): CacheDataClient {
-    const client = this.dataClients[this.nextDataClientIndex];
-    this.nextDataClientIndex =
-      (this.nextDataClientIndex + 1) % this.dataClients.length;
-    return client as CacheDataClient;
   }
 }
 

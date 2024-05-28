@@ -84,10 +84,8 @@ class _Success extends Response {
    */
   public valuesRecordStringString(): Record<string, string> {
     return this.items.reduce<Record<string, string>>((acc, item, index) => {
-      if (item.value() !== undefined) {
-        acc[TEXT_DECODER.decode(this.keys[index])] = (
-          item as CacheGet.Hit
-        ).valueString();
+      if (item instanceof CacheGet.Hit) {
+        acc[TEXT_DECODER.decode(this.keys[index])] = item.valueString();
       }
       return acc;
     }, {});
@@ -100,10 +98,8 @@ class _Success extends Response {
    */
   public valuesRecordStringUint8Array(): Record<string, Uint8Array> {
     return this.items.reduce<Record<string, Uint8Array>>((acc, item, index) => {
-      if (item.value() !== undefined) {
-        acc[TEXT_DECODER.decode(this.keys[index])] = (
-          item as CacheGet.Hit
-        ).valueUint8Array();
+      if (item instanceof CacheGet.Hit) {
+        acc[TEXT_DECODER.decode(this.keys[index])] = item.valueUint8Array();
       }
       return acc;
     }, {});
@@ -124,11 +120,8 @@ class _Success extends Response {
    */
   public valuesMapStringString(): Map<string, string> {
     return this.items.reduce((acc, item, index) => {
-      if (item.value() !== undefined) {
-        acc.set(
-          TEXT_DECODER.decode(this.keys[index]),
-          (item as CacheGet.Hit).valueString()
-        );
+      if (item instanceof CacheGet.Hit) {
+        acc.set(TEXT_DECODER.decode(this.keys[index]), item.valueString());
       }
       return acc;
     }, new Map<string, string>());
@@ -140,27 +133,11 @@ class _Success extends Response {
    */
   public valuesMapStringUint8Array(): Map<string, Uint8Array> {
     return this.items.reduce((acc, item, index) => {
-      if (item.value() !== undefined) {
-        acc.set(
-          TEXT_DECODER.decode(this.keys[index]),
-          (item as CacheGet.Hit).valueUint8Array()
-        );
+      if (item instanceof CacheGet.Hit) {
+        acc.set(TEXT_DECODER.decode(this.keys[index]), item.valueUint8Array());
       }
       return acc;
     }, new Map<string, Uint8Array>());
-  }
-
-  /**
-   * Returns the data as a Map whose keys and values are byte arrays.
-   * @returns {Map<Uint8Array, Uint8Array>}
-   */
-  public valuesMapUint8ArrayUint8Array(): Map<Uint8Array, Uint8Array> {
-    return this.items.reduce((acc, item, index) => {
-      if (item.value() !== undefined) {
-        acc.set(this.keys[index], (item as CacheGet.Hit).valueUint8Array());
-      }
-      return acc;
-    }, new Map<Uint8Array, Uint8Array>());
   }
 
   public override toString(): string {

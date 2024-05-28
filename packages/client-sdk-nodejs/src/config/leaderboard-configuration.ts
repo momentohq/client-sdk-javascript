@@ -1,5 +1,4 @@
-import {MomentoLoggerFactory} from '../';
-import {TransportStrategy} from './transport';
+import {MomentoLoggerFactory, TransportStrategy} from '../';
 import {Middleware} from './middleware/middleware';
 
 /**

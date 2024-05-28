@@ -32,7 +32,7 @@
   "devDependencies": {
     "@gomomento/common-integration-tests": "file:../common-integration-tests",
     "@types/jest": "27.5.2",
-    "@types/node": "14.18.3",
+    "@types/node": "16.18.97",
     "@types/uuid": "8.3.4",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
@@ -59,6 +59,6 @@
     "jwt-decode": "3.1.2"
   },
   "engines": {
-    "node": ">= 14"
+    "node": ">= 16"
   }
 }

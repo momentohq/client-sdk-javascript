@@ -1,16 +1,12 @@
-<head>
-  <meta name="Momento Node.js Client Library Documentation" content="Node.js client software development kit for Momento Cache">
-</head>
-<img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
+<img src="https://docs.momentohq.com/img/momento-logo-forest.svg" alt="logo" width="400"/>
 
 [![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 [![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 
-# Node.js Client SDK
+
+# Momento Node.js SDK - Basic Load Generator Example
 
 _Read this in other languages_: [日本語](README.ja.md)
-
-<br>
 
 This directory contains example code illustrating how to generate load against Momento.
 It also includes an example that shows how request coalescing can reduce latencies and
@@ -18,7 +14,7 @@ improve throughput for workloads that it is suitable for.
 
 ## Example Requirements
 
-- Node version 14 or higher is required
+- Node version 16 or higher is required
 - To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com).
 
 To run any of the examples you will need to install the dependencies once first:
@@ -103,9 +99,10 @@ Stats should like:
 
 It's only about 50 lines of code to create a coalescing wrapper for the Momento cache client.  You can see our
 implementation here:
-https://github.com/momentohq/client-sdk-nodejs/blob/main/examples/utils/momento-client-with-coalescing.ts
+[https://github.com/momentohq/client-sdk-nodejs/blob/main/examples/utils/momento-client-with-coalescing.ts](https://github.com/momentohq/client-sdk-nodejs/blob/main/examples/utils/momento-client-with-coalescing.ts)
 
 ### Run the above example:
+
 ```bash
 # Run example request coalescing
 MOMENTO_API_KEY=<YOUR API KEY> npm run request-coalsecing
@@ -116,5 +113,5 @@ settings are at the bottom of the file.
 
 If you have questions or need help experimenting further, please reach out to us!
 
-
-
+----------------------------------------------------------------------------------------
+For more info, visit our website at [https://gomomento.com](https://gomomento.com)!

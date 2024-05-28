@@ -4,6 +4,10 @@ import {
   TopicClientConfiguration,
   TopicConfiguration,
 } from './topic-configuration';
+import {
+  StaticTopicGrpcConfiguration,
+  StaticTopicTransportStrategy,
+} from './transport/topics';
 
 const defaultLoggerFactory: MomentoLoggerFactory =
   new DefaultMomentoLoggerFactory();
@@ -25,6 +29,11 @@ export class Default extends TopicClientConfiguration {
   ): TopicConfiguration {
     return new TopicClientConfiguration({
       loggerFactory: loggerFactory,
+      transportStrategy: new StaticTopicTransportStrategy({
+        grpcConfiguration: new StaticTopicGrpcConfiguration({
+          numClients: 1,
+        }),
+      }),
       throwOnErrors: false,
     });
   }
