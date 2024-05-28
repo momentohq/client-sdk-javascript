@@ -7,11 +7,12 @@ import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {Configuration} from '../config/configuration';
-import {MomentoLogger} from '../';
+import {CredentialProvider, MomentoLogger} from '../';
 
 export interface PingClientProps {
   configuration: Configuration;
   endpoint: string;
+  credentialProvider: CredentialProvider;
 }
 
 export class InternalNodeGrpcPingClient {
@@ -35,7 +36,12 @@ export class InternalNodeGrpcPingClient {
     );
     this.clientWrapper = new IdleGrpcClientWrapper({
       clientFactoryFn: () =>
-        new grpcPing.PingClient(props.endpoint, ChannelCredentials.createSsl()),
+        new grpcPing.PingClient(
+          props.endpoint,
+          props.credentialProvider.isCacheEndpointInsecure()
+            ? ChannelCredentials.createInsecure()
+            : ChannelCredentials.createSsl()
+        ),
       loggerFactory: props.configuration.getLoggerFactory(),
       maxIdleMillis: props.configuration
         .getTransportStrategy()

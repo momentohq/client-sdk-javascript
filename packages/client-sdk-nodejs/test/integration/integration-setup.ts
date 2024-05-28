@@ -62,9 +62,18 @@ function sessionCredsProvider(): CredentialProvider {
       // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
       // steal them from the auth-token-based creds provider.
       endpointOverrides: {
-        cacheEndpoint: credsProvider().getCacheEndpoint(),
-        controlEndpoint: credsProvider().getControlEndpoint(),
-        tokenEndpoint: credsProvider().getTokenEndpoint(),
+        cacheEndpoint: {
+          endpoint: credsProvider().getCacheEndpoint(),
+          insecureConnection: false,
+        },
+        controlEndpoint: {
+          endpoint: credsProvider().getControlEndpoint(),
+          insecureConnection: false,
+        },
+        tokenEndpoint: {
+          endpoint: credsProvider().getTokenEndpoint(),
+          insecureConnection: false,
+        },
       },
     });
   }

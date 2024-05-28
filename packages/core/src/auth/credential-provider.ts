@@ -8,6 +8,7 @@ import {
 export interface BaseEndpointOverride {
   baseEndpoint: string;
   endpointPrefix?: string;
+  insecureConnection?: boolean;
 }
 
 export type EndpointOverrides = BaseEndpointOverride | AllEndpoints;
@@ -54,14 +55,35 @@ export abstract class CredentialProvider {
   abstract getControlEndpoint(): string;
 
   /**
+   * @returns {boolean} true if connecting to the control plane endpoint connection without TLS; false if using TLS
+   */
+  abstract isControlEndpointInsecure(): boolean;
+
+  /**
    * @returns {string} The host which the Momento client will connect to for Momento data plane operations
    */
   abstract getCacheEndpoint(): string;
 
   /**
+   * @returns {boolean} true if connecting to the data plane endpoint connection without TLS; false if using TLS
+   */
+  abstract isCacheEndpointInsecure(): boolean;
+
+  /**
    * @returns {string} The host which the Momento client will connect to for Momento token operations
    */
   abstract getTokenEndpoint(): string;
+
+  /**
+   * @returns {boolean} true if connecting to the token endpoint connection without TLS; false if using TLS
+   */
+  abstract isTokenEndpointInsecure(): boolean;
+
+  /**
+   * Modifies the instance of the credential provider to override endpoints to
+   * allow insecure connections to the momento-local service for testing purposes
+   */
+  abstract withMomentoLocal(): CredentialProvider;
 
   /**
    * @returns {boolean} true if the endpoints were manually overridden at construction time; false otherwise
@@ -92,11 +114,19 @@ abstract class CredentialProviderBase implements CredentialProvider {
 
   abstract getCacheEndpoint(): string;
 
+  abstract isCacheEndpointInsecure(): boolean;
+
   abstract getControlEndpoint(): string;
+
+  abstract isControlEndpointInsecure(): boolean;
 
   abstract getTokenEndpoint(): string;
 
+  abstract isTokenEndpointInsecure(): boolean;
+
   abstract areEndpointsOverridden(): boolean;
+
+  abstract withMomentoLocal(): CredentialProvider;
 
   valueOf(): object {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -172,9 +202,18 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
         );
       }
       this.allEndpoints = {
-        controlEndpoint: decodedToken.controlEndpoint,
-        cacheEndpoint: decodedToken.cacheEndpoint,
-        tokenEndpoint: decodedToken.tokenEndpoint,
+        controlEndpoint: {
+          endpoint: decodedToken.controlEndpoint,
+          insecureConnection: !decodedToken.controlEndpoint.includes(':443'),
+        },
+        cacheEndpoint: {
+          endpoint: decodedToken.cacheEndpoint,
+          insecureConnection: !decodedToken.controlEndpoint.includes(':443'),
+        },
+        tokenEndpoint: {
+          endpoint: decodedToken.tokenEndpoint,
+          insecureConnection: !decodedToken.controlEndpoint.includes(':443'),
+        },
       };
     } else if (isAllEndpoints(props.endpointOverrides)) {
       this.endpointsOverridden = true;
@@ -197,19 +236,46 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
   }
 
   getCacheEndpoint(): string {
-    return this.allEndpoints.cacheEndpoint;
+    return this.allEndpoints.cacheEndpoint.endpoint;
+  }
+
+  isCacheEndpointInsecure(): boolean {
+    return this.allEndpoints.cacheEndpoint.insecureConnection;
   }
 
   getControlEndpoint(): string {
-    return this.allEndpoints.controlEndpoint;
+    return this.allEndpoints.controlEndpoint.endpoint;
+  }
+
+  isControlEndpointInsecure(): boolean {
+    return this.allEndpoints.controlEndpoint.insecureConnection;
   }
 
   getTokenEndpoint(): string {
-    return this.allEndpoints.tokenEndpoint;
+    return this.allEndpoints.tokenEndpoint.endpoint;
+  }
+
+  isTokenEndpointInsecure(): boolean {
+    return this.allEndpoints.tokenEndpoint.insecureConnection;
   }
 
   areEndpointsOverridden(): boolean {
     return this.endpointsOverridden;
+  }
+
+  withMomentoLocal(): CredentialProvider {
+    const momentoLocalOverride = {
+      endpoint: '127.0.0.1:8080',
+      insecureConnection: true,
+    };
+    return new StringMomentoTokenProvider({
+      authToken: this.apiKey,
+      endpointOverrides: {
+        cacheEndpoint: momentoLocalOverride,
+        controlEndpoint: momentoLocalOverride,
+        tokenEndpoint: momentoLocalOverride,
+      },
+    });
   }
 }
 

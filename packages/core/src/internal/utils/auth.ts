@@ -35,9 +35,9 @@ interface TokenAndEndpoints {
 }
 
 export interface AllEndpoints {
-  controlEndpoint: string;
-  cacheEndpoint: string;
-  tokenEndpoint: string;
+  controlEndpoint: {endpoint: string; insecureConnection: boolean};
+  cacheEndpoint: {endpoint: string; insecureConnection: boolean};
+  tokenEndpoint: {endpoint: string; insecureConnection: boolean};
 }
 
 export function populateAllEndpointsFromBaseEndpoint(
@@ -48,9 +48,18 @@ export function populateAllEndpointsFromBaseEndpoint(
     prefix = `${endpointOverride.endpointPrefix}.`;
   }
   return {
-    controlEndpoint: `${prefix}control.${endpointOverride.baseEndpoint}`,
-    cacheEndpoint: `${prefix}cache.${endpointOverride.baseEndpoint}`,
-    tokenEndpoint: `${prefix}token.${endpointOverride.baseEndpoint}`,
+    controlEndpoint: {
+      endpoint: `${prefix}control.${endpointOverride.baseEndpoint}`,
+      insecureConnection: endpointOverride.insecureConnection || false,
+    },
+    cacheEndpoint: {
+      endpoint: `${prefix}cache.${endpointOverride.baseEndpoint}`,
+      insecureConnection: endpointOverride.insecureConnection || false,
+    },
+    tokenEndpoint: {
+      endpoint: `${prefix}token.${endpointOverride.baseEndpoint}`,
+      insecureConnection: endpointOverride.insecureConnection || false,
+    },
   };
 }
 
@@ -76,10 +85,13 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
       if (!base64DecodedToken.endpoint || !base64DecodedToken.api_key) {
         throw new InvalidArgumentError('failed to parse token');
       }
+      const endpoints = populateAllEndpointsFromBaseEndpoint({
+        baseEndpoint: base64DecodedToken.endpoint,
+      });
       return {
-        ...populateAllEndpointsFromBaseEndpoint({
-          baseEndpoint: base64DecodedToken.endpoint,
-        }),
+        controlEndpoint: endpoints.controlEndpoint.endpoint,
+        cacheEndpoint: endpoints.cacheEndpoint.endpoint,
+        tokenEndpoint: endpoints.tokenEndpoint.endpoint,
         authToken: base64DecodedToken.api_key,
       };
     } else {
