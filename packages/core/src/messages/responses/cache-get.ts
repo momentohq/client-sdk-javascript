@@ -15,35 +15,9 @@ interface IResponse {
 }
 
 /**
- * Parent response type for a cache get request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Hit}
- * - {Miss}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof CacheGet.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheGet.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
- */
-
-/**
  * Indicates that the requested data was successfully retrieved from the cache.  Provides
  * `value*` accessors to retrieve the data in the appropriate format.
  */
-
-// interface IGetResponse {
-//   value(): string;
-//   type: CacheGetResponse.Hit;
-// }
 export class Hit extends ResponseBase implements IResponse {
   readonly type: CacheGetResponse.Hit = CacheGetResponse.Hit;
   private readonly body: Uint8Array;
@@ -85,10 +59,6 @@ export class Hit extends ResponseBase implements IResponse {
 /**
  * Indicates that the requested data was not available in the cache.
  */
-// interface IMissResponse {
-//   value(): undefined;
-//   type: CacheGetResponse.Miss;
-// }
 export class Miss extends BaseResponseMiss implements IResponse {
   readonly type: CacheGetResponse.Miss = CacheGetResponse.Miss;
 
@@ -101,10 +71,6 @@ export class Miss extends BaseResponseMiss implements IResponse {
   }
 }
 
-// interface IErrorResponse {
-//   value(): undefined;
-//   type: CacheGetResponse.Error;
-// }
 /**
  * Indicates that an error occurred during the cache get request.
  *
@@ -127,15 +93,3 @@ export class Error extends BaseResponseError implements IResponse {
 }
 
 export type Response = Hit | Miss | Error;
-
-const miss: Response = new Miss();
-const r = miss as Response;
-
-switch (r.type) {
-  case CacheGetResponse.Miss:
-    break;
-  case CacheGetResponse.Hit:
-    break;
-  case CacheGetResponse.Error:
-    break;
-}

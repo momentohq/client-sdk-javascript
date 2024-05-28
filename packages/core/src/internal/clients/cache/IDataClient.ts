@@ -59,6 +59,7 @@ import {
   GetBatchCallOptions,
   GetCallOptions,
   SetBatchCallOptions,
+  SetBatchItem,
   SetCallOptions,
   SetIfAbsentCallOptions,
 } from '../../../utils';
@@ -140,7 +141,8 @@ export interface IDataClient {
     cacheName: string,
     items:
       | Record<string, string | Uint8Array>
-      | Map<string | Uint8Array, string | Uint8Array>,
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Array<SetBatchItem>,
     options?: SetBatchCallOptions
   ): Promise<CacheSetBatch.Response>;
   setFetch(cacheName: string, setName: string): Promise<CacheSetFetch.Response>;

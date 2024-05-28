@@ -1,12 +1,4 @@
-import {
-  CacheGet,
-  CreateCache,
-  CacheSet,
-  CacheClient,
-  Configurations,
-  CredentialProvider,
-  CacheGetResponse,
-} from '@gomomento/sdk';
+import {CacheGet, CreateCache, CacheSet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
 
 async function main() {
   const momento = await CacheClient.create({
@@ -33,35 +25,13 @@ async function main() {
   }
 
   const getResponse = await momento.get('cache', 'foo');
-  switch (getResponse.type) {
-    // case CacheGet.ResponseType.Hit:
-    //   console.log(`cache hit: ${getResponse.valueString()}`);
-    //   break;
-    // case CacheGet.ResponseType.Miss:
-    //   console.log('cache miss');
-    //   break;
-    // case CacheGet.ResponseType.Error:
-    //   console.log(`Error: ${getResponse.message()}`);
-    //   break;
-    case CacheGetResponse.Hit: {
-      console.log('hit', getResponse.valueString());
-      break;
-    }
-    case CacheGetResponse.Miss: {
-      console.log('miss', getResponse.value());
-      break;
-    }
-    case CacheGetResponse.Error: {
-      console.log('error', getResponse.message());
-    }
+  if (getResponse instanceof CacheGet.Hit) {
+    console.log(`cache hit: ${getResponse.valueString()}`);
+  } else if (getResponse instanceof CacheGet.Miss) {
+    console.log('cache miss');
+  } else if (getResponse instanceof CacheGet.Error) {
+    console.log(`Error: ${getResponse.message()}`);
   }
-  // if (getResponse instanceof CacheGet.Hit) {
-  //   console.log(`cache hit: ${getResponse.valueString()}`);
-  // } else if (getResponse instanceof CacheGet.Miss) {
-  //   console.log('cache miss');
-  // } else if (getResponse instanceof CacheGet.Error) {
-  //   console.log(`Error: ${getResponse.message()}`);
-  // }
 }
 
 main()

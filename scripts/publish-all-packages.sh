@@ -39,5 +39,6 @@ ${ROOT_DIR}/scripts/publish-package.sh "client-sdk-nodejs" "${VERSION}" "${CORE_
 ${ROOT_DIR}/scripts/wait-for-npmjs-release.sh "@gomomento/sdk" "${VERSION}"
 
 ${ROOT_DIR}/scripts/publish-package.sh "client-sdk-nodejs-compression" "${NODEJS_COMPRESSION_EXTENSIONS_VERSION}" "${CORE_VERSION}"
+${ROOT_DIR}/scripts/publish-package.sh "client-sdk-nodejs-compression-zstd" "${NODEJS_COMPRESSION_EXTENSIONS_VERSION}" "${CORE_VERSION}"
 
 ${ROOT_DIR}/scripts/publish-package.sh "client-sdk-web" "${VERSION}" "${CORE_VERSION}"

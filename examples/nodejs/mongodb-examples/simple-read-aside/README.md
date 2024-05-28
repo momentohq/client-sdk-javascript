@@ -1,8 +1,6 @@
 # Welcome to an example MongoDB + Momento Cache read-aside cache example
 
-This is a simple example of using Momento Cache as a read-aside cache for simple MongoDB calls. It could be easily modified to perform and cache more complex and repeated DB calls saving you time and money by avoiding going to MongoDB for reatable things.
-
-<img src="https://docs.momentohq.com/img/nodes.png" width='90%'>
+This is a simple example of using Momento Cache as a read-aside cache for simple MongoDB calls. It could be easily modified to perform and cache more complex and repeated DB calls saving you time and money by avoiding going to MongoDB for repeatable things.
 
 This example currently uses [jest](https://jestjs.io/) to call the example functions in the `./src` directory. This entire sample can be taken and the libraries used in your own code to build your own app.
 

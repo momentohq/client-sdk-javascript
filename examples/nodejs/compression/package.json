@@ -8,6 +8,7 @@
     "build": "tsc",
     "compression": "tsc && node dist/compression.js",
     "test": "jest",
+    "validate-examples": "tsc && node dist/compression.js",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix"
   },
@@ -26,8 +27,8 @@
     "typescript": "4.4.3"
   },
   "dependencies": {
-    "@gomomento/sdk": "^1.81.0",
-    "@gomomento/sdk-nodejs-compression": "^0.74.0"
+    "@gomomento/sdk": "^1.86.0",
+    "@gomomento/sdk-nodejs-compression": "^0.84.0"
   },
   "engines": {
     "node": ">=10.4.0"

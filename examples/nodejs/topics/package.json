@@ -8,6 +8,7 @@
     "build": "tsc",
     "topic-subscribe": "tsc && node dist/topic-subscribe.js",
     "topic-publish": "tsc && node dist/topic-publish.js",
+    "validate-examples": "echo 'Topic examples are intended to be run interactively, so, skipping execution for CI.'",
     "test": "jest",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix"
@@ -27,6 +28,6 @@
     "typescript": "4.4.3"
   },
   "dependencies": {
-    "@gomomento/sdk": "^1.81.0"
+    "@gomomento/sdk": "^1.86.0"
   }
 }

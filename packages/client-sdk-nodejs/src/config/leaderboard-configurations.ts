@@ -9,7 +9,7 @@ import {
   StaticGrpcConfiguration,
   StaticTransportStrategy,
   TransportStrategy,
-} from './transport';
+} from '../';
 import {DefaultMomentoLoggerFactory} from './logging/default-momento-logger';
 import {Middleware} from './middleware/middleware';
 

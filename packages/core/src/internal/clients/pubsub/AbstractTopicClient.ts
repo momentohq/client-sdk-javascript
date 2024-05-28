@@ -17,8 +17,19 @@ import {PutWebhookCallOptions} from '../../../utils/webhook-call-options';
 
 export abstract class AbstractTopicClient implements ITopicClient {
   protected readonly logger: MomentoLogger;
-  protected readonly pubsubClient: IPubsubClient;
+  protected readonly pubsubClients: IPubsubClient[];
   protected readonly webhookClient: IWebhookClient;
+  private nextPubsubClientIndex = 0;
+
+  protected constructor(
+    logger: MomentoLogger,
+    pubsubClients: IPubsubClient[],
+    webhookClient: IWebhookClient
+  ) {
+    this.logger = logger;
+    this.pubsubClients = pubsubClients;
+    this.webhookClient = webhookClient;
+  }
 
   /**
    * Publishes a value to a topic.
@@ -35,7 +46,11 @@ export abstract class AbstractTopicClient implements ITopicClient {
     topicName: string,
     value: string | Uint8Array
   ): Promise<TopicPublish.Response> {
-    return await this.pubsubClient.publish(cacheName, topicName, value);
+    return await this.getNextPubsubClient().publish(
+      cacheName,
+      topicName,
+      value
+    );
   }
 
   /**
@@ -55,7 +70,11 @@ export abstract class AbstractTopicClient implements ITopicClient {
     topicName: string,
     options: SubscribeCallOptions
   ): Promise<TopicSubscribe.Response> {
-    return await this.pubsubClient.subscribe(cacheName, topicName, options);
+    return await this.getNextPubsubClient().subscribe(
+      cacheName,
+      topicName,
+      options
+    );
   }
 
   /**
@@ -150,5 +169,12 @@ export abstract class AbstractTopicClient implements ITopicClient {
       cacheName,
       webhookName,
     });
+  }
+
+  protected getNextPubsubClient(): IPubsubClient {
+    const client = this.pubsubClients[this.nextPubsubClientIndex];
+    this.nextPubsubClientIndex =
+      (this.nextPubsubClientIndex + 1) % this.pubsubClients.length;
+    return client;
   }
 }

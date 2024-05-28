@@ -1,3 +1,11 @@
+<img src="https://docs.momentohq.com/img/momento-logo-forest.svg" alt="logo" width="400"/>
+
+[![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
+[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
+
+
+# Momento Javascript Web SDK - Vite Chat App Example
+
 ## About
 
 This example project is a browser-based chat application that allows pub/sub communication between your users via [Momento Topics](https://docs.momentohq.com/introduction/momento-topics). Each browser will need a Momento API key in order to communicate with the Momento Topics server, and Momento's [Token Vending Machine application](https://github.com/momentohq/client-sdk-javascript/tree/main/examples/nodejs/token-vending-machine) can provide those tokens, which can be scoped to provide permissions to only the necessary caches and topics.
@@ -13,20 +21,20 @@ In order for this project to run, you will need:
 
 First, install all dependencies:
 
-```
+```bash
 npm install
 ```
 
 Then, edit the `.env.development` file with your token vending machine url and your cache name:
 
-```
+```bash
 VITE_TOKEN_VENDING_MACHINE_URL="https://..."
 VITE_MOMENTO_CACHE_NAME="my-cache"
 ```
 
 Additionally, if you deployed your Token Vending Machine with an authentication method, you'll need to specify which method you used and the corresponding additional environment variables:
 
-```
+```bash
 VITE_TOKEN_VENDING_MACHINE_AUTH_TYPE="open|lambda|cognito"
 ```
 
@@ -50,7 +58,7 @@ Open [http://localhost:5173](http://localhost:5173) with your browser to see the
 
 If you deployed your Token Vending Machine with the Lambda Authorizer ("lambda") authentication method, you'll need to include these variables in your `.env.development` file:
 
-```
+```bash
 VITE_TOKEN_VENDING_MACHINE_USERNAME=<username>
 VITE_TOKEN_VENDING_MACHINE_PASSWORD=<password>
 ```
@@ -63,7 +71,7 @@ To demonstrate the Token Vending Machine's ability to vend different tokens to d
 
 If you deployed your Token Vending Machine with the Amazon Cognito ("cognito") authentication method, you'll need to include these additional variables in your `.env.development` file:
 
-```
+```bash
 VITE_TOKEN_VENDING_MACHINE_CLIENT_ID=<cdk-generated-client-id>
 VITE_TOKEN_VENDING_MACHINE_AWS_REGION=<your-aws-region>
 
@@ -78,7 +86,9 @@ The usernames and passwords you provide for the ReadOnly and ReadWrite roles sho
 The AWS region should match the region that you deployed the Token Vending Machine to.
 The client ID should be the string that's printed out after you deploy the CDK stack:
 
-```
+```bash
 MomentoTokenVendingMachine.UserPoolClientId = <cdk-generated-client-id>
 ```
 
+----------------------------------------------------------------------------------------
+For more info, visit our website at [https://gomomento.com](https://gomomento.com)!

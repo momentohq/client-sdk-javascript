@@ -1,14 +1,10 @@
-<head>
-  <meta name="Momento Node.js Client Library Documentation" content="Node.js client software development kit for Momento Cache">
-</head>
-<img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
+<img src="https://docs.momentohq.com/img/momento-logo-forest.svg" alt="logo" width="400"/>
 
 [![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
-[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
+[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-beta.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 
-<br>
 
-## Token Vending Machine
+# Momento Node.js SDK - Token Vending Machine Example
 
 This repo contains an example Token Vending Machine application, built using AWS CDK, API Gateway and Lambda.
 
@@ -16,7 +12,7 @@ The primary use for the Token Vending Machine is to provide temporary, restricte
 
 ## Prerequisites
 
-- Node version 14 or higher is required
+- Node version 16 or higher is required
 - To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining an API key.
 
 ## Configuring the Token Vending Machine App
@@ -43,13 +39,13 @@ You will also need a superuser API key generated from the [Momento Console](http
 
 Then run:
 
-```
+```bash
 npm run deploy -- --parameters MomentoApiKey=<YOUR_MOMENTO_API_KEY>
 ```
 
 When the command completes, you should see something like this near the end of the output:
 
-```
+```text
 Outputs:
 MomentoTokenVendingMachine.MomentoTokenVendingMachineApiEndpointE36C2123 = https://9jkmukxn68.execute-api.us-west-2.amazonaws.com/prod/
 ```
@@ -57,7 +53,7 @@ MomentoTokenVendingMachine.MomentoTokenVendingMachineApiEndpointE36C2123 = https
 This is the URL of the API Gateway endpoint for your Token Vending Machine. Now you should be able to `curl` this endpoint, and the response will be a temporary Momento API key suitable for use in a browser!
 You should see an output like:
 
-```
+```json
 {"authToken":"someShortLivedDisposableToken","expiresAt":1698119397}
 ```
 
@@ -65,13 +61,11 @@ You can also pass a tokenId as a query string to your curl command to add contex
 
 `https://9jkmukxn68.execute-api.us-west-2.amazonaws.com/prod?name=Taylor`
 
-
 ## Example Apps That Use The Token Vending Machine
 
 - [Simple Chat Application](https://github.com/momentohq/client-sdk-javascript/tree/main/examples/web/vite-chat-app) - this is a simple, static, browser-based chat application that uses the Momento Web SDK. When loaded in the browser, the app will make a request to the Token Vending Machine URL to get a token for use in communicating with the Momento Topics server.
 
-
 If you have questions or need help experimenting further, please reach out to us!
 
-
-
+----------------------------------------------------------------------------------------
+For more info, visit our website at [https://gomomento.com](https://gomomento.com)!

@@ -15,27 +15,6 @@ interface IResponse {
 }
 
 /**
- * Parent response type for a dictionary fetch request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Hit}
- * - {Miss}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof CacheDictionaryFetch.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheDictionaryFetch.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
- */
-
-/**
  * Indicates that the requested data was successfully retrieved from the cache.  Provides
  * `value*` accessors to retrieve the data in the appropriate format.
  */
@@ -56,17 +35,6 @@ export class Hit extends ResponseBase implements IResponse {
    */
   public valueMap(): Map<string, string> {
     return this.valueMapStringString();
-  }
-
-  /**
-   * Returns the data as a Map whose keys and values are byte arrays.
-   * @returns {Map<Uint8Array, Uint8Array>}
-   */
-  public valueMapUint8ArrayUint8Array(): Map<Uint8Array, Uint8Array> {
-    return this.items.reduce((acc, item) => {
-      acc.set(item.field, item.value);
-      return acc;
-    }, new Map<Uint8Array, Uint8Array>());
   }
 
   /**

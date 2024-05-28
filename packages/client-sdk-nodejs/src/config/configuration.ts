@@ -1,7 +1,6 @@
 import {RetryStrategy} from './retry/retry-strategy';
 import {Middleware} from './middleware/middleware';
-import {MomentoLoggerFactory} from '../';
-import {TransportStrategy} from './transport';
+import {MomentoLoggerFactory, TransportStrategy} from '../';
 import {ReadConcern} from '@gomomento/sdk-core';
 import {CompressionStrategy} from './compression/compression';
 
@@ -71,6 +70,17 @@ export interface Configuration {
    * @returns {Configuration} a new Configuration object with the specified TransportStrategy
    */
   withTransportStrategy(transportStrategy: TransportStrategy): Configuration;
+
+  /**
+   * Shorthand copy constructor for overriding TransportStrategy.GrpcStrategy.NumClients. This will
+   * allow you to control the number of TCP connections that the client will open to the server. Usually
+   * you should stick with the default value from your pre-built configuration, but it can be valuable
+   * to increase this value in order to ensure more evenly distributed load on Momento servers.
+   *
+   * @param {number} numConnections
+   * @returns {Configuration} a new Configuration object with the updated TransportStrategy
+   */
+  withNumConnections(numConnections: number): Configuration;
 
   /**
    * @returns {Middleware[]} the middleware functions that will wrap each request
@@ -197,6 +207,16 @@ export class CacheConfiguration implements Configuration {
       readConcern: this.readConcern,
       compression: this.compression,
     });
+  }
+
+  withNumConnections(numConnections: number): Configuration {
+    return this.withTransportStrategy(
+      this.getTransportStrategy().withGrpcConfig(
+        this.getTransportStrategy()
+          .getGrpcConfig()
+          .withNumClients(numConnections)
+      )
+    );
   }
 
   getMiddlewares(): Middleware[] {

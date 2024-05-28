@@ -70,7 +70,11 @@ import {
   CacheSetIfAbsentOrEqual,
   CacheSetSample,
 } from '../../../index';
-import {ListFetchCallOptions, ListRetainCallOptions} from '../../../utils';
+import {
+  ListFetchCallOptions,
+  ListRetainCallOptions,
+  SetBatchItem,
+} from '../../../utils';
 import {
   ICacheClient,
   SetOptions,
@@ -106,7 +110,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
   // TODO: Make pingClient required if and when the nodejs side starts adding
   //  one as well
   protected readonly pingClient?: IPingClient;
-  protected nextDataClientIndex: number;
+  private nextDataClientIndex: number;
 
   protected constructor(
     controlClient: IControlClient,
@@ -265,7 +269,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * already present it is replaced with the new value.
    *
    * @param {string} cacheName - The cache to store the values in.
-   * @param {Record<string, string | Uint8Array> | Map<string | Uint8Array, string | Uint8Array>} items - The key-value pairs to be stored.
+   * @param {Record<string, string | Uint8Array | SetBatchItem> | Map<string | Uint8Array, string | Uint8Array | SetBatchItem>} items - The key-value pairs to be stored, with the option to set a TTL per item.
    * @param {SetBatchOptions} [options]
    * @param {number} [options.ttl] - The time to live for the items in the cache.
    * Uses the client's default TTL if this is not supplied.
@@ -278,7 +282,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
     cacheName: string,
     items:
       | Record<string, string | Uint8Array>
-      | Map<string | Uint8Array, string | Uint8Array>,
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Array<SetBatchItem>,
     options?: SetBatchOptions
   ): Promise<CacheSetBatch.Response> {
     const client = this.getNextDataClient();
@@ -1626,7 +1631,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
     return await client.decreaseTtl(cacheName, key, ttlMilliseconds);
   }
 
-  protected getNextDataClient(): IDataClient {
+  private getNextDataClient(): IDataClient {
     const client = this.dataClients[this.nextDataClientIndex];
     this.nextDataClientIndex =
       (this.nextDataClientIndex + 1) % this.dataClients.length;

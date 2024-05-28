@@ -155,6 +155,7 @@ import {
 } from '@gomomento/generated-types-webtext/dist/common_pb';
 import {
   SetBatchCallOptions,
+  SetBatchItem,
   SetCallOptions,
   SetIfAbsentCallOptions,
 } from '@gomomento/sdk-core/dist/src/utils';
@@ -988,22 +989,19 @@ export class CacheDataClient<
       );
     }
     this.logger.trace(`Issuing 'getBatch' request; keys: ${keys.toString()}`);
-    const result = await this.sendGetBatch(
-      cacheName,
-      keys.map(key => convertToB64String(key))
-    );
+    const result = await this.sendGetBatch(cacheName, keys);
     this.logger.trace(`'getBatch' request result: ${result.toString()}`);
     return result;
   }
 
   private async sendGetBatch(
     cacheName: string,
-    keys: string[]
+    keys: Array<string | Uint8Array>
   ): Promise<CacheGetBatch.Response> {
     const getRequests = [];
     for (const k of keys) {
       const getRequest = new _GetRequest();
-      getRequest.setCacheKey(k);
+      getRequest.setCacheKey(convertToB64String(k));
       getRequests.push(getRequest);
     }
     const request = new _GetBatchRequest();
@@ -1056,7 +1054,8 @@ export class CacheDataClient<
     cacheName: string,
     items:
       | Record<string, string | Uint8Array>
-      | Map<string | Uint8Array, string | Uint8Array>,
+      | Map<string | Uint8Array, string | Uint8Array>
+      | Array<SetBatchItem>,
     options?: SetBatchCallOptions
   ): Promise<CacheSetBatch.Response> {
     try {
@@ -1071,31 +1070,29 @@ export class CacheDataClient<
       );
     }
 
-    const itemsToUse = this.convertSetBatchElements(items);
-
     const ttlToUse = options?.ttl || this.defaultTtlSeconds;
+    const itemsToUse = this.convertSetBatchElements(items, ttlToUse);
+
     this.logger.trace(
       `Issuing 'setBatch' request; items length: ${
         itemsToUse.length
       }, ttl: ${ttlToUse.toString()}`
     );
 
-    return await this.sendSetBatch(cacheName, itemsToUse, ttlToUse);
+    return await this.sendSetBatch(cacheName, itemsToUse);
   }
 
   private async sendSetBatch(
     cacheName: string,
-    items: Record<string, string>[],
-    ttlSeconds: number
+    items: [string, string, number][]
   ): Promise<CacheSetBatch.Response> {
     const setRequests = [];
     for (const item of items) {
+      const [key, value, ttl] = item;
       const setRequest = new _SetRequest();
-      setRequest.setCacheKey(item.key);
-      setRequest.setCacheBody(item.value);
-      setRequest.setTtlMilliseconds(
-        this.convertSecondsToMilliseconds(ttlSeconds)
-      );
+      setRequest.setCacheKey(key);
+      setRequest.setCacheBody(value);
+      setRequest.setTtlMilliseconds(this.convertSecondsToMilliseconds(ttl));
       setRequests.push(setRequest);
     }
     const request = new _SetBatchRequest();
@@ -2566,7 +2563,7 @@ export class CacheDataClient<
             items.forEach(val => {
               const fvp = new _DictionaryFieldValuePair({
                 field: val.getField_asU8(),
-                value: this.convertToUint8Array(val.getValue()),
+                value: val.getValue_asU8(),
               });
               retDict.push(fvp);
             });
@@ -3990,10 +3987,7 @@ export class CacheDataClient<
 
     this.logger.trace("Issuing 'keysExist' request");
 
-    const result = await this.sendKeysExist(
-      cacheName,
-      this.convertArrayToB64Strings(keys)
-    );
+    const result = await this.sendKeysExist(cacheName, keys);
 
     this.logger.trace(
       "'keysExist' request result: %s",
@@ -4004,10 +3998,10 @@ export class CacheDataClient<
 
   private async sendKeysExist(
     cacheName: string,
-    keys: string[]
+    keys: string[] | Uint8Array[]
   ): Promise<CacheKeysExist.Response> {
     const request = new _KeysExistRequest();
-    request.setCacheKeysList(keys);
+    request.setCacheKeysList(this.convertArrayToB64Strings(keys));
 
     return await new Promise((resolve, reject) => {
       this.clientWrapper.keysExist(
@@ -4018,7 +4012,12 @@ export class CacheDataClient<
         },
         (err, resp) => {
           if (resp) {
-            resolve(new CacheKeysExist.Success(resp.getExistsList()));
+            resolve(
+              new CacheKeysExist.Success(
+                this.convertArrayToUint8(keys),
+                resp.getExistsList()
+              )
+            );
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
@@ -4302,20 +4301,30 @@ export class CacheDataClient<
     elements:
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>
-  ): Record<string, string>[] {
-    if (elements instanceof Map) {
+      | Array<SetBatchItem>,
+    ttl: number
+  ): [string, string, number][] {
+    if (elements instanceof Array) {
+      return elements.map(element => [
+        convertToB64String(element.key),
+        convertToB64String(element.value),
+        element.ttl ?? ttl,
+      ]);
+    } else if (elements instanceof Map) {
       return [...elements.entries()].map(element => {
-        return {
-          key: convertToB64String(element[0]),
-          value: convertToB64String(element[1]),
-        };
+        return [
+          convertToB64String(element[0]),
+          convertToB64String(element[1]),
+          ttl,
+        ];
       });
     } else {
       return Object.entries(elements).map(element => {
-        return {
-          key: convertToB64String(element[0]),
-          value: convertToB64String(element[1]),
-        };
+        return [
+          convertToB64String(element[0]),
+          convertToB64String(element[1]),
+          ttl,
+        ];
       });
     }
   }
