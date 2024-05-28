@@ -117,18 +117,3 @@ export class Error extends BaseResponseError implements IResponse {
 }
 
 export type Response = Hit | Miss | Error;
-
-const miss: Response = new Miss();
-const r = miss as Response;
-
-switch (r.responseType) {
-  case ResponseType.Hit:
-    r.value();
-    break;
-  case ResponseType.Miss:
-    r.is_miss;
-    break;
-  case ResponseType.Error:
-    r.innerException();
-    break;
-}
