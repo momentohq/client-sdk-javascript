@@ -28,7 +28,7 @@ export class Error extends BaseResponseError implements IResponse {
     super(_innerException);
   }
 
-  readonly type: MomentoResponse.Error;
+  readonly type: MomentoResponse.Error = MomentoResponse.Error;
 }
 
 export type Response = Success | Error;
