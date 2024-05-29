@@ -34,10 +34,15 @@ interface TokenAndEndpoints {
   authToken: string;
 }
 
+export interface Endpoint {
+  endpoint: string;
+  secureConnection?: boolean;
+}
+
 export interface AllEndpoints {
-  controlEndpoint: {endpoint: string; secureConnection?: boolean};
-  cacheEndpoint: {endpoint: string; secureConnection?: boolean};
-  tokenEndpoint: {endpoint: string; secureConnection?: boolean};
+  controlEndpoint: Endpoint;
+  cacheEndpoint: Endpoint;
+  tokenEndpoint: Endpoint;
 }
 
 export function populateAllEndpointsFromBaseEndpoint(
