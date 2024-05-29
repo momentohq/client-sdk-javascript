@@ -329,6 +329,7 @@ jobs:
     name: Test Cache on Node ${{ matrix.node }}
     runs-on: ubuntu-24.04
     if: always()
+    timeout-minutes: 100
     env:
       MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
       TEST_SESSION_TOKEN: ${{ secrets.MOMENTO_PREPROD_SESSION_TOKEN }}
