@@ -52,15 +52,12 @@ describe('getWeb*Endpoint', () => {
       endpointOverrides: {
         controlEndpoint: {
           endpoint: 'some-control-endpoint',
-          insecureConnection: false,
         },
         cacheEndpoint: {
           endpoint: 'some-cache-endpoint',
-          insecureConnection: false,
         },
         tokenEndpoint: {
           endpoint: 'some-token-endpoint',
-          insecureConnection: false,
         },
       },
     });
@@ -77,15 +74,12 @@ describe('getWeb*Endpoint', () => {
       endpointOverrides: {
         controlEndpoint: {
           endpoint: 'https://some-control-endpoint',
-          insecureConnection: false,
         },
         cacheEndpoint: {
           endpoint: 'https://some-cache-endpoint',
-          insecureConnection: false,
         },
         tokenEndpoint: {
           endpoint: 'https://some-token-endpoint',
-          insecureConnection: false,
         },
       },
     });
@@ -103,15 +97,12 @@ describe('getWeb*Endpoint', () => {
         endpointOverrides: {
           controlEndpoint: {
             endpoint: 'some-control-endpoint:9001',
-            insecureConnection: false,
           },
           cacheEndpoint: {
             endpoint: 'some-cache-endpoint:9001',
-            insecureConnection: false,
           },
           tokenEndpoint: {
             endpoint: 'some-token-endpoint:9001',
-            insecureConnection: false,
           },
         },
       });
@@ -128,15 +119,12 @@ describe('getWeb*Endpoint', () => {
         endpointOverrides: {
           controlEndpoint: {
             endpoint: 'https://some-control-endpoint:9001',
-            insecureConnection: false,
           },
           cacheEndpoint: {
             endpoint: 'https://some-cache-endpoint:9001',
-            insecureConnection: false,
           },
           tokenEndpoint: {
             endpoint: 'https://some-token-endpoint:9001',
-            insecureConnection: false,
           },
         },
       });

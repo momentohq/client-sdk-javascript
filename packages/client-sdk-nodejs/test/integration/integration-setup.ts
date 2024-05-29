@@ -64,15 +64,15 @@ function sessionCredsProvider(): CredentialProvider {
       endpointOverrides: {
         cacheEndpoint: {
           endpoint: credsProvider().getCacheEndpoint(),
-          insecureConnection: false,
+          secureConnection: credsProvider().isCacheEndpointSecure(),
         },
         controlEndpoint: {
           endpoint: credsProvider().getControlEndpoint(),
-          insecureConnection: false,
+          secureConnection: credsProvider().isControlEndpointSecure(),
         },
         tokenEndpoint: {
           endpoint: credsProvider().getTokenEndpoint(),
-          insecureConnection: false,
+          secureConnection: credsProvider().isTokenEndpointSecure(),
         },
       },
     });

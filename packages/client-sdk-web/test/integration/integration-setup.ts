@@ -34,15 +34,15 @@ export function credsProvider(): CredentialProvider {
         endpointOverrides: {
           controlEndpoint: {
             endpoint: 'https://no-controlplane-requests-allowed:9001',
-            insecureConnection: false,
+            secureConnection: false,
           },
           cacheEndpoint: {
             endpoint: 'https://localhost:9001',
-            insecureConnection: false,
+            secureConnection: false,
           },
           tokenEndpoint: {
             endpoint: 'https://localhost:9001',
-            insecureConnection: false,
+            secureConnection: false,
           },
         },
       });
@@ -64,15 +64,15 @@ function sessionCredsProvider(): CredentialProvider {
       endpointOverrides: {
         cacheEndpoint: {
           endpoint: credsProvider().getCacheEndpoint(),
-          insecureConnection: credsProvider().isCacheEndpointInsecure(),
+          secureConnection: credsProvider().isCacheEndpointSecure(),
         },
         controlEndpoint: {
           endpoint: credsProvider().getControlEndpoint(),
-          insecureConnection: credsProvider().isControlEndpointInsecure(),
+          secureConnection: credsProvider().isControlEndpointSecure(),
         },
         tokenEndpoint: {
           endpoint: credsProvider().getTokenEndpoint(),
-          insecureConnection: credsProvider().isTokenEndpointInsecure(),
+          secureConnection: credsProvider().isTokenEndpointSecure(),
         },
       },
     });

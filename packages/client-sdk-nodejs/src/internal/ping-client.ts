@@ -38,9 +38,9 @@ export class InternalNodeGrpcPingClient {
       clientFactoryFn: () =>
         new grpcPing.PingClient(
           props.endpoint,
-          props.credentialProvider.isCacheEndpointInsecure()
-            ? ChannelCredentials.createInsecure()
-            : ChannelCredentials.createSsl()
+          props.credentialProvider.isCacheEndpointSecure()
+            ? ChannelCredentials.createSsl()
+            : ChannelCredentials.createInsecure()
         ),
       loggerFactory: props.configuration.getLoggerFactory(),
       maxIdleMillis: props.configuration

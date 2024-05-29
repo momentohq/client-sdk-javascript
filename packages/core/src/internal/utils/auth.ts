@@ -35,9 +35,9 @@ interface TokenAndEndpoints {
 }
 
 export interface AllEndpoints {
-  controlEndpoint: {endpoint: string; insecureConnection: boolean};
-  cacheEndpoint: {endpoint: string; insecureConnection: boolean};
-  tokenEndpoint: {endpoint: string; insecureConnection: boolean};
+  controlEndpoint: {endpoint: string; secureConnection?: boolean};
+  cacheEndpoint: {endpoint: string; secureConnection?: boolean};
+  tokenEndpoint: {endpoint: string; secureConnection?: boolean};
 }
 
 export function populateAllEndpointsFromBaseEndpoint(
@@ -50,15 +50,15 @@ export function populateAllEndpointsFromBaseEndpoint(
   return {
     controlEndpoint: {
       endpoint: `${prefix}control.${endpointOverride.baseEndpoint}`,
-      insecureConnection: endpointOverride.insecureConnection || false,
+      secureConnection: endpointOverride.secureConnection,
     },
     cacheEndpoint: {
       endpoint: `${prefix}cache.${endpointOverride.baseEndpoint}`,
-      insecureConnection: endpointOverride.insecureConnection || false,
+      secureConnection: endpointOverride.secureConnection,
     },
     tokenEndpoint: {
       endpoint: `${prefix}token.${endpointOverride.baseEndpoint}`,
-      insecureConnection: endpointOverride.insecureConnection || false,
+      secureConnection: endpointOverride.secureConnection,
     },
   };
 }

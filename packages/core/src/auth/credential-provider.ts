@@ -8,7 +8,7 @@ import {
 export interface BaseEndpointOverride {
   baseEndpoint: string;
   endpointPrefix?: string;
-  insecureConnection?: boolean;
+  secureConnection?: boolean;
 }
 
 export type EndpointOverrides = BaseEndpointOverride | AllEndpoints;
@@ -57,7 +57,7 @@ export abstract class CredentialProvider {
   /**
    * @returns {boolean} true if connecting to the control plane endpoint connection without TLS; false if using TLS
    */
-  abstract isControlEndpointInsecure(): boolean;
+  abstract isControlEndpointSecure(): boolean;
 
   /**
    * @returns {string} The host which the Momento client will connect to for Momento data plane operations
@@ -67,7 +67,7 @@ export abstract class CredentialProvider {
   /**
    * @returns {boolean} true if connecting to the data plane endpoint connection without TLS; false if using TLS
    */
-  abstract isCacheEndpointInsecure(): boolean;
+  abstract isCacheEndpointSecure(): boolean;
 
   /**
    * @returns {string} The host which the Momento client will connect to for Momento token operations
@@ -77,7 +77,7 @@ export abstract class CredentialProvider {
   /**
    * @returns {boolean} true if connecting to the token endpoint connection without TLS; false if using TLS
    */
-  abstract isTokenEndpointInsecure(): boolean;
+  abstract isTokenEndpointSecure(): boolean;
 
   /**
    * Modifies the instance of the credential provider to override endpoints to
@@ -114,15 +114,15 @@ abstract class CredentialProviderBase implements CredentialProvider {
 
   abstract getCacheEndpoint(): string;
 
-  abstract isCacheEndpointInsecure(): boolean;
+  abstract isCacheEndpointSecure(): boolean;
 
   abstract getControlEndpoint(): string;
 
-  abstract isControlEndpointInsecure(): boolean;
+  abstract isControlEndpointSecure(): boolean;
 
   abstract getTokenEndpoint(): string;
 
-  abstract isTokenEndpointInsecure(): boolean;
+  abstract isTokenEndpointSecure(): boolean;
 
   abstract areEndpointsOverridden(): boolean;
 
@@ -204,15 +204,12 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
       this.allEndpoints = {
         controlEndpoint: {
           endpoint: decodedToken.controlEndpoint,
-          insecureConnection: false,
         },
         cacheEndpoint: {
           endpoint: decodedToken.cacheEndpoint,
-          insecureConnection: false,
         },
         tokenEndpoint: {
           endpoint: decodedToken.tokenEndpoint,
-          insecureConnection: false,
         },
       };
     } else if (isAllEndpoints(props.endpointOverrides)) {
@@ -239,24 +236,33 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
     return this.allEndpoints.cacheEndpoint.endpoint;
   }
 
-  isCacheEndpointInsecure(): boolean {
-    return this.allEndpoints.cacheEndpoint.insecureConnection;
+  isCacheEndpointSecure(): boolean {
+    if (this.allEndpoints.cacheEndpoint.secureConnection === undefined) {
+      return true;
+    }
+    return this.allEndpoints.cacheEndpoint.secureConnection;
   }
 
   getControlEndpoint(): string {
     return this.allEndpoints.controlEndpoint.endpoint;
   }
 
-  isControlEndpointInsecure(): boolean {
-    return this.allEndpoints.controlEndpoint.insecureConnection;
+  isControlEndpointSecure(): boolean {
+    if (this.allEndpoints.controlEndpoint.secureConnection === undefined) {
+      return true;
+    }
+    return this.allEndpoints.controlEndpoint.secureConnection;
   }
 
   getTokenEndpoint(): string {
     return this.allEndpoints.tokenEndpoint.endpoint;
   }
 
-  isTokenEndpointInsecure(): boolean {
-    return this.allEndpoints.tokenEndpoint.insecureConnection;
+  isTokenEndpointSecure(): boolean {
+    if (this.allEndpoints.tokenEndpoint.secureConnection === undefined) {
+      return true;
+    }
+    return this.allEndpoints.tokenEndpoint.secureConnection;
   }
 
   areEndpointsOverridden(): boolean {
@@ -266,7 +272,7 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
   withMomentoLocal(): CredentialProvider {
     const momentoLocalOverride = {
       endpoint: '127.0.0.1:8080',
-      insecureConnection: true,
+      secureConnection: false,
     };
     return new StringMomentoTokenProvider({
       authToken: this.apiKey,

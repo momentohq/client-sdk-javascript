@@ -59,9 +59,9 @@ export class CacheControlClient {
       clientFactoryFn: () =>
         new grpcControl.ScsControlClient(
           props.credentialProvider.getControlEndpoint(),
-          props.credentialProvider.isControlEndpointInsecure()
-            ? ChannelCredentials.createInsecure()
-            : ChannelCredentials.createSsl()
+          props.credentialProvider.isControlEndpointSecure()
+            ? ChannelCredentials.createSsl()
+            : ChannelCredentials.createInsecure()
         ),
       loggerFactory: props.configuration.getLoggerFactory(),
       maxIdleMillis: props.configuration

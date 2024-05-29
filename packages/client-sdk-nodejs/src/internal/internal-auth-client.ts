@@ -80,15 +80,15 @@ export class InternalAuthClient implements IAuthClient {
     ];
     this.tokenClient = new token.token.TokenClient(
       this.creds.getTokenEndpoint(),
-      this.creds.isTokenEndpointInsecure()
-        ? ChannelCredentials.createInsecure()
-        : ChannelCredentials.createSsl()
+      this.creds.isTokenEndpointSecure()
+        ? ChannelCredentials.createSsl()
+        : ChannelCredentials.createInsecure()
     );
     this.authClient = new grpcAuth.AuthClient(
       this.creds.getControlEndpoint(),
-      this.creds.isTokenEndpointInsecure()
-        ? ChannelCredentials.createInsecure()
-        : ChannelCredentials.createSsl()
+      this.creds.isTokenEndpointSecure()
+        ? ChannelCredentials.createSsl()
+        : ChannelCredentials.createInsecure()
     );
   }
 
