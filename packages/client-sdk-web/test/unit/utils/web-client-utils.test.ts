@@ -79,7 +79,7 @@ describe('getWeb*Endpoint', () => {
           endpoint: 'https://some-cache-endpoint',
         },
         tokenEndpoint: {
-          endpoint: 'https://some-token-endpoint',
+          endpoint: 'http://some-token-endpoint',
         },
       },
     });
@@ -124,7 +124,7 @@ describe('getWeb*Endpoint', () => {
             endpoint: 'https://some-cache-endpoint:9001',
           },
           tokenEndpoint: {
-            endpoint: 'https://some-token-endpoint:9001',
+            endpoint: 'http://some-token-endpoint:9001',
           },
         },
       });
