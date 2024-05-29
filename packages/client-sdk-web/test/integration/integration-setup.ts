@@ -34,15 +34,12 @@ export function credsProvider(): CredentialProvider {
         endpointOverrides: {
           controlEndpoint: {
             endpoint: 'https://no-controlplane-requests-allowed:9001',
-            secureConnection: false,
           },
           cacheEndpoint: {
             endpoint: 'https://localhost:9001',
-            secureConnection: false,
           },
           tokenEndpoint: {
             endpoint: 'https://localhost:9001',
-            secureConnection: false,
           },
         },
       });
