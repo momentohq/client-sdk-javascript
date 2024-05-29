@@ -204,15 +204,15 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
       this.allEndpoints = {
         controlEndpoint: {
           endpoint: decodedToken.controlEndpoint,
-          insecureConnection: !decodedToken.controlEndpoint.includes(':443'),
+          insecureConnection: false,
         },
         cacheEndpoint: {
           endpoint: decodedToken.cacheEndpoint,
-          insecureConnection: !decodedToken.controlEndpoint.includes(':443'),
+          insecureConnection: false,
         },
         tokenEndpoint: {
           endpoint: decodedToken.tokenEndpoint,
-          insecureConnection: !decodedToken.controlEndpoint.includes(':443'),
+          insecureConnection: false,
         },
       };
     } else if (isAllEndpoints(props.endpointOverrides)) {
