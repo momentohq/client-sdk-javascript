@@ -3,3 +3,8 @@ export enum CacheGetResponse {
   Miss = 'Miss',
   Error = 'Error',
 }
+
+export enum CacheSetResponse {
+  Success = 'Success',
+  Error = 'Error',
+}
