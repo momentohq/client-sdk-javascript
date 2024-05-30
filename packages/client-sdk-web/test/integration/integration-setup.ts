@@ -32,9 +32,15 @@ export function credsProvider(): CredentialProvider {
       _credsProvider = CredentialProvider.fromEnvironmentVariable({
         environmentVariableName: 'MOMENTO_API_KEY',
         endpointOverrides: {
-          controlEndpoint: 'https://no-controlplane-requests-allowed:9001',
-          cacheEndpoint: 'https://localhost:9001',
-          tokenEndpoint: 'https://localhost:9001',
+          controlEndpoint: {
+            endpoint: 'https://no-controlplane-requests-allowed:9001',
+          },
+          cacheEndpoint: {
+            endpoint: 'https://localhost:9001',
+          },
+          tokenEndpoint: {
+            endpoint: 'https://localhost:9001',
+          },
         },
       });
     } else {
@@ -53,9 +59,18 @@ function sessionCredsProvider(): CredentialProvider {
       // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
       // steal them from the auth-token-based creds provider.
       endpointOverrides: {
-        cacheEndpoint: credsProvider().getCacheEndpoint(),
-        controlEndpoint: credsProvider().getControlEndpoint(),
-        tokenEndpoint: credsProvider().getTokenEndpoint(),
+        cacheEndpoint: {
+          endpoint: credsProvider().getCacheEndpoint(),
+          secureConnection: credsProvider().isCacheEndpointSecure(),
+        },
+        controlEndpoint: {
+          endpoint: credsProvider().getControlEndpoint(),
+          secureConnection: credsProvider().isControlEndpointSecure(),
+        },
+        tokenEndpoint: {
+          endpoint: credsProvider().getTokenEndpoint(),
+          secureConnection: credsProvider().isTokenEndpointSecure(),
+        },
       },
     });
   }

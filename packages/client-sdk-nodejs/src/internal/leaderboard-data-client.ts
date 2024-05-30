@@ -91,7 +91,9 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
           clientFactoryFn: () =>
             new leaderboard.LeaderboardClient(
               this.credentialProvider.getCacheEndpoint(),
-              ChannelCredentials.createSsl(),
+              this.credentialProvider.isCacheEndpointSecure()
+                ? ChannelCredentials.createSsl()
+                : ChannelCredentials.createInsecure(),
               channelOptions
             ),
           loggerFactory: this.configuration.getLoggerFactory(),
