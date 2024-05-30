@@ -18,7 +18,10 @@ is best suited for a particular environment:
 
 ## Getting Started and Documentation
 
-Documentation is available on the [Momento Docs website](https://docs.momentohq.com).
+Documentation is available on the [Momento Docs website](https://docs.momentohq.com). For information specific to a
+particular SDK, see the [Node.js SDK documentation](https://docs.momentohq.com/sdks/nodejs) or the
+[Web SDK documentation](https://docs.momentohq.com/sdks/web). We also have quickstart guides for both
+[Cache](https://docs.momentohq.com/sdks/nodejs/cache.html) and [Topics](https://docs.momentohq.com/sdks/nodejs/topics.html).
 
 ## Examples
 

@@ -125,6 +125,8 @@ export {
   MomentoLoggerFactory,
 } from './config/logging/momento-logger';
 
+export * from './messages/responses/enums';
+
 export {
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,

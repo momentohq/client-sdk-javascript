@@ -23,14 +23,14 @@ import * as crypto from 'node:crypto';
 function example_API_ConfigurationWithCompression() {
   Configurations.InRegion.Default.latest().withCompressionStrategy({
     compressorFactory: CompressorFactory.default(),
-    compressionLevel: CompressionLevel.SmallestSize,
+    compressionLevel: CompressionLevel.Balanced,
   });
 }
 
 function example_API_ConfigurationWithCompressionNoAutomatic() {
   Configurations.InRegion.Default.latest().withCompressionStrategy({
     compressorFactory: CompressorFactory.default(),
-    compressionLevel: CompressionLevel.SmallestSize,
+    compressionLevel: CompressionLevel.Balanced,
     automaticDecompression: AutomaticDecompression.Disabled,
   });
 }
@@ -46,8 +46,8 @@ async function example_API_SetWithCompression(cacheClient: CacheClient, cacheNam
   }
 }
 
-async function example_API_GetNoDecompress(cacheClient: CacheClient, cacheName: string) {
-  const result = await cacheClient.get(cacheName, 'test-key', {decompress: false});
+async function example_API_GetExplicitDecompress(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.get(cacheName, 'test-key', {decompress: true});
   if (result instanceof CacheGet.Hit) {
     console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
   } else if (result instanceof CacheGet.Miss) {
@@ -78,7 +78,7 @@ async function main() {
 
   try {
     await example_API_SetWithCompression(cacheClientWithCompression, cacheName);
-    await example_API_GetNoDecompress(cacheClientWithCompression, cacheName);
+    await example_API_GetExplicitDecompress(cacheClientWithCompression, cacheName);
   } finally {
     await cacheClientWithCompression.deleteCache(cacheName);
     cacheClientWithCompression.close();
