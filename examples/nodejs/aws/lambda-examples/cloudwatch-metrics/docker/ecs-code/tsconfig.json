@@ -14,11 +14,13 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": false,
+    "noFallthroughCasesInSwitch": true,
     "inlineSourceMap": true,
     "inlineSources": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
+    // requires the `override` keyword to override a method/property from a parent class
+    "noImplicitOverride": true,
     "typeRoots": [
       "./node_modules/@types"
     ],

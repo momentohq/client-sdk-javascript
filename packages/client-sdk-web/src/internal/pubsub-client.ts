@@ -30,11 +30,11 @@ export class PubsubClient<
 > extends AbstractPubsubClient<RpcError> {
   private readonly client: pubsub.PubsubClient;
   private readonly configuration: TopicConfiguration;
-  protected readonly credentialProvider: CredentialProvider;
+  protected override readonly credentialProvider: CredentialProvider;
   private readonly requestTimeoutMs: number;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
-  protected readonly logger: MomentoLogger;
-  protected readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
+  protected override readonly logger: MomentoLogger;
+  protected override readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly clientMetadataProvider: ClientMetadataProvider;
 
   private static readonly RST_STREAM_NO_ERROR_MESSAGE =
@@ -69,7 +69,7 @@ export class PubsubClient<
     });
   }
 
-  public getEndpoint(): string {
+  public override getEndpoint(): string {
     const endpoint = getWebCacheEndpoint(this.credentialProvider);
     this.logger.debug(`Using cache endpoint: ${endpoint}`);
     return endpoint;

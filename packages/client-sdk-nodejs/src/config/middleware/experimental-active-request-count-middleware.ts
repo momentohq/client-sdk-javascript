@@ -15,7 +15,7 @@ class ExperimentalActiveRequestCountLoggingMiddlewareRequestHandler extends Expe
     super(parent, logger, context);
   }
 
-  protected recordMetrics(): void {
+  protected override recordMetrics(): void {
     this.parent.decrementActiveRequestCount();
   }
 

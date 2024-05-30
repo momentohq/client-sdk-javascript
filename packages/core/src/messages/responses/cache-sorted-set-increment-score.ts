@@ -41,7 +41,7 @@ class _Success extends Response {
    * The new score of the element after incrementing.
    * @returns {number}
    */
-  public score(): number {
+  public override score(): number {
     return this._score;
   }
 
