@@ -16,6 +16,7 @@
     "incremental": true,
     // requires the `override` keyword to override a method/property from a parent class
     "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
     "plugins": [
       {
         "name": "next"
