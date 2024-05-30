@@ -145,7 +145,9 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
    * {@link CacheFlush.Success} on success.
    * {@link CacheFlush.Error} on failure.
    */
-  public async flushCache(cacheName: string): Promise<CacheFlush.Response> {
+  public override async flushCache(
+    cacheName: string
+  ): Promise<CacheFlush.Response> {
     return await this.notYetAbstractedControlClient.flushCache(cacheName);
   }
 }

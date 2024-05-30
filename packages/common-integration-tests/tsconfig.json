@@ -24,6 +24,7 @@
     // requires the `override` keyword to override a method/property from a parent class
     "noImplicitOverride": true
   },
+  "files": ["node_modules/jest-extended/types/index.d.ts"],
   "include": ["src/", "test/"],
   "exclude": ["node_modules", "dist", "examples/"]
 }

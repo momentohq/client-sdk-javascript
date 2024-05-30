@@ -126,7 +126,7 @@ class _Hit extends Response {
    * {valueRecordStringString}.
    * @returns {Record<string, number>}
    */
-  public value(): Record<string, number> {
+  public override value(): Record<string, number> {
     return this.valueRecord();
   }
 

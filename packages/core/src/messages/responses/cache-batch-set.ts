@@ -41,7 +41,7 @@ class _Success extends Response {
    * Returns the status for each request in the batch as a list of CacheGet.Response objects.
    * @returns {CacheSet.Response[]}
    */
-  public results(): CacheSet.Response[] {
+  public override results(): CacheSet.Response[] {
     return this.body;
   }
 }
