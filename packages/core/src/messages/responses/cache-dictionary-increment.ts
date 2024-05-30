@@ -10,7 +10,7 @@ interface IResponse {
 /**
  * Indicates a Successful dictionary increment request.
  */
-class Success extends BaseResponseSuccess implements IResponse {
+export class Success extends BaseResponseSuccess implements IResponse {
   private readonly _value: number;
   readonly type: DictionaryIncrementResponse.Success =
     DictionaryIncrementResponse.Success;
@@ -46,7 +46,7 @@ class Success extends BaseResponseSuccess implements IResponse {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-class Error extends BaseResponseError implements IResponse {
+export class Error extends BaseResponseError implements IResponse {
   readonly type: DictionaryIncrementResponse.Error =
     DictionaryIncrementResponse.Error;
   constructor(_innerException: SdkError) {
