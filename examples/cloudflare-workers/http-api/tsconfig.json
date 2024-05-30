@@ -96,6 +96,8 @@
 
 		/* Completeness */
 		// "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
-		"skipLibCheck": true /* Skip type checking all .d.ts files. */
+		"skipLibCheck": true, /* Skip type checking all .d.ts files. */
+		// requires the `override` keyword to override a method/property from a parent class
+		"noImplicitOverride": true
 	}
 }

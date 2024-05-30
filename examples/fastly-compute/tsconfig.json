@@ -14,7 +14,9 @@
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    // requires the `override` keyword to override a method/property from a parent class
+    "noImplicitOverride": true
   },
   "include": [
     "./src/**/*.js",
