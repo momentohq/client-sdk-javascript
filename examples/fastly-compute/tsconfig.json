@@ -1,4 +1,5 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "strict": true,
     "module": "ES2022",
@@ -14,10 +15,7 @@
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    // requires the `override` keyword to override a method/property from a parent class
-    "noImplicitOverride": true,
-    "noFallthroughCasesInSwitch": true
+    "skipLibCheck": true
   },
   "include": [
     "./src/**/*.js",

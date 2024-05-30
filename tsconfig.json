@@ -1,18 +1,15 @@
 {
-  "extends": "../../../../../tsconfig.json",
   "compilerOptions": {
-    "target": "ES2021",
+    "target": "ES2018",
     "module": "commonjs",
-    "lib": [
-      "es2021",
-    ],
+    "lib": ["es2018", "dom"],
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
-    "noUnusedLocals": false,
+    "noUnusedLocals": true,
     "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
@@ -20,9 +17,9 @@
     "inlineSources": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
-    "typeRoots": [
-      "./node_modules/@types"
-    ],
-    "outDir": "./dist"
-  }
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    // requires the `override` keyword to override a method/property from a parent class
+    "noImplicitOverride": true,
+  },
 }
