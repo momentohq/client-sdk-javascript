@@ -5,7 +5,6 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
-    // requires the `override` keyword to override a method/property from a parent class
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true
   },
