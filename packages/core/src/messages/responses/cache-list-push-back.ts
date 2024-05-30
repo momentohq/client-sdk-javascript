@@ -65,7 +65,7 @@ class _Error extends Response {}
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
 export class Error extends ResponseError(_Error) {
-  constructor(public _innerException: SdkError) {
+  constructor(public override _innerException: SdkError) {
     super();
   }
 }

@@ -67,7 +67,7 @@ class _Hit extends Response {
    * @return {*}  {number}
    * @memberof _Hit
    */
-  public score(): number {
+  public override score(): number {
     return this._score;
   }
 

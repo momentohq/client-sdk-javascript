@@ -56,7 +56,7 @@ class _Hit extends Response {
    * Returns the data as a utf-8 string, decoded from the underlying byte array.
    * @returns string
    */
-  public value(): string {
+  public override value(): string {
     return TEXT_DECODER.decode(this.body);
   }
 

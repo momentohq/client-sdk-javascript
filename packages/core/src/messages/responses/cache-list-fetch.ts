@@ -75,7 +75,7 @@ class _Hit extends Response {
    * for {valueListString}
    * @returns {string[]}
    */
-  public value(): string[] {
+  public override value(): string[] {
     return this.valueListString();
   }
 

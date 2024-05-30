@@ -88,8 +88,8 @@ export abstract class SdkError extends Error {
  * one that doesn't already exist
  */
 export class AlreadyExistsError extends SdkError {
-  _errorCode = MomentoErrorCode.ALREADY_EXISTS_ERROR;
-  _messageWrapper =
+  override _errorCode = MomentoErrorCode.ALREADY_EXISTS_ERROR;
+  override _messageWrapper =
     'A cache with the specified name already exists.  To resolve this error, either delete the existing cache and make a new one, or use a different name';
 }
 
@@ -97,8 +97,8 @@ export class AlreadyExistsError extends SdkError {
  * Error when authentication with Cache Service fails
  */
 export class AuthenticationError extends SdkError {
-  _errorCode = MomentoErrorCode.AUTHENTICATION_ERROR;
-  _messageWrapper =
+  override _errorCode = MomentoErrorCode.AUTHENTICATION_ERROR;
+  override _messageWrapper =
     'Invalid authentication credentials to connect to cache service';
 }
 
@@ -106,8 +106,8 @@ export class AuthenticationError extends SdkError {
  * Error raised in response to an invalid request
  */
 export class BadRequestError extends SdkError {
-  _errorCode = MomentoErrorCode.BAD_REQUEST_ERROR;
-  _messageWrapper =
+  override _errorCode = MomentoErrorCode.BAD_REQUEST_ERROR;
+  override _messageWrapper =
     'The request was invalid; please contact us at support@momentohq.com';
 }
 
@@ -115,8 +115,8 @@ export class BadRequestError extends SdkError {
  * Error when an operation with Cache Service was cancelled
  */
 export class CancelledError extends SdkError {
-  _errorCode = MomentoErrorCode.CANCELLED_ERROR;
-  _messageWrapper =
+  override _errorCode = MomentoErrorCode.CANCELLED_ERROR;
+  override _messageWrapper =
     'The request was cancelled by the server; please contact us at support@momentohq.com';
 }
 
@@ -124,15 +124,15 @@ export class CancelledError extends SdkError {
  * Error when there's a failure to connect to Momento servers.
  */
 export class ConnectionError extends SdkError {
-  _errorCode = MomentoErrorCode.CONNECTION_ERROR;
+  override _errorCode = MomentoErrorCode.CONNECTION_ERROR;
 }
 
 /**
  * Error raised when system in not in a state required for the operation's success
  */
 export class FailedPreconditionError extends SdkError {
-  _errorCode = MomentoErrorCode.FAILED_PRECONDITION_ERROR;
-  _messageWrapper =
+  override _errorCode = MomentoErrorCode.FAILED_PRECONDITION_ERROR;
+  override _messageWrapper =
     "System is not in a state required for the operation's execution";
 }
 
@@ -140,8 +140,8 @@ export class FailedPreconditionError extends SdkError {
  * Cache Service encountered an unexpected exception while trying to fulfill the request
  */
 export class InternalServerError extends SdkError {
-  _errorCode = MomentoErrorCode.INTERNAL_SERVER_ERROR;
-  _messageWrapper =
+  override _errorCode = MomentoErrorCode.INTERNAL_SERVER_ERROR;
+  override _messageWrapper =
     'An unexpected error occurred while trying to fulfill the request; please contact us at support@momentohq.com';
 }
 
@@ -149,16 +149,16 @@ export class InternalServerError extends SdkError {
  * Represents errors thrown when invalid parameters are passed to the Momento Cache
  */
 export class InvalidArgumentError extends SdkError {
-  _errorCode = MomentoErrorCode.INVALID_ARGUMENT_ERROR;
-  _messageWrapper = 'Invalid argument passed to Momento client';
+  override _errorCode = MomentoErrorCode.INVALID_ARGUMENT_ERROR;
+  override _messageWrapper = 'Invalid argument passed to Momento client';
 }
 
 /**
  * Error when calls are throttled due to request limit rate
  */
 export class LimitExceededError extends SdkError {
-  _errorCode = MomentoErrorCode.LIMIT_EXCEEDED_ERROR;
-  _messageWrapper =
+  override _errorCode = MomentoErrorCode.LIMIT_EXCEEDED_ERROR;
+  override _messageWrapper =
     'Request rate, bandwidth, or object size exceeded the limits for this account.  To resolve this error, reduce your usage as appropriate or contact us at support@momentohq.com to request a limit increase';
 }
 
@@ -167,8 +167,8 @@ export class LimitExceededError extends SdkError {
  * to get exists. If it doesn't create it first and then try again
  */
 export class NotFoundError extends SdkError {
-  _errorCode = MomentoErrorCode.NOT_FOUND_ERROR;
-  _messageWrapper =
+  override _errorCode = MomentoErrorCode.NOT_FOUND_ERROR;
+  override _messageWrapper =
     'A cache with the specified name does not exist.  To resolve this error, make sure you have created the cache before attempting to use it';
 }
 
@@ -176,8 +176,8 @@ export class NotFoundError extends SdkError {
  * Insufficient permissions to perform an operation on Cache Service
  */
 export class PermissionError extends SdkError {
-  _errorCode = MomentoErrorCode.PERMISSION_ERROR;
-  _messageWrapper =
+  override _errorCode = MomentoErrorCode.PERMISSION_ERROR;
+  override _messageWrapper =
     'Insufficient permissions to perform an operation on a cache';
 }
 
@@ -185,8 +185,8 @@ export class PermissionError extends SdkError {
  * Server was unable to handle the request.
  */
 export class ServerUnavailableError extends SdkError {
-  _errorCode = MomentoErrorCode.SERVER_UNAVAILABLE;
-  _messageWrapper =
+  override _errorCode = MomentoErrorCode.SERVER_UNAVAILABLE;
+  override _messageWrapper =
     'The server was unable to handle the request; consider retrying.  If the error persists, please contact us at support@momentohq.com';
 }
 
@@ -194,8 +194,8 @@ export class ServerUnavailableError extends SdkError {
  * Error when an operation did not complete in time
  */
 export class TimeoutError extends SdkError {
-  _errorCode = MomentoErrorCode.TIMEOUT_ERROR;
-  _messageWrapper =
+  override _errorCode = MomentoErrorCode.TIMEOUT_ERROR;
+  override _messageWrapper =
     "The client's configured timeout was exceeded; you may need to use a Configuration with more lenient timeouts";
 }
 
@@ -203,15 +203,15 @@ export class TimeoutError extends SdkError {
  * Error raised when the underlying cause in unknown
  */
 export class UnknownError extends SdkError {
-  _errorCode = MomentoErrorCode.UNKNOWN_ERROR;
-  _messageWrapper = 'Unknown error has occurred';
+  override _errorCode = MomentoErrorCode.UNKNOWN_ERROR;
+  override _messageWrapper = 'Unknown error has occurred';
 }
 
 /**
  * Error raised when the service returns an unknown response
  */
 export class UnknownServiceError extends SdkError {
-  _errorCode = MomentoErrorCode.UNKNOWN_SERVICE_ERROR;
-  _messageWrapper =
+  override _errorCode = MomentoErrorCode.UNKNOWN_SERVICE_ERROR;
+  override _messageWrapper =
     'Service returned an unknown response; please contact us at support@momentohq.com';
 }

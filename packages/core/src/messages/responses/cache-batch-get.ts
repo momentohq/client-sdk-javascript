@@ -53,7 +53,7 @@ class _Success extends Response {
    * Returns the status for each request in the batch as a list of CacheGet.Response objects.
    * @returns {CacheGet.Response[]}
    */
-  public results(): CacheGet.Response[] {
+  public override results(): CacheGet.Response[] {
     return this.items;
   }
 
@@ -63,7 +63,7 @@ class _Success extends Response {
    * {valueRecordStringString}.
    * @returns {Record<string, string>}
    */
-  public values(): Record<string, string> {
+  public override values(): Record<string, string> {
     return this.valuesRecordStringString();
   }
 

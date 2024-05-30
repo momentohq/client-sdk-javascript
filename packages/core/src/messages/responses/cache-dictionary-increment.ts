@@ -24,7 +24,7 @@ export class Success extends BaseResponseSuccess implements IResponse {
    * The new value of the element after incrementing.
    * @returns {number}
    */
-  public value(): number {
+  public override value(): number {
     return this._value;
   }
   public valueNumber(): number {

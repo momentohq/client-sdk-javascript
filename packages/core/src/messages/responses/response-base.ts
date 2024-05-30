@@ -51,7 +51,7 @@ export abstract class BaseResponseError extends ResponseBase {
     return this._innerException.errorCode();
   }
 
-  public toString(): string {
+  public override toString(): string {
     return this.message();
   }
 }
@@ -72,7 +72,7 @@ export function ResponseError<TBase extends Constructor>(Base: TBase) {
       return this._innerException.errorCode();
     }
 
-    public toString(): string {
+    public override toString(): string {
       return this.message();
     }
   };
