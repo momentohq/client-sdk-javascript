@@ -81,8 +81,6 @@ const main = async () => {
   } else if (dictionaryGetFieldResponse instanceof CacheDictionaryGetField.Error) {
     console.log(`Error getting value from dictionary: ${dictionaryGetFieldResponse.message()}`);
     process.exitCode = 1;
-  } else {
-    throw new Error(`Unexpected response: ${dictionaryGetFieldResponse.toString()}`);
   }
 
   // Get multiple values
@@ -94,8 +92,6 @@ const main = async () => {
   } else if (dictionaryGetFieldsResponse instanceof CacheDictionaryGetFields.Error) {
     console.log(`Error getting values from a dictionary: ${dictionaryGetFieldsResponse.message()}`);
     process.exitCode = 1;
-  } else {
-    throw new Error(`Unexpected response: ${dictionaryGetFieldsResponse.toString()}`);
   }
 
   // Get the whole dictionary
@@ -112,8 +108,6 @@ const main = async () => {
   } else if (dictionaryFetchResponse instanceof CacheDictionaryFetch.Error) {
     console.log(`Error while fetching ${dictionaryName}: ${dictionaryFetchResponse.message()}`);
     process.exitCode = 1;
-  } else {
-    throw new Error(`Unexpected response: ${dictionaryFetchResponse.toString()}`);
   }
 };
 

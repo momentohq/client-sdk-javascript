@@ -85,6 +85,7 @@ import * as GenerateDisposableToken from '@gomomento/sdk-core/dist/src/messages/
 // LeaderboardClient Response Types
 export {leaderboard} from '@gomomento/sdk-core';
 export * from '@gomomento/sdk-core/dist/src/messages/responses/leaderboard';
+export * from '@gomomento/sdk-core/dist/src/messages/responses/enums';
 
 import {
   ICacheClient,
