@@ -18,6 +18,7 @@ import {
   AllCaches,
   AllTopics,
 } from '@gomomento/sdk';
+import {uuid} from 'uuidv4';
 
 async function createCache(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.createCache(cacheName);
@@ -99,7 +100,7 @@ async function main() {
   });
 
   // Set up a cache
-  const CACHE_OPEN_DOOR = 'open-door';
+  const CACHE_OPEN_DOOR = `nodejs-access-control-example-${uuid()}`;
   const tokenValidForSeconds = 600;
 
   await createCache(mainCacheClient, CACHE_OPEN_DOOR);

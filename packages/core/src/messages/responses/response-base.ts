@@ -31,6 +31,31 @@ export interface IListResponseSuccess {
   listLength(): number;
 }
 
+export abstract class BaseResponseError extends ResponseBase {
+  public _innerException: SdkError;
+
+  protected constructor(innerException: SdkError) {
+    super();
+    this._innerException = innerException;
+  }
+
+  public message(): string {
+    return this._innerException.wrappedErrorMessage();
+  }
+
+  public innerException(): SdkError {
+    return this._innerException;
+  }
+
+  public errorCode(): MomentoErrorCode {
+    return this._innerException.errorCode();
+  }
+
+  public toString(): string {
+    return this.message();
+  }
+}
+
 export function ResponseError<TBase extends Constructor>(Base: TBase) {
   return class ResponseError extends Base {
     public _innerException: SdkError;
@@ -57,10 +82,18 @@ export function ResponseHit<TBase extends Constructor>(Base: TBase) {
   return class ResponseHit extends Base {};
 }
 
+export abstract class BaseResponseMiss extends ResponseBase {
+  public readonly is_miss: boolean = true;
+}
+
 export function ResponseMiss<TBase extends Constructor>(Base: TBase) {
   return class ResponseMiss extends Base {
     public readonly is_miss: boolean = true;
   };
+}
+
+export abstract class BaseResponseSuccess extends ResponseBase {
+  public readonly is_success: boolean = true;
 }
 
 export function ResponseSuccess<TBase extends Constructor>(Base: TBase) {

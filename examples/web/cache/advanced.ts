@@ -78,8 +78,6 @@ async function setGetDeleteExample() {
     logger.info('Key stored successfully!');
   } else if (setResponse instanceof CacheSet.Error) {
     logger.info(`Error setting key: ${setResponse.message()}`);
-  } else {
-    throw new Error(`Unrecognized response: ${setResponse.toString()}`);
   }
 
   const getResponse = await momento.get(cacheName, cacheKey);
@@ -89,8 +87,6 @@ async function setGetDeleteExample() {
     logger.info('cache miss');
   } else if (getResponse instanceof CacheGet.Error) {
     logger.info(`Error: ${getResponse.message()}`);
-  } else {
-    throw new Error(`Unrecognized response: ${getResponse.toString()}`);
   }
 
   const deleteResponse = await momento.delete(cacheName, cacheKey);
@@ -98,8 +94,6 @@ async function setGetDeleteExample() {
     logger.info(`Error deleting cache key: ${deleteResponse.message()}`);
   } else if (deleteResponse instanceof CacheDelete.Success) {
     logger.info('Deleted key from cache');
-  } else {
-    throw new Error(`Unrecognized response: ${deleteResponse.toString()}`);
   }
 }
 
