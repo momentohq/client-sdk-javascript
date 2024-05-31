@@ -1,48 +1,48 @@
-export enum DictionaryGetFieldsResponse {
+export enum CacheDictionaryGetFieldsResponse {
   Hit = 'Hit',
   Miss = 'Miss',
   Error = 'Error',
 }
 
-export enum DictionaryGetFieldResponse {
+export enum CacheDictionaryGetFieldResponse {
   Hit = 'Hit',
   Miss = 'Miss',
   Error = 'Error',
 }
 
-export enum DictionaryFetchResponse {
+export enum CacheDictionaryFetchResponse {
   Hit = 'Hit',
   Miss = 'Miss',
   Error = 'Error',
 }
 
-export enum DictionaryIncrementResponse {
+export enum CacheDictionaryIncrementResponse {
   Success = 'Success',
   Error = 'Error',
 }
 
-export enum DictionaryLengthResponse {
+export enum CacheDictionaryLengthResponse {
   Hit = 'Hit',
   Miss = 'Miss',
   Error = 'Error',
 }
 
-export enum DictionaryRemoveFieldResponse {
+export enum CacheDictionaryRemoveFieldResponse {
   Success = 'Success',
   Error = 'Error',
 }
 
-export enum DictionaryRemoveFieldsResponse {
+export enum CacheDictionaryRemoveFieldsResponse {
   Success = 'Success',
   Error = 'Error',
 }
 
-export enum DictionarySetFieldResponse {
+export enum CacheDictionarySetFieldResponse {
   Success = 'Success',
   Error = 'Error',
 }
 
-export enum DictionarySetFieldsResponse {
+export enum CacheDictionarySetFieldsResponse {
   Success = 'Success',
   Error = 'Error',
 }

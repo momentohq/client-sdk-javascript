@@ -1,17 +1,17 @@
 import {SdkError} from '../../errors';
 import {BaseResponseError, BaseResponseSuccess} from './response-base';
-import {DictionarySetFieldResponse} from './enums';
+import {CacheDictionarySetFieldResponse} from './enums';
 
 interface IResponse {
-  type: DictionarySetFieldResponse;
+  type: CacheDictionarySetFieldResponse;
 }
 
 /**
  * Indicates a Successful dictionary set field request.
  */
 export class Success extends BaseResponseSuccess implements IResponse {
-  readonly type: DictionarySetFieldResponse.Success =
-    DictionarySetFieldResponse.Success;
+  readonly type: CacheDictionarySetFieldResponse.Success =
+    CacheDictionarySetFieldResponse.Success;
 }
 
 /**
@@ -29,8 +29,8 @@ export class Error extends BaseResponseError implements IResponse {
     super(_innerException);
   }
 
-  readonly type: DictionarySetFieldResponse.Error =
-    DictionarySetFieldResponse.Error;
+  readonly type: CacheDictionarySetFieldResponse.Error =
+    CacheDictionarySetFieldResponse.Error;
 }
 
 export type Response = Success | Error;
