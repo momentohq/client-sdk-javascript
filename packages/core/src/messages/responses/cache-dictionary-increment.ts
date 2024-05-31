@@ -1,10 +1,10 @@
 import {SdkError} from '../../errors';
 import {BaseResponseError, BaseResponseSuccess} from './response-base';
-import {DictionaryIncrementResponse} from './enums';
+import {CacheDictionaryIncrementResponse} from './enums';
 
 interface IResponse {
   value(): number | undefined;
-  type: DictionaryIncrementResponse;
+  type: CacheDictionaryIncrementResponse;
 }
 
 /**
@@ -12,8 +12,8 @@ interface IResponse {
  */
 export class Success extends BaseResponseSuccess implements IResponse {
   private readonly _value: number;
-  readonly type: DictionaryIncrementResponse.Success =
-    DictionaryIncrementResponse.Success;
+  readonly type: CacheDictionaryIncrementResponse.Success =
+    CacheDictionaryIncrementResponse.Success;
 
   constructor(value: number) {
     super();
@@ -47,8 +47,8 @@ export class Success extends BaseResponseSuccess implements IResponse {
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
 export class Error extends BaseResponseError implements IResponse {
-  readonly type: DictionaryIncrementResponse.Error =
-    DictionaryIncrementResponse.Error;
+  readonly type: CacheDictionaryIncrementResponse.Error =
+    CacheDictionaryIncrementResponse.Error;
   constructor(_innerException: SdkError) {
     super(_innerException);
   }

@@ -695,7 +695,7 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     setName: Uint8Array,
     limit: number
-  ): Promise<CacheSetFetch.Response> {
+  ): Promise<CacheSetSample.Response> {
     const request = new grpcCache._SetSampleRequest({
       set_name: setName,
       limit: limit,

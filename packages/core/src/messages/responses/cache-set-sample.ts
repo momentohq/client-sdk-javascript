@@ -1,45 +1,26 @@
 import {
   ResponseBase,
-  ResponseError,
-  ResponseMiss,
-  ResponseHit,
+  BaseResponseMiss,
+  BaseResponseError,
 } from './response-base';
 import {SdkError} from '../../errors';
 import {truncateStringArray} from '../../internal/utils';
+import {CacheSetSampleResponse} from './enums';
 
 const TEXT_DECODER = new TextDecoder();
 
-/**
- * Parent response type for a set sample request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Hit}
- * - {Miss}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof CacheSetSample.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheSetSample.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
- */
-export abstract class Response extends ResponseBase {
-  public value(): string[] | undefined {
-    if (this instanceof Hit) {
-      return (this as Hit).value();
-    }
-    return undefined;
-  }
+interface IResponse {
+  value(): string[] | undefined;
+  type: CacheSetSampleResponse;
 }
 
-class _Hit extends Response {
+/**
+ * Indicates that the requested data was successfully retrieved from the cache.  Provides
+ * `value*` accessors to retrieve the data in the appropriate format.
+ */
+export class Hit extends ResponseBase implements IResponse {
   private readonly elements: Uint8Array[];
+  readonly type: CacheSetSampleResponse.Hit = CacheSetSampleResponse.Hit;
 
   constructor(elements: Uint8Array[]) {
     super();
@@ -77,7 +58,7 @@ class _Hit extends Response {
    * This is a convenience alias for {valueArrayString}.
    * @returns {string[]}
    */
-  public override value(): string[] {
+  public value(): string[] {
     return this.valueArrayString();
   }
 
@@ -118,21 +99,12 @@ class _Hit extends Response {
 }
 
 /**
- * Indicates that the requested data was successfully retrieved from the cache.  Provides
- * `value*` accessors to retrieve the data in the appropriate format.
- */
-export class Hit extends ResponseHit(_Hit) {}
-
-class _Miss extends Response {}
-
-/**
  * Indicates that the requested data was not available in the cache.
  */
-export class Miss extends ResponseMiss(_Miss) {}
-
-class _Error extends Response {
-  constructor(public _innerException: SdkError) {
-    super();
+export class Miss extends BaseResponseMiss implements IResponse {
+  readonly type: CacheSetSampleResponse.Miss = CacheSetSampleResponse.Miss;
+  public value(): undefined {
+    return undefined;
   }
 }
 
@@ -146,4 +118,15 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError {
+  readonly type: CacheSetSampleResponse.Error = CacheSetSampleResponse.Error;
+  constructor(_innerException: SdkError) {
+    super(_innerException);
+  }
+
+  public value(): undefined {
+    return undefined;
+  }
+}
+
+export type Response = Hit | Miss | Error;

@@ -4,11 +4,11 @@ import {
   BaseResponseMiss,
   ResponseBase,
 } from './response-base';
-import {DictionaryLengthResponse} from './enums';
+import {CacheDictionaryLengthResponse} from './enums';
 
 interface IResponse {
   value(): number | undefined;
-  type: DictionaryLengthResponse;
+  type: CacheDictionaryLengthResponse;
 }
 
 /**
@@ -34,7 +34,8 @@ export class Hit extends ResponseBase implements IResponse {
     return `${super.toString()}: length ${this._length}`;
   }
 
-  readonly type: DictionaryLengthResponse.Hit = DictionaryLengthResponse.Hit;
+  readonly type: CacheDictionaryLengthResponse.Hit =
+    CacheDictionaryLengthResponse.Hit;
 
   value(): number {
     return this._length;
@@ -45,7 +46,8 @@ export class Hit extends ResponseBase implements IResponse {
  * Indicates that the requested data was not available in the cache.
  */
 export class Miss extends BaseResponseMiss implements IResponse {
-  readonly type: DictionaryLengthResponse.Miss = DictionaryLengthResponse.Miss;
+  readonly type: CacheDictionaryLengthResponse.Miss =
+    CacheDictionaryLengthResponse.Miss;
 
   value(): undefined {
     return undefined;
@@ -67,8 +69,8 @@ export class Error extends BaseResponseError implements IResponse {
     super(_innerException);
   }
 
-  readonly type: DictionaryLengthResponse.Error =
-    DictionaryLengthResponse.Error;
+  readonly type: CacheDictionaryLengthResponse.Error =
+    CacheDictionaryLengthResponse.Error;
 
   value(): undefined {
     return undefined;

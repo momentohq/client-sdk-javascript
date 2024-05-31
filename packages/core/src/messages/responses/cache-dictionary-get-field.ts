@@ -5,13 +5,13 @@ import {
   ResponseBase,
 } from './response-base';
 import {truncateString} from '../../internal/utils';
-import {DictionaryGetFieldResponse} from './enums';
+import {CacheDictionaryGetFieldResponse} from './enums';
 
 const TEXT_DECODER = new TextDecoder();
 
 interface IResponse {
   value(): string | undefined;
-  type: DictionaryGetFieldResponse;
+  type: CacheDictionaryGetFieldResponse;
 }
 
 /**
@@ -21,8 +21,8 @@ interface IResponse {
 export class Hit extends ResponseBase implements IResponse {
   private readonly body: Uint8Array;
   private readonly field: Uint8Array;
-  readonly type: DictionaryGetFieldResponse.Hit =
-    DictionaryGetFieldResponse.Hit;
+  readonly type: CacheDictionaryGetFieldResponse.Hit =
+    CacheDictionaryGetFieldResponse.Hit;
 
   constructor(body: Uint8Array, field: Uint8Array) {
     super();
@@ -81,8 +81,8 @@ export class Hit extends ResponseBase implements IResponse {
  */
 export class Miss extends BaseResponseMiss implements IResponse {
   private readonly field: Uint8Array;
-  readonly type: DictionaryGetFieldResponse.Miss =
-    DictionaryGetFieldResponse.Miss;
+  readonly type: CacheDictionaryGetFieldResponse.Miss =
+    CacheDictionaryGetFieldResponse.Miss;
 
   constructor(field: Uint8Array) {
     super();
@@ -122,8 +122,8 @@ export class Miss extends BaseResponseMiss implements IResponse {
  */
 export class Error extends BaseResponseError implements IResponse {
   private readonly field: Uint8Array;
-  readonly type: DictionaryGetFieldResponse.Error =
-    DictionaryGetFieldResponse.Error;
+  readonly type: CacheDictionaryGetFieldResponse.Error =
+    CacheDictionaryGetFieldResponse.Error;
 
   constructor(_innerException: SdkError, field: Uint8Array) {
     super(_innerException);

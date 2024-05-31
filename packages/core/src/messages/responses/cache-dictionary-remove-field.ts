@@ -1,17 +1,17 @@
 import {SdkError} from '../../errors';
 import {BaseResponseError, BaseResponseSuccess} from './response-base';
-import {DictionaryRemoveFieldResponse} from './enums';
+import {CacheDictionaryRemoveFieldResponse} from './enums';
 
 interface IResponse {
-  type: DictionaryRemoveFieldResponse;
+  type: CacheDictionaryRemoveFieldResponse;
 }
 
 /**
  * Indicates a Successful dictionary remove field request.
  */
 export class Success extends BaseResponseSuccess implements IResponse {
-  readonly type: DictionaryRemoveFieldResponse.Success =
-    DictionaryRemoveFieldResponse.Success;
+  readonly type: CacheDictionaryRemoveFieldResponse.Success =
+    CacheDictionaryRemoveFieldResponse.Success;
 }
 
 /**
@@ -25,8 +25,8 @@ export class Success extends BaseResponseSuccess implements IResponse {
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
 export class Error extends BaseResponseError implements IResponse {
-  readonly type: DictionaryRemoveFieldResponse.Error =
-    DictionaryRemoveFieldResponse.Error;
+  readonly type: CacheDictionaryRemoveFieldResponse.Error =
+    CacheDictionaryRemoveFieldResponse.Error;
   constructor(_innerException: SdkError) {
     super(_innerException);
   }
