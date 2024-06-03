@@ -12,7 +12,7 @@ export class EventbridgeStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const { momentoApiKeyParameter, momentoApiEndpointParameter, logGroup } = this.createUtilities();
+    const { apiKeySecret, momentoApiEndpointParameter, logGroup } = this.createUtilities();
 
     // Define the DynamoDB table for the game scores
     const gameScoreDemoTable = new dynamodb.Table(this, "game-scores-demo-table", {
@@ -21,12 +21,6 @@ export class EventbridgeStack extends cdk.Stack {
       sortKey: { name: "GamerTag", type: dynamodb.AttributeType.STRING },
       stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
-    });
-
-    // Define the API key secret for the connection. The API key is stored in AWS Secrets Manager.
-    const apiKeySecret = new Secret(this, 'MomentoEventbridgeApiKey', {
-      secretName: 'momento-eventbridge-api-key',
-      secretStringValue: new cdk.SecretValue(momentoApiKeyParameter.valueAsString),
     });
 
     // Define the connection for the event bridge
@@ -158,34 +152,7 @@ export class EventbridgeStack extends cdk.Stack {
       },
     });
 
-    // Define the role policy for restricting access to the API destinations
-    const apiDestinationPolicy = new iam.PolicyStatement({
-      actions: ["events:InvokeApiDestination"],
-      resources: [cachePutCfnPipe.attrArn, cachePutApiDestination.apiDestinationArn, cacheDeleteCfnPipe.attrArn, cacheDeleteApiDestination.apiDestinationArn, topicPublishCfnPipe.attrArn, topicPublishApiDestination.apiDestinationArn],
-      effect: iam.Effect.ALLOW,
-    });
-    role.addToPolicy(apiDestinationPolicy);
-
-    // Define the role policy for accessing the DynamoDB stream
-    const dynamoDbStreamPolicy = new iam.PolicyStatement({
-      actions: [
-        "dynamodb:DescribeStream",
-        "dynamodb:GetRecords",
-        "dynamodb:GetShardIterator",
-        "dynamodb:ListStreams",
-      ],
-      effect: iam.Effect.ALLOW,
-      resources: [gameScoreDemoTable.tableStreamArn!, cachePutCfnPipe.attrArn, cacheDeleteCfnPipe.attrArn, topicPublishCfnPipe.attrArn],
-    });
-    role.addToPolicy(dynamoDbStreamPolicy);
-
-    // Define the role policy for accessing the Dead Letter Queue
-    const sqsPolicy = new iam.PolicyStatement({
-      actions: ["*"],
-      effect: iam.Effect.ALLOW,
-      resources: ["*"],
-    });
-    role.addToPolicy(sqsPolicy);
+    this.addPolicyForEventBridgeRole(role, cachePutApiDestination, cachePutCfnPipe, cacheDeleteApiDestination, cacheDeleteCfnPipe, topicPublishApiDestination, topicPublishCfnPipe, gameScoreDemoTable);
 
     // Add target parameters to the pipes
     cachePutCfnPipe.targetParameters = {
@@ -237,6 +204,12 @@ export class EventbridgeStack extends cdk.Stack {
       description: 'The API endpoint for Momento.',
     });
 
+    // Define the API key secret for the connection. The API key is stored in AWS Secrets Manager.
+    const apiKeySecret = new Secret(this, 'MomentoEventbridgeApiKey', {
+      secretName: 'momento-eventbridge-api-key',
+      secretStringValue: new cdk.SecretValue(momentoApiKeyParameter.valueAsString),
+    });
+
     // Define the log group for the access logs
     const logGroup = new logs.LogGroup(this, "AccessLogs", {
       retention: 90,
@@ -246,6 +219,37 @@ export class EventbridgeStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
-    return { momentoApiKeyParameter, momentoApiEndpointParameter, logGroup };
+    return { apiKeySecret, momentoApiEndpointParameter, logGroup };
+  }
+
+  private addPolicyForEventBridgeRole(role: iam.Role, cachePutApiDestination: events.ApiDestination, cachePutCfnPipe: pipes.CfnPipe, cacheDeleteApiDestination: events.ApiDestination, cacheDeleteCfnPipe: pipes.CfnPipe, topicPublishApiDestination: events.ApiDestination, topicPublishCfnPipe: pipes.CfnPipe, gameScoreDemoTable: dynamodb.Table) {
+    // Define the role policy for restricting access to the API destinations
+    const apiDestinationPolicy = new iam.PolicyStatement({
+      actions: ["events:InvokeApiDestination"],
+      resources: [cachePutCfnPipe.attrArn, cachePutApiDestination.apiDestinationArn, cacheDeleteCfnPipe.attrArn, cacheDeleteApiDestination.apiDestinationArn, topicPublishCfnPipe.attrArn, topicPublishApiDestination.apiDestinationArn],
+      effect: iam.Effect.ALLOW,
+    });
+    role.addToPolicy(apiDestinationPolicy);
+
+    // Define the role policy for accessing the DynamoDB stream
+    const dynamoDbStreamPolicy = new iam.PolicyStatement({
+      actions: [
+        "dynamodb:DescribeStream",
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator",
+        "dynamodb:ListStreams",
+      ],
+      effect: iam.Effect.ALLOW,
+      resources: [gameScoreDemoTable.tableStreamArn!, cachePutCfnPipe.attrArn, cacheDeleteCfnPipe.attrArn, topicPublishCfnPipe.attrArn],
+    });
+    role.addToPolicy(dynamoDbStreamPolicy);
+
+    // Define the role policy for accessing the Dead Letter Queue
+    const sqsPolicy = new iam.PolicyStatement({
+      actions: ["*"],
+      effect: iam.Effect.ALLOW,
+      resources: ["*"],
+    });
+    role.addToPolicy(sqsPolicy);
   }
 }
