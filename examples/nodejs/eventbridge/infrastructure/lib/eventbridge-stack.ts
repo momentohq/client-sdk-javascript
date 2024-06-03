@@ -33,7 +33,7 @@ export class EventbridgeStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
-    const apiKeySecret = new Secret(this, 'MomentoApiKey', {
+    const apiKeySecret = new Secret(this, 'MomentoEventbridgeApiKey', {
       secretName: 'momento-eventbridge-api-key',
       secretStringValue: new cdk.SecretValue(momentoApiKeyParameter.valueAsString),
     });

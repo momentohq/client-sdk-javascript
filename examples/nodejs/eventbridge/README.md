@@ -29,25 +29,19 @@ npm run deploy -- --parameters MomentoApiKey=<YOUR_MOMENTO_API_KEY>
 
 ## **Running the Demo:**
 
-First, install all dependencies:
+First, edit the `.env.development` file with your token vending machine url and your cache name:
 
 ```bash
-cd webapp
-npm install
-```
-
-Then, edit the `.env.development` file with your token vending machine url and your cache name:
-
-```bash
-
 VITE_APP_AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
 VITE_APP_AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
 VITE_TOKEN_VENDING_MACHINE_URL="https://..."
 ```
 
-Then, run the development server:
+Then,  install all dependencies and run the development server:
 
 ```bash
+cd webapp
+npm install
 npm run dev
 ```
 
