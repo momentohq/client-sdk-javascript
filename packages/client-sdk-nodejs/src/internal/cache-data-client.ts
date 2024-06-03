@@ -260,6 +260,21 @@ export class CacheDataClient implements IDataClient {
     return this.connectWithinDeadline(deadline);
   }
 
+  private connectionStateToString(state: ConnectivityState): string {
+    switch (state) {
+      case ConnectivityState.IDLE:
+        return 'IDLE';
+      case ConnectivityState.CONNECTING:
+        return 'CONNECTING';
+      case ConnectivityState.READY:
+        return 'READY';
+      case ConnectivityState.TRANSIENT_FAILURE:
+        return 'TRANSIENT_FAILURE';
+      case ConnectivityState.SHUTDOWN:
+        return 'SHUTDOWN';
+    }
+  }
+
   private connectWithinDeadline(deadline: Date): Promise<void> {
     return new Promise((resolve, reject) => {
       // Get the current state and initiate a connection
@@ -289,9 +304,11 @@ export class CacheDataClient implements IDataClient {
         .getChannel()
         .watchConnectivityState(currentState, deadline, (error?: Error) => {
           if (error) {
-            const errorMessage = `Unable to eagerly connect to Momento. Please contact Momento if this persists. currentState: ${currentState}, errorName: ${
-              error.name
-            } : errorMessage: ${error.message}, errorStack: ${
+            const errorMessage = `Unable to eagerly connect to Momento. Please contact Momento if this persists. currentState: ${this.connectionStateToString(
+              currentState
+            )}, errorName: ${error.name} : errorMessage: ${
+              error.message
+            }, errorStack: ${
               error.stack ? error.stack : 'Stack trace undefined'
             }`;
             this.logger.error(errorMessage);
@@ -305,15 +322,25 @@ export class CacheDataClient implements IDataClient {
             .getConnectivityState(false);
 
           if (newState === ConnectivityState.READY) {
-            this.logger.debug(`Connected! Current state: ${newState}`);
+            this.logger.debug(
+              `Connected! Current state: ${this.connectionStateToString(
+                newState
+              )}`
+            );
             resolve();
           } else if (newState === ConnectivityState.CONNECTING) {
             // The connection goes through the CONNECTING state before becoming READY,
             // so we must watch it twice.
-            this.logger.debug(`Connecting! Current state: ${newState}`);
+            this.logger.debug(
+              `Connecting! Current state: ${this.connectionStateToString(
+                newState
+              )}`
+            );
             this.connectWithinDeadline(deadline).then(resolve).catch(reject);
           } else {
-            const errorMessage = `Unable to connect to Momento: Unexpected connection state: ${newState}., oldState: ${currentState}
+            const errorMessage = `Unable to connect to Momento: Unexpected connection state: ${this.connectionStateToString(
+              newState
+            )}., oldState: ${currentState}
               Please contact Momento if this persists.`;
             this.logger.error(errorMessage);
             reject(new ConnectionError(errorMessage));
