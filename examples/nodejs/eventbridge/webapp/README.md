@@ -1,30 +1,33 @@
-# React + TypeScript + Vite
+<img src="https://docs.momentohq.com/img/momento-logo-forest.svg" alt="logo" width="400"/>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
+[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+# Momento Javascript NodeJS SDK - Momento <-> Eventbridge Project Example
 
-## Expanding the ESLint configuration
+## About
+The project demonstrates a write-through cache pattern for DynamoDB using DynamoDB Streams, AWS EventBridge and Momento.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### **Prerequisites:**
+- Momento API Key, can be created using [momento console](https://console.gomomento.com/) if you haven’t already created one
+- A deployed [Token Vending Machine](https://github.com/momentohq/client-sdk-javascript/tree/main/examples/nodejs/token-vending-machine).
+- AWS Account AccessId and Secret Key
 
-- Configure the top-level `parserOptions` property like this:
+## Getting Started
+First, edit the `.env.development` file with your token vending machine url and your aws credentials:
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+```bash
+VITE_AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
+VITE_AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
+VITE_TOKEN_VENDING_MACHINE_URL="https://..."
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+Then, install all dependencies and run the development server:
+
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) with your browser to explore the demo app.
