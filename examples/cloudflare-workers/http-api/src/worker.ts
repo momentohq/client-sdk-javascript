@@ -18,7 +18,6 @@ class MomentoFetcher {
 		} else {
 			this.baseurl = `${endpoint}/cache`;
 		}
-		this.baseurl = `${correctedEndpoint}/cache`;
 	}
 
 	async get(cacheName: string, key: string) {
