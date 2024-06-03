@@ -1,6 +1,7 @@
 # Welcome to Momento <-> Eventbridge Integration Example Project
 
 The project demonstrates a write-through cache pattern for DynamoDB using DynamoDB Streams, AWS EventBridge and Momento.
+The app can be used to create, update and delete items in a DynamoDB table and the changes will be reflected in the cache/topic in real-time.
 
 ### **Prerequisites:**
 
