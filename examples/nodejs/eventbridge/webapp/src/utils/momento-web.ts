@@ -28,15 +28,17 @@ export type Message = {
   timestamp: number;
 };
 
+const authToken = import.meta.env.VITE_MOMENTO_API_KEY;
+
 async function getNewWebClients(): Promise<MomentoClients> {
   webCacheClient = undefined;
   webTopicClient = undefined;
-  const fetchResp = await fetchTokenWithOpenAuth();
-  const token = await fetchResp.json();
+  // const fetchResp = await fetchTokenWithOpenAuth();
+  // const token = await fetchResp.json();
   const cacheClient = new CacheClient({
     configuration: Configurations.Browser.v1(),
     credentialProvider: CredentialProvider.fromString({
-      apiKey: token.authToken,
+      apiKey: authToken,
     }),
     defaultTtlSeconds: 60,
   });
@@ -44,7 +46,7 @@ async function getNewWebClients(): Promise<MomentoClients> {
   const topicClient = new TopicClient({
     configuration: Configurations.Browser.v1(),
     credentialProvider: CredentialProvider.fromString({
-      apiKey: token.authToken,
+      apiKey: authToken,
     }),
   });
   webCacheClient = cacheClient;
@@ -62,11 +64,11 @@ export const clearCurrentClient = () => {
   webTopicClient = undefined;
 };
 
-async function fetchTokenWithOpenAuth() {
-  return await fetch(import.meta.env.VITE_TOKEN_VENDING_MACHINE_URL, {
-    cache: "no-store",
-  });
-}
+// async function fetchTokenWithOpenAuth() {
+//   return await fetch(import.meta.env.VITE_TOKEN_VENDING_MACHINE_URL, {
+//     cache: "no-store",
+//   });
+// }
 
 async function getWebCacheClient(): Promise<CacheClient> {
   if (webCacheClient) {

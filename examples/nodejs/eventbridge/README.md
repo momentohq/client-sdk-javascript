@@ -5,7 +5,7 @@ The project demonstrates a write-through cache pattern for DynamoDB using Dynamo
 ### **Prerequisites:**
 
 - Momento API Key, can be created using [momento console](https://console.gomomento.com/) if you haven’t already created one
-- [Token Vending Machine](https://github.com/momentohq/client-sdk-javascript/tree/main/examples/nodejs/token-vending-machine) deployed to AWS account
+- HTTP API endpoint the same region as Momento API Key. You can copy the endpoint from the console after creating the API Key or refer to the [Regions Section here in the documentation](https://docs.momentohq.com/topics/develop/api-reference/http-api#regions)
 - AWS Account AccessId and Secret Key
 
 ### **Deploying the Demo App:**
@@ -19,12 +19,13 @@ npm install
 
 To deploy the CDK app you will need to have [configured your AWS credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-authentication.html#cli-chap-authentication-precedence).
 
-You will also need a superuser API key generated from the [Momento Console](https://console.gomomento.com/).
+You will also need a superuser API key generated from the [Momento Console](https://console.gomomento.com/), and the HTTP API endpoint URL for the region you are deploying to.
+
 
 Then run:
 
 ```tsx
-npm run deploy -- --parameters MomentoApiKey=<YOUR_MOMENTO_API_KEY>
+npm run deploy -- --parameters MomentoApiKey=<YOUR_MOMENTO_API_KEY> --parameters MomentoApiEndpoint=<YOUR_MOMENTO_API_ENDPOINT>
 ```
 
 ## **Running the Demo:**
@@ -34,7 +35,7 @@ First, edit the `.env.development` file with your token vending machine url a
 ```bash
 VITE_APP_AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
 VITE_APP_AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
-VITE_TOKEN_VENDING_MACHINE_URL="https://..."
+VITE_MOMENTO_API_KEY=<YOUR_MOMENTO_API_KEY>
 ```
 
 Then,  install all dependencies and run the development server:

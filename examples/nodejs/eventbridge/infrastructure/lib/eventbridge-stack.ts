@@ -12,11 +12,9 @@ export class EventbridgeStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const momentoApiKeyParameter = new cdk.CfnParameter(this, 'MomentoApiKey', {
-      type: 'String',
-      description: 'The API key for Momento.',
-    });
+    const { momentoApiKeyParameter, momentoApiEndpointParameter, logGroup } = this.createUtilities();
 
+    // Define the DynamoDB table for the game scores
     const gameScoreDemoTable = new dynamodb.Table(this, "game-scores-demo-table", {
       tableName: "game-scores-demo",
       partitionKey: { name: "GameId", type: dynamodb.AttributeType.STRING },
@@ -25,58 +23,59 @@ export class EventbridgeStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
-    const logGroup = new logs.LogGroup(this, "AccessLogs", {
-      retention: 90,
-      logGroupName: cdk.Fn.sub(
-        `game-scores-demo-logs-\${AWS::Region}`,
-      ),
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-    });
-
+    // Define the API key secret for the connection. The API key is stored in AWS Secrets Manager.
     const apiKeySecret = new Secret(this, 'MomentoEventbridgeApiKey', {
       secretName: 'momento-eventbridge-api-key',
       secretStringValue: new cdk.SecretValue(momentoApiKeyParameter.valueAsString),
     });
+
+    // Define the connection for the event bridge
     const connection = new events.Connection(this, 'game-scores-demo-connection', {
       connectionName: 'game-scores-demo-connection',
       authorization: events.Authorization.apiKey('Authorization', cdk.SecretValue.secretsManager(apiKeySecret.secretName)),
       description: 'Connection with API Key Authorization',
     });
 
+    // Define the API destination for the cache put operation.
     const cachePutApiDestination = new events.ApiDestination(this, "game-scores-demo-cache-put-api-destination", {
       apiDestinationName: "game-scores-demo-cache-put-api-destination",
       connection,
-      endpoint: "https://api.cache.cell-alpha-dev.preprod.a.momentohq.com/cache/*",
-      description: "Alpha Cache Set API",
+      endpoint: `${momentoApiEndpointParameter.valueAsString}/cache/*`,
+      description: "Cache Set API",
       httpMethod: events.HttpMethod.PUT,
     });
 
+    // Define the API destination for the topic publish operation
     const topicPublishApiDestination = new events.ApiDestination(this, "game-scores-demo-topic-publish-api-destination", {
       apiDestinationName: "game-scores-demo-topic-publish-api-destination",
       connection,
-      endpoint: "https://api.cache.cell-alpha-dev.preprod.a.momentohq.com/topics/*/*",
-      description: "Alpha Topic Publish API",
+      endpoint: `${momentoApiEndpointParameter.valueAsString}/topics/*/*`,
+      description: "Topic Publish API",
       httpMethod: events.HttpMethod.POST,
     });
 
+    // Define the API destination for the cache delete operation
     const cacheDeleteApiDestination = new events.ApiDestination(this, "game-scores-demo-cache-delete-api-destination", {
       apiDestinationName: "game-scores-demo-cache-delete-api-destination",
       connection,
-      endpoint: "https://api.cache.cell-alpha-dev.preprod.a.momentohq.com/cache/*",
-      description: "Alpha Cache Delete API",
+      endpoint: `${momentoApiEndpointParameter.valueAsString}/cache/*`,
+      description: "Cache Delete API",
       httpMethod: events.HttpMethod.DELETE,
     });
 
+    // Define the role for the event bridge
     const role = new iam.Role(this, "AmazonEventBridgePipeGameDemoEventToMomentoCache", {
       roleName: "AmazonEventBridgePipeGameDemoEventToMomentoCache",
       assumedBy: new iam.ServicePrincipal("pipes.amazonaws.com"),
     });
 
+    // Define the dead letter queue for inspecting failed events to event bridge
     const deadLetterQueue = new sqs.Queue(this, "DeadLetterQueue", {
       queueName: "game-scores-demo-dlq",
       retentionPeriod: cdk.Duration.days(14),
     });
 
+    // Define the pipe for the cache put operation
     const cachePutCfnPipe = new pipes.CfnPipe(this, "game-scores-demo-cache-put-pipe", {
       name: "game-scores-demo-cache-put-pipe",
       desiredState: "RUNNING",
@@ -102,6 +101,7 @@ export class EventbridgeStack extends cdk.Stack {
       },
     });
 
+    // Define the pipe for the topic publish operation
     const topicPublishCfnPipe = new pipes.CfnPipe(this, "game-scores-demo-topic-publish-pipe", {
       name: "game-scores-demo-topic-publish-pipe",
       desiredState: "RUNNING",
@@ -127,6 +127,7 @@ export class EventbridgeStack extends cdk.Stack {
       },
     });
 
+    // Define the pipe for the cache delete operation
     const cacheDeleteCfnPipe = new pipes.CfnPipe(this, "game-scores-demo-cache-delete-pipe", {
       name: "game-scores-demo-cache-delete-pipe",
       desiredState: "RUNNING",
@@ -157,6 +158,7 @@ export class EventbridgeStack extends cdk.Stack {
       },
     });
 
+    // Define the role policy for restricting access to the API destinations
     const apiDestinationPolicy = new iam.PolicyStatement({
       actions: ["events:InvokeApiDestination"],
       resources: [cachePutCfnPipe.attrArn, cachePutApiDestination.apiDestinationArn, cacheDeleteCfnPipe.attrArn, cacheDeleteApiDestination.apiDestinationArn, topicPublishCfnPipe.attrArn, topicPublishApiDestination.apiDestinationArn],
@@ -164,6 +166,7 @@ export class EventbridgeStack extends cdk.Stack {
     });
     role.addToPolicy(apiDestinationPolicy);
 
+    // Define the role policy for accessing the DynamoDB stream
     const dynamoDbStreamPolicy = new iam.PolicyStatement({
       actions: [
         "dynamodb:DescribeStream",
@@ -176,6 +179,7 @@ export class EventbridgeStack extends cdk.Stack {
     });
     role.addToPolicy(dynamoDbStreamPolicy);
 
+    // Define the role policy for accessing the Dead Letter Queue
     const sqsPolicy = new iam.PolicyStatement({
       actions: ["*"],
       effect: iam.Effect.ALLOW,
@@ -183,6 +187,7 @@ export class EventbridgeStack extends cdk.Stack {
     });
     role.addToPolicy(sqsPolicy);
 
+    // Add target parameters to the pipes
     cachePutCfnPipe.targetParameters = {
       inputTemplate: "{\n  \"level\": <$.dynamodb.NewImage.Level.N>,\n  \"score\": <$.dynamodb.NewImage.Score.N>\n}",
       httpParameters: {
@@ -210,11 +215,37 @@ export class EventbridgeStack extends cdk.Stack {
       },
     };
 
+    // Add dependencies to the pipes
     cachePutCfnPipe.node.addDependency(gameScoreDemoTable);
     cachePutCfnPipe.node.addDependency(cachePutApiDestination);
     topicPublishCfnPipe.node.addDependency(gameScoreDemoTable);
     topicPublishCfnPipe.node.addDependency(topicPublishApiDestination);
     cacheDeleteCfnPipe.node.addDependency(gameScoreDemoTable);
     cacheDeleteCfnPipe.node.addDependency(cacheDeleteApiDestination);
+  }
+
+  private createUtilities() {
+    // Define the Momento API Key parameter
+    const momentoApiKeyParameter = new cdk.CfnParameter(this, 'MomentoApiKey', {
+      type: 'String',
+      description: 'The API key for Momento.',
+    });
+
+    // Define the Momento API Endpoint parameter
+    const momentoApiEndpointParameter = new cdk.CfnParameter(this, 'MomentoApiEndpoint', {
+      type: 'String',
+      description: 'The API endpoint for Momento.',
+    });
+
+    // Define the log group for the access logs
+    const logGroup = new logs.LogGroup(this, "AccessLogs", {
+      retention: 90,
+      logGroupName: cdk.Fn.sub(
+        `game-scores-demo-logs-\${AWS::Region}`,
+      ),
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    return { momentoApiKeyParameter, momentoApiEndpointParameter, logGroup };
   }
 }

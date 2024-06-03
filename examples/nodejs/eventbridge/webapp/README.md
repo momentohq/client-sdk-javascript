@@ -11,16 +11,15 @@ The project demonstrates a write-through cache pattern for DynamoDB using Dynamo
 
 ### **Prerequisites:**
 - Momento API Key, can be created using [momento console](https://console.gomomento.com/) if you haven’t already created one
-- A deployed [Token Vending Machine](https://github.com/momentohq/client-sdk-javascript/tree/main/examples/nodejs/token-vending-machine).
 - AWS Account AccessId and Secret Key
 
 ## Getting Started
-First, edit the `.env.development` file with your token vending machine url and your aws credentials:
+First, edit the `.env.development` file (create one if not exists) with your token vending machine url and your aws credentials:
 
 ```bash
 VITE_AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
 VITE_AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
-VITE_TOKEN_VENDING_MACHINE_URL="https://..."
+VITE_MOMENTO_API_KEY=<YOUR_MOMENTO_API_KEY>
 ```
 
 Then, install all dependencies and run the development server:
