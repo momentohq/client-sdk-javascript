@@ -64,3 +64,9 @@ export enum CacheSetIfPresentAndNotEqualResponse {
   NotStored = 'NotStored',
   Error = 'Error',
 }
+
+export enum CacheSetIfNotExistsResponse {
+  Stored = 'Stored',
+  NotStored = 'NotStored',
+  Error = 'Error',
+}
