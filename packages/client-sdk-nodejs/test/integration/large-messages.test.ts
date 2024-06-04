@@ -30,7 +30,7 @@ describe('CacheClient', () => {
     }, `expected to successfully get ttl for key ${key}, received ${ttlResponse.toString()}`);
 
     const ttlValue = (ttlResponse as CacheItemGetTtl.Hit).remainingTtlMillis();
-    console.log(
+    console.warn(
       `Expecting ttl for key ${key} to be positive, received: ${ttlValue}`
     );
 
