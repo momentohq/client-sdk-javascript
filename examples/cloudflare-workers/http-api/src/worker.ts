@@ -13,7 +13,7 @@ class MomentoFetcher {
 	private readonly baseurl: string;
 	constructor(key: string, endpoint: string) {
 		this.apiKey = key;
-		if (!endpoint.startsWith('https://')) {
+		if ( !( endpoint.startsWith('https://') || endpoint.startsWith('http://') ) ) {
 			this.baseurl = `https://${endpoint}/cache`;
 		} else {
 			this.baseurl = `${endpoint}/cache`;
