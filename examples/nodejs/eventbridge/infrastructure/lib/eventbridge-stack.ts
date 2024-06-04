@@ -56,18 +56,19 @@ export class EventbridgeStack extends cdk.Stack {
       description: "Cache Delete API",
       httpMethod: events.HttpMethod.DELETE,
     });
+    // Define the dead letter queue for inspecting failed events to event bridge
+    const deadLetterQueue = new sqs.Queue(this, "DeadLetterQueue", {
+      queueName: "game-scores-demo-dlq",
+      retentionPeriod: cdk.Duration.days(14),
+    });
 
     // Define the role for the event bridge
     const role = new iam.Role(this, "AmazonEventBridgePipeGameDemoEventToMomentoCache", {
       roleName: "AmazonEventBridgePipeGameDemoEventToMomentoCache",
       assumedBy: new iam.ServicePrincipal("pipes.amazonaws.com"),
     });
+    this.addPolicyForEventBridgeRole(role, cachePutApiDestination, cacheDeleteApiDestination, topicPublishApiDestination, gameScoreDemoTable, deadLetterQueue);
 
-    // Define the dead letter queue for inspecting failed events to event bridge
-    const deadLetterQueue = new sqs.Queue(this, "DeadLetterQueue", {
-      queueName: "game-scores-demo-dlq",
-      retentionPeriod: cdk.Duration.days(14),
-    });
 
     // Define the pipe for the cache put operation
     const cachePutCfnPipe = new pipes.CfnPipe(this, "game-scores-demo-cache-put-pipe", {
@@ -152,8 +153,6 @@ export class EventbridgeStack extends cdk.Stack {
       },
     });
 
-    this.addPolicyForEventBridgeRole(role, cachePutApiDestination, cachePutCfnPipe, cacheDeleteApiDestination, cacheDeleteCfnPipe, topicPublishApiDestination, topicPublishCfnPipe, gameScoreDemoTable);
-
     // Add target parameters to the pipes
     cachePutCfnPipe.targetParameters = {
       inputTemplate: "{\n  \"level\": <$.dynamodb.NewImage.Level.N>,\n  \"score\": <$.dynamodb.NewImage.Score.N>\n}",
@@ -222,11 +221,11 @@ export class EventbridgeStack extends cdk.Stack {
     return { apiKeySecret, momentoApiEndpointParameter, logGroup };
   }
 
-  private addPolicyForEventBridgeRole(role: iam.Role, cachePutApiDestination: events.ApiDestination, cachePutCfnPipe: pipes.CfnPipe, cacheDeleteApiDestination: events.ApiDestination, cacheDeleteCfnPipe: pipes.CfnPipe, topicPublishApiDestination: events.ApiDestination, topicPublishCfnPipe: pipes.CfnPipe, gameScoreDemoTable: dynamodb.Table) {
+  private addPolicyForEventBridgeRole(role: iam.Role, cachePutApiDestination: events.ApiDestination, cacheDeleteApiDestination: events.ApiDestination, topicPublishApiDestination: events.ApiDestination, gameScoreDemoTable: dynamodb.Table, deadLetterQueue: sqs.Queue) {
     // Define the role policy for restricting access to the API destinations
     const apiDestinationPolicy = new iam.PolicyStatement({
       actions: ["events:InvokeApiDestination"],
-      resources: [cachePutCfnPipe.attrArn, cachePutApiDestination.apiDestinationArn, cacheDeleteCfnPipe.attrArn, cacheDeleteApiDestination.apiDestinationArn, topicPublishCfnPipe.attrArn, topicPublishApiDestination.apiDestinationArn],
+      resources: [cachePutApiDestination.apiDestinationArn, cacheDeleteApiDestination.apiDestinationArn, topicPublishApiDestination.apiDestinationArn],
       effect: iam.Effect.ALLOW,
     });
     role.addToPolicy(apiDestinationPolicy);
@@ -240,15 +239,20 @@ export class EventbridgeStack extends cdk.Stack {
         "dynamodb:ListStreams",
       ],
       effect: iam.Effect.ALLOW,
-      resources: [gameScoreDemoTable.tableStreamArn!, cachePutCfnPipe.attrArn, cacheDeleteCfnPipe.attrArn, topicPublishCfnPipe.attrArn],
+      resources: [gameScoreDemoTable.tableStreamArn!],
     });
     role.addToPolicy(dynamoDbStreamPolicy);
 
-    // Define the role policy for accessing the Dead Letter Queue
     const sqsPolicy = new iam.PolicyStatement({
-      actions: ["*"],
+      actions: [
+        "sqs:SendMessage",
+        "sqs:ReceiveMessage",
+        "sqs:DeleteMessage",
+        "sqs:GetQueueAttributes",
+        "sqs:GetQueueUrl"
+      ],
       effect: iam.Effect.ALLOW,
-      resources: ["*"],
+      resources: [deadLetterQueue.queueArn],
     });
     role.addToPolicy(sqsPolicy);
   }
