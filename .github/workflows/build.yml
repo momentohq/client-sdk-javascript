@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   verify:
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
@@ -327,7 +327,7 @@ jobs:
       matrix:
         node: [18]
     name: Test Cache on Node ${{ matrix.node }}
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     env:
       MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
       TEST_SESSION_TOKEN: ${{ secrets.MOMENTO_PREPROD_SESSION_TOKEN }}
@@ -558,7 +558,7 @@ jobs:
         node: [ 18 ]
       fail-fast: true
     name: Verify packages are installable on node ${{ matrix.node }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Setup repo
