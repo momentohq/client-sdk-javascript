@@ -8,31 +8,33 @@ import * as logs from "aws-cdk-lib/aws-logs";
 import * as sqs from "aws-cdk-lib/aws-sqs";
 import {Secret} from "aws-cdk-lib/aws-secretsmanager";
 
+const cacheName: string = "momento-eventbridge-cache";
+const topicName: string = "momento-eventbridge-topic";
+
 export class EventbridgeStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     const { apiKeySecret, momentoApiEndpointParameter, logGroup } = this.createUtilities();
 
-    // Define the DynamoDB table for the game scores
-    const gameScoreDemoTable = new dynamodb.Table(this, "game-scores-demo-table", {
-      tableName: "game-scores-demo",
-      partitionKey: { name: "GameId", type: dynamodb.AttributeType.STRING },
-      sortKey: { name: "GamerTag", type: dynamodb.AttributeType.STRING },
+    // Define the DynamoDB table for the weather stats demo
+    const weatherStatsDemoTable = new dynamodb.Table(this, "weather-stats-demo-table", {
+      tableName: "weather-stats-demo",
+      partitionKey: { name: "Location", type: dynamodb.AttributeType.STRING },
       stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     // Define the connection for the event bridge
-    const connection = new events.Connection(this, 'game-scores-demo-connection', {
-      connectionName: 'game-scores-demo-connection',
+    const connection = new events.Connection(this, 'weather-stats-demo-connection', {
+      connectionName: 'weather-stats-demo-connection',
       authorization: events.Authorization.apiKey('Authorization', cdk.SecretValue.secretsManager(apiKeySecret.secretName)),
       description: 'Connection with API Key Authorization',
     });
 
     // Define the API destination for the cache put operation.
-    const cachePutApiDestination = new events.ApiDestination(this, "game-scores-demo-cache-put-api-destination", {
-      apiDestinationName: "game-scores-demo-cache-put-api-destination",
+    const cachePutApiDestination = new events.ApiDestination(this, "weather-stats-demo-cache-put-api-destination", {
+      apiDestinationName: "weather-stats-demo-cache-put-api-destination",
       connection,
       endpoint: `${momentoApiEndpointParameter.valueAsString}/cache/*`,
       description: "Cache Set API",
@@ -40,8 +42,8 @@ export class EventbridgeStack extends cdk.Stack {
     });
 
     // Define the API destination for the topic publish operation
-    const topicPublishApiDestination = new events.ApiDestination(this, "game-scores-demo-topic-publish-api-destination", {
-      apiDestinationName: "game-scores-demo-topic-publish-api-destination",
+    const topicPublishApiDestination = new events.ApiDestination(this, "weather-stats-demo-topic-publish-api-destination", {
+      apiDestinationName: "weather-stats-demo-topic-publish-api-destination",
       connection,
       endpoint: `${momentoApiEndpointParameter.valueAsString}/topics/*/*`,
       description: "Topic Publish API",
@@ -49,8 +51,8 @@ export class EventbridgeStack extends cdk.Stack {
     });
 
     // Define the API destination for the cache delete operation
-    const cacheDeleteApiDestination = new events.ApiDestination(this, "game-scores-demo-cache-delete-api-destination", {
-      apiDestinationName: "game-scores-demo-cache-delete-api-destination",
+    const cacheDeleteApiDestination = new events.ApiDestination(this, "weather-stats-demo-cache-delete-api-destination", {
+      apiDestinationName: "weather-stats-demo-cache-delete-api-destination",
       connection,
       endpoint: `${momentoApiEndpointParameter.valueAsString}/cache/*`,
       description: "Cache Delete API",
@@ -58,23 +60,23 @@ export class EventbridgeStack extends cdk.Stack {
     });
     // Define the dead letter queue for inspecting failed events to event bridge
     const deadLetterQueue = new sqs.Queue(this, "DeadLetterQueue", {
-      queueName: "game-scores-demo-dlq",
+      queueName: "weather-stats-demo-dlq",
       retentionPeriod: cdk.Duration.days(14),
     });
 
     // Define the role for the event bridge
-    const role = new iam.Role(this, "AmazonEventBridgePipeGameDemoEventToMomentoCache", {
-      roleName: "AmazonEventBridgePipeGameDemoEventToMomentoCache",
+    const role = new iam.Role(this, "AmazonEventBridgePipeWeatherStatsDemoEventToMomentoCache", {
+      roleName: "AmazonEventBridgePipeWeatherStatsDemoEventToMomentoCache",
       assumedBy: new iam.ServicePrincipal("pipes.amazonaws.com"),
     });
-    this.addPolicyForEventBridgeRole(role, cachePutApiDestination, cacheDeleteApiDestination, topicPublishApiDestination, gameScoreDemoTable, deadLetterQueue);
+    this.addPolicyForEventBridgeRole(role, cachePutApiDestination, cacheDeleteApiDestination, topicPublishApiDestination, weatherStatsDemoTable, deadLetterQueue);
 
 
     // Define the pipe for the cache put operation
-    const cachePutCfnPipe = new pipes.CfnPipe(this, "game-scores-demo-cache-put-pipe", {
-      name: "game-scores-demo-cache-put-pipe",
+    const cachePutCfnPipe = new pipes.CfnPipe(this, "weather-stats-demo-cache-put-pipe", {
+      name: "weather-stats-demo-cache-put-pipe",
       desiredState: "RUNNING",
-      source: gameScoreDemoTable.tableStreamArn!,
+      source: weatherStatsDemoTable.tableStreamArn!,
       sourceParameters: {
         dynamoDbStreamParameters: {
           batchSize: 1,
@@ -83,6 +85,11 @@ export class EventbridgeStack extends cdk.Stack {
           deadLetterConfig: {
             arn: deadLetterQueue.queueArn,
           },
+        },
+        filterCriteria: {
+          filters: [{
+            pattern: '{"eventName": ["INSERT", "MODIFY"]}',
+          }],
         },
       },
       target: cachePutApiDestination.apiDestinationArn!,
@@ -97,10 +104,10 @@ export class EventbridgeStack extends cdk.Stack {
     });
 
     // Define the pipe for the topic publish operation
-    const topicPublishCfnPipe = new pipes.CfnPipe(this, "game-scores-demo-topic-publish-pipe", {
-      name: "game-scores-demo-topic-publish-pipe",
+    const topicPublishCfnPipe = new pipes.CfnPipe(this, "weather-stats-demo-topic-publish-pipe", {
+      name: "weather-stats-demo-topic-publish-pipe",
       desiredState: "RUNNING",
-      source: gameScoreDemoTable.tableStreamArn!,
+      source: weatherStatsDemoTable.tableStreamArn!,
       sourceParameters: {
         dynamoDbStreamParameters: {
           batchSize: 1,
@@ -123,10 +130,10 @@ export class EventbridgeStack extends cdk.Stack {
     });
 
     // Define the pipe for the cache delete operation
-    const cacheDeleteCfnPipe = new pipes.CfnPipe(this, "game-scores-demo-cache-delete-pipe", {
-      name: "game-scores-demo-cache-delete-pipe",
+    const cacheDeleteCfnPipe = new pipes.CfnPipe(this, "weather-stats-demo-cache-delete-pipe", {
+      name: "weather-stats-demo-cache-delete-pipe",
       desiredState: "RUNNING",
-      source: gameScoreDemoTable.tableStreamArn!,
+      source: weatherStatsDemoTable.tableStreamArn!,
       sourceParameters: {
         dynamoDbStreamParameters: {
           batchSize: 1,
@@ -155,38 +162,38 @@ export class EventbridgeStack extends cdk.Stack {
 
     // Add target parameters to the pipes
     cachePutCfnPipe.targetParameters = {
-      inputTemplate: "{\n  \"level\": <$.dynamodb.NewImage.Level.N>,\n  \"score\": <$.dynamodb.NewImage.Score.N>\n}",
+      inputTemplate: "{\n  \"Location\": <$.dynamodb.Keys.Location.S>, \n  \"Max Temp (°F)\": <$.dynamodb.NewImage.MaxTemp.N>,\n  \"Min Temp (°F)\": <$.dynamodb.NewImage.MinTemp.N>, \n  \"Chances of Precipitation (%)\": <$.dynamodb.NewImage.ChancesOfPrecipitation.N>\n}",
       httpParameters: {
-        pathParameterValues: ["$.dynamodb.Keys.GameId.S"],
+        pathParameterValues: [cacheName],
         queryStringParameters: {
-          key: "$.dynamodb.Keys.GamerTag.S",
-          ttl_seconds: "60",
+          key: "$.dynamodb.Keys.Location.S",
+          ttl_seconds: "120",
         },
       },
     };
 
     topicPublishCfnPipe.targetParameters = {
-      inputTemplate: "{\n  \"level\": <$.dynamodb.NewImage.Level.N>,\n  \"score\": <$.dynamodb.NewImage.Score.N>\n}",
+      inputTemplate: "{\n  \"Location\": <$.dynamodb.Keys.Location.S>, \n  \"Max Temp (°F)\": <$.dynamodb.NewImage.MaxTemp.N>,\n  \"Min Temp (°F)\": <$.dynamodb.NewImage.MinTemp.N>, \n  \"Chances of Precipitation (%)\": <$.dynamodb.NewImage.ChancesOfPrecipitation.N>\n}",
       httpParameters: {
-        pathParameterValues: ["$.dynamodb.Keys.GameId.S", "$.dynamodb.Keys.GamerTag.S"],
+        pathParameterValues: [cacheName, topicName],
       },
     };
 
     cacheDeleteCfnPipe.targetParameters = {
       httpParameters: {
-        pathParameterValues: ["$.dynamodb.Keys.GameId.S"],
+        pathParameterValues: [cacheName],
         queryStringParameters: {
-          key: "$.dynamodb.Keys.GamerTag.S"
+          key: "$.dynamodb.Keys.Location.S"
         },
       },
     };
 
     // Add dependencies to the pipes
-    cachePutCfnPipe.node.addDependency(gameScoreDemoTable);
+    cachePutCfnPipe.node.addDependency(weatherStatsDemoTable);
     cachePutCfnPipe.node.addDependency(cachePutApiDestination);
-    topicPublishCfnPipe.node.addDependency(gameScoreDemoTable);
+    topicPublishCfnPipe.node.addDependency(weatherStatsDemoTable);
     topicPublishCfnPipe.node.addDependency(topicPublishApiDestination);
-    cacheDeleteCfnPipe.node.addDependency(gameScoreDemoTable);
+    cacheDeleteCfnPipe.node.addDependency(weatherStatsDemoTable);
     cacheDeleteCfnPipe.node.addDependency(cacheDeleteApiDestination);
   }
 
@@ -213,7 +220,7 @@ export class EventbridgeStack extends cdk.Stack {
     const logGroup = new logs.LogGroup(this, "AccessLogs", {
       retention: 90,
       logGroupName: cdk.Fn.sub(
-        `game-scores-demo-logs-\${AWS::Region}`,
+        `weather-stats-demo-logs-\${AWS::Region}`,
       ),
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
@@ -221,7 +228,7 @@ export class EventbridgeStack extends cdk.Stack {
     return { apiKeySecret, momentoApiEndpointParameter, logGroup };
   }
 
-  private addPolicyForEventBridgeRole(role: iam.Role, cachePutApiDestination: events.ApiDestination, cacheDeleteApiDestination: events.ApiDestination, topicPublishApiDestination: events.ApiDestination, gameScoreDemoTable: dynamodb.Table, deadLetterQueue: sqs.Queue) {
+  private addPolicyForEventBridgeRole(role: iam.Role, cachePutApiDestination: events.ApiDestination, cacheDeleteApiDestination: events.ApiDestination, topicPublishApiDestination: events.ApiDestination, weatherStatsDemoTable: dynamodb.Table, deadLetterQueue: sqs.Queue) {
     // Define the role policy for restricting access to the API destinations
     const apiDestinationPolicy = new iam.PolicyStatement({
       actions: ["events:InvokeApiDestination"],
@@ -239,7 +246,7 @@ export class EventbridgeStack extends cdk.Stack {
         "dynamodb:ListStreams",
       ],
       effect: iam.Effect.ALLOW,
-      resources: [gameScoreDemoTable.tableStreamArn!],
+      resources: [weatherStatsDemoTable.tableStreamArn!],
     });
     role.addToPolicy(dynamoDbStreamPolicy);
 

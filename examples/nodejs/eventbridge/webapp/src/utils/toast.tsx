@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 const defaultToastOptions = {
   hideProgressBar: true,
   position: "top-center",
-  autoClose: 3000,
+  autoClose: 2000,
 } as const;
 
 const toastSuccess = (message: string) => {

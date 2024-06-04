@@ -1,6 +1,6 @@
 import {
   CacheClient,
-  CacheGet,
+  CacheGet, CacheItemGetTtl,
   Configurations,
   CredentialProvider,
   TopicClient,
@@ -8,6 +8,9 @@ import {
   TopicSubscribe,
 } from "@gomomento/sdk-web";
 import { toastError } from "./toast.tsx";
+
+export const cacheName = "momento-eventbridge-cache";
+export const topicName = "momento-eventbridge-topic";
 
 let webCacheClient: CacheClient | undefined = undefined;
 let webTopicClient: TopicClient | undefined = undefined;
@@ -89,7 +92,6 @@ async function getWebTopicClient(): Promise<TopicClient> {
 }
 
 export async function getItemFromCache(
-  cacheName: string,
   key: string,
 ): Promise<string | undefined> {
   const cacheClient = await getWebCacheClient();
@@ -108,9 +110,24 @@ export async function getItemFromCache(
   }
 }
 
+export async function getRemainingTtl(key: string): Promise<number | undefined> {
+  const cacheClient = await getWebCacheClient();
+  const resp = await cacheClient.itemGetTtl(cacheName, key);
+  if (resp instanceof CacheItemGetTtl.Hit) {
+    return resp.remainingTtlMillis();
+  } else if (resp instanceof CacheItemGetTtl.Miss) {
+    console.log("cache miss");
+    return undefined;
+  } else {
+    clearCurrentClient();
+    toastError(`Error getting cache: ${(resp as CacheItemGetTtl.Error).message()}`);
+    throw new Error(
+      `Error getting cache: ${(resp as CacheItemGetTtl.Error).message()}`,
+    );
+  }
+}
+
 export async function subscribeToTopic(
-  cacheName: string,
-  topicName: string,
   onItem: (item: TopicItem) => void,
   onError: (
     error: TopicSubscribe.Error,
