@@ -1,43 +1,40 @@
 import {SdkError} from '../../errors';
 import {
+  BaseResponseError,
+  BaseResponseMiss,
   ResponseBase,
-  ResponseError,
-  ResponseHit,
-  ResponseMiss,
 } from './response-base';
+import {CacheListLengthResponse} from './enums';
+
+interface IResponse {
+  value(): number | undefined;
+  type: CacheListLengthResponse;
+}
 
 /**
- * Parent response type for a list length request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Hit}
- * - {Miss}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof CacheListLength.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheListLength.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
+ * Indicates that the requested list was successfully retrieved from the cache.
+ * Provides `value` and `length` accessors to retrieve the length of the list.
  */
-export abstract class Response extends ResponseBase {}
-
-class _Hit extends Response {
+export class Hit extends ResponseBase implements IResponse {
+  readonly type: CacheListLengthResponse.Hit = CacheListLengthResponse.Hit;
   private readonly _length: number;
+
   constructor(length: number) {
     super();
     this._length = length;
   }
 
   /**
-   * Returns the length of the list
-   * @returns {number}
+   * Returns the length of the list.
+   * @returns number
+   */
+  public value(): number {
+    return this._length;
+  }
+
+  /**
+   * Returns the length of the list.
+   * @returns number
    */
   public length(): number {
     return this._length;
@@ -49,21 +46,17 @@ class _Hit extends Response {
 }
 
 /**
- * Indicates that the requested data was successfully retrieved from the cache.  Provides
- * `value*` accessors to retrieve the data in the appropriate format.
+ * Indicates that the requested list was not available in the cache.
  */
-export class Hit extends ResponseHit(_Hit) {}
+export class Miss extends BaseResponseMiss implements IResponse {
+  readonly type: CacheListLengthResponse.Miss = CacheListLengthResponse.Miss;
 
-class _Miss extends Response {}
-
-/**
- * Indicates that the requested data was not available in the cache.
- */
-export class Miss extends ResponseMiss(_Miss) {}
-
-class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
+  constructor() {
     super();
+  }
+
+  value(): undefined {
+    return undefined;
   }
 }
 
@@ -77,4 +70,16 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  readonly type: CacheListLengthResponse.Error = CacheListLengthResponse.Error;
+
+  constructor(_innerException: SdkError) {
+    super(_innerException);
+  }
+
+  value(): undefined {
+    return undefined;
+  }
+}
+
+export type Response = Hit | Miss | Error;
