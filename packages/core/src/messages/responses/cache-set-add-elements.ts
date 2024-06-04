@@ -1,48 +1,21 @@
-import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
+import {BaseResponseError, BaseResponseSuccess} from './response-base';
 import {SdkError} from '../../errors';
 import * as CacheSetAddElement from './cache-set-add-element';
+import {CacheSetAddElementsResponse} from './enums';
 
-/**
- * Parent response type for a set add elements request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Success}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof CacheSetAddElements.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheSetAddElements.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
- */
-export abstract class Response extends ResponseBase {
-  abstract toSingularResponse(): CacheSetAddElement.Response;
-}
-
-class _Success extends Response {
-  toSingularResponse(): CacheSetAddElement.Response {
-    return new CacheSetAddElement.Success();
-  }
+interface IResponse {
+  type: CacheSetAddElementsResponse;
+  toSingularResponse(): CacheSetAddElement.Response;
 }
 
 /**
  * Indicates a Successful set add elements request.
  */
-export class Success extends ResponseSuccess(_Success) {}
-
-class _Error extends Response {
-  constructor(public _innerException: SdkError) {
-    super();
-  }
-
-  toSingularResponse(): CacheSetAddElement.Response {
-    return new CacheSetAddElement.Error(this._innerException);
+export class Success extends BaseResponseSuccess implements IResponse {
+  readonly type: CacheSetAddElementsResponse.Success =
+    CacheSetAddElementsResponse.Success;
+  toSingularResponse(): CacheSetAddElement.Success {
+    return new CacheSetAddElement.Success();
   }
 }
 
@@ -56,4 +29,16 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  readonly type: CacheSetAddElementsResponse.Error =
+    CacheSetAddElementsResponse.Error;
+  constructor(_innerException: SdkError) {
+    super(_innerException);
+  }
+
+  toSingularResponse(): CacheSetAddElement.Error {
+    return new CacheSetAddElement.Error(this._innerException);
+  }
+}
+
+export type Response = Success | Error;
