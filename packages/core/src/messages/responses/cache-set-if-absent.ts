@@ -1,50 +1,29 @@
 import {SdkError} from '../../errors';
-import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
+import {BaseResponseError, BaseResponseSuccess} from './response-base';
+import {CacheSetIfAbsentResponse} from './enums';
 
-/**
- * Parent response type for a cache setIfAbsent request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Stored}
- * - {NotStored}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof CacheSetIfAbsent.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheSetIfAbsent.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
- */
-export abstract class Response extends ResponseBase {}
-
-class _Stored extends Response {}
+interface IResponse {
+  type: CacheSetIfAbsentResponse;
+}
 
 /**
  * Indicates the key did not exist and the value was set.
  */
-export class Stored extends ResponseSuccess(_Stored) {}
-
-class _NotStored extends Response {}
-
-/**
- * Indicates the key existed and no value was set.
- */
-export class NotStored extends ResponseSuccess(_NotStored) {}
-
-class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
-    super();
-  }
+export class Stored extends BaseResponseSuccess implements IResponse {
+  readonly type: CacheSetIfAbsentResponse.Stored =
+    CacheSetIfAbsentResponse.Stored;
 }
 
 /**
- * Indicates that an error occurred during the cache setIfAbsent request.
+ * Indicates the key already exists and no value was set.
+ */
+export class NotStored extends BaseResponseSuccess implements IResponse {
+  readonly type: CacheSetIfAbsentResponse.NotStored =
+    CacheSetIfAbsentResponse.NotStored;
+}
+
+/**
+ * Indicates that an error occurred during the setIfNotExists request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:
@@ -53,4 +32,13 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  constructor(_innerException: SdkError) {
+    super(_innerException);
+  }
+
+  readonly type: CacheSetIfAbsentResponse.Error =
+    CacheSetIfAbsentResponse.Error;
+}
+
+export type Response = Stored | NotStored | Error;
