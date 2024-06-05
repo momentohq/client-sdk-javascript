@@ -10,6 +10,7 @@
 The project demonstrates a write-through cache pattern for DynamoDB using DynamoDB Streams, AWS EventBridge and Momento.
 
 ### **Prerequisites:**
+- Momento Cache: momento-eventbridge-cache. If cache does not exists, can create one using the [momento console](https://console.gomomento.com/) .
 - Momento API Key, can be created using [momento console](https://console.gomomento.com/) if you haven’t already created one
 - AWS Account AccessId, AWS Secret Key (and AWS Session Token if you are using temporary credentials)
 
