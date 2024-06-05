@@ -1,5 +1,5 @@
 import {SdkError} from '../../errors';
-import {BaseResponseError, BaseResponseSuccess} from './response-base';
+import {BaseResponseError, ResponseBase} from './response-base';
 import {CacheSetIfPresentAndNotEqualResponse} from './enums';
 
 interface IResponse {
@@ -9,7 +9,7 @@ interface IResponse {
 /**
  * Indicates the new value was set because the key already exists and the existing item was not equal to the supplied `notEqual` value.
  */
-export class Stored extends BaseResponseSuccess implements IResponse {
+export class Stored extends ResponseBase implements IResponse {
   readonly type: CacheSetIfPresentAndNotEqualResponse.Stored =
     CacheSetIfPresentAndNotEqualResponse.Stored;
 }
@@ -17,7 +17,7 @@ export class Stored extends BaseResponseSuccess implements IResponse {
 /**
  * Indicates that no value was set because the key did not exist or the existing item was equal to the supplied `notEqual` value.
  */
-export class NotStored extends BaseResponseSuccess implements IResponse {
+export class NotStored extends ResponseBase implements IResponse {
   readonly type: CacheSetIfPresentAndNotEqualResponse.NotStored =
     CacheSetIfPresentAndNotEqualResponse.NotStored;
 }
