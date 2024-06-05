@@ -8,7 +8,7 @@ import {CacheListLengthResponse} from './enums';
 
 interface IResponse {
   value(): number | undefined;
-  type: CacheListLengthResponse;
+  readonly type: CacheListLengthResponse;
 }
 
 /**

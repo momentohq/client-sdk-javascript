@@ -3,7 +3,7 @@ import {BaseResponseError, BaseResponseSuccess} from './response-base';
 import {CacheListPushBackResponse} from './enums';
 
 interface IResponse {
-  type: CacheListPushBackResponse;
+  readonly type: CacheListPushBackResponse;
 }
 
 /**
