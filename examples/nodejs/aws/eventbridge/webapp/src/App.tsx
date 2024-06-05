@@ -10,12 +10,13 @@ import CreateRecordForm from "./components/CreateRecordForm";
 import DescribeCache from "./components/DescribeCache";
 import Topic from "./components/Topic";
 import { clearCurrentClient, Message, subscribeToTopic } from "./utils/momento-web";
-import type { TopicItem, TopicSubscribe } from "@gomomento/sdk-web";
+import { TopicItem, TopicSubscribe } from "@gomomento/sdk-web";
 import { ArrowDown } from "./svgs/arrow-down";
 import DeleteRecordForm from "./components/DeleteRecordForm";
 import { ArrowLeft } from "./svgs/arrow-left";
 import { ArrowRight } from "./svgs/arrow-right";
 import InfoModal from "./components/InfoModal";
+import CacheModal from "./components/CacheModal";
 
 const App = () => {
   const [location, setLocation] = useState("");
@@ -24,6 +25,7 @@ const App = () => {
   const [precipitation, setPrecipitation] = useState("");
   const [isSubscribedToTopic, setIsSubscribedToTopic] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [doesCacheExist, setDoesCacheExist] = useState<boolean>(true);
   const [isInfoModalVisible, setIsInfoModalVisible] = useState<boolean>(() => {
     const infoModalClosed = localStorage.getItem("isInfoModalClosed");
     return infoModalClosed !== "true";
@@ -60,12 +62,15 @@ const App = () => {
   useEffect(() => {
     clearCurrentClient();
     subscribeToTopic(onItem, onError).then((subscription) => {
-      if (subscription) {
+      if (subscription instanceof TopicSubscribe.Subscription) {
         setIsSubscribedToTopic(true);
+      } else {
+        setIsSubscribedToTopic(false);
+        setDoesCacheExist(false);
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [doesCacheExist]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = event.target;
@@ -88,7 +93,7 @@ const App = () => {
           <span className="mx-2">+</span>
           <img src={AwsEventBridgeLogo} alt="AWS EventBridge Logo" className="w-8 h-8" />
         </div>
-        <h1 className="text-lg font-semibold text-center mt-2">Welcome to Weather Statistics Demo</h1>
+        <h1 className="text-lg font-semibold text-center mt-2">Welcome to the DynamoDB-Momento EventBridge Demo</h1>
       </header>
 
       <main className="flex flex-col mt-2 flex-grow">
@@ -165,6 +170,16 @@ const App = () => {
         }
       }
       />
+      {
+        !doesCacheExist && (
+          <CacheModal
+            isVisible={!doesCacheExist}
+            onClose={() => {
+              setDoesCacheExist(true);
+            }}
+          />
+        )
+      }
     </div>
   );
 };

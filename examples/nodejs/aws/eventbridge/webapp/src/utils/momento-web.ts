@@ -67,12 +67,6 @@ export const clearCurrentClient = () => {
   webTopicClient = undefined;
 };
 
-// async function fetchTokenWithOpenAuth() {
-//   return await fetch(import.meta.env.VITE_TOKEN_VENDING_MACHINE_URL, {
-//     cache: "no-store",
-//   });
-// }
-
 async function getWebCacheClient(): Promise<CacheClient> {
   if (webCacheClient) {
     return webCacheClient;
@@ -146,6 +140,8 @@ export async function subscribeToTopic(
     return subscription;
   } else {
     const error = resp as TopicSubscribe.Error;
-    toastError(`Failed to subscribe to topic: ${error.message()}`);
+    if (error.message().includes("Cache not found")) {
+      return error;
+    }
   }
 }
