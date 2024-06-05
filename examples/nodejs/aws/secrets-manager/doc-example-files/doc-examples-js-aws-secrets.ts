@@ -59,8 +59,6 @@ async function writeToCache(client: CacheClient, cacheName: string, key: string,
     console.log('Key stored successfully!');
   } else if (setResponse instanceof CacheSet.Error) {
     console.log('Error setting key: ', setResponse.toString());
-  } else {
-    console.log('Some other error: ', setResponse.toString());
   }
 }
 
