@@ -96,8 +96,6 @@ async function setGetDeleteExample() {
     logger.info(`Error deleting cache key: ${deleteResponse.message()}`);
   } else if (deleteResponse instanceof CacheDelete.Success) {
     logger.info('Deleted key from cache');
-  } else {
-    throw new Error(`Unrecognized response: ${deleteResponse.toString()}`);
   }
 }
 
