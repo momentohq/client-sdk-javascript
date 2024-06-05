@@ -81,9 +81,7 @@ class LoggingMiddlewareRequestHandler implements MiddlewareRequestHandler {
 
 /**
  * This middleware implements per-request logging which can be used for
- * debugging.  The log format is currently considered experimental; in a
- * future release, once the log format is considered stable, this class will
- * be renamed to remove the Experimental prefix.
+ * debugging.
  *
  * WARNING: enabling this middleware may have minor performance implications,
  * so enable with caution.
