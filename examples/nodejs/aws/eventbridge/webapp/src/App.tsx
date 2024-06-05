@@ -171,7 +171,7 @@ const App = () => {
       }
       />
       {
-        !doesCacheExist && (
+        !doesCacheExist && !isInfoModalVisible && (
           <CacheModal
             isVisible={!doesCacheExist}
             onClose={() => {
