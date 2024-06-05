@@ -11,9 +11,12 @@ const Topic = (props: TopicProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    const scrollToBottom = () => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+      }
+    };
+    scrollToBottom();
   }, [props.messages]);
 
   return (

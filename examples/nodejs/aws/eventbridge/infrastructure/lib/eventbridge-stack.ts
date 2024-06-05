@@ -173,7 +173,7 @@ export class EventbridgeStack extends cdk.Stack {
     };
 
     topicPublishCfnPipe.targetParameters = {
-      inputTemplate: "{\n  \"Location\": <$.dynamodb.Keys.Location.S>, \n  \"Max Temp (°F)\": <$.dynamodb.NewImage.MaxTemp.N>,\n  \"Min Temp (°F)\": <$.dynamodb.NewImage.MinTemp.N>, \n  \"Chances of Precipitation (%)\": <$.dynamodb.NewImage.ChancesOfPrecipitation.N>\n}",
+      inputTemplate: "{\n \"Event Type\": <$.eventName>,  \"Location\": <$.dynamodb.Keys.Location.S>, \n  \"Max Temp (°F)\": <$.dynamodb.NewImage.MaxTemp.N>,\n  \"Min Temp (°F)\": <$.dynamodb.NewImage.MinTemp.N>, \n  \"Chances of Precipitation (%)\": <$.dynamodb.NewImage.ChancesOfPrecipitation.N>\n}",
       httpParameters: {
         pathParameterValues: [cacheName, topicName],
       },
