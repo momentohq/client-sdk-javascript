@@ -1,30 +1,20 @@
 import {SdkError} from '../../errors';
-import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
+import {BaseResponseError, BaseResponseSuccess} from './response-base';
+import {CacheKeysExistResponse} from './enums';
 
 const TEXT_DECODER = new TextDecoder();
 
-/**
- * Parent response type for a cache keys exist request. The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Success}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof CacheKeysExist.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheKeysExist.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
- */
-export abstract class Response extends ResponseBase {}
+interface IResponse {
+  readonly type: CacheKeysExistResponse;
+}
 
-class _Success extends Response {
+/**
+ * Indicates a successful keys exist request.
+ */
+export class Success extends BaseResponseSuccess implements IResponse {
+  readonly type: CacheKeysExistResponse.Success =
+    CacheKeysExistResponse.Success;
+
   private readonly _keys: Uint8Array[];
   private readonly _exists: boolean[];
 
@@ -60,18 +50,7 @@ class _Success extends Response {
 }
 
 /**
- * Indicates a Successful cache keys exist request.
- */
-export class Success extends ResponseSuccess(_Success) {}
-
-class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
-    super();
-  }
-}
-
-/**
- * Indicates that an error occurred during the cache keys exist request.
+ * Indicates that an error occurred during the keys exist request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:
@@ -80,4 +59,12 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  constructor(_innerException: SdkError) {
+    super(_innerException);
+  }
+
+  readonly type: CacheKeysExistResponse.Error = CacheKeysExistResponse.Error;
+}
+
+export type Response = Success | Error;

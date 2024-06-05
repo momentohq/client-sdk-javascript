@@ -1,28 +1,18 @@
 import {SdkError} from '../../errors';
-import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
+import {BaseResponseError, BaseResponseSuccess} from './response-base';
+import {CacheKeyExistsResponse} from './enums';
+
+interface IResponse {
+  readonly type: CacheKeyExistsResponse;
+}
 
 /**
- * Parent response type for a cache key exists request. The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Success}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof CacheKeyExists.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheKeyExists.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
+ * Indicates a successful key exists request.
  */
-export abstract class Response extends ResponseBase {}
+export class Success extends BaseResponseSuccess implements IResponse {
+  readonly type: CacheKeyExistsResponse.Success =
+    CacheKeyExistsResponse.Success;
 
-class _Success extends Response {
   private readonly _exists: boolean;
 
   constructor(exists: boolean[]) {
@@ -31,7 +21,7 @@ class _Success extends Response {
   }
 
   /**
-   * The boolean indicating whether the given key was found in the cache.
+   * Returns the boolean indicating whether the given key was found in the cache.
    * @returns {boolean}
    */
   public exists(): boolean {
@@ -39,23 +29,12 @@ class _Success extends Response {
   }
 
   public override toString(): string {
-    return `${super.toString()}: exists: ${String(this.exists())}`;
+    return `${super.toString()}: exists: ${String(this._exists)}`;
   }
 }
 
 /**
- * Indicates a Successful cache key exists request.
- */
-export class Success extends ResponseSuccess(_Success) {}
-
-class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
-    super();
-  }
-}
-
-/**
- * Indicates that an error occurred during the cache key exists request.
+ * Indicates that an error occurred during the key exists request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:
@@ -64,4 +43,12 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  constructor(_innerException: SdkError) {
+    super(_innerException);
+  }
+
+  readonly type: CacheKeyExistsResponse.Error = CacheKeyExistsResponse.Error;
+}
+
+export type Response = Success | Error;
