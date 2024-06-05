@@ -5,17 +5,17 @@ import AwsEventBridgeLogo from "./assets/aws-eventbridge.svg";
 import MomentoCacheLogo from "./assets/momento-service-arch-icon-Cache.svg";
 import MomentoTopicLogo from "./assets/momento-service-arch-icon-Topics.svg";
 import DynamoDbLogo from "./assets/aws-dynamodb.svg";
-import React, {useEffect, useState} from "react";
-import CreateRecordForm from "./components/CreateRecordForm.tsx";
-import DescribeCache from "./components/DescribeCache.tsx";
-import Topic from "./components/Topic.tsx";
-import { clearCurrentClient, Message, subscribeToTopic } from "./utils/momento-web.ts";
+import React, { useEffect, useState } from "react";
+import CreateRecordForm from "./components/CreateRecordForm";
+import DescribeCache from "./components/DescribeCache";
+import Topic from "./components/Topic";
+import { clearCurrentClient, Message, subscribeToTopic } from "./utils/momento-web";
 import type { TopicItem, TopicSubscribe } from "@gomomento/sdk-web";
-import GetRecord from "./components/GetRecord.tsx";
-import {ArrowDown} from "./svgs/arrow-down.tsx";
-import {ArrowLeftwards} from "./svgs/arrow-leftwards.tsx";
-import {ArrowRightwards} from "./svgs/arrow-rightwards.tsx";
-import DeleteRecordForm from "./components/DeleteRecordForm.tsx";
+import { ArrowDown } from "./svgs/arrow-down";
+import DeleteRecordForm from "./components/DeleteRecordForm";
+import { ArrowLeft } from "./svgs/arrow-left";
+import { ArrowRight } from "./svgs/arrow-right";
+import InfoModal from "./components/InfoModal";
 
 const App = () => {
   const [location, setLocation] = useState("");
@@ -24,7 +24,10 @@ const App = () => {
   const [precipitation, setPrecipitation] = useState("");
   const [isSubscribedToTopic, setIsSubscribedToTopic] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
-
+  const [isInfoModalVisible, setIsInfoModalVisible] = useState<boolean>(() => {
+    const infoModalClosed = localStorage.getItem("isInfoModalClosed");
+    return infoModalClosed !== "true";
+  });
   const handleSetMessages = (message: Message) => {
     setMessages((curr) => [...curr, message]);
   };
@@ -56,18 +59,13 @@ const App = () => {
 
   useEffect(() => {
     clearCurrentClient();
-    void handleSubscribe();
+    subscribeToTopic(onItem, onError).then((subscription) => {
+      if (subscription) {
+        setIsSubscribedToTopic(true);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const handleSubscribe = async () => {
-    const subscription = await subscribeToTopic(
-      onItem,
-      onError,
-    );
-    if (subscription) {
-      setIsSubscribedToTopic(true);
-    }
-  };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = event.target;
@@ -83,24 +81,20 @@ const App = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen">
-      <div className={"bg-gray-100 p-6 text-2xl font-bold"}>
-        <div className="flex flex-col items-center">
-          <div className="mb-2 flex">
-            <img src={MomentoLogo} alt="Momento Logo" className="w-8 h-8"/>
-            <div className={"ml-2 mr-2"}>.</div>
-            <img src={AwsEventBridgeLogo} alt="Aws Eventbridge Logo" className="w-8 h-8"/>
-          </div>
-          <h1 className="text-xl font-semibold text-center">Welcome to Weather Statistics Demo</h1>
+    <div className="flex flex-col h-screen bg-gray-50">
+      <header className="bg-green-900 p-4 text-white">
+        <div className="flex justify-center items-center">
+          <img src={MomentoLogo} alt="Momento Logo" className="w-8 h-8" />
+          <span className="mx-2">+</span>
+          <img src={AwsEventBridgeLogo} alt="AWS EventBridge Logo" className="w-8 h-8" />
         </div>
-      </div>
+        <h1 className="text-lg font-semibold text-center mt-2">Welcome to Weather Statistics Demo</h1>
+      </header>
 
-      <div className={"flex flex-col mt-4"}>
-        <div className={"flex flex-row space-x-8 justify-center p-4"}>
-          <div className={"flex flex-col w-1/3 bg-gray-100 p-4 space-y-4 rounded-lg"}>
-            <div className={"text-center"}>
-              <h1 className="text-2xl font-bold text-gray-700">Enter Weather Record</h1>
-            </div>
+      <main className="flex flex-col mt-2 flex-grow">
+        <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4 justify-center p-2">
+          <div className="flex flex-col w-full bg-white p-4 space-y-2 rounded-lg shadow-md">
+            <h1 className="text-xl font-bold text-center text-teal-700">Enter Weather Record</h1>
             <CreateRecordForm
               location={location}
               maxTemp={maxTemp}
@@ -113,11 +107,8 @@ const App = () => {
               handleChange={handleChange}
             />
           </div>
-          <div className={"font-bold text-xl"}>OR</div>
-          <div className={"flex flex-col w-1/3 bg-gray-100 p-4 space-y-4 rounded-lg"}>
-            <div className={"text-center"}>
-              <h1 className="text-2xl font-bold text-gray-700">Delete Weather Record</h1>
-            </div>
+          <div className="flex flex-col w-full bg-white p-4 space-y-2 rounded-lg shadow-md">
+            <h1 className="text-xl font-bold text-center text-teal-700">Delete Weather Record</h1>
             <DeleteRecordForm
               location={location}
               handleChange={handleChange}
@@ -125,57 +116,57 @@ const App = () => {
           </div>
         </div>
 
-        <div className={"items-center mt-4 flex flex-col justify-center"}>
-          <ArrowDown/>
-          <div className={"bg-gray-100 p-6 space-x-2 flex items-center shadow-md rounded-lg "}>
-            <img src={DynamoDbLogo} alt="Momento Cache Logo" className="w-12 h-12"/>
-            <span className={"font-semibold"}>DynamoDB</span>
-          </div>
-          <div className={"flex flex-row justify-between space-x-24"}>
-            <ArrowLeftwards/>
-            <ArrowRightwards/>
-          </div>
-          <div className={"flex flex-row justify-between space-x-48"}>
-            <div className={"bg-gray-100 p-6 space-x-2 flex items-center shadow-md rounded-lg "}>
-              <img src={MomentoCacheLogo} alt="Momento Cache Logo" className="w-12 h-12"/>
-              <span className={"font-semibold"}>Momento Cache</span>
+        <div className="flex flex-col items-center mt-4">
+          <ArrowDown />
+          <div className="flex flex-col md:flex-row items-center justify-center mt-2 space-y-2 md:space-y-0 md:space-x-4">
+            <div className="flex items-center bg-white p-4 shadow-md rounded-lg">
+              <img src={MomentoCacheLogo} alt="Momento Cache Logo" className="w-12 h-12" />
+              <span className="ml-2 font-semibold">Momento Cache</span>
             </div>
-            <div className={"bg-gray-100 p-6 space-x-2 flex items-center shadow-md rounded-lg "}>
-              <img src={MomentoTopicLogo} alt="Momento Topic Logo" className="w-12 h-12"/>
-              <span className={"font-semibold"}>Momento Topic</span>
+            <ArrowLeft />
+            <div className="flex items-center bg-white p-4 shadow-md rounded-lg">
+              <img src={DynamoDbLogo} alt="DynamoDB Logo" className="w-12 h-12" />
+              <span className="ml-2 font-semibold">DynamoDB</span>
+            </div>
+            <ArrowRight />
+            <div className="flex items-center bg-white p-4 shadow-md rounded-lg">
+              <img src={MomentoTopicLogo} alt="Momento Topic Logo" className="w-12 h-12" />
+              <span className="ml-2 font-semibold">Momento Topic</span>
             </div>
           </div>
-          <div className={"flex flex-row justify-between space-x-72"}>
-            <ArrowLeftwards/>
-            <ArrowRightwards/>
+
+          <div className="flex flex-row justify-evenly mt-2 w-full">
+            <ArrowDown />
+            <ArrowDown />
           </div>
         </div>
 
-        <div className="flex flex-col space-y-4 md:flex-row md:space-x-4 p-4">
-          <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:space-x-4">
-            <div className="bg-gray-100 p-4 rounded-lg flex-1">
-              <h1 className="font-bold mb-4">Get Item From Cache</h1>
-              <DescribeCache location={location}/>
-            </div>
-            <div className="bg-gray-100 p-4 rounded-lg flex-1">
-              <h1 className="font-bold mb-4">Get Record From DynamoDB</h1>
-              <GetRecord location={location}/>
-            </div>
+        <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4 p-2 mt-2">
+          <div className="bg-white p-4 rounded-lg shadow-md flex-1">
+            <h1 className="font-bold text-teal-700 mb-2">Get Item From Cache</h1>
+            <DescribeCache location={location} />
           </div>
-          <div className="bg-gray-100 p-4 rounded-lg flex-1">
-            <h1 className="font-bold mb-4">Published Items</h1>
+          <div className="bg-white p-4 rounded-lg shadow-md flex-1">
+            <h1 className="font-bold text-teal-700 mb-2">Published Items</h1>
             <Topic
               location={location}
               isSubscribedToTopic={isSubscribedToTopic}
               messages={messages}
-              handleSubscribe={handleSubscribe}
             />
           </div>
         </div>
+      </main>
 
-      </div>
+      <InfoModal
+        isVisible={isInfoModalVisible}
+        onClose={() => {
+          setIsInfoModalVisible(!isInfoModalVisible)
+          localStorage.setItem("isInfoModalClosed", "true");
+        }
+      }
+      />
     </div>
   );
-}
+};
 
 export default App;

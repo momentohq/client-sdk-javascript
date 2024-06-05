@@ -1,7 +1,8 @@
 import AWS from "aws-sdk";
 
-const awsAccesskeyId = import.meta.env.VITE_APP_AWS_ACCESS_KEY_ID;
-const awsSecretAccessKey = import.meta.env.VITE_APP_AWS_SECRET_ACCESS_KEY;
+const awsAccesskeyId = import.meta.env.VITE_AWS_ACCESS_KEY_ID;
+const awsSecretAccessKey = import.meta.env.VITE_AWS_SECRET_ACCESS_KEY;
+const awsSessionToken = import.meta.env.VITE_AWS_SESSION_TOKEN;
 export const tableName = "weather-stats-demo"
 
 AWS.config.update({
@@ -9,6 +10,7 @@ AWS.config.update({
   credentials: {
     accessKeyId: awsAccesskeyId,
     secretAccessKey: awsSecretAccessKey,
+    sessionToken: awsSessionToken || undefined,
   },
 });
 const dynamoDB = new AWS.DynamoDB();

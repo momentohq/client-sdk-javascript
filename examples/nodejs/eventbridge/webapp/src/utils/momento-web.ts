@@ -4,10 +4,10 @@ import {
   Configurations,
   CredentialProvider,
   TopicClient,
-  type TopicItem,
+  TopicItem,
   TopicSubscribe,
 } from "@gomomento/sdk-web";
-import { toastError } from "./toast.tsx";
+import { toastError } from "./toast";
 
 export const cacheName = "momento-eventbridge-cache";
 export const topicName = "momento-eventbridge-topic";
@@ -144,6 +144,8 @@ export async function subscribeToTopic(
   if (resp instanceof TopicSubscribe.Subscription) {
     subscription = resp;
     return subscription;
+  } else {
+    const error = resp as TopicSubscribe.Error;
+    toastError(`Failed to subscribe to topic: ${error.message()}`);
   }
-  throw new Error(`Unable to subscribe to topic: ${resp}`);
 }

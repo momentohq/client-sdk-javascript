@@ -1,6 +1,6 @@
 import React from "react";
-import {toastSuccess, toastError} from "../utils/toast.tsx";
-import {deleteRecord} from "../utils/dynamodb.ts";
+import {toastSuccess, toastError} from "../utils/toast";
+import {deleteRecord} from "../utils/dynamodb";
 
 type DeleteRecordFormProps = {
   location: string;

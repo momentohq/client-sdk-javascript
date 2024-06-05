@@ -1,7 +1,7 @@
 import React from "react";
-import { getItemFromCache } from "../utils/momento-web.ts";
-import { toastSuccess, toastError } from "../utils/toast.tsx";
-import {createRecord} from "../utils/dynamodb.ts";
+import { getItemFromCache } from "../utils/momento-web";
+import { toastSuccess, toastError } from "../utils/toast";
+import {createRecord} from "../utils/dynamodb";
 
 type CreateRecordFormProps = {
   location: string;
@@ -37,6 +37,7 @@ const CreateRecordForm = (props: CreateRecordFormProps) => {
               Location
             </label>
             <input
+              autoFocus={true}
               type="text"
               id="location-input"
               value={props.location}

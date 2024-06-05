@@ -7,7 +7,7 @@ The app can be used to create, update and delete items in a DynamoDB table and t
 
 - Momento API Key, can be created using [momento console](https://console.gomomento.com/) if you haven’t already created one
 - HTTP API endpoint the same region as Momento API Key. You can copy the endpoint from the console after creating the API Key or refer to the [Regions Section here in the documentation](https://docs.momentohq.com/topics/develop/api-reference/http-api#regions)
-- AWS Account AccessId and Secret Key
+- AWS Account AccessId, Aws Secret Key (and AWS Session Token if you are using temporary credentials)
 
 ### **Deploying the Demo App:**
 
@@ -34,8 +34,9 @@ npm run deploy -- --parameters MomentoApiKey=<YOUR_MOMENTO_API_KEY> --parameters
 First, edit the `.env.development` file with your token vending machine url and your cache name:
 
 ```bash
-VITE_APP_AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
-VITE_APP_AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
+VITE_AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
+VITE_AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
+VITE_AWS_SESSION_TOKEN=<AWS_SESSION_TOKEN> (if you are using temporary credentials)
 VITE_MOMENTO_API_KEY=<YOUR_MOMENTO_API_KEY>
 ```
 
