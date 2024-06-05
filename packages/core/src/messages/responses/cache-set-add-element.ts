@@ -3,7 +3,7 @@ import {BaseResponseError, BaseResponseSuccess} from './response-base';
 import {CacheSetAddElementResponse} from './enums';
 
 interface IResponse {
-  type: CacheSetAddElementResponse;
+  readonly type: CacheSetAddElementResponse;
 }
 
 /**

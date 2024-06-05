@@ -3,7 +3,7 @@ import {BaseResponseError, BaseResponseSuccess} from './response-base';
 import {CacheSetIfPresentResponse} from './enums';
 
 interface IResponse {
-  type: CacheSetIfPresentResponse;
+  readonly type: CacheSetIfPresentResponse;
 }
 
 /**

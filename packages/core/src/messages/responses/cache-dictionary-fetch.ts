@@ -11,7 +11,7 @@ const TEXT_DECODER = new TextDecoder();
 
 interface IResponse {
   value(): Record<string, string> | undefined;
-  type: CacheDictionaryFetchResponse;
+  readonly type: CacheDictionaryFetchResponse;
 }
 
 /**

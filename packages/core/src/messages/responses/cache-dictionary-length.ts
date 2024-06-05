@@ -8,7 +8,7 @@ import {CacheDictionaryLengthResponse} from './enums';
 
 interface IResponse {
   value(): number | undefined;
-  type: CacheDictionaryLengthResponse;
+  readonly type: CacheDictionaryLengthResponse;
 }
 
 /**

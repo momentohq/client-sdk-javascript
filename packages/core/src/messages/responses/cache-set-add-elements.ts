@@ -4,7 +4,7 @@ import * as CacheSetAddElement from './cache-set-add-element';
 import {CacheSetAddElementsResponse} from './enums';
 
 interface IResponse {
-  type: CacheSetAddElementsResponse;
+  readonly type: CacheSetAddElementsResponse;
   toSingularResponse(): CacheSetAddElement.Response;
 }
 

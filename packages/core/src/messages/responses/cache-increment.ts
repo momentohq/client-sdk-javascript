@@ -4,7 +4,7 @@ import {CacheIncrementResponse} from './enums';
 
 interface IResponse {
   value(): number | undefined;
-  type: CacheIncrementResponse;
+  readonly type: CacheIncrementResponse;
 }
 
 /**
