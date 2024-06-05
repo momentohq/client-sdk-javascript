@@ -597,7 +597,9 @@ export function runListTests(
         expectWithMessage(() => {
           expect(response).toBeInstanceOf(CacheListPopFront.Hit);
         }, `expected a HIT but got ${response.toString()}`);
-        expect((response as CacheListPopBack.Hit).valueString()).toEqual('foo');
+        expect((response as CacheListPopFront.Hit).valueString()).toEqual(
+          'foo'
+        );
       });
 
       it('should support accessing value for CacheListPopFront.Hit without instanceof check', async () => {
@@ -619,7 +621,7 @@ export function runListTests(
 
         expect(popResponse.value()).toEqual('foo');
 
-        const hitResponse = popResponse as CacheListPopBack.Hit;
+        const hitResponse = popResponse as CacheListPopFront.Hit;
         expect(hitResponse.value()).toEqual('foo');
         expect(hitResponse.valueString()).toEqual('foo');
 

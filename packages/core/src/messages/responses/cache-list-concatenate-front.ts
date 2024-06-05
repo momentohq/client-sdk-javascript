@@ -1,37 +1,23 @@
-import {
-  IListResponseSuccess,
-  ResponseBase,
-  ResponseError,
-  ResponseSuccess,
-} from './response-base';
 import {SdkError} from '../../errors';
+import {BaseResponseError, BaseResponseSuccess} from './response-base';
+import {CacheListConcatenateFrontResponse} from './enums';
+
+interface IResponse {
+  readonly type: CacheListConcatenateFrontResponse;
+}
 
 /**
- * Parent response type for a list concatenate front request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Success}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof CacheListConcatenateFront.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheListConcatenateFront.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
+ * Indicates a successful list concatenate front request.
  */
-export abstract class Response extends ResponseBase {}
+export class Success extends BaseResponseSuccess implements IResponse {
+  readonly type: CacheListConcatenateFrontResponse.Success =
+    CacheListConcatenateFrontResponse.Success;
 
-class _Success extends Response implements IListResponseSuccess {
-  private readonly _list_length: number;
-  constructor(list_length: number) {
+  private readonly _listLength: number;
+
+  constructor(listLength: number) {
     super();
-    this._list_length = list_length;
+    this._listLength = listLength;
   }
 
   /**
@@ -39,20 +25,13 @@ class _Success extends Response implements IListResponseSuccess {
    * @returns {number}
    */
   public listLength(): number {
-    return this._list_length;
+    return this._listLength;
   }
 
   public override toString(): string {
-    return `${super.toString()}: listLength: ${this._list_length}`;
+    return `${super.toString()}: listLength: ${this._listLength}`;
   }
 }
-
-/**
- * Indicates a Successful list concatenate front request.
- */
-export class Success extends ResponseSuccess(_Success) {}
-
-class _Error extends Response {}
 
 /**
  * Indicates that an error occurred during the list concatenate front request.
@@ -64,8 +43,13 @@ class _Error extends Response {}
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {
-  constructor(public override _innerException: SdkError) {
-    super();
+export class Error extends BaseResponseError implements IResponse {
+  constructor(_innerException: SdkError) {
+    super(_innerException);
   }
+
+  readonly type: CacheListConcatenateFrontResponse.Error =
+    CacheListConcatenateFrontResponse.Error;
 }
+
+export type Response = Success | Error;
