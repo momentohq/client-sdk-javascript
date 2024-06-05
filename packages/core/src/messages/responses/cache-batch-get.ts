@@ -7,7 +7,7 @@ const TEXT_DECODER = new TextDecoder();
 
 interface IResponse {
   values(): Record<string, string> | undefined;
-  type: CacheGetBatchResponse;
+  readonly type: CacheGetBatchResponse;
 }
 
 /**

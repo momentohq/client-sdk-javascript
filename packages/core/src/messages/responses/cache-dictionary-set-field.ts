@@ -3,7 +3,7 @@ import {BaseResponseError, BaseResponseSuccess} from './response-base';
 import {CacheDictionarySetFieldResponse} from './enums';
 
 interface IResponse {
-  type: CacheDictionarySetFieldResponse;
+  readonly type: CacheDictionarySetFieldResponse;
 }
 
 /**

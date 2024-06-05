@@ -4,7 +4,7 @@ import {SdkError} from '../../errors';
 import {CacheSetRemoveElementsResponse} from './enums';
 
 interface IResponse {
-  type: CacheSetRemoveElementsResponse;
+  readonly type: CacheSetRemoveElementsResponse;
   toSingularResponse(): CacheSetRemoveElement.Response;
 }
 

@@ -4,7 +4,7 @@ import {CacheSetBatchResponse} from './enums';
 import {CacheSet} from '../..';
 
 interface IResponse {
-  type: CacheSetBatchResponse;
+  readonly type: CacheSetBatchResponse;
 }
 
 /**
