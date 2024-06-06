@@ -22,6 +22,7 @@ const App = () => {
   const [location, setLocation] = useState("");
   const [maxTemp, setMaxTemp] = useState("");
   const [minTemp, setMinTemp] = useState("");
+  const [ttl, setTtl] = useState("");
   const [precipitation, setPrecipitation] = useState("");
   const [isSubscribedToTopic, setIsSubscribedToTopic] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -82,6 +83,8 @@ const App = () => {
       setMinTemp(value);
     } else if (id === "precipitation-input") {
       setPrecipitation(value);
+    } else if (id === "ttl-input") {
+      setTtl(value);
     }
   };
 
@@ -105,10 +108,12 @@ const App = () => {
               maxTemp={maxTemp}
               minTemp={minTemp}
               precipitation={precipitation}
+              ttl={ttl}
               setLocation={setLocation}
               setPrecipitation={setPrecipitation}
               setMaxTemp={setMaxTemp}
               setMinTemp={setMinTemp}
+              setTtl={setTtl}
               handleChange={handleChange}
             />
           </div>

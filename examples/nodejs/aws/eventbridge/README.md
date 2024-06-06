@@ -10,43 +10,21 @@ The app can be used to create, update and delete items in a DynamoDB table and t
 - HTTP API endpoint the same region as Momento API Key. You can copy the endpoint from the console after creating the API Key or refer to the [Regions Section here in the documentation](https://docs.momentohq.com/topics/develop/api-reference/http-api#regions)
 - AWS Account AccessId, Aws Secret Key (and AWS Session Token if you are using temporary credentials)
 
-### **Deploying the Demo App:**
+### **Deploying and Running the Demo App:**
 
-The source code for the CDK application lives in the `infrastructure` directory. To build and deploy it you will first need to install the dependencies:
-
-```bash
-cd infrastructure
-npm install
-```
-
-To deploy the CDK app you will need to have [configured your AWS credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-authentication.html#cli-chap-authentication-precedence).
-
-You will also need a superuser API key generated from the [Momento Console](https://console.gomomento.com/), and the HTTP API endpoint URL for the region you are deploying to.
-
-
-Then run:
-
-```tsx
-npm run deploy -- --parameters MomentoApiKey=<YOUR_MOMENTO_API_KEY> --parameters MomentoApiEndpoint=<YOUR_MOMENTO_API_ENDPOINT>
-```
-
-## **Running the Demo:**
-
-First, edit the `.env.development` file with your token vending machine url and your cache name:
+The source code for the CDK application lives in the `infrastructure` directory, and web application source code lives in the `webapp` directory.
+You need to create a `.env` file in the root directory of the project with the following environment variables:
 
 ```bash
-VITE_AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
-VITE_AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
-VITE_AWS_SESSION_TOKEN=<AWS_SESSION_TOKEN> (if you are using temporary credentials)
-VITE_MOMENTO_API_KEY=<YOUR_MOMENTO_API_KEY>
+MOMENTO_API_KEY=<your-momento-api-key>
+MOMENTO_API_ENDPOINT=<your-momento-api-endpoint>
+AWS_ACCESS_KEY_ID=<your-aws-access-key-id>
+AWS_SECRET_ACCESS_KEY=<your-aws-secret-access-key>
+AWS_SESSION_TOKEN=<your-aws-session-token>
 ```
 
-Then,  install all dependencies and run the development server:
+To deploy and run the application, run the following script:
 
 ```bash
-cd webapp
-npm install
-npm run dev
+./deploy-and-run.sh
 ```
-
-Open [http://localhost:5173](http://localhost:5173/) with your browser to explore the demo app.

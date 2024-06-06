@@ -53,7 +53,13 @@ const DescribeCache = (props: DescribeCacheProps) => {
           toastInfo("The record does not exist.");
           return;
         }
-        const formattedResult = `Location: ${location}\nMax Temp: ${maxTemp}\nMin Temp: ${minTemp}\nChances of Precipitation: ${chancesOfPrecipitation}`;
+        const weatherData = {
+          Location: location,
+          "Max Temp": maxTemp,
+          "Min Temp": minTemp,
+          "Chances of Precipitation": chancesOfPrecipitation
+        };
+        const formattedResult = JSON.stringify(weatherData, null, 2);
 
         setDynamoResult(formattedResult);
       }

@@ -15,12 +15,13 @@ AWS.config.update({
 });
 const dynamoDB = new AWS.DynamoDB();
 
-export function createRecord(location: string, maxTemp: string, minTemp: string, precipitation: string) {
+export function createRecord(location: string, maxTemp: string, minTemp: string, precipitation: string, ttl: string) {
   const item = {
     Location: { S: location },
     MaxTemp: { N: maxTemp },
     MinTemp: { N: minTemp },
     ChancesOfPrecipitation: { N: precipitation },
+    TTL: { N: ttl },
   };
   const params = {
     TableName: tableName,
