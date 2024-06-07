@@ -1,46 +1,28 @@
 import {
   ResponseBase,
-  ResponseHit,
-  ResponseMiss,
-  ResponseError,
+  BaseResponseMiss,
+  BaseResponseError,
 } from './response-base';
-import {SdkError} from '../../errors';
 import {_SortedSetElement} from './grpc-response-types';
+import {CacheSortedSetFetchResponse} from './enums';
+import {SdkError} from '../../errors';
 
 const TEXT_DECODER = new TextDecoder();
 
-/**
- * Parent response type for a sorted set fetch request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Hit}
- * - {Miss}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof CacheSortedSetFetch.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheSortedSetFetch.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
- */
-export abstract class Response extends ResponseBase {
-  public value(): {value: string; score: number}[] | undefined {
-    if (this instanceof Hit) {
-      return (this as Hit).value();
-    }
-    return undefined;
-  }
+interface IResponse {
+  value(): {value: string; score: number}[] | undefined;
+  readonly type: CacheSortedSetFetchResponse;
 }
 
-class _Hit extends Response {
+/**
+ * Indicates that the requested data was successfully retrieved from the cache.  Provides
+ * `value*` accessors to retrieve the data in the appropriate format.
+ */
+export class Hit extends ResponseBase implements IResponse {
   private readonly elements: _SortedSetElement[];
   private readonly _displayListSizeLimit = 5;
+  readonly type: CacheSortedSetFetchResponse.Hit =
+    CacheSortedSetFetchResponse.Hit;
 
   constructor(elements: _SortedSetElement[]) {
     super();
@@ -91,7 +73,7 @@ class _Hit extends Response {
    * This is a convenience alias for {valueArrayStringNumber}.
    * @returns {value: string; score: number}[]
    */
-  public override value(): {value: string; score: number}[] {
+  public value(): {value: string; score: number}[] {
     return this.valueArrayStringElements();
   }
 
@@ -118,21 +100,14 @@ class _Hit extends Response {
 }
 
 /**
- * Indicates that the requested data was successfully retrieved from the cache.  Provides
- * `value*` accessors to retrieve the data in the appropriate format.
- */
-export class Hit extends ResponseHit(_Hit) {}
-
-class _Miss extends Response {}
-
-/**
  * Indicates that the requested data was not available in the cache.
  */
-export class Miss extends ResponseMiss(_Miss) {}
+export class Miss extends BaseResponseMiss implements IResponse {
+  readonly type: CacheSortedSetFetchResponse.Miss =
+    CacheSortedSetFetchResponse.Miss;
 
-class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
-    super();
+  public value(): undefined {
+    return undefined;
   }
 }
 
@@ -146,4 +121,17 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  readonly type: CacheSortedSetFetchResponse.Error =
+    CacheSortedSetFetchResponse.Error;
+
+  constructor(error: SdkError) {
+    super(error);
+  }
+
+  public value(): undefined {
+    return undefined;
+  }
+}
+
+export type Response = Hit | Miss | Error;

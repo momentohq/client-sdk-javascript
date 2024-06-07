@@ -1,35 +1,25 @@
-import {SdkError} from '../../errors';
 import {
+  BaseResponseError,
+  BaseResponseMiss,
   ResponseBase,
-  ResponseError,
-  ResponseHit,
-  ResponseMiss,
 } from './response-base';
+import {CacheSortedSetLengthResponse} from './enums';
+import {SdkError} from '../../errors';
+
+interface IResponse {
+  length(): number | undefined;
+  readonly type: CacheSortedSetLengthResponse;
+}
 
 /**
- * Parent response type for a sorted set length request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Hit}
- * - {Miss}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof CacheSortedSetLength.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheSortedSetLength.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
+ * Indicates that the requested data was successfully retrieved from the cache.  Provides
+ * `value*` accessors to retrieve the data in the appropriate format.
  */
-export abstract class Response extends ResponseBase {}
-
-class _Hit extends Response {
+export class Hit extends ResponseBase implements IResponse {
   private readonly _length: number;
+  readonly type: CacheSortedSetLengthResponse.Hit =
+    CacheSortedSetLengthResponse.Hit;
+
   constructor(length: number) {
     super();
     this._length = length;
@@ -49,21 +39,18 @@ class _Hit extends Response {
 }
 
 /**
- * Indicates that the requested data was successfully retrieved from the cache.  Provides
- * `value*` accessors to retrieve the data in the appropriate format.
- */
-export class Hit extends ResponseHit(_Hit) {}
-
-class _Miss extends Response {}
-
-/**
  * Indicates that the requested data was not available in the cache.
  */
-export class Miss extends ResponseMiss(_Miss) {}
+export class Miss extends BaseResponseMiss implements IResponse {
+  readonly type: CacheSortedSetLengthResponse.Miss =
+    CacheSortedSetLengthResponse.Miss;
 
-class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
+  constructor() {
     super();
+  }
+
+  public length(): undefined {
+    return undefined;
   }
 }
 
@@ -77,4 +64,17 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  readonly type: CacheSortedSetLengthResponse.Error =
+    CacheSortedSetLengthResponse.Error;
+
+  constructor(error: SdkError) {
+    super(error);
+  }
+
+  public length(): undefined {
+    return undefined;
+  }
+}
+
+export type Response = Hit | Miss | Error;
