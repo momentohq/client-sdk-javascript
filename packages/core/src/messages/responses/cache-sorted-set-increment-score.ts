@@ -1,4 +1,4 @@
-import {BaseResponseError, BaseResponseSuccess, ResponseBase} from './response-base';
+import {BaseResponseError, BaseResponseSuccess} from './response-base';
 import {CacheSortedSetIncrementScoreResponse} from './enums';
 import {SdkError} from '../../errors';
 
