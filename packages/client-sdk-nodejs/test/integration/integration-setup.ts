@@ -74,6 +74,10 @@ function sessionCredsProvider(): CredentialProvider {
           endpoint: credsProvider().getTokenEndpoint(),
           secureConnection: credsProvider().isTokenEndpointSecure(),
         },
+        storageEndpoint: {
+          endpoint: credsProvider().getStorageEndpoint(),
+          secureConnection: credsProvider().isStorageEndpointSecure(),
+        },
       },
     });
   }

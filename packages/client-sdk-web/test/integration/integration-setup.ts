@@ -41,6 +41,9 @@ export function credsProvider(): CredentialProvider {
           tokenEndpoint: {
             endpoint: 'https://localhost:9001',
           },
+          storageEndpoint: {
+            endpoint: 'https://localhost:9001',
+          },
         },
       });
     } else {
@@ -70,6 +73,10 @@ function sessionCredsProvider(): CredentialProvider {
         tokenEndpoint: {
           endpoint: credsProvider().getTokenEndpoint(),
           secureConnection: credsProvider().isTokenEndpointSecure(),
+        },
+        storageEndpoint: {
+          endpoint: credsProvider().getStorageEndpoint(),
+          secureConnection: credsProvider().isStorageEndpointSecure(),
         },
       },
     });

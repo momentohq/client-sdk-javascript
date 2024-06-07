@@ -79,6 +79,10 @@ export * as webhook from './messages/responses/webhook';
 export * from './messages/responses/webhook';
 export {Webhook, WebhookId} from './messages/webhook';
 
+// StoreClient Response Types
+export * from './messages/responses/storage';
+export {StoreInfo} from './messages/store-info';
+
 import {CacheInfo} from './messages/cache-info';
 import {
   SubscribeCallOptions,
@@ -144,6 +148,8 @@ export {
   SetIfAbsentOrEqualOptions,
   IncrementOptions,
 } from './clients/ICacheClient';
+
+export {IStorageClient} from './clients/IStorageClient';
 
 export {IMomentoCache} from './clients/IMomentoCache';
 

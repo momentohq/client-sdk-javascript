@@ -1,7 +1,9 @@
 import {CacheClient, SimpleCacheClient} from './cache-client';
 import {TopicClient} from './topic-client';
+import {StorageClient} from './storage-client';
 import * as Configurations from './config/configurations';
 import * as TopicConfigurations from './config/topic-configurations';
+import * as StorageConfigurations from './config/storage-configurations';
 import * as LeaderboardConfigurations from './config/leaderboard-configurations';
 import * as BatchUtils from './batchutils/batch-functions';
 import * as WebhookUtils from './webhookutils';
@@ -74,6 +76,17 @@ import * as CacheSetBatch from '@gomomento/sdk-core/dist/src/messages/responses/
 import * as TopicPublish from '@gomomento/sdk-core/dist/src/messages/responses/topic-publish';
 import * as TopicSubscribe from '@gomomento/sdk-core/dist/src/messages/responses/topic-subscribe';
 import {TopicItem} from '@gomomento/sdk-core/dist/src/messages/responses/topic-item';
+
+// Storage Response Types
+import {
+  StoreDelete,
+  StoreSet,
+  StoreGet,
+  CreateStore,
+  DeleteStore,
+  ListStores,
+} from '@gomomento/sdk-core/dist/src/messages/responses/storage';
+import {StoreInfo} from '@gomomento/sdk-core/dist/src/messages/store-info';
 
 // AuthClient Response Types
 import {AuthClient} from './auth-client';
@@ -155,6 +168,7 @@ import {
   WebhookDestinationType,
   ReadConcern,
   CompressionLevel,
+  IStorageClient,
 } from '@gomomento/sdk-core';
 
 import {Configuration, CacheConfiguration} from './config/configuration';
@@ -167,6 +181,10 @@ import {
   LeaderboardClientConfiguration,
 } from './config/leaderboard-configuration';
 import {PreviewLeaderboardClient} from './preview-leaderboard-client';
+import {
+  StorageConfiguration,
+  StorageClientConfiguration,
+} from './config/storage-configuration';
 
 export {
   DefaultMomentoLoggerFactory,
@@ -214,6 +232,18 @@ export {
   TopicGrpcConfiguration,
   TopicGrpcConfigurationProps,
 } from './config/transport/topics/grpc-configuration';
+
+export {
+  StaticStorageGrpcConfiguration,
+  StaticStorageTransportStrategy,
+  StorageTransportStrategy,
+  StorageTransportStrategyProps,
+} from './config/transport/storage/transport-strategy';
+
+export {
+  StorageGrpcConfiguration,
+  StorageGrpcConfigurationProps,
+} from './config/transport/storage/grpc-configuration';
 
 export {
   Middleware,
@@ -347,6 +377,19 @@ export {
   TopicPublish,
   TopicSubscribe,
   SubscribeCallOptions,
+  // Storage
+  StorageConfigurations,
+  StorageConfiguration,
+  StorageClientConfiguration,
+  StoreSet,
+  StoreGet,
+  StoreDelete,
+  CreateStore,
+  DeleteStore,
+  ListStores,
+  StoreInfo,
+  StorageClient,
+  IStorageClient,
   // Webhooks
   PostUrlWebhookDestination,
   Webhook,
