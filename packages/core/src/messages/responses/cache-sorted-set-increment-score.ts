@@ -1,4 +1,4 @@
-import {BaseResponseError, ResponseBase} from './response-base';
+import {BaseResponseError, BaseResponseSuccess, ResponseBase} from './response-base';
 import {CacheSortedSetIncrementScoreResponse} from './enums';
 import {SdkError} from '../../errors';
 
@@ -10,7 +10,7 @@ interface IResponse {
 /**
  * Indicates a Successful sorted set IncrementScore request.
  */
-export class Success extends ResponseBase implements IResponse {
+export class Success extends BaseResponseSuccess implements IResponse {
   private readonly _score: number;
   readonly type: CacheSortedSetIncrementScoreResponse.Success =
     CacheSortedSetIncrementScoreResponse.Success;
