@@ -90,7 +90,6 @@ import {cache_client} from '@gomomento/generated-types/dist/cacheclient';
 import {Configuration} from '../config/configuration';
 import {
   Semaphore,
-  truncateString,
   validateCacheName,
   validateDictionaryName,
   validateListName,
@@ -157,7 +156,7 @@ export class CacheDataClient implements IDataClient {
   private readonly interceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
   private readonly compressionDetails?: CompressionDetails;
-  private requestConcurrencySemaphore: Semaphore | undefined;
+  private readonly requestConcurrencySemaphore: Semaphore | undefined;
 
   /**
    * @param {CacheClientProps} props
@@ -447,11 +446,6 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'set' request; key: ${key.toString()}, value length: ${
-          value.length
-        }, ttl: ${ttlToUse.toString()}`
-      );
       return await this.sendSet(cacheName, encodedKey, encodedValue, ttlToUse);
     });
   }
@@ -747,21 +741,12 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'setIfNotExists' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
-          ttl?.toString() ?? 'null'
-        }`
-      );
-      const result = await this.sendSetIfNotExists(
+      return await this.sendSetIfNotExists(
         cacheName,
         this.convert(key),
         this.convert(value),
         ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
       );
-      this.logger.trace(
-        `'setIfNotExists' request result: ${result.toString()}`
-      );
-      return result;
     });
   }
 
@@ -838,12 +823,6 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'setIfAbsent' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
-          ttl?.toString() ?? 'null'
-        }`
-      );
-
       let encodedValue = this.convert(value);
       if (options?.compress) {
         this.logger.trace(
@@ -863,14 +842,12 @@ export class CacheDataClient implements IDataClient {
         );
       }
 
-      const result = await this.sendSetIfAbsent(
+      return await this.sendSetIfAbsent(
         cacheName,
         this.convert(key),
         encodedValue,
         ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
       );
-      this.logger.trace(`'setIfAbsent' request result: ${result.toString()}`);
-      return result;
     });
   }
 
@@ -946,19 +923,12 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'setIfPresent' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
-          ttl?.toString() ?? 'null'
-        }`
-      );
-      const result = await this.sendSetIfPresent(
+      return await this.sendSetIfPresent(
         cacheName,
         this.convert(key),
         this.convert(value),
         ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
       );
-      this.logger.trace(`'setIfPresent' request result: ${result.toString()}`);
-      return result;
     });
   }
 
@@ -1035,20 +1005,13 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'setIfEqual' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
-          ttl?.toString() ?? 'null'
-        }`
-      );
-      const result = await this.sendSetIfEqual(
+      return await this.sendSetIfEqual(
         cacheName,
         this.convert(key),
         this.convert(value),
         this.convert(equal),
         ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
       );
-      this.logger.trace(`'setIfEqual' request result: ${result.toString()}`);
-      return result;
     });
   }
 
@@ -1126,20 +1089,13 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'setIfNotEqual' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
-          ttl?.toString() ?? 'null'
-        }`
-      );
-      const result = await this.sendSetIfNotEqual(
+      return await this.sendSetIfNotEqual(
         cacheName,
         this.convert(key),
         this.convert(value),
         this.convert(notEqual),
         ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
       );
-      this.logger.trace(`'setIfNotEqual' request result: ${result.toString()}`);
-      return result;
     });
   }
 
@@ -1217,22 +1173,13 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'setIfPresentAndNotEqual' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
-          ttl?.toString() ?? 'null'
-        }`
-      );
-      const result = await this.sendSetIfPresentAndNotEqual(
+      return await this.sendSetIfPresentAndNotEqual(
         cacheName,
         this.convert(key),
         this.convert(value),
         this.convert(notEqual),
         ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
       );
-      this.logger.trace(
-        `'setIfPresentAndNotEqual' request result: ${result.toString()}`
-      );
-      return result;
     });
   }
 
@@ -1311,22 +1258,13 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'setIfAbsentOrEqual' request; key: ${key.toString()}, field: ${value.toString()}, ttlSeconds: ${
-          ttl?.toString() ?? 'null'
-        }`
-      );
-      const result = await this.sendSetIfAbsentOrEqual(
+      return await this.sendSetIfAbsentOrEqual(
         cacheName,
         this.convert(key),
         this.convert(value),
         this.convert(equal),
         ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
       );
-      this.logger.trace(
-        `'setIfAbsentOrEqual' request result: ${result.toString()}`
-      );
-      return result;
     });
   }
 
@@ -1398,7 +1336,6 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(`Issuing 'delete' request; key: ${key.toString()}`);
       return await this.sendDelete(cacheName, this.convert(key));
     });
   }
@@ -1449,10 +1386,7 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
-      const result = await this.sendGet(cacheName, this.convert(key), options);
-      this.logger.trace(`'get' request result: ${result.toString()}`);
-      return result;
+      return await this.sendGet(cacheName, this.convert(key), options);
     });
   }
 
@@ -1548,14 +1482,11 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(`Issuing 'getBatch' request; keys: ${keys.toString()}`);
-      const result = await this.sendGetBatch(
+      return await this.sendGetBatch(
         cacheName,
         keys.map(key => this.convert(key)),
         options?.decompress
       );
-      this.logger.trace(`'getBatch' request result: ${result.toString()}`);
-      return result;
     });
   }
 
@@ -1696,11 +1627,6 @@ export class CacheDataClient implements IDataClient {
         }
       }
 
-      this.logger.trace(
-        `Issuing 'setBatch' request; items length: ${
-          itemsToUse.length
-        }, ttl: ${ttlToUse.toString()}`
-      );
       return await this.sendSetBatch(cacheName, itemsToUse);
     });
   }
@@ -1776,15 +1702,7 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'listConcatenateBack' request; listName: ${listName}, values length: ${
-          values.length
-        }, ${ttl.toString()}, truncateFrontToSize: ${
-          truncateFrontToSize?.toString() ?? 'null'
-        }`
-      );
-
-      const result = await this.sendListConcatenateBack(
+      return await this.sendListConcatenateBack(
         cacheName,
         this.convert(listName),
         this.convertArray(values),
@@ -1792,10 +1710,6 @@ export class CacheDataClient implements IDataClient {
         ttl.refreshTtl(),
         truncateFrontToSize
       );
-      this.logger.trace(
-        `'listConcatenateBack' request result: ${result.toString()}`
-      );
-      return result;
     });
   }
 
@@ -1857,15 +1771,7 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'listConcatenateFront' request; listName: ${listName}, values length: ${
-          values.length
-        }, ${ttl.toString()}, truncateBackToSize: ${
-          truncateBackToSize?.toString() ?? 'null'
-        }`
-      );
-
-      const result = await this.sendListConcatenateFront(
+      return await this.sendListConcatenateFront(
         cacheName,
         this.convert(listName),
         this.convertArray(values),
@@ -1873,10 +1779,6 @@ export class CacheDataClient implements IDataClient {
         ttl.refreshTtl(),
         truncateBackToSize
       );
-      this.logger.trace(
-        `'listConcatenateFront' request result: ${result.toString()}`
-      );
-      return result;
     });
   }
 
@@ -1938,20 +1840,12 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        "Issuing 'listFetch' request; listName: %s, startIndex: %s, endIndex: %s",
-        listName,
-        startIndex ?? 'null',
-        endIndex ?? 'null'
-      );
-      const result = await this.sendListFetch(
+      return await this.sendListFetch(
         cacheName,
         this.convert(listName),
         startIndex,
         endIndex
       );
-      this.logger.trace("'listFetch' request result: %s", result.toString());
-      return result;
     });
   }
 
@@ -2020,14 +1914,7 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        "Issuing 'listRetain' request; listName: %s, startIndex: %s, endIndex: %s, ttl: %s",
-        listName,
-        startIndex ?? 'null',
-        endIndex ?? 'null',
-        ttl.ttlSeconds.toString() ?? 'null'
-      );
-      const result = await this.sendListRetain(
+      return await this.sendListRetain(
         cacheName,
         this.convert(listName),
         startIndex,
@@ -2035,8 +1922,6 @@ export class CacheDataClient implements IDataClient {
         ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
         ttl.refreshTtl()
       );
-      this.logger.trace("'listRetain' request result: %s", result.toString());
-      return result;
     });
   }
 
@@ -2103,13 +1988,7 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(`Issuing 'listLength' request; listName: ${listName}`);
-      const result = await this.sendListLength(
-        cacheName,
-        this.convert(listName)
-      );
-      this.logger.trace(`'listLength' request result: ${result.toString()}`);
-      return result;
+      return await this.sendListLength(cacheName, this.convert(listName));
     });
   }
 
@@ -2162,13 +2041,7 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace("Issuing 'listPopBack' request");
-      const result = await this.sendListPopBack(
-        cacheName,
-        this.convert(listName)
-      );
-      this.logger.trace(`'listPopBack' request result: ${result.toString()}`);
-      return result;
+      return await this.sendListPopBack(cacheName, this.convert(listName));
     });
   }
 
@@ -2221,13 +2094,7 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace("Issuing 'listPopFront' request");
-      const result = await this.sendListPopFront(
-        cacheName,
-        this.convert(listName)
-      );
-      this.logger.trace(`'listPopFront' request result: ${result.toString()}`);
-      return result;
+      return await this.sendListPopFront(cacheName, this.convert(listName));
     });
   }
 
@@ -2283,15 +2150,7 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'listPushBack' request; listName: ${listName}, value length: ${
-          value.length
-        }, ${ttl.toString()}, truncateFrontToSize: ${
-          truncateFrontToSize?.toString() ?? 'null'
-        }`
-      );
-
-      const result = await this.sendListPushBack(
+      return await this.sendListPushBack(
         cacheName,
         this.convert(listName),
         this.convert(value),
@@ -2299,8 +2158,6 @@ export class CacheDataClient implements IDataClient {
         ttl.refreshTtl(),
         truncateFrontToSize
       );
-      this.logger.trace(`'listPushBack' request result: ${result.toString()}`);
-      return result;
     });
   }
 
@@ -2361,15 +2218,7 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'listPushFront' request; listName: ${listName}, value length: ${
-          value.length
-        }, ${ttl.toString()}, truncateBackToSize: ${
-          truncateBackToSize?.toString() ?? 'null'
-        }`
-      );
-
-      const result = await this.sendListPushFront(
+      return await this.sendListPushFront(
         cacheName,
         this.convert(listName),
         this.convert(value),
@@ -2377,8 +2226,6 @@ export class CacheDataClient implements IDataClient {
         ttl.refreshTtl(),
         truncateBackToSize
       );
-      this.logger.trace(`'listPushFront' request result: ${result.toString()}`);
-      return result;
     });
   }
 
@@ -2437,19 +2284,11 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'listRemoveValue' request; listName: ${listName}, value length: ${value.length}`
-      );
-
-      const result = await this.sendListRemoveValue(
+      return await this.sendListRemoveValue(
         cacheName,
         this.convert(listName),
         this.convert(value)
       );
-      this.logger.trace(
-        `'listRemoveValue' request result: ${result.toString()}`
-      );
-      return result;
     });
   }
 
@@ -2501,17 +2340,10 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'dictionaryFetch' request; dictionaryName: ${dictionaryName}`
-      );
-      const result = await this.sendDictionaryFetch(
+      return await this.sendDictionaryFetch(
         cacheName,
         this.convert(dictionaryName)
       );
-      this.logger.trace(
-        `'dictionaryFetch' request result: ${result.toString()}`
-      );
-      return result;
     });
   }
 
@@ -2566,13 +2398,7 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'dictionarySetField' request; field: ${field.toString()}, value length: ${
-          value.length
-        }, ttl: ${ttl.ttlSeconds.toString() ?? 'null'}`
-      );
-
-      const result = await this.sendDictionarySetField(
+      return await this.sendDictionarySetField(
         cacheName,
         this.convert(dictionaryName),
         this.convert(field),
@@ -2580,10 +2406,6 @@ export class CacheDataClient implements IDataClient {
         ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
         ttl.refreshTtl()
       );
-      this.logger.trace(
-        `'dictionarySetField' request result: ${result.toString()}`
-      );
-      return result;
     });
   }
 
@@ -2645,25 +2467,15 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'dictionarySetFields' request; elements: ${elements.toString()}, ttl: ${
-          ttl.ttlSeconds.toString() ?? 'null'
-        }`
-      );
-
       const dictionaryFieldValuePairs = this.convertElements(elements);
 
-      const result = await this.sendDictionarySetFields(
+      return await this.sendDictionarySetFields(
         cacheName,
         this.convert(dictionaryName),
         dictionaryFieldValuePairs,
         ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
         ttl.refreshTtl()
       );
-      this.logger.trace(
-        `'dictionarySetFields' request result: ${result.toString()}`
-      );
-      return result;
     });
   }
 
@@ -2721,18 +2533,11 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'dictionaryGetField' request; field: ${field.toString()}`
-      );
-      const result = await this.sendDictionaryGetField(
+      return await this.sendDictionaryGetField(
         cacheName,
         this.convert(dictionaryName),
         this.convert(field)
       );
-      this.logger.trace(
-        `'dictionaryGetField' request result: ${result.toString()}`
-      );
-      return result;
     });
   }
 
@@ -2809,18 +2614,11 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'dictionaryGetFields' request; fields: ${fields.toString()}`
-      );
-      const result = await this.sendDictionaryGetFields(
+      return await this.sendDictionaryGetFields(
         cacheName,
         this.convert(dictionaryName),
         this.convertArray(fields)
       );
-      this.logger.trace(
-        `'dictionaryGetFields' request result: ${result.toString()}`
-      );
-      return result;
     });
   }
 
@@ -2881,18 +2679,11 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'dictionaryRemoveField' request; field: ${field.toString()}`
-      );
-      const result = await this.sendDictionaryRemoveField(
+      return await this.sendDictionaryRemoveField(
         cacheName,
         this.convert(dictionaryName),
         this.convert(field)
       );
-      this.logger.trace(
-        `'dictionaryRemoveField' request result: ${result.toString()}`
-      );
-      return result;
     });
   }
 
@@ -2948,18 +2739,11 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'dictionaryRemoveFields' request; fields: ${fields.toString()}`
-      );
-      const result = await this.sendDictionaryRemoveFields(
+      return await this.sendDictionaryRemoveFields(
         cacheName,
         this.convert(dictionaryName),
         this.convertArray(fields)
       );
-      this.logger.trace(
-        `'dictionaryRemoveFields' request result: ${result.toString()}`
-      );
-      return result;
     });
   }
 
@@ -3014,17 +2798,10 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'dictionaryLength' request; dictionaryName: ${dictionaryName}`
-      );
-      const result = await this.sendDictionaryLength(
+      return await this.sendDictionaryLength(
         cacheName,
         this.convert(dictionaryName)
       );
-      this.logger.trace(
-        `'dictionaryLength' request result: ${result.toString()}`
-      );
-      return result;
     });
   }
 
@@ -3081,20 +2858,12 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'increment' request; field: ${field.toString()}, amount : ${amount}, ttl: ${
-          ttl?.toString() ?? 'null'
-        }`
-      );
-
-      const result = await this.sendIncrement(
+      return await this.sendIncrement(
         cacheName,
         this.convert(field),
         amount,
         (ttl || this.defaultTtlSeconds) * 1000
       );
-      this.logger.trace(`'increment' request result: ${result.toString()}`);
-      return result;
     });
   }
 
@@ -3156,13 +2925,7 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        `Issuing 'dictionaryIncrement' request; field: ${field.toString()}, amount : ${amount}, ttl: ${
-          ttl.ttlSeconds.toString() ?? 'null'
-        }`
-      );
-
-      const result = await this.sendDictionaryIncrement(
+      return await this.sendDictionaryIncrement(
         cacheName,
         this.convert(dictionaryName),
         this.convert(field),
@@ -3170,10 +2933,6 @@ export class CacheDataClient implements IDataClient {
         ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
         ttl.refreshTtl()
       );
-      this.logger.trace(
-        `'dictionaryIncrement' request result: ${result.toString()}`
-      );
-      return result;
     });
   }
 
@@ -3239,14 +2998,7 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        "Issuing 'sortedSetPutElement' request; value: %s, score : %s, ttl: %s",
-        truncateString(value.toString()),
-        score,
-        ttl.ttlSeconds.toString() ?? 'null'
-      );
-
-      const result = await this.sendSortedSetPutElement(
+      return await this.sendSortedSetPutElement(
         cacheName,
         this.convert(sortedSetName),
         this.convert(value),
@@ -3254,11 +3006,6 @@ export class CacheDataClient implements IDataClient {
         ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
         ttl.refreshTtl()
       );
-      this.logger.trace(
-        "'sortedSetPutElement' request result: %s",
-        result.toString()
-      );
-      return result;
     });
   }
 
@@ -3321,27 +3068,16 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        "Issuing 'sortedSetPutElements' request; elements : %s, ttl: %s",
-        elements.toString(),
-        ttl.ttlSeconds.toString() ?? 'null'
-      );
-
       const sortedSetValueScorePairs =
         this.convertSortedSetMapOrRecord(elements);
 
-      const result = await this.sendSortedSetPutElements(
+      return await this.sendSortedSetPutElements(
         cacheName,
         this.convert(sortedSetName),
         sortedSetValueScorePairs,
         ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
         ttl.refreshTtl()
       );
-      this.logger.trace(
-        "'sortedSetPutElements' request result: %s",
-        result.toString()
-      );
-      return result;
     });
   }
 
@@ -3402,25 +3138,13 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        "Issuing 'sortedSetFetchByRank' request; startRank: %s, endRank : %s, order: %s",
-        startRank.toString() ?? 'null',
-        endRank?.toString() ?? 'null',
-        order.toString()
-      );
-
-      const result = await this.sendSortedSetFetchByRank(
+      return await this.sendSortedSetFetchByRank(
         cacheName,
         this.convert(sortedSetName),
         order,
         startRank,
         endRank
       );
-      this.logger.trace(
-        "'sortedSetFetchByRank' request result: %s",
-        result.toString()
-      );
-      return result;
     });
   }
 
@@ -3530,16 +3254,7 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        "Issuing 'sortedSetFetchByScore' request; minScore: %s, maxScore : %s, order: %s, offset: %s, count: %s",
-        minScore?.toString() ?? 'null',
-        maxScore?.toString() ?? 'null',
-        order.toString(),
-        offset?.toString() ?? 'null',
-        count?.toString() ?? 'null'
-      );
-
-      const result = await this.sendSortedSetFetchByScore(
+      return await this.sendSortedSetFetchByScore(
         cacheName,
         this.convert(sortedSetName),
         order,
@@ -3548,12 +3263,6 @@ export class CacheDataClient implements IDataClient {
         offset,
         count
       );
-
-      this.logger.trace(
-        "'sortedSetFetchByScore' request result: %s",
-        result.toString()
-      );
-      return result;
     });
   }
 
@@ -3668,22 +3377,11 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        "Issuing 'sortedSetGetRank' request; value: %s",
-        truncateString(value.toString())
-      );
-
-      const result = await this.sendSortedSetGetRank(
+      return await this.sendSortedSetGetRank(
         cacheName,
         this.convert(sortedSetName),
         this.convert(value)
       );
-
-      this.logger.trace(
-        "'sortedSetGetRank' request result: %s",
-        truncateString(result.toString())
-      );
-      return result;
     });
   }
 
@@ -3770,22 +3468,11 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        "Issuing 'sortedSetGetScores' request; values: %s",
-        truncateString(values.toString())
-      );
-
-      const result = await this.sendSortedSetGetScores(
+      return await this.sendSortedSetGetScores(
         cacheName,
         this.convert(sortedSetName),
         values.map(value => this.convert(value))
       );
-
-      this.logger.trace(
-        "'sortedSetGetScores' request result: %s",
-        truncateString(result.toString())
-      );
-      return result;
     });
   }
 
@@ -3847,12 +3534,7 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        "Issuing 'sortedSetIncrementScore' request; value: %s",
-        truncateString(value.toString())
-      );
-
-      const result = await this.sendSortedSetIncrementScore(
+      return await this.sendSortedSetIncrementScore(
         cacheName,
         this.convert(sortedSetName),
         this.convert(value),
@@ -3860,12 +3542,6 @@ export class CacheDataClient implements IDataClient {
         ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
         ttl.refreshTtl()
       );
-
-      this.logger.trace(
-        "'sortedSetIncrementScore' request result: %s",
-        truncateString(result.toString())
-      );
-      return result;
     });
   }
 
@@ -3929,19 +3605,11 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace("Issuing 'sortedSetRemoveElement' request");
-
-      const result = await this.sendSortedSetRemoveElement(
+      return await this.sendSortedSetRemoveElement(
         cacheName,
         this.convert(sortedSetName),
         this.convert(value)
       );
-
-      this.logger.trace(
-        "'sortedSetRemoveElement' request result: %s",
-        truncateString(result.toString())
-      );
-      return result;
     });
   }
 
@@ -3998,19 +3666,11 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace("Issuing 'sortedSetRemoveElements' request");
-
-      const result = await this.sendSortedSetRemoveElements(
+      return await this.sendSortedSetRemoveElements(
         cacheName,
         this.convert(sortedSetName),
         this.convertArray(values)
       );
-
-      this.logger.trace(
-        "'sortedSetRemoveElements' request result: %s",
-        truncateString(result.toString())
-      );
-      return result;
     });
   }
 
@@ -4066,18 +3726,10 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace("Issuing 'sortedSetLength' request");
-
-      const result = await this.sendSortedSetLength(
+      return await this.sendSortedSetLength(
         cacheName,
         this.convert(sortedSetName)
       );
-
-      this.logger.trace(
-        "'sortedSetLength' request result: %s",
-        truncateString(result.toString())
-      );
-      return result;
     });
   }
 
@@ -4137,24 +3789,12 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        "Issuing 'sortedSetLengthByScore' request; minScore: %s, maxScore: %s",
-        minScore?.toString() ?? 'null',
-        maxScore?.toString() ?? 'null'
-      );
-
-      const result = await this.sendSortedSetLengthByScore(
+      return await this.sendSortedSetLengthByScore(
         cacheName,
         this.convert(sortedSetName),
         minScore,
         maxScore
       );
-
-      this.logger.trace(
-        "'sortedSetLengthByScore' request result: %s",
-        truncateString(result.toString())
-      );
-      return result;
     });
   }
 
@@ -4452,15 +4092,7 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace("Issuing 'keyExists' request");
-
-      const result = await this.sendKeyExists(cacheName, this.convert(key));
-
-      this.logger.trace(
-        "'keyExists' request result: %s",
-        truncateString(result.toString())
-      );
-      return result;
+      return await this.sendKeyExists(cacheName, this.convert(key));
     });
   }
 
@@ -4511,22 +4143,11 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        "Issuing 'updateTtl' request; ttlMilliseconds: %s",
-        ttlMilliseconds?.toString() ?? 'null'
-      );
-
-      const result = await this.sendUpdateTtl(
+      return await this.sendUpdateTtl(
         cacheName,
         this.convert(key),
         ttlMilliseconds
       );
-
-      this.logger.trace(
-        "'updateTtl' request result: %s",
-        truncateString(result.toString())
-      );
-      return result;
     });
   }
 
@@ -4579,18 +4200,7 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace("Issuing 'keysExist' request");
-
-      const result = await this.sendKeysExist(
-        cacheName,
-        this.convertArray(keys)
-      );
-
-      this.logger.trace(
-        "'keysExist' request result: %s",
-        truncateString(result.toString())
-      );
-      return result;
+      return await this.sendKeysExist(cacheName, this.convertArray(keys));
     });
   }
 
@@ -4641,22 +4251,11 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        "Issuing 'increaseTtl' request; ttlMilliseconds: %s",
-        ttlMilliseconds?.toString() ?? 'null'
-      );
-
-      const result = await this.sendIncreaseTtl(
+      return await this.sendIncreaseTtl(
         cacheName,
         this.convert(key),
         ttlMilliseconds
       );
-
-      this.logger.trace(
-        "'increaseTtl' request result: %s",
-        truncateString(result.toString())
-      );
-      return result;
     });
   }
 
@@ -4711,22 +4310,11 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      this.logger.trace(
-        "Issuing 'decreaseTtl' request; ttlMilliseconds: %s",
-        ttlMilliseconds?.toString() ?? 'null'
-      );
-
-      const result = await this.sendDecreaseTtl(
+      return await this.sendDecreaseTtl(
         cacheName,
         this.convert(key),
         ttlMilliseconds
       );
-
-      this.logger.trace(
-        "'decreaseTtl' request result: %s",
-        truncateString(result.toString())
-      );
-      return result;
     });
   }
 
