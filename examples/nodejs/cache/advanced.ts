@@ -48,8 +48,6 @@ async function createCacheExample() {
     logger.info('cache already exists');
   } else if (createCacheResponse instanceof CreateCache.Error) {
     throw createCacheResponse.innerException();
-  } else {
-    throw new Error(`Unexpected response: ${createCacheResponse.toString()}`);
   }
 }
 
@@ -63,8 +61,6 @@ async function listCachesExample() {
     listResponse.getCaches().forEach(cacheInfo => {
       logger.info(`${cacheInfo.getName()}`);
     });
-  } else {
-    throw new Error(`Unrecognized response: ${listResponse.toString()}`);
   }
 }
 

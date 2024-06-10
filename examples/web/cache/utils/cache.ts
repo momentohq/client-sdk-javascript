@@ -42,7 +42,5 @@ export async function ensureCacheExists(cacheName: string): Promise<void> {
     console.log('Cache already exists. Continuing.');
   } else if (createCacheResponse instanceof CreateCache.Error) {
     throw createCacheResponse.innerException();
-  } else {
-    throw new Error(`Unknown create cache response type: ${createCacheResponse.toString()}`);
   }
 }
