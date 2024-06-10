@@ -5,7 +5,7 @@ import {CacheKeysExistResponse} from './enums';
 const TEXT_DECODER = new TextDecoder();
 
 interface IResponse {
-  value(): boolean[] | undefined;
+  exists(): boolean[] | undefined;
   readonly type: CacheKeysExistResponse;
 }
 
@@ -29,20 +29,12 @@ export class Success extends BaseResponseSuccess implements IResponse {
    * A list of booleans indicating whether each given key was found in the cache.
    * @returns {boolean[]}
    */
-  public value(): boolean[] {
-    return this._exists;
-  }
-
-  /**
-   * A list of booleans indicating whether each given key was found in the cache.
-   * @returns {boolean[]}
-   */
   public exists(): boolean[] {
     return this._exists;
   }
 
   /**
-   * A record of key-value pairs indicating whether each given key was found in the cache.
+   * A record of key-exists pairs indicating whether each given key was found in the cache.
    * @returns {Record<string, boolean>}
    */
   public valueRecord(): Record<string, boolean> {
@@ -75,7 +67,7 @@ export class Error extends BaseResponseError implements IResponse {
     super(_innerException);
   }
 
-  value(): undefined {
+  exists(): undefined {
     return undefined;
   }
 }
