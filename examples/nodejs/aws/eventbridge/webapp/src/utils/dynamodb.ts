@@ -3,10 +3,11 @@ import AWS from "aws-sdk";
 const awsAccesskeyId = import.meta.env.VITE_AWS_ACCESS_KEY_ID;
 const awsSecretAccessKey = import.meta.env.VITE_AWS_SECRET_ACCESS_KEY;
 const awsSessionToken = import.meta.env.VITE_AWS_SESSION_TOKEN;
+const awsRegion = import.meta.env.VITE_AWS_REGION;
 export const tableName = "weather-stats-demo"
 
 AWS.config.update({
-  region: "us-west-2",
+  region: awsRegion,
   credentials: {
     accessKeyId: awsAccesskeyId,
     secretAccessKey: awsSecretAccessKey,

@@ -1,9 +1,11 @@
 export const ArrowRight = () => {
   return (
-    <svg className="h-10 w-10 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"
-         strokeLinecap="round" strokeLinejoin="round">
+    <svg className="h-8 w-8 text-gray-500" width="24" height="24" viewBox="0 0 24 24" strokeWidth="2"
+         stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z"/>
       <line x1="5" y1="12" x2="19" y2="12"/>
-      <polyline points="12 5 19 12 12 19"/>
+      <line x1="13" y1="18" x2="19" y2="12"/>
+      <line x1="13" y1="6" x2="19" y2="12"/>
     </svg>
   );
 };

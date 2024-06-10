@@ -20,11 +20,19 @@ MOMENTO_API_KEY=<your-momento-api-key>
 MOMENTO_API_ENDPOINT=<your-momento-api-endpoint>
 AWS_ACCESS_KEY_ID=<your-aws-access-key-id>
 AWS_SECRET_ACCESS_KEY=<your-aws-secret-access-key>
-AWS_SESSION_TOKEN=<your-aws-session-token>
+AWS_SESSION_TOKEN=<your-aws-session-token> # Optional, if you are using temporary credentials
 ```
 
 To deploy and run the application, run the following script:
 
+
 ```bash
 ./deploy-and-run.sh
 ```
+This bash script automates the setup and deployment of a project by checking for a .env file, loading environment variables, running deployment scripts, and starting a web application.
+
+
+
+
+
+

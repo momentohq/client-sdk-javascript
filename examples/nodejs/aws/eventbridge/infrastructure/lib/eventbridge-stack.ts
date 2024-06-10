@@ -162,7 +162,7 @@ export class EventbridgeStack extends cdk.Stack {
 
     // Add target parameters to the pipes
     cachePutCfnPipe.targetParameters = {
-      inputTemplate: "{\n  \"Location\": <$.dynamodb.Keys.Location.S>, \n  \"Max Temp\": <$.dynamodb.NewImage.MaxTemp.N>,\n  \"Min Temp\": <$.dynamodb.NewImage.MinTemp.N>, \n  \"Chances of Precipitation\": <$.dynamodb.NewImage.ChancesOfPrecipitation.N>\n}",
+      inputTemplate: "{\n  \"Location\": <$.dynamodb.Keys.Location.S>, \n  \"MaxTemp\": <$.dynamodb.NewImage.MaxTemp.N>,\n  \"MinTemp\": <$.dynamodb.NewImage.MinTemp.N>, \n  \"ChancesOfPrecipitation\": <$.dynamodb.NewImage.ChancesOfPrecipitation.N>\n}",
       httpParameters: {
         pathParameterValues: [cacheName],
         queryStringParameters: {
@@ -173,7 +173,7 @@ export class EventbridgeStack extends cdk.Stack {
     };
 
     topicPublishCfnPipe.targetParameters = {
-      inputTemplate: "{\n \"Event Type\": <$.eventName>,  \"Location\": <$.dynamodb.Keys.Location.S>, \n  \"Max Temp\": <$.dynamodb.NewImage.MaxTemp.N>,\n  \"Min Temp\": <$.dynamodb.NewImage.MinTemp.N>, \n  \"Chances of Precipitation\": <$.dynamodb.NewImage.ChancesOfPrecipitation.N>\n}",
+      inputTemplate: "{\n \"EventType\": <$.eventName>,  \"Location\": <$.dynamodb.Keys.Location.S>, \n  \"MaxTemp\": <$.dynamodb.NewImage.MaxTemp.N>,\n  \"MinTemp\": <$.dynamodb.NewImage.MinTemp.N>, \n  \"ChancesOfPrecipitation\": <$.dynamodb.NewImage.ChancesOfPrecipitation.N>\n}",
       httpParameters: {
         pathParameterValues: [cacheName, topicName],
       },
