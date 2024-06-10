@@ -23,6 +23,7 @@ import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 import {CheckCircle} from "./svgs/check-circle";
 import {BanCircle} from "./svgs/ban-circle";
+import {tableName} from "./utils/dynamodb";
 
 const App = () => {
   const [location, setLocation] = useState("");
@@ -164,7 +165,7 @@ const App = () => {
               <div className="bg-gray-100 p-4 rounded-lg text-sm">
                 <pre>
                   <code className={"whitespace-pre-wrap"}>
-                    {`ddbClient.putItem({TableName: 'weather-stats-demo', Item: item})`}
+                    {`ddbClient.putItem({TableName: ${tableName}, Item: item})`}
                   </code>
                 </pre>
               </div>
