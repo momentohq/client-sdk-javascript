@@ -1,35 +1,52 @@
-<img src="{{LOGO_URL}}" alt="logo" width="400"/>
+# Welcome to Momento <-> Eventbridge Integration Example Project
 
-[![project status]({{PROJECT_STATUS_BADGE_URL}})]({{PROJECT_STATUS_LINK}})
-[![project stability]({{PROJECT_STABILITY_BADGE_URL}})]({{PROJECT_STABILITY_LINK}})
-
-
-# {{PROJECT_TITLE}}
-
-## About
-{{PROJECT_DESCRIPTION}}
+The project demonstrates a write-through cache pattern for DynamoDB using DynamoDB Streams, AWS EventBridge and Momento.
+The app can be used to create, update and delete items in a DynamoDB table and the changes will be reflected in the cache/topic in real-time.
 
 ### **Prerequisites:**
-- Momento Cache: {{CACHE_NAME}}. If cache does not exists, can create one using the [momento console](https://console.gomomento.com/).
+
+- Momento Cache: momento-eventbridge-cache. If cache does not exists, can create one using the [momento console](https://console.gomomento.com/) .
 - Momento API Key, can be created using [momento console](https://console.gomomento.com/) if you haven’t already created one
-- AWS Account AccessId, AWS Secret Key (and AWS Session Token if you are using temporary credentials)
+- HTTP API endpoint the same region as Momento API Key. You can copy the endpoint from the console after creating the API Key or refer to the [Regions Section here in the documentation](https://docs.momentohq.com/topics/develop/api-reference/http-api#regions)
+- AWS Account AccessId, Aws Secret Key (and AWS Session Token if you are using temporary credentials)
 
-## Getting Started
-First, edit the `.env.development` file (create one if not exists) with your token vending machine url and your aws credentials:
+### **Configuration**
 
-```bash
-VITE_AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
-VITE_AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
-VITE_AWS_SESSION_TOKEN=<AWS_SESSION_TOKEN> # Optional, if you are using temporary credentials
-VITE_MOMENTO_API_KEY=<YOUR_MOMENTO_API_KEY>
-```
-
-Then, install all dependencies and run the development server:
+The source code for the CDK application lives in the `infrastructure` directory, and web application source code lives in the `webapp` directory.
+You need to create a `.env` file in the root directory of the project with the following environment variables:
 
 ```bash
-npm install
-npm run dev
+MOMENTO_API_KEY=<your-momento-api-key>
+MOMENTO_API_ENDPOINT=<your-momento-api-endpoint>
+AWS_ACCESS_KEY_ID=<your-aws-access-key-id>
+AWS_SECRET_ACCESS_KEY=<your-aws-secret-access-key>
+AWS_SESSION_TOKEN=<your-aws-session-token> # Optional, if you are using temporary credentials
 ```
 
-Open [http://localhost:5173](http://localhost:5173) with your browser to explore the demo app.
+### **Deploying and Running the Demo WebApp:**
+To deploy and run the application, run the following script:
 
+
+```bash
+./deploy-and-run.sh
+```
+This bash script automates the setup and deployment of a project by checking for a .env file, loading environment variables, running deployment scripts, and starting a web application.
+
+---
+
+OPTIONAL: If you want to deploy the application and test it using the CLI, follow the steps below:
+### **Deploying and Testing using CLI:**
+
+To deploy and test the application using cli, open two terminals:
+- In the first terminal, run the following command to subscribe to the Momento topic:
+
+```bash
+./subscribe-to-topic.sh
+```
+- In the second terminal, run the following command to deploy the application and test the application:
+
+```bash
+./deploy-and-run-cli.sh
+```
+
+The first terminal will subscribe to the Momento topic. The second terminal will deploy the application and create a dummy record in the DynamoDB table. The changes will be reflected in the Momento cache/topic.

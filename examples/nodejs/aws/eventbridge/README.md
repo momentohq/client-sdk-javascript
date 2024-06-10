@@ -10,7 +10,7 @@ The app can be used to create, update and delete items in a DynamoDB table and t
 - HTTP API endpoint the same region as Momento API Key. You can copy the endpoint from the console after creating the API Key or refer to the [Regions Section here in the documentation](https://docs.momentohq.com/topics/develop/api-reference/http-api#regions)
 - AWS Account AccessId, Aws Secret Key (and AWS Session Token if you are using temporary credentials)
 
-### **Deploying and Running the Demo App:**
+### **Configuration**
 
 The source code for the CDK application lives in the `infrastructure` directory, and web application source code lives in the `webapp` directory.
 You need to create a `.env` file in the root directory of the project with the following environment variables:
@@ -23,6 +23,7 @@ AWS_SECRET_ACCESS_KEY=<your-aws-secret-access-key>
 AWS_SESSION_TOKEN=<your-aws-session-token> # Optional, if you are using temporary credentials
 ```
 
+### **Deploying and Running the Demo WebApp:**
 To deploy and run the application, run the following script:
 
 
@@ -31,8 +32,21 @@ To deploy and run the application, run the following script:
 ```
 This bash script automates the setup and deployment of a project by checking for a .env file, loading environment variables, running deployment scripts, and starting a web application.
 
+---
 
+OPTIONAL: If you want to deploy the application and test it using the CLI, follow the steps below:
+### **Deploying and Testing using CLI:**
 
+To deploy and test the application using cli, open two terminals:
+- In the first terminal, run the following command to subscribe to the Momento topic:
 
+```bash
+./subscribe-to-topic.sh
+```
+- In the second terminal, run the following command to deploy the application and test the application:
 
+```bash
+./deploy-and-run-cli.sh
+```
 
+The first terminal will subscribe to the Momento topic. The second terminal will deploy the application and create a dummy record in the DynamoDB table. The changes will be reflected in the Momento cache/topic.

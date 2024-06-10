@@ -33,10 +33,7 @@ const App = () => {
   const [isSubscribedToTopic, setIsSubscribedToTopic] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [doesCacheExist, setDoesCacheExist] = useState<boolean>(true);
-  const [isInfoModalVisible, setIsInfoModalVisible] = useState<boolean>(() => {
-    const infoModalClosed = localStorage.getItem("isInfoModalClosed");
-    return infoModalClosed !== "true";
-  });
+  const [isInfoModalVisible, setIsInfoModalVisible] = useState<boolean>(true);
   const [operation, setOperation] = useState<string>("create");
 
   const handleSetMessages = (message: Message) => {
@@ -231,7 +228,7 @@ const App = () => {
             <div className="bg-gray-100 p-2 rounded-lg text-sm">
                 <pre>
                   <code className={"whitespace-pre-wrap"}>
-                    {`topicClient.subscribe('the-weather-cache-name', 'the-weather-topic-name', {onItem: onItemCallback})`}
+                    {`topicClient.subscribe(${cacheName}, ${topicName}, {onItem: onItemCallback})`}
                   </code>
                 </pre>
             </div>
@@ -251,7 +248,7 @@ const App = () => {
             <div className="bg-gray-100 p-2 rounded-lg text-sm">
                 <pre>
                   <code className={"whitespace-pre-wrap"}>
-                    {`cacheClient.get('the-weather-cache-name', ${location ? location : "key"})`}
+                    {`cacheClient.get(${cacheName}, ${location ? location : "key"})`}
                   </code>
                 </pre>
             </div>
@@ -264,7 +261,6 @@ const App = () => {
         isVisible={isInfoModalVisible}
         onClose={() => {
           setIsInfoModalVisible(!isInfoModalVisible)
-          localStorage.setItem("isInfoModalClosed", "true");
         }
         }
       />
