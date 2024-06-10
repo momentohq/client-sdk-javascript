@@ -8,6 +8,7 @@ import {CacheItemGetTypeResponse} from './enums';
 import {ItemType} from '../../utils';
 
 interface IResponse {
+  value(): ItemType | undefined;
   readonly type: CacheItemGetTypeResponse;
 }
 
@@ -25,7 +26,15 @@ export class Hit extends ResponseBase implements IResponse {
 
   /**
    * Returns the type of key.
-   * @returns string
+   * @returns {ItemType}
+   */
+  public value(): ItemType {
+    return this.keyType;
+  }
+
+  /**
+   * Returns the type of key.
+   * @returns {ItemType}
    */
   public itemType(): ItemType {
     return this.keyType;
@@ -45,6 +54,10 @@ export class Miss extends BaseResponseMiss implements IResponse {
   constructor() {
     super();
   }
+
+  value(): undefined {
+    return undefined;
+  }
 }
 
 /**
@@ -63,6 +76,10 @@ export class Error extends BaseResponseError implements IResponse {
 
   constructor(_innerException: SdkError) {
     super(_innerException);
+  }
+
+  value(): undefined {
+    return undefined;
   }
 }
 

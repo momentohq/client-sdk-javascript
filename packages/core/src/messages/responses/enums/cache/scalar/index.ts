@@ -93,9 +93,11 @@ export enum CacheItemGetTtlResponse {
   Error = 'Error',
 }
 
+// Note: update ttl has no NotSet response type
+// as it sets the ttl unconditionally. We can still
+// add this NotSet case later if actually needed.
 export enum CacheUpdateTtlResponse {
   Set = 'Set',
-  NotSet = 'NotSet',
   Miss = 'Miss',
   Error = 'Error',
 }

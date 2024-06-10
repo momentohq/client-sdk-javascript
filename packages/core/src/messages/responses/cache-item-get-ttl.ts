@@ -7,6 +7,7 @@ import {
 import {CacheItemGetTtlResponse} from './enums';
 
 interface IResponse {
+  value(): number | undefined;
   readonly type: CacheItemGetTtlResponse;
 }
 
@@ -24,7 +25,15 @@ export class Hit extends ResponseBase implements IResponse {
 
   /**
    * Returns the remaining ttl in milliseconds for object stored at passed key.
-   * @returns string
+   * @returns number
+   */
+  public value(): number {
+    return this.ttlMillis;
+  }
+
+  /**
+   * Returns the remaining ttl in milliseconds for object stored at passed key.
+   * @returns number
    */
   public remainingTtlMillis(): number {
     return this.ttlMillis;
@@ -44,6 +53,10 @@ export class Miss extends BaseResponseMiss implements IResponse {
   constructor() {
     super();
   }
+
+  value(): undefined {
+    return undefined;
+  }
 }
 
 /**
@@ -61,6 +74,10 @@ export class Error extends BaseResponseError implements IResponse {
 
   constructor(_innerException: SdkError) {
     super(_innerException);
+  }
+
+  value(): undefined {
+    return undefined;
   }
 }
 

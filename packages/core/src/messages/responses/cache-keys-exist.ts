@@ -5,6 +5,7 @@ import {CacheKeysExistResponse} from './enums';
 const TEXT_DECODER = new TextDecoder();
 
 interface IResponse {
+  value(): boolean[] | undefined;
   readonly type: CacheKeysExistResponse;
 }
 
@@ -22,6 +23,14 @@ export class Success extends BaseResponseSuccess implements IResponse {
     super();
     this._keys = keys;
     this._exists = exists;
+  }
+
+  /**
+   * A list of booleans indicating whether each given key was found in the cache.
+   * @returns {boolean[]}
+   */
+  public value(): boolean[] {
+    return this._exists;
   }
 
   /**
@@ -60,11 +69,15 @@ export class Success extends BaseResponseSuccess implements IResponse {
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
 export class Error extends BaseResponseError implements IResponse {
+  readonly type: CacheKeysExistResponse.Error = CacheKeysExistResponse.Error;
+
   constructor(_innerException: SdkError) {
     super(_innerException);
   }
 
-  readonly type: CacheKeysExistResponse.Error = CacheKeysExistResponse.Error;
+  value(): undefined {
+    return undefined;
+  }
 }
 
 export type Response = Success | Error;

@@ -3,6 +3,7 @@ import {BaseResponseError, BaseResponseSuccess} from './response-base';
 import {CacheKeyExistsResponse} from './enums';
 
 interface IResponse {
+  value(): boolean | undefined;
   readonly type: CacheKeyExistsResponse;
 }
 
@@ -18,6 +19,14 @@ export class Success extends BaseResponseSuccess implements IResponse {
   constructor(exists: boolean[]) {
     super();
     this._exists = exists[0];
+  }
+
+  /**
+   * Returns the boolean indicating whether the given key was found in the cache.
+   * @returns {boolean}
+   */
+  public value(): boolean {
+    return this._exists;
   }
 
   /**
@@ -44,11 +53,15 @@ export class Success extends BaseResponseSuccess implements IResponse {
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
 export class Error extends BaseResponseError implements IResponse {
+  readonly type: CacheKeyExistsResponse.Error = CacheKeyExistsResponse.Error;
+
   constructor(_innerException: SdkError) {
     super(_innerException);
   }
 
-  readonly type: CacheKeyExistsResponse.Error = CacheKeyExistsResponse.Error;
+  value(): undefined {
+    return undefined;
+  }
 }
 
 export type Response = Success | Error;

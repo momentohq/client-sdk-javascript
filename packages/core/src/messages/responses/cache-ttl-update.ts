@@ -18,13 +18,6 @@ export class Set extends ResponseBase implements IResponse {
 }
 
 /**
- * Indicates the ttl was not updated due to a failed condition.
- */
-export class NotSet extends ResponseBase implements IResponse {
-  readonly type: CacheUpdateTtlResponse.NotSet = CacheUpdateTtlResponse.NotSet;
-}
-
-/**
  * Indicates the requested item was not found in the cache.
  */
 export class Miss extends BaseResponseMiss implements IResponse {
@@ -49,4 +42,4 @@ export class Error extends BaseResponseError implements IResponse {
   readonly type: CacheUpdateTtlResponse.Error = CacheUpdateTtlResponse.Error;
 }
 
-export type Response = Set | NotSet | Miss | Error;
+export type Response = Set | Miss | Error;
