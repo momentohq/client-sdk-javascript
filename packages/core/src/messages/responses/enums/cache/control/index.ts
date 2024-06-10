@@ -1,5 +1,6 @@
 export enum CreateCacheResponse {
   Success = 'Success',
+  AlreadyExists = 'AlreadyExists',
   Error = 'Error',
 }
 

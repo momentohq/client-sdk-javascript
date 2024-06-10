@@ -1,5 +1,9 @@
 import {SdkError} from '../../errors';
-import {BaseResponseError, BaseResponseSuccess} from './response-base';
+import {
+  BaseResponseError,
+  BaseResponseSuccess,
+  ResponseBase,
+} from './response-base';
 import {CreateCacheResponse} from './enums';
 
 interface IResponse {
@@ -14,10 +18,11 @@ export class Success extends BaseResponseSuccess implements IResponse {
 }
 
 /**
- * Indicates that the cache already exists.
+ * Indicates that the cache already exists and no new cache was created.
  */
-export class AlreadyExists extends BaseResponseSuccess implements IResponse {
-  readonly type: CreateCacheResponse.Success = CreateCacheResponse.Success;
+export class AlreadyExists extends ResponseBase implements IResponse {
+  readonly type: CreateCacheResponse.AlreadyExists =
+    CreateCacheResponse.AlreadyExists;
 }
 
 /**
