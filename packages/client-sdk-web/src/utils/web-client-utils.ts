@@ -2,25 +2,12 @@ import {CredentialProvider} from '@gomomento/sdk-core';
 
 export function convertToB64String(v: string | Uint8Array): string {
   if (typeof v === 'string') {
-    const encodedString = encodeURIComponent(v);
-    let decodedString = '';
-    for (let i = 0; i < encodedString.length; i++) {
-      if (encodedString[i] === '%') {
-        const hex = encodedString.substr(i + 1, 2);
-        decodedString += String.fromCharCode(parseInt(hex, 16));
-        i += 2;
-      } else {
-        decodedString += encodedString[i];
-      }
-    }
-    return btoa(decodedString);
+    const utf8Bytes = new TextEncoder().encode(v);
+    const binaryString = String.fromCharCode(...utf8Bytes);
+    return btoa(binaryString);
   } else {
-    const chars = new Uint8Array(v);
-    let binary = '';
-    for (let i = 0; i < chars.length; i++) {
-      binary += String.fromCharCode(chars[i]);
-    }
-    return btoa(binary);
+    const binaryString = String.fromCharCode(...v);
+    return btoa(binaryString);
   }
 }
 
