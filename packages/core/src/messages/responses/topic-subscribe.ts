@@ -4,7 +4,7 @@ import {SubscriptionState} from '../../internal/subscription-state';
 import {TopicSubscribeResponse} from './enums';
 
 interface IResponse {
-  type: TopicSubscribeResponse;
+  readonly type: TopicSubscribeResponse;
 }
 
 /**

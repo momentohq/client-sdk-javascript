@@ -3,7 +3,7 @@ import {BaseResponseError, BaseResponseSuccess} from './response-base';
 import {TopicPublishResponse} from './enums';
 
 interface IResponse {
-  type: TopicPublishResponse;
+  readonly type: TopicPublishResponse;
 }
 
 /**
