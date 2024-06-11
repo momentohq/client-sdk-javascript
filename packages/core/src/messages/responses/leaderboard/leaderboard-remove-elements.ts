@@ -1,40 +1,18 @@
 import {SdkError} from '../../../errors';
-import {ResponseBase, ResponseError, ResponseSuccess} from '../response-base';
+import {BaseResponseError, BaseResponseSuccess} from '../response-base';
+import {LeaderboardRemoveElementsResponse} from '../enums';
 
-/**
- * Parent response type for a leaderboard remove elements request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Success}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof LeaderboardRemoveElements.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `LeaderboardRemoveElements.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
- */
-export abstract class Response extends ResponseBase {}
-
-class _Success extends Response {}
+interface IResponse {
+  readonly type: LeaderboardRemoveElementsResponse;
+}
 
 /**
  * Indicates a Successful leaderboard remove elements request.
  */
-export class Success extends ResponseSuccess(_Success) {}
-
-class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
-    super();
-  }
+export class Success extends BaseResponseSuccess implements IResponse {
+  readonly type: LeaderboardRemoveElementsResponse.Success =
+    LeaderboardRemoveElementsResponse.Success;
 }
-
 /**
  * Indicates that an error occurred during the leaderboard remove elements request.
  *
@@ -45,4 +23,13 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  readonly type: LeaderboardRemoveElementsResponse.Error =
+    LeaderboardRemoveElementsResponse.Error;
+
+  constructor(_innerException: SdkError) {
+    super(_innerException);
+  }
+}
+
+export type Response = Success | Error;
