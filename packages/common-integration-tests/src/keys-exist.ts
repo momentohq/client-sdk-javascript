@@ -103,7 +103,7 @@ export function runKeysExistTest(
         expect(response).toBeInstanceOf(CacheKeysExist.Success);
       }, `expected SUCCESS but got ${response.toString()}`);
 
-      const success = response as CacheKeyExists.Success;
+      const success = response as CacheKeysExist.Success;
       expect(success.exists()).toEqual([]);
     });
 

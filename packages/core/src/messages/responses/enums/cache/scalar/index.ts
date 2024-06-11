@@ -70,3 +70,48 @@ export enum CacheSetIfNotExistsResponse {
   NotStored = 'NotStored',
   Error = 'Error',
 }
+
+export enum CacheKeyExistsResponse {
+  Success = 'Success',
+  Error = 'Error',
+}
+
+export enum CacheKeysExistResponse {
+  Success = 'Success',
+  Error = 'Error',
+}
+
+export enum CacheItemGetTypeResponse {
+  Hit = 'Hit',
+  Miss = 'Miss',
+  Error = 'Error',
+}
+
+export enum CacheItemGetTtlResponse {
+  Hit = 'Hit',
+  Miss = 'Miss',
+  Error = 'Error',
+}
+
+// Note: update ttl has no NotSet response type
+// as it sets the ttl unconditionally. We can still
+// add this NotSet case later if actually needed.
+export enum CacheUpdateTtlResponse {
+  Set = 'Set',
+  Miss = 'Miss',
+  Error = 'Error',
+}
+
+export enum CacheIncreaseTtlResponse {
+  Set = 'Set',
+  NotSet = 'NotSet',
+  Miss = 'Miss',
+  Error = 'Error',
+}
+
+export enum CacheDecreaseTtlResponse {
+  Set = 'Set',
+  NotSet = 'NotSet',
+  Miss = 'Miss',
+  Error = 'Error',
+}
