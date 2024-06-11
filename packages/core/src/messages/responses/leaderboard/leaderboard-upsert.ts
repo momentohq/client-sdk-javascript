@@ -3,11 +3,11 @@ import {BaseResponseError, BaseResponseSuccess} from '../response-base';
 import {LeaderboardUpsertResponse} from '../enums';
 
 interface IResponse {
-  type: LeaderboardUpsertResponse;
+  readonly type: LeaderboardUpsertResponse;
 }
 
 /**
- * Indicates a Successful leaderboard length request.
+ * Indicates a Successful leaderboard upsert request.
  */
 export class Success extends BaseResponseSuccess implements IResponse {
   readonly type: LeaderboardUpsertResponse.Success =

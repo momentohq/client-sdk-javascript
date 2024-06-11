@@ -3,7 +3,7 @@ import {BaseResponseError, BaseResponseSuccess} from '../response-base';
 import {LeaderboardLengthResponse} from '../enums';
 
 interface IResponse {
-  type: LeaderboardLengthResponse;
+  readonly type: LeaderboardLengthResponse;
 }
 
 /**

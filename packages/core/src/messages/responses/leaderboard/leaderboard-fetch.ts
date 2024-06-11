@@ -4,7 +4,7 @@ import {BaseResponseError, BaseResponseSuccess} from '../response-base';
 import {LeaderboardFetchResponse} from '../enums';
 
 interface IResponse {
-  type: LeaderboardFetchResponse;
+  readonly type: LeaderboardFetchResponse;
 }
 
 /**
