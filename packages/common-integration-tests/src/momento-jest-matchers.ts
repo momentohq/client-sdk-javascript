@@ -73,7 +73,10 @@ const toBePermissionDeniedForCacheSet: MatcherFunction = function (
 const toBePermissionDeniedForTopicSubscribe: MatcherFunction = function (
   received: unknown
 ) {
-  if (!(received instanceof TopicSubscribe.Response)) {
+  const isTopicSubscribeResponse =
+    received instanceof TopicSubscribe.Subscription ||
+    received instanceof TopicSubscribe.Error;
+  if (!isTopicSubscribeResponse) {
     throw new Error('Expected TopicSubscribe.Response');
   }
   const pass =
@@ -100,7 +103,10 @@ const toBePermissionDeniedForTopicSubscribe: MatcherFunction = function (
 const toBePermissionDeniedForTopicPublish: MatcherFunction = function (
   received: unknown
 ) {
-  if (!(received instanceof TopicPublish.Response)) {
+  const isTopicPublishResponse =
+    received instanceof TopicPublish.Success ||
+    received instanceof TopicPublish.Error;
+  if (!isTopicPublishResponse) {
     throw new Error('Expected TopicPublish.Response');
   }
   const pass =
