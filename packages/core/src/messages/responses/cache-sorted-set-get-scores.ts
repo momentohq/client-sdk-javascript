@@ -21,7 +21,7 @@ interface IResponse {
  * `value*` accessors to retrieve the data in the appropriate format.
  */
 export class Hit extends ResponseBase implements IResponse {
-  public _responses: CacheSortedSetGetScore.Response[] = [];
+  private readonly _responses: CacheSortedSetGetScore.Response[] = [];
   readonly type: CacheSortedSetGetScoresResponse.Hit =
     CacheSortedSetGetScoresResponse.Hit;
 
