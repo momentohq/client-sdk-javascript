@@ -1,11 +1,17 @@
-import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
+import {BaseResponseSuccess, BaseResponseError} from './response-base';
+import {GenerateApiKeyResponse} from './enums';
 import {SdkError} from '../../errors';
 import {encodeToBase64} from '../../internal/utils';
 import {ExpiresAt} from '../../utils';
 
-export abstract class Response extends ResponseBase {}
+interface IResponse {
+  readonly type: GenerateApiKeyResponse;
+}
 
-class _Success extends Response {
+export class Success extends BaseResponseSuccess implements IResponse {
+  readonly type: GenerateApiKeyResponse.Success =
+    GenerateApiKeyResponse.Success;
+
   readonly apiKey: string;
   readonly refreshToken: string;
   readonly endpoint: string;
@@ -35,17 +41,6 @@ class _Success extends Response {
 }
 
 /**
- * Indicates a Successful generate api token request.
- */
-export class Success extends ResponseSuccess(_Success) {}
-
-class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
-    super();
-  }
-}
-
-/**
  * Indicates that an error occurred during the generate api token request.
  *
  * This response object includes the following fields that you can use to determine
@@ -55,4 +50,12 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  constructor(innerException: SdkError) {
+    super(innerException);
+  }
+
+  readonly type: GenerateApiKeyResponse.Error = GenerateApiKeyResponse.Error;
+}
+
+export type Response = Success | Error;

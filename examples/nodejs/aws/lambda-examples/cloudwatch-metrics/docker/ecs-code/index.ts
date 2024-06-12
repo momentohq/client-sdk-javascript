@@ -5,7 +5,7 @@ import {
   DefaultMomentoLoggerFactory,
   DefaultMomentoLoggerLevel,
   CredentialProvider,
-  ExperimentalMetricsLoggingMiddleware
+  ExperimentalMetricsLoggingMiddleware,
 } from '@gomomento/sdk';
 
 const _secretsClient = new SecretsManagerClient({});
@@ -22,7 +22,7 @@ async function main() {
 
     logger.info('Issuing 10 minutes of set and get requests to generate data for the dashboard example');
     const delayBetweenRequestsMillis = 1000;
-    for (let i = 0; i < (60 /* seconds */ * 10 /* minutes */); i++) {
+    for (let i = 0; i < 60 /* seconds */ * 10 /* minutes */; i++) {
       await cacheClient.set('cache', `metrics-example-${i}`, 'VALUE');
       await cacheClient.get('cache', `metrics-example-${i}`);
       await delay(delayBetweenRequestsMillis);

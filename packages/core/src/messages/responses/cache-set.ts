@@ -1,16 +1,16 @@
 import {SdkError} from '../../errors';
 import {BaseResponseError, BaseResponseSuccess} from './response-base';
-import {MomentoResponse} from './enums';
+import {CacheSetResponse} from './enums';
 
 interface IResponse {
-  type: MomentoResponse;
+  readonly type: CacheSetResponse;
 }
 
 /**
  * Indicates a Successful cache set request.
  */
 export class Success extends BaseResponseSuccess implements IResponse {
-  readonly type: MomentoResponse.Success = MomentoResponse.Success;
+  readonly type: CacheSetResponse.Success = CacheSetResponse.Success;
 }
 
 /**
@@ -28,7 +28,7 @@ export class Error extends BaseResponseError implements IResponse {
     super(_innerException);
   }
 
-  readonly type: MomentoResponse.Error = MomentoResponse.Error;
+  readonly type: CacheSetResponse.Error = CacheSetResponse.Error;
 }
 
 export type Response = Success | Error;

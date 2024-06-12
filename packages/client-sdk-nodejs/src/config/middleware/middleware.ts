@@ -1,10 +1,18 @@
 import {Metadata, StatusObject} from '@grpc/grpc-js';
 import {Message} from 'google-protobuf';
+import {
+  RequestLog,
+  CacheRequestToLogInterfaceConverter,
+} from './cache-request-logging';
 
 export class MiddlewareMetadata {
   readonly _grpcMetadata: Metadata;
   constructor(metadata: Metadata) {
     this._grpcMetadata = metadata;
+  }
+
+  toJsonObject() {
+    return this._grpcMetadata.toJSON();
   }
 
   toJsonString(): string {
@@ -33,6 +41,26 @@ export class MiddlewareMessage {
       return this._grpcMessage.serializeBinary().length;
     }
     return 0;
+  }
+
+  constructorName(): string {
+    return this._grpcMessage.constructor.name;
+  }
+
+  // Note: APIs that use streaming interceptors (e.g. GetBatch and SetBatch)
+  // will not see these debug messages
+  toLogFormat(): RequestLog {
+    const requestToLogConverter = CacheRequestToLogInterfaceConverter.get(
+      this.constructorName()
+    );
+    if (requestToLogConverter === undefined) {
+      console.warn(
+        'Unable to find requestToLogConverter for',
+        this.constructorName()
+      );
+      return {requestType: this.constructorName()};
+    }
+    return requestToLogConverter(this._grpcMessage);
   }
 }
 

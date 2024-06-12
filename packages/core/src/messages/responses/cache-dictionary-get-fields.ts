@@ -11,13 +11,13 @@ import {
   Error as CacheDictionaryGetFieldResponseError,
 } from './cache-dictionary-get-field';
 import {_DictionaryGetResponsePart, _ECacheResult} from './grpc-response-types';
-import {DictionaryGetFieldsResponse} from './enums';
+import {CacheDictionaryGetFieldsResponse} from './enums';
 
 const TEXT_DECODER = new TextDecoder();
 
 interface IResponse {
   value(): Record<string, string> | undefined;
-  type: DictionaryGetFieldsResponse;
+  readonly type: CacheDictionaryGetFieldsResponse;
 }
 
 /**
@@ -27,8 +27,8 @@ interface IResponse {
 export class Hit extends ResponseBase implements IResponse {
   private readonly items: _DictionaryGetResponsePart[];
   private readonly fields: Uint8Array[];
-  public readonly type: DictionaryGetFieldsResponse.Hit =
-    DictionaryGetFieldsResponse.Hit;
+  public readonly type: CacheDictionaryGetFieldsResponse.Hit =
+    CacheDictionaryGetFieldsResponse.Hit;
   public responses: CacheDictionaryGetFieldResponseType[] = [];
 
   constructor(items: _DictionaryGetResponsePart[], fields: Uint8Array[]) {
@@ -162,8 +162,8 @@ export class Hit extends ResponseBase implements IResponse {
  * Indicates that the requested data was not available in the cache.
  */
 export class Miss extends BaseResponseMiss implements IResponse {
-  public readonly type: DictionaryGetFieldsResponse.Miss =
-    DictionaryGetFieldsResponse.Miss;
+  public readonly type: CacheDictionaryGetFieldsResponse.Miss =
+    CacheDictionaryGetFieldsResponse.Miss;
 
   value(): Record<string, string> | undefined {
     return undefined;
@@ -181,8 +181,8 @@ export class Miss extends BaseResponseMiss implements IResponse {
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
 export class Error extends BaseResponseError implements IResponse {
-  public readonly type: DictionaryGetFieldsResponse.Error =
-    DictionaryGetFieldsResponse.Error;
+  public readonly type: CacheDictionaryGetFieldsResponse.Error =
+    CacheDictionaryGetFieldsResponse.Error;
   constructor(_innerException: SdkError) {
     super(_innerException);
   }

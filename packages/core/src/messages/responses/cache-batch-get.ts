@@ -1,51 +1,27 @@
 import {SdkError} from '../../errors';
-import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
+import {BaseResponseError, BaseResponseSuccess} from './response-base';
+import {CacheGetBatchResponse} from './enums';
 import {CacheGet} from '../..';
 
 const TEXT_DECODER = new TextDecoder();
 
-/**
- * Parent response type for a cache get batch request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Success}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof BatchGet.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `BatchGet.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
- */
-export abstract class Response extends ResponseBase {
-  public values(): Record<string, string> | undefined {
-    if (this instanceof Success) {
-      return (this as Success).values();
-    }
-    return undefined;
-  }
-
-  public results(): CacheGet.Response[] | undefined {
-    if (this instanceof Success) {
-      return (this as Success).results();
-    }
-    return undefined;
-  }
+interface IResponse {
+  values(): Record<string, string> | undefined;
+  readonly type: CacheGetBatchResponse;
 }
 
-class _Success extends Response {
-  private readonly items: CacheGet.Response[];
+/**
+ * Indicates that the requested data was successfully retrieved from the cache.
+ * Provides `value*` accessors to retrieve the data in the appropriate format.
+ */
+export class Success extends BaseResponseSuccess implements IResponse {
+  readonly type: CacheGetBatchResponse.Success = CacheGetBatchResponse.Success;
+  private readonly body: CacheGet.Response[];
   private readonly keys: Uint8Array[];
 
-  constructor(items: CacheGet.Response[], keys: Uint8Array[]) {
+  constructor(body: CacheGet.Response[], keys: Uint8Array[]) {
     super();
-    this.items = items;
+    this.body = body;
     this.keys = keys;
   }
 
@@ -54,7 +30,7 @@ class _Success extends Response {
    * @returns {CacheGet.Response[]}
    */
   public results(): CacheGet.Response[] {
-    return this.items;
+    return this.body;
   }
 
   /**
@@ -83,7 +59,7 @@ class _Success extends Response {
    * @returns {Record<string, string>}
    */
   public valuesRecordStringString(): Record<string, string> {
-    return this.items.reduce<Record<string, string>>((acc, item, index) => {
+    return this.body.reduce<Record<string, string>>((acc, item, index) => {
       if (item instanceof CacheGet.Hit) {
         acc[TEXT_DECODER.decode(this.keys[index])] = item.valueString();
       }
@@ -97,7 +73,7 @@ class _Success extends Response {
    * @returns {Record<string, Uint8Array>}
    */
   public valuesRecordStringUint8Array(): Record<string, Uint8Array> {
-    return this.items.reduce<Record<string, Uint8Array>>((acc, item, index) => {
+    return this.body.reduce<Record<string, Uint8Array>>((acc, item, index) => {
       if (item instanceof CacheGet.Hit) {
         acc[TEXT_DECODER.decode(this.keys[index])] = item.valueUint8Array();
       }
@@ -119,7 +95,7 @@ class _Success extends Response {
    * @returns {Map<string, string>}
    */
   public valuesMapStringString(): Map<string, string> {
-    return this.items.reduce((acc, item, index) => {
+    return this.body.reduce((acc, item, index) => {
       if (item instanceof CacheGet.Hit) {
         acc.set(TEXT_DECODER.decode(this.keys[index]), item.valueString());
       }
@@ -132,7 +108,7 @@ class _Success extends Response {
    * @returns {Map<string, Uint8Array>}
    */
   public valuesMapStringUint8Array(): Map<string, Uint8Array> {
-    return this.items.reduce((acc, item, index) => {
+    return this.body.reduce((acc, item, index) => {
       if (item instanceof CacheGet.Hit) {
         acc.set(TEXT_DECODER.decode(this.keys[index]), item.valueUint8Array());
       }
@@ -149,19 +125,7 @@ class _Success extends Response {
 }
 
 /**
- * Indicates that the requested data was successfully retrieved from the cache.  Provides
- * `value*` accessors to retrieve the data in the appropriate format.
- */
-export class Success extends ResponseSuccess(_Success) {}
-
-class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
-    super();
-  }
-}
-
-/**
- * Indicates that an error occurred during the cache get request.
+ * Indicates that an error occurred during the cache get batch request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:
@@ -170,4 +134,16 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  constructor(_innerException: SdkError) {
+    super(_innerException);
+  }
+
+  readonly type: CacheGetBatchResponse.Error = CacheGetBatchResponse.Error;
+
+  values(): undefined {
+    return undefined;
+  }
+}
+
+export type Response = Success | Error;

@@ -1,50 +1,29 @@
 import {SdkError} from '../../errors';
-import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
+import {BaseResponseError, ResponseBase} from './response-base';
+import {CacheSetIfPresentAndNotEqualResponse} from './enums';
 
-/**
- * Parent response type for a cache setIfPresentAndNotEqual request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Stored}
- * - {NotStored}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof CacheSetIfPresentAndNotEqual.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheSetIfPresentAndNotEqual.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
- */
-export abstract class Response extends ResponseBase {}
-
-class _Stored extends Response {}
-
-/**
- * Indicates the key did not exist and the value was set.
- */
-export class Stored extends ResponseSuccess(_Stored) {}
-
-class _NotStored extends Response {}
-
-/**
- * Indicates the key existed and no value was set.
- */
-export class NotStored extends ResponseSuccess(_NotStored) {}
-
-class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
-    super();
-  }
+interface IResponse {
+  readonly type: CacheSetIfPresentAndNotEqualResponse;
 }
 
 /**
- * Indicates that an error occurred during the cache setIfPresentAndNotEqual request.
+ * Indicates the new value was set because the key already exists and the existing item was not equal to the supplied `notEqual` value.
+ */
+export class Stored extends ResponseBase implements IResponse {
+  readonly type: CacheSetIfPresentAndNotEqualResponse.Stored =
+    CacheSetIfPresentAndNotEqualResponse.Stored;
+}
+
+/**
+ * Indicates that no value was set because the key did not exist or the existing item was equal to the supplied `notEqual` value.
+ */
+export class NotStored extends ResponseBase implements IResponse {
+  readonly type: CacheSetIfPresentAndNotEqualResponse.NotStored =
+    CacheSetIfPresentAndNotEqualResponse.NotStored;
+}
+
+/**
+ * Indicates that an error occurred during the setIfPresentAndNotEqual request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:
@@ -53,4 +32,13 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  constructor(_innerException: SdkError) {
+    super(_innerException);
+  }
+
+  readonly type: CacheSetIfPresentAndNotEqualResponse.Error =
+    CacheSetIfPresentAndNotEqualResponse.Error;
+}
+
+export type Response = Stored | NotStored | Error;

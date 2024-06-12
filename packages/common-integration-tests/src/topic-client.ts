@@ -196,7 +196,7 @@ export function runTopicClientTests(
         topicName,
         publishedValue
       );
-      expect(publishResponse).toBeInstanceOf(TopicPublish.Response);
+      expect(publishResponse).toBeInstanceOf(TopicPublish.Success);
 
       // Wait for values to go over the network.
       await sleep(STREAM_WAIT_TIME_MS);

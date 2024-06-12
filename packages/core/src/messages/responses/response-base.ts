@@ -31,6 +31,10 @@ export interface IListResponseSuccess {
   listLength(): number;
 }
 
+export interface IResponseSubscription {
+  is_subscribed: boolean;
+}
+
 export abstract class BaseResponseError extends ResponseBase {
   public _innerException: SdkError;
 
@@ -51,7 +55,7 @@ export abstract class BaseResponseError extends ResponseBase {
     return this._innerException.errorCode();
   }
 
-  public toString(): string {
+  public override toString(): string {
     return this.message();
   }
 }
@@ -72,7 +76,7 @@ export function ResponseError<TBase extends Constructor>(Base: TBase) {
       return this._innerException.errorCode();
     }
 
-    public toString(): string {
+    public override toString(): string {
       return this.message();
     }
   };
@@ -94,6 +98,10 @@ export function ResponseMiss<TBase extends Constructor>(Base: TBase) {
 
 export abstract class BaseResponseSuccess extends ResponseBase {
   public readonly is_success: boolean = true;
+}
+
+export abstract class BaseResponseSubscription extends ResponseBase {
+  public readonly is_subscribed: boolean = true;
 }
 
 export function ResponseSuccess<TBase extends Constructor>(Base: TBase) {

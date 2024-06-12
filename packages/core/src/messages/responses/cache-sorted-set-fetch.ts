@@ -91,7 +91,7 @@ class _Hit extends Response {
    * This is a convenience alias for {valueArrayStringNumber}.
    * @returns {value: string; score: number}[]
    */
-  public value(): {value: string; score: number}[] {
+  public override value(): {value: string; score: number}[] {
     return this.valueArrayStringElements();
   }
 

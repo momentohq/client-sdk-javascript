@@ -47,7 +47,8 @@
     // async without await is often an error and in other uses it obfuscates
     // the intent of the developer. Functions are async when they want to await.
     "require-await": "error",
-    "import/no-duplicates": "error"
+    "import/no-duplicates": "error",
+    "@typescript-eslint/switch-exhaustiveness-check": "error"
   },
   "settings": {
     "import/resolver": {

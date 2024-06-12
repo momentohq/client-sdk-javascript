@@ -1,66 +1,44 @@
 import {SdkError} from '../../errors';
-import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
+import {BaseResponseError, BaseResponseSuccess} from './response-base';
+import {CacheIncrementResponse} from './enums';
 
-/**
- * Parent response type for a increment request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Success}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof CacheIncrement.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheIncrement.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
- */
-export abstract class Response extends ResponseBase {
-  public value(): number | undefined {
-    if (this instanceof Success) {
-      return (this as Success).value();
-    }
-    return undefined;
-  }
+interface IResponse {
+  value(): number | undefined;
+  readonly type: CacheIncrementResponse;
 }
 
-class _Success extends Response {
-  private readonly _value: number;
+/**
+ * Indicates a successful cache increment request.
+ * Provides `value*` accessors to retrieve the updated value in the appropriate format.
+ */
+export class Success extends BaseResponseSuccess implements IResponse {
+  readonly type: CacheIncrementResponse.Success =
+    CacheIncrementResponse.Success;
+  private readonly body: number;
 
-  constructor(value: number) {
+  constructor(body: number) {
     super();
-    this._value = value;
+    this.body = body;
   }
 
   /**
-   * The new value of the element after incrementing.
-   * @returns {number}
+   * Returns the updated value as a number.
+   * @returns number
    */
   public value(): number {
-    return this._value;
+    return this.body;
   }
+
+  /**
+   * Returns the updated value as a number.
+   * @returns number
+   */
   public valueNumber(): number {
-    return this._value;
+    return this.body;
   }
 
   public override toString(): string {
-    return `${super.toString()}: value: ${this.valueNumber()}`;
-  }
-}
-
-/**
- * Indicates a Successful increment request.
- */
-export class Success extends ResponseSuccess(_Success) {}
-
-class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
-    super();
+    return `${super.toString()}: value: ${this.value()}`;
   }
 }
 
@@ -71,7 +49,19 @@ class _Error extends Response {
  * how you would like to handle the error:
  *
  * - `errorCode()` - a unique Momento error code indicating the type of error that occurred.
- * - `message()` - a human-readable description of the error
+ * - `message()` - a human-readable description of the error.
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  constructor(_innerException: SdkError) {
+    super(_innerException);
+  }
+
+  readonly type: CacheIncrementResponse.Error = CacheIncrementResponse.Error;
+
+  value(): undefined {
+    return undefined;
+  }
+}
+
+export type Response = Success | Error;

@@ -1,35 +1,21 @@
 import {SdkError} from '../../errors';
 import {
+  BaseResponseError,
+  BaseResponseMiss,
   ResponseBase,
-  ResponseError,
-  ResponseHit,
-  ResponseMiss,
 } from './response-base';
+import {CacheItemGetTtlResponse} from './enums';
+
+interface IResponse {
+  remainingTtlMillis(): number | undefined;
+  readonly type: CacheItemGetTtlResponse;
+}
 
 /**
- * Parent response type for a item ttl request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Hit}
- * - {Miss}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof ItemGetTtl.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `ItemGetTtl.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
+ * Indicates a successful item get ttl request.
  */
-
-export abstract class Response extends ResponseBase {}
-
-class _Hit extends Response {
+export class Hit extends ResponseBase implements IResponse {
+  readonly type: CacheItemGetTtlResponse.Hit = CacheItemGetTtlResponse.Hit;
   private readonly ttlMillis: number;
 
   constructor(itemTTLMillisRemaining: number) {
@@ -39,33 +25,34 @@ class _Hit extends Response {
 
   /**
    * Returns the remaining ttl in milliseconds for object stored at passed key.
-   * @returns string
+   * @returns number
    */
   public remainingTtlMillis(): number {
     return this.ttlMillis;
   }
-}
 
-/**
- * Indicates that the key exists.
- */
-export class Hit extends ResponseHit(_Hit) {}
-
-class _Miss extends Response {}
-
-/**
- * Indicates that the requested key was not available in the cache.
- */
-export class Miss extends ResponseMiss(_Miss) {}
-
-class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
-    super();
+  public override toString(): string {
+    return `${super.toString()}: remaining ttl: ${this.ttlMillis}`;
   }
 }
 
 /**
- * Indicates that an error occurred during the item ttl request.
+ * Indicates that the requested item was not available in the cache.
+ */
+export class Miss extends BaseResponseMiss implements IResponse {
+  readonly type: CacheItemGetTtlResponse.Miss = CacheItemGetTtlResponse.Miss;
+
+  constructor() {
+    super();
+  }
+
+  remainingTtlMillis(): undefined {
+    return undefined;
+  }
+}
+
+/**
+ * Indicates that an error occurred during the item get ttl request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:
@@ -74,4 +61,16 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  readonly type: CacheItemGetTtlResponse.Error = CacheItemGetTtlResponse.Error;
+
+  constructor(_innerException: SdkError) {
+    super(_innerException);
+  }
+
+  remainingTtlMillis(): undefined {
+    return undefined;
+  }
+}
+
+export type Response = Hit | Miss | Error;
