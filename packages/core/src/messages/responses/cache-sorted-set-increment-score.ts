@@ -1,36 +1,19 @@
+import {BaseResponseError, BaseResponseSuccess} from './response-base';
+import {CacheSortedSetIncrementScoreResponse} from './enums';
 import {SdkError} from '../../errors';
-import {ResponseBase, ResponseError, ResponseSuccess} from './response-base';
 
-/**
- * Parent response type for a sorted set IncrementScore request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Success}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof CacheSortedSetIncrementScore.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheSortedSetIncrementScore.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
- */
-export abstract class Response extends ResponseBase {
-  public score(): number | undefined {
-    if (this instanceof Success) {
-      return (this as Success).score();
-    }
-    return undefined;
-  }
+interface IResponse {
+  score(): number | undefined;
+  readonly type: CacheSortedSetIncrementScoreResponse;
 }
 
-class _Success extends Response {
+/**
+ * Indicates a Successful sorted set IncrementScore request.
+ */
+export class Success extends BaseResponseSuccess implements IResponse {
   private readonly _score: number;
+  readonly type: CacheSortedSetIncrementScoreResponse.Success =
+    CacheSortedSetIncrementScoreResponse.Success;
 
   constructor(score: number) {
     super();
@@ -41,23 +24,12 @@ class _Success extends Response {
    * The new score of the element after incrementing.
    * @returns {number}
    */
-  public override score(): number {
+  public score(): number {
     return this._score;
   }
 
   public override toString(): string {
     return `${super.toString()}: value: ${this.score()}`;
-  }
-}
-
-/**
- * Indicates a Successful sorted set IncrementScore request.
- */
-export class Success extends ResponseSuccess(_Success) {}
-
-class _Error extends Response {
-  constructor(protected _innerException: SdkError) {
-    super();
   }
 }
 
@@ -71,4 +43,17 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  readonly type: CacheSortedSetIncrementScoreResponse.Error =
+    CacheSortedSetIncrementScoreResponse.Error;
+
+  constructor(error: SdkError) {
+    super(error);
+  }
+
+  public score(): undefined {
+    return undefined;
+  }
+}
+
+export type Response = Success | Error;

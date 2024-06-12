@@ -3550,7 +3550,7 @@ export class CacheDataClient<
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new CacheSortedSetFetch.Error(err)
+        err => new CacheSortedSetRemoveElement.Error(err)
       );
     }
 
@@ -3613,7 +3613,7 @@ export class CacheDataClient<
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new CacheSortedSetFetch.Error(err)
+        err => new CacheSortedSetRemoveElements.Error(err)
       );
     }
 
@@ -3675,7 +3675,7 @@ export class CacheDataClient<
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new CacheSortedSetFetch.Error(err)
+        err => new CacheSortedSetLength.Error(err)
       );
     }
 
@@ -3743,7 +3743,7 @@ export class CacheDataClient<
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new CacheSortedSetFetch.Error(err)
+        err => new CacheSortedSetLengthByScore.Error(err)
       );
     }
 

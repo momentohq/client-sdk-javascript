@@ -54,6 +54,7 @@ import {
   CacheSetIfPresentAndNotEqual,
   CacheSetIfAbsentOrEqual,
   CacheSetSample,
+  CacheSortedSetRemoveElements,
 } from '../index';
 import {
   ScalarCallOptions,
@@ -374,7 +375,7 @@ export interface ICacheClient extends IControlClient, IPingClient {
     cacheName: string,
     sortedSetName: string,
     values: string[] | Uint8Array[]
-  ): Promise<CacheSortedSetRemoveElement.Response>;
+  ): Promise<CacheSortedSetRemoveElements.Response>;
   sortedSetLength(
     cacheName: string,
     sortedSetName: string
