@@ -54,6 +54,7 @@ import {
   CacheDictionaryLength,
   CacheGetBatch,
   CacheSetBatch,
+  CacheSortedSetRemoveElements,
 } from '../index';
 import {
   ScalarCallOptions,
@@ -295,7 +296,7 @@ export interface IMomentoCache {
   sortedSetRemoveElements(
     sortedSetName: string,
     values: string[] | Uint8Array[]
-  ): Promise<CacheSortedSetRemoveElement.Response>;
+  ): Promise<CacheSortedSetRemoveElements.Response>;
   sortedSetLength(
     sortedSetName: string
   ): Promise<CacheSortedSetLength.Response>;

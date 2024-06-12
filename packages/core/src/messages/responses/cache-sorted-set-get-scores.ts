@@ -1,67 +1,42 @@
 import {SdkError, UnknownError} from '../../errors';
 import {
   ResponseBase,
-  ResponseHit,
-  ResponseMiss,
-  ResponseError,
+  BaseResponseMiss,
+  BaseResponseError,
 } from './response-base';
-import * as CacheSortedSetGetScoreResponse from './cache-sorted-set-get-score';
 import {
   _ECacheResult,
   _SortedSetGetScoreResponsePart,
 } from './grpc-response-types';
+import {CacheSortedSetGetScoresResponse} from './enums';
+import {CacheSortedSetGetScore} from '../../index';
 
-type CacheSortedSetGetScoreResponseType =
-  | CacheSortedSetGetScoreResponse.Hit
-  | CacheSortedSetGetScoreResponse.Miss
-  | CacheSortedSetGetScoreResponse.Error;
-
-/**
- * Parent response type for a sorted set get scores request.  The
- * response object is resolved to a type-safe object of one of
- * the following subtypes:
- *
- * - {Hit}
- * - {Miss}
- * - {Error}
- *
- * `instanceof` type guards can be used to operate on the appropriate subtype.
- * @example
- * For example:
- * ```
- * if (response instanceof CacheSortedSetGetScores.Error) {
- *   // Handle error as appropriate.  The compiler will smart-cast `response` to type
- *   // `CacheSortedSetGetScores.Error` in this block, so you will have access to the properties
- *   // of the Error class; e.g. `response.errorCode()`.
- * }
- * ```
- */
-export abstract class Response extends ResponseBase {
-  public value(): Record<string, number> | undefined {
-    if (this instanceof Hit) {
-      return (this as Hit).value();
-    }
-    return undefined;
-  }
+interface IResponse {
+  value(): Record<string, number> | undefined;
+  readonly type: CacheSortedSetGetScoresResponse;
 }
 
-class _Hit extends Response {
-  public _responses: CacheSortedSetGetScoreResponseType[] = [];
+/**
+ * Indicates that the requested data was successfully retrieved from the cache.  Provides
+ * `value*` accessors to retrieve the data in the appropriate format.
+ */
+export class Hit extends ResponseBase implements IResponse {
+  private readonly _responses: CacheSortedSetGetScore.Response[] = [];
+  readonly type: CacheSortedSetGetScoresResponse.Hit =
+    CacheSortedSetGetScoresResponse.Hit;
 
   constructor(scores: _SortedSetGetScoreResponsePart[], values: Uint8Array[]) {
     super();
     scores.forEach((score, index) => {
       if (score.result === _ECacheResult.Hit) {
         this._responses.push(
-          new CacheSortedSetGetScoreResponse.Hit(score.score, values[index])
+          new CacheSortedSetGetScore.Hit(score.score, values[index])
         );
       } else if (score.result === _ECacheResult.Miss) {
-        this._responses.push(
-          new CacheSortedSetGetScoreResponse.Miss(values[index])
-        );
+        this._responses.push(new CacheSortedSetGetScore.Miss(values[index]));
       } else {
         this._responses.push(
-          new CacheSortedSetGetScoreResponse.Error(
+          new CacheSortedSetGetScore.Error(
             new UnknownError(score.result.toString()),
             values[index]
           )
@@ -70,7 +45,7 @@ class _Hit extends Response {
     });
   }
 
-  public responses(): CacheSortedSetGetScoreResponseType[] {
+  public responses(): CacheSortedSetGetScore.Response[] {
     return this._responses;
   }
 
@@ -80,7 +55,7 @@ class _Hit extends Response {
    */
   public valueMapString(): Map<string, number> {
     return this._responses.reduce((acc, response) => {
-      if (response instanceof CacheSortedSetGetScoreResponse.Hit) {
+      if (response instanceof CacheSortedSetGetScore.Hit) {
         acc.set(response.valueString(), response.score());
       }
       return acc;
@@ -103,7 +78,7 @@ class _Hit extends Response {
    */
   public valueRecordString(): Record<string, number> {
     return this._responses.reduce<Record<string, number>>((acc, response) => {
-      if (response instanceof CacheSortedSetGetScoreResponse.Hit) {
+      if (response instanceof CacheSortedSetGetScore.Hit) {
         acc[response.valueString()] = response.score();
       }
       return acc;
@@ -126,7 +101,7 @@ class _Hit extends Response {
    * {valueRecordStringString}.
    * @returns {Record<string, number>}
    */
-  public override value(): Record<string, number> {
+  public value(): Record<string, number> {
     return this.valueRecord();
   }
 
@@ -144,21 +119,14 @@ class _Hit extends Response {
 }
 
 /**
- * Indicates that the requested data was successfully retrieved from the cache.  Provides
- * `value*` accessors to retrieve the data in the appropriate format.
- */
-export class Hit extends ResponseHit(_Hit) {}
-
-class _Miss extends Response {}
-
-/**
  * Indicates that the requested data was not available in the cache.
  */
-export class Miss extends ResponseMiss(_Miss) {}
+export class Miss extends BaseResponseMiss implements IResponse {
+  readonly type: CacheSortedSetGetScoresResponse.Miss =
+    CacheSortedSetGetScoresResponse.Miss;
 
-class _Error extends Response {
-  constructor(public _innerException: SdkError) {
-    super();
+  public value(): undefined {
+    return undefined;
   }
 }
 
@@ -172,4 +140,17 @@ class _Error extends Response {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends ResponseError(_Error) {}
+export class Error extends BaseResponseError implements IResponse {
+  readonly type: CacheSortedSetGetScoresResponse.Error =
+    CacheSortedSetGetScoresResponse.Error;
+
+  constructor(_innerException: SdkError) {
+    super(_innerException);
+  }
+
+  public value(): undefined {
+    return undefined;
+  }
+}
+
+export type Response = Hit | Miss | Error;

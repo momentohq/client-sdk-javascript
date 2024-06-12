@@ -1988,23 +1988,25 @@ export function runSortedSetTests(
           }
         );
 
-        let response = await cacheClient.sortedSetRemoveElement(
+        const removeResponse = await cacheClient.sortedSetRemoveElement(
           integrationTestCacheName,
           sortedSetName,
           'foo'
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetRemoveElement.Success);
-        }, `expected SUCCESS but got ${response.toString()}`);
+          expect(removeResponse).toBeInstanceOf(
+            CacheSortedSetRemoveElement.Success
+          );
+        }, `expected SUCCESS but got ${removeResponse.toString()}`);
 
-        response = await cacheClient.sortedSetFetchByRank(
+        const fetchResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
-        }, `expected HIT but got ${response.toString()}`);
-        const hitResponse = response as CacheSortedSetFetch.Hit;
+          expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${fetchResponse.toString()}`);
+        const hitResponse = fetchResponse as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([{value: 'bar', score: 42}]);
       });
 
@@ -2019,23 +2021,25 @@ export function runSortedSetTests(
           ])
         );
 
-        let response = await cacheClient.sortedSetRemoveElement(
+        const removeResponse = await cacheClient.sortedSetRemoveElement(
           integrationTestCacheName,
           sortedSetName,
           uint8ArrayForTest('foo')
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetRemoveElement.Success);
-        }, `expected SUCCESS but got ${response.toString()}`);
+          expect(removeResponse).toBeInstanceOf(
+            CacheSortedSetRemoveElement.Success
+          );
+        }, `expected SUCCESS but got ${removeResponse.toString()}`);
 
-        response = await cacheClient.sortedSetFetchByRank(
+        const fetchResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
-        }, `expected HIT but got ${response.toString()}`);
-        const hitResponse = response as CacheSortedSetFetch.Hit;
+          expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${fetchResponse.toString()}`);
+        const hitResponse = fetchResponse as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArrayUint8Elements()).toEqual([
           {value: uint8ArrayForTest('bar'), score: 42},
         ]);
@@ -2052,23 +2056,25 @@ export function runSortedSetTests(
           }
         );
 
-        let response = await cacheClient.sortedSetRemoveElement(
+        const removeResponse = await cacheClient.sortedSetRemoveElement(
           integrationTestCacheName,
           sortedSetName,
           'taco'
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetRemoveElement.Success);
-        }, `expected SUCCESS but got ${response.toString()}`);
+          expect(removeResponse).toBeInstanceOf(
+            CacheSortedSetRemoveElement.Success
+          );
+        }, `expected SUCCESS but got ${removeResponse.toString()}`);
 
-        response = await cacheClient.sortedSetFetchByRank(
+        const fetchResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
-        }, `expected HIT but got ${response.toString()}`);
-        const hitResponse = response as CacheSortedSetFetch.Hit;
+          expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${fetchResponse.toString()}`);
+        const hitResponse = fetchResponse as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([
           {value: 'foo', score: 21},
           {value: 'bar', score: 42},
@@ -2123,23 +2129,25 @@ export function runSortedSetTests(
           }
         );
 
-        let response = await cacheClient.sortedSetRemoveElements(
+        const removeResponse = await cacheClient.sortedSetRemoveElements(
           integrationTestCacheName,
           sortedSetName,
           ['foo', 'baz']
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetRemoveElements.Success);
-        }, `expected SUCCESS but got ${response.toString()}`);
+          expect(removeResponse).toBeInstanceOf(
+            CacheSortedSetRemoveElements.Success
+          );
+        }, `expected SUCCESS but got ${removeResponse.toString()}`);
 
-        response = await cacheClient.sortedSetFetchByRank(
+        const fetchResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
-        }, `expected HIT but got ${response.toString()}`);
-        const hitResponse = response as CacheSortedSetFetch.Hit;
+          expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${fetchResponse.toString()}`);
+        const hitResponse = fetchResponse as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([{value: 'bar', score: 42}]);
       });
 
@@ -2155,23 +2163,25 @@ export function runSortedSetTests(
           ])
         );
 
-        let response = await cacheClient.sortedSetRemoveElements(
+        const removeResponse = await cacheClient.sortedSetRemoveElements(
           integrationTestCacheName,
           sortedSetName,
           [uint8ArrayForTest('foo'), uint8ArrayForTest('baz')]
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetRemoveElements.Success);
-        }, `expected SUCCESS but got ${response.toString()}`);
+          expect(removeResponse).toBeInstanceOf(
+            CacheSortedSetRemoveElements.Success
+          );
+        }, `expected SUCCESS but got ${removeResponse.toString()}`);
 
-        response = await cacheClient.sortedSetFetchByRank(
+        const fetchResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
-        }, `expected HIT but got ${response.toString()}`);
-        const hitResponse = response as CacheSortedSetFetch.Hit;
+          expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${fetchResponse.toString()}`);
+        const hitResponse = fetchResponse as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArrayUint8Elements()).toEqual([
           {value: uint8ArrayForTest('bar'), score: 42},
         ]);
@@ -2189,23 +2199,25 @@ export function runSortedSetTests(
           }
         );
 
-        let response = await cacheClient.sortedSetRemoveElements(
+        const removeResponse = await cacheClient.sortedSetRemoveElements(
           integrationTestCacheName,
           sortedSetName,
           ['taco', 'habanero']
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetRemoveElements.Success);
-        }, `expected SUCCESS but got ${response.toString()}`);
+          expect(removeResponse).toBeInstanceOf(
+            CacheSortedSetRemoveElements.Success
+          );
+        }, `expected SUCCESS but got ${removeResponse.toString()}`);
 
-        response = await cacheClient.sortedSetFetchByRank(
+        const fetchResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
-        }, `expected HIT but got ${response.toString()}`);
-        const hitResponse = response as CacheSortedSetFetch.Hit;
+          expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${fetchResponse.toString()}`);
+        const hitResponse = fetchResponse as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([
           {value: 'foo', score: 21},
           {value: 'bar', score: 42},
@@ -2265,47 +2277,47 @@ export function runSortedSetTests(
 
       it('should store an element with a string value', async () => {
         const sortedSetName = v4();
-        let response = await cacheClient.sortedSetPutElement(
+        const putResponse = await cacheClient.sortedSetPutElement(
           integrationTestCacheName,
           sortedSetName,
           'foo',
           42
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetPutElement.Success);
-        }, `expected SUCCESS but got ${response.toString()}`);
+          expect(putResponse).toBeInstanceOf(CacheSortedSetPutElement.Success);
+        }, `expected SUCCESS but got ${putResponse.toString()}`);
 
-        response = await cacheClient.sortedSetFetchByRank(
+        const fetchResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
-        }, `expected HIT but got ${response.toString()}`);
-        const hitResponse = response as CacheSortedSetFetch.Hit;
+          expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${fetchResponse.toString()}`);
+        const hitResponse = fetchResponse as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([{value: 'foo', score: 42}]);
       });
 
       it('should store an element with a bytes value', async () => {
         const sortedSetName = v4();
-        let response = await cacheClient.sortedSetPutElement(
+        const putResponse = await cacheClient.sortedSetPutElement(
           integrationTestCacheName,
           sortedSetName,
           uint8ArrayForTest('foo'),
           42
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetPutElement.Success);
-        }, `expected SUCCESS but got ${response.toString()}`);
+          expect(putResponse).toBeInstanceOf(CacheSortedSetPutElement.Success);
+        }, `expected SUCCESS but got ${putResponse.toString()}`);
 
-        response = await cacheClient.sortedSetFetchByRank(
+        const fetchResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
-        }, `expected HIT but got ${response.toString()}`);
-        const hitResponse = response as CacheSortedSetFetch.Hit;
+          expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${fetchResponse.toString()}`);
+        const hitResponse = fetchResponse as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArrayUint8Elements()).toEqual([
           {value: uint8ArrayForTest('foo'), score: 42},
         ]);
@@ -2365,7 +2377,7 @@ export function runSortedSetTests(
 
       it('should store elements with a string values passed via Map', async () => {
         const sortedSetName = v4();
-        let response = await cacheClient.sortedSetPutElements(
+        const putResponse = await cacheClient.sortedSetPutElements(
           integrationTestCacheName,
           sortedSetName,
           new Map([
@@ -2374,17 +2386,17 @@ export function runSortedSetTests(
           ])
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
-        }, `expected SUCCESS but got ${response.toString()}`);
+          expect(putResponse).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        }, `expected SUCCESS but got ${putResponse.toString()}`);
 
-        response = await cacheClient.sortedSetFetchByRank(
+        const fetchResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
-        }, `expected HIT but got ${response.toString()}`);
-        const hitResponse = response as CacheSortedSetFetch.Hit;
+          expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${fetchResponse.toString()}`);
+        const hitResponse = fetchResponse as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([
           {value: 'foo', score: 42},
           {value: 'bar', score: 84},
@@ -2393,23 +2405,23 @@ export function runSortedSetTests(
 
       it('should store elements with a string values passed via Record', async () => {
         const sortedSetName = v4();
-        let response = await cacheClient.sortedSetPutElements(
+        const putResponse = await cacheClient.sortedSetPutElements(
           integrationTestCacheName,
           sortedSetName,
           {foo: 42, bar: 84}
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
-        }, `expected SUCCESS but got ${response.toString()}`);
+          expect(putResponse).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        }, `expected SUCCESS but got ${putResponse.toString()}`);
 
-        response = await cacheClient.sortedSetFetchByRank(
+        const fetchResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
-        }, `expected HIT but got ${response.toString()}`);
-        const hitResponse = response as CacheSortedSetFetch.Hit;
+          expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${fetchResponse.toString()}`);
+        const hitResponse = fetchResponse as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([
           {value: 'foo', score: 42},
           {value: 'bar', score: 84},
@@ -2418,7 +2430,7 @@ export function runSortedSetTests(
 
       it('should store elements with a string values passed via Array', async () => {
         const sortedSetName = v4();
-        let response = await cacheClient.sortedSetPutElements(
+        const putResponse = await cacheClient.sortedSetPutElements(
           integrationTestCacheName,
           sortedSetName,
           [
@@ -2427,17 +2439,17 @@ export function runSortedSetTests(
           ]
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
-        }, `expected SUCCESS but got ${response.toString()}`);
+          expect(putResponse).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        }, `expected SUCCESS but got ${putResponse.toString()}`);
 
-        response = await cacheClient.sortedSetFetchByRank(
+        const fetchResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
-        }, `expected HIT but got ${response.toString()}`);
-        const hitResponse = response as CacheSortedSetFetch.Hit;
+          expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${fetchResponse.toString()}`);
+        const hitResponse = fetchResponse as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArray()).toEqual([
           {value: 'foo', score: 42},
           {value: 'bar', score: 84},
@@ -2446,7 +2458,7 @@ export function runSortedSetTests(
 
       it('should store elements with a bytes values passed via Map', async () => {
         const sortedSetName = v4();
-        let response = await cacheClient.sortedSetPutElements(
+        const putResponse = await cacheClient.sortedSetPutElements(
           integrationTestCacheName,
           sortedSetName,
           new Map([
@@ -2455,17 +2467,17 @@ export function runSortedSetTests(
           ])
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
-        }, `expected SUCCESS but got ${response.toString()}`);
+          expect(putResponse).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        }, `expected SUCCESS but got ${putResponse.toString()}`);
 
-        response = await cacheClient.sortedSetFetchByRank(
+        const fetchResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetFetch.Hit);
-        }, `expected HIT but got ${response.toString()}`);
-        const hitResponse = response as CacheSortedSetFetch.Hit;
+          expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Hit);
+        }, `expected HIT but got ${fetchResponse.toString()}`);
+        const hitResponse = fetchResponse as CacheSortedSetFetch.Hit;
         expect(hitResponse.valueArrayUint8Elements()).toEqual([
           {value: uint8ArrayForTest('foo'), score: 42},
           {value: uint8ArrayForTest('bar'), score: 84},
@@ -2835,7 +2847,7 @@ export function runSortedSetTests(
     describe('test deleting sorted set', () => {
       it('returns a miss for a deleted sorted set', async () => {
         const sortedSetName = v4();
-        let response = await cacheClient.sortedSetPutElements(
+        const putResponse = await cacheClient.sortedSetPutElements(
           integrationTestCacheName,
           sortedSetName,
           new Map([
@@ -2844,23 +2856,23 @@ export function runSortedSetTests(
           ])
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetPutElements.Success);
-        }, `expected SUCCESS but got ${response.toString()}`);
-        response = await cacheClient.delete(
+          expect(putResponse).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        }, `expected SUCCESS but got ${putResponse.toString()}`);
+        const deleteResponse = await cacheClient.delete(
           integrationTestCacheName,
           sortedSetName
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheDelete.Success);
-        }, `expected SUCCESS but got ${response.toString()}`);
-        response = await cacheClient.sortedSetGetScore(
+          expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
+        }, `expected SUCCESS but got ${deleteResponse.toString()}`);
+        const getResponse = await cacheClient.sortedSetGetScore(
           integrationTestCacheName,
           sortedSetName,
           'foo'
         );
         expectWithMessage(() => {
-          expect(response).toBeInstanceOf(CacheSortedSetGetScore.Miss);
-        }, `expected MISS but got ${response.toString()}`);
+          expect(getResponse).toBeInstanceOf(CacheSortedSetGetScore.Miss);
+        }, `expected MISS but got ${getResponse.toString()}`);
       });
     });
   });
