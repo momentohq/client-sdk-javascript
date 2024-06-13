@@ -25,6 +25,7 @@ AWS_SESSION_TOKEN=<your-aws-session-token> # Optional, if you are using temporar
 ```
 
 ### **Deploying the CDK Application:**
+
 To deploy the CDK application, run the following script:
 
 ```bash
@@ -33,6 +34,7 @@ To deploy the CDK application, run the following script:
 This script will deploy the CDK application and create the necessary resources in your AWS account.
 
 ### **Deploying and Running the Demo WebApp:**
+
 To run the web application, run the following script:
 
 ```bash
@@ -41,6 +43,7 @@ To run the web application, run the following script:
 This script load the environment variables from the `.env` file and start the web application on `http://localhost:5173`.
 
 ### **Testing using CLI-App:(Optional)**
+
 To run the CLI-App, run the following script:
 
 ```bash
