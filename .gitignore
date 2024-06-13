@@ -5,3 +5,4 @@ dist
 .node-version
 *.tgz
 !.vscode/*code-workspace
+.env

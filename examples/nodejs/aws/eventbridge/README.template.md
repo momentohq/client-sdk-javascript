@@ -49,7 +49,7 @@ OPTIONAL: If you want to test the application using the CLI-App, follow the step
 To run the CLI-App, run the following script:
 
 ```bash
-./run-cli-app.sh
+./run-typescript-cli-app.sh
 ```
 This script load the environment variables from the `.env` file and start the CLI-App.
 
@@ -83,7 +83,7 @@ Now, open another terminal and run the following commands:
 - In the second terminal, run the following command to test the application:
 
 ```bash
-./run-cli.sh
+./run-bash-cli-app.sh
 ```
 
 The first terminal will subscribe to the Momento topic. The second terminal will create a dummy record in the DynamoDB table. The changes will be reflected in the Momento cache/topic.
