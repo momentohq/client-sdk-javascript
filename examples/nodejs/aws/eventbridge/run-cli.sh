@@ -48,17 +48,6 @@ TTL="300" # 5 minutes
 CACHE_NAME="momento-eventbridge-cache"
 TOPIC_NAME="momento-eventbridge-topic"
 
-## Install Momento CLI
-brew tap momentohq/tap
-brew install momento-cli
-brew upgrade momento-cli
-
-# Configure Momento CLI
-momento configure <<EOF
-$MOMENTO_API_KEY
-
-EOF
-
 # Use the AWS CLI to put the item into the DynamoDB table
 echo "Putting item into DynamoDB table: $TABLE_NAME"
 aws dynamodb put-item \
@@ -113,4 +102,4 @@ dynamodb_output=$(aws dynamodb get-item \
 echo "Getting item from Momento Cache: $CACHE_NAME"
 momento cache get --cache $CACHE_NAME $LOCATION
 
-
+echo "Script execution completed."

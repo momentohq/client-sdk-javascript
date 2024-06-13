@@ -58,8 +58,24 @@ This script load the environment variables from the `.env` file and start the CL
 OPTIONAL: If you want to test the application using the CLI, follow the steps below:
 ### **Testing using CLI:**
 
-To test the application using cli, open two terminals:
-- In the first terminal, run the following command to subscribe to the Momento topic:
+To test the application using cli, you need to first install momento-cli. You can install it using the following command:
+
+```bash
+# Install Momento CLI
+brew tap momentohq/tap
+brew install momento-cli
+brew upgrade momento-cli
+
+# Configure Momento CLI.
+# This will prompt you to enter the API Key. Use the same API Key that you used in the .env file.
+# You can press enter for the other prompts to use the default values.
+momento configure
+```
+
+Now, open another terminal and run the following commands:
+
+```bash
+- In the first terminal, run the following commands to subscribe to the Momento topic:
 
 ```bash
 ./subscribe-to-topic.sh
