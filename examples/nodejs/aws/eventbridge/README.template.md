@@ -31,6 +31,7 @@ To deploy the CDK application, run the following script:
 ```bash
 ./deploy-stack.sh
 ```
+
 This script will deploy the CDK application and create the necessary resources in your AWS account.
 
 ### **Deploying and Running the Demo WebApp:**
@@ -40,6 +41,7 @@ To run the web application, run the following script:
 ```bash
 ./run-webapp.sh
 ```
+
 This script load the environment variables from the `.env` file and start the web application on `http://localhost:5173`.
 
 ### **Testing using CLI-App:(Optional)**
@@ -49,6 +51,7 @@ To run the CLI-App, run the following script:
 ```bash
 ./run-typescript-cli-app.sh
 ```
+
 This script load the environment variables from the `.env` file and start the CLI-App.
 
 ### **Testing using CLI:(Optional)**
@@ -74,9 +77,11 @@ Now, open another terminal and run the following commands:
 ```bash
 ./subscribe-to-topic.sh
 ```
+
 - In the second terminal, run the following command to test the application:
 
 ```bash
 ./run-bash-cli-app.sh
 ```
+
 The first terminal will subscribe to the Momento topic. The second terminal will create a dummy record in the DynamoDB table. The changes will be reflected in the Momento cache/topic.
