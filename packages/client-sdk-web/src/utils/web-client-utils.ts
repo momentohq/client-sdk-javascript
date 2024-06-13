@@ -11,6 +11,23 @@ export function convertToB64String(v: string | Uint8Array): string {
   }
 }
 
+export function convertToBytesFromB64String(b64: string): Uint8Array {
+  const binaryString = atob(b64);
+  const binaryLength = binaryString.length;
+  const bytes = new Uint8Array(binaryLength);
+
+  for (let i = 0; i < binaryLength; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  return bytes;
+}
+
+export function convertToStringFromB64String(b64: string): string {
+  const bytes = convertToBytesFromB64String(b64);
+  return new TextDecoder().decode(bytes);
+}
+
 export function createCallMetadata(
   cacheName: string,
   timeoutMillis: number

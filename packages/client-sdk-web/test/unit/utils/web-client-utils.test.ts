@@ -5,6 +5,8 @@ import {
 import {CredentialProvider} from '@gomomento/sdk-core';
 import {
   convertToB64String,
+  convertToBytesFromB64String,
+  convertToStringFromB64String,
   getWebCacheEndpoint,
   getWebControlEndpoint,
   getWebTokenEndpoint,
@@ -138,31 +140,46 @@ describe('getWeb*Endpoint', () => {
     });
   });
 
-  describe('convertB64ToString', () => {
-    it('should convert a simple string to base64', () => {
+  describe('convertToB64String', () => {
+    it('should convert a simple string to base64 and back to string', () => {
       const input = 'hello';
       const expected = 'aGVsbG8=';
-      expect(convertToB64String(input)).toEqual(expected);
+      const output = convertToB64String(input);
+      expect(output).toEqual(expected);
+      const simpleString = convertToStringFromB64String(output);
+      expect(simpleString).toEqual(input);
     });
-    it('should convert a string with special characters to base64', () => {
+    it('should convert a string with special characters to base64 and back to string with special characters', () => {
       const input = 'héllö wörld';
       const expectedOutput = 'aMOpbGzDtiB3w7ZybGQ=';
-      expect(convertToB64String(input)).toBe(expectedOutput);
+      const output = convertToB64String(input);
+      expect(output).toBe(expectedOutput);
+      const specialString = convertToStringFromB64String(output);
+      expect(specialString).toEqual(input);
     });
     it('should convert a string with emojis to base64', () => {
       const input = 'hello 🌍';
       const expectedOutput = 'aGVsbG8g8J+MjQ==';
-      expect(convertToB64String(input)).toBe(expectedOutput);
+      const output = convertToB64String(input);
+      expect(output).toBe(expectedOutput);
+      const emojiString = convertToStringFromB64String(output);
+      expect(emojiString).toEqual(input);
     });
     it('should convert a Uint8Array to base64', () => {
       const input = new Uint8Array([104, 101, 108, 108, 111]);
       const expectedOutput = 'aGVsbG8=';
-      expect(convertToB64String(input)).toBe(expectedOutput);
+      const output = convertToB64String(input);
+      expect(output).toBe(expectedOutput);
+      const simpleUint8Array = convertToBytesFromB64String(output);
+      expect(simpleUint8Array).toEqual(input);
     });
     it('should convert a Uint8Array with special characters to base64', () => {
       const input = new Uint8Array([104, 195, 169, 108, 108, 195, 182]);
       const expectedOutput = 'aMOpbGzDtg==';
-      expect(convertToB64String(input)).toBe(expectedOutput);
+      const output = convertToB64String(input);
+      expect(output).toBe(expectedOutput);
+      const specialUint8Array = convertToBytesFromB64String(output);
+      expect(specialUint8Array).toEqual(input);
     });
   });
 });
