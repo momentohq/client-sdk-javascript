@@ -53,7 +53,6 @@ To run the CLI-App, run the following script:
 ```
 This script load the environment variables from the `.env` file and start the CLI-App.
 
-
 ---
 OPTIONAL: If you want to test the application using the CLI, follow the steps below:
 ### **Testing using CLI:**
@@ -74,7 +73,6 @@ momento configure
 
 Now, open another terminal and run the following commands:
 
-```bash
 - In the first terminal, run the following commands to subscribe to the Momento topic:
 
 ```bash
@@ -85,5 +83,4 @@ Now, open another terminal and run the following commands:
 ```bash
 ./run-bash-cli-app.sh
 ```
-
 The first terminal will subscribe to the Momento topic. The second terminal will create a dummy record in the DynamoDB table. The changes will be reflected in the Momento cache/topic.
