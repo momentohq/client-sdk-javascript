@@ -157,7 +157,7 @@ describe('getWeb*Endpoint', () => {
       const specialString = convertToStringFromB64String(output);
       expect(specialString).toEqual(input);
     });
-    it('should convert a string with emojis to base64', () => {
+    it('should convert a string with emojis to base64 and back to string with emojis', () => {
       const input = 'hello 🌍';
       const expectedOutput = 'aGVsbG8g8J+MjQ==';
       const output = convertToB64String(input);
@@ -165,7 +165,7 @@ describe('getWeb*Endpoint', () => {
       const emojiString = convertToStringFromB64String(output);
       expect(emojiString).toEqual(input);
     });
-    it('should convert a Uint8Array to base64', () => {
+    it('should convert a Uint8Array to base64 and back to UintArray', () => {
       const input = new Uint8Array([104, 101, 108, 108, 111]);
       const expectedOutput = 'aGVsbG8=';
       const output = convertToB64String(input);
@@ -173,7 +173,7 @@ describe('getWeb*Endpoint', () => {
       const simpleUint8Array = convertToBytesFromB64String(output);
       expect(simpleUint8Array).toEqual(input);
     });
-    it('should convert a Uint8Array with special characters to base64', () => {
+    it('should convert a Uint8Array with special characters to base64 and back to UintArray with special characters', () => {
       const input = new Uint8Array([104, 195, 169, 108, 108, 195, 182]);
       const expectedOutput = 'aMOpbGzDtg==';
       const output = convertToB64String(input);
