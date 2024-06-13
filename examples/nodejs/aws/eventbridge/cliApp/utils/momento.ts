@@ -18,7 +18,7 @@ const cacheName = 'momento-eventbridge-cache';
 const topicName = 'momento-eventbridge-topic';
 
 function handleItem(item: TopicItem) {
-  console.log('Item received from topic subscription; %s', item);
+  console.log(`Received item from topic subscription; ${item.valueString()}`);
 }
 
 function handleError(error: TopicSubscribe.Error) {
