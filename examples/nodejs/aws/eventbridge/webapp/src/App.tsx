@@ -185,11 +185,17 @@ const App = () => {
 
         <div className="flex flex-col items-center">
           <ArrowDown/>
-          <div className="flex flex-col md:flex-row items-center justify-center mt-2 space-y-2 md:space-y-0 md:space-x-4">
-            <CornerLeftDown />
+          <div
+            className="flex flex-col md:flex-row items-center justify-center mt-2 space-y-2 md:space-y-0 md:space-x-4">
+            <CornerLeftDown/>
             <div className="flex items-center bg-white p-4 shadow-md rounded-lg">
               <img src={MomentoTopicLogo} alt="Momento Topic Logo" className="w-12 h-12"/>
               <span className="ml-2 font-semibold">Momento Topic</span>
+            </div>
+            <ArrowLeft/>
+            <div className="flex items-center bg-white p-4 shadow-md rounded-lg">
+              <img src={AwsEventBridgeLogo} alt="AWS EventBridge Logo" className="w-12 h-12"/>
+              <span className="ml-2 font-semibold">AWS EventBridge</span>
             </div>
             <ArrowLeft/>
             <div className="flex items-center bg-white p-4 shadow-md rounded-lg">
@@ -198,10 +204,15 @@ const App = () => {
             </div>
             <ArrowRight/>
             <div className="flex items-center bg-white p-4 shadow-md rounded-lg">
+              <img src={AwsEventBridgeLogo} alt="AWS EventBridge Logo" className="w-12 h-12"/>
+              <span className="ml-2 font-semibold">AWS EventBridge</span>
+            </div>
+            <ArrowRight/>
+            <div className="flex items-center bg-white p-4 shadow-md rounded-lg">
               <img src={MomentoCacheLogo} alt="Momento Cache Logo" className="w-12 h-12"/>
               <span className="ml-2 font-semibold">Momento Cache</span>
             </div>
-            <CornerRightDown />
+            <CornerRightDown/>
           </div>
         </div>
 
@@ -229,7 +240,7 @@ const App = () => {
             <div className="bg-gray-100 p-2 rounded-lg text-sm">
                 <pre>
                   <code className={"whitespace-pre-wrap"}>
-                    {`topicClient.subscribe(${cacheName}, ${topicName}, {onItem: onItemCallback})`}
+                    {`topicClient.subscribe("${cacheName}", "${topicName}", {onItem: onItemCallback})`}
                   </code>
                 </pre>
             </div>
@@ -249,7 +260,7 @@ const App = () => {
             <div className="bg-gray-100 p-2 rounded-lg text-sm">
                 <pre>
                   <code className={"whitespace-pre-wrap"}>
-                    {`cacheClient.get(${cacheName}, ${location ? location : "key"})`}
+                    {`cacheClient.get("${cacheName}", "${location ? location : "key"}")`}
                   </code>
                 </pre>
             </div>

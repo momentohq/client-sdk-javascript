@@ -13,23 +13,22 @@ The app can be used to create, update and delete items in a DynamoDB table and t
 ### **Prerequisites:**
 - Momento Cache: momento-eventbridge-cache. If cache does not exists, can create one using the [momento console](https://console.gomomento.com/) .
 - Momento API Key, can be created using [momento console](https://console.gomomento.com/) if you haven’t already created one
-- AWS Account AccessId, AWS Secret Key (and AWS Session Token if you are using temporary credentials)
+- AWS Account AccessId, AWS Secret Key, AWS Region, (and AWS Session Token if you are using temporary credentials)
 
 ## Getting Started
-First, edit the `.env.development` file (create one if not exists) with your token vending machine url and your aws credentials:
+First, edit the `.env` file (create one if not exists) with your momento and aws credentials:
 
 ```bash
-VITE_AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
-VITE_AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
-VITE_AWS_SESSION_TOKEN=<AWS_SESSION_TOKEN> (if you are using temporary credentials)
-VITE_MOMENTO_API_KEY=<YOUR_MOMENTO_API_KEY>
+MOMENTO_API_KEY=<your-momento-api-key>
+MOMENTO_API_ENDPOINT=<your-momento-api-endpoint>
+AWS_ACCESS_KEY_ID=<your-aws-access-key-id>
+AWS_SECRET_ACCESS_KEY=<your-aws-secret-access-key>
+AWS_REGION=<your-aws-region>
+AWS_SESSION_TOKEN=<your-aws-session-token> # Optional, if you are using temporary credentials
 ```
-
-Then, install all dependencies and run the development server:
+Then, install all dependencies and run the cli-demo:
 
 ```bash
 npm install
-npm run dev
+npm run cli-demo
 ```
-
-Open [http://localhost:5173](http://localhost:5173) with your browser to explore the demo app.

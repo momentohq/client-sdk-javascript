@@ -20,33 +20,54 @@ MOMENTO_API_KEY=<your-momento-api-key>
 MOMENTO_API_ENDPOINT=<your-momento-api-endpoint>
 AWS_ACCESS_KEY_ID=<your-aws-access-key-id>
 AWS_SECRET_ACCESS_KEY=<your-aws-secret-access-key>
+AWS_REGION=<your-aws-region>
 AWS_SESSION_TOKEN=<your-aws-session-token> # Optional, if you are using temporary credentials
 ```
 
+### **Deploying the CDK Application:**
+To deploy the CDK application, run the following script:
+
+```bash
+./deploy-stack.sh
+```
+This script will deploy the CDK application and create the necessary resources in your AWS account.
+
 ### **Deploying and Running the Demo WebApp:**
-To deploy and run the application, run the following script:
+To run the web application, run the following script:
 
 
 ```bash
-./deploy-and-run.sh
+./run-webapp.sh
 ```
-This bash script automates the setup and deployment of a project by checking for a .env file, loading environment variables, running deployment scripts, and starting a web application.
+This script load the environment variables from the `.env` file and start the web application on `http://localhost:5173`.
 
 ---
 
-OPTIONAL: If you want to deploy the application and test it using the CLI, follow the steps below:
-### **Deploying and Testing using CLI:**
+OPTIONAL: If you want to test the application using the CLI-App, follow the steps below:
+### **Testing using CLI-App:**
 
-To deploy and test the application using cli, open two terminals:
+To run the CLI-App, run the following script:
+
+```bash
+./run-cli-app.sh
+```
+This script load the environment variables from the `.env` file and start the CLI-App.
+
+
+---
+OPTIONAL: If you want to test the application using the CLI, follow the steps below:
+### **Testing using CLI:**
+
+To test the application using cli, open two terminals:
 - In the first terminal, run the following command to subscribe to the Momento topic:
 
 ```bash
 ./subscribe-to-topic.sh
 ```
-- In the second terminal, run the following command to deploy the application and test the application:
+- In the second terminal, run the following command to test the application:
 
 ```bash
-./deploy-and-run-cli.sh
+./run-cli.sh
 ```
 
-The first terminal will subscribe to the Momento topic. The second terminal will deploy the application and create a dummy record in the DynamoDB table. The changes will be reflected in the Momento cache/topic.
+The first terminal will subscribe to the Momento topic. The second terminal will create a dummy record in the DynamoDB table. The changes will be reflected in the Momento cache/topic.
