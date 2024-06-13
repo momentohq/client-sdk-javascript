@@ -35,14 +35,12 @@ This script will deploy the CDK application and create the necessary resources i
 ### **Deploying and Running the Demo WebApp:**
 To run the web application, run the following script:
 
-
 ```bash
 ./run-webapp.sh
 ```
 This script load the environment variables from the `.env` file and start the web application on `http://localhost:5173`.
 
-
-### **Testing using CLI-App:** (Optional)
+### **Testing using CLI-App:(Optional)**
 To run the CLI-App, run the following script:
 
 ```bash
@@ -50,8 +48,7 @@ To run the CLI-App, run the following script:
 ```
 This script load the environment variables from the `.env` file and start the CLI-App.
 
-
-### **Testing using CLI:** (Optional)
+### **Testing using CLI:(Optional)**
 
 To test the application using cli, you need to first install momento-cli. You can install it using the following command:
 
