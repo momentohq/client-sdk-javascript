@@ -1,3 +1,5 @@
+{{ ossHeader }}
+
 # Welcome to Momento <-> Eventbridge Integration Example Project
 
 The project demonstrates a write-through cache pattern for DynamoDB using DynamoDB Streams, AWS EventBridge and Momento.
@@ -85,3 +87,5 @@ Now, open another terminal and run the following commands:
 ```
 
 The first terminal will subscribe to the Momento topic. The second terminal will create a dummy record in the DynamoDB table. The changes will be reflected in the Momento cache/topic.
+
+{{ ossFooter }}
