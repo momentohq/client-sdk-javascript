@@ -25,11 +25,8 @@ async function main() {
 
   if (response instanceof TopicSubscribe.Subscription) {
     console.log('Subscribed to topic');
-  } else if (response instanceof TopicSubscribe.Error) {
-    console.log(`Error subscribing to topic: ${response.toString()}`);
-    return;
   } else {
-    console.log(`Unexpected response from topic subscription: ${response.toString()}`);
+    console.log(`Error subscribing to topic: ${response.toString()}`);
     return;
   }
 
@@ -38,10 +35,8 @@ async function main() {
   // Wait a couple minutes to receive some items, then unsubscribe to finish the example.
   await sleep(120);
 
-  if (response instanceof TopicSubscribe.Subscription) {
-    console.log('Unsubscribing from topic subscription. Restart the example to subscribe again.');
-    response.unsubscribe();
-  }
+  console.log('Unsubscribing from topic subscription. Restart the example to subscribe again.');
+  response.unsubscribe();
 }
 
 function handleItem(item: TopicItem) {
