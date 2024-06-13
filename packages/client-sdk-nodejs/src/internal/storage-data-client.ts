@@ -168,7 +168,7 @@ export class StorageDataClient implements IStorageDataClient {
           interceptors: this.interceptors,
         },
         (err: ServiceError | null, resp) => {
-          if (resp && resp.value.value !== 'none') {
+          if (resp) {
             switch (resp.value.value) {
               case 'double_value': {
                 return resolve(
@@ -189,6 +189,9 @@ export class StorageDataClient implements IStorageDataClient {
                 return resolve(
                   new StoreGet.IntegerResponse(resp.value.integer_value)
                 );
+              }
+              case 'none': {
+                return resolve(new StoreGet.Miss());
               }
             }
           } else {

@@ -9,6 +9,7 @@ import {
   DeleteCache,
   CredentialProvider,
   ReadConcern,
+  IStorageClient,
 } from '@gomomento/sdk-core';
 import {
   CacheClient,
@@ -18,10 +19,12 @@ import {
   TopicConfigurations,
   PreviewLeaderboardClient,
   LeaderboardConfigurations,
+  StorageConfigurations,
 } from '../../src';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {CacheClientPropsWithConfig} from '../../src/internal/cache-client-props-with-config';
+import {StorageClient} from '../../src/storage-client';
 
 let _credsProvider: CredentialProvider | undefined = undefined;
 let _sessionCredsProvider: CredentialProvider | undefined = undefined;
@@ -115,6 +118,13 @@ function momentoClientForTestingWithSessionToken(): CacheClient {
 function momentoTopicClientForTesting(): TopicClient {
   return new TopicClient({
     configuration: TopicConfigurations.Default.latest(),
+    credentialProvider: credsProvider(),
+  });
+}
+
+function momentoStorageClientForTesting(): StorageClient {
+  return new StorageClient({
+    configuration: StorageConfigurations.Default.latest(),
     credentialProvider: credsProvider(),
   });
 }
@@ -219,6 +229,18 @@ export function SetupTopicIntegrationTest(): {
     topicClientWithThrowOnErrors,
     cacheClient: cacheClient,
     integrationTestCacheName: integrationTestCacheName,
+  };
+}
+
+export function SetupStorageIntegrationTest(): {
+  storageClient: IStorageClient;
+  integrationTestStoreName: string;
+} {
+  const {integrationTestCacheName} = SetupIntegrationTest();
+  const storageClient = momentoStorageClientForTesting();
+  return {
+    storageClient,
+    integrationTestStoreName: integrationTestCacheName,
   };
 }
 

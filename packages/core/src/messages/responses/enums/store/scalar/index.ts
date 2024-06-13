@@ -3,6 +3,7 @@ export enum StoreGetResponse {
   String = 'String',
   Bytes = 'Bytes',
   Double = 'Double',
+  Miss = 'Miss',
   Error = 'Error',
 }
 

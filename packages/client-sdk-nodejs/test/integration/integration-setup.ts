@@ -11,6 +11,8 @@ import {
   TopicClient,
   PreviewLeaderboardClient,
   LeaderboardConfigurations,
+  StorageClient,
+  StorageConfigurations,
 } from '../../src';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
@@ -135,6 +137,13 @@ function momentoTopicClientForTesting(): TopicClient {
   });
 }
 
+function momentoStorageClientForTesting(): StorageClient {
+  return new StorageClient({
+    configuration: StorageConfigurations.Laptop.latest(),
+    credentialProvider: integrationTestCacheClientProps().credentialProvider,
+  });
+}
+
 function momentoTopicClientWithThrowOnErrorsForTesting(): TopicClient {
   return new TopicClient({
     configuration:
@@ -223,6 +232,18 @@ export function SetupTopicIntegrationTest(): {
     topicClientWithThrowOnErrors,
     cacheClient: cacheClient,
     integrationTestCacheName: integrationTestCacheName,
+  };
+}
+
+export function SetupStorageIntegrationTest(): {
+  storageClient: StorageClient;
+  integrationTestStoreName: string;
+} {
+  const {integrationTestCacheName} = SetupIntegrationTest();
+  const storageClient = momentoStorageClientForTesting();
+  return {
+    storageClient,
+    integrationTestStoreName: integrationTestCacheName,
   };
 }
 

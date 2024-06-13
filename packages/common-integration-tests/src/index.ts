@@ -13,3 +13,4 @@ export * from './update-ttl';
 export * from './leaderboard-client';
 export * from './webhooks';
 export * from './batch-get-set';
+export * from './storage';

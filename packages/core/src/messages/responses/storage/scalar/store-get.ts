@@ -63,6 +63,18 @@ export class BytesResponse extends ResponseBase implements IResponse {
   type: StoreGetResponse.Bytes;
 }
 
+export class Miss extends ResponseBase implements IResponse {
+  constructor() {
+    super();
+  }
+
+  value(): undefined {
+    return undefined;
+  }
+
+  type: StoreGetResponse.Miss;
+}
+
 /**
  * Indicates that an error occurred during the cache get request.
  *
@@ -84,10 +96,10 @@ export class Error extends BaseResponseError implements IResponse {
   }
 }
 
-export type Success =
+export type Hit =
   | InstanceType<typeof StringResponse>
   | InstanceType<typeof IntegerResponse>
   | InstanceType<typeof DoubleResponse>
   | InstanceType<typeof BytesResponse>;
 
-export type Response = Success | Error;
+export type Response = Hit | Miss | Error;

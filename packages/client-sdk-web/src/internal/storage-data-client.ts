@@ -5,7 +5,6 @@ import {
   StoreDelete,
   CredentialProvider,
   MomentoLogger,
-  UnknownError,
 } from '..';
 import {Request, UnaryResponse} from 'grpc-web';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
@@ -105,16 +104,11 @@ export class StorageDataClient<
         },
         (err, resp) => {
           const value = resp?.getValue();
-          if (resp && value) {
-            switch (value.getValueCase()) {
+          if (resp) {
+            switch (value?.getValueCase()) {
+              case undefined:
               case ValueCase.VALUE_NOT_SET: {
-                return resolve(
-                  new StoreGet.Error(
-                    new UnknownError(
-                      'An unknown error occurred: ' + resp.toString()
-                    )
-                  )
-                );
+                return resolve(new StoreGet.Miss());
               }
               case ValueCase.BYTES_VALUE: {
                 return resolve(
@@ -201,7 +195,7 @@ export class StorageDataClient<
           ...this.clientMetadataProvider.createClientMetadata(),
           ...createStorageMetadata(storeName, this.deadlineMillis),
         },
-        (err, resp) => {
+        (err, _resp) => {
           if (err) {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
@@ -249,7 +243,7 @@ export class StorageDataClient<
           ...this.clientMetadataProvider.createClientMetadata(),
           ...createStorageMetadata(storeName, this.deadlineMillis),
         },
-        (err, resp) => {
+        (err, _resp) => {
           if (err) {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
