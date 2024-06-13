@@ -3,14 +3,14 @@
 The project demonstrates a write-through cache pattern for DynamoDB using DynamoDB Streams, AWS EventBridge and Momento.
 The app can be used to create, update and delete items in a DynamoDB table and the changes will be reflected in the cache/topic in real-time.
 
-### **Prerequisites:**
+## **Prerequisites:**
 
 - Momento Cache: momento-eventbridge-cache. If cache does not exists, can create one using the [momento console](https://console.gomomento.com/) .
 - Momento API Key, can be created using [momento console](https://console.gomomento.com/) if you haven’t already created one
 - HTTP API endpoint the same region as Momento API Key. You can copy the endpoint from the console after creating the API Key or refer to the [Regions Section here in the documentation](https://docs.momentohq.com/topics/develop/api-reference/http-api#regions)
 - AWS Account AccessId, Aws Secret Key (and AWS Session Token if you are using temporary credentials)
 
-### **Configuration**
+## **Configuration**
 
 The source code for the CDK application lives in the `infrastructure` directory, and web application source code lives in the `webapp` directory.
 You need to create a `.env` file in the root directory of the project with the following environment variables:
@@ -41,11 +41,8 @@ To run the web application, run the following script:
 ```
 This script load the environment variables from the `.env` file and start the web application on `http://localhost:5173`.
 
----
 
-OPTIONAL: If you want to test the application using the CLI-App, follow the steps below:
-### **Testing using CLI-App:**
-
+### **Testing using CLI-App:** (Optional)
 To run the CLI-App, run the following script:
 
 ```bash
@@ -53,9 +50,8 @@ To run the CLI-App, run the following script:
 ```
 This script load the environment variables from the `.env` file and start the CLI-App.
 
----
-OPTIONAL: If you want to test the application using the CLI, follow the steps below:
-### **Testing using CLI:**
+
+### **Testing using CLI:** (Optional)
 
 To test the application using cli, you need to first install momento-cli. You can install it using the following command:
 
