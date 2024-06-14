@@ -10,7 +10,7 @@ export enum StorageItemType {
   Bytes = 'Bytes',
 }
 
-export enum StorageSetResponse {
+export enum StoragePutResponse {
   Success = 'Success',
   Error = 'Error',
 }

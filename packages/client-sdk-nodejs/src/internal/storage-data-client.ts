@@ -4,7 +4,7 @@ import {
   MomentoLogger,
   MomentoLoggerFactory,
   StorageGet,
-  StorageSet,
+  StoragePut,
   StorageDelete,
   UnknownError,
 } from '@gomomento/sdk-core';
@@ -220,30 +220,30 @@ export class StorageDataClient implements IStorageDataClient {
     });
   }
 
-  public async set(
+  public async put(
     storeName: string,
     key: string,
     value: string | Uint8Array | number
-  ): Promise<StorageSet.Response> {
+  ): Promise<StoragePut.Response> {
     try {
       validateStoreName(storeName);
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new StorageSet.Error(err)
+        err => new StoragePut.Error(err)
       );
     }
     this.logger.trace(
       `Issuing 'get' request; store: ${storeName}, key: ${key}`
     );
-    return await this.sendSet(storeName, key, value);
+    return await this.sendPut(storeName, key, value);
   }
 
-  private async sendSet(
+  private async sendPut(
     storeName: string,
     key: string,
     value: string | Uint8Array | number
-  ): Promise<StorageSet.Response> {
+  ): Promise<StoragePut.Response> {
     const storeValue = new store._StoreValue();
     if (typeof value === 'string') {
       storeValue.string_value = value;
@@ -256,13 +256,13 @@ export class StorageDataClient implements IStorageDataClient {
     } else {
       storeValue.bytes_value = value;
     }
-    const request = new store._StoreSetRequest({
+    const request = new store._StorePutRequest({
       key: key,
       value: storeValue,
     });
     const metadata = this.createMetadata(storeName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().Set(
+      this.clientWrapper.getClient().Put(
         request,
         metadata,
         {
@@ -270,11 +270,11 @@ export class StorageDataClient implements IStorageDataClient {
         },
         (err: ServiceError | null, resp) => {
           if (resp) {
-            resolve(new StorageSet.Success());
+            resolve(new StoragePut.Success());
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e => new StorageSet.Error(e),
+              errorResponseFactoryFn: e => new StoragePut.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });

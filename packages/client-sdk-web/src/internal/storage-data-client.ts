@@ -1,7 +1,7 @@
 import {store} from '@gomomento/generated-types-webtext';
 import {
   StorageGet,
-  StorageSet,
+  StoragePut,
   StorageDelete,
   CredentialProvider,
   MomentoLogger,
@@ -12,7 +12,7 @@ import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   _StoreDeleteRequest,
   _StoreGetRequest,
-  _StoreSetRequest,
+  _StorePutRequest,
   _StoreValue,
 } from '@gomomento/generated-types-webtext/dist/store_pb';
 import {IStorageDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
@@ -154,21 +154,21 @@ export class StorageDataClient<
     });
   }
 
-  public async set(
+  public async put(
     storeName: string,
     key: string,
     value: string | number | Uint8Array
-  ): Promise<StorageSet.Response> {
+  ): Promise<StoragePut.Response> {
     try {
       validateStoreName(storeName);
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new StorageSet.Error(err)
+        err => new StoragePut.Error(err)
       );
     }
     this.logger.trace(`Issuing 'set' request; key: ${key.toString()}`);
-    const result = await this.sendSet(
+    const result = await this.sendPut(
       storeName,
       convertToB64String(key),
       value
@@ -177,12 +177,12 @@ export class StorageDataClient<
     return result;
   }
 
-  private async sendSet(
+  private async sendPut(
     storeName: string,
     key: string,
     passedInVal: string | number | Uint8Array
-  ): Promise<StorageSet.Response> {
-    const request = new _StoreSetRequest();
+  ): Promise<StoragePut.Response> {
+    const request = new _StorePutRequest();
     request.setKey(key);
 
     const value = new _StoreValue();
@@ -199,7 +199,7 @@ export class StorageDataClient<
     }
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.set(
+      this.clientWrapper.put(
         request,
         {
           ...this.clientMetadataProvider.createClientMetadata(),
@@ -209,12 +209,12 @@ export class StorageDataClient<
           if (err) {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e => new StorageSet.Error(e),
+              errorResponseFactoryFn: e => new StoragePut.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
           } else {
-            resolve(new StorageSet.Success());
+            resolve(new StoragePut.Success());
           }
         }
       );

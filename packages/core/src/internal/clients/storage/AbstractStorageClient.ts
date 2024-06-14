@@ -3,7 +3,7 @@ import {
   DeleteStore,
   ListStores,
   StorageGet,
-  StorageSet,
+  StoragePut,
   StorageDelete,
 } from '../../../index';
 import {IStorageDataClient} from './IStorageDataClient';
@@ -44,12 +44,12 @@ export abstract class AbstractStorageClient implements IStorageClient {
     return this.getNextDataClient().get(storeName, key);
   }
 
-  set(
+  put(
     storeName: string,
     key: string,
     value: string | Uint8Array | number
-  ): Promise<StorageSet.Response> {
-    return this.getNextDataClient().set(storeName, key, value);
+  ): Promise<StoragePut.Response> {
+    return this.getNextDataClient().put(storeName, key, value);
   }
 
   delete(storeName: string, key: string): Promise<StorageDelete.Response> {

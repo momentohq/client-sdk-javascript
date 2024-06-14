@@ -1,12 +1,12 @@
-import {StorageGet, StorageSet, StorageDelete} from '../../../index';
+import {StorageGet, StoragePut, StorageDelete} from '../../../index';
 
 export interface IStorageDataClient {
   get(storeName: string, key: string): Promise<StorageGet.Response>;
-  set(
+  put(
     storeName: string,
     key: string,
     value: string | number | Uint8Array
-  ): Promise<StorageSet.Response>;
+  ): Promise<StoragePut.Response>;
   delete(storeName: string, key: string): Promise<StorageDelete.Response>;
   close(): void;
 }

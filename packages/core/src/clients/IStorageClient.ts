@@ -2,7 +2,7 @@ import {
   CreateStore,
   ListStores,
   DeleteStore,
-  StorageSet,
+  StoragePut,
   StorageGet,
   StorageDelete,
 } from '../index';
@@ -12,11 +12,11 @@ export interface IStorageClient {
   listStores(): Promise<ListStores.Response>;
   deleteStore(cache: string): Promise<DeleteStore.Response>;
   get(storeName: string, key: string): Promise<StorageGet.Response>;
-  set(
+  put(
     storeName: string,
     key: string,
     value: string | Uint8Array | number
-  ): Promise<StorageSet.Response>;
+  ): Promise<StoragePut.Response>;
   delete(storeName: string, key: string): Promise<StorageDelete.Response>;
 
   close(): void;

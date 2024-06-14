@@ -80,7 +80,7 @@ import {TopicItem} from '@gomomento/sdk-core/dist/src/messages/responses/topic-i
 // Storage Response Types
 import {
   StorageDelete,
-  StorageSet,
+  StoragePut,
   StorageGet,
   CreateStore,
   DeleteStore,
@@ -381,7 +381,7 @@ export {
   StorageConfigurations,
   StorageConfiguration,
   StorageClientConfiguration,
-  StorageSet,
+  StoragePut,
   StorageGet,
   StorageDelete,
   CreateStore,

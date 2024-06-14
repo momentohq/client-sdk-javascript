@@ -6,7 +6,7 @@ import {
   MomentoErrorCode,
   StorageDeleteResponse,
   StorageGetResponse,
-  StorageSetResponse,
+  StoragePutResponse,
 } from '@gomomento/sdk-core';
 import {testCacheName} from './common-int-test-utils';
 import {v4} from 'uuid';
@@ -102,18 +102,18 @@ export function runStorageServiceTests(
       await storageClient.deleteStore(storeName);
     });
   });
-  describe('#store get set and delete', () => {
-    it('set get and delete a key in a store', async () => {
+  describe('#store get put and delete', () => {
+    it('put get and delete a key in a store', async () => {
       const key = v4();
       const value = v4();
-      const setResponse = await storageClient.set(testStoreName, key, value);
-      switch (setResponse.type) {
-        case StorageSetResponse.Success: {
+      const putResponse = await storageClient.put(testStoreName, key, value);
+      switch (putResponse.type) {
+        case StoragePutResponse.Success: {
           break;
         }
-        case StorageSetResponse.Error: {
+        case StoragePutResponse.Error: {
           throw new Error(
-            `failed to set key: ${setResponse.message()} ${setResponse.toString()}`
+            `failed to put key: ${putResponse.message()} ${putResponse.toString()}`
           );
         }
       }

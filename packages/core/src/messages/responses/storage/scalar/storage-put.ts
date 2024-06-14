@@ -1,16 +1,16 @@
-import {StorageSetResponse} from '../../enums';
+import {StoragePutResponse} from '../../enums';
 import {BaseResponseError, BaseResponseSuccess} from '../../response-base';
 import {SdkError} from '../../../../errors';
 
 interface IResponse {
-  readonly type: StorageSetResponse;
+  readonly type: StoragePutResponse;
 }
 
 /**
  * Indicates a Successful store set request.
  */
 export class Success extends BaseResponseSuccess implements IResponse {
-  readonly type: StorageSetResponse.Success = StorageSetResponse.Success;
+  readonly type: StoragePutResponse.Success = StoragePutResponse.Success;
 }
 
 /**
@@ -28,7 +28,7 @@ export class Error extends BaseResponseError implements IResponse {
     super(_innerException);
   }
 
-  readonly type: StorageSetResponse.Error = StorageSetResponse.Error;
+  readonly type: StoragePutResponse.Error = StoragePutResponse.Error;
 }
 
 export type Response = Success | Error;
