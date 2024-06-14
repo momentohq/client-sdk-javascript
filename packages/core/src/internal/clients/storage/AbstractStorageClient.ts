@@ -2,9 +2,9 @@ import {
   CreateStore,
   DeleteStore,
   ListStores,
-  StoreGet,
-  StoreSet,
-  StoreDelete,
+  StorageGet,
+  StorageSet,
+  StorageDelete,
 } from '../../../index';
 import {IStorageDataClient} from './IStorageDataClient';
 import {IStorageClient} from '../../../clients/IStorageClient';
@@ -40,7 +40,7 @@ export abstract class AbstractStorageClient implements IStorageClient {
     return this.controlClient.deleteStore(storeName);
   }
 
-  get(storeName: string, key: string): Promise<StoreGet.Response> {
+  get(storeName: string, key: string): Promise<StorageGet.Response> {
     return this.getNextDataClient().get(storeName, key);
   }
 
@@ -48,11 +48,11 @@ export abstract class AbstractStorageClient implements IStorageClient {
     storeName: string,
     key: string,
     value: string | Uint8Array | number
-  ): Promise<StoreSet.Response> {
+  ): Promise<StorageSet.Response> {
     return this.getNextDataClient().set(storeName, key, value);
   }
 
-  delete(storeName: string, key: string): Promise<StoreDelete.Response> {
+  delete(storeName: string, key: string): Promise<StorageDelete.Response> {
     return this.getNextDataClient().delete(storeName, key);
   }
 

@@ -39,9 +39,9 @@ export function createCallMetadata(
 export function createStorageMetadata(
   storeName: string,
   timeoutMillis: number
-): {storage: string; deadline: string} {
+): {store: string; deadline: string} {
   const deadline = Date.now() + timeoutMillis;
-  return {storage: storeName, deadline: deadline.toString()};
+  return {store: storeName, deadline: deadline.toString()};
 }
 
 export function getWebControlEndpoint(

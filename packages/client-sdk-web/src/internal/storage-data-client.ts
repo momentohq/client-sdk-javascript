@@ -1,10 +1,11 @@
 import {store} from '@gomomento/generated-types-webtext';
 import {
-  StoreGet,
-  StoreSet,
-  StoreDelete,
+  StorageGet,
+  StorageSet,
+  StorageDelete,
   CredentialProvider,
   MomentoLogger,
+  UnknownError,
 } from '..';
 import {Request, UnaryResponse} from 'grpc-web';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
@@ -73,13 +74,16 @@ export class StorageDataClient<
     // by both nodejs and web SDKs
   }
 
-  public async get(storeName: string, key: string): Promise<StoreGet.Response> {
+  public async get(
+    storeName: string,
+    key: string
+  ): Promise<StorageGet.Response> {
     try {
       validateStoreName(storeName);
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new StoreGet.Error(err)
+        err => new StorageGet.Error(err)
       );
     }
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
@@ -91,7 +95,7 @@ export class StorageDataClient<
   private async sendGet(
     storeName: string,
     key: string
-  ): Promise<StoreGet.Response> {
+  ): Promise<StorageGet.Response> {
     const request = new _StoreGetRequest();
     request.setKey(key);
 
@@ -108,33 +112,39 @@ export class StorageDataClient<
             switch (value?.getValueCase()) {
               case undefined:
               case ValueCase.VALUE_NOT_SET: {
-                return resolve(new StoreGet.Miss());
+                return resolve(
+                  new StorageGet.Error(
+                    new UnknownError(
+                      'StorageGet responded with an unknown result'
+                    )
+                  )
+                );
               }
               case ValueCase.BYTES_VALUE: {
                 return resolve(
-                  new StoreGet.BytesResponse(value.getBytesValue_asU8())
+                  new StorageGet.BytesResponse(value.getBytesValue_asU8())
                 );
               }
               case ValueCase.STRING_VALUE: {
                 return resolve(
-                  new StoreGet.StringResponse(value.getStringValue())
+                  new StorageGet.StringResponse(value.getStringValue())
                 );
               }
               case ValueCase.INTEGER_VALUE: {
                 return resolve(
-                  new StoreGet.IntegerResponse(value.getIntegerValue())
+                  new StorageGet.IntegerResponse(value.getIntegerValue())
                 );
               }
               case ValueCase.DOUBLE_VALUE: {
                 return resolve(
-                  new StoreGet.DoubleResponse(value.getDoubleValue())
+                  new StorageGet.DoubleResponse(value.getDoubleValue())
                 );
               }
             }
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e => new StoreGet.Error(e),
+              errorResponseFactoryFn: e => new StorageGet.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
@@ -148,13 +158,13 @@ export class StorageDataClient<
     storeName: string,
     key: string,
     value: string | number | Uint8Array
-  ): Promise<StoreSet.Response> {
+  ): Promise<StorageSet.Response> {
     try {
       validateStoreName(storeName);
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new StoreSet.Error(err)
+        err => new StorageSet.Error(err)
       );
     }
     this.logger.trace(`Issuing 'set' request; key: ${key.toString()}`);
@@ -171,7 +181,7 @@ export class StorageDataClient<
     storeName: string,
     key: string,
     passedInVal: string | number | Uint8Array
-  ): Promise<StoreSet.Response> {
+  ): Promise<StorageSet.Response> {
     const request = new _StoreSetRequest();
     request.setKey(key);
 
@@ -199,12 +209,12 @@ export class StorageDataClient<
           if (err) {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e => new StoreSet.Error(e),
+              errorResponseFactoryFn: e => new StorageSet.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
           } else {
-            resolve(new StoreSet.Success());
+            resolve(new StorageSet.Success());
           }
         }
       );
@@ -214,13 +224,13 @@ export class StorageDataClient<
   public async delete(
     storeName: string,
     key: string
-  ): Promise<StoreDelete.Response> {
+  ): Promise<StorageDelete.Response> {
     try {
       validateStoreName(storeName);
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new StoreDelete.Error(err)
+        err => new StorageDelete.Error(err)
       );
     }
     this.logger.trace(`Issuing 'delete' request; key: ${key.toString()}`);
@@ -232,7 +242,7 @@ export class StorageDataClient<
   private async sendDelete(
     storeName: string,
     key: string
-  ): Promise<StoreDelete.Response> {
+  ): Promise<StorageDelete.Response> {
     const request = new _StoreDeleteRequest();
     request.setKey(key);
 
@@ -247,12 +257,12 @@ export class StorageDataClient<
           if (err) {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e => new StoreDelete.Error(e),
+              errorResponseFactoryFn: e => new StorageDelete.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
           } else {
-            resolve(new StoreDelete.Success());
+            resolve(new StorageDelete.Success());
           }
         }
       );

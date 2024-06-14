@@ -60,6 +60,7 @@ export class Laptop extends StorageClientConfiguration {
       loggerFactory: loggerFactory,
       transportStrategy: transportStrategy,
       middlewares: defaultMiddlewares,
+      throwOnErrors: false,
     });
   }
 }

@@ -1,20 +1,20 @@
-import {StoreDeleteResponse} from '../../enums';
+import {StorageSetResponse} from '../../enums';
 import {BaseResponseError, BaseResponseSuccess} from '../../response-base';
 import {SdkError} from '../../../../errors';
 
 interface IResponse {
-  readonly type: StoreDeleteResponse;
+  readonly type: StorageSetResponse;
 }
 
 /**
- * Indicates a Successful store delete request.
+ * Indicates a Successful store set request.
  */
 export class Success extends BaseResponseSuccess implements IResponse {
-  readonly type: StoreDeleteResponse.Success = StoreDeleteResponse.Success;
+  readonly type: StorageSetResponse.Success = StorageSetResponse.Success;
 }
 
 /**
- * Indicates that an error occurred during the store delete request.
+ * Indicates that an error occurred during the store set request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:
@@ -28,7 +28,7 @@ export class Error extends BaseResponseError implements IResponse {
     super(_innerException);
   }
 
-  readonly type: StoreDeleteResponse.Error = StoreDeleteResponse.Error;
+  readonly type: StorageSetResponse.Error = StorageSetResponse.Error;
 }
 
 export type Response = Success | Error;

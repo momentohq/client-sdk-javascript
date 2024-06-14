@@ -20,11 +20,11 @@ import {
   PreviewLeaderboardClient,
   LeaderboardConfigurations,
   StorageConfigurations,
+  PreviewStorageClient,
 } from '../../src';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {CacheClientPropsWithConfig} from '../../src/internal/cache-client-props-with-config';
-import {StorageClient} from '../../src/storage-client';
 
 let _credsProvider: CredentialProvider | undefined = undefined;
 let _sessionCredsProvider: CredentialProvider | undefined = undefined;
@@ -122,8 +122,8 @@ function momentoTopicClientForTesting(): TopicClient {
   });
 }
 
-function momentoStorageClientForTesting(): StorageClient {
-  return new StorageClient({
+function momentoStorageClientForTesting(): PreviewStorageClient {
+  return new PreviewStorageClient({
     configuration: StorageConfigurations.Default.latest(),
     credentialProvider: credsProvider(),
   });

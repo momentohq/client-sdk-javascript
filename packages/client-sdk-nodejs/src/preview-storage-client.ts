@@ -11,7 +11,7 @@ import {StorageDataClient} from './internal/storage-data-client';
 import {StorageConfiguration} from './config/storage-configuration';
 import {StorageConfigurations} from './index';
 
-export class StorageClient
+export class PreviewStorageClient
   extends AbstractStorageClient
   implements IStorageClient
 {

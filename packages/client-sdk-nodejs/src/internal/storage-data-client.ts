@@ -3,9 +3,10 @@ import {
   InvalidArgumentError,
   MomentoLogger,
   MomentoLoggerFactory,
-  StoreGet,
-  StoreSet,
-  StoreDelete,
+  StorageGet,
+  StorageSet,
+  StorageDelete,
+  UnknownError,
 } from '@gomomento/sdk-core';
 import {validateStoreName} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {store} from '@gomomento/generated-types/dist/store';
@@ -50,7 +51,9 @@ export class StorageDataClient implements IStorageDataClient {
    */
   constructor(props: StorageClientPropsWithConfig, dataClientID: string) {
     this.configuration = props.configuration;
-    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(false);
+    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
+      props.configuration.getThrowOnErrors()
+    );
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
     this.requestTimeoutMs = this.configuration
@@ -133,17 +136,20 @@ export class StorageDataClient implements IStorageDataClient {
 
   private createMetadata(storeName: string): Metadata {
     const metadata = new Metadata();
-    metadata.set('storage', storeName);
+    metadata.set('store', storeName);
     return metadata;
   }
 
-  public async get(storeName: string, key: string): Promise<StoreGet.Response> {
+  public async get(
+    storeName: string,
+    key: string
+  ): Promise<StorageGet.Response> {
     try {
       validateStoreName(storeName);
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new StoreGet.Error(err)
+        err => new StorageGet.Error(err)
       );
     }
     this.logger.trace(
@@ -155,7 +161,7 @@ export class StorageDataClient implements IStorageDataClient {
   private async sendGet(
     storeName: string,
     key: string
-  ): Promise<StoreGet.Response> {
+  ): Promise<StorageGet.Response> {
     const request = new store._StoreGetRequest({
       key: key,
     });
@@ -168,36 +174,43 @@ export class StorageDataClient implements IStorageDataClient {
           interceptors: this.interceptors,
         },
         (err: ServiceError | null, resp) => {
-          if (resp) {
-            switch (resp.value.value) {
+          const value = resp?.value?.value;
+          if (value) {
+            switch (value) {
               case 'double_value': {
                 return resolve(
-                  new StoreGet.DoubleResponse(resp.value.double_value)
+                  new StorageGet.DoubleResponse(resp.value.double_value)
                 );
               }
               case 'string_value': {
                 return resolve(
-                  new StoreGet.StringResponse(resp.value.string_value)
+                  new StorageGet.StringResponse(resp.value.string_value)
                 );
               }
               case 'bytes_value': {
                 return resolve(
-                  new StoreGet.BytesResponse(resp.value.bytes_value)
+                  new StorageGet.BytesResponse(resp.value.bytes_value)
                 );
               }
               case 'integer_value': {
                 return resolve(
-                  new StoreGet.IntegerResponse(resp.value.integer_value)
+                  new StorageGet.IntegerResponse(resp.value.integer_value)
                 );
               }
               case 'none': {
-                return resolve(new StoreGet.Miss());
+                return resolve(
+                  new StorageGet.Error(
+                    new UnknownError(
+                      'StorageGet responded with an unknown result'
+                    )
+                  )
+                );
               }
             }
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e => new StoreGet.Error(e),
+              errorResponseFactoryFn: e => new StorageGet.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
@@ -211,13 +224,13 @@ export class StorageDataClient implements IStorageDataClient {
     storeName: string,
     key: string,
     value: string | Uint8Array | number
-  ): Promise<StoreSet.Response> {
+  ): Promise<StorageSet.Response> {
     try {
       validateStoreName(storeName);
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new StoreSet.Error(err)
+        err => new StorageSet.Error(err)
       );
     }
     this.logger.trace(
@@ -230,7 +243,7 @@ export class StorageDataClient implements IStorageDataClient {
     storeName: string,
     key: string,
     value: string | Uint8Array | number
-  ): Promise<StoreSet.Response> {
+  ): Promise<StorageSet.Response> {
     const storeValue = new store._StoreValue();
     if (typeof value === 'string') {
       storeValue.string_value = value;
@@ -257,11 +270,11 @@ export class StorageDataClient implements IStorageDataClient {
         },
         (err: ServiceError | null, resp) => {
           if (resp) {
-            resolve(new StoreSet.Success());
+            resolve(new StorageSet.Success());
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e => new StoreSet.Error(e),
+              errorResponseFactoryFn: e => new StorageSet.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
@@ -274,13 +287,13 @@ export class StorageDataClient implements IStorageDataClient {
   public async delete(
     storeName: string,
     key: string
-  ): Promise<StoreDelete.Response> {
+  ): Promise<StorageDelete.Response> {
     try {
       validateStoreName(storeName);
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new StoreDelete.Error(err)
+        err => new StorageDelete.Error(err)
       );
     }
     this.logger.trace(
@@ -292,7 +305,7 @@ export class StorageDataClient implements IStorageDataClient {
   private async sendDelete(
     storeName: string,
     key: string
-  ): Promise<StoreDelete.Response> {
+  ): Promise<StorageDelete.Response> {
     const request = new store._StoreDeleteRequest({
       key: key,
     });
@@ -306,11 +319,11 @@ export class StorageDataClient implements IStorageDataClient {
         },
         (err: ServiceError | null, resp) => {
           if (resp) {
-            resolve(new StoreDelete.Success());
+            resolve(new StorageDelete.Success());
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e => new StoreDelete.Error(e),
+              errorResponseFactoryFn: e => new StorageDelete.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });

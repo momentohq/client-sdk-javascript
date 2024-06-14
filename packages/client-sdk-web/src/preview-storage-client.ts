@@ -14,7 +14,7 @@ interface StorageClientPropsWithConfiguration extends StorageClientProps {
   configuration: StorageConfiguration;
 }
 
-export class StorageClient
+export class PreviewStorageClient
   extends AbstractStorageClient
   implements IStorageClient
 {
@@ -46,7 +46,7 @@ export class StorageClient
    *
    * @readonly
    * @type {StorageConfiguration} the configuration used by this client
-   * @memberof StorageClient
+   * @memberof PreviewStorageClient
    */
   public get configuration(): StorageConfiguration {
     return this._configuration;

@@ -2,6 +2,7 @@ import {CacheClient} from './cache-client';
 import {AuthClient} from './auth-client';
 import {TopicClient} from './topic-client';
 import {PreviewLeaderboardClient} from './preview-leaderboard-client';
+import {PreviewStorageClient} from './preview-storage-client';
 import * as Configurations from './config/configurations';
 import * as TopicConfigurations from './config/topic-configurations';
 import * as LeaderboardConfigurations from './config/leaderboard-configurations';
@@ -330,4 +331,5 @@ export {
   // Storage
   StoreInfo,
   StorageConfigurations,
+  PreviewStorageClient,
 };

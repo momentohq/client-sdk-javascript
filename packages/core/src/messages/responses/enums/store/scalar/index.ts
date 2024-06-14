@@ -1,18 +1,21 @@
-export enum StoreGetResponse {
-  Integer = 'Integer',
-  String = 'String',
-  Bytes = 'Bytes',
-  Double = 'Double',
-  Miss = 'Miss',
-  Error = 'Error',
-}
-
-export enum StoreSetResponse {
+export enum StorageGetResponse {
   Success = 'Success',
   Error = 'Error',
 }
 
-export enum StoreDeleteResponse {
+export enum StorageItemType {
+  String = 'String',
+  Integer = 'Integer',
+  Double = 'Double',
+  Bytes = 'Bytes',
+}
+
+export enum StorageSetResponse {
+  Success = 'Success',
+  Error = 'Error',
+}
+
+export enum StorageDeleteResponse {
   Success = 'Success',
   Error = 'Error',
 }

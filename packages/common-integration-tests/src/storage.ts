@@ -3,9 +3,10 @@ import {
   DeleteStoreResponse,
   IStorageClient,
   ListStoresResponse,
-  StoreDeleteResponse,
-  StoreGetResponse,
-  StoreSetResponse,
+  MomentoErrorCode,
+  StorageDeleteResponse,
+  StorageGetResponse,
+  StorageSetResponse,
 } from '@gomomento/sdk-core';
 import {testCacheName} from './common-int-test-utils';
 import {v4} from 'uuid';
@@ -107,10 +108,10 @@ export function runStorageServiceTests(
       const value = v4();
       const setResponse = await storageClient.set(testStoreName, key, value);
       switch (setResponse.type) {
-        case StoreSetResponse.Success: {
+        case StorageSetResponse.Success: {
           break;
         }
-        case StoreSetResponse.Error: {
+        case StorageSetResponse.Error: {
           throw new Error(
             `failed to set key: ${setResponse.message()} ${setResponse.toString()}`
           );
@@ -121,26 +122,29 @@ export function runStorageServiceTests(
       expect(getResponse.value()).toEqual(value);
       const deleteResponse = await storageClient.delete(testStoreName, key);
       switch (deleteResponse.type) {
-        case StoreDeleteResponse.Success: {
+        case StorageDeleteResponse.Success: {
           break;
         }
-        case StoreDeleteResponse.Error: {
+        case StorageDeleteResponse.Error: {
           throw new Error(
             `failed to delete key in store: ${deleteResponse.message()} ${deleteResponse.toString()}`
           );
         }
       }
     });
-    it('should return miss for a key that doesnt exist', async () => {
+    it('should return not found error for a key that doesnt exist', async () => {
       const key = v4();
       const getResponse = await storageClient.get(testStoreName, key);
       switch (getResponse.type) {
-        case StoreGetResponse.Miss: {
+        case StorageGetResponse.Error: {
+          expect(getResponse.errorCode()).toEqual(
+            MomentoErrorCode.NOT_FOUND_ERROR
+          );
           break;
         }
         default: {
           throw new Error(
-            `expected StoreGetResponse.Miss but got ${
+            `expected StoreGetResponse.Error but got ${
               getResponse.type
             } toString: ${getResponse.toString()}`
           );

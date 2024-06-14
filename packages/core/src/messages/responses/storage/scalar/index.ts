@@ -1,3 +1,3 @@
-export * as StoreDelete from './store-delete';
-export * as StoreGet from './store-get';
-export * as StoreSet from './store-set';
+export * as StorageDelete from './storage-delete';
+export * as StorageGet from './storage-get';
+export * as StorageSet from './storage-set';

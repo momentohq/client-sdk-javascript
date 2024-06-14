@@ -96,8 +96,6 @@ import {
   _ListRetainRequest,
   _SetDifferenceRequest,
   _SetFetchRequest,
-  _SetIfNotExistsRequest,
-  _SetIfNotExistsResponse,
   _SetIfRequest,
   _SetIfResponse,
   _SetRequest,

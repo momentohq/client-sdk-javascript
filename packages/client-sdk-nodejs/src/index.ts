@@ -1,6 +1,6 @@
 import {CacheClient, SimpleCacheClient} from './cache-client';
 import {TopicClient} from './topic-client';
-import {StorageClient} from './storage-client';
+import {PreviewStorageClient} from './preview-storage-client';
 import * as Configurations from './config/configurations';
 import * as TopicConfigurations from './config/topic-configurations';
 import * as StorageConfigurations from './config/storage-configurations';
@@ -79,9 +79,9 @@ import {TopicItem} from '@gomomento/sdk-core/dist/src/messages/responses/topic-i
 
 // Storage Response Types
 import {
-  StoreDelete,
-  StoreSet,
-  StoreGet,
+  StorageDelete,
+  StorageSet,
+  StorageGet,
   CreateStore,
   DeleteStore,
   ListStores,
@@ -381,14 +381,14 @@ export {
   StorageConfigurations,
   StorageConfiguration,
   StorageClientConfiguration,
-  StoreSet,
-  StoreGet,
-  StoreDelete,
+  StorageSet,
+  StorageGet,
+  StorageDelete,
   CreateStore,
   DeleteStore,
   ListStores,
   StoreInfo,
-  StorageClient,
+  PreviewStorageClient,
   IStorageClient,
   // Webhooks
   PostUrlWebhookDestination,

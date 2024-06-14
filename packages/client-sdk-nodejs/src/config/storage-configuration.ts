@@ -53,6 +53,22 @@ export interface StorageConfiguration {
    * @returns {Configuration} a new Configuration object with the specified Middleware appended to the list of existing Middlewares
    */
   addMiddleware(middleware: Middleware): StorageConfiguration;
+
+  /**
+   * @returns {boolean} Configures whether the client should return a Momento Error object or throw an exception when an
+   * error occurs. By default, this is set to false, and the client will return a Momento Error object on errors. Set it
+   * to true if you prefer for exceptions to be thrown.
+   */
+  getThrowOnErrors(): boolean;
+
+  /**
+   * Copy constructor for configuring whether the client should return a Momento Error object or throw an exception when an
+   * error occurs. By default, this is set to false, and the client will return a Momento Error object on errors. Set it
+   * to true if you prefer for exceptions to be thrown.
+   * @param {boolean} throwOnErrors
+   * @returns {Configuration} a new Configuration object with the specified throwOnErrors setting
+   */
+  withThrowOnErrors(throwOnErrors: boolean): StorageConfiguration;
 }
 
 export interface StorageConfigurationProps {
@@ -69,17 +85,24 @@ export interface StorageConfigurationProps {
    * Configures middleware functions that will wrap each request
    */
   middlewares: Middleware[];
+
+  /**
+   * Configures whether the client should return a Momento Error object or throw an exception when an error occurs.
+   */
+  throwOnErrors: boolean;
 }
 
 export class StorageClientConfiguration implements StorageConfiguration {
   private readonly loggerFactory: MomentoLoggerFactory;
   private readonly transportStrategy: StorageTransportStrategy;
   private readonly middlewares: Middleware[];
+  private readonly throwOnErrors: boolean;
 
   constructor(props: StorageConfigurationProps) {
     this.loggerFactory = props.loggerFactory;
     this.transportStrategy = props.transportStrategy;
     this.middlewares = props.middlewares;
+    this.throwOnErrors = props.throwOnErrors;
   }
 
   getLoggerFactory(): MomentoLoggerFactory {
@@ -96,6 +119,7 @@ export class StorageClientConfiguration implements StorageConfiguration {
       transportStrategy:
         this.transportStrategy.withClientTimeoutMillis(clientTimeoutMillis),
       middlewares: this.middlewares,
+      throwOnErrors: this.throwOnErrors,
     });
   }
 
@@ -106,6 +130,7 @@ export class StorageClientConfiguration implements StorageConfiguration {
       loggerFactory: this.loggerFactory,
       transportStrategy: transportStrategy,
       middlewares: this.middlewares,
+      throwOnErrors: this.throwOnErrors,
     });
   }
 
@@ -118,6 +143,7 @@ export class StorageClientConfiguration implements StorageConfiguration {
       loggerFactory: this.loggerFactory,
       transportStrategy: this.transportStrategy,
       middlewares: middlewares,
+      throwOnErrors: this.throwOnErrors,
     });
   }
 
@@ -126,6 +152,20 @@ export class StorageClientConfiguration implements StorageConfiguration {
       loggerFactory: this.loggerFactory,
       transportStrategy: this.transportStrategy,
       middlewares: [middleware, ...this.middlewares],
+      throwOnErrors: this.throwOnErrors,
     });
+  }
+
+  withThrowOnErrors(throwOnErrors: boolean): StorageConfiguration {
+    return new StorageClientConfiguration({
+      loggerFactory: this.loggerFactory,
+      transportStrategy: this.transportStrategy,
+      middlewares: this.middlewares,
+      throwOnErrors: throwOnErrors,
+    });
+  }
+
+  getThrowOnErrors(): boolean {
+    return this.throwOnErrors;
   }
 }
