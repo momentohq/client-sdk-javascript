@@ -67,9 +67,53 @@ export function runGetSetDeleteTests(
       }
     });
 
+    it('should set and get string with special characters from cache', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4() + 'héllö wörld';
+
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
     it('should set and get bytes from cache', async () => {
       const cacheKey = new TextEncoder().encode(v4());
       const cacheValue = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.set(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSet.Success);
+      }, `expected SUCCESS but got ${setResponse.toString()}`);
+      const getResponse = await cacheClient.get(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+    });
+
+    it('should set and get bytes with special characters from cache', async () => {
+      const cacheKey = new TextEncoder().encode(v4());
+      const cacheValue = new TextEncoder().encode(v4() + 'héllö wörld');
       const setResponse = await cacheClient.set(
         integrationTestCacheName,
         cacheKey,

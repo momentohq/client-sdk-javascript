@@ -2,11 +2,30 @@ import {CredentialProvider} from '@gomomento/sdk-core';
 
 export function convertToB64String(v: string | Uint8Array): string {
   if (typeof v === 'string') {
-    return btoa(v);
+    const utf8Bytes = new TextEncoder().encode(v);
+    const binaryString = String.fromCharCode(...utf8Bytes);
+    return btoa(binaryString);
+  } else {
+    const binaryString = String.fromCharCode(...v);
+    return btoa(binaryString);
   }
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  return btoa(String.fromCharCode.apply(null, v));
+}
+
+export function convertToBytesFromB64String(b64: string): Uint8Array {
+  const binaryString = atob(b64);
+  const binaryLength = binaryString.length;
+  const bytes = new Uint8Array(binaryLength);
+
+  for (let i = 0; i < binaryLength; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  return bytes;
+}
+
+export function convertToStringFromB64String(b64: string): string {
+  const bytes = convertToBytesFromB64String(b64);
+  return new TextDecoder().decode(bytes);
 }
 
 export function createCallMetadata(
