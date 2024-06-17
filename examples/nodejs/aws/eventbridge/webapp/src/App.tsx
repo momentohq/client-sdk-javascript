@@ -162,6 +162,9 @@ const App = () => {
               </div>)}
             {operation == "create" && (<div>
               <h1 className="font-semibold text-sm text-teal-700">Put Item in DynamoDB</h1>
+              <div>
+                Clicking the "Submit" button will run the following code to write the weather record to DDB:
+              </div>
               <div className="bg-gray-100 p-4 rounded-lg text-sm">
                 <pre>
                   <code className={"whitespace-pre-wrap"}>
@@ -220,6 +223,12 @@ const App = () => {
           <div className="bg-white p-4 rounded-lg shadow-md flex-1 space-y-3">
             <div className={"flex flex-row space-x-2 text-sm items-center"}>
               <h1 className="font-bold text-teal-700">Published Messages: </h1>
+              <div>
+                When DDB items are updated or deleted, EventBridge sends messages to the Momento Topic. Those messages
+                will show up here, because we've subscribed to the topic using the code below.
+              </div>
+            </div>
+            <div>
               <div className="flex rounded-lg">
                 <h2 className="font-semibold">Cache Name: <span className="text-gray-600 ml-2">{cacheName}</span></h2>
                 <span className={"mr-2"}>,</span>
@@ -253,6 +262,10 @@ const App = () => {
           <div className="bg-white p-4 rounded-lg shadow-md flex-1 space-y-2">
             <div className={"flex flex-row items-center text-sm space-x-2"}>
               <h1 className="font-bold text-teal-700">Get Item From Cache: </h1>
+              <div>When DDB items are updated or deleted, EventBridge uses the Momento API Destination to update the Cache.
+                Click the "Get Item" button to read the item from the cache using the code below.</div>
+            </div>
+            <div>
               <div className="flex rounded-lg">
                 <h2 className="font-semibold">Cache Name: <span className="text-gray-600 ml-2">{cacheName}</span></h2>
               </div>

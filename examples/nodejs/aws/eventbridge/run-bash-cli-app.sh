@@ -1,6 +1,4 @@
 #!/bin/bash
-set -e
-set -x
 
 # Check if .env file exists
 if [ ! -f .env ]; then
@@ -33,6 +31,9 @@ if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ] || [ -z "$AWS_
     echo "  - AWS_REGION"
     exit 1
 fi
+
+set -e
+set -x
 
 # Set your DynamoDB table name
 TABLE_NAME="weather-stats-demo"
