@@ -67,6 +67,7 @@ export class WebhookClient implements IWebhookClient {
     );
     this.clientMetadataProvider = new ClientMetadataProvider({
       authToken: props.credentialProvider.getAuthToken(),
+      clientType: 'webhook',
     });
   }
 
