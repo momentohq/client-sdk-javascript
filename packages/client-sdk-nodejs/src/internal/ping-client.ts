@@ -27,7 +27,7 @@ export class InternalNodeGrpcPingClient {
   constructor(props: PingClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     const headers = [
-      new Header('Agent', `nodejs-ping:${version}`),
+      new Header('Agent', `nodejs:ping:${version}`),
       new Header('Runtime-Version', `nodejs:${process.versions.node}`),
     ];
     this.interceptors = [
