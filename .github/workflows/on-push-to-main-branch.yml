@@ -204,6 +204,33 @@ jobs:
           template_file: ./examples/nodejs/aws/secrets-manager/README.template.md
           output_file: ./examples/nodejs/aws/secrets-manager/README.md
 
+      - name: Generate README for examples/nodejs/aws/eventbridge
+        uses: momentohq/standards-and-practices/github-actions/generate-and-commit-oss-readme@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/aws/eventbridge/README.template.md
+          output_file: ./examples/nodejs/aws/eventbridge/README.md
+
+      - name: Generate README for examples/nodejs/aws/eventbridge/webapp
+        uses: momentohq/standards-and-practices/github-actions/generate-and-commit-oss-readme@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/aws/eventbridge/webapp/README.template.md
+          output_file: ./examples/nodejs/aws/eventbridge/webapp/README.md
+
+      - name: Generate README for examples/nodejs/aws/eventbridge/cliApp
+        uses: momentohq/standards-and-practices/github-actions/generate-and-commit-oss-readme@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: other
+          template_file: ./examples/nodejs/aws/eventbridge/cliApp/README.template.md
+          output_file: ./examples/nodejs/aws/eventbridge/cliApp/README.md
+
       - name: Generate README for examples/nodejs/aws/lambda-examples
         uses: momentohq/standards-and-practices/github-actions/generate-and-commit-oss-readme@gh-actions-v2
         with:
