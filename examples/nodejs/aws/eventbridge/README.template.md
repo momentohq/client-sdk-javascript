@@ -86,6 +86,7 @@ If you'd like to see how to observe the EventBridge interactions via bash and th
 can run the bash cli script.
 
 To run this demo you'll need:
+
 - The [`aws` CLI tool](https://aws.amazon.com/cli/) installed and configured with your AWS credentials
 - The [`momento` CLI tool](https://github.com/momentohq/momento-cli) installed and configured with your Momento API key
 
