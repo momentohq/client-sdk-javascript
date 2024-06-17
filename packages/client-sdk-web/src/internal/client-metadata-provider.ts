@@ -4,7 +4,7 @@ import {version} from '../../package.json';
 export interface ClientMetadataProps {
   authToken?: string;
   readConcern?: ReadConcern;
-  clientType?: string;
+  clientType: string;
 }
 
 /**
