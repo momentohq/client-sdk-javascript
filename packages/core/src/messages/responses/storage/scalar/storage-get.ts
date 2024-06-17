@@ -13,13 +13,13 @@ export abstract class Success extends ResponseBase implements IResponse {
 
   abstract value(): string | number | Uint8Array;
 
-  abstract intValue(): number | undefined;
+  abstract valueInt(): number | undefined;
 
-  abstract doubleValue(): number | undefined;
+  abstract valueDouble(): number | undefined;
 
-  abstract stringValue(): string | undefined;
+  abstract valueString(): string | undefined;
 
-  abstract bytesValue(): Uint8Array | undefined;
+  abstract valueBytes(): Uint8Array | undefined;
 }
 
 export class StringResponse extends Success {
@@ -34,19 +34,19 @@ export class StringResponse extends Success {
     return this._value;
   }
 
-  bytesValue(): undefined {
+  valueBytes(): undefined {
     return undefined;
   }
 
-  doubleValue(): undefined {
+  valueDouble(): undefined {
     return undefined;
   }
 
-  intValue(): undefined {
+  valueInt(): undefined {
     return undefined;
   }
 
-  stringValue(): string {
+  valueString(): string {
     return this.value();
   }
 }
@@ -63,19 +63,19 @@ export class IntegerResponse extends Success {
     return this._value;
   }
 
-  bytesValue(): undefined {
+  valueBytes(): undefined {
     return undefined;
   }
 
-  doubleValue(): undefined {
+  valueDouble(): undefined {
     return undefined;
   }
 
-  intValue(): number | undefined {
+  valueInt(): number | undefined {
     return this.value();
   }
 
-  stringValue(): undefined {
+  valueString(): undefined {
     return undefined;
   }
 }
@@ -92,19 +92,19 @@ export class DoubleResponse extends Success {
     return this._value;
   }
 
-  bytesValue(): undefined {
+  valueBytes(): undefined {
     return undefined;
   }
 
-  doubleValue(): number {
+  valueDouble(): number {
     return this.value();
   }
 
-  intValue(): undefined {
+  valueInt(): undefined {
     return undefined;
   }
 
-  stringValue(): undefined {
+  valueString(): undefined {
     return undefined;
   }
 }
@@ -121,19 +121,19 @@ export class BytesResponse extends Success {
     return this._value;
   }
 
-  bytesValue(): Uint8Array {
+  valueBytes(): Uint8Array {
     return this.value();
   }
 
-  doubleValue(): undefined {
+  valueDouble(): undefined {
     return undefined;
   }
 
-  intValue(): undefined {
+  valueInt(): undefined {
     return undefined;
   }
 
-  stringValue(): undefined {
+  valueString(): undefined {
     return undefined;
   }
 }

@@ -107,7 +107,7 @@ export class StorageDataClient<
           ...createStorageMetadata(storeName, this.deadlineMillis),
         },
         (err, resp) => {
-          const value = resp?.getValue();
+          const value = resp?.getValue() as _StoreValue;
           if (resp) {
             switch (value?.getValueCase()) {
               case undefined:
@@ -159,6 +159,7 @@ export class StorageDataClient<
     key: string,
     value: string | number | Uint8Array
   ): Promise<StoragePut.Response> {
+    console.log('put called');
     try {
       validateStoreName(storeName);
     } catch (err) {
@@ -182,11 +183,18 @@ export class StorageDataClient<
     key: string,
     passedInVal: string | number | Uint8Array
   ): Promise<StoragePut.Response> {
+    console.log('sendPut called');
+    console.log(
+      `storeName: ${storeName} key: ${key} passedInVal: ${
+        passedInVal as string
+      }`
+    );
     const request = new _StorePutRequest();
     request.setKey(key);
 
     const value = new _StoreValue();
     if (typeof passedInVal === 'string') {
+      console.log(`setting string value: ${passedInVal}`);
       value.setStringValue(passedInVal);
     } else if (typeof passedInVal === 'number') {
       if (Number.isInteger(passedInVal)) {

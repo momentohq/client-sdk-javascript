@@ -106,6 +106,21 @@ export function runStorageServiceTests(
     it('put get and delete a key in a store', async () => {
       const key = v4();
       const value = v4();
+      const createResponse = await storageClient.createStore(testStoreName);
+      switch (createResponse.type) {
+        // this is the expected response
+        case CreateStoreResponse.Success: {
+          break;
+        }
+        case CreateStoreResponse.AlreadyExists: {
+          break;
+        }
+        case CreateStoreResponse.Error: {
+          throw new Error(
+            `failed to create store, expected store to be able to happen, error: ${createResponse.message()} exception: ${createResponse.toString()}`
+          );
+        }
+      }
       const putResponse = await storageClient.put(testStoreName, key, value);
       switch (putResponse.type) {
         case StoragePutResponse.Success: {
