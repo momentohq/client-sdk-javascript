@@ -25,7 +25,9 @@ export class PingClient<
    */
   constructor(props: PingClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    this.clientMetadataProvider = new ClientMetadataProvider({});
+    this.clientMetadataProvider = new ClientMetadataProvider({
+      clientType: 'ping',
+    });
     this.clientWrapper = new ping.PingClient(props.endpoint, null, {});
   }
 

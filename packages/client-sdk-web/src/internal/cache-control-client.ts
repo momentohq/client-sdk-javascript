@@ -57,6 +57,7 @@ export class CacheControlClient<
 
     this.clientMetadataProvider = new ClientMetadataProvider({
       authToken: props.credentialProvider.getAuthToken(),
+      clientType: 'cache',
     });
     this.clientWrapper = new control.ScsControlClient(
       // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server

@@ -66,6 +66,7 @@ export class PubsubClient<
     );
     this.clientMetadataProvider = new ClientMetadataProvider({
       authToken: props.credentialProvider.getAuthToken(),
+      clientType: 'topic',
     });
   }
 
