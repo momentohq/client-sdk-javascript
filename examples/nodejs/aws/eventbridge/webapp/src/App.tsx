@@ -162,6 +162,9 @@ const App = () => {
               </div>)}
             {operation == "create" && (<div>
               <h1 className="font-semibold text-sm text-teal-700">Put Item in DynamoDB</h1>
+              <div className={"text-sm text-gray-500"}>
+                Clicking the "Submit" button will run the following code to write the weather record to DDB:
+              </div>
               <div className="bg-gray-100 p-4 rounded-lg text-sm">
                 <pre>
                   <code className={"whitespace-pre-wrap"}>
@@ -172,6 +175,9 @@ const App = () => {
             </div>)}
             {operation == "delete" && (<div>
               <h1 className="font-semibold text-teal-700 text-sm">Delete Item from DynamoDB</h1>
+              <div className={"text-sm text-gray-500"}>
+                Clicking the "Delete" button will run the following code to delete the weather record from DDB:
+              </div>
               <div className="bg-gray-100 p-4 rounded-lg text-sm">
               <pre>
                 <code>
@@ -184,32 +190,32 @@ const App = () => {
         </div>
 
         <div className="flex flex-col items-center">
-          <ArrowDown/>
+          <ArrowDown />
           <div
             className="flex flex-col md:flex-row items-center justify-center mt-2 space-y-2 md:space-y-0 md:space-x-4">
             <CornerLeftDown/>
             <div className="flex items-center bg-white p-4 shadow-md rounded-lg">
-              <img src={MomentoTopicLogo} alt="Momento Topic Logo" className="w-12 h-12"/>
+              <img src={MomentoTopicLogo} alt="Momento Topic Logo" className="w-6 h-6"/>
               <span className="ml-2 font-semibold">Momento Topic</span>
             </div>
             <ArrowLeft/>
             <div className="flex items-center bg-white p-4 shadow-md rounded-lg">
-              <img src={AwsEventBridgeLogo} alt="AWS EventBridge Logo" className="w-12 h-12"/>
+              <img src={AwsEventBridgeLogo} alt="AWS EventBridge Logo" className="w-6 h-6"/>
               <span className="ml-2 font-semibold">AWS EventBridge</span>
             </div>
             <ArrowLeft/>
             <div className="flex items-center bg-white p-4 shadow-md rounded-lg">
-              <img src={DynamoDbLogo} alt="DynamoDB Logo" className="w-12 h-12"/>
+              <img src={DynamoDbLogo} alt="DynamoDB Logo" className="w-6 h-6"/>
               <span className="ml-2 font-semibold">DynamoDB</span>
             </div>
             <ArrowRight/>
             <div className="flex items-center bg-white p-4 shadow-md rounded-lg">
-              <img src={AwsEventBridgeLogo} alt="AWS EventBridge Logo" className="w-12 h-12"/>
+              <img src={AwsEventBridgeLogo} alt="AWS EventBridge Logo" className="w-6 h-6"/>
               <span className="ml-2 font-semibold">AWS EventBridge</span>
             </div>
             <ArrowRight/>
             <div className="flex items-center bg-white p-4 shadow-md rounded-lg">
-              <img src={MomentoCacheLogo} alt="Momento Cache Logo" className="w-12 h-12"/>
+              <img src={MomentoCacheLogo} alt="Momento Cache Logo" className="w-6 h-6"/>
               <span className="ml-2 font-semibold">Momento Cache</span>
             </div>
             <CornerRightDown/>
@@ -220,21 +226,27 @@ const App = () => {
           <div className="bg-white p-4 rounded-lg shadow-md flex-1 space-y-3">
             <div className={"flex flex-row space-x-2 text-sm items-center"}>
               <h1 className="font-bold text-teal-700">Published Messages: </h1>
-              <div className="flex rounded-lg">
+              <div className={"text-sm text-gray-500"}>
+                When DDB items are updated or deleted, EventBridge sends messages to the Momento Topic. Those messages
+                will show up here, because we've subscribed to the topic using the code below.
+              </div>
+            </div>
+            <div>
+              <div className="flex rounded-lg space-x-1 text-sm">
                 <h2 className="font-semibold">Cache Name: <span className="text-gray-600 ml-2">{cacheName}</span></h2>
                 <span className={"mr-2"}>,</span>
                 <h2 className="font-semibold">Topic Name: <span className="text-gray-600 ml-2">{topicName}</span></h2>
-              </div>
-              <div className="flex flex-row space-x-2">
-                {isSubscribedToTopic ? (
-                  <Tippy content={"Subscribed"} placement={"top"} trigger={"mouseenter"}>
-                    <div><CheckCircle/></div>
-                  </Tippy>
-                ) : (
-                  <Tippy content={"Unsubscribed"} placement={"top"}>
-                    <div><BanCircle/></div>
-                  </Tippy>
-                )}
+                <div className="flex flex-row space-x-2">
+                  {isSubscribedToTopic ? (
+                    <Tippy content={"Subscribed"} placement={"top"} trigger={"mouseenter"}>
+                      <div><CheckCircle /></div>
+                    </Tippy>
+                  ) : (
+                    <Tippy content={"Unsubscribed"} placement={"top"}>
+                      <div><BanCircle /></div>
+                    </Tippy>
+                  )}
+                </div>
               </div>
             </div>
             <div className="bg-gray-100 p-2 rounded-lg text-sm">
@@ -253,7 +265,13 @@ const App = () => {
           <div className="bg-white p-4 rounded-lg shadow-md flex-1 space-y-2">
             <div className={"flex flex-row items-center text-sm space-x-2"}>
               <h1 className="font-bold text-teal-700">Get Item From Cache: </h1>
-              <div className="flex rounded-lg">
+              <div className={"text-sm text-gray-500"}>
+                When DDB items are updated or deleted, EventBridge uses the Momento API Destination to update the Cache.
+                Click the "Get Item" button to read the item from the cache using the code below.
+              </div>
+            </div>
+            <div>
+              <div className="flex rounded-lg text-sm">
                 <h2 className="font-semibold">Cache Name: <span className="text-gray-600 ml-2">{cacheName}</span></h2>
               </div>
             </div>

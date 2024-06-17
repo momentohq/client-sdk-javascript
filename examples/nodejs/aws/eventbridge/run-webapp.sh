@@ -1,6 +1,4 @@
 #!/bin/bash
-set -e
-set -x
 
 # Check if .env file exists
 if [ ! -f .env ]; then
@@ -34,14 +32,19 @@ if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ] || [ -z "$AWS_
     exit 1
 fi
 
+set -e
+set -x
+
 # Run the webapp
 cd webapp
+set +x
 echo "VITE_MOMENTO_API_KEY=$MOMENTO_API_KEY" > .env.development
 echo "VITE_AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env.development
 echo "VITE_AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env.development
 if [ -n "$AWS_SESSION_TOKEN" ]; then
   echo "VITE_AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN" >> .env.development
 fi
+set -x
 echo "VITE_AWS_REGION=$AWS_REGION" >> .env.development
 
 
