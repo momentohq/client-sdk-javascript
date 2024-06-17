@@ -44,7 +44,8 @@ export class WebhookClient implements IWebhookClient {
     );
     const headers = [
       new Header('Authorization', props.credentialProvider.getAuthToken()),
-      new Header('Agent', `nodejs:${version}`),
+      new Header('Agent', `nodejs-webhook:${version}`),
+      new Header('Runtime-Version', `nodejs:${process.versions.node}`),
     ];
     this.unaryInterceptors = [
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
