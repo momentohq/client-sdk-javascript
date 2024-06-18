@@ -4,7 +4,6 @@ import {SetupIntegrationTest} from '../integration-setup';
 const {
   cacheClient,
   cacheClientWithThrowOnErrors,
-  cacheClientWithExpressReadConcern,
   cacheClientWithBalancedReadConcern,
   cacheClientWithConsistentReadConcern,
   integrationTestCacheName,
@@ -13,7 +12,6 @@ const {
 runGetSetDeleteTests(
   cacheClient,
   cacheClientWithThrowOnErrors,
-  cacheClientWithExpressReadConcern,
   cacheClientWithBalancedReadConcern,
   cacheClientWithConsistentReadConcern,
   integrationTestCacheName
