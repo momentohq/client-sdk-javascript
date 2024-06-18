@@ -27,7 +27,6 @@ import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache'
 export function runGetSetDeleteTests(
   cacheClient: ICacheClient,
   cacheClientWithThrowOnErrors: ICacheClient,
-  cacheClientWithExpressReadConcern: ICacheClient,
   cacheClientWithBalancedReadConcern: ICacheClient,
   cacheClientWithConsistentReadConcern: ICacheClient,
   integrationTestCacheName: string
@@ -2855,36 +2854,6 @@ export function runGetSetDeleteTests(
         expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
       }, `expected SUCCESS but got ${deleteResponse.toString()}`);
       const getMiss = await cacheClientWithBalancedReadConcern.get(
-        integrationTestCacheName,
-        cacheKey
-      );
-      expect(getMiss).toBeInstanceOf(CacheGet.Miss);
-    });
-
-    it('gets, sets, and deletes with Express ReadConcern', async () => {
-      const cacheKey = v4();
-      const cacheValue = new TextEncoder().encode(v4());
-      await cacheClientWithExpressReadConcern.set(
-        integrationTestCacheName,
-        cacheKey,
-        cacheValue
-      );
-      const getResponse = await cacheClientWithExpressReadConcern.get(
-        integrationTestCacheName,
-        cacheKey
-      );
-      expectWithMessage(() => {
-        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
-      }, `expected HIT but got ${getResponse.toString()}`);
-
-      const deleteResponse = await cacheClientWithExpressReadConcern.delete(
-        integrationTestCacheName,
-        cacheKey
-      );
-      expectWithMessage(() => {
-        expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
-      }, `expected SUCCESS but got ${deleteResponse.toString()}`);
-      const getMiss = await cacheClientWithExpressReadConcern.get(
         integrationTestCacheName,
         cacheKey
       );

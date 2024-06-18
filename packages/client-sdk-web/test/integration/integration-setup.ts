@@ -127,14 +127,6 @@ function momentoClientForTestingBalancedReadConcern(): CacheClient {
   return new CacheClient(props);
 }
 
-function momentoClientForTestingExpressReadConcern(): CacheClient {
-  const props = integrationTestCacheClientProps();
-  props.configuration = props.configuration.withReadConcern(
-    ReadConcern.EXPRESS
-  );
-  return new CacheClient(props);
-}
-
 function momentoClientForTestingConsistentReadConcern(): CacheClient {
   const props = integrationTestCacheClientProps();
   props.configuration = props.configuration.withReadConcern(
@@ -168,7 +160,6 @@ function momentoLeaderboardClientWithThrowOnErrorsForTesting(): PreviewLeaderboa
 export function SetupIntegrationTest(): {
   cacheClient: CacheClient;
   cacheClientWithThrowOnErrors: CacheClient;
-  cacheClientWithExpressReadConcern: CacheClient;
   cacheClientWithBalancedReadConcern: CacheClient;
   cacheClientWithConsistentReadConcern: CacheClient;
   integrationTestCacheName: string;
@@ -193,8 +184,6 @@ export function SetupIntegrationTest(): {
 
   const client = momentoClientForTesting();
   const clientWithThrowOnErrors = momentoClientWithThrowOnErrorsForTesting();
-  const clientWithExpressReadConcern =
-    momentoClientForTestingExpressReadConcern();
   const clientWithBalancedReadConcern =
     momentoClientForTestingBalancedReadConcern();
   const clientWithConsistentReadConcern =
@@ -202,7 +191,6 @@ export function SetupIntegrationTest(): {
   return {
     cacheClient: client,
     cacheClientWithThrowOnErrors: clientWithThrowOnErrors,
-    cacheClientWithExpressReadConcern: clientWithExpressReadConcern,
     cacheClientWithBalancedReadConcern: clientWithBalancedReadConcern,
     cacheClientWithConsistentReadConcern: clientWithConsistentReadConcern,
     integrationTestCacheName: cacheName,
