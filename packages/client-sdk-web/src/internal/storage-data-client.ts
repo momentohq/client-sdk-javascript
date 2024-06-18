@@ -25,6 +25,7 @@ import {
 import {ClientMetadataProvider} from './client-metadata-provider';
 import ValueCase = _StoreValue.ValueCase;
 import {StorageConfiguration} from '../config/storage-configuration';
+import {SdkError} from '@gomomento/sdk-core';
 
 export interface StorageDataClientProps {
   configuration: StorageConfiguration;
@@ -144,7 +145,7 @@ export class StorageDataClient<
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e => new StorageGet.Error(e),
+              errorResponseFactoryFn: (e: SdkError) => new StorageGet.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
@@ -159,7 +160,6 @@ export class StorageDataClient<
     key: string,
     value: string | number | Uint8Array
   ): Promise<StoragePut.Response> {
-    console.log('put called');
     try {
       validateStoreName(storeName);
     } catch (err) {
@@ -168,13 +168,13 @@ export class StorageDataClient<
         err => new StoragePut.Error(err)
       );
     }
-    this.logger.trace(`Issuing 'set' request; key: ${key.toString()}`);
+    this.logger.trace(`Issuing 'put' request; key: ${key.toString()}`);
     const result = await this.sendPut(
       storeName,
       convertToB64String(key),
       value
     );
-    this.logger.trace(`'set' request result: ${result.toString()}`);
+    this.logger.trace(`'put' request result: ${result.toString()}`);
     return result;
   }
 
@@ -183,7 +183,6 @@ export class StorageDataClient<
     key: string,
     passedInVal: string | number | Uint8Array
   ): Promise<StoragePut.Response> {
-    console.log('sendPut called');
     console.log(
       `storeName: ${storeName} key: ${key} passedInVal: ${
         passedInVal as string
@@ -205,7 +204,7 @@ export class StorageDataClient<
     } else {
       value.setBytesValue(passedInVal);
     }
-
+    request.setValue(value);
     return await new Promise((resolve, reject) => {
       this.clientWrapper.put(
         request,
@@ -217,7 +216,7 @@ export class StorageDataClient<
           if (err) {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e => new StoragePut.Error(e),
+              errorResponseFactoryFn: (e: SdkError) => new StoragePut.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
@@ -265,7 +264,8 @@ export class StorageDataClient<
           if (err) {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e => new StorageDelete.Error(e),
+              errorResponseFactoryFn: (e: SdkError) =>
+                new StorageDelete.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });

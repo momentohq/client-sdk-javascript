@@ -7,6 +7,7 @@ import {
   StoragePut,
   StorageDelete,
   UnknownError,
+  SdkError,
 } from '@gomomento/sdk-core';
 import {validateStoreName} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {store} from '@gomomento/generated-types/dist/store';
@@ -210,7 +211,7 @@ export class StorageDataClient implements IStorageDataClient {
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e => new StorageGet.Error(e),
+              errorResponseFactoryFn: (e: SdkError) => new StorageGet.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
@@ -234,7 +235,7 @@ export class StorageDataClient implements IStorageDataClient {
       );
     }
     this.logger.trace(
-      `Issuing 'get' request; store: ${storeName}, key: ${key}`
+      `Issuing 'put' request; store: ${storeName}, key: ${key}`
     );
     return await this.sendPut(storeName, key, value);
   }
@@ -274,7 +275,7 @@ export class StorageDataClient implements IStorageDataClient {
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e => new StoragePut.Error(e),
+              errorResponseFactoryFn: (e: SdkError) => new StoragePut.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
@@ -323,7 +324,8 @@ export class StorageDataClient implements IStorageDataClient {
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e => new StorageDelete.Error(e),
+              errorResponseFactoryFn: (e: SdkError) =>
+                new StorageDelete.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
