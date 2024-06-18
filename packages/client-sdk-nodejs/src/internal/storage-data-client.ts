@@ -122,7 +122,7 @@ export class StorageDataClient implements IStorageDataClient {
   ): Interceptor[] {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
-      new Header('Agent', `nodejs:${version}`),
+      new Header('Agent', `nodejs:store:${version}`),
     ];
     return [
       middlewaresInterceptor(

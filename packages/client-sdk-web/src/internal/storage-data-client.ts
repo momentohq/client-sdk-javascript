@@ -60,6 +60,7 @@ export class StorageDataClient<
 
     this.clientMetadataProvider = new ClientMetadataProvider({
       authToken: props.credentialProvider.getAuthToken(),
+      clientType: 'store',
     });
     this.clientWrapper = new store.StoreClient(
       // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
