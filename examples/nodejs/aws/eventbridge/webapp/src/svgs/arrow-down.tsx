@@ -1,9 +1,11 @@
 export const ArrowDown = () => {
   return (
-    <svg className="h-10 w-10 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"
-         strokeLinecap="round" strokeLinejoin="round">
-      <line x1="12" y1="5" x2="12" y2="19"/>
-      <polyline points="19 12 12 19 5 12"/>
-    </svg>
+  <svg className="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor"
+       fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path stroke="none" d="M0 0h24v24H0z"/>
+    <line x1="12" y1="5" x2="12" y2="19"/>
+    <line x1="18" y1="13" x2="12" y2="19"/>
+    <line x1="6" y1="13" x2="12" y2="19"/>
+  </svg>
   );
 };

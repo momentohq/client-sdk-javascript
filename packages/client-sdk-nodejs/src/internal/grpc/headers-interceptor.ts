@@ -1,7 +1,7 @@
 import {InterceptingCall, Interceptor} from '@grpc/grpc-js';
 
 export class Header {
-  public readonly onceOnlyHeaders: string[] = ['Agent'];
+  public readonly onceOnlyHeaders: string[] = ['Agent', 'Runtime-Version'];
   public readonly name: string;
   public readonly value: string;
 

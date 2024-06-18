@@ -64,6 +64,7 @@ export class LeaderboardDataClient<
     );
     this.clientMetadataProvider = new ClientMetadataProvider({
       authToken: props.credentialProvider.getAuthToken(),
+      clientType: 'leaderboard',
     });
     this.deadlineMillis = props.configuration
       .getTransportStrategy()

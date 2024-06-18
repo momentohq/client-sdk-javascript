@@ -4,4 +4,4 @@ import * as cdk from 'aws-cdk-lib';
 import { EventbridgeStack } from '../lib/eventbridge-stack';
 
 const app = new cdk.App();
-new EventbridgeStack(app, 'eventbridge-stack', {});
+new EventbridgeStack(app, 'momento-ddb-eventbridge-stack', {});

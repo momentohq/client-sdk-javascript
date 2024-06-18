@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
-import { cacheName, getItemFromCache, getRemainingTtl } from "../utils/momento-web";
+import React, { useEffect, useState } from "react";
+import { getItemFromCache, getRemainingTtl } from "../utils/momento-web";
 import { toastInfo } from "../utils/toast";
 import {getRecord} from "../utils/dynamodb";
+import {parseDynamoRecord} from "../utils/helper";
 
 type DescribeCacheProps = {
   location: string;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 const DescribeCache = (props: DescribeCacheProps) => {
@@ -20,6 +22,11 @@ const DescribeCache = (props: DescribeCacheProps) => {
     setDynamoResult(null);
   }, [props.location]);
 
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchKey(e.target.value);
+    props.handleChange(e);
+  }
+
   const handleFindClick = async () => {
     setIsLoading(true);
     try {
@@ -29,6 +36,7 @@ const DescribeCache = (props: DescribeCacheProps) => {
         setCacheResult("No data to display");
         setTtlRemaining(null);
         toastInfo("Cache miss. No data found.");
+        setIsLoading(false);
       } else {
         setCacheResult(JSON.stringify(JSON.parse(getItemFromCacheResp), null, 2));
         const ttlMillis = await getRemainingTtl(searchKey);
@@ -43,19 +51,13 @@ const DescribeCache = (props: DescribeCacheProps) => {
       if (getRecordFromDynamoDBResp === undefined) {
         setDynamoResult("No data to display");
       } else {
-        const {Item} = getRecordFromDynamoDBResp;
-        const location = Item?.Location?.S ;
-        const maxTemp = Item?.MaxTemp?.N;
-        const minTemp = Item?.MinTemp?.N;
-        const chancesOfPrecipitation = Item?.ChancesOfPrecipitation?.N;
-        if (!location || !maxTemp || !minTemp || !chancesOfPrecipitation) {
+        const weatherData = parseDynamoRecord(getRecordFromDynamoDBResp);
+        if (weatherData) {
+          const formattedResult = JSON.stringify(weatherData, null, 2);
+          setDynamoResult(formattedResult);
+        } else {
           setDynamoResult("No data to display");
-          toastInfo("The record does not exist.");
-          return;
         }
-        const formattedResult = `Location: ${location}\nMax Temp: ${maxTemp}\nMin Temp: ${minTemp}\nChances of Precipitation: ${chancesOfPrecipitation}`;
-
-        setDynamoResult(formattedResult);
       }
     } catch (error) {
       console.error("Error fetching cache or DynamoDB:", error);
@@ -66,10 +68,6 @@ const DescribeCache = (props: DescribeCacheProps) => {
 
   return (
     <>
-      <div className="mb-4 flex items-center bg-yellow-100 p-2 rounded-lg">
-        <h2 className="font-semibold">Cache Name:</h2>
-        <span className="text-gray-600 ml-2">{cacheName}</span>
-      </div>
       <div className="mb-4 flex items-center">
         <label
           htmlFor="find-cache-key-input"
@@ -79,11 +77,11 @@ const DescribeCache = (props: DescribeCacheProps) => {
         </label>
         <div className="flex flex-1">
           <input
-            data-automation-id="find-cache-key-input"
+            data-automation-id="location-input"
             value={searchKey}
-            onChange={(e) => setSearchKey(e.target.value)}
+            onChange={handleLocationChange}
             type="text"
-            id="find-key-input"
+            id="location-input"
             placeholder="Enter Location"
             className="flex-1 rounded-l-lg border px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
           />
@@ -92,26 +90,26 @@ const DescribeCache = (props: DescribeCacheProps) => {
             className="rounded-r-lg bg-teal-500 px-3 py-1 font-bold text-white hover:bg-teal-600 focus:outline-none focus:ring-blue-500"
             disabled={isLoading}
           >
-            {isLoading ? "Finding..." : "Find"}
+            {isLoading ? "Loading..." : "Get Item"}
           </button>
+          {(cacheResult !== "No data to display" && cacheResult != null) && (
+            <div className=" ml-2 p-2 bg-gray-100 flex flex-row space-x-2 items-center rounded-lg shadow-lg">
+              <div className="text-sm font-semibold text-gray-700">Cache Information: </div>
+              <div className="text-sm text-gray-500">
+                Expires In: <span className="text-blue-500 font-bold"> {ttlRemaining} s</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-      {(cacheResult !== "No data to display" && cacheResult != null) && (
-        <div className="mt-4 mb-2 p-4 bg-gray-100 rounded-lg shadow-lg">
-          <div className="text-lg font-semibold text-gray-700">Cache Information: </div>
-          <div className="mt-2 text-sm text-gray-500">
-            Expires In: <span className="text-blue-500 font-bold"> {ttlRemaining} s</span>
-          </div>
-        </div>
-      )}
       <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1 h-56 overflow-auto rounded-lg border bg-gray-50 p-4 text-gray-500">
+        <div className="flex-1 h-56 text-sm overflow-auto rounded-lg border bg-gray-50 p-4 text-gray-500">
           <h3 className="font-bold mb-2">Cache Result:</h3>
           <pre className="whitespace-pre-wrap">
             {cacheResult ? cacheResult : "No data to display"}
           </pre>
         </div>
-        <div className="flex-1 h-56 overflow-auto rounded-lg border bg-gray-50 p-4 text-gray-500">
+        <div className="flex-1 text-sm h-56 overflow-auto rounded-lg border bg-gray-50 p-4 text-gray-500">
           <h3 className="font-bold mb-2">DynamoDB Result:</h3>
           <pre className="whitespace-pre-wrap">
             {dynamoResult ? dynamoResult : "No data to display"}

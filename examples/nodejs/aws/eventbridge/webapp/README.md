@@ -4,31 +4,17 @@
 [![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 
 
-# Momento Javascript NodeJS SDK - Momento <-> Eventbridge Project Example
+# Momento Javascript NodeJS SDK - Momento <-> Eventbridge Project Example - Web App
 
 ## About
-The project demonstrates a write-through cache pattern for DynamoDB using DynamoDB Streams, AWS EventBridge and Momento.
 
-### **Prerequisites:**
-- Momento Cache: momento-eventbridge-cache. If cache does not exists, can create one using the [momento console](https://console.gomomento.com/) .
-- Momento API Key, can be created using [momento console](https://console.gomomento.com/) if you haven’t already created one
-- AWS Account AccessId, AWS Secret Key (and AWS Session Token if you are using temporary credentials)
+The parent directory contains a project demonstrating a write-through cache pattern for DynamoDB using DynamoDB Streams, AWS EventBridge and Momento.
 
-## Getting Started
-First, edit the `.env.development` file (create one if not exists) with your token vending machine url and your aws credentials:
+This directory contains a browser app that illustrates how to use the Momento Web SDK to interact with the
+Momento EventBridge integration. The app subscribes to a Momento Topic, provides a form to submit writes to DynamoDB, and then illustrates that
+the DDB updates are propagated to Momento Topics and Cache via DynamoDB Streams and EventBridge.
 
-```bash
-VITE_AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
-VITE_AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
-VITE_AWS_SESSION_TOKEN=<AWS_SESSION_TOKEN> (if you are using temporary credentials)
-VITE_MOMENTO_API_KEY=<YOUR_MOMENTO_API_KEY>
-```
+This web app relies on configuration and infrastructure defined in the parent directory. Check out [the README in the parent directory](../README.md) for complete instructions.
 
-Then, install all dependencies and run the development server:
-
-```bash
-npm install
-npm run dev
-```
-
-Open [http://localhost:5173](http://localhost:5173) with your browser to explore the demo app.
+----------------------------------------------------------------------------------------
+For more info, visit our website at [https://gomomento.com](https://gomomento.com)!

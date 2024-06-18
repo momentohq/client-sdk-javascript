@@ -7,18 +7,23 @@ type InfoModalProps = {
 };
 
 const appUsageInfo = `
-This application showcases a write-through cache pattern implementation for DynamoDB utilizing DynamoDB Streams, AWS EventBridge, and Momento. You can perform create, update, and delete operations on items within DynamoDB table, and EventBridge will send updates in real-time to the Momento cache (<span class="italic">"momento-eventbridge-cache"</span>) and topic (<span class="italic">"momento-eventbridge-topic"</span>).<br><br>
-
-<strong>How to Use the App:</strong><br><br>
-<strong>Prerequisites:</strong><br>
-Before interacting with the application, you'll need to create a cache called <span class="italic">"momento-eventbridge-cache"</span>. If you haven't done that already, please take a moment to do it now via <a class="text-blue-500" href="https://console.gomomento.com" target="_blank" rel="noopener noreferrer">Momento Console!</a><br><br>
-
-<strong>Getting Started:</strong><br>
-1. <strong>Create Weather Record:</strong> Begin by creating a weather record within the DynamoDB table using the web form to create an item in the <span class="italic">weather-stats-demo</span> DynamoDB table that we created with our CDK stack. Once the item is saved to DynamoDB, this will trigger the EventBridge event, which will automatically write-through the value to the Momento cache, as well as publish a notification to the Momento topic. The application does not enforce any constraints on the values entered, allowing users to input any desired data.<br>
-2. <strong>Retrieve Cache Item:</strong> After submitting the weather record, click the 'Retrieve' button to fetch the item from the cache and observe that the cache reflects the same contents as the DynamoDB table. This demonstrates the EventBridge integration with Momento Cache.<br>
-3. <strong>Publish to Topic:</strong> Notice that a message is published to the topic, mirroring the contents of the DynamoDB table. This showcases the EventBridge integration with Momento Topics<br>
-4. <strong>Delete Record:</strong> Click the delete button to delete the previously created record from the DynamoDB table.<br>
-5. <strong>Check Cache:</strong> Click the 'Retrieve' button again and observe that the item has been removed from both DynamoDB and the Momento Cache.<br><br>
+This application demonstrates how to create a write-through cache for a DynamoDB table utilizing DynamoDB Streams, AWS EventBridge, and Momento.
+<br><br>
+Our demo app stores Weather information for different geographic locations in a DynamoDB table. Whenever the weather
+for a given location is updated, an event is sent to EventBridge by DynamoDB Streams. The EventBridge rule forwards the event
+to both a Momento Topic (simulating real-time notifications) and to a Momento Cache (so that subsequent requests can read
+the data directly from the cache, to reduce load on the database and improve performance).
+<br><br>
+In this web page, you can perform create, update, and delete operations on weather records in the DynamoDB table. EventBridge will send updates in real-time to the Momento Cache (<span class="italic">"momento-eventbridge-cache"</span>) and Topic (<span class="italic">"momento-eventbridge-topic"</span>).
+<br><br>
+<strong>Prerequisite:</strong> Before interacting with the application, you'll need to create a cache called <span class="italic">"momento-eventbridge-cache"</span>. If you haven't done that already, please take a moment to do it now via <a class="text-blue-500" href="https://console.gomomento.com" target="_blank" rel="noopener noreferrer">Momento Console!</a>
+<br><br>
+<strong>How to use the App:</strong>
+<br><br>
+1. <strong>Create a Weather Record:</strong> Begin by creating a weather record using the web form at the top of the page. This will create an item in the <span class="italic">weather-stats-demo</span> DynamoDB table that we created with our CDK stack. Once the item is saved to DynamoDB, this will trigger the EventBridge event, which will automatically write-through the value to the Momento cache, as well as publish a notification to the Momento topic.<br>
+2. <strong>Observe the Topic notification:</strong> Notice that a message is published to the topic (the form on the bottom left of the page), mirroring the contents of the DynamoDB table. This showcases the EventBridge integration with Momento Topics.<br>
+3. <strong>Retrieve the Weather Record from the Cache:</strong> Click the 'Get Item' in the form on the bottom-right of the page to fetch the item from the cache and observe that the cache reflects the same contents as the DynamoDB table. This demonstrates the EventBridge integration with Momento Cache.<br>
+4. <strong>Delete a Weather Record:</strong> Use the radio button at the very top of the form to switch from "Create" to "Delete". When you delete a weather record from the DynamoDB table, you will get a delete notification on the Momento Topic, and the value will be removed from the cache.<br>
 `;
 
 const InfoModal = (props: InfoModalProps) => {

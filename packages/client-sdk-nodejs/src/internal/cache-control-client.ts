@@ -46,7 +46,8 @@ export class CacheControlClient {
     );
     const headers = [
       new Header('Authorization', props.credentialProvider.getAuthToken()),
-      new Header('Agent', `nodejs:${version}`),
+      new Header('Agent', `nodejs:cache:${version}`),
+      new Header('Runtime-Version', `nodejs:${process.versions.node}`),
     ];
     this.interceptors = [
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),

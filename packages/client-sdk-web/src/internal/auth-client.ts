@@ -87,7 +87,9 @@ export class InternalWebGrpcAuthClient<
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
       props.throwOnErrors ?? false
     );
-    this.clientMetadataProvider = new ClientMetadataProvider({});
+    this.clientMetadataProvider = new ClientMetadataProvider({
+      clientType: 'auth',
+    });
     this.authClient = new auth.AuthClient(
       // Note: all web SDK requests are routed to a `web.` subdomain to allow us flexibility on the server
       getWebControlEndpoint(this.creds),
