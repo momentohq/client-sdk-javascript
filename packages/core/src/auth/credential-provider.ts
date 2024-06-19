@@ -55,7 +55,7 @@ export abstract class CredentialProvider {
   abstract getControlEndpoint(): string;
 
   /**
-   * @returns {boolean} true if connecting to the control plane endpoint connection without TLS; false if using TLS
+   * @returns {boolean} true if connecting to the control plane endpoint connection with TLS; false if not using TLS
    */
   abstract isControlEndpointSecure(): boolean;
 
@@ -65,7 +65,7 @@ export abstract class CredentialProvider {
   abstract getCacheEndpoint(): string;
 
   /**
-   * @returns {boolean} true if connecting to the data plane endpoint connection without TLS; false if using TLS
+   * @returns {boolean} true if connecting to the data plane endpoint connection with TLS; false if not using TLS
    */
   abstract isCacheEndpointSecure(): boolean;
 
@@ -75,7 +75,7 @@ export abstract class CredentialProvider {
   abstract getStorageEndpoint(): string;
 
   /**
-   * @returns {boolean} true if connecting to the storage endpoint connection without TLS; false if using TLS
+   * @returns {boolean} true if connecting to the storage endpoint connection with TLS; false if not using TLS
    */
   abstract isStorageEndpointSecure(): boolean;
 
@@ -85,7 +85,7 @@ export abstract class CredentialProvider {
   abstract getTokenEndpoint(): string;
 
   /**
-   * @returns {boolean} true if connecting to the token endpoint connection without TLS; false if using TLS
+   * @returns {boolean} true if connecting to the token endpoint connection with TLS; false if not using TLS
    */
   abstract isTokenEndpointSecure(): boolean;
 

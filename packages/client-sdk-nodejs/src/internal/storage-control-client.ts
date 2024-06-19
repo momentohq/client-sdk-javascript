@@ -28,7 +28,7 @@ export class StorageControlClient {
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(false);
     const headers = [
       new Header('Authorization', props.credentialProvider.getAuthToken()),
-      new Header('Agent', `nodejs:cache:${version}`),
+      new Header('Agent', `nodejs:store:${version}`),
     ];
     this.interceptors = [
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),

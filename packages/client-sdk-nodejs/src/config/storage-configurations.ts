@@ -8,8 +8,6 @@ import {
 import {
   StaticStorageGrpcConfiguration,
   StaticStorageTransportStrategy,
-  StorageGrpcConfiguration,
-  StorageTransportStrategy,
 } from './transport/storage';
 
 const defaultMaxIdleMillis = 4 * 60 * 1_000;
@@ -33,32 +31,15 @@ export class Laptop extends StorageClientConfiguration {
   static latest(
     loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
   ): StorageConfiguration {
-    return Laptop.v0(loggerFactory);
-  }
-
-  /**
-   * Provides v0 recommended configuration for a laptop development environment.  This configuration is guaranteed not
-   * to change in future releases of the Momento web SDK.
-   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]
-   * @returns {StorageConfiguration}
-   */
-  static v0(
-    loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
-  ): StorageConfiguration {
-    const deadlineMillis = 5000;
-    const grpcConfig: StorageGrpcConfiguration =
-      new StaticStorageGrpcConfiguration({
-        deadlineMillis,
-        maxSessionMemoryMb: defaultMaxSessionMemoryMb,
-      });
-    const transportStrategy: StorageTransportStrategy =
-      new StaticStorageTransportStrategy({
-        grpcConfiguration: grpcConfig,
-        maxIdleMillis: defaultMaxIdleMillis,
-      });
-    return new Laptop({
+    return new StorageClientConfiguration({
       loggerFactory: loggerFactory,
-      transportStrategy: transportStrategy,
+      transportStrategy: new StaticStorageTransportStrategy({
+        grpcConfiguration: new StaticStorageGrpcConfiguration({
+          deadlineMillis: 5000,
+          maxSessionMemoryMb: defaultMaxSessionMemoryMb,
+        }),
+        maxIdleMillis: defaultMaxIdleMillis,
+      }),
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
     });

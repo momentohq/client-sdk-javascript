@@ -38,12 +38,11 @@ export function runStorageServiceTests(
 
       const listResponse = await storageClient.listStores();
       switch (listResponse.type) {
-        // this is expected response
         case ListStoresResponse.Success: {
-          const foundStore = listResponse
-            .getStores()
-            .find(store => store.getName() === storeName);
-          expect(foundStore).toBeDefined();
+          const storeNames = listResponse
+            .stores()
+            .map(store => store.getName());
+          expect(storeNames).toContain(storeName);
           break;
         }
         case ListStoresResponse.Error: {
@@ -162,6 +161,25 @@ export function runStorageServiceTests(
             `expected StoreGetResponse.Error but got ${
               getResponse.type
             } toString: ${getResponse.toString()}`
+          );
+        }
+      }
+    });
+    it('should return not found error for deleting a store that doesnt exist', async () => {
+      const storeName = 'test';
+      const deleteResponse = await storageClient.deleteStore(storeName);
+      switch (deleteResponse.type) {
+        case DeleteStoreResponse.Error: {
+          expect(deleteResponse.errorCode()).toEqual(
+            MomentoErrorCode.NOT_FOUND_ERROR
+          );
+          break;
+        }
+        default: {
+          throw new Error(
+            `expected StoreGetResponse.Error but got ${
+              deleteResponse.type
+            } toString: ${deleteResponse.toString()}`
           );
         }
       }

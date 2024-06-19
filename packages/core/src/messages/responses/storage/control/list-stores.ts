@@ -12,24 +12,24 @@ interface IResponse {
  */
 export class Success extends BaseResponseSuccess implements IResponse {
   readonly type: ListStoresResponse.Success = ListStoresResponse.Success;
-  private readonly stores: StoreInfo[];
+  private readonly _stores: StoreInfo[];
 
   constructor(stores: StoreInfo[]) {
     super();
-    this.stores = stores;
+    this._stores = stores;
   }
 
   /**
    * An array of StoreInfo, containing information about each store.
    * @returns {StoreInfo[]}
    */
-  public getStores() {
-    return this.stores;
+  public stores(): StoreInfo[] {
+    return this._stores;
   }
 
   public override toString() {
-    const stores = this.stores.map(storeInfo => storeInfo.getName());
-    return super.toString() + ': ' + stores.join(', ');
+    const _stores = this._stores.map(storeInfo => storeInfo.getName());
+    return super.toString() + ': ' + _stores.join(', ');
   }
 }
 

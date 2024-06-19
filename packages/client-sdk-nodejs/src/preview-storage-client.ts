@@ -11,6 +11,10 @@ import {StorageDataClient} from './internal/storage-data-client';
 import {StorageConfiguration} from './config/storage-configuration';
 import {StorageConfigurations} from './index';
 
+/**
+ * A client for interacting with the Momento Storage service.
+ * Warning: This client is in preview and may change in future releases.
+ */
 export class PreviewStorageClient
   extends AbstractStorageClient
   implements IStorageClient
