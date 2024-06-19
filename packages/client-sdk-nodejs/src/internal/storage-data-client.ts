@@ -11,11 +11,8 @@ import {
 } from '@gomomento/sdk-core';
 import {validateStoreName} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {store} from '@gomomento/generated-types/dist/store';
-import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
-import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
-import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   ChannelCredentials,
   Interceptor,
@@ -23,38 +20,26 @@ import {
   ServiceError,
 } from '@grpc/grpc-js';
 import {version} from '../../package.json';
-import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
-import {
-  Middleware,
-  MiddlewareRequestHandlerContext,
-} from '../config/middleware/middleware';
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {IStorageDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {StorageConfiguration} from '../config/storage-configuration';
 import {StorageClientPropsWithConfig} from './storage-client-props-with-config';
 import {StaticGrpcConfiguration} from '../config/transport/cache';
 
-export const CONNECTION_ID_KEY = Symbol('connectionID');
-
 export class StorageDataClient implements IStorageDataClient {
   private readonly configuration: StorageConfiguration;
   private readonly credentialProvider: CredentialProvider;
   private readonly logger: MomentoLogger;
-  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly requestTimeoutMs: number;
-  private readonly clientWrapper: GrpcClientWrapper<store.StoreClient>;
+  private readonly client: store.StoreClient;
   private readonly interceptors: Interceptor[];
   private static readonly DEFAULT_MAX_SESSION_MEMORY_MB: number = 256;
 
   /**
    * @param {StorageClientPropsWithConfig} props
-   * @param dataClientID
    */
-  constructor(props: StorageClientPropsWithConfig, dataClientID: string) {
+  constructor(props: StorageClientPropsWithConfig) {
     this.configuration = props.configuration;
-    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
-      props.configuration.getThrowOnErrors()
-    );
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
     this.requestTimeoutMs = this.configuration
@@ -77,33 +62,21 @@ export class StorageDataClient implements IStorageDataClient {
     });
     const channelOptions = grpcChannelOptionsFromGrpcConfig(grpcConfig);
 
-    this.clientWrapper = new IdleGrpcClientWrapper({
-      clientFactoryFn: () =>
-        new store.StoreClient(
-          this.credentialProvider.getStorageEndpoint(),
-          this.credentialProvider.isStorageEndpointSecure()
-            ? ChannelCredentials.createSsl()
-            : ChannelCredentials.createInsecure(),
-          channelOptions
-        ),
-      loggerFactory: this.configuration.getLoggerFactory(),
-      maxIdleMillis: this.configuration
-        .getTransportStrategy()
-        .getMaxIdleMillis(),
-    });
-
-    const context: MiddlewareRequestHandlerContext = {};
-    context[CONNECTION_ID_KEY] = dataClientID;
+    this.client = new store.StoreClient(
+      this.credentialProvider.getStorageEndpoint(),
+      this.credentialProvider.isStorageEndpointSecure()
+        ? ChannelCredentials.createSsl()
+        : ChannelCredentials.createInsecure(),
+      channelOptions
+    );
     this.interceptors = this.initializeInterceptors(
-      this.configuration.getLoggerFactory(),
-      this.configuration.getMiddlewares(),
-      context
+      this.configuration.getLoggerFactory()
     );
   }
 
   close() {
     this.logger.debug('Closing storage data clients');
-    this.clientWrapper.getClient().close();
+    this.client.close();
   }
 
   private validateRequestTimeout(timeout?: number) {
@@ -116,20 +89,13 @@ export class StorageDataClient implements IStorageDataClient {
   }
 
   private initializeInterceptors(
-    _loggerFactory: MomentoLoggerFactory,
-    middlewares: Middleware[],
-    middlewareRequestContext: MiddlewareRequestHandlerContext
+    _loggerFactory: MomentoLoggerFactory
   ): Interceptor[] {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
       new Header('Agent', `nodejs:store:${version}`),
     ];
     return [
-      middlewaresInterceptor(
-        _loggerFactory,
-        middlewares,
-        middlewareRequestContext
-      ),
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
       ClientTimeoutInterceptor(this.requestTimeoutMs),
     ];
@@ -148,10 +114,7 @@ export class StorageDataClient implements IStorageDataClient {
     try {
       validateStoreName(storeName);
     } catch (err) {
-      return this.cacheServiceErrorMapper.returnOrThrowError(
-        err as Error,
-        err => new StorageGet.Error(err)
-      );
+      return new StorageGet.Error(err as SdkError);
     }
     this.logger.trace(
       `Issuing 'get' request; store: ${storeName}, key: ${key}`
@@ -168,7 +131,7 @@ export class StorageDataClient implements IStorageDataClient {
     });
     const metadata = this.createMetadata(storeName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().Get(
+      this.client.Get(
         request,
         metadata,
         {
@@ -209,12 +172,7 @@ export class StorageDataClient implements IStorageDataClient {
               }
             }
           } else {
-            this.cacheServiceErrorMapper.resolveOrRejectError({
-              err: err,
-              errorResponseFactoryFn: (e: SdkError) => new StorageGet.Error(e),
-              resolveFn: resolve,
-              rejectFn: reject,
-            });
+            return resolve(new StorageGet.Error(err as unknown as SdkError));
           }
         }
       );
@@ -229,10 +187,11 @@ export class StorageDataClient implements IStorageDataClient {
     try {
       validateStoreName(storeName);
     } catch (err) {
-      return this.cacheServiceErrorMapper.returnOrThrowError(
-        err as Error,
-        err => new StoragePut.Error(err)
-      );
+      return new StoragePut.Error(err as SdkError);
+      // return this.cacheServiceErrorMapper.returnOrThrowError(
+      //   err as Error,
+      //   err => new StoragePut.Error(err)
+      // );
     }
     this.logger.trace(
       `Issuing 'put' request; store: ${storeName}, key: ${key}`
@@ -263,7 +222,7 @@ export class StorageDataClient implements IStorageDataClient {
     });
     const metadata = this.createMetadata(storeName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().Put(
+      this.client.Put(
         request,
         metadata,
         {
@@ -273,12 +232,7 @@ export class StorageDataClient implements IStorageDataClient {
           if (resp) {
             resolve(new StoragePut.Success());
           } else {
-            this.cacheServiceErrorMapper.resolveOrRejectError({
-              err: err,
-              errorResponseFactoryFn: (e: SdkError) => new StoragePut.Error(e),
-              resolveFn: resolve,
-              rejectFn: reject,
-            });
+            return resolve(new StoragePut.Error(err as unknown as SdkError));
           }
         }
       );
@@ -292,10 +246,11 @@ export class StorageDataClient implements IStorageDataClient {
     try {
       validateStoreName(storeName);
     } catch (err) {
-      return this.cacheServiceErrorMapper.returnOrThrowError(
-        err as Error,
-        err => new StorageDelete.Error(err)
-      );
+      return new StorageDelete.Error(err as SdkError);
+      // return this.cacheServiceErrorMapper.returnOrThrowError(
+      //   err as Error,
+      //   err => new StorageDelete.Error(err)
+      // );
     }
     this.logger.trace(
       `Issuing 'delete' request; store: ${storeName}, key: ${key}`
@@ -312,7 +267,7 @@ export class StorageDataClient implements IStorageDataClient {
     });
     const metadata = this.createMetadata(storeName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().Delete(
+      this.client.Delete(
         request,
         metadata,
         {
@@ -322,13 +277,7 @@ export class StorageDataClient implements IStorageDataClient {
           if (resp) {
             resolve(new StorageDelete.Success());
           } else {
-            this.cacheServiceErrorMapper.resolveOrRejectError({
-              err: err,
-              errorResponseFactoryFn: (e: SdkError) =>
-                new StorageDelete.Error(e),
-              resolveFn: resolve,
-              rejectFn: reject,
-            });
+            return resolve(new StorageDelete.Error(err as unknown as SdkError));
           }
         }
       );

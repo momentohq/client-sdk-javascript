@@ -7,14 +7,12 @@ import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {MomentoLogger, StoreInfo, ListStores} from '..';
 import {version} from '../../package.json';
-import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
-import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {validateStoreName} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {CreateStore, DeleteStore} from '@gomomento/sdk-core';
 import {StorageClientPropsWithConfig} from './storage-client-props-with-config';
 
 export class StorageControlClient {
-  private readonly clientWrapper: GrpcClientWrapper<grpcControl.ScsControlClient>;
+  private readonly client: grpcControl.ScsControlClient;
   private readonly interceptors: Interceptor[];
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
   private readonly logger: MomentoLogger;
@@ -37,24 +35,17 @@ export class StorageControlClient {
     this.logger.debug(
       `Creating storage control client using endpoint: '${props.credentialProvider.getControlEndpoint()}`
     );
-    this.clientWrapper = new IdleGrpcClientWrapper({
-      clientFactoryFn: () =>
-        new grpcControl.ScsControlClient(
-          props.credentialProvider.getControlEndpoint(),
-          props.credentialProvider.isControlEndpointSecure()
-            ? ChannelCredentials.createSsl()
-            : ChannelCredentials.createInsecure()
-        ),
-      loggerFactory: props.configuration.getLoggerFactory(),
-      maxIdleMillis: props.configuration
-        .getTransportStrategy()
-        .getGrpcConfig()
-        .getDeadlineMillis(),
-    });
+
+    this.client = new grpcControl.ScsControlClient(
+      props.credentialProvider.getControlEndpoint(),
+      props.credentialProvider.isControlEndpointSecure()
+        ? ChannelCredentials.createSsl()
+        : ChannelCredentials.createInsecure()
+    );
   }
   close() {
     this.logger.debug('Closing storage control client');
-    this.clientWrapper.getClient().close();
+    this.client.close();
   }
 
   public async createStore(name: string): Promise<CreateStore.Response> {
@@ -71,28 +62,26 @@ export class StorageControlClient {
       store_name: name,
     });
     return await new Promise<CreateStore.Response>((resolve, reject) => {
-      this.clientWrapper
-        .getClient()
-        .CreateStore(
-          request,
-          {interceptors: this.interceptors},
-          (err, _resp) => {
-            if (err) {
-              if (err.code === Status.ALREADY_EXISTS) {
-                resolve(new CreateStore.AlreadyExists());
-              } else {
-                this.cacheServiceErrorMapper.resolveOrRejectError({
-                  err: err,
-                  errorResponseFactoryFn: e => new CreateStore.Error(e),
-                  resolveFn: resolve,
-                  rejectFn: reject,
-                });
-              }
+      this.client.CreateStore(
+        request,
+        {interceptors: this.interceptors},
+        (err, _resp) => {
+          if (err) {
+            if (err.code === Status.ALREADY_EXISTS) {
+              resolve(new CreateStore.AlreadyExists());
             } else {
-              resolve(new CreateStore.Success());
+              this.cacheServiceErrorMapper.resolveOrRejectError({
+                err: err,
+                errorResponseFactoryFn: e => new CreateStore.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
             }
+          } else {
+            resolve(new CreateStore.Success());
           }
-        );
+        }
+      );
     });
   }
 
@@ -110,24 +99,22 @@ export class StorageControlClient {
     });
     this.logger.debug(`Deleting store: ${name}`);
     return await new Promise<DeleteStore.Response>((resolve, reject) => {
-      this.clientWrapper
-        .getClient()
-        .DeleteStore(
-          request,
-          {interceptors: this.interceptors},
-          (err, _resp) => {
-            if (err) {
-              this.cacheServiceErrorMapper.resolveOrRejectError({
-                err: err,
-                errorResponseFactoryFn: e => new DeleteStore.Error(e),
-                resolveFn: resolve,
-                rejectFn: reject,
-              });
-            } else {
-              resolve(new DeleteStore.Success());
-            }
+      this.client.DeleteStore(
+        request,
+        {interceptors: this.interceptors},
+        (err, _resp) => {
+          if (err) {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new DeleteStore.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          } else {
+            resolve(new DeleteStore.Success());
           }
-        );
+        }
+      );
     });
   }
 
@@ -136,9 +123,10 @@ export class StorageControlClient {
     request.next_token = '';
     this.logger.debug("Issuing 'listStores' request");
     return await new Promise<ListStores.Response>((resolve, reject) => {
-      this.clientWrapper
-        .getClient()
-        .ListStores(request, {interceptors: this.interceptors}, (err, resp) => {
+      this.client.ListStores(
+        request,
+        {interceptors: this.interceptors},
+        (err, resp) => {
           if (err || !resp) {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
@@ -153,7 +141,8 @@ export class StorageControlClient {
             });
             resolve(new ListStores.Success(stores));
           }
-        });
+        }
+      );
     });
   }
 }

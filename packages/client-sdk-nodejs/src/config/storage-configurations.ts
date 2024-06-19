@@ -1,6 +1,5 @@
 import {MomentoLoggerFactory} from '@gomomento/sdk-core';
 import {DefaultMomentoLoggerFactory} from './logging/default-momento-logger';
-import {Middleware} from './middleware/middleware';
 import {
   StorageClientConfiguration,
   StorageConfiguration,
@@ -10,11 +9,8 @@ import {
   StaticStorageTransportStrategy,
 } from './transport/storage';
 
-const defaultMaxIdleMillis = 4 * 60 * 1_000;
-const defaultMaxSessionMemoryMb = 256;
 const defaultLoggerFactory: MomentoLoggerFactory =
   new DefaultMomentoLoggerFactory();
-const defaultMiddlewares: Middleware[] = [];
 
 /**
  * Laptop config provides defaults suitable for a medium-to-high-latency dev environment.
@@ -36,12 +32,8 @@ export class Laptop extends StorageClientConfiguration {
       transportStrategy: new StaticStorageTransportStrategy({
         grpcConfiguration: new StaticStorageGrpcConfiguration({
           deadlineMillis: 5000,
-          maxSessionMemoryMb: defaultMaxSessionMemoryMb,
         }),
-        maxIdleMillis: defaultMaxIdleMillis,
       }),
-      middlewares: defaultMiddlewares,
-      throwOnErrors: false,
     });
   }
 }

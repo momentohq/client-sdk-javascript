@@ -25,7 +25,6 @@ export class Default extends StorageClientConfiguration {
   ): StorageConfiguration {
     return new StorageClientConfiguration({
       loggerFactory: loggerFactory,
-      throwOnErrors: false,
     });
   }
 }

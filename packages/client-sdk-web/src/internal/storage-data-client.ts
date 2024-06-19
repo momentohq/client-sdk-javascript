@@ -8,7 +8,6 @@ import {
   UnknownError,
 } from '..';
 import {Request, UnaryResponse} from 'grpc-web';
-import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   _StoreDeleteRequest,
   _StoreGetRequest,
@@ -39,7 +38,6 @@ export class StorageDataClient<
 {
   private readonly clientWrapper: store.StoreClient;
   private readonly logger: MomentoLogger;
-  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly clientMetadataProvider: ClientMetadataProvider;
   // TODO make this part of configuration
   private readonly deadlineMillis: number = 10000;
@@ -49,9 +47,6 @@ export class StorageDataClient<
    */
   constructor(props: StorageDataClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
-      props.configuration.getThrowOnErrors()
-    );
     this.logger.debug(
       `Creating storage data client using endpoint: '${getWebStorageEndpoint(
         props.credentialProvider
@@ -83,10 +78,7 @@ export class StorageDataClient<
     try {
       validateStoreName(storeName);
     } catch (err) {
-      return this.cacheServiceErrorMapper.returnOrThrowError(
-        err as Error,
-        err => new StorageGet.Error(err)
-      );
+      return new StorageGet.Error(err as SdkError);
     }
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
     const result = await this.sendGet(storeName, convertToB64String(key));
@@ -144,12 +136,7 @@ export class StorageDataClient<
               }
             }
           } else {
-            this.cacheServiceErrorMapper.resolveOrRejectError({
-              err: err,
-              errorResponseFactoryFn: (e: SdkError) => new StorageGet.Error(e),
-              resolveFn: resolve,
-              rejectFn: reject,
-            });
+            return resolve(new StorageGet.Error(err as unknown as SdkError));
           }
         }
       );
@@ -164,10 +151,7 @@ export class StorageDataClient<
     try {
       validateStoreName(storeName);
     } catch (err) {
-      return this.cacheServiceErrorMapper.returnOrThrowError(
-        err as Error,
-        err => new StoragePut.Error(err)
-      );
+      return new StoragePut.Error(err as SdkError);
     }
     this.logger.trace(`Issuing 'put' request; key: ${key.toString()}`);
     const result = await this.sendPut(
@@ -215,12 +199,7 @@ export class StorageDataClient<
         },
         (err, _resp) => {
           if (err) {
-            this.cacheServiceErrorMapper.resolveOrRejectError({
-              err: err,
-              errorResponseFactoryFn: (e: SdkError) => new StoragePut.Error(e),
-              resolveFn: resolve,
-              rejectFn: reject,
-            });
+            return resolve(new StoragePut.Error(err as unknown as SdkError));
           } else {
             resolve(new StoragePut.Success());
           }
@@ -236,10 +215,7 @@ export class StorageDataClient<
     try {
       validateStoreName(storeName);
     } catch (err) {
-      return this.cacheServiceErrorMapper.returnOrThrowError(
-        err as Error,
-        err => new StorageDelete.Error(err)
-      );
+      return new StorageDelete.Error(err as SdkError);
     }
     this.logger.trace(`Issuing 'delete' request; key: ${key.toString()}`);
     const result = await this.sendDelete(storeName, convertToB64String(key));
@@ -263,13 +239,7 @@ export class StorageDataClient<
         },
         (err, _resp) => {
           if (err) {
-            this.cacheServiceErrorMapper.resolveOrRejectError({
-              err: err,
-              errorResponseFactoryFn: (e: SdkError) =>
-                new StorageDelete.Error(e),
-              resolveFn: resolve,
-              rejectFn: reject,
-            });
+            return resolve(new StorageDelete.Error(err as unknown as SdkError));
           } else {
             resolve(new StorageDelete.Success());
           }

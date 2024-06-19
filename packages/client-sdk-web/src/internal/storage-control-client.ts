@@ -6,6 +6,7 @@ import {
   DeleteStore,
   ListStores,
   StoreInfo,
+  SdkError,
 } from '..';
 import {Request, StatusCode, UnaryResponse} from 'grpc-web';
 import {
@@ -13,7 +14,6 @@ import {
   _DeleteStoreRequest,
   _ListStoresRequest,
 } from '@gomomento/generated-types-webtext/dist/controlclient_pb';
-import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {IStorageControlClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {validateStoreName} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {getWebControlEndpoint} from '../utils/web-client-utils';
@@ -32,7 +32,6 @@ export class StorageControlClient<
 {
   private readonly clientWrapper: control.ScsControlClient;
   private readonly logger: MomentoLogger;
-  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
 
   private readonly clientMetadataProvider: ClientMetadataProvider;
 
@@ -41,9 +40,6 @@ export class StorageControlClient<
    */
   constructor(props: StorageClientClientProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
-    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
-      props.configuration.getThrowOnErrors()
-    );
     this.logger.debug(
       `Creating storage control client using endpoint: '${getWebControlEndpoint(
         props.credentialProvider
@@ -73,10 +69,7 @@ export class StorageControlClient<
     try {
       validateStoreName(name);
     } catch (err) {
-      return this.cacheServiceErrorMapper.returnOrThrowError(
-        err as Error,
-        err => new CreateStore.Error(err)
-      );
+      return new CreateStore.Error(err as SdkError);
     }
     this.logger.debug(`Creating store: ${name}`);
     const request = new _CreateStoreRequest();
@@ -91,12 +84,7 @@ export class StorageControlClient<
             if (err.code === StatusCode.ALREADY_EXISTS) {
               resolve(new CreateStore.AlreadyExists());
             } else {
-              this.cacheServiceErrorMapper.resolveOrRejectError({
-                err: err,
-                errorResponseFactoryFn: e => new CreateStore.Error(e),
-                resolveFn: resolve,
-                rejectFn: reject,
-              });
+              return resolve(new CreateStore.Error(err as unknown as SdkError));
             }
           } else {
             resolve(new CreateStore.Success());
@@ -110,10 +98,11 @@ export class StorageControlClient<
     try {
       validateStoreName(name);
     } catch (err) {
-      return this.cacheServiceErrorMapper.returnOrThrowError(
-        err as Error,
-        err => new DeleteStore.Error(err)
-      );
+      return new DeleteStore.Error(err as SdkError);
+      // return this.cacheServiceErrorMapper.returnOrThrowError(
+      //   err as Error,
+      //   err => new DeleteStore.Error(err)
+      // );
     }
     const request = new _DeleteStoreRequest();
     request.setStoreName(name);
@@ -124,12 +113,7 @@ export class StorageControlClient<
         this.clientMetadataProvider.createClientMetadata(),
         (err, _resp) => {
           if (err) {
-            this.cacheServiceErrorMapper.resolveOrRejectError({
-              err: err,
-              errorResponseFactoryFn: e => new DeleteStore.Error(e),
-              resolveFn: resolve,
-              rejectFn: reject,
-            });
+            return resolve(new DeleteStore.Error(err as unknown as SdkError));
           } else {
             resolve(new DeleteStore.Success());
           }
@@ -148,12 +132,7 @@ export class StorageControlClient<
         this.clientMetadataProvider.createClientMetadata(),
         (err, resp) => {
           if (err) {
-            this.cacheServiceErrorMapper.resolveOrRejectError({
-              err: err,
-              errorResponseFactoryFn: e => new ListStores.Error(e),
-              resolveFn: resolve,
-              rejectFn: reject,
-            });
+            return resolve(new ListStores.Error(err as unknown as SdkError));
           } else {
             const stores = resp.getStoreList().map(store => {
               const storeName = store.getStoreName();

@@ -30,8 +30,10 @@ export class PreviewStorageClient
     const controlClient: IStorageControlClient = createControlClient(
       propsWithConfiguration
     );
-    const dataClients = createDataClients(propsWithConfiguration);
-    super(dataClients, controlClient);
+    const dataClient: IStorageDataClient = createDataClient(
+      propsWithConfiguration
+    );
+    super([dataClient], controlClient);
   }
 
   close(): void {
@@ -49,17 +51,13 @@ function createControlClient(
   });
 }
 
-function createDataClients(
+function createDataClient(
   props: StorageClientPropsWithConfig
-): IStorageDataClient[] {
-  const numClients = props.configuration
-    .getTransportStrategy()
-    .getGrpcConfig()
-    .getNumClients();
-  return Array.from(
-    {length: numClients},
-    (_, i) => new StorageDataClient(props, i.toString())
-  );
+): IStorageDataClient {
+  return new StorageDataClient({
+    configuration: props.configuration,
+    credentialProvider: props.credentialProvider,
+  });
 }
 
 function getDefaultStorageConfiguration(): StorageConfiguration {
