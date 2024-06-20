@@ -6,8 +6,9 @@ import {
   DeleteStore,
   ListStores,
   StoreInfo,
+  MomentoErrorCode,
 } from '..';
-import {Request, StatusCode, UnaryResponse} from 'grpc-web';
+import {Request, UnaryResponse} from 'grpc-web';
 import {
   _CreateStoreRequest,
   _DeleteStoreRequest,
@@ -86,8 +87,12 @@ export class StorageControlClient<
         this.clientMetadataProvider.createClientMetadata(),
         (err, _resp) => {
           if (err) {
-            if (err.code === StatusCode.ALREADY_EXISTS) {
-              resolve(new CreateStore.AlreadyExists());
+            const sdkError = this.cacheServiceErrorMapper.convertError(err);
+            if (
+              sdkError.errorCode() ===
+              MomentoErrorCode.STORE_ALREADY_EXISTS_ERROR
+            ) {
+              return resolve(new CreateStore.AlreadyExists());
             } else {
               this.cacheServiceErrorMapper.resolveOrRejectError({
                 err: err,

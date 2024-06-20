@@ -2,7 +2,6 @@ import {control} from '@gomomento/generated-types';
 import grpcControl = control.control_client;
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
-import {Status} from '@grpc/grpc-js/build/src/constants';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {
@@ -13,6 +12,7 @@ import {
   CredentialProvider,
   MomentoLogger,
   CacheInfo,
+  MomentoErrorCode,
 } from '..';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
@@ -96,7 +96,11 @@ export class CacheControlClient {
           {interceptors: this.interceptors},
           (err, _resp) => {
             if (err) {
-              if (err.code === Status.ALREADY_EXISTS) {
+              const sdkError = this.cacheServiceErrorMapper.convertError(err);
+              if (
+                sdkError.errorCode() ===
+                MomentoErrorCode.CACHE_ALREADY_EXISTS_ERROR
+              ) {
                 resolve(new CreateCache.AlreadyExists());
               } else {
                 this.cacheServiceErrorMapper.resolveOrRejectError({

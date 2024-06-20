@@ -107,7 +107,8 @@ import {
 import {
   MomentoErrorCode,
   SdkError,
-  AlreadyExistsError,
+  CacheAlreadyExistsError,
+  StoreAlreadyExistsError,
   AuthenticationError,
   CancelledError,
   ConnectionError,
@@ -298,7 +299,8 @@ export {
   // Errors
   MomentoErrorCode,
   SdkError,
-  AlreadyExistsError,
+  CacheAlreadyExistsError,
+  StoreAlreadyExistsError,
   AuthenticationError,
   CancelledError,
   ConnectionError,

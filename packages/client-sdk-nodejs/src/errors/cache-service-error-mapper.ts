@@ -9,7 +9,6 @@ import {
   TimeoutError,
   AuthenticationError,
   LimitExceededError,
-  AlreadyExistsError,
   SdkError,
   UnknownServiceError,
   ServerUnavailableError,
@@ -25,6 +24,10 @@ import {
   ICacheServiceErrorMapper,
   ResolveOrRejectErrorOptions,
 } from '@gomomento/sdk-core/dist/src/errors/ICacheServiceErrorMapper';
+import {
+  CacheAlreadyExistsError,
+  StoreAlreadyExistsError,
+} from '@gomomento/sdk-core';
 
 export class CacheServiceErrorMapper
   implements ICacheServiceErrorMapper<ServiceError>
@@ -114,8 +117,23 @@ export class CacheServiceErrorMapper
         return new AuthenticationError(...errParams);
       case Status.RESOURCE_EXHAUSTED:
         return new LimitExceededError(...errParams);
-      case Status.ALREADY_EXISTS:
-        return new AlreadyExistsError(...errParams);
+      case Status.ALREADY_EXISTS: {
+        let errCause = errParams[2]?.get('err')?.[0];
+        const errorMessage = errParams[0]?.toString();
+        const isStoreAlreadyExists =
+          errorMessage?.includes('Store with name:') &&
+          errorMessage?.includes('already exists');
+        // If errCause is not already set to 'store_already_exists', check for store_already_exists error
+        if (!errCause && isStoreAlreadyExists) {
+          errCause = 'store_already_exists';
+        }
+        switch (errCause) {
+          case 'store_already_exists':
+            return new StoreAlreadyExistsError(...errParams);
+          default:
+            return new CacheAlreadyExistsError(...errParams);
+        }
+      }
       default:
         return new UnknownError(...errParams);
     }

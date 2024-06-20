@@ -2,10 +2,9 @@ import {control} from '@gomomento/generated-types';
 import grpcControl = control.control_client;
 import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
-import {Status} from '@grpc/grpc-js/build/src/constants';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
-import {MomentoLogger, StoreInfo, ListStores} from '..';
+import {MomentoLogger, StoreInfo, ListStores, MomentoErrorCode} from '..';
 import {version} from '../../package.json';
 import {validateStoreName} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {CreateStore, DeleteStore} from '@gomomento/sdk-core';
@@ -67,7 +66,11 @@ export class StorageControlClient {
         {interceptors: this.interceptors},
         (err, _resp) => {
           if (err) {
-            if (err.code === Status.ALREADY_EXISTS) {
+            const sdkError = this.cacheServiceErrorMapper.convertError(err);
+            if (
+              sdkError.errorCode() ===
+              MomentoErrorCode.STORE_ALREADY_EXISTS_ERROR
+            ) {
               resolve(new CreateStore.AlreadyExists());
             } else {
               this.cacheServiceErrorMapper.resolveOrRejectError({

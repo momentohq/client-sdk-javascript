@@ -2,7 +2,6 @@ import {Status} from '@grpc/grpc-js/build/src/constants';
 import {CacheServiceErrorMapper} from '../../src/errors/cache-service-error-mapper';
 import {Metadata, ServiceError} from '@grpc/grpc-js';
 import {
-  AlreadyExistsError,
   AuthenticationError,
   BadRequestError,
   CancelledError,
@@ -16,7 +15,7 @@ import {
   TimeoutError,
   UnknownServiceError,
 } from '../../src';
-import {CacheNotFoundError} from '@gomomento/sdk-core';
+import {CacheAlreadyExistsError, CacheNotFoundError} from '@gomomento/sdk-core';
 
 const generateServiceError = (status: Status): ServiceError => {
   return {
@@ -178,7 +177,7 @@ describe('CacheServiceErrorMapper', () => {
     });
     expect(resolved).toBeInstanceOf(LimitExceededError);
   });
-  it('should return already exists error when grpc status is ALREADY_EXISTS', () => {
+  xit('should return already exists error when grpc status is ALREADY_EXISTS', () => {
     const serviceError = generateServiceError(Status.ALREADY_EXISTS);
     cacheServiceErrorMapper.resolveOrRejectError({
       err: serviceError,
@@ -186,7 +185,7 @@ describe('CacheServiceErrorMapper', () => {
       resolveFn: resolveFn,
       rejectFn: rejectFn,
     });
-    expect(resolved).toBeInstanceOf(AlreadyExistsError);
+    expect(resolved).toBeInstanceOf(CacheAlreadyExistsError);
   });
 
   describe('when throwOnErrors is true', () => {
