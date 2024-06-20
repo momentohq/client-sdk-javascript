@@ -24,7 +24,7 @@ import {
 import {ClientMetadataProvider} from './client-metadata-provider';
 import ValueCase = _StoreValue.ValueCase;
 import {StorageConfiguration} from '../config/storage-configuration';
-import {SdkError} from '@gomomento/sdk-core';
+import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 
 export interface StorageDataClientProps {
   configuration: StorageConfiguration;
@@ -37,6 +37,7 @@ export class StorageDataClient<
 > implements IStorageDataClient
 {
   private readonly clientWrapper: store.StoreClient;
+  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly logger: MomentoLogger;
   private readonly clientMetadataProvider: ClientMetadataProvider;
   // TODO make this part of configuration
@@ -46,6 +47,7 @@ export class StorageDataClient<
    * @param {DataClientProps} props
    */
   constructor(props: StorageDataClientProps) {
+    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(false);
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.logger.debug(
       `Creating storage data client using endpoint: '${getWebStorageEndpoint(
@@ -78,7 +80,10 @@ export class StorageDataClient<
     try {
       validateStoreName(storeName);
     } catch (err) {
-      return new StorageGet.Error(err as SdkError);
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new StorageGet.Error(err)
+      );
     }
     this.logger.trace(`Issuing 'get' request; key: ${key.toString()}`);
     const result = await this.sendGet(storeName, convertToB64String(key));
@@ -136,7 +141,12 @@ export class StorageDataClient<
               }
             }
           } else {
-            return resolve(new StorageGet.Error(err as unknown as SdkError));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new StorageGet.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -151,7 +161,10 @@ export class StorageDataClient<
     try {
       validateStoreName(storeName);
     } catch (err) {
-      return new StoragePut.Error(err as SdkError);
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new StoragePut.Error(err)
+      );
     }
     this.logger.trace(`Issuing 'put' request; key: ${key.toString()}`);
     const result = await this.sendPut(
@@ -168,17 +181,11 @@ export class StorageDataClient<
     key: string,
     passedInVal: string | number | Uint8Array
   ): Promise<StoragePut.Response> {
-    console.log(
-      `storeName: ${storeName} key: ${key} passedInVal: ${
-        passedInVal as string
-      }`
-    );
     const request = new _StorePutRequest();
     request.setKey(key);
 
     const value = new _StoreValue();
     if (typeof passedInVal === 'string') {
-      console.log(`setting string value: ${passedInVal}`);
       value.setStringValue(passedInVal);
     } else if (typeof passedInVal === 'number') {
       if (Number.isInteger(passedInVal)) {
@@ -199,7 +206,12 @@ export class StorageDataClient<
         },
         (err, _resp) => {
           if (err) {
-            return resolve(new StoragePut.Error(err as unknown as SdkError));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new StoragePut.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new StoragePut.Success());
           }
@@ -215,7 +227,10 @@ export class StorageDataClient<
     try {
       validateStoreName(storeName);
     } catch (err) {
-      return new StorageDelete.Error(err as SdkError);
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new StorageDelete.Error(err)
+      );
     }
     this.logger.trace(`Issuing 'delete' request; key: ${key.toString()}`);
     const result = await this.sendDelete(storeName, convertToB64String(key));
@@ -239,7 +254,12 @@ export class StorageDataClient<
         },
         (err, _resp) => {
           if (err) {
-            return resolve(new StorageDelete.Error(err as unknown as SdkError));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new StorageDelete.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           } else {
             resolve(new StorageDelete.Success());
           }

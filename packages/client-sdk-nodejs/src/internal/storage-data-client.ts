@@ -7,7 +7,6 @@ import {
   StoragePut,
   StorageDelete,
   UnknownError,
-  SdkError,
 } from '@gomomento/sdk-core';
 import {validateStoreName} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {store} from '@gomomento/generated-types/dist/store';
@@ -25,10 +24,12 @@ import {IStorageDataClient} from '@gomomento/sdk-core/dist/src/internal/clients'
 import {StorageConfiguration} from '../config/storage-configuration';
 import {StorageClientPropsWithConfig} from './storage-client-props-with-config';
 import {StaticGrpcConfiguration} from '../config/transport/cache';
+import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 
 export class StorageDataClient implements IStorageDataClient {
   private readonly configuration: StorageConfiguration;
   private readonly credentialProvider: CredentialProvider;
+  private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly logger: MomentoLogger;
   private readonly requestTimeoutMs: number;
   private readonly client: store.StoreClient;
@@ -41,6 +42,7 @@ export class StorageDataClient implements IStorageDataClient {
   constructor(props: StorageClientPropsWithConfig) {
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
+    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(false);
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
     this.requestTimeoutMs = this.configuration
       .getTransportStrategy()
@@ -114,7 +116,10 @@ export class StorageDataClient implements IStorageDataClient {
     try {
       validateStoreName(storeName);
     } catch (err) {
-      return new StorageGet.Error(err as SdkError);
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new StorageGet.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'get' request; store: ${storeName}, key: ${key}`
@@ -172,7 +177,12 @@ export class StorageDataClient implements IStorageDataClient {
               }
             }
           } else {
-            return resolve(new StorageGet.Error(err as unknown as SdkError));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new StorageGet.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -187,11 +197,10 @@ export class StorageDataClient implements IStorageDataClient {
     try {
       validateStoreName(storeName);
     } catch (err) {
-      return new StoragePut.Error(err as SdkError);
-      // return this.cacheServiceErrorMapper.returnOrThrowError(
-      //   err as Error,
-      //   err => new StoragePut.Error(err)
-      // );
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new StoragePut.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'put' request; store: ${storeName}, key: ${key}`
@@ -232,7 +241,12 @@ export class StorageDataClient implements IStorageDataClient {
           if (resp) {
             resolve(new StoragePut.Success());
           } else {
-            return resolve(new StoragePut.Error(err as unknown as SdkError));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new StoragePut.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
@@ -246,11 +260,10 @@ export class StorageDataClient implements IStorageDataClient {
     try {
       validateStoreName(storeName);
     } catch (err) {
-      return new StorageDelete.Error(err as SdkError);
-      // return this.cacheServiceErrorMapper.returnOrThrowError(
-      //   err as Error,
-      //   err => new StorageDelete.Error(err)
-      // );
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new StorageDelete.Error(err)
+      );
     }
     this.logger.trace(
       `Issuing 'delete' request; store: ${storeName}, key: ${key}`
@@ -277,7 +290,12 @@ export class StorageDataClient implements IStorageDataClient {
           if (resp) {
             resolve(new StorageDelete.Success());
           } else {
-            return resolve(new StorageDelete.Error(err as unknown as SdkError));
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new StorageDelete.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );

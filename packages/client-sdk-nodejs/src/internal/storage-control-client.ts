@@ -12,7 +12,7 @@ import {CreateStore, DeleteStore} from '@gomomento/sdk-core';
 import {StorageClientPropsWithConfig} from './storage-client-props-with-config';
 
 export class StorageControlClient {
-  private readonly client: grpcControl.ScsControlClient;
+  private readonly clientWrapper: grpcControl.ScsControlClient;
   private readonly interceptors: Interceptor[];
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
   private readonly logger: MomentoLogger;
@@ -36,7 +36,7 @@ export class StorageControlClient {
       `Creating storage control client using endpoint: '${props.credentialProvider.getControlEndpoint()}`
     );
 
-    this.client = new grpcControl.ScsControlClient(
+    this.clientWrapper = new grpcControl.ScsControlClient(
       props.credentialProvider.getControlEndpoint(),
       props.credentialProvider.isControlEndpointSecure()
         ? ChannelCredentials.createSsl()
@@ -45,7 +45,7 @@ export class StorageControlClient {
   }
   close() {
     this.logger.debug('Closing storage control client');
-    this.client.close();
+    this.clientWrapper.close();
   }
 
   public async createStore(name: string): Promise<CreateStore.Response> {
@@ -62,7 +62,7 @@ export class StorageControlClient {
       store_name: name,
     });
     return await new Promise<CreateStore.Response>((resolve, reject) => {
-      this.client.CreateStore(
+      this.clientWrapper.CreateStore(
         request,
         {interceptors: this.interceptors},
         (err, _resp) => {
@@ -99,7 +99,7 @@ export class StorageControlClient {
     });
     this.logger.debug(`Deleting store: ${name}`);
     return await new Promise<DeleteStore.Response>((resolve, reject) => {
-      this.client.DeleteStore(
+      this.clientWrapper.DeleteStore(
         request,
         {interceptors: this.interceptors},
         (err, _resp) => {
@@ -123,7 +123,7 @@ export class StorageControlClient {
     request.next_token = '';
     this.logger.debug("Issuing 'listStores' request");
     return await new Promise<ListStores.Response>((resolve, reject) => {
-      this.client.ListStores(
+      this.clientWrapper.ListStores(
         request,
         {interceptors: this.interceptors},
         (err, resp) => {

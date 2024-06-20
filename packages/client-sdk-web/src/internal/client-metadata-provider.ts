@@ -39,7 +39,6 @@ export class ClientMetadataProvider {
       metadata['Runtime-Version'] = `javascript-web:${getBrowserName(
         navigator.userAgent
       )}`;
-      console.log('web metadata:', metadata);
     }
     if (this.readConcern) {
       metadata['read-concern'] = this.readConcern;
