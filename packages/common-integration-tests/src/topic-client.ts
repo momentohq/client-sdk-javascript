@@ -7,7 +7,7 @@ import {
   TopicPublish,
   TopicSubscribe,
   SubscribeCallOptions,
-  NotFoundError,
+  CacheNotFoundError,
 } from '@gomomento/sdk-core';
 import {
   expectWithMessage,
@@ -52,7 +52,7 @@ export function runTopicClientTests(
       const response = await topicClient.publish(v4(), 'topic', 'value');
       expectWithMessage(() => {
         expect((response as IResponseError).errorCode()).toEqual(
-          MomentoErrorCode.NOT_FOUND_ERROR
+          MomentoErrorCode.CACHE_NOT_FOUND_ERROR
         );
       }, `expected NOT_FOUND_ERROR but got ${response.toString()}`);
       expect((response as IResponseError).message()).toContain(
@@ -98,7 +98,7 @@ export function runTopicClientTests(
       );
       expectWithMessage(() => {
         expect((response as IResponseError).errorCode()).toEqual(
-          MomentoErrorCode.NOT_FOUND_ERROR
+          MomentoErrorCode.CACHE_NOT_FOUND_ERROR
         );
       }, `expected NOT_FOUND_ERROR but got ${response.toString()}`);
     });
@@ -250,7 +250,7 @@ export function runTopicClientTests(
               subscription: TopicSubscribe.Subscription
             ) => {
               expect(error.errorCode()).toEqual(
-                MomentoErrorCode.NOT_FOUND_ERROR
+                MomentoErrorCode.CACHE_NOT_FOUND_ERROR
               );
               expect(subscription.isSubscribed).toBeFalse();
             },
@@ -297,7 +297,7 @@ export function runTopicClientTests(
     it('should throw when publishing to a cache that does not exist', async () => {
       await expect(async () => {
         await topicClientWithThrowOnErrors.publish(v4(), 'topic', 'value');
-      }).rejects.toThrow(NotFoundError);
+      }).rejects.toThrow(CacheNotFoundError);
     });
   });
 }

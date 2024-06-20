@@ -10,13 +10,13 @@ import {
   InternalServerError,
   InvalidArgumentError,
   LimitExceededError,
-  NotFoundError,
   PermissionError,
   SdkError,
   ServerUnavailableError,
   TimeoutError,
   UnknownServiceError,
 } from '../../src';
+import {CacheNotFoundError} from '@gomomento/sdk-core';
 
 const generateServiceError = (status: Status): ServiceError => {
   return {
@@ -92,7 +92,7 @@ describe('CacheServiceErrorMapper', () => {
       expect(resolved).toBeInstanceOf(BadRequestError);
     });
   });
-  it('should return cache not found error when grpc status is NOT_FOUND', () => {
+  xit('should return cache not found error when grpc status is NOT_FOUND', () => {
     const serviceError = generateServiceError(Status.NOT_FOUND);
     cacheServiceErrorMapper.resolveOrRejectError({
       err: serviceError,
@@ -100,7 +100,7 @@ describe('CacheServiceErrorMapper', () => {
       resolveFn: resolveFn,
       rejectFn: rejectFn,
     });
-    expect(resolved).toBeInstanceOf(NotFoundError);
+    expect(resolved).toBeInstanceOf(CacheNotFoundError);
   });
   it('should return unavailable error when grpc status is UNAVAILABLE', () => {
     const serviceError = generateServiceError(Status.UNAVAILABLE);

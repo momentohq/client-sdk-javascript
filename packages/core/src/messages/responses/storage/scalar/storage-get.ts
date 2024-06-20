@@ -1,140 +1,40 @@
-import {StorageItemType, StorageGetResponse} from '../../enums';
+import {StorageGetResponse} from '../../enums';
 import {BaseResponseError, ResponseBase} from '../../response-base';
 import {SdkError} from '../../../../errors';
+import {StorageValue} from './storage-value';
 
 interface IResponse {
   readonly type: StorageGetResponse;
-  value(): string | number | Uint8Array | undefined;
+  value(): StorageValue | undefined;
 }
 
-export abstract class Success extends ResponseBase implements IResponse {
-  readonly type: StorageGetResponse.Success;
-  readonly itemType: StorageItemType;
+export class Success extends ResponseBase implements IResponse {
+  readonly type: StorageGetResponse.Success = StorageGetResponse.Success;
+  private readonly _value: StorageValue | undefined;
 
-  abstract value(): string | number | Uint8Array;
-
-  abstract valueInt(): number | undefined;
-
-  abstract valueDouble(): number | undefined;
-
-  abstract valueString(): string | undefined;
-
-  abstract valueBytes(): Uint8Array | undefined;
-}
-
-export class StringResponse extends Success {
-  override readonly itemType: StorageItemType.String = StorageItemType.String;
-  private readonly _value: string;
-  constructor(value: string) {
+  constructor(value: StorageValue | undefined) {
     super();
     this._value = value;
   }
 
-  value(): string {
+  static ofInt(value: number): Success {
+    return new Success(StorageValue.ofInt(value));
+  }
+
+  static ofDouble(value: number): Success {
+    return new Success(StorageValue.ofDouble(value));
+  }
+
+  static ofString(value: string): Success {
+    return new Success(StorageValue.ofString(value));
+  }
+
+  static ofBytes(value: Uint8Array): Success {
+    return new Success(StorageValue.ofBytes(value));
+  }
+
+  value(): StorageValue | undefined {
     return this._value;
-  }
-
-  valueBytes(): undefined {
-    return undefined;
-  }
-
-  valueDouble(): undefined {
-    return undefined;
-  }
-
-  valueInt(): undefined {
-    return undefined;
-  }
-
-  valueString(): string {
-    return this.value();
-  }
-}
-
-export class IntegerResponse extends Success {
-  override readonly itemType: StorageItemType.Integer = StorageItemType.Integer;
-  private readonly _value: number;
-  constructor(value: number) {
-    super();
-    this._value = value;
-  }
-
-  value(): number {
-    return this._value;
-  }
-
-  valueBytes(): undefined {
-    return undefined;
-  }
-
-  valueDouble(): undefined {
-    return undefined;
-  }
-
-  valueInt(): number | undefined {
-    return this.value();
-  }
-
-  valueString(): undefined {
-    return undefined;
-  }
-}
-
-export class DoubleResponse extends Success {
-  override readonly itemType: StorageItemType.Double = StorageItemType.Double;
-  private readonly _value: number;
-  constructor(value: number) {
-    super();
-    this._value = value;
-  }
-
-  value(): number {
-    return this._value;
-  }
-
-  valueBytes(): undefined {
-    return undefined;
-  }
-
-  valueDouble(): number {
-    return this.value();
-  }
-
-  valueInt(): undefined {
-    return undefined;
-  }
-
-  valueString(): undefined {
-    return undefined;
-  }
-}
-
-export class BytesResponse extends Success {
-  override readonly itemType: StorageItemType.Bytes = StorageItemType.Bytes;
-  private readonly _value: Uint8Array;
-  constructor(value: Uint8Array) {
-    super();
-    this._value = value;
-  }
-
-  value(): Uint8Array {
-    return this._value;
-  }
-
-  valueBytes(): Uint8Array {
-    return this.value();
-  }
-
-  valueDouble(): undefined {
-    return undefined;
-  }
-
-  valueInt(): undefined {
-    return undefined;
-  }
-
-  valueString(): undefined {
-    return undefined;
   }
 }
 
@@ -159,9 +59,4 @@ export class Error extends BaseResponseError implements IResponse {
   }
 }
 
-export type Response =
-  | DoubleResponse
-  | BytesResponse
-  | StringResponse
-  | IntegerResponse
-  | Error;
+export type Response = Success | Error;

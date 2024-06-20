@@ -6,7 +6,13 @@ export enum MomentoErrorCode {
   // Cache with specified name already exists
   ALREADY_EXISTS_ERROR = 'ALREADY_EXISTS_ERROR',
   // Cache with specified name doesn't exist
+  CACHE_NOT_FOUND_ERROR = 'NOT_FOUND_ERROR',
+  /** @deprecated use CACHE_NOT_FOUND_ERROR instead */
   NOT_FOUND_ERROR = 'NOT_FOUND_ERROR',
+  // Store with specified name doesn't exist
+  STORE_NOT_FOUND_ERROR = 'STORE_NOT_FOUND_ERROR',
+  // Item with specified key doesn't exist
+  ITEM_NOT_FOUND_ERROR = 'ITEM_NOT_FOUND_ERROR',
   // An unexpected error occurred while trying to fulfill the request
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
   // Insufficient permissions to perform operation
@@ -166,10 +172,29 @@ export class LimitExceededError extends SdkError {
  * Error that occurs when trying to get a cache that doesn't exist. To resolve, make sure that the cache you are trying
  * to get exists. If it doesn't create it first and then try again
  */
-export class NotFoundError extends SdkError {
-  override _errorCode = MomentoErrorCode.NOT_FOUND_ERROR;
+export class CacheNotFoundError extends SdkError {
+  override _errorCode = MomentoErrorCode.CACHE_NOT_FOUND_ERROR;
   override _messageWrapper =
     'A cache with the specified name does not exist.  To resolve this error, make sure you have created the cache before attempting to use it';
+}
+
+/**
+ * Error that occurs when trying to get a store that doesn't exist. To resolve, make sure that the store you are trying
+ * to get exists. If it doesn't create it first and then try again.
+ */
+export class StoreNotFoundError extends SdkError {
+  override _errorCode = MomentoErrorCode.STORE_NOT_FOUND_ERROR;
+  override _messageWrapper =
+    'A store with the specified name does not exist.  To resolve this error, make sure you have created the store before attempting to use it';
+}
+
+/**
+ * Error that occurs when trying to get an item that doesn't exist. To resolve, make sure that the item you are trying
+ * to get exists. If it doesn't create it first and then try again.
+ */
+export class ItemNotFoundError extends SdkError {
+  override _errorCode = MomentoErrorCode.ITEM_NOT_FOUND_ERROR;
+  override _messageWrapper = 'An item with the specified key does not exist';
 }
 
 /**

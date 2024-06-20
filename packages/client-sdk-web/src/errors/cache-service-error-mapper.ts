@@ -1,5 +1,4 @@
 import {
-  NotFoundError,
   InternalServerError,
   InvalidArgumentError,
   PermissionError,
@@ -15,11 +14,16 @@ import {
   UnknownError,
   FailedPreconditionError,
 } from '../../src';
-import {RpcError, StatusCode} from 'grpc-web';
+import {Metadata, RpcError, StatusCode} from 'grpc-web';
 import {
   ICacheServiceErrorMapper,
   ResolveOrRejectErrorOptions,
 } from '@gomomento/sdk-core/dist/src/errors/ICacheServiceErrorMapper';
+import {
+  CacheNotFoundError,
+  ItemNotFoundError,
+  StoreNotFoundError,
+} from '@gomomento/sdk-core';
 
 export class CacheServiceErrorMapper
   implements ICacheServiceErrorMapper<RpcError>
@@ -55,7 +59,7 @@ export class CacheServiceErrorMapper
     const errParams: [
       string,
       number | undefined,
-      object | undefined,
+      Metadata | undefined,
       string | undefined
     ] = [
       err?.message || 'Unable to process request',
@@ -74,8 +78,28 @@ export class CacheServiceErrorMapper
         return new UnknownServiceError(...errParams);
       case StatusCode.UNAVAILABLE:
         return new ServerUnavailableError(...errParams);
-      case StatusCode.NOT_FOUND:
-        return new NotFoundError(...errParams);
+      case StatusCode.NOT_FOUND: {
+        let errCause = '';
+        const errorMessage = errParams[0]?.toString();
+        const isStoreNotFound =
+          errorMessage?.includes('Store with name:') &&
+          errorMessage?.includes("doesn't exist");
+        if (isStoreNotFound) {
+          errCause = 'store_not_found';
+        }
+        const isElementNotFound = errorMessage?.includes('Element not found');
+        if (isElementNotFound) {
+          errCause = 'element_not_found';
+        }
+        switch (errCause) {
+          case 'element_not_found':
+            return new ItemNotFoundError(...errParams);
+          case 'store_not_found':
+            return new StoreNotFoundError(...errParams);
+          default:
+            return new CacheNotFoundError(...errParams);
+        }
+      }
       case StatusCode.OUT_OF_RANGE:
       case StatusCode.UNIMPLEMENTED:
         return new BadRequestError(...errParams);

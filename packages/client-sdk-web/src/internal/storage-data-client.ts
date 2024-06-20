@@ -6,6 +6,7 @@ import {
   CredentialProvider,
   MomentoLogger,
   UnknownError,
+  MomentoErrorCode,
 } from '..';
 import {Request, UnaryResponse} from 'grpc-web';
 import {
@@ -121,26 +122,32 @@ export class StorageDataClient<
               }
               case ValueCase.BYTES_VALUE: {
                 return resolve(
-                  new StorageGet.BytesResponse(value.getBytesValue_asU8())
+                  StorageGet.Success.ofBytes(value.getBytesValue_asU8())
                 );
               }
               case ValueCase.STRING_VALUE: {
                 return resolve(
-                  new StorageGet.StringResponse(value.getStringValue())
+                  StorageGet.Success.ofString(value.getStringValue())
                 );
               }
               case ValueCase.INTEGER_VALUE: {
                 return resolve(
-                  new StorageGet.IntegerResponse(value.getIntegerValue())
+                  StorageGet.Success.ofInt(value.getIntegerValue())
                 );
               }
               case ValueCase.DOUBLE_VALUE: {
                 return resolve(
-                  new StorageGet.DoubleResponse(value.getDoubleValue())
+                  StorageGet.Success.ofDouble(value.getDoubleValue())
                 );
               }
             }
           } else {
+            const sdkError = this.cacheServiceErrorMapper.convertError(err);
+            if (
+              sdkError.errorCode() === MomentoErrorCode.ITEM_NOT_FOUND_ERROR
+            ) {
+              return resolve(new StorageGet.Success(undefined));
+            }
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new StorageGet.Error(e),
@@ -153,10 +160,10 @@ export class StorageDataClient<
     });
   }
 
-  public async put(
+  public async putInt(
     storeName: string,
     key: string,
-    value: string | number | Uint8Array
+    value: number
   ): Promise<StoragePut.Response> {
     try {
       validateStoreName(storeName);
@@ -167,10 +174,87 @@ export class StorageDataClient<
       );
     }
     this.logger.trace(`Issuing 'put' request; key: ${key.toString()}`);
+    const storeValue = new _StoreValue();
+    storeValue.setIntegerValue(value);
     const result = await this.sendPut(
       storeName,
       convertToB64String(key),
-      value
+      storeValue
+    );
+    this.logger.trace(`'put' request result: ${result.toString()}`);
+    return result;
+  }
+
+  public async putDouble(
+    storeName: string,
+    key: string,
+    value: number
+  ): Promise<StoragePut.Response> {
+    try {
+      validateStoreName(storeName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new StoragePut.Error(err)
+      );
+    }
+    this.logger.trace(`Issuing 'put' request; key: ${key.toString()}`);
+    const storeValue = new _StoreValue();
+    storeValue.setDoubleValue(value);
+    const result = await this.sendPut(
+      storeName,
+      convertToB64String(key),
+      storeValue
+    );
+    this.logger.trace(`'put' request result: ${result.toString()}`);
+    return result;
+  }
+
+  public async putBytes(
+    storeName: string,
+    key: string,
+    value: Uint8Array
+  ): Promise<StoragePut.Response> {
+    try {
+      validateStoreName(storeName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new StoragePut.Error(err)
+      );
+    }
+    this.logger.trace(`Issuing 'put' request; key: ${key.toString()}`);
+    const storeValue = new _StoreValue();
+    storeValue.setBytesValue(value);
+    const result = await this.sendPut(
+      storeName,
+      convertToB64String(key),
+      storeValue
+    );
+    this.logger.trace(`'put' request result: ${result.toString()}`);
+    return result;
+  }
+
+  public async putString(
+    storeName: string,
+    key: string,
+    value: string
+  ): Promise<StoragePut.Response> {
+    try {
+      validateStoreName(storeName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new StoragePut.Error(err)
+      );
+    }
+    this.logger.trace(`Issuing 'put' request; key: ${key.toString()}`);
+    const storeValue = new _StoreValue();
+    storeValue.setStringValue(value);
+    const result = await this.sendPut(
+      storeName,
+      convertToB64String(key),
+      storeValue
     );
     this.logger.trace(`'put' request result: ${result.toString()}`);
     return result;
@@ -179,24 +263,11 @@ export class StorageDataClient<
   private async sendPut(
     storeName: string,
     key: string,
-    passedInVal: string | number | Uint8Array
+    storeValue: _StoreValue
   ): Promise<StoragePut.Response> {
     const request = new _StorePutRequest();
     request.setKey(key);
-
-    const value = new _StoreValue();
-    if (typeof passedInVal === 'string') {
-      value.setStringValue(passedInVal);
-    } else if (typeof passedInVal === 'number') {
-      if (Number.isInteger(passedInVal)) {
-        value.setIntegerValue(passedInVal);
-      } else {
-        value.setDoubleValue(passedInVal);
-      }
-    } else {
-      value.setBytesValue(passedInVal);
-    }
-    request.setValue(value);
+    request.setValue(storeValue);
     return await new Promise((resolve, reject) => {
       this.clientWrapper.put(
         request,

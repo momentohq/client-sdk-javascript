@@ -16,6 +16,7 @@
     "prebuild": "eslint . --ext .ts",
     "test": "jest --testPathIgnorePatterns auth-client.test.ts --maxWorkers 1",
     "integration-test-auth": "jest auth-client.test.ts --maxWorkers 1",
+    "integration-test-store": "jest storage.test.ts --maxWorkers 1",
     "unit-test": "jest unit",
     "integration-test-leaderboard": "jest leaderboard --maxWorkers 1",
     "integration-test": "jest integration --testPathIgnorePatterns \"auth-client.test.ts|leaderboard.test.ts\" --maxWorkers 1",

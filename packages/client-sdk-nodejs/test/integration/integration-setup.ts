@@ -25,7 +25,7 @@ export const deleteCacheIfExists = async (
 ) => {
   const deleteResponse = await momento.deleteCache(cacheName);
   if (deleteResponse instanceof DeleteCache.Error) {
-    if (deleteResponse.errorCode() !== MomentoErrorCode.NOT_FOUND_ERROR) {
+    if (deleteResponse.errorCode() !== MomentoErrorCode.CACHE_NOT_FOUND_ERROR) {
       throw deleteResponse.innerException();
     }
   }

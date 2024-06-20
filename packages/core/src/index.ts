@@ -120,7 +120,9 @@ import {
   TimeoutError,
   BadRequestError,
   PermissionError,
-  NotFoundError,
+  CacheNotFoundError,
+  ItemNotFoundError,
+  StoreNotFoundError,
   UnknownError,
 } from './errors';
 
@@ -309,6 +311,8 @@ export {
   TimeoutError,
   BadRequestError,
   PermissionError,
-  NotFoundError,
+  CacheNotFoundError,
+  ItemNotFoundError,
+  StoreNotFoundError,
   UnknownError,
 };

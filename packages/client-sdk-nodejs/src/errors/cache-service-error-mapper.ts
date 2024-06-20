@@ -1,7 +1,6 @@
 import {Status} from '@grpc/grpc-js/build/src/constants';
-import {ServiceError} from '@grpc/grpc-js';
+import {Metadata, ServiceError} from '@grpc/grpc-js';
 import {
-  NotFoundError,
   InternalServerError,
   InvalidArgumentError,
   PermissionError,
@@ -17,6 +16,11 @@ import {
   UnknownError,
   FailedPreconditionError,
 } from '../../src';
+import {
+  CacheNotFoundError,
+  ItemNotFoundError,
+  StoreNotFoundError,
+} from '@gomomento/sdk-core/dist/src/errors';
 import {
   ICacheServiceErrorMapper,
   ResolveOrRejectErrorOptions,
@@ -57,7 +61,7 @@ export class CacheServiceErrorMapper
     const errParams: [
       string,
       number | undefined,
-      object | undefined,
+      Metadata | undefined,
       string | undefined
     ] = [
       err?.message || 'Unable to process request',
@@ -76,8 +80,25 @@ export class CacheServiceErrorMapper
         return new UnknownServiceError(...errParams);
       case Status.UNAVAILABLE:
         return new ServerUnavailableError(...errParams);
-      case Status.NOT_FOUND:
-        return new NotFoundError(...errParams);
+      case Status.NOT_FOUND: {
+        let errCause = errParams[2]?.get('err')?.[0];
+        const errorMessage = errParams[0]?.toString();
+        const isStoreNotFound =
+          errorMessage?.includes('Store with name:') &&
+          errorMessage?.includes("doesn't exist");
+        // If errCause is not already set to 'store_not_found', check for store_not_found error
+        if (!errCause && isStoreNotFound) {
+          errCause = 'store_not_found';
+        }
+        switch (errCause) {
+          case 'element_not_found':
+            return new ItemNotFoundError(...errParams);
+          case 'store_not_found':
+            return new StoreNotFoundError(...errParams);
+          default:
+            return new CacheNotFoundError(...errParams);
+        }
+      }
       case Status.OUT_OF_RANGE:
       case Status.UNIMPLEMENTED:
         return new BadRequestError(...errParams);
