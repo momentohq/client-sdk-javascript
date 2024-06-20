@@ -1,11 +1,12 @@
 import {
   CredentialProvider,
   InvalidArgumentError,
+  MomentoErrorCode,
   MomentoLogger,
   MomentoLoggerFactory,
+  StorageDelete,
   StorageGet,
   StoragePut,
-  StorageDelete,
   UnknownError,
 } from '@gomomento/sdk-core';
 import {validateStoreName} from '@gomomento/sdk-core/dist/src/internal/utils';
@@ -148,22 +149,22 @@ export class StorageDataClient implements IStorageDataClient {
             switch (value) {
               case 'double_value': {
                 return resolve(
-                  new StorageGet.DoubleResponse(resp.value.double_value)
+                  StorageGet.Success.ofDouble(resp.value.double_value)
                 );
               }
               case 'string_value': {
                 return resolve(
-                  new StorageGet.StringResponse(resp.value.string_value)
+                  StorageGet.Success.ofString(resp.value.string_value)
                 );
               }
               case 'bytes_value': {
                 return resolve(
-                  new StorageGet.BytesResponse(resp.value.bytes_value)
+                  StorageGet.Success.ofBytes(resp.value.bytes_value)
                 );
               }
               case 'integer_value': {
                 return resolve(
-                  new StorageGet.IntegerResponse(resp.value.integer_value)
+                  StorageGet.Success.ofInt(resp.value.integer_value)
                 );
               }
               case 'none': {
@@ -177,6 +178,14 @@ export class StorageDataClient implements IStorageDataClient {
               }
             }
           } else {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            console.log(`ABOUT TO RESOLVE OR REJECT ERROR: ${err}`);
+            const sdkError = this.cacheServiceErrorMapper.convertError(err);
+            if (
+              sdkError.errorCode() === MomentoErrorCode.ITEM_NOT_FOUND_ERROR
+            ) {
+              return resolve(new StorageGet.Success(undefined));
+            }
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new StorageGet.Error(e),
@@ -189,10 +198,10 @@ export class StorageDataClient implements IStorageDataClient {
     });
   }
 
-  public async put(
+  public async putInt(
     storeName: string,
     key: string,
-    value: string | Uint8Array | number
+    value: number
   ): Promise<StoragePut.Response> {
     try {
       validateStoreName(storeName);
@@ -205,26 +214,87 @@ export class StorageDataClient implements IStorageDataClient {
     this.logger.trace(
       `Issuing 'put' request; store: ${storeName}, key: ${key}`
     );
-    return await this.sendPut(storeName, key, value);
+    const storeValue = new store._StoreValue({integer_value: value});
+    return await this.sendPut(storeName, key, storeValue);
+  }
+
+  public async putDouble(
+    storeName: string,
+    key: string,
+    value: number
+  ): Promise<StoragePut.Response> {
+    try {
+      validateStoreName(storeName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new StoragePut.Error(err)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'put' request; store: ${storeName}, key: ${key}`
+    );
+    const storeValue = new store._StoreValue({double_value: value});
+    return await this.sendPut(storeName, key, storeValue);
+  }
+
+  public async putString(
+    storeName: string,
+    key: string,
+    value: string
+  ): Promise<StoragePut.Response> {
+    try {
+      validateStoreName(storeName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new StoragePut.Error(err)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'put' request; store: ${storeName}, key: ${key}`
+    );
+    const storeValue = new store._StoreValue({string_value: value});
+    return await this.sendPut(storeName, key, storeValue);
+  }
+
+  public async putBytes(
+    storeName: string,
+    key: string,
+    value: Uint8Array
+  ): Promise<StoragePut.Response> {
+    try {
+      validateStoreName(storeName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new StoragePut.Error(err)
+      );
+    }
+    this.logger.trace(
+      `Issuing 'put' request; store: ${storeName}, key: ${key}`
+    );
+    const storeValue = new store._StoreValue({bytes_value: value});
+    return await this.sendPut(storeName, key, storeValue);
   }
 
   private async sendPut(
     storeName: string,
     key: string,
-    value: string | Uint8Array | number
+    storeValue: store._StoreValue
   ): Promise<StoragePut.Response> {
-    const storeValue = new store._StoreValue();
-    if (typeof value === 'string') {
-      storeValue.string_value = value;
-    } else if (typeof value === 'number') {
-      if (Number.isInteger(value)) {
-        storeValue.integer_value = value;
-      } else {
-        storeValue.double_value = value;
-      }
-    } else {
-      storeValue.bytes_value = value;
-    }
+    // const storeValue = new store._StoreValue();
+    // if (typeof value === 'string') {
+    //   storeValue.string_value = value;
+    // } else if (typeof value === 'number') {
+    //   if (Number.isInteger(value)) {
+    //     storeValue.integer_value = value;
+    //   } else {
+    //     storeValue.double_value = value;
+    //   }
+    // } else {
+    //   storeValue.bytes_value = value;
+    // }
     const request = new store._StorePutRequest({
       key: key,
       value: storeValue,

@@ -44,12 +44,36 @@ export abstract class AbstractStorageClient implements IStorageClient {
     return this.getNextDataClient().get(storeName, key);
   }
 
-  put(
+  putInt(
     storeName: string,
     key: string,
-    value: string | Uint8Array | number
+    value: number
   ): Promise<StoragePut.Response> {
-    return this.getNextDataClient().put(storeName, key, value);
+    return this.getNextDataClient().putInt(storeName, key, value);
+  }
+
+  putDouble(
+    storeName: string,
+    key: string,
+    value: number
+  ): Promise<StoragePut.Response> {
+    return this.getNextDataClient().putDouble(storeName, key, value);
+  }
+
+  putString(
+    storeName: string,
+    key: string,
+    value: string
+  ): Promise<StoragePut.Response> {
+    return this.getNextDataClient().putString(storeName, key, value);
+  }
+
+  putBytes(
+    storeName: string,
+    key: string,
+    value: Uint8Array
+  ): Promise<StoragePut.Response> {
+    return this.getNextDataClient().putBytes(storeName, key, value);
   }
 
   delete(storeName: string, key: string): Promise<StorageDelete.Response> {
