@@ -54,7 +54,6 @@ export function runStorageServiceTests(
 
       const deleteResponse = await storageClient.deleteStore(storeName);
       switch (deleteResponse.type) {
-        // w00t
         case DeleteStoreResponse.Success: {
           break;
         }

@@ -144,7 +144,8 @@ export class StorageDataClient<
           } else {
             const sdkError = this.cacheServiceErrorMapper.convertError(err);
             if (
-              sdkError.errorCode() === MomentoErrorCode.ITEM_NOT_FOUND_ERROR
+              sdkError.errorCode() ===
+              MomentoErrorCode.STORE_ITEM_NOT_FOUND_ERROR
             ) {
               return resolve(new StorageGet.Success(undefined));
             }

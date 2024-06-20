@@ -122,7 +122,7 @@ import {
   BadRequestError,
   PermissionError,
   CacheNotFoundError,
-  ItemNotFoundError,
+  StoreItemNotFoundError,
   StoreNotFoundError,
   UnknownError,
 } from './errors';
@@ -314,7 +314,7 @@ export {
   BadRequestError,
   PermissionError,
   CacheNotFoundError,
-  ItemNotFoundError,
+  StoreItemNotFoundError,
   StoreNotFoundError,
   UnknownError,
 };

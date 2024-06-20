@@ -21,7 +21,7 @@ import {
 import {
   CacheAlreadyExistsError,
   CacheNotFoundError,
-  ItemNotFoundError,
+  StoreItemNotFoundError,
   StoreAlreadyExistsError,
   StoreNotFoundError,
 } from '@gomomento/sdk-core';
@@ -81,6 +81,7 @@ export class CacheServiceErrorMapper
         return new ServerUnavailableError(...errParams);
       case StatusCode.NOT_FOUND: {
         let errCause = '';
+        // TODO: Remove this once the error message is standardized on the server side
         const errorMessage = errParams[0]?.toString();
         const isStoreNotFound =
           errorMessage?.includes('Store with name:') &&
@@ -94,7 +95,7 @@ export class CacheServiceErrorMapper
         }
         switch (errCause) {
           case 'element_not_found':
-            return new ItemNotFoundError(...errParams);
+            return new StoreItemNotFoundError(...errParams);
           case 'store_not_found':
             return new StoreNotFoundError(...errParams);
           default:
@@ -118,6 +119,7 @@ export class CacheServiceErrorMapper
         return new LimitExceededError(...errParams);
       case StatusCode.ALREADY_EXISTS: {
         let errCause = '';
+        // TODO: Remove this once the error message is standardized on the server side
         const errorMessage = errParams[0]?.toString();
         const isStoreAlreadyExists =
           errorMessage?.includes('Store with name:') &&

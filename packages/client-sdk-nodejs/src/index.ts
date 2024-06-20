@@ -128,7 +128,7 @@ import {
   PermissionError,
   CacheNotFoundError,
   StoreNotFoundError,
-  ItemNotFoundError,
+  StoreItemNotFoundError,
   UnknownError,
   MomentoLogger,
   MomentoLoggerFactory,
@@ -444,7 +444,7 @@ export {
   PermissionError,
   CacheNotFoundError,
   StoreNotFoundError,
-  ItemNotFoundError,
+  StoreItemNotFoundError,
   UnknownError,
   // Logging
   MomentoLogger,

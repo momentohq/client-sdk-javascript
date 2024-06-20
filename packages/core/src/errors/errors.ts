@@ -16,7 +16,7 @@ export enum MomentoErrorCode {
   // Store with specified name doesn't exist
   STORE_NOT_FOUND_ERROR = 'STORE_NOT_FOUND_ERROR',
   // Item with specified key doesn't exist
-  ITEM_NOT_FOUND_ERROR = 'ITEM_NOT_FOUND_ERROR',
+  STORE_ITEM_NOT_FOUND_ERROR = 'STORE_ITEM_NOT_FOUND_ERROR',
   // An unexpected error occurred while trying to fulfill the request
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
   // Insufficient permissions to perform operation
@@ -204,11 +204,11 @@ export class StoreNotFoundError extends SdkError {
 }
 
 /**
- * Error that occurs when trying to get an item that doesn't exist. To resolve, make sure that the item you are trying
+ * Error that occurs when trying to get an item from store that doesn't exist. To resolve, make sure that the item you are trying
  * to get exists. If it doesn't create it first and then try again.
  */
-export class ItemNotFoundError extends SdkError {
-  override _errorCode = MomentoErrorCode.ITEM_NOT_FOUND_ERROR;
+export class StoreItemNotFoundError extends SdkError {
+  override _errorCode = MomentoErrorCode.STORE_ITEM_NOT_FOUND_ERROR;
   override _messageWrapper = 'An item with the specified key does not exist';
 }
 
