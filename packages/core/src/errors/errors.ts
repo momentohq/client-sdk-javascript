@@ -4,9 +4,19 @@ export enum MomentoErrorCode {
   // Service returned an unknown response
   UNKNOWN_SERVICE_ERROR = 'UNKNOWN_SERVICE_ERROR',
   // Cache with specified name already exists
+  CACHE_ALREADY_EXISTS_ERROR = 'ALREADY_EXISTS_ERROR',
+  /** @deprecated use CACHE_ALREADY_EXISTS_ERROR instead */
   ALREADY_EXISTS_ERROR = 'ALREADY_EXISTS_ERROR',
+  // Store with specified name already exists
+  STORE_ALREADY_EXISTS_ERROR = 'ALREADY_EXISTS_ERROR',
   // Cache with specified name doesn't exist
+  CACHE_NOT_FOUND_ERROR = 'NOT_FOUND_ERROR',
+  /** @deprecated use CACHE_NOT_FOUND_ERROR instead */
   NOT_FOUND_ERROR = 'NOT_FOUND_ERROR',
+  // Store with specified name doesn't exist
+  STORE_NOT_FOUND_ERROR = 'STORE_NOT_FOUND_ERROR',
+  // Item with specified key doesn't exist
+  STORE_ITEM_NOT_FOUND_ERROR = 'STORE_ITEM_NOT_FOUND_ERROR',
   // An unexpected error occurred while trying to fulfill the request
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
   // Insufficient permissions to perform operation
@@ -87,10 +97,21 @@ export abstract class SdkError extends Error {
  * either delete the existing cache and make a new one, or change the name of the cache you are trying to create to
  * one that doesn't already exist
  */
-export class AlreadyExistsError extends SdkError {
-  override _errorCode = MomentoErrorCode.ALREADY_EXISTS_ERROR;
+export class CacheAlreadyExistsError extends SdkError {
+  override _errorCode = MomentoErrorCode.CACHE_ALREADY_EXISTS_ERROR;
   override _messageWrapper =
     'A cache with the specified name already exists.  To resolve this error, either delete the existing cache and make a new one, or use a different name';
+}
+
+/**
+ * Error that occurs when trying to create a store with the same name as an existing cache. To resolve this error,
+ * either delete the existing store and make a new one, or change the name of the store you are trying to create to
+ * one that doesn't already exist
+ */
+export class StoreAlreadyExistsError extends SdkError {
+  override _errorCode = MomentoErrorCode.STORE_ALREADY_EXISTS_ERROR;
+  override _messageWrapper =
+    'A store with the specified name already exists.  To resolve this error, either delete the existing store and make a new one, or use a different name';
 }
 
 /**
@@ -166,10 +187,29 @@ export class LimitExceededError extends SdkError {
  * Error that occurs when trying to get a cache that doesn't exist. To resolve, make sure that the cache you are trying
  * to get exists. If it doesn't create it first and then try again
  */
-export class NotFoundError extends SdkError {
-  override _errorCode = MomentoErrorCode.NOT_FOUND_ERROR;
+export class CacheNotFoundError extends SdkError {
+  override _errorCode = MomentoErrorCode.CACHE_NOT_FOUND_ERROR;
   override _messageWrapper =
     'A cache with the specified name does not exist.  To resolve this error, make sure you have created the cache before attempting to use it';
+}
+
+/**
+ * Error that occurs when trying to get a store that doesn't exist. To resolve, make sure that the store you are trying
+ * to get exists. If it doesn't create it first and then try again.
+ */
+export class StoreNotFoundError extends SdkError {
+  override _errorCode = MomentoErrorCode.STORE_NOT_FOUND_ERROR;
+  override _messageWrapper =
+    'A store with the specified name does not exist.  To resolve this error, make sure you have created the store before attempting to use it';
+}
+
+/**
+ * Error that occurs when trying to get an item from store that doesn't exist. To resolve, make sure that the item you are trying
+ * to get exists. If it doesn't create it first and then try again.
+ */
+export class StoreItemNotFoundError extends SdkError {
+  override _errorCode = MomentoErrorCode.STORE_ITEM_NOT_FOUND_ERROR;
+  override _messageWrapper = 'An item with the specified key does not exist';
 }
 
 /**

@@ -37,6 +37,10 @@ export function testCacheName(): string {
   return process.env.TEST_CACHE_NAME || `js-integration-test-default-${v4()}`;
 }
 
+export function testStoreName(): string {
+  return process.env.TEST_STORE_NAME || `js-integration-test-default-${v4()}`;
+}
+
 /**
  * Returns a unique index name for use in integration tests.
  * @param meaningfulIdentifier Required suffix to identify the test for debugging purposes.
@@ -74,7 +78,7 @@ export const deleteCacheIfExists = async (
   }
   const deleteResponse = await client.deleteCache(cacheName);
   if (deleteResponse instanceof DeleteCache.Error) {
-    if (deleteResponse.errorCode() !== MomentoErrorCode.NOT_FOUND_ERROR) {
+    if (deleteResponse.errorCode() !== MomentoErrorCode.CACHE_NOT_FOUND_ERROR) {
       throw deleteResponse.innerException();
     }
   }

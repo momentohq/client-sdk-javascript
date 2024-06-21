@@ -2,6 +2,12 @@ import {InvalidArgumentError} from '../../errors';
 import {ExpiresIn} from '../../utils';
 import {decodeFromBase64, encodeToBase64} from './string';
 
+export function validateStoreName(name: string) {
+  if (isEmpty(name)) {
+    throw new InvalidArgumentError('store name must not be empty');
+  }
+}
+
 export function validateCacheName(name: string) {
   if (isEmpty(name)) {
     throw new InvalidArgumentError('cache name must not be empty');

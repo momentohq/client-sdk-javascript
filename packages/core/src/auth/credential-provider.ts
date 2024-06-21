@@ -55,7 +55,7 @@ export abstract class CredentialProvider {
   abstract getControlEndpoint(): string;
 
   /**
-   * @returns {boolean} true if connecting to the control plane endpoint connection without TLS; false if using TLS
+   * @returns {boolean} true if connecting to the control plane endpoint connection with TLS; false if not using TLS
    */
   abstract isControlEndpointSecure(): boolean;
 
@@ -65,9 +65,19 @@ export abstract class CredentialProvider {
   abstract getCacheEndpoint(): string;
 
   /**
-   * @returns {boolean} true if connecting to the data plane endpoint connection without TLS; false if using TLS
+   * @returns {boolean} true if connecting to the data plane endpoint connection with TLS; false if not using TLS
    */
   abstract isCacheEndpointSecure(): boolean;
+
+  /**
+   * @returns {string} The host which the Momento client will connect to for Momento storage operations
+   */
+  abstract getStorageEndpoint(): string;
+
+  /**
+   * @returns {boolean} true if connecting to the storage endpoint connection with TLS; false if not using TLS
+   */
+  abstract isStorageEndpointSecure(): boolean;
 
   /**
    * @returns {string} The host which the Momento client will connect to for Momento token operations
@@ -75,7 +85,7 @@ export abstract class CredentialProvider {
   abstract getTokenEndpoint(): string;
 
   /**
-   * @returns {boolean} true if connecting to the token endpoint connection without TLS; false if using TLS
+   * @returns {boolean} true if connecting to the token endpoint connection with TLS; false if not using TLS
    */
   abstract isTokenEndpointSecure(): boolean;
 
@@ -119,6 +129,10 @@ abstract class CredentialProviderBase implements CredentialProvider {
   abstract getControlEndpoint(): string;
 
   abstract isControlEndpointSecure(): boolean;
+
+  abstract getStorageEndpoint(): string;
+
+  abstract isStorageEndpointSecure(): boolean;
 
   abstract getTokenEndpoint(): string;
 
@@ -201,6 +215,11 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
           'Malformed token; unable to determine token endpoint.  Depending on the type of token you are using, you may need to specify the tokenEndpoint explicitly.'
         );
       }
+      if (decodedToken.storageEndpoint === undefined) {
+        throw new Error(
+          'Malformed token; unable to determine storage endpoint.  Depending on the type of token you are using, you may need to specify the storageEndpoint explicitly.'
+        );
+      }
       this.allEndpoints = {
         controlEndpoint: {
           endpoint: decodedToken.controlEndpoint,
@@ -210,6 +229,9 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
         },
         tokenEndpoint: {
           endpoint: decodedToken.tokenEndpoint,
+        },
+        storageEndpoint: {
+          endpoint: decodedToken.storageEndpoint,
         },
       };
     } else if (isAllEndpoints(props.endpointOverrides)) {
@@ -265,6 +287,17 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
     return this.allEndpoints.tokenEndpoint.secureConnection;
   }
 
+  getStorageEndpoint(): string {
+    return this.allEndpoints.storageEndpoint.endpoint;
+  }
+
+  isStorageEndpointSecure(): boolean {
+    if (this.allEndpoints.storageEndpoint.secureConnection === undefined) {
+      return true;
+    }
+    return this.allEndpoints.storageEndpoint.secureConnection;
+  }
+
   areEndpointsOverridden(): boolean {
     return this.endpointsOverridden;
   }
@@ -280,6 +313,7 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
         cacheEndpoint: momentoLocalOverride,
         controlEndpoint: momentoLocalOverride,
         tokenEndpoint: momentoLocalOverride,
+        storageEndpoint: momentoLocalOverride,
       },
     });
   }
