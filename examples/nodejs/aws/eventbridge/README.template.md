@@ -12,6 +12,10 @@ for a given location is updated, an event is sent to EventBridge by DynamoDB Str
 to both a Momento Topic (simulating real-time notifications) and to a Momento Cache (so that subsequent requests can read
 the data directly from the cache, to reduce load on the database and improve performance).
 
+## **High-Level Architecture**
+
+![Momento-EventBridge Architecture](./momento-eventbridge.drawio.png)
+
 ## **Prerequisites:**
 
 - Momento Cache: You will need a cache named `momento-eventbridge-cache`. You can create one using the [momento console](https://console.gomomento.com/).
