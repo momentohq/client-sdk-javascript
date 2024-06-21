@@ -36,7 +36,7 @@ export function runCreateDeleteListCacheTests(cacheClient: ICacheClient) {
       }, `expected ERROR but got ${deleteResponse.toString()}`);
       if (deleteResponse instanceof DeleteCache.Error) {
         expect(deleteResponse.errorCode()).toEqual(
-          MomentoErrorCode.NOT_FOUND_ERROR
+          MomentoErrorCode.CACHE_NOT_FOUND_ERROR
         );
       }
     });
@@ -131,7 +131,7 @@ export function runCreateDeleteListCacheTests(cacheClient: ICacheClient) {
       }, `expected ERROR but got ${flushResponse.toString()}`);
       if (flushResponse instanceof CacheFlush.Error) {
         expect(flushResponse.errorCode()).toEqual(
-          MomentoErrorCode.NOT_FOUND_ERROR
+          MomentoErrorCode.CACHE_NOT_FOUND_ERROR
         );
       }
     });

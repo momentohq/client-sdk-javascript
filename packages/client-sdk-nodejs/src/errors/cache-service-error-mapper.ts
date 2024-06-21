@@ -1,7 +1,6 @@
 import {Status} from '@grpc/grpc-js/build/src/constants';
-import {ServiceError} from '@grpc/grpc-js';
+import {Metadata, ServiceError} from '@grpc/grpc-js';
 import {
-  NotFoundError,
   InternalServerError,
   InvalidArgumentError,
   PermissionError,
@@ -10,7 +9,6 @@ import {
   TimeoutError,
   AuthenticationError,
   LimitExceededError,
-  AlreadyExistsError,
   SdkError,
   UnknownServiceError,
   ServerUnavailableError,
@@ -18,9 +16,18 @@ import {
   FailedPreconditionError,
 } from '../../src';
 import {
+  CacheNotFoundError,
+  StoreItemNotFoundError,
+  StoreNotFoundError,
+} from '@gomomento/sdk-core/dist/src/errors';
+import {
   ICacheServiceErrorMapper,
   ResolveOrRejectErrorOptions,
 } from '@gomomento/sdk-core/dist/src/errors/ICacheServiceErrorMapper';
+import {
+  CacheAlreadyExistsError,
+  StoreAlreadyExistsError,
+} from '@gomomento/sdk-core';
 
 export class CacheServiceErrorMapper
   implements ICacheServiceErrorMapper<ServiceError>
@@ -57,7 +64,7 @@ export class CacheServiceErrorMapper
     const errParams: [
       string,
       number | undefined,
-      object | undefined,
+      Metadata | undefined,
       string | undefined
     ] = [
       err?.message || 'Unable to process request',
@@ -76,8 +83,26 @@ export class CacheServiceErrorMapper
         return new UnknownServiceError(...errParams);
       case Status.UNAVAILABLE:
         return new ServerUnavailableError(...errParams);
-      case Status.NOT_FOUND:
-        return new NotFoundError(...errParams);
+      case Status.NOT_FOUND: {
+        let errCause = errParams[2]?.get('err')?.[0];
+        // TODO: Remove this once the error message is standardized on the server side
+        const errorMessage = errParams[0]?.toString();
+        const isStoreNotFound =
+          errorMessage?.includes('Store with name:') &&
+          errorMessage?.includes("doesn't exist");
+        // If errCause is not already set to 'store_not_found', check for store_not_found error
+        if (!errCause && isStoreNotFound) {
+          errCause = 'store_not_found';
+        }
+        switch (errCause) {
+          case 'element_not_found':
+            return new StoreItemNotFoundError(...errParams);
+          case 'store_not_found':
+            return new StoreNotFoundError(...errParams);
+          default:
+            return new CacheNotFoundError(...errParams);
+        }
+      }
       case Status.OUT_OF_RANGE:
       case Status.UNIMPLEMENTED:
         return new BadRequestError(...errParams);
@@ -93,8 +118,24 @@ export class CacheServiceErrorMapper
         return new AuthenticationError(...errParams);
       case Status.RESOURCE_EXHAUSTED:
         return new LimitExceededError(...errParams);
-      case Status.ALREADY_EXISTS:
-        return new AlreadyExistsError(...errParams);
+      case Status.ALREADY_EXISTS: {
+        let errCause = errParams[2]?.get('err')?.[0];
+        // TODO: Remove this once the error message is standardized on the server side
+        const errorMessage = errParams[0]?.toString();
+        const isStoreAlreadyExists =
+          errorMessage?.includes('Store with name:') &&
+          errorMessage?.includes('already exists');
+        // If errCause is not already set to 'store_already_exists', check for store_already_exists error
+        if (!errCause && isStoreAlreadyExists) {
+          errCause = 'store_already_exists';
+        }
+        switch (errCause) {
+          case 'store_already_exists':
+            return new StoreAlreadyExistsError(...errParams);
+          default:
+            return new CacheAlreadyExistsError(...errParams);
+        }
+      }
       default:
         return new UnknownError(...errParams);
     }

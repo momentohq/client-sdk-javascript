@@ -36,6 +36,14 @@ export function createCallMetadata(
   return {cache: cacheName, deadline: deadline.toString()};
 }
 
+export function createStorageMetadata(
+  storeName: string,
+  timeoutMillis: number
+): {store: string; deadline: string} {
+  const deadline = Date.now() + timeoutMillis;
+  return {store: storeName, deadline: deadline.toString()};
+}
+
 export function getWebControlEndpoint(
   credentialProvider: CredentialProvider
 ): string {
@@ -52,6 +60,15 @@ export function getWebCacheEndpoint(
     return withProtocolPrefix(credentialProvider.getCacheEndpoint());
   }
   return withProtocolPrefix(`web.${credentialProvider.getCacheEndpoint()}`);
+}
+
+export function getWebStorageEndpoint(
+  credentialProvider: CredentialProvider
+): string {
+  if (credentialProvider.areEndpointsOverridden()) {
+    return withProtocolPrefix(credentialProvider.getStorageEndpoint());
+  }
+  return withProtocolPrefix(`web.${credentialProvider.getStorageEndpoint()}`);
 }
 
 export function getWebTokenEndpoint(

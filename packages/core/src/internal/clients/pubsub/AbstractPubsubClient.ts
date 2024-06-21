@@ -220,7 +220,7 @@ export abstract class AbstractPubsubClient<TGrpcError>
     // Another special case is when the cache is not found.
     // This happens here if the user deletes the cache in the middle of
     // a subscription.
-    if (momentoError.errorCode() === MomentoErrorCode.NOT_FOUND_ERROR) {
+    if (momentoError.errorCode() === MomentoErrorCode.CACHE_NOT_FOUND_ERROR) {
       this.logger.trace(
         'Stream ended due to cache not found error on topic: %s',
         options.topicName

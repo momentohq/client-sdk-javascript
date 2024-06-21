@@ -9,6 +9,7 @@ import {
   DeleteCache,
   CredentialProvider,
   ReadConcern,
+  IStorageClient,
 } from '@gomomento/sdk-core';
 import {
   CacheClient,
@@ -18,6 +19,8 @@ import {
   TopicConfigurations,
   PreviewLeaderboardClient,
   LeaderboardConfigurations,
+  StorageConfigurations,
+  PreviewStorageClient,
 } from '../../src';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
@@ -39,6 +42,9 @@ export function credsProvider(): CredentialProvider {
             endpoint: 'https://localhost:9001',
           },
           tokenEndpoint: {
+            endpoint: 'https://localhost:9001',
+          },
+          storageEndpoint: {
             endpoint: 'https://localhost:9001',
           },
         },
@@ -70,6 +76,10 @@ function sessionCredsProvider(): CredentialProvider {
         tokenEndpoint: {
           endpoint: credsProvider().getTokenEndpoint(),
           secureConnection: credsProvider().isTokenEndpointSecure(),
+        },
+        storageEndpoint: {
+          endpoint: credsProvider().getStorageEndpoint(),
+          secureConnection: credsProvider().isStorageEndpointSecure(),
         },
       },
     });
@@ -108,6 +118,13 @@ function momentoClientForTestingWithSessionToken(): CacheClient {
 function momentoTopicClientForTesting(): TopicClient {
   return new TopicClient({
     configuration: TopicConfigurations.Default.latest(),
+    credentialProvider: credsProvider(),
+  });
+}
+
+function momentoStorageClientForTesting(): PreviewStorageClient {
+  return new PreviewStorageClient({
+    configuration: StorageConfigurations.Default.latest(),
     credentialProvider: credsProvider(),
   });
 }
@@ -212,6 +229,18 @@ export function SetupTopicIntegrationTest(): {
     topicClientWithThrowOnErrors,
     cacheClient: cacheClient,
     integrationTestCacheName: integrationTestCacheName,
+  };
+}
+
+export function SetupStorageIntegrationTest(): {
+  storageClient: IStorageClient;
+  integrationTestStoreName: string;
+} {
+  const {integrationTestCacheName} = SetupIntegrationTest();
+  const storageClient = momentoStorageClientForTesting();
+  return {
+    storageClient,
+    integrationTestStoreName: integrationTestCacheName,
   };
 }
 

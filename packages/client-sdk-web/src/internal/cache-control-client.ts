@@ -7,9 +7,10 @@ import {
   MomentoLogger,
   CacheFlush,
   CacheInfo,
+  MomentoErrorCode,
 } from '..';
 import {Configuration} from '../config/configuration';
-import {Request, StatusCode, UnaryResponse} from 'grpc-web';
+import {Request, UnaryResponse} from 'grpc-web';
 import {
   _CreateCacheRequest,
   _DeleteCacheRequest,
@@ -93,7 +94,11 @@ export class CacheControlClient<
         this.clientMetadataProvider.createClientMetadata(),
         (err, _resp) => {
           if (err) {
-            if (err.code === StatusCode.ALREADY_EXISTS) {
+            const sdkError = this.cacheServiceErrorMapper.convertError(err);
+            if (
+              sdkError.errorCode() ===
+              MomentoErrorCode.CACHE_ALREADY_EXISTS_ERROR
+            ) {
               resolve(new CreateCache.AlreadyExists());
             } else {
               this.cacheServiceErrorMapper.resolveOrRejectError({

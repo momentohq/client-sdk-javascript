@@ -2,9 +2,11 @@ import {CacheClient} from './cache-client';
 import {AuthClient} from './auth-client';
 import {TopicClient} from './topic-client';
 import {PreviewLeaderboardClient} from './preview-leaderboard-client';
+import {PreviewStorageClient} from './preview-storage-client';
 import * as Configurations from './config/configurations';
 import * as TopicConfigurations from './config/topic-configurations';
 import * as LeaderboardConfigurations from './config/leaderboard-configurations';
+import * as StorageConfigurations from './config/storage-configurations';
 
 // Cache Client Response Types
 import * as CacheGet from '@gomomento/sdk-core/dist/src/messages/responses/cache-get';
@@ -91,7 +93,8 @@ import {
   EnvMomentoTokenProvider,
   MomentoErrorCode,
   SdkError,
-  AlreadyExistsError,
+  CacheAlreadyExistsError,
+  StoreAlreadyExistsError,
   AuthenticationError,
   CancelledError,
   FailedPreconditionError,
@@ -103,7 +106,9 @@ import {
   TimeoutError,
   BadRequestError,
   PermissionError,
-  NotFoundError,
+  CacheNotFoundError,
+  StoreNotFoundError,
+  StoreItemNotFoundError,
   UnknownError,
   MomentoLogger,
   MomentoLoggerFactory,
@@ -145,6 +150,7 @@ import {
   RotateWebhookSecret,
   WebhookDestinationType,
   ReadConcern,
+  StoreInfo,
 } from '@gomomento/sdk-core';
 
 import {Configuration} from './config/configuration';
@@ -158,6 +164,8 @@ import {
   LeaderboardClientConfiguration,
   LeaderboardConfiguration,
 } from './config/leaderboard-configuration';
+
+export * from '@gomomento/sdk-core/dist/src/messages/responses/storage';
 
 export {
   DefaultMomentoLoggerFactory,
@@ -293,7 +301,8 @@ export {
   ExpiresIn,
   MomentoErrorCode,
   SdkError,
-  AlreadyExistsError,
+  CacheAlreadyExistsError,
+  StoreAlreadyExistsError,
   AuthenticationError,
   CancelledError,
   FailedPreconditionError,
@@ -305,7 +314,9 @@ export {
   TimeoutError,
   BadRequestError,
   PermissionError,
-  NotFoundError,
+  CacheNotFoundError,
+  StoreNotFoundError,
+  StoreItemNotFoundError,
   UnknownError,
   MomentoLogger,
   MomentoLoggerFactory,
@@ -323,4 +334,8 @@ export {
   RotateWebhookSecret,
   WebhookDestinationType,
   ReadConcern,
+  // Storage
+  StoreInfo,
+  StorageConfigurations,
+  PreviewStorageClient,
 };
