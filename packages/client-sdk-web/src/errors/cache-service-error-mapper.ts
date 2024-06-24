@@ -80,7 +80,19 @@ export class CacheServiceErrorMapper
       case StatusCode.UNAVAILABLE:
         return new ServerUnavailableError(...errParams);
       case StatusCode.NOT_FOUND: {
-        const errCause = errParams[2]?.['err']?.[0];
+        let errCause = errParams[2]?.['err']?.[0];
+        // TODO: Remove this once the error message is standardized on the server side
+        const errorMessage = errParams[0]?.toString();
+        const isStoreNotFound =
+          errorMessage?.includes('Store with name:') &&
+          errorMessage?.includes("doesn't exist");
+        if (isStoreNotFound) {
+          errCause = 'store_not_found';
+        }
+        const isElementNotFound = errorMessage?.includes('Element not found');
+        if (isElementNotFound) {
+          errCause = 'element_not_found';
+        }
         switch (errCause) {
           case 'item_not_found':
             return new StoreItemNotFoundError(...errParams);
