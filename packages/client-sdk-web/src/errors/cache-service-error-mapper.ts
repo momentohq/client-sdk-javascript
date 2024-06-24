@@ -82,7 +82,7 @@ export class CacheServiceErrorMapper
       case StatusCode.NOT_FOUND: {
         const errCause = errParams[2]?.['err']?.[0];
         switch (errCause) {
-          case 'element_not_found':
+          case 'item_not_found':
             return new StoreItemNotFoundError(...errParams);
           case 'store_not_found':
             return new StoreNotFoundError(...errParams);
