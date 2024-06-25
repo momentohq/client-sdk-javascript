@@ -11,7 +11,6 @@ const config: Config = {
   testTimeout: 120000,
   reporters: ["jest-ci-spec-reporter"],
   detectOpenHandles: true,
-  detectLeaks: true,
   logHeapUsage: true,
 };
 
