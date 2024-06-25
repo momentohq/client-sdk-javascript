@@ -13,7 +13,3 @@ ${ROOT_DIR}/scripts/build-and-test-package.sh "client-sdk-nodejs"
 ${ROOT_DIR}/scripts/build-and-test-package.sh "client-sdk-nodejs-compression"
 ${ROOT_DIR}/scripts/build-and-test-package.sh "client-sdk-nodejs-compression-zstd"
 ${ROOT_DIR}/scripts/build-and-test-package.sh "client-sdk-web"
-
-./test-leaderboard-packages.sh
-./test-auth-packages.sh
-./test-store-packages.sh

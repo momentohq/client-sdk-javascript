@@ -384,6 +384,11 @@ jobs:
           node -v
           ./scripts/test-leaderboard-packages.sh
 
+      - name: Run storage tests for packages
+        run: |
+          node -v
+          ./scripts/test-store-packages.sh
+
   test-examples:
     strategy:
       matrix:
