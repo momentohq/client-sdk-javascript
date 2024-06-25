@@ -12,6 +12,7 @@ const config: Config = {
   reporters: ["jest-ci-spec-reporter"],
   detectOpenHandles: true,
   detectLeaks: true,
+  logHeapUsage: true,
 };
 
 export default config;
