@@ -34,21 +34,11 @@ export function isLocalhostDevelopmentMode(): boolean {
   return useLocalhost !== undefined;
 }
 export function testCacheName(): string {
-  return process.env.TEST_CACHE_NAME || `js-integration-test-default-${v4()}`;
+  return `js-integration-test-default-${v4()}`;
 }
 
 export function testStoreName(): string {
-  return process.env.TEST_STORE_NAME || `js-integration-test-default-${v4()}`;
-}
-
-/**
- * Returns a unique index name for use in integration tests.
- * @param meaningfulIdentifier Required suffix to identify the test for debugging purposes.
- * Should be a string that describes the test uniquely.
- * @returns {string} A unique index name.
- */
-export function testIndexName(meaningfulIdentifier: string): string {
-  return `js-integration-test-${v4()}-${meaningfulIdentifier}`;
+  return `js-integration-test-default-${v4()}`;
 }
 
 export function testWebhook(cache?: string): Webhook {
