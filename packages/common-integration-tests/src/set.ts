@@ -149,6 +149,40 @@ export function runSetTests(
       );
       expect(response).toBeInstanceOf(CacheSetContainsElement.Miss);
     });
+
+    it("should be a miss on a set that exists but doesn't contain the element", async () => {
+      const setName = v4();
+      const addResponse = await cacheClient.setAddElement(
+        integrationTestCacheName,
+        setName,
+        'bar'
+      );
+      expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
+
+      const response = await cacheClient.setContainsElement(
+        integrationTestCacheName,
+        setName,
+        'foo'
+      );
+      expect(response).toBeInstanceOf(CacheSetContainsElement.Miss);
+    });
+
+    it('should be a hit on a set that exists and does contain the element', async () => {
+      const setName = v4();
+      const addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
+        setName,
+        ['foo', 'bar', 'baz']
+      );
+      expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
+
+      const response = await cacheClient.setContainsElement(
+        integrationTestCacheName,
+        setName,
+        'foo'
+      );
+      expect(response).toBeInstanceOf(CacheSetContainsElement.Hit);
+    });
   });
 
   describe('#removeElement', () => {
