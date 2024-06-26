@@ -36,7 +36,7 @@ export interface IResponseSubscription {
 }
 
 export abstract class BaseResponseError extends ResponseBase {
-  private readonly _innerException: SdkError;
+  protected readonly _innerException: SdkError;
 
   protected constructor(innerException: SdkError) {
     super();
