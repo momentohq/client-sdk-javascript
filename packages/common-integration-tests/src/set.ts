@@ -9,6 +9,7 @@ import {
   CacheSetSample,
   CollectionTtl,
   MomentoErrorCode,
+  CacheSetContainsElement,
 } from '@gomomento/sdk-core';
 import {
   ValidateCacheProps,
@@ -146,7 +147,7 @@ export function runSetTests(
         setName,
         'foo'
       );
-      expect(response).toBeInstanceOf(CacheSetFetch.Miss);
+      expect(response).toBeInstanceOf(CacheSetContainsElement.Miss);
     });
   });
 
