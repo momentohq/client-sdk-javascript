@@ -26,6 +26,7 @@ export class StorageControlClient {
     const headers = [
       new Header('Authorization', props.credentialProvider.getAuthToken()),
       new Header('Agent', `nodejs:store:${version}`),
+      new Header('Runtime-Version', `nodejs:${process.versions.node}`),
     ];
     this.interceptors = [
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
