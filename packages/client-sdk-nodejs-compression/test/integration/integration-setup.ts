@@ -26,9 +26,7 @@ export interface CacheClientPropsWithConfig extends CacheClientProps {
 }
 
 function testCacheName(): string {
-  return (
-    process.env.TEST_CACHE_NAME || `js-integration-test-compression-${v4()}`
-  );
+  return `js-integration-test-compression-${v4()}`;
 }
 
 let _credsProvider: CredentialProvider | undefined = undefined;
