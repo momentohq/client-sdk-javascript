@@ -174,7 +174,7 @@ export function runSetTests(
         setName,
         ['foo', 'bar', 'baz']
       );
-      expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
+      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
 
       const response = await cacheClient.setContainsElement(
         integrationTestCacheName,
