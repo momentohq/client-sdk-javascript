@@ -7,6 +7,7 @@ import {
   CacheSetFetch,
   CacheSetAddElements,
   CacheSetAddElement,
+  CacheSetContainsElement,
   CacheSetRemoveElements,
   CacheSetRemoveElement,
   CacheListFetch,
@@ -201,6 +202,11 @@ export interface ICacheClient extends IControlClient, IPingClient {
     elements: string[] | Uint8Array[],
     options?: SetAddElementsOptions
   ): Promise<CacheSetAddElements.Response>;
+  setContainsElement(
+    cacheName: string,
+    setName: string,
+    element: string | Uint8Array
+  ): Promise<CacheSetContainsElement.Response>;
   setRemoveElement(
     cacheName: string,
     setName: string,

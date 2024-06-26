@@ -29,6 +29,7 @@ import * as CreateCache from '@gomomento/sdk-core/dist/src/messages/responses/cr
 import * as DeleteCache from '@gomomento/sdk-core/dist/src/messages/responses/delete-cache';
 import * as ListCaches from '@gomomento/sdk-core/dist/src/messages/responses/list-caches';
 import * as CacheSetFetch from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-fetch';
+import * as CacheSetContainsElement from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-contains-element';
 import * as CacheDictionaryFetch from '@gomomento/sdk-core/dist/src/messages/responses/cache-dictionary-fetch';
 import * as CacheDictionarySetField from '@gomomento/sdk-core/dist/src/messages/responses/cache-dictionary-set-field';
 import * as CacheDictionarySetFields from '@gomomento/sdk-core/dist/src/messages/responses/cache-dictionary-set-fields';
@@ -335,6 +336,7 @@ export {
   DeleteCache,
   ListCaches,
   CacheIncrement,
+  CacheSetContainsElement,
   CacheSetFetch,
   CacheDictionaryFetch,
   CacheDictionarySetField,

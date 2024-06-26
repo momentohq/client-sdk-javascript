@@ -138,6 +138,18 @@ export function runSetTests(
     });
   });
 
+  describe('#containsElement', () => {
+    it('should be a miss on a set that does not exist', async () => {
+      const setName = v4();
+      const response = await cacheClient.setContainsElement(
+        integrationTestCacheName,
+        setName,
+        'foo'
+      );
+      expect(response).toBeInstanceOf(CacheSetFetch.Miss);
+    });
+  });
+
   describe('#removeElement', () => {
     it('should succeed for removeElement with a byte array happy path', async () => {
       const setName = v4();

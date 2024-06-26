@@ -46,6 +46,7 @@ import {
   CacheSetAddElements,
   CacheSetBatch,
   CacheSetFetch,
+  CacheSetContainsElement,
   CacheSetIfAbsent,
   CacheSetIfAbsentOrEqual,
   CacheSetIfEqual,
@@ -596,6 +597,81 @@ export class CacheDataClient implements IDataClient {
             });
           } else {
             resolve(new CacheSetAddElements.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async setContainsElement(
+    cacheName: string,
+    setName: string,
+    element: string | Uint8Array
+  ): Promise<CacheSetContainsElement.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetContainsElement.Error(err, this.convert(element))
+      );
+    }
+
+    return await this.rateLimited(async () => {
+      return await this.sendSetContainsElement(
+        cacheName,
+        this.convert(setName),
+        this.convert(element)
+      );
+    });
+  }
+
+  private async sendSetContainsElement(
+    cacheName: string,
+    setName: Uint8Array,
+    element: Uint8Array
+  ): Promise<CacheSetContainsElement.Response> {
+    const request = new grpcCache._SetContainsRequest({
+      set_name: setName,
+      elements: [element],
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.getClient().SetContains(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.found) {
+            const found_mask = resp?.found.contains;
+            if (found_mask === undefined || found_mask.length === 0) {
+              return reject(
+                new CacheSetContainsElement.Error(
+                  new UnknownError(
+                    'SetContains response missing contains mask'
+                  ),
+                  element
+                )
+              );
+            }
+            if (found_mask[0]) {
+              resolve(new CacheSetContainsElement.Hit(element));
+            } else {
+              resolve(new CacheSetContainsElement.Miss(element));
+            }
+          } else if (resp?.missing) {
+            resolve(new CacheSetContainsElement.Miss(element));
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSetContainsElement.Error(e, element),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );
