@@ -56,6 +56,7 @@ import {
   CacheGetBatch,
   CacheSetBatch,
   CacheSetSample,
+  CacheSetContainsElement,
 } from '../../../index';
 import {
   ScalarCallOptions,
@@ -240,6 +241,16 @@ export class MomentoCache implements IMomentoCache {
       setName,
       elements,
       options
+    );
+  }
+  setContainsElement(
+    setName: string,
+    element: string | Uint8Array
+  ): Promise<CacheSetContainsElement.Response> {
+    return this.cacheClient.setContainsElement(
+      this.cacheName,
+      setName,
+      element
     );
   }
   setRemoveElement(
