@@ -55,6 +55,7 @@ import {
   CacheGetBatch,
   CacheSetBatch,
   CacheSortedSetRemoveElements,
+  CacheSetContainsElement,
 } from '../index';
 import {
   ScalarCallOptions,
@@ -167,6 +168,10 @@ export interface IMomentoCache {
     elements: string[] | Uint8Array[],
     options?: SetAddElementsOptions
   ): Promise<CacheSetAddElements.Response>;
+  setContainsElement(
+    setName: string,
+    element: string | Uint8Array
+  ): Promise<CacheSetContainsElement.Response>;
   setRemoveElement(
     setName: string,
     element: string | Uint8Array
