@@ -4,13 +4,9 @@ import {
   BaseResponseMiss,
   ResponseBase,
 } from './response-base';
-import {truncateString} from '../../internal/utils';
 import {CacheSetContainsElementResponse} from './enums';
 
-const TEXT_DECODER = new TextDecoder();
-
 interface IResponse {
-  element(): string | undefined;
   readonly type: CacheSetContainsElementResponse;
 }
 
@@ -19,42 +15,15 @@ interface IResponse {
  * `value*` accessors to retrieve the data in the appropriate format.
  */
 export class Hit extends ResponseBase implements IResponse {
-  private readonly _element: Uint8Array;
   readonly type: CacheSetContainsElementResponse.Hit =
     CacheSetContainsElementResponse.Hit;
 
-  constructor(element: Uint8Array) {
+  constructor() {
     super();
-    this._element = element;
-  }
-
-  /**
-   * Returns the element as a utf-8 string, decoded from the underlying byte array.
-   * @returns string
-   */
-  public element(): string {
-    return this.elementString();
-  }
-
-  /**
-   * Returns the element as a utf-8 string, decoded from the underlying byte array.
-   * @returns string
-   */
-  public elementString(): string {
-    return TEXT_DECODER.decode(this._element);
-  }
-
-  /**
-   * Returns the element as a byte array.
-   * @returns Uint8Array
-   */
-  public elementUint8Array(): Uint8Array {
-    return this._element;
   }
 
   public override toString(): string {
-    const display = truncateString(this.elementString());
-    return `${super.toString()}: ${display}`;
+    return `${super.toString()}: Hit`;
   }
 }
 
@@ -62,33 +31,11 @@ export class Hit extends ResponseBase implements IResponse {
  * Indicates that the requested data was not available in the cache.
  */
 export class Miss extends BaseResponseMiss implements IResponse {
-  private readonly _element: Uint8Array;
   readonly type: CacheSetContainsElementResponse.Miss =
     CacheSetContainsElementResponse.Miss;
 
-  constructor(element: Uint8Array) {
+  constructor() {
     super();
-    this._element = element;
-  }
-
-  /**
-   * Returns the element as a utf-8 string decoded from the underlying byte array.
-   * @returns {string}
-   */
-  public elementString(): string {
-    return TEXT_DECODER.decode(this._element);
-  }
-
-  /**
-   * Returns the element name as a byte array.
-   * @returns {Uint8Array}
-   */
-  public elementUint8Array(): Uint8Array {
-    return this._element;
-  }
-
-  element(): string | undefined {
-    return undefined;
   }
 }
 
@@ -103,37 +50,11 @@ export class Miss extends BaseResponseMiss implements IResponse {
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
 export class Error extends BaseResponseError implements IResponse {
-  private readonly _element: Uint8Array;
   readonly type: CacheSetContainsElementResponse.Error =
     CacheSetContainsElementResponse.Error;
 
-  constructor(_innerException: SdkError, element: Uint8Array) {
+  constructor(_innerException: SdkError) {
     super(_innerException);
-    this._element = element;
-  }
-
-  /**
-   * Returns the element as a utf-8 string, decoded from the underlying byte array.
-   * @returns string
-   */
-  public element(): string {
-    return this.elementString();
-  }
-
-  /**
-   * Returns the element as a utf-8 string, decoded from the underlying byte array.
-   * @returns string
-   */
-  public elementString(): string {
-    return TEXT_DECODER.decode(this._element);
-  }
-
-  /**
-   * Returns the element as a byte array.
-   * @returns Uint8Array
-   */
-  public elementUint8Array(): Uint8Array {
-    return this._element;
   }
 }
 

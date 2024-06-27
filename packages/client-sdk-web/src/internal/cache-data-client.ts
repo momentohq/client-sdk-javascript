@@ -1372,11 +1372,7 @@ export class CacheDataClient<
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err =>
-          new CacheSetContainsElement.Error(
-            err,
-            this.convertToUint8Array(element)
-          )
+        err => new CacheSetContainsElement.Error(err)
       );
     }
     return await this.sendSetContainsElement(
@@ -1396,7 +1392,6 @@ export class CacheDataClient<
     request.setElementsList([element]);
 
     return await new Promise((resolve, reject) => {
-      const elementAsUint8Array = this.convertToUint8Array(element);
       this.clientWrapper.setContains(
         request,
         {
@@ -1413,24 +1408,20 @@ export class CacheDataClient<
               ) {
                 resolve(
                   new CacheSetContainsElement.Error(
-                    new UnknownError(
-                      'SetContains responded with an empty list'
-                    ),
-                    elementAsUint8Array
+                    new UnknownError('SetContains responded with an empty list')
                   )
                 );
               }
               if (found?.getContainsList().at(0)) {
-                resolve(new CacheSetContainsElement.Hit(elementAsUint8Array));
+                resolve(new CacheSetContainsElement.Hit());
               } else {
-                resolve(new CacheSetContainsElement.Miss(elementAsUint8Array));
+                resolve(new CacheSetContainsElement.Miss());
               }
             }
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e =>
-                new CacheSetContainsElement.Error(e, elementAsUint8Array),
+              errorResponseFactoryFn: e => new CacheSetContainsElement.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });

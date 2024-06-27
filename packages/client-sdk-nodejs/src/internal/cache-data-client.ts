@@ -614,7 +614,7 @@ export class CacheDataClient implements IDataClient {
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
-        err => new CacheSetContainsElement.Error(err, this.convert(element))
+        err => new CacheSetContainsElement.Error(err)
       );
     }
 
@@ -650,25 +650,21 @@ export class CacheDataClient implements IDataClient {
             if (found_mask === undefined || found_mask.length === 0) {
               return reject(
                 new CacheSetContainsElement.Error(
-                  new UnknownError(
-                    'SetContains response missing contains mask'
-                  ),
-                  element
+                  new UnknownError('SetContains response missing contains mask')
                 )
               );
             }
             if (found_mask[0]) {
-              resolve(new CacheSetContainsElement.Hit(element));
+              resolve(new CacheSetContainsElement.Hit());
             } else {
-              resolve(new CacheSetContainsElement.Miss(element));
+              resolve(new CacheSetContainsElement.Miss());
             }
           } else if (resp?.missing) {
-            resolve(new CacheSetContainsElement.Miss(element));
+            resolve(new CacheSetContainsElement.Miss());
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e =>
-                new CacheSetContainsElement.Error(e, element),
+              errorResponseFactoryFn: e => new CacheSetContainsElement.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
