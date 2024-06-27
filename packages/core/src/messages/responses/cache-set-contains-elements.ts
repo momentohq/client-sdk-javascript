@@ -10,7 +10,7 @@ import {CacheSetContainsElementsResponse} from './enums';
 const TEXT_DECODER = new TextDecoder();
 
 interface IResponse {
-  contains(): Record<string, boolean> | undefined;
+  containsElements(): Record<string, boolean> | undefined;
   readonly type: CacheSetContainsElementsResponse;
 }
 
@@ -38,7 +38,7 @@ export class Hit extends ResponseBase implements IResponse {
    * Returns a mapping of the elements to their presence in the cache.
    * @returns {Record<string, boolean>}
    */
-  public contains(): Record<string, boolean> {
+  public containsElements(): Record<string, boolean> {
     return this._contains;
   }
 
@@ -66,7 +66,7 @@ export class Miss extends BaseResponseMiss implements IResponse {
     super();
   }
 
-  public contains(): Record<string, boolean> | undefined {
+  public containsElements(): Record<string, boolean> | undefined {
     return undefined;
   }
 }
@@ -89,7 +89,7 @@ export class Error extends BaseResponseError implements IResponse {
     super(_innerException);
   }
 
-  public contains(): Record<string, boolean> | undefined {
+  public containsElements(): Record<string, boolean> | undefined {
     return undefined;
   }
 }

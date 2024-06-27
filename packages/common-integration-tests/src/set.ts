@@ -149,6 +149,7 @@ export function runSetTests(
         'foo'
       );
       expect(response).toBeInstanceOf(CacheSetContainsElement.Miss);
+      expect(response.containsElement()).toBeUndefined();
     });
 
     it("should be a hit on a set that exists but doesn't contain the element", async () => {
@@ -197,6 +198,7 @@ export function runSetTests(
         ['foo', 'bar', 'baz']
       );
       expect(response).toBeInstanceOf(CacheSetContainsElements.Miss);
+      expect(response.containsElements()).toBeUndefined();
     });
 
     it('should be a hit when the set does not contain any of the elements', async () => {
@@ -214,7 +216,7 @@ export function runSetTests(
         ['bar', 'baz']
       );
       expect(response).toBeInstanceOf(CacheSetContainsElements.Hit);
-      expect((response as CacheSetContainsElements.Hit).contains()).toEqual({
+      expect(response.containsElements()).toEqual({
         bar: false,
         baz: false,
       });
@@ -235,7 +237,7 @@ export function runSetTests(
         ['foo', 'baz']
       );
       expect(response).toBeInstanceOf(CacheSetContainsElements.Hit);
-      expect((response as CacheSetContainsElements.Hit).contains()).toEqual({
+      expect(response.containsElements()).toEqual({
         foo: true,
         baz: false,
       });
