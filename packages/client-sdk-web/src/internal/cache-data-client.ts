@@ -1418,6 +1418,8 @@ export class CacheDataClient<
                   found?.getContainsList().at(0) ?? false
                 )
               );
+            } else {
+              resolve(new CacheSetContainsElement.Miss());
             }
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
@@ -1495,6 +1497,8 @@ export class CacheDataClient<
               } else {
                 resolve(new CacheSetContainsElements.Miss());
               }
+            } else {
+              resolve(new CacheSetContainsElements.Miss());
             }
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
