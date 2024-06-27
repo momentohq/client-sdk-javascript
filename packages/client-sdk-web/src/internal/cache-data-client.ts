@@ -1449,14 +1449,16 @@ export class CacheDataClient<
     return await this.sendSetContainsElements(
       cacheName,
       convertToB64String(setName),
-      this.convertArrayToB64Strings(elements)
+      this.convertArrayToB64Strings(elements),
+      this.convertArrayToUint8(elements)
     );
   }
 
   private async sendSetContainsElements(
     cacheName: string,
     setName: string,
-    elements: string[]
+    elements: string[],
+    elementsAsUint8: Uint8Array[]
   ): Promise<CacheSetContainsElements.Response> {
     const request = new _SetContainsRequest();
     request.setSetName(setName);
@@ -1486,7 +1488,7 @@ export class CacheDataClient<
               if (found?.getContainsList().at(0)) {
                 resolve(
                   new CacheSetContainsElements.Hit(
-                    elements.map(element => this.convertToUint8Array(element)),
+                    elementsAsUint8,
                     found.getContainsList()
                   )
                 );
