@@ -28,7 +28,7 @@
     "typescript": "^5.0.2"
   },
   "dependencies": {
-    "@fastly/js-compute": "^3.0.0"
+    "@fastly/js-compute": "^3.16.0"
   },
   "scripts": {
     "prebuild": "tsc",
