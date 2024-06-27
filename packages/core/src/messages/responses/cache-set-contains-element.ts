@@ -7,6 +7,7 @@ import {
 import {CacheSetContainsElementResponse} from './enums';
 
 interface IResponse {
+  containsElement(): boolean | undefined;
   readonly type: CacheSetContainsElementResponse;
 }
 
@@ -15,15 +16,27 @@ interface IResponse {
  * `value*` accessors to retrieve the data in the appropriate format.
  */
 export class Hit extends ResponseBase implements IResponse {
+  private readonly _containsElement: boolean;
   readonly type: CacheSetContainsElementResponse.Hit =
     CacheSetContainsElementResponse.Hit;
 
-  constructor() {
+  constructor(found: boolean) {
     super();
+    this._containsElement = found;
+  }
+
+  /**
+   * Returns a boolean indicating whether the element was found in the cache.
+   * @returns {boolean}
+   */
+  public containsElement(): boolean {
+    return this._containsElement;
   }
 
   public override toString(): string {
-    return `${super.toString()}: Hit`;
+    return `${super.toString()}: Hit - ${
+      this._containsElement ? 'true' : 'false'
+    }`;
   }
 }
 
@@ -36,6 +49,10 @@ export class Miss extends BaseResponseMiss implements IResponse {
 
   constructor() {
     super();
+  }
+
+  public containsElement(): undefined {
+    return undefined;
   }
 }
 
@@ -55,6 +72,10 @@ export class Error extends BaseResponseError implements IResponse {
 
   constructor(_innerException: SdkError) {
     super(_innerException);
+  }
+
+  public containsElement(): undefined {
+    return undefined;
   }
 }
 

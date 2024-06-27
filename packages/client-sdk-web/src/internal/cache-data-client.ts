@@ -1413,11 +1413,11 @@ export class CacheDataClient<
                   )
                 );
               }
-              if (found?.getContainsList().at(0)) {
-                resolve(new CacheSetContainsElement.Hit());
-              } else {
-                resolve(new CacheSetContainsElement.Miss());
-              }
+              resolve(
+                new CacheSetContainsElement.Hit(
+                  found?.getContainsList().at(0) ?? false
+                )
+              );
             }
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({

@@ -655,11 +655,7 @@ export class CacheDataClient implements IDataClient {
                 )
               );
             }
-            if (found_mask[0]) {
-              resolve(new CacheSetContainsElement.Hit());
-            } else {
-              resolve(new CacheSetContainsElement.Miss());
-            }
+            resolve(new CacheSetContainsElement.Hit(found_mask[0]));
           } else if (resp?.missing) {
             resolve(new CacheSetContainsElement.Miss());
           } else {
