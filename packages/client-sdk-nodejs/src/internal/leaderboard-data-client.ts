@@ -133,8 +133,8 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
   ): Interceptor[] {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
-      new Header('Agent', `nodejs:leaderboard:${version}`),
-      new Header('Runtime-Version', `nodejs:${process.versions.node}`),
+      new Header('agent', `nodejs:leaderboard:${version}`),
+      new Header('runtime-version', `nodejs:${process.versions.node}`),
     ];
     return [
       middlewaresInterceptor(

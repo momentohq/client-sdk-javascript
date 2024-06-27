@@ -34,9 +34,9 @@ export class ClientMetadataProvider {
     if (!this.areFirstTimeHeadersSent) {
       this.areFirstTimeHeadersSent = true;
       metadata[
-        'Agent'
+        'agent'
       ] = `${ClientMetadataProvider.agentName}:${this.clientType}:${version}`;
-      metadata['Runtime-Version'] = `javascript-web:${getBrowserName(
+      metadata['runtime-version'] = `javascript-web:${getBrowserName(
         navigator.userAgent
       )}`;
     }

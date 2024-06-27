@@ -74,8 +74,8 @@ export class InternalAuthClient implements IAuthClient {
     );
     this.creds = props.credentialProvider;
     const headers = [
-      new Header('Agent', `nodejs:auth:${version}`),
-      new Header('Runtime-Version', `nodejs:${process.versions.node}`),
+      new Header('agent', `nodejs:auth:${version}`),
+      new Header('runtime-version', `nodejs:${process.versions.node}`),
     ];
     this.interceptors = [
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
