@@ -13,6 +13,8 @@ import {
   CacheSetFetch,
   CacheSetAddElements,
   CacheSetAddElement,
+  CacheSetContainsElement,
+  CacheSetContainsElements,
   CacheSetRemoveElements,
   CacheSetRemoveElement,
   CacheSetSample,
@@ -167,6 +169,14 @@ export interface IMomentoCache {
     elements: string[] | Uint8Array[],
     options?: SetAddElementsOptions
   ): Promise<CacheSetAddElements.Response>;
+  setContainsElement(
+    setName: string,
+    element: string | Uint8Array
+  ): Promise<CacheSetContainsElement.Response>;
+  setContainsElements(
+    setName: string,
+    elements: string[] | Uint8Array[]
+  ): Promise<CacheSetContainsElements.Response>;
   setRemoveElement(
     setName: string,
     element: string | Uint8Array

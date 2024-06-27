@@ -14,6 +14,18 @@ export enum CacheSetFetchResponse {
   Error = 'Error',
 }
 
+export enum CacheSetContainsElementResponse {
+  Hit = 'Hit',
+  Miss = 'Miss',
+  Error = 'Error',
+}
+
+export enum CacheSetContainsElementsResponse {
+  Hit = 'Hit',
+  Miss = 'Miss',
+  Error = 'Error',
+}
+
 export enum CacheSetRemoveElementResponse {
   Success = 'Success',
   Error = 'Error',

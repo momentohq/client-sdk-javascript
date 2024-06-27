@@ -19,6 +19,8 @@ import {
   CacheSetFetch,
   CacheSetAddElement,
   CacheSetAddElements,
+  CacheSetContainsElement,
+  CacheSetContainsElements,
   CacheSetRemoveElement,
   CacheSetRemoveElements,
   CacheListFetch,
@@ -642,6 +644,44 @@ export abstract class AbstractCacheClient implements ICacheClient {
       elements,
       options?.ttl
     );
+  }
+
+  /**
+   * Tests if the given set contains the given element.
+   * @param cacheName - The cache containing the set.
+   * @param setName - The set to check.
+   * @param element - The element to check for.
+   * @returns {Promise<CacheSetContainsElement.Response>} -
+   * {@link CacheSetContainsElement.Hit} if the set exists and contains the element.
+   * {@link CacheSetContainsElement.Miss} if the set does not contain the element.
+   * {@link CacheSetContainsElement.Error} on failure.
+   */
+  public async setContainsElement(
+    cacheName: string,
+    setName: string,
+    element: string | Uint8Array
+  ): Promise<CacheSetContainsElement.Response> {
+    const client = this.getNextDataClient();
+    return await client.setContainsElement(cacheName, setName, element);
+  }
+
+  /**
+   * Tests if the given set contains the given elements.
+   * @param cacheName - The cache containing the set.
+   * @param setName - The set to check.
+   * @param elements - The elements to check for.
+   * @returns {Promise<CacheSetContainsElements.Response>} -
+   * {@link CacheSetContainsElements.Hit} containing the elements to their presence in the cache.
+   * {@link CacheSetContainsElements.Miss} if the set does not contain the elements.
+   * {@link CacheSetContainsElements.Error} on failure.
+   */
+  public async setContainsElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[]
+  ): Promise<CacheSetContainsElements.Response> {
+    const client = this.getNextDataClient();
+    return await client.setContainsElements(cacheName, setName, elements);
   }
 
   /**

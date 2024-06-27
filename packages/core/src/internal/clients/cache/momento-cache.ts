@@ -13,6 +13,8 @@ import {
   CacheSetFetch,
   CacheSetAddElements,
   CacheSetAddElement,
+  CacheSetContainsElement,
+  CacheSetContainsElements,
   CacheSetRemoveElements,
   CacheSetRemoveElement,
   CacheListFetch,
@@ -240,6 +242,26 @@ export class MomentoCache implements IMomentoCache {
       setName,
       elements,
       options
+    );
+  }
+  setContainsElement(
+    setName: string,
+    element: string | Uint8Array
+  ): Promise<CacheSetContainsElement.Response> {
+    return this.cacheClient.setContainsElement(
+      this.cacheName,
+      setName,
+      element
+    );
+  }
+  setContainsElements(
+    setName: string,
+    elements: string[] | Uint8Array[]
+  ): Promise<CacheSetContainsElements.Response> {
+    return this.cacheClient.setContainsElements(
+      this.cacheName,
+      setName,
+      elements
     );
   }
   setRemoveElement(
