@@ -1487,16 +1487,12 @@ export class CacheDataClient<
                   )
                 );
               }
-              if (found?.getContainsList().at(0)) {
-                resolve(
-                  new CacheSetContainsElements.Hit(
-                    elementsAsUint8,
-                    found.getContainsList()
-                  )
-                );
-              } else {
-                resolve(new CacheSetContainsElements.Miss());
-              }
+              resolve(
+                new CacheSetContainsElements.Hit(
+                  elementsAsUint8,
+                  found?.getContainsList() ?? []
+                )
+              );
             } else {
               resolve(new CacheSetContainsElements.Miss());
             }
