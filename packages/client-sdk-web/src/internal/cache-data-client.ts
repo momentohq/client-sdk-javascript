@@ -23,6 +23,8 @@ import {
   CacheListRetain,
   CacheSet,
   CacheSetAddElements,
+  CacheSetContainsElement,
+  CacheSetContainsElements,
   CacheSetFetch,
   CacheSetIfNotExists,
   CacheSetIfAbsent,
@@ -96,6 +98,7 @@ import {
   _ListRetainRequest,
   _SetDifferenceRequest,
   _SetFetchRequest,
+  _SetContainsRequest,
   _SetIfRequest,
   _SetIfResponse,
   _SetRequest,
@@ -1353,6 +1356,154 @@ export class CacheDataClient<
             });
           } else {
             resolve(new CacheSetAddElements.Success());
+          }
+        }
+      );
+    });
+  }
+
+  public async setContainsElement(
+    cacheName: string,
+    setName: string,
+    element: string | Uint8Array
+  ): Promise<CacheSetContainsElement.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetContainsElement.Error(err)
+      );
+    }
+    return await this.sendSetContainsElement(
+      cacheName,
+      convertToB64String(setName),
+      convertToB64String(element)
+    );
+  }
+
+  private async sendSetContainsElement(
+    cacheName: string,
+    setName: string,
+    element: string
+  ): Promise<CacheSetContainsElement.Response> {
+    const request = new _SetContainsRequest();
+    request.setSetName(setName);
+    request.setElementsList([element]);
+
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.setContains(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            if (resp.hasFound()) {
+              const found = resp.getFound();
+              if (
+                found?.getContainsList() === undefined ||
+                found?.getContainsList().length === 0
+              ) {
+                resolve(
+                  new CacheSetContainsElement.Error(
+                    new UnknownError('SetContains responded with an empty list')
+                  )
+                );
+              }
+              resolve(
+                new CacheSetContainsElement.Hit(
+                  found?.getContainsList().at(0) ?? false
+                )
+              );
+            } else {
+              resolve(new CacheSetContainsElement.Miss());
+            }
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetContainsElement.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
+  public async setContainsElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[]
+  ): Promise<CacheSetContainsElements.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetContainsElements.Error(err)
+      );
+    }
+    return await this.sendSetContainsElements(
+      cacheName,
+      convertToB64String(setName),
+      this.convertArrayToB64Strings(elements),
+      this.convertArrayToUint8(elements)
+    );
+  }
+
+  private async sendSetContainsElements(
+    cacheName: string,
+    setName: string,
+    elements: string[],
+    elementsAsUint8: Uint8Array[]
+  ): Promise<CacheSetContainsElements.Response> {
+    const request = new _SetContainsRequest();
+    request.setSetName(setName);
+    request.setElementsList(elements);
+
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.setContains(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            if (resp.hasFound()) {
+              const found = resp.getFound();
+              if (
+                found?.getContainsList() === undefined ||
+                found?.getContainsList().length === 0
+              ) {
+                resolve(
+                  new CacheSetContainsElements.Error(
+                    new UnknownError('SetContains responded with an empty list')
+                  )
+                );
+              }
+              resolve(
+                new CacheSetContainsElements.Hit(
+                  elementsAsUint8,
+                  found?.getContainsList() ?? []
+                )
+              );
+            } else {
+              resolve(new CacheSetContainsElements.Miss());
+            }
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSetContainsElements.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
         }
       );

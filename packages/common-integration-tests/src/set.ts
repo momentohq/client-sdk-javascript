@@ -3,6 +3,8 @@ import {
   CacheDelete,
   CacheSetAddElements,
   CacheSetAddElement,
+  CacheSetContainsElement,
+  CacheSetContainsElements,
   CacheSetFetch,
   CacheSetRemoveElements,
   CacheSetRemoveElement,
@@ -135,6 +137,110 @@ export function runSetTests(
       expect((fetchResponse as CacheSetFetch.Hit).valueSet()).toEqual(
         new Set(['foo', 'bar', 'baz'])
       );
+    });
+  });
+
+  describe('#containsElement', () => {
+    it('should be a miss on a set that does not exist', async () => {
+      const setName = v4();
+      const response = await cacheClient.setContainsElement(
+        integrationTestCacheName,
+        setName,
+        'foo'
+      );
+      expect(response).toBeInstanceOf(CacheSetContainsElement.Miss);
+      expect(response.containsElement()).toBeUndefined();
+    });
+
+    it("should be a hit on a set that exists but doesn't contain the element", async () => {
+      const setName = v4();
+      const addResponse = await cacheClient.setAddElement(
+        integrationTestCacheName,
+        setName,
+        'bar'
+      );
+      expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
+
+      const response = await cacheClient.setContainsElement(
+        integrationTestCacheName,
+        setName,
+        'foo'
+      );
+      expect(response).toBeInstanceOf(CacheSetContainsElement.Hit);
+      expect(response.containsElement()).toBeFalse();
+    });
+
+    it('should be a hit on a set that exists and does contain the element', async () => {
+      const setName = v4();
+      const addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
+        setName,
+        ['foo', 'bar', 'baz']
+      );
+      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+
+      const response = await cacheClient.setContainsElement(
+        integrationTestCacheName,
+        setName,
+        'foo'
+      );
+      expect(response).toBeInstanceOf(CacheSetContainsElement.Hit);
+      expect(response.containsElement()).toBeTrue();
+    });
+  });
+
+  describe('#containsElements', () => {
+    it('should be a miss when the set does not exist', async () => {
+      const setName = v4();
+      const response = await cacheClient.setContainsElements(
+        integrationTestCacheName,
+        setName,
+        ['foo', 'bar', 'baz']
+      );
+      expect(response).toBeInstanceOf(CacheSetContainsElements.Miss);
+      expect(response.containsElements()).toBeUndefined();
+    });
+
+    it('should be a hit when the set does not contain any of the elements', async () => {
+      const setName = v4();
+      const addResponse = await cacheClient.setAddElement(
+        integrationTestCacheName,
+        setName,
+        'foo'
+      );
+      expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
+
+      const response = await cacheClient.setContainsElements(
+        integrationTestCacheName,
+        setName,
+        ['bar', 'baz']
+      );
+      expect(response).toBeInstanceOf(CacheSetContainsElements.Hit);
+      expect(response.containsElements()).toEqual({
+        bar: false,
+        baz: false,
+      });
+    });
+
+    it('should be a hit when the set contains some of the elements', async () => {
+      const setName = v4();
+      const addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
+        setName,
+        ['foo', 'bar']
+      );
+      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+
+      const response = await cacheClient.setContainsElements(
+        integrationTestCacheName,
+        setName,
+        ['foo', 'baz']
+      );
+      expect(response).toBeInstanceOf(CacheSetContainsElements.Hit);
+      expect(response.containsElements()).toEqual({
+        foo: true,
+        baz: false,
+      });
     });
   });
 
