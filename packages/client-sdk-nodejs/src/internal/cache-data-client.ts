@@ -47,6 +47,7 @@ import {
   CacheSetBatch,
   CacheSetFetch,
   CacheSetContainsElement,
+  CacheSetContainsElements,
   CacheSetIfAbsent,
   CacheSetIfAbsentOrEqual,
   CacheSetIfEqual,
@@ -665,6 +666,68 @@ export class CacheDataClient implements IDataClient {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSetContainsElement.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
+  public async setContainsElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[]
+  ): Promise<CacheSetContainsElements.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetContainsElements.Error(err)
+      );
+    }
+
+    return await this.rateLimited(async () => {
+      return await this.sendSetContainsElements(
+        cacheName,
+        this.convert(setName),
+        this.convertArray(elements)
+      );
+    });
+  }
+
+  private async sendSetContainsElements(
+    cacheName: string,
+    setName: Uint8Array,
+    elements: Uint8Array[]
+  ): Promise<CacheSetContainsElements.Response> {
+    const request = new grpcCache._SetContainsRequest({
+      set_name: setName,
+      elements: elements,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.getClient().SetContains(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.found) {
+            resolve(
+              new CacheSetContainsElements.Hit(elements, resp?.found.contains)
+            );
+          } else if (resp?.missing) {
+            resolve(new CacheSetContainsElements.Miss());
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSetContainsElements.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });

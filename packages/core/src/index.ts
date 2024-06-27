@@ -29,6 +29,7 @@ import * as CacheDictionaryLength from './messages/responses/cache-dictionary-le
 import * as CacheSetAddElements from './messages/responses/cache-set-add-elements';
 import * as CacheSetAddElement from './messages/responses/cache-set-add-element';
 import * as CacheSetContainsElement from './messages/responses/cache-set-contains-element';
+import * as CacheSetContainsElements from './messages/responses/cache-set-contains-elements';
 import * as CacheSetRemoveElements from './messages/responses/cache-set-remove-elements';
 import * as CacheSetRemoveElement from './messages/responses/cache-set-remove-element';
 import * as CacheSetSample from './messages/responses/cache-set-sample';
@@ -257,6 +258,7 @@ export {
   CacheSetAddElements,
   CacheSetAddElement,
   CacheSetContainsElement,
+  CacheSetContainsElements,
   CacheSetRemoveElements,
   CacheSetRemoveElement,
   CacheSetSample,

@@ -3,13 +3,14 @@ import {
   CacheDelete,
   CacheSetAddElements,
   CacheSetAddElement,
+  CacheSetContainsElement,
+  CacheSetContainsElements,
   CacheSetFetch,
   CacheSetRemoveElements,
   CacheSetRemoveElement,
   CacheSetSample,
   CollectionTtl,
   MomentoErrorCode,
-  CacheSetContainsElement,
 } from '@gomomento/sdk-core';
 import {
   ValidateCacheProps,
@@ -182,6 +183,60 @@ export function runSetTests(
         'foo'
       );
       expect(response).toBeInstanceOf(CacheSetContainsElement.Hit);
+    });
+  });
+
+  describe('#containsElements', () => {
+    it('should be a miss when the set does not exist', async () => {
+      const setName = v4();
+      const response = await cacheClient.setContainsElements(
+        integrationTestCacheName,
+        setName,
+        ['foo', 'bar', 'baz']
+      );
+      expect(response).toBeInstanceOf(CacheSetContainsElements.Miss);
+    });
+
+    it('should be a hit when the set does not contain any of the elements', async () => {
+      const setName = v4();
+      const addResponse = await cacheClient.setAddElement(
+        integrationTestCacheName,
+        setName,
+        'foo'
+      );
+      expect(addResponse).toBeInstanceOf(CacheSetAddElement.Success);
+
+      const response = await cacheClient.setContainsElements(
+        integrationTestCacheName,
+        setName,
+        ['bar', 'baz']
+      );
+      expect(response).toBeInstanceOf(CacheSetContainsElements.Hit);
+      expect((response as CacheSetContainsElements.Hit).contains()).toEqual({
+        bar: false,
+        baz: false,
+      });
+    });
+
+    it('should be a hit when the set contains some of the elements', async () => {
+      const setName = v4();
+      const addResponse = await cacheClient.setAddElements(
+        integrationTestCacheName,
+        setName,
+        ['foo', 'bar']
+      );
+      expect(addResponse).toBeInstanceOf(CacheSetAddElements.Success);
+
+      const response = await cacheClient.setContainsElements(
+        integrationTestCacheName,
+        setName,
+        ['foo', 'baz']
+      );
+      expect(response).toBeInstanceOf(CacheSetContainsElements.Hit);
+      expect((response as CacheSetContainsElements.Hit).contains()).toEqual({
+        foo: true,
+        baz: false,
+      });
     });
   });
 

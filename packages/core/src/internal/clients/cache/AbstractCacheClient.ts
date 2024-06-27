@@ -20,6 +20,7 @@ import {
   CacheSetAddElement,
   CacheSetAddElements,
   CacheSetContainsElement,
+  CacheSetContainsElements,
   CacheSetRemoveElement,
   CacheSetRemoveElements,
   CacheListFetch,
@@ -662,6 +663,25 @@ export abstract class AbstractCacheClient implements ICacheClient {
   ): Promise<CacheSetContainsElement.Response> {
     const client = this.getNextDataClient();
     return await client.setContainsElement(cacheName, setName, element);
+  }
+
+  /**
+   * Tests if the given set contains the given elements.
+   * @param cacheName - The cache containing the set.
+   * @param setName - The set to check.
+   * @param elements - The elements to check for.
+   * @returns {Promise<CacheSetContainsElements.Response>} -
+   * {@link CacheSetContainsElements.Hit} containing the elements to their presence in the cache.
+   * {@link CacheSetContainsElements.Miss} if the set does not contain the elements.
+   * {@link CacheSetContainsElements.Error} on failure.
+   */
+  public async setContainsElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[]
+  ): Promise<CacheSetContainsElements.Response> {
+    const client = this.getNextDataClient();
+    return await client.setContainsElements(cacheName, setName, elements);
   }
 
   /**

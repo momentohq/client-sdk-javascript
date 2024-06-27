@@ -7,6 +7,7 @@ import {
   CacheSetFetch,
   CacheSetAddElements,
   CacheSetContainsElement,
+  CacheSetContainsElements,
   CacheSetRemoveElements,
   CacheListFetch,
   CacheListLength,
@@ -159,6 +160,11 @@ export interface IDataClient {
     setName: string,
     element: string | Uint8Array
   ): Promise<CacheSetContainsElement.Response>;
+  setContainsElements(
+    cacheName: string,
+    setName: string,
+    elements: string[] | Uint8Array[]
+  ): Promise<CacheSetContainsElements.Response>;
   setRemoveElements(
     cacheName: string,
     setName: string,
