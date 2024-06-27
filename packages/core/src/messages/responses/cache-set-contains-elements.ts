@@ -10,13 +10,19 @@ import {CacheSetContainsElementsResponse} from './enums';
 const TEXT_DECODER = new TextDecoder();
 
 interface IResponse {
+  /**
+   * Returns a mapping of the elements to their presence in the cache.
+   * @returns {Record<string, boolean> | undefined} A mapping of the elements to their presence in the cache.
+   * If the set itself was not found, (ie the response was a `Miss` or `Error`), this method returns `undefined`.
+   */
   containsElements(): Record<string, boolean> | undefined;
   readonly type: CacheSetContainsElementsResponse;
 }
 
 /**
- * Indicates that the requested data was successfully retrieved from the cache.  Provides
- * `value*` accessors to retrieve the data in the appropriate format.
+ * Indicates that the requested set was in the cache.  Provides
+ * a `containsElements` accessor that returns a mapping of the elements of the set
+ * to their presence in the cache.
  */
 export class Hit extends ResponseBase implements IResponse {
   private readonly _contains: Record<string, boolean>;
@@ -56,7 +62,7 @@ export class Hit extends ResponseBase implements IResponse {
 }
 
 /**
- * Indicates that the requested data was not available in the cache.
+ * Indicates that the requested set was not in the cache.
  */
 export class Miss extends BaseResponseMiss implements IResponse {
   readonly type: CacheSetContainsElementsResponse.Miss =

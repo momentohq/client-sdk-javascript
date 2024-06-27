@@ -7,13 +7,18 @@ import {
 import {CacheSetContainsElementResponse} from './enums';
 
 interface IResponse {
+  /**
+   * Returns a boolean indicating whether the element was found in the cache.
+   * @returns {boolean | undefined} A boolean indicating whether the element was found in the cache.
+   * If the set itself was not found, (ie the response was a `Miss` or `Error`), this method returns `undefined`.
+   */
   containsElement(): boolean | undefined;
   readonly type: CacheSetContainsElementResponse;
 }
 
 /**
- * Indicates that the requested data was successfully retrieved from the cache.  Provides
- * `value*` accessors to retrieve the data in the appropriate format.
+ * Indicates that the requested set was in the cache.
+ * Provides a `containsElement` accessor that returns a boolean indicating whether the element was found.
  */
 export class Hit extends ResponseBase implements IResponse {
   private readonly _containsElement: boolean;
@@ -41,7 +46,7 @@ export class Hit extends ResponseBase implements IResponse {
 }
 
 /**
- * Indicates that the requested data was not available in the cache.
+ * Indicates that the requested set was not available in the cache.
  */
 export class Miss extends BaseResponseMiss implements IResponse {
   readonly type: CacheSetContainsElementResponse.Miss =
