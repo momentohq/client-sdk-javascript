@@ -109,6 +109,7 @@ export class StorageDataClient implements IStorageDataClient {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
       new Header('Agent', `nodejs:store:${version}`),
+      new Header('Runtime-Version', `nodejs:${process.versions.node}`),
     ];
     return [
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
