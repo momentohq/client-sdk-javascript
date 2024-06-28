@@ -77,8 +77,8 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
 
     const headers: Header[] = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
-      new Header('Agent', `nodejs:topic:${version}`),
-      new Header('Runtime-Version', `nodejs:${process.versions.node}`),
+      new Header('agent', `nodejs:topic:${version}`),
+      new Header('runtime-version', `nodejs:${process.versions.node}`),
     ];
     this.unaryInterceptors = PubsubClient.initializeUnaryInterceptors(
       headers,
