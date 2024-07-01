@@ -86,11 +86,20 @@ function sessionCredsProvider(): CredentialProvider {
   return _sessionCredsProvider;
 }
 
+function testAgainstMomentoLocal(): boolean {
+  return process.env.MOMENTO_LOCAL !== undefined;
+}
+
 export function integrationTestCacheClientProps(): CacheClientPropsWithConfig {
+  let credentialProvider = credsProvider();
+  if (testAgainstMomentoLocal()) {
+    credentialProvider = credentialProvider.withMomentoLocal();
+  }
+
   return {
     configuration:
       Configurations.Laptop.latest().withClientTimeoutMillis(90000),
-    credentialProvider: credsProvider(),
+    credentialProvider,
     defaultTtlSeconds: 1111,
   };
 }
