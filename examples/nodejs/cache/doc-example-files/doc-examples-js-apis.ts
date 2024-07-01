@@ -14,7 +14,7 @@ import {
   AllTopics,
   AuthClient,
   CacheClient,
-  CacheDelete,
+  CacheDeleteResponse,
   CacheDictionaryFetch,
   CacheDictionaryGetField,
   CacheDictionaryGetFields,
@@ -23,9 +23,9 @@ import {
   CacheDictionaryRemoveFields,
   CacheDictionarySetField,
   CacheDictionarySetFields,
-  CacheFlush,
   CacheGet,
-  CacheGetBatch,
+  CacheGetBatchResponse,
+  CacheGetResponse,
   CacheIncrement,
   CacheItemGetType,
   CacheKeyExists,
@@ -44,7 +44,7 @@ import {
   CacheSet,
   CacheSetAddElement,
   CacheSetAddElements,
-  CacheSetBatch,
+  CacheSetBatchResponse,
   CacheSetFetch,
   CacheSetIfAbsent,
   CacheSetIfAbsentOrEqual,
@@ -55,6 +55,7 @@ import {
   CacheSetIfPresentAndNotEqual,
   CacheSetRemoveElement,
   CacheSetRemoveElements,
+  CacheSetResponse,
   CacheSetSample,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
@@ -66,12 +67,13 @@ import {
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
   Configurations,
-  CreateCache,
+  CreateCacheResponse,
   CredentialProvider,
-  DeleteCache,
+  DeleteCacheResponse,
   DeleteWebhook,
   DisposableTokenScopes,
   ExpiresIn,
+  FlushCacheResponse,
   GenerateApiKey,
   GenerateDisposableToken,
   GetWebhookSecret,
@@ -84,7 +86,7 @@ import {
   LeaderboardOrder,
   LeaderboardRemoveElements,
   LeaderboardUpsert,
-  ListCaches,
+  ListCachesResponse,
   ListWebhooks,
   PreviewLeaderboardClient,
   PutWebhook,
@@ -183,85 +185,105 @@ async function example_API_ErrorHandlingSuccess(cacheClient: CacheClient, cacheN
 
 async function example_API_CreateCache(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.createCache(cacheName);
-  if (result instanceof CreateCache.Success) {
-    console.log(`Cache '${cacheName}' created`);
-  } else if (result instanceof CreateCache.AlreadyExists) {
-    console.log(`Cache '${cacheName}' already exists`);
-  } else if (result instanceof CreateCache.Error) {
-    throw new Error(
-      `An error occurred while attempting to create cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case CreateCacheResponse.AlreadyExists:
+      console.log(`Cache '${cacheName}' already exists`);
+      break;
+    case CreateCacheResponse.Success:
+      console.log(`Cache '${cacheName}' created`);
+      break;
+    case CreateCacheResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to create cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
 async function example_API_DeleteCache(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.deleteCache(cacheName);
-  if (result instanceof DeleteCache.Success) {
-    console.log(`Cache '${cacheName}' deleted`);
-  } else if (result instanceof DeleteCache.Error) {
-    throw new Error(
-      `An error occurred while attempting to delete cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case DeleteCacheResponse.Success:
+      console.log(`Cache '${cacheName}' deleted`);
+      break;
+    case DeleteCacheResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to delete cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
 async function example_API_ListCaches(cacheClient: CacheClient) {
   const result = await cacheClient.listCaches();
-  if (result instanceof ListCaches.Success) {
-    console.log(
-      `Caches:\n${result
-        .getCaches()
-        .map(c => c.getName())
-        .join('\n')}\n\n`
-    );
-  } else if (result instanceof ListCaches.Error) {
-    throw new Error(`An error occurred while attempting to list caches: ${result.errorCode()}: ${result.toString()}`);
+  switch (result.type) {
+    case ListCachesResponse.Success:
+      console.log(
+        `Caches:\n${result
+          .getCaches()
+          .map(c => c.getName())
+          .join('\n')}\n\n`
+      );
+      break;
+    case ListCachesResponse.Error:
+      throw new Error(`An error occurred while attempting to list caches: ${result.errorCode()}: ${result.toString()}`);
   }
 }
 
 async function example_API_FlushCache(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.flushCache(cacheName);
-  if (result instanceof CacheFlush.Success) {
-    console.log(`Cache '${cacheName}' flushed`);
-  } else if (result instanceof CacheFlush.Error) {
-    throw new Error(
-      `An error occurred while attempting to flush cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case FlushCacheResponse.Success:
+      console.log(`Cache '${cacheName}' flushed`);
+      break;
+    case FlushCacheResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to flush cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
 async function example_API_Set(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.set(cacheName, 'test-key', 'test-value');
-  if (result instanceof CacheSet.Success) {
-    console.log("Key 'test-key' stored successfully");
-  } else if (result instanceof CacheSet.Error) {
-    throw new Error(
-      `An error occurred while attempting to store key 'test-key' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case CacheSetResponse.Success:
+      console.log("Key 'test-key' stored successfully");
+      break;
+    case CacheSetResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to store key 'test-key' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
 async function example_API_Get(cacheClient: CacheClient, cacheName: string) {
-  const result = await cacheClient.get(cacheName, 'test-key');
-  if (result instanceof CacheGet.Hit) {
-    console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
-  } else if (result instanceof CacheGet.Miss) {
-    console.log(`Key 'test-key' was not found in cache '${cacheName}'`);
-  } else if (result instanceof CacheGet.Error) {
-    throw new Error(
-      `An error occurred while attempting to get key 'test-key' from cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
+  const getResponse = await cacheClient.get(cacheName, 'test-key');
+  // simplified style; assume the value was found
+  console.log(`cache hit: ${getResponse.value()!}`);
+
+  // pattern-matching style; safer for production code
+  switch (getResponse.type) {
+    case CacheGetResponse.Hit:
+      console.log(`Retrieved value for key 'test-key': ${getResponse.valueString()}`);
+      break;
+    case CacheGetResponse.Miss:
+      console.log(`Key 'test-key' was not found in cache '${cacheName}'`);
+      break;
+    case CacheGetResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to get key 'test-key' from cache '${cacheName}': ${getResponse.errorCode()}: ${getResponse.toString()}`
+      );
   }
 }
 
 async function example_API_Delete(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.delete(cacheName, 'test-key');
-  if (result instanceof CacheDelete.Success) {
-    console.log("Key 'test-key' deleted successfully");
-  } else if (result instanceof CacheDelete.Error) {
-    throw new Error(
-      `An error occurred while attempting to delete key 'test-key' from cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case CacheDeleteResponse.Success:
+      console.log("Key 'test-key' deleted successfully");
+      break;
+    case CacheDeleteResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to delete key 'test-key' from cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
@@ -393,27 +415,40 @@ async function example_API_SetBatch(cacheClient: CacheClient, cacheName: string)
     ['321', 'abc'],
   ]);
   const result = await cacheClient.setBatch(cacheName, values);
-  if (result instanceof CacheSetBatch.Success) {
-    console.log('Keys and values stored successfully');
-  } else if (result instanceof CacheSetBatch.Error) {
-    throw new Error(
-      `An error occurred while attempting to batch set in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case CacheSetBatchResponse.Success:
+      console.log('Keys and values stored successfully');
+      break;
+    case CacheSetBatchResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to batch set in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
 async function example_API_GetBatch(cacheClient: CacheClient, cacheName: string) {
   const keys = ['abc', 'xyz', '123', '321'];
-  const result = await cacheClient.getBatch(cacheName, keys);
-  if (result instanceof CacheGetBatch.Success) {
-    const values = result.values();
-    for (const key of keys) {
-      console.log(`Retrieved value for key '${key}': ${values[key]}`);
+  const getBatchResponse = await cacheClient.getBatch(cacheName, keys);
+
+  // simplified style; assume the value was found
+  const values = getBatchResponse.values()!;
+  for (const key of keys) {
+    console.log(`Retrieved value for key '${key}': ${values[key]}`);
+  }
+
+  // pattern-matching style; safer for production code
+  switch (getBatchResponse.type) {
+    case CacheGetBatchResponse.Success: {
+      const values = getBatchResponse.values();
+      for (const key of keys) {
+        console.log(`Retrieved value for key '${key}': ${values[key]}`);
+      }
+      break;
     }
-  } else if (result instanceof CacheGetBatch.Error) {
-    throw new Error(
-      `An error occurred while attempting to batch get in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
+    case CacheGetBatchResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to batch get in cache '${cacheName}': ${getBatchResponse.errorCode()}: ${getBatchResponse.toString()}`
+      );
   }
 }
 
