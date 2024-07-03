@@ -233,7 +233,7 @@ export function runStorageServiceTests(
         }
       }
       const getResponse = await storageClient.get(testingStoreName, key);
-      expect(getResponse.type).toEqual(StorageGetResponse.Found);
+      expect(getResponse.type).toEqual(StorageGetResponse.NotFound);
       expect(getResponse.value()).toBeUndefined();
     });
     it('should return store not found error for deleting a store that doesnt exist', async () => {
