@@ -137,7 +137,7 @@ export function runStorageServiceTests(
         }
       }
       const getIntResponse = await storageClient.get(testingStoreName, key);
-      expect(getIntResponse.type).toEqual(StorageGetResponse.Success);
+      expect(getIntResponse.type).toEqual(StorageGetResponse.Found);
       expect(getIntResponse.value()?.int()).toEqual(intValue);
 
       // put/get a double value
@@ -158,7 +158,7 @@ export function runStorageServiceTests(
         }
       }
       const getDoubleResponse = await storageClient.get(testingStoreName, key);
-      expect(getDoubleResponse.type).toEqual(StorageGetResponse.Success);
+      expect(getDoubleResponse.type).toEqual(StorageGetResponse.Found);
       expect(getDoubleResponse.value()?.double()).toEqual(doubleValue);
 
       // put/get a string value
@@ -179,7 +179,7 @@ export function runStorageServiceTests(
         }
       }
       const getStringResponse = await storageClient.get(testingStoreName, key);
-      expect(getStringResponse.type).toEqual(StorageGetResponse.Success);
+      expect(getStringResponse.type).toEqual(StorageGetResponse.Found);
       expect(getStringResponse.value()?.string()).toEqual(stringValue);
 
       // put/get a bytes value
@@ -200,7 +200,7 @@ export function runStorageServiceTests(
         }
       }
       const getBytesResponse = await storageClient.get(testingStoreName, key);
-      expect(getBytesResponse.type).toEqual(StorageGetResponse.Success);
+      expect(getBytesResponse.type).toEqual(StorageGetResponse.Found);
       expect(getBytesResponse.value()?.bytes()).toEqual(bytesValue);
 
       const deleteResponse = await storageClient.delete(testingStoreName, key);
@@ -233,7 +233,7 @@ export function runStorageServiceTests(
         }
       }
       const getResponse = await storageClient.get(testingStoreName, key);
-      expect(getResponse.type).toEqual(StorageGetResponse.Success);
+      expect(getResponse.type).toEqual(StorageGetResponse.Found);
       expect(getResponse.value()).toBeUndefined();
     });
     it('should return store not found error for deleting a store that doesnt exist', async () => {

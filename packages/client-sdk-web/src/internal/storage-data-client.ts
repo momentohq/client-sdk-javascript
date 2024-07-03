@@ -122,22 +122,20 @@ export class StorageDataClient<
               }
               case ValueCase.BYTES_VALUE: {
                 return resolve(
-                  StorageGet.Success.ofBytes(value.getBytesValue_asU8())
+                  StorageGet.Found.ofBytes(value.getBytesValue_asU8())
                 );
               }
               case ValueCase.STRING_VALUE: {
                 return resolve(
-                  StorageGet.Success.ofString(value.getStringValue())
+                  StorageGet.Found.ofString(value.getStringValue())
                 );
               }
               case ValueCase.INTEGER_VALUE: {
-                return resolve(
-                  StorageGet.Success.ofInt(value.getIntegerValue())
-                );
+                return resolve(StorageGet.Found.ofInt(value.getIntegerValue()));
               }
               case ValueCase.DOUBLE_VALUE: {
                 return resolve(
-                  StorageGet.Success.ofDouble(value.getDoubleValue())
+                  StorageGet.Found.ofDouble(value.getDoubleValue())
                 );
               }
             }
@@ -147,7 +145,7 @@ export class StorageDataClient<
               sdkError.errorCode() ===
               MomentoErrorCode.STORE_ITEM_NOT_FOUND_ERROR
             ) {
-              return resolve(new StorageGet.Success(undefined));
+              return resolve(new StorageGet.NotFound());
             }
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
