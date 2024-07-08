@@ -9,7 +9,7 @@ import {
     CompressionLevel,
     EnvMomentoTokenProvider,
 } from '@gomomento/sdk';
-import {CompressorFactory} from "@gomomento/sdk-nodejs-compression";
+import {CompressorFactory} from "@gomomento/sdk-nodejs-compression-zstd";
 
 const cacheName = 'cache';
 const cacheKey = 'key';

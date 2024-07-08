@@ -51,7 +51,8 @@
     // the intent of the developer. Functions are async when they want to await.
     "require-await": "error",
     "import/no-duplicates": "error",
-    "@typescript-eslint/switch-exhaustiveness-check": "error"
+    "@typescript-eslint/switch-exhaustiveness-check": "error",
+    "@typescript-eslint/no-non-null-assertion": "off"
   },
   "settings": {
     "import/resolver": {
