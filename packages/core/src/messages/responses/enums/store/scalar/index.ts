@@ -1,5 +1,6 @@
 export enum StorageGetResponse {
-  Success = 'Success',
+  Found = 'Found',
+  NotFound = 'NotFound',
   Error = 'Error',
 }
 
