@@ -21,9 +21,7 @@ async function main() {
   const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.TRACE);
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(loggerFactory),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 
@@ -36,9 +34,7 @@ async function main() {
 
   const client = new PreviewLeaderboardClient({
     configuration: LeaderboardConfigurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
   });
 
   // Create a leaderboard with given cache and leaderboard names

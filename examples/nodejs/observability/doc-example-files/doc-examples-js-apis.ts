@@ -20,9 +20,7 @@ import {ExampleMetricMiddleware} from '../example-metric-middleware';
 function example_API_InstantiateCacheClientWithMiddleware() {
   new CacheClient({
     configuration: Configurations.Laptop.v1().addMiddleware(new ExampleMetricMiddleware()),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 }
