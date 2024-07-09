@@ -111,7 +111,7 @@ function retrieveApiKeyFromYourSecretsManager(): string {
 }
 
 function example_API_CredentialProviderFromEnvVar() {
-  CredentialProvider.fromEnvironmentVariable({environmentVariableName: 'MOMENTO_API_KEY'});
+  CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY');
 }
 
 function example_API_CredentialProviderFromString() {
