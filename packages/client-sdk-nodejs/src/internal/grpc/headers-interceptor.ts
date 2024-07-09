@@ -18,7 +18,7 @@ export class Header {
 export class HeaderInterceptorProvider {
   private readonly headersToAddEveryTime: Header[];
   private readonly headersToAddOnce: Header[];
-  private static areOnlyOnceHeadersSent = false;
+  private areOnlyOnceHeadersSent = false;
 
   /**
    * @param {Header[]} headers
@@ -39,8 +39,8 @@ export class HeaderInterceptorProvider {
           this.headersToAddEveryTime.forEach(h =>
             metadata.add(h.name, h.value)
           );
-          if (!HeaderInterceptorProvider.areOnlyOnceHeadersSent) {
-            HeaderInterceptorProvider.areOnlyOnceHeadersSent = true;
+          if (!this.areOnlyOnceHeadersSent) {
+            this.areOnlyOnceHeadersSent = true;
             this.headersToAddOnce.forEach(h => metadata.add(h.name, h.value));
           }
           next(metadata, {});
