@@ -142,9 +142,7 @@ function example_API_ConfigurationLambdaLatest() {
 async function example_API_InstantiateCacheClient() {
   return await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 }
@@ -152,9 +150,7 @@ async function example_API_InstantiateCacheClient() {
 async function example_API_InstantiateCacheClientWithReadConcern() {
   return await CacheClient.create({
     configuration: Configurations.Laptop.v1().withReadConcern(ReadConcern.CONSISTENT),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 }
@@ -1001,18 +997,14 @@ async function example_API_KeysExist(cacheClient: CacheClient, cacheName: string
 
 function example_API_InstantiateAuthClient() {
   new AuthClient({
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
   });
 }
 
 function example_API_InstantiateTopicClient() {
   new TopicClient({
     configuration: TopicConfigurations.Default.latest(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
   });
 }
 
@@ -1323,9 +1315,7 @@ async function example_API_GetWebhookSecret(topicClient: TopicClient, cacheName:
 function example_API_InstantiateLeaderboardClient() {
   new PreviewLeaderboardClient({
     configuration: LeaderboardConfigurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
   });
 }
 
@@ -1573,9 +1563,7 @@ async function main() {
 
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 
@@ -1587,7 +1575,6 @@ async function main() {
     await example_API_ErrorHandlingHitMiss(cacheClient, cacheName);
     await example_API_ErrorHandlingSuccess(cacheClient, cacheName);
 
-    await example_API_CreateCache(cacheClient, cacheName);
     await example_API_ListCaches(cacheClient);
     await example_API_FlushCache(cacheClient, cacheName);
 
@@ -1649,9 +1636,7 @@ async function main() {
 
     example_API_InstantiateAuthClient();
     const authClient = new AuthClient({
-      credentialProvider: CredentialProvider.fromEnvironmentVariable({
-        environmentVariableName: 'MOMENTO_API_KEY',
-      }),
+      credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     });
     await example_API_GenerateApiKey(authClient);
     await example_API_RefreshApiKey(authClient);
@@ -1660,9 +1645,7 @@ async function main() {
     example_API_InstantiateTopicClient();
     const topicClient = new TopicClient({
       configuration: TopicConfigurations.Default.latest(),
-      credentialProvider: CredentialProvider.fromEnvironmentVariable({
-        environmentVariableName: 'MOMENTO_API_KEY',
-      }),
+      credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     });
     await example_API_TopicPublish(topicClient, cacheName);
     await example_API_TopicSubscribe(topicClient, cacheName);
@@ -1677,9 +1660,7 @@ async function main() {
     example_API_InstantiateLeaderboardClient();
     const leaderboardClient = new PreviewLeaderboardClient({
       configuration: LeaderboardConfigurations.Laptop.v1(),
-      credentialProvider: CredentialProvider.fromEnvironmentVariable({
-        environmentVariableName: 'MOMENTO_API_KEY',
-      }),
+      credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     });
     const leaderboard = leaderboardClient.leaderboard(cacheName, 'momento-leaderboard');
     example_API_CreateLeaderboard(leaderboardClient, cacheName);

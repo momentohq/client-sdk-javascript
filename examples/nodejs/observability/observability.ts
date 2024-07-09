@@ -15,9 +15,7 @@ async function main() {
     configuration: Configurations.Laptop.v1()
       // This is where the middleware that captures the request count metric is added.
       .addMiddleware(new ExampleMetricMiddleware()),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 
