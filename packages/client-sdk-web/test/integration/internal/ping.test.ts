@@ -8,7 +8,8 @@ describe('ping service', () => {
   it('ping should work', async () => {
     const cacheClientProps: CacheClientProps = {
       configuration: Configurations.Laptop.latest(),
-      credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
+      credentialProvider:
+        CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
       defaultTtlSeconds: 1111,
     };
     const cacheClient = new CacheClient(cacheClientProps);

@@ -34,7 +34,8 @@ describe('CacheClient', () => {
     const invalidCacheNames = ['', '    '];
     const momento = await CacheClient.create({
       configuration: configuration,
-      credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
+      credentialProvider:
+        CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
       defaultTtlSeconds: 100,
     });
     for (const name of invalidCacheNames) {

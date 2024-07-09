@@ -50,7 +50,8 @@ export function credsProvider(): CredentialProvider {
         },
       });
     } else {
-      _credsProvider = CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY');
+      _credsProvider =
+        CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY');
     }
   }
   return _credsProvider;
