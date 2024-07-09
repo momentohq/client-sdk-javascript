@@ -51,6 +51,10 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
   public get configuration(): Configuration {
     return this._configuration;
   }
+
+  public static create(cacheClientProps: CacheClientProps): CacheClient {
+    return new CacheClient(cacheClientProps);
+  }
 }
 
 function createControlClient(

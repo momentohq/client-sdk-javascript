@@ -44,6 +44,14 @@ describe('default configurations', () => {
     expect(cacheClientViaConstructor).toBeInstanceOf(CacheClient);
   });
 
+  it('CacheClient should be able to be constructed with create function', () => {
+    const cacheClientViaCreate = CacheClient.create({
+      credentialProvider: CredentialProvider.fromString(fakeTestV1ApiKey),
+      defaultTtlSeconds: 60,
+    });
+    expect(cacheClientViaCreate).toBeInstanceOf(CacheClient);
+  });
+
   it('TopicClient should be able to be constructed with a default configuration', () => {
     const topicClientViaConstructor = new TopicClient({
       credentialProvider: credsProvider(),
