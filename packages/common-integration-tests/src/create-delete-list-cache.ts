@@ -50,7 +50,7 @@ export function runCreateDeleteListCacheTests(cacheClient: ICacheClient) {
     });
   });
 
-  describe('create and list cache with expected limits', () => {
+  describe('ci only - create and list cache with expected limits', () => {
     itOnlyInCi(
       'should create 1 cache and list the created cache with expected limits',
       async () => {
