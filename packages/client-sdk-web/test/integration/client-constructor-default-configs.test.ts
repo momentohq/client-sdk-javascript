@@ -44,8 +44,8 @@ describe('default configurations', () => {
     expect(cacheClientViaConstructor).toBeInstanceOf(CacheClient);
   });
 
-  it('CacheClient should be able to be constructed with create function', () => {
-    const cacheClientViaCreate = CacheClient.create({
+  it('CacheClient should be able to be constructed with create function', async () => {
+    const cacheClientViaCreate = await CacheClient.create({
       credentialProvider: CredentialProvider.fromString(fakeTestV1ApiKey),
       defaultTtlSeconds: 60,
     });
