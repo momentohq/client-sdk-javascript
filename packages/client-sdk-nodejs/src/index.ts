@@ -100,6 +100,8 @@ import * as GenerateDisposableToken from '@gomomento/sdk-core/dist/src/messages/
 // LeaderboardClient Response Types
 export {leaderboard} from '@gomomento/sdk-core';
 export * from '@gomomento/sdk-core/dist/src/messages/responses/leaderboard';
+
+// Enums representing the different types available for each response
 export * from '@gomomento/sdk-core/dist/src/messages/responses/enums';
 
 import {

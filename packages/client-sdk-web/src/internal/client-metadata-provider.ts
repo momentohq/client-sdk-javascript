@@ -36,9 +36,9 @@ export class ClientMetadataProvider {
       metadata[
         'agent'
       ] = `${ClientMetadataProvider.agentName}:${this.clientType}:${version}`;
-      metadata['runtime-version'] = `javascript-web:${getBrowserName(
-        navigator.userAgent
-      )}`;
+      metadata['runtime-version'] = `${
+        ClientMetadataProvider.agentName
+      }:${getBrowserName(navigator.userAgent)}`;
     }
     if (this.readConcern) {
       metadata['read-concern'] = this.readConcern;

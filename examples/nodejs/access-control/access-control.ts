@@ -87,9 +87,7 @@ async function generateApiKey(
 }
 
 async function main() {
-  const mainCredsProvider = CredentialProvider.fromEnvironmentVariable({
-    environmentVariableName: 'MOMENTO_API_KEY',
-  });
+  const mainCredsProvider = CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY');
   const mainAuthClient = new AuthClient({
     credentialProvider: mainCredsProvider,
   });

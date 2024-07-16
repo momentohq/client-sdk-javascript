@@ -51,6 +51,19 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
   public get configuration(): Configuration {
     return this._configuration;
   }
+
+  /**
+   * Creates a new instance of CacheClient.
+   * @param cacheClientProps - The properties to use for creating the CacheClient.
+   */
+  // Disabling eslint rule because the example code that calls this function uses an await expression,
+  // necessitating the function to be async.
+  // eslint-disable-next-line require-await,@typescript-eslint/require-await
+  public static async create(
+    cacheClientProps: CacheClientProps
+  ): Promise<CacheClient> {
+    return new CacheClient(cacheClientProps);
+  }
 }
 
 function createControlClient(

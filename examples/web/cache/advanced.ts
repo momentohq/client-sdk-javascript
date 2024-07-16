@@ -24,9 +24,7 @@ const logger = loggerFactory.getLogger('AdvancedExample');
 
 const momento = new CacheClient({
   configuration: Configurations.Laptop.v1(loggerFactory),
-  credentialProvider: CredentialProvider.fromEnvironmentVariable({
-    environmentVariableName: 'MOMENTO_API_KEY',
-  }),
+  credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
   defaultTtlSeconds: 60,
 });
 

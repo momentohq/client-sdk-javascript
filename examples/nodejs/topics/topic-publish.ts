@@ -11,9 +11,7 @@ async function main() {
   const [cacheName, topicName, value] = clargs;
   const momento = new TopicClient({
     configuration: TopicConfigurations.Default.latest(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
   });
 
   await ensureCacheExists(cacheName);

@@ -14,9 +14,7 @@ const cacheName = 'cache';
 async function main() {
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 

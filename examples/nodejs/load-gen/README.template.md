@@ -1,6 +1,6 @@
 {{ ossHeader }}
 
-# Momento Node.js SDK - Basic Load Generator Example
+# Momento Node.js SDK - Basic Cache Client Load Generator Example
 
 _Read this in other languages_: [日本語](README.ja.md)
 
@@ -21,10 +21,10 @@ npm install
 
 ## Running the load generator example
 
-This project includes a very basic load generator, to allow you to experiment with
+This project includes a very basic load generator to allow you to experiment with
 performance in your environment based on different configurations. It's very
 simplistic, and only intended to give you a quick way to explore the performance
-of the Momento client running on a single nodejs process.
+of the Momento Cache client running on a single nodejs process.
 
 Note that because nodejs javascript code runs on a single thread, the limiting
 factor in request throughput will often be CPU. Keep an eye on your CPU
