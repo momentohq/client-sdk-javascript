@@ -169,6 +169,9 @@ import {
 
 export * from '@gomomento/sdk-core/dist/src/messages/responses/storage';
 
+// Enums representing the different types available for each response
+export * from '@gomomento/sdk-core/dist/src/messages/responses/enums';
+
 export {
   DefaultMomentoLoggerFactory,
   DefaultMomentoLogger,
