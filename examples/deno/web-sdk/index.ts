@@ -4,9 +4,9 @@
 import { serve } from 'http'
 import {
 	CacheClient,
+	CacheDelete,
 	CacheGet,
 	CacheSet,
-  CacheDelete,
 	Configurations,
 	CredentialProvider,
 } from 'momento'
@@ -45,37 +45,37 @@ export const handler = async (_request: Request): Promise<Response> => {
 	const value = 'FOO'
 
 	const setResponse = await momento.set(cacheName, key, value)
-  switch (setResponse.type) {
-    case CacheSet.Success:
-      console.log('Key stored successfully!');
-      break;
-    case CacheSet.Error:
-      console.log(`Error setting key: ${setResponse.toString()}`);
-      break;
-  }
+	switch (setResponse.type) {
+		case CacheSet.Success:
+			console.log('Key stored successfully!')
+			break
+		case CacheSet.Error:
+			console.log(`Error setting key: ${setResponse.toString()}`)
+			break
+	}
 
 	const getResponse = await momento.get(cacheName, key)
-  switch (getResponse.type) {
-    case CacheGet.Hit:
-      console.log(`cache hit: ${getResponse.valueString()}`);
-      break;
-    case CacheGet.Miss:
-      console.log('cache miss');
-      break;
-    case CacheGet.Error:
-      console.log(`Error: ${getResponse.message()}`);
-      break;
-  }
+	switch (getResponse.type) {
+		case CacheGet.Hit:
+			console.log(`cache hit: ${getResponse.valueString()}`)
+			break
+		case CacheGet.Miss:
+			console.log('cache miss')
+			break
+		case CacheGet.Error:
+			console.log(`Error: ${getResponse.message()}`)
+			break
+	}
 
 	const deleteResponse = await momento.delete(cacheName, key)
-  switch (deleteResponse.type) {
-    case CacheDelete.Success:
-      console.log('Key deleted successfully!');
-      break;
-    case CacheDelete.Error:
-      console.log(`Error deleting key: ${deleteResponse.toString()}`);
-      break;
-  }
+	switch (deleteResponse.type) {
+		case CacheDelete.Success:
+			console.log('Key deleted successfully!')
+			break
+		case CacheDelete.Error:
+			console.log(`Error deleting key: ${deleteResponse.toString()}`)
+			break
+	}
 
 	return new Response(
 		`Tested the Momento cache using: <br /> Key: ${key} | Value: ${value}`,
