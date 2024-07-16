@@ -4,9 +4,9 @@
 import { serve } from 'http'
 import {
 	CacheClient,
-	CacheDelete,
-	CacheGet,
-	CacheSet,
+	CacheDeleteResponse,
+	CacheGetResponse,
+	CacheSetResponse,
 	Configurations,
 	CredentialProvider,
 } from 'momento'
@@ -46,33 +46,33 @@ export const handler = async (_request: Request): Promise<Response> => {
 
 	const setResponse = await momento.set(cacheName, key, value)
 	switch (setResponse.type) {
-		case CacheSet.Success:
+		case CacheSetResponse.Success:
 			console.log('Key stored successfully!')
 			break
-		case CacheSet.Error:
+		case CacheSetResponse.Error:
 			console.log(`Error setting key: ${setResponse.toString()}`)
 			break
 	}
 
 	const getResponse = await momento.get(cacheName, key)
 	switch (getResponse.type) {
-		case CacheGet.Hit:
+		case CacheGetResponse.Hit:
 			console.log(`cache hit: ${getResponse.valueString()}`)
 			break
-		case CacheGet.Miss:
+		case CacheGetResponse.Miss:
 			console.log('cache miss')
 			break
-		case CacheGet.Error:
+		case CacheGetResponse.Error:
 			console.log(`Error: ${getResponse.message()}`)
 			break
 	}
 
 	const deleteResponse = await momento.delete(cacheName, key)
 	switch (deleteResponse.type) {
-		case CacheDelete.Success:
+		case CacheDeleteResponse.Success:
 			console.log('Key deleted successfully!')
 			break
-		case CacheDelete.Error:
+		case CacheDeleteResponse.Error:
 			console.log(`Error deleting key: ${deleteResponse.toString()}`)
 			break
 	}
