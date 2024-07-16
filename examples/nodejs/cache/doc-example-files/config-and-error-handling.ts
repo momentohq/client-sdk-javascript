@@ -8,7 +8,15 @@
  * a second file in the future if desired.
  *
  */
-import {CacheClient, Configurations, CredentialProvider, CacheGet, SdkError, MomentoErrorCode} from '@gomomento/sdk';
+import {
+  CacheClient,
+  Configurations,
+  CredentialProvider,
+  CacheGet,
+  SdkError,
+  MomentoErrorCode,
+  CacheGetResponse,
+} from '@gomomento/sdk';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 async function example_configuration_ConstructWithNoConfig() {
@@ -31,14 +39,17 @@ async function example_configuration_ConstructWithLambdaConfig() {
 
 async function example_configuration_ErrorHandlingHitMiss(cacheClient: CacheClient) {
   const result = await cacheClient.get('test-cache', 'test-key');
-  if (result instanceof CacheGet.Hit) {
-    console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
-  } else if (result instanceof CacheGet.Miss) {
-    console.log("Key 'test-key' was not found in cache 'test-cache'");
-  } else if (result instanceof CacheGet.Error) {
-    throw new Error(
-      `An error occurred while attempting to get key 'test-key' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case CacheGetResponse.Hit:
+      console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
+      break;
+    case CacheGetResponse.Miss:
+      console.log("Key 'test-key' was not found in cache 'test-cache'");
+      break;
+    case CacheGetResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to get key 'test-key' from cache 'test-cache': ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
