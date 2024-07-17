@@ -1089,7 +1089,7 @@ async function example_API_KeyExists(cacheClient: CacheClient, cacheName: string
   const result = await cacheClient.keyExists(cacheName, 'test-key');
   switch (result.type) {
     case CacheKeyExistsResponse.Success:
-      console.log("Does 'test-key' exists in the cache?", result.exists());
+      console.log("Does 'test-key' exist in the cache?", result.exists());
       break;
     case CacheKeyExistsResponse.Error:
       throw new Error(
