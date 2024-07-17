@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+
 /**
  *
  * This file contains examples of consuming the JavaScript APIs, for use as examples
@@ -481,10 +483,14 @@ async function example_API_GetBatch(cacheClient: CacheClient, cacheName: string)
 async function example_API_ListFetch(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.listConcatenateBack(cacheName, 'test-list', ['a', 'b', 'c']);
   const result = await cacheClient.listFetch(cacheName, 'test-list');
+
+  // simplified style; assume the value was found
+  console.log(`cache hit: ${result.value()!}`);
+
+  // pattern-matching style; safer for production code
   switch (result.type) {
     case CacheListFetchResponse.Hit:
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      console.log(`List fetched successfully: ${result.valueList()}`);
+      console.log(`List fetched successfully: ${result.value()}`);
       break;
     case CacheListFetchResponse.Miss:
       console.log(`List 'test-list' was not found in cache '${cacheName}'`);
@@ -527,6 +533,11 @@ async function example_API_ListConcatenateFront(cacheClient: CacheClient, cacheN
 async function example_API_ListLength(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.listConcatenateBack(cacheName, 'test-list', ['one', 'two', 'three']);
   const result = await cacheClient.listLength(cacheName, 'test-list');
+
+  // simplified style; assume the value was found
+  console.log(`Length of list 'test-list' is: ${result.value()!}`);
+
+  // pattern-matching style; safer for production code
   switch (result.type) {
     case CacheListLengthResponse.Hit:
       console.log(`Length of list 'test-list' is ${result.length()}`);
@@ -544,9 +555,14 @@ async function example_API_ListLength(cacheClient: CacheClient, cacheName: strin
 async function example_API_ListPopBack(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.listConcatenateBack(cacheName, 'test-list', ['one', 'two', 'three']);
   const result = await cacheClient.listPopBack(cacheName, 'test-list');
+
+  // simplified style; assume the value was found
+  console.log(`Last value, removed from 'test-list' is: ${result.value()!}`);
+
+  // pattern-matching style; safer for production code
   switch (result.type) {
     case CacheListPopBackResponse.Hit:
-      console.log(`Last value was removed successfully from list 'test-list': ${result.valueString()}`);
+      console.log(`Last value was removed successfully from list 'test-list': ${result.value()}`);
       break;
     case CacheListPopBackResponse.Miss:
       console.log(`List 'test-list' was not found in cache '${cacheName}'`);
@@ -561,9 +577,14 @@ async function example_API_ListPopBack(cacheClient: CacheClient, cacheName: stri
 async function example_API_ListPopFront(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.listConcatenateFront(cacheName, 'test-list', ['one', 'two', 'three']);
   const result = await cacheClient.listPopFront(cacheName, 'test-list');
+
+  // simplified style; assume the value was found
+  console.log(`First value, removed from 'test-list' is: ${result.value()!}`);
+
+  // pattern-matching style; safer for production code
   switch (result.type) {
     case CacheListPopFrontResponse.Hit:
-      console.log(`First value was removed successfully from list 'test-list': ${result.valueString()}`);
+      console.log(`First value was removed successfully from list 'test-list': ${result.value()}`);
       break;
     case CacheListPopFrontResponse.Miss:
       console.log(`List 'test-list' was not found in cache '${cacheName}'`);
@@ -634,10 +655,15 @@ async function example_API_ListRetain(cacheClient: CacheClient, cacheName: strin
 async function example_API_DictionaryFetch(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.dictionarySetField(cacheName, 'test-dictionary', 'test-field', 'test-value');
   const result = await cacheClient.dictionaryFetch(cacheName, 'test-dictionary');
+
+  // simplified style; assume the value was found
+  console.log(`Dictionary fetched: ${result.value()!}`);
+
+  // pattern-matching style; safer for production code
   switch (result.type) {
     case CacheDictionaryFetchResponse.Hit:
       console.log('Dictionary fetched successfully- ');
-      result.valueMapStringString().forEach((value, key) => {
+      result.valueMap().forEach((value, key) => {
         console.log(`${key} : ${value}`);
       });
       break;
@@ -654,10 +680,15 @@ async function example_API_DictionaryFetch(cacheClient: CacheClient, cacheName: 
 async function example_API_DictionaryGetField(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.dictionarySetField(cacheName, 'test-dictionary', 'test-field', 'test-value');
   const result = await cacheClient.dictionaryGetField(cacheName, 'test-dictionary', 'test-field');
+
+  // simplified style; assume the value was found
+  console.log(`Field 'test-field' fetched from dictionary: ${result.value()!}`);
+
+  // pattern-matching style; safer for production code
   switch (result.type) {
     case CacheDictionaryGetFieldResponse.Hit:
       console.log(
-        `Field ${result.fieldString()} fetched successfully from cache '${cacheName}' with value: ${result.valueString()}`
+        `Field ${result.fieldString()} fetched successfully from cache '${cacheName}' with value: ${result.value()}`
       );
       break;
     case CacheDictionaryGetFieldResponse.Miss:
@@ -680,10 +711,15 @@ async function example_API_DictionaryGetFields(cacheClient: CacheClient, cacheNa
     ])
   );
   const result = await cacheClient.dictionaryGetFields(cacheName, 'test-dictionary', ['key1', 'key2']);
+
+  // simplified style; assume the value was found
+  console.log(`Got fields from dictionary: ${result.value()!}`);
+
+  // pattern-matching style; safer for production code
   switch (result.type) {
     case CacheDictionaryGetFieldsResponse.Hit:
       console.log('Values fetched successfully- ');
-      result.valueMapStringString().forEach((value, key) => {
+      result.valueMap().forEach((value, key) => {
         console.log(`${key} : ${value}`);
       });
       break;
@@ -808,10 +844,15 @@ async function example_API_SetAddElements(cacheClient: CacheClient, cacheName: s
 async function example_API_SetFetch(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.setAddElements(cacheName, 'test-set', ['test-element1', 'test-element2']);
   const result = await cacheClient.setFetch(cacheName, 'test-set');
+
+  // simplified style; assume the value was found
+  console.log(`Set fetched: ${result.value()!}`);
+
+  // pattern-matching style; safer for production code
   switch (result.type) {
     case CacheSetFetchResponse.Hit:
       console.log('Set fetched successfully- ');
-      result.valueSet().forEach((value, key) => {
+      result.value().forEach((value, key) => {
         console.log(`${key} : ${value}`);
       });
       break;
@@ -856,9 +897,14 @@ async function example_API_SetRemoveElements(cacheClient: CacheClient, cacheName
 async function example_API_SetSample(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.setAddElements(cacheName, 'test-set', ['test-element1', 'test-element2', 'test-element3']);
   const result = await cacheClient.setSample(cacheName, 'test-set', 2);
+
+  // simplified style; assume the value was found
+  console.log(`Sampled 2 elements from set: ${result.value()!}`);
+
+  // pattern-matching style; safer for production code
   switch (result.type) {
     case CacheSetSampleResponse.Hit:
-      console.log('Sample of 2 elements fetched successfully- ');
+      console.log('Sample of 2 elements from set: ');
       result.valueSet().forEach((value, key) => {
         console.log(`${key} : ${value}`);
       });
@@ -916,10 +962,15 @@ async function example_API_SortedSetFetchByRank(cacheClient: CacheClient, cacheN
     ])
   );
   const result = await cacheClient.sortedSetFetchByRank(cacheName, 'test-sorted-set');
+
+  // simplified style; assume the value was found
+  console.log(`Sorted set fetched: ${result.value()!}`);
+
+  // pattern-matching style; safer for production code
   switch (result.type) {
     case CacheSortedSetFetchResponse.Hit:
       console.log("Values from sorted set 'test-sorted-set' fetched by rank successfully- ");
-      result.valueArray().forEach(res => {
+      result.value().forEach(res => {
         console.log(`${res.value} : ${res.score}`);
       });
       break;
@@ -943,10 +994,15 @@ async function example_API_SortedSetFetchByScore(cacheClient: CacheClient, cache
     ])
   );
   const result = await cacheClient.sortedSetFetchByScore(cacheName, 'test-sorted-set');
+
+  // simplified style; assume the value was found
+  console.log(`Fetched values from sorted set: ${result.value()!}`);
+
+  // pattern-matching style; safer for production code
   switch (result.type) {
     case CacheSortedSetFetchResponse.Hit:
       console.log("Values from sorted set 'test-sorted-set' fetched by score successfully- ");
-      result.valueArray().forEach(res => {
+      result.value().forEach(res => {
         console.log(`${res.value} : ${res.score}`);
       });
       break;
@@ -971,6 +1027,11 @@ async function example_API_SortedSetGetRank(cacheClient: CacheClient, cacheName:
     ])
   );
   const result = await cacheClient.sortedSetGetRank(cacheName, 'test-sorted-set', 'key2');
+
+  // simplified style; assume the value was found
+  console.log(`Element with value 'key1' has rank: ${result.rank()!}`);
+
+  // pattern-matching style; safer for production code
   switch (result.type) {
     case CacheSortedSetGetRankResponse.Hit:
       console.log(`Element with value 'key1' has rank: ${result.rank()}`);
@@ -995,6 +1056,11 @@ async function example_API_SortedSetGetScore(cacheClient: CacheClient, cacheName
     ])
   );
   const result = await cacheClient.sortedSetGetScore(cacheName, 'test-sorted-set', 'key1');
+
+  // simplified style; assume the value was found
+  console.log(`Element with value 'key1' has score: ${result.score()!}`);
+
+  // pattern-matching style; safer for production code
   switch (result.type) {
     case CacheSortedSetGetScoreResponse.Hit:
       console.log(`Element with value 'key1' has score: ${result.score()}`);
@@ -1019,6 +1085,11 @@ async function example_API_SortedSetGetScores(cacheClient: CacheClient, cacheNam
     ])
   );
   const result = await cacheClient.sortedSetGetScores(cacheName, 'test-sorted-set', ['key1', 'key2']);
+
+  // simplified style; assume the value was found
+  console.log(`Retrieved scores from sorted set: ${result.value()!}`);
+
+  // pattern-matching style; safer for production code
   switch (result.type) {
     case CacheSortedSetGetScoresResponse.Hit:
       console.log('Element scores retrieved successfully -');
