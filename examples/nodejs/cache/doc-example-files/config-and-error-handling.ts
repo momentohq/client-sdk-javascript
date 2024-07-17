@@ -12,7 +12,6 @@ import {
   CacheClient,
   Configurations,
   CredentialProvider,
-  CacheGet,
   SdkError,
   MomentoErrorCode,
   CacheGetResponse,
