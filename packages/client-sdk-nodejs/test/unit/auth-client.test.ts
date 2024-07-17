@@ -23,7 +23,7 @@ describe('internal auth client', () => {
         permission_messages.SuperUserPermissions.SuperUser;
       expect(
         permissionsFromTokenScope(new InternalSuperUserPermissions())
-      ).toEqual(expectedPermission);
+      ).toEqual("foo");
     });
 
     it('creates expected grpc permissions for AllDataReadWrite', () => {
