@@ -4,8 +4,9 @@
 import { serve } from 'http'
 import {
 	CacheClient,
-	CacheGet,
-	CacheSet,
+	CacheDeleteResponse,
+	CacheGetResponse,
+	CacheSetResponse,
 	Configurations,
 	CredentialProvider,
 } from 'momento'
@@ -44,28 +45,36 @@ export const handler = async (_request: Request): Promise<Response> => {
 	const value = 'FOO'
 
 	const setResponse = await momento.set(cacheName, key, value)
-	if (setResponse instanceof CacheSet.Success) {
-		console.log('Key stored successfully!')
-	} else {
-		console.log(`Error setting key: ${setResponse.toString()}`)
+	switch (setResponse.type) {
+		case CacheSetResponse.Success:
+			console.log('Key stored successfully!')
+			break
+		case CacheSetResponse.Error:
+			console.log(`Error setting key: ${setResponse.toString()}`)
+			break
 	}
 
 	const getResponse = await momento.get(cacheName, key)
-	if (getResponse instanceof CacheGet.Hit) {
-		console.log(`cache hit: ${getResponse.valueString()}`)
-	} else if (getResponse instanceof CacheGet.Miss) {
-		console.log('cache miss')
-	} else if (getResponse instanceof CacheGet.Error) {
-		console.log(`Error: ${getResponse.message()}`)
+	switch (getResponse.type) {
+		case CacheGetResponse.Hit:
+			console.log(`cache hit: ${getResponse.valueString()}`)
+			break
+		case CacheGetResponse.Miss:
+			console.log('cache miss')
+			break
+		case CacheGetResponse.Error:
+			console.log(`Error: ${getResponse.message()}`)
+			break
 	}
 
 	const deleteResponse = await momento.delete(cacheName, key)
-	if (deleteResponse instanceof CacheGet.Hit) {
-		console.log(`cache hit: ${deleteResponse.valueString()}`)
-	} else if (deleteResponse instanceof CacheGet.Miss) {
-		console.log('cache miss')
-	} else if (deleteResponse instanceof CacheGet.Error) {
-		console.log(`Error: ${deleteResponse.message()}`)
+	switch (deleteResponse.type) {
+		case CacheDeleteResponse.Success:
+			console.log('Key deleted successfully!')
+			break
+		case CacheDeleteResponse.Error:
+			console.log(`Error deleting key: ${deleteResponse.toString()}`)
+			break
 	}
 
 	return new Response(
