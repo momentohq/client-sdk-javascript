@@ -8,9 +8,19 @@ import {
   StaticStorageGrpcConfiguration,
   StaticStorageTransportStrategy,
 } from './transport/storage';
+import {DefaultStorageRetryStrategy} from './retry/storage-default-retry-strategy';
+import {RetryStrategy} from './retry/retry-strategy';
 
 const defaultLoggerFactory: MomentoLoggerFactory =
   new DefaultMomentoLoggerFactory();
+
+function defaultRetryStrategy(
+  loggerFactory: MomentoLoggerFactory
+): RetryStrategy {
+  return new DefaultStorageRetryStrategy({
+    loggerFactory: loggerFactory,
+  });
+}
 
 /**
  * Laptop config provides defaults suitable for a medium-to-high-latency dev environment.
@@ -34,6 +44,7 @@ export class Laptop extends StorageClientConfiguration {
           deadlineMillis: 5000,
         }),
       }),
+      retryStrategy: defaultRetryStrategy(loggerFactory),
     });
   }
 }
