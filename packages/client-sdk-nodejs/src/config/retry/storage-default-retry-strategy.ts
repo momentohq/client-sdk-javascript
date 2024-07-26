@@ -3,8 +3,8 @@ import {
   RetryStrategy,
 } from './retry-strategy';
 import {EligibilityStrategy} from './eligibility-strategy';
-import {DefaultEligibilityStrategy} from './default-eligibility-strategy';
 import {MomentoLoggerFactory, MomentoLogger} from '../../';
+import {DefaultStorageEligibilityStrategy} from './storage-default-eligibility-strategy';
 
 export interface DefaultStorageRetryStrategyProps {
   loggerFactory: MomentoLoggerFactory;
@@ -22,7 +22,7 @@ export class DefaultStorageRetryStrategy implements RetryStrategy {
     this.logger = props.loggerFactory.getLogger(this);
     this.eligibilityStrategy =
       props.eligibilityStrategy ??
-      new DefaultEligibilityStrategy(props.loggerFactory);
+      new DefaultStorageEligibilityStrategy(props.loggerFactory);
     this.retryDelayInterval = props.retryDelayInterval ?? 100;
   }
 
@@ -37,7 +37,7 @@ export class DefaultStorageRetryStrategy implements RetryStrategy {
       return null;
     }
     this.logger.debug(
-      `Request is eligible for retry (attempt ${props.attemptNumber}), retrying immediately.`
+      `Request is eligible for retry (attempt ${props.attemptNumber}), retrying soon.`
     );
     // retry after a fixed time interval has passed
     return this.retryDelayInterval;

@@ -31,8 +31,8 @@ const retryableGrpcStatusCodes: Array<Status> = [
 // TODO: verify correct strings. Should be proto file's "<package name>.<service name>/<RPC name>" right?
 const retryableRequestTypes: Array<string> = [
   '/store.Store/Put',
-  '/store.Store.?/Get',
-  '/store.Store.?/Delete',
+  '/store.Store/Get',
+  '/store.Store/Delete',
 ];
 
 export class DefaultStorageEligibilityStrategy implements EligibilityStrategy {

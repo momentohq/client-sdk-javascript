@@ -26,6 +26,8 @@ import {StorageConfiguration} from '../config/storage-configuration';
 import {StorageClientPropsWithConfig} from './storage-client-props-with-config';
 import {StaticGrpcConfiguration} from '../config/transport/cache';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {createStorageClientTimeoutInterceptor} from './grpc/storage-client-timeout-interceptor';
+import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
 
 export class StorageDataClient implements IStorageDataClient {
   private readonly configuration: StorageConfiguration;
@@ -36,6 +38,7 @@ export class StorageDataClient implements IStorageDataClient {
   private readonly client: store.StoreClient;
   private readonly interceptors: Interceptor[];
   private static readonly DEFAULT_MAX_SESSION_MEMORY_MB: number = 256;
+  private readonly responseDataReceivedTimeoutMs: number;
 
   /**
    * @param {StorageClientPropsWithConfig} props
@@ -49,6 +52,9 @@ export class StorageDataClient implements IStorageDataClient {
       .getTransportStrategy()
       .getGrpcConfig()
       .getDeadlineMillis();
+    this.responseDataReceivedTimeoutMs = this.configuration
+      .getTransportStrategy()
+      .getResponseDataReceivedTimeout();
     this.validateRequestTimeout(this.requestTimeoutMs);
     this.logger.debug(
       `Creating leaderboard client using endpoint: '${this.credentialProvider.getStorageEndpoint()}'`
@@ -112,6 +118,10 @@ export class StorageDataClient implements IStorageDataClient {
       new Header('runtime-version', `nodejs:${process.versions.node}`),
     ];
     return [
+      ...createRetryInterceptorIfEnabled(
+        this.configuration.getLoggerFactory(),
+        this.configuration.getRetryStrategy()
+      ),
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
       ClientTimeoutInterceptor(this.requestTimeoutMs),
     ];
@@ -154,7 +164,13 @@ export class StorageDataClient implements IStorageDataClient {
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.interceptors.concat(
+            createStorageClientTimeoutInterceptor(
+              this.configuration.getLoggerFactory(),
+              this.requestTimeoutMs,
+              this.responseDataReceivedTimeoutMs
+            )
+          ),
         },
         (err: ServiceError | null, resp) => {
           const value = resp?.value?.value;
@@ -277,7 +293,13 @@ export class StorageDataClient implements IStorageDataClient {
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.interceptors.concat(
+            createStorageClientTimeoutInterceptor(
+              this.configuration.getLoggerFactory(),
+              this.requestTimeoutMs,
+              this.responseDataReceivedTimeoutMs
+            )
+          ),
         },
         (err: ServiceError | null, resp) => {
           if (resp) {
@@ -326,7 +348,13 @@ export class StorageDataClient implements IStorageDataClient {
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.interceptors.concat(
+            createStorageClientTimeoutInterceptor(
+              this.configuration.getLoggerFactory(),
+              this.requestTimeoutMs,
+              this.responseDataReceivedTimeoutMs
+            )
+          ),
         },
         (err: ServiceError | null, resp) => {
           if (resp) {

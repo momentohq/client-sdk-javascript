@@ -22,6 +22,11 @@ export interface StorageConfiguration {
   getTransportStrategy(): StorageTransportStrategy;
 
   /**
+   * @returns {RetryStrategy} the current configuration options for how and when failed requests will be retried
+   */
+  getRetryStrategy(): RetryStrategy;
+
+  /**
    * Convenience copy constructor that updates the client-side timeout setting in the TransportStrategy
    * @param {number} clientTimeoutMillis
    * @returns {StorageConfiguration} a new Configuration object with its TransportStrategy updated to use the specified client timeout
@@ -77,6 +82,10 @@ export class StorageClientConfiguration implements StorageConfiguration {
 
   getTransportStrategy(): StorageTransportStrategy {
     return this.transportStrategy;
+  }
+
+  getRetryStrategy(): RetryStrategy {
+    return this.retryStrategy;
   }
 
   withClientTimeoutMillis(clientTimeoutMillis: number): StorageConfiguration {
