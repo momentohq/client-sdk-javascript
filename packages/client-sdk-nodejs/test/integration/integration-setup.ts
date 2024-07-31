@@ -13,8 +13,6 @@ import {
   LeaderboardConfigurations,
   PreviewStorageClient,
   StorageConfigurations,
-  DefaultMomentoLoggerFactory,
-  DefaultMomentoLoggerLevel,
 } from '../../src';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
@@ -151,9 +149,7 @@ function momentoTopicClientForTesting(): TopicClient {
 
 function momentoStorageClientForTesting(): PreviewStorageClient {
   return new PreviewStorageClient({
-    configuration: StorageConfigurations.Laptop.latest(
-      new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.DEBUG)
-    ),
+    configuration: StorageConfigurations.Laptop.latest(),
     credentialProvider: integrationTestCacheClientProps().credentialProvider,
   });
 }
