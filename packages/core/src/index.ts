@@ -33,6 +33,8 @@ import * as CacheSetContainsElements from './messages/responses/cache-set-contai
 import * as CacheSetRemoveElements from './messages/responses/cache-set-remove-elements';
 import * as CacheSetRemoveElement from './messages/responses/cache-set-remove-element';
 import * as CacheSetSample from './messages/responses/cache-set-sample';
+import * as CacheSetPop from './messages/responses/cache-set-pop';
+import * as CacheSetLength from './messages/responses/cache-set-length';
 import * as CacheIncrement from './messages/responses/cache-increment';
 import * as CacheSetIfNotExists from './messages/responses/cache-set-if-not-exists';
 import * as CacheSetIfAbsent from './messages/responses/cache-set-if-absent';
@@ -262,6 +264,8 @@ export {
   CacheSetRemoveElements,
   CacheSetRemoveElement,
   CacheSetSample,
+  CacheSetPop,
+  CacheSetLength,
   CacheSortedSetPutElement,
   CacheSortedSetPutElements,
   CacheSortedSetFetch,

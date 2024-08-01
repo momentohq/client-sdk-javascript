@@ -71,6 +71,8 @@ import {
   CacheSetIfPresentAndNotEqual,
   CacheSetIfAbsentOrEqual,
   CacheSetSample,
+  CacheSetPop,
+  CacheSetLength,
 } from '../../../index';
 import {
   ListFetchCallOptions,
@@ -749,6 +751,46 @@ export abstract class AbstractCacheClient implements ICacheClient {
   ): Promise<CacheSetSample.Response> {
     const client = this.getNextDataClient();
     return await client.setSample(cacheName, setName, limit);
+  }
+
+  /**
+   * Fetch and remove a random sample of elements from the set.
+   * Returns a different random sample for each call.
+   *
+   * @param {string} cacheName - The cache containing the set.
+   * @param {string} setName - The set to remove from.
+   * @param {number} count - The maximum number of elements to return.
+   * If the set contains fewer than 'limit' elements, the entire set will be returned.
+   * @returns {Promise<CacheSetPop.Response>} -
+   * {@link CacheSetPop.Hit} containing the set elements if the set exists.
+   * {@link CacheSetPop.Miss} if the set does not exist.
+   * {@link CacheSetPop.Error} on failure.
+   */
+  public async setPop(
+    cacheName: string,
+    setName: string,
+    count: number
+  ): Promise<CacheSetPop.Response> {
+    const client = this.getNextDataClient();
+    return await client.setPop(cacheName, setName, count);
+  }
+
+  /**
+   * Get the number of elements in the set.
+   *
+   * @param {string} cacheName - The cache containing the set.
+   * @param {string} setName - The set to remove from.
+   * @returns {Promise<CacheSetLength.Response>} -
+   * {@link CacheSetLength.Hit} containing the set elements if the set exists.
+   * {@link CacheSetLength.Miss} if the set does not exist.
+   * {@link CacheSetLength.Error} on failure.
+   */
+  public async setLength(
+    cacheName: string,
+    setName: string
+  ): Promise<CacheSetLength.Response> {
+    const client = this.getNextDataClient();
+    return await client.setLength(cacheName, setName);
   }
 
   /**

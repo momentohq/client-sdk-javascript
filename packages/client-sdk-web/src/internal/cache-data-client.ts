@@ -119,6 +119,8 @@ import {
   _GetBatchRequest,
   _SetBatchRequest,
   _SetSampleRequest,
+  _SetPopRequest,
+  _SetLengthRequest,
 } from '@gomomento/generated-types-webtext/dist/cacheclient_pb';
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {
@@ -136,6 +138,7 @@ import {
   validateTtlSeconds,
   validateValidForSeconds,
   validateSetSampleLimit,
+  validateSetPopCount,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
   convertToB64String,
@@ -160,6 +163,7 @@ import {
   SetCallOptions,
   SetIfAbsentCallOptions,
 } from '@gomomento/sdk-core/dist/src/utils';
+import {CacheSetLength, CacheSetPop} from '@gomomento/sdk-core';
 
 export interface DataClientProps {
   configuration: Configuration;
@@ -1616,6 +1620,125 @@ export class CacheDataClient<
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSetSample.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
+  public async setPop(
+    cacheName: string,
+    setName: string,
+    count: number
+  ): Promise<CacheSetPop.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+      validateSetPopCount(count);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetPop.Error(err)
+      );
+    }
+    return await this.sendSetPop(cacheName, convertToB64String(setName), count);
+  }
+
+  private async sendSetPop(
+    cacheName: string,
+    setName: string,
+    count: number
+  ): Promise<CacheSetPop.Response> {
+    const request = new _SetPopRequest();
+    request.setSetName(setName);
+    request.setCount(count);
+
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.setPop(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          const theSet = resp?.getFound();
+          if (theSet && theSet.getElementsList()) {
+            const found = theSet.getElementsList();
+            resolve(new CacheSetPop.Hit(this.convertArrayToUint8(found)));
+          } else if (resp?.getMissing()) {
+            resolve(new CacheSetPop.Miss());
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetPop.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
+  public async setLength(
+    cacheName: string,
+    setName: string
+  ): Promise<CacheSetLength.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetLength.Error(err)
+      );
+    }
+
+    this.logger.trace("Issuing 'setLength' request");
+
+    const result = await this.sendSetLength(
+      cacheName,
+      convertToB64String(setName)
+    );
+
+    this.logger.trace(
+      "'setLength' request result: %s",
+      truncateString(result.toString())
+    );
+    return result;
+  }
+
+  private async sendSetLength(
+    cacheName: string,
+    setName: string
+  ): Promise<CacheSetLength.Response> {
+    const request = new _SetLengthRequest();
+    request.setSetName(setName);
+
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.setLength(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp?.getMissing()) {
+            resolve(new CacheSetLength.Miss());
+          } else if (resp?.getFound()) {
+            const len = resp.getFound()?.getLength();
+            if (!len) {
+              resolve(new CacheSetLength.Miss());
+            } else {
+              resolve(new CacheSetLength.Hit(len));
+            }
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetLength.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
