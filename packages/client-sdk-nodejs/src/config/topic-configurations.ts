@@ -32,6 +32,11 @@ export class Default extends TopicClientConfiguration {
       transportStrategy: new StaticTopicTransportStrategy({
         grpcConfiguration: new StaticTopicGrpcConfiguration({
           numClients: 1,
+          // TODO: when we introduce lambda configurations, we do not want to enable keepalives, because they
+          //  cause issues on lambda.
+          keepAlivePermitWithoutCalls: 1,
+          keepAliveTimeMs: 5000,
+          keepAliveTimeoutMs: 1000,
         }),
       }),
       throwOnErrors: false,
