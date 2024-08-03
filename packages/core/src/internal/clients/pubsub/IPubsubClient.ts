@@ -5,7 +5,6 @@ import {
 } from '../../../index';
 
 export interface IPubsubClient {
-  getEndpoint(): string;
   publish(
     cacheName: string,
     topicName: string,

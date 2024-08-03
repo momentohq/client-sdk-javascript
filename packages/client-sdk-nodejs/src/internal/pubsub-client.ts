@@ -10,7 +10,6 @@ import {version} from '../../package.json';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {
   CredentialProvider,
-  MomentoLogger,
   StaticGrpcConfiguration,
   TopicItem,
   TopicPublish,
@@ -29,13 +28,10 @@ import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 
 export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   private readonly client: grpcPubsub.PubsubClient;
-  private readonly configuration: TopicConfiguration;
-  protected override readonly credentialProvider: CredentialProvider;
+  protected readonly credentialProvider: CredentialProvider;
   private readonly unaryRequestTimeoutMs: number;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
   private static readonly DEFAULT_MAX_SESSION_MEMORY_MB: number = 256;
-  protected override readonly logger: MomentoLogger;
-  protected override readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly unaryInterceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
 
@@ -46,15 +42,14 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
    * @param {TopicClientProps} props
    */
   constructor(props: TopicClientPropsWithConfiguration) {
-    super();
-    this.configuration = props.configuration;
-    this.credentialProvider = props.credentialProvider;
-    this.logger = this.configuration.getLoggerFactory().getLogger(this);
-    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
-      this.configuration.getThrowOnErrors()
+    super(
+      props.configuration.getLoggerFactory(),
+      props.configuration.getLoggerFactory().getLogger(PubsubClient.name),
+      new CacheServiceErrorMapper(props.configuration.getThrowOnErrors())
     );
+    this.credentialProvider = props.credentialProvider;
     this.unaryRequestTimeoutMs = PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
-    this.logger.debug(
+    this.getLogger().debug(
       `Creating topic client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
     );
 
@@ -66,6 +61,14 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
     });
 
     const channelOptions = grpcChannelOptionsFromGrpcConfig(grpcConfig);
+
+    console.log(
+      `Creating pubsub client with channel options: ${JSON.stringify(
+        channelOptions,
+        null,
+        2
+      )}`
+    );
 
     this.client = new grpcPubsub.PubsubClient(
       this.credentialProvider.getCacheEndpoint(),
@@ -89,9 +92,9 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
       PubsubClient.initializeStreamingInterceptors(headers);
   }
 
-  public override getEndpoint(): string {
+  public getEndpoint(): string {
     const endpoint = this.credentialProvider.getCacheEndpoint();
-    this.logger.debug(`Using cache endpoint: ${endpoint}`);
+    this.getLogger().debug(`Using cache endpoint: ${endpoint}`);
     return endpoint;
   }
 
@@ -123,7 +126,7 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
           if (resp) {
             resolve(new TopicPublish.Success());
           } else {
-            this.cacheServiceErrorMapper.resolveOrRejectError({
+            this.getCacheServiceErrorMapper().resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new TopicPublish.Error(e),
               resolveFn: resolve,
@@ -209,7 +212,7 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
             })
           );
         } else {
-          this.logger.error(
+          this.getLogger().error(
             'Received subscription item with unknown type; topic: %s',
             truncateString(options.topicName)
           );
@@ -221,17 +224,17 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
           );
         }
       } else if (resp?.heartbeat) {
-        this.logger.trace(
+        this.getLogger().trace(
           'Received heartbeat from subscription stream; topic: %s',
           truncateString(options.topicName)
         );
       } else if (resp?.discontinuity) {
-        this.logger.trace(
+        this.getLogger().trace(
           'Received discontinuity from subscription stream; topic: %s',
           truncateString(options.topicName)
         );
       } else {
-        this.logger.error(
+        this.getLogger().error(
           'Received unknown subscription item; topic: %s',
           truncateString(options.topicName)
         );
@@ -257,7 +260,7 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
         serviceError.code === Status.INTERNAL &&
         serviceError.details === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE;
       const momentoError = new TopicSubscribe.Error(
-        this.cacheServiceErrorMapper.convertError(serviceError)
+        this.getCacheServiceErrorMapper().convertError(serviceError)
       );
       this.handleSubscribeError(options, momentoError, isRstStreamNoError);
     };

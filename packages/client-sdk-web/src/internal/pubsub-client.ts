@@ -1,11 +1,6 @@
 import * as pubsub from '@gomomento/generated-types-webtext/dist/CachepubsubServiceClientPb';
 import * as cachepubsub_pb from '@gomomento/generated-types-webtext/dist/cachepubsub_pb';
-import {
-  CredentialProvider,
-  MomentoLogger,
-  TopicItem,
-  UnknownError,
-} from '@gomomento/sdk-core';
+import {CredentialProvider, TopicItem, UnknownError} from '@gomomento/sdk-core';
 import {Request, RpcError, StatusCode, UnaryResponse} from 'grpc-web';
 import {truncateString} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {TopicPublish, TopicSubscribe} from '../index';
@@ -21,7 +16,6 @@ import {
   getWebCacheEndpoint,
 } from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
-import {TopicConfiguration} from '../config/topic-configuration';
 import {TopicClientPropsWithConfiguration} from './topic-client-props-with-config';
 
 export class PubsubClient<
@@ -29,12 +23,9 @@ export class PubsubClient<
   RESP extends UnaryResponse<REQ, RESP>
 > extends AbstractPubsubClient<RpcError> {
   private readonly client: pubsub.PubsubClient;
-  private readonly configuration: TopicConfiguration;
-  protected override readonly credentialProvider: CredentialProvider;
+  private readonly credentialProvider: CredentialProvider;
   private readonly requestTimeoutMs: number;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
-  protected override readonly logger: MomentoLogger;
-  protected override readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly clientMetadataProvider: ClientMetadataProvider;
 
   private static readonly RST_STREAM_NO_ERROR_MESSAGE =
@@ -43,18 +34,17 @@ export class PubsubClient<
     'Http response at 400 or 500 level, http status code: 0';
 
   constructor(props: TopicClientPropsWithConfiguration) {
-    super();
-    this.configuration = props.configuration;
-    this.credentialProvider = props.credentialProvider;
-    this.logger = this.configuration.getLoggerFactory().getLogger(this);
-    this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
-      props.configuration.getThrowOnErrors()
+    super(
+      props.configuration.getLoggerFactory(),
+      props.configuration.getLoggerFactory().getLogger(PubsubClient.name),
+      new CacheServiceErrorMapper(props.configuration.getThrowOnErrors())
     );
 
+    this.credentialProvider = props.credentialProvider;
     this.requestTimeoutMs = PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
-    this.logger.debug(
+    this.getLogger().debug(
       `Creating topic client using endpoint: '${getWebCacheEndpoint(
-        this.credentialProvider
+        props.credentialProvider
       )}'`
     );
 
@@ -70,9 +60,9 @@ export class PubsubClient<
     });
   }
 
-  public override getEndpoint(): string {
+  public getEndpoint(): string {
     const endpoint = getWebCacheEndpoint(this.credentialProvider);
-    this.logger.debug(`Using cache endpoint: ${endpoint}`);
+    this.getLogger().debug(`Using cache endpoint: ${endpoint}`);
     return endpoint;
   }
 
@@ -104,7 +94,7 @@ export class PubsubClient<
           if (resp) {
             resolve(new TopicPublish.Success());
           } else {
-            this.cacheServiceErrorMapper.resolveOrRejectError({
+            this.getCacheServiceErrorMapper().resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new TopicPublish.Error(e),
               resolveFn: resolve,
@@ -190,7 +180,7 @@ export class PubsubClient<
         } else if (itemBinary) {
           options.onItem(new TopicItem(itemBinary, {tokenId: publisherId}));
         } else {
-          this.logger.error(
+          this.getLogger().error(
             'Received subscription item with unknown type; topic: %s',
             truncateString(options.topicName)
           );
@@ -202,17 +192,17 @@ export class PubsubClient<
           );
         }
       } else if (resp?.getHeartbeat()) {
-        this.logger.trace(
+        this.getLogger().trace(
           'Received heartbeat from subscription stream; topic: %s',
           truncateString(options.topicName)
         );
       } else if (resp?.getDiscontinuity()) {
-        this.logger.trace(
+        this.getLogger().trace(
           'Received discontinuity from subscription stream; topic: %s',
           truncateString(options.topicName)
         );
       } else {
-        this.logger.error(
+        this.getLogger().error(
           'Received unknown subscription item; topic: %s',
           truncateString(options.topicName)
         );
@@ -243,7 +233,7 @@ export class PubsubClient<
       const shouldReconnectSubscription =
         isBrowserDisconnect || isRstStreamNoError;
       const momentoError = new TopicSubscribe.Error(
-        this.cacheServiceErrorMapper.convertError(serviceError)
+        this.getCacheServiceErrorMapper().convertError(serviceError)
       );
       this.handleSubscribeError(
         options,

@@ -2,6 +2,7 @@ import {SdkError} from '../../errors';
 import {BaseResponseError, BaseResponseSubscription} from './response-base';
 import {SubscriptionState} from '../../internal/subscription-state';
 import {TopicSubscribeResponse} from './enums';
+import {MomentoLogger, MomentoLoggerFactory} from '../../config/logging';
 
 interface IResponse {
   readonly type: TopicSubscribeResponse;
@@ -19,11 +20,16 @@ export class Subscription
   implements IResponse
 {
   private subscriptionState: SubscriptionState;
+  private readonly logger: MomentoLogger;
   readonly type: TopicSubscribeResponse.Subscription =
     TopicSubscribeResponse.Subscription;
 
-  constructor(subscriptionState: SubscriptionState) {
+  constructor(
+    loggerFactory: MomentoLoggerFactory,
+    subscriptionState: SubscriptionState
+  ) {
     super();
+    this.logger = loggerFactory.getLogger(this);
     this.subscriptionState = subscriptionState;
   }
 
@@ -33,6 +39,9 @@ export class Subscription
    * @returns void
    */
   public unsubscribe(): void {
+    this.logger.trace(
+      `Unsubscribing from subscription: ${this.subscriptionState.toString()}`
+    );
     this.subscriptionState.unsubscribe();
   }
 

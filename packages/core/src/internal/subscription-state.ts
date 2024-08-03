@@ -38,4 +38,15 @@ export class SubscriptionState {
       this.setUnsubscribed();
     }
   }
+
+  public toString(): string {
+    return JSON.stringify(
+      {
+        lastTopicSequenceNumber: this.lastTopicSequenceNumber,
+        isSubscribed: this._isSubscribed,
+      },
+      null,
+      2
+    );
+  }
 }
