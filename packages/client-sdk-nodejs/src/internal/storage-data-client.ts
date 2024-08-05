@@ -54,7 +54,8 @@ export class StorageDataClient implements IStorageDataClient {
       .getDeadlineMillis();
     this.responseDataReceivedTimeoutMs = this.configuration
       .getTransportStrategy()
-      .getResponseDataReceivedTimeout();
+      .getGrpcConfig()
+      .getResponseDataReceivedTimeoutMillis();
     this.validateRequestTimeout(this.requestTimeoutMs);
     this.logger.debug(
       `Creating leaderboard client using endpoint: '${this.credentialProvider.getStorageEndpoint()}'`

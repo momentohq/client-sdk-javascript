@@ -42,6 +42,7 @@ export class Laptop extends StorageClientConfiguration {
       transportStrategy: new StaticStorageTransportStrategy({
         grpcConfiguration: new StaticStorageGrpcConfiguration({
           deadlineMillis: 5000,
+          responseDataReceivedTimeoutMillis: 1000,
         }),
       }),
       retryStrategy: defaultRetryStrategy(loggerFactory),
