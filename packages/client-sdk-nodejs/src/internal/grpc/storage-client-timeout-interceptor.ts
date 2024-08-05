@@ -57,7 +57,7 @@ export class StorageClientTimeoutInterceptor {
       );
 
       // Reset incremental deadline only if it has been reached
-      if (receivedDeadline < new Date(Date.now()).valueOf()) {
+      if (receivedDeadline < Date.now()) {
         this.logger.debug('received deadline < current time, resetting');
 
         const deadline = new Date(Date.now());
