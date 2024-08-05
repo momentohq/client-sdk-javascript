@@ -28,10 +28,10 @@ export interface StorageConfiguration {
 
   /**
    * Convenience copy constructor that updates the client-side timeout setting in the TransportStrategy
-   * @param {number} clientTimeoutMillis
+   * @param {number} requestTimeoutMillis
    * @returns {StorageConfiguration} a new Configuration object with its TransportStrategy updated to use the specified client timeout
    */
-  withClientTimeoutMillis(clientTimeoutMillis: number): StorageConfiguration;
+  withRequestTimeoutMillis(requestTimeoutMillis: number): StorageConfiguration;
 
   /**
    * Copy constructor for overriding TransportStrategy
@@ -88,11 +88,11 @@ export class StorageClientConfiguration implements StorageConfiguration {
     return this.retryStrategy;
   }
 
-  withClientTimeoutMillis(clientTimeoutMillis: number): StorageConfiguration {
+  withRequestTimeoutMillis(requestTimeoutMillis: number): StorageConfiguration {
     return new StorageClientConfiguration({
       loggerFactory: this.loggerFactory,
       transportStrategy:
-        this.transportStrategy.withClientTimeoutMillis(clientTimeoutMillis),
+        this.transportStrategy.withRequestTimeoutMillis(requestTimeoutMillis),
       retryStrategy: this.retryStrategy,
     });
   }
