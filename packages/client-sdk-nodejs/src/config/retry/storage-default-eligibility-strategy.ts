@@ -28,7 +28,6 @@ const retryableGrpcStatusCodes: Array<Status> = [
   // Status.UNAUTHENTICATED
 ];
 
-// TODO: verify correct strings. Should be proto file's "<package name>.<service name>/<RPC name>" right?
 const retryableRequestTypes: Array<string> = [
   '/store.Store/Put',
   '/store.Store/Get',
