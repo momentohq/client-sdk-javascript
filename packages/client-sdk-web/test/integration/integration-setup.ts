@@ -27,7 +27,8 @@ import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {CacheClientPropsWithConfig} from '../../src/internal/cache-client-props-with-config';
 
 let _credsProvider: CredentialProvider | undefined = undefined;
-let _sessionCredsProvider: CredentialProvider | undefined = undefined;
+let _mgaAccountSessionTokenCredsProvider: CredentialProvider | undefined =
+  undefined;
 
 export function credsProvider(): CredentialProvider {
   if (_credsProvider === undefined) {
@@ -57,33 +58,34 @@ export function credsProvider(): CredentialProvider {
   return _credsProvider;
 }
 
-function sessionCredsProvider(): CredentialProvider {
-  if (_sessionCredsProvider === undefined) {
-    _sessionCredsProvider = CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'TEST_SESSION_TOKEN',
-      // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
-      // steal them from the auth-token-based creds provider.
-      endpointOverrides: {
-        cacheEndpoint: {
-          endpoint: credsProvider().getCacheEndpoint(),
-          secureConnection: credsProvider().isCacheEndpointSecure(),
+function mgaAccountSessionTokenCredsProvider(): CredentialProvider {
+  if (_mgaAccountSessionTokenCredsProvider === undefined) {
+    _mgaAccountSessionTokenCredsProvider =
+      CredentialProvider.fromEnvironmentVariable({
+        environmentVariableName: 'TEST_MGA_ACCOUNT_SESSION_TOKEN',
+        // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
+        // steal them from the auth-token-based creds provider.
+        endpointOverrides: {
+          cacheEndpoint: {
+            endpoint: credsProvider().getCacheEndpoint(),
+            secureConnection: credsProvider().isCacheEndpointSecure(),
+          },
+          controlEndpoint: {
+            endpoint: credsProvider().getControlEndpoint(),
+            secureConnection: credsProvider().isControlEndpointSecure(),
+          },
+          tokenEndpoint: {
+            endpoint: credsProvider().getTokenEndpoint(),
+            secureConnection: credsProvider().isTokenEndpointSecure(),
+          },
+          storageEndpoint: {
+            endpoint: credsProvider().getStorageEndpoint(),
+            secureConnection: credsProvider().isStorageEndpointSecure(),
+          },
         },
-        controlEndpoint: {
-          endpoint: credsProvider().getControlEndpoint(),
-          secureConnection: credsProvider().isControlEndpointSecure(),
-        },
-        tokenEndpoint: {
-          endpoint: credsProvider().getTokenEndpoint(),
-          secureConnection: credsProvider().isTokenEndpointSecure(),
-        },
-        storageEndpoint: {
-          endpoint: credsProvider().getStorageEndpoint(),
-          secureConnection: credsProvider().isStorageEndpointSecure(),
-        },
-      },
-    });
+      });
   }
-  return _sessionCredsProvider;
+  return _mgaAccountSessionTokenCredsProvider;
 }
 
 function integrationTestCacheClientProps(): CacheClientPropsWithConfig {
@@ -105,11 +107,11 @@ function momentoClientWithThrowOnErrorsForTesting(): CacheClient {
   return new CacheClient(props);
 }
 
-function momentoClientForTestingWithSessionToken(): CacheClient {
+function momentoCacheClientForTestingWithMgaAccountSessionToken(): CacheClient {
   return new CacheClient({
     configuration:
       Configurations.Laptop.latest().withClientTimeoutMillis(90000),
-    credentialProvider: sessionCredsProvider(),
+    credentialProvider: mgaAccountSessionTokenCredsProvider(),
     defaultTtlSeconds: 1111,
   });
 }
@@ -151,10 +153,10 @@ function momentoClientForTestingConsistentReadConcern(): CacheClient {
   return new CacheClient(props);
 }
 
-function momentoTopicClientForTestingWithSessionToken(): TopicClient {
+function momentoTopicClientForTestingWithMgaAccountSessionToken(): TopicClient {
   return new TopicClient({
     configuration: integrationTestCacheClientProps().configuration,
-    credentialProvider: sessionCredsProvider(),
+    credentialProvider: mgaAccountSessionTokenCredsProvider(),
   });
 }
 
@@ -260,10 +262,10 @@ export function SetupLeaderboardIntegrationTest(): {
 }
 
 export function SetupAuthClientIntegrationTest(): {
-  sessionTokenAuthClient: AuthClient;
+  mgaAccountSessionTokenAuthClient: AuthClient;
   legacyTokenAuthClient: AuthClient;
-  sessionTokenCacheClient: CacheClient;
-  sessionTokenTopicClient: TopicClient;
+  mgaAccountSessionTokenCacheClient: CacheClient;
+  mgaAccountSessionTokenTopicClient: TopicClient;
   authTokenAuthClientFactory: (authToken: string) => AuthClient;
   cacheClientFactory: (token: string) => ICacheClient;
   topicClientFactory: (token: string) => ITopicClient;
@@ -273,7 +275,7 @@ export function SetupAuthClientIntegrationTest(): {
 
   beforeAll(async () => {
     // Use a fresh client to avoid test interference with setup.
-    const momento = momentoClientForTestingWithSessionToken();
+    const momento = momentoCacheClientForTestingWithMgaAccountSessionToken();
     await deleteCacheIfExists(momento, cacheName);
     const createResponse = await momento.createCache(cacheName);
     if (createResponse instanceof CreateCache.Error) {
@@ -283,7 +285,7 @@ export function SetupAuthClientIntegrationTest(): {
 
   afterAll(async () => {
     // Use a fresh client to avoid test interference with teardown.
-    const momento = momentoClientForTestingWithSessionToken();
+    const momento = momentoCacheClientForTestingWithMgaAccountSessionToken();
     const deleteResponse = await momento.deleteCache(cacheName);
     if (deleteResponse instanceof DeleteCache.Error) {
       throw deleteResponse.innerException();
@@ -291,16 +293,18 @@ export function SetupAuthClientIntegrationTest(): {
   });
 
   return {
-    sessionTokenAuthClient: new AuthClient({
-      credentialProvider: sessionCredsProvider(),
+    mgaAccountSessionTokenAuthClient: new AuthClient({
+      credentialProvider: mgaAccountSessionTokenCredsProvider(),
     }),
     legacyTokenAuthClient: new AuthClient({
       credentialProvider: CredentialProvider.fromEnvironmentVariable({
         environmentVariableName: 'TEST_LEGACY_AUTH_TOKEN',
       }),
     }),
-    sessionTokenCacheClient: momentoClientForTestingWithSessionToken(),
-    sessionTokenTopicClient: momentoTopicClientForTestingWithSessionToken(),
+    mgaAccountSessionTokenCacheClient:
+      momentoCacheClientForTestingWithMgaAccountSessionToken(),
+    mgaAccountSessionTokenTopicClient:
+      momentoTopicClientForTestingWithMgaAccountSessionToken(),
     authTokenAuthClientFactory: authToken =>
       new AuthClient({
         credentialProvider: CredentialProvider.fromString({
