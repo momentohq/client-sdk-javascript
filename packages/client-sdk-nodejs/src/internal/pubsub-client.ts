@@ -62,7 +62,7 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
 
     const channelOptions = grpcChannelOptionsFromGrpcConfig(grpcConfig);
 
-    console.log(
+    this.getLogger().trace(
       `Creating pubsub client with channel options: ${JSON.stringify(
         channelOptions,
         null,
