@@ -52,10 +52,45 @@ export class DefaultStorageEligibilityStrategy implements EligibilityStrategy {
     const errorMetadata = props.grpcStatus.metadata.get('err');
     // Expecting only one error condition in metadata
     if (errorMetadata.length === 1) {
-      // TODO: check error metadata for specific conditions that should not be retried
-      if (errorMetadata[0] === 'unacceptable retry condition') return false;
+      switch (errorMetadata[0].toString()) {
+        case 'momento_general_err':
+          return false;
+        case 'server_is_busy': {
+          // Retry disposition will show up only for err metadata "server_is_busy"
+          const retryMetadata =
+            props.grpcStatus.metadata.get('retry_disposition');
+          if (retryMetadata.length === 1) {
+            const retryDisposition = retryMetadata[0].toString();
+            switch (retryMetadata[0].toString()) {
+              case 'retryable':
+                // Retryable = could retry soon (default 100ms)
+                return true;
+              case 'possibly_retryable':
+                // Possibly retryable = could retry in a second or two
+                return true; // return a value here instead?
+              default:
+                this.logger.debug(
+                  `Unknown retry disposition value: ${retryDisposition}`
+                );
+                return false;
+            }
+          }
+          return false;
+        }
+        case 'invalid_type':
+          return false;
+        case 'item_not_found':
+          return false;
+        case 'store_not_found':
+          return false;
+        default:
+          this.logger.debug(
+            `Unknown error metadata value: ${errorMetadata[0].toString()}`
+          );
+          return false;
+      }
     } else {
-      // If no metadata, fall back to checking idemopotency
+      // If no metadata to check, fall back to checking RPC idemopotency
       if (!retryableRequestTypes.includes(props.grpcRequest.path)) {
         this.logger.debug(
           `Request with type ${props.grpcRequest.path} is not retryable.`
