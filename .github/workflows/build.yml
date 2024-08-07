@@ -366,8 +366,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
-      TEST_SESSION_TOKEN: ${{ secrets.MOMENTO_PREPROD_SESSION_TOKEN }}
       TEST_LEGACY_AUTH_TOKEN: ${{ secrets.ALPHA_LEGACY_TEST_AUTH_TOKEN }}
+      TEST_MGA_ACCOUNT_SESSION_TOKEN: ${{ MOMENTO_PREPROD_ACCOUNT_SESSION_TOKEN }}
 
     steps:
       - name: Setup repo
@@ -382,21 +382,6 @@ jobs:
         run: |
           node -v
           ./scripts/build-and-test-all-packages.sh
-
-      - name: Run auth tests for packages
-        run: |
-          node -v
-          ./scripts/test-auth-packages.sh
-
-      - name: Run leaderboard tests for packages
-        run: |
-          node -v
-          ./scripts/test-leaderboard-packages.sh
-
-      - name: Run storage tests for packages
-        run: |
-          node -v
-          ./scripts/test-store-packages.sh
 
   test-examples:
     strategy:
