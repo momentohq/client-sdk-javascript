@@ -57,6 +57,8 @@ import {
   CacheSetIfAbsentOrEqual,
   CacheSetSample,
   CacheSortedSetRemoveElements,
+  CacheSetPop,
+  CacheSetLength,
 } from '../../../index';
 import {
   GetBatchCallOptions,
@@ -175,6 +177,15 @@ export interface IDataClient {
     setName: string,
     limit: number
   ): Promise<CacheSetSample.Response>;
+  setPop(
+    cacheName: string,
+    setName: string,
+    count: number
+  ): Promise<CacheSetPop.Response>;
+  setLength(
+    cacheName: string,
+    setName: string
+  ): Promise<CacheSetLength.Response>;
   listFetch(
     cacheName: string,
     listName: string,

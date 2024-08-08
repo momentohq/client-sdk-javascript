@@ -32,6 +32,12 @@ export function validateSetSampleLimit(limit: number) {
   }
 }
 
+export function validateSetPopCount(count: number) {
+  if (count < 1) {
+    throw new InvalidArgumentError('count must be positive (> 0)');
+  }
+}
+
 export function validateSortedSetName(name: string) {
   if (isEmpty(name)) {
     throw new InvalidArgumentError('sorted set name must not be empty');
