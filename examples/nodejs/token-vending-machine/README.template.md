@@ -39,6 +39,8 @@ Then run:
 npm run deploy -- --parameters MomentoApiKey=<YOUR_MOMENTO_API_KEY>
 ```
 
+**Note**: If you are logged into Amazon's public ECR while deploying, you may run into a `403 Forbidden` error. To resolve this, you can run `docker logout public.ecr.aws`.
+
 When the command completes, you should see something like this near the end of the output:
 
 ```text
