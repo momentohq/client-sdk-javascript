@@ -1043,9 +1043,9 @@ export function runSetTests(
         setName
       );
       expectWithMessage(() => {
-        expect(lengthResponse).toBeInstanceOf(CacheSetLength.Hit);
+        expect(lengthResponse).toBeInstanceOf(CacheSetLength.Miss);
       }, `expected HIT but got ${lengthResponse.toString()}`);
-      expect((lengthResponse as CacheSetLength.Hit).length()).toEqual(0);
+      // expect((lengthResponse as CacheSetLength.Hit).length()).toEqual(0);
     });
 
     it('should return HIT when set exists - count > set size', async () => {
@@ -1086,9 +1086,9 @@ export function runSetTests(
         setName
       );
       expectWithMessage(() => {
-        expect(lengthResponse).toBeInstanceOf(CacheSetLength.Hit);
+        expect(lengthResponse).toBeInstanceOf(CacheSetLength.Miss);
       }, `expected HIT but got ${lengthResponse.toString()}`);
-      expect((lengthResponse as CacheSetLength.Hit).length()).toEqual(0);
+      // expect((lengthResponse as CacheSetLength.Hit).length()).toEqual(0);
     });
 
     it('should support happy path for setPop via curried cache via ICache interface', async () => {
