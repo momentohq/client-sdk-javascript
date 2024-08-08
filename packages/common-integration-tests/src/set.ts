@@ -692,7 +692,7 @@ export function runSetTests(
     it('should return MISS if set does not exist', async () => {
       const noKeyGetResponse = await cacheClient.setFetch(
         integrationTestCacheName,
-        'this-set-doesnt-exist'
+        v4()
       );
       expect(noKeyGetResponse).toBeInstanceOf(CacheSetFetch.Miss);
     });
@@ -777,7 +777,7 @@ export function runSetTests(
     it('validates limit', async () => {
       const response = await cacheClient.setSample(
         integrationTestCacheName,
-        'this-set-doesnt-exist',
+        v4(),
         -1
       );
       expectWithMessage(() => {
@@ -791,7 +791,7 @@ export function runSetTests(
     it('should return MISS if set does not exist', async () => {
       const response = await cacheClient.setSample(
         integrationTestCacheName,
-        'this-set-doesnt-exist',
+        v4(),
         10
       );
       expectWithMessage(() => {
@@ -928,7 +928,7 @@ export function runSetTests(
     it('validates count', async () => {
       const negativeResponse = await cacheClient.setPop(
         integrationTestCacheName,
-        'this-set-doesnt-exist',
+        v4(),
         -1
       );
       expectWithMessage(() => {
@@ -940,7 +940,7 @@ export function runSetTests(
 
       const zeroResponse = await cacheClient.setPop(
         integrationTestCacheName,
-        'this-set-doesnt-exist',
+        v4(),
         0
       );
       expectWithMessage(() => {
@@ -954,7 +954,7 @@ export function runSetTests(
     it('should return MISS if set does not exist', async () => {
       const response = await cacheClient.setPop(
         integrationTestCacheName,
-        'this-set-doesnt-exist',
+        v4(),
         10
       );
       expectWithMessage(() => {
@@ -994,6 +994,15 @@ export function runSetTests(
       for (const value of valuesArrayLess) {
         expect(elements).toContain(value);
       }
+
+      const lengthResponse = await cacheClient.setLength(
+        integrationTestCacheName,
+        setName
+      );
+      expectWithMessage(() => {
+        expect(lengthResponse).toBeInstanceOf(CacheSetLength.Hit);
+      }, `expected HIT but got ${lengthResponse.toString()}`);
+      expect((lengthResponse as CacheSetLength.Hit).length()).toEqual(2);
     });
 
     it('should return HIT when set exists - count == set size', async () => {
@@ -1028,6 +1037,15 @@ export function runSetTests(
       for (const value of valuesArrayEqual) {
         expect(elements).toContain(value);
       }
+
+      const lengthResponse = await cacheClient.setLength(
+        integrationTestCacheName,
+        setName
+      );
+      expectWithMessage(() => {
+        expect(lengthResponse).toBeInstanceOf(CacheSetLength.Hit);
+      }, `expected HIT but got ${lengthResponse.toString()}`);
+      expect((lengthResponse as CacheSetLength.Hit).length()).toEqual(0);
     });
 
     it('should return HIT when set exists - count > set size', async () => {
@@ -1062,9 +1080,18 @@ export function runSetTests(
       for (const value of valuesArrayMore) {
         expect(elements).toContain(value);
       }
+
+      const lengthResponse = await cacheClient.setLength(
+        integrationTestCacheName,
+        setName
+      );
+      expectWithMessage(() => {
+        expect(lengthResponse).toBeInstanceOf(CacheSetLength.Hit);
+      }, `expected HIT but got ${lengthResponse.toString()}`);
+      expect((lengthResponse as CacheSetLength.Hit).length()).toEqual(0);
     });
 
-    it('should support happy path for fetch via curried cache via ICache interface', async () => {
+    it('should support happy path for setPop via curried cache via ICache interface', async () => {
       const setName = v4();
 
       const cache = cacheClient.cache(integrationTestCacheName);
@@ -1118,7 +1145,7 @@ export function runSetTests(
     it('should return MISS if set does not exist', async () => {
       const response = await cacheClient.setLength(
         integrationTestCacheName,
-        'this-set-doesnt-exist'
+        v4()
       );
       expectWithMessage(() => {
         expect(response).toBeInstanceOf(CacheSetLength.Miss);
@@ -1156,7 +1183,7 @@ export function runSetTests(
       );
     });
 
-    it('should support happy path for fetch via curried cache via ICache interface', async () => {
+    it('should support happy path for setLength via curried cache via ICache interface', async () => {
       const setName = v4();
 
       const cache = cacheClient.cache(integrationTestCacheName);

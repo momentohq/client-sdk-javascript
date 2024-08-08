@@ -754,8 +754,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
   }
 
   /**
-   * Fetch and remove a random sample of elements from the set.
-   * Returns a different random sample for each call.
+   * Pops a random sample of elements from the set.
    *
    * @param {string} cacheName - The cache containing the set.
    * @param {string} setName - The set to remove from.
