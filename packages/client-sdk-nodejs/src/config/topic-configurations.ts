@@ -32,13 +32,41 @@ export class Default extends TopicClientConfiguration {
       transportStrategy: new StaticTopicTransportStrategy({
         grpcConfiguration: new StaticTopicGrpcConfiguration({
           numClients: 1,
-          // TODO: when we introduce lambda configurations, we do not want to enable keepalives, because they
-          //  cause issues on lambda.
           keepAlivePermitWithoutCalls: 1,
           keepAliveTimeMs: 5000,
           keepAliveTimeoutMs: 1000,
         }),
       }),
+      throwOnErrors: false,
+    });
+  }
+}
+
+/**
+ * Default config provides defaults suitable for AWS lambda or similar environments; relaxes timeouts, disables keep-alives
+ * to avoid issues with execution environments being frozen and resumed, etc.
+ * @export
+ * @class Lambda
+ */
+export class Lambda extends TopicClientConfiguration {
+  /**
+   * Provides the latest recommended configuration for a lambda environment.  NOTE: this configuration may
+   * change in future releases to take advantage of improvements we identify for default configurations.
+   * @param {MomentoLoggerFactory} [loggerFactory=defaultLoggerFactory]
+   * @returns {CacheConfiguration}
+   */
+  static latest(
+    loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
+  ): TopicClientConfiguration {
+    const grpcConfig = new StaticTopicGrpcConfiguration({
+      numClients: 1,
+    });
+    const transportStrategy = new StaticTopicTransportStrategy({
+      grpcConfiguration: grpcConfig,
+    });
+    return new Lambda({
+      loggerFactory: loggerFactory,
+      transportStrategy: transportStrategy,
       throwOnErrors: false,
     });
   }

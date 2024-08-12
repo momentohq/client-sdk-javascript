@@ -189,8 +189,6 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
     return new Promise((resolve, _reject) => {
       const prepareCallbackOptions: PrepareSubscribeCallbackOptions = {
         ...options,
-        // restartedDueToError: false,
-        // firstMessage: true,
         resolve,
       };
       call.on('data', this.prepareDataCallback(prepareCallbackOptions));
