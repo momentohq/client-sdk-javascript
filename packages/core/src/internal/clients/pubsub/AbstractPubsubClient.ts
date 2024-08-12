@@ -1,4 +1,5 @@
 import {
+  sleep,
   truncateString,
   validateCacheName,
   validateTopicName,
@@ -29,6 +30,16 @@ export interface SendSubscribeOptions {
   ) => void;
   subscriptionState: SubscriptionState;
   subscription: TopicSubscribe.Subscription;
+
+  /**
+   * Whether the stream was restarted due to an error. If so, we skip the end stream handler
+   * logic as the error handler will have restarted the stream.
+   */
+  restartedDueToError: boolean;
+  /**
+   * If the first message is an error, we return an error immediately and do not subscribe.
+   */
+  firstMessage: boolean;
 }
 
 /**
@@ -41,15 +52,6 @@ export interface PrepareSubscribeCallbackOptions extends SendSubscribeOptions {
   resolve: (
     value: TopicSubscribe.Response | PromiseLike<TopicSubscribe.Subscription>
   ) => void;
-  /**
-   * Whether the stream was restarted due to an error. If so, we skip the end stream handler
-   * logic as the error handler will have restarted the stream.
-   */
-  restartedDueToError: boolean;
-  /**
-   * If the first message is an error, we return an error immediately and do not subscribe.
-   */
-  firstMessage: boolean;
 }
 
 export abstract class AbstractPubsubClient<TGrpcError>
@@ -149,6 +151,8 @@ export abstract class AbstractPubsubClient<TGrpcError>
       onError: onError,
       subscriptionState: subscriptionState,
       subscription: subscription,
+      restartedDueToError: false,
+      firstMessage: true,
     });
   }
 
@@ -197,15 +201,17 @@ export abstract class AbstractPubsubClient<TGrpcError>
   protected handleSubscribeError(
     options: PrepareSubscribeCallbackOptions,
     momentoError: TopicSubscribe.Error,
-    isRstStreamNoError: boolean
+    shouldReconnectSubscription: boolean
   ): void {
+    this.logger.trace('Handling subscribe error');
     // When the first message is an error, an irrecoverable error has happened,
     // eg the cache does not exist. The user should not receive a subscription
     // object but an error.
     if (options.firstMessage) {
       this.logger.trace(
-        'Received subscription stream error; topic: %s',
-        truncateString(options.topicName)
+        'First message on subscription was an error; topic: %s, error: %s',
+        truncateString(options.topicName),
+        momentoError.toString()
       );
 
       options.resolve(momentoError);
@@ -213,24 +219,9 @@ export abstract class AbstractPubsubClient<TGrpcError>
       return;
     }
 
-    // The service cuts the stream after a period of time.
-    // Transparently restart the stream instead of propagating an error.
-    if (isRstStreamNoError) {
-      this.logger.trace(
-        'Server closed stream due to idle activity. Restarting.'
-      );
-      // When restarting the stream we do not do anything with the promises,
-      // because we should have already returned the subscription object to the user.
-      this.sendSubscribe(options)
-        .then(() => {
-          return;
-        })
-        .catch(() => {
-          return;
-        });
-      options.restartedDueToError = true;
-      return;
-    }
+    this.logger.trace(
+      'Subscribe error was not the first message on the stream.'
+    );
 
     // Another special case is when the cache is not found.
     // This happens here if the user deletes the cache in the middle of
@@ -243,8 +234,53 @@ export abstract class AbstractPubsubClient<TGrpcError>
       options.subscription.unsubscribe();
       options.onError(momentoError, options.subscription);
       return;
-    } else {
-      options.onError(momentoError, options.subscription);
     }
+
+    this.logger.trace(
+      'Checking to see if we should attempt to reconnect subscription.'
+    );
+
+    // For several types of errors having to with network interruptions, we wish to
+    // transparently restart the stream instead of propagating an error.
+    if (shouldReconnectSubscription) {
+      options.restartedDueToError = true;
+      const reconnectDelayMillis = 100;
+      this.logger.trace(
+        'Error occurred on subscription, possibly a network interruption. Will attempt to restart stream in %s ms.',
+        reconnectDelayMillis
+      );
+      sleep(reconnectDelayMillis)
+        .then(() => {
+          // When restarting the stream we do not do anything with the promises,
+          // because we should have already returned the subscription object to the user.
+          this.sendSubscribe(options)
+            .then(() => {
+              return;
+            })
+            .catch(e => {
+              this.logger.trace(
+                'Error when calling sendSubscribe to reconnect: %s',
+                e
+              );
+              return;
+            });
+          return;
+        })
+        .catch(e => {
+          this.logger.trace(
+            'Error when sleeping prior to sendSubscribe to reconnect: %s',
+            e
+          );
+          return;
+        });
+      return;
+    }
+
+    this.logger.trace('Subscribe error was not a re-connectable error.');
+
+    this.logger.trace(
+      'Subscribe error was not one of the known error types; calling error handler.'
+    );
+    options.onError(momentoError, options.subscription);
   }
 }

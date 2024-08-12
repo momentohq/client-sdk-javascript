@@ -5,12 +5,12 @@ import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, ServiceError} from '@grpc/grpc-js';
-import {Status} from '@grpc/grpc-js/build/src/constants';
 import {version} from '../../package.json';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {
   CredentialProvider,
   StaticGrpcConfiguration,
+  TopicGrpcConfiguration,
   TopicItem,
   TopicPublish,
   TopicSubscribe,
@@ -35,8 +35,8 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   private readonly unaryInterceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
 
-  private static readonly RST_STREAM_NO_ERROR_MESSAGE =
-    'Received RST_STREAM with code 0';
+  // private static readonly RST_STREAM_NO_ERROR_MESSAGE =
+  //   'Received RST_STREAM with code 0';
 
   /**
    * @param {TopicClientProps} props
@@ -53,16 +53,24 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
       `Creating topic client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
     );
 
+    const topicGrpcConfig: TopicGrpcConfiguration = props.configuration
+      .getTransportStrategy()
+      .getGrpcConfig();
+
     // NOTE: This is hard-coded for now but we may want to expose it via TopicConfiguration in the
     // future, as we do with some of the other clients.
     const grpcConfig = new StaticGrpcConfiguration({
       deadlineMillis: this.unaryRequestTimeoutMs,
       maxSessionMemoryMb: PubsubClient.DEFAULT_MAX_SESSION_MEMORY_MB,
+      keepAlivePermitWithoutCalls:
+        topicGrpcConfig.getKeepAlivePermitWithoutCalls(),
+      keepAliveTimeMs: topicGrpcConfig.getKeepAliveTimeMS(),
+      keepAliveTimeoutMs: topicGrpcConfig.getKeepAliveTimeoutMS(),
     });
 
     const channelOptions = grpcChannelOptionsFromGrpcConfig(grpcConfig);
 
-    this.getLogger().trace(
+    this.getLogger().debug(
       `Creating pubsub client with channel options: ${JSON.stringify(
         channelOptions,
         null,
@@ -151,7 +159,7 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
    * case we already returned a subscription object to the user, so we instead cancel the stream and
    * propagate an error to the user via the error handler.
    */
-  protected sendSubscribe(
+  protected override sendSubscribe(
     options: SendSubscribeOptions
   ): Promise<TopicSubscribe.Response> {
     const request = new grpcPubsub._SubscriptionRequest({
@@ -161,6 +169,10 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
         options.subscriptionState.resumeAtTopicSequenceNumber,
     });
 
+    this.getLogger().trace(
+      'Subscribing to topic with resume_at_topic_sequence_number: %s',
+      options.subscriptionState.resumeAtTopicSequenceNumber
+    );
     const call = this.client.Subscribe(request, {
       interceptors: this.streamingInterceptors,
     });
@@ -177,8 +189,6 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
     return new Promise((resolve, _reject) => {
       const prepareCallbackOptions: PrepareSubscribeCallbackOptions = {
         ...options,
-        restartedDueToError: false,
-        firstMessage: true,
         resolve,
       };
       call.on('data', this.prepareDataCallback(prepareCallbackOptions));
@@ -199,6 +209,11 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
       if (resp?.item) {
         options.subscriptionState.lastTopicSequenceNumber =
           resp.item.topic_sequence_number;
+        this.getLogger().trace(
+          'Received an item on subscription stream; topic: %s; sequence number: %s',
+          truncateString(options.topicName),
+          resp.item.topic_sequence_number
+        );
         if (resp.item.value.text) {
           options.onItem(
             new TopicItem(resp.item.value.text, {
@@ -256,13 +271,24 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
       }
 
       const serviceError = err as unknown as ServiceError;
-      const isRstStreamNoError =
-        serviceError.code === Status.INTERNAL &&
-        serviceError.details === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE;
+      this.getLogger().trace(
+        `Subscription encountered an error: ${serviceError.code}: ${serviceError.message}: ${serviceError.details}`
+      );
+      const shouldReconnectSubscription =
+        // previously, we were only attempting a reconnect on this one very specific case, but our current expectation is that
+        // we should err on the side of retrying. This may become a sort of "deny list" of error types to *not* retry on
+        // in the future, but for now we will be aggressive about retrying.
+        // // serviceError.code === Status.INTERNAL &&
+        //  // serviceError.details === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE;
+        true;
       const momentoError = new TopicSubscribe.Error(
         this.getCacheServiceErrorMapper().convertError(serviceError)
       );
-      this.handleSubscribeError(options, momentoError, isRstStreamNoError);
+      this.handleSubscribeError(
+        options,
+        momentoError,
+        shouldReconnectSubscription
+      );
     };
   }
 

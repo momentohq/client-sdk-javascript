@@ -28,6 +28,9 @@ export interface TopicTransportStrategyProps {
 
 export class StaticTopicGrpcConfiguration implements TopicGrpcConfiguration {
   private readonly numClients: number;
+  private readonly keepAlivePermitWithoutCalls?: number;
+  private readonly keepAliveTimeoutMs?: number;
+  private readonly keepAliveTimeMs?: number;
 
   constructor(props: TopicGrpcConfigurationProps) {
     if (props.numClients !== undefined && props.numClients !== null) {
@@ -35,6 +38,10 @@ export class StaticTopicGrpcConfiguration implements TopicGrpcConfiguration {
     } else {
       this.numClients = 1;
     }
+
+    this.keepAliveTimeMs = props.keepAliveTimeMs;
+    this.keepAliveTimeoutMs = props.keepAliveTimeoutMs;
+    this.keepAlivePermitWithoutCalls = props.keepAlivePermitWithoutCalls;
   }
 
   getNumClients(): number {
@@ -44,7 +51,22 @@ export class StaticTopicGrpcConfiguration implements TopicGrpcConfiguration {
   withNumClients(numClients: number): TopicGrpcConfiguration {
     return new StaticTopicGrpcConfiguration({
       numClients: numClients,
+      keepAlivePermitWithoutCalls: this.keepAlivePermitWithoutCalls,
+      keepAliveTimeoutMs: this.keepAliveTimeoutMs,
+      keepAliveTimeMs: this.keepAliveTimeMs,
     });
+  }
+
+  getKeepAliveTimeoutMS(): number | undefined {
+    return this.keepAliveTimeoutMs;
+  }
+
+  getKeepAliveTimeMS(): number | undefined {
+    return this.keepAliveTimeMs;
+  }
+
+  getKeepAlivePermitWithoutCalls(): number | undefined {
+    return this.keepAlivePermitWithoutCalls;
   }
 }
 
