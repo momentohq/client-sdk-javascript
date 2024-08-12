@@ -1504,30 +1504,30 @@ async function example_API_DeleteWebhook(topicClient: TopicClient, cacheName: st
   }
 }
 
-async function example_API_PutWebhook(topicClient: TopicClient, cacheName: string) {
-  const result = await topicClient.putWebhook(cacheName, 'examples webhook', {
-    topicName: 'a topic',
-    destination: 'https://www.thisisawebhookurl.com/v1/webhook',
-  });
-  if (result instanceof PutWebhook.Success) {
-    console.log('successfully created webhook');
-  } else if (result instanceof PutWebhook.Error) {
-    throw new Error(
-      `An error occurred while attempting to create a webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
-  }
-}
+// async function example_API_PutWebhook(topicClient: TopicClient, cacheName: string) {
+//   const result = await topicClient.putWebhook(cacheName, 'examples webhook', {
+//     topicName: 'a topic',
+//     destination: 'https://www.thisisawebhookurl.com/v1/webhook',
+//   });
+//   if (result instanceof PutWebhook.Success) {
+//     console.log('successfully created webhook');
+//   } else if (result instanceof PutWebhook.Error) {
+//     throw new Error(
+//       `An error occurred while attempting to create a webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+//     );
+//   }
+// }
 
-async function example_API_RotateWebhookSecret(topicClient: TopicClient, cacheName: string) {
-  const result = await topicClient.rotateWebhookSecret(cacheName, 'examples webhook');
-  if (result instanceof RotateWebhookSecret.Success) {
-    console.log('successfully rotated the webhook secret');
-  } else if (result instanceof RotateWebhookSecret.Error) {
-    throw new Error(
-      `An error occurred while attempting to rotate the secret for the webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
-  }
-}
+// async function example_API_RotateWebhookSecret(topicClient: TopicClient, cacheName: string) {
+//   const result = await topicClient.rotateWebhookSecret(cacheName, 'examples webhook');
+//   if (result instanceof RotateWebhookSecret.Success) {
+//     console.log('successfully rotated the webhook secret');
+//   } else if (result instanceof RotateWebhookSecret.Error) {
+//     throw new Error(
+//       `An error occurred while attempting to rotate the secret for the webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+//     );
+//   }
+// }
 
 async function example_API_GetWebhookSecret(topicClient: TopicClient, cacheName: string) {
   const result = await topicClient.getWebhookSecret(cacheName, 'examples webhook');
