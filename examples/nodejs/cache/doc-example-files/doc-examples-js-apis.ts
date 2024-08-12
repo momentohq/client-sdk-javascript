@@ -1499,6 +1499,7 @@ async function example_API_DeleteWebhook(topicClient: TopicClient, cacheName: st
     console.log('successfully deleted webhook');
   } else if (result instanceof ListWebhooks.Error) {
     throw new Error(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       `An error occurred while attempting to delete webhook 'a webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
@@ -1513,6 +1514,7 @@ async function example_API_PutWebhook(topicClient: TopicClient, cacheName: strin
     console.log('successfully created webhook');
   } else if (result instanceof PutWebhook.Error) {
     throw new Error(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       `An error occurred while attempting to create a webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
   }
