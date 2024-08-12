@@ -5,12 +5,12 @@ import {
 } from '../../utils';
 import {MomentoErrorCode} from '../../../errors';
 import {
-  CredentialProvider,
   TopicPublish,
   TopicItem,
   MomentoLogger,
   TopicSubscribe,
   SubscribeCallOptions,
+  MomentoLoggerFactory,
 } from '../../../index';
 import {SubscriptionState} from '../../subscription-state';
 import {IPubsubClient} from './IPubsubClient';
@@ -55,14 +55,26 @@ export interface PrepareSubscribeCallbackOptions extends SendSubscribeOptions {
 export abstract class AbstractPubsubClient<TGrpcError>
   implements IPubsubClient
 {
-  protected readonly logger: MomentoLogger;
-  protected readonly credentialProvider: CredentialProvider;
-  protected readonly cacheServiceErrorMapper: ICacheServiceErrorMapper<TGrpcError>;
+  private readonly loggerFactory: MomentoLoggerFactory;
+  private readonly logger: MomentoLogger;
+  private readonly cacheServiceErrorMapper: ICacheServiceErrorMapper<TGrpcError>;
 
-  public getEndpoint(): string {
-    const endpoint = this.credentialProvider.getCacheEndpoint();
-    this.logger.debug(`Using cache endpoint: ${endpoint}`);
-    return endpoint;
+  protected constructor(
+    loggerFactory: MomentoLoggerFactory,
+    logger: MomentoLogger,
+    cacheServiceErrorMapper: ICacheServiceErrorMapper<TGrpcError>
+  ) {
+    this.loggerFactory = loggerFactory;
+    this.logger = logger;
+    this.cacheServiceErrorMapper = cacheServiceErrorMapper;
+  }
+
+  protected getLogger(): MomentoLogger {
+    return this.logger;
+  }
+
+  protected getCacheServiceErrorMapper(): ICacheServiceErrorMapper<TGrpcError> {
+    return this.cacheServiceErrorMapper;
   }
 
   public async publish(
@@ -126,7 +138,10 @@ export abstract class AbstractPubsubClient<TGrpcError>
       });
 
     const subscriptionState = new SubscriptionState();
-    const subscription = new TopicSubscribe.Subscription(subscriptionState);
+    const subscription = new TopicSubscribe.Subscription(
+      this.loggerFactory,
+      subscriptionState
+    );
     return await this.sendSubscribe({
       cacheName: cacheName,
       topicName: topicName,
