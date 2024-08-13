@@ -4,6 +4,7 @@ import {
   EligibilityStrategy,
   EligibleForRetryProps,
 } from './eligibility-strategy';
+import {Metadata} from '@grpc/grpc-js';
 
 const retryableGrpcStatusCodes: Array<Status> = [
   // including all the status codes for reference, but
@@ -49,56 +50,32 @@ export class DefaultStorageEligibilityStrategy implements EligibilityStrategy {
       return false;
     }
 
-    const errorMetadata = props.grpcStatus.metadata.get('err');
-    // Expecting only one error condition in metadata
-    if (errorMetadata.length === 1) {
-      switch (errorMetadata[0].toString()) {
-        case 'momento_general_err':
-          return false;
-        case 'server_is_busy': {
-          // Retry disposition will show up only for err metadata "server_is_busy"
-          const retryMetadata =
-            props.grpcStatus.metadata.get('retry_disposition');
-          if (retryMetadata.length === 1) {
-            const retryDisposition = retryMetadata[0].toString();
-            switch (retryMetadata[0].toString()) {
-              case 'retryable':
-                // Retryable = could retry soon (default 100ms)
-                return true;
-              case 'possibly_retryable':
-                // Possibly retryable = could retry in a second or two
-                return true; // return a value here instead?
-              default:
-                this.logger.debug(
-                  `Unknown retry disposition value: ${retryDisposition}`
-                );
-                return false;
-            }
-          }
-          return false;
-        }
-        case 'invalid_type':
-          return false;
-        case 'item_not_found':
-          return false;
-        case 'store_not_found':
-          return false;
-        default:
-          this.logger.debug(
-            `Unknown error metadata value: ${errorMetadata[0].toString()}`
-          );
-          return false;
-      }
-    } else {
-      // If no metadata to check, fall back to checking RPC idemopotency
-      if (!retryableRequestTypes.includes(props.grpcRequest.path)) {
-        this.logger.debug(
-          `Request with type ${props.grpcRequest.path} is not retryable.`
-        );
-        return false;
-      }
+    // If retry disposition metadata is available and the value is "retryable",
+    // it is safe to retry regardless of idempotency.
+    const retryMetadata = this.getRetryDispositionMetadata(
+      props.grpcStatus.metadata
+    );
+    if (retryMetadata === 'retryable') {
+      return true;
+    }
+
+    // Otherwise, if there is no retry metadata or the retry disposition is
+    // "possibly_retryable", it is safe to retry only idempotent commands.
+    if (!retryableRequestTypes.includes(props.grpcRequest.path)) {
+      this.logger.debug(
+        `Request with type ${props.grpcRequest.path} is not retryable.`
+      );
+      return false;
     }
 
     return true;
+  }
+
+  private getRetryDispositionMetadata(metadata: Metadata): string | undefined {
+    const retryMetadata = metadata.get('retry_disposition');
+    if (retryMetadata.length === 1) {
+      return retryMetadata[0].toString();
+    }
+    return undefined;
   }
 }
