@@ -82,12 +82,8 @@ export function runWebhookTests(
                 wh.id.cacheName === webhook.id.cacheName
             );
           expect(webhookWeAreLookingFor).toBeTruthy();
-        } else if (resp instanceof ListWebhooks.Error) {
-          throw new Error(`list webhooks request failed: ${resp.message()}`);
         } else {
-          throw new Error(
-            `unknown error occured when making a 'listWebhooks' request: ${resp.toString()}`
-          );
+          throw new Error(`list webhooks request failed: ${resp.message()}`);
         }
       });
     });
@@ -102,12 +98,8 @@ export function runWebhookTests(
           expect(resp.secret()).toBeTruthy();
           expect(resp.webhookName()).toEqual(webhook.id.webhookName);
           expect(resp.cacheName()).toEqual(webhook.id.cacheName);
-        } else if (resp instanceof GetWebhookSecret.Error) {
-          throw new Error(`getWebhookSecret request failed: ${resp.message()}`);
         } else {
-          throw new Error(
-            `unknown error occured when making a 'getWebhookSecret' request: ${resp.toString()}`
-          );
+          throw new Error(`getWebhookSecret request failed: ${resp.message()}`);
         }
       });
     });
