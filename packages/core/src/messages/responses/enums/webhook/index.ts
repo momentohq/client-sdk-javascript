@@ -12,3 +12,8 @@ export enum RotateWebhookSecretResponse {
   Success = 'Success',
   Error = 'Error',
 }
+
+export enum GetWebhookSecretResponse {
+  Success = 'Success',
+  Error = 'Error',
+}
