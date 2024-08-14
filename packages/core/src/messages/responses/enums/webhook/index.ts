@@ -17,3 +17,8 @@ export enum GetWebhookSecretResponse {
   Success = 'Success',
   Error = 'Error',
 }
+
+export enum ListWebhooksResponse {
+  Success = 'Success',
+  Error = 'Error',
+}
