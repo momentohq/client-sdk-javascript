@@ -2,10 +2,10 @@ import {SetupAuthClientIntegrationTest} from '../integration-setup';
 import {runAuthClientTests} from '@gomomento/common-integration-tests';
 
 const {
-  sessionTokenAuthClient,
+  mgaAccountSessionTokenAuthClient,
   legacyTokenAuthClient,
-  sessionTokenCacheClient,
-  sessionTokenTopicClient,
+  mgaAccountSessionTokenCacheClient,
+  mgaAccountSessionTokenTopicClient,
   authTokenAuthClientFactory,
   cacheClientFactory,
   topicClientFactory,
@@ -13,10 +13,10 @@ const {
 } = SetupAuthClientIntegrationTest();
 
 runAuthClientTests(
-  sessionTokenAuthClient,
+  mgaAccountSessionTokenAuthClient,
   legacyTokenAuthClient,
-  sessionTokenCacheClient,
-  sessionTokenTopicClient,
+  mgaAccountSessionTokenCacheClient,
+  mgaAccountSessionTokenTopicClient,
   authTokenAuthClientFactory,
   cacheClientFactory,
   topicClientFactory,

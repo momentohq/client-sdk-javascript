@@ -41,3 +41,15 @@ export enum CacheSetSampleResponse {
   Miss = 'Miss',
   Error = 'Error',
 }
+
+export enum CacheSetPopResponse {
+  Hit = 'Hit',
+  Miss = 'Miss',
+  Error = 'Error',
+}
+
+export enum CacheSetLengthResponse {
+  Hit = 'Hit',
+  Miss = 'Miss',
+  Error = 'Error',
+}

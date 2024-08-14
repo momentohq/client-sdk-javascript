@@ -57,6 +57,8 @@ import {
   CacheGetBatch,
   CacheSetBatch,
   CacheSortedSetRemoveElements,
+  CacheSetPop,
+  CacheSetLength,
 } from '../index';
 import {
   ScalarCallOptions,
@@ -186,6 +188,8 @@ export interface IMomentoCache {
     elements: string[] | Uint8Array[]
   ): Promise<CacheSetRemoveElements.Response>;
   setSample(setName: string, limit: number): Promise<CacheSetSample.Response>;
+  setPop(setName: string, count: number): Promise<CacheSetPop.Response>;
+  setLength(setName: string): Promise<CacheSetLength.Response>;
   listFetch(
     listName: string,
     options?: ListFetchCallOptions

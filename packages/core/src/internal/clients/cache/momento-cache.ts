@@ -58,6 +58,8 @@ import {
   CacheGetBatch,
   CacheSetBatch,
   CacheSetSample,
+  CacheSetPop,
+  CacheSetLength,
 } from '../../../index';
 import {
   ScalarCallOptions,
@@ -282,6 +284,12 @@ export class MomentoCache implements IMomentoCache {
   }
   setSample(setName: string, limit: number): Promise<CacheSetSample.Response> {
     return this.cacheClient.setSample(this.cacheName, setName, limit);
+  }
+  setPop(setName: string, count: number): Promise<CacheSetPop.Response> {
+    return this.cacheClient.setPop(this.cacheName, setName, count);
+  }
+  setLength(setName: string): Promise<CacheSetLength.Response> {
+    return this.cacheClient.setLength(this.cacheName, setName);
   }
   listFetch(
     listName: string,

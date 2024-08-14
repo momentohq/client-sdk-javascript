@@ -97,6 +97,7 @@ import {
   validateListName,
   validateListSliceStartEnd,
   validateSetName,
+  validateSetPopCount,
   validateSetSampleLimit,
   validateSortedSetCount,
   validateSortedSetName,
@@ -136,6 +137,7 @@ import Equal = common.Equal;
 import NotEqual = common.NotEqual;
 import PresentAndNotEqual = common.PresentAndNotEqual;
 import AbsentOrEqual = common.AbsentOrEqual;
+import {CacheSetLength, CacheSetPop} from '@gomomento/sdk-core';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -843,6 +845,119 @@ export class CacheDataClient implements IDataClient {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSetSample.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
+  public async setPop(
+    cacheName: string,
+    setName: string,
+    count: number
+  ): Promise<CacheSetPop.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+      validateSetPopCount(count);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetPop.Error(err)
+      );
+    }
+
+    return await this.rateLimited(async () => {
+      return await this.sendSetPop(cacheName, this.convert(setName), count);
+    });
+  }
+
+  private async sendSetPop(
+    cacheName: string,
+    setName: Uint8Array,
+    count: number
+  ): Promise<CacheSetPop.Response> {
+    const request = new grpcCache._SetPopRequest({
+      set_name: setName,
+      count: count,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.getClient().SetPop(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheSetPop.Miss());
+          } else if (resp?.found) {
+            resolve(new CacheSetPop.Hit(resp.found.elements));
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetPop.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
+  public async setLength(
+    cacheName: string,
+    setName: string
+  ): Promise<CacheSetLength.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSetName(setName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetLength.Error(err)
+      );
+    }
+
+    return await this.rateLimited(async () => {
+      return await this.sendSetLength(cacheName, this.convert(setName));
+    });
+  }
+
+  private async sendSetLength(
+    cacheName: string,
+    setName: Uint8Array
+  ): Promise<CacheSetLength.Response> {
+    const request = new grpcCache._SetLengthRequest({
+      set_name: setName,
+    });
+
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.getClient().SetLength(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheSetLength.Miss());
+          } else if (resp?.found) {
+            if (!resp.found.length) {
+              resolve(new CacheSetLength.Miss());
+            } else {
+              resolve(new CacheSetLength.Hit(resp.found.length));
+            }
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetLength.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
