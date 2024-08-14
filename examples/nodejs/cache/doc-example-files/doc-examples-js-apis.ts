@@ -1494,7 +1494,7 @@ async function example_API_ListWebhooks(topicClient: TopicClient, cacheName: str
 }
 
 async function example_API_DeleteWebhook(topicClient: TopicClient, cacheName: string) {
-  const result = await topicClient.deleteWebhook(cacheName, 'a webhook');
+  const result = await topicClient.deleteWebhook(cacheName, 'examples webhook');
   if (result instanceof DeleteWebhook.Success) {
     console.log('successfully deleted webhook');
   } else if (result instanceof DeleteWebhook.Error) {
