@@ -36,9 +36,9 @@ export class HeaderInterceptorProvider {
     return (options, nextCall) => {
       return new InterceptingCall(nextCall(options), {
         start: (metadata, listener, next) => {
-          this.headersToAddEveryTime.forEach(h =>
-            metadata.add(h.name, h.value)
-          );
+          this.headersToAddEveryTime.forEach(h => {
+            metadata.set(h.name, h.value);
+          });
           if (!this.areOnlyOnceHeadersSent) {
             this.areOnlyOnceHeadersSent = true;
             this.headersToAddOnce.forEach(h => metadata.add(h.name, h.value));
