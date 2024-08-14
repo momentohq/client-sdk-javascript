@@ -1910,10 +1910,10 @@ async function main() {
 
     // Webhooks
     await example_API_ListWebhooks(topicClient, cacheName);
-    await example_API_DeleteWebhook(topicClient, cacheName);
     await example_API_PutWebhook(topicClient, cacheName);
     await example_API_RotateWebhookSecret(topicClient, cacheName);
     await example_API_GetWebhookSecret(topicClient, cacheName);
+    await example_API_DeleteWebhook(topicClient, cacheName);
 
     example_API_InstantiateLeaderboardClient();
     const leaderboardClient = new PreviewLeaderboardClient({
