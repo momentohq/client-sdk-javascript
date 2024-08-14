@@ -1494,10 +1494,10 @@ async function example_API_ListWebhooks(topicClient: TopicClient, cacheName: str
 }
 
 async function example_API_DeleteWebhook(topicClient: TopicClient, cacheName: string) {
-  const result = await topicClient.deleteWebhook(cacheName, 'a webhook');
+  const result = await topicClient.deleteWebhook(cacheName, 'examples webhook');
   if (result instanceof DeleteWebhook.Success) {
     console.log('successfully deleted webhook');
-  } else if (result instanceof ListWebhooks.Error) {
+  } else if (result instanceof DeleteWebhook.Error) {
     throw new Error(
       `An error occurred while attempting to delete webhook 'a webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
@@ -1910,10 +1910,10 @@ async function main() {
 
     // Webhooks
     await example_API_ListWebhooks(topicClient, cacheName);
-    await example_API_DeleteWebhook(topicClient, cacheName);
     await example_API_PutWebhook(topicClient, cacheName);
     await example_API_RotateWebhookSecret(topicClient, cacheName);
     await example_API_GetWebhookSecret(topicClient, cacheName);
+    await example_API_DeleteWebhook(topicClient, cacheName);
 
     example_API_InstantiateLeaderboardClient();
     const leaderboardClient = new PreviewLeaderboardClient({
