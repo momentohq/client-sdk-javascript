@@ -1497,7 +1497,7 @@ async function example_API_DeleteWebhook(topicClient: TopicClient, cacheName: st
   const result = await topicClient.deleteWebhook(cacheName, 'a webhook');
   if (result instanceof DeleteWebhook.Success) {
     console.log('successfully deleted webhook');
-  } else if (result instanceof ListWebhooks.Error) {
+  } else if (result instanceof DeleteWebhook.Error) {
     throw new Error(
       `An error occurred while attempting to delete webhook 'a webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
     );
