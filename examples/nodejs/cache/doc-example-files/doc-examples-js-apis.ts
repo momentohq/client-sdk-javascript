@@ -1481,64 +1481,64 @@ async function example_API_TopicSubscribe(topicClient: TopicClient, cacheName: s
   }
 }
 
-// async function example_API_ListWebhooks(topicClient: TopicClient, cacheName: string) {
-//   const result = await topicClient.listWebhooks(cacheName);
-//   if (result instanceof ListWebhooks.Success) {
-//     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-//     console.log(`listed webhooks: ${result.getWebhooks()}`);
-//   } else if (result instanceof ListWebhooks.Error) {
-//     throw new Error(
-//       `An error occurred while attempting to list webhooks for cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-//     );
-//   }
-// }
+async function example_API_ListWebhooks(topicClient: TopicClient, cacheName: string) {
+  const result = await topicClient.listWebhooks(cacheName);
+  if (result instanceof ListWebhooks.Success) {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    console.log(`listed webhooks: ${result.getWebhooks()}`);
+  } else if (result instanceof ListWebhooks.Error) {
+    throw new Error(
+      `An error occurred while attempting to list webhooks for cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
 
-// async function example_API_DeleteWebhook(topicClient: TopicClient, cacheName: string) {
-//   const result = await topicClient.deleteWebhook(cacheName, 'a webhook');
-//   if (result instanceof DeleteWebhook.Success) {
-//     console.log('successfully deleted webhook');
-//   } else if (result instanceof ListWebhooks.Error) {
-//     throw new Error(
-//       `An error occurred while attempting to delete webhook 'a webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-//     );
-//   }
-// }
+async function example_API_DeleteWebhook(topicClient: TopicClient, cacheName: string) {
+  const result = await topicClient.deleteWebhook(cacheName, 'a webhook');
+  if (result instanceof DeleteWebhook.Success) {
+    console.log('successfully deleted webhook');
+  } else if (result instanceof ListWebhooks.Error) {
+    throw new Error(
+      `An error occurred while attempting to delete webhook 'a webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
 
-// async function example_API_PutWebhook(topicClient: TopicClient, cacheName: string) {
-//   const result = await topicClient.putWebhook(cacheName, 'examples webhook', {
-//     topicName: 'a topic',
-//     destination: 'https://www.thisisawebhookurl.com/v1/webhook',
-//   });
-//   if (result instanceof PutWebhook.Success) {
-//     console.log('successfully created webhook');
-//   } else if (result instanceof PutWebhook.Error) {
-//     throw new Error(
-//       `An error occurred while attempting to create a webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-//     );
-//   }
-// }
+async function example_API_PutWebhook(topicClient: TopicClient, cacheName: string) {
+  const result = await topicClient.putWebhook(cacheName, 'examples webhook', {
+    topicName: 'a topic',
+    destination: 'https://www.thisisawebhookurl.com/v1/webhook',
+  });
+  if (result instanceof PutWebhook.Success) {
+    console.log('successfully created webhook');
+  } else if (result instanceof PutWebhook.Error) {
+    throw new Error(
+      `An error occurred while attempting to create a webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
 
-// async function example_API_RotateWebhookSecret(topicClient: TopicClient, cacheName: string) {
-//   const result = await topicClient.rotateWebhookSecret(cacheName, 'examples webhook');
-//   if (result instanceof RotateWebhookSecret.Success) {
-//     console.log('successfully rotated the webhook secret');
-//   } else if (result instanceof RotateWebhookSecret.Error) {
-//     throw new Error(
-//       `An error occurred while attempting to rotate the secret for the webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-//     );
-//   }
-// }
+async function example_API_RotateWebhookSecret(topicClient: TopicClient, cacheName: string) {
+  const result = await topicClient.rotateWebhookSecret(cacheName, 'examples webhook');
+  if (result instanceof RotateWebhookSecret.Success) {
+    console.log('successfully rotated the webhook secret');
+  } else if (result instanceof RotateWebhookSecret.Error) {
+    throw new Error(
+      `An error occurred while attempting to rotate the secret for the webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
 
-// async function example_API_GetWebhookSecret(topicClient: TopicClient, cacheName: string) {
-//   const result = await topicClient.getWebhookSecret(cacheName, 'examples webhook');
-//   if (result instanceof GetWebhookSecret.Success) {
-//     console.log('successfully retrieved the webhook secret');
-//   } else if (result instanceof GetWebhookSecret.Error) {
-//     throw new Error(
-//       `An error occurred while attempting to fetch the secret for the webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-//     );
-//   }
-// }
+async function example_API_GetWebhookSecret(topicClient: TopicClient, cacheName: string) {
+  const result = await topicClient.getWebhookSecret(cacheName, 'examples webhook');
+  if (result instanceof GetWebhookSecret.Success) {
+    console.log('successfully retrieved the webhook secret');
+  } else if (result instanceof GetWebhookSecret.Error) {
+    throw new Error(
+      `An error occurred while attempting to fetch the secret for the webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+    );
+  }
+}
 
 function example_API_InstantiateLeaderboardClient() {
   new PreviewLeaderboardClient({
@@ -1909,11 +1909,11 @@ async function main() {
     await example_API_TopicSubscribe(topicClient, cacheName);
 
     // Webhooks
-    // await example_API_ListWebhooks(topicClient, cacheName);
-    // await example_API_DeleteWebhook(topicClient, cacheName);
-    // await example_API_PutWebhook(topicClient, cacheName);
-    // await example_API_RotateWebhookSecret(topicClient, cacheName);
-    // await example_API_GetWebhookSecret(topicClient, cacheName);
+    await example_API_ListWebhooks(topicClient, cacheName);
+    await example_API_DeleteWebhook(topicClient, cacheName);
+    await example_API_PutWebhook(topicClient, cacheName);
+    await example_API_RotateWebhookSecret(topicClient, cacheName);
+    await example_API_GetWebhookSecret(topicClient, cacheName);
 
     example_API_InstantiateLeaderboardClient();
     const leaderboardClient = new PreviewLeaderboardClient({
