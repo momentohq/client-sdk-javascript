@@ -1,5 +1,5 @@
 import {expectWithMessage} from '@gomomento/common-integration-tests';
-import {SetupIntegrationTest} from './integration-setup';
+import {SetupIntegrationTest} from '../integration-setup';
 import {CacheGet, CacheItemGetTtl, CacheSet} from '@gomomento/sdk-core';
 import {v4} from 'uuid';
 import {log} from 'console';

@@ -1,12 +1,12 @@
-import {credsProvider} from './integration-setup';
-import {CacheClientPropsWithConfig} from '../../src/internal/cache-client-props-with-config';
+import {credsProvider} from '../integration-setup';
+import {CacheClientPropsWithConfig} from '../../../src/internal/cache-client-props-with-config';
 import {
   CacheClient,
   Configurations,
   DefaultMomentoLoggerFactory,
   DefaultMomentoLoggerLevel,
   MiddlewareFactory,
-} from '../../src';
+} from '../../../src';
 
 describe("Test exercises closing a client and jest doesn't hang", () => {
   it('constructs a client with background task and closes it', async () => {

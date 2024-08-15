@@ -5,13 +5,13 @@ import {
   CacheSetIfNotExists,
   MomentoErrorCode,
   CacheClient,
-} from '../../src';
+} from '../../../src';
 import {TextEncoder} from 'util';
 import {
   SetupIntegrationTest,
   integrationTestCacheClientProps,
   WithCache,
-} from './integration-setup';
+} from '../integration-setup';
 
 const {cacheClient} = SetupIntegrationTest();
 

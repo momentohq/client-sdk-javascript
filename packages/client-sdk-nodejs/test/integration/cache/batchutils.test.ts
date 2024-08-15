@@ -3,8 +3,8 @@ import {
   batchDelete,
   batchGet,
   batchSet,
-} from '../../src/batchutils/batch-functions';
-import {SetupIntegrationTest, delay} from './integration-setup';
+} from '../../../src/batchutils/batch-functions';
+import {SetupIntegrationTest, delay} from '../integration-setup';
 import {expectWithMessage} from '@gomomento/common-integration-tests';
 
 const {cacheClient, integrationTestCacheName} = SetupIntegrationTest();
