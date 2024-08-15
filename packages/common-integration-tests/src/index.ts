@@ -6,6 +6,7 @@ export * from './cache/list';
 export * from './cache/dictionary';
 export * from './cache/set';
 export * from './cache/sorted-set';
+export * from './cache/item-get-ttl';
 export * from './cache/item-get-type';
 export * from './topics/topic-client';
 export * from './cache/keys-exist';

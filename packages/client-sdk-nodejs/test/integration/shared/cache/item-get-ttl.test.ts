@@ -1,5 +1,5 @@
 import {SetupIntegrationTest} from '../../integration-setup';
-import {runItemGetTtlTest} from '@gomomento/common-integration-tests/dist/src/item-get-ttl';
+import {runItemGetTtlTest} from '@gomomento/common-integration-tests';
 
 const {cacheClient, integrationTestCacheName} = SetupIntegrationTest();
 
