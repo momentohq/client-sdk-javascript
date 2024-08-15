@@ -20,7 +20,7 @@ import {
   ValidateDictionaryChangerProps,
   uint8ArrayForTest,
   expectWithMessage,
-} from './common-int-test-utils';
+} from '../common-int-test-utils';
 import {TextEncoder} from 'util';
 import {
   IResponseError,

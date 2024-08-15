@@ -6,8 +6,8 @@ import {
   CacheSetBatch,
   SetBatchItem,
 } from '@gomomento/sdk-core';
-import {expectWithMessage, uint8ArrayForTest} from './common-int-test-utils';
-import {delay} from './auth-client';
+import {expectWithMessage, uint8ArrayForTest} from '../common-int-test-utils';
+import {delay} from '../auth/auth-client';
 
 export function runBatchGetSetTests(
   cacheClient: ICacheClient,

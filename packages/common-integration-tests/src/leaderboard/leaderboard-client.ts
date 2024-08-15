@@ -10,7 +10,7 @@ import {
   InvalidArgumentError,
   ILeaderboard,
 } from '@gomomento/sdk-core';
-import {expectWithMessage} from './common-int-test-utils';
+import {expectWithMessage} from '../common-int-test-utils';
 import {v4} from 'uuid';
 
 // Leaderboard items have a 7-day or no TTL so it's important to make sure we

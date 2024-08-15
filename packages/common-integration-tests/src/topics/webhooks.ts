@@ -14,12 +14,12 @@ import {
   ValidateTopicProps,
   WithWebhook,
   itOnlyInCi,
-} from './common-int-test-utils';
+} from '../common-int-test-utils';
 import {
   ICacheClient,
   ITopicClient,
 } from '@gomomento/sdk-core/dist/src/internal/clients';
-import {delay} from './auth-client';
+import {delay} from '../auth/auth-client';
 
 export function runWebhookTests(
   topicClient: ITopicClient,

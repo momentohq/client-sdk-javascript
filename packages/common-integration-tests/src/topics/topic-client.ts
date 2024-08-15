@@ -16,7 +16,7 @@ import {
   uint8ArrayForTest,
   ValidateCacheProps,
   ValidateTopicProps,
-} from './common-int-test-utils';
+} from '../common-int-test-utils';
 import {TextEncoder} from 'util';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {

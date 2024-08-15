@@ -20,7 +20,7 @@ import {
   ValidateCacheProps,
   ItBehavesLikeItValidatesCacheName,
   expectWithMessage,
-} from './common-int-test-utils';
+} from '../common-int-test-utils';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
 

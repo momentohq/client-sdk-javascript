@@ -23,7 +23,7 @@ import {
   ValidateCacheProps,
   ValidateSortedSetChangerProps,
   ValidateSortedSetProps,
-} from './common-int-test-utils';
+} from '../common-int-test-utils';
 import {
   IResponseError,
   IResponseMiss,

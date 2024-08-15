@@ -3,7 +3,7 @@ import {
   ValidateCacheProps,
   ItBehavesLikeItValidatesCacheName,
   expectWithMessage,
-} from './common-int-test-utils';
+} from '../common-int-test-utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
 import {CacheItemGetType} from '@gomomento/sdk-core';
 import {ItemType} from '@gomomento/sdk-core/dist/src/utils';

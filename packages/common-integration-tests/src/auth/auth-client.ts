@@ -28,7 +28,7 @@ import {
   RefreshAuthToken,
   TopicItem,
 } from '@gomomento/sdk-core';
-import {expectWithMessage} from './common-int-test-utils';
+import {expectWithMessage} from '../common-int-test-utils';
 import {InternalSuperUserPermissions} from '@gomomento/sdk-core/dist/src/internal/utils/auth';
 import {
   IAuthClient,
@@ -37,7 +37,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/clients';
 import {v4} from 'uuid';
 import {expect} from '@jest/globals';
-import './momento-jest-matchers';
+import '../momento-jest-matchers';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 
 const SUPER_USER_PERMISSIONS: PermissionScope =

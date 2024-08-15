@@ -20,7 +20,7 @@ import {
   ValidateCacheProps,
   ValidateListProps,
   ItBehavesLikeItValidatesCacheName,
-} from './common-int-test-utils';
+} from '../common-int-test-utils';
 import {
   IListResponseSuccess,
   IResponseError,

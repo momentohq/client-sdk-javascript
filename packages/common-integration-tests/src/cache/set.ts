@@ -19,7 +19,7 @@ import {
   ValidateSetProps,
   ItBehavesLikeItValidatesCacheName,
   expectWithMessage,
-} from './common-int-test-utils';
+} from '../common-int-test-utils';
 import {
   IResponseError,
   ResponseBase,

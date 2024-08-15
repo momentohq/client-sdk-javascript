@@ -8,7 +8,7 @@ import {
   StorageGetResponse,
   StoragePutResponse,
 } from '@gomomento/sdk-core';
-import {testStoreName} from './common-int-test-utils';
+import {testStoreName} from '..//common-int-test-utils';
 import {v4} from 'uuid';
 
 export function runStorageServiceTests(

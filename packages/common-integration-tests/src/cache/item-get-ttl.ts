@@ -3,10 +3,10 @@ import {
   ValidateCacheProps,
   ItBehavesLikeItValidatesCacheName,
   expectWithMessage,
-} from './common-int-test-utils';
+} from '../common-int-test-utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
 import {CacheItemGetTtl, CollectionTtl} from '@gomomento/sdk-core';
-import {delay} from './auth-client';
+import {delay} from '../auth/auth-client';
 export function runItemGetTtlTest(
   momento: ICacheClient,
   integrationTestCacheName: string
