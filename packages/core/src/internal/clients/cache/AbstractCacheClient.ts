@@ -95,6 +95,7 @@ import {
   SortedSetPutElementOptions,
   SortedSetPutElementsOptions,
   SortedSetFetchByScoreOptions,
+  SortedSetGetRankOptions,
   SortedSetIncrementOptions,
   SortedSetLengthByScoreOptions,
   SetBatchOptions,
@@ -1414,6 +1415,9 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the sorted set.
    * @param {string} sortedSetName - The sorted set to fetch from.
    * @param {string | Uint8Array} value - The value of the element whose rank we are retrieving.
+   * @param {SortedSetGetRankOptions} options
+   * @param {SortedSetOrder} [options.order] - The order in which sorted set will be sorted to determine the rank.
+   * Defaults to ascending.
    * @returns {Promise<CacheSortedSetGetRank.Response>}
    * {@link CacheSortedSetGetRank.Hit} containing the rank of the requested elements when found.
    * {@link CacheSortedSetGetRank.Miss} when the element does not exist.
@@ -1422,10 +1426,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async sortedSetGetRank(
     cacheName: string,
     sortedSetName: string,
-    value: string | Uint8Array
+    value: string | Uint8Array,
+    options?: SortedSetGetRankOptions
   ): Promise<CacheSortedSetGetRank.Response> {
     const client = this.getNextDataClient();
-    return await client.sortedSetGetRank(cacheName, sortedSetName, value);
+    return await client.sortedSetGetRank(
+      cacheName,
+      sortedSetName,
+      value,
+      options?.order
+    );
   }
 
   /**

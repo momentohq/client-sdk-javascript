@@ -6,12 +6,12 @@ import {
   CacheSortedSetGetScore,
   CacheSortedSetGetScores,
   CacheSortedSetIncrementScore,
+  CacheSortedSetLength,
+  CacheSortedSetLengthByScore,
   CacheSortedSetPutElement,
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
-  CacheSortedSetLength,
-  CacheSortedSetLengthByScore,
   CollectionTtl,
   MomentoErrorCode,
   SortedSetOrder,
@@ -1391,6 +1391,34 @@ export function runSortedSetTests(
           integrationTestCacheName,
           sortedSetName,
           'foo'
+        );
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetGetRank.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        hitResult = result as CacheSortedSetGetRank.Hit;
+        expect(hitResult.rank()).toEqual(0);
+
+        result = await cacheClient.sortedSetGetRank(
+          integrationTestCacheName,
+          sortedSetName,
+          'foo',
+          {
+            order: SortedSetOrder.Descending,
+          }
+        );
+        expectWithMessage(() => {
+          expect(result).toBeInstanceOf(CacheSortedSetGetRank.Hit);
+        }, `expected HIT but got ${result.toString()}`);
+        hitResult = result as CacheSortedSetGetRank.Hit;
+        expect(hitResult.rank()).toEqual(2);
+
+        result = await cacheClient.sortedSetGetRank(
+          integrationTestCacheName,
+          sortedSetName,
+          'foo',
+          {
+            order: SortedSetOrder.Ascending,
+          }
         );
         expectWithMessage(() => {
           expect(result).toBeInstanceOf(CacheSortedSetGetRank.Hit);
