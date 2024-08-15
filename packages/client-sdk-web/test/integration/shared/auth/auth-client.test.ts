@@ -1,5 +1,5 @@
 import {runAuthClientTests} from '@gomomento/common-integration-tests';
-import {SetupAuthClientIntegrationTest} from '../integration-setup';
+import {SetupAuthClientIntegrationTest} from '../../integration-setup';
 
 const {
   mgaAccountSessionTokenAuthClient,
