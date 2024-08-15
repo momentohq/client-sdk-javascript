@@ -330,7 +330,8 @@ export interface IDataClient {
   sortedSetGetRank(
     cacheName: string,
     sortedSetName: string,
-    value: string | Uint8Array
+    value: string | Uint8Array,
+    order?: SortedSetOrder
   ): Promise<CacheSortedSetGetRank.Response>;
   sortedSetGetScore(
     cacheName: string,

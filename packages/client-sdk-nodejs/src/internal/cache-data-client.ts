@@ -3611,7 +3611,8 @@ export class CacheDataClient implements IDataClient {
   public async sortedSetGetRank(
     cacheName: string,
     sortedSetName: string,
-    value: string | Uint8Array
+    value: string | Uint8Array,
+    order?: SortedSetOrder
   ): Promise<CacheSortedSetGetRank.Response> {
     try {
       validateCacheName(cacheName);
@@ -3627,7 +3628,8 @@ export class CacheDataClient implements IDataClient {
       return await this.sendSortedSetGetRank(
         cacheName,
         this.convert(sortedSetName),
-        this.convert(value)
+        this.convert(value),
+        order
       );
     });
   }
@@ -3635,11 +3637,18 @@ export class CacheDataClient implements IDataClient {
   private async sendSortedSetGetRank(
     cacheName: string,
     sortedSetName: Uint8Array,
-    value: Uint8Array
+    value: Uint8Array,
+    order?: SortedSetOrder
   ): Promise<CacheSortedSetGetRank.Response> {
+    const protoBufOrder =
+      order === SortedSetOrder.Descending
+        ? grpcCache._SortedSetGetRankRequest.Order.DESCENDING
+        : grpcCache._SortedSetGetRankRequest.Order.ASCENDING;
+
     const request = new grpcCache._SortedSetGetRankRequest({
       set_name: sortedSetName,
       value: value,
+      order: protoBufOrder,
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {

@@ -123,6 +123,14 @@ export interface SortedSetFetchByScoreCallOptions {
   count?: number;
 }
 
+export interface SortedSetGetRankCallOptions {
+  /**
+   * The order in which sorted set will be sorted to determine the rank.
+   * If the order is not specified, then ascending order is used.
+   */
+  order?: SortedSetOrder;
+}
+
 export interface SortedSetLengthByScoreCallOptions {
   /**
    * The minimum score of the elements to include when counting number of items in the set, inclusive.
