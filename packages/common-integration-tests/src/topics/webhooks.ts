@@ -1,9 +1,9 @@
 import {
   PostUrlWebhookDestination,
-  ListWebhooks,
-  GetWebhookSecret,
-  TopicPublish,
-  RotateWebhookSecret,
+  ListWebhooksResponse,
+  GetWebhookSecretResponse,
+  TopicPublishResponse,
+  RotateWebhookSecretResponse,
 } from '@gomomento/sdk-core';
 import {
   getWebhookRequestDetails,
@@ -73,17 +73,20 @@ export function runWebhookTests(
       const webhook = testWebhook(integrationTestCacheName);
       await WithWebhook(topicClient, webhook, async () => {
         const resp = await topicClient.listWebhooks(integrationTestCacheName);
-        if (resp instanceof ListWebhooks.Success) {
-          const webhookWeAreLookingFor = resp
-            .getWebhooks()
-            .find(
-              wh =>
-                wh.id.webhookName === webhook.id.webhookName &&
-                wh.id.cacheName === webhook.id.cacheName
-            );
-          expect(webhookWeAreLookingFor).toBeTruthy();
-        } else if (resp instanceof ListWebhooks.Error) {
-          throw new Error(`list webhooks request failed: ${resp.message()}`);
+        switch (resp.type) {
+          case ListWebhooksResponse.Success: {
+            const webhookWeAreLookingFor = resp
+              .getWebhooks()
+              .find(
+                wh =>
+                  wh.id.webhookName === webhook.id.webhookName &&
+                  wh.id.cacheName === webhook.id.cacheName
+              );
+            expect(webhookWeAreLookingFor).toBeTruthy();
+            break;
+          }
+          case ListWebhooksResponse.Error:
+            throw new Error(`list webhooks request failed: ${resp.message()}`);
         }
       });
     });
@@ -94,12 +97,16 @@ export function runWebhookTests(
           webhook.id.cacheName,
           webhook.id.webhookName
         );
-        if (resp instanceof GetWebhookSecret.Success) {
-          expect(resp.secret()).toBeTruthy();
-          expect(resp.webhookName()).toEqual(webhook.id.webhookName);
-          expect(resp.cacheName()).toEqual(webhook.id.cacheName);
-        } else if (resp instanceof GetWebhookSecret.Error) {
-          throw new Error(`getWebhookSecret request failed: ${resp.message()}`);
+        switch (resp.type) {
+          case GetWebhookSecretResponse.Success:
+            expect(resp.secret()).toBeTruthy();
+            expect(resp.webhookName()).toEqual(webhook.id.webhookName);
+            expect(resp.cacheName()).toEqual(webhook.id.cacheName);
+            break;
+          case GetWebhookSecretResponse.Error:
+            throw new Error(
+              `getWebhookSecret request failed: ${resp.message()}`
+            );
         }
       });
     });
@@ -111,7 +118,7 @@ export function runWebhookTests(
           webhook.topicName,
           'a message'
         );
-        if (publishResp instanceof TopicPublish.Error) {
+        if (publishResp.type === TopicPublishResponse.Error) {
           throw new Error(
             `failed to publish to topic: ${webhook.topicName} in cache: ${
               webhook.id.cacheName
@@ -122,8 +129,10 @@ export function runWebhookTests(
         }
         // wait 5 seconds for webhook to get called. Can increase this if needed
         await delay(5 * 1000);
-        const detes = await getWebhookRequestDetails(webhook.destination.url());
-        expect(detes.invocationCount).toBe(1);
+        const details = await getWebhookRequestDetails(
+          webhook.destination.url()
+        );
+        expect(details.invocationCount).toBe(1);
       });
     });
     itOnlyInCi('should rotate a webhook secret', async () => {
@@ -133,9 +142,9 @@ export function runWebhookTests(
           webhook.id.cacheName,
           webhook.id.webhookName
         );
-        if (!(getSecretResp instanceof GetWebhookSecret.Success)) {
+        if (!(getSecretResp.type === GetWebhookSecretResponse.Success)) {
           throw new Error(
-            `unknown error occured when making a 'getWebhookSecret' request: ${getSecretResp.toString()}`
+            `unknown error occurred when making a 'getWebhookSecret' request: ${getSecretResp.toString()}`
           );
         }
         expect(getSecretResp.secret()).toBeTruthy();
@@ -143,9 +152,9 @@ export function runWebhookTests(
           webhook.id.cacheName,
           webhook.id.webhookName
         );
-        if (!(rotateResp instanceof RotateWebhookSecret.Success)) {
+        if (!(rotateResp.type === RotateWebhookSecretResponse.Success)) {
           throw new Error(
-            `unknown error occured when making a 'rotateWebhookSecret' request: ${rotateResp.toString()}`
+            `unknown error occurred when making a 'rotateWebhookSecret' request: ${rotateResp.toString()}`
           );
         }
         expect(rotateResp.secret()).toBeTruthy();

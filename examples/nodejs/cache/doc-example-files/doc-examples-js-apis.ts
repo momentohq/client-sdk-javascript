@@ -70,14 +70,14 @@ import {
   CreateCacheResponse,
   CredentialProvider,
   DeleteCacheResponse,
-  DeleteWebhook,
+  DeleteWebhookResponse,
   DisposableTokenScopes,
   ExpiresIn,
   FlushCacheResponse,
   GenerateApiKey,
   GenerateApiKeyResponse,
   GenerateDisposableTokenResponse,
-  GetWebhookSecret,
+  GetWebhookSecretResponse,
   ILeaderboard,
   ItemType,
   LeaderboardConfigurations,
@@ -88,12 +88,12 @@ import {
   LeaderboardRemoveElementsResponse,
   LeaderboardUpsertResponse,
   ListCachesResponse,
-  ListWebhooks,
+  ListWebhooksResponse,
   PreviewLeaderboardClient,
-  PutWebhook,
+  PutWebhookResponse,
   ReadConcern,
   RefreshApiKeyResponse,
-  RotateWebhookSecret,
+  RotateWebhookSecretResponse,
   TokenScopes,
   TopicClient,
   TopicConfigurations,
@@ -1483,24 +1483,27 @@ async function example_API_TopicSubscribe(topicClient: TopicClient, cacheName: s
 
 async function example_API_ListWebhooks(topicClient: TopicClient, cacheName: string) {
   const result = await topicClient.listWebhooks(cacheName);
-  if (result instanceof ListWebhooks.Success) {
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    console.log(`listed webhooks: ${result.getWebhooks()}`);
-  } else if (result instanceof ListWebhooks.Error) {
-    throw new Error(
-      `An error occurred while attempting to list webhooks for cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case ListWebhooksResponse.Success:
+      console.log(`Listed webhooks for cache '${cacheName}': ${result.getWebhooks()}`);
+      break;
+    case ListWebhooksResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to list webhooks for cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
 async function example_API_DeleteWebhook(topicClient: TopicClient, cacheName: string) {
   const result = await topicClient.deleteWebhook(cacheName, 'examples webhook');
-  if (result instanceof DeleteWebhook.Success) {
-    console.log('successfully deleted webhook');
-  } else if (result instanceof DeleteWebhook.Error) {
-    throw new Error(
-      `An error occurred while attempting to delete webhook 'a webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case DeleteWebhookResponse.Success:
+      console.log('Successfully deleted webhook');
+      break;
+    case DeleteWebhookResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to delete webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
@@ -1509,34 +1512,40 @@ async function example_API_PutWebhook(topicClient: TopicClient, cacheName: strin
     topicName: 'a topic',
     destination: 'https://www.thisisawebhookurl.com/v1/webhook',
   });
-  if (result instanceof PutWebhook.Success) {
-    console.log('successfully created webhook');
-  } else if (result instanceof PutWebhook.Error) {
-    throw new Error(
-      `An error occurred while attempting to create a webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case PutWebhookResponse.Success:
+      console.log('Successfully put webhook');
+      break;
+    case PutWebhookResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to put the webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
 async function example_API_RotateWebhookSecret(topicClient: TopicClient, cacheName: string) {
   const result = await topicClient.rotateWebhookSecret(cacheName, 'examples webhook');
-  if (result instanceof RotateWebhookSecret.Success) {
-    console.log('successfully rotated the webhook secret');
-  } else if (result instanceof RotateWebhookSecret.Error) {
-    throw new Error(
-      `An error occurred while attempting to rotate the secret for the webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case RotateWebhookSecretResponse.Success:
+      console.log('Successfully rotated the webhook secret');
+      break;
+    case RotateWebhookSecretResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to rotate the secret for the webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
 async function example_API_GetWebhookSecret(topicClient: TopicClient, cacheName: string) {
   const result = await topicClient.getWebhookSecret(cacheName, 'examples webhook');
-  if (result instanceof GetWebhookSecret.Success) {
-    console.log('successfully retrieved the webhook secret');
-  } else if (result instanceof GetWebhookSecret.Error) {
-    throw new Error(
-      `An error occurred while attempting to fetch the secret for the webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case GetWebhookSecretResponse.Success:
+      console.log(`Successfully retrieved the webhook secret: ${result.secret()}`);
+      break;
+    case GetWebhookSecretResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to get the secret for the webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
