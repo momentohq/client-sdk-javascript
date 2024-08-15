@@ -1,10 +1,10 @@
 import {
   CacheClient,
-  CacheGetResponse,
-  CacheSetResponse,
   Configurations,
-  CreateCacheResponse,
   CredentialProvider,
+  CreateCacheResponse,
+  CacheSetResponse,
+  CacheGetResponse,
 } from '@gomomento/sdk';
 
 async function main() {
