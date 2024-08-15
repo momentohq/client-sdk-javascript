@@ -3657,7 +3657,8 @@ export class CacheDataClient<
   public async sortedSetGetRank(
     cacheName: string,
     sortedSetName: string,
-    value: string | Uint8Array
+    value: string | Uint8Array,
+    order?: SortedSetOrder
   ): Promise<CacheSortedSetGetRank.Response> {
     try {
       validateCacheName(cacheName);
@@ -3677,7 +3678,8 @@ export class CacheDataClient<
     const result = await this.sendSortedSetGetRank(
       cacheName,
       convertToB64String(sortedSetName),
-      convertToB64String(value)
+      convertToB64String(value),
+      order
     );
 
     this.logger.trace(
@@ -3690,11 +3692,18 @@ export class CacheDataClient<
   private async sendSortedSetGetRank(
     cacheName: string,
     sortedSetName: string,
-    value: string
+    value: string,
+    order?: SortedSetOrder
   ): Promise<CacheSortedSetGetRank.Response> {
+    const protoBufOrder =
+      order === SortedSetOrder.Descending
+        ? _SortedSetGetRankRequest.Order.DESCENDING
+        : _SortedSetGetRankRequest.Order.ASCENDING;
+
     const request = new _SortedSetGetRankRequest();
     request.setSetName(sortedSetName);
     request.setValue(value);
+    request.setOrder(protoBufOrder);
 
     return await new Promise((resolve, reject) => {
       this.clientWrapper.sortedSetGetRank(

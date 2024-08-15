@@ -1,10 +1,12 @@
 import {
   CacheClient,
-  Configurations,
-  CredentialProvider,
-  CreateCacheResponse,
-  CacheSetResponse,
   CacheGetResponse,
+  CacheSetResponse,
+  CacheSortedSetFetchResponse,
+  Configurations,
+  CreateCacheResponse,
+  CredentialProvider,
+  SortedSetOrder,
 } from '@gomomento/sdk';
 
 async function main() {
@@ -52,6 +54,26 @@ async function main() {
       break;
     case CacheGetResponse.Error:
       console.log(`Error: ${getResponse.message()}`);
+      break;
+  }
+
+  await momento.sortedSetGetRank('my-cache', 'my-sorted-set', 'my-element', {
+    order: SortedSetOrder.Descending,
+  });
+
+  const getRankRsp = await momento.sortedSetFetchByRank('myCache', 'mySortedSet', {
+    order: SortedSetOrder.Ascending,
+    // order: SortedSetOrder.Descending,
+  });
+  switch (getRankRsp.type) {
+    case CacheSortedSetFetchResponse.Hit:
+      console.log(JSON.stringify(getRankRsp.valueArray()));
+      break;
+    case CacheSortedSetFetchResponse.Miss:
+      console.log('sorted set not found');
+      break;
+    case CacheSortedSetFetchResponse.Error:
+      console.error(getRankRsp);
       break;
   }
 }
