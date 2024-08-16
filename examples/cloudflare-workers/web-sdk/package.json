@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@gomomento/sdk-core": "^1.40.0",
-    "@gomomento/sdk-web": "^1.94.0",
+    "@gomomento/sdk-web": "^1.95.0",
     "xhr4sw": "^0.0.5"
   }
 }
