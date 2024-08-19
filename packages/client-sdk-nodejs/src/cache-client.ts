@@ -27,7 +27,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
   private readonly logger: MomentoLogger;
   private readonly notYetAbstractedControlClient: CacheControlClient;
   private readonly _configuration: Configuration;
-  private dataRequestConcurrencySemaphore: Semaphore | undefined = undefined;
+  private dataRequestConcurrencySemaphore: Semaphore | undefined;
 
   /**
    * Creates an instance of CacheClient.
@@ -42,12 +42,12 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
       configuration: configuration,
     };
 
-    let semaphore: Semaphore | undefined = undefined;
+    let semaphore: Semaphore | undefined;
     const numConcurrentRequests = configuration
       .getTransportStrategy()
       .getGrpcConfig()
       .getMaxConcurrentRequests();
-    if (numConcurrentRequests !== null && numConcurrentRequests !== undefined) {
+    if (numConcurrentRequests != null) {
       validateMaxConcurrentRequests(numConcurrentRequests);
       semaphore = new Semaphore(numConcurrentRequests);
     }
@@ -86,7 +86,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
   }
 
   public close() {
-    if (this.dataRequestConcurrencySemaphore !== undefined) {
+    if (this.dataRequestConcurrencySemaphore != null) {
       this.dataRequestConcurrencySemaphore.purge();
     }
     this.controlClient.close();
@@ -108,7 +108,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
     const client = new CacheClient(props);
     try {
       const timeout =
-        props.eagerConnectTimeout !== undefined
+        props.eagerConnectTimeout != null
           ? props.eagerConnectTimeout
           : EAGER_CONNECTION_DEFAULT_TIMEOUT_SECONDS;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call

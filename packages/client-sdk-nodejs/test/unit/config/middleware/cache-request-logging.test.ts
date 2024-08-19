@@ -104,11 +104,11 @@ describe('request-logging-formats.ts', () => {
         ttlMillis: 42,
         condition: 'equal',
         present: false,
-        presentAndNotEqual: undefined,
+        presentAndNotEqual: null,
         absent: false,
         equal: 'habanero',
-        absentOrEqual: undefined,
-        notEqual: undefined,
+        absentOrEqual: null,
+        notEqual: null,
       });
     });
 
@@ -671,7 +671,7 @@ describe('request-logging-formats.ts', () => {
           minScore: 44,
           minScoreExclusive: true,
           maxScore: 'unbounded',
-          maxScoreExclusive: undefined,
+          maxScoreExclusive: null,
         },
         order: 'descending',
       });
@@ -806,7 +806,7 @@ describe('request-logging-formats.ts', () => {
         minScore: 41,
         minScoreExclusive: false,
         maxScore: 'unbounded',
-        maxScoreExclusive: undefined,
+        maxScoreExclusive: null,
       });
     });
   });
@@ -821,7 +821,7 @@ describe('request-logging-formats.ts', () => {
         .getModule('cache_client')
         ?.getClasses();
 
-      if (classes === undefined) {
+      if (classes == null) {
         throw new Error('Unable to get the classes for cache_client');
       }
 

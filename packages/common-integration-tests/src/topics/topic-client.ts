@@ -284,7 +284,7 @@ export function runTopicClientTests(
 
         // Just in case
         if (
-          subscribeResponse !== undefined &&
+          subscribeResponse != null &&
           subscribeResponse instanceof TopicSubscribe.Subscription
         ) {
           subscribeResponse.unsubscribe();

@@ -16,7 +16,7 @@ export type EndpointOverrides = BaseEndpointOverride | AllEndpoints;
 function isBaseEndpointOverride(
   endpointOverrides: EndpointOverrides
 ): endpointOverrides is BaseEndpointOverride {
-  return (endpointOverrides as BaseEndpointOverride).baseEndpoint !== undefined;
+  return (endpointOverrides as BaseEndpointOverride).baseEndpoint != null;
 }
 
 function isAllEndpoints(
@@ -24,9 +24,9 @@ function isAllEndpoints(
 ): endpointOverrides is AllEndpoints {
   const allEndpoints = endpointOverrides as AllEndpoints;
   return (
-    allEndpoints.cacheEndpoint !== undefined &&
-    allEndpoints.controlEndpoint !== undefined &&
-    allEndpoints.tokenEndpoint !== undefined
+    allEndpoints.cacheEndpoint != null &&
+    allEndpoints.controlEndpoint != null &&
+    allEndpoints.tokenEndpoint != null
   );
 }
 
@@ -198,24 +198,24 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
     }
     const decodedToken = decodeAuthToken(key);
     this.apiKey = decodedToken.authToken;
-    if (props.endpointOverrides === undefined) {
+    if (props.endpointOverrides == null) {
       this.endpointsOverridden = false;
-      if (decodedToken.controlEndpoint === undefined) {
+      if (decodedToken.controlEndpoint == null) {
         throw new Error(
           'Malformed token; unable to determine control endpoint.  Depending on the type of token you are using, you may need to specify the controlEndpoint explicitly.'
         );
       }
-      if (decodedToken.cacheEndpoint === undefined) {
+      if (decodedToken.cacheEndpoint == null) {
         throw new Error(
           'Malformed token; unable to determine cache endpoint.  Depending on the type of token you are using, you may need to specify the cacheEndpoint explicitly.'
         );
       }
-      if (decodedToken.tokenEndpoint === undefined) {
+      if (decodedToken.tokenEndpoint == null) {
         throw new Error(
           'Malformed token; unable to determine token endpoint.  Depending on the type of token you are using, you may need to specify the tokenEndpoint explicitly.'
         );
       }
-      if (decodedToken.storageEndpoint === undefined) {
+      if (decodedToken.storageEndpoint == null) {
         throw new Error(
           'Malformed token; unable to determine storage endpoint.  Depending on the type of token you are using, you may need to specify the storageEndpoint explicitly.'
         );
@@ -259,7 +259,7 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
   }
 
   isCacheEndpointSecure(): boolean {
-    if (this.allEndpoints.cacheEndpoint.secureConnection === undefined) {
+    if (this.allEndpoints.cacheEndpoint.secureConnection == null) {
       return true;
     }
     return this.allEndpoints.cacheEndpoint.secureConnection;
@@ -270,7 +270,7 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
   }
 
   isControlEndpointSecure(): boolean {
-    if (this.allEndpoints.controlEndpoint.secureConnection === undefined) {
+    if (this.allEndpoints.controlEndpoint.secureConnection == null) {
       return true;
     }
     return this.allEndpoints.controlEndpoint.secureConnection;
@@ -281,7 +281,7 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
   }
 
   isTokenEndpointSecure(): boolean {
-    if (this.allEndpoints.tokenEndpoint.secureConnection === undefined) {
+    if (this.allEndpoints.tokenEndpoint.secureConnection == null) {
       return true;
     }
     return this.allEndpoints.tokenEndpoint.secureConnection;
@@ -292,7 +292,7 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
   }
 
   isStorageEndpointSecure(): boolean {
-    if (this.allEndpoints.storageEndpoint.secureConnection === undefined) {
+    if (this.allEndpoints.storageEndpoint.secureConnection == null) {
       return true;
     }
     return this.allEndpoints.storageEndpoint.secureConnection;

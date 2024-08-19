@@ -182,8 +182,8 @@ export class LeaderboardDataClient<
     offset?: number,
     count?: number
   ): Promise<LeaderboardFetch.Response> {
-    const offsetValue = offset === undefined ? 0 : offset;
-    const countValue = count === undefined ? 8192 : count;
+    const offsetValue = offset == null ? 0 : offset;
+    const countValue = count == null ? 8192 : count;
     const orderValue = order ?? LeaderboardOrder.Ascending;
     try {
       validateSortedSetScores(minScore, maxScore);
@@ -235,12 +235,12 @@ export class LeaderboardDataClient<
     request.setOrder(protoBufOrder);
 
     const protoBufScoreRange = new _ScoreRange();
-    if (minScore !== undefined) {
+    if (minScore != null) {
       protoBufScoreRange.setMinInclusive(minScore);
     } else {
       protoBufScoreRange.setUnboundedMin(new _Unbounded());
     }
-    if (maxScore !== undefined) {
+    if (maxScore != null) {
       protoBufScoreRange.setMaxExclusive(maxScore);
     } else {
       protoBufScoreRange.setUnboundedMax(new _Unbounded());

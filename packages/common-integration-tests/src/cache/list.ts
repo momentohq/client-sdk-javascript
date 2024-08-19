@@ -402,7 +402,7 @@ export function runListTests(
         expectWithMessage(() => {
           expect(fetchResponse).toBeInstanceOf(CacheListFetch.Miss);
         }, `expected a MISS but got ${fetchResponse.toString()}`);
-        expect(fetchResponse.value()).toEqual(undefined);
+        expect(fetchResponse.value()).toBeUndefined();
       });
     });
 
@@ -540,7 +540,7 @@ export function runListTests(
         expectWithMessage(() => {
           expect(popResponse).toBeInstanceOf(CacheListPopBack.Miss);
         }, `expected a MISS but got ${popResponse.toString()}`);
-        expect(popResponse.value()).toEqual(undefined);
+        expect(popResponse.value()).toBeUndefined();
       });
     });
 
@@ -632,7 +632,7 @@ export function runListTests(
         expectWithMessage(() => {
           expect(popResponse).toBeInstanceOf(CacheListPopFront.Miss);
         }, `expected a MISS but got ${popResponse.toString()}`);
-        expect(popResponse.value()).toEqual(undefined);
+        expect(popResponse.value()).toBeUndefined();
       });
     });
 

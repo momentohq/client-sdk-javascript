@@ -50,7 +50,7 @@ export class Miss extends BaseResponseMiss implements IResponse {
     CacheDictionaryLengthResponse.Miss;
 
   value(): undefined {
-    return undefined;
+    return;
   }
 }
 
@@ -73,7 +73,7 @@ export class Error extends BaseResponseError implements IResponse {
     CacheDictionaryLengthResponse.Error;
 
   value(): undefined {
-    return undefined;
+    return;
   }
 }
 

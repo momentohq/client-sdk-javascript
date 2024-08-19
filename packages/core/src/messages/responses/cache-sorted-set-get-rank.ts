@@ -50,7 +50,7 @@ export class Miss extends BaseResponseMiss implements IResponse {
   }
 
   public rank(): undefined {
-    return undefined;
+    return;
   }
 }
 
@@ -73,7 +73,7 @@ export class Error extends BaseResponseError implements IResponse {
   }
 
   public rank(): undefined {
-    return undefined;
+    return;
   }
 }
 

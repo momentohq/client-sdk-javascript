@@ -85,7 +85,7 @@ export class NotFound extends ResponseBase implements IResponse {
   }
 
   value(): undefined {
-    return undefined;
+    return;
   }
 }
 
@@ -107,7 +107,7 @@ export class Error extends BaseResponseError implements IResponse {
   }
 
   value(): undefined {
-    return undefined;
+    return;
   }
 }
 

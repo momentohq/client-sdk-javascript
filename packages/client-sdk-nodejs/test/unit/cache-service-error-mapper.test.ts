@@ -27,13 +27,19 @@ const generateServiceError = (status: Status): ServiceError => {
   };
 };
 
+// we need this so that we can reset the resolved/rejected values between tests, because we are using the `no-undefined`
+// lint rule to give our users better support for null vs undefined
+function returnUndefined(): undefined {
+  return;
+}
+
 describe('CacheServiceErrorMapper', () => {
   const cacheServiceErrorMapper = new CacheServiceErrorMapper(false);
   let resolved: SdkError | unknown;
   let rejected: SdkError | unknown;
   beforeEach(() => {
-    resolved = undefined;
-    rejected = undefined;
+    resolved = returnUndefined();
+    rejected = returnUndefined();
   });
 
   const errorResponseFactoryFn = (err: SdkError): never => {

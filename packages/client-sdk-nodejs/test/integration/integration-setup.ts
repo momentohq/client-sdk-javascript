@@ -45,20 +45,19 @@ export async function WithCache(
   }
 }
 
-let _credsProvider: CredentialProvider | undefined = undefined;
+let _credsProvider: CredentialProvider | undefined;
 export function credsProvider(): CredentialProvider {
-  if (_credsProvider === undefined) {
+  if (_credsProvider == null) {
     _credsProvider =
       CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY');
   }
   return _credsProvider;
 }
 
-let _mgaAccountSessionTokenCredsProvider: CredentialProvider | undefined =
-  undefined;
+let _mgaAccountSessionTokenCredsProvider: CredentialProvider | undefined;
 
 function mgaAccountSessionTokenCredsProvider(): CredentialProvider {
-  if (_mgaAccountSessionTokenCredsProvider === undefined) {
+  if (_mgaAccountSessionTokenCredsProvider == null) {
     _mgaAccountSessionTokenCredsProvider =
       CredentialProvider.fromEnvironmentVariable({
         environmentVariableName: 'TEST_MGA_ACCOUNT_SESSION_TOKEN',
@@ -88,7 +87,7 @@ function mgaAccountSessionTokenCredsProvider(): CredentialProvider {
 }
 
 function testAgainstMomentoLocal(): boolean {
-  return process.env.MOMENTO_LOCAL !== undefined;
+  return process.env.MOMENTO_LOCAL != null;
 }
 
 export function integrationTestCacheClientProps(): CacheClientPropsWithConfig {

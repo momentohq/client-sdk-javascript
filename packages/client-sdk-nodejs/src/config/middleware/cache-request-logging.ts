@@ -110,11 +110,11 @@ interface SetIfRequestLog extends WriteRequestLog {
   value: string;
   condition: string;
   present: boolean;
-  presentAndNotEqual: string | undefined;
+  presentAndNotEqual: string | null;
   absent: boolean;
-  equal: string | undefined;
-  absentOrEqual: string | undefined;
-  notEqual: string | undefined;
+  equal: string | null;
+  absentOrEqual: string | null;
+  notEqual: string | null;
 }
 
 const convertSetIfRequest: RequestToLogInterfaceConverterFn<
@@ -127,20 +127,20 @@ const convertSetIfRequest: RequestToLogInterfaceConverterFn<
     value: convertBytesToString(request.cache_body),
     ttlMillis: request.ttl_milliseconds,
     condition: request.condition,
-    present: request.present !== undefined,
+    present: request.present != null,
     presentAndNotEqual: request.present_and_not_equal
       ? convertBytesToString(request.present_and_not_equal.value_to_check)
-      : undefined,
-    absent: request.absent !== undefined,
+      : null,
+    absent: request.absent != null,
     equal: request.equal
       ? convertBytesToString(request.equal.value_to_check)
-      : undefined,
+      : null,
     absentOrEqual: request.absent_or_equal
       ? convertBytesToString(request.absent_or_equal.value_to_check)
-      : undefined,
+      : null,
     notEqual: request.not_equal
       ? convertBytesToString(request.not_equal.value_to_check)
-      : undefined,
+      : null,
   };
 };
 
@@ -366,7 +366,7 @@ const convertSetUnionRequest: RequestToLogInterfaceConverterFn<
 
 interface SetDifferenceRequestLog extends SetCollectionRequestLog {
   action: 'minuend' | 'subtrahend_set' | 'subtrahend_identity';
-  elements?: string[];
+  elements: string[] | null;
 }
 
 const convertSetDifferenceRequest: RequestToLogInterfaceConverterFn<
@@ -387,7 +387,7 @@ const convertSetDifferenceRequest: RequestToLogInterfaceConverterFn<
       ? request.subtrahend.set.elements.map(element =>
           convertBytesToString(element)
         )
-      : undefined,
+      : null,
   };
 };
 
@@ -583,7 +583,7 @@ const convertListEraseRequest: RequestToLogInterfaceConverterFn<
   return {
     requestType: 'listErase',
     listName: convertBytesToString(request.list_name),
-    all: request.all !== undefined,
+    all: request.all != null,
     some: request.some.ranges.map(range => {
       return {
         beginIndex: range.begin_index,
@@ -654,18 +654,18 @@ const convertSortedSetPutRequest: RequestToLogInterfaceConverterFn<
 
 interface SortedSetFetchRequestLog extends SortedSetRequestLog {
   order: 'ascending' | 'descending'; // enum with 0 = ascending, 1 = descending
-  byScore?: {
+  byScore: {
     minScore: number | string;
-    minScoreExclusive?: boolean;
+    minScoreExclusive: boolean | null;
     maxScore: number | string;
-    maxScoreExclusive?: boolean;
+    maxScoreExclusive: boolean | null;
     offset: number;
     count: number;
-  };
-  byIndex?: {
+  } | null;
+  byIndex: {
     inclusiveStartIndex: number | string;
     exclusiveEndIndex: number | string;
-  };
+  } | null;
 }
 
 const convertSortedSetFetchRequest: RequestToLogInterfaceConverterFn<
@@ -685,7 +685,7 @@ const convertSortedSetFetchRequest: RequestToLogInterfaceConverterFn<
         offset: request.by_score.offset,
         count: request.by_score.count,
       }
-    : undefined;
+    : null;
 
   const byIndex = request.by_index
     ? {
@@ -696,7 +696,7 @@ const convertSortedSetFetchRequest: RequestToLogInterfaceConverterFn<
           ? 'unbounded'
           : request.by_index.exclusive_end_index,
       }
-    : undefined;
+    : null;
 
   return {
     requestType: 'sortedSetFetch',
@@ -797,9 +797,9 @@ const convertSortedSetLengthRequest: RequestToLogInterfaceConverterFn<
 
 interface SortedSetLengthByScoreRequestLog extends SortedSetRequestLog {
   minScore: number | string;
-  minScoreExclusive?: boolean;
+  minScoreExclusive: boolean | null;
   maxScore: number | string;
-  maxScoreExclusive?: boolean;
+  maxScoreExclusive: boolean | null;
 }
 
 const convertSortedSetLengthByScoreRequest: RequestToLogInterfaceConverterFn<
@@ -812,15 +812,11 @@ const convertSortedSetLengthByScoreRequest: RequestToLogInterfaceConverterFn<
     minScore: request.unbounded_min
       ? 'unbounded'
       : request.inclusive_min ?? request.exclusive_min,
-    minScoreExclusive: request.unbounded_min
-      ? undefined
-      : request.has_exclusive_min,
+    minScoreExclusive: request.unbounded_min ? null : request.has_exclusive_min,
     maxScore: request.unbounded_max
       ? 'unbounded'
       : request.inclusive_max ?? request.exclusive_max,
-    maxScoreExclusive: request.unbounded_max
-      ? undefined
-      : request.has_exclusive_max,
+    maxScoreExclusive: request.unbounded_max ? null : request.has_exclusive_max,
   };
 };
 

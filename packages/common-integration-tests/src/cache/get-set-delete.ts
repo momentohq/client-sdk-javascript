@@ -356,7 +356,7 @@ export function runGetSetDeleteTests(
         expect(getResponse).toBeInstanceOf(CacheGet.Miss);
       }, `expected MISS but got ${getResponse.toString()}`);
 
-      expect(getResponse.value()).toEqual(undefined);
+      expect(getResponse.value()).toBeUndefined();
     });
   });
 

@@ -142,7 +142,7 @@ export class Error extends BaseResponseError implements IResponse {
   readonly type: CacheGetBatchResponse.Error = CacheGetBatchResponse.Error;
 
   values(): undefined {
-    return undefined;
+    return;
   }
 }
 

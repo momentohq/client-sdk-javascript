@@ -223,7 +223,7 @@ class MiddlewareInterceptedStream implements ClientReadableStream<Message> {
         'onResponseEnd',
         this.reversedMiddlewareRequestHandlers,
         (h: MiddlewareRequestHandler) => () => h.onResponseEnd(),
-        undefined
+        null
       );
       callback();
     };

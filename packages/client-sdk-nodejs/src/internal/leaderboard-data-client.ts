@@ -119,7 +119,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
 
   private validateRequestTimeout(timeout?: number) {
     this.logger.debug(`Request timeout ms: ${String(timeout)}`);
-    if (timeout !== undefined && timeout <= 0) {
+    if (timeout != null && timeout <= 0) {
       throw new InvalidArgumentError(
         'request timeout must be greater than zero.'
       );
@@ -235,8 +235,8 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     offset?: number,
     count?: number
   ): Promise<LeaderboardFetch.Response> {
-    const offsetValue = offset === undefined ? 0 : offset;
-    const countValue = count === undefined ? 8192 : count;
+    const offsetValue = offset == null ? 0 : offset;
+    const countValue = count == null ? 8192 : count;
     const orderValue = order ?? LeaderboardOrder.Ascending;
     try {
       validateSortedSetScores(minScore, maxScore);
@@ -281,12 +281,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
         : leaderboard._Order.ASCENDING;
 
     const protoBufScoreRange = new leaderboard._ScoreRange();
-    if (minScore !== undefined) {
+    if (minScore != null) {
       protoBufScoreRange.min_inclusive = minScore;
     } else {
       protoBufScoreRange.unbounded_min = new common._Unbounded();
     }
-    if (maxScore !== undefined) {
+    if (maxScore != null) {
       protoBufScoreRange.max_exclusive = maxScore;
     } else {
       protoBufScoreRange.unbounded_max = new common._Unbounded();

@@ -39,8 +39,8 @@ describe('Expiration', () => {
   });
 
   describe('ExpiresAt', () => {
-    test('expiresAt.fromEpoch when epoch is undefined', () => {
-      const expiresIn = ExpiresAt.fromEpoch(undefined);
+    test('expiresAt.fromEpoch when epoch is null', () => {
+      const expiresIn = ExpiresAt.fromEpoch(null);
 
       expect(expiresIn.doesExpire()).toBe(false);
       expect(expiresIn.epoch()).toBe(Infinity);

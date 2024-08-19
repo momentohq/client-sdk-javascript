@@ -33,7 +33,7 @@ export class StaticTopicGrpcConfiguration implements TopicGrpcConfiguration {
   private readonly keepAliveTimeMs?: number;
 
   constructor(props: TopicGrpcConfigurationProps) {
-    if (props.numClients !== undefined && props.numClients !== null) {
+    if (props.numClients != null) {
       this.numClients = props.numClients;
     } else {
       this.numClients = 1;

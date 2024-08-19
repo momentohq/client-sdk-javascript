@@ -26,12 +26,11 @@ import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {CacheClientPropsWithConfig} from '../../src/internal/cache-client-props-with-config';
 
-let _credsProvider: CredentialProvider | undefined = undefined;
-let _mgaAccountSessionTokenCredsProvider: CredentialProvider | undefined =
-  undefined;
+let _credsProvider: CredentialProvider | undefined;
+let _mgaAccountSessionTokenCredsProvider: CredentialProvider | undefined;
 
 export function credsProvider(): CredentialProvider {
-  if (_credsProvider === undefined) {
+  if (_credsProvider == null) {
     if (isLocalhostDevelopmentMode()) {
       _credsProvider = CredentialProvider.fromEnvironmentVariable({
         environmentVariableName: 'MOMENTO_API_KEY',
@@ -59,7 +58,7 @@ export function credsProvider(): CredentialProvider {
 }
 
 function mgaAccountSessionTokenCredsProvider(): CredentialProvider {
-  if (_mgaAccountSessionTokenCredsProvider === undefined) {
+  if (_mgaAccountSessionTokenCredsProvider == null) {
     _mgaAccountSessionTokenCredsProvider =
       CredentialProvider.fromEnvironmentVariable({
         environmentVariableName: 'TEST_MGA_ACCOUNT_SESSION_TOKEN',

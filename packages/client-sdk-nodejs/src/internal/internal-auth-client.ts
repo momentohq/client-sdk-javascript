@@ -239,7 +239,7 @@ export class InternalAuthClient implements IAuthClient {
     }
 
     const tokenId = disposableTokenProps?.tokenId;
-    if (tokenId !== undefined) {
+    if (tokenId != null) {
       try {
         validateDisposableTokenTokenID(tokenId);
       } catch (err) {

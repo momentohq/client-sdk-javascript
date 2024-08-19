@@ -21,7 +21,7 @@ class GzipCompressor implements ICompression {
     compressionLevel: CompressionLevel,
     value: Uint8Array
   ): Promise<Uint8Array> {
-    let level: number | undefined = undefined;
+    let level: number | undefined;
     switch (compressionLevel) {
       case CompressionLevel.Balanced:
         level = zlib.constants.Z_DEFAULT_COMPRESSION;

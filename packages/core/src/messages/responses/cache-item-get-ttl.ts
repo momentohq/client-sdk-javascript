@@ -47,7 +47,7 @@ export class Miss extends BaseResponseMiss implements IResponse {
   }
 
   remainingTtlMillis(): undefined {
-    return undefined;
+    return;
   }
 }
 
@@ -69,7 +69,7 @@ export class Error extends BaseResponseError implements IResponse {
   }
 
   remainingTtlMillis(): undefined {
-    return undefined;
+    return;
   }
 }
 

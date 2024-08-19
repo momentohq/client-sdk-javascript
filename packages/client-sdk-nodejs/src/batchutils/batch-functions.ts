@@ -64,7 +64,7 @@ async function getWorker(
   const responses: Record<string, CacheGet.Response> = {};
   while (keys.length) {
     const cacheKey = keys.pop();
-    if (cacheKey !== undefined) {
+    if (cacheKey != null) {
       responses[String(cacheKey)] = await cacheClient.get(cacheName, cacheKey);
     }
   }
@@ -102,7 +102,7 @@ async function setWorker(
   const responses: Record<string, CacheSet.Response> = {};
   while (items.length) {
     const item = items.pop();
-    if (item !== undefined) {
+    if (item != null) {
       responses[String(item.key)] = await cacheClient.set(
         cacheName,
         item.key,
@@ -145,7 +145,7 @@ async function deleteWorker(
   const responses: Record<string, CacheDelete.Response> = {};
   while (keys.length) {
     const cacheKey = keys.pop();
-    if (cacheKey !== undefined) {
+    if (cacheKey != null) {
       responses[String(cacheKey)] = await cacheClient.delete(
         cacheName,
         cacheKey

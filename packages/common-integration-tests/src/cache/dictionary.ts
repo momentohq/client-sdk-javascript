@@ -401,7 +401,7 @@ export function runDictionaryTests(
         expectWithMessage(() => {
           expect(fetchResponse).toBeInstanceOf(CacheDictionaryFetch.Miss);
         }, `expected MISS but got ${fetchResponse.toString()}`);
-        expect(fetchResponse.value()).toEqual(undefined);
+        expect(fetchResponse.value()).toBeUndefined();
       });
     });
 
@@ -498,7 +498,7 @@ export function runDictionaryTests(
         expectWithMessage(() => {
           expect(getResponse).toBeInstanceOf(CacheDictionaryGetField.Miss);
         }, `expected MISS but got ${getResponse.toString()}`);
-        expect(getResponse.value()).toEqual(undefined);
+        expect(getResponse.value()).toBeUndefined();
       });
     });
 
@@ -762,7 +762,7 @@ export function runDictionaryTests(
         expectWithMessage(() => {
           expect(getResponse).toBeInstanceOf(CacheDictionaryGetFields.Miss);
         }, `expected MISS but got ${getResponse.toString()}`);
-        expect(getResponse.value()).toEqual(undefined);
+        expect(getResponse.value()).toBeUndefined();
       });
     });
 

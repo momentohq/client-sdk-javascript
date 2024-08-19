@@ -33,7 +33,7 @@ export class MiddlewareMessage {
   }
 
   messageLength(): number {
-    if (this._grpcMessage !== null && this._grpcMessage !== undefined) {
+    if (this._grpcMessage != null) {
       return this._grpcMessage.serializeBinary().length;
     }
     return 0;

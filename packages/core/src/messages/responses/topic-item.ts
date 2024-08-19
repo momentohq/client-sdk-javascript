@@ -56,7 +56,7 @@ export class TopicItem {
     const displayValue = truncateString(this.value().toString());
     let displayString = `${this.constructor.name}: ${displayValue}`;
 
-    if (this._tokenId !== undefined) {
+    if (this._tokenId != null) {
       displayString += `; Token Id: ${this._tokenId}`;
     }
 

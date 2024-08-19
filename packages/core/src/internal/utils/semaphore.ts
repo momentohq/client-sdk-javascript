@@ -26,7 +26,7 @@ export class Semaphore {
     if (this.counter < this.max) {
       this.counter += 1;
       return new Promise(resolve => {
-        resolve(undefined);
+        resolve(null);
       });
     }
     return new Promise((resolve, err) => {

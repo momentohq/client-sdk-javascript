@@ -29,10 +29,10 @@ function testCacheName(): string {
   return `js-integration-test-compression-${v4()}`;
 }
 
-let _credsProvider: CredentialProvider | undefined = undefined;
+let _credsProvider: CredentialProvider | undefined;
 
 export function credsProvider(): CredentialProvider {
-  if (_credsProvider === undefined) {
+  if (_credsProvider == null) {
     _credsProvider =
       CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY');
   }
@@ -103,7 +103,7 @@ export function expectWithMessage(expected: () => void, message: string) {
   try {
     expected();
   } catch (e) {
-    if (e instanceof Error && e.stack !== undefined) {
+    if (e instanceof Error && e.stack != null) {
       message += `\n\nOriginal stack trace:\n${e.stack}`;
     }
     throw new Error(message);

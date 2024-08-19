@@ -48,7 +48,7 @@ export class Miss extends BaseResponseMiss implements IResponse {
   }
 
   itemType(): undefined {
-    return undefined;
+    return;
   }
 }
 
@@ -71,7 +71,7 @@ export class Error extends BaseResponseError implements IResponse {
   }
 
   itemType(): undefined {
-    return undefined;
+    return;
   }
 }
 

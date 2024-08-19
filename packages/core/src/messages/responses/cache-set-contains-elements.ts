@@ -73,7 +73,7 @@ export class Miss extends BaseResponseMiss implements IResponse {
   }
 
   public containsElements(): Record<string, boolean> | undefined {
-    return undefined;
+    return;
   }
 }
 
@@ -96,7 +96,7 @@ export class Error extends BaseResponseError implements IResponse {
   }
 
   public containsElements(): Record<string, boolean> | undefined {
-    return undefined;
+    return;
   }
 }
 

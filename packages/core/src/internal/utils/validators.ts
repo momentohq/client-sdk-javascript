@@ -45,7 +45,7 @@ export function validateSortedSetName(name: string) {
 }
 
 export function validateSortedSetRanks(start_rank: number, end_rank?: number) {
-  if (end_rank === undefined) {
+  if (end_rank == null) {
     return;
   }
   if (start_rank > 0 && end_rank > 0 && start_rank > end_rank) {
@@ -59,8 +59,8 @@ export function validateSortedSetRanks(start_rank: number, end_rank?: number) {
 }
 
 export function validateSortedSetScores(minScore?: number, maxScore?: number) {
-  if (minScore === undefined) return;
-  if (maxScore === undefined) return;
+  if (minScore == null) return;
+  if (maxScore == null) return;
   if (minScore > maxScore) {
     throw new InvalidArgumentError(
       'minScore must be less than or equal to maxScore'
@@ -96,7 +96,7 @@ export function validateListSliceStartEnd(
   startIndex?: number,
   endIndex?: number
 ) {
-  if (startIndex === undefined || endIndex === undefined) return;
+  if (startIndex == null || endIndex == null) return;
   // can't validate bounds for start and index of either or are negative without list length
   if (startIndex > 0 || endIndex < 0) return;
   if (endIndex <= startIndex) {

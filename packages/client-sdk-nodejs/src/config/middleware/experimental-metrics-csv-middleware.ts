@@ -37,13 +37,11 @@ class ExperimentalMetricsCsvMiddlewareRequestHandler extends ExperimentalMetrics
     try {
       await fs.promises.appendFile(this.csvPath, `${csvRow}\n`);
     } catch (err) {
-      if (err !== null) {
-        this.logger.error(
-          'Error writing to metrics csv file at path: %s : %s',
-          this.csvPath,
-          err
-        );
-      }
+      this.logger.error(
+        'Error writing to metrics csv file at path: %s : %s',
+        this.csvPath,
+        err
+      );
     }
   }
 }

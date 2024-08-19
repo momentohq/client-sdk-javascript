@@ -110,12 +110,12 @@ export class StorageDataClient<
           const value = resp?.getValue() as _StoreValue;
           if (resp) {
             switch (value?.getValueCase()) {
-              case undefined:
               case ValueCase.VALUE_NOT_SET: {
                 return resolve(
                   new StorageGet.Error(
                     new UnknownError(
-                      'StorageGet responded with an unknown result'
+                      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                      `StorageGet responded with an unknown result: ${value}`
                     )
                   )
                 );
@@ -136,6 +136,16 @@ export class StorageDataClient<
               case ValueCase.DOUBLE_VALUE: {
                 return resolve(
                   StorageGet.Found.ofDouble(value.getDoubleValue())
+                );
+              }
+              default: {
+                return resolve(
+                  new StorageGet.Error(
+                    new UnknownError(
+                      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                      `StorageGet responded with an unknown result: ${value}`
+                    )
+                  )
                 );
               }
             }

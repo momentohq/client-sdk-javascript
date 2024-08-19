@@ -33,7 +33,6 @@ describe('configuration.ts', () => {
     middlewares: testMiddlewares,
     throwOnErrors: false,
     readConcern: ReadConcern.BALANCED,
-    compression: undefined,
   });
 
   it('should support overriding retry strategy', () => {

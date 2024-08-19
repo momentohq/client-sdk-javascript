@@ -1,11 +1,18 @@
+export interface StorageValueProps {
+  valueInt?: number;
+  valueDouble?: number;
+  valueString?: string;
+  valueBytes?: Uint8Array;
+}
+
 /**
  * Represents a value stored in the cache, which can be an integer, double, string, or byte array.
  */
 export class StorageValue {
-  private readonly _valueInt: number | undefined = undefined;
-  private readonly _valueDouble: number | undefined = undefined;
-  private readonly _valueString: string | undefined = undefined;
-  private readonly _valueBytes: Uint8Array | undefined = undefined;
+  private readonly _valueInt: number | undefined;
+  private readonly _valueDouble: number | undefined;
+  private readonly _valueString: string | undefined;
+  private readonly _valueBytes: Uint8Array | undefined;
 
   /**
    * Creates an instance of the StorageValue class.
@@ -14,16 +21,11 @@ export class StorageValue {
    * @param {string | undefined} valueString - The string value to be stored.
    * @param {Uint8Array | undefined} valueBytes - The byte array value to be stored.
    */
-  constructor(
-    valueInt: number | undefined,
-    valueDouble: number | undefined,
-    valueString: string | undefined,
-    valueBytes: Uint8Array | undefined
-  ) {
-    this._valueInt = valueInt;
-    this._valueDouble = valueDouble;
-    this._valueString = valueString;
-    this._valueBytes = valueBytes;
+  constructor(props: StorageValueProps) {
+    this._valueInt = props.valueInt;
+    this._valueDouble = props.valueDouble;
+    this._valueString = props.valueString;
+    this._valueBytes = props.valueBytes;
   }
 
   /**
@@ -32,7 +34,7 @@ export class StorageValue {
    * @returns {StorageValue} - A StorageValue instance containing the integer value.
    */
   static ofInt(value: number): StorageValue {
-    return new StorageValue(value, undefined, undefined, undefined);
+    return new StorageValue({valueInt: value});
   }
 
   /**
@@ -41,7 +43,7 @@ export class StorageValue {
    * @returns {StorageValue} - A StorageValue instance containing the double value.
    */
   static ofDouble(value: number): StorageValue {
-    return new StorageValue(undefined, value, undefined, undefined);
+    return new StorageValue({valueDouble: value});
   }
 
   /**
@@ -50,7 +52,7 @@ export class StorageValue {
    * @returns {StorageValue} - A StorageValue instance containing the string value.
    */
   static ofString(value: string): StorageValue {
-    return new StorageValue(undefined, undefined, value, undefined);
+    return new StorageValue({valueString: value});
   }
 
   /**
@@ -59,7 +61,7 @@ export class StorageValue {
    * @returns {StorageValue} - A StorageValue instance containing the byte array value.
    */
   static ofBytes(value: Uint8Array): StorageValue {
-    return new StorageValue(undefined, undefined, undefined, value);
+    return new StorageValue({valueBytes: value});
   }
 
   /**

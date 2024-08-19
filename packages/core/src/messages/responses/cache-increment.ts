@@ -60,7 +60,7 @@ export class Error extends BaseResponseError implements IResponse {
   readonly type: CacheIncrementResponse.Error = CacheIncrementResponse.Error;
 
   value(): undefined {
-    return undefined;
+    return;
   }
 }
 

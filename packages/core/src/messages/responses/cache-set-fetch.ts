@@ -104,7 +104,7 @@ export class Hit extends ResponseBase implements IResponse {
 export class Miss extends BaseResponseMiss {
   readonly type: CacheSetFetchResponse.Miss = CacheSetFetchResponse.Miss;
   public value(): undefined {
-    return undefined;
+    return;
   }
 }
 
@@ -125,7 +125,7 @@ export class Error extends BaseResponseError implements IResponse {
 
   readonly type: CacheSetFetchResponse.Error = CacheSetFetchResponse.Error;
   public value(): undefined {
-    return undefined;
+    return;
   }
 }
 

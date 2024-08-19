@@ -32,7 +32,7 @@ export interface ConfigurationProps {
   /**
    * Configures compression capabilities for the client.
    */
-  compression: CompressionStrategy | undefined;
+  compression?: CompressionStrategy;
 }
 
 /**
@@ -311,6 +311,6 @@ export class CacheConfiguration implements Configuration {
   }
 
   hasCompressionStrategy(): boolean {
-    return this.compression !== undefined;
+    return this.compression != null;
   }
 }

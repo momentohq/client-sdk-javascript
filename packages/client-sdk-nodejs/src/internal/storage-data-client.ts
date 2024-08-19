@@ -84,7 +84,7 @@ export class StorageDataClient implements IStorageDataClient {
 
   private validateRequestTimeout(timeout?: number) {
     this.logger.debug(`Request timeout ms: ${String(timeout)}`);
-    if (timeout !== undefined && timeout <= 0) {
+    if (timeout != null && timeout <= 0) {
       throw new InvalidArgumentError(
         'request timeout must be greater than zero.'
       );

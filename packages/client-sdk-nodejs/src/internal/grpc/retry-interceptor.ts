@@ -84,7 +84,7 @@ export class RetryInterceptor {
                         attemptNumber: attempts,
                       });
 
-                    if (whenToRetry === null) {
+                    if (whenToRetry == null) {
                       logger.debug(
                         `Request not eligible for retry: path: ${options.method_definition.path}; retryable status code: ${status.code}; number of attempts (${attempts}).`
                       );
@@ -111,7 +111,7 @@ export class RetryInterceptor {
                   grpcRequest: options.method_definition,
                   attemptNumber: attempts,
                 });
-                if (whenToRetry === null) {
+                if (whenToRetry == null) {
                   logger.debug(
                     `Request not eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}.`
                   );

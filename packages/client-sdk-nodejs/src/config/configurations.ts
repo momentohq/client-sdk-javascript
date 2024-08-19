@@ -74,7 +74,6 @@ export class Laptop extends CacheConfiguration {
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
       readConcern: ReadConcern.BALANCED,
-      compression: undefined,
     });
   }
 }
@@ -106,7 +105,6 @@ export class Lambda extends CacheConfiguration {
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
       readConcern: ReadConcern.BALANCED,
-      compression: undefined,
     });
   }
 }
@@ -152,7 +150,6 @@ class InRegionDefault extends CacheConfiguration {
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
       readConcern: ReadConcern.BALANCED,
-      compression: undefined,
     });
   }
 }
@@ -199,7 +196,6 @@ class InRegionLowLatency extends CacheConfiguration {
       middlewares: defaultMiddlewares,
       throwOnErrors: false,
       readConcern: ReadConcern.BALANCED,
-      compression: undefined,
     });
   }
 }

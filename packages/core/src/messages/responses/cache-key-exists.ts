@@ -52,7 +52,7 @@ export class Error extends BaseResponseError implements IResponse {
   }
 
   exists(): undefined {
-    return undefined;
+    return;
   }
 }
 

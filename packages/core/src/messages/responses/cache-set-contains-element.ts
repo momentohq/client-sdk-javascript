@@ -57,7 +57,7 @@ export class Miss extends BaseResponseMiss implements IResponse {
   }
 
   public containsElement(): undefined {
-    return undefined;
+    return;
   }
 }
 
@@ -80,7 +80,7 @@ export class Error extends BaseResponseError implements IResponse {
   }
 
   public containsElement(): undefined {
-    return undefined;
+    return;
   }
 }
 

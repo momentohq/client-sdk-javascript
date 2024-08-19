@@ -769,7 +769,7 @@ export function runSetTests(
         expect(fetchResponse).toBeInstanceOf(CacheSetFetch.Miss);
       }, `expected a MISS but got ${fetchResponse.toString()}`);
 
-      expect(fetchResponse.value()).toEqual(undefined);
+      expect(fetchResponse.value()).toBeUndefined();
     });
   });
 
@@ -920,7 +920,7 @@ export function runSetTests(
         expect(response).toBeInstanceOf(CacheSetSample.Miss);
       }, `expected a MISS but got ${response.toString()}`);
 
-      expect(response.value()).toEqual(undefined);
+      expect(response.value()).toBeUndefined();
     });
   });
 
@@ -1137,7 +1137,7 @@ export function runSetTests(
         expect(popResponse).toBeInstanceOf(CacheSetPop.Miss);
       }, `expected a MISS but got ${popResponse.toString()}`);
 
-      expect(popResponse.value()).toEqual(undefined);
+      expect(popResponse.value()).toBeUndefined();
     });
   });
 
@@ -1228,7 +1228,7 @@ export function runSetTests(
         expect(lengthResponse).toBeInstanceOf(CacheSetLength.Miss);
       }, `expected a MISS but got ${lengthResponse.toString()}`);
 
-      expect(lengthResponse.length()).toEqual(undefined);
+      expect(lengthResponse.length()).toBeUndefined();
     });
   });
 }

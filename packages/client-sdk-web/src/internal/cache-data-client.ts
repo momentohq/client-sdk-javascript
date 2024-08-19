@@ -314,7 +314,7 @@ export class CacheDataClient<
   ): Promise<CacheSet.Response> {
     try {
       validateCacheName(cacheName);
-      if (options?.ttl !== undefined) {
+      if (options?.ttl != null) {
         validateTtlSeconds(options?.ttl);
       }
     } catch (err) {
@@ -382,7 +382,7 @@ export class CacheDataClient<
   ): Promise<CacheSetIfNotExists.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
+      if (ttl != null) {
         validateTtlSeconds(ttl);
       }
     } catch (err) {
@@ -467,7 +467,7 @@ export class CacheDataClient<
     const ttl = options?.ttl;
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
+      if (ttl != null) {
         validateTtlSeconds(ttl);
       }
     } catch (err) {
@@ -551,7 +551,7 @@ export class CacheDataClient<
   ): Promise<CacheSetIfPresent.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
+      if (ttl != null) {
         validateTtlSeconds(ttl);
       }
     } catch (err) {
@@ -636,7 +636,7 @@ export class CacheDataClient<
   ): Promise<CacheSetIfEqual.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
+      if (ttl != null) {
         validateTtlSeconds(ttl);
       }
     } catch (err) {
@@ -723,7 +723,7 @@ export class CacheDataClient<
   ): Promise<CacheSetIfNotEqual.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
+      if (ttl != null) {
         validateTtlSeconds(ttl);
       }
     } catch (err) {
@@ -810,7 +810,7 @@ export class CacheDataClient<
   ): Promise<CacheSetIfPresentAndNotEqual.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
+      if (ttl != null) {
         validateTtlSeconds(ttl);
       }
     } catch (err) {
@@ -902,7 +902,7 @@ export class CacheDataClient<
   ): Promise<CacheSetIfAbsentOrEqual.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
+      if (ttl != null) {
         validateTtlSeconds(ttl);
       }
     } catch (err) {
@@ -1066,7 +1066,7 @@ export class CacheDataClient<
   ): Promise<CacheSetBatch.Response> {
     try {
       validateCacheName(cacheName);
-      if (options?.ttl !== undefined) {
+      if (options?.ttl != null) {
         validateTtlSeconds(options?.ttl);
       }
     } catch (err) {
@@ -1193,7 +1193,7 @@ export class CacheDataClient<
   ): Promise<CacheIncrement.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
+      if (ttl != null) {
         validateTtlSeconds(ttl);
       }
     } catch (err) {
@@ -1408,7 +1408,7 @@ export class CacheDataClient<
             if (resp.hasFound()) {
               const found = resp.getFound();
               if (
-                found?.getContainsList() === undefined ||
+                found?.getContainsList() == null ||
                 found?.getContainsList().length === 0
               ) {
                 resolve(
@@ -1482,7 +1482,7 @@ export class CacheDataClient<
             if (resp.hasFound()) {
               const found = resp.getFound();
               if (
-                found?.getContainsList() === undefined ||
+                found?.getContainsList() == null ||
                 found?.getContainsList().length === 0
               ) {
                 resolve(
@@ -1969,7 +1969,7 @@ export class CacheDataClient<
             resolve(new CacheListFetch.Miss());
           } else if (resp?.getFound()) {
             const found = resp?.getFound();
-            if (found !== undefined) {
+            if (found != null) {
               const values = found.getValuesList();
               // TODO: does this work for mixed (str/byte) item lists? May need to
               //   add a convertMixedArray() method.
@@ -3245,10 +3245,10 @@ export class CacheDataClient<
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
       validateSortedSetScores(minScore, maxScore);
-      if (offset !== undefined) {
+      if (offset != null) {
         validateSortedSetOffset(offset);
       }
-      if (count !== undefined) {
+      if (count != null) {
         validateSortedSetCount(count);
       }
     } catch (err) {
@@ -3294,7 +3294,7 @@ export class CacheDataClient<
     count?: number
   ): Promise<CacheSortedSetFetch.Response> {
     const by_score = new _SortedSetFetchRequest._ByScore();
-    if (minScore !== undefined) {
+    if (minScore != null) {
       by_score.setMinScore(
         new _SortedSetFetchRequest._ByScore._Score()
           .setScore(minScore)
@@ -3303,7 +3303,7 @@ export class CacheDataClient<
     } else {
       by_score.setUnboundedMin(new _Unbounded());
     }
-    if (maxScore !== undefined) {
+    if (maxScore != null) {
       by_score.setMaxScore(
         new _SortedSetFetchRequest._ByScore._Score()
           .setScore(maxScore)
@@ -3720,7 +3720,7 @@ export class CacheDataClient<
             resolve(new CacheSortedSetGetRank.Miss());
           } else if (resp?.getElementRank()?.getResult() === ECacheResult.HIT) {
             const rank = resp?.getElementRank()?.getRank();
-            if (rank !== undefined) {
+            if (rank != null) {
               resolve(new CacheSortedSetGetRank.Hit(rank));
             } else {
               resolve(new CacheSortedSetGetRank.Miss());
@@ -4058,13 +4058,13 @@ export class CacheDataClient<
     const request = new _SortedSetLengthByScoreRequest();
     request.setSetName(sortedSetName);
 
-    if (minScore === undefined) {
+    if (minScore == null) {
       request.setUnboundedMin(new _Unbounded());
     } else {
       request.setInclusiveMin(minScore);
     }
 
-    if (maxScore === undefined) {
+    if (maxScore == null) {
       request.setUnboundedMax(new _Unbounded());
     } else {
       request.setInclusiveMax(maxScore);

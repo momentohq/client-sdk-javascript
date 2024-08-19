@@ -47,7 +47,7 @@ export class MiddlewareFactory {
         new ExperimentalEventLoopPerformanceMetricsMiddleware(loggerFactory)
       );
     }
-    if (options.perRequestMetricsCSVPath !== undefined) {
+    if (options.perRequestMetricsCSVPath != null) {
       middlewares.push(
         new ExperimentalMetricsCsvMiddleware(
           options.perRequestMetricsCSVPath,

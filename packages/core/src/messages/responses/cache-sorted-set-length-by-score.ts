@@ -46,7 +46,7 @@ export class Miss extends BaseResponseMiss implements IResponse {
     CacheSortedSetLengthByScoreResponse.Miss;
 
   public length(): undefined {
-    return undefined;
+    return;
   }
 }
 
@@ -69,7 +69,7 @@ export class Error extends BaseResponseError implements IResponse {
   }
 
   public length(): undefined {
-    return undefined;
+    return;
   }
 }
 

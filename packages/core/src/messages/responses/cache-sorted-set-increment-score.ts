@@ -52,7 +52,7 @@ export class Error extends BaseResponseError implements IResponse {
   }
 
   public score(): undefined {
-    return undefined;
+    return;
   }
 }
 

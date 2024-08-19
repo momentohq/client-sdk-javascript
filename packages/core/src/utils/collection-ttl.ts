@@ -28,7 +28,7 @@ export class CollectionTtl {
    * @param {boolean} [refreshTtl=true]
    */
   constructor(ttlSeconds: number | null = null, refreshTtl = true) {
-    if (ttlSeconds !== null) {
+    if (ttlSeconds != null) {
       validateTtlSeconds(ttlSeconds);
     }
     this._refreshTtl = refreshTtl;
@@ -46,7 +46,7 @@ export class CollectionTtl {
    * @returns {number | null}
    */
   public ttlMilliseconds(): number | null {
-    return this._ttlSeconds === null ? null : this._ttlSeconds * 1000;
+    return this._ttlSeconds == null ? null : this._ttlSeconds * 1000;
   }
 
   /** Whether or not to refresh a collection's TTL when it's modified.
@@ -86,7 +86,7 @@ export class CollectionTtl {
   public static refreshTtlIfProvided(
     ttlSeconds: number | null = null
   ): CollectionTtl {
-    return new CollectionTtl(ttlSeconds, ttlSeconds !== null);
+    return new CollectionTtl(ttlSeconds, ttlSeconds != null);
   }
 
   /** Copies the CollectionTtl, but it will refresh the TTL when

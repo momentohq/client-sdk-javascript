@@ -1,5 +1,5 @@
 import {Status} from '@grpc/grpc-js/build/src/constants';
-import {Metadata, ServiceError} from '@grpc/grpc-js';
+import {ServiceError} from '@grpc/grpc-js';
 import {
   InternalServerError,
   InvalidArgumentError,
@@ -17,6 +17,7 @@ import {
 } from '../../src';
 import {
   CacheNotFoundError,
+  SdkErrorProps,
   StoreItemNotFoundError,
   StoreNotFoundError,
 } from '@gomomento/sdk-core/dist/src/errors';
@@ -61,32 +62,27 @@ export class CacheServiceErrorMapper
   }
 
   convertError(err: ServiceError | null): SdkError {
-    const errParams: [
-      string,
-      number | undefined,
-      Metadata | undefined,
-      string | undefined
-    ] = [
-      err?.message || 'Unable to process request',
-      err?.code,
-      err?.metadata,
-      err?.stack,
-    ];
+    const message = err?.message || 'Unable to process request';
+    const sdkErrorProps: SdkErrorProps = {
+      code: err?.code,
+      metadata: err?.metadata,
+      stack: err?.stack,
+    };
     switch (err?.code) {
       case Status.PERMISSION_DENIED:
-        return new PermissionError(...errParams);
+        return new PermissionError(message, sdkErrorProps);
       case Status.DATA_LOSS:
       case Status.INTERNAL:
       case Status.ABORTED:
-        return new InternalServerError(...errParams);
+        return new InternalServerError(message, sdkErrorProps);
       case Status.UNKNOWN:
-        return new UnknownServiceError(...errParams);
+        return new UnknownServiceError(message, sdkErrorProps);
       case Status.UNAVAILABLE:
-        return new ServerUnavailableError(...errParams);
+        return new ServerUnavailableError(message, sdkErrorProps);
       case Status.NOT_FOUND: {
-        let errCause = errParams[2]?.get('err')?.[0];
+        let errCause = err?.metadata?.get('err')?.[0];
         // TODO: Remove this once the error message is standardized on the server side
-        const errorMessage = errParams[0]?.toString();
+        const errorMessage = err?.message?.toString();
         const isStoreNotFound =
           errorMessage?.includes('Store with name:') &&
           errorMessage?.includes("doesn't exist");
@@ -96,32 +92,32 @@ export class CacheServiceErrorMapper
         }
         switch (errCause) {
           case 'item_not_found':
-            return new StoreItemNotFoundError(...errParams);
+            return new StoreItemNotFoundError(message, sdkErrorProps);
           case 'store_not_found':
-            return new StoreNotFoundError(...errParams);
+            return new StoreNotFoundError(message, sdkErrorProps);
           default:
-            return new CacheNotFoundError(...errParams);
+            return new CacheNotFoundError(message, sdkErrorProps);
         }
       }
       case Status.OUT_OF_RANGE:
       case Status.UNIMPLEMENTED:
-        return new BadRequestError(...errParams);
+        return new BadRequestError(message, sdkErrorProps);
       case Status.FAILED_PRECONDITION:
-        return new FailedPreconditionError(...errParams);
+        return new FailedPreconditionError(message, sdkErrorProps);
       case Status.INVALID_ARGUMENT:
-        return new InvalidArgumentError(...errParams);
+        return new InvalidArgumentError(message, sdkErrorProps);
       case Status.CANCELLED:
-        return new CancelledError(...errParams);
+        return new CancelledError(message, sdkErrorProps);
       case Status.DEADLINE_EXCEEDED:
-        return new TimeoutError(...errParams);
+        return new TimeoutError(message, sdkErrorProps);
       case Status.UNAUTHENTICATED:
-        return new AuthenticationError(...errParams);
+        return new AuthenticationError(message, sdkErrorProps);
       case Status.RESOURCE_EXHAUSTED:
-        return new LimitExceededError(...errParams);
+        return new LimitExceededError(message, sdkErrorProps);
       case Status.ALREADY_EXISTS: {
-        let errCause = errParams[2]?.get('err')?.[0];
+        let errCause = err?.metadata?.get('err')?.[0];
         // TODO: Remove this once the error message is standardized on the server side
-        const errorMessage = errParams[0]?.toString();
+        const errorMessage = err?.message?.toString();
         const isStoreAlreadyExists =
           errorMessage?.includes('Store with name:') &&
           errorMessage?.includes('already exists');
@@ -131,13 +127,13 @@ export class CacheServiceErrorMapper
         }
         switch (errCause) {
           case 'store_already_exists':
-            return new StoreAlreadyExistsError(...errParams);
+            return new StoreAlreadyExistsError(message, sdkErrorProps);
           default:
-            return new CacheAlreadyExistsError(...errParams);
+            return new CacheAlreadyExistsError(message, sdkErrorProps);
         }
       }
       default:
-        return new UnknownError(...errParams);
+        return new UnknownError(message, sdkErrorProps);
     }
   }
 }

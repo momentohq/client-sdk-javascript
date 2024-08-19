@@ -54,7 +54,7 @@ export class Error extends BaseResponseError implements IResponse {
   }
 
   public value(): undefined {
-    return undefined;
+    return;
   }
 }
 

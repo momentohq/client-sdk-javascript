@@ -241,7 +241,7 @@ export class InternalWebGrpcAuthClient<
     request.setPermissions(permissions);
 
     const tokenId = disposableTokenProps?.tokenId;
-    if (tokenId !== undefined) {
+    if (tokenId != null) {
       try {
         validateDisposableTokenTokenID(tokenId);
       } catch (err) {

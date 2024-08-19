@@ -23,8 +23,7 @@ export class ExpiresIn extends Expiration {
    */
   private constructor(validForSeconds: number) {
     super(validForSeconds !== Infinity);
-    this._validForSeconds =
-      validForSeconds === null ? Infinity : validForSeconds;
+    this._validForSeconds = validForSeconds;
   }
 
   /**
@@ -95,8 +94,8 @@ export class ExpiresIn extends Expiration {
 export class ExpiresAt extends Expiration {
   private readonly validUntil: number;
 
-  private constructor(epochTimestamp: number | undefined) {
-    super(epochTimestamp !== undefined && epochTimestamp !== 0);
+  private constructor(epochTimestamp: number | null) {
+    super(epochTimestamp != null && epochTimestamp !== 0);
     if (this.doesExpire()) {
       this.validUntil = epochTimestamp as number;
     } else {
@@ -114,11 +113,11 @@ export class ExpiresAt extends Expiration {
 
   /**
    * Constructs an ExpiresAt with the specified epoch timestamp,
-   * if timestamp is undefined, then epoch timestamp will instead be Infinity.
+   * if timestamp is null, then epoch timestamp will instead be Infinity.
    * @param epoch
    * @returns {ExpiresAt}
    */
-  public static fromEpoch(epoch: number | undefined): ExpiresAt {
+  public static fromEpoch(epoch: number | null): ExpiresAt {
     return new ExpiresAt(epoch);
   }
 }

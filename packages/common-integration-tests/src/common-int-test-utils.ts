@@ -31,7 +31,7 @@ export const describeOnlyInCi = maybe(isInsideGithubCI);
 
 export function isLocalhostDevelopmentMode(): boolean {
   const useLocalhost = process.env.MOMENTO_SDK_TESTS_USE_LOCALHOST;
-  return useLocalhost !== undefined;
+  return useLocalhost != null;
 }
 export function testCacheName(): string {
   return `js-integration-test-default-${v4()}`;
@@ -277,7 +277,7 @@ export function expectWithMessage(expected: () => void, message: string) {
   try {
     expected();
   } catch (e) {
-    if (e instanceof Error && e.stack !== undefined) {
+    if (e instanceof Error && e.stack != null) {
       message += `\n\nOriginal stack trace:\n${e.stack}`;
     }
     throw new Error(message);

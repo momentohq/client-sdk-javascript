@@ -101,7 +101,7 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
   constructor(props: GrpcConfigurationProps) {
     this.deadlineMillis = props.deadlineMillis;
     this.maxSessionMemoryMb = props.maxSessionMemoryMb;
-    if (props.numClients !== undefined && props.numClients !== null) {
+    if (props.numClients != null && props.numClients != null) {
       this.numClients = props.numClients;
     } else {
       // This is the previously hardcoded value and a safe default for most environments.

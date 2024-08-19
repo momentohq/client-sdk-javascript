@@ -59,7 +59,7 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
       this.client = this.clientFactoryFn();
     }
 
-    if (this.maxClientAgeMillis !== undefined) {
+    if (this.maxClientAgeMillis != null) {
       this.logger.trace(
         `Checking to see if client was created more than ${this.maxClientAgeMillis} ms`
       );

@@ -69,7 +69,7 @@ export class ExperimentalActiveRequestCountLoggingMiddleware extends Experimenta
   }
 
   close() {
-    if (this.intervalId !== null) {
+    if (this.intervalId != null) {
       this.logger.debug('Stopping active request count metrics logging.');
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       clearInterval(this.intervalId);

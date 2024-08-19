@@ -86,7 +86,7 @@ export class Miss extends BaseResponseMiss implements IResponse {
   }
 
   public score(): undefined {
-    return undefined;
+    return;
   }
 
   public override toString(): string {
@@ -131,7 +131,7 @@ export class Error extends BaseResponseError implements IResponse {
   }
 
   public score(): undefined {
-    return undefined;
+    return;
   }
 }
 

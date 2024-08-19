@@ -717,7 +717,7 @@ export function runSortedSetTests(
         expectWithMessage(() => {
           expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Miss);
         }, `expected MISS but got ${fetchResponse.toString()}`);
-        expect(fetchResponse.value()).toEqual(undefined);
+        expect(fetchResponse.value()).toBeUndefined();
       });
     });
 
@@ -1341,7 +1341,7 @@ export function runSortedSetTests(
         expectWithMessage(() => {
           expect(fetchResponse).toBeInstanceOf(CacheSortedSetFetch.Miss);
         }, `expected MISS but got ${fetchResponse.toString()}`);
-        expect(fetchResponse.value()).toEqual(undefined);
+        expect(fetchResponse.value()).toBeUndefined();
       });
     });
 
@@ -1577,7 +1577,7 @@ export function runSortedSetTests(
           expect(getScoreResponse).toBeInstanceOf(CacheSortedSetGetScore.Miss);
         }, `expected MISS but got ${getScoreResponse.toString()}`);
 
-        expect(getScoreResponse.score()).toEqual(undefined);
+        expect(getScoreResponse.score()).toBeUndefined();
       });
     });
 
@@ -1698,7 +1698,7 @@ export function runSortedSetTests(
             CacheSortedSetGetScores.Miss
           );
         }, `expected MISS but got ${getScoresResponse.toString()}`);
-        expect(getScoresResponse.value()).toEqual(undefined);
+        expect(getScoresResponse.value()).toBeUndefined();
       });
     });
 
@@ -2702,7 +2702,6 @@ export function runSortedSetTests(
 
         const scoreRange = {
           minScore: 42,
-          maxScore: undefined,
         };
         const result = await cacheClient.sortedSetLengthByScore(
           integrationTestCacheName,
@@ -2735,7 +2734,6 @@ export function runSortedSetTests(
         );
 
         const scoreRange = {
-          minScore: undefined,
           maxScore: 42,
         };
         const result = await cacheClient.sortedSetLengthByScore(

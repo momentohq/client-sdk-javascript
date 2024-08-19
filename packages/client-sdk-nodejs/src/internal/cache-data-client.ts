@@ -179,7 +179,7 @@ export class CacheDataClient implements IDataClient {
       props.configuration.getThrowOnErrors()
     );
     const compression = this.configuration.getCompressionStrategy();
-    if (compression !== undefined) {
+    if (compression != null) {
       this.compressionDetails = {
         valueCompressor: compression.compressorFactory,
         compressionLevel:
@@ -188,8 +188,6 @@ export class CacheDataClient implements IDataClient {
           (compression.automaticDecompression ??
             AutomaticDecompression.Enabled) === AutomaticDecompression.Enabled,
       };
-    } else {
-      this.compressionDetails = undefined;
     }
     this.requestConcurrencySemaphore = semaphore;
 
@@ -362,7 +360,7 @@ export class CacheDataClient implements IDataClient {
 
   private validateRequestTimeout(timeout?: number) {
     this.logger.debug(`Request timeout ms: ${String(timeout)}`);
-    if (timeout !== undefined && timeout <= 0) {
+    if (timeout != null && timeout <= 0) {
       throw new InvalidArgumentError(
         'request timeout must be greater than zero.'
       );
@@ -403,12 +401,12 @@ export class CacheDataClient implements IDataClient {
   // Otherwise, execute the cache operation without any rate limiting.
   private async rateLimited<T>(cacheOperation: () => Promise<T>): Promise<T> {
     try {
-      if (this.requestConcurrencySemaphore !== undefined)
+      if (this.requestConcurrencySemaphore != null)
         await this.requestConcurrencySemaphore.acquire();
 
       return await cacheOperation();
     } finally {
-      if (this.requestConcurrencySemaphore !== undefined)
+      if (this.requestConcurrencySemaphore != null)
         this.requestConcurrencySemaphore.release();
     }
   }
@@ -421,7 +419,7 @@ export class CacheDataClient implements IDataClient {
   ): Promise<CacheSet.Response> {
     try {
       validateCacheName(cacheName);
-      if (options?.ttl !== undefined) {
+      if (options?.ttl != null) {
         validateTtlSeconds(options.ttl);
       }
     } catch (err) {
@@ -438,7 +436,7 @@ export class CacheDataClient implements IDataClient {
       this.logger.trace(
         'CacheClient.set; compression enabled, calling value compressor'
       );
-      if (this.compressionDetails === undefined) {
+      if (this.compressionDetails == null) {
         return this.cacheServiceErrorMapper.returnOrThrowError(
           new CompressionError('CacheClient.set', 'compress'),
           err => new CacheSet.Error(err)
@@ -650,7 +648,7 @@ export class CacheDataClient implements IDataClient {
         (err, resp) => {
           if (resp?.found) {
             const found_mask = resp?.found.contains;
-            if (found_mask === undefined || found_mask.length === 0) {
+            if (found_mask == null || found_mask.length === 0) {
               return reject(
                 new CacheSetContainsElement.Error(
                   new UnknownError('SetContains response missing contains mask')
@@ -977,7 +975,7 @@ export class CacheDataClient implements IDataClient {
   ): Promise<CacheSetIfNotExists.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
+      if (ttl != null) {
         validateTtlSeconds(ttl);
       }
     } catch (err) {
@@ -1059,7 +1057,7 @@ export class CacheDataClient implements IDataClient {
     const ttl = options?.ttl;
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
+      if (ttl != null) {
         validateTtlSeconds(ttl);
       }
     } catch (err) {
@@ -1075,7 +1073,7 @@ export class CacheDataClient implements IDataClient {
         this.logger.trace(
           'CacheClient.setIfAbsent; compression enabled, calling value compressor'
         );
-        if (this.compressionDetails === undefined) {
+        if (this.compressionDetails == null) {
           return this.cacheServiceErrorMapper.returnOrThrowError(
             new InvalidArgumentError(
               'Compressor is not set, but `CacheClient.setIfAbsent` was called with the `compress` option; please install @gomomento/sdk-nodejs-compression and call `Configuration.withCompressionStrategy` to enable compression.'
@@ -1159,7 +1157,7 @@ export class CacheDataClient implements IDataClient {
   ): Promise<CacheSetIfPresent.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
+      if (ttl != null) {
         validateTtlSeconds(ttl);
       }
     } catch (err) {
@@ -1241,7 +1239,7 @@ export class CacheDataClient implements IDataClient {
   ): Promise<CacheSetIfEqual.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
+      if (ttl != null) {
         validateTtlSeconds(ttl);
       }
     } catch (err) {
@@ -1325,7 +1323,7 @@ export class CacheDataClient implements IDataClient {
   ): Promise<CacheSetIfNotEqual.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
+      if (ttl != null) {
         validateTtlSeconds(ttl);
       }
     } catch (err) {
@@ -1409,7 +1407,7 @@ export class CacheDataClient implements IDataClient {
   ): Promise<CacheSetIfPresentAndNotEqual.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
+      if (ttl != null) {
         validateTtlSeconds(ttl);
       }
     } catch (err) {
@@ -1494,7 +1492,7 @@ export class CacheDataClient implements IDataClient {
   ): Promise<CacheSetIfAbsentOrEqual.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
+      if (ttl != null) {
         validateTtlSeconds(ttl);
       }
     } catch (err) {
@@ -1667,7 +1665,7 @@ export class CacheDataClient implements IDataClient {
                 if (!shouldDecompress) {
                   resolve(new CacheGet.Hit(resp.cache_body));
                 } else {
-                  if (this.compressionDetails === undefined) {
+                  if (this.compressionDetails == null) {
                     resolve(
                       new CacheGet.Error(
                         new CompressionError('CacheClient.Get', 'decompress')
@@ -1782,7 +1780,7 @@ export class CacheDataClient implements IDataClient {
         if (!shouldDecompress) {
           resolve(new CacheGetBatch.Success(results, keys));
         } else {
-          if (this.compressionDetails === undefined) {
+          if (this.compressionDetails == null) {
             resolve(
               new CacheGetBatch.Error(
                 new CompressionError('CacheClient.Get', 'decompress')
@@ -1833,7 +1831,7 @@ export class CacheDataClient implements IDataClient {
   ): Promise<CacheSetBatch.Response> {
     try {
       validateCacheName(cacheName);
-      if (options?.ttl !== undefined) {
+      if (options?.ttl != null) {
         validateTtlSeconds(options?.ttl);
       }
     } catch (err) {
@@ -1852,7 +1850,7 @@ export class CacheDataClient implements IDataClient {
         this.logger.trace(
           'CacheClient.setBatch; compression enabled, calling value compressor'
         );
-        if (this.compressionDetails === undefined) {
+        if (this.compressionDetails == null) {
           return this.cacheServiceErrorMapper.returnOrThrowError(
             new CompressionError('CacheClient.setBatch', 'compress'),
             err => new CacheSetBatch.Error(err)
@@ -3094,7 +3092,7 @@ export class CacheDataClient implements IDataClient {
   ): Promise<CacheIncrement.Response> {
     try {
       validateCacheName(cacheName);
-      if (ttl !== undefined) {
+      if (ttl != null) {
         validateTtlSeconds(ttl);
       }
     } catch (err) {
@@ -3487,10 +3485,10 @@ export class CacheDataClient implements IDataClient {
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
       validateSortedSetScores(minScore, maxScore);
-      if (offset !== undefined) {
+      if (offset != null) {
         validateSortedSetOffset(offset);
       }
-      if (count !== undefined) {
+      if (count != null) {
         validateSortedSetCount(count);
       }
     } catch (err) {
@@ -3523,7 +3521,7 @@ export class CacheDataClient implements IDataClient {
     count?: number
   ): Promise<CacheSortedSetFetch.Response> {
     const by_score = new grpcCache._SortedSetFetchRequest._ByScore();
-    if (minScore !== undefined) {
+    if (minScore != null) {
       by_score.min_score = new grpcCache._SortedSetFetchRequest._ByScore._Score(
         {
           score: minScore,
@@ -3533,7 +3531,7 @@ export class CacheDataClient implements IDataClient {
     } else {
       by_score.unbounded_min = new _Unbounded();
     }
-    if (maxScore !== undefined) {
+    if (maxScore != null) {
       by_score.max_score = new grpcCache._SortedSetFetchRequest._ByScore._Score(
         {
           score: maxScore,
@@ -3665,7 +3663,7 @@ export class CacheDataClient implements IDataClient {
             ) {
               resolve(new CacheSortedSetGetRank.Miss());
             } else if (resp?.element_rank?.result === ECacheResult.Hit) {
-              if (resp?.element_rank.rank === undefined) {
+              if (resp?.element_rank.rank == null) {
                 resolve(new CacheSortedSetGetRank.Miss());
               } else {
                 resolve(new CacheSortedSetGetRank.Hit(resp.element_rank.rank));
@@ -4064,13 +4062,13 @@ export class CacheDataClient implements IDataClient {
       set_name: sortedSetName,
     });
 
-    if (minScore === undefined) {
+    if (minScore == null) {
       request.unbounded_min = new _Unbounded();
     } else {
       request.inclusive_min = minScore;
     }
 
-    if (maxScore === undefined) {
+    if (maxScore == null) {
       request.unbounded_max = new _Unbounded();
     } else {
       request.inclusive_max = maxScore;

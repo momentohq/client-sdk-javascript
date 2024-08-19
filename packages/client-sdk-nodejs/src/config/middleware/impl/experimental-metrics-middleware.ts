@@ -122,7 +122,7 @@ export abstract class ExperimentalMetricsMiddlewareRequestHandler
   onResponseBody(
     response: MiddlewareMessage | null
   ): Promise<MiddlewareMessage | null> {
-    if (response !== null) {
+    if (response != null) {
       this.responseSize = response.messageLength();
     } else {
       this.responseSize = 0;

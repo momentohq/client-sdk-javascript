@@ -60,6 +60,13 @@ export class MomentoErrorTransportDetails {
     this.grpc = grpc;
   }
 }
+
+export interface SdkErrorProps {
+  code?: number;
+  metadata?: object;
+  stack?: string;
+}
+
 /**
  * Base class for all errors thrown by the sdk
  */
@@ -67,16 +74,15 @@ export abstract class SdkError extends Error {
   protected readonly _errorCode: MomentoErrorCode;
   protected readonly _messageWrapper: string;
   private readonly _transportDetails: MomentoErrorTransportDetails;
-  constructor(
-    message: string,
-    code = 0,
-    metadata: object | undefined = undefined,
-    stack: string | undefined = undefined
-  ) {
+  constructor(message: string, props?: SdkErrorProps) {
     super(message);
-    const grpcDetails = new MomentoGrpcErrorDetails(code, message, metadata);
+    const grpcDetails = new MomentoGrpcErrorDetails(
+      props?.code ?? 0,
+      message,
+      props?.metadata
+    );
     this._transportDetails = new MomentoErrorTransportDetails(grpcDetails);
-    this.stack = stack ?? undefined;
+    this.stack = props?.stack;
   }
 
   public wrappedErrorMessage(): string {

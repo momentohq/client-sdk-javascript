@@ -156,7 +156,7 @@ export class ExperimentalEventLoopPerformanceMetricsMiddleware
   }
 
   close() {
-    if (this.intervalId !== null) {
+    if (this.intervalId != null) {
       this.logger.debug('Stopping event loop metrics logging.');
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       clearInterval(this.intervalId);
