@@ -25,6 +25,10 @@ export function createRetryInterceptorIfEnabled(
   ];
 }
 
+function addJitter(whenToRetry: number): number {
+  return Math.random() * (1.2 * whenToRetry) - 1.1 * whenToRetry;
+}
+
 export class RetryInterceptor {
   private readonly logger: MomentoLogger;
   private readonly retryStrategy: RetryStrategy;
@@ -92,10 +96,14 @@ export class RetryInterceptor {
                       savedMessageNext(savedReceiveMessage);
                       next(status);
                     } else {
+                      const whenToRetryWithJitter = addJitter(whenToRetry);
                       logger.debug(
-                        `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`
+                        `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetryWithJitter}ms`
                       );
-                      setTimeout(() => retry(message, metadata), whenToRetry);
+                      setTimeout(
+                        () => retry(message, metadata),
+                        whenToRetryWithJitter
+                      );
                     }
                   },
                 });
@@ -119,12 +127,13 @@ export class RetryInterceptor {
                   savedMessageNext(savedReceiveMessage);
                   next(status);
                 } else {
+                  const whenToRetryWithJitter = addJitter(whenToRetry);
                   logger.debug(
-                    `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`
+                    `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetryWithJitter}ms`
                   );
                   setTimeout(
                     () => retry(savedSendMessage, savedMetadata),
-                    whenToRetry
+                    whenToRetryWithJitter
                   );
                 }
               }
