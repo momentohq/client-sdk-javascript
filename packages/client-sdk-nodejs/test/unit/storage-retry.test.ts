@@ -18,7 +18,6 @@ describe('storage configuration', () => {
   const testLoggerFactory = new DefaultMomentoLoggerFactory();
   const testGrpcConfiguration = new StaticStorageGrpcConfiguration({
     deadlineMillis: 5000,
-    responseDataReceivedTimeoutMillis: 1000,
   });
   const testTransportStrategy = new StaticStorageTransportStrategy({
     grpcConfiguration: testGrpcConfiguration,
@@ -52,8 +51,7 @@ describe('storage configuration', () => {
 
   it('should support overriding transport strategy', () => {
     const newTransportStrategy = new StaticStorageTransportStrategy({
-      grpcConfiguration:
-        testGrpcConfiguration.withResponseDataReceivedTimeoutMillis(5000),
+      grpcConfiguration: testGrpcConfiguration.withDeadlineMillis(10000),
     });
     const configWithNewTransportStrategy =
       testConfiguration.withTransportStrategy(newTransportStrategy);

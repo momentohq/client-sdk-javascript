@@ -28,15 +28,6 @@ export interface StorageTransportStrategy {
   withRequestTimeoutMillis(
     requestTimeoutMillis: number
   ): StorageTransportStrategy;
-
-  /**
-   * Copy constructor to update the ResponseDataReceivedTimeout
-   * @param {number} responseDataReceivedTimeoutMillis
-   * @returns {StorageTransportStrategy} a new StorageTransportStrategy with the specified client timeout
-   */
-  withResponseDataReceivedTimeout(
-    responseDataReceivedTimeoutMillis: number
-  ): StorageTransportStrategy;
 }
 
 export interface StorageTransportStrategyProps {
@@ -50,12 +41,9 @@ export class StaticStorageGrpcConfiguration
   implements StorageGrpcConfiguration
 {
   private readonly deadlineMillis: number;
-  private readonly responseDataReceivedTimeoutMillis: number;
 
   constructor(props: StorageGrpcConfigurationProps) {
     this.deadlineMillis = props.deadlineMillis;
-    this.responseDataReceivedTimeoutMillis =
-      props.responseDataReceivedTimeoutMillis;
   }
 
   getDeadlineMillis(): number {
@@ -65,20 +53,6 @@ export class StaticStorageGrpcConfiguration
   withDeadlineMillis(deadlineMillis: number): StorageGrpcConfiguration {
     return new StaticStorageGrpcConfiguration({
       deadlineMillis: deadlineMillis,
-      responseDataReceivedTimeoutMillis: this.responseDataReceivedTimeoutMillis,
-    });
-  }
-
-  getResponseDataReceivedTimeoutMillis(): number {
-    return this.responseDataReceivedTimeoutMillis;
-  }
-
-  withResponseDataReceivedTimeoutMillis(
-    responseDataReceivedTimeoutMillis: number
-  ): StorageGrpcConfiguration {
-    return new StaticStorageGrpcConfiguration({
-      deadlineMillis: this.deadlineMillis,
-      responseDataReceivedTimeoutMillis: responseDataReceivedTimeoutMillis,
     });
   }
 }
@@ -110,16 +84,6 @@ export class StaticStorageTransportStrategy
     return new StaticStorageTransportStrategy({
       grpcConfiguration:
         this.grpcConfig.withDeadlineMillis(requestTimeoutMillis),
-    });
-  }
-
-  withResponseDataReceivedTimeout(
-    responseDataReceivedTimeoutMillis: number
-  ): StorageTransportStrategy {
-    return new StaticStorageTransportStrategy({
-      grpcConfiguration: this.grpcConfig.withResponseDataReceivedTimeoutMillis(
-        responseDataReceivedTimeoutMillis
-      ),
     });
   }
 }

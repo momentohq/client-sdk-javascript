@@ -9,21 +9,28 @@ import {DefaultStorageEligibilityStrategy} from './storage-default-eligibility-s
 export interface DefaultStorageRetryStrategyProps {
   loggerFactory: MomentoLoggerFactory;
   eligibilityStrategy?: EligibilityStrategy;
+
   // Retry request after a fixed time interval (defaults to 100ms)
-  retryDelayInterval?: number;
+  retryDelayIntervalMillis?: number;
+
+  // Number of milliseconds the client is willing to wait for response data to be received before retrying (defaults to 1000ms). After the overarching GRPC config deadlineMillis has been reached, the client will terminate the RPC with a Cancelled error.
+  responseDataReceivedTimeoutMillis?: number;
 }
 
 export class DefaultStorageRetryStrategy implements RetryStrategy {
   private readonly logger: MomentoLogger;
   private readonly eligibilityStrategy: EligibilityStrategy;
-  private readonly retryDelayInterval: number;
+  private readonly retryDelayIntervalMillis: number;
+  private readonly responseDataReceivedTimeoutMillis: number;
 
   constructor(props: DefaultStorageRetryStrategyProps) {
     this.logger = props.loggerFactory.getLogger(this);
     this.eligibilityStrategy =
       props.eligibilityStrategy ??
       new DefaultStorageEligibilityStrategy(props.loggerFactory);
-    this.retryDelayInterval = props.retryDelayInterval ?? 100;
+    this.retryDelayIntervalMillis = props.retryDelayIntervalMillis ?? 100;
+    this.responseDataReceivedTimeoutMillis =
+      props.responseDataReceivedTimeoutMillis ?? 1000;
   }
 
   determineWhenToRetryRequest(
@@ -36,10 +43,15 @@ export class DefaultStorageRetryStrategy implements RetryStrategy {
       // null means do not retry
       return null;
     }
+
     this.logger.debug(
       `Request is eligible for retry (attempt ${props.attemptNumber}), retrying soon.`
     );
     // retry after a fixed time interval has passed
-    return this.retryDelayInterval;
+    return this.retryDelayIntervalMillis;
+  }
+
+  public getResponseDataReceivedTimeoutMillis(): number {
+    return this.responseDataReceivedTimeoutMillis;
   }
 }

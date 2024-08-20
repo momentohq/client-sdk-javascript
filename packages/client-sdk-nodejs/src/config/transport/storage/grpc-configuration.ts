@@ -4,10 +4,6 @@ export interface StorageGrpcConfigurationProps {
    * with a DeadlineExceeded error.
    */
   deadlineMillis: number;
-  /**
-   * number of milliseconds the client is willing to wait for response data to be received before retrying (defaults to 1000ms). After the deadlineMillis has been reached, the client will terminate the RPC with a Cancelled error.
-   */
-  responseDataReceivedTimeoutMillis: number;
 }
 
 /**
@@ -28,18 +24,4 @@ export interface StorageGrpcConfiguration {
    * @returns {StorageGrpcConfiguration} a new StorageGrpcConfiguration with the specified client-side deadline
    */
   withDeadlineMillis(deadlineMillis: number): StorageGrpcConfiguration;
-
-  /**
-   * @returns {number} number of milliseconds the client is willing to wait for response data to be received before retrying (defaults to 1000ms). After the deadlineMillis has been reached, the client will terminate the RPC with a Cancelled error.
-   */
-  getResponseDataReceivedTimeoutMillis(): number;
-
-  /**
-   * Copy constructor for overriding the client-side deadline for receiving response data before retrying the request
-   * @param {number} responseDataReceivedTimeoutMillis
-   * @returns {StorageGrpcConfiguration} a new StorageGrpcConfiguration with the specified timeout
-   */
-  withResponseDataReceivedTimeoutMillis(
-    responseDataReceivedTimeoutMillis: number
-  ): StorageGrpcConfiguration;
 }
