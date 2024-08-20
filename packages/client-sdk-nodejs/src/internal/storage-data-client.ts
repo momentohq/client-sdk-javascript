@@ -25,9 +25,7 @@ import {StorageConfiguration} from '../config/storage-configuration';
 import {StorageClientPropsWithConfig} from './storage-client-props-with-config';
 import {StaticGrpcConfiguration} from '../config/transport/cache';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-import {createStorageClientTimeoutInterceptor} from './grpc/storage-client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
-import {DefaultStorageRetryStrategy} from '../config/retry/storage-default-retry-strategy';
 import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 
 export class StorageDataClient implements IStorageDataClient {
@@ -115,22 +113,6 @@ export class StorageDataClient implements IStorageDataClient {
       new Header('runtime-version', `nodejs:${process.versions.node}`),
     ];
 
-    // Determine which retry strategy is specified in the configuration
-    // and which interceptor to use.
-    const retryStrategy = this.configuration.getRetryStrategy();
-    let timeoutInterceptor: Interceptor;
-    if (retryStrategy instanceof DefaultStorageRetryStrategy) {
-      const responseDataReceivedTimeoutMs =
-        retryStrategy.getResponseDataReceivedTimeoutMillis();
-      timeoutInterceptor = createStorageClientTimeoutInterceptor(
-        _loggerFactory,
-        this.requestTimeoutMs,
-        responseDataReceivedTimeoutMs
-      )[0];
-    } else {
-      timeoutInterceptor = ClientTimeoutInterceptor(this.requestTimeoutMs);
-    }
-
     return [
       ...createRetryInterceptorIfEnabled(
         this.configuration.getLoggerFactory(),
@@ -138,7 +120,11 @@ export class StorageDataClient implements IStorageDataClient {
       ),
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
       // For the timeout interceptors to work correctly, it must be specified last.
-      timeoutInterceptor,
+      ClientTimeoutInterceptor(
+        this.requestTimeoutMs,
+        this.configuration.getRetryStrategy(),
+        _loggerFactory
+      ),
     ];
   }
 
