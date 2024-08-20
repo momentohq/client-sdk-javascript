@@ -1,10 +1,10 @@
 import {
   CacheClient,
-  CacheDelete,
-  CacheDictionaryFetch,
-  CacheDictionarySetField,
+  CacheDeleteResponse,
+  CacheDictionaryFetchResponse,
+  CacheDictionarySetFieldResponse,
   Configurations,
-  CreateCache,
+  CreateCacheResponse,
   CredentialProvider,
   DefaultMomentoLoggerFactory,
   DefaultMomentoLoggerLevel,
@@ -87,10 +87,11 @@ class ShardedDictionary {
       field,
       value
     );
-    if (dictionarySetFieldResponse instanceof CacheDictionarySetField.Success) {
-      return;
-    } else {
-      throw new Error(`Error setting field ${field} in individual dictionary ${individualDictionaryToUse}`);
+    switch (dictionarySetFieldResponse.type) {
+      case CacheDictionarySetFieldResponse.Success:
+        return;
+      case CacheDictionarySetFieldResponse.Error:
+        throw new Error(`Error setting field ${field} in individual dictionary ${individualDictionaryToUse}`);
     }
   }
 
@@ -101,10 +102,12 @@ class ShardedDictionary {
 
     const responses = await Promise.all(individualDictionaryFetchPromises);
     const individualDictionaryContents = responses.map(response => {
-      if (response instanceof CacheDictionaryFetch.Hit) {
-        return response.value();
-      } else {
-        throw new Error(`Error fetching individual dictionary: ${response.toString()}`);
+      switch (response.type) {
+        case CacheDictionaryFetchResponse.Hit:
+          return response.value();
+        case CacheDictionaryFetchResponse.Error:
+        case CacheDictionaryFetchResponse.Miss:
+          throw new Error(`Error fetching individual dictionary: ${response.toString()}`);
       }
     });
     return Object.assign({}, ...individualDictionaryContents) as Record<string, string>;
@@ -139,10 +142,15 @@ async function main() {
   });
 
   const createCacheResponse = await cacheClient.createCache(cacheName);
-  if (createCacheResponse instanceof CreateCache.AlreadyExists) {
-    logger.info('cache already exists');
-  } else if (createCacheResponse instanceof CreateCache.Error) {
-    throw createCacheResponse.innerException();
+  switch (createCacheResponse.type) {
+    case CreateCacheResponse.AlreadyExists:
+      logger.info('cache already exists');
+      break;
+    case CreateCacheResponse.Success:
+      logger.info('cache created');
+      break;
+    case CreateCacheResponse.Error:
+      throw createCacheResponse.innerException();
   }
 
   const maxTotalDictionarySizeMb = 10;
@@ -192,20 +200,26 @@ async function main() {
       `Using regular Momento client to fetch individual dictionary '${dictionaryName}' from sharded dictionary`
     );
     const dictionaryContentsResponse = await cacheClient.dictionaryFetch(cacheName, dictionaryName);
-    if (dictionaryContentsResponse instanceof CacheDictionaryFetch.Hit) {
-      const dictionaryContents = dictionaryContentsResponse.value();
-      const {numKeysRead, totalBytesRead} = analyzeDictionaryContents(logger, dictionaryContents);
-      logger.info(`Individual dictionary contained ${numKeysRead} keys and ${totalBytesRead} bytes`);
-    } else {
-      throw new Error(`Error fetching dictionary contents: ${dictionaryContentsResponse.toString()}`);
+    switch (dictionaryContentsResponse.type) {
+      case CacheDictionaryFetchResponse.Hit: {
+        const dictionaryContents = dictionaryContentsResponse.value();
+        const {numKeysRead, totalBytesRead} = analyzeDictionaryContents(logger, dictionaryContents);
+        logger.info(`Individual dictionary contained ${numKeysRead} keys and ${totalBytesRead} bytes`);
+        break;
+      }
+      case CacheDictionaryFetchResponse.Error:
+      case CacheDictionaryFetchResponse.Miss:
+        throw new Error(`Error fetching dictionary contents: ${dictionaryContentsResponse.toString()}`);
     }
     const deleteDictionaryResponse = await cacheClient.delete(cacheName, dictionaryName);
-    if (deleteDictionaryResponse instanceof CacheDelete.Success) {
-      logger.info(`Deleted individual dictionary '${dictionaryName}'`);
-    } else {
-      throw new Error(
-        `Error deleting individual dictionary '${dictionaryName}': ${deleteDictionaryResponse.toString()}`
-      );
+    switch (deleteDictionaryResponse.type) {
+      case CacheDeleteResponse.Success:
+        logger.info(`Deleted individual dictionary '${dictionaryName}'`);
+        break;
+      case CacheDeleteResponse.Error:
+        throw new Error(
+          `Error deleting individual dictionary '${dictionaryName}': ${deleteDictionaryResponse.toString()}`
+        );
     }
   }
 }

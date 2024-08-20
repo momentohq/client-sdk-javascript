@@ -13,6 +13,12 @@ import {
   LeaderboardUpsert,
   DefaultMomentoLoggerLevel,
   DefaultMomentoLoggerFactory,
+  CreateCacheResponse,
+  LeaderboardUpsertResponse,
+  LeaderboardFetchResponse,
+  LeaderboardLengthResponse,
+  LeaderboardRemoveElementsResponse,
+  LeaderboardDeleteResponse,
 } from '@gomomento/sdk';
 
 async function main() {
@@ -26,10 +32,15 @@ async function main() {
   });
 
   const createCacheResponse = await cacheClient.createCache('my-cache');
-  if (createCacheResponse instanceof CreateCache.AlreadyExists) {
-    console.log('cache already exists');
-  } else if (createCacheResponse instanceof CreateCache.Error) {
-    throw createCacheResponse.innerException();
+  switch (createCacheResponse.type) {
+    case CreateCacheResponse.AlreadyExists:
+      console.log('cache already exists');
+      break;
+    case CreateCacheResponse.Success:
+      console.log('cache created');
+      break;
+    case CreateCacheResponse.Error:
+      throw createCacheResponse.innerException();
   }
 
   const client = new PreviewLeaderboardClient({
@@ -47,10 +58,13 @@ async function main() {
     [789, 300.0],
   ]);
   const upsertResp1 = await leaderboard.upsert(elements1);
-  if (upsertResp1 instanceof LeaderboardUpsert.Success) {
-    console.log('Upsert attempt 1: success');
-  } else if (upsertResp1 instanceof LeaderboardUpsert.Error) {
-    console.log('Upsert error:', upsertResp1.message());
+  switch (upsertResp1.type) {
+    case LeaderboardUpsertResponse.Success:
+      console.log('Upsert attempt 1: success');
+      break;
+    case LeaderboardUpsertResponse.Error:
+      console.log('Upsert error:', upsertResp1.message());
+      break;
   }
 
   // Or upsert elements using a Record
@@ -58,11 +72,15 @@ async function main() {
     1234: 111,
     5678: 222,
   };
+
   const upsertResp2 = await leaderboard.upsert(elements2);
-  if (upsertResp2 instanceof LeaderboardUpsert.Success) {
-    console.log('Upsert attempt 2: success');
-  } else if (upsertResp2 instanceof LeaderboardUpsert.Error) {
-    console.log('Upsert error:', upsertResp2.message());
+  switch (upsertResp2.type) {
+    case LeaderboardUpsertResponse.Success:
+      console.log('Upsert attempt 2: success');
+      break;
+    case LeaderboardUpsertResponse.Error:
+      console.log('Upsert error:', upsertResp2.message());
+      break;
   }
 
   // Fetch by score example specifying all options.
@@ -73,10 +91,13 @@ async function main() {
     offset: 10,
     count: 100,
   });
-  if (fetchByScore instanceof LeaderboardFetch.Success) {
-    console.log('Fetch by score success:', fetchByScore.values());
-  } else if (fetchByScore instanceof LeaderboardFetch.Error) {
-    console.log('Fetch by score error:', fetchByScore.message());
+  switch (fetchByScore.type) {
+    case LeaderboardFetchResponse.Success:
+      console.log('Fetch by score success:', fetchByScore.values());
+      break;
+    case LeaderboardFetchResponse.Error:
+      console.log('Fetch by score error:', fetchByScore.message());
+      break;
   }
 
   // Fetch by rank can be used to page through the leaderboard
@@ -86,10 +107,13 @@ async function main() {
     const startRank = rank;
     const endRank = rank + 2;
     const fetchByRank = await leaderboard.fetchByRank(startRank, endRank, {order: LeaderboardOrder.Ascending});
-    if (fetchByRank instanceof LeaderboardFetch.Success) {
-      console.log('Fetch by rank success:', fetchByRank.values());
-    } else if (fetchByRank instanceof LeaderboardFetch.Error) {
-      console.log('Fetch by rank error:', fetchByRank.message());
+    switch (fetchByRank.type) {
+      case LeaderboardFetchResponse.Success:
+        console.log('Fetch by rank success:', fetchByRank.values());
+        break;
+      case LeaderboardFetchResponse.Error:
+        console.log('Fetch by rank error:', fetchByRank.message());
+        break;
     }
   }
 
@@ -97,37 +121,49 @@ async function main() {
   const getRank = await leaderboard.getRank([123, 1234], {
     order: LeaderboardOrder.Ascending,
   });
-  if (getRank instanceof LeaderboardFetch.Success) {
-    console.log('Get rank success:', getRank.values());
-  } else if (getRank instanceof LeaderboardFetch.Error) {
-    console.log('Get rank error:', getRank.message());
+  switch (getRank.type) {
+    case LeaderboardFetchResponse.Success:
+      console.log('Get rank success:', getRank.values());
+      break;
+    case LeaderboardFetchResponse.Error:
+      console.log('Get rank error:', getRank.message());
+      break;
   }
 
   // Length returns length of a leaderboard. Returns 0 if
   // leaderboard is empty or doesn't exist.
   const lengthResp = await leaderboard.length();
-  if (lengthResp instanceof LeaderboardLength.Success) {
-    console.log('Get leaderboard length success:', lengthResp.length());
-  } else if (lengthResp instanceof LeaderboardLength.Error) {
-    console.log('Get leaderboard length error:', lengthResp.message());
+  switch (lengthResp.type) {
+    case LeaderboardLengthResponse.Success:
+      console.log('Get leaderboard length success:', lengthResp.length());
+      break;
+    case LeaderboardLengthResponse.Error:
+      console.log('Get leaderboard length error:', lengthResp.message());
+      break;
   }
 
   // Remove elements by providing a list of element IDs.
   const removeResp = await leaderboard.removeElements([123, 456, 789]);
-  if (removeResp instanceof LeaderboardRemoveElements.Success) {
-    console.log('Remove elements success');
-  } else if (removeResp instanceof LeaderboardRemoveElements.Error) {
-    console.log('Remove elements error:', removeResp.message());
+  switch (removeResp.type) {
+    case LeaderboardRemoveElementsResponse.Success:
+      console.log('Remove elements success');
+      break;
+    case LeaderboardRemoveElementsResponse.Error:
+      console.log('Remove elements error:', removeResp.message());
+      break;
   }
 
   // Delete will remove theh entire leaderboard.
   // Leaderboard items have no TTL so make sure to clean up
   // all unnecessary elements when no longer needed.
   const deleteResp = await leaderboard.delete();
-  if (deleteResp instanceof LeaderboardDelete.Success) {
-    console.log('Delete leaderboard success');
-  } else if (deleteResp instanceof LeaderboardDelete.Error) {
-    console.log('Delete leaderboard error:', deleteResp.message());
+  switch (deleteResp.type) {
+    case LeaderboardDeleteResponse.Success:
+      console.log('Delete leaderboard success');
+      break;
+    case LeaderboardDeleteResponse.Error:
+      console.log('Delete leaderboard error:', deleteResp.message());
+      break;
   }
 }
 
