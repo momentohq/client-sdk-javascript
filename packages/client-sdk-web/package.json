@@ -22,7 +22,7 @@
     "integration-test-leaderboard": "jest --env=jsdom leaderboard/ --maxWorkers 1",
     "integration-test-storage": "jest --env=jsdom storage/ --maxWorkers 1",
     "integration-test-store": "npm run integration-test-storage",
-    "integration-test-topics": "jest --env=jsdom topics/ --maxWorkers 1",
+    "integration-test-topics": "jest --env=jsdom topics/ --maxWorkers 1 && jest --env=@happy-dom/jest-environment webhooks/ --maxWorkers 1",
     "integration-test-jsdom": "jest integration --env=jsdom --testMatch \"**/dictionary.test.ts|**/ping.test.ts|*/topic-client.test.ts|leaderboard.test.ts\" --maxWorkers 1",
     "integration-test-happy-dom": "jest integration --env=@happy-dom/jest-environment --testPathIgnorePatterns \"dictionary.test.ts|ping.test.ts|topic-client.test.ts|auth-client.test.ts|leaderboard.test.ts|storage.test.ts\" --maxWorkers 1",
     "integration-test": "npm run integration-test-happy-dom && npm run integration-test-jsdom",
