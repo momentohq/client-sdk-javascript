@@ -28,6 +28,7 @@ import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {createStorageClientTimeoutInterceptor} from './grpc/storage-client-timeout-interceptor';
 import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
 import {DefaultStorageRetryStrategy} from '../config/retry/storage-default-retry-strategy';
+import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 
 export class StorageDataClient implements IStorageDataClient {
   private readonly configuration: StorageConfiguration;
@@ -38,7 +39,6 @@ export class StorageDataClient implements IStorageDataClient {
   private readonly client: store.StoreClient;
   private readonly interceptors: Interceptor[];
   private static readonly DEFAULT_MAX_SESSION_MEMORY_MB: number = 256;
-  private readonly responseDataReceivedTimeoutMs: number;
 
   /**
    * @param {StorageClientPropsWithConfig} props
@@ -52,9 +52,6 @@ export class StorageDataClient implements IStorageDataClient {
       .getTransportStrategy()
       .getGrpcConfig()
       .getDeadlineMillis();
-    this.responseDataReceivedTimeoutMs = (
-      this.configuration.getRetryStrategy() as DefaultStorageRetryStrategy
-    ).getResponseDataReceivedTimeoutMillis();
     this.validateRequestTimeout(this.requestTimeoutMs);
     this.logger.debug(
       `Creating leaderboard client using endpoint: '${this.credentialProvider.getStorageEndpoint()}'`
@@ -117,18 +114,31 @@ export class StorageDataClient implements IStorageDataClient {
       new Header('agent', `nodejs:store:${version}`),
       new Header('runtime-version', `nodejs:${process.versions.node}`),
     ];
+
+    // Determine which retry strategy is specified in the configuration
+    // and which interceptor to use.
+    const retryStrategy = this.configuration.getRetryStrategy();
+    let timeoutInterceptor: Interceptor;
+    if (retryStrategy instanceof DefaultStorageRetryStrategy) {
+      const responseDataReceivedTimeoutMs =
+        retryStrategy.getResponseDataReceivedTimeoutMillis();
+      timeoutInterceptor = createStorageClientTimeoutInterceptor(
+        _loggerFactory,
+        this.requestTimeoutMs,
+        responseDataReceivedTimeoutMs
+      )[0];
+    } else {
+      timeoutInterceptor = ClientTimeoutInterceptor(this.requestTimeoutMs);
+    }
+
     return [
       ...createRetryInterceptorIfEnabled(
         this.configuration.getLoggerFactory(),
         this.configuration.getRetryStrategy()
       ),
       new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
-      // For this interceptor to work correctly, it must be specified last.
-      ...createStorageClientTimeoutInterceptor(
-        this.configuration.getLoggerFactory(),
-        this.requestTimeoutMs,
-        this.responseDataReceivedTimeoutMs
-      ),
+      // For the timeout interceptors to work correctly, it must be specified last.
+      timeoutInterceptor,
     ];
   }
 
