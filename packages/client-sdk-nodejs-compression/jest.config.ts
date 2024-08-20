@@ -9,7 +9,11 @@ const config: Config = {
     '^.+\\.tsx?$': 'ts-jest',
   },
   testTimeout: 120000,
-  reporters: ["jest-ci-spec-reporter"]
+  // this reporter makes some things easier when searching canary logs because it logs
+  // fail/success status for each test case on a single line. However it also swallows
+  // most console output. Consider commenting out this line if you are debugging some
+  // tests and need to see console output
+  reporters: ["jest-spec-reporter"]
 };
 
 export default config;
