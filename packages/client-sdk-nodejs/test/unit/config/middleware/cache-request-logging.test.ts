@@ -665,13 +665,13 @@ describe('request-logging-formats.ts', () => {
       expect(converter?.(request)).toEqual({
         requestType: 'sortedSetFetch',
         sortedSetName: 'taco',
+        byIndex: null,
         byScore: {
           offset: 42,
           count: 43,
           minScore: 44,
           minScoreExclusive: true,
           maxScore: 'unbounded',
-          maxScoreExclusive: null,
         },
         order: 'descending',
       });
@@ -698,6 +698,7 @@ describe('request-logging-formats.ts', () => {
           inclusiveStartIndex: 42,
           exclusiveEndIndex: 'unbounded',
         },
+        byScore: null,
         order: 'ascending',
       });
     });
