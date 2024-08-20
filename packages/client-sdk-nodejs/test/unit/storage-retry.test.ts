@@ -11,7 +11,7 @@ import {
   StaticStorageTransportStrategy,
   StorageClientConfiguration,
 } from '../../src';
-import {DefaultStorageRetryStrategy} from '../../src/config/retry/storage-default-retry-strategy';
+import {DefaultStorageRetryStrategyFactory} from '../../src/config/retry/storage-default-retry-strategy';
 import {Metadata, StatusObject} from '@grpc/grpc-js';
 
 describe('storage configuration', () => {
@@ -22,9 +22,11 @@ describe('storage configuration', () => {
   const testTransportStrategy = new StaticStorageTransportStrategy({
     grpcConfiguration: testGrpcConfiguration,
   });
-  const testRetryStrategy = new DefaultStorageRetryStrategy({
-    loggerFactory: testLoggerFactory,
-  });
+  const testRetryStrategy = DefaultStorageRetryStrategyFactory.getRetryStrategy(
+    {
+      loggerFactory: testLoggerFactory,
+    }
+  );
   const testConfiguration = new StorageClientConfiguration({
     loggerFactory: testLoggerFactory,
     transportStrategy: testTransportStrategy,

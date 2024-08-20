@@ -3,7 +3,11 @@ import {
   RetryStrategy,
 } from './retry-strategy';
 import {EligibilityStrategy} from './eligibility-strategy';
-import {MomentoLoggerFactory, MomentoLogger} from '../../';
+import {
+  MomentoLoggerFactory,
+  MomentoLogger,
+  DefaultMomentoLoggerFactory,
+} from '../../';
 import {DefaultStorageEligibilityStrategy} from './storage-default-eligibility-strategy';
 
 export interface DefaultStorageRetryStrategyProps {
@@ -53,5 +57,19 @@ export class DefaultStorageRetryStrategy implements RetryStrategy {
 
   public getResponseDataReceivedTimeoutMillis(): number {
     return this.responseDataReceivedTimeoutMillis;
+  }
+}
+
+export class DefaultStorageRetryStrategyFactory {
+  static getRetryStrategy(
+    props?: DefaultStorageRetryStrategyProps
+  ): DefaultStorageRetryStrategy {
+    return new DefaultStorageRetryStrategy({
+      loggerFactory: props?.loggerFactory ?? new DefaultMomentoLoggerFactory(),
+      eligibilityStrategy: props?.eligibilityStrategy,
+      retryDelayIntervalMillis: props?.retryDelayIntervalMillis,
+      responseDataReceivedTimeoutMillis:
+        props?.responseDataReceivedTimeoutMillis,
+    });
   }
 }
