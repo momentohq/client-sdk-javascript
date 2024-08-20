@@ -21,7 +21,7 @@
     "integration-test-leaderboard": "jest leaderboard/ --maxWorkers 1",
     "integration-test-storage": "jest storage/ --maxWorkers 1",
     "integration-test-store": "npm run integration-test-storage",
-    "integration-test-topics": "jest topics/ --maxWorkers 1",
+    "integration-test-topics": "jest topics/ webhooks/ --maxWorkers 1",
     "integration-test": "jest integration --maxWorkers 1",
     "unit-test": "jest unit",
     "build-deps": "cd ../core && npm run build && cd - && cd ../common-integration-tests && npm run build && cd -",
