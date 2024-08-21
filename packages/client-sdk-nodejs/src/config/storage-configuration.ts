@@ -1,9 +1,6 @@
 import {MomentoLoggerFactory, RetryStrategy} from '../';
 import {StorageTransportStrategy} from './transport/storage';
 
-// TODO: include ResponseDataReceivedTimeout as a top-level config?
-// Or keep at the StorageTransportStrategy level?
-
 /**
  * Configuration options for Momento StorageClient
  *
