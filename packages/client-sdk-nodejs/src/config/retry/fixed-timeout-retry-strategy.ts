@@ -25,7 +25,7 @@ export class FixedTimeoutRetryStrategy implements RetryStrategy {
   private readonly logger: MomentoLogger;
   private readonly eligibilityStrategy: EligibilityStrategy;
   private readonly retryDelayIntervalMillis: number;
-  private readonly responseDataReceivedTimeoutMillis: number;
+  readonly responseDataReceivedTimeoutMillis: number;
 
   constructor(props: FixedTimeoutRetryStrategyProps) {
     this.logger = props.loggerFactory.getLogger(this);
@@ -53,10 +53,6 @@ export class FixedTimeoutRetryStrategy implements RetryStrategy {
     );
     // retry after a fixed time interval has passed (=/- some jitter)
     return addJitter(this.retryDelayIntervalMillis);
-  }
-
-  public getResponseDataReceivedTimeoutMillis(): number {
-    return this.responseDataReceivedTimeoutMillis;
   }
 }
 

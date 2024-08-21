@@ -9,6 +9,8 @@ export interface DeterminewhenToRetryRequestProps {
 }
 
 export interface RetryStrategy {
+  responseDataReceivedTimeoutMillis?: number;
+
   determineWhenToRetryRequest(
     props: DeterminewhenToRetryRequestProps
   ): number | null;
