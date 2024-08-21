@@ -28,7 +28,7 @@ export const ClientTimeoutInterceptor = (
   ).createTimeoutInterceptor();
 };
 
-export class BasicTimeoutInterceptor {
+class BasicTimeoutInterceptor {
   private readonly overallRequestTimeoutMs: number;
 
   constructor(overallRequestTimeoutMs: number) {
@@ -49,7 +49,7 @@ export class BasicTimeoutInterceptor {
   }
 }
 
-export class RetryUntilTimeoutInterceptor {
+class RetryUntilTimeoutInterceptor {
   private readonly logger: MomentoLogger;
   private readonly responseDataReceivedTimeoutMs: number;
   private readonly overallRequestTimeoutMs: number;
