@@ -1,12 +1,12 @@
 import {
-  CacheDelete,
-  CacheGet,
-  CacheSet,
-  CacheClient,
-  Configurations,
-  CredentialProvider,
-  CreateCache,
   BatchUtils,
+  CacheClient,
+  CacheDeleteResponse,
+  CacheGetResponse,
+  CacheSetResponse,
+  Configurations,
+  CreateCacheResponse,
+  CredentialProvider,
 } from '@gomomento/sdk';
 
 const cacheName = 'cache';
@@ -19,10 +19,15 @@ async function main() {
   });
 
   const createCacheResponse = await cacheClient.createCache(cacheName);
-  if (createCacheResponse instanceof CreateCache.AlreadyExists) {
-    console.log('cache already exists');
-  } else if (createCacheResponse instanceof CreateCache.Error) {
-    throw createCacheResponse.innerException();
+  switch (createCacheResponse.type) {
+    case CreateCacheResponse.AlreadyExists:
+      console.log('cache already exists');
+      break;
+    case CreateCacheResponse.Success:
+      console.log('cache created');
+      break;
+    case CreateCacheResponse.Error:
+      throw createCacheResponse.innerException();
   }
 
   const items: Array<BatchUtils.BatchSetItem> = [
@@ -36,19 +41,19 @@ async function main() {
   const setResponse = await BatchUtils.batchSet(cacheClient, cacheName, items);
   console.log('\nValues set for the following keys?');
   for (const [key, resp] of Object.entries(setResponse)) {
-    console.log(`\t|${key}: ${String(resp instanceof CacheSet.Success)}`);
+    console.log(`\t|${key}: ${String(resp.type === CacheSetResponse.Success)}`);
   }
 
   const getResponse = await BatchUtils.batchGet(cacheClient, cacheName, ['a', 'b', 'c', '1', '2', '3']);
   console.log('\nValues fetched for the following keys?');
   for (const [key, resp] of Object.entries(getResponse)) {
-    console.log(`\t|${key}: ${String(resp instanceof CacheGet.Hit)} | value: ${(resp as CacheGet.Hit).value()}`);
+    console.log(`\t|${key}: ${String(resp.type === CacheGetResponse.Hit)} | value: ${String(resp.value())}`);
   }
 
   const deleteResponse = await BatchUtils.batchDelete(cacheClient, cacheName, ['a', 'b', 'c', '1', '2', '3']);
   console.log('\nValues deleted for the following keys?');
   for (const [key, resp] of Object.entries(deleteResponse)) {
-    console.log(`\t|${key}: ${String(resp instanceof CacheDelete.Success)}`);
+    console.log(`\t|${key}: ${String(resp.type === CacheDeleteResponse.Success)}`);
   }
 }
 
