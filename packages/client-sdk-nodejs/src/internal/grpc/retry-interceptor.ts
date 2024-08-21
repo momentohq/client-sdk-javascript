@@ -26,7 +26,7 @@ export function createRetryInterceptorIfEnabled(
 }
 
 function addJitter(whenToRetry: number): number {
-  return (1 + Math.random()) * (1.2 * whenToRetry) - 1.1 * whenToRetry;
+  return (0.2 * Math.random() + 0.9) * whenToRetry;
 }
 
 export class RetryInterceptor {
