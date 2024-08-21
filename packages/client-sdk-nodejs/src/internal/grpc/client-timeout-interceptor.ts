@@ -1,7 +1,7 @@
 import {MomentoLogger, MomentoLoggerFactory} from '@gomomento/sdk-core';
 import {InterceptingCall, Interceptor, status} from '@grpc/grpc-js';
 import {RetryStrategy} from '../../config/retry/retry-strategy';
-import {DefaultStorageRetryStrategy} from '../../config/retry/storage-default-retry-strategy';
+import {FixedTimeoutRetryStrategy} from '../../config/retry/fixed-timeout-retry-strategy';
 import {DefaultMomentoLoggerFactory} from '../../config/logging/default-momento-logger';
 
 // Determine which retry strategy is specified in the configuration
@@ -13,7 +13,7 @@ export const ClientTimeoutInterceptor = (
 ): Interceptor => {
   if (
     retryStrategy !== undefined &&
-    retryStrategy instanceof DefaultStorageRetryStrategy
+    retryStrategy instanceof FixedTimeoutRetryStrategy
   ) {
     const responseDataReceivedTimeoutMs =
       retryStrategy.getResponseDataReceivedTimeoutMillis();

@@ -8,7 +8,7 @@ import {
   StaticStorageGrpcConfiguration,
   StaticStorageTransportStrategy,
 } from './transport/storage';
-import {DefaultStorageRetryStrategy} from './retry/storage-default-retry-strategy';
+import {FixedTimeoutRetryStrategy} from './retry/fixed-timeout-retry-strategy';
 import {RetryStrategy} from './retry/retry-strategy';
 
 const defaultLoggerFactory: MomentoLoggerFactory =
@@ -17,7 +17,7 @@ const defaultLoggerFactory: MomentoLoggerFactory =
 function defaultRetryStrategy(
   loggerFactory: MomentoLoggerFactory
 ): RetryStrategy {
-  return new DefaultStorageRetryStrategy({
+  return new FixedTimeoutRetryStrategy({
     loggerFactory: loggerFactory,
   });
 }

@@ -7,10 +7,10 @@ import {
   MomentoLoggerFactory,
   MomentoLogger,
   DefaultMomentoLoggerFactory,
-} from '../../';
+} from '../..';
 import {DefaultStorageEligibilityStrategy} from './storage-default-eligibility-strategy';
 
-export interface DefaultStorageRetryStrategyProps {
+export interface FixedTimeoutRetryStrategyProps {
   loggerFactory: MomentoLoggerFactory;
   eligibilityStrategy?: EligibilityStrategy;
 
@@ -21,13 +21,13 @@ export interface DefaultStorageRetryStrategyProps {
   responseDataReceivedTimeoutMillis?: number;
 }
 
-export class DefaultStorageRetryStrategy implements RetryStrategy {
+export class FixedTimeoutRetryStrategy implements RetryStrategy {
   private readonly logger: MomentoLogger;
   private readonly eligibilityStrategy: EligibilityStrategy;
   private readonly retryDelayIntervalMillis: number;
   private readonly responseDataReceivedTimeoutMillis: number;
 
-  constructor(props: DefaultStorageRetryStrategyProps) {
+  constructor(props: FixedTimeoutRetryStrategyProps) {
     this.logger = props.loggerFactory.getLogger(this);
     this.eligibilityStrategy =
       props.eligibilityStrategy ??
@@ -60,11 +60,11 @@ export class DefaultStorageRetryStrategy implements RetryStrategy {
   }
 }
 
-export class DefaultStorageRetryStrategyFactory {
+export class FixedTimeoutRetryStrategyFactory {
   static getRetryStrategy(
-    props?: DefaultStorageRetryStrategyProps
-  ): DefaultStorageRetryStrategy {
-    return new DefaultStorageRetryStrategy({
+    props?: FixedTimeoutRetryStrategyProps
+  ): FixedTimeoutRetryStrategy {
+    return new FixedTimeoutRetryStrategy({
       loggerFactory: props?.loggerFactory ?? new DefaultMomentoLoggerFactory(),
       eligibilityStrategy: props?.eligibilityStrategy,
       retryDelayIntervalMillis: props?.retryDelayIntervalMillis,
