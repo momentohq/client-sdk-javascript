@@ -85,36 +85,39 @@ class RetryUntilTimeoutInterceptor {
         return new InterceptingCall(nextCall(options));
       }
 
-      const receivedDeadline = options.deadline?.valueOf() || 0;
-      this.logger.debug(
-        `intercepting call with options.deadline ${receivedDeadline}`
-      );
-
-      // Reset incremental deadline only if it has been reached
-      if (receivedDeadline < Date.now()) {
-        this.logger.debug('received deadline < current time, resetting');
-
-        const deadline = new Date(Date.now());
-        deadline.setMilliseconds(
-          deadline.getMilliseconds() + this.responseDataReceivedTimeoutMs
+      // If the received deadline is equal to the overall deadline, we've
+      // maxed out the retries and should cancel the request.
+      const receivedDeadline = options.deadline;
+      if (
+        receivedDeadline === undefined ||
+        receivedDeadline === this.overallDeadline
+      ) {
+        this.logger.debug(
+          'Unable to successfully retry request within overall timeout, canceling request'
         );
+        // reset overall deadline for next request
+        this.overallDeadline = undefined;
+        const call = new InterceptingCall(nextCall(options));
+        call.cancelWithStatus(
+          status.CANCELLED,
+          'Unable to successfully retry request within overall timeout'
+        );
+        return call;
+      }
 
-        if (deadline.valueOf() > this.overallDeadline.valueOf()) {
-          this.logger.debug(
-            'Unable to successfully retry request within client timeout, canceling request'
-          );
-          const call = new InterceptingCall(nextCall(options));
-          call.cancelWithStatus(
-            status.CANCELLED,
-            'Unable to successfully retry request within client timeout'
-          );
-          return call;
-        } else {
-          options.deadline = deadline;
-          this.logger.debug(
-            `new deadline set to ${options.deadline.valueOf()}`
-          );
-        }
+      // Otherwise, we've hit an incremental timeout and must set the next deadline.
+      const newDeadline = new Date(Date.now());
+      newDeadline.setMilliseconds(
+        newDeadline.getMilliseconds() + this.responseDataReceivedTimeoutMs
+      );
+      if (newDeadline > this.overallDeadline) {
+        this.logger.debug(
+          `new deadline would exceed overall deadline, setting to overall deadline ${this.overallDeadline.valueOf()}`
+        );
+        options.deadline = this.overallDeadline;
+      } else {
+        this.logger.debug(`new deadline set to ${newDeadline.valueOf()}`);
+        options.deadline = newDeadline;
       }
 
       return new InterceptingCall(nextCall(options));
