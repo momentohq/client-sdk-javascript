@@ -1,9 +1,7 @@
 import {
   CacheClient,
-  CacheDictionaryFetch,
   CacheDictionaryFetchResponse,
   CacheDictionaryGetFieldResponse,
-  CacheDictionaryGetFields,
   CacheDictionaryGetFieldsResponse,
   CacheDictionarySetFieldResponse,
   CacheDictionarySetFieldsResponse,
