@@ -90,54 +90,54 @@ describe('storage configuration', () => {
       details: 'deadline exceeded',
       metadata: new Metadata(),
     };
-    expect(
-      testRetryStrategy
-        .determineWhenToRetryRequest({
-          grpcStatus: testGrpcStatusDeadlineExceeded,
-          grpcRequest: testClientRequest as ClientMethodDefinition<
-            unknown,
-            unknown
-          >,
-          attemptNumber: 1,
-        })
-        ?.valueOf()
-    ).toEqual(100); // will retry after 100ms
+    const whenToRetryDeadlineExceeded =
+      testRetryStrategy.determineWhenToRetryRequest({
+        grpcStatus: testGrpcStatusDeadlineExceeded,
+        grpcRequest: testClientRequest as ClientMethodDefinition<
+          unknown,
+          unknown
+        >,
+        attemptNumber: 1,
+      });
+    // should retry after 100ms +/- 10% jitter
+    expect(whenToRetryDeadlineExceeded).toBeGreaterThanOrEqual(90);
+    expect(whenToRetryDeadlineExceeded).toBeLessThanOrEqual(110);
 
     const testGrpcStatusInternalError = {
       code: Status.INTERNAL,
       details: 'internal server error',
       metadata: new Metadata(),
     };
-    expect(
-      testRetryStrategy
-        .determineWhenToRetryRequest({
-          grpcStatus: testGrpcStatusInternalError,
-          grpcRequest: testClientRequest as ClientMethodDefinition<
-            unknown,
-            unknown
-          >,
-          attemptNumber: 1,
-        })
-        ?.valueOf()
-    ).toEqual(100); // will retry after 100ms
+    const whenToRetryInternalError =
+      testRetryStrategy.determineWhenToRetryRequest({
+        grpcStatus: testGrpcStatusInternalError,
+        grpcRequest: testClientRequest as ClientMethodDefinition<
+          unknown,
+          unknown
+        >,
+        attemptNumber: 1,
+      });
+    // should retry after 100ms +/- 10% jitter
+    expect(whenToRetryInternalError).toBeGreaterThanOrEqual(90);
+    expect(whenToRetryInternalError).toBeLessThanOrEqual(110);
 
     const testGrpcStatusUnavailable = {
       code: Status.UNAVAILABLE,
       details: 'server unavailable',
       metadata: new Metadata(),
     };
-    expect(
-      testRetryStrategy
-        .determineWhenToRetryRequest({
-          grpcStatus: testGrpcStatusUnavailable,
-          grpcRequest: testClientRequest as ClientMethodDefinition<
-            unknown,
-            unknown
-          >,
-          attemptNumber: 1,
-        })
-        ?.valueOf()
-    ).toEqual(100); // will retry after 100ms
+    const whenToRetryUnavailable =
+      testRetryStrategy.determineWhenToRetryRequest({
+        grpcStatus: testGrpcStatusUnavailable,
+        grpcRequest: testClientRequest as ClientMethodDefinition<
+          unknown,
+          unknown
+        >,
+        attemptNumber: 1,
+      });
+    // should retry after 100ms +/- 10% jitter
+    expect(whenToRetryUnavailable).toBeGreaterThanOrEqual(90);
+    expect(whenToRetryUnavailable).toBeLessThanOrEqual(110);
 
     const testGrpcStatusCancelled = {
       code: Status.CANCELLED,
