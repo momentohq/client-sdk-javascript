@@ -8,7 +8,11 @@ import {
   StorageGetResponse,
   StoragePutResponse,
 } from '@gomomento/sdk-core';
-import {testStoreName, WithStore} from '../common-int-test-utils';
+import {
+  expectWithMessage,
+  testStoreName,
+  WithStore,
+} from '../common-int-test-utils';
 import {v4} from 'uuid';
 
 export function runStorageServiceTests(
@@ -123,7 +127,9 @@ export function runStorageServiceTests(
           }
         }
         const getIntResponse = await storageClient.get(testingStoreName, key);
-        expect(getIntResponse.type).toEqual(StorageGetResponse.Found);
+        expectWithMessage(() => {
+          expect(getIntResponse.type).toEqual(StorageGetResponse.Found);
+        }, `expected Found, received ${getIntResponse.toString()}`);
         expect(getIntResponse.value()?.int()).toEqual(intValue);
 
         // put/get a double value
@@ -147,7 +153,9 @@ export function runStorageServiceTests(
           testingStoreName,
           key
         );
-        expect(getDoubleResponse.type).toEqual(StorageGetResponse.Found);
+        expectWithMessage(() => {
+          expect(getDoubleResponse.type).toEqual(StorageGetResponse.Found);
+        }, `expected Found, received ${getDoubleResponse.toString()}`);
         expect(getDoubleResponse.value()?.double()).toEqual(doubleValue);
 
         // put/get a string value
@@ -171,7 +179,9 @@ export function runStorageServiceTests(
           testingStoreName,
           key
         );
-        expect(getStringResponse.type).toEqual(StorageGetResponse.Found);
+        expectWithMessage(() => {
+          expect(getStringResponse.type).toEqual(StorageGetResponse.Found);
+        }, `expected Found, received ${getStringResponse.toString()}`);
         expect(getStringResponse.value()?.string()).toEqual(stringValue);
 
         // put/get a bytes value
@@ -192,7 +202,9 @@ export function runStorageServiceTests(
           }
         }
         const getBytesResponse = await storageClient.get(testingStoreName, key);
-        expect(getBytesResponse.type).toEqual(StorageGetResponse.Found);
+        expectWithMessage(() => {
+          expect(getBytesResponse.type).toEqual(StorageGetResponse.Found);
+        }, `expected Found, received ${getBytesResponse.toString()}`);
         expect(getBytesResponse.value()?.bytes()).toEqual(bytesValue);
 
         const deleteResponse = await storageClient.delete(
@@ -215,7 +227,9 @@ export function runStorageServiceTests(
       await WithStore(storageClient, testingStoreName, async () => {
         const key = v4();
         const getResponse = await storageClient.get(testingStoreName, key);
-        expect(getResponse.type).toEqual(StorageGetResponse.NotFound);
+        expectWithMessage(() => {
+          expect(getResponse.type).toEqual(StorageGetResponse.NotFound);
+        }, `expected NotFound, received ${getResponse.toString()}`);
         expect(getResponse.value()).toBeUndefined();
       });
     });

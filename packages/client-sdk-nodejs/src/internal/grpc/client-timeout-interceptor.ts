@@ -86,7 +86,7 @@ class RetryUntilTimeoutInterceptor {
       // maxed out the retries and should cancel the request.
       const receivedDeadline = options.deadline;
       if (
-        receivedDeadline === undefined ||
+        receivedDeadline !== undefined &&
         receivedDeadline === this.overallDeadline
       ) {
         this.logger.debug(
