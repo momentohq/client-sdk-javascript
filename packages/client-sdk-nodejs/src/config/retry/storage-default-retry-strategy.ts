@@ -51,8 +51,8 @@ export class DefaultStorageRetryStrategy implements RetryStrategy {
     this.logger.debug(
       `Request is eligible for retry (attempt ${props.attemptNumber}), retrying soon.`
     );
-    // retry after a fixed time interval has passed
-    return this.retryDelayIntervalMillis;
+    // retry after a fixed time interval has passed (=/- some jitter)
+    return addJitter(this.retryDelayIntervalMillis);
   }
 
   public getResponseDataReceivedTimeoutMillis(): number {
@@ -72,4 +72,8 @@ export class DefaultStorageRetryStrategyFactory {
         props?.responseDataReceivedTimeoutMillis,
     });
   }
+}
+
+export function addJitter(whenToRetry: number): number {
+  return (0.2 * Math.random() + 0.9) * whenToRetry;
 }

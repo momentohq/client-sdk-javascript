@@ -25,10 +25,6 @@ export function createRetryInterceptorIfEnabled(
   ];
 }
 
-function addJitter(whenToRetry: number): number {
-  return (0.2 * Math.random() + 0.9) * whenToRetry;
-}
-
 export class RetryInterceptor {
   private readonly logger: MomentoLogger;
   private readonly retryStrategy: RetryStrategy;
@@ -44,8 +40,6 @@ export class RetryInterceptor {
   // TODO: We need to send retry count information to the server so that we
   // will have some visibility into how often this is happening to customers:
   // https://github.com/momentohq/client-sdk-nodejs/issues/80
-  // TODO: we need to add backoff/jitter for the retries:
-  // https://github.com/momentohq/client-sdk-nodejs/issues/81
   public createRetryInterceptor(): Interceptor {
     const logger = this.logger;
     const retryStrategy = this.retryStrategy;
@@ -96,14 +90,10 @@ export class RetryInterceptor {
                       savedMessageNext(savedReceiveMessage);
                       next(status);
                     } else {
-                      const whenToRetryWithJitter = addJitter(whenToRetry);
                       logger.debug(
-                        `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetryWithJitter}ms`
+                        `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`
                       );
-                      setTimeout(
-                        () => retry(message, metadata),
-                        whenToRetryWithJitter
-                      );
+                      setTimeout(() => retry(message, metadata), whenToRetry);
                     }
                   },
                 });
@@ -127,13 +117,12 @@ export class RetryInterceptor {
                   savedMessageNext(savedReceiveMessage);
                   next(status);
                 } else {
-                  const whenToRetryWithJitter = addJitter(whenToRetry);
                   logger.debug(
-                    `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetryWithJitter}ms`
+                    `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`
                   );
                   setTimeout(
                     () => retry(savedSendMessage, savedMetadata),
-                    whenToRetryWithJitter
+                    whenToRetry
                   );
                 }
               }
