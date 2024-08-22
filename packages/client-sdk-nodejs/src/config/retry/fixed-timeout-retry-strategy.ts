@@ -51,7 +51,7 @@ export class FixedTimeoutRetryStrategy implements RetryStrategy {
     this.logger.debug(
       `Request is eligible for retry (attempt ${props.attemptNumber}), retrying soon.`
     );
-    // retry after a fixed time interval has passed (=/- some jitter)
+    // retry after a fixed time interval has passed (+/- some jitter)
     return addJitter(this.retryDelayIntervalMillis);
   }
 }
