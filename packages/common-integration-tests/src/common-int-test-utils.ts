@@ -1,13 +1,16 @@
 import {
   CollectionTtl,
-  CreateCache,
-  DeleteCache,
   MomentoErrorCode,
-  DeleteWebhook,
   Webhook,
-  PutWebhook,
   WebhookId,
   PostUrlWebhookDestination,
+  IStorageClient,
+  CreateStoreResponse,
+  DeleteStoreResponse,
+  CreateCacheResponse,
+  DeleteCacheResponse,
+  DeleteWebhookResponse,
+  PutWebhookResponse,
 } from '@gomomento/sdk-core';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {
@@ -67,7 +70,7 @@ export const deleteCacheIfExists = async (
     return;
   }
   const deleteResponse = await client.deleteCache(cacheName);
-  if (deleteResponse instanceof DeleteCache.Error) {
+  if (deleteResponse.type === DeleteCacheResponse.Error) {
     if (deleteResponse.errorCode() !== MomentoErrorCode.CACHE_NOT_FOUND_ERROR) {
       throw deleteResponse.innerException();
     }
@@ -85,7 +88,7 @@ export const createCacheIfNotExists = async (
     return;
   }
   const createResponse = await client.createCache(cacheName);
-  if (createResponse instanceof CreateCache.Error) {
+  if (createResponse.type === CreateCacheResponse.Error) {
     throw createResponse.innerException();
   }
 };
@@ -118,7 +121,7 @@ export const deleteWebhookIfExists = async (
     webhookId.cacheName,
     webhookId.webhookName
   );
-  if (deleteResponse instanceof DeleteWebhook.Error) {
+  if (deleteResponse.type === DeleteWebhookResponse.Error) {
     throw deleteResponse.innerException();
   }
 };
@@ -141,7 +144,7 @@ export const createWebhookIfNotExists = async (
       destination: webhook.destination,
     }
   );
-  if (createResponse instanceof PutWebhook.Error) {
+  if (createResponse.type === PutWebhookResponse.Error) {
     throw createResponse.innerException();
   }
 };
@@ -297,4 +300,52 @@ export async function getWebhookRequestDetails(
     throw new Error(`failed to get webhook details: ${await resp.text()}`);
   }
   return (await resp.json()) as WebhookRequestDetails;
+}
+
+export const deleteStoreIfExists = async (
+  client: IStorageClient,
+  storeName: string
+) => {
+  if (isLocalhostDevelopmentMode()) {
+    console.log(
+      `LOCALHOST DEVELOPMENT MODE: skipping delete store command for store '${storeName}`
+    );
+    return;
+  }
+  const deleteResponse = await client.deleteStore(storeName);
+  if (deleteResponse.type === DeleteStoreResponse.Error) {
+    if (deleteResponse.errorCode() !== MomentoErrorCode.STORE_NOT_FOUND_ERROR) {
+      throw deleteResponse.innerException();
+    }
+  }
+};
+
+export const createStoreIfNotExists = async (
+  client: IStorageClient,
+  storeName: string
+) => {
+  if (isLocalhostDevelopmentMode()) {
+    console.log(
+      `LOCALHOST DEVELOPMENT MODE: skipping create store command for store '${storeName}`
+    );
+    return;
+  }
+  const createResponse = await client.createStore(storeName);
+  if (createResponse.type === CreateStoreResponse.Error) {
+    throw createResponse.innerException();
+  }
+};
+
+export async function WithStore(
+  client: IStorageClient,
+  storeName: string,
+  block: () => Promise<void>
+) {
+  await deleteStoreIfExists(client, storeName);
+  await createStoreIfNotExists(client, storeName);
+  try {
+    await block();
+  } finally {
+    await deleteStoreIfExists(client, storeName);
+  }
 }
