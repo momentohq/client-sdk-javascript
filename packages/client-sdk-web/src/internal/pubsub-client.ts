@@ -168,17 +168,21 @@ export class PubsubClient<
       }
       options.firstMessage = false;
 
-      if (resp?.getItem()) {
-        options.subscriptionState.lastTopicSequenceNumber = resp
-          .getItem()
-          ?.getTopicSequenceNumber();
-        const itemText = resp.getItem()?.getValue()?.getText();
-        const publisherId = resp.getItem()?.getPublisherId();
-        const itemBinary = resp.getItem()?.getValue()?.getBinary();
+      const item = resp.getItem();
+      if (item) {
+        const sequenceNumber = item.getTopicSequenceNumber();
+        options.subscriptionState.lastTopicSequenceNumber = sequenceNumber;
+        const publisherId = item.getPublisherId();
+        const itemText = item.getValue()?.getText();
+        const itemBinary = item.getValue()?.getBinary();
         if (itemText) {
-          options.onItem(new TopicItem(itemText, {tokenId: publisherId}));
+          options.onItem(
+            new TopicItem(itemText, sequenceNumber, {tokenId: publisherId})
+          );
         } else if (itemBinary) {
-          options.onItem(new TopicItem(itemBinary, {tokenId: publisherId}));
+          options.onItem(
+            new TopicItem(itemBinary, sequenceNumber, {tokenId: publisherId})
+          );
         } else {
           this.getLogger().error(
             'Received subscription item with unknown type; topic: %s',
@@ -191,12 +195,12 @@ export class PubsubClient<
             options.subscription
           );
         }
-      } else if (resp?.getHeartbeat()) {
+      } else if (resp.getHeartbeat()) {
         this.getLogger().trace(
           'Received heartbeat from subscription stream; topic: %s',
           truncateString(options.topicName)
         );
-      } else if (resp?.getDiscontinuity()) {
+      } else if (resp.getDiscontinuity()) {
         this.getLogger().trace(
           'Received discontinuity from subscription stream; topic: %s',
           truncateString(options.topicName)
