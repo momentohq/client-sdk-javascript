@@ -1,9 +1,4 @@
 import {
-  CacheGet,
-  ListCaches,
-  CreateCache,
-  CacheSet,
-  CacheDelete,
   CacheClient,
   Configurations,
   MomentoLoggerFactory,
@@ -11,6 +6,11 @@ import {
   DefaultMomentoLoggerLevel,
   CredentialProvider,
   MiddlewareFactory,
+  CreateCacheResponse,
+  ListCachesResponse,
+  CacheSetResponse,
+  CacheGetResponse,
+  CacheDeleteResponse,
 } from '@gomomento/sdk';
 import {range} from './utils/collections';
 import * as fs from 'fs';
@@ -42,23 +42,31 @@ async function main() {
 
 async function createCacheExample() {
   const createCacheResponse = await momento.createCache(cacheName);
-  if (createCacheResponse instanceof CreateCache.AlreadyExists) {
-    logger.info('cache already exists');
-  } else if (createCacheResponse instanceof CreateCache.Error) {
-    throw createCacheResponse.innerException();
+  switch (createCacheResponse.type) {
+    case CreateCacheResponse.AlreadyExists:
+      logger.info('cache already exists');
+      break;
+    case CreateCacheResponse.Success:
+      logger.info('cache created');
+      break;
+    case CreateCacheResponse.Error:
+      throw createCacheResponse.innerException();
   }
 }
 
 async function listCachesExample() {
   logger.info('Listing caches:');
   const listResponse = await momento.listCaches();
-  if (listResponse instanceof ListCaches.Error) {
-    logger.info(`Error listing caches: ${listResponse.message()}`);
-  } else if (listResponse instanceof ListCaches.Success) {
-    logger.info('Found caches:');
-    listResponse.getCaches().forEach(cacheInfo => {
-      logger.info(`${cacheInfo.getName()}`);
-    });
+  switch (listResponse.type) {
+    case ListCachesResponse.Success:
+      logger.info('Found caches:');
+      listResponse.getCaches().forEach(cacheInfo => {
+        logger.info(`${cacheInfo.getName()}`);
+      });
+      break;
+    case ListCachesResponse.Error:
+      logger.info(`Error listing caches: ${listResponse.message()}`);
+      break;
   }
 }
 
@@ -70,26 +78,36 @@ async function setGetDeleteExample() {
   const setResponse = await momento.set(cacheName, cacheKey, cacheValue, {
     ttl: exampleTtlSeconds,
   });
-  if (setResponse instanceof CacheSet.Success) {
-    logger.info('Key stored successfully!');
-  } else if (setResponse instanceof CacheSet.Error) {
-    logger.info(`Error setting key: ${setResponse.message()}`);
+  switch (setResponse.type) {
+    case CacheSetResponse.Success:
+      logger.info('Key stored successfully!');
+      break;
+    case CacheSetResponse.Error:
+      logger.info(`Error setting key: ${setResponse.message()}`);
+      break;
   }
 
   const getResponse = await momento.get(cacheName, cacheKey);
-  if (getResponse instanceof CacheGet.Hit) {
-    logger.info(`cache hit: ${getResponse.valueString()}`);
-  } else if (getResponse instanceof CacheGet.Miss) {
-    logger.info('cache miss');
-  } else if (getResponse instanceof CacheGet.Error) {
-    logger.info(`Error: ${getResponse.message()}`);
+  switch (getResponse.type) {
+    case CacheGetResponse.Miss:
+      logger.info('cache miss');
+      break;
+    case CacheGetResponse.Hit:
+      logger.info(`cache hit: ${getResponse.valueString()}`);
+      break;
+    case CacheGetResponse.Error:
+      logger.info(`Error: ${getResponse.message()}`);
+      break;
   }
 
   const deleteResponse = await momento.delete(cacheName, cacheKey);
-  if (deleteResponse instanceof CacheDelete.Error) {
-    logger.info(`Error deleting cache key: ${deleteResponse.message()}`);
-  } else if (deleteResponse instanceof CacheDelete.Success) {
-    logger.info('Deleted key from cache');
+  switch (deleteResponse.type) {
+    case CacheDeleteResponse.Success:
+      logger.info('Deleted key from cache');
+      break;
+    case CacheDeleteResponse.Error:
+      logger.info(`Error deleting cache key: ${deleteResponse.message()}`);
+      break;
   }
 }
 
@@ -103,7 +121,7 @@ async function concurrentGetsExample() {
   const getResponses = await Promise.all(getPromises);
   getResponses.forEach((response, index) => {
     const key = `key${index + 1}`;
-    if (response instanceof CacheGet.Hit) {
+    if (response.type === CacheGetResponse.Hit) {
       logger.info(`Concurrent get for ${key} returned ${response.valueString()}`);
     } else {
       logger.info(`Something went wrong with concurrent get for key ${key}: ${response.toString()}`);

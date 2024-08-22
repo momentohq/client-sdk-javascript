@@ -1,8 +1,11 @@
 import {
   CacheClient,
-  CacheGetBatch,
+  CacheGet,
+  CacheGetBatchResponse,
+  CacheGetResponse,
   CacheSet,
-  CacheSetBatch,
+  CacheSetBatchResponse,
+  CacheSetResponse,
   DefaultMomentoLoggerFactory,
   DefaultMomentoLoggerLevel,
   MomentoLogger,
@@ -237,7 +240,7 @@ class PerfTest {
     }
     const setResponses = await Promise.all(setPromises);
     const setDuration = getElapsedMillis(setStartTime);
-    const error = setResponses.find(response => response instanceof CacheSet.Error);
+    const error = setResponses.find(response => response.type === CacheSetResponse.Error);
     if (error !== undefined) {
       throw new Error(`Error in async sets: ${error.toString()}`);
     }
@@ -249,7 +252,7 @@ class PerfTest {
     context: PerfTestContext,
     getConfig: GetSetConfig
   ): Promise<void> {
-    const getPromises: Promise<CacheSet.Response>[] = [];
+    const getPromises: Promise<CacheGet.Response>[] = [];
     const getStartTime = process.hrtime();
     for (let i = 0; i < getConfig.batchSize; i++) {
       const key = `key-${i}`;
@@ -259,7 +262,7 @@ class PerfTest {
     }
     const getResponses = await Promise.all(getPromises);
     const getDuration = getElapsedMillis(getStartTime);
-    const error = getResponses.find(response => response instanceof CacheSet.Error);
+    const error = getResponses.find(response => response.type === CacheGetResponse.Error);
     if (error !== undefined) {
       throw new Error(`Error in async gets: ${error.toString()}`);
     }
@@ -282,8 +285,7 @@ class PerfTest {
 
     context.totalItemSizeBytes += setConfig.batchSize * setConfig.itemSizeBytes;
     const setBatchResponse = await setBatchPromise;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (setBatchResponse instanceof CacheSetBatch.Error) {
+    if (setBatchResponse.type === CacheSetBatchResponse.Error) {
       throw new Error(`Error setting batch: ${setBatchResponse.toString()}`);
     }
     const setBatchDuration = getElapsedMillis(setBatchStartTime);
@@ -300,8 +302,7 @@ class PerfTest {
     const getBatchPromise = momento.getBatch(this.cacheName, keys);
     context.totalItemSizeBytes += getConfig.batchSize * getConfig.itemSizeBytes;
     const getBatchResponse = await getBatchPromise;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (getBatchResponse instanceof CacheGetBatch.Error) {
+    if (getBatchResponse.type === CacheGetBatchResponse.Error) {
       throw new Error(`Error getting batch: ${getBatchResponse.toString()}`);
     }
     const getBatchDuration = getElapsedMillis(getBatchStartTime);
