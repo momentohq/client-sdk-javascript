@@ -22,11 +22,11 @@ export interface StorageTransportStrategy {
 
   /**
    * Copy constructor to update the client-side timeout
-   * @param {number} requestTimeoutMillis
+   * @param {number} clientTimeoutMillis
    * @returns {StorageTransportStrategy} a new StorageTransportStrategy with the specified client timeout
    */
-  withRequestTimeoutMillis(
-    requestTimeoutMillis: number
+  withClientTimeoutMillis(
+    clientTimeoutMillis: number
   ): StorageTransportStrategy;
 }
 
@@ -78,12 +78,12 @@ export class StaticStorageTransportStrategy
     });
   }
 
-  withRequestTimeoutMillis(
-    requestTimeoutMillis: number
+  withClientTimeoutMillis(
+    clientTimeoutMillis: number
   ): StorageTransportStrategy {
     return new StaticStorageTransportStrategy({
       grpcConfiguration:
-        this.grpcConfig.withDeadlineMillis(requestTimeoutMillis),
+        this.grpcConfig.withDeadlineMillis(clientTimeoutMillis),
     });
   }
 }
