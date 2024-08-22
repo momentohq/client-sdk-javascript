@@ -1,4 +1,4 @@
-import {TopicItem, TopicSubscribe} from '..';
+import {TopicItem, TopicSubscribe, TopicDiscontinuity} from '..';
 
 /**
  * Options for the subscribe call.
@@ -21,4 +21,11 @@ export interface SubscribeCallOptions {
     error: TopicSubscribe.Error,
     subscription: TopicSubscribe.Subscription
   ) => void;
+
+  /**
+   * The callback to invoke when a discontinuity is received from the topic subscription.
+   *
+   * @param item The discontinuity received from the topic subscription.
+   */
+  onDiscontinuity?: (discontinuity: TopicDiscontinuity) => void;
 }

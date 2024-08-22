@@ -60,7 +60,7 @@ export class TopicItem {
 
   /**
    * Returns the sequence number of the item.
-   * @returns string | undefined
+   * @returns number
    */
   public sequenceNumber(): number {
     return this._sequenceNumber;

@@ -1,6 +1,11 @@
 import * as pubsub from '@gomomento/generated-types-webtext/dist/CachepubsubServiceClientPb';
 import * as cachepubsub_pb from '@gomomento/generated-types-webtext/dist/cachepubsub_pb';
-import {CredentialProvider, TopicItem, UnknownError} from '@gomomento/sdk-core';
+import {
+  CredentialProvider,
+  TopicDiscontinuity,
+  TopicItem,
+  UnknownError,
+} from '@gomomento/sdk-core';
 import {Request, RpcError, StatusCode, UnaryResponse} from 'grpc-web';
 import {truncateString} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {TopicPublish, TopicSubscribe} from '../index';
@@ -169,6 +174,8 @@ export class PubsubClient<
       options.firstMessage = false;
 
       const item = resp.getItem();
+      const discontinuity = resp.getDiscontinuity();
+
       if (item) {
         const sequenceNumber = item.getTopicSequenceNumber();
         options.subscriptionState.lastTopicSequenceNumber = sequenceNumber;
@@ -200,11 +207,19 @@ export class PubsubClient<
           'Received heartbeat from subscription stream; topic: %s',
           truncateString(options.topicName)
         );
-      } else if (resp.getDiscontinuity()) {
+      } else if (discontinuity) {
         this.getLogger().trace(
           'Received discontinuity from subscription stream; topic: %s',
           truncateString(options.topicName)
         );
+        if (options.onDiscontinuity) {
+          options.onDiscontinuity(
+            new TopicDiscontinuity(
+              discontinuity.getLastTopicSequence(),
+              discontinuity.getNewTopicSequence()
+            )
+          );
+        }
       } else {
         this.getLogger().error(
           'Received unknown subscription item; topic: %s',
