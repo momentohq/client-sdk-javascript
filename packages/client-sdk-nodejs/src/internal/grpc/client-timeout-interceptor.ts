@@ -67,17 +67,10 @@ class RetryUntilTimeoutInterceptor {
       // Replace default timeout with the desired overall timeout
       // on the first time through and set the first incremental timeout
       if (this.overallDeadline === undefined) {
-        const newDate = new Date(Date.now());
-        newDate.setMilliseconds(
-          newDate.getMilliseconds() + this.overallRequestTimeoutMs
+        this.overallDeadline = createNewDeadline(this.overallRequestTimeoutMs);
+        options.deadline = createNewDeadline(
+          this.responseDataReceivedTimeoutMs
         );
-        this.overallDeadline = newDate;
-
-        const deadline = new Date(Date.now());
-        deadline.setMilliseconds(
-          deadline.getMilliseconds() + this.responseDataReceivedTimeoutMs
-        );
-        options.deadline = deadline;
         this.logger.debug(`new deadline set to ${options.deadline.valueOf()}`);
         return new InterceptingCall(nextCall(options));
       }
@@ -103,10 +96,7 @@ class RetryUntilTimeoutInterceptor {
       }
 
       // Otherwise, we've hit an incremental timeout and must set the next deadline.
-      const newDeadline = new Date(Date.now());
-      newDeadline.setMilliseconds(
-        newDeadline.getMilliseconds() + this.responseDataReceivedTimeoutMs
-      );
+      const newDeadline = createNewDeadline(this.responseDataReceivedTimeoutMs);
       if (newDeadline > this.overallDeadline) {
         this.logger.debug(
           `new deadline would exceed overall deadline, setting to overall deadline ${this.overallDeadline.valueOf()}`
@@ -120,4 +110,10 @@ class RetryUntilTimeoutInterceptor {
       return new InterceptingCall(nextCall(options));
     };
   }
+}
+
+function createNewDeadline(timeToAddMillis: number): Date {
+  const deadline = new Date(Date.now());
+  deadline.setMilliseconds(deadline.getMilliseconds() + timeToAddMillis);
+  return deadline;
 }
