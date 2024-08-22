@@ -216,15 +216,23 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
         );
         if (resp.item.value.text) {
           options.onItem(
-            new TopicItem(resp.item.value.text, {
-              tokenId: resp.item.publisher_id,
-            })
+            new TopicItem(
+              resp.item.value.text,
+              resp.item.topic_sequence_number,
+              {
+                tokenId: resp.item.publisher_id,
+              }
+            )
           );
         } else if (resp.item.value.binary) {
           options.onItem(
-            new TopicItem(resp.item.value.binary, {
-              tokenId: resp.item.publisher_id,
-            })
+            new TopicItem(
+              resp.item.value.binary,
+              resp.item.topic_sequence_number,
+              {
+                tokenId: resp.item.publisher_id,
+              }
+            )
           );
         } else {
           this.getLogger().error(

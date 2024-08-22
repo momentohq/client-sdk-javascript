@@ -14,10 +14,16 @@ export interface TopicItemOptions {
 export class TopicItem {
   private readonly _value: string | Uint8Array;
   private readonly _tokenId?: string;
+  private readonly _sequenceNumber: number;
 
-  constructor(_value: string | Uint8Array, options?: TopicItemOptions) {
+  constructor(
+    _value: string | Uint8Array,
+    _sequenceNumber: number,
+    options?: TopicItemOptions
+  ) {
     this._value = _value;
     this._tokenId = options?.tokenId;
+    this._sequenceNumber = _sequenceNumber;
   }
 
   /**
@@ -50,6 +56,14 @@ export class TopicItem {
    */
   public tokenId(): string | undefined {
     return this._tokenId;
+  }
+
+  /**
+   * Returns the sequence number of the item.
+   * @returns string | undefined
+   */
+  public sequenceNumber(): number {
+    return this._sequenceNumber;
   }
 
   public toString(): string {
