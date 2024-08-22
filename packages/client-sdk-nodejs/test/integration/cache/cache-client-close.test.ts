@@ -1,5 +1,5 @@
 import {credsProvider} from '../integration-setup';
-import {CacheClientPropsWithConfig} from '../../../src/internal/cache-client-props-with-config';
+import {CacheClientAllProps} from '../../../src/internal/cache-client-all-props';
 import {
   CacheClient,
   Configurations,
@@ -21,7 +21,7 @@ describe("Test exercises closing a client and jest doesn't hang", () => {
   });
 });
 
-function integrationTestCacheClientPropsWithExperimentalMetricsMiddleware(): CacheClientPropsWithConfig {
+function integrationTestCacheClientPropsWithExperimentalMetricsMiddleware(): CacheClientAllProps {
   const loggerFactory = new DefaultMomentoLoggerFactory(
     DefaultMomentoLoggerLevel.INFO
   );

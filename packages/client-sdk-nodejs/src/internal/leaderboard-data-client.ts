@@ -33,7 +33,7 @@ import {
 } from '@grpc/grpc-js';
 import {version} from '../../package.json';
 import {ILeaderboardDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/leaderboard/ILeaderboardDataClient';
-import {LeaderboardClientPropsWithConfig} from './leaderboard-client-props-with-config';
+import {LeaderboardClientAllProps} from './leaderboard-client-all-props';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {
   Middleware,
@@ -56,10 +56,10 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
   private readonly interceptors: Interceptor[];
 
   /**
-   * @param {LeaderboardClientPropsWithConfig} props
+   * @param {LeaderboardClientAllProps} props
    * @param dataClientID
    */
-  constructor(props: LeaderboardClientPropsWithConfig, dataClientID: string) {
+  constructor(props: LeaderboardClientAllProps, dataClientID: string) {
     this.configuration = props.configuration;
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
       props.configuration.getThrowOnErrors()

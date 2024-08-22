@@ -1,6 +1,12 @@
 import {CacheControlClient} from './internal/cache-control-client';
 import {CacheDataClient} from './internal/cache-data-client';
-import {CacheFlush, MomentoLogger, Configuration, Configurations} from '.';
+import {
+  CacheFlush,
+  MomentoLogger,
+  Configuration,
+  Configurations,
+  getDefaultCredentialProvider,
+} from '.';
 import {CacheClientProps, EagerCacheClientProps} from './cache-client-props';
 import {
   range,
@@ -11,7 +17,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {AbstractCacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/AbstractCacheClient';
-import {CacheClientPropsWithConfig} from './internal/cache-client-props-with-config';
+import {CacheClientAllProps} from './internal/cache-client-all-props';
 
 const EAGER_CONNECTION_DEFAULT_TIMEOUT_SECONDS = 30;
 
@@ -37,9 +43,13 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
     validateTtlSeconds(props.defaultTtlSeconds);
     const configuration: Configuration =
       props.configuration ?? getDefaultCacheClientConfiguration();
-    const propsWithConfig: CacheClientPropsWithConfig = {
+    const credentialProvider =
+      props.credentialProvider ?? getDefaultCredentialProvider();
+
+    const allProps: CacheClientAllProps = {
       ...props,
       configuration: configuration,
+      credentialProvider: credentialProvider,
     };
 
     let semaphore: Semaphore | undefined = undefined;
@@ -54,7 +64,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
 
     const controlClient = new CacheControlClient({
       configuration: configuration,
-      credentialProvider: props.credentialProvider,
+      credentialProvider: credentialProvider,
     });
 
     const numClients = configuration
@@ -62,7 +72,7 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
       .getGrpcConfig()
       .getNumClients();
     const dataClients = range(numClients).map(
-      (_, id) => new CacheDataClient(propsWithConfig, String(id), semaphore)
+      (_, id) => new CacheDataClient(allProps, String(id), semaphore)
     );
     super(controlClient, dataClients);
     this._configuration = configuration;

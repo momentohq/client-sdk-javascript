@@ -55,7 +55,6 @@ import {
   CacheDecreaseTtl,
   CollectionTtl,
   ItemType,
-  CredentialProvider,
   MomentoLogger,
   SortedSetOrder,
   UnknownError,
@@ -63,7 +62,6 @@ import {
   CacheGetBatch,
   CacheSetBatch,
 } from '..';
-import {Configuration} from '../config/configuration';
 import {Request, RpcError, UnaryResponse} from 'grpc-web';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
@@ -164,15 +162,7 @@ import {
   SetIfAbsentCallOptions,
 } from '@gomomento/sdk-core/dist/src/utils';
 import {CacheSetLength, CacheSetPop} from '@gomomento/sdk-core';
-
-export interface DataClientProps {
-  configuration: Configuration;
-  credentialProvider: CredentialProvider;
-  /**
-   * the default time to live of object inside of cache, in seconds
-   */
-  defaultTtlSeconds: number;
-}
+import {CacheClientAllProps} from './cache-client-all-props';
 
 export class CacheDataClient<
   REQ extends Request<REQ, RESP>,
@@ -190,7 +180,7 @@ export class CacheDataClient<
   /**
    * @param {DataClientProps} props
    */
-  constructor(props: DataClientProps) {
+  constructor(props: CacheClientAllProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
       props.configuration.getThrowOnErrors()

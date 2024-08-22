@@ -24,7 +24,7 @@ import {
 } from '../../src';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
-import {CacheClientPropsWithConfig} from '../../src/internal/cache-client-props-with-config';
+import {CacheClientAllProps} from '../../src/internal/cache-client-all-props';
 
 let _credsProvider: CredentialProvider | undefined = undefined;
 let _mgaAccountSessionTokenCredsProvider: CredentialProvider | undefined =
@@ -88,7 +88,7 @@ function mgaAccountSessionTokenCredsProvider(): CredentialProvider {
   return _mgaAccountSessionTokenCredsProvider;
 }
 
-function integrationTestCacheClientProps(): CacheClientPropsWithConfig {
+function integrationTestCacheClientProps(): CacheClientAllProps {
   return {
     configuration:
       Configurations.Laptop.latest().withClientTimeoutMillis(90000),
@@ -102,7 +102,7 @@ function momentoClientForTesting(): CacheClient {
 }
 
 function momentoClientWithThrowOnErrorsForTesting(): CacheClient {
-  const props: CacheClientPropsWithConfig = integrationTestCacheClientProps();
+  const props: CacheClientAllProps = integrationTestCacheClientProps();
   props.configuration = props.configuration.withThrowOnErrors(true);
   return new CacheClient(props);
 }

@@ -37,7 +37,6 @@ import {
   DisposableTokenScope,
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients';
-import {AuthClientProps} from '../auth-client-props';
 import {
   asCachePermission,
   asPermissionsObject,
@@ -59,6 +58,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
 import {RetryInterceptor} from './grpc/retry-interceptor';
 import {AuthClientConfigurations} from '../index';
+import {AuthClientAllProps} from './auth-client-all-props';
 
 export class InternalAuthClient implements IAuthClient {
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
@@ -69,7 +69,7 @@ export class InternalAuthClient implements IAuthClient {
   private readonly tokenClient: token.token.TokenClient;
   private readonly authClient: grpcAuth.AuthClient;
 
-  constructor(props: AuthClientProps) {
+  constructor(props: AuthClientAllProps) {
     const configuration =
       props.configuration ?? AuthClientConfigurations.Default.latest();
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(

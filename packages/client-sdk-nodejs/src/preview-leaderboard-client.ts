@@ -2,13 +2,14 @@ import {
   MomentoLogger,
   ILeaderboardClient,
   ILeaderboard,
+  getDefaultCredentialProvider,
 } from '@gomomento/sdk-core';
 import {LeaderboardDataClient} from './internal/leaderboard-data-client';
 import {LeaderboardClientProps} from './leaderboard-client-props';
 import {Leaderboard} from './internal/leaderboard';
 import {ILeaderboardDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/leaderboard/ILeaderboardDataClient';
 import {LeaderboardConfiguration, LeaderboardConfigurations} from './index';
-import {LeaderboardClientPropsWithConfig} from './internal/leaderboard-client-props-with-config';
+import {LeaderboardClientAllProps} from './internal/leaderboard-client-all-props';
 
 /**
  * PREVIEW Momento Leaderboard Client
@@ -27,15 +28,16 @@ export class PreviewLeaderboardClient implements ILeaderboardClient {
   constructor(props: LeaderboardClientProps) {
     const configuration =
       props.configuration ?? getDefaultLeaderboardConfiguration();
-    const propsWithConfig: LeaderboardClientPropsWithConfig = {
-      ...props,
+    const allProps: LeaderboardClientAllProps = {
       configuration: configuration,
+      credentialProvider:
+        props.credentialProvider ?? getDefaultCredentialProvider(),
     };
     this.configuration = configuration;
 
     this.logger = configuration.getLoggerFactory().getLogger(this);
     this.logger.debug('Creating Momento LeaderboardClient');
-    this.dataClient = new LeaderboardDataClient(propsWithConfig, '0'); // only creating one leaderboard client
+    this.dataClient = new LeaderboardDataClient(allProps, '0'); // only creating one leaderboard client
 
     // Initialize middlewares that have init methods. These currently start
     // background tasks for logging that will execute until they are explicitly

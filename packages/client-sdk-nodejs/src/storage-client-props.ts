@@ -2,6 +2,6 @@ import {CredentialProvider} from '@gomomento/sdk-core';
 import {StorageConfiguration} from './config/storage-configuration';
 
 export interface StorageClientProps {
-  credentialProvider: CredentialProvider;
+  credentialProvider?: CredentialProvider;
   configuration?: StorageConfiguration;
 }
