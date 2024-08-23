@@ -98,6 +98,7 @@ describe('storage configuration', () => {
           unknown
         >,
         attemptNumber: 1,
+        requestMetadata: new Metadata(),
       });
     // should retry after 100ms +/- 10% jitter
     expect(whenToRetryDeadlineExceeded).toBeGreaterThanOrEqual(90);
@@ -116,6 +117,7 @@ describe('storage configuration', () => {
           unknown
         >,
         attemptNumber: 1,
+        requestMetadata: new Metadata(),
       });
     // should retry after 100ms +/- 10% jitter
     expect(whenToRetryInternalError).toBeGreaterThanOrEqual(90);
@@ -134,6 +136,7 @@ describe('storage configuration', () => {
           unknown
         >,
         attemptNumber: 1,
+        requestMetadata: new Metadata(),
       });
     // should retry after 100ms +/- 10% jitter
     expect(whenToRetryUnavailable).toBeGreaterThanOrEqual(90);
@@ -152,6 +155,7 @@ describe('storage configuration', () => {
           unknown
         >,
         attemptNumber: 1,
+        requestMetadata: new Metadata(),
       })
     ).toBeNull(); // will not retry
   });

@@ -109,6 +109,7 @@ export class RetryInterceptor {
                   grpcStatus: status,
                   grpcRequest: options.method_definition,
                   attemptNumber: attempts,
+                  requestMetadata: metadata,
                 });
                 if (whenToRetry === null) {
                   logger.debug(

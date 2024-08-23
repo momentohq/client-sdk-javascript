@@ -5,7 +5,7 @@ export interface DeterminewhenToRetryRequestProps {
   grpcStatus: StatusObject;
   grpcRequest: ClientMethodDefinition<unknown, unknown>;
   attemptNumber: number;
-  requestMetadata?: Metadata;
+  requestMetadata: Metadata;
 }
 
 export interface RetryStrategy {
