@@ -212,14 +212,12 @@ export class PubsubClient<
           'Received discontinuity from subscription stream; topic: %s',
           truncateString(options.topicName)
         );
-        if (options.onDiscontinuity) {
-          options.onDiscontinuity(
-            new TopicDiscontinuity(
-              discontinuity.getLastTopicSequence(),
-              discontinuity.getNewTopicSequence()
-            )
-          );
-        }
+        options.onDiscontinuity(
+          new TopicDiscontinuity(
+            discontinuity.getLastTopicSequence(),
+            discontinuity.getNewTopicSequence()
+          )
+        );
       } else {
         this.getLogger().error(
           'Received unknown subscription item; topic: %s',

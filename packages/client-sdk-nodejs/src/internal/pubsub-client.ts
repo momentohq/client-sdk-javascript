@@ -249,14 +249,12 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
           'Received discontinuity from subscription stream; topic: %s',
           truncateString(options.topicName)
         );
-        if (options.onDiscontinuity) {
-          options.onDiscontinuity(
-            new TopicDiscontinuity(
-              resp.discontinuity.last_topic_sequence,
-              resp.discontinuity.new_topic_sequence
-            )
-          );
-        }
+        options.onDiscontinuity(
+          new TopicDiscontinuity(
+            resp.discontinuity.last_topic_sequence,
+            resp.discontinuity.new_topic_sequence
+          )
+        );
       } else {
         this.getLogger().error(
           'Received unknown subscription item; topic: %s',
