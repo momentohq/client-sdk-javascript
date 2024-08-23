@@ -66,9 +66,8 @@ export class RetryInterceptor {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               next: (arg0: any) => void
             ) {
-              let attempts = 1;
+              let attempts = 0;
               const retry = function (message: unknown, metadata: Metadata) {
-                attempts++;
                 const newCall = nextCall(options);
                 newCall.start(metadata, {
                   onReceiveMessage: function (message) {
@@ -90,6 +89,7 @@ export class RetryInterceptor {
                       savedMessageNext(savedReceiveMessage);
                       next(status);
                     } else {
+                      attempts++;
                       logger.debug(
                         `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`
                       );
@@ -117,6 +117,7 @@ export class RetryInterceptor {
                   savedMessageNext(savedReceiveMessage);
                   next(status);
                 } else {
+                  attempts++;
                   logger.debug(
                     `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`
                   );

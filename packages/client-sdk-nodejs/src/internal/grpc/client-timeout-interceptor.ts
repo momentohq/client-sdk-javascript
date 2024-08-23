@@ -79,7 +79,7 @@ class RetryUntilTimeoutInterceptor {
         receivedDeadline === this.overallDeadline
       ) {
         this.logger.debug(
-          'Unable to successfully retry request within overall timeout, canceling request'
+          `Unable to successfully retry request within overall timeout of ${this.overallRequestTimeoutMs}ms, canceling request`
         );
         // reset overall deadline for next request
         this.overallDeadline = undefined;
@@ -87,7 +87,7 @@ class RetryUntilTimeoutInterceptor {
         const call = new InterceptingCall(nextCall(options));
         call.cancelWithStatus(
           status.CANCELLED,
-          'Unable to successfully retry request within overall timeout'
+          `Unable to successfully retry request within overall timeout of ${this.overallRequestTimeoutMs}ms`
         );
         return call;
       }
@@ -110,7 +110,14 @@ class RetryUntilTimeoutInterceptor {
           this.responseDataReceivedTimeoutMs
         );
         this.logger.debug(
-          `Overall deadline set to ${this.overallDeadline.valueOf()}; incremental deadline set to ${options.deadline.valueOf()}`
+          `Overall deadline set to ${this.overallDeadline.valueOf()}, which is ${
+            this.overallRequestTimeoutMs
+          }ms from now`
+        );
+        this.logger.debug(
+          `Incremental deadline set to ${options.deadline.valueOf()}, which is ${
+            this.responseDataReceivedTimeoutMs
+          }ms from now`
         );
         return new InterceptingCall(nextCall(options));
       }
@@ -124,7 +131,9 @@ class RetryUntilTimeoutInterceptor {
         options.deadline = this.overallDeadline;
       } else {
         this.logger.debug(
-          `Incremental deadline set to ${newDeadline.valueOf()}`
+          `Incremental deadline set to ${newDeadline.valueOf()}, which is ${
+            this.responseDataReceivedTimeoutMs
+          }ms from now`
         );
         options.deadline = newDeadline;
       }
