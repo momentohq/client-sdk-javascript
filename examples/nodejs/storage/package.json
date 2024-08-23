@@ -6,6 +6,7 @@
   "scripts": {
     "prebuild": "eslint . --ext .ts",
     "build": "tsc",
+    "basic": "tsc && node dist/basic.js",
     "doc-examples": "tsc && node dist/doc-examples-js-apis.js",
     "validate-examples": "tsc && node dist/doc-examples-js-apis.js && node dist/cheat-sheet-main.js",
     "test": "jest",
