@@ -29,7 +29,7 @@ export interface SendSubscribeOptions {
     error: TopicSubscribe.Error,
     subscription: TopicSubscribe.Subscription
   ) => void;
-  onDiscontinuity?: (discontinuity: TopicDiscontinuity) => void;
+  onDiscontinuity: (discontinuity: TopicDiscontinuity) => void;
   subscriptionState: SubscriptionState;
   subscription: TopicSubscribe.Subscription;
 
@@ -140,6 +140,11 @@ export abstract class AbstractPubsubClient<TGrpcError>
       (() => {
         return;
       });
+    const onDiscontinuity =
+      options.onDiscontinuity ??
+      (() => {
+        return;
+      });
 
     const subscriptionState = new SubscriptionState();
     const subscription = new TopicSubscribe.Subscription(
@@ -151,7 +156,7 @@ export abstract class AbstractPubsubClient<TGrpcError>
       topicName: topicName,
       onItem: onItem,
       onError: onError,
-      onDiscontinuity: options.onDiscontinuity,
+      onDiscontinuity: onDiscontinuity,
       subscriptionState: subscriptionState,
       subscription: subscription,
       restartedDueToError: false,
