@@ -3,11 +3,7 @@ import {
   RetryStrategy,
 } from './retry-strategy';
 import {EligibilityStrategy} from './eligibility-strategy';
-import {
-  MomentoLoggerFactory,
-  MomentoLogger,
-  DefaultMomentoLoggerFactory,
-} from '../..';
+import {MomentoLoggerFactory, MomentoLogger} from '../..';
 import {DefaultStorageEligibilityStrategy} from './storage-default-eligibility-strategy';
 
 export interface FixedTimeoutRetryStrategyProps {
@@ -53,20 +49,6 @@ export class FixedTimeoutRetryStrategy implements RetryStrategy {
     );
     // retry after a fixed time interval has passed (+/- some jitter)
     return addJitter(this.retryDelayIntervalMillis);
-  }
-}
-
-export class FixedTimeoutRetryStrategyFactory {
-  static getRetryStrategy(
-    props?: FixedTimeoutRetryStrategyProps
-  ): FixedTimeoutRetryStrategy {
-    return new FixedTimeoutRetryStrategy({
-      loggerFactory: props?.loggerFactory ?? new DefaultMomentoLoggerFactory(),
-      eligibilityStrategy: props?.eligibilityStrategy,
-      retryDelayIntervalMillis: props?.retryDelayIntervalMillis,
-      responseDataReceivedTimeoutMillis:
-        props?.responseDataReceivedTimeoutMillis,
-    });
   }
 }
 
