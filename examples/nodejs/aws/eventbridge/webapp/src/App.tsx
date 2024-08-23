@@ -10,7 +10,7 @@ import CreateRecordForm from "./components/CreateRecordForm";
 import DescribeCache from "./components/DescribeCache";
 import Topic from "./components/Topic";
 import {cacheName, clearCurrentClient, Message, subscribeToTopic, topicName} from "./utils/momento-web";
-import {TopicItem, TopicSubscribe} from "@gomomento/sdk-web";
+import {TopicItem, TopicSubscribe, TopicSubscribeResponse} from "@gomomento/sdk-web";
 import {ArrowDown} from "./svgs/arrow-down";
 import DeleteRecordForm from "./components/DeleteRecordForm";
 import {ArrowLeft} from "./svgs/arrow-left";
@@ -69,11 +69,15 @@ const App = () => {
   useEffect(() => {
     clearCurrentClient();
     subscribeToTopic(onItem, onError).then((subscription) => {
-      if (subscription instanceof TopicSubscribe.Subscription) {
-        setIsSubscribedToTopic(true);
-      } else {
-        setIsSubscribedToTopic(false);
-        setDoesCacheExist(false);
+      switch (subscription?.type) {
+        case TopicSubscribeResponse.Subscription:
+          setIsSubscribedToTopic(true);
+          break;
+        case TopicSubscribeResponse.Error:
+        default:
+          setIsSubscribedToTopic(false);
+          setDoesCacheExist(false);
+          break;
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps

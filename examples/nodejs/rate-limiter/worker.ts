@@ -1,7 +1,7 @@
 import {
   CacheClient,
   Configurations,
-  CreateCache,
+  CreateCacheResponse,
   CredentialProvider,
 } from '@gomomento/sdk';
 import {DummyService} from './service';
@@ -39,7 +39,7 @@ async function main() {
   const cacheName = 'rate-limiter';
 
   const resp = await momento.createCache(cacheName);
-  if (resp instanceof CreateCache.Error) {
+  if (resp.type === CreateCacheResponse.Error) {
     throw new Error(`Failed to create cache ${cacheName}`);
   }
 
