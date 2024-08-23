@@ -1,4 +1,8 @@
-import {CacheClient, CacheIncrement, CacheUpdateTtl} from '@gomomento/sdk';
+import {
+  CacheClient,
+  CacheIncrementResponse,
+  CacheUpdateTtlResponse,
+} from '@gomomento/sdk';
 import {AbstractRateLimiter, RATE_LIMITER_TTL_MILLIS} from './rate-limiter';
 
 export class MomentoRateLimiter extends AbstractRateLimiter {
@@ -21,26 +25,35 @@ export class MomentoRateLimiter extends AbstractRateLimiter {
       currentMinuteKey
     );
 
-    if (resp instanceof CacheIncrement.Success) {
-      if (resp.value() <= this._limit) {
-        // if returned value is 1, we know this was the first request in this minute for the given user. So
-        // we set the TTL for this minute's key to 60 seconds now.
-        if (resp.value() === 1) {
-          const updateTTLResp = await this._client.updateTtl(
-            this._cacheName,
-            currentMinuteKey,
-            RATE_LIMITER_TTL_MILLIS
-          );
-          if (!(updateTTLResp instanceof CacheUpdateTtl.Set)) {
-            console.error(
-              `Failed to update TTL; this minute's user requests might be overcounted, key: ${currentMinuteKey}`
+    switch (resp.type) {
+      case CacheIncrementResponse.Success: {
+        if (resp.value() <= this._limit) {
+          // if returned value is 1, we know this was the first request in this minute for the given user. So
+          // we set the TTL for this minute's key to 60 seconds now.
+          if (resp.value() === 1) {
+            const updateTTLResp = await this._client.updateTtl(
+              this._cacheName,
+              currentMinuteKey,
+              RATE_LIMITER_TTL_MILLIS
             );
+            switch (updateTTLResp.type) {
+              case CacheUpdateTtlResponse.Set:
+                break;
+              case CacheUpdateTtlResponse.Miss:
+              case CacheUpdateTtlResponse.Error:
+                console.error(
+                  `Failed to update TTL; this minute's user requests might be overcounted, key: ${currentMinuteKey}`
+                );
+                break;
+            }
           }
+          return false;
         }
-        return false;
+        break;
       }
-    } else if (resp instanceof CacheIncrement.Error) {
-      throw new Error(resp.message());
+
+      case CacheIncrementResponse.Error:
+        break;
     }
 
     return true;

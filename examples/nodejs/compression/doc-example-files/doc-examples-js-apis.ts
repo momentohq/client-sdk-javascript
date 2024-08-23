@@ -11,8 +11,8 @@
 import {
   AutomaticDecompression,
   CacheClient,
-  CacheGet,
-  CacheSet,
+  CacheGetResponse,
+  CacheSetResponse,
   CompressionLevel,
   Configurations,
   CredentialProvider,
@@ -37,25 +37,30 @@ function example_API_ConfigurationWithCompressionNoAutomatic() {
 
 async function example_API_SetWithCompression(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.set(cacheName, 'test-key', 'test-value', {compress: true});
-  if (result instanceof CacheSet.Success) {
-    console.log("Key 'test-key' stored successfully");
-  } else if (result instanceof CacheSet.Error) {
-    throw new Error(
-      `An error occurred while attempting to store key 'test-key' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case CacheSetResponse.Success:
+      console.log("Key 'test-key' stored successfully");
+      break;
+    case CacheSetResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to store key 'test-key' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
 async function example_API_GetExplicitDecompress(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.get(cacheName, 'test-key', {decompress: true});
-  if (result instanceof CacheGet.Hit) {
-    console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
-  } else if (result instanceof CacheGet.Miss) {
-    console.log(`Key 'test-key' was not found in cache '${cacheName}'`);
-  } else if (result instanceof CacheGet.Error) {
-    throw new Error(
-      `An error occurred while attempting to get key 'test-key' from cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case CacheGetResponse.Miss:
+      console.log(`Key 'test-key' was not found in cache '${cacheName}'`);
+      break;
+    case CacheGetResponse.Hit:
+      console.log(`Retrieved value for key 'test-key': ${result.valueString()}`);
+      break;
+    case CacheGetResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to get key 'test-key' from cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 

@@ -1,11 +1,11 @@
 import {
   CacheClient,
-  CacheGet, CacheItemGetTtl,
+  CacheGet, CacheGetResponse, CacheItemGetTtl, CacheItemGetTtlResponse,
   Configurations,
   CredentialProvider,
   TopicClient,
   TopicItem,
-  TopicSubscribe,
+  TopicSubscribe, TopicSubscribeResponse,
 } from "@gomomento/sdk-web";
 import { toastError } from "./toast";
 
@@ -90,34 +90,37 @@ export async function getItemFromCache(
 ): Promise<string | undefined> {
   const cacheClient = await getWebCacheClient();
   const resp = await cacheClient.get(cacheName, key);
-  if (resp instanceof CacheGet.Hit) {
-    return resp.valueString();
-  } else if (resp instanceof CacheGet.Miss) {
-    console.log("cache miss");
-    return undefined;
-  } else {
-    clearCurrentClient();
-    toastError(`Error getting cache: ${(resp as CacheGet.Error).message()}`);
-    throw new Error(
-      `Error getting cache: ${(resp as CacheGet.Error).message()}`,
-    );
+  switch (resp.type) {
+    case CacheGetResponse.Miss:
+      console.log("cache miss");
+      return undefined;
+    case CacheGetResponse.Hit:
+      return resp.valueString();
+    case CacheGetResponse.Error:
+      clearCurrentClient();
+      toastError(`Error getting cache: ${(resp as CacheGet.Error).message()}`);
+      throw new Error(
+        `Error getting cache: ${(resp as CacheGet.Error).message()}`,
+      );
+      break;
   }
 }
 
 export async function getRemainingTtl(key: string): Promise<number | undefined> {
   const cacheClient = await getWebCacheClient();
   const resp = await cacheClient.itemGetTtl(cacheName, key);
-  if (resp instanceof CacheItemGetTtl.Hit) {
-    return resp.remainingTtlMillis();
-  } else if (resp instanceof CacheItemGetTtl.Miss) {
-    console.log("cache miss");
-    return undefined;
-  } else {
-    clearCurrentClient();
-    toastError(`Error getting cache: ${(resp as CacheItemGetTtl.Error).message()}`);
-    throw new Error(
-      `Error getting cache: ${(resp as CacheItemGetTtl.Error).message()}`,
-    );
+  switch (resp.type) {
+    case CacheItemGetTtlResponse.Hit:
+      return resp.remainingTtlMillis();
+    case CacheItemGetTtlResponse.Miss:
+      console.log("cache miss");
+      return undefined;
+    case CacheItemGetTtlResponse.Error:
+      clearCurrentClient();
+      toastError(`Error getting cache: ${(resp as CacheItemGetTtl.Error).message()}`);
+      throw new Error(
+        `Error getting cache: ${(resp as CacheItemGetTtl.Error).message()}`,
+      );
   }
 }
 
@@ -135,13 +138,15 @@ export async function subscribeToTopic(
     onItem: onItemCb,
     onError: onErrorCb,
   });
-  if (resp instanceof TopicSubscribe.Subscription) {
-    subscription = resp;
-    return subscription;
-  } else {
-    const error = resp as TopicSubscribe.Error;
-    if (error.message().includes("Cache not found")) {
-      return error;
+  switch(resp.type) {
+    case TopicSubscribeResponse.Subscription:
+      subscription = resp;
+      return subscription;
+    case TopicSubscribeResponse.Error: {
+      const error = resp as TopicSubscribe.Error;
+      if (error.message().includes("Cache not found")) {
+        return error;
+      }
     }
   }
 }

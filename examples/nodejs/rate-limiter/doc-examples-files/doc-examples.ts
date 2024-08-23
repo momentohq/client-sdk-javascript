@@ -1,9 +1,9 @@
 import {
   CacheClient,
-  CacheIncrement,
-  CacheUpdateTtl,
+  CacheIncrementResponse,
+  CacheUpdateTtlResponse,
   Configurations,
-  CreateCache,
+  CreateCacheResponse,
   CredentialProvider,
 } from '@gomomento/sdk';
 
@@ -40,26 +40,36 @@ export class MomentoRateLimiter {
       currentMinuteKey
     );
 
-    if (resp instanceof CacheIncrement.Success) {
-      if (resp.value() <= this._limit) {
-        // if returned value is 1, we know this was the first request in this minute for the given user. So
-        // we set the TTL for this minute's key to 60 seconds now.
-        if (resp.value() === 1) {
-          const updateTTLResp = await this._client.updateTtl(
-            this._cacheName,
-            currentMinuteKey,
-            RATE_LIMITER_TTL_MILLIS
-          );
-          if (!(updateTTLResp instanceof CacheUpdateTtl.Set)) {
-            console.error(
-              `Failed to update TTL; this minute's user requests might be overcounted, key: ${currentMinuteKey}`
+    switch (resp.type) {
+      case CacheIncrementResponse.Success: {
+        if (resp.value() <= this._limit) {
+          // if returned value is 1, we know this was the first request in this minute for the given user. So
+          // we set the TTL for this minute's key to 60 seconds now.
+          if (resp.value() === 1) {
+            const updateTTLResp = await this._client.updateTtl(
+              this._cacheName,
+              currentMinuteKey,
+              RATE_LIMITER_TTL_MILLIS
             );
+            switch (updateTTLResp.type) {
+              case CacheUpdateTtlResponse.Set:
+                break;
+              case CacheUpdateTtlResponse.Miss:
+              case CacheUpdateTtlResponse.Error: {
+                console.error(
+                  `Failed to update TTL; this minute's user requests might be overcounted, key: ${currentMinuteKey}`
+                );
+                break;
+              }
+            }
           }
+          return false;
         }
-        return false;
+        break;
       }
-    } else if (resp instanceof CacheIncrement.Error) {
-      throw new Error(resp.message());
+
+      case CacheIncrementResponse.Error:
+        throw new Error(resp.message());
     }
 
     return true;
@@ -78,10 +88,15 @@ async function main() {
   const cacheName = 'rate-limiter';
 
   const createCacheResp = await cacheClient.createCache(cacheName);
-  if (createCacheResp instanceof CreateCache.Error) {
-    throw new Error(createCacheResp.message());
-  } else if (createCacheResp instanceof CreateCache.AlreadyExists) {
-    console.log(`${cacheName} cache already exists`);
+  switch (createCacheResp.type) {
+    case CreateCacheResponse.AlreadyExists:
+      console.log(`${cacheName} cache already exists`);
+      break;
+    case CreateCacheResponse.Success:
+      console.log(`${cacheName} cache created`);
+      break;
+    case CreateCacheResponse.Error:
+      throw new Error(createCacheResp.message());
   }
 
   const momentoRateLimier = new MomentoRateLimiter(
