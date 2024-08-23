@@ -14,6 +14,7 @@ import {
   WithStore,
 } from '../common-int-test-utils';
 import {v4} from 'uuid';
+import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 
 export function runStorageServiceTests(
   storageClient: IStorageClient,
@@ -251,6 +252,22 @@ export function runStorageServiceTests(
           );
         }
       }
+    });
+    it('should successfully make two of the same requests after 5s retry timeout', async () => {
+      await WithStore(storageClient, testingStoreName, async () => {
+        const key = v4();
+        const getResponse1 = await storageClient.get(testingStoreName, key);
+        expectWithMessage(() => {
+          expect(getResponse1.type).toEqual(StorageGetResponse.NotFound);
+        }, `expected NotFound, received ${getResponse1.toString()}`);
+
+        await sleep(5000);
+
+        const getResponse2 = await storageClient.get(testingStoreName, key);
+        expectWithMessage(() => {
+          expect(getResponse2.type).toEqual(StorageGetResponse.NotFound);
+        }, `expected NotFound, received ${getResponse2.toString()}`);
+      });
     });
   });
 }

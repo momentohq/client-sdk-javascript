@@ -51,6 +51,7 @@ class RetryUntilTimeoutInterceptor {
   private readonly responseDataReceivedTimeoutMs: number;
   private readonly overallRequestTimeoutMs: number;
   private overallDeadline?: Date;
+  private previousRpc?: string;
 
   constructor(
     loggerFactory: MomentoLoggerFactory,
@@ -64,19 +65,14 @@ class RetryUntilTimeoutInterceptor {
 
   public createTimeoutInterceptor(): Interceptor {
     return (options, nextCall) => {
-      // Replace default timeout with the desired overall timeout
-      // on the first time through and set the first incremental timeout
-      if (this.overallDeadline === undefined) {
-        this.overallDeadline = createNewDeadline(this.overallRequestTimeoutMs);
-        options.deadline = createNewDeadline(
-          this.responseDataReceivedTimeoutMs
-        );
-        this.logger.debug(`new deadline set to ${options.deadline.valueOf()}`);
-        return new InterceptingCall(nextCall(options));
-      }
+      this.logger.debug(
+        `Previous RPC: ${this.previousRpc ?? 'none'} | Incoming RPC: ${
+          options.method_definition.path
+        }`
+      );
 
       // If the received deadline is equal to the overall deadline, we've
-      // maxed out the retries and should cancel the request.
+      // maxed out the retries on a particular request and should cancel retries.
       const receivedDeadline = options.deadline;
       if (
         receivedDeadline !== undefined &&
@@ -87,6 +83,7 @@ class RetryUntilTimeoutInterceptor {
         );
         // reset overall deadline for next request
         this.overallDeadline = undefined;
+        this.previousRpc = undefined;
         const call = new InterceptingCall(nextCall(options));
         call.cancelWithStatus(
           status.CANCELLED,
@@ -95,17 +92,43 @@ class RetryUntilTimeoutInterceptor {
         return call;
       }
 
+      // Reset overall and incremental deadlines in these cases:
+      // Case 1: overallDeadline is undefined (first request or previous was canceled)
+      // Case 2: different RPC path requested through same client
+      // Case 3: new request through same client after original retry deadline has passed
+      // (Note: Case 3 check must occur after the receivedDeadline == options.deadline check
+      // or else the request is always retried).
+      if (
+        this.overallDeadline === undefined ||
+        this.previousRpc !== options.method_definition.path ||
+        (this.overallDeadline !== undefined &&
+          Date.now().valueOf() > this.overallDeadline.valueOf())
+      ) {
+        this.previousRpc = options.method_definition.path;
+        this.overallDeadline = createNewDeadline(this.overallRequestTimeoutMs);
+        options.deadline = createNewDeadline(
+          this.responseDataReceivedTimeoutMs
+        );
+        this.logger.debug(
+          `Overall deadline set to ${this.overallDeadline.valueOf()}; incremental deadline set to ${options.deadline.valueOf()}`
+        );
+        return new InterceptingCall(nextCall(options));
+      }
+
       // Otherwise, we've hit an incremental timeout and must set the next deadline.
       const newDeadline = createNewDeadline(this.responseDataReceivedTimeoutMs);
       if (newDeadline > this.overallDeadline) {
         this.logger.debug(
-          `new deadline would exceed overall deadline, setting to overall deadline ${this.overallDeadline.valueOf()}`
+          `New incremental deadline ${newDeadline.valueOf()} would exceed overall deadline, setting to overall deadline ${this.overallDeadline.valueOf()}`
         );
         options.deadline = this.overallDeadline;
       } else {
-        this.logger.debug(`new deadline set to ${newDeadline.valueOf()}`);
+        this.logger.debug(
+          `Incremental deadline set to ${newDeadline.valueOf()}`
+        );
         options.deadline = newDeadline;
       }
+      this.previousRpc = options.method_definition.path;
 
       return new InterceptingCall(nextCall(options));
     };
