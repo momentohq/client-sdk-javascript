@@ -214,6 +214,11 @@ export {
   FixedCountRetryStrategyProps,
 } from './config/retry/fixed-count-retry-strategy';
 
+export {
+  FixedTimeoutRetryStrategy,
+  FixedTimeoutRetryStrategyProps,
+} from './config/retry/fixed-timeout-retry-strategy';
+
 export {DefaultEligibilityStrategy} from './config/retry/default-eligibility-strategy';
 
 export {
