@@ -70,6 +70,6 @@ export class FixedTimeoutRetryStrategyFactory {
   }
 }
 
-export function addJitter(whenToRetry: number): number {
+function addJitter(whenToRetry: number): number {
   return (0.2 * Math.random() + 0.9) * whenToRetry;
 }
