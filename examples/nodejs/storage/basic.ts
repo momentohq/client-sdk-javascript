@@ -1,26 +1,15 @@
 import {
   CreateStoreResponse,
   CredentialProvider,
-  DefaultMomentoLoggerFactory,
-  DefaultMomentoLoggerLevel,
   PreviewStorageClient,
   StorageConfigurations,
   StorageGetResponse,
   StoragePutResponse,
 } from '@gomomento/sdk';
-import {FixedTimeoutRetryStrategy} from '@gomomento/sdk/dist/src/config/retry/fixed-timeout-retry-strategy';
 
 async function main() {
-  const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.INFO);
-
-  const retryStrategy = new FixedTimeoutRetryStrategy({
-    loggerFactory: loggerFactory,
-    responseDataReceivedTimeoutMillis: 100,
-    retryDelayIntervalMillis: 1000,
-  });
-
   const storageClient = new PreviewStorageClient({
-    configuration: StorageConfigurations.Laptop.latest(loggerFactory).withRetryStrategy(retryStrategy),
+    configuration: StorageConfigurations.Laptop.latest(),
     credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY').withMomentoLocal(),
   });
 
