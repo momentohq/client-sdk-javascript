@@ -1,6 +1,13 @@
 import {APIGatewayProxyEvent, APIGatewayProxyEventHeaders, APIGatewayProxyResult} from 'aws-lambda';
 import {GetSecretValueCommand, SecretsManagerClient} from '@aws-sdk/client-secrets-manager';
-import {AllTopics, AuthClient, CredentialProvider, GenerateDisposableToken, TokenScopes} from '@gomomento/sdk';
+import {
+  AllTopics,
+  AuthClient,
+  CredentialProvider,
+  GenerateDisposableToken,
+  GenerateDisposableTokenResponse,
+  TokenScopes,
+} from '@gomomento/sdk';
 import {tokenPermissions, tokenExpiresIn, authenticationMethod, AuthenticationMethod} from './config';
 
 const _secretsClient = new SecretsManagerClient({});
@@ -64,13 +71,14 @@ async function vendDisposableToken(
     });
   }
 
-  if (generateTokenResponse instanceof GenerateDisposableToken.Success) {
-    return {
-      authToken: generateTokenResponse.authToken,
-      expiresAt: generateTokenResponse.expiresAt.epoch(),
-    };
-  } else {
-    throw new Error(`An error occurred while attempting to generate the token: ${generateTokenResponse.toString()}`);
+  switch (generateTokenResponse.type) {
+    case GenerateDisposableTokenResponse.Success:
+      return {
+        authToken: generateTokenResponse.authToken,
+        expiresAt: generateTokenResponse.expiresAt.epoch(),
+      };
+    case GenerateDisposableTokenResponse.Error:
+      throw new Error(`An error occurred while attempting to generate the token: ${generateTokenResponse.toString()}`);
   }
 }
 

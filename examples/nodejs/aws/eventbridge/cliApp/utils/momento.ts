@@ -3,13 +3,14 @@ config();
 
 import {
   CacheClient,
-  CacheGet,
+  CacheGetResponse,
   Configurations,
   StringMomentoTokenProvider,
   TopicClient,
   TopicConfigurations,
   TopicItem,
   TopicSubscribe,
+  TopicSubscribeResponse,
 } from '@gomomento/sdk';
 import {validateEnvVariables} from './helper';
 
@@ -48,10 +49,13 @@ export async function subscribeToTopic() {
     onItem: handleItem,
     onError: handleError,
   });
-  if (subscription instanceof TopicSubscribe.Subscription) {
-    console.log('Subscribed to topic');
-  } else {
-    console.log(`Error subscribing to topic: ${subscription.toString()}`);
+  switch (subscription.type) {
+    case TopicSubscribeResponse.Error:
+      console.log(`Error subscribing to topic: ${subscription.toString()}`);
+      break;
+    case TopicSubscribeResponse.Subscription:
+      console.log('Subscribed to topic');
+      break;
   }
 }
 
@@ -65,11 +69,12 @@ export function unsubscribeFromTopic() {
 export async function getItemFromCache(key: string) {
   const cacheClient = await getCacheClient();
   const getItemResponse = await cacheClient.get(cacheName, key);
-  if (getItemResponse instanceof CacheGet.Hit) {
-    return getItemResponse.valueString();
-  } else if (getItemResponse instanceof CacheGet.Miss) {
-    return 'Item not found in cache';
-  } else {
-    return 'Error getting item from cache';
+  switch (getItemResponse.type) {
+    case CacheGetResponse.Miss:
+      return 'Item not found in cache';
+    case CacheGetResponse.Hit:
+      return getItemResponse.valueString();
+    case CacheGetResponse.Error:
+      return 'Error getting item from cache';
   }
 }

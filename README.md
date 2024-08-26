@@ -32,7 +32,7 @@ is best suited for a particular environment:
 ## Usage
 
 ```javascript
-import {CacheGet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
+import {CacheClient, CacheGetResponse, Configurations, CredentialProvider} from '@gomomento/sdk';
 
 async function main() {
   const cacheClient = await CacheClient.create({
@@ -44,7 +44,7 @@ async function main() {
   await cacheClient.createCache('cache');
   await cacheClient.set('cache', 'foo', 'FOO');
   const getResponse = await cacheClient.get('cache', 'foo');
-  if (getResponse instanceof CacheGet.Hit) {
+  if (getResponse.type === CacheGetResponse.Hit) {
     console.log(`Got value: ${getResponse.valueString()}`);
   }
 }

@@ -1,5 +1,5 @@
 import {GetSecretValueCommand, SecretsManagerClient} from '@aws-sdk/client-secrets-manager';
-import {CacheClient, CacheGet, Configurations, CredentialProvider} from '@gomomento/sdk';
+import {CacheClient, CacheGetResponse, Configurations, CredentialProvider} from '@gomomento/sdk';
 
 const CACHE_NAME = 'cache';
 const KEY = 'key';
@@ -13,12 +13,16 @@ export const handler = async () => {
     const cacheClient = await getCacheClient();
     for (let i = 0; i < 100; i++) {
       const response = await cacheClient.get(CACHE_NAME, KEY);
-      if (response instanceof CacheGet.Hit) {
-        console.log(`response ${i}: Hit!`);
-      } else if (response instanceof CacheGet.Miss) {
-        console.log(`response ${i}: Miss!`);
-      } else {
-        console.log(`response ${i}: Error!`);
+      switch (response.type) {
+        case CacheGetResponse.Miss:
+          console.log(`response ${i}: Miss!`);
+          break;
+        case CacheGetResponse.Hit:
+          console.log(`response ${i}: Hit!`);
+          break;
+        case CacheGetResponse.Error:
+          console.log(`response ${i}: Error!`);
+          break;
       }
 
       await new Promise(resolve => setTimeout(resolve, 100));

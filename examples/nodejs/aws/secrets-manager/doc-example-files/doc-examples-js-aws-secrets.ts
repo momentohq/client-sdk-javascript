@@ -1,4 +1,11 @@
-import {CacheClient, Configurations, CredentialProvider, CacheGet, CacheSet, CreateCache} from '@gomomento/sdk';
+import {
+  CacheClient,
+  Configurations,
+  CredentialProvider,
+  CreateCacheResponse,
+  CacheSetResponse,
+  CacheGetResponse,
+} from '@gomomento/sdk';
 
 import {SecretsManagerClient, GetSecretValueCommand} from '@aws-sdk/client-secrets-manager';
 
@@ -41,36 +48,46 @@ async function example_API_retrieveApiKeyFromSecretsManager(
 // A function to create a cache
 async function createCache(client: CacheClient, cacheName: string) {
   const result = await client.createCache(cacheName);
-  if (result instanceof CreateCache.Success) {
-    console.log(`Cache '${cacheName}' created`);
-  } else if (result instanceof CreateCache.AlreadyExists) {
-    console.log(`Cache '${cacheName}' already exists`);
-  } else if (result instanceof CreateCache.Error) {
-    throw new Error(
-      `An error occurred while attempting to create cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case CreateCacheResponse.AlreadyExists:
+      console.log(`Cache '${cacheName}' already exists`);
+      break;
+    case CreateCacheResponse.Success:
+      console.log(`Cache '${cacheName}' created`);
+      break;
+    case CreateCacheResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to create cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
 // A function to write to the cache
 async function writeToCache(client: CacheClient, cacheName: string, key: string, data: string) {
   const setResponse = await client.set(cacheName, key, data);
-  if (setResponse instanceof CacheSet.Success) {
-    console.log('Key stored successfully!');
-  } else if (setResponse instanceof CacheSet.Error) {
-    console.log('Error setting key: ', setResponse.toString());
+  switch (setResponse.type) {
+    case CacheSetResponse.Success:
+      console.log('Key stored successfully!');
+      break;
+    case CacheSetResponse.Error:
+      console.log('Error setting key: ', setResponse.toString());
+      break;
   }
 }
 
 // A function to read scalar items from the cache
 async function readFromCache(client: CacheClient, cacheName: string, key: string) {
   const fileResponse = await client.get(cacheName, key);
-  if (fileResponse instanceof CacheGet.Hit) {
-    console.log('Cache hit: ', fileResponse.valueString());
-  } else if (fileResponse instanceof CacheGet.Miss) {
-    console.log('Cache miss');
-  } else if (fileResponse instanceof CacheGet.Error) {
-    console.log('Error: ', fileResponse.message());
+  switch (fileResponse.type) {
+    case CacheGetResponse.Miss:
+      console.log('Cache miss');
+      break;
+    case CacheGetResponse.Hit:
+      console.log('Cache hit: ', fileResponse.valueString());
+      break;
+    case CacheGetResponse.Error:
+      console.log('Error: ', fileResponse.message());
+      break;
   }
 }
 

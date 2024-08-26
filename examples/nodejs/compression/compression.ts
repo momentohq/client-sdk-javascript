@@ -1,10 +1,10 @@
 import {
   CacheClient,
-  CacheGet,
-  CacheSet,
+  CacheGetResponse,
+  CacheSetResponse,
   CompressionLevel,
   Configurations,
-  CreateCache,
+  CreateCacheResponse,
   CredentialProvider,
 } from '@gomomento/sdk';
 import {CompressorFactory} from '@gomomento/sdk-nodejs-compression';
@@ -29,10 +29,16 @@ async function main() {
   // create cache
   const cacheName = 'cache';
   const createResponse = await cacheClient.createCache(cacheName);
-  if (createResponse instanceof CreateCache.Success) {
-    console.log('Cache created successfully!');
-  } else {
-    console.log(`Error creating cache: ${createResponse.toString()}`);
+  switch (createResponse.type) {
+    case CreateCacheResponse.AlreadyExists:
+      console.log('Cache already exists!');
+      break;
+    case CreateCacheResponse.Success:
+      console.log('Cache created successfully!');
+      break;
+    case CreateCacheResponse.Error:
+      console.log(`Error creating cache: ${createResponse.toString()}`);
+      break;
   }
 
   // This string is long and repetitive enough to be compressible.
@@ -42,32 +48,43 @@ async function main() {
   const setResponse = await cacheClient.set(cacheName, 'my-key', compressibleValue, {
     compress: true,
   });
-  if (setResponse instanceof CacheSet.Success) {
-    console.log('Key stored successfully with compression!');
-  } else {
-    console.log(`Error setting key: ${setResponse.toString()}`);
+  switch (setResponse.type) {
+    case CacheSetResponse.Success:
+      console.log('Key stored successfully with compression!');
+      break;
+    case CacheSetResponse.Error:
+      console.log(`Error setting key: ${setResponse.toString()}`);
+      break;
   }
 
   // get the value without decompressing
   const noDecompressResponse = await cacheClient.get(cacheName, 'my-key', {
     decompress: false,
   });
-  if (noDecompressResponse instanceof CacheGet.Hit) {
-    console.log(`cache hit, compressed value: ${noDecompressResponse.valueString()}`);
-  } else if (noDecompressResponse instanceof CacheGet.Miss) {
-    console.log('cache miss');
-  } else if (noDecompressResponse instanceof CacheGet.Error) {
-    console.log(`Error: ${noDecompressResponse.message()}`);
+  switch (noDecompressResponse.type) {
+    case CacheGetResponse.Miss:
+      console.log('cache miss');
+      break;
+    case CacheGetResponse.Hit:
+      console.log(`cache hit, compressed value: ${noDecompressResponse.valueString()}`);
+      break;
+    case CacheGetResponse.Error:
+      console.log(`Error: ${noDecompressResponse.message()}`);
+      break;
   }
 
   // get decompressed value
   const getResponse = await cacheClient.get(cacheName, 'my-key');
-  if (getResponse instanceof CacheGet.Hit) {
-    console.log(`cache hit, decompressed value: ${getResponse.valueString()}`);
-  } else if (getResponse instanceof CacheGet.Miss) {
-    console.log('cache miss');
-  } else if (getResponse instanceof CacheGet.Error) {
-    console.log(`Error: ${getResponse.message()}`);
+  switch (getResponse.type) {
+    case CacheGetResponse.Miss:
+      console.log('cache miss');
+      break;
+    case CacheGetResponse.Hit:
+      console.log(`cache hit, decompressed value: ${getResponse.valueString()}`);
+      break;
+    case CacheGetResponse.Error:
+      console.log(`Error: ${getResponse.message()}`);
+      break;
   }
 }
 

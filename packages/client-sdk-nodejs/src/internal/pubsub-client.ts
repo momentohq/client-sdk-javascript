@@ -10,6 +10,7 @@ import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {
   CredentialProvider,
   StaticGrpcConfiguration,
+  TopicDiscontinuity,
   TopicGrpcConfiguration,
   TopicItem,
   TopicPublish,
@@ -206,23 +207,23 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
       }
       options.firstMessage = false;
 
-      if (resp?.item) {
-        options.subscriptionState.lastTopicSequenceNumber =
-          resp.item.topic_sequence_number;
+      if (resp.item) {
+        const sequenceNumber = resp.item.topic_sequence_number;
+        options.subscriptionState.lastTopicSequenceNumber = sequenceNumber;
         this.getLogger().trace(
           'Received an item on subscription stream; topic: %s; sequence number: %s',
           truncateString(options.topicName),
-          resp.item.topic_sequence_number
+          sequenceNumber
         );
         if (resp.item.value.text) {
           options.onItem(
-            new TopicItem(resp.item.value.text, {
+            new TopicItem(resp.item.value.text, sequenceNumber, {
               tokenId: resp.item.publisher_id,
             })
           );
         } else if (resp.item.value.binary) {
           options.onItem(
-            new TopicItem(resp.item.value.binary, {
+            new TopicItem(resp.item.value.binary, sequenceNumber, {
               tokenId: resp.item.publisher_id,
             })
           );
@@ -238,15 +239,21 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
             options.subscription
           );
         }
-      } else if (resp?.heartbeat) {
+      } else if (resp.heartbeat) {
         this.getLogger().trace(
           'Received heartbeat from subscription stream; topic: %s',
           truncateString(options.topicName)
         );
-      } else if (resp?.discontinuity) {
+      } else if (resp.discontinuity) {
         this.getLogger().trace(
           'Received discontinuity from subscription stream; topic: %s',
           truncateString(options.topicName)
+        );
+        options.onDiscontinuity(
+          new TopicDiscontinuity(
+            resp.discontinuity.last_topic_sequence,
+            resp.discontinuity.new_topic_sequence
+          )
         );
       } else {
         this.getLogger().error(

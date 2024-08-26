@@ -78,6 +78,7 @@ import * as CacheSetBatch from '@gomomento/sdk-core/dist/src/messages/responses/
 import * as TopicPublish from '@gomomento/sdk-core/dist/src/messages/responses/topic-publish';
 import * as TopicSubscribe from '@gomomento/sdk-core/dist/src/messages/responses/topic-subscribe';
 import {TopicItem} from '@gomomento/sdk-core/dist/src/messages/responses/topic-item';
+import {TopicDiscontinuity} from '@gomomento/sdk-core/dist/src/messages/responses/topic-discontinuity';
 
 // Storage Response Types
 import {
@@ -382,6 +383,7 @@ export {
   TopicClientConfiguration,
   TopicClient,
   TopicClientProps,
+  TopicDiscontinuity,
   TopicItem,
   TopicPublish,
   TopicSubscribe,

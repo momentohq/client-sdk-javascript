@@ -1,4 +1,4 @@
-import {CacheClient, CacheGet, CacheSet} from '@gomomento/sdk';
+import {CacheClient, CacheGet, CacheGetResponse, CacheSet, CacheSetResponse} from '@gomomento/sdk';
 import { MongoClient } from "mongodb";
 
 interface WrapperArgs {
@@ -17,13 +17,16 @@ export class ReadAsideWrapper {
 
     public async getItem(keyToGet: string): Promise<string> {
         const getResponse = await this.client.get(this.cacheName, keyToGet);
-        if (getResponse instanceof CacheGet.Hit) {
-            return getResponse.valueString();
-        } else if (getResponse instanceof CacheGet.Miss) {
+        switch (getResponse.type) {
+          case CacheGetResponse.Miss:
             console.log(`Cache MISS. Fetching data from DB instead. key=${keyToGet}`)
-        } else if (getResponse instanceof CacheGet.Error) {
+            break;
+          case CacheGetResponse.Hit:
+            return getResponse.valueString();
+          case CacheGetResponse.Error:
             console.error(`Error fetching from Cache. Falling back to DB. key=${keyToGet} err=${getResponse.message()}`);
             // We are not throwing an error here as we are going to attempt next to get the item from MongoDB.
+            break;
         }
 
         const resp = await this.MongoDBHandler(keyToGet, this.cacheName);
@@ -31,12 +34,14 @@ export class ReadAsideWrapper {
         if (resp !== 'null') {
             const setRsp = await this.client.set(this.cacheName, keyToGet, resp);
             // If the value is inserted into the Momento Cache, return success.
-            if (setRsp instanceof CacheSet.Success) {
-                console.log(`Retrieved data from MongoDB and inserted into Momento. key=${keyToGet}`);
-            } else if (setRsp instanceof CacheSet.Error) {
-                console.error(`Retrieved data from MongoDB but failed to insert into Momento. key=${keyToGet} err=${setRsp.message()}`);
-                return resp;
-            }
+          switch (setRsp.type) {
+            case CacheSetResponse.Success:
+              console.log(`Retrieved data from MongoDB and inserted into Momento. key=${keyToGet}`);
+              break;
+            case CacheSetResponse.Error:
+              console.error(`Retrieved data from MongoDB but failed to insert into Momento. key=${keyToGet} err=${setRsp.message()}`);
+              return resp;
+          }
         } else {
             const err: string = "Item not in Momento cache or MongoDB";
             console.error(err);

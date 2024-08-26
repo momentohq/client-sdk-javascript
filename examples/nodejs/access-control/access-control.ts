@@ -1,88 +1,99 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import {
-  CacheGet,
-  CreateCache,
-  CacheSet,
   CacheClient,
   Configurations,
   CredentialProvider,
-  DeleteCache,
   AuthClient,
   ExpiresIn,
-  GenerateApiKey,
-  TokenScope,
-  TokenScopes,
+  PermissionScope,
+  PermissionScopes,
   CacheRole,
   TopicRole,
   AllCaches,
   AllTopics,
+  CreateCacheResponse,
+  DeleteCacheResponse,
+  CacheSetResponse,
+  CacheGetResponse,
+  GenerateApiKeyResponse,
 } from '@gomomento/sdk';
 import {uuid} from 'uuidv4';
 
 async function createCache(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.createCache(cacheName);
-  if (result instanceof CreateCache.Success) {
-    console.log(`Cache ${cacheName} created`);
-  } else if (result instanceof CreateCache.AlreadyExists) {
-    console.log(`Cache ${cacheName} already exists`);
-  } else if (result instanceof CreateCache.Error) {
-    throw new Error(
-      `An error occurred while attempting to create cache ${cacheName}: ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case CreateCacheResponse.AlreadyExists:
+      console.log(`Cache ${cacheName} already exists`);
+      break;
+    case CreateCacheResponse.Success:
+      console.log(`Cache ${cacheName} created`);
+      break;
+    case CreateCacheResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to create cache ${cacheName}: ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
 async function deleteCache(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.deleteCache(cacheName);
-  if (result instanceof DeleteCache.Success) {
-    console.log(`Cache ${cacheName} deleted`);
-  } else if (result instanceof DeleteCache.Error) {
-    throw new Error(
-      `An error occurred while attempting to delete cache ${cacheName}: ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case DeleteCacheResponse.Success:
+      console.log(`Cache ${cacheName} deleted`);
+      break;
+    case DeleteCacheResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to delete cache ${cacheName}: ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
 async function set(cacheClient: CacheClient, cacheName: string, key: string, value: string) {
   const result = await cacheClient.set(cacheName, key, value);
-  if (result instanceof CacheSet.Success) {
-    console.log(`Key ${key} stored successfully in ${cacheName}`);
-  } else if (result instanceof CacheSet.Error) {
-    throw new Error(
-      `An error occurred while attempting to store key ${key} in cache ${cacheName}: ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case CacheSetResponse.Success:
+      console.log(`Key ${key} stored successfully in ${cacheName}`);
+      break;
+    case CacheSetResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to store key ${key} in cache ${cacheName}: ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
 async function get(cacheClient: CacheClient, cacheName: string, key: string) {
   const result = await cacheClient.get(cacheName, key);
-  if (result instanceof CacheGet.Hit) {
-    console.log(`Retrieved value for key ${key} in cache ${cacheName}: ${result.valueString()}`);
-  } else if (result instanceof CacheGet.Miss) {
-    console.log(`Key ${key} was not found in cache ${cacheName}`);
-  } else if (result instanceof CacheGet.Error) {
-    throw new Error(
-      `An error occurred while attempting to get key ${key} from cache ${cacheName}: ${result.errorCode()}: ${result.toString()}`
-    );
+  switch (result.type) {
+    case CacheGetResponse.Miss:
+      console.log(`Key ${key} was not found in cache ${cacheName}`);
+      break;
+    case CacheGetResponse.Hit:
+      console.log(`Retrieved value for key ${key} in cache ${cacheName}: ${result.valueString()}`);
+      break;
+    case CacheGetResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to get key ${key} from cache ${cacheName}: ${result.errorCode()}: ${result.toString()}`
+      );
   }
 }
 
 async function generateApiKey(
   authClient: AuthClient,
-  scope: TokenScope,
+  scope: PermissionScope,
   durationSeconds: number
 ): Promise<[string, string]> {
   const generateTokenResponse = await authClient.generateApiKey(scope, ExpiresIn.seconds(durationSeconds));
-  if (generateTokenResponse instanceof GenerateApiKey.Success) {
-    console.log(`Generated an API key with ${scope.toString()} scope at time ${Date.now() / 1000}!`);
-    console.log('Logging only a substring of the tokens, because logging security credentials is not advisable:');
-    console.log(`API key starts with: ${generateTokenResponse.apiKey.substring(0, 10)}`);
-    console.log(`Refresh token starts with: ${generateTokenResponse.refreshToken.substring(0, 10)}`);
-    console.log(`Expires At: ${generateTokenResponse.expiresAt.epoch()}`);
-    return [generateTokenResponse.apiKey, generateTokenResponse.refreshToken];
-  } else {
-    throw new Error(`Failed to generate API key: ${generateTokenResponse.toString()}`);
+  switch (generateTokenResponse.type) {
+    case GenerateApiKeyResponse.Success:
+      console.log(`Generated an API key with ${scope.toString()} scope at time ${Date.now() / 1000}!`);
+      console.log('Logging only a substring of the tokens, because logging security credentials is not advisable:');
+      console.log(`API key starts with: ${generateTokenResponse.apiKey.substring(0, 10)}`);
+      console.log(`Refresh token starts with: ${generateTokenResponse.refreshToken.substring(0, 10)}`);
+      console.log(`Expires At: ${generateTokenResponse.expiresAt.epoch()}`);
+      return [generateTokenResponse.apiKey, generateTokenResponse.refreshToken];
+    case GenerateApiKeyResponse.Error:
+      throw new Error(`Failed to generate API key: ${generateTokenResponse.toString()}`);
   }
 }
 
@@ -108,7 +119,7 @@ async function main() {
     // Create a token valid for 600 seconds that can only read a specific cache 'open-door'
     const [scopedToken, scopedRefreshToken] = await generateApiKey(
       mainAuthClient,
-      TokenScopes.cacheReadOnly(CACHE_OPEN_DOOR),
+      PermissionScopes.cacheReadOnly(CACHE_OPEN_DOOR),
       tokenValidForSeconds
     );
     const scopedTokenCacheClient = await CacheClient.create({

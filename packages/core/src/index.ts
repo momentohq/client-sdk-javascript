@@ -68,6 +68,7 @@ import * as CacheGetBatch from './messages/responses/cache-batch-get';
 import * as TopicPublish from './messages/responses/topic-publish';
 import * as TopicSubscribe from './messages/responses/topic-subscribe';
 import {TopicItem} from './messages/responses/topic-item';
+import {TopicDiscontinuity} from './messages/responses/topic-discontinuity';
 
 // AuthClient Response Types
 import * as GenerateApiKey from './messages/responses/generate-api-key';
@@ -291,6 +292,7 @@ export {
   TopicPublish,
   TopicSubscribe,
   TopicItem,
+  TopicDiscontinuity,
   SubscribeCallOptions,
   // AuthClient Response Types
   GenerateApiKey,
