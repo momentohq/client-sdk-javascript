@@ -14,9 +14,8 @@ import {
 } from '@gomomento/sdk-core';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {IWebhookClient} from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/IWebhookClient';
-import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
+import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
 import {version} from '../../package.json';
-import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   validateCacheName,
@@ -24,6 +23,7 @@ import {
   validateWebhookName,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {TopicClientPropsWithConfiguration} from './topic-client-props-with-config';
+import {RetryInterceptor} from './grpc/retry-interceptor';
 
 export class WebhookClient implements IWebhookClient {
   private readonly webhookClient: grpcWebhook.WebhookClient;
@@ -48,8 +48,11 @@ export class WebhookClient implements IWebhookClient {
       new Header('runtime-version', `nodejs:${process.versions.node}`),
     ];
     this.unaryInterceptors = [
-      new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
-      ClientTimeoutInterceptor(WebhookClient.DEFAULT_REQUEST_TIMEOUT_MS),
+      HeaderInterceptor.createHeadersInterceptor(headers),
+      RetryInterceptor.createRetryInterceptor({
+        loggerFactory: props.configuration.getLoggerFactory(),
+        overallRequestTimeoutMs: WebhookClient.DEFAULT_REQUEST_TIMEOUT_MS,
+      }),
     ];
     this.webhookClient = new webhook.webhook.WebhookClient(
       props.credentialProvider.getControlEndpoint(),

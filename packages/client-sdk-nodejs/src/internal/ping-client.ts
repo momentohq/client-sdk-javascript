@@ -1,13 +1,13 @@
 import {ping} from '@gomomento/generated-types';
 import grpcPing = ping.cache_client;
-import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
-import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
+import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {Configuration} from '../config/configuration';
 import {CredentialProvider, MomentoLogger} from '../';
+import {RetryInterceptor} from './grpc/retry-interceptor';
 
 export interface PingClientProps {
   configuration: Configuration;
@@ -31,8 +31,11 @@ export class InternalNodeGrpcPingClient {
       new Header('runtime-version', `nodejs:${process.versions.node}`),
     ];
     this.interceptors = [
-      new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
-      ClientTimeoutInterceptor(InternalNodeGrpcPingClient.REQUEST_TIMEOUT_MS),
+      HeaderInterceptor.createHeadersInterceptor(headers),
+      RetryInterceptor.createRetryInterceptor({
+        loggerFactory: props.configuration.getLoggerFactory(),
+        overallRequestTimeoutMs: InternalNodeGrpcPingClient.REQUEST_TIMEOUT_MS,
+      }),
     ];
     this.logger.debug(
       `Creating ping client using endpoint: '${props.endpoint}`

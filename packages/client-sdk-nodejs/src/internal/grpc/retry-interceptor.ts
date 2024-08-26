@@ -14,37 +14,40 @@ import {
 } from '@grpc/grpc-js';
 import {RetryStrategy} from '../../config/retry/retry-strategy';
 import {Status} from '@grpc/grpc-js/build/src/constants';
-import {MomentoLoggerFactory, MomentoLogger} from '../../';
+import {MomentoLoggerFactory} from '../../';
+import {NoRetryStrategy} from '../../config/retry/no-retry-strategy';
 
-export function createRetryInterceptorIfEnabled(
-  loggerFactory: MomentoLoggerFactory,
-  retryStrategy: RetryStrategy
-): Array<Interceptor> {
-  return [
-    new RetryInterceptor(loggerFactory, retryStrategy).createRetryInterceptor(),
-  ];
+export interface RetryInterceptorProps {
+  loggerFactory: MomentoLoggerFactory;
+  overallRequestTimeoutMs: number;
+  retryStrategy?: RetryStrategy;
 }
 
 export class RetryInterceptor {
-  private readonly logger: MomentoLogger;
-  private readonly retryStrategy: RetryStrategy;
-
-  constructor(
-    loggerFactory: MomentoLoggerFactory,
-    retryStrategy: RetryStrategy
-  ) {
-    this.logger = loggerFactory.getLogger(this);
-    this.retryStrategy = retryStrategy;
-  }
-
   // TODO: We need to send retry count information to the server so that we
   // will have some visibility into how often this is happening to customers:
   // https://github.com/momentohq/client-sdk-nodejs/issues/80
-  public createRetryInterceptor(): Interceptor {
-    const logger = this.logger;
-    const retryStrategy = this.retryStrategy;
+  public static createRetryInterceptor(
+    props: RetryInterceptorProps
+  ): Interceptor {
+    const logger = props.loggerFactory.getLogger(
+      RetryInterceptor.constructor.name
+    );
+
+    const retryStrategy =
+      props.retryStrategy ??
+      new NoRetryStrategy({loggerFactory: props.loggerFactory});
 
     return (options, nextCall) => {
+      console.log('THE MAIN RETRY INTERCEPTOR FN IS CALLED');
+      if (!options.deadline) {
+        const deadline = new Date(Date.now());
+        deadline.setMilliseconds(
+          deadline.getMilliseconds() + props.overallRequestTimeoutMs
+        );
+        options.deadline = deadline;
+      }
+
       let savedMetadata: Metadata;
       let savedSendMessage: unknown;
       let savedReceiveMessage: unknown;
@@ -67,7 +70,16 @@ export class RetryInterceptor {
               next: (arg0: any) => void
             ) {
               let attempts = 0;
+              const originalDeadline = options.deadline;
+              console.log(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                `RETRY INTERCEPTOR: ORIGINAL DEADLINE: ${originalDeadline}`
+              );
               const retry = function (message: unknown, metadata: Metadata) {
+                console.log(
+                  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                  `RECURSIVE RETRY; ORIGINAL DEADLINE: ${originalDeadline}, NEW DEADLINE: ${options.deadline}`
+                );
                 const newCall = nextCall(options);
                 newCall.start(metadata, {
                   onReceiveMessage: function (message) {

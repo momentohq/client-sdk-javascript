@@ -1,7 +1,6 @@
 import {control} from '@gomomento/generated-types';
 import grpcControl = control.control_client;
-import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
-import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
+import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {
@@ -23,6 +22,7 @@ import {
   CacheLimits,
   TopicLimits,
 } from '@gomomento/sdk-core/dist/src/messages/cache-info';
+import {RetryInterceptor} from './grpc/retry-interceptor';
 
 export interface ControlClientProps {
   configuration: Configuration;
@@ -50,8 +50,11 @@ export class CacheControlClient {
       new Header('runtime-version', `nodejs:${process.versions.node}`),
     ];
     this.interceptors = [
-      new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
-      ClientTimeoutInterceptor(CacheControlClient.REQUEST_TIMEOUT_MS),
+      HeaderInterceptor.createHeadersInterceptor(headers),
+      RetryInterceptor.createRetryInterceptor({
+        loggerFactory: props.configuration.getLoggerFactory(),
+        overallRequestTimeoutMs: CacheControlClient.REQUEST_TIMEOUT_MS,
+      }),
     ];
     this.logger.debug(
       `Creating control client using endpoint: '${props.credentialProvider.getControlEndpoint()}`

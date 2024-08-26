@@ -2,6 +2,7 @@ import {CacheClient, SimpleCacheClient} from './cache-client';
 import {TopicClient} from './topic-client';
 import {PreviewStorageClient} from './preview-storage-client';
 import * as Configurations from './config/configurations';
+import * as AuthClientConfigurations from './config/auth-client-configurations';
 import * as TopicConfigurations from './config/topic-configurations';
 import * as StorageConfigurations from './config/storage-configurations';
 import * as LeaderboardConfigurations from './config/leaderboard-configurations';
@@ -179,6 +180,10 @@ import {
 } from '@gomomento/sdk-core';
 
 import {Configuration, CacheConfiguration} from './config/configuration';
+import {
+  AuthConfiguration,
+  AuthClientConfiguration,
+} from './config/auth-client-configuration';
 import {
   TopicConfiguration,
   TopicClientConfiguration,
@@ -417,6 +422,9 @@ export {
   WebhookDestinationType,
   // AuthClient response types
   AuthClient,
+  AuthConfiguration,
+  AuthClientConfiguration,
+  AuthClientConfigurations,
   GenerateApiKey,
   /**
    * @deprecated Use 'GenerateApiKey' instead

@@ -1,9 +1,8 @@
 import {cache} from '@gomomento/generated-types';
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {TextEncoder} from 'util';
-import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
-import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
-import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
+import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
+import {RetryInterceptor} from './grpc/retry-interceptor';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   ChannelCredentials,
@@ -4120,19 +4119,19 @@ export class CacheDataClient implements IDataClient {
         middlewareRequestContext,
         this.clientWrapper.getClient()
       ),
-      new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
-      ClientTimeoutInterceptor(this.requestTimeoutMs),
-      ...createRetryInterceptorIfEnabled(
-        this.configuration.getLoggerFactory(),
-        this.configuration.getRetryStrategy()
-      ),
+      HeaderInterceptor.createHeadersInterceptor(headers),
+      RetryInterceptor.createRetryInterceptor({
+        loggerFactory: this.configuration.getLoggerFactory(),
+        retryStrategy: this.configuration.getRetryStrategy(),
+        overallRequestTimeoutMs: this.requestTimeoutMs,
+      }),
     ];
   }
 
   // TODO https://github.com/momentohq/client-sdk-nodejs/issues/349
   // decide on streaming interceptors and middlewares
   private initializeStreamingInterceptors(headers: Header[]): Interceptor[] {
-    return [new HeaderInterceptorProvider(headers).createHeadersInterceptor()];
+    return [HeaderInterceptor.createHeadersInterceptor(headers)];
   }
 
   private convert(v: string | Uint8Array): Uint8Array {

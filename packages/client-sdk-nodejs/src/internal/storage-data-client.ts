@@ -11,7 +11,7 @@ import {
 } from '@gomomento/sdk-core';
 import {validateStoreName} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {store} from '@gomomento/generated-types/dist/store';
-import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
+import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
 import {
   ChannelCredentials,
   Interceptor,
@@ -25,8 +25,7 @@ import {StorageConfiguration} from '../config/storage-configuration';
 import {StorageClientPropsWithConfig} from './storage-client-props-with-config';
 import {StaticGrpcConfiguration} from '../config/transport/cache';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-import {createRetryInterceptorIfEnabled} from './grpc/retry-interceptor';
-import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
+import {RetryInterceptor} from './grpc/retry-interceptor';
 
 export class StorageDataClient implements IStorageDataClient {
   private readonly configuration: StorageConfiguration;
@@ -114,17 +113,12 @@ export class StorageDataClient implements IStorageDataClient {
     ];
 
     return [
-      ...createRetryInterceptorIfEnabled(
-        this.configuration.getLoggerFactory(),
-        this.configuration.getRetryStrategy()
-      ),
-      new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
-      // For the timeout interceptors to work correctly, it must be specified last.
-      ClientTimeoutInterceptor(
-        this.requestTimeoutMs,
-        this.configuration.getRetryStrategy(),
-        _loggerFactory
-      ),
+      HeaderInterceptor.createHeadersInterceptor(headers),
+      RetryInterceptor.createRetryInterceptor({
+        loggerFactory: this.configuration.getLoggerFactory(),
+        retryStrategy: this.configuration.getRetryStrategy(),
+        overallRequestTimeoutMs: this.requestTimeoutMs,
+      }),
     ];
   }
 

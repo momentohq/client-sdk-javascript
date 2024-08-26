@@ -1,7 +1,6 @@
 import {control} from '@gomomento/generated-types';
 import grpcControl = control.control_client;
-import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
-import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
+import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {MomentoLogger, StoreInfo, ListStores, MomentoErrorCode} from '..';
@@ -9,6 +8,7 @@ import {version} from '../../package.json';
 import {validateStoreName} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {CreateStore, DeleteStore} from '@gomomento/sdk-core';
 import {StorageClientPropsWithConfig} from './storage-client-props-with-config';
+import {RetryInterceptor} from './grpc/retry-interceptor';
 
 export class StorageControlClient {
   private readonly clientWrapper: grpcControl.ScsControlClient;
@@ -29,8 +29,11 @@ export class StorageControlClient {
       new Header('runtime-version', `nodejs:${process.versions.node}`),
     ];
     this.interceptors = [
-      new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
-      ClientTimeoutInterceptor(StorageControlClient.REQUEST_TIMEOUT_MS),
+      HeaderInterceptor.createHeadersInterceptor(headers),
+      RetryInterceptor.createRetryInterceptor({
+        loggerFactory: props.configuration.getLoggerFactory(),
+        overallRequestTimeoutMs: StorageControlClient.REQUEST_TIMEOUT_MS,
+      }),
     ];
     this.logger.debug(
       `Creating storage control client using endpoint: '${props.credentialProvider.getControlEndpoint()}`

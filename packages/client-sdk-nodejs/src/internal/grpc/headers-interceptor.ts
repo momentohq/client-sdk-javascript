@@ -15,33 +15,24 @@ export class Header {
   }
 }
 
-export class HeaderInterceptorProvider {
-  private readonly headersToAddEveryTime: Header[];
-  private readonly headersToAddOnce: Header[];
-  private areOnlyOnceHeadersSent = false;
-
-  /**
-   * @param {Header[]} headers
-   */
-  constructor(headers: Header[]) {
-    this.headersToAddOnce = headers.filter(header =>
+export class HeaderInterceptor {
+  public static createHeadersInterceptor(headers: Header[]): Interceptor {
+    const headersToAddOnce = headers.filter(header =>
       header.onceOnlyHeaders.includes(header.name)
     );
-    this.headersToAddEveryTime = headers.filter(
+    const headersToAddEveryTime = headers.filter(
       header => !header.onceOnlyHeaders.includes(header.name)
     );
-  }
-
-  public createHeadersInterceptor(): Interceptor {
+    let areOnlyOnceHeadersSent = false;
     return (options, nextCall) => {
       return new InterceptingCall(nextCall(options), {
         start: (metadata, listener, next) => {
-          this.headersToAddEveryTime.forEach(h => {
+          headersToAddEveryTime.forEach(h => {
             metadata.set(h.name, h.value);
           });
-          if (!this.areOnlyOnceHeadersSent) {
-            this.areOnlyOnceHeadersSent = true;
-            this.headersToAddOnce.forEach(h => metadata.add(h.name, h.value));
+          if (!areOnlyOnceHeadersSent) {
+            areOnlyOnceHeadersSent = true;
+            headersToAddOnce.forEach(h => metadata.add(h.name, h.value));
           }
           next(metadata, {});
         },
