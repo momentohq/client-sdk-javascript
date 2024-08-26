@@ -31,6 +31,7 @@ export class StorageControlClient {
     this.interceptors = [
       HeaderInterceptor.createHeadersInterceptor(headers),
       RetryInterceptor.createRetryInterceptor({
+        clientName: 'StorageControlClient',
         loggerFactory: props.configuration.getLoggerFactory(),
         overallRequestTimeoutMs: StorageControlClient.REQUEST_TIMEOUT_MS,
       }),

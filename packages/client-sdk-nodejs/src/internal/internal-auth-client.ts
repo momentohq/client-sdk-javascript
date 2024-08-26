@@ -83,6 +83,7 @@ export class InternalAuthClient implements IAuthClient {
     this.interceptors = [
       HeaderInterceptor.createHeadersInterceptor(headers),
       RetryInterceptor.createRetryInterceptor({
+        clientName: 'AuthClient',
         loggerFactory: configuration.getLoggerFactory(),
         overallRequestTimeoutMs: InternalAuthClient.REQUEST_TIMEOUT_MS,
       }),

@@ -4121,6 +4121,7 @@ export class CacheDataClient implements IDataClient {
       ),
       HeaderInterceptor.createHeadersInterceptor(headers),
       RetryInterceptor.createRetryInterceptor({
+        clientName: 'CacheDataClient',
         loggerFactory: this.configuration.getLoggerFactory(),
         retryStrategy: this.configuration.getRetryStrategy(),
         overallRequestTimeoutMs: this.requestTimeoutMs,

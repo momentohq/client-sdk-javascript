@@ -144,6 +144,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
       ),
       HeaderInterceptor.createHeadersInterceptor(headers),
       RetryInterceptor.createRetryInterceptor({
+        clientName: 'LeaderboardDataClient',
         loggerFactory: _loggerFactory,
         overallRequestTimeoutMs: this.requestTimeoutMs,
       }),

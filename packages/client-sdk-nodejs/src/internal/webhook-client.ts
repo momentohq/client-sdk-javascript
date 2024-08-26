@@ -50,6 +50,7 @@ export class WebhookClient implements IWebhookClient {
     this.unaryInterceptors = [
       HeaderInterceptor.createHeadersInterceptor(headers),
       RetryInterceptor.createRetryInterceptor({
+        clientName: 'WebhookClient',
         loggerFactory: props.configuration.getLoggerFactory(),
         overallRequestTimeoutMs: WebhookClient.DEFAULT_REQUEST_TIMEOUT_MS,
       }),

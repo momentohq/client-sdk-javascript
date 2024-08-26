@@ -33,6 +33,7 @@ export class InternalNodeGrpcPingClient {
     this.interceptors = [
       HeaderInterceptor.createHeadersInterceptor(headers),
       RetryInterceptor.createRetryInterceptor({
+        clientName: 'PingClient',
         loggerFactory: props.configuration.getLoggerFactory(),
         overallRequestTimeoutMs: InternalNodeGrpcPingClient.REQUEST_TIMEOUT_MS,
       }),

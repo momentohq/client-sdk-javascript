@@ -51,7 +51,7 @@ export class StorageDataClient implements IStorageDataClient {
       .getDeadlineMillis();
     this.validateRequestTimeout(this.requestTimeoutMs);
     this.logger.debug(
-      `Creating leaderboard client using endpoint: '${this.credentialProvider.getStorageEndpoint()}'`
+      `Creating storage client using endpoint: '${this.credentialProvider.getStorageEndpoint()}'`
     );
 
     // NOTE: This is hard-coded for now but we may want to expose it via StorageConfiguration in the
@@ -111,10 +111,10 @@ export class StorageDataClient implements IStorageDataClient {
       new Header('agent', `nodejs:store:${version}`),
       new Header('runtime-version', `nodejs:${process.versions.node}`),
     ];
-
     return [
       HeaderInterceptor.createHeadersInterceptor(headers),
       RetryInterceptor.createRetryInterceptor({
+        clientName: 'StorageDataClient',
         loggerFactory: this.configuration.getLoggerFactory(),
         retryStrategy: this.configuration.getRetryStrategy(),
         overallRequestTimeoutMs: this.requestTimeoutMs,

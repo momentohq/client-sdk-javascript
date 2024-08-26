@@ -301,6 +301,7 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
       middlewaresInterceptor(configuration.getLoggerFactory(), [], {}),
       HeaderInterceptor.createHeadersInterceptor(headers),
       RetryInterceptor.createRetryInterceptor({
+        clientName: 'PubSubClient',
         loggerFactory: configuration.getLoggerFactory(),
         overallRequestTimeoutMs: requestTimeoutMs,
       }),

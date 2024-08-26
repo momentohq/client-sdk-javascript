@@ -18,6 +18,7 @@ import {MomentoLoggerFactory} from '../../';
 import {NoRetryStrategy} from '../../config/retry/no-retry-strategy';
 
 export interface RetryInterceptorProps {
+  clientName: string;
   loggerFactory: MomentoLoggerFactory;
   overallRequestTimeoutMs: number;
   retryStrategy?: RetryStrategy;
@@ -30,23 +31,41 @@ export class RetryInterceptor {
   public static createRetryInterceptor(
     props: RetryInterceptorProps
   ): Interceptor {
-    const logger = props.loggerFactory.getLogger(
-      RetryInterceptor.constructor.name
-    );
+    const logger = props.loggerFactory.getLogger(RetryInterceptor.name);
 
-    const retryStrategy =
+    const retryStrategy: RetryStrategy =
       props.retryStrategy ??
       new NoRetryStrategy({loggerFactory: props.loggerFactory});
 
+    const overallRequestTimeoutMs = props.overallRequestTimeoutMs;
+    const deadlineOffset =
+      retryStrategy.responseDataReceivedTimeoutMillis ??
+      props.overallRequestTimeoutMs;
+
+    logger.trace(
+      `Creating RetryInterceptor (for ${
+        props.clientName
+      }); overall request timeout offset: ${overallRequestTimeoutMs} ms; retry strategy responseDataRecievedTimeoutMillis: ${String(
+        retryStrategy?.responseDataReceivedTimeoutMillis
+      )}; deadline offset: ${deadlineOffset} ms`
+    );
+
     return (options, nextCall) => {
-      console.log('THE MAIN RETRY INTERCEPTOR FN IS CALLED');
-      if (!options.deadline) {
-        const deadline = new Date(Date.now());
-        deadline.setMilliseconds(
-          deadline.getMilliseconds() + props.overallRequestTimeoutMs
-        );
-        options.deadline = deadline;
-      }
+      logger.trace(
+        `Entering RetryInterceptor (for ${
+          props.clientName
+        }); overall request timeout offset: ${overallRequestTimeoutMs} ms; deadline offset: ${String(
+          deadlineOffset
+        )}`
+      );
+      const overallDeadline = calculateDeadline(overallRequestTimeoutMs);
+
+      logger.trace(
+        `Setting initial deadline (for ${props.clientName}) based on offset: ${deadlineOffset} ms`
+      );
+      let nextDeadline = calculateDeadline(deadlineOffset);
+
+      options.deadline = nextDeadline;
 
       let savedMetadata: Metadata;
       let savedSendMessage: unknown;
@@ -70,16 +89,30 @@ export class RetryInterceptor {
               next: (arg0: any) => void
             ) {
               let attempts = 0;
-              const originalDeadline = options.deadline;
-              console.log(
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                `RETRY INTERCEPTOR: ORIGINAL DEADLINE: ${originalDeadline}`
-              );
               const retry = function (message: unknown, metadata: Metadata) {
-                console.log(
-                  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                  `RECURSIVE RETRY; ORIGINAL DEADLINE: ${originalDeadline}, NEW DEADLINE: ${options.deadline}`
+                logger.debug(
+                  `Retrying request: path: ${
+                    options.method_definition.path
+                  }; deadline was: ${String(
+                    (options.deadline as Date | undefined)?.toISOString()
+                  )}, overall deadline is: ${overallDeadline.toISOString()}`
                 );
+                if (new Date(Date.now()) >= overallDeadline) {
+                  logger.debug(
+                    `Request not eligible for retry: path: ${
+                      options.method_definition.path
+                    }; overall deadline exceeded: ${overallDeadline.toISOString()}`
+                  );
+                  savedMessageNext(savedReceiveMessage);
+                  next(status);
+                  return;
+                }
+                nextDeadline = calculateDeadline(deadlineOffset);
+                logger.debug(
+                  `Setting next deadline (via offset of ${deadlineOffset} ms) to: ${nextDeadline.toISOString()}`
+                );
+                options.deadline = nextDeadline;
+
                 const newCall = nextCall(options);
                 newCall.start(metadata, {
                   onReceiveMessage: function (message) {
@@ -151,4 +184,10 @@ export class RetryInterceptor {
       });
     };
   }
+}
+
+function calculateDeadline(offsetMillis: number): Date {
+  const deadline = new Date(Date.now());
+  deadline.setMilliseconds(deadline.getMilliseconds() + offsetMillis);
+  return deadline;
 }

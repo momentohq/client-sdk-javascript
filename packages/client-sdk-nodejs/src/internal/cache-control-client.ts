@@ -52,6 +52,7 @@ export class CacheControlClient {
     this.interceptors = [
       HeaderInterceptor.createHeadersInterceptor(headers),
       RetryInterceptor.createRetryInterceptor({
+        clientName: 'CacheControlClient',
         loggerFactory: props.configuration.getLoggerFactory(),
         overallRequestTimeoutMs: CacheControlClient.REQUEST_TIMEOUT_MS,
       }),
