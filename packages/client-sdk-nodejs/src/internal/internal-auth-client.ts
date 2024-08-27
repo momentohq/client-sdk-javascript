@@ -1,7 +1,6 @@
 import {auth, token} from '@gomomento/generated-types';
 import grpcAuth = auth.auth;
-import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
-import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
+import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {version} from '../../package.json';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
@@ -58,6 +57,8 @@ import {
   isDisposableTokenCachePermission,
   isDisposableTokenPermissionsObject,
 } from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
+import {RetryInterceptor} from './grpc/retry-interceptor';
+import {AuthClientConfigurations} from '../index';
 
 export class InternalAuthClient implements IAuthClient {
   private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
@@ -69,6 +70,8 @@ export class InternalAuthClient implements IAuthClient {
   private readonly authClient: grpcAuth.AuthClient;
 
   constructor(props: AuthClientProps) {
+    const configuration =
+      props.configuration ?? AuthClientConfigurations.Default.latest();
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
       props.throwOnErrors ?? false
     );
@@ -78,8 +81,12 @@ export class InternalAuthClient implements IAuthClient {
       new Header('runtime-version', `nodejs:${process.versions.node}`),
     ];
     this.interceptors = [
-      new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
-      ClientTimeoutInterceptor(InternalAuthClient.REQUEST_TIMEOUT_MS),
+      HeaderInterceptor.createHeadersInterceptor(headers),
+      RetryInterceptor.createRetryInterceptor({
+        clientName: 'AuthClient',
+        loggerFactory: configuration.getLoggerFactory(),
+        overallRequestTimeoutMs: InternalAuthClient.REQUEST_TIMEOUT_MS,
+      }),
     ];
     this.tokenClient = new token.token.TokenClient(
       this.creds.getTokenEndpoint(),

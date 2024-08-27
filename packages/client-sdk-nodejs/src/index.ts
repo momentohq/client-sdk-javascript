@@ -2,6 +2,7 @@ import {CacheClient, SimpleCacheClient} from './cache-client';
 import {TopicClient} from './topic-client';
 import {PreviewStorageClient} from './preview-storage-client';
 import * as Configurations from './config/configurations';
+import * as AuthClientConfigurations from './config/auth-client-configurations';
 import * as TopicConfigurations from './config/topic-configurations';
 import * as StorageConfigurations from './config/storage-configurations';
 import * as LeaderboardConfigurations from './config/leaderboard-configurations';
@@ -181,6 +182,10 @@ import {
 
 import {Configuration, CacheConfiguration} from './config/configuration';
 import {
+  AuthConfiguration,
+  AuthClientConfiguration,
+} from './config/auth-client-configuration';
+import {
   TopicConfiguration,
   TopicClientConfiguration,
 } from './config/topic-configuration';
@@ -214,6 +219,11 @@ export {
   FixedCountRetryStrategy,
   FixedCountRetryStrategyProps,
 } from './config/retry/fixed-count-retry-strategy';
+
+export {
+  FixedTimeoutRetryStrategy,
+  FixedTimeoutRetryStrategyProps,
+} from './config/retry/fixed-timeout-retry-strategy';
 
 export {DefaultEligibilityStrategy} from './config/retry/default-eligibility-strategy';
 
@@ -414,6 +424,9 @@ export {
   WebhookDestinationType,
   // AuthClient response types
   AuthClient,
+  AuthConfiguration,
+  AuthClientConfiguration,
+  AuthClientConfigurations,
   GenerateApiKey,
   /**
    * @deprecated Use 'GenerateApiKey' instead

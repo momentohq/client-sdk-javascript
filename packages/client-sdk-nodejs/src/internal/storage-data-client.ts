@@ -11,8 +11,7 @@ import {
 } from '@gomomento/sdk-core';
 import {validateStoreName} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {store} from '@gomomento/generated-types/dist/store';
-import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
-import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
+import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
 import {
   ChannelCredentials,
   Interceptor,
@@ -26,6 +25,7 @@ import {StorageConfiguration} from '../config/storage-configuration';
 import {StorageClientPropsWithConfig} from './storage-client-props-with-config';
 import {StaticGrpcConfiguration} from '../config/transport/cache';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
+import {RetryInterceptor} from './grpc/retry-interceptor';
 
 export class StorageDataClient implements IStorageDataClient {
   private readonly configuration: StorageConfiguration;
@@ -51,7 +51,7 @@ export class StorageDataClient implements IStorageDataClient {
       .getDeadlineMillis();
     this.validateRequestTimeout(this.requestTimeoutMs);
     this.logger.debug(
-      `Creating leaderboard client using endpoint: '${this.credentialProvider.getStorageEndpoint()}'`
+      `Creating storage client using endpoint: '${this.credentialProvider.getStorageEndpoint()}'`
     );
 
     // NOTE: This is hard-coded for now but we may want to expose it via StorageConfiguration in the
@@ -112,8 +112,13 @@ export class StorageDataClient implements IStorageDataClient {
       new Header('runtime-version', `nodejs:${process.versions.node}`),
     ];
     return [
-      new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
-      ClientTimeoutInterceptor(this.requestTimeoutMs),
+      HeaderInterceptor.createHeadersInterceptor(headers),
+      RetryInterceptor.createRetryInterceptor({
+        clientName: 'StorageDataClient',
+        loggerFactory: this.configuration.getLoggerFactory(),
+        retryStrategy: this.configuration.getRetryStrategy(),
+        overallRequestTimeoutMs: this.requestTimeoutMs,
+      }),
     ];
   }
 
