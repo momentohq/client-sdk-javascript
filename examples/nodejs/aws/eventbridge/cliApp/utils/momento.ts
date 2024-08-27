@@ -1,6 +1,4 @@
 import {config} from 'dotenv';
-config();
-
 import {
   CacheClient,
   CacheGetResponse,
@@ -13,6 +11,8 @@ import {
   TopicSubscribeResponse,
 } from '@gomomento/sdk';
 import {validateEnvVariables} from './helper';
+
+config();
 
 validateEnvVariables(['MOMENTO_API_KEY']);
 const cacheName = 'momento-eventbridge-cache';
@@ -60,7 +60,7 @@ export async function subscribeToTopic() {
 }
 
 export function unsubscribeFromTopic() {
-  if (subscription instanceof TopicSubscribe.Subscription) {
+  if (subscription?.type === TopicSubscribeResponse.Subscription) {
     console.log('Unsubscribing from topic subscription');
     subscription.unsubscribe();
   }

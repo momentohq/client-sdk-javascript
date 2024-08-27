@@ -14,7 +14,7 @@ import {
   initiateLoadGenContext,
 } from './utils/load-gen';
 import {getElapsedMillis, logStats} from './utils/load-gen-statistics-calculator';
-import {createCache, getCacheClient} from './utils/cache';
+import {ensureCacheExists, getCacheClient} from './utils/cache';
 
 class BasicLoadGen {
   private readonly loggerFactory: MomentoLoggerFactory;
@@ -38,7 +38,7 @@ class BasicLoadGen {
   async run(): Promise<void> {
     const momento = await getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
 
-    await createCache(momento, this.cacheName, this.logger);
+    await ensureCacheExists(this.cacheName);
 
     this.logger.trace(`delayMillisBetweenRequests: ${this.delayMillisBetweenRequests}`);
 
