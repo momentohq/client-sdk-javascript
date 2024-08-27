@@ -1,8 +1,7 @@
 import {pubsub} from '@gomomento/generated-types';
 import grpcPubsub = pubsub.cache_client.pubsub;
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
-import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
-import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
+import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor, ServiceError} from '@grpc/grpc-js';
 import {version} from '../../package.json';
@@ -26,6 +25,7 @@ import {
 import {TopicConfiguration} from '../config/topic-configuration';
 import {TopicClientPropsWithConfiguration} from './topic-client-props-with-config';
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
+import {RetryInterceptor} from './grpc/retry-interceptor';
 
 export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   private readonly client: grpcPubsub.PubsubClient;
@@ -306,8 +306,12 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   ): Interceptor[] {
     return [
       middlewaresInterceptor(configuration.getLoggerFactory(), [], {}),
-      new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
-      ClientTimeoutInterceptor(requestTimeoutMs),
+      HeaderInterceptor.createHeadersInterceptor(headers),
+      RetryInterceptor.createRetryInterceptor({
+        clientName: 'PubSubClient',
+        loggerFactory: configuration.getLoggerFactory(),
+        overallRequestTimeoutMs: requestTimeoutMs,
+      }),
     ];
   }
 
@@ -316,6 +320,6 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   private static initializeStreamingInterceptors(
     headers: Header[]
   ): Interceptor[] {
-    return [new HeaderInterceptorProvider(headers).createHeadersInterceptor()];
+    return [HeaderInterceptor.createHeadersInterceptor(headers)];
   }
 }

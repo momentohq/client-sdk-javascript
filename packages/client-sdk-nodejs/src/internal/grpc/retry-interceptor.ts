@@ -14,39 +14,59 @@ import {
 } from '@grpc/grpc-js';
 import {RetryStrategy} from '../../config/retry/retry-strategy';
 import {Status} from '@grpc/grpc-js/build/src/constants';
-import {MomentoLoggerFactory, MomentoLogger} from '../../';
+import {MomentoLoggerFactory} from '../../';
+import {NoRetryStrategy} from '../../config/retry/no-retry-strategy';
 
-export function createRetryInterceptorIfEnabled(
-  loggerFactory: MomentoLoggerFactory,
-  retryStrategy: RetryStrategy
-): Array<Interceptor> {
-  return [
-    new RetryInterceptor(loggerFactory, retryStrategy).createRetryInterceptor(),
-  ];
+export interface RetryInterceptorProps {
+  clientName: string;
+  loggerFactory: MomentoLoggerFactory;
+  overallRequestTimeoutMs: number;
+  retryStrategy?: RetryStrategy;
 }
 
 export class RetryInterceptor {
-  private readonly logger: MomentoLogger;
-  private readonly retryStrategy: RetryStrategy;
-
-  constructor(
-    loggerFactory: MomentoLoggerFactory,
-    retryStrategy: RetryStrategy
-  ) {
-    this.logger = loggerFactory.getLogger(this);
-    this.retryStrategy = retryStrategy;
-  }
-
   // TODO: We need to send retry count information to the server so that we
   // will have some visibility into how often this is happening to customers:
   // https://github.com/momentohq/client-sdk-nodejs/issues/80
-  // TODO: we need to add backoff/jitter for the retries:
-  // https://github.com/momentohq/client-sdk-nodejs/issues/81
-  public createRetryInterceptor(): Interceptor {
-    const logger = this.logger;
-    const retryStrategy = this.retryStrategy;
+  public static createRetryInterceptor(
+    props: RetryInterceptorProps
+  ): Interceptor {
+    const logger = props.loggerFactory.getLogger(RetryInterceptor.name);
+
+    const retryStrategy: RetryStrategy =
+      props.retryStrategy ??
+      new NoRetryStrategy({loggerFactory: props.loggerFactory});
+
+    const overallRequestTimeoutMs = props.overallRequestTimeoutMs;
+    const deadlineOffset =
+      retryStrategy.responseDataReceivedTimeoutMillis ??
+      props.overallRequestTimeoutMs;
+
+    logger.trace(
+      `Creating RetryInterceptor (for ${
+        props.clientName
+      }); overall request timeout offset: ${overallRequestTimeoutMs} ms; retry strategy responseDataRecievedTimeoutMillis: ${String(
+        retryStrategy?.responseDataReceivedTimeoutMillis
+      )}; deadline offset: ${deadlineOffset} ms`
+    );
 
     return (options, nextCall) => {
+      logger.trace(
+        `Entering RetryInterceptor (for ${
+          props.clientName
+        }); overall request timeout offset: ${overallRequestTimeoutMs} ms; deadline offset: ${String(
+          deadlineOffset
+        )}`
+      );
+      const overallDeadline = calculateDeadline(overallRequestTimeoutMs);
+
+      logger.trace(
+        `Setting initial deadline (for ${props.clientName}) based on offset: ${deadlineOffset} ms`
+      );
+      let nextDeadline = calculateDeadline(deadlineOffset);
+
+      options.deadline = nextDeadline;
+
       let savedMetadata: Metadata;
       let savedSendMessage: unknown;
       let savedReceiveMessage: unknown;
@@ -68,9 +88,31 @@ export class RetryInterceptor {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               next: (arg0: any) => void
             ) {
-              let attempts = 1;
+              let attempts = 0;
               const retry = function (message: unknown, metadata: Metadata) {
-                attempts++;
+                logger.debug(
+                  `Retrying request: path: ${
+                    options.method_definition.path
+                  }; deadline was: ${String(
+                    (options.deadline as Date | undefined)?.toISOString()
+                  )}, overall deadline is: ${overallDeadline.toISOString()}`
+                );
+                if (new Date(Date.now()) >= overallDeadline) {
+                  logger.debug(
+                    `Request not eligible for retry: path: ${
+                      options.method_definition.path
+                    }; overall deadline exceeded: ${overallDeadline.toISOString()}`
+                  );
+                  savedMessageNext(savedReceiveMessage);
+                  next(status);
+                  return;
+                }
+                nextDeadline = calculateDeadline(deadlineOffset);
+                logger.debug(
+                  `Setting next deadline (via offset of ${deadlineOffset} ms) to: ${nextDeadline.toISOString()}`
+                );
+                options.deadline = nextDeadline;
+
                 const newCall = nextCall(options);
                 newCall.start(metadata, {
                   onReceiveMessage: function (message) {
@@ -82,6 +124,7 @@ export class RetryInterceptor {
                         grpcStatus: status,
                         grpcRequest: options.method_definition,
                         attemptNumber: attempts,
+                        requestMetadata: metadata,
                       });
 
                     if (whenToRetry === null) {
@@ -91,6 +134,7 @@ export class RetryInterceptor {
                       savedMessageNext(savedReceiveMessage);
                       next(status);
                     } else {
+                      attempts++;
                       logger.debug(
                         `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`
                       );
@@ -110,6 +154,7 @@ export class RetryInterceptor {
                   grpcStatus: status,
                   grpcRequest: options.method_definition,
                   attemptNumber: attempts,
+                  requestMetadata: metadata,
                 });
                 if (whenToRetry === null) {
                   logger.debug(
@@ -118,6 +163,7 @@ export class RetryInterceptor {
                   savedMessageNext(savedReceiveMessage);
                   next(status);
                 } else {
+                  attempts++;
                   logger.debug(
                     `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`
                   );
@@ -138,4 +184,10 @@ export class RetryInterceptor {
       });
     };
   }
+}
+
+function calculateDeadline(offsetMillis: number): Date {
+  const deadline = new Date(Date.now());
+  deadline.setMilliseconds(deadline.getMilliseconds() + offsetMillis);
+  return deadline;
 }

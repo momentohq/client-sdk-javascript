@@ -23,8 +23,7 @@ import {leaderboard} from '@gomomento/generated-types/dist/leaderboard';
 import _Element = leaderboard._Element;
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
-import {Header, HeaderInterceptorProvider} from './grpc/headers-interceptor';
-import {ClientTimeoutInterceptor} from './grpc/client-timeout-interceptor';
+import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   ChannelCredentials,
@@ -42,6 +41,7 @@ import {
 } from '../config/middleware/middleware';
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {common} from '@gomomento/generated-types/dist/common';
+import {RetryInterceptor} from './grpc/retry-interceptor';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -142,8 +142,12 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
         middlewares,
         middlewareRequestContext
       ),
-      new HeaderInterceptorProvider(headers).createHeadersInterceptor(),
-      ClientTimeoutInterceptor(this.requestTimeoutMs),
+      HeaderInterceptor.createHeadersInterceptor(headers),
+      RetryInterceptor.createRetryInterceptor({
+        clientName: 'LeaderboardDataClient',
+        loggerFactory: _loggerFactory,
+        overallRequestTimeoutMs: this.requestTimeoutMs,
+      }),
     ];
   }
 
