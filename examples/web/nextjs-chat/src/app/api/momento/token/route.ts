@@ -1,7 +1,7 @@
 import {
   AuthClient,
   CredentialProvider,
-  GenerateDisposableToken,
+  GenerateDisposableTokenResponse,
 } from "@gomomento/sdk";
 import {
   tokenPermissions,
@@ -48,20 +48,16 @@ export async function GET(_request: NextRequest) {
       throw new Error("Unimplemented authentication method");
   }
 
-  if (
-    generateDisposableTokenResponse instanceof GenerateDisposableToken.Success
-  ) {
-    return new Response(generateDisposableTokenResponse.authToken, {
-      headers: {
-        "Cache-Control": "no-cache",
-      },
-    });
-  } else if (
-    generateDisposableTokenResponse instanceof GenerateDisposableToken.Error
-  ) {
-    throw new Error(generateDisposableTokenResponse.message());
+  switch (generateDisposableTokenResponse.type) {
+    case GenerateDisposableTokenResponse.Success:
+      return new Response(generateDisposableTokenResponse.authToken, {
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      });
+    case GenerateDisposableTokenResponse.Error:
+      throw new Error(generateDisposableTokenResponse.message());
   }
-  throw new Error("Unable to get token from momento");
 }
 
 async function fetchTokenWithOpenAuth(username: string | undefined) {
