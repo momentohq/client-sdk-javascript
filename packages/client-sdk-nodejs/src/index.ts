@@ -80,6 +80,7 @@ import * as TopicPublish from '@gomomento/sdk-core/dist/src/messages/responses/t
 import * as TopicSubscribe from '@gomomento/sdk-core/dist/src/messages/responses/topic-subscribe';
 import {TopicItem} from '@gomomento/sdk-core/dist/src/messages/responses/topic-item';
 import {TopicDiscontinuity} from '@gomomento/sdk-core/dist/src/messages/responses/topic-discontinuity';
+import {TopicHeartbeat} from '@gomomento/sdk-core/dist/src/messages/responses/topic-heartbeat';
 
 // Storage Response Types
 import {
@@ -394,6 +395,7 @@ export {
   TopicClient,
   TopicClientProps,
   TopicDiscontinuity,
+  TopicHeartbeat,
   TopicItem,
   TopicPublish,
   TopicSubscribe,

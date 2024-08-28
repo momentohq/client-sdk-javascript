@@ -3,6 +3,7 @@ import * as cachepubsub_pb from '@gomomento/generated-types-webtext/dist/cachepu
 import {
   CredentialProvider,
   TopicDiscontinuity,
+  TopicHeartbeat,
   TopicItem,
   UnknownError,
 } from '@gomomento/sdk-core';
@@ -207,6 +208,7 @@ export class PubsubClient<
           'Received heartbeat from subscription stream; topic: %s',
           truncateString(options.topicName)
         );
+        options.onHeartbeat(new TopicHeartbeat());
       } else if (discontinuity) {
         this.getLogger().trace(
           'Received discontinuity from subscription stream; topic: %s',

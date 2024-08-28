@@ -10,6 +10,7 @@ import {
   CredentialProvider,
   StaticGrpcConfiguration,
   TopicDiscontinuity,
+  TopicHeartbeat,
   TopicGrpcConfiguration,
   TopicItem,
   TopicPublish,
@@ -244,6 +245,7 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
           'Received heartbeat from subscription stream; topic: %s',
           truncateString(options.topicName)
         );
+        options.onHeartbeat(new TopicHeartbeat());
       } else if (resp.discontinuity) {
         this.getLogger().trace(
           'Received discontinuity from subscription stream; topic: %s',
