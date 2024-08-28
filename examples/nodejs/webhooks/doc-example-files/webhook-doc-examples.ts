@@ -8,13 +8,7 @@
  * a second file in the future if desired.
  *
  */
-import {
-  CredentialProvider,
-  TopicClient,
-  TopicConfigurations,
-  TopicItem,
-  TopicPublishResponse,
-} from '@gomomento/sdk';
+import {CredentialProvider, TopicClient, TopicConfigurations, TopicItem, TopicPublishResponse} from '@gomomento/sdk';
 
 async function example_API_WebhookTopicSubscribe(topicClient: TopicClient, cacheName: string) {
   const result = await topicClient.subscribe(cacheName, 'topic 2', {
