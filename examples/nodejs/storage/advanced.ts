@@ -3,6 +3,7 @@ import {
   DefaultMomentoLoggerFactory,
   DefaultMomentoLoggerLevel,
   FixedCountRetryStrategy,
+  FixedTimeoutRetryStrategy,
   ListStoresResponse,
   MomentoLoggerFactory,
   PreviewStorageClient,
@@ -15,12 +16,13 @@ async function main() {
   const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.DEBUG);
   const logger = loggerFactory.getLogger('AdvancedStorageExample');
 
-  // You can specify the logger factory and override the default RetryStrategy (FixedTimeoutRetryStrategy)
+  // You can specify the logger factory and override the default RetryStrategy
   const storageClient = new PreviewStorageClient({
     configuration: StorageConfigurations.Laptop.latest(loggerFactory).withRetryStrategy(
-      new FixedCountRetryStrategy({
+      new FixedTimeoutRetryStrategy({
         loggerFactory: loggerFactory,
-        maxAttempts: 3,
+        responseDataReceivedTimeoutMillis: 2000,
+        retryDelayIntervalMillis: 200,
       })
     ),
     credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
