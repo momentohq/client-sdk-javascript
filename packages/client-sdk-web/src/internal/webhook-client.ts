@@ -32,7 +32,7 @@ import {
   _WebhookId,
   _RotateWebhookSecretRequest,
 } from '@gomomento/generated-types-webtext/dist/webhook_pb';
-import {TopicClientPropsWithConfiguration} from './topic-client-props-with-config';
+import {TopicClientAllProps} from './topic-client-all-props';
 
 export class WebhookClient implements IWebhookClient {
   private readonly webhookClient: webhook.WebhookClient;
@@ -45,7 +45,7 @@ export class WebhookClient implements IWebhookClient {
   /**
    * @param {TopicClientProps} props
    */
-  constructor(props: TopicClientPropsWithConfiguration) {
+  constructor(props: TopicClientAllProps) {
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);

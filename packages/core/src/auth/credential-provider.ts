@@ -353,3 +353,7 @@ export class EnvMomentoTokenProvider extends StringMomentoTokenProvider {
     this.environmentVariableName = props.environmentVariableName;
   }
 }
+
+export function getDefaultCredentialProvider(): CredentialProvider {
+  return CredentialProvider.fromEnvVar('MOMENTO_API_KEY');
+}

@@ -16,7 +16,7 @@ import {
 } from '../../src';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
-import {CacheClientPropsWithConfig} from '../../src/internal/cache-client-props-with-config';
+import {CacheClientAllProps} from '../../src/internal/cache-client-all-props';
 import {ReadConcern} from '@gomomento/sdk-core';
 
 export const deleteCacheIfExists = async (
@@ -91,7 +91,7 @@ function testAgainstMomentoLocal(): boolean {
   return process.env.MOMENTO_LOCAL !== undefined;
 }
 
-export function integrationTestCacheClientProps(): CacheClientPropsWithConfig {
+export function integrationTestCacheClientProps(): CacheClientAllProps {
   let credentialProvider = credsProvider();
   if (testAgainstMomentoLocal()) {
     credentialProvider = credentialProvider.withMomentoLocal();

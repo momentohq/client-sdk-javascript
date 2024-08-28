@@ -29,7 +29,6 @@ import {
   RefreshApiKey,
 } from '@gomomento/sdk-core';
 import {IAuthClient} from '@gomomento/sdk-core/dist/src/internal/clients';
-import {AuthClientProps} from '../auth-client-props';
 import {
   InternalSuperUserPermissions,
   validateValidForSeconds,
@@ -70,6 +69,7 @@ import {
   TopicRole as TokenTopicRole,
   CacheRole as TokenCacheRole,
 } from '@gomomento/generated-types-webtext/dist/permissionmessages_pb';
+import {AuthClientAllProps} from './auth-client-all-props';
 
 export class InternalWebGrpcAuthClient<
   REQ extends Request<REQ, RESP>,
@@ -82,7 +82,7 @@ export class InternalWebGrpcAuthClient<
   private readonly authClient: auth.AuthClient;
   private readonly tokenClient: token.TokenClient;
 
-  constructor(props: AuthClientProps) {
+  constructor(props: AuthClientAllProps) {
     this.creds = props.credentialProvider;
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
       props.throwOnErrors ?? false

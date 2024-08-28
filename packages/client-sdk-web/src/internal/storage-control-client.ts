@@ -1,6 +1,5 @@
 import {control} from '@gomomento/generated-types-webtext';
 import {
-  CredentialProvider,
   MomentoLogger,
   CreateStore,
   DeleteStore,
@@ -18,13 +17,8 @@ import {IStorageControlClient} from '@gomomento/sdk-core/dist/src/internal/clien
 import {validateStoreName} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {getWebControlEndpoint} from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
-import {StorageConfiguration} from '../config/storage-configuration';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-
-export interface StorageClientClientProps {
-  configuration: StorageConfiguration;
-  credentialProvider: CredentialProvider;
-}
+import {StorageClientAllProps} from './storage-client-all-props';
 
 export class StorageControlClient<
   REQ extends Request<REQ, RESP>,
@@ -40,7 +34,7 @@ export class StorageControlClient<
   /**
    * @param {ControlClientProps} props
    */
-  constructor(props: StorageClientClientProps) {
+  constructor(props: StorageClientAllProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(false);
     this.logger.debug(

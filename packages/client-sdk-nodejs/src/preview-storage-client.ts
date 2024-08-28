@@ -5,11 +5,12 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/clients';
 import {IStorageClient} from '@gomomento/sdk-core/dist/src/clients/IStorageClient';
 import {StorageClientProps} from './storage-client-props';
-import {StorageClientPropsWithConfig} from './internal/storage-client-props-with-config';
+import {StorageClientAllProps} from './internal/storage-client-all-props';
 import {StorageControlClient} from './internal/storage-control-client';
 import {StorageDataClient} from './internal/storage-data-client';
 import {StorageConfiguration} from './config/storage-configuration';
 import {StorageConfigurations} from './index';
+import {getDefaultCredentialProvider} from '@gomomento/sdk-core';
 
 /**
  * A client for interacting with the Momento Storage service.
@@ -20,19 +21,14 @@ export class PreviewStorageClient
   implements IStorageClient
 {
   constructor(props: StorageClientProps) {
-    const configuration =
-      props.configuration ?? getDefaultStorageConfiguration();
-    const propsWithConfiguration: StorageClientPropsWithConfig = {
-      ...props,
-      configuration,
+    const allProps: StorageClientAllProps = {
+      configuration: props.configuration ?? getDefaultStorageConfiguration(),
+      credentialProvider:
+        props.credentialProvider ?? getDefaultCredentialProvider(),
     };
 
-    const controlClient: IStorageControlClient = createControlClient(
-      propsWithConfiguration
-    );
-    const dataClient: IStorageDataClient = createDataClient(
-      propsWithConfiguration
-    );
+    const controlClient: IStorageControlClient = createControlClient(allProps);
+    const dataClient: IStorageDataClient = createDataClient(allProps);
     super([dataClient], controlClient);
   }
 
@@ -43,21 +39,13 @@ export class PreviewStorageClient
 }
 
 function createControlClient(
-  props: StorageClientPropsWithConfig
+  props: StorageClientAllProps
 ): IStorageControlClient {
-  return new StorageControlClient({
-    configuration: props.configuration,
-    credentialProvider: props.credentialProvider,
-  });
+  return new StorageControlClient(props);
 }
 
-function createDataClient(
-  props: StorageClientPropsWithConfig
-): IStorageDataClient {
-  return new StorageDataClient({
-    configuration: props.configuration,
-    credentialProvider: props.credentialProvider,
-  });
+function createDataClient(props: StorageClientAllProps): IStorageDataClient {
+  return new StorageDataClient(props);
 }
 
 function getDefaultStorageConfiguration(): StorageConfiguration {

@@ -12,10 +12,8 @@ import {CacheClientProps} from './cache-client-props';
 import {getWebCacheEndpoint} from './utils/web-client-utils';
 import {Configuration, Configurations} from './index';
 import {validateTtlSeconds} from '@gomomento/sdk-core/dist/src/internal/utils';
-
-interface CacheClientPropsWithConfiguration extends CacheClientProps {
-  configuration: Configuration;
-}
+import {CacheClientAllProps} from './internal/cache-client-all-props';
+import {getDefaultCredentialProvider} from '@gomomento/sdk-core';
 
 export class CacheClient extends AbstractCacheClient implements ICacheClient {
   private readonly _configuration: Configuration;
@@ -24,15 +22,16 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
     validateTtlSeconds(props.defaultTtlSeconds);
     const configuration =
       props.configuration ?? getDefaultCacheClientConfiguration();
-    const propsWithConfiguration: CacheClientPropsWithConfiguration = {
+    const credentialProvider =
+      props.credentialProvider ?? getDefaultCredentialProvider();
+    const allProps: CacheClientAllProps = {
       ...props,
       configuration,
+      credentialProvider,
     };
-    const controlClient: IControlClient = createControlClient(
-      propsWithConfiguration
-    );
-    const dataClient: IDataClient = createDataClient(propsWithConfiguration);
-    const pingClient: IPingClient = createPingClient(propsWithConfiguration);
+    const controlClient: IControlClient = createControlClient(allProps);
+    const dataClient: IDataClient = createDataClient(allProps);
+    const pingClient: IPingClient = createPingClient(allProps);
     super(controlClient, [dataClient], pingClient);
   }
 
@@ -66,18 +65,14 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
   }
 }
 
-function createControlClient(
-  props: CacheClientPropsWithConfiguration
-): IControlClient {
+function createControlClient(props: CacheClientAllProps): IControlClient {
   return new CacheControlClient({
     configuration: props.configuration,
     credentialProvider: props.credentialProvider,
   });
 }
 
-function createDataClient(
-  props: CacheClientPropsWithConfiguration
-): IDataClient {
+function createDataClient(props: CacheClientAllProps): IDataClient {
   return new CacheDataClient({
     configuration: props.configuration,
     credentialProvider: props.credentialProvider,
@@ -85,9 +80,7 @@ function createDataClient(
   });
 }
 
-function createPingClient(
-  props: CacheClientPropsWithConfiguration
-): IPingClient {
+function createPingClient(props: CacheClientAllProps): IPingClient {
   return new PingClient({
     endpoint: getWebCacheEndpoint(props.credentialProvider),
     configuration: props.configuration,

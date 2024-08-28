@@ -4,8 +4,9 @@ import {
   MomentoErrorCode,
   TopicClient,
   type TopicItem,
-  TopicPublish,
-  TopicSubscribe,
+  type TopicSubscribe,
+  TopicSubscribeResponse,
+  TopicPublishResponse,
 } from "@gomomento/sdk-web";
 
 export enum EventTypes {
@@ -102,34 +103,39 @@ export async function subscribeToTopic(
     onError: onErrorCb,
   });
 
-  if (resp instanceof TopicSubscribe.Subscription) {
-    subscription = resp;
-    return subscription;
+  switch (resp.type) {
+    case TopicSubscribeResponse.Subscription:
+      subscription = resp;
+      return subscription;
+    case TopicSubscribeResponse.Error:
+      throw new Error(`unable to subscribe to topic: ${resp}`);
   }
-
-  throw new Error(`unable to subscribe to topic: ${resp}`);
 }
 
 async function publish(cacheName: string, topicName: string, message: string) {
   const topicClient = await getWebTopicClient();
   const resp = await topicClient.publish(cacheName, topicName, message);
-  if (resp instanceof TopicPublish.Error) {
-    if (resp.errorCode() === MomentoErrorCode.AUTHENTICATION_ERROR) {
-      console.log(
-        "token has expired, going to refresh subscription and retry publish",
-      );
-      clearCurrentClient();
-      await subscribeToTopic(
-        cacheName,
-        topicName,
-        username,
-        onItemCb,
-        onErrorCb,
-      );
-      await publish(cacheName, topicName, message);
-    } else {
-      console.error("failed to publish to topic", resp);
-    }
+
+  switch (resp.type) {
+    case TopicPublishResponse.Success:
+      console.log("published to topic", resp);
+      break;
+    case TopicPublishResponse.Error:
+      if (resp.errorCode() === MomentoErrorCode.AUTHENTICATION_ERROR) {
+        console.log(
+          "token has expired, going to refresh subscription and retry publish",
+        );
+        clearCurrentClient();
+        await subscribeToTopic(
+          cacheName,
+          topicName,
+          username,
+          onItemCb,
+          onErrorCb,
+        );
+        await publish(cacheName, topicName, message);
+        break;
+      }
   }
 }
 

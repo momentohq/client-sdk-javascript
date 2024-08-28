@@ -1,4 +1,9 @@
-import {TopicItem, TopicSubscribe, TopicDiscontinuity} from '..';
+import {
+  TopicItem,
+  TopicSubscribe,
+  TopicDiscontinuity,
+  TopicHeartbeat,
+} from '..';
 
 /**
  * Options for the subscribe call.
@@ -25,7 +30,14 @@ export interface SubscribeCallOptions {
   /**
    * The callback to invoke when a discontinuity is received from the topic subscription.
    *
-   * @param item The discontinuity received from the topic subscription.
+   * @param discontinuity The discontinuity received from the topic subscription.
    */
   onDiscontinuity?: (discontinuity: TopicDiscontinuity) => void;
+
+  /**
+   * The callback to invoke when a heartbeat is received from the topic subscription.
+   *
+   * @param heartbeat The heartbeat received from the topic subscription.
+   */
+  onHeartbeat?: (heartbeat: TopicHeartbeat) => void;
 }

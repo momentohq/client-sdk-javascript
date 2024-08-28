@@ -3,7 +3,6 @@ import {
   StorageGet,
   StoragePut,
   StorageDelete,
-  CredentialProvider,
   MomentoLogger,
   UnknownError,
   MomentoErrorCode,
@@ -24,13 +23,8 @@ import {
 } from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import ValueCase = _StoreValue.ValueCase;
-import {StorageConfiguration} from '../config/storage-configuration';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-
-export interface StorageDataClientProps {
-  configuration: StorageConfiguration;
-  credentialProvider: CredentialProvider;
-}
+import {StorageClientAllProps} from './storage-client-all-props';
 
 export class StorageDataClient<
   REQ extends Request<REQ, RESP>,
@@ -47,7 +41,7 @@ export class StorageDataClient<
   /**
    * @param {DataClientProps} props
    */
-  constructor(props: StorageDataClientProps) {
+  constructor(props: StorageClientAllProps) {
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(false);
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.logger.debug(

@@ -3,8 +3,9 @@ import {TopicConfiguration, TopicConfigurations} from '.';
 import {PubsubClient} from './internal/pubsub-client';
 import {TopicClientProps} from './topic-client-props';
 import {WebhookClient} from './internal/webhook-client';
-import {TopicClientPropsWithConfiguration} from './internal/topic-client-props-with-config';
+import {TopicClientAllProps} from './internal/topic-client-all-props';
 import {range} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {getDefaultCredentialProvider} from '@gomomento/sdk-core';
 
 /**
  * Momento Topic Client.
@@ -16,22 +17,22 @@ export class TopicClient extends AbstractTopicClient {
    * Creates an instance of TopicClient.
    */
   constructor(props: TopicClientProps) {
-    const configuration: TopicConfiguration =
-      props.configuration ?? getDefaultTopicClientConfiguration();
-    const propsWithConfiguration: TopicClientPropsWithConfiguration = {
-      ...props,
-      configuration,
+    const allProps: TopicClientAllProps = {
+      credentialProvider:
+        props.credentialProvider ?? getDefaultCredentialProvider(),
+      configuration:
+        props.configuration ?? getDefaultTopicClientConfiguration(),
     };
 
-    const numClients = configuration
+    const numClients = allProps.configuration
       .getTransportStrategy()
       .getGrpcConfig()
       .getNumClients();
 
     super(
-      configuration.getLoggerFactory().getLogger(TopicClient.name),
-      range(numClients).map(_ => new PubsubClient(propsWithConfiguration)),
-      new WebhookClient(propsWithConfiguration)
+      allProps.configuration.getLoggerFactory().getLogger(TopicClient.name),
+      range(numClients).map(_ => new PubsubClient(allProps)),
+      new WebhookClient(allProps)
     );
 
     this.logger.debug('Instantiated Momento TopicClient');

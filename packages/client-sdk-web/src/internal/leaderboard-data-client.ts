@@ -38,7 +38,7 @@ import {ClientMetadataProvider} from './client-metadata-provider';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {_RankedElement} from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
 import {ILeaderboardDataClient} from '@gomomento/sdk-core/dist/src/internal/clients/leaderboard/ILeaderboardDataClient';
-import {LeaderboardClientPropsWithConfig} from './leaderboard-client-props-with-config';
+import {LeaderboardClientAllProps} from './leaderboard-client-all-props';
 import {_Unbounded} from '@gomomento/generated-types-webtext/dist/common_pb';
 
 export class LeaderboardDataClient<
@@ -52,7 +52,7 @@ export class LeaderboardDataClient<
   private readonly clientMetadataProvider: ClientMetadataProvider;
   private readonly deadlineMillis: number;
 
-  constructor(props: LeaderboardClientPropsWithConfig) {
+  constructor(props: LeaderboardClientAllProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
       props.configuration.getThrowOnErrors()

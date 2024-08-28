@@ -5,7 +5,7 @@ export interface AuthClientProps {
   /**
    * controls how the client will get authentication information for connecting to the Momento service
    */
-  credentialProvider: CredentialProvider;
+  credentialProvider?: CredentialProvider;
 
   /**
    * Controls the configuration settings for the auth client, such as logging configuration.

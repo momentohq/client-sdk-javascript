@@ -9,7 +9,7 @@ export interface CacheClientProps {
   /**
    * controls how the client will get authentication information for connecting to the Momento service
    */
-  credentialProvider: CredentialProvider;
+  credentialProvider?: CredentialProvider;
   /**
    * the default time to live of object inside of cache, in seconds
    */

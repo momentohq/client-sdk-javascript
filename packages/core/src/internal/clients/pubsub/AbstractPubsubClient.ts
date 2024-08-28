@@ -13,6 +13,7 @@ import {
   SubscribeCallOptions,
   MomentoLoggerFactory,
   TopicDiscontinuity,
+  TopicHeartbeat,
 } from '../../../index';
 import {SubscriptionState} from '../../subscription-state';
 import {IPubsubClient} from './IPubsubClient';
@@ -30,6 +31,7 @@ export interface SendSubscribeOptions {
     subscription: TopicSubscribe.Subscription
   ) => void;
   onDiscontinuity: (discontinuity: TopicDiscontinuity) => void;
+  onHeartbeat: (heartbeat: TopicHeartbeat) => void;
   subscriptionState: SubscriptionState;
   subscription: TopicSubscribe.Subscription;
 
@@ -145,6 +147,11 @@ export abstract class AbstractPubsubClient<TGrpcError>
       (() => {
         return;
       });
+    const onHeartbeat =
+      options.onHeartbeat ??
+      (() => {
+        return;
+      });
 
     const subscriptionState = new SubscriptionState();
     const subscription = new TopicSubscribe.Subscription(
@@ -157,6 +164,7 @@ export abstract class AbstractPubsubClient<TGrpcError>
       onItem: onItem,
       onError: onError,
       onDiscontinuity: onDiscontinuity,
+      onHeartbeat: onHeartbeat,
       subscriptionState: subscriptionState,
       subscription: subscription,
       restartedDueToError: false,

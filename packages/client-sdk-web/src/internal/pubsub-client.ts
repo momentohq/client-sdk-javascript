@@ -3,6 +3,7 @@ import * as cachepubsub_pb from '@gomomento/generated-types-webtext/dist/cachepu
 import {
   CredentialProvider,
   TopicDiscontinuity,
+  TopicHeartbeat,
   TopicItem,
   UnknownError,
 } from '@gomomento/sdk-core';
@@ -21,7 +22,7 @@ import {
   getWebCacheEndpoint,
 } from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
-import {TopicClientPropsWithConfiguration} from './topic-client-props-with-config';
+import {TopicClientAllProps} from './topic-client-all-props';
 
 export class PubsubClient<
   REQ extends Request<REQ, RESP>,
@@ -38,7 +39,7 @@ export class PubsubClient<
   private static readonly BROWSER_DISCONNECT =
     'Http response at 400 or 500 level, http status code: 0';
 
-  constructor(props: TopicClientPropsWithConfiguration) {
+  constructor(props: TopicClientAllProps) {
     super(
       props.configuration.getLoggerFactory(),
       props.configuration.getLoggerFactory().getLogger(PubsubClient.name),
@@ -207,6 +208,7 @@ export class PubsubClient<
           'Received heartbeat from subscription stream; topic: %s',
           truncateString(options.topicName)
         );
+        options.onHeartbeat(new TopicHeartbeat());
       } else if (discontinuity) {
         this.getLogger().trace(
           'Received discontinuity from subscription stream; topic: %s',

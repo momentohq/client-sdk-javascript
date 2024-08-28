@@ -22,8 +22,8 @@ import {
   validateTopicName,
   validateWebhookName,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
-import {TopicClientPropsWithConfiguration} from './topic-client-props-with-config';
 import {RetryInterceptor} from './grpc/retry-interceptor';
+import {TopicClientAllProps} from './topic-client-all-props';
 
 export class WebhookClient implements IWebhookClient {
   private readonly webhookClient: grpcWebhook.WebhookClient;
@@ -36,7 +36,7 @@ export class WebhookClient implements IWebhookClient {
   /**
    * @param {TopicClientProps} props
    */
-  constructor(props: TopicClientPropsWithConfiguration) {
+  constructor(props: TopicClientAllProps) {
     this.credentialProvider = props.credentialProvider;
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(

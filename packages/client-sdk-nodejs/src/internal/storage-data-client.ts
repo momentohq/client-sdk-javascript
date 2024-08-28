@@ -22,7 +22,7 @@ import {version} from '../../package.json';
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {IStorageDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {StorageConfiguration} from '../config/storage-configuration';
-import {StorageClientPropsWithConfig} from './storage-client-props-with-config';
+import {StorageClientAllProps} from './storage-client-all-props';
 import {StaticGrpcConfiguration} from '../config/transport/cache';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {RetryInterceptor} from './grpc/retry-interceptor';
@@ -38,9 +38,9 @@ export class StorageDataClient implements IStorageDataClient {
   private static readonly DEFAULT_MAX_SESSION_MEMORY_MB: number = 256;
 
   /**
-   * @param {StorageClientPropsWithConfig} props
+   * @param {StorageClientAllProps} props
    */
-  constructor(props: StorageClientPropsWithConfig) {
+  constructor(props: StorageClientAllProps) {
     this.configuration = props.configuration;
     this.credentialProvider = props.credentialProvider;
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(false);
