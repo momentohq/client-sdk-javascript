@@ -93,7 +93,6 @@ import {
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
-  getDefaultCredentialProvider,
   MomentoErrorCode,
   SdkError,
   CacheAlreadyExistsError,
