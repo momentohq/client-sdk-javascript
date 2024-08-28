@@ -108,6 +108,7 @@ import {
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
+  getDefaultCredentialProvider,
 } from './auth';
 
 import {
@@ -221,6 +222,7 @@ export {
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
+  getDefaultCredentialProvider,
   SetBatchItem,
 
   // CacheClient Response Types

@@ -24,7 +24,7 @@ import {
   PrepareSubscribeCallbackOptions,
 } from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/AbstractPubsubClient';
 import {TopicConfiguration} from '../config/topic-configuration';
-import {TopicClientPropsWithConfiguration} from './topic-client-props-with-config';
+import {TopicClientAllProps} from './topic-client-all-props';
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {RetryInterceptor} from './grpc/retry-interceptor';
 
@@ -43,7 +43,7 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   /**
    * @param {TopicClientProps} props
    */
-  constructor(props: TopicClientPropsWithConfiguration) {
+  constructor(props: TopicClientAllProps) {
     super(
       props.configuration.getLoggerFactory(),
       props.configuration.getLoggerFactory().getLogger(PubsubClient.name),

@@ -7,8 +7,8 @@ import {MomentoLogger, StoreInfo, ListStores, MomentoErrorCode} from '..';
 import {version} from '../../package.json';
 import {validateStoreName} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {CreateStore, DeleteStore} from '@gomomento/sdk-core';
-import {StorageClientPropsWithConfig} from './storage-client-props-with-config';
 import {RetryInterceptor} from './grpc/retry-interceptor';
+import {StorageClientAllProps} from './storage-client-all-props';
 
 export class StorageControlClient {
   private readonly clientWrapper: grpcControl.ScsControlClient;
@@ -20,7 +20,7 @@ export class StorageControlClient {
   /**
    * @param {StorageClientProps} props
    */
-  constructor(props: StorageClientPropsWithConfig) {
+  constructor(props: StorageClientAllProps) {
     this.logger = props.configuration.getLoggerFactory().getLogger(this);
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(false);
     const headers = [

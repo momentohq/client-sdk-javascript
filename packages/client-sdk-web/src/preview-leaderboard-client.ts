@@ -2,10 +2,14 @@ import {ILeaderboardDataClient} from '@gomomento/sdk-core/dist/src/internal/clie
 import {Leaderboard} from './internal/leaderboard';
 import {LeaderboardDataClient} from './internal/leaderboard-data-client';
 import {LeaderboardClientProps} from './leaderboard-client-props';
-import {ILeaderboardClient, ILeaderboard} from '@gomomento/sdk-core';
+import {
+  ILeaderboardClient,
+  ILeaderboard,
+  getDefaultCredentialProvider,
+} from '@gomomento/sdk-core';
 import {LeaderboardConfiguration} from './config/leaderboard-configuration';
 import {LeaderboardConfigurations} from './index';
-import {LeaderboardClientPropsWithConfig} from './internal/leaderboard-client-props-with-config';
+import {LeaderboardClientAllProps} from './internal/leaderboard-client-all-props';
 
 /**
  * PREVIEW Momento Leaderboard Client
@@ -20,13 +24,13 @@ export class PreviewLeaderboardClient implements ILeaderboardClient {
   private dataClient: ILeaderboardDataClient;
 
   constructor(props: LeaderboardClientProps) {
-    const configuration =
-      props.configuration ?? getDefaultLeaderboardConfiguration();
-    const propsWithConfig: LeaderboardClientPropsWithConfig = {
-      ...props,
-      configuration: configuration,
+    const allProps: LeaderboardClientAllProps = {
+      configuration:
+        props.configuration ?? getDefaultLeaderboardConfiguration(),
+      credentialProvider:
+        props.credentialProvider ?? getDefaultCredentialProvider(),
     };
-    this.dataClient = new LeaderboardDataClient(propsWithConfig);
+    this.dataClient = new LeaderboardDataClient(allProps);
   }
 
   close() {

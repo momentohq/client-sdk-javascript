@@ -113,7 +113,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/messages/responses/grpc-response-types';
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
-import {CacheClientPropsWithConfig} from './cache-client-props-with-config';
+import {CacheClientAllProps} from './cache-client-all-props';
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {ConnectionError} from '@gomomento/sdk-core/dist/src/errors';
 import {common} from '@gomomento/generated-types/dist/common';
@@ -167,7 +167,7 @@ export class CacheDataClient implements IDataClient {
    * @param semaphore
    */
   constructor(
-    props: CacheClientPropsWithConfig,
+    props: CacheClientAllProps,
     dataClientID: string,
     semaphore: Semaphore | undefined
   ) {
