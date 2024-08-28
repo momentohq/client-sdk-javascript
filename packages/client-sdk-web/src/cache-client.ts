@@ -10,13 +10,10 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/clients';
 import {CacheClientProps} from './cache-client-props';
 import {getWebCacheEndpoint} from './utils/web-client-utils';
-import {
-  Configuration,
-  Configurations,
-  getDefaultCredentialProvider,
-} from './index';
+import {Configuration, Configurations} from './index';
 import {validateTtlSeconds} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {CacheClientAllProps} from './internal/cache-client-all-props';
+import {getDefaultCredentialProvider} from '@gomomento/sdk-core';
 
 export class CacheClient extends AbstractCacheClient implements ICacheClient {
   private readonly _configuration: Configuration;

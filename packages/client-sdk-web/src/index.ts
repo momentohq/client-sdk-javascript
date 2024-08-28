@@ -193,7 +193,6 @@ export {
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
-  getDefaultCredentialProvider,
   AllDataReadWrite,
   CacheRole,
   TopicRole,

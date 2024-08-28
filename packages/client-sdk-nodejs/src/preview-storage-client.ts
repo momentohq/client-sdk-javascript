@@ -9,7 +9,8 @@ import {StorageClientAllProps} from './internal/storage-client-all-props';
 import {StorageControlClient} from './internal/storage-control-client';
 import {StorageDataClient} from './internal/storage-data-client';
 import {StorageConfiguration} from './config/storage-configuration';
-import {getDefaultCredentialProvider, StorageConfigurations} from './index';
+import {StorageConfigurations} from './index';
+import {getDefaultCredentialProvider} from '@gomomento/sdk-core';
 
 /**
  * A client for interacting with the Momento Storage service.

@@ -1,12 +1,6 @@
 import {CacheControlClient} from './internal/cache-control-client';
 import {CacheDataClient} from './internal/cache-data-client';
-import {
-  CacheFlush,
-  MomentoLogger,
-  Configuration,
-  Configurations,
-  getDefaultCredentialProvider,
-} from '.';
+import {CacheFlush, MomentoLogger, Configuration, Configurations} from '.';
 import {CacheClientProps, EagerCacheClientProps} from './cache-client-props';
 import {
   range,
@@ -18,6 +12,7 @@ import {
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {AbstractCacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/AbstractCacheClient';
 import {CacheClientAllProps} from './internal/cache-client-all-props';
+import {getDefaultCredentialProvider} from '@gomomento/sdk-core';
 
 const EAGER_CONNECTION_DEFAULT_TIMEOUT_SECONDS = 30;
 

@@ -1,13 +1,10 @@
-import {
-  getDefaultCredentialProvider,
-  TopicConfiguration,
-  TopicConfigurations,
-} from '.';
+import {TopicConfiguration, TopicConfigurations} from '.';
 import {PubsubClient} from './internal/pubsub-client';
 import {TopicClientProps} from './topic-client-props';
 import {AbstractTopicClient} from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/AbstractTopicClient';
 import {WebhookClient} from './internal/webhook-client';
 import {TopicClientAllProps} from './internal/topic-client-all-props';
+import {getDefaultCredentialProvider} from '@gomomento/sdk-core';
 
 /**
  * Momento Topic Client.
