@@ -4,7 +4,6 @@ import {TopicClient, TopicConfigurations, CredentialProvider} from '@gomomento/s
 function main() {
   const cacheClient = new TopicClient({
     configuration: TopicConfigurations.Default.latest(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
   });
 }
 

@@ -1,7 +1,6 @@
 import {
   CacheClient,
   Configurations,
-  CredentialProvider,
   CreateCacheResponse,
   CacheSetResponse,
   CacheGetResponse,
@@ -14,7 +13,6 @@ async function main() {
   initJSDom();
   const momento = new CacheClient({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 

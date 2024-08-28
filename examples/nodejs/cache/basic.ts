@@ -1,7 +1,6 @@
 import {
   CacheClient,
   Configurations,
-  CredentialProvider,
   CreateCacheResponse,
   CacheSetResponse,
   CacheGetResponse,
@@ -10,7 +9,6 @@ import {
 async function main() {
   const momento = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 

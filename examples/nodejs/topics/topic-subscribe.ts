@@ -5,6 +5,8 @@ import {
   CredentialProvider,
   TopicConfigurations,
   TopicSubscribeResponse,
+  TopicDiscontinuity,
+  TopicHeartbeat,
 } from '@gomomento/sdk';
 import {ensureCacheExists} from './utils/cache';
 
@@ -26,6 +28,8 @@ async function main() {
   const response = await momento.subscribe(cacheName, topicName, {
     onItem: handleItem,
     onError: handleError,
+    onDiscontinuity: handleDiscontinuity,
+    onHeartbeat: handleHeartbeat,
   });
 
   switch (response.type) {
@@ -55,6 +59,14 @@ function handleError(error: TopicSubscribe.Error) {
 
   // optionally: unsubscribe from the topic subscription
   //subscription.unsubscribe();
+}
+
+function handleDiscontinuity(discontinuity: TopicDiscontinuity) {
+  console.log('Discontinuity received from topic subscription');
+}
+
+function handleHeartbeat(heartbeat: TopicHeartbeat) {
+  console.log('Heartbeat received from topic subscription');
 }
 
 main()

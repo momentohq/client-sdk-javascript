@@ -10,7 +10,6 @@ import {
 async function main() {
   const storageClient = new PreviewStorageClient({
     configuration: StorageConfigurations.Laptop.latest(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
   });
 
   const storeName = 'my-store';
