@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "eslint . --ext .ts",
     "build": "tsc",
-    "validate-examples": "tsc && node dist/doc-example-files/webhook-doc-examples.js",
+    "validate-examples": "tsc && node dist/webhook-doc-examples.js",
     "test": "jest",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix"
