@@ -69,6 +69,7 @@ import * as TopicPublish from './messages/responses/topic-publish';
 import * as TopicSubscribe from './messages/responses/topic-subscribe';
 import {TopicItem} from './messages/responses/topic-item';
 import {TopicDiscontinuity} from './messages/responses/topic-discontinuity';
+import {TopicHeartbeat} from './messages/responses/topic-heartbeat';
 
 // AuthClient Response Types
 import * as GenerateApiKey from './messages/responses/generate-api-key';
@@ -293,6 +294,7 @@ export {
   TopicSubscribe,
   TopicItem,
   TopicDiscontinuity,
+  TopicHeartbeat,
   SubscribeCallOptions,
   // AuthClient Response Types
   GenerateApiKey,
