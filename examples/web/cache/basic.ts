@@ -1,4 +1,11 @@
-import {CacheGet, CreateCache, CacheSet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk-web';
+import {
+  CacheClient,
+  Configurations,
+  CredentialProvider,
+  CreateCacheResponse,
+  CacheSetResponse,
+  CacheGetResponse,
+} from '@gomomento/sdk-web';
 import {initJSDom} from './utils/jsdom';
 
 async function main() {
@@ -12,27 +19,39 @@ async function main() {
   });
 
   const createCacheResponse = await momento.createCache('cache');
-  if (createCacheResponse instanceof CreateCache.AlreadyExists) {
-    console.log('cache already exists');
-  } else if (createCacheResponse instanceof CreateCache.Error) {
-    throw createCacheResponse.innerException();
+  switch (createCacheResponse.type) {
+    case CreateCacheResponse.AlreadyExists:
+      console.log('cache already exists');
+      break;
+    case CreateCacheResponse.Success:
+      console.log('cache created');
+      break;
+    case CreateCacheResponse.Error:
+      throw createCacheResponse.innerException();
   }
 
   console.log('Storing key=foo, value=FOO');
   const setResponse = await momento.set('cache', 'foo', 'FOO');
-  if (setResponse instanceof CacheSet.Success) {
-    console.log('Key stored successfully!');
-  } else {
-    console.log(`Error setting key: ${setResponse.toString()}`);
+  switch (setResponse.type) {
+    case CacheSetResponse.Success:
+      console.log('Key stored successfully!');
+      break;
+    case CacheSetResponse.Error:
+      console.log(`Error setting key: ${setResponse.toString()}`);
+      break;
   }
 
   const getResponse = await momento.get('cache', 'foo');
-  if (getResponse instanceof CacheGet.Hit) {
-    console.log(`cache hit: ${getResponse.valueString()}`);
-  } else if (getResponse instanceof CacheGet.Miss) {
-    console.log('cache miss');
-  } else if (getResponse instanceof CacheGet.Error) {
-    console.log(`Error: ${getResponse.message()}`);
+  switch (getResponse.type) {
+    case CacheGetResponse.Miss:
+      console.log('cache miss');
+      break;
+    case CacheGetResponse.Hit:
+      console.log(`cache hit: ${getResponse.valueString()}`);
+      break;
+    case CacheGetResponse.Error:
+      console.log(`Error: ${getResponse.message()}`);
+      break;
   }
 }
 

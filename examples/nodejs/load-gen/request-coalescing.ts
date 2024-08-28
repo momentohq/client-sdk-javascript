@@ -14,7 +14,7 @@ import {
   initiateRequestCoalescerContext,
 } from './utils/load-gen';
 import {getElapsedMillis, logCoalescingStats, logStats} from './utils/load-gen-statistics-calculator';
-import {createCache, getCacheClient} from './utils/cache';
+import {ensureCacheExists, getCacheClient} from './utils/cache';
 import {GetAndSetOnlyClient, MomentoClientWrapperWithCoalescing} from './utils/momento-client-with-coalescing';
 
 const cacheKeys: string[] = [];
@@ -45,7 +45,7 @@ class RequestCoalescerLoadGen {
   async run(): Promise<void> {
     const momento = await getCacheClient(this.loggerFactory, this.options.requestTimeoutMs, this.cacheItemTtlSeconds);
 
-    await createCache(momento, this.cacheName, this.logger);
+    await ensureCacheExists(this.cacheName);
 
     this.logger.trace(`delayMillisBetweenRequests: ${this.delayMillisBetweenRequests}`);
 
