@@ -1,10 +1,4 @@
-import {
-  CacheClient,
-  Configurations,
-  CreateCacheResponse,
-  CacheSetResponse,
-  CacheGetResponse,
-} from '@gomomento/sdk-web';
+import {CacheClient, Configurations, CreateCacheResponse, CacheSetResponse, CacheGetResponse} from '@gomomento/sdk-web';
 import {initJSDom} from './utils/jsdom';
 
 async function main() {
