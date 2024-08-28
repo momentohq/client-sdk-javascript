@@ -29,7 +29,7 @@ node.js server-side applications, check out the [Momento Node.js SDK](../client-
 ## Usage
 
 ```javascript
-import {CacheGet, CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk-web';
+import {CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk-web';
 import {initJSDom} from './utils/jsdom';
 async function main() {
   // Because the Momento Web SDK is intended for use in a browser, we use the JSDom library to set up an environment
@@ -44,9 +44,7 @@ async function main() {
   await cacheClient.createCache('cache');
   await cacheClient.set('cache', 'foo', 'FOO');
   const getResponse = await cacheClient.get('cache', 'foo');
-  if (getResponse instanceof CacheGet.Hit) {
-    console.log(`Got value: ${getResponse.valueString()}`);
-  }
+  console.log(`Value: ${getResponse.value() ?? 'CACHE MISS OR ERROR'}`);
 }
 
 main().catch(e => {

@@ -1,4 +1,4 @@
-import {TopicClient, TopicPublish, CredentialProvider, TopicConfigurations} from '@gomomento/sdk';
+import {TopicClient, CredentialProvider, TopicConfigurations, TopicPublishResponse} from '@gomomento/sdk';
 
 import {ensureCacheExists} from './utils/cache';
 
@@ -18,10 +18,13 @@ async function main() {
 
   console.log(`Publishing cacheName=${cacheName}, topicName=${topicName}, value=${value}`);
   const publishResponse = await momento.publish(cacheName, topicName, value);
-  if (publishResponse instanceof TopicPublish.Success) {
-    console.log('Value published successfully!');
-  } else {
-    console.log(`Error publishing value: ${publishResponse.toString()}`);
+  switch (publishResponse.type) {
+    case TopicPublishResponse.Success:
+      console.log('Value published successfully!');
+      break;
+    case TopicPublishResponse.Error:
+      console.log(`Error publishing value: ${publishResponse.toString()}`);
+      break;
   }
 }
 

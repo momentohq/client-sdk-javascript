@@ -4,8 +4,9 @@ import {
   MomentoErrorCode,
   TopicClient,
   type TopicItem,
-  TopicPublish,
+  TopicPublishResponse,
   TopicSubscribe,
+  TopicSubscribeResponse,
 } from "@gomomento/sdk-web";
 import { CognitoIdentityProviderClient, InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider";
 import jwt_decode from "jwt-decode";
@@ -184,33 +185,39 @@ export async function subscribeToTopic(
     onItem: onItemCb,
     onError: onErrorCb,
   });
-  if (resp instanceof TopicSubscribe.Subscription) {
-    subscription = resp;
-    return subscription;
+  switch (resp.type) {
+    case TopicSubscribeResponse.Error:
+      throw new Error(`unable to subscribe to topic: ${resp}`);
+    case TopicSubscribeResponse.Subscription: {
+      subscription = resp;
+      return subscription;
+    }
   }
-
-  throw new Error(`unable to subscribe to topic: ${resp}`);
 }
 
 async function publish(cacheName: string, topicName: string, message: string) {
   const topicClient = await getWebTopicClient();
   const resp = await topicClient.publish(cacheName, topicName, message);
-  if (resp instanceof TopicPublish.Error) {
-    if (resp.errorCode() === MomentoErrorCode.AUTHENTICATION_ERROR) {
-      console.log(
-        "token has expired, going to refresh subscription and retry publish",
-      );
-      clearCurrentClient();
-      await subscribeToTopic(cacheName, topicName, onItemCb, onErrorCb);
-      await publish(cacheName, topicName, message);
-    }
-    else if (resp.errorCode() === MomentoErrorCode.PERMISSION_ERROR) {
-      console.log("User is not allowed to publish to topic", resp);
-      alert("You have entered the chat room as a read-only user!");
-    }
-    else {
-      console.error("failed to publish to topic", resp);
-    }
+  switch (resp.type) {
+    case TopicPublishResponse.Success:
+      break;
+    case TopicPublishResponse.Error:
+      if (resp.errorCode() === MomentoErrorCode.AUTHENTICATION_ERROR) {
+        console.log(
+          "token has expired, going to refresh subscription and retry publish",
+        );
+        clearCurrentClient();
+        await subscribeToTopic(cacheName, topicName, onItemCb, onErrorCb);
+        await publish(cacheName, topicName, message);
+      }
+      else if (resp.errorCode() === MomentoErrorCode.PERMISSION_ERROR) {
+        console.log("User is not allowed to publish to topic", resp);
+        alert("You have entered the chat room as a read-only user!");
+      }
+      else {
+        console.error("failed to publish to topic", resp);
+      }
+      break;
   }
 }
 

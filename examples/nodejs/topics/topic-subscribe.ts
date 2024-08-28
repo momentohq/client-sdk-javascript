@@ -1,4 +1,11 @@
-import {TopicClient, TopicItem, TopicSubscribe, CredentialProvider, TopicConfigurations} from '@gomomento/sdk';
+import {
+  TopicClient,
+  TopicItem,
+  TopicSubscribe,
+  CredentialProvider,
+  TopicConfigurations,
+  TopicSubscribeResponse,
+} from '@gomomento/sdk';
 import {ensureCacheExists} from './utils/cache';
 
 async function main() {
@@ -21,11 +28,13 @@ async function main() {
     onError: handleError,
   });
 
-  if (response instanceof TopicSubscribe.Subscription) {
-    console.log('Subscribed to topic');
-  } else {
-    console.log(`Error subscribing to topic: ${response.toString()}`);
-    return;
+  switch (response.type) {
+    case TopicSubscribeResponse.Error:
+      console.log(`Error subscribing to topic: ${response.toString()}`);
+      return;
+    case TopicSubscribeResponse.Subscription:
+      console.log('Subscribed to topic');
+      break;
   }
 
   const sleep = (seconds: number) => new Promise(r => setTimeout(r, seconds * 1000));

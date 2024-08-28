@@ -8,8 +8,8 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 import {
-	CacheClient, CacheDelete,
-	CacheGet, CacheSet,
+	CacheClient, CacheDelete, CacheDeleteResponse,
+	CacheGet, CacheGetResponse, CacheSet, CacheSetResponse,
 	Configurations, CreateCache,
 	CredentialProvider,
 } from "@gomomento/sdk-web";
@@ -34,15 +34,17 @@ class MomentoFetcher {
 
 	async get(cacheName: string, key: string) {
 		const getResponse = await this.momento.get(cacheName, key);
-		if (getResponse instanceof CacheGet.Hit) {
-			console.log(`cache hit: ${getResponse.valueString()}`);
-		} else if (getResponse instanceof CacheGet.Miss) {
-			console.log(`cache miss for key ${key}`);
-		} else if (getResponse instanceof CacheGet.Error) {
-			console.log(`Error when getting value from cache! ${getResponse.toString()}`);
-			throw new Error(`Error retrieving key ${key}: ${getResponse.message()}`);
+		switch (getResponse.type) {
+			case CacheGetResponse.Miss:
+				console.log(`cache miss for key ${key}`);
+				break;
+			case CacheGetResponse.Hit:
+				console.log(`cache hit: ${getResponse.valueString()}`);
+				break;
+			case CacheGetResponse.Error:
+				console.log(`Error when getting value from cache! ${getResponse.toString()}`);
+				throw new Error(`Error retrieving key ${key}: ${getResponse.message()}`);
 		}
-
 		return getResponse;
 	}
 
@@ -51,11 +53,13 @@ class MomentoFetcher {
 			ttl: ttl_seconds,
 		});
 
-		if (setResponse instanceof CacheSet.Success) {
-			console.log('Key stored successfully!');
-		} else if (setResponse instanceof CacheSet.Error) {
-			console.log(`Error when setting value in cache! ${setResponse.toString()}`);
-			throw new Error(`Error setting key ${key}: ${setResponse.toString()}`);
+		switch (setResponse.type) {
+			case CacheSetResponse.Success:
+				console.log('Key stored successfully!');
+				break;
+			case CacheSetResponse.Error:
+				console.log(`Error when setting value in cache! ${setResponse.toString()}`);
+				throw new Error(`Error setting key ${key}: ${setResponse.toString()}`);
 		}
 
 		return;
@@ -63,11 +67,13 @@ class MomentoFetcher {
 
 	async delete(cacheName: string, key: string) {
 		const delResponse = await this.momento.delete(cacheName, key);
-		if (delResponse instanceof CacheDelete.Success) {
-			console.log(`successfully deleted ${key} from cache`);
-		} else if (delResponse instanceof CacheDelete.Error) {
-			console.log(`Error when deleting value from cache! ${delResponse.toString()}`);
-			throw new Error(`failed to delete ${key} from cache. Message: ${delResponse.message()}; cache: ${cacheName}`);
+		switch (delResponse.type) {
+			case CacheDeleteResponse.Success:
+				console.log(`successfully deleted ${key} from cache`);
+				break;
+			case CacheDeleteResponse.Error:
+				console.log(`Error when deleting value from cache! ${delResponse.toString()}`);
+				throw new Error(`failed to delete ${key} from cache. Message: ${delResponse.message()}; cache: ${cacheName}`);
 		}
 
 		return;

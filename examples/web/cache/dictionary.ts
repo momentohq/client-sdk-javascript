@@ -1,16 +1,16 @@
 import {
-  CreateCache,
   CacheClient,
-  EnvMomentoTokenProvider,
-  Configurations,
-  CacheDictionarySetField,
-  CacheDictionarySetFields,
-  CacheDictionaryGetField,
-  CacheDictionaryGetFields,
-  CacheDictionaryFetch,
-  MomentoLoggerFactory,
-  DefaultMomentoLoggerFactory,
+  CacheDictionaryFetchResponse,
+  CacheDictionaryGetFieldResponse,
+  CacheDictionaryGetFieldsResponse,
+  CacheDictionarySetFieldResponse,
+  CacheDictionarySetFieldsResponse,
   CollectionTtl,
+  Configurations,
+  CreateCacheResponse,
+  DefaultMomentoLoggerFactory,
+  EnvMomentoTokenProvider,
+  MomentoLoggerFactory,
 } from '@gomomento/sdk-web';
 import {initJSDom} from './utils/jsdom';
 
@@ -35,15 +35,20 @@ const main = async () => {
   // that will allow us to use it in a node.js program.
   initJSDom();
   const createCacheResponse = await momento.createCache(cacheName);
-  if (createCacheResponse instanceof CreateCache.AlreadyExists) {
-    console.log('cache already exists');
-  } else if (createCacheResponse instanceof CreateCache.Error) {
-    throw createCacheResponse.innerException();
+  switch (createCacheResponse.type) {
+    case CreateCacheResponse.AlreadyExists:
+      console.log('cache already exists');
+      break;
+    case CreateCacheResponse.Success:
+      console.log('cache created');
+      break;
+    case CreateCacheResponse.Error:
+      throw createCacheResponse.innerException();
   }
 
   // Set a value
   const dictionarySetFieldResponse = await momento.dictionarySetField(cacheName, dictionaryName, 'field1', 'value1');
-  if (dictionarySetFieldResponse instanceof CacheDictionarySetField.Error) {
+  if (dictionarySetFieldResponse.type === CacheDictionarySetFieldResponse.Error) {
     console.log(`Error setting a value in a dictionary: ${dictionarySetFieldResponse.message()}`);
     process.exitCode = 1;
   }
@@ -62,7 +67,7 @@ const main = async () => {
       ttl: CollectionTtl.of(30).withNoRefreshTtlOnUpdates(),
     }
   );
-  if (dictionarySetFieldsResponse instanceof CacheDictionarySetFields.Error) {
+  if (dictionarySetFieldsResponse.type === CacheDictionarySetFieldsResponse.Error) {
     console.log(`Error setting multiple values in a dictionary: ${dictionarySetFieldsResponse.message()}`);
     process.exitCode = 1;
   }
@@ -71,43 +76,58 @@ const main = async () => {
   console.log('\nGetting a single dictionary value');
   const field = 'field1';
   const dictionaryGetFieldResponse = await momento.dictionaryGetField(cacheName, dictionaryName, field);
-  if (dictionaryGetFieldResponse instanceof CacheDictionaryGetField.Hit) {
-    console.log(`Dictionary get of ${field}: status=HIT; value=${dictionaryGetFieldResponse.valueString()}`);
-  } else if (dictionaryGetFieldResponse instanceof CacheDictionaryGetField.Miss) {
-    // In this example you can get here if you:
-    // - change the field name to one that does not exist, or if you
-    // - set a short TTL, then add a sleep so that it expires.
-    console.log(`Dictionary get of ${field}: status=MISS`);
-  } else if (dictionaryGetFieldResponse instanceof CacheDictionaryGetField.Error) {
-    console.log(`Error getting value from dictionary: ${dictionaryGetFieldResponse.message()}`);
-    process.exitCode = 1;
+  switch (dictionaryGetFieldResponse.type) {
+    case CacheDictionaryGetFieldResponse.Miss:
+      // In this example you can get here if you:
+      // - change the field name to one that does not exist, or if you
+      // - set a short TTL, then add a sleep so that it expires.
+      console.log(`Dictionary get of ${field}: status=MISS`);
+      break;
+    case CacheDictionaryGetFieldResponse.Hit:
+      console.log(`Dictionary get of ${field}: status=HIT; value=${dictionaryGetFieldResponse.valueString()}`);
+      break;
+    case CacheDictionaryGetFieldResponse.Error:
+      console.log(`Error getting value from dictionary: ${dictionaryGetFieldResponse.message()}`);
+      process.exitCode = 1;
+      break;
   }
 
   // Get multiple values
   console.log('\nGetting multiple dictionary values');
   const fieldsList = ['field1', 'field2', 'field3', 'field4'];
   const dictionaryGetFieldsResponse = await momento.dictionaryGetFields(cacheName, dictionaryName, fieldsList);
-  if (dictionaryGetFieldsResponse instanceof CacheDictionaryGetFields.Hit) {
-    console.log(`Got dictionary fields: ${JSON.stringify(dictionaryGetFieldsResponse.valueRecord(), null, 2)}`);
-  } else if (dictionaryGetFieldsResponse instanceof CacheDictionaryGetFields.Error) {
-    console.log(`Error getting values from a dictionary: ${dictionaryGetFieldsResponse.message()}`);
-    process.exitCode = 1;
+  switch (dictionaryGetFieldsResponse.type) {
+    case CacheDictionaryGetFieldsResponse.Miss:
+      console.log(`Dictionary get of ${JSON.stringify(fieldsList)}: status=MISS`);
+      break;
+    case CacheDictionaryGetFieldsResponse.Hit:
+      console.log(`Got dictionary fields: ${JSON.stringify(dictionaryGetFieldsResponse.valueRecord(), null, 2)}`);
+      break;
+    case CacheDictionaryGetFieldsResponse.Error:
+      console.log(`Error getting values from a dictionary: ${dictionaryGetFieldsResponse.message()}`);
+      process.exitCode = 1;
+      break;
   }
 
   // Get the whole dictionary
   console.log('\nGetting an entire dictionary');
   const dictionaryFetchResponse = await momento.dictionaryFetch(cacheName, dictionaryName);
-  if (dictionaryFetchResponse instanceof CacheDictionaryFetch.Hit) {
-    const dictionary = dictionaryFetchResponse.valueRecord();
-    console.log(`Fetched dictionary: ${JSON.stringify(dictionary, null, 2)}`);
-  } else if (dictionaryFetchResponse instanceof CacheDictionaryFetch.Miss) {
-    // You can reach here by:
-    // - fetching a dictionary that does not exist, e.g. changing the name above, or
-    // - setting a short TTL and adding a Task.Delay so the dictionary expires
-    console.log(`Expected ${dictionaryName} to be a hit; got a miss.`);
-  } else if (dictionaryFetchResponse instanceof CacheDictionaryFetch.Error) {
-    console.log(`Error while fetching ${dictionaryName}: ${dictionaryFetchResponse.message()}`);
-    process.exitCode = 1;
+  switch (dictionaryFetchResponse.type) {
+    case CacheDictionaryFetchResponse.Miss:
+      // You can reach here by:
+      // - fetching a dictionary that does not exist, e.g. changing the name above, or
+      // - setting a short TTL and adding a Task.Delay so the dictionary expires
+      console.log(`Expected ${dictionaryName} to be a hit; got a miss.`);
+      break;
+    case CacheDictionaryFetchResponse.Hit: {
+      const dictionary = dictionaryFetchResponse.valueRecord();
+      console.log(`Fetched dictionary: ${JSON.stringify(dictionary, null, 2)}`);
+      break;
+    }
+    case CacheDictionaryFetchResponse.Error:
+      console.log(`Error while fetching ${dictionaryName}: ${dictionaryFetchResponse.message()}`);
+      process.exitCode = 1;
+      break;
   }
 };
 
