@@ -22,18 +22,19 @@ export async function getCacheClient(
   });
 }
 
-export async function ensureCacheExists(cacheName: string) {
+export async function ensureCacheExists(cacheName: string): Promise<void> {
   const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.INFO);
-  const cacheClient = await getCacheClient(loggerFactory, 5000, 60);
-  const createResponse = await cacheClient.createCache(cacheName);
-  switch (createResponse.type) {
+  const logger = loggerFactory.getLogger('ensureCacheExists');
+  const momento = await getCacheClient(loggerFactory, 5000, 60);
+  const createCacheResponse = await momento.createCache(cacheName);
+  switch (createCacheResponse.type) {
     case CreateCacheResponse.AlreadyExists:
-      console.info(`cache '${cacheName}' already exists`);
+      logger.info('Cache already exists. Continuing.');
       break;
     case CreateCacheResponse.Success:
-      console.info(`cache '${cacheName}' created`);
+      logger.info('Cache created successfully. Continuing.');
       break;
     case CreateCacheResponse.Error:
-      throw createResponse.innerException();
+      throw createCacheResponse.innerException();
   }
 }

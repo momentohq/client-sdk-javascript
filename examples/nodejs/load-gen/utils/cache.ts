@@ -24,14 +24,15 @@ export function getCacheClient(
 
 export async function ensureCacheExists(cacheName: string): Promise<void> {
   const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.INFO);
+  const logger = loggerFactory.getLogger('ensureCacheExists');
   const momento = await getCacheClient(loggerFactory, 5000, 60);
   const createCacheResponse = await momento.createCache(cacheName);
   switch (createCacheResponse.type) {
     case CreateCacheResponse.AlreadyExists:
-      console.log('Cache already exists. Continuing.');
+      logger.info('Cache already exists. Continuing.');
       break;
     case CreateCacheResponse.Success:
-      console.log('Cache created successfully. Continuing.');
+      logger.info('Cache created successfully. Continuing.');
       break;
     case CreateCacheResponse.Error:
       throw createCacheResponse.innerException();
