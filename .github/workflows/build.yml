@@ -418,6 +418,11 @@ jobs:
             npm run build
             npm run validate-examples
           popd
+          pushd examples/nodejs/webhooks
+            npm ci
+            npm run build
+            npm run validate-examples
+          popd
           pushd examples/nodejs/storage
             npm ci
             npm run build
@@ -451,6 +456,10 @@ jobs:
             npm run build
           popd
           pushd examples/nodejs/aws/lambda-examples/cloudwatch-metrics/infrastructure
+            npm ci
+            npm run build
+          popd
+          pushd examples/nodejs/aws/lambda-examples/webhooks
             npm ci
             npm run build
           popd
