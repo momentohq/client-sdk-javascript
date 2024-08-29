@@ -1,8 +1,7 @@
-import {CacheClient, CacheGetResponse, Configurations} from '@gomomento/sdk';
+import {CacheClient, CacheGetResponse} from '@gomomento/sdk';
 
 async function main() {
   const cacheClient = await CacheClient.create({
-    configuration: Configurations.Laptop.v1(),
     defaultTtlSeconds: 60,
   });
 

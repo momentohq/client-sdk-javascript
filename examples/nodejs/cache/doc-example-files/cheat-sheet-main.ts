@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {CacheClient, Configurations} from '@gomomento/sdk';
+import {CacheClient} from '@gomomento/sdk';
 
 async function main() {
   const cacheClient = await CacheClient.create({
-    configuration: Configurations.Laptop.v1(),
     defaultTtlSeconds: 60,
   });
 }

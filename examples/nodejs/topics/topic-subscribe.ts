@@ -2,8 +2,6 @@ import {
   TopicClient,
   TopicItem,
   TopicSubscribe,
-  CredentialProvider,
-  TopicConfigurations,
   TopicSubscribeResponse,
   TopicDiscontinuity,
   TopicHeartbeat,
@@ -17,10 +15,7 @@ async function main() {
     return;
   }
   const [cacheName, topicName] = clargs;
-  const momento = new TopicClient({
-    configuration: TopicConfigurations.Default.latest(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
-  });
+  const momento = new TopicClient({});
 
   await ensureCacheExists(cacheName);
 

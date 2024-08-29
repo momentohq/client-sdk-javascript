@@ -9,11 +9,16 @@ import {
   Configurations,
   CreateCacheResponse,
   DefaultMomentoLoggerFactory,
+  EnvMomentoTokenProvider,
   MomentoLoggerFactory,
 } from '@gomomento/sdk';
 
 const cacheName = 'cache';
 const dictionaryName = 'dictionary';
+
+const credentialsProvider = new EnvMomentoTokenProvider({
+  environmentVariableName: 'MOMENTO_API_KEY',
+});
 
 const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory();
 
@@ -23,6 +28,7 @@ let momento: CacheClient;
 const main = async () => {
   momento = await CacheClient.create({
     configuration: Configurations.Laptop.v1(loggerFactory),
+    credentialProvider: credentialsProvider,
     defaultTtlSeconds: defaultTtl,
   });
 
