@@ -15,8 +15,8 @@ import {
 } from '@gomomento/sdk';
 
 async function main() {
-  // NOTE: trace logging to view leaderboard interactions; might want to disable in production to save log noise and
-  // switch to ERROR or info
+  // NOTE: you can use TRACE level logging to view leaderboard interactions, but you likely want to
+  // disable that in production to save log noise by switching to ERROR or INFO level instead.
   const loggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.TRACE);
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(loggerFactory),
@@ -35,9 +35,7 @@ async function main() {
       throw createCacheResponse.innerException();
   }
 
-  const client = new PreviewLeaderboardClient({
-    configuration: LeaderboardConfigurations.Laptop.v1(),
-  });
+  const client = new PreviewLeaderboardClient({});
 
   // Create a leaderboard with given cache and leaderboard names
   const leaderboard = client.leaderboard('my-cache', 'my-leaderboard');
