@@ -2,7 +2,6 @@ import {
   CredentialProvider,
   DefaultMomentoLoggerFactory,
   DefaultMomentoLoggerLevel,
-  FixedCountRetryStrategy,
   FixedTimeoutRetryStrategy,
   ListStoresResponse,
   MomentoLoggerFactory,
