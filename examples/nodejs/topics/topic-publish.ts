@@ -1,4 +1,4 @@
-import {TopicClient, CredentialProvider, TopicConfigurations, TopicPublishResponse} from '@gomomento/sdk';
+import {TopicClient, TopicPublishResponse} from '@gomomento/sdk';
 
 import {ensureCacheExists} from './utils/cache';
 
@@ -9,10 +9,7 @@ async function main() {
     return;
   }
   const [cacheName, topicName, value] = clargs;
-  const momento = new TopicClient({
-    configuration: TopicConfigurations.Default.latest(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
-  });
+  const momento = new TopicClient({});
 
   await ensureCacheExists(cacheName);
 

@@ -1,11 +1,4 @@
-import {
-  CacheClient,
-  Configurations,
-  CredentialProvider,
-  CreateCacheResponse,
-  CacheSetResponse,
-  CacheGetResponse,
-} from '@gomomento/sdk-web';
+import {CacheClient, CreateCacheResponse, CacheSetResponse, CacheGetResponse} from '@gomomento/sdk-web';
 import {initJSDom} from './utils/jsdom';
 
 async function main() {
@@ -13,8 +6,6 @@ async function main() {
   // that will allow us to use it in a node.js program.
   initJSDom();
   const momento = new CacheClient({
-    configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 

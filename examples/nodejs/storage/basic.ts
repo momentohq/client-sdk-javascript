@@ -1,17 +1,7 @@
-import {
-  CreateStoreResponse,
-  CredentialProvider,
-  PreviewStorageClient,
-  StorageConfigurations,
-  StorageGetResponse,
-  StoragePutResponse,
-} from '@gomomento/sdk';
+import {CreateStoreResponse, PreviewStorageClient, StorageGetResponse, StoragePutResponse} from '@gomomento/sdk';
 
 async function main() {
-  const storageClient = new PreviewStorageClient({
-    configuration: StorageConfigurations.Laptop.latest(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
-  });
+  const storageClient = new PreviewStorageClient({});
 
   const storeName = 'my-store';
   const createStoreResponse = await storageClient.createStore(storeName);

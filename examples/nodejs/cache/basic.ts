@@ -1,16 +1,7 @@
-import {
-  CacheClient,
-  Configurations,
-  CredentialProvider,
-  CreateCacheResponse,
-  CacheSetResponse,
-  CacheGetResponse,
-} from '@gomomento/sdk';
+import {CacheClient, CreateCacheResponse, CacheSetResponse, CacheGetResponse} from '@gomomento/sdk';
 
 async function main() {
   const momento = await CacheClient.create({
-    configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 
