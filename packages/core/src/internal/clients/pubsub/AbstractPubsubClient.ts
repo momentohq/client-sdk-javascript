@@ -260,7 +260,7 @@ export abstract class AbstractPubsubClient<TGrpcError>
     // transparently restart the stream instead of propagating an error.
     if (shouldReconnectSubscription) {
       options.restartedDueToError = true;
-      const reconnectDelayMillis = 5000;
+      const reconnectDelayMillis = 500;
       this.logger.trace(
         'Error occurred on subscription, possibly a network interruption. Will attempt to restart stream in %s ms.',
         reconnectDelayMillis
