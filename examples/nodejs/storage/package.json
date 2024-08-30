@@ -7,8 +7,9 @@
     "prebuild": "eslint . --ext .ts",
     "build": "tsc",
     "basic": "tsc && node dist/basic.js",
+    "advanced": "tsc && node dist/advanced.js",
     "doc-examples": "tsc && node dist/doc-examples-js-apis.js",
-    "validate-examples": "tsc && node dist/doc-example-files/doc-examples-js-apis.js && node dist/doc-example-files/cheat-sheet-main.js",
+    "validate-examples": "tsc && node dist/doc-example-files/doc-examples-js-apis.js && node dist/doc-example-files/cheat-sheet-main.js && node dist/basic.js && node dist/advanced.js",
     "test": "jest",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix"
