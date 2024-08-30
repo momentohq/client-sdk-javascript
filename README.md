@@ -32,12 +32,10 @@ is best suited for a particular environment:
 ## Usage
 
 ```javascript
-import {CacheClient, CacheGetResponse, Configurations, CredentialProvider} from '@gomomento/sdk';
+import {CacheClient, CacheGetResponse} from '@gomomento/sdk';
 
 async function main() {
   const cacheClient = await CacheClient.create({
-    configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 
@@ -54,6 +52,16 @@ main().catch(e => {
 });
 
 ```
+
+You'll need a Momento API key to authenticate with Momento. You can get one from the [Momento Console](https://console.gomomento.com/caches).
+
+By default, Momento clients use a `CredentialProvider` that expects an environment variable named `MOMENTO_API_KEY`
+
+```bash
+export MOMENTO_API_KEY=<your Momento API key here>
+```
+
+Note: it is best practice to put the API key into something like AWS Secret Manager or GCP Secret Manager instead of an environment variable for enhanced security. See [these docs](https://docs.momentohq.com/cache/develop#instantiating-credential-providers-using-momento-api-keys) for more information about instantiating your own `CredentialProvider`.
 
 ## Getting Started and Documentation
 
