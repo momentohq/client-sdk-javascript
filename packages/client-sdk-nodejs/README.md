@@ -30,12 +30,10 @@ the [Momento Web SDK](../client-sdk-web).
 ## Usage
 
 ```javascript
-import {CacheClient, CacheGetResponse, Configurations, CredentialProvider} from '@gomomento/sdk';
+import {CacheClient, CacheGetResponse} from '@gomomento/sdk';
 
 async function main() {
   const cacheClient = await CacheClient.create({
-    configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 
