@@ -42,6 +42,10 @@ async function main() {
   });
   await example_API_WebhookTopicSubscribe(topicClient, 'cache');
   await example_API_WebhookTopicPublish(topicClient, 'cache');
+  // The subscription does not get unsubscribed due to the way the example code needs to look in the docs, so here
+  // we just forcefully exit the process so it doesn't hang.
+  // eslint-disable-next-line no-process-exit
+  process.exit(0);
 }
 
 main().catch(e => {
