@@ -1,6 +1,6 @@
 import {runStorageServiceTests} from '@gomomento/common-integration-tests';
 import {SetupStorageIntegrationTest} from '../../integration-setup';
 
-const {storageClient, integrationTestStoreName} = SetupStorageIntegrationTest();
+const {storageClient} = SetupStorageIntegrationTest();
 
-runStorageServiceTests(storageClient, integrationTestStoreName);
+runStorageServiceTests(storageClient);

@@ -247,13 +247,10 @@ export function SetupTopicIntegrationTest(): {
 
 export function SetupStorageIntegrationTest(): {
   storageClient: PreviewStorageClient;
-  integrationTestStoreName: string;
 } {
-  const {integrationTestCacheName} = SetupIntegrationTest();
   const storageClient = momentoStorageClientForTesting();
   return {
     storageClient,
-    integrationTestStoreName: integrationTestCacheName,
   };
 }
 

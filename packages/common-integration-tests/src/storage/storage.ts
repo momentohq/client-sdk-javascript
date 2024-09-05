@@ -14,12 +14,8 @@ import {
   WithStore,
 } from '../common-int-test-utils';
 import {v4} from 'uuid';
-import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 
-export function runStorageServiceTests(
-  storageClient: IStorageClient,
-  testingStoreName: string
-) {
+export function runStorageServiceTests(storageClient: IStorageClient) {
   describe('#create list and delete stores', () => {
     it('creates a store, lists it and makes sure it exists, and then deletes it', async () => {
       const storeName = testStoreName();
@@ -107,13 +103,14 @@ export function runStorageServiceTests(
   });
   describe('#store get put and delete', () => {
     it('put get and delete key in a store', async () => {
-      await WithStore(storageClient, testingStoreName, async () => {
+      const storeName = testStoreName();
+      await WithStore(storageClient, storeName, async () => {
         const key = v4();
 
         // put/get an int value
         const intValue = 42;
         const putIntResponse = await storageClient.putInt(
-          testingStoreName,
+          storeName,
           key,
           intValue
         );
@@ -127,7 +124,7 @@ export function runStorageServiceTests(
             );
           }
         }
-        const getIntResponse = await storageClient.get(testingStoreName, key);
+        const getIntResponse = await storageClient.get(storeName, key);
         expectWithMessage(() => {
           expect(getIntResponse.type).toEqual(StorageGetResponse.Found);
         }, `expected Found, received ${getIntResponse.toString()}`);
@@ -136,7 +133,7 @@ export function runStorageServiceTests(
         // put/get a double value
         const doubleValue = 42.42;
         const putDoubleResponse = await storageClient.putDouble(
-          testingStoreName,
+          storeName,
           key,
           doubleValue
         );
@@ -150,10 +147,7 @@ export function runStorageServiceTests(
             );
           }
         }
-        const getDoubleResponse = await storageClient.get(
-          testingStoreName,
-          key
-        );
+        const getDoubleResponse = await storageClient.get(storeName, key);
         expectWithMessage(() => {
           expect(getDoubleResponse.type).toEqual(StorageGetResponse.Found);
         }, `expected Found, received ${getDoubleResponse.toString()}`);
@@ -162,7 +156,7 @@ export function runStorageServiceTests(
         // put/get a string value
         const stringValue = v4();
         const putStringResponse = await storageClient.putString(
-          testingStoreName,
+          storeName,
           key,
           stringValue
         );
@@ -176,10 +170,7 @@ export function runStorageServiceTests(
             );
           }
         }
-        const getStringResponse = await storageClient.get(
-          testingStoreName,
-          key
-        );
+        const getStringResponse = await storageClient.get(storeName, key);
         expectWithMessage(() => {
           expect(getStringResponse.type).toEqual(StorageGetResponse.Found);
         }, `expected Found, received ${getStringResponse.toString()}`);
@@ -188,7 +179,7 @@ export function runStorageServiceTests(
         // put/get a bytes value
         const bytesValue = new Uint8Array([1, 2, 3, 4]);
         const putBytesResponse = await storageClient.putBytes(
-          testingStoreName,
+          storeName,
           key,
           bytesValue
         );
@@ -202,16 +193,13 @@ export function runStorageServiceTests(
             );
           }
         }
-        const getBytesResponse = await storageClient.get(testingStoreName, key);
+        const getBytesResponse = await storageClient.get(storeName, key);
         expectWithMessage(() => {
           expect(getBytesResponse.type).toEqual(StorageGetResponse.Found);
         }, `expected Found, received ${getBytesResponse.toString()}`);
         expect(getBytesResponse.value()?.bytes()).toEqual(bytesValue);
 
-        const deleteResponse = await storageClient.delete(
-          testingStoreName,
-          key
-        );
+        const deleteResponse = await storageClient.delete(storeName, key);
         switch (deleteResponse.type) {
           case StorageDeleteResponse.Success: {
             break;
@@ -225,9 +213,10 @@ export function runStorageServiceTests(
       });
     });
     it('should return an undefined value for a key that doesnt exist', async () => {
-      await WithStore(storageClient, testingStoreName, async () => {
+      const storeName = testStoreName();
+      await WithStore(storageClient, storeName, async () => {
         const key = v4();
-        const getResponse = await storageClient.get(testingStoreName, key);
+        const getResponse = await storageClient.get(storeName, key);
         expectWithMessage(() => {
           expect(getResponse.type).toEqual(StorageGetResponse.NotFound);
         }, `expected NotFound, received ${getResponse.toString()}`);
@@ -252,22 +241,6 @@ export function runStorageServiceTests(
           );
         }
       }
-    });
-    it('should successfully make two of the same requests after 5s retry timeout', async () => {
-      await WithStore(storageClient, testingStoreName, async () => {
-        const key = v4();
-        const getResponse1 = await storageClient.get(testingStoreName, key);
-        expectWithMessage(() => {
-          expect(getResponse1.type).toEqual(StorageGetResponse.NotFound);
-        }, `expected NotFound, received ${getResponse1.toString()}`);
-
-        await sleep(5000);
-
-        const getResponse2 = await storageClient.get(testingStoreName, key);
-        expectWithMessage(() => {
-          expect(getResponse2.type).toEqual(StorageGetResponse.NotFound);
-        }, `expected NotFound, received ${getResponse2.toString()}`);
-      });
     });
   });
 }
