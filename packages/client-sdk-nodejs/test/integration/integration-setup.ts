@@ -1,4 +1,9 @@
-import {testCacheName} from '@gomomento/common-integration-tests';
+import {
+  createStoreIfNotExists,
+  deleteStoreIfExists,
+  testCacheName,
+  testStoreName,
+} from '@gomomento/common-integration-tests';
 import {
   AuthClient,
   CreateCache,
@@ -247,10 +252,22 @@ export function SetupTopicIntegrationTest(): {
 
 export function SetupStorageIntegrationTest(): {
   storageClient: PreviewStorageClient;
+  integrationTestStoreName: string;
 } {
+  const integrationTestStoreName = testStoreName();
   const storageClient = momentoStorageClientForTesting();
+
+  beforeAll(async () => {
+    await createStoreIfNotExists(storageClient, integrationTestStoreName);
+  });
+
+  afterAll(async () => {
+    await deleteStoreIfExists(storageClient, integrationTestStoreName);
+  });
+
   return {
     storageClient,
+    integrationTestStoreName,
   };
 }
 
