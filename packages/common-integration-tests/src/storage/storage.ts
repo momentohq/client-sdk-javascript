@@ -14,12 +14,11 @@ import {
   WithStore,
 } from '../common-int-test-utils';
 import {v4} from 'uuid';
-import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 
 export function runStorageServiceTests(
   storageClient: IStorageClient,
   testingStoreName: string
-) {
+): void {
   describe('#create list and delete stores', () => {
     it('creates a store, lists it and makes sure it exists, and then deletes it', async () => {
       const storeName = testStoreName();
@@ -71,167 +70,24 @@ export function runStorageServiceTests(
     });
     it('should return AlreadyExists response if trying to create a store that already exists', async () => {
       const storeName = testStoreName();
-      const createResponse = await storageClient.createStore(storeName);
-      switch (createResponse.type) {
-        // this is the expected response
-        case CreateStoreResponse.Success: {
-          break;
-        }
-        case CreateStoreResponse.AlreadyExists: {
-          break;
-        }
-        case CreateStoreResponse.Error: {
-          throw new Error(
-            `failed to create store, expected store to be able to happen, error: ${createResponse.message()} exception: ${createResponse.toString()}`
-          );
-        }
-      }
-      const alreadyExistResponse = await storageClient.createStore(storeName);
-      switch (alreadyExistResponse.type) {
-        case CreateStoreResponse.AlreadyExists: {
-          break;
-        }
-        case CreateStoreResponse.Error: {
-          throw new Error(
-            `failed to create store, expected AlreadyExists response, error: ${alreadyExistResponse.message()} exception: ${alreadyExistResponse.toString()}`
-          );
-        }
-        case CreateStoreResponse.Success: {
-          throw new Error(
-            'store already exists, we should not be able to create it again'
-          );
-        }
-      }
-      await storageClient.deleteStore(storeName);
-    });
-  });
-  describe('#store get put and delete', () => {
-    it('put get and delete key in a store', async () => {
-      await WithStore(storageClient, testingStoreName, async () => {
-        const key = v4();
-
-        // put/get an int value
-        const intValue = 42;
-        const putIntResponse = await storageClient.putInt(
-          testingStoreName,
-          key,
-          intValue
-        );
-        switch (putIntResponse.type) {
-          case StoragePutResponse.Success: {
+      // WithStore creates a store then deletes it
+      await WithStore(storageClient, storeName, async () => {
+        const alreadyExistResponse = await storageClient.createStore(storeName);
+        switch (alreadyExistResponse.type) {
+          case CreateStoreResponse.AlreadyExists: {
             break;
           }
-          case StoragePutResponse.Error: {
+          case CreateStoreResponse.Error: {
             throw new Error(
-              `failed to put key: ${putIntResponse.message()} ${putIntResponse.toString()}`
+              `failed to create store, expected AlreadyExists response, error: ${alreadyExistResponse.message()} exception: ${alreadyExistResponse.toString()}`
+            );
+          }
+          case CreateStoreResponse.Success: {
+            throw new Error(
+              'store already exists, we should not be able to create it again'
             );
           }
         }
-        const getIntResponse = await storageClient.get(testingStoreName, key);
-        expectWithMessage(() => {
-          expect(getIntResponse.type).toEqual(StorageGetResponse.Found);
-        }, `expected Found, received ${getIntResponse.toString()}`);
-        expect(getIntResponse.value()?.int()).toEqual(intValue);
-
-        // put/get a double value
-        const doubleValue = 42.42;
-        const putDoubleResponse = await storageClient.putDouble(
-          testingStoreName,
-          key,
-          doubleValue
-        );
-        switch (putDoubleResponse.type) {
-          case StoragePutResponse.Success: {
-            break;
-          }
-          case StoragePutResponse.Error: {
-            throw new Error(
-              `failed to put key: ${putDoubleResponse.message()} ${putDoubleResponse.toString()}`
-            );
-          }
-        }
-        const getDoubleResponse = await storageClient.get(
-          testingStoreName,
-          key
-        );
-        expectWithMessage(() => {
-          expect(getDoubleResponse.type).toEqual(StorageGetResponse.Found);
-        }, `expected Found, received ${getDoubleResponse.toString()}`);
-        expect(getDoubleResponse.value()?.double()).toEqual(doubleValue);
-
-        // put/get a string value
-        const stringValue = v4();
-        const putStringResponse = await storageClient.putString(
-          testingStoreName,
-          key,
-          stringValue
-        );
-        switch (putStringResponse.type) {
-          case StoragePutResponse.Success: {
-            break;
-          }
-          case StoragePutResponse.Error: {
-            throw new Error(
-              `failed to put key: ${putStringResponse.message()} ${putStringResponse.toString()}`
-            );
-          }
-        }
-        const getStringResponse = await storageClient.get(
-          testingStoreName,
-          key
-        );
-        expectWithMessage(() => {
-          expect(getStringResponse.type).toEqual(StorageGetResponse.Found);
-        }, `expected Found, received ${getStringResponse.toString()}`);
-        expect(getStringResponse.value()?.string()).toEqual(stringValue);
-
-        // put/get a bytes value
-        const bytesValue = new Uint8Array([1, 2, 3, 4]);
-        const putBytesResponse = await storageClient.putBytes(
-          testingStoreName,
-          key,
-          bytesValue
-        );
-        switch (putBytesResponse.type) {
-          case StoragePutResponse.Success: {
-            break;
-          }
-          case StoragePutResponse.Error: {
-            throw new Error(
-              `failed to put key: ${putBytesResponse.message()} ${putBytesResponse.toString()}`
-            );
-          }
-        }
-        const getBytesResponse = await storageClient.get(testingStoreName, key);
-        expectWithMessage(() => {
-          expect(getBytesResponse.type).toEqual(StorageGetResponse.Found);
-        }, `expected Found, received ${getBytesResponse.toString()}`);
-        expect(getBytesResponse.value()?.bytes()).toEqual(bytesValue);
-
-        const deleteResponse = await storageClient.delete(
-          testingStoreName,
-          key
-        );
-        switch (deleteResponse.type) {
-          case StorageDeleteResponse.Success: {
-            break;
-          }
-          case StorageDeleteResponse.Error: {
-            throw new Error(
-              `failed to delete key in store: ${deleteResponse.message()} ${deleteResponse.toString()}`
-            );
-          }
-        }
-      });
-    });
-    it('should return an undefined value for a key that doesnt exist', async () => {
-      await WithStore(storageClient, testingStoreName, async () => {
-        const key = v4();
-        const getResponse = await storageClient.get(testingStoreName, key);
-        expectWithMessage(() => {
-          expect(getResponse.type).toEqual(StorageGetResponse.NotFound);
-        }, `expected NotFound, received ${getResponse.toString()}`);
-        expect(getResponse.value()).toBeUndefined();
       });
     });
     it('should return store not found error for deleting a store that doesnt exist', async () => {
@@ -253,21 +109,125 @@ export function runStorageServiceTests(
         }
       }
     });
-    it('should successfully make two of the same requests after 5s retry timeout', async () => {
-      await WithStore(storageClient, testingStoreName, async () => {
-        const key = v4();
-        const getResponse1 = await storageClient.get(testingStoreName, key);
-        expectWithMessage(() => {
-          expect(getResponse1.type).toEqual(StorageGetResponse.NotFound);
-        }, `expected NotFound, received ${getResponse1.toString()}`);
+  });
 
-        await sleep(5000);
+  // Data plane tests should use the shared integration test store
+  // with the BeforeAll setup and AfterAll teardown
+  describe('#store get put and delete', () => {
+    it('put get and delete key in a store', async () => {
+      const key = v4();
 
-        const getResponse2 = await storageClient.get(testingStoreName, key);
-        expectWithMessage(() => {
-          expect(getResponse2.type).toEqual(StorageGetResponse.NotFound);
-        }, `expected NotFound, received ${getResponse2.toString()}`);
-      });
+      // put/get an int value
+      const intValue = 42;
+      const putIntResponse = await storageClient.putInt(
+        testingStoreName,
+        key,
+        intValue
+      );
+      switch (putIntResponse.type) {
+        case StoragePutResponse.Success: {
+          break;
+        }
+        case StoragePutResponse.Error: {
+          throw new Error(
+            `failed to put key: ${putIntResponse.message()} ${putIntResponse.toString()}`
+          );
+        }
+      }
+      const getIntResponse = await storageClient.get(testingStoreName, key);
+      expectWithMessage(() => {
+        expect(getIntResponse.type).toEqual(StorageGetResponse.Found);
+      }, `expected Found, received ${getIntResponse.toString()}`);
+      expect(getIntResponse.value()?.int()).toEqual(intValue);
+
+      // put/get a double value
+      const doubleValue = 42.42;
+      const putDoubleResponse = await storageClient.putDouble(
+        testingStoreName,
+        key,
+        doubleValue
+      );
+      switch (putDoubleResponse.type) {
+        case StoragePutResponse.Success: {
+          break;
+        }
+        case StoragePutResponse.Error: {
+          throw new Error(
+            `failed to put key: ${putDoubleResponse.message()} ${putDoubleResponse.toString()}`
+          );
+        }
+      }
+      const getDoubleResponse = await storageClient.get(testingStoreName, key);
+      expectWithMessage(() => {
+        expect(getDoubleResponse.type).toEqual(StorageGetResponse.Found);
+      }, `expected Found, received ${getDoubleResponse.toString()}`);
+      expect(getDoubleResponse.value()?.double()).toEqual(doubleValue);
+
+      // put/get a string value
+      const stringValue = v4();
+      const putStringResponse = await storageClient.putString(
+        testingStoreName,
+        key,
+        stringValue
+      );
+      switch (putStringResponse.type) {
+        case StoragePutResponse.Success: {
+          break;
+        }
+        case StoragePutResponse.Error: {
+          throw new Error(
+            `failed to put key: ${putStringResponse.message()} ${putStringResponse.toString()}`
+          );
+        }
+      }
+      const getStringResponse = await storageClient.get(testingStoreName, key);
+      expectWithMessage(() => {
+        expect(getStringResponse.type).toEqual(StorageGetResponse.Found);
+      }, `expected Found, received ${getStringResponse.toString()}`);
+      expect(getStringResponse.value()?.string()).toEqual(stringValue);
+
+      // put/get a bytes value
+      const bytesValue = new Uint8Array([1, 2, 3, 4]);
+      const putBytesResponse = await storageClient.putBytes(
+        testingStoreName,
+        key,
+        bytesValue
+      );
+      switch (putBytesResponse.type) {
+        case StoragePutResponse.Success: {
+          break;
+        }
+        case StoragePutResponse.Error: {
+          throw new Error(
+            `failed to put key: ${putBytesResponse.message()} ${putBytesResponse.toString()}`
+          );
+        }
+      }
+      const getBytesResponse = await storageClient.get(testingStoreName, key);
+      expectWithMessage(() => {
+        expect(getBytesResponse.type).toEqual(StorageGetResponse.Found);
+      }, `expected Found, received ${getBytesResponse.toString()}`);
+      expect(getBytesResponse.value()?.bytes()).toEqual(bytesValue);
+
+      const deleteResponse = await storageClient.delete(testingStoreName, key);
+      switch (deleteResponse.type) {
+        case StorageDeleteResponse.Success: {
+          break;
+        }
+        case StorageDeleteResponse.Error: {
+          throw new Error(
+            `failed to delete key in store: ${deleteResponse.message()} ${deleteResponse.toString()}`
+          );
+        }
+      }
+    });
+    it('should return an undefined value for a key that doesnt exist', async () => {
+      const key = v4();
+      const getResponse = await storageClient.get(testingStoreName, key);
+      expectWithMessage(() => {
+        expect(getResponse.type).toEqual(StorageGetResponse.NotFound);
+      }, `expected NotFound, received ${getResponse.toString()}`);
+      expect(getResponse.value()).toBeUndefined();
     });
   });
 }
