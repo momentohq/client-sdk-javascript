@@ -1,6 +1,7 @@
 import {v4} from 'uuid';
 import {
   CacheDelete,
+  CacheItemGetTtl,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
@@ -109,6 +110,13 @@ export function runSortedSetTests(
         });
         expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
         await sleep(timeout * 1000);
+        const getItemTTLResponse = await cacheClient.itemGetTtl(
+          integrationTestCacheName,
+          sortedSetName
+        );
+        expectWithMessage(() => {
+          expect(getItemTTLResponse).toBeInstanceOf(CacheItemGetTtl.Miss);
+        }, `expected MISS but got ${getItemTTLResponse.toString()}`);
 
         const getResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,
