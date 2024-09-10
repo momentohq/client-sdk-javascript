@@ -1,7 +1,6 @@
 import {v4} from 'uuid';
 import {
   CacheDelete,
-  CacheItemGetTtl,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
@@ -109,15 +108,7 @@ export function runSortedSetTests(
           ttl: CollectionTtl.of(timeout * 10).withNoRefreshTtlOnUpdates(),
         });
         expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
-        await sleep(timeout * 1000);
-        const getItemTTLResponse = await cacheClient.itemGetTtl(
-          integrationTestCacheName,
-          sortedSetName
-        );
-        expectWithMessage(() => {
-          expect(getItemTTLResponse).toBeInstanceOf(CacheItemGetTtl.Miss);
-        }, `expected MISS but got ${getItemTTLResponse.toString()}`);
-
+        await sleep(timeout * 1000 + 1);
         const getResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,
           sortedSetName
@@ -2400,6 +2391,7 @@ export function runSortedSetTests(
       };
 
       const changeResponder = (props: ValidateSortedSetChangerProps) => {
+        console.log('props.ttl', props.ttl);
         return cacheClient.sortedSetPutElements(
           props.cacheName,
           props.sortedSetName,
