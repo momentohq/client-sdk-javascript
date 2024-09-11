@@ -2391,7 +2391,6 @@ export function runSortedSetTests(
       };
 
       const changeResponder = (props: ValidateSortedSetChangerProps) => {
-        console.log('props.ttl', props.ttl);
         return cacheClient.sortedSetPutElements(
           props.cacheName,
           props.sortedSetName,
