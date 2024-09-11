@@ -1,6 +1,7 @@
 import {v4} from 'uuid';
 import {
   CacheDelete,
+  CacheItemGetTtl,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
@@ -14,6 +15,7 @@ import {
   CacheSortedSetRemoveElements,
   CollectionTtl,
   MomentoErrorCode,
+  MomentoLogger,
   SortedSetOrder,
 } from '@gomomento/sdk-core';
 import {
@@ -35,7 +37,8 @@ import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 export function runSortedSetTests(
   cacheClient: ICacheClient,
-  integrationTestCacheName: string
+  integrationTestCacheName: string,
+  logger?: MomentoLogger
 ) {
   describe('Integration tests for sorted set operations', () => {
     it('is good at logic', async () => {
@@ -108,6 +111,16 @@ export function runSortedSetTests(
           ttl: CollectionTtl.of(timeout * 10).withNoRefreshTtlOnUpdates(),
         });
         expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
+        const itemGetTtlResponse = await cacheClient.itemGetTtl(
+          integrationTestCacheName,
+          sortedSetName
+        );
+        expect(itemGetTtlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+        logger?.info(
+          `Received CacheItemGetTtl Hit. Remaining TTL for the item: ${(
+            itemGetTtlResponse as CacheItemGetTtl.Hit
+          ).remainingTtlMillis()} milliseconds.`
+        );
         await sleep(timeout * 1000 + 1);
         const getResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,

@@ -12,6 +12,8 @@ import {
   CacheDictionaryGetFields,
   CacheDictionaryIncrement,
   CacheDictionaryLength,
+  CacheItemGetTtl,
+  MomentoLogger,
 } from '@gomomento/sdk-core';
 import {
   ValidateCacheProps,
@@ -33,7 +35,8 @@ import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache'
 
 export function runDictionaryTests(
   cacheClient: ICacheClient,
-  integrationTestCacheName: string
+  integrationTestCacheName: string,
+  logger?: MomentoLogger
 ) {
   describe('Integration tests for dictionary operations', () => {
     const itBehavesLikeItValidates = (
@@ -152,6 +155,18 @@ export function runDictionaryTests(
           ttl: CollectionTtl.of(timeout * 10).withNoRefreshTtlOnUpdates(),
         });
         expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
+
+        const itemGetTtlResponse = await cacheClient.itemGetTtl(
+          integrationTestCacheName,
+          dictionaryName
+        );
+        expect(itemGetTtlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+        logger?.info(
+          `Received CacheItemGetTtl Hit. Remaining TTL for the item: ${(
+            itemGetTtlResponse as CacheItemGetTtl.Hit
+          ).remainingTtlMillis()} milliseconds.`
+        );
+
         await sleep(timeout * 1000 + 1);
 
         const getResponse = await cacheClient.dictionaryGetField(
