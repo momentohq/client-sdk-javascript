@@ -91,7 +91,7 @@ export function runSortedSetTests(
       it('does not refresh with no refresh ttl', async () => {
         const sortedSetName = v4();
         const value = v4();
-        const timeout = 1;
+        const timeout = 2;
 
         let changeResponse = await changeResponder({
           cacheName: integrationTestCacheName,

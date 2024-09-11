@@ -135,7 +135,7 @@ export function runDictionaryTests(
       it('does not refresh with no refresh ttl', async () => {
         const dictionaryName = v4();
         const field = v4();
-        const timeout = 1;
+        const timeout = 2;
 
         let changeResponse = await changeResponder({
           cacheName: integrationTestCacheName,
