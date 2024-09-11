@@ -108,8 +108,7 @@ export function runSortedSetTests(
           ttl: CollectionTtl.of(timeout * 10).withNoRefreshTtlOnUpdates(),
         });
         expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
-        await sleep(timeout * 1000);
-
+        await sleep(timeout * 1000 + 1);
         const getResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,
           sortedSetName
