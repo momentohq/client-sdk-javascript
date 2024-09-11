@@ -12,6 +12,7 @@ import {
   CacheDictionaryGetFields,
   CacheDictionaryIncrement,
   CacheDictionaryLength,
+  CacheItemGetTtl,
 } from '@gomomento/sdk-core';
 import {
   ValidateCacheProps,
@@ -30,6 +31,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
+import {log} from 'console';
 
 export function runDictionaryTests(
   cacheClient: ICacheClient,
@@ -133,7 +135,7 @@ export function runDictionaryTests(
       it('does not refresh with no refresh ttl', async () => {
         const dictionaryName = v4();
         const field = v4();
-        const timeout = 1;
+        const timeout = 2;
 
         let changeResponse = await changeResponder({
           cacheName: integrationTestCacheName,
@@ -152,6 +154,18 @@ export function runDictionaryTests(
           ttl: CollectionTtl.of(timeout * 10).withNoRefreshTtlOnUpdates(),
         });
         expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
+
+        const itemGetTtlResponse = await cacheClient.itemGetTtl(
+          integrationTestCacheName,
+          dictionaryName
+        );
+        expect(itemGetTtlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+        log(
+          `Received CacheItemGetTtl Hit. Remaining TTL for the item: ${(
+            itemGetTtlResponse as CacheItemGetTtl.Hit
+          ).remainingTtlMillis()} milliseconds.`
+        );
+
         await sleep(timeout * 1000 + 1);
 
         const getResponse = await cacheClient.dictionaryGetField(
