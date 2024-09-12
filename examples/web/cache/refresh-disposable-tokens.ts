@@ -57,7 +57,7 @@ interface TokenRefreshingTopicClientProps {
 }
 
 class TokenRefreshingTopicClient {
-  topicClient: TopicClient | undefined;
+  topicClient: TopicClient;
   refreshBeforeExpiryMs: number;
   getDisposableToken: () => Promise<{token: string; expiresAt: ExpiresAt}>;
   activeSubscriptions: Record<
@@ -77,7 +77,7 @@ class TokenRefreshingTopicClient {
     this.getDisposableToken = props.getDisposableToken;
   }
 
-  private async initializeTopicClient() {
+  async initialize() {
     const disposableToken = await this.getDisposableToken();
     this.topicClient = new TopicClient({
       credentialProvider: CredentialProvider.fromString(disposableToken.token),
@@ -117,18 +117,12 @@ class TokenRefreshingTopicClient {
         };
       }
     }
-
-    delete this.topicClient;
     this.topicClient = newTopicClient;
   }
 
   async publish(cacheName: string, topicName: string, message: string) {
-    if (!this.topicClient) {
-      console.log('Initializing topic client from subscribe');
-      await this.initializeTopicClient();
-    }
-    const resp = await this.topicClient?.publish(cacheName, topicName, message);
-    if (resp?.type === TopicPublishResponse.Error) {
+    const resp = await this.topicClient.publish(cacheName, topicName, message);
+    if (resp.type === TopicPublishResponse.Error) {
       console.error(`Error publishing message: ${resp.toString()}`);
     }
   }
@@ -143,11 +137,6 @@ class TokenRefreshingTopicClient {
   ) {
     console.log(`Subscribe function called for ${cacheName}:${topicName}`);
 
-    if (!this.topicClient) {
-      console.log('Initializing topic client from subscribe');
-      await this.initializeTopicClient();
-    }
-
     const wrappedOnItem = (item: TopicItem) => {
       const currentSubscription = this.activeSubscriptions[`${cacheName}:${topicName}`];
       // pass through to user-provided onItem only if message hasn't been processed before
@@ -157,9 +146,6 @@ class TokenRefreshingTopicClient {
       }
     };
 
-    if (!this.topicClient) {
-      throw new Error('Topic client is not initialized');
-    }
     const resp = await this.topicClient.subscribe(cacheName, topicName, {
       onItem: wrappedOnItem,
       onError: options.onError,
@@ -215,6 +201,9 @@ const main = async () => {
     refreshBeforeExpiryMs: 10_000, // 10 seconds before token expires, refresh it.
     getDisposableToken,
   });
+  // Must hit up the token vending machine to initialize the topic client,
+  // which is an async operation that cannot be done in the constructor.
+  await wrappedTopicClient.initialize();
 
   await wrappedTopicClient.subscribe('my-cache', 'topic-1', {
     onItem: onItemA,
