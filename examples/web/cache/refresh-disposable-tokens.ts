@@ -217,7 +217,7 @@ const main = async () => {
 
   const endDemoTime = Date.now() + 45_000; // Run for 45 seconds
 
-  // Meanwhile, publish a message every second and see how the topic client
+  // Meanwhile, publish messages and see how the topic client
   // is refreshed after tokens expire every 20 seconds.
   while (Date.now() < endDemoTime) {
     await wrappedTopicClient.publish('my-cache', 'topic-1', 'Message for topic 1');
