@@ -57,7 +57,6 @@ MOMENTO_API_KEY=<YOUR API KEY> npm run tokens
 
 Example Code: [refresh-disposable-tokens.ts](refresh-disposable-tokens.ts)
 
-
 If you have questions or need help experimenting further, please reach out to us!
 
 {{ ossFooter }}
