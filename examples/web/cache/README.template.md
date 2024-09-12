@@ -46,6 +46,18 @@ MOMENTO_API_KEY=<YOUR API KEY> npm run dictionary
 
 Example Code: [dictionary.ts](dictionary.ts)
 
+## Running the TopicClient example with auto-refreshing disposable tokens
+
+This example implements TokenRefreshingTopicClient, an example wrapper class around the TopicClient that refreshes disposable tokens before they expire. Getting a new disposable token requires creating a new TopicClient that accepts a CredentialProvider that uses the new token. After the new TopicClient is created, existing subscriptions must be transferred to the new client. All of this occurs within the TokenRefreshingTopicClient. 
+
+```bash
+# Run example code
+MOMENTO_API_KEY=<YOUR API KEY> npm run tokens
+```
+
+Example Code: [refresh-disposable-tokens.ts](refresh-disposable-tokens.ts)
+
+
 If you have questions or need help experimenting further, please reach out to us!
 
 {{ ossFooter }}

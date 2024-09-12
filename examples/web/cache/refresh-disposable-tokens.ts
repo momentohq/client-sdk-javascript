@@ -21,6 +21,8 @@ function getRefreshAfterMs(expiresAt: ExpiresAt, refreshBefore: number): number 
   return refreshingIn;
 }
 
+// In your own setup, the token vending machine would likely be a separate service.
+// See https://github.com/momentohq/client-sdk-javascript/tree/main/examples/nodejs/token-vending-machine
 async function tokenVendingMachine(): Promise<{token: string; expiresAt: ExpiresAt}> {
   const authClient = new AuthClient({});
   const topic1Perms: TopicPermission = {
