@@ -1,44 +1,32 @@
 import {
+  AllTopics,
   AuthClient,
   CredentialProvider,
-  DisposableTokenScope,
+  DisposableTokenScopes,
   ExpiresAt,
   ExpiresIn,
   GenerateDisposableTokenResponse,
   TopicClient,
   TopicItem,
-  TopicPermission,
+  TopicPublish,
   TopicPublishResponse,
-  TopicRole,
   TopicSubscribe,
   TopicSubscribeResponse,
 } from '@gomomento/sdk-web';
 import {initJSDom} from './utils/jsdom';
 
-function getRefreshAfterMs(expiresAt: ExpiresAt, refreshBefore: number): number {
-  const refreshingIn = expiresAt.epoch() * 1000 - Date.now() - refreshBefore;
-  console.log(`Refreshing in ${refreshingIn} ms`);
-  return refreshingIn;
-}
-
 // In your own setup, the token vending machine would likely be a separate service.
+// In this file, we provide a local version if you want to run this example completely independently.
+// We also provide a version that fetches a token from a deployed token vending machine.
 // See https://github.com/momentohq/client-sdk-javascript/tree/main/examples/nodejs/token-vending-machine
-async function tokenVendingMachine(): Promise<{token: string; expiresAt: ExpiresAt}> {
+// for more information about deploying your own token vending machine.
+
+async function localTokenVendingMachine(): Promise<{token: string; expiresAt: ExpiresAt}> {
   const authClient = new AuthClient({});
-  const topic1Perms: TopicPermission = {
-    role: TopicRole.PublishSubscribe,
-    cache: 'my-cache',
-    topic: 'topic-1',
-  };
-  const topic2Perms: TopicPermission = {
-    role: TopicRole.PublishSubscribe,
-    cache: 'my-cache',
-    topic: 'topic-2',
-  };
-  const permsScope: DisposableTokenScope = {
-    permissions: [topic1Perms, topic2Perms],
-  };
-  const tokenResponse = await authClient.generateDisposableToken(permsScope, ExpiresIn.seconds(30));
+  const tokenResponse = await authClient.generateDisposableToken(
+    DisposableTokenScopes.topicPublishSubscribe('my-cache', AllTopics),
+    ExpiresIn.seconds(30)
+  );
   if (tokenResponse.type === GenerateDisposableTokenResponse.Error) {
     throw new Error(`Failed to generate a disposable token: ${tokenResponse.toString()}`);
   }
@@ -47,6 +35,16 @@ async function tokenVendingMachine(): Promise<{token: string; expiresAt: Expires
   const disposableToken = {
     token: tokenResponse.authToken,
     expiresAt: tokenResponse.expiresAt,
+  };
+  return disposableToken;
+}
+
+async function tokenVendingMachine(): Promise<{token: string; expiresAt: ExpiresAt}> {
+  const resp = await fetch(process.env.TVM_ENDPOINT as string);
+  const respJson = (await resp.json()) as {authToken: string; expiresAt: number};
+  const disposableToken = {
+    token: respJson.authToken,
+    expiresAt: ExpiresAt.fromEpoch(respJson.expiresAt),
   };
   return disposableToken;
 }
@@ -72,12 +70,12 @@ class TokenRefreshingTopicClient {
     }
   > = {};
 
-  constructor(props: TokenRefreshingTopicClientProps) {
+  private constructor(props: TokenRefreshingTopicClientProps) {
     this.refreshBeforeExpiryMs = props.refreshBeforeExpiryMs;
     this.getDisposableToken = props.getDisposableToken;
   }
 
-  async initialize() {
+  private async initialize() {
     const disposableToken = await this.getDisposableToken();
     this.topicClient = new TopicClient({
       credentialProvider: CredentialProvider.fromString(disposableToken.token),
@@ -87,6 +85,12 @@ class TokenRefreshingTopicClient {
       await this.refreshToken();
     }, getRefreshAfterMs(disposableToken.expiresAt, this.refreshBeforeExpiryMs));
     console.log('Initialized topic client and set first timeout');
+  }
+
+  static async create(props: TokenRefreshingTopicClientProps) {
+    const client = new TokenRefreshingTopicClient(props);
+    await client.initialize();
+    return client;
   }
 
   private async refreshToken() {
@@ -120,10 +124,13 @@ class TokenRefreshingTopicClient {
     this.topicClient = newTopicClient;
   }
 
-  async publish(cacheName: string, topicName: string, message: string) {
+  async publish(cacheName: string, topicName: string, message: string, onError?: (resp: TopicPublish.Error) => void) {
     const resp = await this.topicClient.publish(cacheName, topicName, message);
     if (resp.type === TopicPublishResponse.Error) {
       console.error(`Error publishing message: ${resp.toString()}`);
+      if (onError) {
+        onError(resp);
+      }
     }
   }
 
@@ -180,6 +187,12 @@ class TokenRefreshingTopicClient {
   }
 }
 
+function getRefreshAfterMs(expiresAt: ExpiresAt, refreshBefore: number): number {
+  const refreshingIn = expiresAt.epoch() * 1000 - Date.now() - refreshBefore;
+  console.log(`Refreshing in ${refreshingIn} ms`);
+  return refreshingIn;
+}
+
 const main = async () => {
   // Because the Momento Web SDK is intended for use in a browser, we use the JSDom library
   // to set up an environment that will allow us to use it in a node.js program.
@@ -195,15 +208,14 @@ const main = async () => {
   const onError = (error: TopicSubscribe.Error) => {
     console.error(`User code received error: ${error.toString()}`);
   };
-  const getDisposableToken = tokenVendingMachine;
+  const onPublishError = (resp: TopicPublish.Error) => {
+    console.error(`User code received error while publishing message: ${resp.toString()}`);
+  };
 
-  const wrappedTopicClient = new TokenRefreshingTopicClient({
+  const wrappedTopicClient = await TokenRefreshingTopicClient.create({
     refreshBeforeExpiryMs: 10_000, // 10 seconds before token expires, refresh it.
-    getDisposableToken,
+    getDisposableToken: tokenVendingMachine,
   });
-  // Must hit up the token vending machine to initialize the topic client,
-  // which is an async operation that cannot be done in the constructor.
-  await wrappedTopicClient.initialize();
 
   await wrappedTopicClient.subscribe('my-cache', 'topic-1', {
     onItem: onItemA,
@@ -220,8 +232,8 @@ const main = async () => {
   // Meanwhile, publish messages and see how the topic client
   // is refreshed after tokens expire every 20 seconds.
   while (Date.now() < endDemoTime) {
-    await wrappedTopicClient.publish('my-cache', 'topic-1', 'Message for topic 1');
-    await wrappedTopicClient.publish('my-cache', 'topic-2', 'Message for topic 2');
+    await wrappedTopicClient.publish('my-cache', 'topic-1', 'Message for topic 1', onPublishError);
+    await wrappedTopicClient.publish('my-cache', 'topic-2', 'Message for topic 2', onPublishError);
   }
 };
 
