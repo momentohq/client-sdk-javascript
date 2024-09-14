@@ -79,7 +79,7 @@ Run the example using:
 
 ```bash
 # Run example code
-MOMENTO_API_KEY=<YOUR API KEY> TVM_ENDPOINT=<YOUR TVM URL> npm run tokens
+TVM_ENDPOINT=<YOUR TVM URL> npm run tokens
 ```
 
 Example Code: [refresh-disposable-tokens.ts](refresh-disposable-tokens.ts)
