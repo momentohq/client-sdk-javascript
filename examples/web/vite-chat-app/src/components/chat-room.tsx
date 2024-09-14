@@ -2,11 +2,8 @@ import { useEffect, useRef, useState } from "react";
 
 import {
   type ChatEvent,
-  clearCurrentClient,
   EventTypes,
-  sendMessage,
-  subscribeToTopic,
-  userJoined,
+  MomentoWebClient,
 } from "../utils/momento-web";
 import { type TopicItem, type TopicSubscribe } from "@gomomento/sdk-web";
 
@@ -22,31 +19,31 @@ export default function ChatRoom(props: Props) {
   const [chats, setChats] = useState<ChatEvent[]>([]);
   const [textInput, setTextInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [momentoClient, setMomentoClient] = useState<MomentoWebClient|undefined>(undefined);
 
   const onItem = (item: TopicItem) => {
     try {
       const message = JSON.parse(item.valueString()) as ChatEvent;
       setChats((curr) => [...curr, message]);
     } catch (e) {
-      console.error("unable to parse chat message", e);
+      // Messages received from elsewhere (like the Momento Console or an SDK)
+      // should be converted from TopicItem to ChatEvent to be readable on the UI.
+      const chatEvent: ChatEvent = {
+        event: EventTypes.MESSAGE,
+        text: item.valueString(),
+        username: item.tokenId() || "unknown",
+        timestamp: Date.now(),
+      };
+      setChats((curr) => [...curr, chatEvent]);
     }
   };
 
-  const onError = async (
-    error: TopicSubscribe.Error,
-    sub: TopicSubscribe.Subscription,
-  ) => {
-    console.error(
-      "received error from momento, getting new token and resubscribing",
-      error,
-    );
-    sub.unsubscribe();
-    clearCurrentClient();
-    await subscribeToTopic(props.cacheName, props.topicName, onItem, onError);
-  };
+  const onError = (error: TopicSubscribe.Error) => {
+    console.error("received error from momento", error);
+  }
 
   const onSendMessage = async () => {
-    await sendMessage(
+    await momentoClient?.sendMessage(
       props.cacheName,
       props.topicName,
       props.username,
@@ -62,13 +59,22 @@ export default function ChatRoom(props: Props) {
   };
 
   useEffect(() => {
-    subscribeToTopic(props.cacheName, props.topicName, onItem, onError, props.selectedUser)
-      .then(async () => {
-        console.log("successfully subscribed");
-        await userJoined(props.cacheName, props.topicName, props.username);
-      })
-      .catch((e) => console.error("error subscribing to topic", e));
-  }, []);
+    // Initializing the Momento TopicClient is an async operation because
+    // we first need to get a disposable token from the token vending machine.
+    // We must also pass in props.selectedUser here in case the cognito authorizer
+    // is used in the getDisposableToken function passed to the TokenRefreshingTopicClient.
+
+    const initialSetup = async (client: MomentoWebClient) => {
+      setMomentoClient(client);
+      await client.subscribeToTopic(props.cacheName, props.topicName, onItem, onError, props.selectedUser);
+      console.log("Successfully initialized momento client and subscribed to topic", props.topicName);
+      await momentoClient?.userJoined(props.cacheName, props.topicName, props.username);
+    }
+
+    MomentoWebClient.create(props.selectedUser)
+      .then(initialSetup)
+      .catch((e) => console.error("error initializing momento client", e));
+  }, [props.topicName, props.username, props.selectedUser]);
 
   const scrollToBottom = () => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -103,9 +109,10 @@ export default function ChatRoom(props: Props) {
           const date = new Date(chat.timestamp);
           const hours = date.getHours();
           const minutes = date.getMinutes();
+          const timestampWithUsername = `[${hours}:${minutes}] <${chat.username}>`;
+          const timestamp = `[${hours}:${minutes}]`;
           switch (chat.event) {
             case EventTypes.MESSAGE:
-              const timestampWithUsername = `[${hours}:${minutes}] <${chat.username}>`;
               return (
                 <div
                   className={"break-words"}
@@ -118,7 +125,6 @@ export default function ChatRoom(props: Props) {
                 </div>
               );
             case EventTypes.USER_JOINED:
-              const timestamp = `[${hours}:${minutes}]`;
               return (
                 <div
                   key={`${chat.timestamp}-${chat.username}`}
@@ -135,6 +141,7 @@ export default function ChatRoom(props: Props) {
         <input
           disabled={props.selectedUser === "ReadOnly"}
           placeholder={"chat"}
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
           onKeyDown={onEnterClicked}
           className={"border-2 rounded-2xl p-2 w-full"}
           value={textInput}
@@ -142,6 +149,7 @@ export default function ChatRoom(props: Props) {
         />
         <div className={"w-4"} />
         <button
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
           onClick={onSendMessage}
           disabled={!textInput}
           className={

@@ -1,23 +1,25 @@
 import { useState } from "react";
-import { clearCurrentClient } from "./utils/momento-web";
 import ChatRoom from "./components/chat-room";
+
+function determineCognitoUser() {
+  return import.meta.env.VITE_TOKEN_VENDING_MACHINE_AUTH_TYPE === "cognito" ? "ReadOnly" : "ReadWrite";
+}
 
 export default function Home() {
   const [topic, setTopic] = useState("");
   const [username, setUsername] = useState("");
-  const [cognitoUser, setCognitoUser] = useState(import.meta.env.VITE_TOKEN_VENDING_MACHINE_AUTH_TYPE === "cognito" ? "ReadOnly" : "ReadWrite");
+  const [cognitoUser, setCognitoUser] = useState(determineCognitoUser());
   const [chatRoomSelected, setChatRoomSelected] = useState(false);
   const [usernameSelected, setUsernameSelected] = useState(false);
   const [cognitoUserSelected, setCognitoUserSelected] = useState(false);
 
   const leaveChatRoom = () => {
-    clearCurrentClient();
     setChatRoomSelected(false);
     setUsernameSelected(false);
     setCognitoUserSelected(false);
     setTopic("");
     setUsername("");
-    setCognitoUser("ReadOnly");
+    setCognitoUser(determineCognitoUser());
   };
 
   if (!import.meta.env.VITE_MOMENTO_CACHE_NAME) {
