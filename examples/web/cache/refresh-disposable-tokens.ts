@@ -214,7 +214,7 @@ const main = async () => {
 
   const wrappedTopicClient = await TokenRefreshingTopicClient.create({
     refreshBeforeExpiryMs: 10_000, // 10 seconds before token expires, refresh it.
-    getDisposableToken: tokenVendingMachine,
+    getDisposableToken: localTokenVendingMachine,
   });
 
   await wrappedTopicClient.subscribe('my-cache', 'topic-1', {
