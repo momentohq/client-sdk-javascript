@@ -6,7 +6,7 @@ export interface TokenRefreshingTopicClientProps {
 }
 
 export class TokenRefreshingTopicClient {
-  topicClient: TopicClient;
+  topicClient?: TopicClient;
   refreshBeforeExpiryMs: number;
   getDisposableToken: () => Promise<{token: string; expiresAt: ExpiresAt}>;
   activeSubscriptions: Record<
@@ -76,8 +76,11 @@ export class TokenRefreshingTopicClient {
   }
 
   async publish(cacheName: string, topicName: string, message: string, onError?: (resp: TopicPublish.Error) => void) {
-    const resp = await this.topicClient.publish(cacheName, topicName, message);
-    if (resp.type === TopicPublishResponse.Error) {
+    if (this.topicClient === undefined) {
+      await this.initialize();
+    }
+    const resp = await this.topicClient?.publish(cacheName, topicName, message);
+    if (resp?.type === TopicPublishResponse.Error) {
       console.error(`Error publishing message: ${resp.toString()}`);
       if (onError) {
         onError(resp);
@@ -94,6 +97,9 @@ export class TokenRefreshingTopicClient {
     }
   ) {
     console.log(`Subscribe function called for ${cacheName}:${topicName}`);
+    if (this.topicClient === undefined) {
+      await this.initialize();
+    }
 
     const wrappedOnItem = (item: TopicItem) => {
       const currentSubscription = this.activeSubscriptions[`${cacheName}:${topicName}`];
@@ -104,12 +110,12 @@ export class TokenRefreshingTopicClient {
       }
     };
  
-    const resp = await this.topicClient.subscribe(cacheName, topicName, {
+    const resp = await this.topicClient?.subscribe(cacheName, topicName, {
       onItem: wrappedOnItem,
       onError: options.onError,
     });
 
-    if (resp.type === TopicSubscribeResponse.Error) {
+    if (resp?.type === TopicSubscribeResponse.Error) {
       throw new Error(`Error subscribing to topic: ${resp.toString()}`);
     } else {
       console.log(`Subscribed to ${cacheName}:${topicName}`);
@@ -119,7 +125,7 @@ export class TokenRefreshingTopicClient {
       // otherwise make new record
       if (key in this.activeSubscriptions) {
         this.activeSubscriptions[key].unsubscribe = () => {
-          resp.unsubscribe();
+          resp?.unsubscribe();
         };
       } else {
         this.activeSubscriptions[key] = {
@@ -127,7 +133,7 @@ export class TokenRefreshingTopicClient {
           topicName,
           lastSequenceNumber: 0,
           unsubscribe: () => {
-            resp.unsubscribe();
+            resp?.unsubscribe();
           },
           onItem: wrappedOnItem,
           onError: options.onError,
