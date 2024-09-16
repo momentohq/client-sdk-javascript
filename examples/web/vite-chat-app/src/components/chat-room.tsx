@@ -87,13 +87,17 @@ export default function ChatRoom(props: Props) {
   }, [chats]);
 
   return (
-    <div className={"flex flex-col p-6 h-full justify-between bg-slate-200"}>
+    // <div className={"flex flex-col p-6 h-full justify-between bg-slate-200"}>
+    <div 
+      className={"flex flex-col p-6 h-full justify-between"}
+      style={{ background: "radial-gradient(circle, #25392B, #0E2515)" }}
+    >
       <div
         className={
           "flex justify-between items-center p-1 border-b-2 border-slate-300 mb-4"
         }
       >
-        <div>
+        <div className={"text-white"}>
           Welcome to the <span className={"italic"}>{props.topicName}</span>{" "}
           chat room
         </div>
@@ -118,17 +122,19 @@ export default function ChatRoom(props: Props) {
                   className={"break-words"}
                   key={`${chat.timestamp}-${chat.username}`}
                 >
-                  <span className={"text-red-500"}>
+                  <span className={"text-green-500"}>
                     {timestampWithUsername}
                   </span>{" "}
-                  {chat.text}
+                  <span className={"text-white"}>
+                    {chat.text}
+                  </span>
                 </div>
               );
             case EventTypes.USER_JOINED:
               return (
                 <div
                   key={`${chat.timestamp}-${chat.username}`}
-                  className={"text-green-500 italic"}
+                  className={"text-gray-400 italic"}
                 >
                   {timestamp} user joined: {chat.username}
                 </div>
@@ -153,7 +159,7 @@ export default function ChatRoom(props: Props) {
           onClick={onSendMessage}
           disabled={!textInput}
           className={
-            "bg-blue-400 rounded-2xl p-2 hover:brightness-75 disabled:bg-slate-400 disabled:brightness-75 disabled:text-white"
+            "bg-green-400 rounded-2xl p-2 hover:brightness-75 disabled:bg-slate-400 disabled:brightness-75 disabled:text-white"
           }
         >
           Send

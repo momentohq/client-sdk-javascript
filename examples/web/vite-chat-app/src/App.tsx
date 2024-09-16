@@ -31,12 +31,13 @@ export default function Home() {
 
   if (import.meta.env.VITE_TOKEN_VENDING_MACHINE_AUTH_TYPE === "cognito" && !cognitoUserSelected) {
     return(
-      <div className={
-        "flex h-full justify-center items-center flex-col bg-slate-300"
-      }>
+      <div 
+        className={"flex h-full justify-center items-center flex-col"}
+        style={{ background: "radial-gradient(circle, #25392B, #0E2515)" }}
+      >
           <label
             htmlFor={"cognito-users-list"}
-            className={"block mb-2 text-sm font-medium text-gray-900 text-center"}
+            className={"block mb-2 text-sm font-medium text-gray-900 text-center text-white"}
           >
             This app was configured to allow only authenticated users. <br />
             In a real-world application, this would be a more typical login or SSO page. <br />
@@ -68,12 +69,13 @@ export default function Home() {
   if (!chatRoomSelected) {
     return (
       <div
-        className={
-          "flex h-full justify-center items-center flex-col bg-slate-300"
-        }
+        className={"flex h-full justify-center items-center flex-col"}
+        style={{ background: "radial-gradient(circle, #25392B, #0E2515)" }}
       >
-        <div className={"w-80 text-center my-2"}>
+        <div className={"w-80 text-center my-2 text-white"}>
           Please enter the name of the chat room you'd like to join.
+          <br/><br/>
+          The chat room name is the topic name you wish to subscribe to.
           If it doesn't exist, it will be created using Momento Topics.
         </div>
         <div className={"h-8"} />
@@ -104,14 +106,13 @@ export default function Home() {
   if (!usernameSelected) {
     return (
       <div
-        className={
-          "flex h-full justify-center items-center flex-col bg-slate-300"
-        }
+        className={"flex h-full justify-center items-center flex-col"}
+        style={{ background: "radial-gradient(circle, #25392B, #0E2515)" }}
       >
-        <div className={"w-72 text-center"}>
+        <div className={"w-72 text-center text-white"}>
           <div>
             Welcome to the <span className={"italic"}>{topic}</span> chat room!
-            What would you like to be called?
+            Please enter your preferred username.
           </div>
         </div>
         <div className={"h-4"} />
