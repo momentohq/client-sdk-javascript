@@ -9,7 +9,8 @@
     "example": "tsc && node dist/basic.js",
     "advanced": "tsc && node dist/advanced.js",
     "dictionary": "tsc && node dist/dictionary.js",
-    "validate-examples": "tsc && node dist/basic.js && node dist/advanced.js && node dist/dictionary.js && node dist/readme.js",
+    "tokens": "tsc && node dist/refresh-disposable-tokens.js",
+    "validate-examples": "tsc && node dist/basic.js && node dist/advanced.js && node dist/dictionary.js && node dist/readme.js && node dist/refresh-disposable-tokens.js",
     "test": "jest",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix"
@@ -17,7 +18,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "16.11.4",
+    "@types/node": "22.5.4",
     "@typescript-eslint/eslint-plugin": "^5.59.7",
     "@typescript-eslint/parser": "^5.0.0",
     "eslint": "8.19.0",
