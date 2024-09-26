@@ -17,6 +17,7 @@
     "test": "jest",
     "unit-test": "jest unit",
     "integration-test": "jest integration",
+    "integration-test-consistent-reads": "jest integration -- useConsistentReads",
     "build-deps": "cd ../core && npm run build && cd - && cd ../client-sdk-nodejs && npm run build && cd -",
     "build-and-run-tests": "npm run build-deps && jest",
     "lint": "eslint . --ext .ts",
