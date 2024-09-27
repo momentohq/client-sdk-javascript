@@ -6,23 +6,23 @@ import {
 } from '@gomomento/common-integration-tests';
 import {
   AuthClient,
-  CreateCache,
-  Configurations,
-  DeleteCache,
-  MomentoErrorCode,
   CacheClient,
-  CredentialProvider,
   CollectionTtl,
-  TopicClient,
-  PreviewLeaderboardClient,
+  Configurations,
+  CreateCache,
+  CredentialProvider,
+  DeleteCache,
   LeaderboardConfigurations,
+  MomentoErrorCode,
+  PreviewLeaderboardClient,
   PreviewStorageClient,
+  ReadConcern,
   StorageConfigurations,
+  TopicClient,
 } from '../../src';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {CacheClientAllProps} from '../../src/internal/cache-client-all-props';
-import {ReadConcern} from '@gomomento/sdk-core';
 
 export const deleteCacheIfExists = async (
   momento: CacheClient,
@@ -96,15 +96,24 @@ function testAgainstMomentoLocal(): boolean {
   return process.env.MOMENTO_LOCAL !== undefined;
 }
 
+function useConsistentReads(): boolean {
+  return process.argv.find(arg => arg === 'useConsistentReads') !== undefined;
+}
+
 export function integrationTestCacheClientProps(): CacheClientAllProps {
   let credentialProvider = credsProvider();
   if (testAgainstMomentoLocal()) {
     credentialProvider = credentialProvider.withMomentoLocal();
   }
 
+  const readConcern = useConsistentReads()
+    ? ReadConcern.CONSISTENT
+    : ReadConcern.BALANCED;
+
   return {
-    configuration:
-      Configurations.Laptop.latest().withClientTimeoutMillis(90000),
+    configuration: Configurations.Laptop.latest()
+      .withClientTimeoutMillis(90000)
+      .withReadConcern(readConcern),
     credentialProvider,
     defaultTtlSeconds: 1111,
   };

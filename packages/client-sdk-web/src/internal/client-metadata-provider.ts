@@ -40,7 +40,8 @@ export class ClientMetadataProvider {
         ClientMetadataProvider.agentName
       }:${getBrowserName(navigator.userAgent)}`;
     }
-    if (this.readConcern) {
+    // Not sending a head concern header is treated the same as sending a BALANCED read concern header
+    if (this.readConcern && this.readConcern !== ReadConcern.BALANCED) {
       metadata['read-concern'] = this.readConcern;
     }
     return metadata;

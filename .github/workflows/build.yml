@@ -381,7 +381,7 @@ jobs:
       - name: Build and test all packages
         run: |
           node -v
-          ./scripts/build-and-test-all-packages.sh
+          ./scripts/build-and-test-all-packages-consistent-reads.sh
 
   test-examples:
     strategy:
