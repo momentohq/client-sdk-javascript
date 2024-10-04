@@ -20,12 +20,12 @@ export class PreviewStorageClient
 {
   private readonly _configuration: StorageConfiguration;
 
-  constructor(props: StorageClientProps) {
+  constructor(props?: StorageClientProps) {
     const allProps: StorageClientAllProps = {
       configuration:
-        props.configuration ?? getDefaultStorageClientConfiguration(),
+        props?.configuration ?? getDefaultStorageClientConfiguration(),
       credentialProvider:
-        props.credentialProvider ?? getDefaultCredentialProvider(),
+        props?.credentialProvider ?? getDefaultCredentialProvider(),
     };
     const controlClient: IStorageControlClient = createControlClient(allProps);
     const dataClient: IStorageDataClient = createDataClient(allProps);
@@ -63,7 +63,7 @@ function getDefaultStorageClientConfiguration(): StorageConfiguration {
   const config = StorageConfigurations.Default.latest();
   const logger = config.getLoggerFactory().getLogger('StorageClient');
   logger.info(
-    'No configuration provided to StorageClient. Using default configuration. For production use, consider specifying an explicit configuration.'
+    'No configuration provided to StorageClient. Using latest "Default" configuration, suitable for development. For production use, consider specifying an explicit configuration.'
   );
   return config;
 }

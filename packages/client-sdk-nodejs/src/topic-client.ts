@@ -16,12 +16,12 @@ export class TopicClient extends AbstractTopicClient {
   /**
    * Creates an instance of TopicClient.
    */
-  constructor(props: TopicClientProps) {
+  constructor(props?: TopicClientProps) {
     const allProps: TopicClientAllProps = {
       credentialProvider:
-        props.credentialProvider ?? getDefaultCredentialProvider(),
+        props?.credentialProvider ?? getDefaultCredentialProvider(),
       configuration:
-        props.configuration ?? getDefaultTopicClientConfiguration(),
+        props?.configuration ?? getDefaultTopicClientConfiguration(),
     };
 
     const numClients = allProps.configuration
@@ -40,5 +40,10 @@ export class TopicClient extends AbstractTopicClient {
 }
 
 function getDefaultTopicClientConfiguration(): TopicConfiguration {
-  return TopicConfigurations.Default.latest();
+  const config = TopicConfigurations.Default.latest();
+  const logger = config.getLoggerFactory().getLogger('TopicClient');
+  logger.info(
+    'No configuration provided to TopicClient. Using latest "Default" configuration, suitable for development. For production use, consider specifying an explicit configuration.'
+  );
+  return config;
 }
