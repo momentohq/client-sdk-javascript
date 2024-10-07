@@ -20,11 +20,12 @@ export class PreviewStorageClient
   extends AbstractStorageClient
   implements IStorageClient
 {
-  constructor(props: StorageClientProps) {
+  constructor(props?: StorageClientProps) {
     const allProps: StorageClientAllProps = {
-      configuration: props.configuration ?? getDefaultStorageConfiguration(),
+      configuration:
+        props?.configuration ?? getDefaultStorageClientConfiguration(),
       credentialProvider:
-        props.credentialProvider ?? getDefaultCredentialProvider(),
+        props?.credentialProvider ?? getDefaultCredentialProvider(),
     };
 
     const controlClient: IStorageControlClient = createControlClient(allProps);
@@ -48,6 +49,11 @@ function createDataClient(props: StorageClientAllProps): IStorageDataClient {
   return new StorageDataClient(props);
 }
 
-function getDefaultStorageConfiguration(): StorageConfiguration {
-  return StorageConfigurations.Laptop.latest();
+function getDefaultStorageClientConfiguration(): StorageConfiguration {
+  const config = StorageConfigurations.Laptop.latest();
+  const logger = config.getLoggerFactory().getLogger('StorageClient');
+  logger.info(
+    'No configuration provided to StorageClient. Using default "Laptop" configuration, suitable for development. For production use, consider specifying an explicit configuration.'
+  );
+  return config;
 }

@@ -23,12 +23,12 @@ import {LeaderboardClientAllProps} from './internal/leaderboard-client-all-props
 export class PreviewLeaderboardClient implements ILeaderboardClient {
   private dataClient: ILeaderboardDataClient;
 
-  constructor(props: LeaderboardClientProps) {
+  constructor(props?: LeaderboardClientProps) {
     const allProps: LeaderboardClientAllProps = {
       configuration:
-        props.configuration ?? getDefaultLeaderboardConfiguration(),
+        props?.configuration ?? getDefaultLeaderboardConfiguration(),
       credentialProvider:
-        props.credentialProvider ?? getDefaultCredentialProvider(),
+        props?.credentialProvider ?? getDefaultCredentialProvider(),
     };
     this.dataClient = new LeaderboardDataClient(allProps);
   }
@@ -46,5 +46,10 @@ export class PreviewLeaderboardClient implements ILeaderboardClient {
 }
 
 function getDefaultLeaderboardConfiguration(): LeaderboardConfiguration {
-  return LeaderboardConfigurations.Laptop.latest();
+  const config = LeaderboardConfigurations.Laptop.latest();
+  const logger = config.getLoggerFactory().getLogger('LeaderboardClient');
+  logger.info(
+    'No configuration provided to LeaderboardClient. Using default "Laptop" configuration, suitable for development. For production use, consider specifying an explicit configuration.'
+  );
+  return config;
 }
