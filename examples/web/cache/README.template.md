@@ -46,6 +46,44 @@ MOMENTO_API_KEY=<YOUR API KEY> npm run dictionary
 
 Example Code: [dictionary.ts](dictionary.ts)
 
+## Running the TopicClient example with auto-refreshing disposable tokens
+
+This example implements TokenRefreshingTopicClient, an example wrapper class around the TopicClient that refreshes disposable tokens before they expire. Getting a new disposable token requires creating a new TopicClient that accepts a CredentialProvider that uses the new token. After the new TopicClient is created, existing subscriptions must be transferred to the new client. All of this occurs within the TokenRefreshingTopicClient. 
+
+If you run the example using the `localTokenVendingMachine()` method passed to the wrapped client (this is the default for this example):
+
+```typescript
+  const wrappedTopicClient = await TokenRefreshingTopicClient.create({
+    refreshBeforeExpiryMs: 10_000, // 10 seconds before token expires, refresh it.
+    getDisposableToken: localTokenVendingMachine,
+  });
+```
+
+Run the example using:
+
+```bash
+# Run example code
+MOMENTO_API_KEY=<YOUR API KEY> npm run tokens
+```
+
+If you have deployed a token vending machine to generate disposable tokens like so:
+
+```typescript
+  const wrappedTopicClient = await TokenRefreshingTopicClient.create({
+    refreshBeforeExpiryMs: 10_000, // 10 seconds before token expires, refresh it.
+    getDisposableToken: tokenVendingMachine,
+  });
+```
+
+Run the example using:
+
+```bash
+# Run example code
+TVM_ENDPOINT=<YOUR TVM URL> npm run tokens
+```
+
+Example Code: [refresh-disposable-tokens.ts](refresh-disposable-tokens.ts)
+
 If you have questions or need help experimenting further, please reach out to us!
 
 {{ ossFooter }}

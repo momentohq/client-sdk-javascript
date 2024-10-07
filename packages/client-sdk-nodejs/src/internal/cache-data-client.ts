@@ -44,9 +44,9 @@ import {
   CacheSet,
   CacheSetAddElements,
   CacheSetBatch,
-  CacheSetFetch,
   CacheSetContainsElement,
   CacheSetContainsElements,
+  CacheSetFetch,
   CacheSetIfAbsent,
   CacheSetIfAbsentOrEqual,
   CacheSetIfEqual,
@@ -76,6 +76,7 @@ import {
   ItemType,
   MomentoLogger,
   MomentoLoggerFactory,
+  ReadConcern,
   SortedSetOrder,
   UnknownError,
 } from '..';
@@ -126,6 +127,7 @@ import {
   SetIfAbsentCallOptions,
 } from '@gomomento/sdk-core/dist/src/utils';
 import {CompressionError} from '../errors/compression-error';
+import {CacheSetLength, CacheSetPop} from '@gomomento/sdk-core';
 import grpcCache = cache.cache_client;
 import ECacheResult = cache_client.ECacheResult;
 import _ItemGetTypeResponse = cache_client._ItemGetTypeResponse;
@@ -136,7 +138,6 @@ import Equal = common.Equal;
 import NotEqual = common.NotEqual;
 import PresentAndNotEqual = common.PresentAndNotEqual;
 import AbsentOrEqual = common.AbsentOrEqual;
-import {CacheSetLength, CacheSetPop} from '@gomomento/sdk-core';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -237,9 +238,14 @@ export class CacheDataClient implements IDataClient {
     const headers = [
       new Header('Authorization', this.credentialProvider.getAuthToken()),
       new Header('agent', `nodejs:cache:${version}`),
-      new Header('read-concern', this.configuration.getReadConcern()),
       new Header('runtime-version', `nodejs:${process.versions.node}`),
     ];
+
+    // Not sending a head concern header is treated the same as sending a BALANCED read concern header
+    const readConcern = this.configuration.getReadConcern();
+    if (readConcern !== ReadConcern.BALANCED) {
+      headers.push(new Header('read-concern', readConcern));
+    }
 
     this.interceptors = this.initializeInterceptors(
       headers,

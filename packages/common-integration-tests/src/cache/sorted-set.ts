@@ -1,6 +1,7 @@
 import {v4} from 'uuid';
 import {
   CacheDelete,
+  CacheItemGetTtl,
   CacheSortedSetFetch,
   CacheSortedSetGetRank,
   CacheSortedSetGetScore,
@@ -32,6 +33,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/messages/responses/response-base';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {log} from 'console';
 
 export function runSortedSetTests(
   cacheClient: ICacheClient,
@@ -89,7 +91,7 @@ export function runSortedSetTests(
       it('does not refresh with no refresh ttl', async () => {
         const sortedSetName = v4();
         const value = v4();
-        const timeout = 1;
+        const timeout = 2;
 
         let changeResponse = await changeResponder({
           cacheName: integrationTestCacheName,
@@ -108,8 +110,18 @@ export function runSortedSetTests(
           ttl: CollectionTtl.of(timeout * 10).withNoRefreshTtlOnUpdates(),
         });
         expect((changeResponse as IResponseSuccess).is_success).toBeTrue();
-        await sleep(timeout * 1000);
+        const itemGetTtlResponse = await cacheClient.itemGetTtl(
+          integrationTestCacheName,
+          sortedSetName
+        );
+        expect(itemGetTtlResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+        log(
+          `Received CacheItemGetTtl Hit. Remaining TTL for the item: ${(
+            itemGetTtlResponse as CacheItemGetTtl.Hit
+          ).remainingTtlMillis()} milliseconds.`
+        );
 
+        await sleep(timeout * 1000 + 1);
         const getResponse = await cacheClient.sortedSetFetchByRank(
           integrationTestCacheName,
           sortedSetName

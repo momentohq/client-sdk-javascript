@@ -3,6 +3,9 @@ import {
   testCacheName,
   isLocalhostDevelopmentMode,
   createCacheIfNotExists,
+  testStoreName,
+  deleteStoreIfExists,
+  createStoreIfNotExists,
 } from '@gomomento/common-integration-tests';
 import {
   CreateCache,
@@ -88,10 +91,19 @@ function mgaAccountSessionTokenCredsProvider(): CredentialProvider {
   return _mgaAccountSessionTokenCredsProvider;
 }
 
+function useConsistentReads(): boolean {
+  return process.argv.find(arg => arg === 'useConsistentReads') !== undefined;
+}
+
 function integrationTestCacheClientProps(): CacheClientAllProps {
+  const readConcern = useConsistentReads()
+    ? ReadConcern.CONSISTENT
+    : ReadConcern.BALANCED;
+
   return {
-    configuration:
-      Configurations.Laptop.latest().withClientTimeoutMillis(90000),
+    configuration: Configurations.Laptop.latest()
+      .withClientTimeoutMillis(90000)
+      .withReadConcern(readConcern),
     credentialProvider: credsProvider(),
     defaultTtlSeconds: 1111,
   };
@@ -237,11 +249,20 @@ export function SetupStorageIntegrationTest(): {
   storageClient: IStorageClient;
   integrationTestStoreName: string;
 } {
-  const {integrationTestCacheName} = SetupIntegrationTest();
+  const integrationTestStoreName = testStoreName();
   const storageClient = momentoStorageClientForTesting();
+
+  beforeAll(async () => {
+    await createStoreIfNotExists(storageClient, integrationTestStoreName);
+  });
+
+  afterAll(async () => {
+    await deleteStoreIfExists(storageClient, integrationTestStoreName);
+  });
+
   return {
     storageClient,
-    integrationTestStoreName: integrationTestCacheName,
+    integrationTestStoreName,
   };
 }
 

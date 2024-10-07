@@ -1437,6 +1437,22 @@ async function example_API_GenerateDisposableToken(authClient: AuthClient) {
   }
 }
 
+async function example_API_TopicCreateClientAndPublish(cacheName: string, topicName: string, value: string) {
+  const topicClient = new TopicClient({
+    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
+  });
+  const publishResponse = await topicClient.publish(cacheName, topicName, value);
+  switch (publishResponse.type) {
+    case TopicPublishResponse.Success:
+      console.log("Value published to topic 'test-topic'");
+      break;
+    case TopicPublishResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to publish to the topic 'test-topic' in cache '${cacheName}': ${publishResponse.errorCode()}: ${publishResponse.toString()}`
+      );
+  }
+}
+
 async function example_API_TopicPublish(topicClient: TopicClient, cacheName: string) {
   const result = await topicClient.publish(cacheName, 'test-topic', 'test-topic-value');
   switch (result.type) {
@@ -1914,6 +1930,7 @@ async function main() {
       configuration: TopicConfigurations.Default.latest(),
       credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     });
+    await example_API_TopicCreateClientAndPublish(cacheName, 'topic', 'value');
     await example_API_TopicPublish(topicClient, cacheName);
     await example_API_TopicSubscribe(topicClient, cacheName);
 

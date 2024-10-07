@@ -381,7 +381,7 @@ jobs:
       - name: Build and test all packages
         run: |
           node -v
-          ./scripts/build-and-test-all-packages.sh
+          ./scripts/build-and-test-all-packages-consistent-reads.sh
 
   test-examples:
     strategy:
@@ -414,6 +414,11 @@ jobs:
             npm run validate-examples
           popd
           pushd examples/nodejs/topics
+            npm ci
+            npm run build
+            npm run validate-examples
+          popd
+          pushd examples/nodejs/webhooks
             npm ci
             npm run build
             npm run validate-examples
@@ -451,6 +456,10 @@ jobs:
             npm run build
           popd
           pushd examples/nodejs/aws/lambda-examples/cloudwatch-metrics/infrastructure
+            npm ci
+            npm run build
+          popd
+          pushd examples/nodejs/aws/lambda-examples/webhooks/infrastructure
             npm ci
             npm run build
           popd

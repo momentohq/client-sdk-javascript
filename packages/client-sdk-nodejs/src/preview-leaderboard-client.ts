@@ -25,13 +25,13 @@ export class PreviewLeaderboardClient implements ILeaderboardClient {
   private readonly dataClient: ILeaderboardDataClient;
   private readonly configuration: LeaderboardConfiguration;
 
-  constructor(props: LeaderboardClientProps) {
+  constructor(props?: LeaderboardClientProps) {
     const configuration =
-      props.configuration ?? getDefaultLeaderboardConfiguration();
+      props?.configuration ?? getDefaultLeaderboardConfiguration();
     const allProps: LeaderboardClientAllProps = {
       configuration: configuration,
       credentialProvider:
-        props.credentialProvider ?? getDefaultCredentialProvider(),
+        props?.credentialProvider ?? getDefaultCredentialProvider(),
     };
     this.configuration = configuration;
 
@@ -70,5 +70,10 @@ export class PreviewLeaderboardClient implements ILeaderboardClient {
 }
 
 function getDefaultLeaderboardConfiguration(): LeaderboardConfiguration {
-  return LeaderboardConfigurations.Laptop.latest();
+  const config = LeaderboardConfigurations.Laptop.latest();
+  const logger = config.getLoggerFactory().getLogger('LeaderboardClient');
+  logger.info(
+    'No configuration provided to LeaderboardClient. Using default "Laptop" configuration, suitable for development. For production use, consider specifying an explicit configuration.'
+  );
+  return config;
 }
