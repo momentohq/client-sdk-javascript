@@ -15,7 +15,7 @@ async function main() {
     return;
   }
   const [cacheName, topicName] = clargs;
-  const momento = new TopicClient({});
+  const momento = new TopicClient();
 
   await ensureCacheExists(cacheName);
 

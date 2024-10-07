@@ -1,7 +1,7 @@
 import {CreateStoreResponse, PreviewStorageClient, StorageGetResponse, StoragePutResponse} from '@gomomento/sdk';
 
 async function main() {
-  const storageClient = new PreviewStorageClient({});
+  const storageClient = new PreviewStorageClient();
 
   const storeName = 'my-store';
   const createStoreResponse = await storageClient.createStore(storeName);
