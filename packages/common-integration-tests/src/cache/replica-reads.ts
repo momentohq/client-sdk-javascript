@@ -35,10 +35,10 @@ export function runReplicaReadTests(
             expect(setResponse).toBeInstanceOf(CacheSet.Success);
           }, `expected SUCCESS but got ${setResponse.toString()}`);
 
-          // Wait for the replication SLA period to exceed
+          // Wait for replication to complete
           await new Promise(resolve => setTimeout(resolve, replicationDelayMs));
 
-          // Perform a get operation
+          // Verify that the value can be read
           const getResponse = await client.get(
             integrationTestCacheName,
             cacheKey
