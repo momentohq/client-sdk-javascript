@@ -47,11 +47,9 @@ export function runReplicaReadTests(
             expect(getResponse).toBeInstanceOf(CacheGet.Hit);
           }, `expected HIT but got ${getResponse.toString()}`);
 
-          if (getResponse instanceof CacheGet.Hit) {
-            expectWithMessage(() => {
-              expect(getResponse.valueString()).toEqual(cacheValue);
-            }, `expected ${cacheValue} but got ${getResponse.valueString()}`);
-          }
+          expectWithMessage(() => {
+            expect(getResponse.value()).toEqual(cacheValue);
+          }, `expected ${cacheValue} but got ${getResponse.value() ?? 'undefined'}`);
         })();
         trials.push(trialPromise);
       }
