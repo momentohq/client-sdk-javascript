@@ -14,4 +14,5 @@ export * from './cache/update-ttl';
 export * from './leaderboard/leaderboard-client';
 export * from './webhooks/webhooks';
 export * from './cache/batch-get-set';
+export * from './cache/replica-reads';
 export * from './storage/storage';
