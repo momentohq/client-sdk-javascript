@@ -4541,6 +4541,8 @@ export class CacheDataClient implements IDataClient {
         (err, resp) => {
           if (resp?.missing) {
             resolve(new CacheIncreaseTtl.Miss());
+          } else if (resp?.not_set) {
+            resolve(new CacheIncreaseTtl.NotSet());
           } else if (resp?.set) {
             resolve(new CacheIncreaseTtl.Set());
           } else {
@@ -4600,6 +4602,8 @@ export class CacheDataClient implements IDataClient {
         (err, resp) => {
           if (resp?.missing) {
             resolve(new CacheDecreaseTtl.Miss());
+          } else if (resp?.not_set) {
+            resolve(new CacheDecreaseTtl.NotSet());
           } else if (resp?.set) {
             resolve(new CacheDecreaseTtl.Set());
           } else {
