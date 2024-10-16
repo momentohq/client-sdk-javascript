@@ -142,7 +142,7 @@ export function runUpdateTtlTest(
       expect(ttlResult.remainingTtlMillis()).toBeGreaterThan(15000);
     });
 
-    it('should Error if given TTL is less than current TTL', async () => {
+    it('should NotSet for increaseTTL if given TTL is less than current TTL', async () => {
       const cacheKey = v4();
       await cacheClient.set(integrationTestCacheName, cacheKey, cacheKey, {
         ttl: 10,
@@ -154,8 +154,8 @@ export function runUpdateTtlTest(
         5000
       );
       expectWithMessage(() => {
-        expect(response).toBeInstanceOf(CacheIncreaseTtl.Error);
-      }, `expected ERROR but got ${response.toString()}`);
+        expect(response).toBeInstanceOf(CacheIncreaseTtl.NotSet);
+      }, `expected NOT_SET but got ${response.toString()}`);
     });
 
     it('should Error if given a TTL below 0', async () => {
@@ -241,7 +241,7 @@ export function runUpdateTtlTest(
       expect(ttlResult.remainingTtlMillis()).toBeGreaterThan(0);
     });
 
-    it('should Error if given TTL is greater than current TTL', async () => {
+    it('should NotSet for decreaseTTL if given TTL is greater than current TTL', async () => {
       const cacheKey = v4();
       await cacheClient.set(integrationTestCacheName, cacheKey, cacheKey, {
         ttl: 10,
@@ -253,8 +253,8 @@ export function runUpdateTtlTest(
         20000
       );
       expectWithMessage(() => {
-        expect(response).toBeInstanceOf(CacheDecreaseTtl.Error);
-      }, `expected ERROR but got ${response.toString()}`);
+        expect(response).toBeInstanceOf(CacheDecreaseTtl.NotSet);
+      }, `expected NOT_SET but got ${response.toString()}`);
     });
 
     it('should Error if given a TTL below 0', async () => {
