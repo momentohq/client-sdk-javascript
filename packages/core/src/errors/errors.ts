@@ -66,7 +66,7 @@ export class MomentoErrorTransportDetails {
 export abstract class SdkError extends Error {
   protected readonly _errorCode: MomentoErrorCode;
   protected readonly _messageWrapper: string;
-  private readonly _transportDetails: MomentoErrorTransportDetails;
+  protected readonly _transportDetails: MomentoErrorTransportDetails;
   constructor(
     message: string,
     code = 0,
@@ -179,8 +179,24 @@ export class InvalidArgumentError extends SdkError {
  */
 export class LimitExceededError extends SdkError {
   override _errorCode = MomentoErrorCode.LIMIT_EXCEEDED_ERROR;
-  override _messageWrapper =
-    'Request rate, bandwidth, or object size exceeded the limits for this account.  To resolve this error, reduce your usage as appropriate or contact us at support@momentohq.com to request a limit increase';
+  override _messageWrapper = this.determineMessageWrapper();
+
+  private determineMessageWrapper() {
+    // TODO: prefer using grpc metadata instead of raw strings in details
+    // if (this._transportDetails.grpc.metadata !== undefined) {}
+
+    if (this._transportDetails.grpc.details !== undefined) {
+      const details = this._transportDetails.grpc.details.toLowerCase();
+      if (details.includes('throughput')) {
+        return 'Bandwidth limit exceeded for this account';
+      } else if (details.includes('request limit')) {
+        return 'Item size limit exceeded for this account';
+      } else if (details.includes('operations')) {
+        return 'Request rate limit exceeded for this account';
+      }
+    }
+    return 'Request rate, bandwidth, or item size limit exceeded for this account';
+  }
 }
 
 /**
