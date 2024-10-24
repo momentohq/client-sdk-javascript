@@ -1,22 +1,22 @@
 <head>
-  <meta name="Momento Node.js Client Library Documentation" content="Node.js client software development kit for Momento Cache">
+  <meta name="Momento Client Library Documentation for Node.js" content="Momento client software development kit for Node.js">
 </head>
 <img src="https://docs.momentohq.com/img/momento-logo-forest.svg" alt="logo" width="400"/>
 
 [![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 [![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 
-# Momento Node.js Client Library
+# Momento Client Library for Node.js
 
 Momento Cache is a fast, simple, pay-as-you-go caching solution without any of the operational overhead
-required by traditional caching solutions.  This repo contains the source code for the Momento Node.js client library.
+required by traditional caching solutions.  This repo contains the source code for the Momento client library for Node.js.
 
 To get started with Momento you will need a Momento Auth Token. You can get one from the [Momento Console](https://console.gomomento.com).
 
 * Website: [https://www.gomomento.com/](https://www.gomomento.com/)
 * Momento Documentation: [https://docs.momentohq.com/](https://docs.momentohq.com/)
 * Getting Started: [https://docs.momentohq.com/getting-started](https://docs.momentohq.com/getting-started)
-* Node.js SDK Documentation: [https://docs.momentohq.com/sdks/nodejs](https://docs.momentohq.com/sdks/nodejs)
+* Momento SDK Documentation for Node.js: [https://docs.momentohq.com/sdks/nodejs](https://docs.momentohq.com/sdks/nodejs)
 * Discuss: [Momento Discord](https://discord.gg/3HkAKjUZGq)
 
 ## Packages
