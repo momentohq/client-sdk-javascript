@@ -174,28 +174,78 @@ export class InvalidArgumentError extends SdkError {
   override _messageWrapper = 'Invalid argument passed to Momento client';
 }
 
+enum LimitExceededMessageWrapper {
+  TOPIC_SUBSCRIPTIONS_LIMIT_EXCEEDED = 'Topic subscriptions limit exceeded for this account',
+  OPERATIONS_RATE_LIMIT_EXCEEDED = 'Request rate limit exceeded for this account',
+  THROUGHPUT_RATE_LIMIT_EXCEEDED = 'Bandwidth limit exceeded for this account',
+  REQUEST_SIZE_LIMIT_EXCEEDED = 'Request size limit exceeded for this account',
+  ITEM_SIZE_LIMIT_EXCEEDED = 'Item size limit exceeded for this account',
+  ELEMENT_SIZE_LIMIT_EXCEEDED = 'Element size limit exceeded for this account',
+  UNKNOWN_LIMIT_EXCEEDED = 'Limit exceeded for this account',
+}
+
 /**
  * Error when calls are throttled due to request limit rate
  */
 export class LimitExceededError extends SdkError {
   override _errorCode = MomentoErrorCode.LIMIT_EXCEEDED_ERROR;
   override _messageWrapper = this.determineMessageWrapper();
+  private errCause: string | undefined;
+
+  constructor(
+    message: string,
+    code = 0,
+    metadata: object | undefined = undefined,
+    stack: string | undefined = undefined,
+    errCause?: string
+  ) {
+    super(message, code, metadata, stack);
+    this.errCause = errCause;
+  }
 
   private determineMessageWrapper() {
-    // TODO: prefer using grpc metadata instead of raw strings in details
-    // if (this._transportDetails.grpc.metadata !== undefined) {}
-
-    if (this._transportDetails.grpc.details !== undefined) {
-      const details = this._transportDetails.grpc.details.toLowerCase();
-      if (details.includes('throughput')) {
-        return 'Bandwidth limit exceeded for this account';
-      } else if (details.includes('request limit')) {
-        return 'Item size limit exceeded for this account';
-      } else if (details.includes('operations')) {
-        return 'Request rate limit exceeded for this account';
+    // If provided, we use the `err` metadata value to determine the most
+    // appropriate error message to return.
+    if (this.errCause !== undefined) {
+      switch (this.errCause) {
+        case 'topic_subscriptions_limit_exceeded':
+          return LimitExceededMessageWrapper.TOPIC_SUBSCRIPTIONS_LIMIT_EXCEEDED;
+        case 'operations_rate_limit_exceeded':
+          return LimitExceededMessageWrapper.OPERATIONS_RATE_LIMIT_EXCEEDED;
+        case 'throughput_rate_limit_exceeded':
+          return LimitExceededMessageWrapper.THROUGHPUT_RATE_LIMIT_EXCEEDED;
+        case 'request_size_limit_exceeded':
+          return LimitExceededMessageWrapper.REQUEST_SIZE_LIMIT_EXCEEDED;
+        case 'item_size_limit_exceeded':
+          return LimitExceededMessageWrapper.ITEM_SIZE_LIMIT_EXCEEDED;
+        case 'element_size_limit_exceeded':
+          return LimitExceededMessageWrapper.ELEMENT_SIZE_LIMIT_EXCEEDED;
+        default:
+          return LimitExceededMessageWrapper.UNKNOWN_LIMIT_EXCEEDED;
       }
     }
-    return 'Request rate, bandwidth, or item size limit exceeded for this account';
+
+    // If `err` metadata is unavailable, try to use the error details field
+    // to return the an appropriate error message.
+    if (this._transportDetails.grpc.details !== undefined) {
+      const details = this._transportDetails.grpc.details.toLowerCase();
+      if (details.includes('subscribers')) {
+        return LimitExceededMessageWrapper.TOPIC_SUBSCRIPTIONS_LIMIT_EXCEEDED;
+      } else if (details.includes('operations')) {
+        return LimitExceededMessageWrapper.OPERATIONS_RATE_LIMIT_EXCEEDED;
+      } else if (details.includes('throughput')) {
+        return LimitExceededMessageWrapper.THROUGHPUT_RATE_LIMIT_EXCEEDED;
+      } else if (details.includes('request limit')) {
+        return LimitExceededMessageWrapper.REQUEST_SIZE_LIMIT_EXCEEDED;
+      } else if (details.includes('item size')) {
+        return LimitExceededMessageWrapper.ITEM_SIZE_LIMIT_EXCEEDED;
+      } else if (details.includes('element size')) {
+        return LimitExceededMessageWrapper.ELEMENT_SIZE_LIMIT_EXCEEDED;
+      }
+    }
+
+    // If all else fails, return a generic "limit exceeded" message
+    return LimitExceededMessageWrapper.UNKNOWN_LIMIT_EXCEEDED;
   }
 }
 
