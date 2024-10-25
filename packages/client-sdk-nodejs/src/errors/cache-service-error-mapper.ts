@@ -117,7 +117,7 @@ export class CacheServiceErrorMapper
       case Status.UNAUTHENTICATED:
         return new AuthenticationError(...errParams);
       case Status.RESOURCE_EXHAUSTED: {
-        const errCause = errParams[2]?.get('err')?.[0].toString();
+        const errCause = errParams[2]?.get('err')?.[0]?.toString();
         return new LimitExceededError(...errParams, errCause);
       }
       case Status.ALREADY_EXISTS: {
