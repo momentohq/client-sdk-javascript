@@ -112,8 +112,11 @@ export class CacheServiceErrorMapper
         return new TimeoutError(...errParams);
       case StatusCode.UNAUTHENTICATED:
         return new AuthenticationError(...errParams);
-      case StatusCode.RESOURCE_EXHAUSTED:
-        return new LimitExceededError(...errParams);
+      case StatusCode.RESOURCE_EXHAUSTED: {
+        const meta = errParams[2] ?? {};
+        const errCause = meta['err'];
+        return new LimitExceededError(...errParams, errCause);
+      }
       case StatusCode.ALREADY_EXISTS: {
         let errCause = '';
         // TODO: Remove this once the error message is standardized on the server side
