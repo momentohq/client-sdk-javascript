@@ -4422,6 +4422,8 @@ export class CacheDataClient<
         (err, resp) => {
           if (resp?.getMissing()) {
             resolve(new CacheIncreaseTtl.Miss());
+          } else if (resp?.getNotSet()) {
+            resolve(new CacheIncreaseTtl.NotSet());
           } else if (resp?.getSet()) {
             resolve(new CacheIncreaseTtl.Set());
           } else {
@@ -4489,6 +4491,8 @@ export class CacheDataClient<
         (err, resp) => {
           if (resp?.getMissing()) {
             resolve(new CacheDecreaseTtl.Miss());
+          } else if (resp?.getNotSet()) {
+            resolve(new CacheDecreaseTtl.NotSet());
           } else if (resp?.getSet()) {
             resolve(new CacheDecreaseTtl.Set());
           } else {

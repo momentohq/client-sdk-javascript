@@ -43,4 +43,22 @@ describe('CacheClient', () => {
       expect(responseValue).toEqual(value);
     }, `expected 5mb retrieved string to match 5mb value that was set for key ${key}`);
   });
+
+  it('should fail with RESOURCE_EXHAUSTED_ERROR when setting a value greater than 5mb', async () => {
+    const cacheKey = v4();
+    const cacheValue = 'x'.repeat(5_300_000);
+    const setResponse = await cacheClient.set(
+      integrationTestCacheName,
+      cacheKey,
+      cacheValue
+    );
+    const stringifiedSetResponse = setResponse.toString();
+    expectWithMessage(() => {
+      expect(setResponse).toBeInstanceOf(CacheSet.Error);
+    }, `expected ERROR but got ${stringifiedSetResponse}`);
+    expect(stringifiedSetResponse).toInclude('RESOURCE_EXHAUSTED');
+    expect(stringifiedSetResponse).toInclude(
+      'Request size limit exceeded for this account'
+    );
+  });
 });
