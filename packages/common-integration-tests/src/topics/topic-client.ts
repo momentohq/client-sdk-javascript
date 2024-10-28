@@ -13,6 +13,7 @@ import {
   expectWithMessage,
   ItBehavesLikeItValidatesCacheName,
   ItBehavesLikeItValidatesTopicName,
+  testTopicName,
   uint8ArrayForTest,
   ValidateCacheProps,
   ValidateTopicProps,
@@ -106,7 +107,7 @@ export function runTopicClientTests(
 
   describe('subscribe and publish', () => {
     it('should publish strings and bytes and receive them on a subscription', async () => {
-      const topicName = v4();
+      const topicName = testTopicName();
       const publishedValues = [
         'value1',
         'value2',
@@ -161,7 +162,7 @@ export function runTopicClientTests(
     });
 
     it('should not receive messages when unsubscribed', async () => {
-      const topicName = v4();
+      const topicName = testTopicName();
       const publishedValue = 'value';
       const receivedValues: (string | Uint8Array)[] = [];
 
@@ -209,7 +210,7 @@ export function runTopicClientTests(
     });
 
     it('should subscribe with default handlers', async () => {
-      const topicName = v4();
+      const topicName = testTopicName();
 
       const subscribeResponse = await topicClient.subscribe(
         integrationTestCacheName,
