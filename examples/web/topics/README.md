@@ -4,7 +4,7 @@
 [![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 
 
-# Momento JavaScript Web SDK - Basic Cache Examples
+# Momento JavaScript Web SDK - Basic Topic Examples
 
 _Read this in other languages_: [日本語](README.ja.md)
 

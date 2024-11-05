@@ -1,6 +1,6 @@
 {{ ossHeader }}
 
-# Momento JavaScript Web SDK - Basic Cache Examples
+# Momento JavaScript Web SDK - Basic Topics Examples
 
 _Read this in other languages_: [日本語](README.ja.md)
 
