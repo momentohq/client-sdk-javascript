@@ -169,11 +169,13 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
       topic: options.topicName,
       resume_at_topic_sequence_number:
         options.subscriptionState.resumeAtTopicSequenceNumber,
+      sequence_page: options.subscriptionState.lastTopicSequencePage,
     });
 
     this.getLogger().trace(
-      'Subscribing to topic with resume_at_topic_sequence_number: %s',
-      options.subscriptionState.resumeAtTopicSequenceNumber
+      'Subscribing to topic with resume_at_topic_sequence_number %s and sequence_page %s',
+      options.subscriptionState.resumeAtTopicSequenceNumber,
+      options.subscriptionState.lastTopicSequencePage ?? 'undefined'
     );
     const call = this.client.Subscribe(request, {
       interceptors: this.streamingInterceptors,
@@ -210,11 +212,14 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
 
       if (resp.item) {
         const sequenceNumber = resp.item.topic_sequence_number;
+        const sequencePage = resp.item.sequence_page;
         options.subscriptionState.lastTopicSequenceNumber = sequenceNumber;
+        options.subscriptionState.lastTopicSequencePage = sequencePage;
         this.getLogger().trace(
-          'Received an item on subscription stream; topic: %s; sequence number: %s',
+          'Received an item on subscription stream; topic: %s; sequence number: %s; sequence page: %s',
           truncateString(options.topicName),
-          sequenceNumber
+          sequenceNumber,
+          sequencePage
         );
         if (resp.item.value.text) {
           options.onItem(
@@ -254,7 +259,8 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
         options.onDiscontinuity(
           new TopicDiscontinuity(
             resp.discontinuity.last_topic_sequence,
-            resp.discontinuity.new_topic_sequence
+            resp.discontinuity.new_topic_sequence,
+            resp.discontinuity.new_sequence_page
           )
         );
       } else {

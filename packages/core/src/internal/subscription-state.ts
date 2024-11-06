@@ -4,6 +4,7 @@
 export class SubscriptionState {
   private _unsubscribeFn: () => void;
   public lastTopicSequenceNumber?: number;
+  public lastTopicSequencePage?: number;
   private _isSubscribed: boolean;
   constructor() {
     this._unsubscribeFn = () => {
@@ -43,6 +44,7 @@ export class SubscriptionState {
     return JSON.stringify(
       {
         lastTopicSequenceNumber: this.lastTopicSequenceNumber,
+        lastTopicSequencePage: this.lastTopicSequencePage,
         isSubscribed: this._isSubscribed,
       },
       null,

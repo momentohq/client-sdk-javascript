@@ -134,6 +134,15 @@ export class PubsubClient<
     request.setResumeAtTopicSequenceNumber(
       options.subscriptionState.resumeAtTopicSequenceNumber
     );
+    if (options.subscriptionState.lastTopicSequencePage !== undefined) {
+      request.setSequencePage(options.subscriptionState.lastTopicSequencePage);
+    }
+
+    this.getLogger().trace(
+      'Subscribing to topic with resume_at_topic_sequence_number %s and sequence_page %s',
+      options.subscriptionState.resumeAtTopicSequenceNumber,
+      options.subscriptionState.lastTopicSequencePage ?? 'undefined'
+    );
 
     const call = this.client.subscribe(request, {
       ...this.clientMetadataProvider.createClientMetadata(),
@@ -179,10 +188,18 @@ export class PubsubClient<
 
       if (item) {
         const sequenceNumber = item.getTopicSequenceNumber();
+        const sequencePage = item.getSequencePage();
         options.subscriptionState.lastTopicSequenceNumber = sequenceNumber;
+        options.subscriptionState.lastTopicSequencePage = sequencePage;
         const publisherId = item.getPublisherId();
         const itemText = item.getValue()?.getText();
         const itemBinary = item.getValue()?.getBinary();
+        this.getLogger().trace(
+          'Received an item on subscription stream; topic: %s; sequence number: %s; sequence page: %s',
+          truncateString(options.topicName),
+          sequenceNumber,
+          sequencePage
+        );
         if (itemText) {
           options.onItem(
             new TopicItem(itemText, sequenceNumber, {tokenId: publisherId})
@@ -211,13 +228,16 @@ export class PubsubClient<
         options.onHeartbeat(new TopicHeartbeat());
       } else if (discontinuity) {
         this.getLogger().trace(
-          'Received discontinuity from subscription stream; topic: %s',
-          truncateString(options.topicName)
+          'Received a discontinuity; topic: %s; new sequence number: %s; new sequence page: %s',
+          truncateString(options.topicName),
+          discontinuity.getNewTopicSequence(),
+          discontinuity.getNewSequencePage()
         );
         options.onDiscontinuity(
           new TopicDiscontinuity(
             discontinuity.getLastTopicSequence(),
-            discontinuity.getNewTopicSequence()
+            discontinuity.getNewTopicSequence(),
+            discontinuity.getNewSequencePage()
           )
         );
       } else {
