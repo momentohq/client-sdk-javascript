@@ -43,7 +43,7 @@ export class TopicDiscontinuity {
   }
 
   public toString(): string {
-    const displayValue = `Last Sequence Number: ${this._lastSequenceNumber}; New Sequence Number: ${this._newSequenceNumber}`;
+    const displayValue = `Last Sequence Number: ${this._lastSequenceNumber}; New Sequence Number: ${this._newSequenceNumber}; New Sequence Page: ${this._newSequencePage}`;
     return `${this.constructor.name}: ${displayValue}`;
   }
 }
