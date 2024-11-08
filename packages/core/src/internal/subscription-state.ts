@@ -17,6 +17,10 @@ export class SubscriptionState {
     return (this.lastTopicSequenceNumber ?? -1) + 1;
   }
 
+  public get resumeAtTopicSequencePage(): number {
+    return this.lastTopicSequencePage ?? 0;
+  }
+
   public setSubscribed(): void {
     this._isSubscribed = true;
   }
