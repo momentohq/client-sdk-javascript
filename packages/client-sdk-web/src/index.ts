@@ -76,6 +76,7 @@ import * as CacheSetBatch from '@gomomento/sdk-core/dist/src/messages/responses/
 import * as TopicPublish from '@gomomento/sdk-core/dist/src/messages/responses/topic-publish';
 import * as TopicSubscribe from '@gomomento/sdk-core/dist/src/messages/responses/topic-subscribe';
 import {TopicItem} from '@gomomento/sdk-core/dist/src/messages/responses/topic-item';
+import {TopicDiscontinuity} from '@gomomento/sdk-core/dist/src/messages/responses/topic-discontinuity';
 
 // AuthClient Response Types
 import * as GenerateApiKey from '@gomomento/sdk-core/dist/src/messages/responses/generate-api-key';
@@ -284,6 +285,7 @@ export {
   TopicClientConfiguration,
   TopicClient,
   TopicItem,
+  TopicDiscontinuity,
   TopicPublish,
   TopicSubscribe,
   SubscribeCallOptions,

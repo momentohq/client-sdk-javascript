@@ -44,6 +44,10 @@ export function testStoreName(): string {
   return `js-integration-test-default-${v4()}`;
 }
 
+export function testTopicName(): string {
+  return `js-integration-test-topic-${v4()}`;
+}
+
 export function testWebhook(cache?: string): Webhook {
   const cacheName = cache ?? testCacheName();
   const webhookName = `webhook-${cacheName}`;

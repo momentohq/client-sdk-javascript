@@ -134,6 +134,13 @@ export class PubsubClient<
     request.setResumeAtTopicSequenceNumber(
       options.subscriptionState.resumeAtTopicSequenceNumber
     );
+    request.setSequencePage(
+      options.subscriptionState.resumeAtTopicSequencePage
+    );
+
+    this.getLogger().trace(
+      `Subscribing to topic with resume_at_topic_sequence_number ${options.subscriptionState.resumeAtTopicSequenceNumber} and sequence_page ${options.subscriptionState.resumeAtTopicSequencePage}`
+    );
 
     const call = this.client.subscribe(request, {
       ...this.clientMetadataProvider.createClientMetadata(),
@@ -179,10 +186,17 @@ export class PubsubClient<
 
       if (item) {
         const sequenceNumber = item.getTopicSequenceNumber();
+        const sequencePage = item.getSequencePage();
         options.subscriptionState.lastTopicSequenceNumber = sequenceNumber;
+        options.subscriptionState.lastTopicSequencePage = sequencePage;
         const publisherId = item.getPublisherId();
         const itemText = item.getValue()?.getText();
         const itemBinary = item.getValue()?.getBinary();
+        this.getLogger().trace(
+          `Received an item on subscription stream; topic: ${truncateString(
+            options.topicName
+          )}; sequence number: ${sequenceNumber}; sequence page: ${sequencePage}`
+        );
         if (itemText) {
           options.onItem(
             new TopicItem(itemText, sequenceNumber, {tokenId: publisherId})
@@ -193,8 +207,9 @@ export class PubsubClient<
           );
         } else {
           this.getLogger().error(
-            'Received subscription item with unknown type; topic: %s',
-            truncateString(options.topicName)
+            `Received subscription item with unknown type; topic: ${truncateString(
+              options.topicName
+            )}`
           );
           options.onError(
             new TopicSubscribe.Error(
@@ -205,25 +220,28 @@ export class PubsubClient<
         }
       } else if (resp.getHeartbeat()) {
         this.getLogger().trace(
-          'Received heartbeat from subscription stream; topic: %s',
-          truncateString(options.topicName)
+          `Received heartbeat from subscription stream; topic: ${truncateString(
+            options.topicName
+          )}`
         );
         options.onHeartbeat(new TopicHeartbeat());
       } else if (discontinuity) {
+        const topicDiscontinuity = new TopicDiscontinuity(
+          discontinuity.getLastTopicSequence(),
+          discontinuity.getNewTopicSequence(),
+          discontinuity.getNewSequencePage()
+        );
         this.getLogger().trace(
-          'Received discontinuity from subscription stream; topic: %s',
-          truncateString(options.topicName)
+          `Received a discontinuity; topic: ${truncateString(
+            options.topicName
+          )}; ${topicDiscontinuity.toString()}`
         );
-        options.onDiscontinuity(
-          new TopicDiscontinuity(
-            discontinuity.getLastTopicSequence(),
-            discontinuity.getNewTopicSequence()
-          )
-        );
+        options.onDiscontinuity(topicDiscontinuity);
       } else {
         this.getLogger().error(
-          'Received unknown subscription item; topic: %s',
-          truncateString(options.topicName)
+          `Received unknown subscription item; topic: ${truncateString(
+            options.topicName
+          )}`
         );
         options.onError(
           new TopicSubscribe.Error(new UnknownError('Unknown item type')),

@@ -28,7 +28,7 @@ import {
   RefreshAuthToken,
   TopicItem,
 } from '@gomomento/sdk-core';
-import {expectWithMessage} from '../common-int-test-utils';
+import {expectWithMessage, testTopicName} from '../common-int-test-utils';
 import {InternalSuperUserPermissions} from '@gomomento/sdk-core/dist/src/internal/utils/auth';
 import {
   IAuthClient,
@@ -753,9 +753,10 @@ export function runAuthClientTests(
       }, `Expected MISS but received ${missResp2.toString()}`);
 
       const topicClient = topicClientFactory(readAllCachesToken);
+      const topicName = testTopicName();
       const pubResp = await topicClient.publish(
         FGA_CACHE_1,
-        'Ankh-Morpork Inquirer',
+        topicName,
         'There is a werewolf in the City Watch!!!!!'
       );
       expectWithMessage(() => {
@@ -764,7 +765,7 @@ export function runAuthClientTests(
 
       const subResp = await topicClient.subscribe(
         FGA_CACHE_1,
-        'Ankh-Morpork Inquirer',
+        topicName,
         trivialHandlers
       );
       expectWithMessage(() => {
@@ -811,11 +812,12 @@ export function runAuthClientTests(
         expect(getKey2).toBePermissionDeniedForCacheGet();
       }, `Expected ERROR but received ${getKey2.toString()}`);
 
+      const topicName = testTopicName();
       const topicClient = topicClientFactory(readAllTopicsToken);
       // Publish should fail
       const pubResp = await topicClient.publish(
         FGA_CACHE_1,
-        'The Ankh-Morpork Times',
+        topicName,
         'The Truth Shall Make Ye Fret'
       );
       expectWithMessage(() => {
@@ -825,7 +827,7 @@ export function runAuthClientTests(
       // Subscribe should succeed
       const subResp = await topicClient.subscribe(
         FGA_CACHE_1,
-        'The Ankh-Morpork Times',
+        topicName,
         trivialHandlers
       );
       expectWithMessage(() => {
@@ -876,11 +878,12 @@ export function runAuthClientTests(
         expect(getResp2).toBePermissionDeniedForCacheGet();
       }, `Expected ERROR but received ${getResp2.toString()}`);
 
+      const topicName = testTopicName();
       const topicClient = topicClientFactory(token);
       // Read/Write on topics in cache FGA_CACHE_1 is not allowed
       const pubResp = await topicClient.publish(
         FGA_CACHE_1,
-        'breaking news!',
+        topicName,
         'Flying lizard seen over Manhattan!'
       );
       expectWithMessage(() => {
@@ -889,7 +892,7 @@ export function runAuthClientTests(
 
       const subResp = await topicClient.subscribe(
         FGA_CACHE_1,
-        'breaking news!',
+        topicName,
         trivialHandlers
       );
       expectWithMessage(() => {
@@ -899,7 +902,7 @@ export function runAuthClientTests(
       // Read/Write on topics in cache FGA_CACHE_2 is allowed
       const pubResp1 = await topicClient.publish(
         FGA_CACHE_2,
-        'breaking news!',
+        topicName,
         'UFOs spotted'
       );
       expectWithMessage(() => {
@@ -908,7 +911,7 @@ export function runAuthClientTests(
 
       const subResp1 = await topicClient.subscribe(
         FGA_CACHE_2,
-        'breaking news!',
+        topicName,
         trivialHandlers
       );
       expectWithMessage(() => {
@@ -953,13 +956,14 @@ export function runAuthClientTests(
         .authToken;
 
       const topicClient = topicClientFactory(token);
+      const topicName = testTopicName();
 
       const receivedValues: TopicItem[] = [];
 
       let done = false;
       const subscribeResponse = await topicClient.subscribe(
         FGA_CACHE_2,
-        'breaking news!',
+        topicName,
         {
           onItem: (item: TopicItem) => {
             receivedValues.push(item);
@@ -979,7 +983,7 @@ export function runAuthClientTests(
       await sleep(2000);
       const pubResp1 = await topicClient.publish(
         FGA_CACHE_2,
-        'breaking news!',
+        topicName,
         'humans landed on Mars!'
       );
       expectWithMessage(() => {
@@ -1088,11 +1092,12 @@ export function runAuthClientTests(
         expect(getResp2).toBePermissionDeniedForCacheGet();
       }, `Expected ERROR but received ${getResp2.toString()}`);
 
+      const topicName = testTopicName();
       const topicClient = topicClientFactory(token);
       // Read/Write on topics in cache FGA_CACHE_1 is not allowed
       const pubResp = await topicClient.publish(
         FGA_CACHE_1,
-        'breaking news!',
+        topicName,
         'Flying lizard seen over Manhattan!'
       );
       expectWithMessage(() => {
@@ -1101,7 +1106,7 @@ export function runAuthClientTests(
 
       const subResp = await topicClient.subscribe(
         FGA_CACHE_1,
-        'breaking news!',
+        topicName,
         trivialHandlers
       );
       expectWithMessage(() => {
@@ -1111,7 +1116,7 @@ export function runAuthClientTests(
       // Only Write on topics in cache FGA_CACHE_2 is allowed
       const pubResp1 = await topicClient.publish(
         FGA_CACHE_2,
-        'breaking news!',
+        topicName,
         'UFOs spotted'
       );
       expectWithMessage(() => {
@@ -1120,7 +1125,7 @@ export function runAuthClientTests(
 
       const subResp1 = await topicClient.subscribe(
         FGA_CACHE_2,
-        'breaking news!',
+        topicName,
         trivialHandlers
       );
       expectWithMessage(() => {
@@ -1715,10 +1720,12 @@ export function runAuthClientTests(
         expect(getKey2).toBePermissionDeniedForCacheGet();
       }, `Expected ERROR but received ${getKey2.toString()}`);
 
+      const topicName = testTopicName();
+
       // can publish and subscribe topics in FGA_CACHE_2 but not FGA_CACHE_1
       const subResp1 = await topicClient.subscribe(
         FGA_CACHE_2,
-        'breaking news!',
+        topicName,
         trivialHandlers
       );
       expectWithMessage(() => {
@@ -1727,7 +1734,7 @@ export function runAuthClientTests(
 
       const pubResp1 = await topicClient.publish(
         FGA_CACHE_2,
-        'breaking news!',
+        topicName,
         'humans landed on Mars!'
       );
       expectWithMessage(() => {
@@ -1736,7 +1743,7 @@ export function runAuthClientTests(
 
       const subResp2 = await topicClient.subscribe(
         FGA_CACHE_1,
-        'breaking news!',
+        topicName,
         trivialHandlers
       );
       expectWithMessage(() => {
@@ -1745,7 +1752,7 @@ export function runAuthClientTests(
 
       const pubResp = await topicClient.publish(
         FGA_CACHE_1,
-        'breaking news!',
+        topicName,
         'humans landed on Pluto!'
       );
       expectWithMessage(() => {
