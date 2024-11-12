@@ -10,6 +10,8 @@ const retryableGrpcStatusCodes: Array<Status> = [
   // commenting out the ones we don't want to retry on for now.
 
   // Status.OK,
+  // Idempotent operations can be safely retried for CANCELLED errors. These may pop us sometimes during
+  // client or server side deployments
   Status.CANCELLED,
   // Status.UNKNOWN,
   // Status.INVALID_ARGUMENT,
