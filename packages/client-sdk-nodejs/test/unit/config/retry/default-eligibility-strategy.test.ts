@@ -58,7 +58,23 @@ describe('DefaultEligibilityStrategy', () => {
     expect(isEligible).toBe(true);
   });
 
-  it('should return false for CANCELLED status code and GET request path', () => {
+  it('should return true for CANCELLED status code and GET request path', () => {
+    const grpcStatus = {code: Status.CANCELLED} as StatusObject;
+    const grpcRequest = {
+      path: '/cache_client.Scs/Get',
+    } as ClientMethodDefinition<unknown, unknown>;
+    const requestMetadata = new Metadata();
+
+    const isEligible = eligibilityStrategy.isEligibleForRetry({
+      grpcStatus,
+      grpcRequest,
+      requestMetadata,
+    });
+
+    expect(isEligible).toBe(true);
+  });
+
+  it('should return false for CANCELLED status code and SET request path', () => {
     const grpcStatus = {code: Status.CANCELLED} as StatusObject;
     const grpcRequest = {
       path: '/cache_client.Scs/Set',
