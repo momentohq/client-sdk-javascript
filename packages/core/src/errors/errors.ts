@@ -138,7 +138,7 @@ export class BadRequestError extends SdkError {
 export class CancelledError extends SdkError {
   override _errorCode = MomentoErrorCode.CANCELLED_ERROR;
   override _messageWrapper =
-    'The request was cancelled, typically by the caller; please contact us at support@momentohq.com ';
+    'The request was cancelled; please contact us at support@momentohq.com ';
 }
 
 /**
