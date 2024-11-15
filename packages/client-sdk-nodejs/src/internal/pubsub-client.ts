@@ -262,6 +262,10 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
           truncateString(options.topicName),
           topicDiscontinuity.toString()
         );
+        options.subscriptionState.lastTopicSequenceNumber =
+          resp.discontinuity.new_topic_sequence;
+        options.subscriptionState.lastTopicSequencePage =
+          resp.discontinuity.new_sequence_page;
         options.onDiscontinuity(topicDiscontinuity);
       } else {
         this.getLogger().error(
