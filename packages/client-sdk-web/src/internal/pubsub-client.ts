@@ -236,6 +236,10 @@ export class PubsubClient<
             options.topicName
           )}; ${topicDiscontinuity.toString()}`
         );
+        options.subscriptionState.lastTopicSequenceNumber =
+          discontinuity.getNewTopicSequence();
+        options.subscriptionState.lastTopicSequencePage =
+          discontinuity.getNewSequencePage();
         options.onDiscontinuity(topicDiscontinuity);
       } else {
         this.getLogger().error(
