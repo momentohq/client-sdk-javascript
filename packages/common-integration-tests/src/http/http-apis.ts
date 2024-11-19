@@ -4,7 +4,6 @@ import {IAuthClient} from '@gomomento/sdk-core/dist/src/clients/IAuthClient';
 import * as https from 'https';
 
 import {v4} from 'uuid';
-import {IncomingMessage} from 'node:http';
 
 const SUPER_USER_PERMISSIONS: PermissionScope =
   new InternalSuperUserPermissions();
@@ -15,7 +14,11 @@ function makeRequest(
   path: string,
   headers: Record<string, string>,
   body?: string
-): Promise<IncomingMessage> {
+): Promise<{
+  statusCode: number;
+  statusMessage: string | undefined;
+  body: string;
+}> {
   return new Promise((resolve, reject) => {
     const options = {
       hostname,
@@ -25,7 +28,19 @@ function makeRequest(
     };
 
     const req = https.request(options, res => {
-      resolve(res);
+      let data = '';
+
+      res.on('data', chunk => {
+        data += chunk;
+      });
+
+      res.on('end', () => {
+        resolve({
+          statusCode: res.statusCode || 0,
+          statusMessage: res.statusMessage,
+          body: data,
+        });
+      });
     });
 
     req.on('error', reject);
@@ -45,9 +60,10 @@ function putValue(
   key: string,
   value: string,
   ttl: number
-): Promise<IncomingMessage> {
-  const encodedKey = encodeURIComponent(key);
-  const path = `/cache/${cacheName}?key=${encodedKey}&value=${value}&ttl_seconds=${ttl}`;
+): Promise<{statusCode: number; statusMessage: string | undefined}> {
+  const path = `/cache/${encodeValue(cacheName)}?key=${encodeValue(
+    key
+  )}&value=${encodeValue(value)}&ttl_seconds=${ttl}`;
   const headers = {
     Authorization: apiKey,
     'Content-Type': 'application/json',
@@ -61,12 +77,14 @@ function getValue(
   apiKey: string,
   cacheName: string,
   key: string
-): Promise<IncomingMessage> {
-  const encodedKey = encodeURIComponent(key);
-  const path = `/cache/${cacheName}?key=${encodedKey}`;
+): Promise<{
+  statusCode: number;
+  statusMessage: string | undefined;
+  body: string;
+}> {
+  const path = `/cache/${encodeValue(cacheName)}?key=${encodeValue(key)}`;
   const headers = {
     Authorization: apiKey,
-    'Content-Type': 'application/json',
   };
 
   return makeRequest('GET', baseUrl, path, headers);
@@ -77,15 +95,17 @@ function deleteValue(
   apiKey: string,
   cacheName: string,
   key: string
-): Promise<IncomingMessage> {
-  const encodedKey = encodeURIComponent(key);
-  const path = `/cache/${cacheName}?key=${encodedKey}`;
+): Promise<{statusCode: number; statusMessage: string | undefined}> {
+  const path = `/cache/${encodeValue(cacheName)}?key=${encodeValue(key)}`;
   const headers = {
     Authorization: apiKey,
-    'Content-Type': 'application/json',
   };
 
   return makeRequest('DELETE', baseUrl, path, headers);
+}
+
+function encodeValue(value: string): string {
+  return encodeURIComponent(value);
 }
 
 export function runHttpApiTest(
@@ -107,7 +127,66 @@ export function runHttpApiTest(
       baseUrl = `api.cache.${successResp.endpoint}`;
     });
 
-    it('should successfully PUT, GET, DELETE a value in the cache', async () => {
+    it('should return error on non-existing cache', async () => {
+      const key = v4();
+      const value = v4();
+      const ttl = 300;
+
+      const nonExistentCache = v4();
+
+      // PUT API
+      const putRes = await putValue(
+        baseUrl,
+        apiKey,
+        nonExistentCache,
+        key,
+        value,
+        ttl
+      );
+      expect(putRes.statusCode).toBe(404);
+      expect(putRes.statusMessage?.toLowerCase()).toBe('not found');
+
+      // GET API
+      const getRes = await getValue(baseUrl, apiKey, nonExistentCache, key);
+      expect(getRes.statusCode).toBe(404);
+      expect(getRes.statusMessage?.toLowerCase()).toBe('not found');
+
+      // DELETE API
+      const delRes = await deleteValue(baseUrl, apiKey, nonExistentCache, key);
+      expect(delRes.statusCode).toBe(404);
+      expect(delRes.statusMessage?.toLowerCase()).toBe('not found');
+    });
+
+    it('should successfully PUT and GET a value from a cache', async () => {
+      const key = v4();
+      const value = v4();
+      const ttl = 300;
+
+      // Use PUT API to set the string value
+      const putRes = await putValue(
+        baseUrl,
+        apiKey,
+        cacheName,
+        key,
+        value,
+        ttl
+      );
+      expect(putRes.statusCode).toBe(204);
+
+      // Use GET API to retrieve the value
+      const getRes = await getValue(baseUrl, apiKey, cacheName, key);
+      expect(getRes.statusCode).toBe(200);
+      expect(getRes.body).toBe(value);
+    });
+
+    it('should return error on GET on non-existing key', async () => {
+      // Use GET API to retrieve the value that was not set
+      const getRes2 = await getValue(baseUrl, apiKey, cacheName, v4());
+      expect(getRes2.statusCode).toBe(404);
+      expect(getRes2.statusMessage?.toLowerCase()).toBe('not found');
+    });
+
+    it('should successfully DELETE a value from a cache', async () => {
       const key = v4();
       const value = v4();
       const ttl = 300;
@@ -121,19 +200,18 @@ export function runHttpApiTest(
         value,
         ttl
       );
-      expect(putRes.statusCode as number).toBe(204);
+      expect(putRes.statusCode).toBe(204);
 
-      // Use GET API to retrieve the value
-      const getRes = await getValue(baseUrl, apiKey, cacheName, key);
-      expect(getRes.statusCode).toBe(200);
-
-      // Use DELETE API to update the value
+      // Use DELETE API to delete the value that was set
       const delRes = await deleteValue(baseUrl, apiKey, cacheName, key);
       expect(delRes.statusCode).toBe(204);
+      console.log(delRes.statusMessage);
+    });
 
-      // Use GET API to retrieve the value
-      const getRes2 = await getValue(baseUrl, apiKey, cacheName, key);
-      expect(getRes2.statusCode).toBe(404);
+    it('should return success on DELETE on non-existing key', async () => {
+      // Use DELETE API to delete the value that was not set
+      const delRes2 = await deleteValue(baseUrl, apiKey, cacheName, v4());
+      expect(delRes2.statusCode).toBe(204);
     });
   });
 }
