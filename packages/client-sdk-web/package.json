@@ -17,6 +17,7 @@
     "test": "jest --testPathIgnorePatterns auth-client.test.ts --maxWorkers 1",
     "unit-test": "jest unit",
     "integration-test-auth": "jest --env=jsdom auth/ --maxWorkers 1 -- useConsistentReads",
+    "integration-test-http": "jest --env=jsdom http/ --maxWorkers 1 -- useConsistentReads",
     "integration-test-cache": "jest --env=jsdom cache/ --maxWorkers 1 -- useConsistentReads",
     "integration-test-control-cache-topics": "npm run integration-test-cache && npm run integration-test-topics",
     "integration-test-leaderboard": "jest --env=jsdom leaderboard/ --maxWorkers 1 -- useConsistentReads",

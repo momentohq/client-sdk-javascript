@@ -205,7 +205,6 @@ export function runHttpApiTest(
       // Use DELETE API to delete the value that was set
       const delRes = await deleteValue(baseUrl, apiKey, cacheName, key);
       expect(delRes.statusCode).toBe(204);
-      console.log(delRes.statusMessage);
     });
 
     it('should return success on DELETE on non-existing key', async () => {
