@@ -193,6 +193,7 @@ export function SetupIntegrationTest(): {
   cacheClientWithBalancedReadConcern: CacheClient;
   cacheClientWithConsistentReadConcern: CacheClient;
   integrationTestCacheName: string;
+  credentialProvider: CredentialProvider;
 } {
   const cacheName = testCacheName();
 
@@ -224,6 +225,7 @@ export function SetupIntegrationTest(): {
     cacheClientWithBalancedReadConcern: clientWithBalancedReadConcern,
     cacheClientWithConsistentReadConcern: clientWithConsistentReadConcern,
     integrationTestCacheName: cacheName,
+    credentialProvider: credsProvider(),
   };
 }
 

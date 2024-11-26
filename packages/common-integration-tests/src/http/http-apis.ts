@@ -1,12 +1,6 @@
-import {ExpiresIn, GenerateApiKey, PermissionScope} from '@gomomento/sdk-core';
-import {InternalSuperUserPermissions} from '@gomomento/sdk-core/dist/src/internal/utils';
-import {IAuthClient} from '@gomomento/sdk-core/dist/src/clients/IAuthClient';
+import {CredentialProvider} from '@gomomento/sdk-core';
 import * as https from 'https';
-
 import {v4} from 'uuid';
-
-const SUPER_USER_PERMISSIONS: PermissionScope =
-  new InternalSuperUserPermissions();
 
 function makeRequest(
   method: string,
@@ -109,22 +103,18 @@ function encodeValue(value: string): string {
 }
 
 export function runHttpApiTest(
-  sessionTokenAuthClient: IAuthClient,
+  credentialProvider: CredentialProvider,
   cacheName: string
 ) {
   describe('Momento HTTP API', () => {
     let apiKey: string;
     let baseUrl: string;
+    let cacheEndpoint: string;
 
-    beforeAll(async () => {
-      const resp = await sessionTokenAuthClient.generateApiKey(
-        SUPER_USER_PERMISSIONS,
-        ExpiresIn.minutes(5)
-      );
-      expect(resp).toBeInstanceOf(GenerateApiKey.Success);
-      const successResp = resp as GenerateApiKey.Success;
-      apiKey = successResp.apiKey;
-      baseUrl = `api.cache.${successResp.endpoint}`;
+    beforeAll(() => {
+      cacheEndpoint = credentialProvider.getCacheEndpoint();
+      apiKey = credentialProvider.getAuthToken();
+      baseUrl = `api.${cacheEndpoint}`;
     });
 
     it('should return error on non-existing cache', async () => {
