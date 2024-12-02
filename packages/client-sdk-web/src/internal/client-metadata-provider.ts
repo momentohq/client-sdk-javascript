@@ -51,8 +51,11 @@ export class ClientMetadataProvider {
 // Each browser uses its own JS engine, the best we can do is detect the browser name.
 // Source: https://developer.mozilla.org/en-US/docs/Web/API/Window/navigator
 function getBrowserName(userAgent: string): string {
+  // Check for empty string, null, or undefined.
+  if (!userAgent) {
+    return 'unknown-browser';
+  }
   // The order matters here, and this may report false positives for unlisted browsers.
-
   if (userAgent.includes('Firefox')) {
     // "Mozilla/5.0 (X11; Linux i686; rv:104.0) Gecko/20100101 Firefox/104.0"
     return 'Mozilla-Firefox';
