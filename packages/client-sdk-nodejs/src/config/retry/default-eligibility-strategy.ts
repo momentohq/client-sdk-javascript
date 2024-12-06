@@ -31,32 +31,57 @@ const retryableGrpcStatusCodes: Array<Status> = [
 ];
 
 const retryableRequestTypes: Array<string> = [
-  '/cache_client.Scs/Set',
   '/cache_client.Scs/Get',
+  '/cache_client.Scs/GetBatch',
+  '/cache_client.Scs/Set',
+  '/cache_client.Scs/SetBatch',
+  // Not retryable: '/cache_client.Scs/SetIf',
+  // SetIfNotExists is deprecated
+  // Not retryable: '/cache_client.Scs/SetIfNotExists',
   '/cache_client.Scs/Delete',
-  '/cache_client.Scs/DictionarySet',
-  // not idempotent: '/cache_client.Scs/DictionaryIncrement',
+  '/cache_client.Scs/KeysExist',
+  // Not retryable: '/cache_client.Scs/Increment',
+  // Not retryable: '/cache_client.Scs/UpdateTtl',
+  '/cache_client.Scs/ItemGetTtl',
+  '/cache_client.Scs/ItemGetType',
+
   '/cache_client.Scs/DictionaryGet',
   '/cache_client.Scs/DictionaryFetch',
+  '/cache_client.Scs/DictionarySet',
+  // Not retryable: '/cache_client.Scs/DictionaryIncrement',
   '/cache_client.Scs/DictionaryDelete',
+  '/cache_client.Scs/DictionaryLength',
+
+  '/cache_client.Scs/SetFetch',
+  '/cache_client.Scs/SetSample',
   '/cache_client.Scs/SetUnion',
   '/cache_client.Scs/SetDifference',
-  '/cache_client.Scs/SetFetch',
-  // not idempotent: '/cache_client.Scs/ListPushFront',
-  // not idempotent: '/cache_client.Scs/ListPushBack',
-  // not idempotent: '/cache_client.Scs/ListPopFront',
-  // not idempotent: '/cache_client.Scs/ListPopBack',
-  '/cache_client.Scs/ListFetch',
-  /*
-   *  Warning: in the future, this may not be idempotent
-   *  Currently it supports removing all occurrences of a value.
-   *  In the future, we may also add "the first/last N occurrences of a value".
-   *  In the latter case it is not idempotent.
-   */
+  '/cache_client.Scs/SetContains',
+  '/cache_client.Scs/SetLength',
+  // Not retryable: '/cache_client.Scs/SetPop',
+
+  // Not retryable: '/cache_client.Scs/ListPushFront',
+  // Not retryable: '/cache_client.Scs/ListPushBack',
+  // Not retryable: '/cache_client.Scs/ListPopFront',
+  // Not retryable: '/cache_client.Scs/ListPopBack',
+  // Not used: '/cache_client.Scs/ListErase',
   '/cache_client.Scs/ListRemove',
+  '/cache_client.Scs/ListFetch',
   '/cache_client.Scs/ListLength',
-  // not idempotent: '/cache_client.Scs/ListConcatenateFront',
-  // not idempotent: '/cache_client.Scs/ListConcatenateBack'
+  // Not retryable: '/cache_client.Scs/ListConcatenateFront',
+  // Not retryable: '/cache_client.Scs/ListConcatenateBack',
+  // Not retryable: '/cache_client.Scs/ListRetain',
+
+  '/cache_client.Scs/SortedSetPut',
+  '/cache_client.Scs/SortedSetFetch',
+  '/cache_client.Scs/SortedSetGetScore',
+  '/cache_client.Scs/SortedSetRemove',
+  // Not retryable: '/cache_client.Scs/SortedSetIncrement',
+  '/cache_client.Scs/SortedSetGetRank',
+  '/cache_client.Scs/SortedSetLength',
+  '/cache_client.Scs/SortedSetLengthByScore',
+
+  '/cache_client.pubsub.Pubsub/Subscribe',
 ];
 
 export class DefaultEligibilityStrategy implements EligibilityStrategy {
