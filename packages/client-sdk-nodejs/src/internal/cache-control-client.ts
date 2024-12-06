@@ -23,6 +23,7 @@ import {
   TopicLimits,
 } from '@gomomento/sdk-core/dist/src/messages/cache-info';
 import {RetryInterceptor} from './grpc/retry-interceptor';
+import {secondsToMilliseconds} from '@gomomento/sdk-core/dist/src/utils';
 
 export interface ControlClientProps {
   configuration: Configuration;
@@ -32,7 +33,8 @@ export interface ControlClientProps {
 export class CacheControlClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcControl.ScsControlClient>;
   private readonly interceptors: Interceptor[];
-  private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
+  private static readonly REQUEST_TIMEOUT_MS: number =
+    secondsToMilliseconds(60);
   private readonly logger: MomentoLogger;
   private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
 
