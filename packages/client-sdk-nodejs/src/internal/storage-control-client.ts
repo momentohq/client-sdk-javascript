@@ -9,11 +9,13 @@ import {validateStoreName} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {CreateStore, DeleteStore} from '@gomomento/sdk-core';
 import {RetryInterceptor} from './grpc/retry-interceptor';
 import {StorageClientAllProps} from './storage-client-all-props';
+import {secondsToMilliseconds} from '@gomomento/sdk-core/dist/src/utils';
 
 export class StorageControlClient {
   private readonly clientWrapper: grpcControl.ScsControlClient;
   private readonly interceptors: Interceptor[];
-  private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
+  private static readonly REQUEST_TIMEOUT_MS: number =
+    secondsToMilliseconds(60);
   private readonly logger: MomentoLogger;
   private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
 

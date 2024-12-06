@@ -1,4 +1,5 @@
 import {validateTtlSeconds} from '../internal/utils';
+import {secondsToMilliseconds} from './time';
 
 /** Represents the desired behavior for managing the TTL on collection
  *  objects (dictionaries, lists, sets) in your cache.
@@ -46,7 +47,9 @@ export class CollectionTtl {
    * @returns {number | null}
    */
   public ttlMilliseconds(): number | null {
-    return this._ttlSeconds === null ? null : this._ttlSeconds * 1000;
+    return this._ttlSeconds === null
+      ? null
+      : secondsToMilliseconds(this._ttlSeconds);
   }
 
   /** Whether or not to refresh a collection's TTL when it's modified.

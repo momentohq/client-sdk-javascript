@@ -8,6 +8,7 @@ import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
 import {Configuration} from '../config/configuration';
 import {CredentialProvider, MomentoLogger} from '../';
 import {RetryInterceptor} from './grpc/retry-interceptor';
+import {secondsToMilliseconds} from '@gomomento/sdk-core/dist/src/utils';
 
 export interface PingClientProps {
   configuration: Configuration;
@@ -18,7 +19,8 @@ export interface PingClientProps {
 export class InternalNodeGrpcPingClient {
   private readonly clientWrapper: GrpcClientWrapper<grpcPing.PingClient>;
   private readonly interceptors: Interceptor[];
-  private static readonly REQUEST_TIMEOUT_MS: number = 60 * 1000;
+  private static readonly REQUEST_TIMEOUT_MS: number =
+    secondsToMilliseconds(60);
   private readonly logger: MomentoLogger;
 
   /**

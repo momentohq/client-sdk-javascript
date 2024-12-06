@@ -121,6 +121,7 @@ import {common} from '@gomomento/generated-types/dist/common';
 import {
   GetBatchCallOptions,
   GetCallOptions,
+  secondsToMilliseconds,
   SetBatchCallOptions,
   SetBatchItem,
   SetCallOptions,
@@ -154,7 +155,8 @@ export class CacheDataClient implements IDataClient {
   private readonly credentialProvider: CredentialProvider;
   private readonly defaultTtlSeconds: number;
   private readonly requestTimeoutMs: number;
-  private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
+  private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number =
+    secondsToMilliseconds(5);
   private readonly logger: MomentoLogger;
   private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
   private readonly interceptors: Interceptor[];
@@ -418,6 +420,29 @@ export class CacheDataClient implements IDataClient {
     }
   }
 
+  /**
+   * Returns the TTL in milliseconds for a collection.
+   * If the provided TTL is not set, it defaults to the instance's default TTL.
+   * @param ttl - The CollectionTttl object containing the TTL value.
+   * @returns The TTL in milliseconds.
+   */
+  private collectionTtlOrDefaultMilliseconds(ttl: CollectionTtl): number {
+    return (
+      ttl.ttlMilliseconds() ?? secondsToMilliseconds(this.defaultTtlSeconds)
+    );
+  }
+
+  /**
+   * Returns the TTL in milliseconds.
+   * If the provided TTL is not set, it defaults to the instance's default TTL.
+   * @param ttl
+   * @returns The TTL in milliseconds.
+   */
+  private ttlOrDefaultMilliseconds(ttl?: number): number {
+    const ttlSeconds = ttl ?? this.defaultTtlSeconds;
+    return secondsToMilliseconds(ttlSeconds);
+  }
+
   public async set(
     cacheName: string,
     key: string | Uint8Array,
@@ -469,7 +494,7 @@ export class CacheDataClient implements IDataClient {
     const request = new grpcCache._SetRequest({
       cache_body: value,
       cache_key: key,
-      ttl_milliseconds: ttl * 1000,
+      ttl_milliseconds: secondsToMilliseconds(ttl),
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
@@ -568,7 +593,7 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(setName),
         this.convertArray(elements),
-        ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+        this.collectionTtlOrDefaultMilliseconds(ttl),
         ttl.refreshTtl()
       );
     });
@@ -997,7 +1022,7 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(key),
         this.convert(value),
-        ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+        this.ttlOrDefaultMilliseconds(ttl)
       );
     });
   }
@@ -1098,7 +1123,7 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(key),
         encodedValue,
-        ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+        this.ttlOrDefaultMilliseconds(ttl)
       );
     });
   }
@@ -1179,7 +1204,7 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(key),
         this.convert(value),
-        ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+        this.ttlOrDefaultMilliseconds(ttl)
       );
     });
   }
@@ -1262,7 +1287,7 @@ export class CacheDataClient implements IDataClient {
         this.convert(key),
         this.convert(value),
         this.convert(equal),
-        ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+        this.ttlOrDefaultMilliseconds(ttl)
       );
     });
   }
@@ -1346,7 +1371,7 @@ export class CacheDataClient implements IDataClient {
         this.convert(key),
         this.convert(value),
         this.convert(notEqual),
-        ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+        this.ttlOrDefaultMilliseconds(ttl)
       );
     });
   }
@@ -1430,7 +1455,7 @@ export class CacheDataClient implements IDataClient {
         this.convert(key),
         this.convert(value),
         this.convert(notEqual),
-        ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+        this.ttlOrDefaultMilliseconds(ttl)
       );
     });
   }
@@ -1515,7 +1540,7 @@ export class CacheDataClient implements IDataClient {
         this.convert(key),
         this.convert(value),
         this.convert(equal),
-        ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+        this.ttlOrDefaultMilliseconds(ttl)
       );
     });
   }
@@ -1892,7 +1917,7 @@ export class CacheDataClient implements IDataClient {
       const setRequest = new grpcCache._SetRequest({
         cache_key: item[0],
         cache_body: item[1],
-        ttl_milliseconds: item[2] * 1000,
+        ttl_milliseconds: secondsToMilliseconds(item[2]),
       });
       setRequests.push(setRequest);
     }
@@ -1958,7 +1983,7 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(listName),
         this.convertArray(values),
-        ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+        this.collectionTtlOrDefaultMilliseconds(ttl),
         ttl.refreshTtl(),
         truncateFrontToSize
       );
@@ -2027,7 +2052,7 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(listName),
         this.convertArray(values),
-        ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+        this.collectionTtlOrDefaultMilliseconds(ttl),
         ttl.refreshTtl(),
         truncateBackToSize
       );
@@ -2171,7 +2196,7 @@ export class CacheDataClient implements IDataClient {
         this.convert(listName),
         startIndex,
         endIndex,
-        ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+        this.collectionTtlOrDefaultMilliseconds(ttl),
         ttl.refreshTtl()
       );
     });
@@ -2406,7 +2431,7 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(listName),
         this.convert(value),
-        ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+        this.collectionTtlOrDefaultMilliseconds(ttl),
         ttl.refreshTtl(),
         truncateFrontToSize
       );
@@ -2474,7 +2499,7 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(listName),
         this.convert(value),
-        ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+        this.collectionTtlOrDefaultMilliseconds(ttl),
         ttl.refreshTtl(),
         truncateBackToSize
       );
@@ -2655,7 +2680,7 @@ export class CacheDataClient implements IDataClient {
         this.convert(dictionaryName),
         this.convert(field),
         this.convert(value),
-        ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+        this.collectionTtlOrDefaultMilliseconds(ttl),
         ttl.refreshTtl()
       );
     });
@@ -2725,7 +2750,7 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(dictionaryName),
         dictionaryFieldValuePairs,
-        ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+        this.collectionTtlOrDefaultMilliseconds(ttl),
         ttl.refreshTtl()
       );
     });
@@ -3114,7 +3139,7 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(field),
         amount,
-        (ttl || this.defaultTtlSeconds) * 1000
+        this.ttlOrDefaultMilliseconds(ttl)
       );
     });
   }
@@ -3182,7 +3207,7 @@ export class CacheDataClient implements IDataClient {
         this.convert(dictionaryName),
         this.convert(field),
         amount,
-        ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+        this.collectionTtlOrDefaultMilliseconds(ttl),
         ttl.refreshTtl()
       );
     });
@@ -3255,7 +3280,7 @@ export class CacheDataClient implements IDataClient {
         this.convert(sortedSetName),
         this.convert(value),
         score,
-        ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+        this.collectionTtlOrDefaultMilliseconds(ttl),
         ttl.refreshTtl()
       );
     });
@@ -3327,7 +3352,7 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(sortedSetName),
         sortedSetValueScorePairs,
-        ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+        this.collectionTtlOrDefaultMilliseconds(ttl),
         ttl.refreshTtl()
       );
     });
@@ -3800,7 +3825,7 @@ export class CacheDataClient implements IDataClient {
         this.convert(sortedSetName),
         this.convert(value),
         amount,
-        ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+        this.collectionTtlOrDefaultMilliseconds(ttl),
         ttl.refreshTtl()
       );
     });

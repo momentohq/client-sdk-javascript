@@ -104,6 +104,8 @@ import {
   SetBatchItem,
 } from './utils';
 
+export * as utils from './utils';
+
 import {
   CredentialProvider,
   StringMomentoTokenProvider,
