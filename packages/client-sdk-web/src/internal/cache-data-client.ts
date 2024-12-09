@@ -156,6 +156,7 @@ import {
   NotEqual,
 } from '@gomomento/generated-types-webtext/dist/common_pb';
 import {
+  secondsToMilliseconds,
   SetBatchCallOptions,
   SetBatchItem,
   SetCallOptions,
@@ -224,6 +225,29 @@ export class CacheDataClient<
     // do nothing as gRPC web version doesn't expose a close() yet.
     // this is needed as we have added close to `IControlClient` extended
     // by both nodejs and web SDKs
+  }
+
+  /**
+   * Returns the TTL in milliseconds for a collection.
+   * If the provided TTL is not set, it defaults to the instance's default TTL.
+   * @param ttl - The CollectionTttl object containing the TTL value.
+   * @returns The TTL in milliseconds.
+   */
+  private collectionTtlOrDefaultMilliseconds(ttl: CollectionTtl): number {
+    return (
+      ttl.ttlMilliseconds() ?? secondsToMilliseconds(this.defaultTtlSeconds)
+    );
+  }
+
+  /**
+   * Returns the TTL in milliseconds.
+   * If the provided TTL is not set, it defaults to the instance's default TTL.
+   * @param ttl
+   * @returns The TTL in milliseconds.
+   */
+  private ttlOrDefaultMilliseconds(ttl?: number): number {
+    const ttlSeconds = ttl ?? this.defaultTtlSeconds;
+    return secondsToMilliseconds(ttlSeconds);
   }
 
   public async get(
@@ -337,7 +361,7 @@ export class CacheDataClient<
     const request = new _SetRequest();
     request.setCacheKey(key);
     request.setCacheBody(value);
-    request.setTtlMilliseconds(this.convertSecondsToMilliseconds(ttlSeconds));
+    request.setTtlMilliseconds(secondsToMilliseconds(ttlSeconds));
 
     return await new Promise((resolve, reject) => {
       this.clientWrapper.set(
@@ -391,7 +415,7 @@ export class CacheDataClient<
       cacheName,
       convertToB64String(key),
       convertToB64String(field),
-      ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+      this.ttlOrDefaultMilliseconds(ttl)
     );
     this.logger.trace(`'setIfNotExists' request result: ${result.toString()}`);
     return result;
@@ -476,7 +500,7 @@ export class CacheDataClient<
       cacheName,
       convertToB64String(key),
       convertToB64String(field),
-      ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+      this.ttlOrDefaultMilliseconds(ttl)
     );
     this.logger.trace(`'setIfAbsent' request result: ${result.toString()}`);
     return result;
@@ -560,7 +584,7 @@ export class CacheDataClient<
       cacheName,
       convertToB64String(key),
       convertToB64String(field),
-      ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+      this.ttlOrDefaultMilliseconds(ttl)
     );
     this.logger.trace(`'setIfPresent' request result: ${result.toString()}`);
     return result;
@@ -646,7 +670,7 @@ export class CacheDataClient<
       convertToB64String(key),
       convertToB64String(field),
       convertToB64String(equal),
-      ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+      this.ttlOrDefaultMilliseconds(ttl)
     );
     this.logger.trace(`'setIfEqual' request result: ${result.toString()}`);
     return result;
@@ -733,7 +757,7 @@ export class CacheDataClient<
       convertToB64String(key),
       convertToB64String(field),
       convertToB64String(notEqual),
-      ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+      this.ttlOrDefaultMilliseconds(ttl)
     );
     this.logger.trace(`'setIfNotEqual' request result: ${result.toString()}`);
     return result;
@@ -820,7 +844,7 @@ export class CacheDataClient<
       convertToB64String(key),
       convertToB64String(field),
       convertToB64String(notEqual),
-      ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+      this.ttlOrDefaultMilliseconds(ttl)
     );
     this.logger.trace(
       `'setIfPresentAndNotEqual' request result: ${result.toString()}`
@@ -912,7 +936,7 @@ export class CacheDataClient<
       convertToB64String(key),
       convertToB64String(field),
       convertToB64String(equal),
-      ttl ? ttl * 1000 : this.defaultTtlSeconds * 1000
+      this.ttlOrDefaultMilliseconds(ttl)
     );
     this.logger.trace(
       `'setIfAbsentOrEqual' request result: ${result.toString()}`
@@ -1088,7 +1112,7 @@ export class CacheDataClient<
       const setRequest = new _SetRequest();
       setRequest.setCacheKey(key);
       setRequest.setCacheBody(value);
-      setRequest.setTtlMilliseconds(this.convertSecondsToMilliseconds(ttl));
+      setRequest.setTtlMilliseconds(secondsToMilliseconds(ttl));
       setRequests.push(setRequest);
     }
     const request = new _SetBatchRequest();
@@ -1202,7 +1226,7 @@ export class CacheDataClient<
       cacheName,
       convertToB64String(field),
       amount,
-      (ttl || this.defaultTtlSeconds) * 1000
+      this.ttlOrDefaultMilliseconds(ttl)
     );
     this.logger.trace(`'increment' request result: ${result.toString()}`);
     return result;
@@ -1315,7 +1339,7 @@ export class CacheDataClient<
       cacheName,
       convertToB64String(setName),
       this.convertArrayToB64Strings(elements),
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      this.collectionTtlOrDefaultMilliseconds(ttl),
       ttl.refreshTtl()
     );
   }
@@ -1767,7 +1791,7 @@ export class CacheDataClient<
       cacheName,
       convertToB64String(listName),
       this.convertArrayToB64Strings(values),
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      this.collectionTtlOrDefaultMilliseconds(ttl),
       ttl.refreshTtl(),
       truncateFrontToSize
     );
@@ -1845,7 +1869,7 @@ export class CacheDataClient<
       cacheName,
       convertToB64String(listName),
       this.convertArrayToB64Strings(values),
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      this.collectionTtlOrDefaultMilliseconds(ttl),
       ttl.refreshTtl(),
       truncateBackToSize
     );
@@ -2009,7 +2033,7 @@ export class CacheDataClient<
       convertToB64String(listName),
       // passing ttl info before start/end because it's guaranteed to be defined so doesn't need
       // to be nullable
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      this.collectionTtlOrDefaultMilliseconds(ttl),
       ttl.refreshTtl(),
       startIndex,
       endIndex
@@ -2274,7 +2298,7 @@ export class CacheDataClient<
       cacheName,
       convertToB64String(listName),
       convertToB64String(value),
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      this.collectionTtlOrDefaultMilliseconds(ttl),
       ttl.refreshTtl(),
       truncateFrontToSize
     );
@@ -2349,7 +2373,7 @@ export class CacheDataClient<
       cacheName,
       convertToB64String(listName),
       convertToB64String(value),
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      this.collectionTtlOrDefaultMilliseconds(ttl),
       ttl.refreshTtl(),
       truncateBackToSize
     );
@@ -2481,7 +2505,7 @@ export class CacheDataClient<
       convertToB64String(dictionaryName),
       convertToB64String(field),
       convertToB64String(value),
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      this.collectionTtlOrDefaultMilliseconds(ttl),
       ttl.refreshTtl()
     );
     this.logger.trace(
@@ -2560,7 +2584,7 @@ export class CacheDataClient<
       cacheName,
       convertToB64String(dictionaryName),
       dictionaryFieldValuePairs,
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      this.collectionTtlOrDefaultMilliseconds(ttl),
       ttl.refreshTtl()
     );
     this.logger.trace(
@@ -2873,7 +2897,7 @@ export class CacheDataClient<
       convertToB64String(dictionaryName),
       convertToB64String(field),
       amount,
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      this.collectionTtlOrDefaultMilliseconds(ttl),
       ttl.refreshTtl()
     );
     this.logger.trace(
@@ -3399,7 +3423,7 @@ export class CacheDataClient<
       convertToB64String(sortedSetName),
       convertToB64String(value),
       score,
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      this.collectionTtlOrDefaultMilliseconds(ttl),
       ttl.refreshTtl()
     );
     this.logger.trace(
@@ -3480,7 +3504,7 @@ export class CacheDataClient<
       cacheName,
       convertToB64String(sortedSetName),
       sortedSetValueScorePairs,
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      this.collectionTtlOrDefaultMilliseconds(ttl),
       ttl.refreshTtl()
     );
     this.logger.trace(
@@ -3755,7 +3779,7 @@ export class CacheDataClient<
       convertToB64String(sortedSetName),
       convertToB64String(value),
       amount,
-      ttl.ttlMilliseconds() || this.defaultTtlSeconds * 1000,
+      this.collectionTtlOrDefaultMilliseconds(ttl),
       ttl.refreshTtl()
     );
 
@@ -4506,10 +4530,6 @@ export class CacheDataClient<
         }
       );
     });
-  }
-
-  private convertSecondsToMilliseconds(ttlSeconds: number): number {
-    return ttlSeconds * 1000;
   }
 
   private convertArrayToB64Strings(v: string[] | Uint8Array[]): string[] {

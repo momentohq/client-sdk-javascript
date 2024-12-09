@@ -27,12 +27,14 @@ import {TopicConfiguration} from '../config/topic-configuration';
 import {TopicClientAllProps} from './topic-client-all-props';
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {RetryInterceptor} from './grpc/retry-interceptor';
+import {secondsToMilliseconds} from '@gomomento/sdk-core/dist/src/utils';
 
 export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   private readonly client: grpcPubsub.PubsubClient;
   protected readonly credentialProvider: CredentialProvider;
   private readonly unaryRequestTimeoutMs: number;
-  private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
+  private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number =
+    secondsToMilliseconds(5);
   private static readonly DEFAULT_MAX_SESSION_MEMORY_MB: number = 256;
   private readonly unaryInterceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
