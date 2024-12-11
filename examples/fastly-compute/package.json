@@ -4,7 +4,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fastly/compute-starter-kit-typescript.git"
+    "url": "https://github.com/momentohq/client-sdk-javascript"
   },
   "author": "oss@fastly.com",
   "license": "MIT",
