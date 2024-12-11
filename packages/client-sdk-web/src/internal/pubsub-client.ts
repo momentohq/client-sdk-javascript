@@ -23,6 +23,7 @@ import {
 } from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {TopicClientAllProps} from './topic-client-all-props';
+import {secondsToMilliseconds} from '@gomomento/sdk-core/dist/src/utils';
 
 export class PubsubClient<
   REQ extends Request<REQ, RESP>,
@@ -31,7 +32,8 @@ export class PubsubClient<
   private readonly client: pubsub.PubsubClient;
   private readonly credentialProvider: CredentialProvider;
   private readonly requestTimeoutMs: number;
-  private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
+  private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number =
+    secondsToMilliseconds(5);
   private readonly clientMetadataProvider: ClientMetadataProvider;
 
   private static readonly RST_STREAM_NO_ERROR_MESSAGE =

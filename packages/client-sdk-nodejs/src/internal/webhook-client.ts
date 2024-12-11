@@ -24,13 +24,15 @@ import {
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {RetryInterceptor} from './grpc/retry-interceptor';
 import {TopicClientAllProps} from './topic-client-all-props';
+import {secondsToMilliseconds} from '@gomomento/sdk-core/dist/src/utils';
 
 export class WebhookClient implements IWebhookClient {
   private readonly webhookClient: grpcWebhook.WebhookClient;
   protected readonly credentialProvider: CredentialProvider;
   private readonly logger: MomentoLogger;
   private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
-  private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number = 5 * 1000;
+  private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number =
+    secondsToMilliseconds(5);
   private readonly unaryInterceptors: Interceptor[];
 
   /**
