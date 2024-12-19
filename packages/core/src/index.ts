@@ -158,6 +158,7 @@ export {
   SetIfNotEqualOptions,
   SetIfPresentAndNotEqualOptions,
   SetIfAbsentOrEqualOptions,
+  SortedSetPutElementsOptions,
   IncrementOptions,
 } from './clients/ICacheClient';
 
