@@ -111,6 +111,7 @@ import {
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
   getDefaultCredentialProvider,
+  MomentoLocalProvider,
 } from './auth';
 
 import {
@@ -225,6 +226,7 @@ export {
   CredentialProvider,
   StringMomentoTokenProvider,
   EnvMomentoTokenProvider,
+  MomentoLocalProvider,
   getDefaultCredentialProvider,
   SetBatchItem,
 
