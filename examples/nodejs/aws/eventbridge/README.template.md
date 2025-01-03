@@ -20,8 +20,8 @@ the data directly from the cache, to reduce load on the database and improve per
 
 - Momento Cache: You will need a cache named `momento-eventbridge-cache`. You can create one using the [momento console](https://console.gomomento.com/).
 - Momento API Key: This can also be created using [momento console](https://console.gomomento.com/). Make sure the API Key is created in the same region as the cache!
-- HTTP API endpoint: You can copy this from the Momento console after creating the API Key, or refer to the [Regions Section here in the documentation](https://docs.momentohq.com/topics/develop/api-reference/http-api#regions).
-- AWS Credentials: AccessKeyId, SecretAccessKey for your AWS account (and, optional, SessionToken if you are using temporary credentials).
+- HTTP API endpoint: You can copy this from the Momento console after creating the API Key, or refer to the [Regions Section here in the documentation](https://docs.momentohq.com/platform/regions).
+- AWS Credentials: `AccessKeyId`, `SecretAccessKey` for your AWS account (and, optional, `SessionToken` if you are using temporary credentials).
 
 ## **Configuration**
 
@@ -81,7 +81,7 @@ To run the TypeScript CLI demo, run the following script:
 ```
 
 This script loads the environment variables from the `.env` file and launches the TypeScript app. Take a look at the TypeScript
-code in [./cliApp/src/index.ts](./cliApp/src/index.ts) to see how it works; it uses the AWS SDK to write weather records
+code in [./cliApp/cli-demo.ts](./cliApp/cli-demo.ts) to see how it works; it uses the AWS SDK to write weather records
 to DynamoDB, and the Momento Node.js SDK to observe the EventBridge events being delivered to the Momento Topic and Cache.
 
 ### **Running the Bash CLI demo**
