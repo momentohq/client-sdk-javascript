@@ -14,6 +14,7 @@ import {
   DeleteCache,
   LeaderboardConfigurations,
   MomentoErrorCode,
+  MomentoLocalProvider,
   PreviewLeaderboardClient,
   PreviewStorageClient,
   ReadConcern,
@@ -103,7 +104,7 @@ function useConsistentReads(): boolean {
 export function integrationTestCacheClientProps(): CacheClientAllProps {
   let credentialProvider = credsProvider();
   if (testAgainstMomentoLocal()) {
-    credentialProvider = credentialProvider.withMomentoLocal();
+    credentialProvider = new MomentoLocalProvider();
   }
 
   const readConcern = useConsistentReads()
