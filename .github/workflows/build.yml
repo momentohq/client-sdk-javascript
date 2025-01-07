@@ -18,8 +18,6 @@ jobs:
         with:
           require: write
           username: ${{ github.triggering_actor }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Check User Permission
         if: steps.checkAccess.outputs.require-result == 'false'
         run: |
@@ -392,8 +390,6 @@ jobs:
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
-        with:
-          ref: ${{  github.event.pull_request.head.sha }} # This is dangerous without the first access check
 
       - name: Install Node
         uses: actions/setup-node@v3
@@ -421,8 +417,6 @@ jobs:
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
-        with:
-          ref: ${{  github.event.pull_request.head.sha }} # This is dangerous without the first access check
 
       - name: Install Node
         uses: actions/setup-node@v3
@@ -540,8 +534,6 @@ jobs:
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
-        with:
-          ref: ${{  github.event.pull_request.head.sha }} # This is dangerous without the first access check
 
       - name: Install Node
         uses: actions/setup-node@v3
@@ -589,8 +581,6 @@ jobs:
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
-        with:
-          ref: ${{  github.event.pull_request.head.sha }} # This is dangerous without the first access check
 
       - name: Install Deno
         uses: denoland/setup-deno@v1
