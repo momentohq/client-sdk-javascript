@@ -13,3 +13,10 @@ jobs:
 
       - name: Inspect Git Config
         run: git config -l
+
+      - name: View System Config
+        run: git config --system --list || echo "No system config"
+      - name: View Global Config
+        run: git config --global --list || echo "No global config"
+      - name: View Local Config
+        run: git config --local --list || echo "No local config"
