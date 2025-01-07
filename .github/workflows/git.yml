@@ -1,0 +1,15 @@
+name: Inspect Git Config
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  inspect-git-config:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Inspect Git Config
+        run: git config -l
