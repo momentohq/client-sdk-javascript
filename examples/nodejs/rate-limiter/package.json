@@ -26,7 +26,7 @@
     "typescript": "4.9.5"
   },
   "dependencies": {
-    "@gomomento/sdk": "^1.102.3"
+    "@gomomento/sdk": "^1.103.0"
   },
   "engines": {
     "node": ">=10.4.0"
