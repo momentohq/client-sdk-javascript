@@ -9,6 +9,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  verify-user-permissions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get User Permission
+        id: checkAccess
+        uses: actions-cool/check-user-permission@v2
+        with:
+          require: write
+          username: ${{ github.triggering_actor }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check User Permission
+        if: steps.checkAccess.outputs.require-result == 'false'
+        run: |
+          echo "${{ github.triggering_actor }} does not have permissions on this repo."
+          echo "Current permission level is ${{ steps.checkAccess.outputs.user-permission }}"
+          echo "Job originally triggered by ${{ github.actor }}"
+          exit 1
+
   verify:
     runs-on: ubuntu-24.04
     steps:
@@ -359,6 +378,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   cache-tests:
+    needs: verify-user-permissions
     strategy:
       matrix:
         node: [18]
@@ -372,6 +392,8 @@ jobs:
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
+        with:
+          ref: ${{  github.event.pull_request.head.sha }} # This is dangerous without the first access check
 
       - name: Install Node
         uses: actions/setup-node@v3
@@ -384,6 +406,7 @@ jobs:
           ./scripts/build-and-test-all-packages-consistent-reads.sh
 
   test-examples:
+    needs: verify-user-permissions
     strategy:
       matrix:
         node: [16, 18, 20]
@@ -398,6 +421,8 @@ jobs:
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
+        with:
+          ref: ${{  github.event.pull_request.head.sha }} # This is dangerous without the first access check
 
       - name: Install Node
         uses: actions/setup-node@v3
@@ -500,6 +525,7 @@ jobs:
         run: exit 1
 
   test-web-examples:
+    needs: verify-user-permissions
     strategy:
       matrix:
         node: [ 16, 18 ]
@@ -514,6 +540,8 @@ jobs:
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
+        with:
+          ref: ${{  github.event.pull_request.head.sha }} # This is dangerous without the first access check
 
       - name: Install Node
         uses: actions/setup-node@v3
@@ -550,20 +578,19 @@ jobs:
         run: exit 1
 
   test-deno-examples:
+    needs: verify-user-permissions
     strategy:
       matrix:
         node: [ 16, 18 ]
       fail-fast: true
     name: Test Deno examples on node ${{ matrix.node }}
     runs-on: ubuntu-24.04
-    env:
-      # TODO: remove token stored as secret in favor of using a
-      # momento-local instance that can be spun up for testing
-      MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
 
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
+        with:
+          ref: ${{  github.event.pull_request.head.sha }} # This is dangerous without the first access check
 
       - name: Install Deno
         uses: denoland/setup-deno@v1
