@@ -49,7 +49,7 @@ async function main() {
 
 main()
   .then(() => {
-    console.log('success!!');
+    console.log('success!! end of example');
   })
   .catch((e: Error) => {
     console.error(`Uncaught exception while running example: ${e.message}`);
