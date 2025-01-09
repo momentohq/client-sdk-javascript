@@ -10,99 +10,163 @@ describe('DefaultEligibilityStrategy', () => {
   const testLoggerFactory = new DefaultMomentoLoggerFactory();
   const eligibilityStrategy = new DefaultEligibilityStrategy(testLoggerFactory);
 
-  it('should return true for INTERNAL status code and GET request path', () => {
-    const grpcStatus = {code: Status.INTERNAL} as StatusObject;
-    const grpcRequest = {
-      path: '/cache_client.Scs/Get',
-    } as ClientMethodDefinition<unknown, unknown>;
-    const requestMetadata = new Metadata();
+  const testCases = [
+    {
+      description:
+        'should return true for INTERNAL status code and GET request path',
+      grpcStatus: {code: Status.INTERNAL} as StatusObject,
+      grpcRequest: {path: '/cache_client.Scs/Get'} as ClientMethodDefinition<
+        unknown,
+        unknown
+      >,
+      expected: true,
+    },
+    {
+      description:
+        'should return true for INTERNAL status code and SET request path',
+      grpcStatus: {code: Status.INTERNAL} as StatusObject,
+      grpcRequest: {path: '/cache_client.Scs/Set'} as ClientMethodDefinition<
+        unknown,
+        unknown
+      >,
+      expected: true,
+    },
+    {
+      description:
+        'should return false for INTERNAL status code and dictionary increment request path',
+      grpcStatus: {code: Status.INTERNAL} as StatusObject,
+      grpcRequest: {
+        path: '/cache_client.Scs/DictionaryIncrement',
+      } as ClientMethodDefinition<unknown, unknown>,
+      expected: false,
+    },
+    {
+      description:
+        'should return false for UNKNOWN status code and GET request path',
+      grpcStatus: {code: Status.UNKNOWN} as StatusObject,
+      grpcRequest: {path: '/cache_client.Scs/Get'} as ClientMethodDefinition<
+        unknown,
+        unknown
+      >,
+      expected: false,
+    },
+    {
+      description:
+        'should return false for UNKNOWN status code and SET request path',
+      grpcStatus: {code: Status.UNKNOWN} as StatusObject,
+      grpcRequest: {path: '/cache_client.Scs/Set'} as ClientMethodDefinition<
+        unknown,
+        unknown
+      >,
+      expected: false,
+    },
+    {
+      description:
+        'should return false for UNKNOWN status code and dictionary increment request path',
+      grpcStatus: {code: Status.UNKNOWN} as StatusObject,
+      grpcRequest: {
+        path: '/cache_client.Scs/DictionaryIncrement',
+      } as ClientMethodDefinition<unknown, unknown>,
+      expected: false,
+    },
+    {
+      description:
+        'should return true for UNAVAILABLE status code and GET request path',
+      grpcStatus: {code: Status.UNAVAILABLE} as StatusObject,
+      grpcRequest: {path: '/cache_client.Scs/Set'} as ClientMethodDefinition<
+        unknown,
+        unknown
+      >,
+      expected: true,
+    },
+    {
+      description:
+        'should return true for UNAVAILABLE status code and SET request path',
+      grpcStatus: {code: Status.UNAVAILABLE} as StatusObject,
+      grpcRequest: {path: '/cache_client.Scs/Set'} as ClientMethodDefinition<
+        unknown,
+        unknown
+      >,
+      expected: true,
+    },
+    {
+      description:
+        'should return false for UNAVAILABLE status code and dictionary increment request path',
+      grpcStatus: {code: Status.UNAVAILABLE} as StatusObject,
+      grpcRequest: {
+        path: '/cache_client.Scs/DictionaryIncrement',
+      } as ClientMethodDefinition<unknown, unknown>,
+      expected: false,
+    },
+    {
+      description:
+        'should return true for CANCELLED status code and GET request path',
+      grpcStatus: {code: Status.CANCELLED} as StatusObject,
+      grpcRequest: {path: '/cache_client.Scs/Get'} as ClientMethodDefinition<
+        unknown,
+        unknown
+      >,
+      expected: true,
+    },
+    {
+      description:
+        'should return true for CANCELLED status code and SET request path',
+      grpcStatus: {code: Status.CANCELLED} as StatusObject,
+      grpcRequest: {path: '/cache_client.Scs/Set'} as ClientMethodDefinition<
+        unknown,
+        unknown
+      >,
+      expected: true,
+    },
+    {
+      description:
+        'should return false for CANCELLED status code and dictionary increment request path',
+      grpcStatus: {code: Status.CANCELLED} as StatusObject,
+      grpcRequest: {
+        path: '/cache_client.Scs/DictionaryIncrement',
+      } as ClientMethodDefinition<unknown, unknown>,
+      expected: false,
+    },
+    {
+      description:
+        'should return false for DEADLINE_EXCEEDED status code and GET request path',
+      grpcStatus: {code: Status.DEADLINE_EXCEEDED} as StatusObject,
+      grpcRequest: {path: '/cache_client.Scs/Get'} as ClientMethodDefinition<
+        unknown,
+        unknown
+      >,
+      expected: false,
+    },
+    {
+      description:
+        'should return false for DEADLINE_EXCEEDED status code and SET request path',
+      grpcStatus: {code: Status.DEADLINE_EXCEEDED} as StatusObject,
+      grpcRequest: {path: '/cache_client.Scs/Set'} as ClientMethodDefinition<
+        unknown,
+        unknown
+      >,
+      expected: false,
+    },
+    {
+      description:
+        'should return false for DEADLINE_EXCEEDED status code and dictionary increment request path',
+      grpcStatus: {code: Status.DEADLINE_EXCEEDED} as StatusObject,
+      grpcRequest: {
+        path: '/cache_client.Scs/DictionaryIncrement',
+      } as ClientMethodDefinition<unknown, unknown>,
+      expected: false,
+    },
+  ];
 
-    const isEligible = eligibilityStrategy.isEligibleForRetry({
-      grpcStatus,
-      grpcRequest,
-      requestMetadata,
+  testCases.forEach(({description, grpcStatus, grpcRequest, expected}) => {
+    it(description, () => {
+      const requestMetadata = new Metadata();
+      const isEligible = eligibilityStrategy.isEligibleForRetry({
+        grpcStatus,
+        grpcRequest,
+        requestMetadata,
+      });
+      expect(isEligible).toBe(expected);
     });
-
-    expect(isEligible).toBe(true);
-  });
-
-  it('should return false for UNKNOWN status code and GET request path', () => {
-    const grpcStatus = {code: Status.UNKNOWN} as StatusObject;
-    const grpcRequest = {
-      path: '/cache_client.Scs/Get',
-    } as ClientMethodDefinition<unknown, unknown>;
-    const requestMetadata = new Metadata();
-
-    const isEligible = eligibilityStrategy.isEligibleForRetry({
-      grpcStatus,
-      grpcRequest,
-      requestMetadata,
-    });
-
-    expect(isEligible).toBe(false);
-  });
-
-  it('should return true for UNAVAILABLE status code and SET request path', () => {
-    const grpcStatus = {code: Status.UNAVAILABLE} as StatusObject;
-    const grpcRequest = {
-      path: '/cache_client.Scs/Set',
-    } as ClientMethodDefinition<unknown, unknown>;
-    const requestMetadata = new Metadata();
-
-    const isEligible = eligibilityStrategy.isEligibleForRetry({
-      grpcStatus,
-      grpcRequest,
-      requestMetadata,
-    });
-
-    expect(isEligible).toBe(true);
-  });
-
-  it('should return true for CANCELLED status code and GET request path', () => {
-    const grpcStatus = {code: Status.CANCELLED} as StatusObject;
-    const grpcRequest = {
-      path: '/cache_client.Scs/Get',
-    } as ClientMethodDefinition<unknown, unknown>;
-    const requestMetadata = new Metadata();
-
-    const isEligible = eligibilityStrategy.isEligibleForRetry({
-      grpcStatus,
-      grpcRequest,
-      requestMetadata,
-    });
-
-    expect(isEligible).toBe(true);
-  });
-
-  it('should return true for CANCELLED status code and SET request path', () => {
-    const grpcStatus = {code: Status.CANCELLED} as StatusObject;
-    const grpcRequest = {
-      path: '/cache_client.Scs/Set',
-    } as ClientMethodDefinition<unknown, unknown>;
-    const requestMetadata = new Metadata();
-
-    const isEligible = eligibilityStrategy.isEligibleForRetry({
-      grpcStatus,
-      grpcRequest,
-      requestMetadata,
-    });
-
-    expect(isEligible).toBe(true);
-  });
-
-  it('should return false for CANCELLED status code and dictionary increment request path', () => {
-    const grpcStatus = {code: Status.CANCELLED} as StatusObject;
-    const grpcRequest = {
-      path: '/cache_client.Scs/DictionaryIncrement',
-    } as ClientMethodDefinition<unknown, unknown>;
-    const requestMetadata = new Metadata();
-
-    const isEligible = eligibilityStrategy.isEligibleForRetry({
-      grpcStatus,
-      grpcRequest,
-      requestMetadata,
-    });
-
-    expect(isEligible).toBe(false);
   });
 });
