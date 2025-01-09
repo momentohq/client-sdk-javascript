@@ -1,9 +1,9 @@
 import {GrpcConfiguration} from '../..';
 import {ChannelOptions} from '@grpc/grpc-js';
 
-// The default value for max_send_message_length is 4mb.  We need to increase this to 5mb in order to
-// support cases where users have requested a limit increase up to our maximum item size of 5mb.
-const DEFAULT_MAX_REQUEST_SIZE = 5_243_000;
+// The default value for max_send_message_length is 4MiB.  We increase this to ~10MiB to support
+// customers that have requested a limit increase above the default 5MiB.
+const DEFAULT_MAX_REQUEST_SIZE = 10_486_000;
 
 export function grpcChannelOptionsFromGrpcConfig(
   grpcConfig: GrpcConfiguration
