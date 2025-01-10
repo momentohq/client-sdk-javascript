@@ -1,3 +1,35 @@
+export enum MomentoRPCMethod {
+  Get = 'get',
+  Set = 'set',
+  Delete = 'delete',
+  GetBatch = 'getBatch',
+  SetBatch = 'setBatch',
+  KeysExist = 'keysExist',
+  ItemGetTtl = 'itemGetTtl',
+  ItemGetType = 'itemGetType',
+  DictionaryGet = 'dictionaryGet',
+  DictionaryFetch = 'dictionaryFetch',
+  DictionarySet = 'dictionarySet',
+  DictionaryDelete = 'dictionaryDelete',
+  DictionaryLength = 'dictionaryLength',
+  SetFetch = 'setFetch',
+  SetSample = 'setSample',
+  SetUnion = 'setUnion',
+  SetDifference = 'setDifference',
+  SetContains = 'setContains',
+  SetLength = 'setLength',
+  ListRemove = 'listRemove',
+  ListFetch = 'listFetch',
+  ListLength = 'listLength',
+  sortedSetPut = 'sortedSetPut',
+  sortedSetFetch = 'sortedSetFetch',
+  sortedSetGetScore = 'sortedSetGetScore',
+  sortedSetRemove = 'sortedSetRemove',
+  sortedSetGetRank = 'sortedSetGetRank',
+  sortedSetLength = 'sortedSetLength',
+  sortedSetLengthByScore = 'sortedSetLengthByScore',
+}
+
 export class TestRetryMetricsCollector {
   // Data structure to store timestamps: cacheName -> requestName -> [timestamps]
   private readonly data: Record<string, Record<string, number[]>>;
@@ -9,12 +41,12 @@ export class TestRetryMetricsCollector {
   /**
    * Adds a timestamp for a specific request and cache.
    * @param cacheName - The name of the cache.
-   * @param requestName - The name of the request (could also be an enum like MomentoRpcs).
-   * @param timestamp - The timestamp to record (in milliseconds).
+   * @param requestName - The name of the request.
+   * @param timestamp - The timestamp to record in seconds since epoch.
    */
   addTimestamp(
     cacheName: string,
-    requestName: string,
+    requestName: MomentoRPCMethod,
     timestamp: number
   ): void {
     if (!this.data[cacheName]) {
@@ -41,7 +73,7 @@ export class TestRetryMetricsCollector {
    * Calculates the average time between retries for a specific cache and request.
    * @param cacheName - The name of the cache.
    * @param requestName - The name of the request.
-   * @returns The average time in milliseconds, or null if there are no retries.
+   * @returns The average time in seconds, or null if there are no retries.
    */
   getAverageTimeBetweenRetries(
     cacheName: string,
