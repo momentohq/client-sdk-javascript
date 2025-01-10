@@ -137,17 +137,15 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
 
   withDeadlineMillis(deadlineMillis: number): StaticGrpcConfiguration {
     return new StaticGrpcConfiguration({
-      deadlineMillis: deadlineMillis,
-      maxSessionMemoryMb: this.maxSessionMemoryMb,
-      numClients: this.numClients,
+      ...this,
+      deadlineMillis,
     });
   }
 
   withMaxSessionMemoryMb(maxSessionMemoryMb: number): StaticGrpcConfiguration {
     return new StaticGrpcConfiguration({
-      deadlineMillis: this.deadlineMillis,
-      maxSessionMemoryMb: maxSessionMemoryMb,
-      numClients: this.numClients,
+      ...this,
+      maxSessionMemoryMb,
     });
   }
 
@@ -165,9 +163,8 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
 
   withNumClients(numClients: number): GrpcConfiguration {
     return new StaticGrpcConfiguration({
-      deadlineMillis: this.deadlineMillis,
-      maxSessionMemoryMb: this.maxSessionMemoryMb,
-      numClients: numClients,
+      ...this,
+      numClients,
     });
   }
 
@@ -177,38 +174,37 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
 
   withMaxConcurrentRequests(maxConcurrentRequests: number): GrpcConfiguration {
     return new StaticGrpcConfiguration({
-      deadlineMillis: this.deadlineMillis,
-      maxSessionMemoryMb: this.maxSessionMemoryMb,
-      numClients: this.numClients,
-      maxConcurrentRequests: maxConcurrentRequests,
+      ...this,
+      maxConcurrentRequests,
     });
   }
 }
 
 export class StaticTransportStrategy implements TransportStrategy {
-  private readonly grpcConfig: GrpcConfiguration;
+  private readonly grpcConfiguration: GrpcConfiguration;
   private readonly maxIdleMillis: number;
   private readonly maxClientAgeMillis?: number;
 
   constructor(props: TransportStrategyProps) {
-    this.grpcConfig = props.grpcConfiguration;
+    this.grpcConfiguration = props.grpcConfiguration;
     this.maxIdleMillis = props.maxIdleMillis;
     this.maxClientAgeMillis = props.maxClientAgeMillis;
   }
 
   getGrpcConfig(): GrpcConfiguration {
-    return this.grpcConfig;
+    return this.grpcConfiguration;
   }
 
   getMaxClientAgeMillis(): number | undefined {
     return this.maxClientAgeMillis;
   }
 
-  withGrpcConfig(grpcConfig: GrpcConfiguration): StaticTransportStrategy {
+  withGrpcConfig(
+    grpcConfiguration: GrpcConfiguration
+  ): StaticTransportStrategy {
     return new StaticTransportStrategy({
-      grpcConfiguration: grpcConfig,
-      maxIdleMillis: this.maxIdleMillis,
-      maxClientAgeMillis: this.maxClientAgeMillis,
+      ...this,
+      grpcConfiguration,
     });
   }
 
@@ -218,39 +214,38 @@ export class StaticTransportStrategy implements TransportStrategy {
 
   withMaxIdleMillis(maxIdleMillis: number): TransportStrategy {
     return new StaticTransportStrategy({
-      grpcConfiguration: this.grpcConfig,
-      maxIdleMillis: maxIdleMillis,
-      maxClientAgeMillis: this.maxClientAgeMillis,
+      ...this,
+      maxIdleMillis,
     });
   }
 
   withMaxClientAgeMillis(maxClientAgeMillis: number): TransportStrategy {
     return new StaticTransportStrategy({
-      grpcConfiguration: this.grpcConfig,
-      maxIdleMillis: this.maxIdleMillis,
-      maxClientAgeMillis: maxClientAgeMillis,
+      ...this,
+      maxClientAgeMillis,
     });
   }
 
   withClientTimeoutMillis(clientTimeout: number): StaticTransportStrategy {
     return new StaticTransportStrategy({
-      grpcConfiguration: this.grpcConfig.withDeadlineMillis(clientTimeout),
-      maxIdleMillis: this.maxIdleMillis,
+      ...this,
+      grpcConfiguration:
+        this.grpcConfiguration.withDeadlineMillis(clientTimeout),
     });
   }
 
   getMaxConcurrentRequests(): number | undefined {
-    return this.grpcConfig.getMaxConcurrentRequests();
+    return this.grpcConfiguration.getMaxConcurrentRequests();
   }
 
   withMaxConcurrentRequests(
     maxConcurrentRequests: number
   ): StaticTransportStrategy {
     return new StaticTransportStrategy({
-      grpcConfiguration: this.grpcConfig.withMaxConcurrentRequests(
+      ...this,
+      grpcConfiguration: this.grpcConfiguration.withMaxConcurrentRequests(
         maxConcurrentRequests
       ),
-      maxIdleMillis: this.maxIdleMillis,
     });
   }
 }

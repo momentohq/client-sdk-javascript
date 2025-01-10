@@ -50,10 +50,8 @@ export class StaticTopicGrpcConfiguration implements TopicGrpcConfiguration {
 
   withNumClients(numClients: number): TopicGrpcConfiguration {
     return new StaticTopicGrpcConfiguration({
-      numClients: numClients,
-      keepAlivePermitWithoutCalls: this.keepAlivePermitWithoutCalls,
-      keepAliveTimeoutMs: this.keepAliveTimeoutMs,
-      keepAliveTimeMs: this.keepAliveTimeMs,
+      ...this,
+      numClients,
     });
   }
 
@@ -71,21 +69,22 @@ export class StaticTopicGrpcConfiguration implements TopicGrpcConfiguration {
 }
 
 export class StaticTopicTransportStrategy implements TopicTransportStrategy {
-  private readonly grpcConfig: TopicGrpcConfiguration;
+  private readonly grpcConfiguration: TopicGrpcConfiguration;
 
   constructor(props: TopicTransportStrategyProps) {
-    this.grpcConfig = props.grpcConfiguration;
+    this.grpcConfiguration = props.grpcConfiguration;
   }
 
   getGrpcConfig(): TopicGrpcConfiguration {
-    return this.grpcConfig;
+    return this.grpcConfiguration;
   }
 
   withGrpcConfig(
-    grpcConfig: TopicGrpcConfiguration
+    grpcConfiguration: TopicGrpcConfiguration
   ): StaticTopicTransportStrategy {
     return new StaticTopicTransportStrategy({
-      grpcConfiguration: grpcConfig,
+      ...this,
+      grpcConfiguration,
     });
   }
 }

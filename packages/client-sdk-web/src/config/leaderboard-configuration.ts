@@ -84,10 +84,9 @@ export class LeaderboardClientConfiguration
     clientTimeoutMillis: number
   ): LeaderboardConfiguration {
     return new LeaderboardClientConfiguration({
-      loggerFactory: this.loggerFactory,
+      ...this,
       transportStrategy:
         this.transportStrategy.withClientTimeoutMillis(clientTimeoutMillis),
-      throwOnErrors: this.throwOnErrors,
     });
   }
 
@@ -95,9 +94,8 @@ export class LeaderboardClientConfiguration
     transportStrategy: TransportStrategy
   ): LeaderboardConfiguration {
     return new LeaderboardClientConfiguration({
-      loggerFactory: this.loggerFactory,
-      transportStrategy: transportStrategy,
-      throwOnErrors: this.throwOnErrors,
+      ...this,
+      transportStrategy,
     });
   }
 
@@ -107,9 +105,8 @@ export class LeaderboardClientConfiguration
 
   withThrowOnErrors(throwOnErrors: boolean): LeaderboardConfiguration {
     return new LeaderboardClientConfiguration({
-      loggerFactory: this.loggerFactory,
-      transportStrategy: this.transportStrategy,
-      throwOnErrors: throwOnErrors,
+      ...this,
+      throwOnErrors,
     });
   }
 }

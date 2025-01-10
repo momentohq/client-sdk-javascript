@@ -120,11 +120,9 @@ export class LeaderboardClientConfiguration
     clientTimeoutMillis: number
   ): LeaderboardConfiguration {
     return new LeaderboardClientConfiguration({
-      loggerFactory: this.loggerFactory,
+      ...this,
       transportStrategy:
         this.transportStrategy.withClientTimeoutMillis(clientTimeoutMillis),
-      throwOnErrors: this.throwOnErrors,
-      middlewares: this.middlewares,
     });
   }
 
@@ -132,10 +130,8 @@ export class LeaderboardClientConfiguration
     transportStrategy: TransportStrategy
   ): LeaderboardConfiguration {
     return new LeaderboardClientConfiguration({
-      loggerFactory: this.loggerFactory,
-      transportStrategy: transportStrategy,
-      throwOnErrors: this.throwOnErrors,
-      middlewares: this.middlewares,
+      ...this,
+      transportStrategy,
     });
   }
 
@@ -145,10 +141,8 @@ export class LeaderboardClientConfiguration
 
   withThrowOnErrors(throwOnErrors: boolean): LeaderboardConfiguration {
     return new LeaderboardClientConfiguration({
-      loggerFactory: this.loggerFactory,
-      transportStrategy: this.transportStrategy,
-      throwOnErrors: throwOnErrors,
-      middlewares: this.middlewares,
+      ...this,
+      throwOnErrors,
     });
   }
 
@@ -158,19 +152,15 @@ export class LeaderboardClientConfiguration
 
   withMiddlewares(middlewares: Middleware[]): LeaderboardConfiguration {
     return new LeaderboardClientConfiguration({
-      loggerFactory: this.loggerFactory,
-      transportStrategy: this.transportStrategy,
-      middlewares: middlewares,
-      throwOnErrors: this.throwOnErrors,
+      ...this,
+      middlewares,
     });
   }
 
   addMiddleware(middleware: Middleware): LeaderboardConfiguration {
     return new LeaderboardClientConfiguration({
-      loggerFactory: this.loggerFactory,
-      transportStrategy: this.transportStrategy,
+      ...this,
       middlewares: [middleware, ...this.middlewares],
-      throwOnErrors: this.throwOnErrors,
     });
   }
 }

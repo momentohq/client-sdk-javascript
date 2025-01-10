@@ -60,8 +60,8 @@ export class TopicClientConfiguration implements TopicConfiguration {
 
   withThrowOnErrors(throwOnErrors: boolean): TopicConfiguration {
     return new TopicClientConfiguration({
-      loggerFactory: this.loggerFactory,
-      throwOnErrors: throwOnErrors,
+      ...this,
+      throwOnErrors,
     });
   }
 }
