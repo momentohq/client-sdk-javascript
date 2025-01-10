@@ -21,13 +21,13 @@ export enum MomentoRPCMethod {
   ListRemove = 'listRemove',
   ListFetch = 'listFetch',
   ListLength = 'listLength',
-  sortedSetPut = 'sortedSetPut',
-  sortedSetFetch = 'sortedSetFetch',
-  sortedSetGetScore = 'sortedSetGetScore',
-  sortedSetRemove = 'sortedSetRemove',
-  sortedSetGetRank = 'sortedSetGetRank',
-  sortedSetLength = 'sortedSetLength',
-  sortedSetLengthByScore = 'sortedSetLengthByScore',
+  SortedSetPut = 'sortedSetPut',
+  SortedSetFetch = 'sortedSetFetch',
+  SortedSetGetScore = 'sortedSetGetScore',
+  SortedSetRemove = 'sortedSetRemove',
+  SortedSetGetRank = 'sortedSetGetRank',
+  SortedSetLength = 'sortedSetLength',
+  SortedSetLengthByScore = 'sortedSetLengthByScore',
 }
 
 export class TestRetryMetricsCollector {
