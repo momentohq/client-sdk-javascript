@@ -32,6 +32,7 @@ export interface TransportStrategyProps {
 
 export class StaticGrpcConfiguration implements GrpcConfiguration {
   private readonly deadlineMillis: number;
+
   constructor(props: GrpcConfigurationProps) {
     this.deadlineMillis = props.deadlineMillis;
   }
@@ -42,31 +43,37 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
 
   withDeadlineMillis(deadlineMillis: number): StaticGrpcConfiguration {
     return new StaticGrpcConfiguration({
-      deadlineMillis: deadlineMillis,
+      ...this,
+      deadlineMillis,
     });
   }
 }
 
 export class StaticTransportStrategy implements TransportStrategy {
-  private readonly grpcConfig: GrpcConfiguration;
+  private readonly grpcConfiguration: GrpcConfiguration;
 
   constructor(props: TransportStrategyProps) {
-    this.grpcConfig = props.grpcConfiguration;
+    this.grpcConfiguration = props.grpcConfiguration;
   }
 
   getGrpcConfig(): GrpcConfiguration {
-    return this.grpcConfig;
+    return this.grpcConfiguration;
   }
 
-  withGrpcConfig(grpcConfig: GrpcConfiguration): StaticTransportStrategy {
+  withGrpcConfig(
+    grpcConfiguration: GrpcConfiguration
+  ): StaticTransportStrategy {
     return new StaticTransportStrategy({
-      grpcConfiguration: grpcConfig,
+      ...this,
+      grpcConfiguration,
     });
   }
 
   withClientTimeoutMillis(clientTimeout: number): StaticTransportStrategy {
     return new StaticTransportStrategy({
-      grpcConfiguration: this.grpcConfig.withDeadlineMillis(clientTimeout),
+      ...this,
+      grpcConfiguration:
+        this.grpcConfiguration.withDeadlineMillis(clientTimeout),
     });
   }
 }

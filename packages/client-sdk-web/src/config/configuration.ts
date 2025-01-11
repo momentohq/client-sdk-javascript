@@ -126,11 +126,8 @@ export class CacheConfiguration implements Configuration {
 
   withTransportStrategy(transportStrategy: TransportStrategy): Configuration {
     return new CacheConfiguration({
-      loggerFactory: this.loggerFactory,
-      transportStrategy: transportStrategy,
-      middlewares: this.middlewares,
-      throwOnErrors: this.throwOnErrors,
-      readConcern: this.readConcern,
+      ...this,
+      transportStrategy,
     });
   }
 
@@ -140,22 +137,16 @@ export class CacheConfiguration implements Configuration {
 
   withMiddlewares(middlewares: Middleware[]): Configuration {
     return new CacheConfiguration({
-      loggerFactory: this.loggerFactory,
-      transportStrategy: this.transportStrategy,
-      middlewares: middlewares,
-      throwOnErrors: this.throwOnErrors,
-      readConcern: this.readConcern,
+      ...this,
+      middlewares,
     });
   }
 
   withClientTimeoutMillis(clientTimeout: number): Configuration {
     return new CacheConfiguration({
-      loggerFactory: this.loggerFactory,
+      ...this,
       transportStrategy:
         this.transportStrategy.withClientTimeoutMillis(clientTimeout),
-      middlewares: this.middlewares,
-      throwOnErrors: this.throwOnErrors,
-      readConcern: this.readConcern,
     });
   }
 
@@ -165,11 +156,8 @@ export class CacheConfiguration implements Configuration {
 
   withThrowOnErrors(throwOnErrors: boolean): Configuration {
     return new CacheConfiguration({
-      loggerFactory: this.loggerFactory,
-      transportStrategy: this.transportStrategy,
-      middlewares: this.middlewares,
-      throwOnErrors: throwOnErrors,
-      readConcern: this.readConcern,
+      ...this,
+      throwOnErrors,
     });
   }
 
@@ -179,11 +167,8 @@ export class CacheConfiguration implements Configuration {
 
   withReadConcern(readConcern: ReadConcern): Configuration {
     return new CacheConfiguration({
-      loggerFactory: this.loggerFactory,
-      transportStrategy: this.transportStrategy,
-      middlewares: this.middlewares,
-      throwOnErrors: this.throwOnErrors,
-      readConcern: readConcern,
+      ...this,
+      readConcern,
     });
   }
 }

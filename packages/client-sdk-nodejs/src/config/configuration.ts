@@ -183,13 +183,8 @@ export class CacheConfiguration implements Configuration {
 
   withRetryStrategy(retryStrategy: RetryStrategy): Configuration {
     return new CacheConfiguration({
-      loggerFactory: this.loggerFactory,
-      retryStrategy: retryStrategy,
-      transportStrategy: this.transportStrategy,
-      middlewares: this.middlewares,
-      throwOnErrors: this.throwOnErrors,
-      readConcern: this.readConcern,
-      compression: this.compression,
+      ...this,
+      retryStrategy,
     });
   }
 
@@ -199,13 +194,8 @@ export class CacheConfiguration implements Configuration {
 
   withTransportStrategy(transportStrategy: TransportStrategy): Configuration {
     return new CacheConfiguration({
-      loggerFactory: this.loggerFactory,
-      retryStrategy: this.retryStrategy,
-      transportStrategy: transportStrategy,
-      middlewares: this.middlewares,
-      throwOnErrors: this.throwOnErrors,
-      readConcern: this.readConcern,
-      compression: this.compression,
+      ...this,
+      transportStrategy,
     });
   }
 
@@ -225,38 +215,23 @@ export class CacheConfiguration implements Configuration {
 
   withMiddlewares(middlewares: Middleware[]): Configuration {
     return new CacheConfiguration({
-      loggerFactory: this.loggerFactory,
-      retryStrategy: this.retryStrategy,
-      transportStrategy: this.transportStrategy,
-      middlewares: middlewares,
-      throwOnErrors: this.throwOnErrors,
-      readConcern: this.readConcern,
-      compression: this.compression,
+      ...this,
+      middlewares,
     });
   }
 
   addMiddleware(middleware: Middleware): Configuration {
     return new CacheConfiguration({
-      loggerFactory: this.loggerFactory,
-      retryStrategy: this.retryStrategy,
-      transportStrategy: this.transportStrategy,
+      ...this,
       middlewares: [middleware, ...this.middlewares],
-      throwOnErrors: this.throwOnErrors,
-      readConcern: this.readConcern,
-      compression: this.compression,
     });
   }
 
   withClientTimeoutMillis(clientTimeout: number): Configuration {
     return new CacheConfiguration({
-      loggerFactory: this.loggerFactory,
-      retryStrategy: this.retryStrategy,
+      ...this,
       transportStrategy:
         this.transportStrategy.withClientTimeoutMillis(clientTimeout),
-      middlewares: this.middlewares,
-      throwOnErrors: this.throwOnErrors,
-      readConcern: this.readConcern,
-      compression: this.compression,
     });
   }
 
@@ -266,13 +241,8 @@ export class CacheConfiguration implements Configuration {
 
   withThrowOnErrors(throwOnErrors: boolean): Configuration {
     return new CacheConfiguration({
-      loggerFactory: this.loggerFactory,
-      retryStrategy: this.retryStrategy,
-      transportStrategy: this.transportStrategy,
-      middlewares: this.middlewares,
-      throwOnErrors: throwOnErrors,
-      readConcern: this.readConcern,
-      compression: this.compression,
+      ...this,
+      throwOnErrors,
     });
   }
 
@@ -282,13 +252,8 @@ export class CacheConfiguration implements Configuration {
 
   withReadConcern(readConcern: ReadConcern): Configuration {
     return new CacheConfiguration({
-      loggerFactory: this.loggerFactory,
-      retryStrategy: this.retryStrategy,
-      transportStrategy: this.transportStrategy,
-      middlewares: this.middlewares,
-      throwOnErrors: this.throwOnErrors,
-      readConcern: readConcern,
-      compression: this.compression,
+      ...this,
+      readConcern,
     });
   }
 
@@ -300,12 +265,7 @@ export class CacheConfiguration implements Configuration {
     compressionStrategy: CompressionStrategy
   ): Configuration {
     return new CacheConfiguration({
-      loggerFactory: this.loggerFactory,
-      retryStrategy: this.retryStrategy,
-      transportStrategy: this.transportStrategy,
-      middlewares: this.middlewares,
-      throwOnErrors: this.throwOnErrors,
-      readConcern: this.readConcern,
+      ...this,
       compression: compressionStrategy,
     });
   }

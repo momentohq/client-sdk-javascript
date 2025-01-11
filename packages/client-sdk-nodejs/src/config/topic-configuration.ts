@@ -86,9 +86,8 @@ export class TopicClientConfiguration implements TopicConfiguration {
     transportStrategy: TopicTransportStrategy
   ): TopicConfiguration {
     return new TopicClientConfiguration({
-      loggerFactory: this.loggerFactory,
-      transportStrategy: transportStrategy,
-      throwOnErrors: this.throwOnErrors,
+      ...this,
+      transportStrategy,
     });
   }
 
@@ -108,9 +107,8 @@ export class TopicClientConfiguration implements TopicConfiguration {
 
   withThrowOnErrors(throwOnErrors: boolean): TopicConfiguration {
     return new TopicClientConfiguration({
-      loggerFactory: this.loggerFactory,
-      transportStrategy: this.transportStrategy,
-      throwOnErrors: throwOnErrors,
+      ...this,
+      throwOnErrors,
     });
   }
 }
