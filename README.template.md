@@ -1,6 +1,6 @@
 {{ ossHeader }}
 
-## Packages
+## Packages .
 
 There are two different JavaScript SDKs available for Momento on npmjs.  The API is identical in both SDKs, but each
 is best suited for a particular environment:
