@@ -87,10 +87,9 @@ export class StorageClientConfiguration implements StorageConfiguration {
 
   withClientTimeoutMillis(clientTimeoutMillis: number): StorageConfiguration {
     return new StorageClientConfiguration({
-      loggerFactory: this.loggerFactory,
+      ...this,
       transportStrategy:
         this.transportStrategy.withClientTimeoutMillis(clientTimeoutMillis),
-      retryStrategy: this.retryStrategy,
     });
   }
 
@@ -98,17 +97,15 @@ export class StorageClientConfiguration implements StorageConfiguration {
     transportStrategy: StorageTransportStrategy
   ): StorageConfiguration {
     return new StorageClientConfiguration({
-      loggerFactory: this.loggerFactory,
-      transportStrategy: transportStrategy,
-      retryStrategy: this.retryStrategy,
+      ...this,
+      transportStrategy,
     });
   }
 
   withRetryStrategy(retryStrategy: RetryStrategy): StorageConfiguration {
     return new StorageClientConfiguration({
-      loggerFactory: this.loggerFactory,
-      transportStrategy: this.transportStrategy,
-      retryStrategy: retryStrategy,
+      ...this,
+      retryStrategy,
     });
   }
 }

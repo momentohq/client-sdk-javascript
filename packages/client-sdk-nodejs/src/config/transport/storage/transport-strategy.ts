@@ -52,7 +52,8 @@ export class StaticStorageGrpcConfiguration
 
   withDeadlineMillis(deadlineMillis: number): StorageGrpcConfiguration {
     return new StaticStorageGrpcConfiguration({
-      deadlineMillis: deadlineMillis,
+      ...this,
+      deadlineMillis,
     });
   }
 }
@@ -71,10 +72,11 @@ export class StaticStorageTransportStrategy
   }
 
   withGrpcConfig(
-    grpcConfig: StorageGrpcConfiguration
+    grpcConfiguration: StorageGrpcConfiguration
   ): StorageTransportStrategy {
     return new StaticStorageTransportStrategy({
-      grpcConfiguration: grpcConfig,
+      ...this,
+      grpcConfiguration,
     });
   }
 
@@ -82,6 +84,7 @@ export class StaticStorageTransportStrategy
     clientTimeoutMillis: number
   ): StorageTransportStrategy {
     return new StaticStorageTransportStrategy({
+      ...this,
       grpcConfiguration:
         this.grpcConfig.withDeadlineMillis(clientTimeoutMillis),
     });

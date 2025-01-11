@@ -31,6 +31,8 @@ jobs:
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
 
       - name: Verify README generation
         uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
@@ -390,6 +392,8 @@ jobs:
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
 
       - name: Install Node
         uses: actions/setup-node@v3
@@ -417,6 +421,8 @@ jobs:
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
 
       - name: Install Node
         uses: actions/setup-node@v3
@@ -534,6 +540,8 @@ jobs:
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
 
       - name: Install Node
         uses: actions/setup-node@v3
@@ -581,6 +589,8 @@ jobs:
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
 
       - name: Install Deno
         uses: denoland/setup-deno@v1
@@ -624,6 +634,8 @@ jobs:
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
 
       - name: Build all packages
         run: |
