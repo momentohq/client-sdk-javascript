@@ -32,7 +32,7 @@ jobs:
       - name: Setup repo
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.event.pull_request.head.sha }}
 
       - name: Verify README generation
         uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
@@ -393,7 +393,7 @@ jobs:
       - name: Setup repo
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.event.pull_request.head.sha }}
 
       - name: Install Node
         uses: actions/setup-node@v3
@@ -422,7 +422,7 @@ jobs:
       - name: Setup repo
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.event.pull_request.head.sha }}
 
       - name: Install Node
         uses: actions/setup-node@v3
@@ -541,7 +541,7 @@ jobs:
       - name: Setup repo
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.event.pull_request.head.sha }}
 
       - name: Install Node
         uses: actions/setup-node@v3
@@ -590,7 +590,7 @@ jobs:
       - name: Setup repo
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.event.pull_request.head.sha }}
 
       - name: Install Deno
         uses: denoland/setup-deno@v1
@@ -635,7 +635,7 @@ jobs:
       - name: Setup repo
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.event.pull_request.head.sha }}
 
       - name: Build all packages
         run: |
