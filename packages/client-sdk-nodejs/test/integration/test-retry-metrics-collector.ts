@@ -1,35 +1,3 @@
-export enum MomentoRPCMethod {
-  Get = 'get',
-  Set = 'set',
-  Delete = 'delete',
-  GetBatch = 'getBatch',
-  SetBatch = 'setBatch',
-  KeysExist = 'keysExist',
-  ItemGetTtl = 'itemGetTtl',
-  ItemGetType = 'itemGetType',
-  DictionaryGet = 'dictionaryGet',
-  DictionaryFetch = 'dictionaryFetch',
-  DictionarySet = 'dictionarySet',
-  DictionaryDelete = 'dictionaryDelete',
-  DictionaryLength = 'dictionaryLength',
-  SetFetch = 'setFetch',
-  SetSample = 'setSample',
-  SetUnion = 'setUnion',
-  SetDifference = 'setDifference',
-  SetContains = 'setContains',
-  SetLength = 'setLength',
-  ListRemove = 'listRemove',
-  ListFetch = 'listFetch',
-  ListLength = 'listLength',
-  SortedSetPut = 'sortedSetPut',
-  SortedSetFetch = 'sortedSetFetch',
-  SortedSetGetScore = 'sortedSetGetScore',
-  SortedSetRemove = 'sortedSetRemove',
-  SortedSetGetRank = 'sortedSetGetRank',
-  SortedSetLength = 'sortedSetLength',
-  SortedSetLengthByScore = 'sortedSetLengthByScore',
-}
-
 export class TestRetryMetricsCollector {
   // Data structure to store timestamps: cacheName -> requestName -> [timestamps]
   private readonly data: Record<string, Record<string, number[]>>;
@@ -46,7 +14,7 @@ export class TestRetryMetricsCollector {
    */
   addTimestamp(
     cacheName: string,
-    requestName: MomentoRPCMethod,
+    requestName: string,
     timestamp: number
   ): void {
     if (!this.data[cacheName]) {
