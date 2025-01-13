@@ -153,8 +153,26 @@ export class StaticGrpcConfiguration implements GrpcConfiguration {
     return this.maxSendMessageLength;
   }
 
+  withMaxSendMessageLength(
+    maxSendMessageLength: number
+  ): StaticGrpcConfiguration {
+    return new StaticGrpcConfiguration({
+      ...this,
+      maxSendMessageLength,
+    });
+  }
+
   getMaxReceiveMessageLength(): number | undefined {
     return this.maxReceiveMessageLength;
+  }
+
+  withMaxReceiveMessageLength(
+    maxReceiveMessageLength: number
+  ): StaticGrpcConfiguration {
+    return new StaticGrpcConfiguration({
+      ...this,
+      maxReceiveMessageLength,
+    });
   }
 
   getNumClients(): number {

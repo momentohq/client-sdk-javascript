@@ -83,6 +83,16 @@ export interface Configuration {
   withNumConnections(numConnections: number): Configuration;
 
   /**
+   * Shorthand copy constructor for overriding TransportStrategy.GrpcConfig message lengths. This will
+   * allow you to adjust the maximum message length the client can send and receive from the server.
+   *
+   * This is only relevant if you have requested a service limit increase beyond the default value.
+   * @param {number} maxMessageLength
+   * @returns {Configuration} a new Configuration object with the updated TransportStrategy
+   */
+  withMaxMessageLength(maxMessageLength: number): Configuration;
+
+  /**
    * @returns {Middleware[]} the middleware functions that will wrap each request
    */
   getMiddlewares(): Middleware[];
@@ -205,6 +215,17 @@ export class CacheConfiguration implements Configuration {
         this.getTransportStrategy()
           .getGrpcConfig()
           .withNumClients(numConnections)
+      )
+    );
+  }
+
+  withMaxMessageLength(maxMessageLength: number): Configuration {
+    return this.withTransportStrategy(
+      this.getTransportStrategy().withGrpcConfig(
+        this.getTransportStrategy()
+          .getGrpcConfig()
+          .withMaxReceiveMessageLength(maxMessageLength)
+          .withMaxSendMessageLength(maxMessageLength)
       )
     );
   }
