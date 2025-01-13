@@ -3,7 +3,6 @@ import {Middleware, MiddlewareRequestHandler, MomentoLogger} from '../../src';
 import {
   MiddlewareMessage,
   MiddlewareMetadata,
-  MiddlewareRequestHandlerContext,
   MiddlewareStatus,
 } from '../../src/config/middleware/middleware';
 
@@ -78,9 +77,7 @@ export class TestRetryMetricsMiddleware implements Middleware {
     this.testMetricsCollector = testMetricsCollector;
   }
 
-  onNewRequest(
-    context?: MiddlewareRequestHandlerContext
-  ): MiddlewareRequestHandler {
+  onNewRequest(): MiddlewareRequestHandler {
     return new TestMetricsMiddlewareRequestHandler(
       this.logger,
       this.testMetricsCollector
