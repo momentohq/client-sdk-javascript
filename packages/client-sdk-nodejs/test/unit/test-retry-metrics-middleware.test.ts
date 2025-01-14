@@ -10,7 +10,7 @@ describe('TestRetryMetricsMiddleware', () => {
   let testMetricsCollector: TestRetryMetricsCollector;
   let momentoLogger: MomentoLogger;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     testMetricsCollector = new TestRetryMetricsCollector();
     momentoLogger = {
       debug: (message: string) => console.log(message),
