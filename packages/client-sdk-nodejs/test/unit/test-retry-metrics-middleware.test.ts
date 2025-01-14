@@ -3,6 +3,7 @@ import {TestRetryMetricsCollector} from '../integration/test-retry-metrics-colle
 import {CredentialProvider, MomentoLogger} from '@gomomento/sdk-core';
 import {CacheClient, Configurations} from '../../src';
 import {MomentoRPCMethod} from '../integration/momento-rpc-method';
+import {v4} from 'uuid';
 
 describe('TestRetryMetricsMiddleware', () => {
   let middleware: TestRetryMetricsMiddleware;
@@ -31,7 +32,7 @@ describe('TestRetryMetricsMiddleware', () => {
   });
 
   test('should add a timestamp on request body for a single cache', async () => {
-    const cacheName = 'middleware-cache';
+    const cacheName = v4();
     await cacheClient.get(cacheName, 'key');
     const allMetrics = testMetricsCollector.getAllMetrics();
     expect(allMetrics).toEqual({
@@ -43,8 +44,8 @@ describe('TestRetryMetricsMiddleware', () => {
   });
 
   test('should add a timestamp on request body for multiple caches', async () => {
-    const cacheName1 = 'middleware-cache-1';
-    const cacheName2 = 'middleware-cache-2';
+    const cacheName1 = v4();
+    const cacheName2 = v4();
     await cacheClient.get(cacheName1, 'key');
     await cacheClient.get(cacheName2, 'key');
     const allMetrics = testMetricsCollector.getAllMetrics();
@@ -61,7 +62,7 @@ describe('TestRetryMetricsMiddleware', () => {
   });
 
   test('should add a timestamp on request body for multiple requests', async () => {
-    const cacheName = 'middleware-cache';
+    const cacheName = v4();
     await cacheClient.set(cacheName, 'key', 'value');
     await cacheClient.get(cacheName, 'key');
     const allMetrics = testMetricsCollector.getAllMetrics();
