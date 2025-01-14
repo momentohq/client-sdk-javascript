@@ -59,4 +59,19 @@ describe('TestRetryMetricsMiddleware', () => {
       },
     });
   });
+
+  test('should add a timestamp on request body for multiple requests', async () => {
+    const cacheName = 'middleware-cache';
+    await cacheClient.set(cacheName, 'key', 'value');
+    await cacheClient.get(cacheName, 'key');
+    const allMetrics = testMetricsCollector.getAllMetrics();
+    expect(allMetrics).toEqual({
+      [cacheName]: {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        [MomentoRPCMethod.Get]: expect.arrayContaining([expect.any(Number)]),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        [MomentoRPCMethod.Set]: expect.arrayContaining([expect.any(Number)]),
+      },
+    });
+  });
 });
