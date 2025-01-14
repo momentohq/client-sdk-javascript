@@ -144,7 +144,7 @@ export interface GrpcConfiguration {
 
   /**
    * Copy constructor for overriding the max send message length.
-   * @param maxSendMessageLength the desired maximum message length the client can send to the server.
+   * @param maxSendMessageLength the desired maximum message length (in bytes) the client can send to the server.
    */
   withMaxSendMessageLength(maxSendMessageLength: number): GrpcConfiguration;
 
@@ -156,7 +156,7 @@ export interface GrpcConfiguration {
 
   /**
    * Copy constructor for overriding the max receive message length.
-   * @param maxReceiveMessageLength the desired maximum message length the client can receive from the server.
+   * @param maxReceiveMessageLength the desired maximum message length (in bytes) the client can receive from the server.
    */
   withMaxReceiveMessageLength(
     maxReceiveMessageLength: number
