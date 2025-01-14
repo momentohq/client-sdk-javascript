@@ -1,8 +1,8 @@
-import {TestRetryMetricsMiddleware} from '../integration/test-retry-metrics-middleware';
-import {TestRetryMetricsCollector} from '../integration/test-retry-metrics-collector';
+import {TestRetryMetricsMiddleware} from '../test-retry-metrics-middleware';
+import {TestRetryMetricsCollector} from '../test-retry-metrics-collector';
 import {CredentialProvider, MomentoLogger} from '@gomomento/sdk-core';
 import {CacheClient, Configurations} from '../../src';
-import {MomentoRPCMethod} from '../integration/momento-rpc-method';
+import {MomentoRPCMethod} from '../momento-rpc-method';
 import {v4} from 'uuid';
 
 describe('TestRetryMetricsMiddleware', () => {

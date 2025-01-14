@@ -1,10 +1,10 @@
 import {TestRetryMetricsCollector} from './test-retry-metrics-collector';
-import {Middleware, MiddlewareRequestHandler, MomentoLogger} from '../../src';
+import {Middleware, MiddlewareRequestHandler, MomentoLogger} from '../src';
 import {
   MiddlewareMessage,
   MiddlewareMetadata,
   MiddlewareStatus,
-} from '../../src/config/middleware/middleware';
+} from '../src/config/middleware/middleware';
 import {MomentoRPCMethod} from './momento-rpc-method';
 
 export class TestMetricsMiddlewareRequestHandler

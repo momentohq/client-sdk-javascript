@@ -1,5 +1,5 @@
-import {TestRetryMetricsCollector} from '../integration/test-retry-metrics-collector';
-import {MomentoRPCMethod} from '../integration/momento-rpc-method';
+import {TestRetryMetricsCollector} from '../test-retry-metrics-collector';
+import {MomentoRPCMethod} from '../momento-rpc-method';
 
 describe('TestRetryMetricsCollector', () => {
   let metricsCollector: TestRetryMetricsCollector;
@@ -102,13 +102,13 @@ describe('TestRetryMetricsCollector', () => {
 
     expect(allMetrics).toEqual({
       myCache1: {
-        _GetRequest: [1673000000, 1673000010],
-        _SetRequest: [1673000020],
+        [MomentoRPCMethod.Get]: [1673000000, 1673000010],
+        [MomentoRPCMethod.Set]: [1673000020],
       },
       myCache2: {
-        _GetRequest: [1673000000],
-        _DeleteRequest: [1673000010],
-        _SetRequest: [1673000020],
+        [MomentoRPCMethod.Get]: [1673000000],
+        [MomentoRPCMethod.Delete]: [1673000010],
+        [MomentoRPCMethod.Set]: [1673000020],
       },
     });
   });
