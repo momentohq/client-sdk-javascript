@@ -87,7 +87,7 @@ export interface Configuration {
    * allow you to adjust the maximum message length the client can send and receive from the server.
    *
    * This is only relevant if you have requested a service limit increase beyond the default value.
-   * @param {number} maxMessageLength
+   * @param {number} maxMessageLength - the max message length (in bytes) the client can send and receive
    * @returns {Configuration} a new Configuration object with the updated TransportStrategy
    */
   withMaxMessageLength(maxMessageLength: number): Configuration;
