@@ -1,3 +1,5 @@
+import {MomentoRPCMethod} from './momento-rpc-method';
+
 export class TestRetryMetricsCollector {
   // Data structure to store timestamps: cacheName -> requestName -> [timestamps]
   private readonly data: Record<string, Record<string, number[]>>;
@@ -14,7 +16,7 @@ export class TestRetryMetricsCollector {
    */
   addTimestamp(
     cacheName: string,
-    requestName: string,
+    requestName: MomentoRPCMethod,
     timestamp: number
   ): void {
     if (!this.data[cacheName]) {
@@ -32,7 +34,7 @@ export class TestRetryMetricsCollector {
    * @param requestName - The name of the request.
    * @returns The total number of retries.
    */
-  getTotalRetryCount(cacheName: string, requestName: string): number {
+  getTotalRetryCount(cacheName: string, requestName: MomentoRPCMethod): number {
     const timestamps = this.data[cacheName]?.[requestName] ?? [];
     return timestamps.length;
   }
@@ -45,7 +47,7 @@ export class TestRetryMetricsCollector {
    */
   getAverageTimeBetweenRetries(
     cacheName: string,
-    requestName: string
+    requestName: MomentoRPCMethod
   ): number | null {
     const timestamps = this.data[cacheName]?.[requestName] ?? [];
     if (timestamps.length < 2) {
@@ -67,7 +69,7 @@ export class TestRetryMetricsCollector {
    * Retrieves all collected metrics for debugging or analysis.
    * @returns The complete data structure with all recorded metrics.
    */
-  getAllMetrics(): Record<string, Record<string, number[]>> {
+  getAllMetrics(): Record<string, Record<MomentoRPCMethod, number[]>> {
     return this.data;
   }
 }

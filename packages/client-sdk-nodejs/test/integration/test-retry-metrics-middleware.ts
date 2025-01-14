@@ -5,6 +5,7 @@ import {
   MiddlewareMetadata,
   MiddlewareStatus,
 } from '../../src/config/middleware/middleware';
+import {MomentoRPCMethod} from './momento-rpc-method';
 
 export class TestMetricsMiddlewareRequestHandler
   implements MiddlewareRequestHandler
@@ -26,7 +27,7 @@ export class TestMetricsMiddlewareRequestHandler
     if (this.cacheName) {
       this.testMetricsCollector.addTimestamp(
         this.cacheName,
-        requestType,
+        requestType as MomentoRPCMethod,
         Date.now()
       );
     } else {

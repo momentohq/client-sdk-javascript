@@ -2,6 +2,7 @@ import {TestRetryMetricsMiddleware} from '../integration/test-retry-metrics-midd
 import {TestRetryMetricsCollector} from '../integration/test-retry-metrics-collector';
 import {CredentialProvider, MomentoLogger} from '@gomomento/sdk-core';
 import {CacheClient, Configurations} from '../../src';
+import {MomentoRPCMethod} from '../integration/momento-rpc-method';
 
 describe('TestRetryMetricsMiddleware', () => {
   let middleware: TestRetryMetricsMiddleware;
@@ -9,7 +10,7 @@ describe('TestRetryMetricsMiddleware', () => {
   let testMetricsCollector: TestRetryMetricsCollector;
   let momentoLogger: MomentoLogger;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     testMetricsCollector = new TestRetryMetricsCollector();
     momentoLogger = {
       debug: (message: string) => console.log(message),
@@ -29,14 +30,32 @@ describe('TestRetryMetricsMiddleware', () => {
     });
   });
 
-  test('should add a timestamp on request body when cache name is available', async () => {
+  test('should add a timestamp on request body for a single cache', async () => {
     const cacheName = 'middleware-cache';
     await cacheClient.get(cacheName, 'key');
     const allMetrics = testMetricsCollector.getAllMetrics();
     expect(allMetrics).toEqual({
       [cacheName]: {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        _GetRequest: expect.arrayContaining([expect.any(Number)]),
+        [MomentoRPCMethod.Get]: expect.arrayContaining([expect.any(Number)]),
+      },
+    });
+  });
+
+  test('should add a timestamp on request body for multiple caches', async () => {
+    const cacheName1 = 'middleware-cache-1';
+    const cacheName2 = 'middleware-cache-2';
+    await cacheClient.get(cacheName1, 'key');
+    await cacheClient.get(cacheName2, 'key');
+    const allMetrics = testMetricsCollector.getAllMetrics();
+    expect(allMetrics).toEqual({
+      [cacheName1]: {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        [MomentoRPCMethod.Get]: expect.arrayContaining([expect.any(Number)]),
+      },
+      [cacheName2]: {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        [MomentoRPCMethod.Get]: expect.arrayContaining([expect.any(Number)]),
       },
     });
   });
