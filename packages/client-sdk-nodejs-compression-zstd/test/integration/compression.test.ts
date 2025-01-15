@@ -82,16 +82,14 @@ describe('CompressorFactory', () => {
     it('should compress the value if compress is true', async () => {
       const cacheClient = cacheClientWithCompressor_AutoDecompressionDisabled;
       const key = randomString();
-      const setResponse = await cacheClient.set(cacheName, key, '', {
+      const setResponse = await cacheClient.set(cacheName, key, testValue, {
         compress: true,
       });
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSet.Success);
       }, `Expected CacheClient.set to be a success with compression specified, got: '${setResponse.toString()}'`);
 
-      const getResponse = await cacheClient.get(cacheName, key, {
-        decompress: true,
-      });
+      const getResponse = await cacheClient.get(cacheName, key);
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `Expected CacheClient.get to be a hit after CacheClient.set with compression specified, got: '${getResponse.toString()}'`);
