@@ -26,9 +26,7 @@ export class TestMetricsMiddlewareRequestHandler
   }
 
   onRequestBody(request: MiddlewareMessage): Promise<MiddlewareMessage> {
-    console.log('onRequestBody in middleware called');
     const requestType = request.constructorName();
-    console.log('Adding timestamp', this.cacheName);
     if (this.cacheName) {
       this.testMetricsCollector.addTimestamp(
         this.cacheName,
