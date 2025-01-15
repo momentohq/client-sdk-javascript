@@ -71,23 +71,23 @@ describe('Automated retry with full network outage', () => {
   });
 
   it('should make maximum retry attempts for eligible API with fixed timeout strategy', async () => {
-    const RETRY_DELAY_SECONDS = 1;
-    const CLIENT_TIMEOUT_SECONDS = 5;
+    const RETRY_DELAY_MILLIS = 1000;
+    const CLIENT_TIMEOUT_MILLIS = 5000;
     const loggerFactory = new DefaultMomentoLoggerFactory();
     const retryStrategy = new FixedTimeoutRetryStrategy({
       loggerFactory: loggerFactory,
-      retryDelayIntervalMillis: RETRY_DELAY_SECONDS * 1000,
+      retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
       eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
     });
 
     const cacheClient = await createCacheClient(config =>
       config
         .withRetryStrategy(retryStrategy)
-        .withClientTimeoutMillis(CLIENT_TIMEOUT_SECONDS * 1000)
+        .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS)
     );
     await cacheClient.get(cacheName, 'key');
     const expectedRetryCount = Math.floor(
-      CLIENT_TIMEOUT_SECONDS / RETRY_DELAY_SECONDS
+      CLIENT_TIMEOUT_MILLIS / RETRY_DELAY_MILLIS
     );
     const actualRetryCount = testMetricsCollector.getTotalRetryCount(
       cacheName,
@@ -98,17 +98,19 @@ describe('Automated retry with full network outage', () => {
   });
 
   it('should make 0 attempts for retry non-eligible api for fixed timeout strategy', async () => {
-    const RETRY_DELAY_SECONDS = 1;
-    const CLIENT_TIMEOUT_SECONDS = 5;
+    const RETRY_DELAY_MILLIS = 1000;
+    const CLIENT_TIMEOUT_MILLIS = 5000;
+    const loggerFactory = new DefaultMomentoLoggerFactory();
     const retryStrategy = new FixedTimeoutRetryStrategy({
-      loggerFactory: new DefaultMomentoLoggerFactory(),
-      retryDelayIntervalMillis: RETRY_DELAY_SECONDS * 1000,
+      loggerFactory: loggerFactory,
+      retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
+      eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
     });
 
     const cacheClient = await createCacheClient(config =>
       config
         .withRetryStrategy(retryStrategy)
-        .withClientTimeoutMillis(CLIENT_TIMEOUT_SECONDS * 1000)
+        .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS)
     );
     await cacheClient.increment(cacheName, 'key', 1);
     const noOfRetries = testMetricsCollector.getTotalRetryCount(

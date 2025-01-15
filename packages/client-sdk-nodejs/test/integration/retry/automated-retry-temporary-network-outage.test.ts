@@ -3,6 +3,7 @@ import {
   CacheClient,
   Configuration,
   Configurations,
+  DefaultEligibilityStrategy,
   DefaultMomentoLoggerFactory,
   FixedTimeoutRetryStrategy,
   MomentoLocalProvider,
@@ -60,17 +61,19 @@ describe('Automated retry with temporary network outage', () => {
   });
 
   it('should make less than max number of attempts for fixed timeout strategy', async () => {
-    const RETRY_DELAY_SECONDS = 1;
-    const CLIENT_TIMEOUT_SECONDS = 5;
+    const RETRY_DELAY_MILLIS = 1000;
+    const CLIENT_TIMEOUT_MILLIS = 5000;
+    const loggerFactory = new DefaultMomentoLoggerFactory();
     const retryStrategy = new FixedTimeoutRetryStrategy({
-      loggerFactory: new DefaultMomentoLoggerFactory(),
-      retryDelayIntervalMillis: RETRY_DELAY_SECONDS * 1000,
+      loggerFactory: loggerFactory,
+      retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
+      eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
     });
 
     const cacheClient = await createCacheClient(config =>
       config
         .withRetryStrategy(retryStrategy)
-        .withClientTimeoutMillis(CLIENT_TIMEOUT_SECONDS * 1000)
+        .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS)
     );
     await cacheClient.get(cacheName, 'key');
     const noOfRetries = testMetricsCollector.getTotalRetryCount(
@@ -78,7 +81,7 @@ describe('Automated retry with temporary network outage', () => {
       MomentoRPCMethod.Get
     );
     const totalAttemptsClientCouldHaveMade = Math.floor(
-      CLIENT_TIMEOUT_SECONDS / RETRY_DELAY_SECONDS
+      CLIENT_TIMEOUT_MILLIS / RETRY_DELAY_MILLIS
     );
     expect(noOfRetries).toBeLessThanOrEqual(totalAttemptsClientCouldHaveMade);
 
@@ -87,6 +90,6 @@ describe('Automated retry with temporary network outage', () => {
         cacheName,
         MomentoRPCMethod.Get
       );
-    expect(delayBetweenResponses).toBeLessThanOrEqual(CLIENT_TIMEOUT_SECONDS);
+    expect(delayBetweenResponses).toBeLessThanOrEqual(CLIENT_TIMEOUT_MILLIS);
   });
 });
