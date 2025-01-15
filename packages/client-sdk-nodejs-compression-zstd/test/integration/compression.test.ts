@@ -93,9 +93,12 @@ describe('CompressorFactory', () => {
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `Expected CacheClient.get to be a hit after CacheClient.set with compression specified, got: '${getResponse.toString()}'`);
-      expect((getResponse as CacheGet.Hit).valueUint8Array()).toEqual(
-        testValueCompressed
-      );
+
+      const received = (getResponse as CacheGet.Hit).valueUint8Array();
+      const actualUint8Array =
+        received instanceof Buffer ? new Uint8Array(received) : received;
+
+      expect(actualUint8Array).toEqual(testValueCompressed);
     });
     it('should not compress the value if compress is not specified', async () => {
       const cacheClient = cacheClientWithCompressor_AutoDecompressionDisabled;
