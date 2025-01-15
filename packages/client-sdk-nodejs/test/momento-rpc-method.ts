@@ -2,6 +2,7 @@ export enum MomentoRPCMethod {
   Get = '_GetRequest',
   Set = '_SetRequest',
   Delete = '_DeleteRequest',
+  Increment = '_IncrementRequest',
   GetBatch = '_GetBatchRequest',
   SetBatch = '_SetBatchRequest',
   KeysExist = '_KeysExistRequest',

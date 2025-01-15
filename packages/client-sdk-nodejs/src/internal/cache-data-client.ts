@@ -139,6 +139,7 @@ import Equal = common.Equal;
 import NotEqual = common.NotEqual;
 import PresentAndNotEqual = common.PresentAndNotEqual;
 import AbsentOrEqual = common.AbsentOrEqual;
+import {TestRetryMetricsMiddleware} from '../../test/test-retry-metrics-middleware';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -4143,10 +4144,18 @@ export class CacheDataClient implements IDataClient {
     middlewares: Middleware[],
     middlewareRequestContext: MiddlewareRequestHandlerContext
   ): Interceptor[] {
-    return [
+    const testRetryMiddleware = middlewares.find(
+      middleware => middleware instanceof TestRetryMetricsMiddleware
+    );
+    let filteredMiddlewares: Middleware[] = middlewares;
+    if (testRetryMiddleware) {
+      filteredMiddlewares = middlewares.filter(_ => !testRetryMiddleware);
+    }
+
+    const interceptors = [
       middlewaresInterceptor(
         loggerFactory,
-        middlewares,
+        filteredMiddlewares,
         middlewareRequestContext,
         this.clientWrapper.getClient()
       ),
@@ -4158,6 +4167,19 @@ export class CacheDataClient implements IDataClient {
         overallRequestTimeoutMs: this.requestTimeoutMs,
       }),
     ];
+
+    if (testRetryMiddleware !== undefined) {
+      interceptors.push(
+        middlewaresInterceptor(
+          loggerFactory,
+          [testRetryMiddleware],
+          middlewareRequestContext,
+          this.clientWrapper.getClient()
+        )
+      );
+    }
+
+    return interceptors;
   }
 
   // TODO https://github.com/momentohq/client-sdk-nodejs/issues/349

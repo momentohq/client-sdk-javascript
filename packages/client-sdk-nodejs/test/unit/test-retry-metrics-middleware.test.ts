@@ -19,7 +19,8 @@ describe('TestRetryMetricsMiddleware', () => {
     } as unknown as MomentoLogger;
     middleware = new TestRetryMetricsMiddleware(
       momentoLogger,
-      testMetricsCollector
+      testMetricsCollector,
+      v4()
     );
 
     // Create CacheClient with middleware enabled
