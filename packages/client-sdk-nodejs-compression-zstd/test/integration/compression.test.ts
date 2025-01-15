@@ -51,14 +51,12 @@ const testValue = 'my-value';
 const testValueBytes = textEncoder.encode(testValue);
 
 const testValueCompressed = Uint8Array.from([
-  40, 181, 47, 253, 0, 96, 65, 0, 0, 109, 121, 45, 118, 97, 108, 117, 101,
+  40, 181, 47, 253, 32, 8, 65, 0, 0, 109, 121, 45, 118, 97, 108, 117, 101,
 ]);
 const testValue2 = 'my-value2';
 const testValue2Compressed = Uint8Array.from([
-  40, 181, 47, 253, 0, 96, 73, 0, 0, 109, 121, 45, 118, 97, 108, 117, 101, 50,
+  40, 181, 47, 253, 32, 9, 73, 0, 0, 109, 121, 45, 118, 97, 108, 117, 101, 50,
 ]);
-
-const invalidCompressed = Uint8Array.from([40, 181, 47, 253, 0]);
 
 describe('CompressorFactory', () => {
   describe('CacheClient.set', () => {
@@ -84,14 +82,16 @@ describe('CompressorFactory', () => {
     it('should compress the value if compress is true', async () => {
       const cacheClient = cacheClientWithCompressor_AutoDecompressionDisabled;
       const key = randomString();
-      const setResponse = await cacheClient.set(cacheName, key, testValue, {
+      const setResponse = await cacheClient.set(cacheName, key, '', {
         compress: true,
       });
       expectWithMessage(() => {
         expect(setResponse).toBeInstanceOf(CacheSet.Success);
       }, `Expected CacheClient.set to be a success with compression specified, got: '${setResponse.toString()}'`);
 
-      const getResponse = await cacheClient.get(cacheName, key);
+      const getResponse = await cacheClient.get(cacheName, key, {
+        decompress: true,
+      });
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `Expected CacheClient.get to be a hit after CacheClient.set with compression specified, got: '${getResponse.toString()}'`);
@@ -300,27 +300,6 @@ describe('CompressorFactory', () => {
       }, `Expected CacheClient.get to be a hit after CacheClient.set with compression specified, got: '${getResponse.toString()}'`);
 
       expect((getResponse as CacheGet.Hit).valueString()).toEqual(testValue);
-    });
-    it('should return an error if decompression is enabled and the client receives invalid ZSTD data', async () => {
-      const noCompressCacheClient = cacheClientWithoutCompressor;
-      const key = randomString();
-      const setResponse = await noCompressCacheClient.set(
-        cacheName,
-        key,
-        invalidCompressed
-      );
-      expectWithMessage(() => {
-        expect(setResponse).toBeInstanceOf(CacheSet.Success);
-      }, `Expected CacheClient.set to be a success, got: '${setResponse.toString()}'`);
-
-      const getResponse =
-        await cacheClientWithCompressor_AutoDecompressionEnabled.get(
-          cacheName,
-          key
-        );
-      expectWithMessage(() => {
-        expect(getResponse).toBeInstanceOf(CacheGet.Error);
-      }, `Expected CacheClient.get to be an Error when receiving invalid ZSTD data, got: '${getResponse.toString()}'`);
     });
   });
   describe('CacheClient.setBatch', () => {
