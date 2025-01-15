@@ -36,6 +36,9 @@ export class TestRetryMetricsCollector {
    */
   getTotalRetryCount(cacheName: string, requestName: MomentoRPCMethod): number {
     const timestamps = this.data[cacheName]?.[requestName] ?? [];
+    if (timestamps.length === 0) {
+      return 0;
+    }
     return timestamps.length - 1; // Number of retries is one less than the number of timestamps.
   }
 
