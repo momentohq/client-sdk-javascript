@@ -92,4 +92,8 @@ export class TestRetryMetricsMiddleware implements Middleware {
       this.requestId
     );
   }
+
+  shouldLoadLate(): boolean {
+    return true;
+  }
 }

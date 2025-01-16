@@ -139,7 +139,6 @@ import Equal = common.Equal;
 import NotEqual = common.NotEqual;
 import PresentAndNotEqual = common.PresentAndNotEqual;
 import AbsentOrEqual = common.AbsentOrEqual;
-import {TestRetryMetricsMiddleware} from '../../test/test-retry-metrics-middleware';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -4144,18 +4143,17 @@ export class CacheDataClient implements IDataClient {
     middlewares: Middleware[],
     middlewareRequestContext: MiddlewareRequestHandlerContext
   ): Interceptor[] {
-    const testRetryMiddleware = middlewares.find(
-      middleware => middleware instanceof TestRetryMetricsMiddleware
+    const lateLoadMiddlewares = middlewares.filter(
+      middleware => middleware.shouldLoadLate && middleware.shouldLoadLate()
     );
-    let filteredMiddlewares: Middleware[] = middlewares;
-    if (testRetryMiddleware) {
-      filteredMiddlewares = middlewares.filter(_ => !testRetryMiddleware);
-    }
+    const immediateMiddlewares = middlewares.filter(
+      middleware => !middleware.shouldLoadLate
+    );
 
     const interceptors = [
       middlewaresInterceptor(
         loggerFactory,
-        filteredMiddlewares,
+        immediateMiddlewares,
         middlewareRequestContext,
         this.clientWrapper.getClient()
       ),
@@ -4168,11 +4166,11 @@ export class CacheDataClient implements IDataClient {
       }),
     ];
 
-    if (testRetryMiddleware !== undefined) {
+    if (lateLoadMiddlewares.length > 0) {
       interceptors.push(
         middlewaresInterceptor(
           loggerFactory,
-          [testRetryMiddleware],
+          lateLoadMiddlewares,
           middlewareRequestContext,
           this.clientWrapper.getClient()
         )
