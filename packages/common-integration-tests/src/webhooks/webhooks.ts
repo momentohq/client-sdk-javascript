@@ -20,7 +20,6 @@ import {
   ITopicClient,
 } from '@gomomento/sdk-core/dist/src/internal/clients';
 import {delay} from '../auth/auth-client';
-import {log} from 'console';
 
 export function runWebhookTests(
   topicClient: ITopicClient,
@@ -133,7 +132,6 @@ export function runWebhookTests(
         const details = await getWebhookRequestDetails(
           webhook.destination.url()
         );
-        log('webhook request details:', details);
         expect(details.invocationCount).toBe(1);
       });
     });
