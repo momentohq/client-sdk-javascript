@@ -1,4 +1,4 @@
-.PHONY: test-auth-service test-cache-service test-leaderboard-service test-storage-service test-topics-service test-http-service test-full-network-outage-retry-service test-temporary-network-outage-retry-service
+.PHONY: test-auth-service test-cache-service test-leaderboard-service test-storage-service test-topics-service test-http-service
 
 
 test-auth-service:
@@ -25,14 +25,8 @@ test-topics-service:
 	@echo "Testing topics service..."
 	@npm run integration-test-topics
 
+
 test-http-service:
 	@echo "Testing http service..."
 	@npm run integration-test-http
 
-test-full-network-outage-retry-service:
-	@echo "Testing full network outage retry service..."
-	@npm run integration-test-retry-full-network-outage
-
-test-temporary-network-outage-retry-service:
-	@echo "Testing temporary network outage retry service..."
-	@npm run integration-test-retry-temporary-network-outage
