@@ -1,73 +1,47 @@
-import {TestRetryMetricsMiddleware} from '../../test-retry-metrics-middleware';
 import {
-  CacheClient,
-  Configuration,
-  Configurations,
   DefaultEligibilityStrategy,
   DefaultMomentoLoggerFactory,
   FixedTimeoutRetryStrategy,
-  MomentoLocalProvider,
 } from '../../../src';
 import {TestRetryMetricsCollector} from '../../test-retry-metrics-collector';
-import {v4} from 'uuid';
 import {MomentoRPCMethod} from '../../momento-rpc-method';
+import {WithCacheAndCacheClient} from '../integration-setup';
 
 describe('Automated retry with full network outage', () => {
-  let middleware: TestRetryMetricsMiddleware;
   let testMetricsCollector: TestRetryMetricsCollector;
-  let cacheName: string;
-  let credentialProvider: MomentoLocalProvider;
 
   beforeAll(() => {
     testMetricsCollector = new TestRetryMetricsCollector();
-    credentialProvider = new MomentoLocalProvider();
   });
-
-  beforeEach(async () => {
-    cacheName = v4();
-    middleware = new TestRetryMetricsMiddleware(
-      new DefaultMomentoLoggerFactory().getLogger('TestRetryMetricsMiddleware'),
-      testMetricsCollector,
-      v4()
-    );
-    const cacheClient = await CacheClient.create({
-      configuration: Configurations.Laptop.v1(),
-      credentialProvider: credentialProvider,
-      defaultTtlSeconds: 60,
-    });
-    await cacheClient.createCache(cacheName);
-  });
-
-  const createCacheClient = async (
-    configFn: (config: Configuration) => Configuration
-  ) => {
-    return await CacheClient.create({
-      configuration: configFn(
-        Configurations.Laptop.v1().withMiddlewares([middleware])
-      ),
-      credentialProvider: credentialProvider,
-      defaultTtlSeconds: 60,
-    });
-  };
 
   it('should make max 3 attempts for retry eligible api for fixed count strategy', async () => {
-    const cacheClient = await createCacheClient(config => config);
-    await cacheClient.get(cacheName, 'key');
-    const noOfRetries = testMetricsCollector.getTotalRetryCount(
-      cacheName,
-      MomentoRPCMethod.Get
+    await WithCacheAndCacheClient(
+      config => config,
+      testMetricsCollector,
+      async (cacheClient, cacheName) => {
+        await cacheClient.get(cacheName, 'key');
+        const noOfRetries = testMetricsCollector.getTotalRetryCount(
+          cacheName,
+          MomentoRPCMethod.Get
+        );
+        expect(noOfRetries).toBe(3);
+      }
     );
-    expect(noOfRetries).toBe(3);
   });
 
   it('should make 0 attempts for retry non-eligible api for fixed count strategy', async () => {
-    const cacheClient = await createCacheClient(config => config);
-    await cacheClient.increment(cacheName, 'key', 1);
-    const noOfRetries = testMetricsCollector.getTotalRetryCount(
-      cacheName,
-      MomentoRPCMethod.Increment
+    await WithCacheAndCacheClient(
+      config => config,
+      testMetricsCollector,
+      async (cacheClient, cacheName) => {
+        await cacheClient.increment(cacheName, 'key', 1);
+        const noOfRetries = testMetricsCollector.getTotalRetryCount(
+          cacheName,
+          MomentoRPCMethod.Increment
+        );
+        expect(noOfRetries).toBe(0);
+      }
     );
-    expect(noOfRetries).toBe(0);
   });
 
   it('should make maximum retry attempts for eligible API with fixed timeout strategy', async () => {
@@ -80,21 +54,25 @@ describe('Automated retry with full network outage', () => {
       eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
     });
 
-    const cacheClient = await createCacheClient(config =>
-      config
-        .withRetryStrategy(retryStrategy)
-        .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS)
+    await WithCacheAndCacheClient(
+      config =>
+        config
+          .withRetryStrategy(retryStrategy)
+          .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS),
+      testMetricsCollector,
+      async (cacheClient, cacheName) => {
+        await cacheClient.get(cacheName, 'key');
+        const expectedRetryCount = Math.floor(
+          CLIENT_TIMEOUT_MILLIS / RETRY_DELAY_MILLIS
+        );
+        const actualRetryCount = testMetricsCollector.getTotalRetryCount(
+          cacheName,
+          MomentoRPCMethod.Get
+        );
+        expect(actualRetryCount).toBeGreaterThanOrEqual(expectedRetryCount - 1);
+        expect(actualRetryCount).toBeLessThanOrEqual(expectedRetryCount);
+      }
     );
-    await cacheClient.get(cacheName, 'key');
-    const expectedRetryCount = Math.floor(
-      CLIENT_TIMEOUT_MILLIS / RETRY_DELAY_MILLIS
-    );
-    const actualRetryCount = testMetricsCollector.getTotalRetryCount(
-      cacheName,
-      MomentoRPCMethod.Get
-    );
-    expect(actualRetryCount).toBeGreaterThanOrEqual(expectedRetryCount - 1);
-    expect(actualRetryCount).toBeLessThanOrEqual(expectedRetryCount);
   });
 
   it('should make 0 attempts for retry non-eligible api for fixed timeout strategy', async () => {
@@ -107,16 +85,20 @@ describe('Automated retry with full network outage', () => {
       eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
     });
 
-    const cacheClient = await createCacheClient(config =>
-      config
-        .withRetryStrategy(retryStrategy)
-        .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS)
+    await WithCacheAndCacheClient(
+      config =>
+        config
+          .withRetryStrategy(retryStrategy)
+          .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS),
+      testMetricsCollector,
+      async (cacheClient, cacheName) => {
+        await cacheClient.increment(cacheName, 'key', 1);
+        const noOfRetries = testMetricsCollector.getTotalRetryCount(
+          cacheName,
+          MomentoRPCMethod.Increment
+        );
+        expect(noOfRetries).toBe(0);
+      }
     );
-    await cacheClient.increment(cacheName, 'key', 1);
-    const noOfRetries = testMetricsCollector.getTotalRetryCount(
-      cacheName,
-      MomentoRPCMethod.Increment
-    );
-    expect(noOfRetries).toBe(0);
   });
 });
