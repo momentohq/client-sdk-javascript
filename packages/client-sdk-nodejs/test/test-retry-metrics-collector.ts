@@ -1,34 +1,4 @@
-export enum MomentoRPCMethod {
-  Get = 'get',
-  Set = 'set',
-  Delete = 'delete',
-  GetBatch = 'getBatch',
-  SetBatch = 'setBatch',
-  KeysExist = 'keysExist',
-  ItemGetTtl = 'itemGetTtl',
-  ItemGetType = 'itemGetType',
-  DictionaryGet = 'dictionaryGet',
-  DictionaryFetch = 'dictionaryFetch',
-  DictionarySet = 'dictionarySet',
-  DictionaryDelete = 'dictionaryDelete',
-  DictionaryLength = 'dictionaryLength',
-  SetFetch = 'setFetch',
-  SetSample = 'setSample',
-  SetUnion = 'setUnion',
-  SetDifference = 'setDifference',
-  SetContains = 'setContains',
-  SetLength = 'setLength',
-  ListRemove = 'listRemove',
-  ListFetch = 'listFetch',
-  ListLength = 'listLength',
-  SortedSetPut = 'sortedSetPut',
-  SortedSetFetch = 'sortedSetFetch',
-  SortedSetGetScore = 'sortedSetGetScore',
-  SortedSetRemove = 'sortedSetRemove',
-  SortedSetGetRank = 'sortedSetGetRank',
-  SortedSetLength = 'sortedSetLength',
-  SortedSetLengthByScore = 'sortedSetLengthByScore',
-}
+import {MomentoRPCMethod} from './momento-rpc-method';
 
 export class TestRetryMetricsCollector {
   // Data structure to store timestamps: cacheName -> requestName -> [timestamps]
@@ -64,7 +34,7 @@ export class TestRetryMetricsCollector {
    * @param requestName - The name of the request.
    * @returns The total number of retries.
    */
-  getTotalRetryCount(cacheName: string, requestName: string): number {
+  getTotalRetryCount(cacheName: string, requestName: MomentoRPCMethod): number {
     const timestamps = this.data[cacheName]?.[requestName] ?? [];
     return timestamps.length;
   }
@@ -77,7 +47,7 @@ export class TestRetryMetricsCollector {
    */
   getAverageTimeBetweenRetries(
     cacheName: string,
-    requestName: string
+    requestName: MomentoRPCMethod
   ): number | null {
     const timestamps = this.data[cacheName]?.[requestName] ?? [];
     if (timestamps.length < 2) {
@@ -99,7 +69,7 @@ export class TestRetryMetricsCollector {
    * Retrieves all collected metrics for debugging or analysis.
    * @returns The complete data structure with all recorded metrics.
    */
-  getAllMetrics(): Record<string, Record<string, number[]>> {
+  getAllMetrics(): Record<string, Record<MomentoRPCMethod, number[]>> {
     return this.data;
   }
 }
