@@ -35,7 +35,7 @@ export class FixedCountRetryStrategy implements RetryStrategy {
       // null means do not retry
       return null;
     }
-    if (props.attemptNumber > this.maxAttempts) {
+    if (props.attemptNumber >= this.maxAttempts) {
       this.logger.debug(`Exceeded max attempt count (${this.maxAttempts})`);
       // null means do not retry
       return null;

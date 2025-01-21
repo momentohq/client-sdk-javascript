@@ -1,5 +1,5 @@
-import {TestRetryMetricsCollector} from '../test-retry-metrics-collector';
 import {MomentoRPCMethod} from '../momento-rpc-method';
+import {TestRetryMetricsCollector} from '../test-retry-metrics-collector';
 
 describe('TestRetryMetricsCollector', () => {
   let metricsCollector: TestRetryMetricsCollector;
@@ -20,7 +20,7 @@ describe('TestRetryMetricsCollector', () => {
       MomentoRPCMethod.Get
     );
 
-    expect(retryCount).toBe(1);
+    expect(retryCount).toBe(0);
   });
 
   test('should calculate average time between retries', () => {
@@ -37,14 +37,12 @@ describe('TestRetryMetricsCollector', () => {
   });
 
   test('should return null for average time when there are no retries', () => {
-    metricsCollector.addTimestamp('myCache', MomentoRPCMethod.Get, 1673000000);
-
     const avgTime = metricsCollector.getAverageTimeBetweenRetries(
       'myCache',
       MomentoRPCMethod.Get
     );
 
-    expect(avgTime).toBeNull();
+    expect(avgTime).toBe(0);
   });
 
   test('should handle multiple caches and requests', () => {
@@ -70,8 +68,8 @@ describe('TestRetryMetricsCollector', () => {
       MomentoRPCMethod.Set
     );
 
-    expect(retryCountCache1).toBe(2);
-    expect(retryCountCache2).toBe(2);
+    expect(retryCountCache1).toBe(1);
+    expect(retryCountCache2).toBe(1);
     expect(avgTimeCache1).toBe(10);
     expect(avgTimeCache2).toBe(10);
   });

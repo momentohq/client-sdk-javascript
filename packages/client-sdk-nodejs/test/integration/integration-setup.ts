@@ -8,9 +8,11 @@ import {
   AuthClient,
   CacheClient,
   CollectionTtl,
+  Configuration,
   Configurations,
   CreateCache,
   CredentialProvider,
+  DefaultMomentoLoggerFactory,
   DeleteCache,
   LeaderboardConfigurations,
   MomentoErrorCode,
@@ -24,6 +26,9 @@ import {
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {CacheClientAllProps} from '../../src/internal/cache-client-all-props';
+import {TestRetryMetricsMiddleware} from '../test-retry-metrics-middleware';
+import {v4} from 'uuid';
+import {TestRetryMetricsCollector} from '../test-retry-metrics-collector';
 
 export const deleteCacheIfExists = async (
   momento: CacheClient,
@@ -49,6 +54,30 @@ export async function WithCache(
   } finally {
     await deleteCacheIfExists(client, cacheName);
   }
+}
+
+export const momentoLocalProvider = new MomentoLocalProvider();
+
+export async function WithCacheAndCacheClient(
+  configFn: (config: Configuration) => Configuration,
+  testMetricsCollector: TestRetryMetricsCollector,
+  testCallback: (cacheClient: CacheClient, cacheName: string) => Promise<void>
+) {
+  const cacheName = testCacheName();
+  const testMiddleware = new TestRetryMetricsMiddleware(
+    new DefaultMomentoLoggerFactory().getLogger('TestRetryMetricsMiddleware'),
+    testMetricsCollector,
+    v4()
+  );
+  const cacheClient = await CacheClient.create({
+    configuration: configFn(
+      Configurations.Laptop.v1().withMiddlewares([testMiddleware])
+    ),
+    credentialProvider: momentoLocalProvider,
+    defaultTtlSeconds: 60,
+  });
+  await cacheClient.createCache(cacheName);
+  await testCallback(cacheClient, cacheName);
 }
 
 let _credsProvider: CredentialProvider | undefined = undefined;

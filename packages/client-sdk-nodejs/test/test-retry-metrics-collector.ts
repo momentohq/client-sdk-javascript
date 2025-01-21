@@ -19,12 +19,8 @@ export class TestRetryMetricsCollector {
     requestName: MomentoRPCMethod,
     timestamp: number
   ): void {
-    if (!this.data[cacheName]) {
-      this.data[cacheName] = {};
-    }
-    if (!this.data[cacheName][requestName]) {
-      this.data[cacheName][requestName] = [];
-    }
+    this.data[cacheName] = this.data[cacheName] || {};
+    this.data[cacheName][requestName] = this.data[cacheName][requestName] || [];
     this.data[cacheName][requestName].push(timestamp);
   }
 
@@ -35,34 +31,32 @@ export class TestRetryMetricsCollector {
    * @returns The total number of retries.
    */
   getTotalRetryCount(cacheName: string, requestName: MomentoRPCMethod): number {
-    const timestamps = this.data[cacheName]?.[requestName] ?? [];
-    return timestamps.length;
+    const timestamps = this.data[cacheName]?.[requestName] || [];
+    // Number of retries is one less than the number of timestamps.
+    return Math.max(0, timestamps.length - 1);
   }
 
   /**
    * Calculates the average time between retries for a specific cache and request.
    * @param cacheName - The name of the cache.
    * @param requestName - The name of the request.
-   * @returns The average time in seconds, or null if there are no retries.
+   * @returns The average time in seconds, or `0` if there are no retries.
    */
   getAverageTimeBetweenRetries(
     cacheName: string,
     requestName: MomentoRPCMethod
-  ): number | null {
-    const timestamps = this.data[cacheName]?.[requestName] ?? [];
+  ): number {
+    const timestamps = this.data[cacheName]?.[requestName] || [];
     if (timestamps.length < 2) {
-      // No retries occurred.
-      return null;
+      return 0; // No retries occurred.
     }
-    const intervals = [];
-    for (let i = 1; i < timestamps.length; i++) {
-      intervals.push(timestamps[i] - timestamps[i - 1]);
-    }
-    const totalInterval = intervals.reduce(
-      (sum, interval) => sum + interval,
-      0
-    );
-    return totalInterval / intervals.length;
+    const totalInterval = timestamps
+      .slice(1)
+      .reduce(
+        (sum, timestamp, index) => sum + (timestamp - timestamps[index]),
+        0
+      );
+    return totalInterval / (timestamps.length - 1);
   }
 
   /**

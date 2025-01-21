@@ -12,14 +12,17 @@ export class TestMetricsMiddlewareRequestHandler
 {
   private readonly logger: MomentoLogger;
   private readonly testMetricsCollector: TestRetryMetricsCollector;
+  private readonly requestId: string;
   private cacheName: string | null = null;
 
   constructor(
     logger: MomentoLogger,
-    testMetricsCollector: TestRetryMetricsCollector
+    testMetricsCollector: TestRetryMetricsCollector,
+    requestId: string
   ) {
     this.logger = logger;
     this.testMetricsCollector = testMetricsCollector;
+    this.requestId = requestId;
   }
 
   onRequestBody(request: MiddlewareMessage): Promise<MiddlewareMessage> {
@@ -41,6 +44,7 @@ export class TestMetricsMiddlewareRequestHandler
   onRequestMetadata(metadata: MiddlewareMetadata): Promise<MiddlewareMetadata> {
     const grpcMetadata = metadata._grpcMetadata;
     const cacheName = grpcMetadata.get('cache');
+    grpcMetadata.set('request-id', this.requestId);
     if (cacheName && cacheName.length > 0) {
       this.cacheName = cacheName[0].toString();
     } else {
@@ -69,19 +73,25 @@ export class TestMetricsMiddlewareRequestHandler
 export class TestRetryMetricsMiddleware implements Middleware {
   private readonly logger: MomentoLogger;
   private readonly testMetricsCollector: TestRetryMetricsCollector;
+  private readonly requestId: string;
+  shouldLoadLate?: boolean;
 
   constructor(
     logger: MomentoLogger,
-    testMetricsCollector: TestRetryMetricsCollector
+    testMetricsCollector: TestRetryMetricsCollector,
+    requestId: string
   ) {
     this.logger = logger;
     this.testMetricsCollector = testMetricsCollector;
+    this.requestId = requestId;
+    this.shouldLoadLate = true;
   }
 
   onNewRequest(): MiddlewareRequestHandler {
     return new TestMetricsMiddlewareRequestHandler(
       this.logger,
-      this.testMetricsCollector
+      this.testMetricsCollector,
+      this.requestId
     );
   }
 }
