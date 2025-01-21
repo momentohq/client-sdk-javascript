@@ -74,6 +74,7 @@ export class TestRetryMetricsMiddleware implements Middleware {
   private readonly logger: MomentoLogger;
   private readonly testMetricsCollector: TestRetryMetricsCollector;
   private readonly requestId: string;
+  shouldLoadLate?: boolean;
 
   constructor(
     logger: MomentoLogger,
@@ -83,6 +84,7 @@ export class TestRetryMetricsMiddleware implements Middleware {
     this.logger = logger;
     this.testMetricsCollector = testMetricsCollector;
     this.requestId = requestId;
+    this.shouldLoadLate = true;
   }
 
   onNewRequest(): MiddlewareRequestHandler {
@@ -91,9 +93,5 @@ export class TestRetryMetricsMiddleware implements Middleware {
       this.testMetricsCollector,
       this.requestId
     );
-  }
-
-  shouldLoadLate(): boolean {
-    return true;
   }
 }

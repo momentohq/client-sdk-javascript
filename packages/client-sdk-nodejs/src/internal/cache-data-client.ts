@@ -4143,20 +4143,25 @@ export class CacheDataClient implements IDataClient {
     middlewares: Middleware[],
     middlewareRequestContext: MiddlewareRequestHandlerContext
   ): Interceptor[] {
-    const lateLoadMiddlewares = middlewares.filter(
-      middleware => middleware.shouldLoadLate && middleware.shouldLoadLate()
-    );
-    const immediateMiddlewares = middlewares.filter(
-      middleware => !middleware.shouldLoadLate
-    );
+    const groupMiddlewares = (isLateLoad: boolean) =>
+      middlewares.filter(
+        middleware => (middleware.shouldLoadLate ?? false) === isLateLoad
+      );
 
-    const interceptors = [
+    const createMiddlewareInterceptor = (middlewareGroup: Middleware[]) =>
       middlewaresInterceptor(
         loggerFactory,
-        immediateMiddlewares,
+        middlewareGroup,
         middlewareRequestContext,
         this.clientWrapper.getClient()
-      ),
+      );
+
+    // Separate middlewares into immediate and late-load groups
+    const immediateMiddlewares = groupMiddlewares(false);
+    const lateLoadMiddlewares = groupMiddlewares(true);
+
+    const interceptors: Interceptor[] = [
+      createMiddlewareInterceptor(immediateMiddlewares),
       HeaderInterceptor.createHeadersInterceptor(headers),
       RetryInterceptor.createRetryInterceptor({
         clientName: 'CacheDataClient',
@@ -4167,14 +4172,7 @@ export class CacheDataClient implements IDataClient {
     ];
 
     if (lateLoadMiddlewares.length > 0) {
-      interceptors.push(
-        middlewaresInterceptor(
-          loggerFactory,
-          lateLoadMiddlewares,
-          middlewareRequestContext,
-          this.clientWrapper.getClient()
-        )
-      );
+      interceptors.push(createMiddlewareInterceptor(lateLoadMiddlewares));
     }
 
     return interceptors;

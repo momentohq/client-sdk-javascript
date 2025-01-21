@@ -92,5 +92,5 @@ export interface Middleware {
   ): MiddlewareRequestHandler;
   init?(): void;
   close?(): void;
-  shouldLoadLate?(): boolean;
+  shouldLoadLate?: boolean;
 }
