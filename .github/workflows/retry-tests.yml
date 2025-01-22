@@ -1,0 +1,48 @@
+name: Retry tests
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    services:
+      momento-local-1:
+        image: gomomento/momento-local
+        ports:
+          - 8080:8080
+        options: >
+          --return-error unavailable --error-rpcs get
+      momento-local-2:
+        image: gomomento/momento-local
+        ports:
+          - 8081:8080
+        options: >
+          --return-error unavailable --error-rpcs get --error-count 2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Build and test with Momento Local 1
+        env:
+          TEST_URL: http://localhost:8080
+        run: |
+          echo "Running tests against Momento Local 1 (http://localhost:8080)"
+          chmod +x ./scripts/build-and-test-full-network-outage-retry.sh
+          ./scripts/build-and-test-full-network-outage-retry.sh "client-sdk-nodejs"
+
+      - name: Build and test with Momento Local 2
+        env:
+          TEST_URL: http://localhost:8081
+        run: |
+          echo "Running tests against Momento Local 2 (http://localhost:8081)"
+          chmod +x ./scripts/build-and-test-full-network-outage-retry.sh
+          ./scripts/build-and-test-full-network-outage-retry.sh "client-sdk-nodejs"
