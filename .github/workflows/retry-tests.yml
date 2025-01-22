@@ -40,6 +40,9 @@ jobs:
         run: |
           docker run -d --name momento-local-1 -p 8080:8080 gomomento/momento-local
 
+      - name: Set script permissions
+        run: chmod +x ./scripts/build-and-test-package-retry.sh
+        
       - name: Build and test with Momento Local 1
         env:
           TEST_URL: http://localhost:8080
