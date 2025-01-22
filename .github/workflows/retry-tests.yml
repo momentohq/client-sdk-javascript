@@ -13,15 +13,17 @@ jobs:
         ports:
           - 8080:8080
         options: >
-          --entrypoint "" --return-error unavailable --error-rpcs get
+          --entrypoint /momento-local
+          --return-error unavailable --error-rpcs get
 
       momento-local-2:
         image: gomomento/momento-local
         ports:
           - 8081:8080
         options: >
-          --entrypoint "" --return-error unavailable --error-rpcs get --error-count 2
-    
+          --entrypoint /momento-local
+          --return-error unavailable --error-rpcs get --error-count 2
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
