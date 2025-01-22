@@ -25,6 +25,8 @@ jobs:
   test-momento-local-1:
     needs: verify-user-permissions
     runs-on: ubuntu-latest
+    env:
+      MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
