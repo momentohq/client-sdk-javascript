@@ -35,13 +35,9 @@ jobs:
 
   test-momento-local-2:
     runs-on: ubuntu-latest
-    env:
-      MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install Node
         uses: actions/setup-node@v3
