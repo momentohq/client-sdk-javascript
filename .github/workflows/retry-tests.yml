@@ -27,39 +27,39 @@ jobs:
           TEST_URL: http://localhost:8080
         run: |
           node -v
-          ./scripts/build-and-test-package-full-network-outage-retry.sh "client-sdk-nodejs"
+          ./scripts/build-and-test-package-retry.sh
 
       - name: Clean up Docker Container
         run: docker rm -f momento-local-1 || true
 
-  test-momento-local-2:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Install Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Start Momento Local 2
-        run: |
-          docker run -d \
-            --name momento-local-2 \
-            -p 8081:8080 \
-            gomomento/momento-local \
-            --entrypoint /momento-local \
-            --return-error unavailable --error-rpcs get --error-count 2
-
-      - name: Build and test with Momento Local 2
-        env:
-          TEST_URL: http://localhost:8081
-        run: |
-          node -v
-          ./scripts/build-and-test-package-temporary-network-outage-retry.sh "client-sdk-nodejs"
-
-      - name: Clean up Docker Container
-        run: docker rm -f momento-local-2 || true
+#  test-momento-local-2:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#        with:
+#          ref: ${{ github.event.pull_request.head.sha }}
+#
+#      - name: Install Node
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: 18
+#
+#      - name: Start Momento Local 2
+#        run: |
+#          docker run -d \
+#            --name momento-local-2 \
+#            -p 8081:8080 \
+#            gomomento/momento-local \
+#            --entrypoint /momento-local \
+#            --return-error unavailable --error-rpcs get --error-count 2
+#
+#      - name: Build and test with Momento Local 2
+#        env:
+#          TEST_URL: http://localhost:8081
+#        run: |
+#          node -v
+#          ./scripts/build-and-test-package-temporary-network-outage-retry.sh "client-sdk-nodejs"
+#
+#      - name: Clean up Docker Container
+#        run: docker rm -f momento-local-2 || true
