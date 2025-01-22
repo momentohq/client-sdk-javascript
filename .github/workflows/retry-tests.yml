@@ -42,7 +42,7 @@ jobs:
 
       - name: Set script permissions
         run: chmod +x ./scripts/build-and-test-package-retry.sh
-        
+
       - name: Build and test with Momento Local 1
         env:
           TEST_URL: http://localhost:8080
