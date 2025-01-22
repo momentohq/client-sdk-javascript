@@ -38,7 +38,7 @@ jobs:
 
       - name: Start Momento Local 1
         run: |
-          docker run -d --name momento-local-1 -p 8080:8080 gomomento/momento-local
+          docker run -d -p 8080:8080 gomomento/momento-local --return-error unavailable --error-rpcs get
 
       - name: Set script permissions
         run: chmod +x ./scripts/build-and-test-package-retry.sh
