@@ -26,9 +26,8 @@ jobs:
         env:
           TEST_URL: http://localhost:8080
         run: |
-          echo "Running tests against Momento Local 1 (http://localhost:8080)"
-          chmod +x ./scripts/build-and-test-full-network-outage-retry.sh
-          ./scripts/build-and-test-full-network-outage-retry.sh "client-sdk-nodejs"
+          node -v
+          ./scripts/build-and-test-package-full-network-outage-retry.sh "client-sdk-nodejs"
 
       - name: Clean up Docker Container
         run: docker rm -f momento-local-1 || true
@@ -59,9 +58,8 @@ jobs:
         env:
           TEST_URL: http://localhost:8081
         run: |
-          echo "Running tests against Momento Local 2 (http://localhost:8081)"
-          chmod +x ./scripts/build-and-test-full-network-outage-retry.sh
-          ./scripts/build-and-test-full-network-outage-retry.sh "client-sdk-nodejs"
+          node -v
+          ./scripts/build-and-test-package-temporary-network-outage-retry.sh "client-sdk-nodejs"
 
       - name: Clean up Docker Container
         run: docker rm -f momento-local-2 || true
