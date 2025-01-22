@@ -56,12 +56,13 @@ export async function WithCache(
   }
 }
 
-export const momentoLocalProvider = new MomentoLocalProvider();
+export let momentoLocalProvider = new MomentoLocalProvider();
 
 export async function WithCacheAndCacheClient(
   configFn: (config: Configuration) => Configuration,
   testMetricsCollector: TestRetryMetricsCollector,
-  testCallback: (cacheClient: CacheClient, cacheName: string) => Promise<void>
+  testCallback: (cacheClient: CacheClient, cacheName: string) => Promise<void>,
+  connectionPort?: number
 ) {
   const cacheName = testCacheName();
   const testMiddleware = new TestRetryMetricsMiddleware(
@@ -69,6 +70,11 @@ export async function WithCacheAndCacheClient(
     testMetricsCollector,
     v4()
   );
+  if (connectionPort) {
+    momentoLocalProvider = new MomentoLocalProvider({
+      port: connectionPort,
+    });
+  }
   const cacheClient = await CacheClient.create({
     configuration: configFn(
       Configurations.Laptop.v1().withMiddlewares([testMiddleware])
