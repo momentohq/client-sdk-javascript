@@ -5,7 +5,12 @@ set -e
 
 ROOT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )"/.. &> /dev/null && pwd )
 
-echo "Building and testing package: ${1}"
+echo "building and testing JS SDK with full network outage"
+
+${ROOT_DIR}/scripts/build-package.sh "core"
+${ROOT_DIR}/scripts/build-package.sh "common-integration-tests"
+
+echo "building and testing retry with full network outage"
 echo "Target URL for tests: ${TEST_URL}"
 
 ${ROOT_DIR}/scripts/build-package.sh ${1}
@@ -14,52 +19,3 @@ pushd ${ROOT_DIR}/packages/${1}
     npm run unit-test
     TEST_URL=${TEST_URL} npm run integration-test-retry-full-network-outage
 popd
-
-
-
-
-##!/bin/bash
-#
-#set -x
-#set -e
-#
-#ROOT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )"/.. &> /dev/null && pwd )
-#
-#echo "building and testing package: ${1}"
-#
-#${ROOT_DIR}/scripts/build-package.sh ${1}
-#
-#pushd ${ROOT_DIR}/packages/${1}
-#    npm run unit-test
-#    npm run integration-test-retry-full-network-outage
-#popd
-
-
-
-##!/bin/bash
-#
-#set -x
-#set -e
-#
-#ROOT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )"/.. &> /dev/null && pwd )
-#
-#echo "Building and testing package: ${1}"
-#
-## Start the Docker container in the background
-#DOCKER_CONTAINER_NAME="momento-local-test"
-#docker run --name ${DOCKER_CONTAINER_NAME} -d -p 8080:8080 gomomento/momento-local \
-#    --return-error unavailable --error-rpcs get
-#
-## Ensure the container is stopped when the script exits
-#function cleanup {
-#    echo "Stopping and removing Docker container..."
-#    docker stop ${DOCKER_CONTAINER_NAME}
-#    docker rm ${DOCKER_CONTAINER_NAME}
-#}
-#trap cleanup EXIT
-#
-#${ROOT_DIR}/scripts/build-package.sh ${1}
-#
-#pushd ${ROOT_DIR}/packages/${1}
-#    npm run integration-test-retry-full-network-outage
-#popd
