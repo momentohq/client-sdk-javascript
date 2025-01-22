@@ -13,14 +13,14 @@ jobs:
         ports:
           - 8080:8080
         options: >
-          --entrypoint ["/bin/sh", "-c", "--return-error unavailable --error-rpcs get"]
+          -- --return-error unavailable --error-rpcs get
 
       momento-local-2:
         image: gomomento/momento-local
         ports:
           - 8081:8080
         options: >
-          --entrypoint ["/bin/sh", "-c", "--return-error unavailable --error-rpcs get --error-count 2"]
+          -- --return-error unavailable --error-rpcs get --error-count 2
 
     steps:
       - name: Checkout code
