@@ -25,7 +25,7 @@ jobs:
 
       - name: Build and test with Momento Local 1
         env:
-          TEST_URL: http://localhost:8080
+          MOMENTO_PORT: 8080
         run: |
           node -v
           ./scripts/build-and-test-package-full-network-outage-retry-tests.sh
@@ -53,7 +53,7 @@ jobs:
 
       - name: Build and test with Momento Local 2
         env:
-          TEST_URL: http://localhost:8081
+            MOMENTO_PORT: 8081
         run: |
           node -v
           ./scripts/build-and-test-package-temporary-network-outage-retry-tests.sh

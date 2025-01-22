@@ -26,8 +26,7 @@ describe('Automated retry with temporary network outage', () => {
         );
         expect(noOfRetries).toBeGreaterThan(1);
         expect(noOfRetries).toBeLessThanOrEqual(3);
-      },
-      8081
+      }
     );
   });
 
@@ -70,8 +69,7 @@ describe('Automated retry with temporary network outage', () => {
         expect(averageDelayBetweenResponses).toBeLessThanOrEqual(
           CLIENT_TIMEOUT_MILLIS
         );
-      },
-      8081
+      }
     );
   });
 });
