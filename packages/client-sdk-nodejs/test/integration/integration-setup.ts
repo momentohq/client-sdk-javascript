@@ -29,6 +29,7 @@ import {CacheClientAllProps} from '../../src/internal/cache-client-all-props';
 import {TestRetryMetricsMiddleware} from '../test-retry-metrics-middleware';
 import {v4} from 'uuid';
 import {TestRetryMetricsCollector} from '../test-retry-metrics-collector';
+import {MomentoLocalProviderProps} from '@gomomento/sdk-core/dist/src/auth';
 
 export const deleteCacheIfExists = async (
   momento: CacheClient,
@@ -56,8 +57,6 @@ export async function WithCache(
   }
 }
 
-export const momentoLocalProvider = new MomentoLocalProvider();
-
 export async function WithCacheAndCacheClient(
   configFn: (config: Configuration) => Configuration,
   testMetricsCollector: TestRetryMetricsCollector,
@@ -69,6 +68,16 @@ export async function WithCacheAndCacheClient(
     testMetricsCollector,
     v4()
   );
+
+  const momentoLocalProviderProps: MomentoLocalProviderProps = {
+    hostname: process.env.MOMENTO_HOSTNAME || '127.0.0.1',
+    port: parseInt(process.env.MOMENTO_PORT || '8080'),
+  };
+
+  const momentoLocalProvider = new MomentoLocalProvider(
+    momentoLocalProviderProps
+  );
+
   const cacheClient = await CacheClient.create({
     configuration: configFn(
       Configurations.Laptop.v1().withMiddlewares([testMiddleware])
