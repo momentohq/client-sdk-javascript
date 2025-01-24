@@ -4143,13 +4143,25 @@ export class CacheDataClient implements IDataClient {
     middlewares: Middleware[],
     middlewareRequestContext: MiddlewareRequestHandlerContext
   ): Interceptor[] {
-    return [
+    const groupMiddlewares = (isLateLoad: boolean) =>
+      middlewares.filter(
+        middleware => (middleware.shouldLoadLate ?? false) === isLateLoad
+      );
+
+    const createMiddlewareInterceptor = (middlewareGroup: Middleware[]) =>
       middlewaresInterceptor(
         loggerFactory,
-        middlewares,
+        middlewareGroup,
         middlewareRequestContext,
         this.clientWrapper.getClient()
-      ),
+      );
+
+    // Separate middlewares into immediate and late-load groups
+    const immediateMiddlewares = groupMiddlewares(false);
+    const lateLoadMiddlewares = groupMiddlewares(true);
+
+    const interceptors: Interceptor[] = [
+      createMiddlewareInterceptor(immediateMiddlewares),
       HeaderInterceptor.createHeadersInterceptor(headers),
       RetryInterceptor.createRetryInterceptor({
         clientName: 'CacheDataClient',
@@ -4158,6 +4170,12 @@ export class CacheDataClient implements IDataClient {
         overallRequestTimeoutMs: this.requestTimeoutMs,
       }),
     ];
+
+    if (lateLoadMiddlewares.length > 0) {
+      interceptors.push(createMiddlewareInterceptor(lateLoadMiddlewares));
+    }
+
+    return interceptors;
   }
 
   // TODO https://github.com/momentohq/client-sdk-nodejs/issues/349

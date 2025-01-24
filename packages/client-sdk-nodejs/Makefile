@@ -1,4 +1,4 @@
-.PHONY: test-auth-service test-cache-service test-leaderboard-service test-storage-service test-topics-service test-http-service
+.PHONY: test-auth-service test-cache-service test-leaderboard-service test-storage-service test-topics-service test-http-service test-retry-service
 
 
 test-auth-service:
@@ -25,6 +25,13 @@ test-topics-service:
 	@echo "Testing topics service..."
 	@npm run integration-test-topics
 
+
 test-http-service:
 	@echo "Testing http service..."
 	@npm run integration-test-http
+
+
+test-retry-service:
+	@echo "Testing automated retry service..."
+	@npm run integration-test-retry
+

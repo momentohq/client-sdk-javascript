@@ -17,10 +17,11 @@ describe('TestRetryMetricsMiddleware', () => {
       debug: (message: string) => console.log(message),
       info: (message: string) => console.log(message),
     } as unknown as MomentoLogger;
-    middleware = new TestRetryMetricsMiddleware(
-      momentoLogger,
-      testMetricsCollector
-    );
+    middleware = new TestRetryMetricsMiddleware({
+      logger: momentoLogger,
+      testMetricsCollector,
+      requestId: v4(),
+    });
 
     // Create CacheClient with middleware enabled
     cacheClient = await CacheClient.create({

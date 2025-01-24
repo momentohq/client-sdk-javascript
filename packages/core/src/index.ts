@@ -151,6 +151,9 @@ export {
 
 export {
   ICacheClient,
+  DictionaryIncrementOptions,
+  DictionarySetFieldOptions,
+  DictionarySetFieldsOptions,
   SetOptions,
   SetIfNotExistsOptions,
   SetIfAbsentOptions,

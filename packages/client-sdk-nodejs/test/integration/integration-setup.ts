@@ -8,6 +8,7 @@ import {
   AuthClient,
   CacheClient,
   CollectionTtl,
+  Configuration,
   Configurations,
   CreateCache,
   CredentialProvider,
@@ -24,6 +25,11 @@ import {
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {CacheClientAllProps} from '../../src/internal/cache-client-all-props';
+import {
+  TestRetryMetricsMiddleware,
+  TestRetryMetricsMiddlewareArgs,
+} from '../test-retry-metrics-middleware';
+import {MomentoLocalProviderProps} from '@gomomento/sdk-core/dist/src/auth';
 
 export const deleteCacheIfExists = async (
   momento: CacheClient,
@@ -49,6 +55,33 @@ export async function WithCache(
   } finally {
     await deleteCacheIfExists(client, cacheName);
   }
+}
+
+export async function WithCacheAndCacheClient(
+  configFn: (config: Configuration) => Configuration,
+  testMetricsMiddlewareArgs: TestRetryMetricsMiddlewareArgs,
+  testCallback: (cacheClient: CacheClient, cacheName: string) => Promise<void>
+) {
+  const cacheName = testCacheName();
+  const momentoLocalProviderProps: MomentoLocalProviderProps = {
+    hostname: process.env.MOMENTO_HOSTNAME || '127.0.0.1',
+    port: parseInt(process.env.MOMENTO_PORT || '8080'),
+  };
+  const momentoLocalProvider = new MomentoLocalProvider(
+    momentoLocalProviderProps
+  );
+  const testMiddleware = new TestRetryMetricsMiddleware(
+    testMetricsMiddlewareArgs
+  );
+  const cacheClient = await CacheClient.create({
+    configuration: configFn(
+      Configurations.Laptop.v1().withMiddlewares([testMiddleware])
+    ),
+    credentialProvider: momentoLocalProvider,
+    defaultTtlSeconds: 60,
+  });
+  await cacheClient.createCache(cacheName);
+  await testCallback(cacheClient, cacheName);
 }
 
 let _credsProvider: CredentialProvider | undefined = undefined;
