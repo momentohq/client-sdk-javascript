@@ -6,24 +6,22 @@ import {
   MiddlewareStatus,
 } from '../src/config/middleware/middleware';
 import {MomentoRPCMethod} from './momento-rpc-method';
+import {Metadata} from '@grpc/grpc-js';
 
-export class TestMetricsMiddlewareRequestHandler
-  implements MiddlewareRequestHandler
-{
-  private readonly logger: MomentoLogger;
-  private readonly testMetricsCollector: TestRetryMetricsCollector;
-  private readonly requestId: string;
+class TestMetricsMiddlewareRequestHandler implements MiddlewareRequestHandler {
   private cacheName: string | null = null;
 
   constructor(
-    logger: MomentoLogger,
-    testMetricsCollector: TestRetryMetricsCollector,
-    requestId: string
-  ) {
-    this.logger = logger;
-    this.testMetricsCollector = testMetricsCollector;
-    this.requestId = requestId;
-  }
+    private readonly logger: MomentoLogger,
+    private readonly testMetricsCollector: TestRetryMetricsCollector,
+    private readonly requestId: string,
+    private readonly returnError?: string,
+    private readonly errorRpcList: string[] = [],
+    private readonly errorCount?: number,
+    private readonly delayRpcList: string[] = [],
+    private readonly delayMillis?: number,
+    private readonly delayCount?: number
+  ) {}
 
   onRequestBody(request: MiddlewareMessage): Promise<MiddlewareMessage> {
     const requestType = request.constructorName();
@@ -43,8 +41,34 @@ export class TestMetricsMiddlewareRequestHandler
 
   onRequestMetadata(metadata: MiddlewareMetadata): Promise<MiddlewareMetadata> {
     const grpcMetadata = metadata._grpcMetadata;
+    this.setGrpcMetadata(grpcMetadata, 'request-id', this.requestId);
+    this.setGrpcMetadata(grpcMetadata, 'return-error', this.returnError);
+    this.setGrpcMetadata(
+      grpcMetadata,
+      'error-rpcs',
+      this.errorRpcList.join(' ')
+    );
+    this.setGrpcMetadata(
+      grpcMetadata,
+      'delay-rpcs',
+      this.delayRpcList.join(' ')
+    );
+    this.setGrpcMetadata(
+      grpcMetadata,
+      'error-count',
+      this.errorCount?.toString()
+    );
+    this.setGrpcMetadata(
+      grpcMetadata,
+      'delay-ms',
+      this.delayMillis?.toString()
+    );
+    this.setGrpcMetadata(
+      grpcMetadata,
+      'delay-count',
+      this.delayCount?.toString()
+    );
     const cacheName = grpcMetadata.get('cache');
-    grpcMetadata.set('request-id', this.requestId);
     if (cacheName && cacheName.length > 0) {
       this.cacheName = cacheName[0].toString();
     } else {
@@ -68,30 +92,54 @@ export class TestMetricsMiddlewareRequestHandler
   onResponseStatus(status: MiddlewareStatus): Promise<MiddlewareStatus> {
     return Promise.resolve(status);
   }
+
+  private setGrpcMetadata(
+    metadata: Metadata,
+    key: string,
+    value?: string
+  ): void {
+    if (value) {
+      metadata.set(key, value);
+    }
+  }
 }
 
-export class TestRetryMetricsMiddleware implements Middleware {
-  private readonly logger: MomentoLogger;
-  private readonly testMetricsCollector: TestRetryMetricsCollector;
-  private readonly requestId: string;
+interface TestRetryMetricsMiddlewareArgs {
+  logger: MomentoLogger;
+  testMetricsCollector: TestRetryMetricsCollector;
+  requestId: string;
+  returnError?: string;
+  errorRpcList?: string[];
+  errorCount?: number;
+  delayRpcList?: string[];
+  delayMillis?: number;
+  delayCount?: number;
+}
+
+class TestRetryMetricsMiddleware implements Middleware {
   shouldLoadLate?: boolean;
 
-  constructor(
-    logger: MomentoLogger,
-    testMetricsCollector: TestRetryMetricsCollector,
-    requestId: string
-  ) {
-    this.logger = logger;
-    this.testMetricsCollector = testMetricsCollector;
-    this.requestId = requestId;
+  constructor(private readonly args: TestRetryMetricsMiddlewareArgs) {
     this.shouldLoadLate = true;
   }
 
   onNewRequest(): MiddlewareRequestHandler {
     return new TestMetricsMiddlewareRequestHandler(
-      this.logger,
-      this.testMetricsCollector,
-      this.requestId
+      this.args.logger,
+      this.args.testMetricsCollector,
+      this.args.requestId,
+      this.args.returnError,
+      this.args.errorRpcList,
+      this.args.errorCount,
+      this.args.delayRpcList,
+      this.args.delayMillis,
+      this.args.delayCount
     );
   }
 }
+
+export {
+  TestRetryMetricsMiddleware,
+  TestRetryMetricsMiddlewareArgs,
+  TestMetricsMiddlewareRequestHandler,
+};

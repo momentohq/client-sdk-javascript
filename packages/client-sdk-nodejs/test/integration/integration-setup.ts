@@ -12,7 +12,6 @@ import {
   Configurations,
   CreateCache,
   CredentialProvider,
-  DefaultMomentoLoggerFactory,
   DeleteCache,
   LeaderboardConfigurations,
   MomentoErrorCode,
@@ -26,9 +25,10 @@ import {
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {CacheClientAllProps} from '../../src/internal/cache-client-all-props';
-import {TestRetryMetricsMiddleware} from '../test-retry-metrics-middleware';
-import {v4} from 'uuid';
-import {TestRetryMetricsCollector} from '../test-retry-metrics-collector';
+import {
+  TestRetryMetricsMiddleware,
+  TestRetryMetricsMiddlewareArgs,
+} from '../test-retry-metrics-middleware';
 import {MomentoLocalProviderProps} from '@gomomento/sdk-core/dist/src/auth';
 
 export const deleteCacheIfExists = async (
@@ -59,25 +59,20 @@ export async function WithCache(
 
 export async function WithCacheAndCacheClient(
   configFn: (config: Configuration) => Configuration,
-  testMetricsCollector: TestRetryMetricsCollector,
+  testMetricsMiddlewareArgs: TestRetryMetricsMiddlewareArgs,
   testCallback: (cacheClient: CacheClient, cacheName: string) => Promise<void>
 ) {
   const cacheName = testCacheName();
-  const testMiddleware = new TestRetryMetricsMiddleware(
-    new DefaultMomentoLoggerFactory().getLogger('TestRetryMetricsMiddleware'),
-    testMetricsCollector,
-    v4()
-  );
-
   const momentoLocalProviderProps: MomentoLocalProviderProps = {
     hostname: process.env.MOMENTO_HOSTNAME || '127.0.0.1',
     port: parseInt(process.env.MOMENTO_PORT || '8080'),
   };
-
   const momentoLocalProvider = new MomentoLocalProvider(
     momentoLocalProviderProps
   );
-
+  const testMiddleware = new TestRetryMetricsMiddleware(
+    testMetricsMiddlewareArgs
+  );
   const cacheClient = await CacheClient.create({
     configuration: configFn(
       Configurations.Laptop.v1().withMiddlewares([testMiddleware])
