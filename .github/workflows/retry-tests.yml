@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 jobs:
-  test-momento-local-1:
+  test-momento-local:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -16,47 +16,19 @@ jobs:
         with:
           node-version: 18
 
-      - name: Start Momento Local 1
+      - name: Start Momento Local
         run: |
-          docker run -d -p 8080:8080 gomomento/momento-local --return-error unavailable --error-rpcs get
+          docker run -d -p 8080:8080 gomomento/momento-local
 
       - name: Set script permissions
-        run: chmod +x ./scripts/build-and-test-package-full-network-outage-retry-tests.sh
+        run: chmod +x ./scripts/build-and-test-package-retry-tests.sh
 
-      - name: Build and test with Momento Local 1
+      - name: Build and test with Momento Local
         env:
           MOMENTO_PORT: 8080
         run: |
           node -v
-          ./scripts/build-and-test-package-full-network-outage-retry-tests.sh
+          ./scripts/build-and-test-package-retry-tests.sh
 
       - name: Clean up Docker Container
-        run: docker rm -f momento-local-1 || true
-
-  test-momento-local-2:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Install Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Start Momento Local 2
-        run: |
-          docker run -d -p 8081:8080 gomomento/momento-local --return-error unavailable --error-rpcs get --error-count 2
-
-      - name: Set script permissions
-        run: chmod +x ./scripts/build-and-test-package-temporary-network-outage-retry-tests.sh
-
-      - name: Build and test with Momento Local 2
-        env:
-            MOMENTO_PORT: 8081
-        run: |
-          node -v
-          ./scripts/build-and-test-package-temporary-network-outage-retry-tests.sh
-
-      - name: Clean up Docker Container
-        run: docker rm -f momento-local-2 || true
+        run: docker rm -f momento-local || true

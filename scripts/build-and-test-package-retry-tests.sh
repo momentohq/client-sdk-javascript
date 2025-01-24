@@ -11,8 +11,8 @@ ${ROOT_DIR}/scripts/build-package.sh "core"
 ${ROOT_DIR}/scripts/build-package.sh "common-integration-tests"
 ${ROOT_DIR}/scripts/build-package.sh "client-sdk-nodejs"
 
-echo "building and testing retry with full network outage"
+echo "building and testing automated retries"
 
 pushd ${ROOT_DIR}/packages/client-sdk-nodejs
-    npm run integration-test-retry-temporary-network-outage
+    npm run integration-test-retry
 popd
