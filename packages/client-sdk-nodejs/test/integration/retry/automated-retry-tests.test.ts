@@ -1,4 +1,6 @@
 import {
+  CacheGetResponse,
+  CacheIncrementResponse,
   DefaultEligibilityStrategy,
   DefaultMomentoLoggerFactory,
   FixedTimeoutRetryStrategy,
@@ -34,7 +36,11 @@ describe('Automated retry with full network outage', () => {
       config => config,
       testMiddlewareArgs,
       async (cacheClient, cacheName) => {
-        await cacheClient.get(cacheName, 'key');
+        const getResponse = await cacheClient.get(cacheName, 'key');
+        expect(getResponse.type).toEqual(CacheGetResponse.Error);
+        if (getResponse.type === CacheGetResponse.Error) {
+          expect(getResponse.errorCode()).toEqual('SERVER_UNAVAILABLE');
+        }
         const noOfRetries = testMetricsCollector.getTotalRetryCount(
           cacheName,
           MomentoRPCMethod.Get
@@ -56,7 +62,12 @@ describe('Automated retry with full network outage', () => {
       config => config,
       testMiddlewareArgs,
       async (cacheClient, cacheName) => {
-        await cacheClient.increment(cacheName, 'key', 1);
+        const incrementResponse = await cacheClient.increment(
+          cacheName,
+          'key',
+          1
+        );
+        expect(incrementResponse.type).toEqual(CacheIncrementResponse.Success);
         const noOfRetries = testMetricsCollector.getTotalRetryCount(
           cacheName,
           MomentoRPCMethod.Increment
@@ -90,7 +101,11 @@ describe('Automated retry with full network outage', () => {
           .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS),
       testMiddlewareArgs,
       async (cacheClient, cacheName) => {
-        await cacheClient.get(cacheName, 'key');
+        const getResponse = await cacheClient.get(cacheName, 'key');
+        expect(getResponse.type).toEqual(CacheGetResponse.Error);
+        if (getResponse.type === CacheGetResponse.Error) {
+          expect(getResponse.errorCode()).toEqual('SERVER_UNAVAILABLE');
+        }
         const expectedRetryCount = Math.floor(
           CLIENT_TIMEOUT_MILLIS / RETRY_DELAY_MILLIS
         );
@@ -128,7 +143,12 @@ describe('Automated retry with full network outage', () => {
           .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS),
       testMiddlewareArgs,
       async (cacheClient, cacheName) => {
-        await cacheClient.increment(cacheName, 'key', 1);
+        const incrementResponse = await cacheClient.increment(
+          cacheName,
+          'key',
+          1
+        );
+        expect(incrementResponse.type).toEqual(CacheIncrementResponse.Success);
         const noOfRetries = testMetricsCollector.getTotalRetryCount(
           cacheName,
           MomentoRPCMethod.Increment
@@ -163,7 +183,8 @@ describe('Automated retry with temporary network outage', () => {
       config => config,
       testMiddlewareArgs,
       async (cacheClient, cacheName) => {
-        await cacheClient.get(cacheName, 'key');
+        const getResponse = await cacheClient.get(cacheName, 'key');
+        expect(getResponse.type).toEqual(CacheGetResponse.Miss); // Miss because we never set the key
         const noOfRetries = testMetricsCollector.getTotalRetryCount(
           cacheName,
           MomentoRPCMethod.Get
@@ -199,7 +220,8 @@ describe('Automated retry with temporary network outage', () => {
           .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS),
       testMiddlewareArgs,
       async (cacheClient, cacheName) => {
-        await cacheClient.get(cacheName, 'key');
+        const getResponse = await cacheClient.get(cacheName, 'key');
+        expect(getResponse.type).toEqual(CacheGetResponse.Miss); // Miss because we never set the key
         const noOfRetries = testMetricsCollector.getTotalRetryCount(
           cacheName,
           MomentoRPCMethod.Get
