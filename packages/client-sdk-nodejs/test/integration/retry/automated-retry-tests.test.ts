@@ -251,18 +251,19 @@ describe('Automated retry with temporary network outage', () => {
 describe('Automated retry with delay ms on fixed timeout strategy', () => {
   let testMetricsCollector: TestRetryMetricsCollector;
   let momentoLogger: MomentoLogger;
+  let loggerFactory: DefaultMomentoLoggerFactory;
+  const RETRY_DELAY_MILLIS = 1000;
+  const CLIENT_TIMEOUT_MILLIS = 5000;
 
   beforeAll(() => {
     testMetricsCollector = new TestRetryMetricsCollector();
     momentoLogger = new DefaultMomentoLoggerFactory().getLogger(
       'TestRetryMetricsMiddleware'
     );
+    loggerFactory = new DefaultMomentoLoggerFactory();
   });
 
   it('should get hit/miss response with no retries for fixed timeout strategy if delayMs < responseDataReceivedTimeoutMillis', async () => {
-    const RETRY_DELAY_MILLIS = 1000;
-    const CLIENT_TIMEOUT_MILLIS = 5000;
-    const loggerFactory = new DefaultMomentoLoggerFactory();
     const retryStrategy = new FixedTimeoutRetryStrategy({
       loggerFactory: loggerFactory,
       retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
@@ -295,9 +296,6 @@ describe('Automated retry with delay ms on fixed timeout strategy', () => {
   });
 
   it('should TIMEOUT_ERROR error with no retries for fixed timeout strategy if delayMs > responseDataReceivedTimeoutMillis', async () => {
-    const RETRY_DELAY_MILLIS = 1000;
-    const CLIENT_TIMEOUT_MILLIS = 5000;
-    const loggerFactory = new DefaultMomentoLoggerFactory();
     const retryStrategy = new FixedTimeoutRetryStrategy({
       loggerFactory: loggerFactory,
       retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
@@ -333,9 +331,6 @@ describe('Automated retry with delay ms on fixed timeout strategy', () => {
   });
 
   it('should get hit/miss response with retries for fixed timeout strategy if delayMs < responseDataReceivedTimeoutMillis', async () => {
-    const RETRY_DELAY_MILLIS = 1000;
-    const CLIENT_TIMEOUT_MILLIS = 5000;
-    const loggerFactory = new DefaultMomentoLoggerFactory();
     const retryStrategy = new FixedTimeoutRetryStrategy({
       loggerFactory: loggerFactory,
       retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
