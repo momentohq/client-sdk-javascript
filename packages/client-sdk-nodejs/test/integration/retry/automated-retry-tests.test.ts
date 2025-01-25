@@ -247,3 +247,127 @@ describe('Automated retry with temporary network outage', () => {
     );
   });
 });
+
+describe('Automated retry with delay ms on fixed timeout strategy', () => {
+  let testMetricsCollector: TestRetryMetricsCollector;
+  let momentoLogger: MomentoLogger;
+
+  beforeAll(() => {
+    testMetricsCollector = new TestRetryMetricsCollector();
+    momentoLogger = new DefaultMomentoLoggerFactory().getLogger(
+      'TestRetryMetricsMiddleware'
+    );
+  });
+
+  it('should get hit/miss response with no retries for fixed timeout strategy if delayMs < responseDataReceivedTimeoutMillis', async () => {
+    const RETRY_DELAY_MILLIS = 1000;
+    const CLIENT_TIMEOUT_MILLIS = 5000;
+    const loggerFactory = new DefaultMomentoLoggerFactory();
+    const retryStrategy = new FixedTimeoutRetryStrategy({
+      loggerFactory: loggerFactory,
+      retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
+      eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
+      responseDataReceivedTimeoutMillis: 1000,
+    });
+    const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+      logger: momentoLogger,
+      testMetricsCollector: testMetricsCollector,
+      requestId: v4(),
+      delayRpcList: ['get'],
+      delayMillis: 500,
+    };
+    await WithCacheAndCacheClient(
+      config =>
+        config
+          .withRetryStrategy(retryStrategy)
+          .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS),
+      testMiddlewareArgs,
+      async (cacheClient, cacheName) => {
+        const getResponse = await cacheClient.get(cacheName, 'key');
+        expect(getResponse.type).toEqual(CacheGetResponse.Miss); // Miss because we never set the key
+        const noOfRetries = testMetricsCollector.getTotalRetryCount(
+          cacheName,
+          MomentoRPCMethod.Get
+        );
+        expect(noOfRetries).toBe(0);
+      }
+    );
+  });
+
+  it('should TIMEOUT_ERROR error with no retries for fixed timeout strategy if delayMs > responseDataReceivedTimeoutMillis', async () => {
+    const RETRY_DELAY_MILLIS = 1000;
+    const CLIENT_TIMEOUT_MILLIS = 5000;
+    const loggerFactory = new DefaultMomentoLoggerFactory();
+    const retryStrategy = new FixedTimeoutRetryStrategy({
+      loggerFactory: loggerFactory,
+      retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
+      eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
+      responseDataReceivedTimeoutMillis: 1000,
+    });
+    const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+      logger: momentoLogger,
+      testMetricsCollector: testMetricsCollector,
+      requestId: v4(),
+      delayRpcList: ['get'],
+      delayMillis: 1500,
+    };
+    await WithCacheAndCacheClient(
+      config =>
+        config
+          .withRetryStrategy(retryStrategy)
+          .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS),
+      testMiddlewareArgs,
+      async (cacheClient, cacheName) => {
+        const getResponse = await cacheClient.get(cacheName, 'key');
+        expect(getResponse.type).toEqual(CacheGetResponse.Error);
+        if (getResponse.type === CacheGetResponse.Error) {
+          expect(getResponse.errorCode()).toEqual('TIMEOUT_ERROR');
+        }
+        const noOfRetries = testMetricsCollector.getTotalRetryCount(
+          cacheName,
+          MomentoRPCMethod.Get
+        );
+        expect(noOfRetries).toBe(0);
+      }
+    );
+  });
+
+  it('should get hit/miss response with retries for fixed timeout strategy if delayMs < responseDataReceivedTimeoutMillis', async () => {
+    const RETRY_DELAY_MILLIS = 1000;
+    const CLIENT_TIMEOUT_MILLIS = 5000;
+    const loggerFactory = new DefaultMomentoLoggerFactory();
+    const retryStrategy = new FixedTimeoutRetryStrategy({
+      loggerFactory: loggerFactory,
+      retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
+      eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
+      responseDataReceivedTimeoutMillis: 2000,
+    });
+    const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+      logger: momentoLogger,
+      testMetricsCollector: testMetricsCollector,
+      requestId: v4(),
+      errorRpcList: ['get'],
+      returnError: 'unavailable',
+      errorCount: 2,
+      delayRpcList: ['get'],
+      delayMillis: 500,
+      delayCount: 2,
+    };
+    await WithCacheAndCacheClient(
+      config =>
+        config
+          .withRetryStrategy(retryStrategy)
+          .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS),
+      testMiddlewareArgs,
+      async (cacheClient, cacheName) => {
+        const getResponse = await cacheClient.get(cacheName, 'key');
+        expect(getResponse.type).toEqual(CacheGetResponse.Miss); // Miss because we never set the key
+        const noOfRetries = testMetricsCollector.getTotalRetryCount(
+          cacheName,
+          MomentoRPCMethod.Get
+        );
+        expect(noOfRetries).toBe(2);
+      }
+    );
+  });
+});
