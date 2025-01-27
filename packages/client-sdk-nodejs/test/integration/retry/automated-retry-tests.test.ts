@@ -72,7 +72,7 @@ describe('Automated retry with full network outage', () => {
           'key',
           1
         );
-        expect(incrementResponse.type).toEqual(CacheIncrementResponse.Success);
+        expect(incrementResponse.type).toEqual(CacheIncrementResponse.Error);
         const noOfRetries = testMetricsCollector.getTotalRetryCount(
           cacheName,
           MomentoRPCMethod.Increment
@@ -155,7 +155,7 @@ describe('Automated retry with full network outage', () => {
           'key',
           1
         );
-        expect(incrementResponse.type).toEqual(CacheIncrementResponse.Success);
+        expect(incrementResponse.type).toEqual(CacheIncrementResponse.Error);
         const noOfRetries = testMetricsCollector.getTotalRetryCount(
           cacheName,
           MomentoRPCMethod.Increment
