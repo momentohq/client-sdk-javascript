@@ -1,4 +1,4 @@
-export enum MomentoRPCMethod {
+enum MomentoRPCMethod {
   Get = '_GetRequest',
   Set = '_SetRequest',
   Delete = '_DeleteRequest',
@@ -44,3 +44,31 @@ export enum MomentoRPCMethod {
   SortedSetLength = '_SortedSetLengthRequest',
   SortedSetLengthByScore = '_SortedSetLengthByScoreRequest',
 }
+
+class MomentoRPCMethodConverter {
+  private static readonly rpcMethodToMetadataMap: Record<string, string> =
+    Object.fromEntries(
+      Object.values(MomentoRPCMethod).map(method => [
+        method,
+        method
+          .replace(/^_/, '')
+          .replace(/Request$/, '')
+          .toLowerCase(),
+      ])
+    );
+
+  /**
+   * Converts a MomentoRPCMethod enum value to its corresponding metadata type.
+   * @param rpcMethod - The MomentoRPCMethod enum value.
+   * @returns The corresponding metadata type.
+   */
+  public static convert(rpcMethod: MomentoRPCMethod): string {
+    const metadataType = this.rpcMethodToMetadataMap[rpcMethod];
+    if (!metadataType) {
+      throw new Error(`Unsupported MomentoRPCMethod: ${rpcMethod}`);
+    }
+    return metadataType;
+  }
+}
+
+export {MomentoRPCMethod, MomentoRPCMethodConverter};

@@ -7,7 +7,10 @@ import {
   MomentoLogger,
 } from '../../../src';
 import {TestRetryMetricsCollector} from '../../test-retry-metrics-collector';
-import {MomentoRPCMethod} from '../../momento-rpc-method';
+import {
+  MomentoRPCMethod,
+  MomentoRPCMethodConverter,
+} from '../../momento-rpc-method';
 import {WithCacheAndCacheClient} from '../integration-setup';
 import {TestRetryMetricsMiddlewareArgs} from '../../test-retry-metrics-middleware';
 import {v4} from 'uuid';
@@ -29,7 +32,7 @@ describe('Automated retry with full network outage', () => {
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
       returnError: 'unavailable',
-      errorRpcList: ['get'],
+      errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
     };
 
     await WithCacheAndCacheClient(
@@ -56,7 +59,9 @@ describe('Automated retry with full network outage', () => {
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
       returnError: 'unavailable',
-      errorRpcList: ['get'],
+      errorRpcList: [
+        MomentoRPCMethodConverter.convert(MomentoRPCMethod.Increment),
+      ],
     };
     await WithCacheAndCacheClient(
       config => config,
@@ -72,7 +77,7 @@ describe('Automated retry with full network outage', () => {
           cacheName,
           MomentoRPCMethod.Increment
         );
-        expect(noOfRetries).toBe(0);
+        expect(noOfRetries).toBe(0); // Increment is not eligible for retry
       }
     );
   });
@@ -91,7 +96,7 @@ describe('Automated retry with full network outage', () => {
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
       returnError: 'unavailable',
-      errorRpcList: ['get'],
+      errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
     };
 
     await WithCacheAndCacheClient(
@@ -133,7 +138,9 @@ describe('Automated retry with full network outage', () => {
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
       returnError: 'unavailable',
-      errorRpcList: ['get'],
+      errorRpcList: [
+        MomentoRPCMethodConverter.convert(MomentoRPCMethod.Increment),
+      ],
     };
 
     await WithCacheAndCacheClient(
@@ -153,7 +160,7 @@ describe('Automated retry with full network outage', () => {
           cacheName,
           MomentoRPCMethod.Increment
         );
-        expect(noOfRetries).toBe(0);
+        expect(noOfRetries).toBe(0); // Increment is not eligible for retry
       }
     );
   });
@@ -176,7 +183,7 @@ describe('Automated retry with temporary network outage', () => {
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
       returnError: 'unavailable',
-      errorRpcList: ['get'],
+      errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
       errorCount: 2,
     };
     await WithCacheAndCacheClient(
@@ -209,7 +216,7 @@ describe('Automated retry with temporary network outage', () => {
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
       returnError: 'unavailable',
-      errorRpcList: ['get'],
+      errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
       errorCount: 2,
     };
 
@@ -274,7 +281,7 @@ describe('Automated retry with delay ms on fixed timeout strategy', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      delayRpcList: ['get'],
+      delayRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
       delayMillis: 500,
     };
     await WithCacheAndCacheClient(
@@ -306,7 +313,7 @@ describe('Automated retry with delay ms on fixed timeout strategy', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      delayRpcList: ['get'],
+      delayRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
       delayMillis: 1500,
     };
     await WithCacheAndCacheClient(
@@ -341,10 +348,10 @@ describe('Automated retry with delay ms on fixed timeout strategy', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      errorRpcList: ['get'],
+      errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
       returnError: 'unavailable',
       errorCount: 2,
-      delayRpcList: ['get'],
+      delayRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
       delayMillis: 500,
       delayCount: 2,
     };
