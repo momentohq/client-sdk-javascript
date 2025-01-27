@@ -51,8 +51,9 @@ class MomentoRPCMethodConverter {
       Object.values(MomentoRPCMethod).map(method => [
         method,
         method
-          .replace(/^_/, '')
-          .replace(/Request$/, '')
+          .replace(/^_/, '') // Remove leading underscore
+          .replace(/Request$/, '') // Remove trailing "Request"
+          .replace(/([a-z])([A-Z])/g, '$1-$2') // Insert hyphen between lowercase and uppercase
           .toLowerCase(),
       ])
     );
