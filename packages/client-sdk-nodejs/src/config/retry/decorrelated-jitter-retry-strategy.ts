@@ -3,8 +3,11 @@ import {
   RetryStrategy,
 } from './retry-strategy';
 import {EligibilityStrategy} from './eligibility-strategy';
-import {MomentoLoggerFactory, MomentoLogger} from '../..';
-import {DefaultStorageEligibilityStrategy} from './storage-default-eligibility-strategy';
+import {
+  DefaultEligibilityStrategy,
+  MomentoLoggerFactory,
+  MomentoLogger,
+} from '../..';
 
 /*
  * Default parameters
@@ -71,7 +74,7 @@ export class DecorrelatedJitterRetryStrategy implements RetryStrategy {
     this.logger = props.loggerFactory.getLogger(this);
     this.eligibilityStrategy =
       props.eligibilityStrategy ??
-      new DefaultStorageEligibilityStrategy(props.loggerFactory);
+      new DefaultEligibilityStrategy(props.loggerFactory);
 
     this.initialDelayMillis =
       props.initialDelayMillis ?? DEFAULT_INITIAL_DELAY_MS;
