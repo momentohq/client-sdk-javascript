@@ -94,17 +94,15 @@ export class DecorrelatedJitterRetryStrategy implements RetryStrategy {
     }
 
     // Compute the backoff for this attempt
-    const attemptIndex = props.attemptNumber - 1; // Zero-based attempt index
-
     // Decorrelated jitter: Random delay in [baseDelay, previousDelay * 3]
-    const baseDelay = this.initialDelayMillis * Math.pow(2, attemptIndex);
+    const baseDelay =
+      this.initialDelayMillis * Math.pow(2, props.attemptNumber);
     const maxDelay = (props.previousDelay ?? this.initialDelayMillis) * 3;
     const jitteredDelay = Math.min(
       this.maxBackoffMillis,
       randomInRange(baseDelay, maxDelay)
     );
 
-    // Log the calculated delay
     this.logger.debug(
       `DecorrelatedJitterRetryStrategy: attempt #${props.attemptNumber}` +
         ` -> base delay=${baseDelay}ms, max delay=${maxDelay}ms, jittered delay=${jitteredDelay}ms`
