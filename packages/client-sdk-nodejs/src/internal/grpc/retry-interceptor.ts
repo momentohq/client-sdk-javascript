@@ -89,7 +89,6 @@ export class RetryInterceptor {
               next: (arg0: any) => void
             ) {
               let attempts = 0;
-              let previousDelay: number | undefined = undefined;
               const retry = function (message: unknown, metadata: Metadata) {
                 logger.debug(
                   `Retrying request: path: ${
@@ -126,7 +125,6 @@ export class RetryInterceptor {
                         grpcRequest: options.method_definition,
                         attemptNumber: attempts,
                         requestMetadata: metadata,
-                        previousDelay,
                       });
 
                     if (whenToRetry === null) {
@@ -137,7 +135,6 @@ export class RetryInterceptor {
                       next(status);
                     } else {
                       attempts++;
-                      previousDelay = whenToRetry;
                       logger.debug(
                         `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`
                       );
@@ -158,7 +155,6 @@ export class RetryInterceptor {
                   grpcRequest: options.method_definition,
                   attemptNumber: attempts,
                   requestMetadata: metadata,
-                  previousDelay,
                 });
                 if (whenToRetry === null) {
                   logger.debug(
@@ -168,7 +164,6 @@ export class RetryInterceptor {
                   next(status);
                 } else {
                   attempts++;
-                  previousDelay = whenToRetry;
                   logger.debug(
                     `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`
                   );

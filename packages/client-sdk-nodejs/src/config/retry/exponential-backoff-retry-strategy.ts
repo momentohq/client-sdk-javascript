@@ -20,12 +20,12 @@ const DEFAULT_INITIAL_DELAY_MS = 100;
 /**
  * Default maximum delay to cap the exponential growth (in milliseconds)
  */
-const DEFAULT_MAX_BACKOFF_MS = 5_000;
+const DEFAULT_MAX_DELAY_MS = 5_000;
 
 /**
- * Properties for configuring the Decorrelated Jitter Retry Strategy
+ * Properties for configuring the ExponentialBackoffRetryStrategy
  */
-export interface DecorrelatedJitterRetryStrategyProps {
+export interface ExponentialBackoffRetryStrategyProps {
   /**
    * Configures logging verbosity and format
    */
@@ -43,24 +43,26 @@ export interface DecorrelatedJitterRetryStrategyProps {
   /**
    * Maximum delay to cap the exponential growth (in milliseconds)
    */
-  maxBackoffMillis?: number;
+  maxDelayMillis?: number;
 }
 
 /**
- * Retry strategy that uses a decorrelated jitter backoff algorithm.
+ * Retry strategy that uses exponential backoff with decorrelated jitter.
  *
  * The backoff for each attempt is calculated as follows:
- * - Base delay: initialDelayMillis * 2^(attemptNumber - 1)
- * - Jittered delay: Random delay in [baseDelay, previousDelay * 3]
- * - Maximum delay: maxBackoffMillis
+ * - The first retry has a fixed delay of `initialDelayMillis`
+ * - Backoff for subsequent retries is calculated as `initialDelayMillis * 2^attemptNumber`
+ * - Subsequent retries have a delay that is a random value between
+ *   the current backoff and 3 times the previous backoff, with the
+ *.  maximum delay capped at `maxDelayMillis`.
  */
-export class DecorrelatedJitterRetryStrategy implements RetryStrategy {
+export class ExponentialBackoffRetryStrategy implements RetryStrategy {
   private readonly logger: MomentoLogger;
   private readonly eligibilityStrategy: EligibilityStrategy;
   private readonly initialDelayMillis: number;
-  private readonly maxBackoffMillis: number;
+  private readonly maxDelayMillis: number;
 
-  constructor(props: DecorrelatedJitterRetryStrategyProps) {
+  constructor(props: ExponentialBackoffRetryStrategyProps) {
     this.logger = props.loggerFactory.getLogger(this);
     this.eligibilityStrategy =
       props.eligibilityStrategy ??
@@ -68,7 +70,7 @@ export class DecorrelatedJitterRetryStrategy implements RetryStrategy {
 
     this.initialDelayMillis =
       props.initialDelayMillis ?? DEFAULT_INITIAL_DELAY_MS;
-    this.maxBackoffMillis = props.maxBackoffMillis ?? DEFAULT_MAX_BACKOFF_MS;
+    this.maxDelayMillis = props.maxDelayMillis ?? DEFAULT_MAX_DELAY_MS;
   }
 
   determineWhenToRetryRequest(
@@ -83,22 +85,30 @@ export class DecorrelatedJitterRetryStrategy implements RetryStrategy {
       return null; // Do not retry
     }
 
-    // Compute the backoff for this attempt
-    // Decorrelated jitter: Random delay in [baseDelay, previousDelay * 3]
-    const baseDelay =
-      this.initialDelayMillis * Math.pow(2, props.attemptNumber);
-    const maxDelay = (props.previousDelay ?? this.initialDelayMillis) * 3;
-    const jitteredDelay = Math.min(
-      this.maxBackoffMillis,
-      randomInRange(baseDelay, maxDelay)
-    );
+    const baseDelay = this.computeBaseDelay(props.attemptNumber);
+    const previousBaseDelay = this.computeBaseDelay(props.attemptNumber - 1);
+    const maxDelay = previousBaseDelay * 3;
+    const jitteredDelay = randomInRange(baseDelay, maxDelay);
+    const finalDelay = Math.min(this.maxDelayMillis, jitteredDelay);
 
     this.logger.debug(
       `DecorrelatedJitterRetryStrategy: attempt #${props.attemptNumber}` +
-        ` -> base delay=${baseDelay}ms, max delay=${maxDelay}ms, jittered delay=${jitteredDelay}ms`
+        ` -> base delay=${baseDelay}ms, max delay=${maxDelay}ms, jittered delay=${finalDelay}ms`
     );
 
-    return jitteredDelay;
+    return finalDelay;
+  }
+
+  /**
+   * Compute the backoffed base delay for the given attempt number.
+   * @param attemptNumber - The attempt number (0-based)
+   * @returns The base delay for the given attempt number
+   */
+  private computeBaseDelay(attemptNumber: number): number {
+    if (attemptNumber <= 0) {
+      return this.initialDelayMillis;
+    }
+    return this.initialDelayMillis * Math.pow(2, attemptNumber);
   }
 }
 
