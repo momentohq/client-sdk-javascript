@@ -92,7 +92,7 @@ export class ExponentialBackoffRetryStrategy implements RetryStrategy {
     const finalDelay = Math.min(this.maxDelayMillis, jitteredDelay);
 
     this.logger.debug(
-      `DecorrelatedJitterRetryStrategy: attempt #${props.attemptNumber}` +
+      `ExponentialBackoffRetryStrategy: attempt #${props.attemptNumber}` +
         ` -> base delay=${baseDelay}ms, max delay=${maxDelay}ms, jittered delay=${finalDelay}ms`
     );
 
