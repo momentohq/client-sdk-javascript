@@ -21,10 +21,6 @@ const DEFAULT_INITIAL_DELAY_MS = 100;
  * Default maximum delay to cap the exponential growth (in milliseconds)
  */
 const DEFAULT_MAX_BACKOFF_MS = 5_000;
-/**
- * Default timeout for receiving response data before retrying (in milliseconds)
- */
-const DEFAULT_RESPONSE_DATA_RECEIVED_TIMEOUT_MS = 1_000;
 
 /**
  * Properties for configuring the Decorrelated Jitter Retry Strategy
@@ -48,11 +44,6 @@ export interface DecorrelatedJitterRetryStrategyProps {
    * Maximum delay to cap the exponential growth (in milliseconds)
    */
   maxBackoffMillis?: number;
-
-  /**
-   * Timeout for receiving response data before retrying (in milliseconds)
-   */
-  responseDataReceivedTimeoutMillis?: number;
 }
 
 /**
@@ -68,7 +59,6 @@ export class DecorrelatedJitterRetryStrategy implements RetryStrategy {
   private readonly eligibilityStrategy: EligibilityStrategy;
   private readonly initialDelayMillis: number;
   private readonly maxBackoffMillis: number;
-  readonly responseDataReceivedTimeoutMillis: number;
 
   constructor(props: DecorrelatedJitterRetryStrategyProps) {
     this.logger = props.loggerFactory.getLogger(this);
@@ -79,9 +69,6 @@ export class DecorrelatedJitterRetryStrategy implements RetryStrategy {
     this.initialDelayMillis =
       props.initialDelayMillis ?? DEFAULT_INITIAL_DELAY_MS;
     this.maxBackoffMillis = props.maxBackoffMillis ?? DEFAULT_MAX_BACKOFF_MS;
-    this.responseDataReceivedTimeoutMillis =
-      props.responseDataReceivedTimeoutMillis ??
-      DEFAULT_RESPONSE_DATA_RECEIVED_TIMEOUT_MS;
   }
 
   determineWhenToRetryRequest(
