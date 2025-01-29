@@ -15,8 +15,10 @@ import {
 
 /**
  * Default initial delay for the first retry (in milliseconds).
+ *
+ * The first delay will be sampled in [8, 12)
  */
-const DEFAULT_INITIAL_DELAY_MS = 16;
+const DEFAULT_INITIAL_DELAY_MS = 8;
 /**
  * Default maximum delay to cap the exponential growth (in milliseconds)
  */
@@ -55,6 +57,17 @@ export interface ExponentialBackoffRetryStrategyProps {
  * - Subsequent retries have a delay that is a random value between
  *   the current backoff and 3 times the previous backoff, with the
  *.  maximum delay capped at `maxDelayMillis`.
+ *
+ * Example sequence with `initialDelayMillis=8` and `maxDelayMillis=5000` with immediate failures:
+ * - Attempt 1: 11ms
+ * - Attempt 2: 19ms
+ * - Attempt 3: 43ms
+ * - Attempt 4: 79ms
+ * - Attempt 5: 184ms
+ * - Attempt 6: 295ms
+ * - Attempt 7: 670ms
+ * - Attempt 8: 1133ms
+ * - Attempt 9: 2928ms
  */
 export class ExponentialBackoffRetryStrategy implements RetryStrategy {
   private readonly logger: MomentoLogger;
@@ -105,10 +118,14 @@ export class ExponentialBackoffRetryStrategy implements RetryStrategy {
    * @returns The base delay for the given attempt number
    */
   private computeBaseDelay(attemptNumber: number): number {
-    if (attemptNumber <= 0) {
+    if (attemptNumber < 0) {
+      // This handles the "previousBaseDelay" when on the initial attempt.
+      return this.initialDelayMillis / 2;
+    } else if (attemptNumber === 0) {
       return this.initialDelayMillis;
+    } else {
+      return this.initialDelayMillis * Math.pow(2, attemptNumber);
     }
-    return this.initialDelayMillis * Math.pow(2, attemptNumber);
   }
 }
 
@@ -122,5 +139,5 @@ function randomInRange(min: number, max: number): number {
   if (min >= max) {
     return min;
   }
-  return min + Math.random() * (max - min);
+  return Math.round(min + Math.random() * (max - min));
 }
