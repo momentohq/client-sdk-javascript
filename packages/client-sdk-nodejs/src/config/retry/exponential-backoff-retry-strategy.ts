@@ -16,13 +16,19 @@ import {
 /**
  * Default initial delay for the first retry (in milliseconds).
  *
- * The first delay will be sampled in [8, 12)
+ * The first delay will be sampled in [0.25, 0.75)
  */
-const DEFAULT_INITIAL_DELAY_MS = 8;
+const DEFAULT_INITIAL_DELAY_MS = 0.5;
+
+/**
+ * Default growth factor for exponential backoff
+ */
+const DEFAULT_GROWTH_FACTOR = 2;
+
 /**
  * Default maximum delay to cap the exponential growth (in milliseconds)
  */
-const DEFAULT_MAX_DELAY_MS = 5_000;
+const DEFAULT_MAX_BACKOFF_MS = 8.0;
 
 /**
  * Properties for configuring the ExponentialBackoffRetryStrategy
@@ -45,7 +51,7 @@ export interface ExponentialBackoffRetryStrategyProps {
   /**
    * Maximum delay to cap the exponential growth (in milliseconds)
    */
-  maxDelayMillis?: number;
+  maxBackoffMillis?: number;
 }
 
 /**
@@ -56,24 +62,14 @@ export interface ExponentialBackoffRetryStrategyProps {
  * - Backoff for subsequent retries is calculated as `initialDelayMillis * 2^attemptNumber`
  * - Subsequent retries have a delay that is a random value between
  *   the current backoff and 3 times the previous backoff, with the
- *.  maximum delay capped at `maxDelayMillis`.
- *
- * Example sequence with `initialDelayMillis=8` and `maxDelayMillis=5000` with immediate failures:
- * - Attempt 1: 11ms
- * - Attempt 2: 19ms
- * - Attempt 3: 43ms
- * - Attempt 4: 79ms
- * - Attempt 5: 184ms
- * - Attempt 6: 295ms
- * - Attempt 7: 670ms
- * - Attempt 8: 1133ms
- * - Attempt 9: 2928ms
+ *.  current backoff capped at `maxBackoffMillis`
  */
 export class ExponentialBackoffRetryStrategy implements RetryStrategy {
   private readonly logger: MomentoLogger;
   private readonly eligibilityStrategy: EligibilityStrategy;
   private readonly initialDelayMillis: number;
-  private readonly maxDelayMillis: number;
+  private readonly growthFactor: number;
+  private readonly maxBackoffMillis: number;
 
   constructor(props: ExponentialBackoffRetryStrategyProps) {
     this.logger = props.loggerFactory.getLogger(this);
@@ -83,7 +79,8 @@ export class ExponentialBackoffRetryStrategy implements RetryStrategy {
 
     this.initialDelayMillis =
       props.initialDelayMillis ?? DEFAULT_INITIAL_DELAY_MS;
-    this.maxDelayMillis = props.maxDelayMillis ?? DEFAULT_MAX_DELAY_MS;
+    this.growthFactor = DEFAULT_GROWTH_FACTOR;
+    this.maxBackoffMillis = props.maxBackoffMillis ?? DEFAULT_MAX_BACKOFF_MS;
   }
 
   determineWhenToRetryRequest(
@@ -98,18 +95,20 @@ export class ExponentialBackoffRetryStrategy implements RetryStrategy {
       return null; // Do not retry
     }
 
-    const baseDelay = this.computeBaseDelay(props.attemptNumber);
-    const previousBaseDelay = this.computeBaseDelay(props.attemptNumber - 1);
+    const baseDelay = Math.min(
+      this.computeBaseDelay(props.attemptNumber),
+      this.maxBackoffMillis
+    );
+    const previousBaseDelay = this.computePreviousBaseDelay(baseDelay);
     const maxDelay = previousBaseDelay * 3;
     const jitteredDelay = randomInRange(baseDelay, maxDelay);
-    const finalDelay = Math.min(this.maxDelayMillis, jitteredDelay);
 
     this.logger.debug(
       `ExponentialBackoffRetryStrategy: attempt #${props.attemptNumber}` +
-        ` -> base delay=${baseDelay}ms, max delay=${maxDelay}ms, jittered delay=${finalDelay}ms`
+        ` -> base delay=${baseDelay}ms, max delay=${maxDelay}ms, jittered delay=${jitteredDelay}ms`
     );
 
-    return finalDelay;
+    return jitteredDelay;
   }
 
   /**
@@ -118,14 +117,17 @@ export class ExponentialBackoffRetryStrategy implements RetryStrategy {
    * @returns The base delay for the given attempt number
    */
   private computeBaseDelay(attemptNumber: number): number {
-    if (attemptNumber < 0) {
-      // This handles the "previousBaseDelay" when on the initial attempt.
-      return this.initialDelayMillis / 2;
-    } else if (attemptNumber === 0) {
+    if (attemptNumber <= 0) {
       return this.initialDelayMillis;
     } else {
-      return this.initialDelayMillis * Math.pow(2, attemptNumber);
+      return (
+        this.initialDelayMillis * Math.pow(this.growthFactor, attemptNumber)
+      );
     }
+  }
+
+  private computePreviousBaseDelay(currentBaseDelay: number): number {
+    return currentBaseDelay / this.growthFactor;
   }
 }
 
@@ -139,5 +141,17 @@ function randomInRange(min: number, max: number): number {
   if (min >= max) {
     return min;
   }
-  return Math.round(min + Math.random() * (max - min));
+  return round(min + Math.random() * (max - min), 3);
+}
+
+/**
+ * Round a number to a given number of decimal places
+ *
+ * @param value - The value to round
+ * @param decimals - The number of decimal places
+ * @returns The rounded value
+ */
+function round(value: number, decimals: number): number {
+  const factor = Math.pow(10, decimals);
+  return Math.round(value * factor) / factor;
 }

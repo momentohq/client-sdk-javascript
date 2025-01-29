@@ -34,8 +34,8 @@ describe('ExponentialBackoffRetryStrategy integration tests', () => {
       const exponentialBackoffRetryStrategy =
         new ExponentialBackoffRetryStrategy({
           loggerFactory,
-          initialDelayMillis: 100, // Starting point
-          maxDelayMillis: 2000, // Cap
+          initialDelayMillis: 100,
+          maxBackoffMillis: 2000,
         });
 
       // Simulate server UNAVAILABLE for all attempts
@@ -118,7 +118,7 @@ describe('ExponentialBackoffRetryStrategy integration tests', () => {
         new ExponentialBackoffRetryStrategy({
           loggerFactory,
           initialDelayMillis: 100,
-          maxDelayMillis: 2000,
+          maxBackoffMillis: 2000,
         });
 
       // Return "unavailable" for first 2 calls, then succeed
