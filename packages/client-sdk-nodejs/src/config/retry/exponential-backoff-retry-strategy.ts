@@ -16,7 +16,7 @@ import {
 /**
  * Default initial delay for the first retry (in milliseconds).
  */
-const DEFAULT_INITIAL_DELAY_MS = 100;
+const DEFAULT_INITIAL_DELAY_MS = 16;
 /**
  * Default maximum delay to cap the exponential growth (in milliseconds)
  */
