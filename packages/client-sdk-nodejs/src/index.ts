@@ -223,6 +223,11 @@ export {
 } from './config/retry/retry-strategy';
 
 export {
+  ExponentialBackoffRetryStrategy,
+  ExponentialBackoffRetryStrategyProps,
+} from './config/retry/exponential-backoff-retry-strategy';
+
+export {
   FixedCountRetryStrategy,
   FixedCountRetryStrategyProps,
 } from './config/retry/fixed-count-retry-strategy';
