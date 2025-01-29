@@ -16,7 +16,8 @@ import {
 /**
  * Default initial delay for the first retry (in milliseconds).
  *
- * The first delay will be sampled in [0.25, 0.75)
+ * Note that Node.js `setTimeout` has a resolution of 1ms, so
+ * the actual delay may be slightly longer.
  */
 const DEFAULT_INITIAL_DELAY_MS = 0.5;
 
