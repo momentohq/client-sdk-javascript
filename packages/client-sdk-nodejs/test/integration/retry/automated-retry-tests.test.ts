@@ -7,13 +7,13 @@ import {
   MomentoLogger,
 } from '../../../src';
 import {TestRetryMetricsCollector} from '../../test-retry-metrics-collector';
-import {
-  MomentoRPCMethod,
-  MomentoRPCMethodConverter,
-} from '../../momento-rpc-method';
 import {WithCacheAndCacheClient} from '../integration-setup';
 import {TestRetryMetricsMiddlewareArgs} from '../../test-retry-metrics-middleware';
 import {v4} from 'uuid';
+import {
+  MomentoRPCMethod,
+  MomentoRPCMethodConverter,
+} from '../../../src/config/retry/momento-rpc-method';
 
 describe('Automated retry with full network outage', () => {
   let testMetricsCollector: TestRetryMetricsCollector;

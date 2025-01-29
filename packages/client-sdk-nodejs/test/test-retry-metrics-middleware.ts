@@ -5,8 +5,8 @@ import {
   MiddlewareMetadata,
   MiddlewareStatus,
 } from '../src/config/middleware/middleware';
-import {MomentoRPCMethod} from './momento-rpc-method';
 import {Metadata} from '@grpc/grpc-js';
+import {MomentoRPCMethod} from '../src/config/retry/momento-rpc-method';
 
 class TestMetricsMiddlewareRequestHandler implements MiddlewareRequestHandler {
   private cacheName: string | null = null;
