@@ -1,5 +1,5 @@
-import {MomentoRPCMethod} from '../momento-rpc-method';
 import {TestRetryMetricsCollector} from '../test-retry-metrics-collector';
+import {MomentoRPCMethod} from '../../src/config/retry/momento-rpc-method';
 
 describe('TestRetryMetricsCollector', () => {
   let metricsCollector: TestRetryMetricsCollector;
