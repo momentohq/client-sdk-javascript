@@ -2,6 +2,7 @@ import {
   CacheGetResponse,
   CacheIncrementResponse,
   DefaultMomentoLoggerFactory,
+  MomentoErrorCode,
   MomentoLogger,
 } from '../../../src';
 import {TestRetryMetricsCollector} from '../../test-retry-metrics-collector';
@@ -12,6 +13,7 @@ import {
 import {WithCacheAndCacheClient} from '../integration-setup';
 import {TestRetryMetricsMiddlewareArgs} from '../../test-retry-metrics-middleware';
 import {v4} from 'uuid';
+import {MomentoErrorCodeMetadataConverter} from '../../../src/config/retry/momento-error-code-metadata-converter';
 
 describe('Fixed count retry strategy with full network outage', () => {
   let testMetricsCollector: TestRetryMetricsCollector;
@@ -29,7 +31,9 @@ describe('Fixed count retry strategy with full network outage', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      returnError: 'unavailable',
+      returnError: MomentoErrorCodeMetadataConverter.convert(
+        MomentoErrorCode.SERVER_UNAVAILABLE
+      ),
       errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
     };
 
@@ -56,7 +60,9 @@ describe('Fixed count retry strategy with full network outage', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      returnError: 'unavailable',
+      returnError: MomentoErrorCodeMetadataConverter.convert(
+        MomentoErrorCode.SERVER_UNAVAILABLE
+      ),
       errorRpcList: [
         MomentoRPCMethodConverter.convert(MomentoRPCMethod.Increment),
       ],
@@ -97,7 +103,9 @@ describe('Fixed count retry strategy with temporary network outage', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      returnError: 'unavailable',
+      returnError: MomentoErrorCodeMetadataConverter.convert(
+        MomentoErrorCode.SERVER_UNAVAILABLE
+      ),
       errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
       errorCount: 2,
     };
