@@ -4,8 +4,10 @@ import {
   MomentoLocalTestConfigMiddleware,
 } from '../../../../src/config/middleware/momento-local-test-config-middleware';
 import {v4} from 'uuid';
-import {MomentoRPCMethod} from '../../../momento-rpc-method';
 import {MiddlewareMetadata} from '../../../../src/config/middleware/middleware';
+import {MomentoRPCMethod} from '../../../../src/config/retry/momento-rpc-method';
+import {MomentoErrorCodeMetadataConverter} from '../../../../src/config/retry/momento-error-code-metadata-converter';
+import {MomentoErrorCode} from '@gomomento/sdk-core';
 
 describe('MomentoLocalTestConfigMiddleware', () => {
   let middleware: MomentoLocalTestConfigMiddleware;
@@ -14,7 +16,9 @@ describe('MomentoLocalTestConfigMiddleware', () => {
   beforeEach(() => {
     metadata = {
       requestId: v4(),
-      returnError: MomentoRPCMethod.Get,
+      returnError: MomentoErrorCodeMetadataConverter.convert(
+        MomentoErrorCode.SERVER_UNAVAILABLE
+      ),
       errorRpcs: [MomentoRPCMethod.Get],
       errorCount: 1,
       delayRpcs: [MomentoRPCMethod.Get],

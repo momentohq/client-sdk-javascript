@@ -4,6 +4,7 @@ import {
   DefaultEligibilityStrategy,
   DefaultMomentoLoggerFactory,
   FixedTimeoutRetryStrategy,
+  MomentoErrorCode,
   MomentoLogger,
 } from '../../../src';
 import {TestRetryMetricsCollector} from '../../test-retry-metrics-collector';
@@ -14,6 +15,7 @@ import {
   MomentoRPCMethod,
   MomentoRPCMethodConverter,
 } from '../../../src/config/retry/momento-rpc-method';
+import {MomentoErrorCodeMetadataConverter} from '../../../src/config/retry/momento-error-code-metadata-converter';
 
 describe('Fixed timeout retry strategy with full network outage', () => {
   let testMetricsCollector: TestRetryMetricsCollector;
@@ -23,6 +25,66 @@ describe('Fixed timeout retry strategy with full network outage', () => {
     testMetricsCollector = new TestRetryMetricsCollector();
     momentoLogger = new DefaultMomentoLoggerFactory().getLogger(
       'TestRetryMetricsMiddleware'
+    );
+  });
+
+  it('should make max 3 attempts for retry eligible api for fixed count strategy', async () => {
+    const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+      logger: momentoLogger,
+      testMetricsCollector: testMetricsCollector,
+      requestId: v4(),
+      returnError: MomentoErrorCodeMetadataConverter.convert(
+        MomentoErrorCode.SERVER_UNAVAILABLE
+      ),
+      errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+    };
+
+    await WithCacheAndCacheClient(
+      config => config,
+      testMiddlewareArgs,
+      async (cacheClient, cacheName) => {
+        const getResponse = await cacheClient.get(cacheName, 'key');
+        expect(getResponse.type).toEqual(CacheGetResponse.Error);
+        if (getResponse.type === CacheGetResponse.Error) {
+          expect(getResponse.errorCode()).toEqual('SERVER_UNAVAILABLE');
+        }
+        const noOfRetries = testMetricsCollector.getTotalRetryCount(
+          cacheName,
+          MomentoRPCMethod.Get
+        );
+        expect(noOfRetries).toBe(3);
+      }
+    );
+  });
+
+  it('should make 0 attempts for retry non-eligible api for fixed count strategy', async () => {
+    const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+      logger: momentoLogger,
+      testMetricsCollector: testMetricsCollector,
+      requestId: v4(),
+      returnError: MomentoErrorCodeMetadataConverter.convert(
+        MomentoErrorCode.SERVER_UNAVAILABLE
+      ),
+      errorRpcList: [
+        MomentoRPCMethodConverter.convert(MomentoRPCMethod.Increment),
+      ],
+    };
+    await WithCacheAndCacheClient(
+      config => config,
+      testMiddlewareArgs,
+      async (cacheClient, cacheName) => {
+        const incrementResponse = await cacheClient.increment(
+          cacheName,
+          'key',
+          1
+        );
+        expect(incrementResponse.type).toEqual(CacheIncrementResponse.Error);
+        const noOfRetries = testMetricsCollector.getTotalRetryCount(
+          cacheName,
+          MomentoRPCMethod.Increment
+        );
+        expect(noOfRetries).toBe(0); // Increment is not eligible for retry
+      }
     );
   });
 
@@ -39,7 +101,9 @@ describe('Fixed timeout retry strategy with full network outage', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      returnError: 'unavailable',
+      returnError: MomentoErrorCodeMetadataConverter.convert(
+        MomentoErrorCode.SERVER_UNAVAILABLE
+      ),
       errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
     };
 
@@ -81,7 +145,9 @@ describe('Fixed timeout retry strategy with full network outage', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      returnError: 'unavailable',
+      returnError: MomentoErrorCodeMetadataConverter.convert(
+        MomentoErrorCode.SERVER_UNAVAILABLE
+      ),
       errorRpcList: [
         MomentoRPCMethodConverter.convert(MomentoRPCMethod.Increment),
       ],
@@ -121,6 +187,33 @@ describe('Fixed timeout retry strategy with temporary network outage', () => {
     );
   });
 
+  it('should make less than max number of allowed retry attempts for fixed count strategy', async () => {
+    const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+      logger: momentoLogger,
+      testMetricsCollector: testMetricsCollector,
+      requestId: v4(),
+      returnError: MomentoErrorCodeMetadataConverter.convert(
+        MomentoErrorCode.SERVER_UNAVAILABLE
+      ),
+      errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+      errorCount: 2,
+    };
+    await WithCacheAndCacheClient(
+      config => config,
+      testMiddlewareArgs,
+      async (cacheClient, cacheName) => {
+        const getResponse = await cacheClient.get(cacheName, 'key');
+        expect(getResponse.type).toEqual(CacheGetResponse.Miss); // Miss because we never set the key
+        const noOfRetries = testMetricsCollector.getTotalRetryCount(
+          cacheName,
+          MomentoRPCMethod.Get
+        );
+        expect(noOfRetries).toBeGreaterThan(1);
+        expect(noOfRetries).toBeLessThanOrEqual(3);
+      }
+    );
+  });
+
   it('should make less than max number of attempts for fixed timeout strategy', async () => {
     const RETRY_DELAY_MILLIS = 1000;
     const CLIENT_TIMEOUT_MILLIS = 5000;
@@ -134,7 +227,9 @@ describe('Fixed timeout retry strategy with temporary network outage', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      returnError: 'unavailable',
+      returnError: MomentoErrorCodeMetadataConverter.convert(
+        MomentoErrorCode.SERVER_UNAVAILABLE
+      ),
       errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
       errorCount: 2,
     };
@@ -268,7 +363,9 @@ describe('Fixed timeout retry strategy with delay ms', () => {
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
       errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
-      returnError: 'unavailable',
+      returnError: MomentoErrorCodeMetadataConverter.convert(
+        MomentoErrorCode.SERVER_UNAVAILABLE
+      ),
       errorCount: 2,
       delayRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
       delayMillis: 500,
