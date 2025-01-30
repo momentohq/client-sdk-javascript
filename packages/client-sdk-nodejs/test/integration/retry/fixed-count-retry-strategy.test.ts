@@ -8,7 +8,7 @@ import {TestRetryMetricsCollector} from '../../test-retry-metrics-collector';
 import {
   MomentoRPCMethod,
   MomentoRPCMethodConverter,
-} from '../../momento-rpc-method';
+} from '../../../src/config/retry/momento-rpc-method';
 import {WithCacheAndCacheClient} from '../integration-setup';
 import {TestRetryMetricsMiddlewareArgs} from '../../test-retry-metrics-middleware';
 import {v4} from 'uuid';
