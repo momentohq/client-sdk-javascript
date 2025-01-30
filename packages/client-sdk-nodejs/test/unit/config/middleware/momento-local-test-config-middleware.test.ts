@@ -5,7 +5,10 @@ import {
 } from '../../../../src/config/middleware/momento-local-test-config-middleware';
 import {v4} from 'uuid';
 import {MiddlewareMetadata} from '../../../../src/config/middleware/middleware';
-import {MomentoRPCMethod} from '../../../../src/config/retry/momento-rpc-method';
+import {
+  MomentoRPCMethod,
+  MomentoRPCMethodConverter,
+} from '../../../../src/config/retry/momento-rpc-method';
 import {MomentoErrorCodeMetadataConverter} from '../../../../src/config/retry/momento-error-code-metadata-converter';
 import {MomentoErrorCode} from '@gomomento/sdk-core';
 
@@ -19,9 +22,9 @@ describe('MomentoLocalTestConfigMiddleware', () => {
       returnError: MomentoErrorCodeMetadataConverter.convert(
         MomentoErrorCode.SERVER_UNAVAILABLE
       ),
-      errorRpcs: [MomentoRPCMethod.Get],
+      errorRpcs: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
       errorCount: 1,
-      delayRpcs: [MomentoRPCMethod.Get],
+      delayRpcs: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
       delayMs: 1000,
       delayCount: 1,
     };
@@ -39,12 +42,20 @@ describe('MomentoLocalTestConfigMiddleware', () => {
     await middleware.onNewRequest().onRequestMetadata(middlewareMetadata);
 
     expect(grpcMetadata.get('request-id')).toEqual([metadata.requestId]);
-    expect(grpcMetadata.get('return-error')).toEqual([MomentoRPCMethod.Get]);
-    expect(grpcMetadata.get('error-rpcs')).toEqual([MomentoRPCMethod.Get]);
+    expect(grpcMetadata.get('return-error')).toEqual([
+      MomentoErrorCodeMetadataConverter.convert(
+        MomentoErrorCode.SERVER_UNAVAILABLE
+      ),
+    ]);
+    expect(grpcMetadata.get('error-rpcs')).toEqual([
+      MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get),
+    ]);
     expect(grpcMetadata.get('error-count')).toEqual([
       metadata.errorCount?.toString(),
     ]);
-    expect(grpcMetadata.get('delay-rpcs')).toEqual([MomentoRPCMethod.Get]);
+    expect(grpcMetadata.get('delay-rpcs')).toEqual([
+      MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get),
+    ]);
     expect(grpcMetadata.get('delay-ms')).toEqual([
       metadata.delayMs?.toString(),
     ]);
