@@ -4,16 +4,14 @@ import {
   DefaultEligibilityStrategy,
   DefaultMomentoLoggerFactory,
   FixedTimeoutRetryStrategy,
+  MomentoErrorCode,
   MomentoLogger,
 } from '../../../src';
 import {TestRetryMetricsCollector} from '../../test-retry-metrics-collector';
 import {WithCacheAndCacheClient} from '../integration-setup';
 import {TestRetryMetricsMiddlewareArgs} from '../../test-retry-metrics-middleware';
 import {v4} from 'uuid';
-import {
-  MomentoRPCMethod,
-  MomentoRPCMethodConverter,
-} from '../../../src/config/retry/momento-rpc-method';
+import {MomentoRPCMethod} from '../../../src/config/retry/momento-rpc-method';
 
 describe('Fixed timeout retry strategy with full network outage', () => {
   let testMetricsCollector: TestRetryMetricsCollector;
@@ -39,8 +37,8 @@ describe('Fixed timeout retry strategy with full network outage', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      returnError: 'unavailable',
-      errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+      returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+      errorRpcList: [MomentoRPCMethod.Get],
     };
 
     await WithCacheAndCacheClient(
@@ -53,7 +51,9 @@ describe('Fixed timeout retry strategy with full network outage', () => {
         const getResponse = await cacheClient.get(cacheName, 'key');
         expect(getResponse.type).toEqual(CacheGetResponse.Error);
         if (getResponse.type === CacheGetResponse.Error) {
-          expect(getResponse.errorCode()).toEqual('SERVER_UNAVAILABLE');
+          expect(getResponse.errorCode()).toEqual(
+            MomentoErrorCode.SERVER_UNAVAILABLE
+          );
         }
         const expectedRetryCount = Math.floor(
           CLIENT_TIMEOUT_MILLIS / RETRY_DELAY_MILLIS
@@ -81,10 +81,8 @@ describe('Fixed timeout retry strategy with full network outage', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      returnError: 'unavailable',
-      errorRpcList: [
-        MomentoRPCMethodConverter.convert(MomentoRPCMethod.Increment),
-      ],
+      returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+      errorRpcList: [MomentoRPCMethod.Increment],
     };
 
     await WithCacheAndCacheClient(
@@ -134,8 +132,8 @@ describe('Fixed timeout retry strategy with temporary network outage', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      returnError: 'unavailable',
-      errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+      returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+      errorRpcList: [MomentoRPCMethod.Get],
       errorCount: 2,
     };
 
@@ -200,7 +198,7 @@ describe('Fixed timeout retry strategy with delay ms', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      delayRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+      delayRpcList: [MomentoRPCMethod.Get],
       delayMillis: 500,
     };
     await WithCacheAndCacheClient(
@@ -232,7 +230,7 @@ describe('Fixed timeout retry strategy with delay ms', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      delayRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+      delayRpcList: [MomentoRPCMethod.Get],
       delayMillis: 1500,
     };
     await WithCacheAndCacheClient(
@@ -245,7 +243,9 @@ describe('Fixed timeout retry strategy with delay ms', () => {
         const getResponse = await cacheClient.get(cacheName, 'key');
         expect(getResponse.type).toEqual(CacheGetResponse.Error);
         if (getResponse.type === CacheGetResponse.Error) {
-          expect(getResponse.errorCode()).toEqual('TIMEOUT_ERROR');
+          expect(getResponse.errorCode()).toEqual(
+            MomentoErrorCode.TIMEOUT_ERROR
+          );
         }
         const noOfRetries = testMetricsCollector.getTotalRetryCount(
           cacheName,
@@ -267,10 +267,10 @@ describe('Fixed timeout retry strategy with delay ms', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
-      returnError: 'unavailable',
+      errorRpcList: [MomentoRPCMethod.Get],
+      returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
       errorCount: 2,
-      delayRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+      delayRpcList: [MomentoRPCMethod.Get],
       delayMillis: 500,
       delayCount: 2,
     };

@@ -1,9 +1,25 @@
-import {TestRetryMetricsMiddleware} from '../test-retry-metrics-middleware';
+import {
+  TestMetricsMiddlewareRequestHandler,
+  TestRetryMetricsMiddleware,
+} from '../test-retry-metrics-middleware';
 import {TestRetryMetricsCollector} from '../test-retry-metrics-collector';
-import {CredentialProvider, MomentoLogger} from '@gomomento/sdk-core';
-import {CacheClient, Configurations} from '../../src';
+import {
+  CredentialProvider,
+  MomentoErrorCode,
+  MomentoLogger,
+} from '@gomomento/sdk-core';
+import {
+  CacheClient,
+  Configurations,
+  DefaultMomentoLoggerFactory,
+} from '../../src';
 import {v4} from 'uuid';
-import {MomentoRPCMethod} from '../../src/config/retry/momento-rpc-method';
+import {
+  MomentoRPCMethod,
+  MomentoRPCMethodMetadataConverter,
+} from '../../src/config/retry/momento-rpc-method';
+import {Metadata} from '@grpc/grpc-js';
+import {MiddlewareMetadata} from '../../src/config/middleware/middleware';
 
 describe('TestRetryMetricsMiddleware', () => {
   let middleware: TestRetryMetricsMiddleware;
@@ -13,10 +29,9 @@ describe('TestRetryMetricsMiddleware', () => {
 
   beforeEach(async () => {
     testMetricsCollector = new TestRetryMetricsCollector();
-    momentoLogger = {
-      debug: (message: string) => console.log(message),
-      info: (message: string) => console.log(message),
-    } as unknown as MomentoLogger;
+    momentoLogger = new DefaultMomentoLoggerFactory().getLogger(
+      'TestRetryMetricsMiddleware'
+    );
     middleware = new TestRetryMetricsMiddleware({
       logger: momentoLogger,
       testMetricsCollector,
@@ -75,5 +90,51 @@ describe('TestRetryMetricsMiddleware', () => {
         [MomentoRPCMethod.Set]: expect.arrayContaining([expect.any(Number)]),
       },
     });
+  });
+
+  test('should add correct metadata to grpc metadata', async () => {
+    const requestId = v4();
+    const returnError = MomentoErrorCode.SERVER_UNAVAILABLE;
+    const errorRpcList = [MomentoRPCMethod.Get, MomentoRPCMethod.Set];
+    const errorCount = 3;
+    const delayRpcList = [MomentoRPCMethod.Get, MomentoRPCMethod.Set];
+    const delayMillis = 1000;
+    const delayCount = 3;
+
+    const grpcMetadata = new Metadata();
+    const middlewareMetadata: MiddlewareMetadata = {
+      _grpcMetadata: grpcMetadata,
+      toJsonObject: () => ({}), // Mock implementation
+      toJsonString: () => JSON.stringify({}), // Mock implementation
+    };
+    const testRetryMetricsMiddlewareArgs = {
+      logger: momentoLogger,
+      testMetricsCollector,
+      requestId,
+      returnError,
+      errorRpcList,
+      errorCount,
+      delayRpcList,
+      delayMillis,
+      delayCount,
+    };
+
+    const handler = new TestMetricsMiddlewareRequestHandler(
+      testRetryMetricsMiddlewareArgs
+    );
+    await handler.onRequestMetadata(middlewareMetadata);
+
+    const expectedRpcsList = [
+      `${MomentoRPCMethodMetadataConverter.convert(
+        MomentoRPCMethod.Get
+      )} ${MomentoRPCMethodMetadataConverter.convert(MomentoRPCMethod.Set)}`,
+    ];
+
+    expect(grpcMetadata.get('request-id')).toEqual([requestId]);
+    expect(grpcMetadata.get('error-rpcs')).toEqual(expectedRpcsList);
+    expect(grpcMetadata.get('error-count')).toEqual([errorCount.toString()]);
+    expect(grpcMetadata.get('delay-rpcs')).toEqual(expectedRpcsList);
+    expect(grpcMetadata.get('delay-ms')).toEqual([delayMillis.toString()]);
+    expect(grpcMetadata.get('delay-count')).toEqual([delayCount.toString()]);
   });
 });

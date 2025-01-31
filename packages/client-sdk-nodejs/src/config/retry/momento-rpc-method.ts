@@ -45,7 +45,7 @@ enum MomentoRPCMethod {
   SortedSetLengthByScore = '_SortedSetLengthByScoreRequest',
 }
 
-class MomentoRPCMethodConverter {
+class MomentoRPCMethodMetadataConverter {
   private static readonly rpcMethodToMetadataMap: Record<string, string> = {
     [MomentoRPCMethod.Get]: 'get',
     [MomentoRPCMethod.Set]: 'set',
@@ -100,10 +100,10 @@ class MomentoRPCMethodConverter {
 
   /**
    * Converts a MomentoRPCMethod enum value to its corresponding metadata type.
-   * @param rpcMethod - The MomentoRPCMethod enum value.
+   * @param rpcMethod - The rpc method to convert.
    * @returns The corresponding metadata type.
    */
-  public static convert(rpcMethod: MomentoRPCMethod): string {
+  public static convert(rpcMethod: string): string {
     const metadataType = this.rpcMethodToMetadataMap[rpcMethod];
     if (!metadataType) {
       throw new Error(`Unsupported MomentoRPCMethod: ${rpcMethod}`);
@@ -112,4 +112,4 @@ class MomentoRPCMethodConverter {
   }
 }
 
-export {MomentoRPCMethod, MomentoRPCMethodConverter};
+export {MomentoRPCMethod, MomentoRPCMethodMetadataConverter};

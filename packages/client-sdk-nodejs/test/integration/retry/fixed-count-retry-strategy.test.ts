@@ -2,13 +2,11 @@ import {
   CacheGetResponse,
   CacheIncrementResponse,
   DefaultMomentoLoggerFactory,
+  MomentoErrorCode,
   MomentoLogger,
 } from '../../../src';
 import {TestRetryMetricsCollector} from '../../test-retry-metrics-collector';
-import {
-  MomentoRPCMethod,
-  MomentoRPCMethodConverter,
-} from '../../../src/config/retry/momento-rpc-method';
+import {MomentoRPCMethod} from '../../../src/config/retry/momento-rpc-method';
 import {WithCacheAndCacheClient} from '../integration-setup';
 import {TestRetryMetricsMiddlewareArgs} from '../../test-retry-metrics-middleware';
 import {v4} from 'uuid';
@@ -29,8 +27,8 @@ describe('Fixed count retry strategy with full network outage', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      returnError: 'unavailable',
-      errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+      returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+      errorRpcList: [MomentoRPCMethod.Get],
     };
 
     await WithCacheAndCacheClient(
@@ -56,10 +54,8 @@ describe('Fixed count retry strategy with full network outage', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      returnError: 'unavailable',
-      errorRpcList: [
-        MomentoRPCMethodConverter.convert(MomentoRPCMethod.Increment),
-      ],
+      returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+      errorRpcList: [MomentoRPCMethod.Increment],
     };
     await WithCacheAndCacheClient(
       config => config,
@@ -97,8 +93,8 @@ describe('Fixed count retry strategy with temporary network outage', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      returnError: 'unavailable',
-      errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+      returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+      errorRpcList: [MomentoRPCMethod.Get],
       errorCount: 2,
     };
     await WithCacheAndCacheClient(

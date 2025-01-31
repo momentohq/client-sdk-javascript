@@ -3,13 +3,11 @@ import {
   CacheIncrementResponse,
   DefaultMomentoLoggerFactory,
   ExponentialBackoffRetryStrategy,
+  MomentoErrorCode,
   MomentoLogger,
 } from '../../../src';
 import {TestRetryMetricsCollector} from '../../test-retry-metrics-collector';
-import {
-  MomentoRPCMethod,
-  MomentoRPCMethodConverter,
-} from '../../../src/config/retry/momento-rpc-method';
+import {MomentoRPCMethod} from '../../../src/config/retry/momento-rpc-method';
 import {WithCacheAndCacheClient} from '../integration-setup';
 import {TestRetryMetricsMiddlewareArgs} from '../../test-retry-metrics-middleware';
 import {v4} from 'uuid';
@@ -43,8 +41,8 @@ describe('ExponentialBackoffRetryStrategy integration tests', () => {
         logger: momentoLogger,
         testMetricsCollector,
         requestId: v4(),
-        returnError: 'unavailable',
-        errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+        returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+        errorRpcList: [MomentoRPCMethod.Get],
       };
 
       await WithCacheAndCacheClient(
@@ -85,10 +83,8 @@ describe('ExponentialBackoffRetryStrategy integration tests', () => {
         logger: momentoLogger,
         testMetricsCollector,
         requestId: v4(),
-        returnError: 'unavailable',
-        errorRpcList: [
-          MomentoRPCMethodConverter.convert(MomentoRPCMethod.Increment),
-        ],
+        returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+        errorRpcList: [MomentoRPCMethod.Increment],
       };
 
       await WithCacheAndCacheClient(
@@ -126,8 +122,8 @@ describe('ExponentialBackoffRetryStrategy integration tests', () => {
         logger: momentoLogger,
         testMetricsCollector,
         requestId: v4(),
-        returnError: 'unavailable',
-        errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+        returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+        errorRpcList: [MomentoRPCMethod.Get],
         errorCount: 2, // after 2 errors, subsequent requests succeed
       };
 
