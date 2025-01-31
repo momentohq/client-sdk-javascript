@@ -6,14 +6,10 @@ import {
   MomentoLogger,
 } from '../../../src';
 import {TestRetryMetricsCollector} from '../../test-retry-metrics-collector';
-import {
-  MomentoRPCMethod,
-  MomentoRPCMethodConverter,
-} from '../../../src/config/retry/momento-rpc-method';
+import {MomentoRPCMethod} from '../../../src/config/retry/momento-rpc-method';
 import {WithCacheAndCacheClient} from '../integration-setup';
 import {TestRetryMetricsMiddlewareArgs} from '../../test-retry-metrics-middleware';
 import {v4} from 'uuid';
-import {MomentoErrorCodeMetadataConverter} from '../../../src/config/retry/momento-error-code-metadata-converter';
 
 describe('Fixed count retry strategy with full network outage', () => {
   let testMetricsCollector: TestRetryMetricsCollector;
@@ -31,10 +27,8 @@ describe('Fixed count retry strategy with full network outage', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      returnError: MomentoErrorCodeMetadataConverter.convert(
-        MomentoErrorCode.SERVER_UNAVAILABLE
-      ),
-      errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+      returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+      errorRpcList: [MomentoRPCMethod.Get],
     };
 
     await WithCacheAndCacheClient(
@@ -60,12 +54,8 @@ describe('Fixed count retry strategy with full network outage', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      returnError: MomentoErrorCodeMetadataConverter.convert(
-        MomentoErrorCode.SERVER_UNAVAILABLE
-      ),
-      errorRpcList: [
-        MomentoRPCMethodConverter.convert(MomentoRPCMethod.Increment),
-      ],
+      returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+      errorRpcList: [MomentoRPCMethod.Increment],
     };
     await WithCacheAndCacheClient(
       config => config,
@@ -103,10 +93,8 @@ describe('Fixed count retry strategy with temporary network outage', () => {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
-      returnError: MomentoErrorCodeMetadataConverter.convert(
-        MomentoErrorCode.SERVER_UNAVAILABLE
-      ),
-      errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+      returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+      errorRpcList: [MomentoRPCMethod.Get],
       errorCount: 2,
     };
     await WithCacheAndCacheClient(

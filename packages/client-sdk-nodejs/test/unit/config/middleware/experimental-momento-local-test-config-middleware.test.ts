@@ -1,20 +1,20 @@
 import {Metadata} from '@grpc/grpc-js';
 import {
-  MomentoLocalTestConfigMetadata,
-  MomentoLocalTestConfigMiddleware,
-} from '../../../../src/config/middleware/momento-local-test-config-middleware';
+  ExperimentalMomentoLocalTestConfigMetadata,
+  ExperimentalMomentoLocalTestConfigMiddleware,
+} from '../../../../src/config/middleware/experimental-momento-local-test-config-middleware';
 import {v4} from 'uuid';
 import {MiddlewareMetadata} from '../../../../src/config/middleware/middleware';
 import {
   MomentoRPCMethod,
-  MomentoRPCMethodConverter,
+  MomentoRPCMethodMetadataConverter,
 } from '../../../../src/config/retry/momento-rpc-method';
 import {MomentoErrorCodeMetadataConverter} from '../../../../src/config/retry/momento-error-code-metadata-converter';
 import {MomentoErrorCode} from '@gomomento/sdk-core';
 
-describe('MomentoLocalTestConfigMiddleware', () => {
-  let middleware: MomentoLocalTestConfigMiddleware;
-  let metadata: MomentoLocalTestConfigMetadata;
+describe('ExperimentalMomentoLocalTestConfigMiddleware', () => {
+  let middleware: ExperimentalMomentoLocalTestConfigMiddleware;
+  let metadata: ExperimentalMomentoLocalTestConfigMetadata;
 
   beforeEach(() => {
     metadata = {
@@ -22,14 +22,18 @@ describe('MomentoLocalTestConfigMiddleware', () => {
       returnError: MomentoErrorCodeMetadataConverter.convert(
         MomentoErrorCode.SERVER_UNAVAILABLE
       ),
-      errorRpcs: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+      errorRpcs: [
+        MomentoRPCMethodMetadataConverter.convert(MomentoRPCMethod.Get),
+      ],
       errorCount: 1,
-      delayRpcs: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+      delayRpcs: [
+        MomentoRPCMethodMetadataConverter.convert(MomentoRPCMethod.Get),
+      ],
       delayMs: 1000,
       delayCount: 1,
     };
 
-    middleware = new MomentoLocalTestConfigMiddleware(metadata);
+    middleware = new ExperimentalMomentoLocalTestConfigMiddleware(metadata);
   });
 
   test('should inject metadata correctly into request', async () => {
@@ -48,13 +52,13 @@ describe('MomentoLocalTestConfigMiddleware', () => {
       ),
     ]);
     expect(grpcMetadata.get('error-rpcs')).toEqual([
-      MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get),
+      MomentoRPCMethodMetadataConverter.convert(MomentoRPCMethod.Get),
     ]);
     expect(grpcMetadata.get('error-count')).toEqual([
       metadata.errorCount?.toString(),
     ]);
     expect(grpcMetadata.get('delay-rpcs')).toEqual([
-      MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get),
+      MomentoRPCMethodMetadataConverter.convert(MomentoRPCMethod.Get),
     ]);
     expect(grpcMetadata.get('delay-ms')).toEqual([
       metadata.delayMs?.toString(),

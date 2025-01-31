@@ -7,8 +7,12 @@ import {
   MiddlewareStatus,
 } from './middleware';
 
-class MomentoLocalMiddlewareRequestHandler implements MiddlewareRequestHandler {
-  constructor(private readonly metadata: MomentoLocalTestConfigMetadata) {}
+class ExperimentalMomentoLocalMiddlewareRequestHandler
+  implements MiddlewareRequestHandler
+{
+  constructor(
+    private readonly metadata: ExperimentalMomentoLocalTestConfigMetadata
+  ) {}
 
   onRequestBody(request: MiddlewareMessage): Promise<MiddlewareMessage> {
     return Promise.resolve(request);
@@ -51,7 +55,7 @@ class MomentoLocalMiddlewareRequestHandler implements MiddlewareRequestHandler {
   }
 }
 
-interface MomentoLocalTestConfigMetadata {
+interface ExperimentalMomentoLocalTestConfigMetadata {
   requestId: string;
   returnError?: string;
   errorRpcs?: string[];
@@ -61,19 +65,21 @@ interface MomentoLocalTestConfigMetadata {
   delayCount?: number;
 }
 
-class MomentoLocalTestConfigMiddleware implements Middleware {
+class ExperimentalMomentoLocalTestConfigMiddleware implements Middleware {
   shouldLoadLate: boolean;
-  constructor(private readonly metadata: MomentoLocalTestConfigMetadata) {
+  constructor(
+    private readonly metadata: ExperimentalMomentoLocalTestConfigMetadata
+  ) {
     this.shouldLoadLate = true;
   }
 
   onNewRequest(): MiddlewareRequestHandler {
-    return new MomentoLocalMiddlewareRequestHandler(this.metadata);
+    return new ExperimentalMomentoLocalMiddlewareRequestHandler(this.metadata);
   }
 }
 
 export {
-  MomentoLocalTestConfigMiddleware,
-  MomentoLocalTestConfigMetadata,
-  MomentoLocalMiddlewareRequestHandler,
+  ExperimentalMomentoLocalTestConfigMiddleware,
+  ExperimentalMomentoLocalTestConfigMetadata,
+  ExperimentalMomentoLocalMiddlewareRequestHandler,
 };

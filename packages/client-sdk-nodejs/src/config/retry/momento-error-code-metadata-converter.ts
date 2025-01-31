@@ -30,15 +30,14 @@ class MomentoErrorCodeMetadataConverter {
 
   /**
    * Converts a MomentoErrorCode enum value to its corresponding metadata type.
-   * @param errorCode - The MomentoErrorCode enum value.
+   * @param errorCode - The error code to convert.
    * @returns The corresponding metadata type.
    */
-  public static convert(errorCode: MomentoErrorCode): string {
-    const metadataType = this.momentoErrorCodeToMetadataMap[errorCode];
-    if (!metadataType) {
-      throw new Error(`Unsupported MomentoErrorCode: ${errorCode}`);
+  public static convert(errorCode: string | undefined): string {
+    if (!errorCode) {
+      return '';
     }
-    return metadataType;
+    return this.momentoErrorCodeToMetadataMap[errorCode] ?? '';
   }
 }
 

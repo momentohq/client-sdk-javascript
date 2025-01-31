@@ -7,14 +7,10 @@ import {
   MomentoLogger,
 } from '../../../src';
 import {TestRetryMetricsCollector} from '../../test-retry-metrics-collector';
-import {
-  MomentoRPCMethod,
-  MomentoRPCMethodConverter,
-} from '../../../src/config/retry/momento-rpc-method';
+import {MomentoRPCMethod} from '../../../src/config/retry/momento-rpc-method';
 import {WithCacheAndCacheClient} from '../integration-setup';
 import {TestRetryMetricsMiddlewareArgs} from '../../test-retry-metrics-middleware';
 import {v4} from 'uuid';
-import {MomentoErrorCodeMetadataConverter} from '../../../src/config/retry/momento-error-code-metadata-converter';
 
 describe('ExponentialBackoffRetryStrategy integration tests', () => {
   let testMetricsCollector: TestRetryMetricsCollector;
@@ -45,10 +41,8 @@ describe('ExponentialBackoffRetryStrategy integration tests', () => {
         logger: momentoLogger,
         testMetricsCollector,
         requestId: v4(),
-        returnError: MomentoErrorCodeMetadataConverter.convert(
-          MomentoErrorCode.SERVER_UNAVAILABLE
-        ),
-        errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+        returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+        errorRpcList: [MomentoRPCMethod.Get],
       };
 
       await WithCacheAndCacheClient(
@@ -89,12 +83,8 @@ describe('ExponentialBackoffRetryStrategy integration tests', () => {
         logger: momentoLogger,
         testMetricsCollector,
         requestId: v4(),
-        returnError: MomentoErrorCodeMetadataConverter.convert(
-          MomentoErrorCode.SERVER_UNAVAILABLE
-        ),
-        errorRpcList: [
-          MomentoRPCMethodConverter.convert(MomentoRPCMethod.Increment),
-        ],
+        returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+        errorRpcList: [MomentoRPCMethod.Increment],
       };
 
       await WithCacheAndCacheClient(
@@ -132,10 +122,8 @@ describe('ExponentialBackoffRetryStrategy integration tests', () => {
         logger: momentoLogger,
         testMetricsCollector,
         requestId: v4(),
-        returnError: MomentoErrorCodeMetadataConverter.convert(
-          MomentoErrorCode.SERVER_UNAVAILABLE
-        ),
-        errorRpcList: [MomentoRPCMethodConverter.convert(MomentoRPCMethod.Get)],
+        returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+        errorRpcList: [MomentoRPCMethod.Get],
         errorCount: 2, // after 2 errors, subsequent requests succeed
       };
 
