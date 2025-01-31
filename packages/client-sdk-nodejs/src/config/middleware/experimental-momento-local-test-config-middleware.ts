@@ -6,6 +6,8 @@ import {
   MiddlewareRequestHandler,
   MiddlewareStatus,
 } from './middleware';
+import {MomentoErrorCodeMetadataConverter} from '../retry/momento-error-code-metadata-converter';
+import {MomentoRPCMethodMetadataConverter} from '../retry/momento-rpc-method';
 
 class ExperimentalMomentoLocalMiddlewareRequestHandler
   implements MiddlewareRequestHandler
@@ -45,13 +47,58 @@ class ExperimentalMomentoLocalMiddlewareRequestHandler
   private setGrpcMetadata(
     metadata: Metadata,
     key: string,
-    value?: string
+    value?: unknown
   ): void {
-    if (value) {
-      // convert key to lowercase kebab-case as momento-local expects
-      key = key.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-      metadata.set(key, value.toString());
+    if (value === undefined) return;
+
+    let convertedKey: string;
+    let convertedValue: string;
+
+    switch (key) {
+      case 'requestId':
+        convertedKey = 'request-id';
+        convertedValue = value as string;
+        break;
+      case 'returnError':
+        convertedKey = 'return-error';
+        convertedValue = MomentoErrorCodeMetadataConverter.convert(
+          value as string
+        );
+        break;
+      case 'errorRpcs':
+        convertedKey = 'error-rpcs';
+        convertedValue = (value as string[])
+          .map(rpcMethod =>
+            MomentoRPCMethodMetadataConverter.convert(rpcMethod)
+          )
+          .join(' ');
+        break;
+      case 'errorCount':
+        convertedKey = 'error-count';
+        convertedValue = (value as number).toString();
+        break;
+      case 'delayRpcs':
+        convertedKey = 'delay-rpcs';
+        convertedValue = (value as string[])
+          .map(rpcMethod =>
+            MomentoRPCMethodMetadataConverter.convert(rpcMethod)
+          )
+          .join(' ');
+        break;
+      case 'delayMs':
+        convertedKey = 'delay-ms';
+        convertedValue = (value as number).toString();
+        break;
+      case 'delayCount':
+        convertedKey = 'delay-count';
+        convertedValue = (value as number).toString();
+        break;
+      default:
+        convertedKey = key;
+        convertedValue = value as string;
     }
+
+    metadata.set(convertedKey, convertedValue);
   }
 }
 
