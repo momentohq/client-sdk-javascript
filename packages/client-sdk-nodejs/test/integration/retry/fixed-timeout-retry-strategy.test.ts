@@ -12,7 +12,6 @@ import {WithCacheAndCacheClient} from '../integration-setup';
 import {TestRetryMetricsMiddlewareArgs} from '../../test-retry-metrics-middleware';
 import {v4} from 'uuid';
 import {MomentoRPCMethod} from '../../../src/config/retry/momento-rpc-method';
-import {MomentoErrorCodeMetadataConverter} from '../../../src/config/retry/momento-error-code-metadata-converter';
 
 describe('Fixed timeout retry strategy with full network outage', () => {
   let testMetricsCollector: TestRetryMetricsCollector;
@@ -350,9 +349,7 @@ describe('Fixed timeout retry strategy with delay ms', () => {
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
       errorRpcList: [MomentoRPCMethod.Get],
-      returnError: MomentoErrorCodeMetadataConverter.convert(
-        MomentoErrorCode.SERVER_UNAVAILABLE
-      ),
+      returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
       errorCount: 2,
       delayRpcList: [MomentoRPCMethod.Get],
       delayMillis: 500,
