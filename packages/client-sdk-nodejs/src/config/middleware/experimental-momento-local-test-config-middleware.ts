@@ -12,9 +12,10 @@ import {MomentoRPCMethodMetadataConverter} from '../retry/momento-rpc-method';
 class ExperimentalMomentoLocalMiddlewareRequestHandler
   implements MiddlewareRequestHandler
 {
-  constructor(
-    private readonly metadata: ExperimentalMomentoLocalTestConfigMetadata
-  ) {}
+  private readonly metadata: ExperimentalMomentoLocalTestConfigMetadata;
+  constructor(metadata: ExperimentalMomentoLocalTestConfigMetadata) {
+    this.metadata = metadata;
+  }
 
   onRequestBody(request: MiddlewareMessage): Promise<MiddlewareMessage> {
     return Promise.resolve(request);
@@ -114,10 +115,10 @@ interface ExperimentalMomentoLocalTestConfigMetadata {
 
 class ExperimentalMomentoLocalTestConfigMiddleware implements Middleware {
   shouldLoadLate: boolean;
-  constructor(
-    private readonly metadata: ExperimentalMomentoLocalTestConfigMetadata
-  ) {
+  private readonly metadata: ExperimentalMomentoLocalTestConfigMetadata;
+  constructor(metadata: ExperimentalMomentoLocalTestConfigMetadata) {
     this.shouldLoadLate = true;
+    this.metadata = metadata;
   }
 
   onNewRequest(): MiddlewareRequestHandler {

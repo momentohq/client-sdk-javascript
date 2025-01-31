@@ -14,10 +14,11 @@ import {MomentoErrorCodeMetadataConverter} from '../src/config/retry/momento-err
 
 class TestMetricsMiddlewareRequestHandler implements MiddlewareRequestHandler {
   private cacheName: string | null = null;
+  private testRetryMetricsMiddlewareArgs: TestRetryMetricsMiddlewareArgs;
 
-  constructor(
-    private testRetryMetricsMiddlewareArgs: TestRetryMetricsMiddlewareArgs
-  ) {}
+  constructor(testRetryMetricsMiddlewareArgs: TestRetryMetricsMiddlewareArgs) {
+    this.testRetryMetricsMiddlewareArgs = testRetryMetricsMiddlewareArgs;
+  }
 
   onRequestBody(request: MiddlewareMessage): Promise<MiddlewareMessage> {
     const requestType = request.constructorName();
@@ -44,13 +45,15 @@ class TestMetricsMiddlewareRequestHandler implements MiddlewareRequestHandler {
       'request-id',
       this.testRetryMetricsMiddlewareArgs.requestId
     );
-    this.setGrpcMetadata(
-      grpcMetadata,
-      'return-error',
-      MomentoErrorCodeMetadataConverter.convert(
-        this.testRetryMetricsMiddlewareArgs.returnError
-      )
-    );
+    if (this.testRetryMetricsMiddlewareArgs.returnError) {
+      this.setGrpcMetadata(
+        grpcMetadata,
+        'return-error',
+        MomentoErrorCodeMetadataConverter.convert(
+          this.testRetryMetricsMiddlewareArgs.returnError
+        )
+      );
+    }
     this.setGrpcMetadata(
       grpcMetadata,
       'error-rpcs',
@@ -141,13 +144,17 @@ interface TestRetryMetricsMiddlewareArgs {
 
 class TestRetryMetricsMiddleware implements Middleware {
   shouldLoadLate?: boolean;
+  private readonly testRetryMetricsMiddlewareArgs: TestRetryMetricsMiddlewareArgs;
 
-  constructor(private readonly args: TestRetryMetricsMiddlewareArgs) {
+  constructor(testRetryMetricsMiddlewareArgs: TestRetryMetricsMiddlewareArgs) {
     this.shouldLoadLate = true;
+    this.testRetryMetricsMiddlewareArgs = testRetryMetricsMiddlewareArgs;
   }
 
   onNewRequest(): MiddlewareRequestHandler {
-    return new TestMetricsMiddlewareRequestHandler(this.args);
+    return new TestMetricsMiddlewareRequestHandler(
+      this.testRetryMetricsMiddlewareArgs
+    );
   }
 }
 

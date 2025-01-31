@@ -110,13 +110,13 @@ describe('TestRetryMetricsMiddleware', () => {
     const testRetryMetricsMiddlewareArgs = {
       logger: momentoLogger,
       testMetricsCollector,
-      requestId: requestId,
-      returnError: returnError,
-      errorRpcList: errorRpcList,
-      errorCount: errorCount,
-      delayRpcList: delayRpcList,
-      delayMillis: delayMillis,
-      delayCount: delayCount,
+      requestId,
+      returnError,
+      errorRpcList,
+      errorCount,
+      delayRpcList,
+      delayMillis,
+      delayCount,
     };
 
     const handler = new TestMetricsMiddlewareRequestHandler(

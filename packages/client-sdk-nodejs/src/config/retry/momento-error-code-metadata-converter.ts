@@ -33,11 +33,12 @@ class MomentoErrorCodeMetadataConverter {
    * @param errorCode - The error code to convert.
    * @returns The corresponding metadata type.
    */
-  public static convert(errorCode: string | undefined): string {
-    if (!errorCode) {
-      return '';
+  public static convert(errorCode: string): string {
+    const metadataType = this.momentoErrorCodeToMetadataMap[errorCode];
+    if (!metadataType) {
+      throw new Error(`Unsupported MomentoErrorCode: ${errorCode}`);
     }
-    return this.momentoErrorCodeToMetadataMap[errorCode] ?? '';
+    return metadataType;
   }
 }
 
