@@ -1,8 +1,8 @@
-import {MomentoRPCMethod} from './momento-rpc-method';
+import {MomentoRPCMethod} from '../src/config/retry/momento-rpc-method';
 
 export class TestRetryMetricsCollector {
   // Data structure to store timestamps: cacheName -> requestName -> [timestamps]
-  private readonly data: Record<string, Record<string, number[]>>;
+  private readonly data: Record<string, Record<MomentoRPCMethod, number[]>>;
 
   constructor() {
     this.data = {};
