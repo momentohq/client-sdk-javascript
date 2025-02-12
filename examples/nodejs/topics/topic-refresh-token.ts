@@ -35,6 +35,7 @@ export class TopicRefreshToken {
       onError: (error: TopicSubscribe.Error) => void;
     }
   > = {};
+  private testFinished = false;
 
   private constructor(props: TokenRefreshingTopicClientProps) {
     this.refreshBeforeExpiryMs = props.refreshBeforeExpiryMs;
@@ -56,11 +57,14 @@ export class TopicRefreshToken {
   }
 
   private scheduleTokenRefresh(expiresAt: ExpiresAt) {
+    if (this.testFinished) return; // Stop the refresh if the test is finished
     const refreshAfterMs = getRefreshAfterMs(expiresAt, this.refreshBeforeExpiryMs);
     setTimeout(() => void this.refreshToken(), refreshAfterMs);
   }
 
   private async refreshToken() {
+    if (this.testFinished) return; // Stop refreshing if the test is finished
+
     console.log('Disposable token expiring soon, refreshing topic client with new token');
     const disposableToken = await this.getDisposableToken();
     const newTopicClient = new TopicClient({
@@ -135,6 +139,18 @@ export class TopicRefreshToken {
       onError: options.onError,
     };
   }
+
+  // Call this to end the test and stop refreshing and publishing
+  finishTest() {
+    this.testFinished = true;
+
+    // Unsubscribe from all active subscriptions
+    Object.values(this.activeSubscriptions).forEach(subscription => {
+      subscription.unsubscribe();
+    });
+
+    console.log('Test completed. All subscriptions have been unsubscribed.');
+  }
 }
 
 function getRefreshAfterMs(expiresAt: ExpiresAt, refreshBefore: number): number {
@@ -189,11 +205,12 @@ async function main() {
     console.log(`Published: ${message}`);
   }, 2000);
 
-  // Run the test for 5 minutes
+  // Run the test for 2 minutes
   setTimeout(() => {
     console.log('Test finished');
     clearInterval(publishInterval);
-  }, 300000);
+    client.finishTest();
+  }, 120000);
 }
 
 main().catch(console.error);
