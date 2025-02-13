@@ -20,6 +20,11 @@ export interface TokenRefreshingTopicClientProps {
   getDisposableToken: () => Promise<{token: string; expiresAt: ExpiresAt}>;
 }
 
+// This wrapper class makes it easy to use disposable auth tokens with the TopicClient.
+// At some user-specified time before the token expires (refreshBeforeExpiryMs), a new
+// disposable token will be fetched via the user-specified getDisposableToken function
+// and the new token is used to create a new TopicClient instance. All active subscriptions
+// are transferred to the new client, then the old client is replaced by the new one.
 export class TopicRefreshToken {
   private topicClient?: TopicClient;
   private readonly refreshBeforeExpiryMs: number;
@@ -42,6 +47,10 @@ export class TopicRefreshToken {
     this.getDisposableToken = props.getDisposableToken;
   }
 
+  // The wrapper class requires an async initialization function to set up the
+  // first TopicClient instance since the constructor cannot be async and the
+  // getDisposableToken function is async.
+  // A new TopicClient requires a new CredentialProvider with the new disposable token.
   private async initialize() {
     const disposableToken = await this.getDisposableToken();
     this.topicClient = new TopicClient({
@@ -50,18 +59,21 @@ export class TopicRefreshToken {
     this.scheduleTokenRefresh(disposableToken.expiresAt);
   }
 
+  // create() is a factory method that creates a new instance of the wrapper class.
   static async create(props: TokenRefreshingTopicClientProps) {
     const client = new TopicRefreshToken(props);
     await client.initialize();
     return client;
   }
 
+  // scheduleTokenRefresh() is a helper function that schedules a token refresh
   private scheduleTokenRefresh(expiresAt: ExpiresAt) {
     if (this.testFinished) return; // Stop the refresh if the test is finished
     const refreshAfterMs = getRefreshAfterMs(expiresAt, this.refreshBeforeExpiryMs);
     setTimeout(() => void this.refreshToken(), refreshAfterMs);
   }
 
+  // refreshToken() is the function that is called to refresh the token.
   private async refreshToken() {
     if (this.testFinished) return; // Stop refreshing if the test is finished
 
@@ -77,6 +89,8 @@ export class TopicRefreshToken {
     this.topicClient = newTopicClient;
   }
 
+  // For each active subscription, make sure to start the same subscription on the new client,
+  // transfer over the existing onItem and onError callbacks, then unsubscribe from the old client.
   private async refreshSubscriptions(newTopicClient: TopicClient) {
     for (const key in this.activeSubscriptions) {
       const value = this.activeSubscriptions[key];
@@ -94,6 +108,8 @@ export class TopicRefreshToken {
     }
   }
 
+  // Simply passes a publish request to the underlying TopicClient instance.
+  // Calls the onError callback if the publish request fails.
   async publish(cacheName: string, topicName: string, message: string, onError?: (resp: TopicPublish.Error) => void) {
     if (!this.topicClient) {
       await this.initialize();
@@ -104,6 +120,11 @@ export class TopicRefreshToken {
     }
   }
 
+  // Subscribes to a topic and stores the subscription and callbacks in the
+  // activeSubscriptions record. The wrappedOnItem callback is a wrapper around
+  // the user-provided onItem callback. The wrapper ensures that duplicate messages
+  // are not processed by the user code since there could be some overlap in message
+  // delivery between the old and new TopicClient instances when refreshing the client.
   async subscribe(
     cacheName: string,
     topicName: string,
@@ -115,6 +136,7 @@ export class TopicRefreshToken {
 
     const wrappedOnItem = (item: TopicItem) => {
       const currentSubscription = this.activeSubscriptions[`${cacheName}:${topicName}`];
+      // Pass item through to user-provided onItem only if message hasn't been processed before
       if (item.sequenceNumber() > currentSubscription.lastSequenceNumber) {
         options.onItem(item);
         currentSubscription.lastSequenceNumber = item.sequenceNumber();
@@ -130,6 +152,8 @@ export class TopicRefreshToken {
       throw new Error(`Error subscribing to topic: ${resp.toString()}`);
     }
 
+    // If the subscription already exists, update the existing subscription to include the
+    // unsubscribe function. Otherwise, make a new record with all necessary info.
     this.activeSubscriptions[`${cacheName}:${topicName}`] = {
       cacheName,
       topicName,
@@ -150,13 +174,19 @@ export class TopicRefreshToken {
     });
 
     console.log('Test completed. All subscriptions have been unsubscribed.');
+
+    // Do not leave the process hanging if the test is finished
+    // eslint-disable-next-line no-process-exit
+    process.exit(0);
   }
 }
 
+// Helper function for setting the correct SetTimeout value for refreshing the token.
 function getRefreshAfterMs(expiresAt: ExpiresAt, refreshBefore: number): number {
   return expiresAt.epoch() * 1000 - Date.now() - refreshBefore;
 }
 
+// Helper function to get a disposable token from the auth service
 async function getDisposableToken(): Promise<{token: string; expiresAt: ExpiresAt}> {
   const authClient = new AuthClient();
   const fetchResp = await authClient.generateDisposableToken(
