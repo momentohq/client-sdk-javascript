@@ -22,7 +22,7 @@ describe('Fixed count retry strategy with full network outage', () => {
     );
   });
 
-  it('should make max 3 attempts for retry eligible api for fixed count strategy', async () => {
+  it('should make max 3 attempts for retry eligible api', async () => {
     const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
@@ -49,7 +49,7 @@ describe('Fixed count retry strategy with full network outage', () => {
     );
   });
 
-  it('should make 0 attempts for retry non-eligible api for fixed count strategy', async () => {
+  it('should make 0 attempts for retry non-eligible api', async () => {
     const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
@@ -88,7 +88,7 @@ describe('Fixed count retry strategy with temporary network outage', () => {
     );
   });
 
-  it('should make less than max number of allowed retry attempts for fixed count strategy', async () => {
+  it('should make less than max number of allowed retry attempts', async () => {
     const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,

@@ -20,6 +20,7 @@ import {
 } from '../../src/config/retry/momento-rpc-method';
 import {Metadata} from '@grpc/grpc-js';
 import {MiddlewareMetadata} from '../../src/config/middleware/middleware';
+import {MomentoErrorCodeMetadataConverter} from '../../src/config/retry/momento-error-code-metadata-converter';
 
 describe('TestRetryMetricsMiddleware', () => {
   let middleware: TestRetryMetricsMiddleware;
@@ -129,8 +130,11 @@ describe('TestRetryMetricsMiddleware', () => {
         MomentoRPCMethod.Get
       )} ${MomentoRPCMethodMetadataConverter.convert(MomentoRPCMethod.Set)}`,
     ];
+    const expectedReturnError =
+      MomentoErrorCodeMetadataConverter.convert(returnError);
 
     expect(grpcMetadata.get('request-id')).toEqual([requestId]);
+    expect(grpcMetadata.get('return-error')).toEqual([expectedReturnError]);
     expect(grpcMetadata.get('error-rpcs')).toEqual(expectedRpcsList);
     expect(grpcMetadata.get('error-count')).toEqual([errorCount.toString()]);
     expect(grpcMetadata.get('delay-rpcs')).toEqual(expectedRpcsList);
