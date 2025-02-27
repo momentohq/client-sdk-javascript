@@ -35,5 +35,8 @@ export function grpcChannelOptionsFromGrpcConfig(
       grpcConfig.getKeepAlivePermitWithoutCalls(),
     'grpc.keepalive_time_ms': grpcConfig.getKeepAliveTimeMS(),
     'grpc.keepalive_timeout_ms': grpcConfig.getKeepAliveTimeoutMS(),
+
+    // This flag disables service config resolution, which is not needed for our use case.
+    'grpc.service_config_disable_resolution': 1,
   };
 }
