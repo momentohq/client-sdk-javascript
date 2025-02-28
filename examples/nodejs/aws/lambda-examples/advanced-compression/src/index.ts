@@ -22,7 +22,7 @@ const credentialsProvider = new EnvMomentoTokenProvider({
 const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.INFO);
 
 const config = Configurations.InRegion.Default.latest(loggerFactory).withCompressionStrategy({
-    compressorFactory: CompressorFactory.default(),
+    compressorFactory: CompressorFactory.zstd(),
     compressionLevel: CompressionLevel.SmallestSize,
 });
 
