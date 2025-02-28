@@ -24,6 +24,7 @@ import {
 } from '@gomomento/sdk-core/dist/src/messages/cache-info';
 import {RetryInterceptor} from './grpc/retry-interceptor';
 import {secondsToMilliseconds} from '@gomomento/sdk-core/dist/src/utils';
+import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 
 export interface ControlClientProps {
   configuration: Configuration;
@@ -59,6 +60,12 @@ export class CacheControlClient {
         overallRequestTimeoutMs: CacheControlClient.REQUEST_TIMEOUT_MS,
       }),
     ];
+
+    const grpcConfig = props.configuration
+      .getTransportStrategy()
+      .getGrpcConfig();
+    const channelOptions = grpcChannelOptionsFromGrpcConfig(grpcConfig);
+
     this.logger.debug(
       `Creating control client using endpoint: '${props.credentialProvider.getControlEndpoint()}`
     );
@@ -68,7 +75,8 @@ export class CacheControlClient {
           props.credentialProvider.getControlEndpoint(),
           props.credentialProvider.isControlEndpointSecure()
             ? ChannelCredentials.createSsl()
-            : ChannelCredentials.createInsecure()
+            : ChannelCredentials.createInsecure(),
+          channelOptions
         ),
       loggerFactory: props.configuration.getLoggerFactory(),
       maxIdleMillis: props.configuration
