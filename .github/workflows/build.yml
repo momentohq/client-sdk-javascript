@@ -491,7 +491,6 @@ jobs:
           pushd examples/nodejs/aws/lambda-examples/advanced-compression
             # This example shows how to build and package a lambda function for a different target architecture,
             # and thus it requires this `--force` flag.
-            rm -rf node_modules package-lock.json
             npm ci --force
             npm run build
           popd
