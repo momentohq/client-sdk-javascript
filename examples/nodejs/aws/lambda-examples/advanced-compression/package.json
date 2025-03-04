@@ -17,7 +17,11 @@
   "scripts": {
     "postinstall": "mkdir -p node_modules/@mongodb-js/zstd/build/Debug && cp node_modules/@mongodb-js/zstd/build/Release/zstd.node node_modules/@mongodb-js/zstd/build/Debug",
     "prebuild": "rm -rf dist",
+    "install:dev": "rm -rf node_modules && npm install",
+    "install:aws": "rm -rf node_modules && npm install --platform=linux --arch=x64",
     "build": "ts-node esbuild.ts",
+    "rebuild:dev": "npm run install:dev && npm run build",
+    "rebuild:aws": "npm run install:aws && npm run build",
     "postbuild": "ts-node postbuild.ts"
   }
 }
