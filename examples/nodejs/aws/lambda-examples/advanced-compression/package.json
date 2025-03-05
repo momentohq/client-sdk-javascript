@@ -15,7 +15,6 @@
     "esbuild": "^0.20.2"
   },
   "scripts": {
-    "postinstall": "mkdir -p node_modules/@mongodb-js/zstd/build/Debug && cp node_modules/@mongodb-js/zstd/build/Release/zstd.node node_modules/@mongodb-js/zstd/build/Debug",
     "prebuild": "rm -rf dist",
     "install:dev": "rm -rf node_modules && npm install",
     "install:aws": "rm -rf node_modules && npm install --platform=linux --arch=x64",
