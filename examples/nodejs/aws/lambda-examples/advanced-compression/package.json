@@ -16,11 +16,8 @@
   },
   "scripts": {
     "prebuild": "rm -rf dist",
-    "install:dev": "rm -rf node_modules && npm install",
-    "install:aws": "rm -rf node_modules && npm install --platform=linux --arch=x64",
     "build": "ts-node esbuild.ts",
-    "rebuild:dev": "npm run install:dev && npm run build",
-    "rebuild:aws": "npm run install:aws && npm run build",
+    "build:lambda": "docker build -t lambda-builder . && docker run --rm -v \"$(pwd)/output:/output\" lambda-builder",
     "postbuild": "ts-node postbuild.ts"
   }
 }
