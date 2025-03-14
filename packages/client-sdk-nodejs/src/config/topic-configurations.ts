@@ -8,9 +8,11 @@ import {
   StaticTopicGrpcConfiguration,
   StaticTopicTransportStrategy,
 } from './transport/topics';
+import {Middleware} from './middleware/middleware';
 
 const defaultLoggerFactory: MomentoLoggerFactory =
   new DefaultMomentoLoggerFactory();
+const defaultMiddlewares: Middleware[] = [];
 
 /**
  * Default config provides defaults suitable for most environments; prioritizes success of publishing and receiving messages.
@@ -38,6 +40,7 @@ export class Default extends TopicClientConfiguration {
         }),
       }),
       throwOnErrors: false,
+      middlewares: defaultMiddlewares,
     });
   }
 }
@@ -68,6 +71,7 @@ export class Lambda extends TopicClientConfiguration {
       loggerFactory: loggerFactory,
       transportStrategy: transportStrategy,
       throwOnErrors: false,
+      middlewares: defaultMiddlewares,
     });
   }
 }

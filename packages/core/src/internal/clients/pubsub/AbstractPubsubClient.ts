@@ -32,6 +32,7 @@ export interface SendSubscribeOptions {
   ) => void;
   onDiscontinuity: (discontinuity: TopicDiscontinuity) => void;
   onHeartbeat: (heartbeat: TopicHeartbeat) => void;
+  onConnectionLost: () => void;
   subscriptionState: SubscriptionState;
   subscription: TopicSubscribe.Subscription;
 
@@ -152,6 +153,11 @@ export abstract class AbstractPubsubClient<TGrpcError>
       (() => {
         return;
       });
+    const onConnectionLost =
+      options.onConnectionLost ??
+      (() => {
+        return;
+      });
 
     const subscriptionState = new SubscriptionState();
     const subscription = new TopicSubscribe.Subscription(
@@ -165,6 +171,7 @@ export abstract class AbstractPubsubClient<TGrpcError>
       onError: onError,
       onDiscontinuity: onDiscontinuity,
       onHeartbeat: onHeartbeat,
+      onConnectionLost: onConnectionLost,
       subscriptionState: subscriptionState,
       subscription: subscription,
       restartedDueToError: false,
@@ -183,11 +190,15 @@ export abstract class AbstractPubsubClient<TGrpcError>
       // We want to restart on stream end, except if:
       // 1. The stream was cancelled by the caller.
       // 2. The stream was restarted following an error.
-      if (options.restartedDueToError) {
+      if (
+        options.restartedDueToError &&
+        options.subscriptionState.isSubscribed
+      ) {
         this.logger.trace(
           'Stream ended after error but was restarted on topic: %s',
           options.topicName
         );
+        options.restartedDueToError = false;
         return;
       } else if (!options.subscriptionState.isSubscribed) {
         this.logger.trace(
@@ -267,6 +278,13 @@ export abstract class AbstractPubsubClient<TGrpcError>
       );
       sleep(reconnectDelayMillis)
         .then(() => {
+          if (!options.subscriptionState.isSubscribed) {
+            this.logger.trace(
+              'Subscription was unsubscribed before retrying; aborting reconnect.'
+            );
+            return;
+          }
+
           // When restarting the stream we do not do anything with the promises,
           // because we should have already returned the subscription object to the user.
           this.sendSubscribe(options)
