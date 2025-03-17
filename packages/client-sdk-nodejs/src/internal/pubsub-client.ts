@@ -1,5 +1,4 @@
 import {pubsub} from '@gomomento/generated-types';
-import grpcPubsub = pubsub.cache_client.pubsub;
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
@@ -8,10 +7,11 @@ import {version} from '../../package.json';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {
   CredentialProvider,
+  Middleware,
   StaticGrpcConfiguration,
   TopicDiscontinuity,
-  TopicHeartbeat,
   TopicGrpcConfiguration,
+  TopicHeartbeat,
   TopicItem,
   TopicPublish,
   TopicSubscribe,
@@ -20,14 +20,15 @@ import {
 import {truncateString} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
   AbstractPubsubClient,
-  SendSubscribeOptions,
   PrepareSubscribeCallbackOptions,
+  SendSubscribeOptions,
 } from '@gomomento/sdk-core/dist/src/internal/clients/pubsub/AbstractPubsubClient';
 import {TopicConfiguration} from '../config/topic-configuration';
 import {TopicClientAllProps} from './topic-client-all-props';
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {RetryInterceptor} from './grpc/retry-interceptor';
 import {secondsToMilliseconds} from '@gomomento/sdk-core/dist/src/utils';
+import grpcPubsub = pubsub.cache_client.pubsub;
 
 export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   private readonly client: grpcPubsub.PubsubClient;
@@ -38,6 +39,7 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   private static readonly DEFAULT_MAX_SESSION_MEMORY_MB: number = 256;
   private readonly unaryInterceptors: Interceptor[];
   private readonly streamingInterceptors: Interceptor[];
+  private isConnectionLost: boolean;
 
   // private static readonly RST_STREAM_NO_ERROR_MESSAGE =
   //   'Received RST_STREAM with code 0';
@@ -100,8 +102,11 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
       props.configuration,
       this.unaryRequestTimeoutMs
     );
-    this.streamingInterceptors =
-      PubsubClient.initializeStreamingInterceptors(headers);
+    this.streamingInterceptors = PubsubClient.initializeStreamingInterceptors(
+      headers,
+      props.configuration
+    );
+    this.isConnectionLost = false;
   }
 
   public getEndpoint(): string {
@@ -212,6 +217,12 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
       }
       options.firstMessage = false;
 
+      if (resp.has_item || resp.has_heartbeat || resp.has_discontinuity) {
+        if (this.isConnectionLost) {
+          this.isConnectionLost = false;
+        }
+      }
+
       if (resp.item) {
         const sequenceNumber = resp.item.topic_sequence_number;
         const sequencePage = resp.item.sequence_page;
@@ -302,6 +313,12 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
         // // serviceError.code === Status.INTERNAL &&
         //  // serviceError.details === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE;
         true;
+
+      if (!this.isConnectionLost) {
+        this.isConnectionLost = true;
+        options.onConnectionLost();
+      }
+
       const momentoError = new TopicSubscribe.Error(
         this.getCacheServiceErrorMapper().convertError(serviceError)
       );
@@ -318,8 +335,25 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
     configuration: TopicConfiguration,
     requestTimeoutMs: number
   ): Interceptor[] {
-    return [
-      middlewaresInterceptor(configuration.getLoggerFactory(), [], {}),
+    const middlewares = configuration.getMiddlewares();
+    const groupMiddlewares = (isLateLoad: boolean) =>
+      middlewares.filter(
+        middleware => (middleware.shouldLoadLate ?? false) === isLateLoad
+      );
+
+    const createMiddlewareInterceptor = (middlewareGroup: Middleware[]) =>
+      middlewaresInterceptor(
+        configuration.getLoggerFactory(),
+        middlewareGroup,
+        {}
+      );
+
+    // Separate middlewares into immediate and late-load groups
+    const immediateMiddlewares = groupMiddlewares(false);
+    const lateLoadMiddlewares = groupMiddlewares(true);
+
+    const interceptors: Interceptor[] = [
+      createMiddlewareInterceptor(immediateMiddlewares),
       HeaderInterceptor.createHeadersInterceptor(headers),
       RetryInterceptor.createRetryInterceptor({
         clientName: 'PubSubClient',
@@ -327,13 +361,27 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
         overallRequestTimeoutMs: requestTimeoutMs,
       }),
     ];
+
+    if (lateLoadMiddlewares.length > 0) {
+      interceptors.push(createMiddlewareInterceptor(lateLoadMiddlewares));
+    }
+    return interceptors;
   }
 
   // TODO https://github.com/momentohq/client-sdk-nodejs/issues/349
   // decide on streaming interceptors and middlewares
   private static initializeStreamingInterceptors(
-    headers: Header[]
+    headers: Header[],
+    configuration: TopicConfiguration
   ): Interceptor[] {
-    return [HeaderInterceptor.createHeadersInterceptor(headers)];
+    const middlewares = configuration.getMiddlewares();
+
+    const createMiddlewareInterceptor = (middlewares: Middleware[]) =>
+      middlewaresInterceptor(configuration.getLoggerFactory(), middlewares, {});
+
+    return [
+      createMiddlewareInterceptor(middlewares),
+      HeaderInterceptor.createHeadersInterceptor(headers),
+    ];
   }
 }

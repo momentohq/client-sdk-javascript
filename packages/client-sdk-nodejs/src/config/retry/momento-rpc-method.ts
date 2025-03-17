@@ -43,6 +43,8 @@ enum MomentoRPCMethod {
   SortedSetGetRank = '_SortedSetGetRankRequest',
   SortedSetLength = '_SortedSetLengthRequest',
   SortedSetLengthByScore = '_SortedSetLengthByScoreRequest',
+  TopicPublish = '_PublishRequest',
+  TopicSubscribe = '_SubscriptionRequest',
 }
 
 class MomentoRPCMethodMetadataConverter {
@@ -96,6 +98,9 @@ class MomentoRPCMethodMetadataConverter {
     [MomentoRPCMethod.SortedSetGetRank]: 'sorted-set-get-rank',
     [MomentoRPCMethod.SortedSetLength]: 'sorted-set-length',
     [MomentoRPCMethod.SortedSetLengthByScore]: 'sorted-set-length-by-score',
+
+    [MomentoRPCMethod.TopicPublish]: 'topic-publish',
+    [MomentoRPCMethod.TopicSubscribe]: 'topic-subscribe',
   };
 
   /**

@@ -36,6 +36,12 @@ export class TopicClient extends AbstractTopicClient {
     );
 
     this.logger.debug('Instantiated Momento TopicClient');
+
+    allProps.configuration.getMiddlewares().forEach(m => {
+      if (m.init) {
+        m.init();
+      }
+    });
   }
 }
 

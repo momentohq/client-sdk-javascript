@@ -1,7 +1,7 @@
 import {
-  TestMetricsMiddlewareRequestHandler,
-  TestRetryMetricsMiddleware,
-} from '../test-retry-metrics-middleware';
+  MomentoLocalMiddlewareRequestHandler,
+  MomentoLocalMiddleware,
+} from '../momento-local-middleware';
 import {TestRetryMetricsCollector} from '../test-retry-metrics-collector';
 import {
   CredentialProvider,
@@ -23,7 +23,7 @@ import {MiddlewareMetadata} from '../../src/config/middleware/middleware';
 import {MomentoErrorCodeMetadataConverter} from '../../src/config/retry/momento-error-code-metadata-converter';
 
 describe('TestRetryMetricsMiddleware', () => {
-  let middleware: TestRetryMetricsMiddleware;
+  let middleware: MomentoLocalMiddleware;
   let cacheClient: CacheClient;
   let testMetricsCollector: TestRetryMetricsCollector;
   let momentoLogger: MomentoLogger;
@@ -33,7 +33,7 @@ describe('TestRetryMetricsMiddleware', () => {
     momentoLogger = new DefaultMomentoLoggerFactory().getLogger(
       'TestRetryMetricsMiddleware'
     );
-    middleware = new TestRetryMetricsMiddleware({
+    middleware = new MomentoLocalMiddleware({
       logger: momentoLogger,
       testMetricsCollector,
       requestId: v4(),
@@ -120,7 +120,7 @@ describe('TestRetryMetricsMiddleware', () => {
       delayCount,
     };
 
-    const handler = new TestMetricsMiddlewareRequestHandler(
+    const handler = new MomentoLocalMiddlewareRequestHandler(
       testRetryMetricsMiddlewareArgs
     );
     await handler.onRequestMetadata(middlewareMetadata);
