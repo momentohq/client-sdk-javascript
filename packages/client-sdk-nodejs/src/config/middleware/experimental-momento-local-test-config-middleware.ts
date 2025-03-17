@@ -128,8 +128,8 @@ interface ExperimentalMomentoLocalTestConfigMetadata {
   delayMs?: number;
   delayCount?: number;
   streamErrorRpcs?: string[];
-  streamError: string;
-  streamErrorMessageLimit: number;
+  streamError?: string;
+  streamErrorMessageLimit?: number;
 }
 
 class ExperimentalMomentoLocalTestConfigMiddleware implements Middleware {
