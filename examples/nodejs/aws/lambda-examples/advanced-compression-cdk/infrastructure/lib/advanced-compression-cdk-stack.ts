@@ -15,7 +15,7 @@ export class AdvancedCompressionCdkStack extends cdk.Stack {
 
     // Define the lambda layer from the ZIP file
     const zstdLayer = new lambda.LayerVersion(this, 'ZstdLayer', {
-      code: lambda.Code.fromAsset('../src/zstd-layer/zstd_arm64_layer.zip'),
+      code: lambda.Code.fromAsset('../src/zstd-layer/zstd_x64_layer.zip'),
       compatibleRuntimes: [lambda.Runtime.NODEJS_18_X, lambda.Runtime.NODEJS_20_X],
       description: 'Zstd compression library for Momento',
     });

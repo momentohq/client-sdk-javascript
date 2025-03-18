@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npm install --platform=linux --arch=x64 && cd .. && zip -r zstd_arm64_layer.zip nodejs"
+    "build": "npm install --platform=linux --arch=x64 && cd .. && zip -r zstd_x64_layer.zip nodejs"
   },
   "keywords": [],
   "author": "",
