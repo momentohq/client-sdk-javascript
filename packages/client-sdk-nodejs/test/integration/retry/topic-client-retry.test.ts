@@ -5,7 +5,7 @@ import {
   SubscribeCallOptions,
 } from '../../../src';
 import {TestRetryMetricsCollector} from '../../test-retry-metrics-collector';
-import {WithCacheAndTopicClient} from '../integration-setup';
+import {TestAdminClient, WithCacheAndTopicClient} from '../integration-setup';
 import {MomentoLocalMiddlewareArgs} from '../../momento-local-middleware';
 import {v4} from 'uuid';
 import {Semaphore} from '@gomomento/sdk-core/dist/src/internal/utils';
@@ -160,6 +160,102 @@ describe('Topic client retry tests', () => {
           );
         }
       );
+    });
+  });
+
+  describe('test-admin', () => {
+    it('should pause subscription when admin port is blocked and resume subscription once admin port is unblocked', async () => {
+      const testAdminClient = new TestAdminClient();
+      const momentoLocalMiddlewareArgs: MomentoLocalMiddlewareArgs = {
+        logger: momentoLogger,
+        testMetricsCollector: testMetricsCollector,
+        requestId: v4(),
+      };
+
+      let subscription: TopicSubscribe.Subscription | null = null;
+      const lostConnectionSemaphore = new Semaphore(0);
+      const heartbeatSemaphore = new Semaphore(0); // Semaphore starts at 0 (not acquired)
+      let heartbeatCounter = 0;
+      let retryCounter = 0;
+      const whenToReleaseHeartbeatSemaphore = 5;
+
+      const subscribeOptions: SubscribeCallOptions = {
+        onItem(item) {
+          momentoLogger.info(`Received item: ${item.valueString()}`);
+        },
+        onHeartbeat() {
+          heartbeatCounter++;
+
+          // Release semaphore when the specified number of heartbeats is reached
+          if (heartbeatCounter === whenToReleaseHeartbeatSemaphore) {
+            heartbeatSemaphore.release();
+          }
+        },
+        onConnectionLost() {
+          retryCounter++;
+          lostConnectionSemaphore.release(); // Release semaphore when connection is lost
+        },
+      };
+
+      await WithCacheAndTopicClient(
+        config => config,
+        momentoLocalMiddlewareArgs,
+        async (topicClient, cacheName) => {
+          const topicName = 'topic';
+
+          // Subscribe to the topic
+          const subscribeResponse = await topicClient.subscribe(
+            cacheName,
+            topicName,
+            subscribeOptions
+          );
+          expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
+          subscription = subscribeResponse as TopicSubscribe.Subscription;
+
+          // Wait for the specified number of heartbeats before proceeding
+          await heartbeatSemaphore.acquire();
+          const initialHeartbeatCount = heartbeatCounter;
+          expect(initialHeartbeatCount).toBeGreaterThan(0);
+
+          // Block the admin port
+          momentoLogger.info('Blocking admin port');
+          await testAdminClient.blockPort();
+
+          // Wait for connection lost
+          await lostConnectionSemaphore.acquire();
+          expect(retryCounter).toBe(1);
+          expect(heartbeatCounter).toBe(initialHeartbeatCount); // Ensure no new heartbeats during the block
+
+          // Unblock the admin port
+          momentoLogger.info('Unblocking admin port');
+          await testAdminClient.unblockPort();
+
+          // Wait for heartbeat to resume after unblocking
+          await waitForHeartbeatResume(initialHeartbeatCount);
+
+          // Ensure heartbeats resumed after unblock
+          expect(heartbeatCounter).toBeGreaterThan(initialHeartbeatCount);
+
+          // Unsubscribe after test completes
+          if (subscription) {
+            subscription.unsubscribe();
+          }
+        }
+      );
+
+      // Helper function to wait for heartbeat to resume. This simulates the `onConnectionRestore` event logic.
+      function waitForHeartbeatResume(
+        initialHeartbeatCount: number
+      ): Promise<void> {
+        return new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (heartbeatCounter > initialHeartbeatCount) {
+              clearInterval(interval);
+              resolve();
+            }
+          }, 100); // Check every 100ms
+        });
+      }
     });
   });
 });

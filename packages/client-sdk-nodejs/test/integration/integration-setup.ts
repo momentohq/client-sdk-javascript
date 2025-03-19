@@ -113,6 +113,33 @@ export async function WithCacheAndTopicClient(
   await testCallback(topicClient, cacheName);
 }
 
+export class TestAdminClient {
+  private readonly endpoint: string;
+
+  constructor() {
+    const host = process.env.TEST_ADMIN_ENDPOINT || '127.0.0.1';
+    const port = process.env.TEST_ADMIN_PORT || '9090';
+    this.endpoint = `${host}:${port}`;
+  }
+
+  public async blockPort(): Promise<void> {
+    await this.sendRequest('/block', 'Failed to block port');
+  }
+
+  public async unblockPort(): Promise<void> {
+    await this.sendRequest('/unblock', 'Failed to unblock port');
+  }
+
+  private async sendRequest(path: string, errorMessage: string): Promise<void> {
+    try {
+      await fetch(`http://${this.endpoint}${path}`);
+    } catch (error) {
+      console.error(`${errorMessage}:`, error);
+      throw error;
+    }
+  }
+}
+
 let _credsProvider: CredentialProvider | undefined = undefined;
 export function credsProvider(): CredentialProvider {
   if (_credsProvider === undefined) {
