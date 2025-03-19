@@ -218,7 +218,6 @@ describe('Topic client retry tests', () => {
           expect(initialHeartbeatCount).toBeGreaterThan(0);
 
           // Block the admin port
-          momentoLogger.info('Blocking admin port');
           await testAdminClient.blockPort();
 
           // Wait for connection lost
@@ -227,7 +226,6 @@ describe('Topic client retry tests', () => {
           expect(heartbeatCounter).toBe(initialHeartbeatCount); // Ensure no new heartbeats during the block
 
           // Unblock the admin port
-          momentoLogger.info('Unblocking admin port');
           await testAdminClient.unblockPort();
 
           // Wait for heartbeat to resume after unblocking
