@@ -157,6 +157,9 @@ describe('Topic client retry tests', () => {
             subscribeOptions
           );
           expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Error);
+          expect(
+            (subscribeResponse as TopicSubscribe.Error).errorCode()
+          ).toEqual(MomentoErrorCode.TIMEOUT_ERROR);
         }
       );
     });
