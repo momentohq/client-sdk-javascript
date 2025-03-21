@@ -38,6 +38,12 @@ export interface TopicGrpcConfigurationProps {
    * Therefore, keep-alives should be disabled in lambda and similar environments.
    */
   keepAliveTimeMs?: number;
+
+  /**
+   * number of milliseconds the client is willing to wait for an RPC to complete before it is terminated
+   * with a DeadlineExceeded error.
+   */
+  deadlineMillis: number;
 }
 
 /**
@@ -91,4 +97,17 @@ export interface TopicGrpcConfiguration {
    * @returns {number} the interval at which to send the keepalive or ping.
    */
   getKeepAliveTimeMS(): number | undefined;
+
+  /**
+   * @returns {number} number of milliseconds the client is willing to wait for an RPC to complete before it is terminated
+   *    with a DeadlineExceeded error.
+   */
+  getDeadlineMillis(): number;
+
+  /**
+   * Copy constructor for overriding the client-side deadline
+   * @param {number} deadlineMillis
+   * @returns {TopicGrpcConfiguration} a new GrpcConfiguration with the specified client-side deadline
+   */
+  withDeadlineMillis(deadlineMillis: number): TopicGrpcConfiguration;
 }

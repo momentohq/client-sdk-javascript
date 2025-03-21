@@ -86,6 +86,13 @@ export interface TopicConfiguration {
    * @returns {TopicConfiguration} a new TopicConfiguration object with the specified Middleware appended to the list of existing Middlewares
    */
   addMiddleware(middleware: Middleware): TopicConfiguration;
+
+  /**
+   * Convenience copy constructor that updates the client-side timeout setting in the TransportStrategy
+   * @param {number} clientTimeoutMillis
+   * @returns {Configuration} a new TopicConfiguration object with its TransportStrategy updated to use the specified client timeout
+   */
+  withClientTimeoutMillis(clientTimeoutMillis: number): TopicConfiguration;
 }
 
 export class TopicClientConfiguration implements TopicConfiguration {
@@ -154,6 +161,14 @@ export class TopicClientConfiguration implements TopicConfiguration {
     return new TopicClientConfiguration({
       ...this,
       middlewares: [middleware, ...this.middlewares],
+    });
+  }
+
+  withClientTimeoutMillis(clientTimeoutMillis: number): TopicConfiguration {
+    return new TopicClientConfiguration({
+      ...this,
+      transportStrategy:
+        this.transportStrategy.withClientTimeoutMillis(clientTimeoutMillis),
     });
   }
 }

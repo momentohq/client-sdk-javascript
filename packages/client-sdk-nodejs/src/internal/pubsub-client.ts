@@ -2,7 +2,12 @@ import {pubsub} from '@gomomento/generated-types';
 // older versions of node don't have the global util variables https://github.com/nodejs/node/issues/20365
 import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
-import {ChannelCredentials, Interceptor, ServiceError} from '@grpc/grpc-js';
+import {
+  ChannelCredentials,
+  ClientReadableStream,
+  Interceptor,
+  ServiceError,
+} from '@grpc/grpc-js';
 import {version} from '../../package.json';
 import {middlewaresInterceptor} from './grpc/middlewares-interceptor';
 import {
@@ -33,7 +38,7 @@ import grpcPubsub = pubsub.cache_client.pubsub;
 export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   private readonly client: grpcPubsub.PubsubClient;
   protected readonly credentialProvider: CredentialProvider;
-  private readonly unaryRequestTimeoutMs: number;
+  private readonly requestTimeoutMs: number;
   private static readonly DEFAULT_REQUEST_TIMEOUT_MS: number =
     secondsToMilliseconds(5);
   private static readonly DEFAULT_MAX_SESSION_MEMORY_MB: number = 256;
@@ -54,7 +59,6 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
       new CacheServiceErrorMapper(props.configuration.getThrowOnErrors())
     );
     this.credentialProvider = props.credentialProvider;
-    this.unaryRequestTimeoutMs = PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
     this.getLogger().debug(
       `Creating topic client using endpoint: '${this.credentialProvider.getCacheEndpoint()}'`
     );
@@ -63,10 +67,14 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
       .getTransportStrategy()
       .getGrpcConfig();
 
+    this.requestTimeoutMs =
+      topicGrpcConfig.getDeadlineMillis() ||
+      PubsubClient.DEFAULT_REQUEST_TIMEOUT_MS;
+
     // NOTE: This is hard-coded for now but we may want to expose it via TopicConfiguration in the
     // future, as we do with some of the other clients.
     const grpcConfig = new StaticGrpcConfiguration({
-      deadlineMillis: this.unaryRequestTimeoutMs,
+      deadlineMillis: this.requestTimeoutMs,
       maxSessionMemoryMb: PubsubClient.DEFAULT_MAX_SESSION_MEMORY_MB,
       keepAlivePermitWithoutCalls:
         topicGrpcConfig.getKeepAlivePermitWithoutCalls(),
@@ -100,7 +108,7 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
     this.unaryInterceptors = PubsubClient.initializeUnaryInterceptors(
       headers,
       props.configuration,
-      this.unaryRequestTimeoutMs
+      this.requestTimeoutMs
     );
     this.streamingInterceptors = PubsubClient.initializeStreamingInterceptors(
       headers,
@@ -184,9 +192,21 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
       options.subscriptionState.resumeAtTopicSequenceNumber,
       options.subscriptionState.resumeAtTopicSequencePage
     );
-    const call = this.client.Subscribe(request, {
-      interceptors: this.streamingInterceptors,
-    });
+
+    let call: ClientReadableStream<grpcPubsub._SubscriptionItem>;
+    if (options.firstMessage) {
+      // If this is the first message, we want to set a deadline for the request.
+      const deadline = Date.now() + this.requestTimeoutMs;
+      call = this.client.Subscribe(request, {
+        interceptors: this.streamingInterceptors,
+        deadline: deadline,
+      });
+    } else {
+      call = this.client.Subscribe(request, {
+        interceptors: this.streamingInterceptors,
+      });
+    }
+
     options.subscriptionState.setSubscribed();
 
     // Allow the caller to cancel the stream.
