@@ -37,6 +37,7 @@ export class Default extends TopicClientConfiguration {
           keepAlivePermitWithoutCalls: 1,
           keepAliveTimeMs: 5000,
           keepAliveTimeoutMs: 1000,
+          deadlineMillis: 5000,
         }),
       }),
       throwOnErrors: false,
@@ -63,6 +64,7 @@ export class Lambda extends TopicClientConfiguration {
   ): TopicClientConfiguration {
     const grpcConfig = new StaticTopicGrpcConfiguration({
       numClients: 1,
+      deadlineMillis: 5000,
     });
     const transportStrategy = new StaticTopicTransportStrategy({
       grpcConfiguration: grpcConfig,

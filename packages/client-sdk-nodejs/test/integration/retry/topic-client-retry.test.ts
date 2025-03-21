@@ -133,6 +133,36 @@ describe('Topic client retry tests', () => {
         }
       );
     });
+
+    it('should timeout if deadline exceeds client timeout on first message', async () => {
+      const clientTimeoutMillis = 3000;
+      const momentoLocalMiddlewareArgs: MomentoLocalMiddlewareArgs = {
+        logger: momentoLogger,
+        testMetricsCollector: testMetricsCollector,
+        requestId: v4(),
+        delayRpcList: [MomentoRPCMethod.TopicSubscribe],
+        delayMillis: 5000, // greater than client timeout of 3 seconds
+      };
+
+      const subscribeOptions: SubscribeCallOptions = {};
+
+      await WithCacheAndTopicClient(
+        config => config.withClientTimeoutMillis(clientTimeoutMillis),
+        momentoLocalMiddlewareArgs,
+        async (topicClient, cacheName) => {
+          const topicName = 'topic';
+          const subscribeResponse = await topicClient.subscribe(
+            cacheName,
+            topicName,
+            subscribeOptions
+          );
+          expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Error);
+          expect(
+            (subscribeResponse as TopicSubscribe.Error).errorCode()
+          ).toEqual(MomentoErrorCode.TIMEOUT_ERROR);
+        }
+      );
+    });
   });
 
   describe('publish', () => {
