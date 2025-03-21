@@ -141,7 +141,7 @@ describe('Topic client retry tests', () => {
         testMetricsCollector: testMetricsCollector,
         requestId: v4(),
         delayRpcList: [MomentoRPCMethod.TopicSubscribe],
-        delayMillis: 4000, // greater than client timeout of 3 seconds
+        delayMillis: 5000, // greater than client timeout of 3 seconds
       };
 
       const subscribeOptions: SubscribeCallOptions = {};
