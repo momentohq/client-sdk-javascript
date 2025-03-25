@@ -94,6 +94,22 @@ class ExperimentalMomentoLocalMiddlewareRequestHandler
         convertedKey = 'delay-count';
         convertedValue = (value as number).toString();
         break;
+      case 'streamErrorRpcs':
+        convertedKey = 'stream-error-rpcs';
+        convertedValue = (value as string[])
+          .map(rpcMethod =>
+            MomentoRPCMethodMetadataConverter.convert(rpcMethod)
+          )
+          .join(' ');
+        break;
+      case 'streamError':
+        convertedKey = 'stream-error';
+        convertedValue = value as string;
+        break;
+      case 'streamErrorMessageLimit':
+        convertedKey = 'stream-error-message-limit';
+        convertedValue = (value as number).toString();
+        break;
       default:
         convertedKey = key;
         convertedValue = value as string;
@@ -111,6 +127,9 @@ interface ExperimentalMomentoLocalTestConfigMetadata {
   delayRpcs?: string[];
   delayMs?: number;
   delayCount?: number;
+  streamErrorRpcs?: string[];
+  streamError?: string;
+  streamErrorMessageLimit?: number;
 }
 
 class ExperimentalMomentoLocalTestConfigMiddleware implements Middleware {

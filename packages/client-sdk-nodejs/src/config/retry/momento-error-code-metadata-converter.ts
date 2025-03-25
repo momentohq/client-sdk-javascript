@@ -19,7 +19,7 @@ class MomentoErrorCodeMetadataConverter {
     [MomentoErrorCode.AUTHENTICATION_ERROR]: 'unauthenticated',
     [MomentoErrorCode.CANCELLED_ERROR]: 'cancelled',
     [MomentoErrorCode.CONNECTION_ERROR]: 'unavailable',
-    [MomentoErrorCode.LIMIT_EXCEEDED_ERROR]: 'deadline-exceeded',
+    [MomentoErrorCode.LIMIT_EXCEEDED_ERROR]: 'resource-exhausted',
     [MomentoErrorCode.BAD_REQUEST_ERROR]: 'invalid-argument',
     [MomentoErrorCode.TIMEOUT_ERROR]: 'deadline-exceeded',
     [MomentoErrorCode.SERVER_UNAVAILABLE]: 'unavailable',

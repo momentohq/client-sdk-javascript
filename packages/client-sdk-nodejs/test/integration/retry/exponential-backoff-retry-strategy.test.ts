@@ -9,7 +9,7 @@ import {
 import {TestRetryMetricsCollector} from '../../test-retry-metrics-collector';
 import {MomentoRPCMethod} from '../../../src/config/retry/momento-rpc-method';
 import {WithCacheAndCacheClient} from '../integration-setup';
-import {TestRetryMetricsMiddlewareArgs} from '../../test-retry-metrics-middleware';
+import {MomentoLocalMiddlewareArgs} from '../../momento-local-middleware';
 import {v4} from 'uuid';
 
 describe('ExponentialBackoffRetryStrategy integration tests', () => {
@@ -37,7 +37,7 @@ describe('ExponentialBackoffRetryStrategy integration tests', () => {
         });
 
       // Simulate server UNAVAILABLE for all attempts
-      const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+      const momentoLocalMiddlewareArgs: MomentoLocalMiddlewareArgs = {
         logger: momentoLogger,
         testMetricsCollector,
         requestId: v4(),
@@ -50,7 +50,7 @@ describe('ExponentialBackoffRetryStrategy integration tests', () => {
           config
             .withRetryStrategy(exponentialBackoffRetryStrategy)
             .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS),
-        testMiddlewareArgs,
+        momentoLocalMiddlewareArgs,
         async (cacheClient, cacheName) => {
           const getResponse = await cacheClient.get(cacheName, 'key');
           expect(getResponse.type).toEqual(CacheGetResponse.Error);
@@ -79,7 +79,7 @@ describe('ExponentialBackoffRetryStrategy integration tests', () => {
           loggerFactory,
         });
 
-      const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+      const momentoLocalMiddlewareArgs: MomentoLocalMiddlewareArgs = {
         logger: momentoLogger,
         testMetricsCollector,
         requestId: v4(),
@@ -89,7 +89,7 @@ describe('ExponentialBackoffRetryStrategy integration tests', () => {
 
       await WithCacheAndCacheClient(
         config => config.withRetryStrategy(exponentialBackoffRetryStrategy),
-        testMiddlewareArgs,
+        momentoLocalMiddlewareArgs,
         async (cacheClient, cacheName) => {
           const incrementResponse = await cacheClient.increment(
             cacheName,
@@ -118,7 +118,7 @@ describe('ExponentialBackoffRetryStrategy integration tests', () => {
         });
 
       // Return "unavailable" for first 2 calls, then succeed
-      const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+      const momentoLocalMiddlewareArgs: MomentoLocalMiddlewareArgs = {
         logger: momentoLogger,
         testMetricsCollector,
         requestId: v4(),
@@ -132,7 +132,7 @@ describe('ExponentialBackoffRetryStrategy integration tests', () => {
           config
             .withRetryStrategy(exponentialBackoffRetryStrategy)
             .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS),
-        testMiddlewareArgs,
+        momentoLocalMiddlewareArgs,
         async (cacheClient, cacheName) => {
           const getResponse = await cacheClient.get(cacheName, 'key');
           // Because we never actually set the key, it should be a Miss

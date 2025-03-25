@@ -21,14 +21,16 @@ import {
   ReadConcern,
   StorageConfigurations,
   TopicClient,
+  TopicConfiguration,
+  TopicConfigurations,
 } from '../../src';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {CacheClientAllProps} from '../../src/internal/cache-client-all-props';
 import {
-  TestRetryMetricsMiddleware,
-  TestRetryMetricsMiddlewareArgs,
-} from '../test-retry-metrics-middleware';
+  MomentoLocalMiddleware,
+  MomentoLocalMiddlewareArgs,
+} from '../momento-local-middleware';
 import {MomentoLocalProviderProps} from '@gomomento/sdk-core/dist/src/auth';
 
 export const deleteCacheIfExists = async (
@@ -59,7 +61,7 @@ export async function WithCache(
 
 export async function WithCacheAndCacheClient(
   configFn: (config: Configuration) => Configuration,
-  testMetricsMiddlewareArgs: TestRetryMetricsMiddlewareArgs,
+  momentoLocalMiddlewareArgs: MomentoLocalMiddlewareArgs,
   testCallback: (cacheClient: CacheClient, cacheName: string) => Promise<void>
 ) {
   const cacheName = testCacheName();
@@ -70,9 +72,7 @@ export async function WithCacheAndCacheClient(
   const momentoLocalProvider = new MomentoLocalProvider(
     momentoLocalProviderProps
   );
-  const testMiddleware = new TestRetryMetricsMiddleware(
-    testMetricsMiddlewareArgs
-  );
+  const testMiddleware = new MomentoLocalMiddleware(momentoLocalMiddlewareArgs);
   const cacheClient = await CacheClient.create({
     configuration: configFn(
       Configurations.Laptop.v1().withMiddlewares([testMiddleware])
@@ -82,6 +82,62 @@ export async function WithCacheAndCacheClient(
   });
   await cacheClient.createCache(cacheName);
   await testCallback(cacheClient, cacheName);
+}
+
+export async function WithCacheAndTopicClient(
+  configFn: (config: TopicConfiguration) => TopicConfiguration,
+  momentoLocalMiddlewareArgs: MomentoLocalMiddlewareArgs,
+  testCallback: (topicClient: TopicClient, cacheName: string) => Promise<void>
+) {
+  const cacheName = testCacheName();
+  const momentoLocalProviderProps: MomentoLocalProviderProps = {
+    hostname: process.env.MOMENTO_HOSTNAME || '127.0.0.1',
+    port: parseInt(process.env.MOMENTO_PORT || '8080'),
+  };
+  const momentoLocalProvider = new MomentoLocalProvider(
+    momentoLocalProviderProps
+  );
+  const testMiddleware = new MomentoLocalMiddleware(momentoLocalMiddlewareArgs);
+  const cacheClient = await CacheClient.create({
+    configuration: Configurations.Laptop.v1(),
+    credentialProvider: momentoLocalProvider,
+    defaultTtlSeconds: 60,
+  });
+  const topicClient = new TopicClient({
+    configuration: configFn(
+      TopicConfigurations.Default.latest().withMiddlewares([testMiddleware])
+    ),
+    credentialProvider: momentoLocalProvider,
+  });
+  await cacheClient.createCache(cacheName);
+  await testCallback(topicClient, cacheName);
+}
+
+export class TestAdminClient {
+  private readonly endpoint: string;
+
+  constructor() {
+    const host = process.env.TEST_ADMIN_ENDPOINT || '127.0.0.1';
+    const port = process.env.TEST_ADMIN_PORT || '9090';
+    this.endpoint = `${host}:${port}`;
+  }
+
+  public async blockPort(): Promise<void> {
+    await this.sendRequest('/block', 'Failed to block port');
+  }
+
+  public async unblockPort(): Promise<void> {
+    await this.sendRequest('/unblock', 'Failed to unblock port');
+  }
+
+  private async sendRequest(path: string, errorMessage: string): Promise<void> {
+    try {
+      await fetch(`http://${this.endpoint}${path}`);
+    } catch (error) {
+      console.error(`${errorMessage}:`, error);
+      throw error;
+    }
+  }
 }
 
 let _credsProvider: CredentialProvider | undefined = undefined;

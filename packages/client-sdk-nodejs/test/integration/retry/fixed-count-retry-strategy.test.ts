@@ -8,7 +8,7 @@ import {
 import {TestRetryMetricsCollector} from '../../test-retry-metrics-collector';
 import {MomentoRPCMethod} from '../../../src/config/retry/momento-rpc-method';
 import {WithCacheAndCacheClient} from '../integration-setup';
-import {TestRetryMetricsMiddlewareArgs} from '../../test-retry-metrics-middleware';
+import {MomentoLocalMiddlewareArgs} from '../../momento-local-middleware';
 import {v4} from 'uuid';
 
 describe('Fixed count retry strategy with full network outage', () => {
@@ -23,7 +23,7 @@ describe('Fixed count retry strategy with full network outage', () => {
   });
 
   it('should make max 3 attempts for retry eligible api', async () => {
-    const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+    const testMiddlewareArgs: MomentoLocalMiddlewareArgs = {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
@@ -50,7 +50,7 @@ describe('Fixed count retry strategy with full network outage', () => {
   });
 
   it('should make 0 attempts for retry non-eligible api', async () => {
-    const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+    const testMiddlewareArgs: MomentoLocalMiddlewareArgs = {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
@@ -89,7 +89,7 @@ describe('Fixed count retry strategy with temporary network outage', () => {
   });
 
   it('should make less than max number of allowed retry attempts', async () => {
-    const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+    const testMiddlewareArgs: MomentoLocalMiddlewareArgs = {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),

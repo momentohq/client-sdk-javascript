@@ -18,7 +18,7 @@ jobs:
 
       - name: Start Momento Local
         run: |
-          docker run -d -p 8080:8080 gomomento/momento-local
+          docker run --cap-add=NET_ADMIN --rm -d -p 8080:8080 -p 9090:9090 gomomento/momento-local --enable-test-admin
 
       - name: Set script permissions
         run: chmod +x ./scripts/build-and-test-package-retry-tests.sh
@@ -26,6 +26,7 @@ jobs:
       - name: Build and test with Momento Local
         env:
           MOMENTO_PORT: 8080
+          MOMENTO_ADMIN_PORT: 9090
         run: |
           node -v
           ./scripts/build-and-test-package-retry-tests.sh

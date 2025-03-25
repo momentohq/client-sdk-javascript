@@ -9,9 +9,9 @@ import {
 } from '../../../src';
 import {TestRetryMetricsCollector} from '../../test-retry-metrics-collector';
 import {WithCacheAndCacheClient} from '../integration-setup';
-import {TestRetryMetricsMiddlewareArgs} from '../../test-retry-metrics-middleware';
 import {v4} from 'uuid';
 import {MomentoRPCMethod} from '../../../src/config/retry/momento-rpc-method';
+import {MomentoLocalMiddlewareArgs} from '../../momento-local-middleware';
 
 describe('Fixed timeout retry strategy with full network outage', () => {
   let testMetricsCollector: TestRetryMetricsCollector;
@@ -33,7 +33,7 @@ describe('Fixed timeout retry strategy with full network outage', () => {
       retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
       eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
     });
-    const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+    const testMiddlewareArgs: MomentoLocalMiddlewareArgs = {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
@@ -77,7 +77,7 @@ describe('Fixed timeout retry strategy with full network outage', () => {
       retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
       eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
     });
-    const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+    const testMiddlewareArgs: MomentoLocalMiddlewareArgs = {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
@@ -128,7 +128,7 @@ describe('Fixed timeout retry strategy with temporary network outage', () => {
       retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
       eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
     });
-    const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+    const testMiddlewareArgs: MomentoLocalMiddlewareArgs = {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
@@ -194,7 +194,7 @@ describe('Fixed timeout retry strategy with delay ms', () => {
       eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
       responseDataReceivedTimeoutMillis: 1000,
     });
-    const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+    const testMiddlewareArgs: MomentoLocalMiddlewareArgs = {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
@@ -226,7 +226,7 @@ describe('Fixed timeout retry strategy with delay ms', () => {
       eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
       responseDataReceivedTimeoutMillis: 1000,
     });
-    const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+    const testMiddlewareArgs: MomentoLocalMiddlewareArgs = {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
@@ -263,7 +263,7 @@ describe('Fixed timeout retry strategy with delay ms', () => {
       eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
       responseDataReceivedTimeoutMillis: 2000,
     });
-    const testMiddlewareArgs: TestRetryMetricsMiddlewareArgs = {
+    const testMiddlewareArgs: MomentoLocalMiddlewareArgs = {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),

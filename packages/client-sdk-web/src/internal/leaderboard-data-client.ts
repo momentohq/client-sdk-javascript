@@ -146,7 +146,6 @@ export class LeaderboardDataClient<
     elements: Record<number, number> | Map<number, number>
   ): Promise<LeaderboardUpsert.Response> {
     const request = new _UpsertElementsRequest();
-    request.setCacheName(cacheName);
     request.setLeaderboard(leaderboardName);
     request.setElementsList(this.convertMapOrRecordToElementsList(elements));
 
@@ -223,7 +222,6 @@ export class LeaderboardDataClient<
     maxScore?: number
   ): Promise<LeaderboardFetch.Response> {
     const request = new _GetByScoreRequest();
-    request.setCacheName(cacheName);
     request.setLeaderboard(leaderboardName);
     request.setOffset(offset);
     request.setLimitElements(count);
@@ -311,7 +309,6 @@ export class LeaderboardDataClient<
     order: LeaderboardOrder
   ): Promise<LeaderboardFetch.Response> {
     const request = new _GetByRankRequest();
-    request.setCacheName(cacheName);
     request.setLeaderboard(leaderboardName);
 
     const protoBufOrder =
@@ -375,7 +372,6 @@ export class LeaderboardDataClient<
     order: LeaderboardOrder
   ): Promise<LeaderboardFetch.Response> {
     const request = new _GetRankRequest();
-    request.setCacheName(cacheName);
     request.setLeaderboard(leaderboardName);
     request.setIdsList(ids);
 
@@ -428,7 +424,6 @@ export class LeaderboardDataClient<
     leaderboardName: string
   ): Promise<LeaderboardLength.Response> {
     const request = new _GetLeaderboardLengthRequest();
-    request.setCacheName(cacheName);
     request.setLeaderboard(leaderboardName);
 
     return await new Promise((resolve, reject) => {
@@ -480,7 +475,6 @@ export class LeaderboardDataClient<
     ids: Array<number>
   ): Promise<LeaderboardRemoveElements.Response> {
     const request = new _RemoveElementsRequest();
-    request.setCacheName(cacheName);
     request.setLeaderboard(leaderboardName);
     request.setIdsList(ids);
 
@@ -523,7 +517,6 @@ export class LeaderboardDataClient<
     leaderboardName: string
   ): Promise<LeaderboardDelete.Response> {
     const request = new _DeleteLeaderboardRequest();
-    request.setCacheName(cacheName);
     request.setLeaderboard(leaderboardName);
 
     return await new Promise((resolve, reject) => {

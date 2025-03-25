@@ -202,7 +202,6 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     elements: Record<number, number> | Map<number, number>
   ): Promise<LeaderboardUpsert.Response> {
     const request = new leaderboard._UpsertElementsRequest({
-      cache_name: cacheName,
       leaderboard: leaderboardName,
       elements: this.convertMapOrRecordToElementsList(elements),
     });
@@ -297,7 +296,6 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     }
 
     const request = new leaderboard._GetByScoreRequest({
-      cache_name: cacheName,
       leaderboard: leaderboardName,
       score_range: protoBufScoreRange,
       order: protoBufOrder,
@@ -376,7 +374,6 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     });
 
     const request = new leaderboard._GetByRankRequest({
-      cache_name: cacheName,
       leaderboard: leaderboardName,
       rank_range: protoBufRankRange,
       order: protoBufOrder,
@@ -434,7 +431,6 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
         : leaderboard._Order.ASCENDING;
 
     const request = new leaderboard._GetRankRequest({
-      cache_name: cacheName,
       leaderboard: leaderboardName,
       ids: ids,
       order: protoBufOrder,
@@ -480,7 +476,6 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     leaderboardName: string
   ): Promise<LeaderboardLength.Response> {
     const request = new leaderboard._GetLeaderboardLengthRequest({
-      cache_name: cacheName,
       leaderboard: leaderboardName,
     });
     const metadata = this.createMetadata(cacheName);
@@ -534,7 +529,6 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     ids: Array<number>
   ): Promise<LeaderboardRemoveElements.Response> {
     const request = new leaderboard._RemoveElementsRequest({
-      cache_name: cacheName,
       leaderboard: leaderboardName,
       ids: ids,
     });
@@ -578,7 +572,6 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
     leaderboardName: string
   ): Promise<LeaderboardDelete.Response> {
     const request = new leaderboard._DeleteLeaderboardRequest({
-      cache_name: cacheName,
       leaderboard: leaderboardName,
     });
     const metadata = this.createMetadata(cacheName);

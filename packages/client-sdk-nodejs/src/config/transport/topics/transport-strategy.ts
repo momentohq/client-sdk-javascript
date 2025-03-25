@@ -17,6 +17,13 @@ export interface TopicTransportStrategy {
    * @returns {TopicTransportStrategy} a new TransportStrategy with the specified gRPC config.
    */
   withGrpcConfig(grpcConfig: TopicGrpcConfiguration): TopicTransportStrategy;
+
+  /**
+   * Copy constructor to update the client-side timeout
+   * @param {number} clientTimeoutMillis
+   * @returns {TopicTransportStrategy} a new TopicTransportStrategy with the specified client timeout
+   */
+  withClientTimeoutMillis(clientTimeoutMillis: number): TopicTransportStrategy;
 }
 
 export interface TopicTransportStrategyProps {
@@ -31,6 +38,7 @@ export class StaticTopicGrpcConfiguration implements TopicGrpcConfiguration {
   private readonly keepAlivePermitWithoutCalls?: number;
   private readonly keepAliveTimeoutMs?: number;
   private readonly keepAliveTimeMs?: number;
+  private readonly deadlineMillis: number;
 
   constructor(props: TopicGrpcConfigurationProps) {
     if (props.numClients !== undefined && props.numClients !== null) {
@@ -42,6 +50,7 @@ export class StaticTopicGrpcConfiguration implements TopicGrpcConfiguration {
     this.keepAliveTimeMs = props.keepAliveTimeMs;
     this.keepAliveTimeoutMs = props.keepAliveTimeoutMs;
     this.keepAlivePermitWithoutCalls = props.keepAlivePermitWithoutCalls;
+    this.deadlineMillis = props.deadlineMillis;
   }
 
   getNumClients(): number {
@@ -66,6 +75,17 @@ export class StaticTopicGrpcConfiguration implements TopicGrpcConfiguration {
   getKeepAlivePermitWithoutCalls(): number | undefined {
     return this.keepAlivePermitWithoutCalls;
   }
+
+  getDeadlineMillis(): number {
+    return this.deadlineMillis;
+  }
+
+  withDeadlineMillis(deadlineMillis: number): StaticTopicGrpcConfiguration {
+    return new StaticTopicGrpcConfiguration({
+      ...this,
+      deadlineMillis,
+    });
+  }
 }
 
 export class StaticTopicTransportStrategy implements TopicTransportStrategy {
@@ -85,6 +105,16 @@ export class StaticTopicTransportStrategy implements TopicTransportStrategy {
     return new StaticTopicTransportStrategy({
       ...this,
       grpcConfiguration,
+    });
+  }
+
+  withClientTimeoutMillis(
+    clientTimeoutMillis: number
+  ): StaticTopicTransportStrategy {
+    return new StaticTopicTransportStrategy({
+      ...this,
+      grpcConfiguration:
+        this.grpcConfiguration.withDeadlineMillis(clientTimeoutMillis),
     });
   }
 }

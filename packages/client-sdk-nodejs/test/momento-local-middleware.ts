@@ -12,24 +12,24 @@ import {
 } from '../src/config/retry/momento-rpc-method';
 import {MomentoErrorCodeMetadataConverter} from '../src/config/retry/momento-error-code-metadata-converter';
 
-class TestMetricsMiddlewareRequestHandler implements MiddlewareRequestHandler {
+class MomentoLocalMiddlewareRequestHandler implements MiddlewareRequestHandler {
   private cacheName: string | null = null;
-  private testRetryMetricsMiddlewareArgs: TestRetryMetricsMiddlewareArgs;
+  private momentoLocalMiddlewareArgs: MomentoLocalMiddlewareArgs;
 
-  constructor(testRetryMetricsMiddlewareArgs: TestRetryMetricsMiddlewareArgs) {
-    this.testRetryMetricsMiddlewareArgs = testRetryMetricsMiddlewareArgs;
+  constructor(momentoLocalMiddlewareArgs: MomentoLocalMiddlewareArgs) {
+    this.momentoLocalMiddlewareArgs = momentoLocalMiddlewareArgs;
   }
 
   onRequestBody(request: MiddlewareMessage): Promise<MiddlewareMessage> {
     const requestType = request.constructorName();
     if (this.cacheName) {
-      this.testRetryMetricsMiddlewareArgs.testMetricsCollector.addTimestamp(
+      this.momentoLocalMiddlewareArgs.testMetricsCollector.addTimestamp(
         this.cacheName,
         requestType as MomentoRPCMethod,
         Date.now()
       );
     } else {
-      this.testRetryMetricsMiddlewareArgs.logger.debug(
+      this.momentoLocalMiddlewareArgs.logger.debug(
         'No cache name available. Timestamp will not be collected.'
       );
     }
@@ -43,22 +43,22 @@ class TestMetricsMiddlewareRequestHandler implements MiddlewareRequestHandler {
     this.setGrpcMetadata(
       grpcMetadata,
       'request-id',
-      this.testRetryMetricsMiddlewareArgs.requestId
+      this.momentoLocalMiddlewareArgs.requestId
     );
-    if (this.testRetryMetricsMiddlewareArgs.returnError) {
+    if (this.momentoLocalMiddlewareArgs.returnError) {
       this.setGrpcMetadata(
         grpcMetadata,
         'return-error',
         MomentoErrorCodeMetadataConverter.convert(
-          this.testRetryMetricsMiddlewareArgs.returnError
+          this.momentoLocalMiddlewareArgs.returnError
         )
       );
     }
     this.setGrpcMetadata(
       grpcMetadata,
       'error-rpcs',
-      this.testRetryMetricsMiddlewareArgs.errorRpcList
-        ? this.testRetryMetricsMiddlewareArgs.errorRpcList
+      this.momentoLocalMiddlewareArgs.errorRpcList
+        ? this.momentoLocalMiddlewareArgs.errorRpcList
             .map(rpcMethod =>
               MomentoRPCMethodMetadataConverter.convert(rpcMethod)
             )
@@ -68,8 +68,8 @@ class TestMetricsMiddlewareRequestHandler implements MiddlewareRequestHandler {
     this.setGrpcMetadata(
       grpcMetadata,
       'delay-rpcs',
-      this.testRetryMetricsMiddlewareArgs.delayRpcList
-        ? this.testRetryMetricsMiddlewareArgs.delayRpcList
+      this.momentoLocalMiddlewareArgs.delayRpcList
+        ? this.momentoLocalMiddlewareArgs.delayRpcList
             .map(rpcMethod =>
               MomentoRPCMethodMetadataConverter.convert(rpcMethod)
             )
@@ -79,24 +79,48 @@ class TestMetricsMiddlewareRequestHandler implements MiddlewareRequestHandler {
     this.setGrpcMetadata(
       grpcMetadata,
       'error-count',
-      this.testRetryMetricsMiddlewareArgs.errorCount?.toString()
+      this.momentoLocalMiddlewareArgs.errorCount?.toString()
     );
     this.setGrpcMetadata(
       grpcMetadata,
       'delay-ms',
-      this.testRetryMetricsMiddlewareArgs.delayMillis?.toString()
+      this.momentoLocalMiddlewareArgs.delayMillis?.toString()
     );
     this.setGrpcMetadata(
       grpcMetadata,
       'delay-count',
-      this.testRetryMetricsMiddlewareArgs.delayCount?.toString()
+      this.momentoLocalMiddlewareArgs.delayCount?.toString()
     );
-
+    this.setGrpcMetadata(
+      grpcMetadata,
+      'stream-error-rpcs',
+      this.momentoLocalMiddlewareArgs.streamErrorRpcList
+        ? this.momentoLocalMiddlewareArgs.streamErrorRpcList
+            .map(rpcMethod =>
+              MomentoRPCMethodMetadataConverter.convert(rpcMethod)
+            )
+            .join(' ')
+        : ''
+    );
+    if (this.momentoLocalMiddlewareArgs.streamError) {
+      this.setGrpcMetadata(
+        grpcMetadata,
+        'stream-error',
+        MomentoErrorCodeMetadataConverter.convert(
+          this.momentoLocalMiddlewareArgs.streamError
+        )
+      );
+    }
+    this.setGrpcMetadata(
+      grpcMetadata,
+      'stream-error-message-limit',
+      this.momentoLocalMiddlewareArgs.streamErrorMessageLimit?.toString()
+    );
     const cacheName = grpcMetadata.get('cache');
     if (cacheName && cacheName.length > 0) {
       this.cacheName = cacheName[0].toString();
     } else {
-      this.testRetryMetricsMiddlewareArgs.logger.debug(
+      this.momentoLocalMiddlewareArgs.logger.debug(
         'No cache name found in metadata.'
       );
     }
@@ -130,7 +154,7 @@ class TestMetricsMiddlewareRequestHandler implements MiddlewareRequestHandler {
   }
 }
 
-interface TestRetryMetricsMiddlewareArgs {
+interface MomentoLocalMiddlewareArgs {
   logger: MomentoLogger;
   testMetricsCollector: TestRetryMetricsCollector;
   requestId: string;
@@ -140,26 +164,29 @@ interface TestRetryMetricsMiddlewareArgs {
   delayRpcList?: string[];
   delayMillis?: number;
   delayCount?: number;
+  streamErrorRpcList?: string[];
+  streamError?: string;
+  streamErrorMessageLimit?: number;
 }
 
-class TestRetryMetricsMiddleware implements Middleware {
+class MomentoLocalMiddleware implements Middleware {
   shouldLoadLate?: boolean;
-  private readonly testRetryMetricsMiddlewareArgs: TestRetryMetricsMiddlewareArgs;
+  private readonly momentoLocalMiddlewareArgs: MomentoLocalMiddlewareArgs;
 
-  constructor(testRetryMetricsMiddlewareArgs: TestRetryMetricsMiddlewareArgs) {
+  constructor(momentoLocalMiddlewareArgs: MomentoLocalMiddlewareArgs) {
     this.shouldLoadLate = true;
-    this.testRetryMetricsMiddlewareArgs = testRetryMetricsMiddlewareArgs;
+    this.momentoLocalMiddlewareArgs = momentoLocalMiddlewareArgs;
   }
 
   onNewRequest(): MiddlewareRequestHandler {
-    return new TestMetricsMiddlewareRequestHandler(
-      this.testRetryMetricsMiddlewareArgs
+    return new MomentoLocalMiddlewareRequestHandler(
+      this.momentoLocalMiddlewareArgs
     );
   }
 }
 
 export {
-  TestRetryMetricsMiddleware,
-  TestRetryMetricsMiddlewareArgs,
-  TestMetricsMiddlewareRequestHandler,
+  MomentoLocalMiddleware,
+  MomentoLocalMiddlewareArgs,
+  MomentoLocalMiddlewareRequestHandler,
 };

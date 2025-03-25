@@ -29,16 +29,12 @@ package the appropriate native `zstd` binary for your target environment. This e
 runtime, but assumes that you may be building / deploying the code from MacOS or another non-linux platform.
 
 The `zstd` binaries are installed into the `node_modules` directory by `npm`. By default, `npm` will only install the appropriate
-binary for the platform that you are running the build from. To ensure that the correct binary for the target platform is
-also installed, you need to explicitly reference it in the `package.json` file. In this example, this is done via
-the following line in the `dependencies` section of our `package.json`:
+binary for the platform that you are running the build from. When developing locally, running `npm install` will do the right thing,
+but the lambda runtime is a different platform, so you need to ensure that the correct binary is included in the final package.
 
-```json
-"@mongodb-js/zstd-linux-x64-gnu": "^1.2.0",
-```
-
-If you were targeting a different platform, you could specify the appropriate dependency for your target platform here instead of
-the `linux-x64-gnu` version.
+Though not recommended for the normal development process, you may run `npm install --platform=linux --arch=x64`. This will
+install the correct binary for the lambda runtime. However, we recommend using a docker build to isolate the production
+build from your development environment (see [Building the Example](#building-the-example) below).
 
 ### `esbuild.ts`: Special handling for `.node` files
 
@@ -53,27 +49,30 @@ you will need to take similar steps to ensure that the `.node` files are include
 
 This script is responsible for creating the final `.zip` artifact that we will deploy to the lambda. It processes the
 `dist` directory created by `esbuild` and ensures that all the required files are present, and then produces the `.zip`.
-It also removes any unnecessary native binaries (`.node` files) that are not necessary for the target platform, to ensure
-that the final `.zip` is as small as possible.
-
-**NOTE: this script has another hard coded reference to 'linux-x64-gnu' so that it knows the correct `.node` files to keep or
-remove. Therefore if you want to change the target platform, you will need to update the target architecture information in both
-the `package.json` file and the `postbuild.ts` file.**
 
 ## Building the Example
 
-**NOTE: the `--force` flag is necessary on the `npm install` command if you are building from a different platform than
-the lambda target platform. Otherwise `npm` will error out and indicate that your platform and arch are not suitable
-for the `zstd-linux-x64-gnu` dependency that is listed in the `package.json` file.**
+### Production Build
 
-To build the code and package the lambda .zip artifact:
+To build the code and package the lambda .zip artifact, run:
 
 ```bash
-npm install --force
+npm run build:aws
+```
+
+**Note: this depends on docker to build the lambda package. See the script in [package.json](package.json) for details.**
+
+At this point, you should have a `function.zip` file that contains the esbuild output and the linux x64 `zstd` binary.
+
+### Local Development
+
+In order to do local development, run:
+
+```bash
 npm run build
 ```
 
-At this point, you should have a `function.zip` file that contains the esbuild output and the linux x64 `zstd` binary.
+This will build the code and package but using a `node` binary that is appropriate for your local development environment.
 
 ## Deploy via AWS SAM
 
@@ -102,18 +101,18 @@ lambda, then you won't need the `--force` flag, so you can allow SAM to manage t
 could modify the `template.yml` file to set `CodeUri` to `./src/index.ts`, and include this build metadata:
 
 ```yaml
-    Metadata:
-      SkipBuild: True
-      BuildMethod: esbuild
-      BuildProperties:
-        UseNpmCi: true
-        Minify: false
-        Target: "es2020"
-        Sourcemap: true
-        Loader:
-          - ".node=copy"
-        EntryPoints:
-          - src/index.ts
+Metadata:
+  SkipBuild: True
+  BuildMethod: esbuild
+  BuildProperties:
+    UseNpmCi: true
+    Minify: false
+    Target: "es2020"
+    Sourcemap: true
+    Loader:
+      - ".node=copy"
+    EntryPoints:
+      - src/index.ts
 ```
 
 ### Deploy Via AWS CLI

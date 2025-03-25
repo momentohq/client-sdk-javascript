@@ -1,7 +1,7 @@
 import {
-  TestMetricsMiddlewareRequestHandler,
-  TestRetryMetricsMiddleware,
-} from '../test-retry-metrics-middleware';
+  MomentoLocalMiddlewareRequestHandler,
+  MomentoLocalMiddleware,
+} from '../momento-local-middleware';
 import {TestRetryMetricsCollector} from '../test-retry-metrics-collector';
 import {
   CredentialProvider,
@@ -22,8 +22,8 @@ import {Metadata} from '@grpc/grpc-js';
 import {MiddlewareMetadata} from '../../src/config/middleware/middleware';
 import {MomentoErrorCodeMetadataConverter} from '../../src/config/retry/momento-error-code-metadata-converter';
 
-describe('TestRetryMetricsMiddleware', () => {
-  let middleware: TestRetryMetricsMiddleware;
+describe('MomentoLocalMiddleware', () => {
+  let middleware: MomentoLocalMiddleware;
   let cacheClient: CacheClient;
   let testMetricsCollector: TestRetryMetricsCollector;
   let momentoLogger: MomentoLogger;
@@ -31,9 +31,9 @@ describe('TestRetryMetricsMiddleware', () => {
   beforeEach(async () => {
     testMetricsCollector = new TestRetryMetricsCollector();
     momentoLogger = new DefaultMomentoLoggerFactory().getLogger(
-      'TestRetryMetricsMiddleware'
+      'MomentoLocalMiddleware'
     );
-    middleware = new TestRetryMetricsMiddleware({
+    middleware = new MomentoLocalMiddleware({
       logger: momentoLogger,
       testMetricsCollector,
       requestId: v4(),
@@ -101,6 +101,12 @@ describe('TestRetryMetricsMiddleware', () => {
     const delayRpcList = [MomentoRPCMethod.Get, MomentoRPCMethod.Set];
     const delayMillis = 1000;
     const delayCount = 3;
+    const streamErrorRpcList = [
+      MomentoRPCMethod.TopicSubscribe,
+      MomentoRPCMethod.TopicPublish,
+    ];
+    const streamError = MomentoErrorCode.SERVER_UNAVAILABLE;
+    const streamErrorMessageLimit = 3;
 
     const grpcMetadata = new Metadata();
     const middlewareMetadata: MiddlewareMetadata = {
@@ -108,7 +114,7 @@ describe('TestRetryMetricsMiddleware', () => {
       toJsonObject: () => ({}), // Mock implementation
       toJsonString: () => JSON.stringify({}), // Mock implementation
     };
-    const testRetryMetricsMiddlewareArgs = {
+    const momentoLocalMiddlewareArgs = {
       logger: momentoLogger,
       testMetricsCollector,
       requestId,
@@ -118,27 +124,46 @@ describe('TestRetryMetricsMiddleware', () => {
       delayRpcList,
       delayMillis,
       delayCount,
+      streamErrorRpcList,
+      streamError,
+      streamErrorMessageLimit,
     };
 
-    const handler = new TestMetricsMiddlewareRequestHandler(
-      testRetryMetricsMiddlewareArgs
+    const handler = new MomentoLocalMiddlewareRequestHandler(
+      momentoLocalMiddlewareArgs
     );
     await handler.onRequestMetadata(middlewareMetadata);
 
-    const expectedRpcsList = [
+    const expectedErrorRpcsList = [
       `${MomentoRPCMethodMetadataConverter.convert(
         MomentoRPCMethod.Get
       )} ${MomentoRPCMethodMetadataConverter.convert(MomentoRPCMethod.Set)}`,
     ];
     const expectedReturnError =
       MomentoErrorCodeMetadataConverter.convert(returnError);
+    const expectedStreamErrorRpcsList = [
+      `${MomentoRPCMethodMetadataConverter.convert(
+        MomentoRPCMethod.TopicSubscribe
+      )} ${MomentoRPCMethodMetadataConverter.convert(
+        MomentoRPCMethod.TopicPublish
+      )}`,
+    ];
+    const expectedStreamError =
+      MomentoErrorCodeMetadataConverter.convert(streamError);
 
     expect(grpcMetadata.get('request-id')).toEqual([requestId]);
     expect(grpcMetadata.get('return-error')).toEqual([expectedReturnError]);
-    expect(grpcMetadata.get('error-rpcs')).toEqual(expectedRpcsList);
+    expect(grpcMetadata.get('error-rpcs')).toEqual(expectedErrorRpcsList);
     expect(grpcMetadata.get('error-count')).toEqual([errorCount.toString()]);
-    expect(grpcMetadata.get('delay-rpcs')).toEqual(expectedRpcsList);
+    expect(grpcMetadata.get('delay-rpcs')).toEqual(expectedErrorRpcsList);
     expect(grpcMetadata.get('delay-ms')).toEqual([delayMillis.toString()]);
     expect(grpcMetadata.get('delay-count')).toEqual([delayCount.toString()]);
+    expect(grpcMetadata.get('stream-error-rpcs')).toEqual(
+      expectedStreamErrorRpcsList
+    );
+    expect(grpcMetadata.get('stream-error')).toEqual([expectedStreamError]);
+    expect(grpcMetadata.get('stream-error-message-limit')).toEqual([
+      streamErrorMessageLimit.toString(),
+    ]);
   });
 });

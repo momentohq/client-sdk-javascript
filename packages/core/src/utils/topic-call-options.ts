@@ -40,4 +40,9 @@ export interface SubscribeCallOptions {
    * @param heartbeat The heartbeat received from the topic subscription.
    */
   onHeartbeat?: (heartbeat: TopicHeartbeat) => void;
+
+  /**
+   * The callback to invoke when the connection is lost.
+   */
+  onConnectionLost?: () => void;
 }

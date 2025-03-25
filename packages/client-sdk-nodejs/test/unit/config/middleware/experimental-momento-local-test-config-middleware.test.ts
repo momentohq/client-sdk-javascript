@@ -21,6 +21,9 @@ describe('ExperimentalMomentoLocalTestConfigMiddleware', () => {
       delayRpcs: [MomentoRPCMethod.Get],
       delayMs: 1000,
       delayCount: 1,
+      streamErrorRpcs: [MomentoRPCMethod.TopicSubscribe],
+      streamError: MomentoErrorCode.SERVER_UNAVAILABLE,
+      streamErrorMessageLimit: 10,
     };
 
     middleware = new ExperimentalMomentoLocalTestConfigMiddleware(metadata);
@@ -47,6 +50,13 @@ describe('ExperimentalMomentoLocalTestConfigMiddleware', () => {
     ]);
     expect(grpcMetadata.get('delay-count')).toEqual([
       metadata.delayCount?.toString(),
+    ]);
+    expect(grpcMetadata.get('stream-error-rpcs')).toEqual(['topic-subscribe']);
+    expect(grpcMetadata.get('stream-error')).toEqual([
+      MomentoErrorCode.SERVER_UNAVAILABLE,
+    ]);
+    expect(grpcMetadata.get('stream-error-message-limit')).toEqual([
+      metadata.streamErrorMessageLimit?.toString(),
     ]);
   });
 

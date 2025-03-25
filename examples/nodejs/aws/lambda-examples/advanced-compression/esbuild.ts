@@ -9,10 +9,15 @@ const nativeNodeModulesPlugin: Plugin = {
     setup(build) {
         // If a ".node" file is imported within a module in the "file" namespace, resolve
         // it to an absolute path and put it into the "node-file" virtual namespace.
-        build.onResolve({ filter: /\.node$/, namespace: 'file' }, args => ({
-            path: require.resolve(args.path, { paths: [args.resolveDir] }),
-            namespace: 'node-file',
-        }))
+      build.onResolve({ filter: /\.node$/, namespace: 'file' }, (args) => {
+        const releasePath = args.path.replace(/\/build\/(Debug|Release)\/zstd.node/, '/build/Release/zstd.node'); // Force Release
+        // Ensure this path is absolute and checked
+        const resolvedPath = require.resolve(releasePath, { paths: [args.resolveDir] });
+        return {
+          path: resolvedPath,
+          namespace: 'node-file',
+        };
+      });
 
         // Files in the "node-file" virtual namespace call "require()" on the
         // path from esbuild of the ".node" file in the output directory.
@@ -53,4 +58,5 @@ build({
     loader: {
         '.node': 'copy',
     },
+  plugins: [nativeNodeModulesPlugin],
 }).catch(() => process.exit(1));

@@ -1,9 +1,11 @@
 enum MomentoRPCMethod {
   Get = '_GetRequest',
+  GetWithHash = '_GetWithHashRequest',
   Set = '_SetRequest',
   Delete = '_DeleteRequest',
   Increment = '_IncrementRequest',
   SetIf = '_SetIfRequest',
+  SetIfHash = '_SetIfHashRequest',
   SetIfNotExists = '_SetIfNotExistsRequest',
   GetBatch = '_GetBatchRequest',
   SetBatch = '_SetBatchRequest',
@@ -43,12 +45,16 @@ enum MomentoRPCMethod {
   SortedSetGetRank = '_SortedSetGetRankRequest',
   SortedSetLength = '_SortedSetLengthRequest',
   SortedSetLengthByScore = '_SortedSetLengthByScoreRequest',
+  TopicPublish = '_PublishRequest',
+  TopicSubscribe = '_SubscriptionRequest',
 }
 
 class MomentoRPCMethodMetadataConverter {
   private static readonly rpcMethodToMetadataMap: Record<string, string> = {
     [MomentoRPCMethod.Get]: 'get',
+    [MomentoRPCMethod.GetWithHash]: 'get-with-hash',
     [MomentoRPCMethod.Set]: 'set',
+    [MomentoRPCMethod.SetIfHash]: 'set-if-hash',
     [MomentoRPCMethod.Delete]: 'delete',
     [MomentoRPCMethod.Increment]: 'increment',
     [MomentoRPCMethod.SetIf]: 'set-if',
@@ -96,6 +102,9 @@ class MomentoRPCMethodMetadataConverter {
     [MomentoRPCMethod.SortedSetGetRank]: 'sorted-set-get-rank',
     [MomentoRPCMethod.SortedSetLength]: 'sorted-set-length',
     [MomentoRPCMethod.SortedSetLengthByScore]: 'sorted-set-length-by-score',
+
+    [MomentoRPCMethod.TopicPublish]: 'topic-publish',
+    [MomentoRPCMethod.TopicSubscribe]: 'topic-subscribe',
   };
 
   /**

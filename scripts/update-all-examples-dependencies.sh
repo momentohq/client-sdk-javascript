@@ -17,7 +17,7 @@ pushd ${ROOT_DIR}/examples
              echo "do not need to upgrade node sdk"
           else
              echo "need to upgrade node sdk"
-             npm install @gomomento/sdk
+             npm install @gomomento/sdk@latest
           fi
           has_nodejs_compression=$(grep '"@gomomento/sdk-nodejs-compression"' package.json || true)
           if [ "$has_nodejs_compression" == "" ]
@@ -25,7 +25,7 @@ pushd ${ROOT_DIR}/examples
              echo "do not need to upgrade nodejs compression extension"
           else
              echo "need to upgrade nodejs compression extension"
-             npm install @gomomento/sdk-nodejs-compression
+             npm install @gomomento/sdk-nodejs-compression@latest
           fi
           has_nodejs_compression_zstd=$(grep '"@gomomento/sdk-nodejs-compression-zstd"' package.json || true)
           if [ "$has_nodejs_compression_zstd" == "" ]
@@ -33,7 +33,7 @@ pushd ${ROOT_DIR}/examples
              echo "do not need to upgrade nodejs compression zstd extension"
           else
              echo "need to upgrade nodejs compression zstd extension"
-             npm install @gomomento/sdk-nodejs-compression-zstd
+             npm install @gomomento/sdk-nodejs-compression-zstd@latest
           fi
           has_web_sdk=$(grep '"@gomomento/sdk-web"' package.json || true)
           if [ "$has_web_sdk" == "" ]
@@ -41,7 +41,7 @@ pushd ${ROOT_DIR}/examples
              echo "do not need to upgrade web sdk"
           else
              echo "need to upgrade web sdk"
-             npm install @gomomento/sdk-web
+             npm install @gomomento/sdk-web@latest
           fi
        popd
     done <<< "$example_dirs"
