@@ -108,7 +108,6 @@ describe('IdleGrpcClientWrapper', () => {
     expect(factory).toHaveBeenCalledTimes(2);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(initialClient.close).toHaveBeenCalledTimes(1);
-    jest.useRealTimers();
   });
 
   it('recreates the client if it exceeds maxClientAgeMillis', () => {
@@ -141,6 +140,5 @@ describe('IdleGrpcClientWrapper', () => {
     expect(factory).toHaveBeenCalledTimes(2);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(initialClient.close).toHaveBeenCalledTimes(1);
-    jest.useRealTimers();
   });
 });
