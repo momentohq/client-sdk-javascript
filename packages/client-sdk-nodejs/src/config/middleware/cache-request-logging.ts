@@ -856,6 +856,17 @@ const convertSortedSetLengthByScoreRequest: RequestToLogInterfaceConverterFn<
   };
 };
 
+// TODO elaborate on all the fields here. This is a stub.
+const convertSortedSetUnionStoreRequest: RequestToLogInterfaceConverterFn<
+  cache.cache_client._SortedSetUnionStoreRequest,
+  SortedSetRequestLog
+> = (request: cache.cache_client._SortedSetUnionStoreRequest) => {
+  return {
+    requestType: 'sortedSetUnionStore',
+    sortedSetName: convertBytesToString(request.set_name),
+  };
+};
+
 export const CacheRequestToLogInterfaceConverter = new Map<
   string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -907,4 +918,5 @@ export const CacheRequestToLogInterfaceConverter = new Map<
   ['_SortedSetGetRankRequest', convertSortedSetGetRankRequest],
   ['_SortedSetLengthRequest', convertSortedSetLengthRequest],
   ['_SortedSetLengthByScoreRequest', convertSortedSetLengthByScoreRequest],
+  ['_SortedSetUnionStoreRequest', convertSortedSetUnionStoreRequest],
 ]);
