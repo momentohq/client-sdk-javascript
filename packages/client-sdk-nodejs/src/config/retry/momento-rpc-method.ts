@@ -1,9 +1,11 @@
 enum MomentoRPCMethod {
   Get = '_GetRequest',
+  GetWithHash = '_GetWithHashRequest',
   Set = '_SetRequest',
   Delete = '_DeleteRequest',
   Increment = '_IncrementRequest',
   SetIf = '_SetIfRequest',
+  SetIfHash = '_SetIfHashRequest',
   SetIfNotExists = '_SetIfNotExistsRequest',
   GetBatch = '_GetBatchRequest',
   SetBatch = '_SetBatchRequest',
@@ -50,7 +52,9 @@ enum MomentoRPCMethod {
 class MomentoRPCMethodMetadataConverter {
   private static readonly rpcMethodToMetadataMap: Record<string, string> = {
     [MomentoRPCMethod.Get]: 'get',
+    [MomentoRPCMethod.GetWithHash]: 'get-with-hash',
     [MomentoRPCMethod.Set]: 'set',
+    [MomentoRPCMethod.SetIfHash]: 'set-if-hash',
     [MomentoRPCMethod.Delete]: 'delete',
     [MomentoRPCMethod.Increment]: 'increment',
     [MomentoRPCMethod.SetIf]: 'set-if',

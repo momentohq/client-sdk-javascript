@@ -61,6 +61,13 @@ const convertGetBatchRequest: RequestToLogInterfaceConverterFn<
   };
 };
 
+const convertGetWithHashRequest: RequestToLogInterfaceConverterFn<
+  cache.cache_client._GetWithHashRequest,
+  RequestSingleKeyLog
+> = (request: cache.cache_client._GetWithHashRequest) => {
+  return convertSingleKeyRequest('getWithHash', request.cache_key);
+};
+
 const convertDeleteRequest: RequestToLogInterfaceConverterFn<
   cache.cache_client._DeleteRequest,
   RequestSingleKeyLog
@@ -153,6 +160,31 @@ const convertSetIfNotExistsRequest: RequestToLogInterfaceConverterFn<
     key: convertBytesToString(request.cache_key),
     value: convertBytesToString(request.cache_body),
     ttlMillis: request.ttl_milliseconds,
+  };
+};
+
+const convertSetIfHashRequest: RequestToLogInterfaceConverterFn<
+  cache.cache_client._SetIfHashRequest,
+  SetRequestLog
+> = (request: cache.cache_client._SetIfHashRequest) => {
+  return {
+    requestType: 'setIfHash',
+    key: convertBytesToString(request.cache_key),
+    value: convertBytesToString(request.cache_body),
+    ttlMillis: request.ttl_milliseconds,
+    presentAndNotHashEqual: request.present_and_not_hash_equal
+      ? convertBytesToString(request.present_and_not_hash_equal.hash_to_check)
+      : undefined,
+    presentAndHashEqual: request.present_and_hash_equal
+      ? convertBytesToString(request.present_and_hash_equal.hash_to_check)
+      : undefined,
+    absentOrHashEqual: request.absent_or_hash_equal
+      ? convertBytesToString(request.absent_or_hash_equal.hash_to_check)
+      : undefined,
+    absentOrNotHashEqual: request.absent_or_not_hash_equal
+      ? convertBytesToString(request.absent_or_not_hash_equal.hash_to_check)
+      : undefined,
+    unconditional: request.unconditional ? true : undefined,
   };
 };
 
@@ -824,16 +856,29 @@ const convertSortedSetLengthByScoreRequest: RequestToLogInterfaceConverterFn<
   };
 };
 
+// TODO elaborate on all the fields here. This is a stub.
+const convertSortedSetUnionStoreRequest: RequestToLogInterfaceConverterFn<
+  cache.cache_client._SortedSetUnionStoreRequest,
+  SortedSetRequestLog
+> = (request: cache.cache_client._SortedSetUnionStoreRequest) => {
+  return {
+    requestType: 'sortedSetUnionStore',
+    sortedSetName: convertBytesToString(request.set_name),
+  };
+};
+
 export const CacheRequestToLogInterfaceConverter = new Map<
   string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   RequestToLogInterfaceConverterFn<any, RequestLog>
 >([
   ['_GetRequest', convertGetRequest],
+  ['_GetWithHashRequest', convertGetWithHashRequest],
   ['_GetBatchRequest', convertGetBatchRequest],
   ['_DeleteRequest', convertDeleteRequest],
   ['_SetRequest', convertSetRequest],
   ['_SetBatchRequest', convertSetBatchRequest],
+  ['_SetIfHashRequest', convertSetIfHashRequest],
   ['_SetIfRequest', convertSetIfRequest],
   ['_SetIfNotExistsRequest', convertSetIfNotExistsRequest],
   ['_KeysExistRequest', convertKeysExistRequest],
@@ -873,4 +918,5 @@ export const CacheRequestToLogInterfaceConverter = new Map<
   ['_SortedSetGetRankRequest', convertSortedSetGetRankRequest],
   ['_SortedSetLengthRequest', convertSortedSetLengthRequest],
   ['_SortedSetLengthByScoreRequest', convertSortedSetLengthByScoreRequest],
+  ['_SortedSetUnionStoreRequest', convertSortedSetUnionStoreRequest],
 ]);
