@@ -79,64 +79,66 @@ describe('IdleGrpcClientWrapper', () => {
   });
 
   it('recreates the client if it exceeds maxIdleMillis', () => {
-    const now = Date.now();
-    jest.setSystemTime(now);
-
     const initialChannel = createMockChannel(ConnectivityState.READY);
+    const newChannel = createMockChannel(ConnectivityState.READY);
+
     const initialClient = createMockGrpcClient(initialChannel);
+    const newClient = createMockGrpcClient(newChannel);
 
     const factory = jest
       .fn<GrpcClientWithChannel, []>()
-      .mockReturnValue(initialClient);
+      .mockReturnValueOnce(initialClient)
+      .mockReturnValueOnce(newClient);
 
     const wrapper = new IdleGrpcClientWrapper<GrpcClientWithChannel>({
       clientFactoryFn: factory,
       loggerFactory,
       maxIdleMillis: 10_000,
-      maxClientAgeMillis: 30_000,
+      maxClientAgeMillis: 60_000, // longer, so it won’t interfere
     });
 
-    // First call: should return initial client
+    // Initial client use
     const c1 = wrapper.getClient();
     expect(c1).toBe(initialClient);
 
-    // Advance fake time past the maxIdleMillis but not the maxClientAgeMillis
-    jest.advanceTimersByTime(20_000);
+    // Advance past idle threshold only
+    jest.advanceTimersByTime(15_000);
 
-    // Second call: should trigger recreation due to maxIdleMillis
-    wrapper.getClient();
+    const c2 = wrapper.getClient();
+    expect(c2).toBe(newClient);
     expect(factory).toHaveBeenCalledTimes(2);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(initialClient.close).toHaveBeenCalledTimes(1);
   });
 
   it('recreates the client if it exceeds maxClientAgeMillis', () => {
-    const now = Date.now();
-    jest.setSystemTime(now);
-
     const initialChannel = createMockChannel(ConnectivityState.READY);
+    const newChannel = createMockChannel(ConnectivityState.READY);
+
     const initialClient = createMockGrpcClient(initialChannel);
+    const newClient = createMockGrpcClient(newChannel);
 
     const factory = jest
       .fn<GrpcClientWithChannel, []>()
-      .mockReturnValue(initialClient);
+      .mockReturnValueOnce(initialClient)
+      .mockReturnValueOnce(newClient);
 
     const wrapper = new IdleGrpcClientWrapper<GrpcClientWithChannel>({
       clientFactoryFn: factory,
       loggerFactory,
-      maxIdleMillis: 10_000,
-      maxClientAgeMillis: 30_000,
+      maxIdleMillis: 60_000, // longer, so it won’t interfere
+      maxClientAgeMillis: 10_000,
     });
 
-    // First call: should return initial client
+    // Initial use
     const c1 = wrapper.getClient();
     expect(c1).toBe(initialClient);
 
-    // Advance fake time past the maxClientAgeMillis
-    jest.advanceTimersByTime(35_000);
+    // Regular usage, but pass age threshold
+    jest.advanceTimersByTime(12_000);
 
-    // Second call: should trigger recreation due to age
-    wrapper.getClient();
+    const c2 = wrapper.getClient();
+    expect(c2).toBe(newClient);
     expect(factory).toHaveBeenCalledTimes(2);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(initialClient.close).toHaveBeenCalledTimes(1);

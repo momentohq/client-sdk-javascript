@@ -53,9 +53,9 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
   }
 
   getClient(): T {
-    let shouldRecreate = false;
-    let reason: string | undefined;
+    const now = Date.now();
 
+    // Reconnect if channel is in a bad state.
     // Reconnect if channel is in a bad state.
     // Although the generic type `T` only extends `CloseableGrpcClient` (which doesn't define `getChannel()`),
     // we know that in practice, the client returned by `clientFactoryFn()` is a gRPC client that inherits from
@@ -72,38 +72,42 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
         state === ConnectivityState.TRANSIENT_FAILURE ||
         state === ConnectivityState.SHUTDOWN
       ) {
-        reason = `gRPC channel is in bad state: ${
-          state === ConnectivityState.TRANSIENT_FAILURE
-            ? 'TRANSIENT_FAILURE'
-            : 'SHUTDOWN'
-        }`;
-        shouldRecreate = true;
+        return this.recreateClient(
+          `gRPC channel is in bad state: ${
+            state === ConnectivityState.TRANSIENT_FAILURE
+              ? 'TRANSIENT_FAILURE'
+              : 'SHUTDOWN'
+          }`
+        );
       }
     }
 
-    // Idle timeout check
-    if (Date.now() - this.lastAccessTime > this.maxIdleMillis) {
-      reason = `Client has been idle for more than ${this.maxIdleMillis} ms`;
-      shouldRecreate = true;
+    if (now - this.lastAccessTime > this.maxIdleMillis) {
+      return this.recreateClient(
+        `Client has been idle for more than ${this.maxIdleMillis} ms`
+      );
     }
 
-    // Max client age check
-    if (this.maxClientAgeMillis !== undefined) {
-      if (Date.now() - this.clientCreatedTime > this.maxClientAgeMillis) {
-        reason = `Client has been alive for more than ${this.maxClientAgeMillis} ms`;
-        shouldRecreate = true;
-      }
+    if (
+      this.maxClientAgeMillis !== undefined &&
+      now - this.clientCreatedTime > this.maxClientAgeMillis
+    ) {
+      return this.recreateClient(
+        `Client was created more than ${this.maxClientAgeMillis} ms ago`
+      );
     }
 
-    // Recreate the client if needed
-    if (shouldRecreate) {
-      this.logger.info(`${reason as string}; reconnecting client.`);
-      this.client.close();
-      this.client = this.clientFactoryFn();
-      this.clientCreatedTime = Date.now();
-    }
+    this.lastAccessTime = now;
+    return this.client;
+  }
 
-    this.lastAccessTime = Date.now();
+  private recreateClient(reason: string): T {
+    this.logger.info(`${reason}; reconnecting client.`);
+    this.client.close();
+    this.client = this.clientFactoryFn();
+    const now = Date.now();
+    this.clientCreatedTime = now;
+    this.lastAccessTime = now;
     return this.client;
   }
 }
