@@ -56,7 +56,6 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
     const now = Date.now();
 
     // Reconnect if channel is in a bad state.
-    // Reconnect if channel is in a bad state.
     // Although the generic type `T` only extends `CloseableGrpcClient` (which doesn't define `getChannel()`),
     // we know that in practice, the client returned by `clientFactoryFn()` is a gRPC client that inherits from
     // `grpc.Client`: https://grpc.github.io/grpc/node/grpc.Client.html
