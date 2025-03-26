@@ -48,7 +48,6 @@
     "uuid": "8.3.2"
   },
   "dependencies": {
-    "@gomomento/generated-types": "0.113.0",
     "@gomomento/sdk": "file:../client-sdk-nodejs",
     "@mongodb-js/zstd": "2.0.0"
   },
