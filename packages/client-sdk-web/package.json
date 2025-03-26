@@ -64,7 +64,7 @@
     "xhr2": "0.2.1"
   },
   "dependencies": {
-    "@gomomento/generated-types-webtext": "0.124.0",
+    "@gomomento/generated-types-webtext": "0.124.2",
     "@gomomento/sdk-core": "file:../core",
     "@types/google-protobuf": "3.15.6",
     "google-protobuf": "3.21.2",
