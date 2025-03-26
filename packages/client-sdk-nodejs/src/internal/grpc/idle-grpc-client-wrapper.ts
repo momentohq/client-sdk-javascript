@@ -1,5 +1,10 @@
-import {CloseableGrpcClient, GrpcClientWrapper} from './grpc-client-wrapper';
+import {
+  CloseableGrpcClient,
+  GrpcClientWithChannel,
+  GrpcClientWrapper,
+} from './grpc-client-wrapper';
 import {MomentoLogger, MomentoLoggerFactory} from '@gomomento/sdk-core';
+import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
 
 export interface IdleGrpcClientWrapperProps<T extends CloseableGrpcClient> {
   clientFactoryFn: () => T;
@@ -48,32 +53,60 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
   }
 
   getClient(): T {
-    this.logger.trace(
-      `Checking to see if client has been idle for more than ${this.maxIdleMillis} ms`
-    );
-    if (Date.now() - this.lastAccessTime > this.maxIdleMillis) {
-      this.logger.info(
-        `Client has been idle for more than ${this.maxIdleMillis} ms; reconnecting.`
-      );
-      this.client.close();
-      this.client = this.clientFactoryFn();
-    }
+    const now = Date.now();
 
-    if (this.maxClientAgeMillis !== undefined) {
-      this.logger.trace(
-        `Checking to see if client was created more than ${this.maxClientAgeMillis} ms`
-      );
-      if (Date.now() - this.clientCreatedTime > this.maxClientAgeMillis) {
-        this.logger.info(
-          `Client was created more than ${this.maxClientAgeMillis} millis ago; recreating as asked.`
+    // Reconnect if channel is in a bad state.
+    // Although the generic type `T` only extends `CloseableGrpcClient` (which doesn't define `getChannel()`),
+    // we know that in practice, the client returned by `clientFactoryFn()` is a gRPC client that inherits from
+    // `grpc.Client`: https://grpc.github.io/grpc/node/grpc.Client.html
+    //
+    // Since `grpc.Client` defines a public `getChannel()` method, we can safely assume it's present on the client.
+    // To make TypeScript accept this, we cast the client to `unknown` first and then to `GrpcClientWithChannel`.
+    // This double-cast is necessary to override structural type checking and is safe in our controlled use case.
+    const clientWithChannel = this.client as unknown as GrpcClientWithChannel;
+    const channel = clientWithChannel.getChannel?.();
+    if (channel) {
+      const state = channel.getConnectivityState(true);
+      if (
+        state === ConnectivityState.TRANSIENT_FAILURE ||
+        state === ConnectivityState.SHUTDOWN
+      ) {
+        return this.recreateClient(
+          `gRPC channel is in bad state: ${
+            state === ConnectivityState.TRANSIENT_FAILURE
+              ? 'TRANSIENT_FAILURE'
+              : 'SHUTDOWN'
+          }`
         );
-        this.client.close();
-        this.client = this.clientFactoryFn();
-        this.clientCreatedTime = Date.now();
       }
     }
 
-    this.lastAccessTime = Date.now();
+    if (now - this.lastAccessTime > this.maxIdleMillis) {
+      return this.recreateClient(
+        `Client has been idle for more than ${this.maxIdleMillis} ms`
+      );
+    }
+
+    if (
+      this.maxClientAgeMillis !== undefined &&
+      now - this.clientCreatedTime > this.maxClientAgeMillis
+    ) {
+      return this.recreateClient(
+        `Client was created more than ${this.maxClientAgeMillis} ms ago`
+      );
+    }
+
+    this.lastAccessTime = now;
+    return this.client;
+  }
+
+  private recreateClient(reason: string): T {
+    this.logger.info(`${reason}; reconnecting client.`);
+    this.client.close();
+    this.client = this.clientFactoryFn();
+    const now = Date.now();
+    this.clientCreatedTime = now;
+    this.lastAccessTime = now;
     return this.client;
   }
 }
