@@ -60,7 +60,7 @@
     "uuid": "8.3.2"
   },
   "dependencies": {
-    "@gomomento/generated-types": "0.124.2",
+    "@gomomento/generated-types": "0.124.3",
     "@gomomento/sdk-core": "file:../core",
     "@grpc/grpc-js": "1.13.1",
     "@types/google-protobuf": "3.15.10",
