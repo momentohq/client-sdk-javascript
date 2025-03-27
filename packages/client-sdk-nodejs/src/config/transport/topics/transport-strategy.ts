@@ -35,16 +35,27 @@ export interface TopicTransportStrategyProps {
 
 export class StaticTopicGrpcConfiguration implements TopicGrpcConfiguration {
   private readonly numClients: number;
+  private readonly numStreamClients: number;
+  private readonly numUnaryClients: number;
   private readonly keepAlivePermitWithoutCalls?: number;
   private readonly keepAliveTimeoutMs?: number;
   private readonly keepAliveTimeMs?: number;
   private readonly deadlineMillis: number;
 
   constructor(props: TopicGrpcConfigurationProps) {
-    if (props.numClients !== undefined && props.numClients !== null) {
-      this.numClients = props.numClients;
+    if (
+      props.numStreamClients !== undefined &&
+      props.numStreamClients !== null
+    ) {
+      this.numStreamClients = props.numStreamClients;
     } else {
-      this.numClients = 1;
+      this.numStreamClients = 1;
+    }
+
+    if (props.numUnaryClients !== undefined && props.numUnaryClients !== null) {
+      this.numUnaryClients = props.numUnaryClients;
+    } else {
+      this.numUnaryClients = 1;
     }
 
     this.keepAliveTimeMs = props.keepAliveTimeMs;
@@ -57,10 +68,32 @@ export class StaticTopicGrpcConfiguration implements TopicGrpcConfiguration {
     return this.numClients;
   }
 
+  getNumStreamClients(): number {
+    return this.numStreamClients;
+  }
+
+  getNumUnaryClients(): number {
+    return this.numUnaryClients;
+  }
+
   withNumClients(numClients: number): TopicGrpcConfiguration {
     return new StaticTopicGrpcConfiguration({
       ...this,
       numClients,
+    });
+  }
+
+  withNumStreamClients(numStreamClients: number): TopicGrpcConfiguration {
+    return new StaticTopicGrpcConfiguration({
+      ...this,
+      numStreamClients,
+    });
+  }
+
+  withNumUnaryClients(numUnaryClients: number): TopicGrpcConfiguration {
+    return new StaticTopicGrpcConfiguration({
+      ...this,
+      numUnaryClients,
     });
   }
 

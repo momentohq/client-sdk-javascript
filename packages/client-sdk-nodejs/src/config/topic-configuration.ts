@@ -42,6 +42,7 @@ export interface TopicConfiguration {
   getTransportStrategy(): TopicTransportStrategy;
 
   /**
+   * @deprecated Use `withNumStreamConnections()` and `withNumUnaryConnections()` instead.
    * Shorthand copy constructor for overriding TransportStrategy.GrpcStrategy.NumClients. This will
    * allow you to control the number of TCP connections that the client will open to the server. Usually
    * you should stick with the default value from your pre-built configuration, but it can be valuable
@@ -51,6 +52,28 @@ export interface TopicConfiguration {
    * @returns {Configuration} a new Configuration object with the updated TransportStrategy
    */
   withNumConnections(numConnections: number): TopicConfiguration;
+
+  /**
+   * Shorthand copy constructor for overriding TransportStrategy.GrpcStrategy.NumStreamClients. This will
+   * allow you to control the number of TCP connections that the client will open to the server for streaming
+   * requests. Usually you should stick with the default value from your pre-built configuration, but it can be valuable
+   * to increase this value in order to ensure more evenly distributed load on Momento servers.
+   *
+   * @param {number} numConnections
+   * @returns {Configuration} a new Configuration object with the updated TransportStrategy
+   */
+  withNumStreamConnections(numConnections: number): TopicConfiguration;
+
+  /**
+   * Shorthand copy constructor for overriding TransportStrategy.GrpcStrategy.NumUnaryClients. This will
+   * allow you to control the number of TCP connections that the client will open to the server for unary
+   * requests. Usually you should stick with the default value from your pre-built configuration, but it can be valuable
+   * to increase this value in order to ensure more evenly distributed load on Momento servers.
+   *
+   * @param {number} numConnections
+   * @returns {Configuration} a new Configuration object with the updated TransportStrategy
+   */
+  withNumUnaryConnections(numConnections: number): TopicConfiguration;
 
   /**
    * @returns {boolean} Configures whether the client should return a Momento Error object or throw an exception when an
@@ -131,6 +154,26 @@ export class TopicClientConfiguration implements TopicConfiguration {
         this.getTransportStrategy()
           .getGrpcConfig()
           .withNumClients(numConnections)
+      )
+    );
+  }
+
+  withNumStreamConnections(numConnections: number): TopicConfiguration {
+    return this.withTransportStrategy(
+      this.getTransportStrategy().withGrpcConfig(
+        this.getTransportStrategy()
+          .getGrpcConfig()
+          .withNumStreamClients(numConnections)
+      )
+    );
+  }
+
+  withNumUnaryConnections(numConnections: number): TopicConfiguration {
+    return this.withTransportStrategy(
+      this.getTransportStrategy().withGrpcConfig(
+        this.getTransportStrategy()
+          .getGrpcConfig()
+          .withNumUnaryClients(numConnections)
       )
     );
   }

@@ -33,7 +33,8 @@ export class Default extends TopicClientConfiguration {
       loggerFactory: loggerFactory,
       transportStrategy: new StaticTopicTransportStrategy({
         grpcConfiguration: new StaticTopicGrpcConfiguration({
-          numClients: 1,
+          numStreamClients: 1,
+          numUnaryClients: 1,
           keepAlivePermitWithoutCalls: 1,
           keepAliveTimeMs: 5000,
           keepAliveTimeoutMs: 1000,
@@ -63,7 +64,8 @@ export class Lambda extends TopicClientConfiguration {
     loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
   ): TopicClientConfiguration {
     const grpcConfig = new StaticTopicGrpcConfiguration({
-      numClients: 1,
+      numStreamClients: 1,
+      numUnaryClients: 1,
       deadlineMillis: 5000,
     });
     const transportStrategy = new StaticTopicTransportStrategy({

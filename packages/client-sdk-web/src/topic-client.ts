@@ -27,6 +27,7 @@ export class TopicClient extends AbstractTopicClient {
     super(
       configuration.getLoggerFactory().getLogger(TopicClient.name),
       [new PubsubClient(allProps)],
+      [new PubsubClient(allProps)],
       new WebhookClient(allProps)
     );
     this.logger.debug('Instantiated Momento TopicClient');

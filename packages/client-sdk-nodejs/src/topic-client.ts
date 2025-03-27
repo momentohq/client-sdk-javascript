@@ -24,14 +24,23 @@ export class TopicClient extends AbstractTopicClient {
         props?.configuration ?? getDefaultTopicClientConfiguration(),
     };
 
-    const numClients = allProps.configuration
+    const grpcConfig = allProps.configuration
       .getTransportStrategy()
-      .getGrpcConfig()
-      .getNumClients();
+      .getGrpcConfig();
+
+    if (grpcConfig.getNumClients()) {
+      throw new Error(
+        'Deprecated: Use withNumStreamClients() and withNumUnaryClients() instead.'
+      );
+    }
+
+    const numStreamClients = grpcConfig.getNumStreamClients();
+    const numUnaryClients = grpcConfig.getNumUnaryClients();
 
     super(
       allProps.configuration.getLoggerFactory().getLogger(TopicClient.name),
-      range(numClients).map(_ => new PubsubClient(allProps)),
+      range(numStreamClients).map(_ => new PubsubClient(allProps)),
+      range(numUnaryClients).map(_ => new PubsubClient(allProps)),
       new WebhookClient(allProps)
     );
 
