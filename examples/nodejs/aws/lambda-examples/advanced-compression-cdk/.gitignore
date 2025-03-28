@@ -1,0 +1,18 @@
+*.js
+*.d.ts
+node_modules
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+src/lambda/dist
+src/lambda/node_modules
+
+src/zstd-layer/nodejs/node_modules
+src/zstd-layer/*.zip
+
+infrastructure/cdk.out
+infrastructure/.cdk.staging
+infrastructure/node_modules
+infrastructure/result.json
