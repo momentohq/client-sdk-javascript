@@ -1,9 +1,22 @@
 export interface TopicGrpcConfigurationProps {
   /**
-   * The number of internal clients a topic client will create to communicate with Momento. More of them allows
-   * more concurrent requests, at the cost of more open connections and the latency of setting up each client.
+   * @deprecated Use `numStreamClients` and `numUnaryClients` instead.
+   * The number of internal clients a topic client will create to communicate with Momento.
+   * More of them allows more concurrent requests, at the cost of more open connections and the latency of setting up each client.
    */
   numClients?: number;
+
+  /**
+   * The number of internal clients a topic client will create to communicate with Momento for streaming requests (e.g. subscribe).
+   * More of them allows more concurrent requests, at the cost of more open connections and the latency of setting up each client.
+   */
+  numStreamClients?: number;
+
+  /**
+   * The number of internal clients a topic client will create to communicate with Momento for unary requests (e.g. publish).
+   * More of them allows more concurrent requests, at the cost of more open connections and the latency of setting up each client.
+   */
+  numUnaryClients?: number;
 
   /**
    * Indicates if it permissible to send keepalive pings from the client without any outstanding streams.
@@ -53,17 +66,52 @@ export interface TopicGrpcConfigurationProps {
  */
 export interface TopicGrpcConfiguration {
   /**
+   * @deprecated Use `getNumStreamClients()` and `getNumUnaryClients()` instead.
    * @returns {number} the number of internal clients a topic client will create to communicate with Momento. More of
    * them will allow for more concurrent requests.
    */
   getNumClients(): number;
 
   /**
-   * Copy constructor for overriding the number of clients to create
-   * @param {number} numClients the number of internal clients to create
-   * @returns {GrpcConfiguration} a new GrpcConfiguration with the specified number of clients
+   * @deprecated Use `withNumStreamClients()` and `withNumUnaryClients()` instead.
+   * Copy constructor for overriding the number of clients to create.
+   *
+   * @param {number} numClients - @deprecated Use `withNumStreamClients()` and `withNumUnaryClients()` instead.
+   * The number of internal clients to create.
+   *
+   * @returns {GrpcConfiguration} A new GrpcConfiguration with the specified number of clients.
    */
   withNumClients(numClients: number): TopicGrpcConfiguration;
+
+  /**
+   * @returns {number} the number of internal clients a topic client will create to communicate with Momento for streaming requests (e.g. subscribe). More of
+   * them will allow for more concurrent requests.
+   */
+  getNumStreamClients(): number;
+
+  /**
+   * Copy constructor for overriding the number of stream clients to create.
+   *
+   * @param {number} numStreamClients - The number of internal clients to create for streaming requests.
+   *
+   * @returns {TopicGrpcConfiguration} A new GrpcConfiguration with the specified number of stream clients.
+   */
+  withNumStreamClients(numStreamClients: number): TopicGrpcConfiguration;
+
+  /**
+   * @returns {number} the number of internal clients a topic client will create to communicate with Momento for unary requests (e.g. publish). More of
+   * them will allow for more concurrent requests.
+   */
+  getNumUnaryClients(): number;
+
+  /**
+   * Copy constructor for overriding the number of unary clients to create.
+   *
+   * @param {number} numUnaryClients - The number of internal clients to create for unary requests.
+   *
+   * @returns {TopicGrpcConfiguration} A new GrpcConfiguration with the specified number of unary clients.
+   */
+  withNumUnaryClients(numUnaryClients: number): TopicGrpcConfiguration;
 
   /**
    * NOTE: keep-alives are very important for long-lived server environments where there may be periods of time

@@ -18,16 +18,21 @@ import {PutWebhookCallOptions} from '../../../utils/webhook-call-options';
 export abstract class AbstractTopicClient implements ITopicClient {
   protected readonly logger: MomentoLogger;
   protected readonly pubsubClients: IPubsubClient[];
+  protected readonly pubsubStreamClients: IPubsubClient[];
+  protected readonly pubsubUnaryClients: IPubsubClient[];
   protected readonly webhookClient: IWebhookClient;
-  private nextPubsubClientIndex = 0;
+  private nextPubsubStreamClientIndex = 0;
+  private nextPubsubUnaryClientIndex = 0;
 
   protected constructor(
     logger: MomentoLogger,
-    pubsubClients: IPubsubClient[],
+    pubsubStreamClients: IPubsubClient[],
+    pubsubUnaryClients: IPubsubClient[],
     webhookClient: IWebhookClient
   ) {
     this.logger = logger;
-    this.pubsubClients = pubsubClients;
+    this.pubsubStreamClients = pubsubStreamClients;
+    this.pubsubUnaryClients = pubsubUnaryClients;
     this.webhookClient = webhookClient;
   }
 
@@ -46,7 +51,7 @@ export abstract class AbstractTopicClient implements ITopicClient {
     topicName: string,
     value: string | Uint8Array
   ): Promise<TopicPublish.Response> {
-    return await this.getNextPubsubClient().publish(
+    return await this.getNextPublishClient().publish(
       cacheName,
       topicName,
       value
@@ -70,7 +75,7 @@ export abstract class AbstractTopicClient implements ITopicClient {
     topicName: string,
     options: SubscribeCallOptions
   ): Promise<TopicSubscribe.Response> {
-    return await this.getNextPubsubClient().subscribe(
+    return await this.getNextSubscribeClient().subscribe(
       cacheName,
       topicName,
       options
@@ -171,10 +176,17 @@ export abstract class AbstractTopicClient implements ITopicClient {
     });
   }
 
-  protected getNextPubsubClient(): IPubsubClient {
-    const client = this.pubsubClients[this.nextPubsubClientIndex];
-    this.nextPubsubClientIndex =
-      (this.nextPubsubClientIndex + 1) % this.pubsubClients.length;
+  protected getNextPublishClient(): IPubsubClient {
+    const client = this.pubsubUnaryClients[this.nextPubsubUnaryClientIndex];
+    this.nextPubsubUnaryClientIndex =
+      (this.nextPubsubUnaryClientIndex + 1) % this.pubsubUnaryClients.length;
+    return client;
+  }
+
+  protected getNextSubscribeClient(): IPubsubClient {
+    const client = this.pubsubStreamClients[this.nextPubsubStreamClientIndex];
+    this.nextPubsubStreamClientIndex =
+      (this.nextPubsubStreamClientIndex + 1) % this.pubsubStreamClients.length;
     return client;
   }
 }

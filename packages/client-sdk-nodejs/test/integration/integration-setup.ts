@@ -32,6 +32,7 @@ import {
   MomentoLocalMiddlewareArgs,
 } from '../momento-local-middleware';
 import {MomentoLocalProviderProps} from '@gomomento/sdk-core/dist/src/auth';
+import {TopicClientAllProps} from '../../src/internal/topic-client-all-props';
 
 export const deleteCacheIfExists = async (
   momento: CacheClient,
@@ -209,6 +210,19 @@ export function integrationTestCacheClientProps(): CacheClientAllProps {
   };
 }
 
+export function integrationTestTopicClientProps(): TopicClientAllProps {
+  let credentialProvider = credsProvider();
+  if (testAgainstMomentoLocal()) {
+    credentialProvider = new MomentoLocalProvider();
+  }
+
+  return {
+    configuration:
+      TopicConfigurations.Default.latest().withClientTimeoutMillis(90000),
+    credentialProvider,
+  };
+}
+
 function momentoClientForTesting(): CacheClient {
   return new CacheClient(integrationTestCacheClientProps());
 }
@@ -246,8 +260,8 @@ function momentoCacheClientForTestingWithMgaAccountSessionToken(): CacheClient {
 
 function momentoTopicClientForTesting(): TopicClient {
   return new TopicClient({
-    configuration: integrationTestCacheClientProps().configuration,
-    credentialProvider: integrationTestCacheClientProps().credentialProvider,
+    configuration: integrationTestTopicClientProps().configuration,
+    credentialProvider: integrationTestTopicClientProps().credentialProvider,
   });
 }
 
@@ -261,14 +275,14 @@ function momentoStorageClientForTesting(): PreviewStorageClient {
 function momentoTopicClientWithThrowOnErrorsForTesting(): TopicClient {
   return new TopicClient({
     configuration:
-      integrationTestCacheClientProps().configuration.withThrowOnErrors(true),
-    credentialProvider: integrationTestCacheClientProps().credentialProvider,
+      integrationTestTopicClientProps().configuration.withThrowOnErrors(true),
+    credentialProvider: integrationTestTopicClientProps().credentialProvider,
   });
 }
 
 function momentoTopicClientForTestingWithMgaAccountSessionToken(): TopicClient {
   return new TopicClient({
-    configuration: integrationTestCacheClientProps().configuration,
+    configuration: integrationTestTopicClientProps().configuration,
     credentialProvider: mgaAccountSessionTokenCredsProvider(),
   });
 }
@@ -452,7 +466,7 @@ export function SetupAuthClientIntegrationTest(): {
         credentialProvider: CredentialProvider.fromString({
           authToken: authToken,
         }),
-        configuration: Configurations.Laptop.latest(),
+        configuration: TopicConfigurations.Default.latest(),
       }),
     cacheName: cacheName,
   };
