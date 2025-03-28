@@ -97,6 +97,12 @@ export class RetryInterceptor {
                     (options.deadline as Date | undefined)?.toISOString()
                   )}, overall deadline is: ${overallDeadline.toISOString()}`
                 );
+                // Note: we need to manually check if overall deadline has been exceeded
+                // because the retry interceptor does not return a status code of DEADLINE_EXCEEDED
+                // when a retry attempt is made with an already-passed deadline.
+                //
+                // We also need this check in case DEADLINE_EXCEEDED is marked as a retryable status code
+                // as it is in the default storage eligibility strategy.
                 if (new Date(Date.now()) >= overallDeadline) {
                   logger.debug(
                     `Request not eligible for retry: path: ${
@@ -107,7 +113,13 @@ export class RetryInterceptor {
                   next(status);
                   return;
                 }
-                nextDeadline = calculateDeadline(deadlineOffset);
+                // Do not exceed the overall deadline when setting the retry attempt's deadline.
+                nextDeadline = new Date(
+                  Math.min(
+                    overallDeadline.getTime(),
+                    calculateDeadline(deadlineOffset).getTime()
+                  )
+                );
                 logger.debug(
                   `Setting next deadline (via offset of ${deadlineOffset} ms) to: ${nextDeadline.toISOString()}`
                 );
