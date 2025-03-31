@@ -3,7 +3,6 @@ import {
   TopicGrpcConfigurationProps,
 } from './grpc-configuration';
 import {
-  NUM_DEFAULT_CLIENTS,
   NUM_DEFAULT_STREAM_CLIENTS,
   NUM_DEFAULT_UNARY_CLIENTS,
 } from '../../topic-configurations';
