@@ -114,11 +114,9 @@ export class RetryInterceptor {
                   return;
                 }
                 // Do not exceed the overall deadline when setting the retry attempt's deadline.
-                nextDeadline = new Date(
-                  Math.min(
-                    overallDeadline.getTime(),
-                    calculateDeadline(deadlineOffset).getTime()
-                  )
+                nextDeadline = calculateDeadline(
+                  deadlineOffset,
+                  overallDeadline
                 );
                 logger.debug(
                   `Setting next deadline (via offset of ${deadlineOffset} ms) to: ${nextDeadline.toISOString()}`
@@ -198,8 +196,11 @@ export class RetryInterceptor {
   }
 }
 
-function calculateDeadline(offsetMillis: number): Date {
+function calculateDeadline(offsetMillis: number, maxDeadline?: Date): Date {
   const deadline = new Date(Date.now());
   deadline.setMilliseconds(deadline.getMilliseconds() + offsetMillis);
+  if (maxDeadline && deadline > maxDeadline) {
+    return maxDeadline;
+  }
   return deadline;
 }
