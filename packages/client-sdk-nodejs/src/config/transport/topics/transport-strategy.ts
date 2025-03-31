@@ -66,7 +66,7 @@ export class StaticTopicGrpcConfiguration implements TopicGrpcConfiguration {
     if (props.numClients !== undefined && props.numClients !== null) {
       this.numClients = props.numClients;
     } else {
-      this.numClients = NUM_DEFAULT_CLIENTS;
+      this.numClients = 4;
     }
 
     this.keepAliveTimeMs = props.keepAliveTimeMs;
