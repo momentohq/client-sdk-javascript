@@ -28,14 +28,21 @@ export class TopicClient extends AbstractTopicClient {
       .getTransportStrategy()
       .getGrpcConfig();
 
-    if (grpcConfig.getNumClients()) {
-      throw new Error(
-        'Deprecated: Use withNumStreamClients() and withNumUnaryClients() instead.'
-      );
-    }
+    let numStreamClients: number;
+    let numUnaryClients: number;
 
-    const numStreamClients = grpcConfig.getNumStreamClients();
-    const numUnaryClients = grpcConfig.getNumUnaryClients();
+    const hasNumClients = grpcConfig.getNumClients() !== undefined;
+    const hasStreamClients = grpcConfig.getNumStreamClients() !== undefined;
+    const hasUnaryClients = grpcConfig.getNumUnaryClients() !== undefined;
+
+    if (hasNumClients && !hasStreamClients && !hasUnaryClients) {
+      // `numClients` is deprecated, but if it is set, we will use it to set the number of stream and unary clients
+      numStreamClients = grpcConfig.getNumClients();
+      numUnaryClients = grpcConfig.getNumClients();
+    } else {
+      numStreamClients = grpcConfig.getNumStreamClients();
+      numUnaryClients = grpcConfig.getNumUnaryClients();
+    }
 
     super(
       allProps.configuration.getLoggerFactory().getLogger(TopicClient.name),

@@ -2,6 +2,11 @@ import {
   TopicGrpcConfiguration,
   TopicGrpcConfigurationProps,
 } from './grpc-configuration';
+import {
+  NUM_DEFAULT_CLIENTS,
+  NUM_DEFAULT_STREAM_CLIENTS,
+  NUM_DEFAULT_UNARY_CLIENTS,
+} from '../../topic-configurations';
 
 export interface TopicTransportStrategy {
   /**
@@ -49,13 +54,19 @@ export class StaticTopicGrpcConfiguration implements TopicGrpcConfiguration {
     ) {
       this.numStreamClients = props.numStreamClients;
     } else {
-      this.numStreamClients = 1;
+      this.numStreamClients = NUM_DEFAULT_STREAM_CLIENTS;
     }
 
     if (props.numUnaryClients !== undefined && props.numUnaryClients !== null) {
       this.numUnaryClients = props.numUnaryClients;
     } else {
-      this.numUnaryClients = 1;
+      this.numUnaryClients = NUM_DEFAULT_UNARY_CLIENTS;
+    }
+
+    if (props.numClients !== undefined && props.numClients !== null) {
+      this.numClients = props.numClients;
+    } else {
+      this.numClients = NUM_DEFAULT_CLIENTS;
     }
 
     this.keepAliveTimeMs = props.keepAliveTimeMs;

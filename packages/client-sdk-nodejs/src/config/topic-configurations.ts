@@ -13,8 +13,10 @@ import {Middleware} from './middleware/middleware';
 const defaultLoggerFactory: MomentoLoggerFactory =
   new DefaultMomentoLoggerFactory();
 const defaultMiddlewares: Middleware[] = [];
-const NUM_DEFAULT_STREAM_CLIENTS = 4;
-const NUM_DEFAULT_UNARY_CLIENTS = 4;
+
+export const NUM_DEFAULT_STREAM_CLIENTS = 4;
+export const NUM_DEFAULT_UNARY_CLIENTS = 4;
+export const NUM_DEFAULT_CLIENTS = 4;
 
 /**
  * Default config provides defaults suitable for most environments; prioritizes success of publishing and receiving messages.
@@ -35,6 +37,7 @@ export class Default extends TopicClientConfiguration {
       loggerFactory: loggerFactory,
       transportStrategy: new StaticTopicTransportStrategy({
         grpcConfiguration: new StaticTopicGrpcConfiguration({
+          numClients: NUM_DEFAULT_CLIENTS,
           numStreamClients: NUM_DEFAULT_STREAM_CLIENTS,
           numUnaryClients: NUM_DEFAULT_UNARY_CLIENTS,
           keepAlivePermitWithoutCalls: 1,
@@ -66,6 +69,7 @@ export class Lambda extends TopicClientConfiguration {
     loggerFactory: MomentoLoggerFactory = defaultLoggerFactory
   ): TopicClientConfiguration {
     const grpcConfig = new StaticTopicGrpcConfiguration({
+      numClients: NUM_DEFAULT_CLIENTS,
       numStreamClients: NUM_DEFAULT_STREAM_CLIENTS,
       numUnaryClients: NUM_DEFAULT_UNARY_CLIENTS,
       deadlineMillis: 5000,
