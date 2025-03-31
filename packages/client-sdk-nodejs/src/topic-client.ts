@@ -24,6 +24,10 @@ export class TopicClient extends AbstractTopicClient {
         props?.configuration ?? getDefaultTopicClientConfiguration(),
     };
 
+    const logger = allProps.configuration
+      .getLoggerFactory()
+      .getLogger('TopicClient');
+
     const grpcConfig = allProps.configuration
       .getTransportStrategy()
       .getGrpcConfig();
@@ -37,6 +41,10 @@ export class TopicClient extends AbstractTopicClient {
 
     if (hasNumClients && !hasStreamClients && !hasUnaryClients) {
       // `numClients` is deprecated, but if it is set, we will use it to set the number of stream and unary clients
+      logger.info(
+        '`numClients` is deprecated but was provided; defaulting both `numStreamClients` and `numUnaryClients` to %d',
+        grpcConfig.getNumClients()
+      );
       numStreamClients = grpcConfig.getNumClients();
       numUnaryClients = grpcConfig.getNumClients();
     } else {
