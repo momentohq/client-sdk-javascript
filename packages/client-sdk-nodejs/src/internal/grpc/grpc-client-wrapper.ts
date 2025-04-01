@@ -6,6 +6,8 @@ export interface CloseableGrpcClient {
 
 export interface GrpcClientWrapper<T extends CloseableGrpcClient> {
   getClient(): T;
+  startRequest(): void;
+  endRequest(): void;
 }
 
 export interface GrpcClientWithChannel extends CloseableGrpcClient {

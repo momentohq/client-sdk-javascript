@@ -497,27 +497,32 @@ export class CacheDataClient implements IDataClient {
       ttl_milliseconds: secondsToMilliseconds(ttl),
     });
     const metadata = this.createMetadata(cacheName);
-    return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().Set(
-        request,
-        metadata,
-        {
-          interceptors: this.interceptors,
-        },
-        (err, resp) => {
-          if (resp) {
-            resolve(new CacheSet.Success());
-          } else {
-            this.cacheServiceErrorMapper.resolveOrRejectError({
-              err: err,
-              errorResponseFactoryFn: e => new CacheSet.Error(e),
-              resolveFn: resolve,
-              rejectFn: reject,
-            });
+    this.clientWrapper.startRequest();
+    try {
+      return await new Promise((resolve, reject) => {
+        this.clientWrapper.getClient().Set(
+          request,
+          metadata,
+          {
+            interceptors: this.interceptors,
+          },
+          (err, resp) => {
+            if (resp) {
+              resolve(new CacheSet.Success());
+            } else {
+              this.cacheServiceErrorMapper.resolveOrRejectError({
+                err: err,
+                errorResponseFactoryFn: e => new CacheSet.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
+            }
           }
-        }
-      );
-    });
+        );
+      });
+    } finally {
+      this.clientWrapper.endRequest();
+    }
   }
 
   public async setFetch(

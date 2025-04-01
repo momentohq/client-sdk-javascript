@@ -42,6 +42,9 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
   private clientCreatedTime: number;
   private readonly maxClientAgeMillis?: number;
 
+  private inflightRequests = 0;
+  private inflightWaitTimeoutMs = 1000; // 1 second
+
   constructor(props: IdleGrpcClientWrapperProps<T>) {
     this.logger = props.loggerFactory.getLogger(this);
     this.clientFactoryFn = props.clientFactoryFn;
@@ -50,6 +53,14 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
     this.lastAccessTime = Date.now();
     this.maxClientAgeMillis = props.maxClientAgeMillis;
     this.clientCreatedTime = Date.now();
+  }
+
+  public startRequest(): void {
+    this.inflightRequests++;
+  }
+
+  public endRequest(): void {
+    this.inflightRequests--;
   }
 
   getClient(): T {
@@ -101,12 +112,28 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
   }
 
   private recreateClient(reason: string): T {
-    this.logger.info(`${reason}; reconnecting client.`);
+    this.logger.info(`${reason}; attempting safe reconnect.`);
+
+    const deadline = Date.now() + this.inflightWaitTimeoutMs;
+    while (this.inflightRequests > 0 && Date.now() < deadline) {
+      const waitUntil = Date.now() + 10;
+      while (Date.now() < waitUntil) {
+        // Busy wait
+      }
+    }
+
+    if (this.inflightRequests > 0) {
+      this.logger.warn(
+        `Timed out waiting for ${this.inflightRequests} in-flight request(s); proceeding with reconnect.`
+      );
+    }
+
     this.client.close();
     this.client = this.clientFactoryFn();
     const now = Date.now();
-    this.clientCreatedTime = now;
     this.lastAccessTime = now;
+    this.clientCreatedTime = now;
+
     return this.client;
   }
 }
