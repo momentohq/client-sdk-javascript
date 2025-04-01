@@ -6,6 +6,27 @@ import {
 import {MomentoLogger, MomentoLoggerFactory} from '@gomomento/sdk-core';
 import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
 
+export class ClientReaper<T extends CloseableGrpcClient> {
+  private readonly reapingDelayMs: number;
+  private logger: MomentoLogger;
+
+  constructor(props: {delayMs?: number; loggerFactory: MomentoLoggerFactory}) {
+    this.reapingDelayMs = props.delayMs ?? 1000; // default 1 second
+    this.logger = props.loggerFactory.getLogger(this);
+  }
+
+  reapLater(client: T): void {
+    this.logger.info(
+      `Scheduling client for cleanup in ${this.reapingDelayMs}ms`
+    );
+
+    setTimeout(() => {
+      this.logger.info('Closing old client now');
+      client.close();
+    }, this.reapingDelayMs);
+  }
+}
+
 export interface IdleGrpcClientWrapperProps<T extends CloseableGrpcClient> {
   clientFactoryFn: () => T;
   loggerFactory: MomentoLoggerFactory;
@@ -42,6 +63,8 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
   private clientCreatedTime: number;
   private readonly maxClientAgeMillis?: number;
 
+  private readonly clientReaper: ClientReaper<T>;
+
   constructor(props: IdleGrpcClientWrapperProps<T>) {
     this.logger = props.loggerFactory.getLogger(this);
     this.clientFactoryFn = props.clientFactoryFn;
@@ -50,6 +73,10 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
     this.lastAccessTime = Date.now();
     this.maxClientAgeMillis = props.maxClientAgeMillis;
     this.clientCreatedTime = Date.now();
+    this.clientReaper = new ClientReaper({
+      delayMs: 1000, // 1 second
+      loggerFactory: props.loggerFactory,
+    });
   }
 
   getClient(): T {
@@ -102,11 +129,16 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
 
   private recreateClient(reason: string): T {
     this.logger.info(`${reason}; reconnecting client.`);
-    this.client.close();
+
+    const oldClient = this.client; // Save the old client to close it later
     this.client = this.clientFactoryFn();
+
     const now = Date.now();
     this.clientCreatedTime = now;
     this.lastAccessTime = now;
+
+    this.clientReaper.reapLater(oldClient); // Let the old client drain and close later
+
     return this.client;
   }
 }
