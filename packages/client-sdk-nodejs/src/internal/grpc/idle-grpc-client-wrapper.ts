@@ -141,6 +141,7 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
           this.logger.warn(
             `Timeout or error while watching for channel state transition: ${err.message}`
           );
+          oldClient.close();
         } else {
           const newState = channel.getConnectivityState(false);
           if (newState === ConnectivityState.IDLE) {
