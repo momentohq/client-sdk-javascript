@@ -24,6 +24,66 @@ describe('Fixed timeout retry strategy with full network outage', () => {
     );
   });
 
+  it('should use default retry delay and timeout when not specified', async () => {
+    const DEFAULT_RETRY_DELAY_MILLIS = 100;
+    const DEFAULT_RESPONSE_DATA_RECEIVED_TIMEOUT_MILLIS = 1000;
+    const RESPONSE_DELAY_MILLIS =
+      DEFAULT_RESPONSE_DATA_RECEIVED_TIMEOUT_MILLIS - 100;
+    const CLIENT_TIMEOUT_MILLIS = 5000;
+    const loggerFactory = new DefaultMomentoLoggerFactory();
+    const retryStrategy = new FixedTimeoutRetryStrategy({
+      loggerFactory: loggerFactory,
+      eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
+    });
+    const testMiddlewareArgs: MomentoLocalMiddlewareArgs = {
+      logger: momentoLogger,
+      testMetricsCollector: testMetricsCollector,
+      requestId: v4(),
+      returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+      errorRpcList: [MomentoRPCMethod.Get],
+      delayRpcList: [MomentoRPCMethod.Get],
+      delayMillis: RESPONSE_DELAY_MILLIS,
+    };
+
+    await WithCacheAndCacheClient(
+      config =>
+        config
+          .withRetryStrategy(retryStrategy)
+          .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS),
+      testMiddlewareArgs,
+      async (cacheClient, cacheName) => {
+        const getResponse = await cacheClient.get(cacheName, 'key');
+        expect(getResponse.type).toEqual(CacheGetResponse.Error);
+        if (getResponse.type === CacheGetResponse.Error) {
+          expect(getResponse.errorCode()).toEqual(
+            MomentoErrorCode.SERVER_UNAVAILABLE
+          );
+        }
+        const delayBetweenResponses =
+          RESPONSE_DELAY_MILLIS + DEFAULT_RETRY_DELAY_MILLIS;
+        const expectedRetryCount = Math.floor(
+          CLIENT_TIMEOUT_MILLIS / delayBetweenResponses
+        );
+        const actualRetryCount = testMetricsCollector.getTotalRetryCount(
+          cacheName,
+          MomentoRPCMethod.Get
+        );
+        expect(actualRetryCount).toBeGreaterThanOrEqual(expectedRetryCount - 1);
+        expect(actualRetryCount).toBeLessThanOrEqual(expectedRetryCount);
+
+        const averageDelayBetweenResponses =
+          testMetricsCollector.getAverageTimeBetweenRetries(
+            cacheName,
+            MomentoRPCMethod.Get
+          );
+        const minDelay = delayBetweenResponses * 0.9;
+        const maxDelay = delayBetweenResponses * 1.1;
+        expect(averageDelayBetweenResponses).toBeGreaterThanOrEqual(minDelay);
+        expect(averageDelayBetweenResponses).toBeLessThanOrEqual(maxDelay);
+      }
+    );
+  });
+
   it('should make maximum retry attempts for eligible API with fixed timeout strategy', async () => {
     const RETRY_DELAY_MILLIS = 1000;
     const CLIENT_TIMEOUT_MILLIS = 5000;
@@ -103,6 +163,57 @@ describe('Fixed timeout retry strategy with full network outage', () => {
           MomentoRPCMethod.Increment
         );
         expect(noOfRetries).toBe(0); // Increment is not eligible for retry
+      }
+    );
+  });
+
+  it('should not exceed client timeout when retry timeout is greater than client timeout', async () => {
+    const RESPONSE_DATA_RECEIVED_TIMEOUT_MILLIS = 3000;
+    const CLIENT_TIMEOUT_MILLIS = 2000;
+    const loggerFactory = new DefaultMomentoLoggerFactory();
+    const retryStrategy = new FixedTimeoutRetryStrategy({
+      loggerFactory: loggerFactory,
+      eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
+      responseDataReceivedTimeoutMillis: RESPONSE_DATA_RECEIVED_TIMEOUT_MILLIS,
+    });
+    const testMiddlewareArgs: MomentoLocalMiddlewareArgs = {
+      logger: momentoLogger,
+      testMetricsCollector: testMetricsCollector,
+      requestId: v4(),
+      returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
+      errorRpcList: [MomentoRPCMethod.Get],
+      delayRpcList: [MomentoRPCMethod.Get],
+      delayMillis: 1000,
+    };
+
+    await WithCacheAndCacheClient(
+      config =>
+        config
+          .withRetryStrategy(retryStrategy)
+          .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS),
+      testMiddlewareArgs,
+      async (cacheClient, cacheName) => {
+        const getResponse = await cacheClient.get(cacheName, 'key');
+        expect(getResponse.type).toEqual(CacheGetResponse.Error);
+        if (getResponse.type === CacheGetResponse.Error) {
+          expect(getResponse.errorCode()).toEqual(
+            MomentoErrorCode.TIMEOUT_ERROR
+          );
+        }
+        const actualRetryCount = testMetricsCollector.getTotalRetryCount(
+          cacheName,
+          MomentoRPCMethod.Get
+        );
+        expect(actualRetryCount).toEqual(1);
+        const averageDelayBetweenResponses =
+          testMetricsCollector.getAverageTimeBetweenRetries(
+            cacheName,
+            MomentoRPCMethod.Get
+          );
+        expect(averageDelayBetweenResponses).toBeGreaterThan(0);
+        expect(averageDelayBetweenResponses).toBeLessThanOrEqual(
+          CLIENT_TIMEOUT_MILLIS
+        );
       }
     );
   });
