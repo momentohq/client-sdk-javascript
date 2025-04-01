@@ -73,6 +73,8 @@ describe('IdleGrpcClientWrapper', () => {
     wrapper.getClient();
     // factory should be called twice (initial + reconnection)
     expect(factory).toHaveBeenCalledTimes(2);
+
+    jest.advanceTimersByTime(1000); // Advance time to ensure the client is closed
     // the first client should be closed
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(badClient.close).toHaveBeenCalledTimes(1);
@@ -107,6 +109,8 @@ describe('IdleGrpcClientWrapper', () => {
     const c2 = wrapper.getClient();
     expect(c2).toBe(newClient);
     expect(factory).toHaveBeenCalledTimes(2);
+
+    jest.advanceTimersByTime(1000); // Advance time to ensure the client is closed
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(initialClient.close).toHaveBeenCalledTimes(1);
   });
@@ -140,6 +144,8 @@ describe('IdleGrpcClientWrapper', () => {
     const c2 = wrapper.getClient();
     expect(c2).toBe(newClient);
     expect(factory).toHaveBeenCalledTimes(2);
+
+    jest.advanceTimersByTime(1000); // Advance time to ensure the client is closed
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(initialClient.close).toHaveBeenCalledTimes(1);
   });
