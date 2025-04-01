@@ -230,7 +230,7 @@ export class RetryInterceptor {
 function calculateDeadline(offsetMillis: number, maxDeadline?: Date): Date {
   const deadline = new Date(Date.now());
   deadline.setMilliseconds(deadline.getMilliseconds() + offsetMillis);
-  if (maxDeadline && deadline > maxDeadline) {
+  if (maxDeadline !== undefined && deadline > maxDeadline) {
     return maxDeadline;
   }
   return deadline;
