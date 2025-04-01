@@ -6,6 +6,9 @@ import {
   Middleware,
   StaticGrpcConfiguration,
   StaticTransportStrategy,
+  StaticTopicGrpcConfiguration,
+  TopicClientConfiguration,
+  StaticTopicTransportStrategy,
 } from '../../../src';
 import {ReadConcern} from '@gomomento/sdk-core';
 
@@ -128,5 +131,104 @@ describe('configuration.ts', () => {
     expect(Configurations.InRegion.LowLatency.latest()).toEqual(
       Configurations.InRegion.LowLatency.v1()
     );
+  });
+});
+
+describe('topic-configuration.ts', () => {
+  const testLoggerFactory = new DefaultMomentoLoggerFactory();
+  const testGrpcConfiguration = new StaticTopicGrpcConfiguration({
+    deadlineMillis: 90210,
+  });
+  const testTransportStrategy = new StaticTopicTransportStrategy({
+    grpcConfiguration: testGrpcConfiguration,
+  });
+  const testMiddlewares: Middleware[] = [];
+
+  const testConfiguration = new TopicClientConfiguration({
+    loggerFactory: testLoggerFactory,
+    transportStrategy: testTransportStrategy,
+    throwOnErrors: false,
+    middlewares: testMiddlewares,
+  });
+
+  it('should support overriding client timeout in transport strategy', () => {
+    const newClientTimeoutMillis = 42;
+    const expectedTransportStrategy = new StaticTopicTransportStrategy({
+      grpcConfiguration: new StaticTopicGrpcConfiguration({
+        deadlineMillis: newClientTimeoutMillis,
+      }),
+    });
+    const configWithNewClientTimeout =
+      testConfiguration.withClientTimeoutMillis(newClientTimeoutMillis);
+    expect(configWithNewClientTimeout.getLoggerFactory()).toEqual(
+      testLoggerFactory
+    );
+
+    expect(configWithNewClientTimeout.getTransportStrategy()).toEqual(
+      expectedTransportStrategy
+    );
+  });
+
+  it('should support overriding number of clients in transport strategy', () => {
+    const numClients = 8;
+    const expectedTransportStrategy = new StaticTopicTransportStrategy({
+      grpcConfiguration: new StaticTopicGrpcConfiguration({
+        deadlineMillis: testGrpcConfiguration.getDeadlineMillis(),
+        numClients: numClients,
+        numStreamClients: testGrpcConfiguration.getNumStreamClients(),
+        numUnaryClients: testGrpcConfiguration.getNumUnaryClients(),
+      }),
+    });
+    const configWithNewNumberOfClients =
+      testConfiguration.withNumConnections(numClients);
+    expect(configWithNewNumberOfClients.getLoggerFactory()).toEqual(
+      testLoggerFactory
+    );
+
+    expect(configWithNewNumberOfClients.getTransportStrategy()).toEqual(
+      expectedTransportStrategy
+    );
+    expect(
+      configWithNewNumberOfClients
+        .getTransportStrategy()
+        .getGrpcConfig()
+        .getNumUnaryClients()
+    ).toEqual(4); // default value
+    expect(
+      configWithNewNumberOfClients
+        .getTransportStrategy()
+        .getGrpcConfig()
+        .getNumStreamClients()
+    ).toEqual(4); // default value
+  });
+
+  it('should support overriding number of stream and unary clients in transport strategy', () => {
+    const numStreamClients = 5;
+    const numUnaryClients = 4;
+    const expectedTransportStrategy = new StaticTopicTransportStrategy({
+      grpcConfiguration: new StaticTopicGrpcConfiguration({
+        deadlineMillis: testGrpcConfiguration.getDeadlineMillis(),
+        numStreamClients: numStreamClients,
+        numUnaryClients: numUnaryClients,
+      }),
+    });
+    const configWithNewNumberOfClients = testConfiguration
+      .withNumStreamConnections(numStreamClients)
+      .withNumUnaryConnections(numUnaryClients);
+    expect(configWithNewNumberOfClients.getLoggerFactory()).toEqual(
+      testLoggerFactory
+    );
+
+    expect(configWithNewNumberOfClients.getTransportStrategy()).toEqual(
+      expectedTransportStrategy
+    );
+
+    // numClients should be undefined since we are using the new methods
+    expect(
+      configWithNewNumberOfClients
+        .getTransportStrategy()
+        .getGrpcConfig()
+        .getNumClients()
+    ).toEqual(undefined);
   });
 });

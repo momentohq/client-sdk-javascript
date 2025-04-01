@@ -2,6 +2,10 @@ import {
   TopicGrpcConfiguration,
   TopicGrpcConfigurationProps,
 } from './grpc-configuration';
+import {
+  NUM_DEFAULT_STREAM_CLIENTS,
+  NUM_DEFAULT_UNARY_CLIENTS,
+} from '../../topic-configurations';
 
 export interface TopicTransportStrategy {
   /**
@@ -35,16 +39,31 @@ export interface TopicTransportStrategyProps {
 
 export class StaticTopicGrpcConfiguration implements TopicGrpcConfiguration {
   private readonly numClients: number;
+  private readonly numStreamClients: number;
+  private readonly numUnaryClients: number;
   private readonly keepAlivePermitWithoutCalls?: number;
   private readonly keepAliveTimeoutMs?: number;
   private readonly keepAliveTimeMs?: number;
   private readonly deadlineMillis: number;
 
   constructor(props: TopicGrpcConfigurationProps) {
+    if (
+      props.numStreamClients !== undefined &&
+      props.numStreamClients !== null
+    ) {
+      this.numStreamClients = props.numStreamClients;
+    } else {
+      this.numStreamClients = NUM_DEFAULT_STREAM_CLIENTS;
+    }
+
+    if (props.numUnaryClients !== undefined && props.numUnaryClients !== null) {
+      this.numUnaryClients = props.numUnaryClients;
+    } else {
+      this.numUnaryClients = NUM_DEFAULT_UNARY_CLIENTS;
+    }
+
     if (props.numClients !== undefined && props.numClients !== null) {
       this.numClients = props.numClients;
-    } else {
-      this.numClients = 1;
     }
 
     this.keepAliveTimeMs = props.keepAliveTimeMs;
@@ -57,10 +76,32 @@ export class StaticTopicGrpcConfiguration implements TopicGrpcConfiguration {
     return this.numClients;
   }
 
+  getNumStreamClients(): number {
+    return this.numStreamClients;
+  }
+
+  getNumUnaryClients(): number {
+    return this.numUnaryClients;
+  }
+
   withNumClients(numClients: number): TopicGrpcConfiguration {
     return new StaticTopicGrpcConfiguration({
       ...this,
       numClients,
+    });
+  }
+
+  withNumStreamClients(numStreamClients: number): TopicGrpcConfiguration {
+    return new StaticTopicGrpcConfiguration({
+      ...this,
+      numStreamClients,
+    });
+  }
+
+  withNumUnaryClients(numUnaryClients: number): TopicGrpcConfiguration {
+    return new StaticTopicGrpcConfiguration({
+      ...this,
+      numUnaryClients,
     });
   }
 
