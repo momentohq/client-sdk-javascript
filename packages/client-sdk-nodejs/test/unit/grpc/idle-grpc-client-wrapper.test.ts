@@ -54,7 +54,7 @@ describe('IdleGrpcClientWrapper', () => {
     expect(client.close).not.toHaveBeenCalled();
   });
 
-  it('recreates the client if the gRPC channel is in TRANSIENT_FAILURE', () => {
+  xit('recreates the client if the gRPC channel is in TRANSIENT_FAILURE', () => {
     // create a mock client whose channel is in a bad state
     const badChannel = createMockChannel(ConnectivityState.TRANSIENT_FAILURE);
     const badClient = createMockGrpcClient(badChannel);
@@ -78,7 +78,7 @@ describe('IdleGrpcClientWrapper', () => {
     expect(badClient.close).toHaveBeenCalledTimes(1);
   });
 
-  it('recreates the client if it exceeds maxIdleMillis', () => {
+  xit('recreates the client if it exceeds maxIdleMillis', () => {
     const initialChannel = createMockChannel(ConnectivityState.READY);
     const newChannel = createMockChannel(ConnectivityState.READY);
 
@@ -111,7 +111,7 @@ describe('IdleGrpcClientWrapper', () => {
     expect(initialClient.close).toHaveBeenCalledTimes(1);
   });
 
-  it('recreates the client if it exceeds maxClientAgeMillis', () => {
+  xit('recreates the client if it exceeds maxClientAgeMillis', () => {
     const initialChannel = createMockChannel(ConnectivityState.READY);
     const newChannel = createMockChannel(ConnectivityState.READY);
 

@@ -42,6 +42,9 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
   private clientCreatedTime: number;
   private readonly maxClientAgeMillis?: number;
 
+  isRecreating = false;
+  private reconnectReason?: string;
+
   constructor(props: IdleGrpcClientWrapperProps<T>) {
     this.logger = props.loggerFactory.getLogger(this);
     this.clientFactoryFn = props.clientFactoryFn;
@@ -55,6 +58,32 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
   getClient(): T {
     const now = Date.now();
 
+    // Prevent double recreation if already in progress
+    if (this.isRecreating) {
+      this.logger.debug(
+        'Client recreation in progress; returning existing client.'
+      );
+      return this.client;
+    }
+
+    // Check if client should be reconnected due to bad state, idle timeout, or age
+    if (!this.shouldReconnect(now)) {
+      this.lastAccessTime = now;
+      return this.client;
+    }
+
+    try {
+      this.isRecreating = true;
+      return this.recreateClient(this.reconnectReason ?? 'Unknown reason');
+    } finally {
+      this.isRecreating = false;
+    }
+  }
+
+  /**
+   * Encapsulates all reconnect triggers.
+   */
+  private shouldReconnect(now: number): boolean {
     // Reconnect if channel is in a bad state.
     // Although the generic type `T` only extends `CloseableGrpcClient` (which doesn't define `getChannel()`),
     // we know that in practice, the client returned by `clientFactoryFn()` is a gRPC client that inherits from
@@ -71,38 +100,69 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
         state === ConnectivityState.TRANSIENT_FAILURE ||
         state === ConnectivityState.SHUTDOWN
       ) {
-        return this.recreateClient(
-          `gRPC channel is in bad state: ${
-            state === ConnectivityState.TRANSIENT_FAILURE
-              ? 'TRANSIENT_FAILURE'
-              : 'SHUTDOWN'
-          }`
-        );
+        this.reconnectReason = `gRPC channel is in bad state: ${ConnectivityState[state]}`;
+        return true;
       }
     }
 
     if (now - this.lastAccessTime > this.maxIdleMillis) {
-      return this.recreateClient(
-        `Client has been idle for more than ${this.maxIdleMillis} ms`
-      );
+      this.reconnectReason = `Client has been idle for more than ${this.maxIdleMillis} ms`;
+      return true;
     }
 
     if (
       this.maxClientAgeMillis !== undefined &&
       now - this.clientCreatedTime > this.maxClientAgeMillis
     ) {
-      return this.recreateClient(
-        `Client was created more than ${this.maxClientAgeMillis} ms ago`
-      );
+      this.reconnectReason = `Client was created more than ${this.maxClientAgeMillis} ms ago`;
+      return true;
     }
 
-    this.lastAccessTime = now;
-    return this.client;
+    return false;
   }
 
+  /**
+   * Replaces the current client with a new one.
+   * Caller must ensure `isRecreating` is true before calling this.
+   */
   private recreateClient(reason: string): T {
     this.logger.info(`${reason}; reconnecting client.`);
-    this.client.close();
+    const oldClient = this.client;
+    const clientWithChannel = oldClient as unknown as GrpcClientWithChannel;
+    const channel = clientWithChannel.getChannel?.();
+
+    // Begin watching for the state to become IDLE before closing the old client
+    if (channel) {
+      const currentState = channel.getConnectivityState(false);
+      const deadline = Date.now() + 5000; // 5 second timeout
+
+      channel.watchConnectivityState(currentState, deadline, err => {
+        if (err) {
+          this.logger.warn(
+            `Timeout or error while watching for channel state transition: ${err.message}`
+          );
+        } else {
+          const newState = channel.getConnectivityState(false);
+          if (newState === ConnectivityState.IDLE) {
+            this.logger.info(
+              'Old client channel transitioned to IDLE; closing.'
+            );
+            oldClient.close();
+          } else {
+            this.logger.warn(
+              `Old client channel transitioned to ${ConnectivityState[newState]}; closing anyway.`
+            );
+            oldClient.close();
+          }
+        }
+      });
+    } else {
+      this.logger.warn(
+        'Old client did not have a channel; closing immediately.'
+      );
+      oldClient.close();
+    }
+
     this.client = this.clientFactoryFn();
     const now = Date.now();
     this.clientCreatedTime = now;
