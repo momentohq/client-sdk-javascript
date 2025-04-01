@@ -143,4 +143,42 @@ describe('IdleGrpcClientWrapper', () => {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(initialClient.close).toHaveBeenCalledTimes(1);
   });
+
+  it('should not recreate the client when recreation is in progress', () => {
+    const badChannel = createMockChannel(ConnectivityState.TRANSIENT_FAILURE);
+    const badClient = createMockGrpcClient(badChannel);
+    const goodChannel = createMockChannel(ConnectivityState.READY);
+    const goodClient = createMockGrpcClient(goodChannel);
+
+    // Simulate a slow factory that delays recreation
+    const factory = jest
+      .fn<GrpcClientWithChannel, []>()
+      .mockReturnValueOnce(badClient)
+      .mockImplementationOnce(() => {
+        // Simulate delay to mimic async-like blocking
+        // Since this is synchronous code, we’ll manually control the effect
+        return goodClient;
+      });
+
+    const wrapper = new IdleGrpcClientWrapper<GrpcClientWithChannel>({
+      clientFactoryFn: factory,
+      loggerFactory,
+      maxIdleMillis: 10_000,
+    });
+
+    // Trigger initial creation with bad client
+    wrapper.getClient();
+    // Manually mark the wrapper as recreating to simulate concurrent access
+    wrapper.isRecreating = true;
+    // This call should not trigger recreation because it's "in progress"
+    wrapper.getClient();
+
+    // Cleanup: unset the flag and allow actual recreation
+    wrapper.isRecreating = false;
+    wrapper.getClient();
+
+    expect(factory).toHaveBeenCalledTimes(2);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(badClient.close).toHaveBeenCalledTimes(1);
+  });
 });

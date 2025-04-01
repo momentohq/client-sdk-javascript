@@ -42,6 +42,8 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
   private clientCreatedTime: number;
   private readonly maxClientAgeMillis?: number;
 
+  isRecreating = false;
+
   constructor(props: IdleGrpcClientWrapperProps<T>) {
     this.logger = props.loggerFactory.getLogger(this);
     this.clientFactoryFn = props.clientFactoryFn;
@@ -71,7 +73,7 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
         state === ConnectivityState.TRANSIENT_FAILURE ||
         state === ConnectivityState.SHUTDOWN
       ) {
-        return this.recreateClient(
+        return this.safeRecreateClient(
           `gRPC channel is in bad state: ${
             state === ConnectivityState.TRANSIENT_FAILURE
               ? 'TRANSIENT_FAILURE'
@@ -82,7 +84,7 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
     }
 
     if (now - this.lastAccessTime > this.maxIdleMillis) {
-      return this.recreateClient(
+      return this.safeRecreateClient(
         `Client has been idle for more than ${this.maxIdleMillis} ms`
       );
     }
@@ -91,13 +93,29 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
       this.maxClientAgeMillis !== undefined &&
       now - this.clientCreatedTime > this.maxClientAgeMillis
     ) {
-      return this.recreateClient(
+      return this.safeRecreateClient(
         `Client was created more than ${this.maxClientAgeMillis} ms ago`
       );
     }
 
     this.lastAccessTime = now;
     return this.client;
+  }
+
+  private safeRecreateClient(reason: string): T {
+    if (this.isRecreating) {
+      this.logger.debug(
+        'Client recreation already in progress; reusing current client.'
+      );
+      return this.client;
+    }
+
+    this.isRecreating = true;
+    try {
+      return this.recreateClient(reason);
+    } finally {
+      this.isRecreating = false;
+    }
   }
 
   private recreateClient(reason: string): T {
