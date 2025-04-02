@@ -29,6 +29,12 @@ advanced-compression-cdk/
 
 > **Note**: AWS Lambda layers must be structured so that the `node_modules` folder is inside the `nodejs/` directory within the zip file. Ensure that `zstd_arm64_layer.zip` contains `nodejs/node_modules` before deployment.
 
+## Prerequisites
+
+- Node version 18 or higher is required
+- To get started with Momento, you will need a Super User Momento API key. You can get one from the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining an API key.
+- To deploy the CDK app, you will need to have [configured your AWS credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-authentication.html#cli-chap-authentication-precedence).
+
 ## Deployment
 
 To deploy the project using AWS CDK, follow these steps:
