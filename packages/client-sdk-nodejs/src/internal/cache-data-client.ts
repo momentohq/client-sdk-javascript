@@ -221,6 +221,7 @@ export class CacheDataClient implements IDataClient {
         );
       },
       loggerFactory: this.configuration.getLoggerFactory(),
+      clientTimeoutMillis: this.requestTimeoutMs,
       maxIdleMillis: this.configuration
         .getTransportStrategy()
         .getMaxIdleMillis(),

@@ -9,6 +9,7 @@ import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
 export interface IdleGrpcClientWrapperProps<T extends CloseableGrpcClient> {
   clientFactoryFn: () => T;
   loggerFactory: MomentoLoggerFactory;
+  clientTimeoutMillis: number;
   maxIdleMillis: number;
   maxClientAgeMillis?: number;
 }
@@ -41,8 +42,10 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
   private lastAccessTime: number;
   private clientCreatedTime: number;
   private readonly maxClientAgeMillis?: number;
+  private readonly clientTimeoutMillis: number;
+  private CLOSE_CLIENT_TIMEOUT_MULTIPLIER = 2;
 
-  isRecreating = false;
+  private isRecreating = false;
   private reconnectReason?: string;
 
   constructor(props: IdleGrpcClientWrapperProps<T>) {
@@ -53,6 +56,7 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
     this.lastAccessTime = Date.now();
     this.maxClientAgeMillis = props.maxClientAgeMillis;
     this.clientCreatedTime = Date.now();
+    this.clientTimeoutMillis = props.clientTimeoutMillis;
   }
 
   getClient(): T {
@@ -128,41 +132,17 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
   private recreateClient(reason: string): T {
     this.logger.info(`${reason}; reconnecting client.`);
     const oldClient = this.client;
-    const clientWithChannel = oldClient as unknown as GrpcClientWithChannel;
-    const channel = clientWithChannel.getChannel?.();
 
-    // Begin watching for the state to become IDLE before closing the old client
-    if (channel) {
-      const currentState = channel.getConnectivityState(false);
-      const deadline = Date.now() + 5000; // 5 second timeout
-
-      channel.watchConnectivityState(currentState, deadline, err => {
-        if (err) {
-          this.logger.warn(
-            `Timeout or error while watching for channel state transition: ${err.message}`
-          );
-          oldClient.close();
-        } else {
-          const newState = channel.getConnectivityState(false);
-          if (newState === ConnectivityState.IDLE) {
-            this.logger.info(
-              'Old client channel transitioned to IDLE; closing.'
-            );
-            oldClient.close();
-          } else {
-            this.logger.warn(
-              `Old client channel transitioned to ${ConnectivityState[newState]}; closing anyway.`
-            );
-            oldClient.close();
-          }
-        }
-      });
-    } else {
-      this.logger.warn(
-        'Old client did not have a channel; closing immediately.'
+    // Delay closing the old client to allow in-flight requests to complete
+    const closeDelay =
+      this.clientTimeoutMillis * this.CLOSE_CLIENT_TIMEOUT_MULTIPLIER;
+    setTimeout(() => {
+      this.logger.debug(
+        'Closing old client after grace period of %d ms',
+        closeDelay
       );
       oldClient.close();
-    }
+    }, closeDelay);
 
     this.client = this.clientFactoryFn();
     const now = Date.now();
