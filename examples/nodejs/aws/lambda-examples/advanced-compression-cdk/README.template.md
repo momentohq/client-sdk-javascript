@@ -2,7 +2,7 @@
 
 # Momento Node.js SDK – AWS Lambda with Advanced (`zstd`) Compression Using CDK
 
-## 📌 Overview
+## Overview
 
 This example demonstrates how to deploy an AWS Lambda function using **Momento Cache** with **Zstandard (`zstd`) compression**.
 It leverages a **custom Lambda layer** to include the `zstd` binary required by the `@gomomento/sdk-nodejs-compression-zstd` library.
@@ -29,7 +29,7 @@ advanced-compression-cdk/
 
 > **Note**: AWS Lambda layers must be structured so that the `node_modules` folder is inside the `nodejs/` directory within the zip file. Ensure that `zstd_arm64_layer.zip` contains `nodejs/node_modules` before deployment.
 
-## 🚀 Deployment
+## Deployment
 
 To deploy the project using AWS CDK, follow these steps:
 
@@ -40,7 +40,7 @@ npm run build
 npm run deploy  # This zips the Lambda layer, builds the Lambda, and deploys the stack
 ```
 
-## ⚡ Invoking the Lambda
+## Invoking the Lambda
 
 Once deployed, invoke the Lambda function using the AWS CLI:
 

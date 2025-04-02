@@ -33,6 +33,8 @@ const momento = new CacheClient({
 });
 
 export const handler = async (event: APIGatewayEvent, context: Context): Promise<APIGatewayProxyResult> => {
+  const createCacheResp = await momento.createCache(cacheName);
+  console.log(`create cache resp: ${createCacheResp.toString()}`);
   const setResp = await momento.set(cacheName, cacheKey, cacheValue, {compress: true});
   console.log(`set resp: ${setResp.toString()}`);
   const resp = await momento.get(cacheName, cacheKey, {decompress: true});
