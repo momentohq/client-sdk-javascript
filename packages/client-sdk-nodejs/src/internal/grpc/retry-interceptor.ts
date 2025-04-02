@@ -50,6 +50,13 @@ export class RetryInterceptor {
       )}; deadline offset: ${deadlineOffset} ms`
     );
 
+    // The interceptor is a function that takes (options, nextCall) and
+    // returns InterceptingCall(nextCall(options), requester).
+    // The requester object acts on outgoing requests, and we define `start`
+    // and `sendMessage` methods on it below.
+    // Within the requester object, you can define a listener object that acts on incoming responses.
+    // The listener object has `onReceiveMessage` and `onReceiveStatus` methods defined below.
+    // Reference: https://github.com/grpc/grpc-node/tree/master/examples/interceptors
     return (options, nextCall) => {
       logger.trace(
         `Entering RetryInterceptor (for ${
@@ -71,9 +78,13 @@ export class RetryInterceptor {
       let savedSendMessage: unknown;
       let savedReceiveMessage: unknown;
       let savedMessageNext: (arg0: unknown) => void;
+
       return new InterceptingCall(nextCall(options), {
         start: function (metadata, listener, next) {
           savedMetadata = metadata;
+
+          // The listener object acts on incoming responses.
+          // Our retry logic is implemented in the `onReceiveStatus` method.
           const newListener: Listener = {
             onReceiveMessage: function (
               message: unknown,
@@ -89,6 +100,8 @@ export class RetryInterceptor {
               next: (arg0: any) => void
             ) {
               let attempts = 0;
+
+              // This is the retry function that is called when a request is eligible for retry.
               const retry = function (message: unknown, metadata: Metadata) {
                 logger.debug(
                   `Retrying request: path: ${
@@ -97,6 +110,12 @@ export class RetryInterceptor {
                     (options.deadline as Date | undefined)?.toISOString()
                   )}, overall deadline is: ${overallDeadline.toISOString()}`
                 );
+                // Note: we need to manually check if overall deadline has been exceeded
+                // because the retry interceptor does not return a status code of DEADLINE_EXCEEDED
+                // when a retry attempt is made with an already-passed deadline.
+                //
+                // We also need this check in case DEADLINE_EXCEEDED is marked as a retryable status code
+                // as it is in the default storage eligibility strategy.
                 if (new Date(Date.now()) >= overallDeadline) {
                   logger.debug(
                     `Request not eligible for retry: path: ${
@@ -107,18 +126,29 @@ export class RetryInterceptor {
                   next(status);
                   return;
                 }
-                nextDeadline = calculateDeadline(deadlineOffset);
+                // Do not exceed the overall deadline when setting the retry attempt's deadline.
+                nextDeadline = calculateDeadline(
+                  deadlineOffset,
+                  overallDeadline
+                );
                 logger.debug(
                   `Setting next deadline (via offset of ${deadlineOffset} ms) to: ${nextDeadline.toISOString()}`
                 );
                 options.deadline = nextDeadline;
 
+                // Here, we kind of define an interceptor within the retry interceptor.
+                // The `newCall.start` accepts a new listener that's sent out with the retried request.
+                // All retries will use this logic to recursively call the retry function if needed.
+                // Retry attempts' responses are handled in the `onReceiveStatus` method defined on newCall's listener.
                 const newCall = nextCall(options);
                 newCall.start(metadata, {
                   onReceiveMessage: function (message) {
                     savedReceiveMessage = message;
                   },
                   onReceiveStatus: function (status) {
+                    logger.trace(
+                      `Inner retry loop received status ${status.code}, determining when to retry`
+                    );
                     const whenToRetry =
                       retryStrategy.determineWhenToRetryRequest({
                         grpcStatus: status,
@@ -146,6 +176,11 @@ export class RetryInterceptor {
                 newCall.halfClose();
               };
 
+              // From the first incoming response, we determine if the request is eligible for retry.
+              // If it is not, we call the next function.
+              // If it is, we call the `retry` function defined above.
+              // We only execute this code once, when the first response is received, to kick off
+              // the retry loop defined by the `retry` function.
               if (status.code === Status.OK) {
                 savedMessageNext(savedReceiveMessage);
                 next(status);
@@ -163,6 +198,9 @@ export class RetryInterceptor {
                   savedMessageNext(savedReceiveMessage);
                   next(status);
                 } else {
+                  logger.trace(
+                    'First response not OK, entering inner retry loop'
+                  );
                   attempts++;
                   logger.debug(
                     `Request eligible for retry: path: ${options.method_definition.path}; response status code: ${status.code}; number of attempts (${attempts}); will retry in ${whenToRetry}ms`
@@ -175,6 +213,9 @@ export class RetryInterceptor {
               }
             },
           };
+
+          // The requester object ends with a call to `next()` and passes
+          // along the listener object we defined above.
           next(metadata, newListener);
         },
         sendMessage: function (message, next) {
@@ -186,8 +227,11 @@ export class RetryInterceptor {
   }
 }
 
-function calculateDeadline(offsetMillis: number): Date {
+function calculateDeadline(offsetMillis: number, maxDeadline?: Date): Date {
   const deadline = new Date(Date.now());
   deadline.setMilliseconds(deadline.getMilliseconds() + offsetMillis);
+  if (maxDeadline !== undefined && deadline > maxDeadline) {
+    return maxDeadline;
+  }
   return deadline;
 }
