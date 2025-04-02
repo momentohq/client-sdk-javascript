@@ -25,6 +25,7 @@ describe('IdleGrpcClientWrapper', () => {
   const loggerFactory = new DefaultMomentoLoggerFactory(
     DefaultMomentoLoggerLevel.INFO
   );
+  const CLIENT_TIMEOUT_MILLIS = 500;
 
   beforeEach(() => {
     jest.useFakeTimers();
@@ -44,6 +45,7 @@ describe('IdleGrpcClientWrapper', () => {
     const wrapper = new IdleGrpcClientWrapper<GrpcClientWithChannel>({
       clientFactoryFn: () => client,
       loggerFactory: loggerFactory,
+      clientTimeoutMillis: CLIENT_TIMEOUT_MILLIS,
       maxIdleMillis: 10000,
     });
 
@@ -66,6 +68,7 @@ describe('IdleGrpcClientWrapper', () => {
     const wrapper = new IdleGrpcClientWrapper<GrpcClientWithChannel>({
       clientFactoryFn: factory,
       loggerFactory,
+      clientTimeoutMillis: CLIENT_TIMEOUT_MILLIS,
       maxIdleMillis: 10000,
     });
 
@@ -73,6 +76,8 @@ describe('IdleGrpcClientWrapper', () => {
     wrapper.getClient();
     // factory should be called twice (initial + reconnection)
     expect(factory).toHaveBeenCalledTimes(2);
+
+    jest.advanceTimersByTime(CLIENT_TIMEOUT_MILLIS * 2);
     // the first client should be closed
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(badClient.close).toHaveBeenCalledTimes(1);
@@ -93,6 +98,7 @@ describe('IdleGrpcClientWrapper', () => {
     const wrapper = new IdleGrpcClientWrapper<GrpcClientWithChannel>({
       clientFactoryFn: factory,
       loggerFactory,
+      clientTimeoutMillis: CLIENT_TIMEOUT_MILLIS,
       maxIdleMillis: 10_000,
       maxClientAgeMillis: 60_000, // longer, so it won’t interfere
     });
@@ -107,6 +113,8 @@ describe('IdleGrpcClientWrapper', () => {
     const c2 = wrapper.getClient();
     expect(c2).toBe(newClient);
     expect(factory).toHaveBeenCalledTimes(2);
+
+    jest.advanceTimersByTime(CLIENT_TIMEOUT_MILLIS * 2);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(initialClient.close).toHaveBeenCalledTimes(1);
   });
@@ -126,6 +134,7 @@ describe('IdleGrpcClientWrapper', () => {
     const wrapper = new IdleGrpcClientWrapper<GrpcClientWithChannel>({
       clientFactoryFn: factory,
       loggerFactory,
+      clientTimeoutMillis: CLIENT_TIMEOUT_MILLIS,
       maxIdleMillis: 60_000, // longer, so it won’t interfere
       maxClientAgeMillis: 10_000,
     });
@@ -140,6 +149,8 @@ describe('IdleGrpcClientWrapper', () => {
     const c2 = wrapper.getClient();
     expect(c2).toBe(newClient);
     expect(factory).toHaveBeenCalledTimes(2);
+
+    jest.advanceTimersByTime(CLIENT_TIMEOUT_MILLIS * 2);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(initialClient.close).toHaveBeenCalledTimes(1);
   });

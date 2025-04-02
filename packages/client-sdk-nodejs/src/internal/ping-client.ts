@@ -52,6 +52,7 @@ export class InternalNodeGrpcPingClient {
             : ChannelCredentials.createInsecure()
         ),
       loggerFactory: props.configuration.getLoggerFactory(),
+      clientTimeoutMillis: InternalNodeGrpcPingClient.REQUEST_TIMEOUT_MS,
       maxIdleMillis: props.configuration
         .getTransportStrategy()
         .getMaxIdleMillis(),
