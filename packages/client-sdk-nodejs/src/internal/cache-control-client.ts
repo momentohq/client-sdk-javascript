@@ -79,6 +79,7 @@ export class CacheControlClient {
           channelOptions
         ),
       loggerFactory: props.configuration.getLoggerFactory(),
+      clientTimeoutMillis: CacheControlClient.REQUEST_TIMEOUT_MS,
       maxIdleMillis: props.configuration
         .getTransportStrategy()
         .getMaxIdleMillis(),

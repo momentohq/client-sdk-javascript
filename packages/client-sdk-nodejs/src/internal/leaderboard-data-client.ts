@@ -97,6 +97,7 @@ export class LeaderboardDataClient implements ILeaderboardDataClient {
               channelOptions
             ),
           loggerFactory: this.configuration.getLoggerFactory(),
+          clientTimeoutMillis: this.requestTimeoutMs,
           maxIdleMillis: this.configuration
             .getTransportStrategy()
             .getMaxIdleMillis(),

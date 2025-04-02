@@ -9,6 +9,7 @@ import {ConnectivityState} from '@grpc/grpc-js/build/src/connectivity-state';
 export interface IdleGrpcClientWrapperProps<T extends CloseableGrpcClient> {
   clientFactoryFn: () => T;
   loggerFactory: MomentoLoggerFactory;
+  clientTimeoutMillis: number;
   maxIdleMillis: number;
   maxClientAgeMillis?: number;
 }
@@ -41,6 +42,11 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
   private lastAccessTime: number;
   private clientCreatedTime: number;
   private readonly maxClientAgeMillis?: number;
+  private readonly clientTimeoutMillis: number;
+  private CLOSE_CLIENT_TIMEOUT_MULTIPLIER = 2;
+
+  private isRecreating = false;
+  private reconnectReason?: string;
 
   constructor(props: IdleGrpcClientWrapperProps<T>) {
     this.logger = props.loggerFactory.getLogger(this);
@@ -50,11 +56,38 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
     this.lastAccessTime = Date.now();
     this.maxClientAgeMillis = props.maxClientAgeMillis;
     this.clientCreatedTime = Date.now();
+    this.clientTimeoutMillis = props.clientTimeoutMillis;
   }
 
   getClient(): T {
     const now = Date.now();
 
+    // Prevent double recreation if already in progress
+    if (this.isRecreating) {
+      this.logger.debug(
+        'Client recreation in progress; returning existing client.'
+      );
+      return this.client;
+    }
+
+    // Check if client should be reconnected due to bad state, idle timeout, or age
+    if (!this.shouldReconnect(now)) {
+      this.lastAccessTime = now;
+      return this.client;
+    }
+
+    try {
+      this.isRecreating = true;
+      return this.recreateClient(this.reconnectReason ?? 'Unknown reason');
+    } finally {
+      this.isRecreating = false;
+    }
+  }
+
+  /**
+   * Encapsulates all reconnect triggers.
+   */
+  private shouldReconnect(now: number): boolean {
     // Reconnect if channel is in a bad state.
     // Although the generic type `T` only extends `CloseableGrpcClient` (which doesn't define `getChannel()`),
     // we know that in practice, the client returned by `clientFactoryFn()` is a gRPC client that inherits from
@@ -71,38 +104,46 @@ export class IdleGrpcClientWrapper<T extends CloseableGrpcClient>
         state === ConnectivityState.TRANSIENT_FAILURE ||
         state === ConnectivityState.SHUTDOWN
       ) {
-        return this.recreateClient(
-          `gRPC channel is in bad state: ${
-            state === ConnectivityState.TRANSIENT_FAILURE
-              ? 'TRANSIENT_FAILURE'
-              : 'SHUTDOWN'
-          }`
-        );
+        this.reconnectReason = `gRPC channel is in bad state: ${ConnectivityState[state]}`;
+        return true;
       }
     }
 
     if (now - this.lastAccessTime > this.maxIdleMillis) {
-      return this.recreateClient(
-        `Client has been idle for more than ${this.maxIdleMillis} ms`
-      );
+      this.reconnectReason = `Client has been idle for more than ${this.maxIdleMillis} ms`;
+      return true;
     }
 
     if (
       this.maxClientAgeMillis !== undefined &&
       now - this.clientCreatedTime > this.maxClientAgeMillis
     ) {
-      return this.recreateClient(
-        `Client was created more than ${this.maxClientAgeMillis} ms ago`
-      );
+      this.reconnectReason = `Client was created more than ${this.maxClientAgeMillis} ms ago`;
+      return true;
     }
 
-    this.lastAccessTime = now;
-    return this.client;
+    return false;
   }
 
+  /**
+   * Replaces the current client with a new one.
+   * Caller must ensure `isRecreating` is true before calling this.
+   */
   private recreateClient(reason: string): T {
     this.logger.info(`${reason}; reconnecting client.`);
-    this.client.close();
+    const oldClient = this.client;
+
+    // Delay closing the old client to allow in-flight requests to complete
+    const closeDelay =
+      this.clientTimeoutMillis * this.CLOSE_CLIENT_TIMEOUT_MULTIPLIER;
+    setTimeout(() => {
+      this.logger.debug(
+        'Closing old client after grace period of %d ms',
+        closeDelay
+      );
+      oldClient.close();
+    }, closeDelay);
+
     this.client = this.clientFactoryFn();
     const now = Date.now();
     this.clientCreatedTime = now;

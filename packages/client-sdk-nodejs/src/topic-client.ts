@@ -24,14 +24,38 @@ export class TopicClient extends AbstractTopicClient {
         props?.configuration ?? getDefaultTopicClientConfiguration(),
     };
 
-    const numClients = allProps.configuration
+    const logger = allProps.configuration
+      .getLoggerFactory()
+      .getLogger('TopicClient');
+
+    const grpcConfig = allProps.configuration
       .getTransportStrategy()
-      .getGrpcConfig()
-      .getNumClients();
+      .getGrpcConfig();
+
+    let numStreamClients: number;
+    let numUnaryClients: number;
+
+    const hasNumClients = grpcConfig.getNumClients() !== undefined;
+    const hasStreamClients = grpcConfig.getNumStreamClients() !== undefined;
+    const hasUnaryClients = grpcConfig.getNumUnaryClients() !== undefined;
+
+    if (hasNumClients && !hasStreamClients && !hasUnaryClients) {
+      // `numClients` is deprecated, but if it is set, we will use it to set the number of stream and unary clients
+      logger.info(
+        '`numClients` is deprecated but was provided; defaulting both `numStreamClients` and `numUnaryClients` to %d',
+        grpcConfig.getNumClients()
+      );
+      numStreamClients = grpcConfig.getNumClients();
+      numUnaryClients = grpcConfig.getNumClients();
+    } else {
+      numStreamClients = grpcConfig.getNumStreamClients();
+      numUnaryClients = grpcConfig.getNumUnaryClients();
+    }
 
     super(
       allProps.configuration.getLoggerFactory().getLogger(TopicClient.name),
-      range(numClients).map(_ => new PubsubClient(allProps)),
+      range(numStreamClients).map(_ => new PubsubClient(allProps)),
+      range(numUnaryClients).map(_ => new PubsubClient(allProps)),
       new WebhookClient(allProps)
     );
 
