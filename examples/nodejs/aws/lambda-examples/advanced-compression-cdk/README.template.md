@@ -27,7 +27,7 @@ advanced-compression-cdk/
 │-- README.md                           # Project documentation
 ```
 
-> **Note**: AWS Lambda layers must be structured so that the `node_modules` folder is inside the `nodejs/` directory within the zip file. Ensure that `zstd_arm64_layer.zip` contains `nodejs/node_modules` before deployment.
+> **Note**: AWS Lambda layers must be structured so that the `node_modules` folder is inside the `nodejs/` directory within the zip file. Ensure that `zstd_x64_layer.zip` contains `nodejs/node_modules` before deployment.
 
 ## Prerequisites
 
