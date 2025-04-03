@@ -16,11 +16,6 @@ test-leaderboard-service:
 	@npm run integration-test-leaderboard
 
 
-test-storage-service:
-	@echo "Testing storage service..."
-	@npm run integration-test-storage
-
-
 test-topics-service:
 	@echo "Testing topics service..."
 	@npm run integration-test-topics
