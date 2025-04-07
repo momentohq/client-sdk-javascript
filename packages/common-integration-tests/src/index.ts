@@ -12,6 +12,5 @@ export * from './topics/topic-client';
 export * from './cache/keys-exist';
 export * from './cache/update-ttl';
 export * from './leaderboard/leaderboard-client';
-export * from './webhooks/webhooks';
 export * from './cache/batch-get-set';
 export * from './cache/replica-reads';

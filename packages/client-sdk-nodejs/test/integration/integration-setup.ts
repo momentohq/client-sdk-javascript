@@ -1,9 +1,4 @@
-import {
-  createStoreIfNotExists,
-  deleteStoreIfExists,
-  testCacheName,
-  testStoreName,
-} from '@gomomento/common-integration-tests';
+import {testCacheName} from '@gomomento/common-integration-tests';
 import {
   AuthClient,
   CacheClient,
@@ -17,9 +12,7 @@ import {
   MomentoErrorCode,
   MomentoLocalProvider,
   PreviewLeaderboardClient,
-  PreviewStorageClient,
   ReadConcern,
-  StorageConfigurations,
   TopicClient,
   TopicConfiguration,
   TopicConfigurations,
@@ -265,13 +258,6 @@ function momentoTopicClientForTesting(): TopicClient {
   });
 }
 
-function momentoStorageClientForTesting(): PreviewStorageClient {
-  return new PreviewStorageClient({
-    configuration: StorageConfigurations.Laptop.latest(),
-    credentialProvider: integrationTestCacheClientProps().credentialProvider,
-  });
-}
-
 function momentoTopicClientWithThrowOnErrorsForTesting(): TopicClient {
   return new TopicClient({
     configuration:
@@ -362,27 +348,6 @@ export function SetupTopicIntegrationTest(): {
     topicClientWithThrowOnErrors,
     cacheClient: cacheClient,
     integrationTestCacheName: integrationTestCacheName,
-  };
-}
-
-export function SetupStorageIntegrationTest(): {
-  storageClient: PreviewStorageClient;
-  integrationTestStoreName: string;
-} {
-  const integrationTestStoreName = testStoreName();
-  const storageClient = momentoStorageClientForTesting();
-
-  beforeAll(async () => {
-    await createStoreIfNotExists(storageClient, integrationTestStoreName);
-  });
-
-  afterAll(async () => {
-    await deleteStoreIfExists(storageClient, integrationTestStoreName);
-  });
-
-  return {
-    storageClient,
-    integrationTestStoreName,
   };
 }
 

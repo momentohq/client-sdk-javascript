@@ -20,7 +20,7 @@
     "integration-test-cache": "jest cache/ --maxWorkers 1 -- useConsistentReads",
     "integration-test-control-cache-topics": "npm run integration-test-cache && npm run integration-test-topics",
     "integration-test-leaderboard": "jest leaderboard/ --maxWorkers 1 -- useConsistentReads",
-    "integration-test-topics": "jest topics/ webhooks/ --maxWorkers 1 -- useConsistentReads",
+    "integration-test-topics": "jest topics/ --maxWorkers 1 -- useConsistentReads",
     "integration-test-retry": "jest retry/ --maxWorkers 1 -- useConsistentReads",
     "integration-test-consistent-reads": "jest integration --testPathIgnorePatterns=\"retry/\" --maxWorkers 1 -- useConsistentReads",
     "integration-test": "jest integration --maxWorkers 1",

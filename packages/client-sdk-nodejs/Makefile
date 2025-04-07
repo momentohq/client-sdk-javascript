@@ -1,4 +1,4 @@
-.PHONY: test-auth-service test-cache-service test-leaderboard-service test-storage-service test-topics-service test-http-service test-retry-service
+.PHONY: test-auth-service test-cache-service test-leaderboard-service test-topics-service test-http-service test-retry-service
 
 
 test-auth-service:
