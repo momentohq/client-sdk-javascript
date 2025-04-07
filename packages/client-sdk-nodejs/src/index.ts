@@ -7,7 +7,6 @@ import * as TopicConfigurations from './config/topic-configurations';
 import * as StorageConfigurations from './config/storage-configurations';
 import * as LeaderboardConfigurations from './config/leaderboard-configurations';
 import * as BatchUtils from './batchutils/batch-functions';
-import * as WebhookUtils from './webhookutils';
 
 import {TopicClientProps} from './topic-client-props';
 
@@ -492,7 +491,6 @@ export {
   NoopMomentoLogger,
   NoopMomentoLoggerFactory,
   BatchUtils,
-  WebhookUtils,
   ReadConcern,
   CompressionLevel,
 };
