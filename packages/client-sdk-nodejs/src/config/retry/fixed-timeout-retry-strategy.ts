@@ -5,6 +5,7 @@ import {
 import {EligibilityStrategy} from './eligibility-strategy';
 import {MomentoLoggerFactory, MomentoLogger} from '../..';
 import {DefaultStorageEligibilityStrategy} from './storage-default-eligibility-strategy';
+import {Status} from '@grpc/grpc-js/build/src/constants';
 
 export interface FixedTimeoutRetryStrategyProps {
   loggerFactory: MomentoLoggerFactory;
@@ -39,6 +40,20 @@ export class FixedTimeoutRetryStrategy implements RetryStrategy {
     this.logger.debug(
       `Determining whether request is eligible for retry; status code: ${props.grpcStatus.code}, request type: ${props.grpcRequest.path}, attemptNumber: ${props.attemptNumber}`
     );
+
+    // If a retry attempt's timeout has passed but the client's overall timeout has not yet passed,
+    // we should reset the deadline and retry.
+    if (
+      props.attemptNumber > 0 &&
+      props.grpcStatus.code === Status.DEADLINE_EXCEEDED &&
+      props.overallDeadline > new Date(Date.now())
+    ) {
+      this.logger.debug(
+        `Request is eligible for retry (attempt ${props.attemptNumber}), retrying after ${this.retryDelayIntervalMillis} ms +/- jitter.`
+      );
+      return addJitter(this.retryDelayIntervalMillis);
+    }
+
     if (!this.eligibilityStrategy.isEligibleForRetry(props)) {
       // null means do not retry
       return null;
@@ -47,7 +62,6 @@ export class FixedTimeoutRetryStrategy implements RetryStrategy {
     this.logger.debug(
       `Request is eligible for retry (attempt ${props.attemptNumber}), retrying after ${this.retryDelayIntervalMillis} ms +/- jitter.`
     );
-    // retry after a fixed time interval has passed (+/- some jitter)
     return addJitter(this.retryDelayIntervalMillis);
   }
 }

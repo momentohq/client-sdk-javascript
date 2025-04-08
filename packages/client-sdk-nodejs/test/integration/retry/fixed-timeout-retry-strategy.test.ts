@@ -56,7 +56,7 @@ describe('Fixed timeout retry strategy with full network outage', () => {
         expect(getResponse.type).toEqual(CacheGetResponse.Error);
         if (getResponse.type === CacheGetResponse.Error) {
           expect(getResponse.errorCode()).toEqual(
-            MomentoErrorCode.SERVER_UNAVAILABLE
+            MomentoErrorCode.TIMEOUT_ERROR
           );
         }
         const delayBetweenResponses =
@@ -112,7 +112,7 @@ describe('Fixed timeout retry strategy with full network outage', () => {
         expect(getResponse.type).toEqual(CacheGetResponse.Error);
         if (getResponse.type === CacheGetResponse.Error) {
           expect(getResponse.errorCode()).toEqual(
-            MomentoErrorCode.SERVER_UNAVAILABLE
+            MomentoErrorCode.TIMEOUT_ERROR
           );
         }
         const expectedRetryCount = Math.floor(
@@ -287,7 +287,8 @@ describe('Fixed timeout retry strategy with delay ms', () => {
   let testMetricsCollector: TestRetryMetricsCollector;
   let momentoLogger: MomentoLogger;
   let loggerFactory: DefaultMomentoLoggerFactory;
-  const RETRY_DELAY_MILLIS = 1000;
+  const RETRY_DELAY_MILLIS = 100;
+  const RETRY_TIMEOUT_MILLIS = 1000;
   const CLIENT_TIMEOUT_MILLIS = 5000;
 
   beforeAll(() => {
@@ -298,11 +299,11 @@ describe('Fixed timeout retry strategy with delay ms', () => {
     loggerFactory = new DefaultMomentoLoggerFactory();
   });
 
-  it('should get hit/miss response with no retries for fixed timeout strategy if delayMs < responseDataReceivedTimeoutMillis', async () => {
+  it('should get hit/miss response with no retries for fixed timeout strategy if response is delayed but no error is returned', async () => {
     const retryStrategy = new FixedTimeoutRetryStrategy({
       loggerFactory: loggerFactory,
-      retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
       eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
+      // the retry deadline should not be set when no retries are triggered
       responseDataReceivedTimeoutMillis: 1000,
     });
     const testMiddlewareArgs: MomentoLocalMiddlewareArgs = {
@@ -310,7 +311,8 @@ describe('Fixed timeout retry strategy with delay ms', () => {
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
       delayRpcList: [MomentoRPCMethod.Get],
-      delayMillis: 500,
+      // first request should have deadline defined by CLIENT_TIMEOUT_MILLIS, not responseDataReceivedTimeoutMillis
+      delayMillis: CLIENT_TIMEOUT_MILLIS - 1000,
     };
     await WithCacheAndCacheClient(
       config =>
@@ -319,7 +321,14 @@ describe('Fixed timeout retry strategy with delay ms', () => {
           .withClientTimeoutMillis(CLIENT_TIMEOUT_MILLIS),
       testMiddlewareArgs,
       async (cacheClient, cacheName) => {
+        // The request should take longer than responseDataReceivedTimeoutMillis because
+        // the grpc deadline was not overwritten by the retry interceptor.
+        const startTime = new Date();
         const getResponse = await cacheClient.get(cacheName, 'key');
+        const endTime = new Date();
+        const duration = endTime.getTime() - startTime.getTime();
+        expect(duration).toBeGreaterThanOrEqual(CLIENT_TIMEOUT_MILLIS - 1000);
+        expect(duration).toBeLessThanOrEqual(CLIENT_TIMEOUT_MILLIS);
         expect(getResponse.type).toEqual(CacheGetResponse.Miss); // Miss because we never set the key
         const noOfRetries = testMetricsCollector.getTotalRetryCount(
           cacheName,
@@ -330,19 +339,23 @@ describe('Fixed timeout retry strategy with delay ms', () => {
     );
   });
 
-  it('should TIMEOUT_ERROR error with no retries for fixed timeout strategy if delayMs > responseDataReceivedTimeoutMillis', async () => {
+  it('should retry until client timeout when responses have short delays (< responseDataReceivedTimeoutMillis) during full outage', async () => {
     const retryStrategy = new FixedTimeoutRetryStrategy({
       loggerFactory: loggerFactory,
-      retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
       eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
-      responseDataReceivedTimeoutMillis: 1000,
+      responseDataReceivedTimeoutMillis: RETRY_TIMEOUT_MILLIS,
+      retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
     });
+
+    const shortDelay = RETRY_DELAY_MILLIS + 100;
     const testMiddlewareArgs: MomentoLocalMiddlewareArgs = {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
       delayRpcList: [MomentoRPCMethod.Get],
-      delayMillis: 1500,
+      delayMillis: shortDelay,
+      errorRpcList: [MomentoRPCMethod.Get],
+      returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
     };
     await WithCacheAndCacheClient(
       config =>
@@ -358,32 +371,50 @@ describe('Fixed timeout retry strategy with delay ms', () => {
             MomentoErrorCode.TIMEOUT_ERROR
           );
         }
+
+        const delayBetweenAttempts = RETRY_DELAY_MILLIS + shortDelay;
+        const maxAttempts = Math.ceil(
+          CLIENT_TIMEOUT_MILLIS / delayBetweenAttempts
+        );
         const noOfRetries = testMetricsCollector.getTotalRetryCount(
           cacheName,
           MomentoRPCMethod.Get
         );
-        expect(noOfRetries).toBe(0);
+        expect(noOfRetries).toBeGreaterThanOrEqual(2);
+        expect(noOfRetries).toBeLessThanOrEqual(maxAttempts);
+
+        // Jitter will be +/- 10% of the delay between retry attempts
+        const maxDelay = delayBetweenAttempts * 1.1;
+        const minDelay = delayBetweenAttempts * 0.9;
+        const averageDelay = testMetricsCollector.getAverageTimeBetweenRetries(
+          cacheName,
+          MomentoRPCMethod.Get
+        );
+        expect(averageDelay).toBeGreaterThanOrEqual(minDelay);
+        expect(averageDelay).toBeLessThanOrEqual(maxDelay);
       }
     );
   });
 
-  it('should get hit/miss response with retries for fixed timeout strategy if delayMs < responseDataReceivedTimeoutMillis', async () => {
+  it('should retry until client timeout when responses have long delays (> responseDataReceivedTimeoutMillis) during full outage', async () => {
     const retryStrategy = new FixedTimeoutRetryStrategy({
       loggerFactory: loggerFactory,
-      retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
       eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
-      responseDataReceivedTimeoutMillis: 2000,
+      responseDataReceivedTimeoutMillis: RETRY_TIMEOUT_MILLIS,
+      retryDelayIntervalMillis: RETRY_DELAY_MILLIS,
     });
+
+    // Momento-local should delay responses for longer than the retry timeout so that
+    // we can test the retry strategy's timeout is actually being respected.
+    const longDelay = RETRY_TIMEOUT_MILLIS + 500;
     const testMiddlewareArgs: MomentoLocalMiddlewareArgs = {
       logger: momentoLogger,
       testMetricsCollector: testMetricsCollector,
       requestId: v4(),
+      delayRpcList: [MomentoRPCMethod.Get],
+      delayMillis: longDelay,
       errorRpcList: [MomentoRPCMethod.Get],
       returnError: MomentoErrorCode.SERVER_UNAVAILABLE,
-      errorCount: 2,
-      delayRpcList: [MomentoRPCMethod.Get],
-      delayMillis: 500,
-      delayCount: 2,
     };
     await WithCacheAndCacheClient(
       config =>
@@ -393,12 +424,41 @@ describe('Fixed timeout retry strategy with delay ms', () => {
       testMiddlewareArgs,
       async (cacheClient, cacheName) => {
         const getResponse = await cacheClient.get(cacheName, 'key');
-        expect(getResponse.type).toEqual(CacheGetResponse.Miss); // Miss because we never set the key
+        expect(getResponse.type).toEqual(CacheGetResponse.Error);
+        if (getResponse.type === CacheGetResponse.Error) {
+          expect(getResponse.errorCode()).toEqual(
+            MomentoErrorCode.TIMEOUT_ERROR
+          );
+        }
+
+        const delayBetweenAttempts = RETRY_DELAY_MILLIS + longDelay;
+        const maxAttempts = Math.ceil(
+          CLIENT_TIMEOUT_MILLIS / delayBetweenAttempts
+        );
         const noOfRetries = testMetricsCollector.getTotalRetryCount(
           cacheName,
           MomentoRPCMethod.Get
         );
-        expect(noOfRetries).toBe(2);
+        expect(noOfRetries).toBeLessThanOrEqual(maxAttempts);
+        // Fixed timeout retry strategy should retry at least twice.
+        // If it retries only once, it could mean that the retry attempt is timing out and if we aren't
+        // handling that case correctly, then it won't continue retrying until the client timeout is reached.
+        expect(noOfRetries).toBeGreaterThanOrEqual(2);
+
+        // Jitter will contribute +/- 10% of the delay between retry attempts, and there will
+        // be some time spent making the retry attempt as well (estimating +/- 5%).
+        // The expected delay here is not longDelay because the retry strategy's timeout is
+        // shorter than that and retry attempts should stop before longDelay is reached.
+        const expectedDelayBetweenAttempts =
+          RETRY_TIMEOUT_MILLIS + RETRY_DELAY_MILLIS;
+        const maxDelay = expectedDelayBetweenAttempts * 1.15;
+        const minDelay = expectedDelayBetweenAttempts * 0.85;
+        const averageDelay = testMetricsCollector.getAverageTimeBetweenRetries(
+          cacheName,
+          MomentoRPCMethod.Get
+        );
+        expect(averageDelay).toBeGreaterThanOrEqual(minDelay);
+        expect(averageDelay).toBeLessThanOrEqual(maxDelay);
       }
     );
   });

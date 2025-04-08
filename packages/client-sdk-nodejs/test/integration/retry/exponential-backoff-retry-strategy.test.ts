@@ -55,7 +55,9 @@ describe('ExponentialBackoffRetryStrategy integration tests', () => {
           const getResponse = await cacheClient.get(cacheName, 'key');
           expect(getResponse.type).toEqual(CacheGetResponse.Error);
           if (getResponse.type === CacheGetResponse.Error) {
-            expect(getResponse.errorCode()).toEqual('SERVER_UNAVAILABLE');
+            expect(getResponse.errorCode()).toEqual(
+              MomentoErrorCode.TIMEOUT_ERROR
+            );
           }
 
           // Evaluate how many retries were attempted.

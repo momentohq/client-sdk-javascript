@@ -65,14 +65,16 @@ export class RetryInterceptor {
           deadlineOffset
         )}`
       );
+
+      // The first attempt at a request should use the overall request timeout,
+      // not a retry strategy-specific timeout (i.e. responseDataReceivedTimeoutMillis).
       const overallDeadline = calculateDeadline(overallRequestTimeoutMs);
-
+      options.deadline = overallDeadline;
       logger.trace(
-        `Setting initial deadline (for ${props.clientName}) based on offset: ${deadlineOffset} ms`
+        `Setting initial deadline (for ${
+          props.clientName
+        }): ${overallDeadline.toISOString()}`
       );
-      let nextDeadline = calculateDeadline(deadlineOffset);
-
-      options.deadline = nextDeadline;
 
       let savedMetadata: Metadata;
       let savedSendMessage: unknown;
@@ -123,16 +125,17 @@ export class RetryInterceptor {
                     }; overall deadline exceeded: ${overallDeadline.toISOString()}`
                   );
                   savedMessageNext(savedReceiveMessage);
+                  status.code = Status.DEADLINE_EXCEEDED;
                   next(status);
                   return;
                 }
                 // Do not exceed the overall deadline when setting the retry attempt's deadline.
-                nextDeadline = calculateDeadline(
+                const nextDeadline = calculateDeadline(
                   deadlineOffset,
                   overallDeadline
                 );
                 logger.debug(
-                  `Setting next deadline (via offset of ${deadlineOffset} ms) to: ${nextDeadline.toISOString()}`
+                  `Setting retry attempt deadline (via offset of ${deadlineOffset} ms) to: ${nextDeadline.toISOString()}`
                 );
                 options.deadline = nextDeadline;
 
@@ -155,6 +158,7 @@ export class RetryInterceptor {
                         grpcRequest: options.method_definition,
                         attemptNumber: attempts,
                         requestMetadata: metadata,
+                        overallDeadline: overallDeadline,
                       });
 
                     if (whenToRetry === null) {
@@ -190,6 +194,7 @@ export class RetryInterceptor {
                   grpcRequest: options.method_definition,
                   attemptNumber: attempts,
                   requestMetadata: metadata,
+                  overallDeadline: overallDeadline,
                 });
                 if (whenToRetry === null) {
                   logger.debug(
