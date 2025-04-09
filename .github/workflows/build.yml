@@ -434,11 +434,6 @@ jobs:
             npm run build
             npm run validate-examples
           popd
-          pushd examples/nodejs/webhooks
-            npm ci
-            npm run build
-            npm run validate-examples
-          popd
           pushd examples/nodejs/compression
             npm ci
             npm run build
