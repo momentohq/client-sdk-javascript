@@ -16,6 +16,10 @@ import {RetryStrategy} from '../../config/retry/retry-strategy';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {MomentoLoggerFactory} from '../../';
 import {NoRetryStrategy} from '../../config/retry/no-retry-strategy';
+import {
+  createDateObjectFromUnixMillisTimestamp,
+  getCurrentTimeAsDateObject,
+} from '../utils';
 
 export interface RetryInterceptorProps {
   clientName: string;
@@ -118,7 +122,7 @@ export class RetryInterceptor {
                 //
                 // We also need this check in case DEADLINE_EXCEEDED is marked as a retryable status code
                 // as it is in the default storage eligibility strategy.
-                if (new Date(Date.now()) >= overallDeadline) {
+                if (getCurrentTimeAsDateObject() >= overallDeadline) {
                   logger.debug(
                     `Request not eligible for retry: path: ${
                       options.method_definition.path
@@ -233,8 +237,9 @@ export class RetryInterceptor {
 }
 
 function calculateDeadline(offsetMillis: number, maxDeadline?: Date): Date {
-  const deadline = new Date(Date.now());
-  deadline.setMilliseconds(deadline.getMilliseconds() + offsetMillis);
+  const deadline = createDateObjectFromUnixMillisTimestamp(
+    getCurrentTimeAsDateObject().getTime() + offsetMillis
+  );
   if (maxDeadline !== undefined && deadline > maxDeadline) {
     return maxDeadline;
   }
