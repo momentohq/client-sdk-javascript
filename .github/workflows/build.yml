@@ -461,10 +461,6 @@ jobs:
             npm ci
             npm run build
           popd
-          pushd examples/nodejs/aws/lambda-examples/webhooks/infrastructure
-            npm ci
-            npm run build
-          popd
           pushd examples/nodejs/aws/lambda-examples/advanced-compression
             npm ci
             npm run build
