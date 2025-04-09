@@ -240,7 +240,7 @@ function calculateDeadline(offsetMillis: number, maxDeadline?: Date): Date {
   const deadline = createDateObjectFromUnixMillisTimestamp(
     getCurrentTimeAsDateObject().getTime() + offsetMillis
   );
-  if (maxDeadline !== undefined && deadline > maxDeadline) {
+  if (maxDeadline !== undefined && deadline >= maxDeadline) {
     return maxDeadline;
   }
   return deadline;
