@@ -70,14 +70,12 @@ import {
   CreateCacheResponse,
   CredentialProvider,
   DeleteCacheResponse,
-  DeleteWebhookResponse,
   DisposableTokenScopes,
   ExpiresIn,
   FlushCacheResponse,
   GenerateApiKey,
   GenerateApiKeyResponse,
   GenerateDisposableTokenResponse,
-  GetWebhookSecretResponse,
   ILeaderboard,
   ItemType,
   LeaderboardConfigurations,
@@ -88,12 +86,9 @@ import {
   LeaderboardRemoveElementsResponse,
   LeaderboardUpsertResponse,
   ListCachesResponse,
-  ListWebhooksResponse,
   PreviewLeaderboardClient,
-  PutWebhookResponse,
   ReadConcern,
   RefreshApiKeyResponse,
-  RotateWebhookSecretResponse,
   TokenScopes,
   TopicClient,
   TopicConfigurations,
@@ -1497,74 +1492,6 @@ async function example_API_TopicSubscribe(topicClient: TopicClient, cacheName: s
   }
 }
 
-async function example_API_ListWebhooks(topicClient: TopicClient, cacheName: string) {
-  const result = await topicClient.listWebhooks(cacheName);
-  switch (result.type) {
-    case ListWebhooksResponse.Success:
-      console.log(`Listed webhooks for cache '${cacheName}': ${result.getWebhooks()}`);
-      break;
-    case ListWebhooksResponse.Error:
-      throw new Error(
-        `An error occurred while attempting to list webhooks for cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-      );
-  }
-}
-
-async function example_API_DeleteWebhook(topicClient: TopicClient, cacheName: string) {
-  const result = await topicClient.deleteWebhook(cacheName, 'examples webhook');
-  switch (result.type) {
-    case DeleteWebhookResponse.Success:
-      console.log('Successfully deleted webhook');
-      break;
-    case DeleteWebhookResponse.Error:
-      throw new Error(
-        `An error occurred while attempting to delete webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-      );
-  }
-}
-
-async function example_API_PutWebhook(topicClient: TopicClient, cacheName: string) {
-  const result = await topicClient.putWebhook(cacheName, 'examples webhook', {
-    topicName: 'a topic',
-    destination: 'https://www.thisisawebhookurl.com/v1/webhook',
-  });
-  switch (result.type) {
-    case PutWebhookResponse.Success:
-      console.log('Successfully put webhook');
-      break;
-    case PutWebhookResponse.Error:
-      throw new Error(
-        `An error occurred while attempting to put the webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-      );
-  }
-}
-
-async function example_API_RotateWebhookSecret(topicClient: TopicClient, cacheName: string) {
-  const result = await topicClient.rotateWebhookSecret(cacheName, 'examples webhook');
-  switch (result.type) {
-    case RotateWebhookSecretResponse.Success:
-      console.log('Successfully rotated the webhook secret');
-      break;
-    case RotateWebhookSecretResponse.Error:
-      throw new Error(
-        `An error occurred while attempting to rotate the secret for the webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-      );
-  }
-}
-
-async function example_API_GetWebhookSecret(topicClient: TopicClient, cacheName: string) {
-  const result = await topicClient.getWebhookSecret(cacheName, 'examples webhook');
-  switch (result.type) {
-    case GetWebhookSecretResponse.Success:
-      console.log(`Successfully retrieved the webhook secret: ${result.secret()}`);
-      break;
-    case GetWebhookSecretResponse.Error:
-      throw new Error(
-        `An error occurred while attempting to get the secret for the webhook 'examples webhook' inside of cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
-      );
-  }
-}
-
 function example_API_InstantiateLeaderboardClient() {
   new PreviewLeaderboardClient({
     configuration: LeaderboardConfigurations.Laptop.v1(),
@@ -1933,13 +1860,6 @@ async function main() {
     await example_API_TopicCreateClientAndPublish(cacheName, 'topic', 'value');
     await example_API_TopicPublish(topicClient, cacheName);
     await example_API_TopicSubscribe(topicClient, cacheName);
-
-    // Webhooks
-    await example_API_ListWebhooks(topicClient, cacheName);
-    await example_API_PutWebhook(topicClient, cacheName);
-    await example_API_RotateWebhookSecret(topicClient, cacheName);
-    await example_API_GetWebhookSecret(topicClient, cacheName);
-    await example_API_DeleteWebhook(topicClient, cacheName);
 
     example_API_InstantiateLeaderboardClient();
     const leaderboardClient = new PreviewLeaderboardClient({
