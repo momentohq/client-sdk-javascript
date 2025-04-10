@@ -19,6 +19,7 @@ import {NoRetryStrategy} from '../../config/retry/no-retry-strategy';
 import {
   createDateObjectFromUnixMillisTimestamp,
   getCurrentTimeAsDateObject,
+  hasExceededDeadlineRelativeToNow,
 } from '../utils';
 
 export interface RetryInterceptorProps {
@@ -122,7 +123,7 @@ export class RetryInterceptor {
                 //
                 // We also need this check in case DEADLINE_EXCEEDED is marked as a retryable status code
                 // as it is in the default storage eligibility strategy.
-                if (getCurrentTimeAsDateObject() >= overallDeadline) {
+                if (hasExceededDeadlineRelativeToNow(overallDeadline)) {
                   logger.debug(
                     `Request not eligible for retry: path: ${
                       options.method_definition.path

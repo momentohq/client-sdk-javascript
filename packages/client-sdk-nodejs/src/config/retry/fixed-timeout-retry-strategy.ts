@@ -6,7 +6,7 @@ import {EligibilityStrategy} from './eligibility-strategy';
 import {MomentoLoggerFactory, MomentoLogger} from '../..';
 import {DefaultStorageEligibilityStrategy} from './storage-default-eligibility-strategy';
 import {Status} from '@grpc/grpc-js/build/src/constants';
-import {getCurrentTimeAsDateObject} from '../../internal/utils';
+import {hasExceededDeadlineRelativeToNow} from '../../internal/utils';
 
 export interface FixedTimeoutRetryStrategyProps {
   loggerFactory: MomentoLoggerFactory;
@@ -47,7 +47,7 @@ export class FixedTimeoutRetryStrategy implements RetryStrategy {
     if (
       props.attemptNumber > 0 &&
       props.grpcStatus.code === Status.DEADLINE_EXCEEDED &&
-      props.overallDeadline >= getCurrentTimeAsDateObject()
+      hasExceededDeadlineRelativeToNow(props.overallDeadline)
     ) {
       this.logger.debug(
         `Request is eligible for retry (attempt ${props.attemptNumber}), retrying after ${this.retryDelayIntervalMillis} ms +/- jitter.`

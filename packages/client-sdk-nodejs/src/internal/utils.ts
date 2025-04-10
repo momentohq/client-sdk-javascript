@@ -14,3 +14,7 @@ export function createDateObjectFromUnixMillisTimestamp(
 ): Date {
   return new Date(unixMillisTimestamp);
 }
+
+export function hasExceededDeadlineRelativeToNow(overallDeadline: Date) {
+  return getCurrentTimeAsDateObject() >= overallDeadline;
+}
