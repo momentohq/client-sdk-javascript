@@ -217,6 +217,42 @@ describe('Fixed timeout retry strategy with full network outage', () => {
       }
     );
   });
+
+  it('should not set retry deadline on the initial request', async () => {
+    const retryTimeoutMillis = 100; // really short
+    const clientTimeoutMillis = 2000;
+    const delayMillis = 500;
+    const loggerFactory = new DefaultMomentoLoggerFactory();
+    const retryStrategy = new FixedTimeoutRetryStrategy({
+      loggerFactory: loggerFactory,
+      eligibilityStrategy: new DefaultEligibilityStrategy(loggerFactory),
+      responseDataReceivedTimeoutMillis: retryTimeoutMillis,
+    });
+    const testMiddlewareArgs: MomentoLocalMiddlewareArgs = {
+      logger: momentoLogger,
+      testMetricsCollector: testMetricsCollector,
+      requestId: v4(),
+      delayRpcList: [MomentoRPCMethod.Get],
+      delayMillis: delayMillis,
+    };
+
+    await WithCacheAndCacheClient(
+      config =>
+        config
+          .withRetryStrategy(retryStrategy)
+          .withClientTimeoutMillis(clientTimeoutMillis),
+      testMiddlewareArgs,
+      async (cacheClient, cacheName) => {
+        const getResponse = await cacheClient.get(cacheName, 'key');
+        expect(getResponse.type).toEqual(CacheGetResponse.Miss);
+        const noOfRetries = testMetricsCollector.getTotalRetryCount(
+          cacheName,
+          MomentoRPCMethod.Get
+        );
+        expect(noOfRetries).toBe(0);
+      }
+    );
+  });
 });
 
 describe('Fixed timeout retry strategy with temporary network outage', () => {
