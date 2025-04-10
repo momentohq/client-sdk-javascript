@@ -47,7 +47,7 @@ export class FixedTimeoutRetryStrategy implements RetryStrategy {
     if (
       props.attemptNumber > 0 &&
       props.grpcStatus.code === Status.DEADLINE_EXCEEDED &&
-      hasExceededDeadlineRelativeToNow(props.overallDeadline)
+      !hasExceededDeadlineRelativeToNow(props.overallDeadline)
     ) {
       this.logger.debug(
         `Request is eligible for retry (attempt ${props.attemptNumber}), retrying after ${this.retryDelayIntervalMillis} ms +/- jitter.`
