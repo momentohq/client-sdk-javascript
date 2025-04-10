@@ -16,6 +16,11 @@ import {RetryStrategy} from '../../config/retry/retry-strategy';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {MomentoLoggerFactory} from '../../';
 import {NoRetryStrategy} from '../../config/retry/no-retry-strategy';
+import {
+  createDateObjectFromUnixMillisTimestamp,
+  getCurrentTimeAsDateObject,
+  hasExceededDeadlineRelativeToNow,
+} from '../utils';
 
 export interface RetryInterceptorProps {
   clientName: string;
@@ -65,14 +70,16 @@ export class RetryInterceptor {
           deadlineOffset
         )}`
       );
+
+      // The first attempt at a request should use the overall request timeout,
+      // not a retry strategy-specific timeout (i.e. responseDataReceivedTimeoutMillis).
       const overallDeadline = calculateDeadline(overallRequestTimeoutMs);
-
+      options.deadline = overallDeadline;
       logger.trace(
-        `Setting initial deadline (for ${props.clientName}) based on offset: ${deadlineOffset} ms`
+        `Setting initial deadline (for ${
+          props.clientName
+        }): ${overallDeadline.toISOString()}`
       );
-      let nextDeadline = calculateDeadline(deadlineOffset);
-
-      options.deadline = nextDeadline;
 
       let savedMetadata: Metadata;
       let savedSendMessage: unknown;
@@ -116,23 +123,24 @@ export class RetryInterceptor {
                 //
                 // We also need this check in case DEADLINE_EXCEEDED is marked as a retryable status code
                 // as it is in the default storage eligibility strategy.
-                if (new Date(Date.now()) >= overallDeadline) {
+                if (hasExceededDeadlineRelativeToNow(overallDeadline)) {
                   logger.debug(
                     `Request not eligible for retry: path: ${
                       options.method_definition.path
                     }; overall deadline exceeded: ${overallDeadline.toISOString()}`
                   );
                   savedMessageNext(savedReceiveMessage);
+                  status.code = Status.DEADLINE_EXCEEDED;
                   next(status);
                   return;
                 }
                 // Do not exceed the overall deadline when setting the retry attempt's deadline.
-                nextDeadline = calculateDeadline(
+                const nextDeadline = calculateDeadline(
                   deadlineOffset,
                   overallDeadline
                 );
                 logger.debug(
-                  `Setting next deadline (via offset of ${deadlineOffset} ms) to: ${nextDeadline.toISOString()}`
+                  `Setting retry attempt deadline (via offset of ${deadlineOffset} ms) to: ${nextDeadline.toISOString()}`
                 );
                 options.deadline = nextDeadline;
 
@@ -155,6 +163,7 @@ export class RetryInterceptor {
                         grpcRequest: options.method_definition,
                         attemptNumber: attempts,
                         requestMetadata: metadata,
+                        overallDeadline: overallDeadline,
                       });
 
                     if (whenToRetry === null) {
@@ -190,6 +199,7 @@ export class RetryInterceptor {
                   grpcRequest: options.method_definition,
                   attemptNumber: attempts,
                   requestMetadata: metadata,
+                  overallDeadline: overallDeadline,
                 });
                 if (whenToRetry === null) {
                   logger.debug(
@@ -228,9 +238,10 @@ export class RetryInterceptor {
 }
 
 function calculateDeadline(offsetMillis: number, maxDeadline?: Date): Date {
-  const deadline = new Date(Date.now());
-  deadline.setMilliseconds(deadline.getMilliseconds() + offsetMillis);
-  if (maxDeadline !== undefined && deadline > maxDeadline) {
+  const deadline = createDateObjectFromUnixMillisTimestamp(
+    getCurrentTimeAsDateObject().getTime() + offsetMillis
+  );
+  if (maxDeadline !== undefined && deadline >= maxDeadline) {
     return maxDeadline;
   }
   return deadline;
