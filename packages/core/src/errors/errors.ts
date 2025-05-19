@@ -321,3 +321,17 @@ export class UnknownServiceError extends SdkError {
   override _messageWrapper =
     'Service returned an unknown response; please contact us at support@momentohq.com';
 }
+
+/**
+ * Error raised when a client resource is exhausted, such as memory or number of subscriptions (stream connections).
+ */
+export class ClientResourceExhaustedError extends SdkError {
+  override _errorCode = MomentoErrorCode.CLIENT_RESOURCE_EXHAUSTED;
+
+  constructor(message: string | undefined = undefined) {
+    super(
+      message ??
+        'A client resource is exhausted, such as memory or number of subscriptions (stream connections).'
+    );
+  }
+}

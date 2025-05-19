@@ -14,11 +14,21 @@ import {
 import {IPubsubClient} from './IPubsubClient';
 import {IWebhookClient} from './IWebhookClient';
 import {PutWebhookCallOptions} from '../../../utils/webhook-call-options';
+import {ClientResourceExhaustedError, SdkError} from '../../../errors';
+
+class StreamClientWithCount {
+  numActiveSubscriptions = 0;
+  client: IPubsubClient;
+
+  constructor(client: IPubsubClient) {
+    this.client = client;
+  }
+}
 
 export abstract class AbstractTopicClient implements ITopicClient {
   protected readonly logger: MomentoLogger;
   protected readonly pubsubClients: IPubsubClient[];
-  protected readonly pubsubStreamClients: IPubsubClient[];
+  protected readonly pubsubStreamClients: StreamClientWithCount[];
   protected readonly pubsubUnaryClients: IPubsubClient[];
   protected readonly webhookClient: IWebhookClient;
   private nextPubsubStreamClientIndex = 0;
@@ -31,7 +41,9 @@ export abstract class AbstractTopicClient implements ITopicClient {
     webhookClient: IWebhookClient
   ) {
     this.logger = logger;
-    this.pubsubStreamClients = pubsubStreamClients;
+    this.pubsubStreamClients = pubsubStreamClients.map(
+      client => new StreamClientWithCount(client)
+    );
     this.pubsubUnaryClients = pubsubUnaryClients;
     this.webhookClient = webhookClient;
   }
@@ -75,11 +87,12 @@ export abstract class AbstractTopicClient implements ITopicClient {
     topicName: string,
     options: SubscribeCallOptions
   ): Promise<TopicSubscribe.Response> {
-    return await this.getNextSubscribeClient().subscribe(
-      cacheName,
-      topicName,
-      options
-    );
+    try {
+      const client = this.getNextSubscribeClient();
+      return await client.subscribe(cacheName, topicName, options);
+    } catch (e) {
+      return new TopicSubscribe.Error(e as SdkError);
+    }
   }
 
   /**
@@ -184,9 +197,31 @@ export abstract class AbstractTopicClient implements ITopicClient {
   }
 
   protected getNextSubscribeClient(): IPubsubClient {
-    const client = this.pubsubStreamClients[this.nextPubsubStreamClientIndex];
-    this.nextPubsubStreamClientIndex =
-      (this.nextPubsubStreamClientIndex + 1) % this.pubsubStreamClients.length;
-    return client;
+    const maxConcurrentSubscriptions = 100 * this.pubsubStreamClients.length;
+
+    // Check if there's any client with capacity
+    let totalActiveStreams = 0;
+    for (const clientWithCount of this.pubsubStreamClients) {
+      totalActiveStreams += clientWithCount.numActiveSubscriptions;
+    }
+    if (totalActiveStreams < maxConcurrentSubscriptions) {
+      // Try to get a client with capacity for another subscription.
+      // Allow up to maxConcurrentSubscriptions attempts.
+      for (let i = 0; i < maxConcurrentSubscriptions; i++) {
+        const clientWithCount =
+          this.pubsubStreamClients[
+            this.nextPubsubStreamClientIndex % this.pubsubStreamClients.length
+          ];
+        if (clientWithCount.numActiveSubscriptions < 100) {
+          this.nextPubsubStreamClientIndex++;
+          clientWithCount.numActiveSubscriptions++;
+          return clientWithCount.client;
+        }
+      }
+    }
+
+    throw new ClientResourceExhaustedError(
+      'Already at maximum number of subscriptions'
+    );
   }
 }
