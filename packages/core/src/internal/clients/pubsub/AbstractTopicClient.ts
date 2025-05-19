@@ -33,6 +33,7 @@ export abstract class AbstractTopicClient implements ITopicClient {
   protected readonly webhookClient: IWebhookClient;
   private nextPubsubStreamClientIndex = 0;
   private nextPubsubUnaryClientIndex = 0;
+  private readonly maxConcurrentSubscriptions;
 
   protected constructor(
     logger: MomentoLogger,
@@ -46,6 +47,7 @@ export abstract class AbstractTopicClient implements ITopicClient {
     );
     this.pubsubUnaryClients = pubsubUnaryClients;
     this.webhookClient = webhookClient;
+    this.maxConcurrentSubscriptions = 100 * this.pubsubStreamClients.length;
   }
 
   /**
@@ -197,17 +199,15 @@ export abstract class AbstractTopicClient implements ITopicClient {
   }
 
   protected getNextSubscribeClient(): IPubsubClient {
-    const maxConcurrentSubscriptions = 100 * this.pubsubStreamClients.length;
-
     // Check if there's any client with capacity
     let totalActiveStreams = 0;
     for (const clientWithCount of this.pubsubStreamClients) {
       totalActiveStreams += clientWithCount.numActiveSubscriptions;
     }
-    if (totalActiveStreams < maxConcurrentSubscriptions) {
+    if (totalActiveStreams < this.maxConcurrentSubscriptions) {
       // Try to get a client with capacity for another subscription.
       // Allow up to maxConcurrentSubscriptions attempts.
-      for (let i = 0; i < maxConcurrentSubscriptions; i++) {
+      for (let i = 0; i < this.maxConcurrentSubscriptions; i++) {
         const clientWithCount =
           this.pubsubStreamClients[
             this.nextPubsubStreamClientIndex % this.pubsubStreamClients.length
