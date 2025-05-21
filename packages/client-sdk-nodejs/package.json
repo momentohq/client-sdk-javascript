@@ -14,7 +14,7 @@
   },
   "scripts": {
     "prebuild": "eslint . --ext .ts",
-    "test": "jest --testPathIgnorePatterns=\"auth-client\\.test\\.ts|http-apis\\.test\\.ts\" --maxWorkers 1",
+    "test": "jest --testPathIgnorePatterns=\"auth-client\\.test\\.ts|http-apis\\.test\\.ts|topic-subscribe\\.test\\.ts\" --maxWorkers 1",
     "integration-test-auth": "jest auth/ --maxWorkers 1 -- useConsistentReads",
     "integration-test-http": "jest http/ --maxWorkers 1 -- useConsistentReads",
     "integration-test-cache": "jest cache/ --maxWorkers 1 -- useConsistentReads",

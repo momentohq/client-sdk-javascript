@@ -33,6 +33,7 @@ export interface SendSubscribeOptions {
   onDiscontinuity: (discontinuity: TopicDiscontinuity) => void;
   onHeartbeat: (heartbeat: TopicHeartbeat) => void;
   onConnectionLost: () => void;
+  onSubscriptionEnd: () => void;
   subscriptionState: SubscriptionState;
   subscription: TopicSubscribe.Subscription;
 
@@ -158,6 +159,11 @@ export abstract class AbstractPubsubClient<TGrpcError>
       (() => {
         return;
       });
+    const onSubscriptionEnd =
+      options.onSubscriptionEnd ??
+      (() => {
+        return;
+      });
 
     const subscriptionState = new SubscriptionState();
     const subscription = new TopicSubscribe.Subscription(
@@ -172,6 +178,7 @@ export abstract class AbstractPubsubClient<TGrpcError>
       onDiscontinuity: onDiscontinuity,
       onHeartbeat: onHeartbeat,
       onConnectionLost: onConnectionLost,
+      onSubscriptionEnd: onSubscriptionEnd,
       subscriptionState: subscriptionState,
       subscription: subscription,
       restartedDueToError: false,
@@ -199,12 +206,14 @@ export abstract class AbstractPubsubClient<TGrpcError>
           options.topicName
         );
         options.restartedDueToError = false;
+        options.onSubscriptionEnd?.();
         return;
       } else if (!options.subscriptionState.isSubscribed) {
         this.logger.trace(
           'Stream ended after unsubscribe on topic: %s',
           options.topicName
         );
+        options.onSubscriptionEnd?.();
         return;
       }
 
