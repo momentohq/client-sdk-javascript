@@ -199,12 +199,14 @@ export abstract class AbstractPubsubClient<TGrpcError>
           options.topicName
         );
         options.restartedDueToError = false;
+        options.onConnectionLost?.();
         return;
       } else if (!options.subscriptionState.isSubscribed) {
         this.logger.trace(
           'Stream ended after unsubscribe on topic: %s',
           options.topicName
         );
+        options.onConnectionLost?.();
         return;
       }
 

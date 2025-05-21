@@ -90,8 +90,17 @@ export abstract class AbstractTopicClient implements ITopicClient {
     options: SubscribeCallOptions
   ): Promise<TopicSubscribe.Response> {
     try {
-      const client = this.getNextSubscribeClient();
-      return await client.subscribe(cacheName, topicName, options);
+      const {client, decrementSubscriptionCount} =
+        this.getNextSubscribeClient();
+      const revisedOnConnectionLost = () => {
+        options.onConnectionLost?.();
+        decrementSubscriptionCount();
+      };
+      const subscribeOptions = {
+        ...options,
+        onConnectionLost: revisedOnConnectionLost,
+      };
+      return await client.subscribe(cacheName, topicName, subscribeOptions);
     } catch (e) {
       return new TopicSubscribe.Error(e as SdkError);
     }
@@ -198,7 +207,10 @@ export abstract class AbstractTopicClient implements ITopicClient {
     return client;
   }
 
-  protected getNextSubscribeClient(): IPubsubClient {
+  protected getNextSubscribeClient(): {
+    client: IPubsubClient;
+    decrementSubscriptionCount: () => void;
+  } {
     // Check if there's any client with capacity
     let totalActiveStreams = 0;
     for (const clientWithCount of this.pubsubStreamClients) {
@@ -215,7 +227,12 @@ export abstract class AbstractTopicClient implements ITopicClient {
         if (clientWithCount.numActiveSubscriptions < 100) {
           this.nextPubsubStreamClientIndex++;
           clientWithCount.numActiveSubscriptions++;
-          return clientWithCount.client;
+          return {
+            client: clientWithCount.client,
+            decrementSubscriptionCount: () => {
+              clientWithCount.numActiveSubscriptions--;
+            },
+          };
         }
       }
     }
