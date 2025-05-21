@@ -92,13 +92,14 @@ export abstract class AbstractTopicClient implements ITopicClient {
     try {
       const {client, decrementSubscriptionCount} =
         this.getNextSubscribeClient();
-      const revisedOnConnectionLost = () => {
-        options.onConnectionLost?.();
-        decrementSubscriptionCount();
-      };
       const subscribeOptions = {
         ...options,
-        onConnectionLost: revisedOnConnectionLost,
+        onSubscriptionEnd: () => {
+          // Call any existing onSubscriptionEnd handler
+          options.onSubscriptionEnd?.();
+          // Decrement the subscription count
+          decrementSubscriptionCount();
+        },
       };
       return await client.subscribe(cacheName, topicName, subscribeOptions);
     } catch (e) {

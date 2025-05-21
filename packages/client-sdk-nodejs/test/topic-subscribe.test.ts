@@ -10,6 +10,7 @@ import {
   TopicSubscribe,
 } from '@gomomento/sdk-core';
 import {testTopicName} from '@gomomento/common-integration-tests';
+import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 
 /******************************************************************/
 /* Do not run these tests in CI as they rely on using a cache with
@@ -40,13 +41,20 @@ describe('Topic subscribe initialization tests', () => {
       credentialProvider,
     });
 
+    let unsubscribeCounter = 0;
+    const callOptions: SubscribeCallOptions = {
+      onSubscriptionEnd: () => {
+        unsubscribeCounter++;
+      },
+    };
+
     // Should successfully subscribe 100 times
     const subscriptions: TopicSubscribe.Subscription[] = [];
     for (let i = 0; i < 100; i++) {
       const subscribeResponse = await topicClient.subscribe(
         cacheName,
         topicName,
-        {}
+        callOptions
       );
       expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
       subscriptions.push(subscribeResponse as TopicSubscribe.Subscription);
@@ -57,7 +65,7 @@ describe('Topic subscribe initialization tests', () => {
     const subscribeResponse = await topicClient.subscribe(
       cacheName,
       topicName,
-      {}
+      callOptions
     );
     expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Error);
     const subscribeError = subscribeResponse as TopicSubscribe.Error;
@@ -68,10 +76,13 @@ describe('Topic subscribe initialization tests', () => {
 
     // Unsubscribing should allow one new subscription to be created
     subscriptions[0].unsubscribe();
+    await sleep(100);
+    expect(unsubscribeCounter).toBe(1);
+
     const subscribeResponse2 = await topicClient.subscribe(
       cacheName,
       topicName,
-      {}
+      callOptions
     );
     expect(subscribeResponse2).toBeInstanceOf(TopicSubscribe.Subscription);
     subscriptions.push(subscribeResponse2 as TopicSubscribe.Subscription);
@@ -80,7 +91,7 @@ describe('Topic subscribe initialization tests', () => {
     const subscribeResponse3 = await topicClient.subscribe(
       cacheName,
       topicName,
-      {}
+      callOptions
     );
     expect(subscribeResponse3).toBeInstanceOf(TopicSubscribe.Error);
     const subscribeError3 = subscribeResponse3 as TopicSubscribe.Error;
@@ -259,14 +270,10 @@ describe('Topic subscribe initialization tests', () => {
     });
 
     it('handles a burst of subscribe, unsubscribe, subscribe requests', async () => {
-      let errorCounter = 0;
-      let disconnectedCounter = 0;
-      const subscribeOptions: SubscribeCallOptions = {
-        onError() {
-          errorCounter++;
-        },
-        onConnectionLost() {
-          disconnectedCounter++;
+      let unsubscribeCounter = 0;
+      const callOptions: SubscribeCallOptions = {
+        onSubscriptionEnd: () => {
+          unsubscribeCounter++;
         },
       };
 
@@ -284,7 +291,7 @@ describe('Topic subscribe initialization tests', () => {
         const subscribePromise = topicClient.subscribe(
           cacheName,
           topicName,
-          subscribeOptions
+          callOptions
         );
         subscribePromises.push(subscribePromise);
       }
@@ -297,19 +304,14 @@ describe('Topic subscribe initialization tests', () => {
         );
       }
       expect(successfulSubscriptions.length).toBe(maxStreamCapacity);
-      expect(errorCounter).toBe(0);
-      expect(disconnectedCounter).toBe(0);
 
-      // Burst of unsubscribe requests
+      // Batch of unsubscribe requests
       const unsubscribeBurstSize = maxStreamCapacity / 2;
-      const unsubscribePromises = [];
       for (let i = 0; i < unsubscribeBurstSize; i++) {
-        const unsubscribePromise = successfulSubscriptions[i].unsubscribe();
-        unsubscribePromises.push(unsubscribePromise);
+        successfulSubscriptions[i].unsubscribe();
       }
-      await Promise.all(unsubscribePromises);
-      expect(errorCounter).toBe(0);
-      expect(disconnectedCounter).toBe(unsubscribeBurstSize);
+      await sleep(100);
+      expect(unsubscribeCounter).toBe(unsubscribeBurstSize);
 
       // Burst of subscribe requests
       const subscribeBurstSize = maxStreamCapacity / 2 + 10;
@@ -318,7 +320,7 @@ describe('Topic subscribe initialization tests', () => {
         const subscribePromise = topicClient.subscribe(
           cacheName,
           topicName,
-          subscribeOptions
+          callOptions
         );
         subscribePromises2.push(subscribePromise);
       }

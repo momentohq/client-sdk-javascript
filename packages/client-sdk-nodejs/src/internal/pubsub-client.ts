@@ -215,7 +215,7 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
     // stream restarts are transparent to the caller.
     options.subscriptionState.unsubscribeFn = () => {
       call.cancel();
-      options.onConnectionLost();
+      // options.onSubscriptionEnd?.();
     };
 
     return new Promise((resolve, _reject) => {

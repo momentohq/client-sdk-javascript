@@ -45,4 +45,9 @@ export interface SubscribeCallOptions {
    * The callback to invoke when the connection is lost.
    */
   onConnectionLost?: () => void;
+
+  /**
+   * The callback to invoke just before the subscription ends.
+   */
+  onSubscriptionEnd?: () => void;
 }
