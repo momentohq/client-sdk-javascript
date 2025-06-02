@@ -1,14 +1,21 @@
-import {DefaultMomentoLoggerFactory, SubscribeCallOptions} from '../../../src';
+import {
+  DefaultMomentoLoggerFactory,
+  SubscribeCallOptions,
+  TopicClient,
+  TopicConfigurations,
+} from '../../../src';
 import {
   MomentoLogger,
   TopicSubscribe,
   MomentoErrorCode,
+  MomentoLocalProvider,
 } from '@gomomento/sdk-core';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {WithCacheAndTopicClient} from '../integration-setup';
 import {MomentoLocalMiddlewareArgs} from '../../momento-local-middleware';
 import {TestRetryMetricsCollector} from '../../test-retry-metrics-collector';
 import {v4} from 'uuid';
+import {MomentoRPCMethod} from '../../../src/config/retry/momento-rpc-method';
 
 describe('Topic subscribe initialization tests', () => {
   let testMetricsCollector: TestRetryMetricsCollector;
@@ -82,6 +89,100 @@ describe('Topic subscribe initialization tests', () => {
 
         // Another subscribe attempt should fail (i.e. should not over-decrement)
         const subscribeResponse3 = await topicClient.subscribe(
+          cacheName,
+          topicName,
+          callOptions
+        );
+        expect(subscribeResponse3).toBeInstanceOf(TopicSubscribe.Error);
+        const subscribeError3 = subscribeResponse3 as TopicSubscribe.Error;
+        expect(subscribeError3).toBeInstanceOf(TopicSubscribe.Error);
+        expect(subscribeError3.errorCode()).toBe(
+          MomentoErrorCode.CLIENT_RESOURCE_EXHAUSTED
+        );
+
+        // Cleanup
+        for (const subscription of subscriptions) {
+          subscription.unsubscribe();
+        }
+      }
+    );
+  });
+
+  it('mid-stream error should decrement subscription count', async () => {
+    let unsubscribeCounter = 0;
+    const callOptions: SubscribeCallOptions = {
+      onSubscriptionEnd: () => {
+        unsubscribeCounter++;
+      },
+      onError(e) {
+        expect(e).toBeInstanceOf(TopicSubscribe.Error);
+        expect(e.errorCode()).toBe(MomentoErrorCode.CACHE_NOT_FOUND_ERROR);
+      },
+    };
+
+    const momentoLocalMiddlewareArgs: MomentoLocalMiddlewareArgs = {
+      logger: momentoLogger,
+      testMetricsCollector: testMetricsCollector,
+      requestId: v4(),
+      streamError: MomentoErrorCode.CACHE_NOT_FOUND_ERROR,
+      streamErrorRpcList: [MomentoRPCMethod.TopicSubscribe],
+      streamErrorMessageLimit: 3,
+    };
+
+    const basicTopicClient = new TopicClient({
+      configuration:
+        TopicConfigurations.Default.latest().withNumStreamConnections(1),
+      credentialProvider: new MomentoLocalProvider({
+        hostname: process.env.MOMENTO_HOSTNAME || '127.0.0.1',
+        port: parseInt(process.env.MOMENTO_PORT || '8080'),
+      }),
+    });
+
+    await WithCacheAndTopicClient(
+      config => config.withNumStreamConnections(1),
+      momentoLocalMiddlewareArgs,
+      async (topicClient, cacheName) => {
+        const topicName = 'topic';
+
+        // Should successfully subscribe 99 times using a client without momento-local args
+        const subscriptions: TopicSubscribe.Subscription[] = [];
+        for (let i = 0; i < 99; i++) {
+          const subscribeResponse = await basicTopicClient.subscribe(
+            cacheName,
+            topicName,
+            callOptions
+          );
+          expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
+          subscriptions.push(subscribeResponse as TopicSubscribe.Subscription);
+        }
+
+        // Subscribe one more time but expecting an error after a couple of heartbeats
+        const subscribeResponse = await topicClient.subscribe(
+          cacheName,
+          'another-topic',
+          callOptions
+        );
+        expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
+        subscriptions.push(subscribeResponse as TopicSubscribe.Subscription);
+        expect(subscriptions.length).toBe(100);
+
+        // Wait for the subscription that ran into the error to be closed
+        await sleep(3000);
+        expect(unsubscribeCounter).toBe(1);
+
+        // Another subscribe attempt should succeed because the subscription that
+        // ran into the error should have decremented the subscription count.
+        const subscribeResponse2 = await basicTopicClient.subscribe(
+          cacheName,
+          topicName,
+          callOptions
+        );
+        expect(subscribeResponse2).toBeInstanceOf(TopicSubscribe.Subscription);
+        subscriptions.push(subscribeResponse2 as TopicSubscribe.Subscription);
+
+        // Another subscribe attempt should fail because the subscription count
+        // should be at 100 again
+        const subscribeResponse3 = await basicTopicClient.subscribe(
           cacheName,
           topicName,
           callOptions
