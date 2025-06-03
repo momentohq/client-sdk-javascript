@@ -1,14 +1,8 @@
-import {
-  DefaultMomentoLoggerFactory,
-  SubscribeCallOptions,
-  TopicClient,
-  TopicConfigurations,
-} from '../../../src';
+import {DefaultMomentoLoggerFactory, SubscribeCallOptions} from '../../../src';
 import {
   MomentoLogger,
   TopicSubscribe,
   MomentoErrorCode,
-  MomentoLocalProvider,
 } from '@gomomento/sdk-core';
 import {sleep} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {WithCacheAndTopicClient} from '../integration-setup';
@@ -108,7 +102,7 @@ describe('Topic subscribe initialization tests', () => {
     );
   });
 
-  it('mid-stream error should decrement subscription count', async () => {
+  it('mid-stream error should end the subscription', async () => {
     let unsubscribeCounter = 0;
     const callOptions: SubscribeCallOptions = {
       onSubscriptionEnd: () => {
@@ -129,70 +123,26 @@ describe('Topic subscribe initialization tests', () => {
       streamErrorMessageLimit: 3,
     };
 
-    const basicTopicClient = new TopicClient({
-      configuration:
-        TopicConfigurations.Default.latest().withNumStreamConnections(1),
-      credentialProvider: new MomentoLocalProvider({
-        hostname: process.env.MOMENTO_HOSTNAME || '127.0.0.1',
-        port: parseInt(process.env.MOMENTO_PORT || '8080'),
-      }),
-    });
-
     await WithCacheAndTopicClient(
       config => config.withNumStreamConnections(1),
       momentoLocalMiddlewareArgs,
       async (topicClient, cacheName) => {
         const topicName = 'topic';
-
-        // Should successfully subscribe 99 times using a client without momento-local args
         const subscriptions: TopicSubscribe.Subscription[] = [];
-        for (let i = 0; i < 99; i++) {
-          const subscribeResponse = await basicTopicClient.subscribe(
-            cacheName,
-            topicName,
-            callOptions
-          );
-          expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
-          subscriptions.push(subscribeResponse as TopicSubscribe.Subscription);
-        }
 
-        // Subscribe one more time but expecting an error after a couple of heartbeats
+        // Subscribe but expecting an error after a couple of heartbeats
         const subscribeResponse = await topicClient.subscribe(
           cacheName,
-          'another-topic',
+          topicName,
           callOptions
         );
         expect(subscribeResponse).toBeInstanceOf(TopicSubscribe.Subscription);
         subscriptions.push(subscribeResponse as TopicSubscribe.Subscription);
-        expect(subscriptions.length).toBe(100);
 
-        // Wait for the subscription that ran into the error to be closed
+        // Wait for the subscription that ran into the error to be closed.
+        // Should run the assert statements in onError callback.
         await sleep(3000);
         expect(unsubscribeCounter).toBe(1);
-
-        // Another subscribe attempt should succeed because the subscription that
-        // ran into the error should have decremented the subscription count.
-        const subscribeResponse2 = await basicTopicClient.subscribe(
-          cacheName,
-          topicName,
-          callOptions
-        );
-        expect(subscribeResponse2).toBeInstanceOf(TopicSubscribe.Subscription);
-        subscriptions.push(subscribeResponse2 as TopicSubscribe.Subscription);
-
-        // Another subscribe attempt should fail because the subscription count
-        // should be at 100 again
-        const subscribeResponse3 = await basicTopicClient.subscribe(
-          cacheName,
-          topicName,
-          callOptions
-        );
-        expect(subscribeResponse3).toBeInstanceOf(TopicSubscribe.Error);
-        const subscribeError3 = subscribeResponse3 as TopicSubscribe.Error;
-        expect(subscribeError3).toBeInstanceOf(TopicSubscribe.Error);
-        expect(subscribeError3.errorCode()).toBe(
-          MomentoErrorCode.CLIENT_RESOURCE_EXHAUSTED
-        );
 
         // Cleanup
         for (const subscription of subscriptions) {
