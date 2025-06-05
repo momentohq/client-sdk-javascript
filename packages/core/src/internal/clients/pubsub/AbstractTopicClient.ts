@@ -16,7 +16,12 @@ import {IWebhookClient} from './IWebhookClient';
 import {PutWebhookCallOptions} from '../../../utils/webhook-call-options';
 import {ClientResourceExhaustedError, SdkError} from '../../../errors';
 
-class StreamClientWithCount {
+interface IStreamClientWithCount {
+  numActiveSubscriptions: number;
+  client: IPubsubClient;
+}
+
+class StreamClientWithCount implements IStreamClientWithCount {
   numActiveSubscriptions = 0;
   client: IPubsubClient;
 
@@ -28,7 +33,7 @@ class StreamClientWithCount {
 export abstract class AbstractTopicClient implements ITopicClient {
   protected readonly logger: MomentoLogger;
   protected readonly pubsubClients: IPubsubClient[];
-  protected readonly pubsubStreamClients: StreamClientWithCount[];
+  protected readonly pubsubStreamClients: IStreamClientWithCount[];
   protected readonly pubsubUnaryClients: IPubsubClient[];
   protected readonly webhookClient: IWebhookClient;
   private nextPubsubStreamClientIndex = 0;
