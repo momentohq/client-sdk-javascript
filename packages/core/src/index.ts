@@ -215,6 +215,14 @@ export * as DisposableTokenScopes from './auth/tokens/disposable-token-scopes';
 
 export {ReadConcern} from './config/read-concern';
 export {CompressionLevel} from './compression/compression-level';
+export {
+  SubscriptionRetryStrategy,
+  DetermineWhenToResubscribeProps,
+} from './config/retry/subscription-retry-strategy';
+export {
+  SubscriptionRetryEligibilityStrategy,
+  EligibleForResubscribeProps,
+} from './config/retry/subscription-retry-eligibility-strategy';
 
 export {
   ExpiresIn,

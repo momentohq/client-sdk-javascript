@@ -275,14 +275,11 @@ export class PubsubClient<
         serviceError.message === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE;
       const shouldReconnectSubscription =
         isBrowserDisconnect || isRstStreamNoError;
+      const retryDelayMillis = shouldReconnectSubscription ? 500 : null;
       const momentoError = new TopicSubscribe.Error(
         this.getCacheServiceErrorMapper().convertError(serviceError)
       );
-      this.handleSubscribeError(
-        options,
-        momentoError,
-        shouldReconnectSubscription
-      );
+      this.handleSubscribeError(options, momentoError, retryDelayMillis);
     };
   }
 }
