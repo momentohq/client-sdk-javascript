@@ -218,6 +218,7 @@ export {CompressionLevel} from './compression/compression-level';
 export {
   SubscriptionRetryStrategy,
   DetermineWhenToResubscribeProps,
+  DEFAULT_SUBSCRIPTION_RETRY_DELAY_MILLIS,
 } from './config/retry/subscription-retry-strategy';
 export {
   SubscriptionRetryEligibilityStrategy,

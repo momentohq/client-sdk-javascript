@@ -5,6 +5,7 @@ import {
   SubscriptionRetryStrategy,
 } from '@gomomento/sdk-core';
 import {TopicSubscriptionRetryEligibilityStrategy} from './topic-subscription-retry-eligibility-strategy';
+import {DEFAULT_SUBSCRIPTION_RETRY_DELAY_MILLIS} from '@gomomento/sdk-core/dist/src/config/retry/subscription-retry-strategy';
 
 export interface TopicSubscriptionRetryStrategyProps {
   logger: MomentoLogger;
@@ -28,7 +29,8 @@ export class TopicSubscriptionRetryStrategy
     this.eligibilityStrategy =
       props.eligibilityStrategy ??
       new TopicSubscriptionRetryEligibilityStrategy(props.logger);
-    this.retryDelayMillis = props.retryDelayMillis ?? 500;
+    this.retryDelayMillis =
+      props.retryDelayMillis ?? DEFAULT_SUBSCRIPTION_RETRY_DELAY_MILLIS;
   }
 
   determineWhenToResubscribe(

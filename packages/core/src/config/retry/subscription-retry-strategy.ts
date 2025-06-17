@@ -1,6 +1,8 @@
 import {SdkError} from '../../errors';
 import {SubscriptionRetryEligibilityStrategy} from './subscription-retry-eligibility-strategy';
 
+export const DEFAULT_SUBSCRIPTION_RETRY_DELAY_MILLIS = 500;
+
 export interface DetermineWhenToResubscribeProps {
   sdkError: SdkError;
 }

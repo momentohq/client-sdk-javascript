@@ -24,6 +24,7 @@ import {
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {TopicClientAllProps} from './topic-client-all-props';
 import {secondsToMilliseconds} from '@gomomento/sdk-core/dist/src/utils';
+import {DEFAULT_SUBSCRIPTION_RETRY_DELAY_MILLIS} from '@gomomento/sdk-core/dist/src/config/retry/subscription-retry-strategy';
 
 export class PubsubClient<
   REQ extends Request<REQ, RESP>,
@@ -275,7 +276,9 @@ export class PubsubClient<
         serviceError.message === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE;
       const shouldReconnectSubscription =
         isBrowserDisconnect || isRstStreamNoError;
-      const retryDelayMillis = shouldReconnectSubscription ? 500 : null;
+      const retryDelayMillis = shouldReconnectSubscription
+        ? DEFAULT_SUBSCRIPTION_RETRY_DELAY_MILLIS
+        : null;
       const momentoError = new TopicSubscribe.Error(
         this.getCacheServiceErrorMapper().convertError(serviceError)
       );
