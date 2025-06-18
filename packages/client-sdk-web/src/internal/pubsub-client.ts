@@ -6,6 +6,7 @@ import {
   TopicHeartbeat,
   TopicItem,
   UnknownError,
+  DEFAULT_SUBSCRIPTION_RETRY_DELAY_MILLIS,
 } from '@gomomento/sdk-core';
 import {Request, RpcError, StatusCode, UnaryResponse} from 'grpc-web';
 import {truncateString} from '@gomomento/sdk-core/dist/src/internal/utils';
@@ -24,7 +25,6 @@ import {
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {TopicClientAllProps} from './topic-client-all-props';
 import {secondsToMilliseconds} from '@gomomento/sdk-core/dist/src/utils';
-import {DEFAULT_SUBSCRIPTION_RETRY_DELAY_MILLIS} from '@gomomento/sdk-core/dist/src/config/retry/subscription-retry-strategy';
 
 export class PubsubClient<
   REQ extends Request<REQ, RESP>,
