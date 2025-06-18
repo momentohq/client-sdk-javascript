@@ -1,6 +1,7 @@
 import {MomentoLoggerFactory} from '@gomomento/sdk-core';
 import {TopicTransportStrategy} from './transport/topics';
 import {Middleware} from './middleware/middleware';
+import {TopicSubscriptionRetryStrategy} from './retry/topic-subscription-retry-strategy';
 
 export interface TopicConfigurationProps {
   /**
@@ -22,6 +23,11 @@ export interface TopicConfigurationProps {
    * Configures middleware functions that will wrap each request
    */
   middlewares: Middleware[];
+
+  /**
+   * Configures the retry strategy for topic subscriptions
+   */
+  subscriptionRetryStrategy?: TopicSubscriptionRetryStrategy;
 }
 
 /**
@@ -116,6 +122,20 @@ export interface TopicConfiguration {
    * @returns {Configuration} a new TopicConfiguration object with its TransportStrategy updated to use the specified client timeout
    */
   withClientTimeoutMillis(clientTimeoutMillis: number): TopicConfiguration;
+
+  /**
+   * @returns {TopicSubscriptionRetryStrategy} the current configuration options for topic subscription retry strategy
+   */
+  getSubscriptionRetryStrategy(): TopicSubscriptionRetryStrategy;
+
+  /**
+   * Copy constructor for configuring the topic subscription retry strategy
+   * @param {TopicSubscriptionRetryStrategy} subscriptionRetryStrategy
+   * @returns {TopicConfiguration} a new TopicConfiguration object with the specified subscription retry strategy
+   */
+  withSubscriptionRetryStrategy(
+    subscriptionRetryStrategy: TopicSubscriptionRetryStrategy
+  ): TopicConfiguration;
 }
 
 export class TopicClientConfiguration implements TopicConfiguration {
@@ -123,12 +143,18 @@ export class TopicClientConfiguration implements TopicConfiguration {
   private readonly transportStrategy: TopicTransportStrategy;
   private readonly throwOnErrors: boolean;
   private readonly middlewares: Middleware[];
+  private readonly subscriptionRetryStrategy: TopicSubscriptionRetryStrategy;
 
   constructor(props: TopicConfigurationProps) {
     this.loggerFactory = props.loggerFactory;
     this.transportStrategy = props.transportStrategy;
     this.throwOnErrors = props.throwOnErrors;
     this.middlewares = props.middlewares;
+    this.subscriptionRetryStrategy =
+      props.subscriptionRetryStrategy ??
+      new TopicSubscriptionRetryStrategy({
+        logger: props.loggerFactory.getLogger(this),
+      });
   }
 
   getLoggerFactory(): MomentoLoggerFactory {
@@ -213,5 +239,15 @@ export class TopicClientConfiguration implements TopicConfiguration {
       transportStrategy:
         this.transportStrategy.withClientTimeoutMillis(clientTimeoutMillis),
     });
+  }
+
+  getSubscriptionRetryStrategy(): TopicSubscriptionRetryStrategy {
+    return this.subscriptionRetryStrategy;
+  }
+
+  withSubscriptionRetryStrategy(
+    subscriptionRetryStrategy: TopicSubscriptionRetryStrategy
+  ): TopicConfiguration {
+    return new TopicClientConfiguration({...this, subscriptionRetryStrategy});
   }
 }

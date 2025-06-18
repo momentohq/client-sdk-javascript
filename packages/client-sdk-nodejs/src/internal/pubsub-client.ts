@@ -34,6 +34,7 @@ import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {RetryInterceptor} from './grpc/retry-interceptor';
 import {secondsToMilliseconds} from '@gomomento/sdk-core/dist/src/utils';
 import grpcPubsub = pubsub.cache_client.pubsub;
+import {TopicSubscriptionRetryStrategy} from '../config/retry/topic-subscription-retry-strategy';
 
 export class PubsubClient extends AbstractPubsubClient<ServiceError> {
   private readonly client: grpcPubsub.PubsubClient;
@@ -56,7 +57,8 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
     super(
       props.configuration.getLoggerFactory(),
       props.configuration.getLoggerFactory().getLogger(PubsubClient.name),
-      new CacheServiceErrorMapper(props.configuration.getThrowOnErrors())
+      new CacheServiceErrorMapper(props.configuration.getThrowOnErrors()),
+      props.configuration.getSubscriptionRetryStrategy()
     );
     this.credentialProvider = props.credentialProvider;
     this.getLogger().debug(
@@ -328,27 +330,24 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
       this.getLogger().trace(
         `Subscription encountered an error: ${serviceError.code}: ${serviceError.message}: ${serviceError.details}`
       );
-      const shouldReconnectSubscription =
-        // previously, we were only attempting a reconnect on this one very specific case, but our current expectation is that
-        // we should err on the side of retrying. This may become a sort of "deny list" of error types to *not* retry on
-        // in the future, but for now we will be aggressive about retrying.
-        // // serviceError.code === Status.INTERNAL &&
-        //  // serviceError.details === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE;
-        true;
 
       if (!this.isConnectionLost) {
         this.isConnectionLost = true;
         options.onConnectionLost();
       }
 
-      const momentoError = new TopicSubscribe.Error(
-        this.getCacheServiceErrorMapper().convertError(serviceError)
-      );
-      this.handleSubscribeError(
-        options,
-        momentoError,
-        shouldReconnectSubscription
-      );
+      const sdkError =
+        this.getCacheServiceErrorMapper().convertError(serviceError);
+      const momentoError = new TopicSubscribe.Error(sdkError);
+      const retryStrategy =
+        this.getRetryStrategy() ??
+        new TopicSubscriptionRetryStrategy({
+          logger: this.getLogger(),
+        });
+      const retryDelayMillis = retryStrategy.determineWhenToResubscribe({
+        sdkError,
+      });
+      this.handleSubscribeError(options, momentoError, retryDelayMillis);
     };
   }
 
