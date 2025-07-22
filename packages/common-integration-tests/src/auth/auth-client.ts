@@ -257,9 +257,11 @@ export function runAuthClientTests(
 
       const cacheClient = cacheClientFactory(generateSuccessRst.apiKey);
 
-      const createCacheRst = await cacheClient.createCache(
-        'cache-should-fail-to-create'
-      );
+      const cacheName = 'expired-token-should-fail-to-create-cache';
+      const createCacheRst = await cacheClient.createCache(cacheName);
+
+      // If this test fails for whatever reason, we should make sure not to leak the cache
+      await cacheClient.deleteCache(cacheName);
 
       expectWithMessage(
         () => expect(createCacheRst).toBeInstanceOf(CreateCache.Error),
@@ -436,9 +438,14 @@ export function runAuthClientTests(
     });
 
     it('cannot create a cache', async () => {
+      const cacheName =
+        'AllDataReadWrite-token-scope-should-fail-to-create-cache';
       const createCacheResponse = await allDataReadWriteClient.createCache(
-        'FOOFOOFOO'
+        cacheName
       );
+      // If this test fails for whatever reason, we should make sure not to leak the cache
+      await allDataReadWriteClient.deleteCache(cacheName);
+
       expectWithMessage(
         () => expect(createCacheResponse).toBeInstanceOf(CreateCache.Error),
         `Unexpected response: ${createCacheResponse.toString()}`
@@ -514,7 +521,7 @@ export function runAuthClientTests(
       },
     };
 
-    // Setup 2 caches
+    // Setup 2 caches. Note: caches may be leaked if afterAll is not run due to an interruption
     beforeAll(async () => {
       const createCache1 = await sessionTokenCacheClient.createCache(
         FGA_CACHE_1
@@ -1760,6 +1767,7 @@ export function runAuthClientTests(
       }, `Expected ERROR but received ${pubResp.toString()}`);
     });
 
+    // Note: caches may be leaked if afterAll is not run due to an interruption
     afterAll(async () => {
       const deleteCache1 = await sessionTokenCacheClient.deleteCache(
         FGA_CACHE_1
