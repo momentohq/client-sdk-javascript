@@ -35,10 +35,6 @@ interface TokenAndEndpoints {
   authToken: string;
 }
 
-// export interface Endpoint {
-//   endpoint: string;
-// }
-
 export interface AllEndpoints {
   controlEndpoint: string;
   cacheEndpoint: string;
