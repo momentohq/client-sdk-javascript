@@ -67,7 +67,7 @@ export class StorageDataClient implements IStorageDataClient {
 
     this.client = new store.StoreClient(
       this.credentialProvider.getStorageEndpoint(),
-      this.credentialProvider.isStorageEndpointSecure()
+      this.credentialProvider.isEndpointSecure()
         ? ChannelCredentials.createSsl()
         : ChannelCredentials.createInsecure(),
       channelOptions

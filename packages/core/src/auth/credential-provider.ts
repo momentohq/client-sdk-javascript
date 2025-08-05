@@ -55,19 +55,9 @@ export abstract class CredentialProvider {
   abstract getControlEndpoint(): string;
 
   /**
-   * @returns {boolean} true if connecting to the control plane endpoint connection with TLS; false if not using TLS
-   */
-  abstract isControlEndpointSecure(): boolean;
-
-  /**
    * @returns {string} The host which the Momento client will connect to for Momento data plane operations
    */
   abstract getCacheEndpoint(): string;
-
-  /**
-   * @returns {boolean} true if connecting to the data plane endpoint connection with TLS; false if not using TLS
-   */
-  abstract isCacheEndpointSecure(): boolean;
 
   /**
    * @returns {string} The host which the Momento client will connect to for Momento storage operations
@@ -75,19 +65,9 @@ export abstract class CredentialProvider {
   abstract getStorageEndpoint(): string;
 
   /**
-   * @returns {boolean} true if connecting to the storage endpoint connection with TLS; false if not using TLS
-   */
-  abstract isStorageEndpointSecure(): boolean;
-
-  /**
    * @returns {string} The host which the Momento client will connect to for Momento token operations
    */
   abstract getTokenEndpoint(): string;
-
-  /**
-   * @returns {boolean} true if connecting to the token endpoint connection with TLS; false if not using TLS
-   */
-  abstract isTokenEndpointSecure(): boolean;
 
   /**
    * @deprecated - use the static method forMomentoLocal instead
@@ -101,6 +81,10 @@ export abstract class CredentialProvider {
    * @returns {boolean} true if the endpoints were manually overridden at construction time; false otherwise
    */
   abstract areEndpointsOverridden(): boolean;
+  /**
+   * @returns {boolean} true if connecting to the endpoint connection with TLS; false if not using TLS
+   */
+  abstract isEndpointSecure(): boolean;
 
   static fromEnvironmentVariable(
     props: EnvMomentoTokenProviderProps | string
@@ -136,21 +120,15 @@ abstract class CredentialProviderBase implements CredentialProvider {
 
   abstract getCacheEndpoint(): string;
 
-  abstract isCacheEndpointSecure(): boolean;
-
   abstract getControlEndpoint(): string;
-
-  abstract isControlEndpointSecure(): boolean;
 
   abstract getStorageEndpoint(): string;
 
-  abstract isStorageEndpointSecure(): boolean;
-
   abstract getTokenEndpoint(): string;
 
-  abstract isTokenEndpointSecure(): boolean;
-
   abstract areEndpointsOverridden(): boolean;
+
+  abstract isEndpointSecure(): boolean;
 
   abstract withMomentoLocal(): CredentialProvider;
 
@@ -233,18 +211,10 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
         );
       }
       this.allEndpoints = {
-        controlEndpoint: {
-          endpoint: decodedToken.controlEndpoint,
-        },
-        cacheEndpoint: {
-          endpoint: decodedToken.cacheEndpoint,
-        },
-        tokenEndpoint: {
-          endpoint: decodedToken.tokenEndpoint,
-        },
-        storageEndpoint: {
-          endpoint: decodedToken.storageEndpoint,
-        },
+        controlEndpoint: decodedToken.controlEndpoint,
+        cacheEndpoint: decodedToken.cacheEndpoint,
+        tokenEndpoint: decodedToken.tokenEndpoint,
+        storageEndpoint: decodedToken.storageEndpoint,
       };
     } else if (isAllEndpoints(props.endpointOverrides)) {
       this.endpointsOverridden = true;
@@ -267,51 +237,30 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
   }
 
   getCacheEndpoint(): string {
-    return this.allEndpoints.cacheEndpoint.endpoint;
-  }
-
-  isCacheEndpointSecure(): boolean {
-    if (this.allEndpoints.cacheEndpoint.secureConnection === undefined) {
-      return true;
-    }
-    return this.allEndpoints.cacheEndpoint.secureConnection;
+    return this.allEndpoints.cacheEndpoint;
   }
 
   getControlEndpoint(): string {
-    return this.allEndpoints.controlEndpoint.endpoint;
-  }
-
-  isControlEndpointSecure(): boolean {
-    if (this.allEndpoints.controlEndpoint.secureConnection === undefined) {
-      return true;
-    }
-    return this.allEndpoints.controlEndpoint.secureConnection;
+    return this.allEndpoints.controlEndpoint;
   }
 
   getTokenEndpoint(): string {
-    return this.allEndpoints.tokenEndpoint.endpoint;
-  }
-
-  isTokenEndpointSecure(): boolean {
-    if (this.allEndpoints.tokenEndpoint.secureConnection === undefined) {
-      return true;
-    }
-    return this.allEndpoints.tokenEndpoint.secureConnection;
+    return this.allEndpoints.tokenEndpoint;
   }
 
   getStorageEndpoint(): string {
-    return this.allEndpoints.storageEndpoint.endpoint;
-  }
-
-  isStorageEndpointSecure(): boolean {
-    if (this.allEndpoints.storageEndpoint.secureConnection === undefined) {
-      return true;
-    }
-    return this.allEndpoints.storageEndpoint.secureConnection;
+    return this.allEndpoints.storageEndpoint;
   }
 
   areEndpointsOverridden(): boolean {
     return this.endpointsOverridden;
+  }
+
+  isEndpointSecure(): boolean {
+    if (this.allEndpoints.secureConnection === undefined) {
+      return true;
+    }
+    return this.allEndpoints.secureConnection;
   }
 
   withMomentoLocal(): CredentialProvider {
@@ -379,10 +328,7 @@ export class MomentoLocalProvider implements CredentialProvider {
   constructor(props?: MomentoLocalProviderProps) {
     const hostname = props?.hostname || '127.0.0.1';
     const port = props?.port || 8080;
-    const momentoLocalEndpoint = {
-      endpoint: `${hostname}:${port}`,
-      secureConnection: false,
-    };
+    const momentoLocalEndpoint = `${hostname}:${port}`;
 
     if (props === undefined || props.endpointOverrides === undefined) {
       this.endpointsOverridden = false;
@@ -391,6 +337,7 @@ export class MomentoLocalProvider implements CredentialProvider {
         cacheEndpoint: momentoLocalEndpoint,
         tokenEndpoint: momentoLocalEndpoint,
         storageEndpoint: momentoLocalEndpoint,
+        secureConnection: false,
       };
     } else if (isAllEndpoints(props.endpointOverrides)) {
       this.endpointsOverridden = true;
@@ -412,51 +359,30 @@ export class MomentoLocalProvider implements CredentialProvider {
     return '';
   }
   getCacheEndpoint(): string {
-    return this.allEndpoints.cacheEndpoint.endpoint;
-  }
-
-  isCacheEndpointSecure(): boolean {
-    if (this.allEndpoints.cacheEndpoint.secureConnection === undefined) {
-      return true;
-    }
-    return this.allEndpoints.cacheEndpoint.secureConnection;
+    return this.allEndpoints.cacheEndpoint;
   }
 
   getControlEndpoint(): string {
-    return this.allEndpoints.controlEndpoint.endpoint;
-  }
-
-  isControlEndpointSecure(): boolean {
-    if (this.allEndpoints.controlEndpoint.secureConnection === undefined) {
-      return true;
-    }
-    return this.allEndpoints.controlEndpoint.secureConnection;
+    return this.allEndpoints.controlEndpoint;
   }
 
   getTokenEndpoint(): string {
-    return this.allEndpoints.tokenEndpoint.endpoint;
-  }
-
-  isTokenEndpointSecure(): boolean {
-    if (this.allEndpoints.tokenEndpoint.secureConnection === undefined) {
-      return true;
-    }
-    return this.allEndpoints.tokenEndpoint.secureConnection;
+    return this.allEndpoints.tokenEndpoint;
   }
 
   getStorageEndpoint(): string {
-    return this.allEndpoints.storageEndpoint.endpoint;
-  }
-
-  isStorageEndpointSecure(): boolean {
-    if (this.allEndpoints.storageEndpoint.secureConnection === undefined) {
-      return true;
-    }
-    return this.allEndpoints.storageEndpoint.secureConnection;
+    return this.allEndpoints.storageEndpoint;
   }
 
   areEndpointsOverridden(): boolean {
     return this.endpointsOverridden;
+  }
+
+  isEndpointSecure(): boolean {
+    if (this.allEndpoints.secureConnection === undefined) {
+      return true;
+    }
+    return this.allEndpoints.secureConnection;
   }
 
   withMomentoLocal(): CredentialProvider {

@@ -35,16 +35,16 @@ interface TokenAndEndpoints {
   authToken: string;
 }
 
-export interface Endpoint {
-  endpoint: string;
-  secureConnection?: boolean;
-}
+// export interface Endpoint {
+//   endpoint: string;
+// }
 
 export interface AllEndpoints {
-  controlEndpoint: Endpoint;
-  cacheEndpoint: Endpoint;
-  tokenEndpoint: Endpoint;
-  storageEndpoint: Endpoint;
+  controlEndpoint: string;
+  cacheEndpoint: string;
+  tokenEndpoint: string;
+  storageEndpoint: string;
+  secureConnection?: boolean;
 }
 
 export function populateAllEndpointsFromBaseEndpoint(
@@ -55,22 +55,11 @@ export function populateAllEndpointsFromBaseEndpoint(
     prefix = `${endpointOverride.endpointPrefix}.`;
   }
   return {
-    controlEndpoint: {
-      endpoint: `${prefix}control.${endpointOverride.baseEndpoint}`,
-      secureConnection: endpointOverride.secureConnection,
-    },
-    cacheEndpoint: {
-      endpoint: `${prefix}cache.${endpointOverride.baseEndpoint}`,
-      secureConnection: endpointOverride.secureConnection,
-    },
-    tokenEndpoint: {
-      endpoint: `${prefix}token.${endpointOverride.baseEndpoint}`,
-      secureConnection: endpointOverride.secureConnection,
-    },
-    storageEndpoint: {
-      endpoint: `${prefix}storage.${endpointOverride.baseEndpoint}`,
-      secureConnection: endpointOverride.secureConnection,
-    },
+    controlEndpoint: `${prefix}control.${endpointOverride.baseEndpoint}`,
+    cacheEndpoint: `${prefix}cache.${endpointOverride.baseEndpoint}`,
+    tokenEndpoint: `${prefix}token.${endpointOverride.baseEndpoint}`,
+    storageEndpoint: `${prefix}storage.${endpointOverride.baseEndpoint}`,
+    secureConnection: endpointOverride.secureConnection,
   };
 }
 
@@ -100,10 +89,10 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
         baseEndpoint: base64DecodedToken.endpoint,
       });
       return {
-        controlEndpoint: endpoints.controlEndpoint.endpoint,
-        cacheEndpoint: endpoints.cacheEndpoint.endpoint,
-        tokenEndpoint: endpoints.tokenEndpoint.endpoint,
-        storageEndpoint: endpoints.storageEndpoint.endpoint,
+        controlEndpoint: endpoints.controlEndpoint,
+        cacheEndpoint: endpoints.cacheEndpoint,
+        tokenEndpoint: endpoints.tokenEndpoint,
+        storageEndpoint: endpoints.storageEndpoint,
         authToken: base64DecodedToken.api_key,
       };
     } else {
