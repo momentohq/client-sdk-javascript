@@ -401,10 +401,11 @@ export class MomentoLocalProvider implements CredentialProvider {
   getAuthToken(): string {
     return '';
   }
+
   getCacheEndpoint(): string {
     return this.allEndpoints.cacheEndpoint;
   }
-  
+
   isCacheEndpointSecure(): boolean {
     return this.isEndpointSecure();
   }
