@@ -44,7 +44,7 @@ export class StorageControlClient {
 
     this.clientWrapper = new grpcControl.ScsControlClient(
       props.credentialProvider.getControlEndpoint(),
-      props.credentialProvider.isControlEndpointSecure()
+      props.credentialProvider.isEndpointSecure()
         ? ChannelCredentials.createSsl()
         : ChannelCredentials.createInsecure()
     );

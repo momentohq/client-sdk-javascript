@@ -154,22 +154,11 @@ function mgaAccountSessionTokenCredsProvider(): CredentialProvider {
         // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
         // steal them from the auth-token-based creds provider.
         endpointOverrides: {
-          cacheEndpoint: {
-            endpoint: credsProvider().getCacheEndpoint(),
-            secureConnection: credsProvider().isCacheEndpointSecure(),
-          },
-          controlEndpoint: {
-            endpoint: credsProvider().getControlEndpoint(),
-            secureConnection: credsProvider().isControlEndpointSecure(),
-          },
-          tokenEndpoint: {
-            endpoint: credsProvider().getTokenEndpoint(),
-            secureConnection: credsProvider().isTokenEndpointSecure(),
-          },
-          storageEndpoint: {
-            endpoint: credsProvider().getStorageEndpoint(),
-            secureConnection: credsProvider().isStorageEndpointSecure(),
-          },
+          cacheEndpoint: credsProvider().getCacheEndpoint(),
+          controlEndpoint: credsProvider().getControlEndpoint(),
+          tokenEndpoint: credsProvider().getTokenEndpoint(),
+          storageEndpoint: credsProvider().getStorageEndpoint(),
+          secureConnection: credsProvider().isEndpointSecure(),
         },
       });
   }

@@ -88,10 +88,10 @@ describe('StringMomentoTokenProvider', () => {
     const legacyAuthProvider = CredentialProvider.fromString({
       apiKey: fakeTestLegacyToken,
       endpointOverrides: {
-        controlEndpoint: {endpoint: 'control.foo'},
-        cacheEndpoint: {endpoint: 'cache.foo'},
-        tokenEndpoint: {endpoint: 'token.foo'},
-        storageEndpoint: {endpoint: 'storage.foo'},
+        controlEndpoint: 'control.foo',
+        cacheEndpoint: 'cache.foo',
+        tokenEndpoint: 'token.foo',
+        storageEndpoint: 'storage.foo',
       },
     });
     expect(legacyAuthProvider.getControlEndpoint()).toEqual('control.foo');
@@ -103,10 +103,10 @@ describe('StringMomentoTokenProvider', () => {
     const v1AuthProvider = CredentialProvider.fromString({
       apiKey: base64EncodedFakeV1AuthToken,
       endpointOverrides: {
-        controlEndpoint: {endpoint: 'control.foo'},
-        cacheEndpoint: {endpoint: 'cache.foo'},
-        tokenEndpoint: {endpoint: 'token.foo'},
-        storageEndpoint: {endpoint: 'storage.foo'},
+        controlEndpoint: 'control.foo',
+        cacheEndpoint: 'cache.foo',
+        tokenEndpoint: 'token.foo',
+        storageEndpoint: 'storage.foo',
       },
     });
     expect(v1AuthProvider.getAuthToken()).toEqual(fakeTestV1ApiKey);
@@ -121,10 +121,10 @@ describe('StringMomentoTokenProvider', () => {
     const sessionTokenProvider = CredentialProvider.fromString({
       apiKey: fakeSessionToken,
       endpointOverrides: {
-        controlEndpoint: {endpoint: 'control.foo'},
-        cacheEndpoint: {endpoint: 'cache.foo'},
-        tokenEndpoint: {endpoint: 'token.foo'},
-        storageEndpoint: {endpoint: 'storage.foo'},
+        controlEndpoint: 'control.foo',
+        cacheEndpoint: 'cache.foo',
+        tokenEndpoint: 'token.foo',
+        storageEndpoint: 'storage.foo',
       },
     });
     expect(sessionTokenProvider.getAuthToken()).toEqual(fakeSessionToken);
@@ -210,10 +210,10 @@ describe('EnvMomentoTokenProvider', () => {
     const legacyAuthProvider = CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: testEnvVarName,
       endpointOverrides: {
-        controlEndpoint: {endpoint: 'control.foo'},
-        cacheEndpoint: {endpoint: 'cache.foo'},
-        tokenEndpoint: {endpoint: 'token.foo'},
-        storageEndpoint: {endpoint: 'storage.foo'},
+        controlEndpoint: 'control.foo',
+        cacheEndpoint: 'cache.foo',
+        tokenEndpoint: 'token.foo',
+        storageEndpoint: 'storage.foo',
       },
     });
     expect(legacyAuthProvider.getAuthToken()).toEqual(fakeTestLegacyToken);
@@ -227,10 +227,10 @@ describe('EnvMomentoTokenProvider', () => {
     const v1AuthProvider = CredentialProvider.fromEnvironmentVariable({
       environmentVariableName: testEnvVarName,
       endpointOverrides: {
-        controlEndpoint: {endpoint: 'control.foo'},
-        cacheEndpoint: {endpoint: 'cache.foo'},
-        tokenEndpoint: {endpoint: 'token.foo'},
-        storageEndpoint: {endpoint: 'storage.foo'},
+        controlEndpoint: 'control.foo',
+        cacheEndpoint: 'cache.foo',
+        tokenEndpoint: 'token.foo',
+        storageEndpoint: 'storage.foo',
       },
     });
     expect(v1AuthProvider.getAuthToken()).toEqual(fakeTestV1ApiKey);

@@ -73,7 +73,7 @@ export class CacheControlClient {
       clientFactoryFn: () =>
         new grpcControl.ScsControlClient(
           props.credentialProvider.getControlEndpoint(),
-          props.credentialProvider.isControlEndpointSecure()
+          props.credentialProvider.isEndpointSecure()
             ? ChannelCredentials.createSsl()
             : ChannelCredentials.createInsecure(),
           channelOptions

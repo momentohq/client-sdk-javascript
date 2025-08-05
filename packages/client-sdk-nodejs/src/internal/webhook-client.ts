@@ -59,7 +59,7 @@ export class WebhookClient implements IWebhookClient {
     ];
     this.webhookClient = new webhook.webhook.WebhookClient(
       props.credentialProvider.getControlEndpoint(),
-      props.credentialProvider.isControlEndpointSecure()
+      props.credentialProvider.isEndpointSecure()
         ? ChannelCredentials.createSsl()
         : ChannelCredentials.createInsecure()
     );

@@ -96,7 +96,7 @@ export class PubsubClient extends AbstractPubsubClient<ServiceError> {
 
     this.client = new grpcPubsub.PubsubClient(
       this.credentialProvider.getCacheEndpoint(),
-      this.credentialProvider.isCacheEndpointSecure()
+      this.credentialProvider.isEndpointSecure()
         ? ChannelCredentials.createSsl()
         : ChannelCredentials.createInsecure(),
       channelOptions

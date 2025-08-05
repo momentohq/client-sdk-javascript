@@ -54,18 +54,10 @@ describe('getWeb*Endpoint', () => {
     const credProvider = CredentialProvider.fromString({
       authToken: base64EncodedFakeV1AuthToken,
       endpointOverrides: {
-        controlEndpoint: {
-          endpoint: 'some-control-endpoint',
-        },
-        cacheEndpoint: {
-          endpoint: 'some-cache-endpoint',
-        },
-        tokenEndpoint: {
-          endpoint: 'some-token-endpoint',
-        },
-        storageEndpoint: {
-          endpoint: 'some-storage-endpoint',
-        },
+        controlEndpoint: 'some-control-endpoint',
+        cacheEndpoint: 'some-cache-endpoint',
+        tokenEndpoint: 'some-token-endpoint',
+        storageEndpoint: 'some-storage-endpoint',
       },
     });
     const webControlEndpoint = getWebControlEndpoint(credProvider);
@@ -81,18 +73,10 @@ describe('getWeb*Endpoint', () => {
     const credProvider = CredentialProvider.fromString({
       authToken: base64EncodedFakeV1AuthToken,
       endpointOverrides: {
-        controlEndpoint: {
-          endpoint: 'https://some-control-endpoint',
-        },
-        cacheEndpoint: {
-          endpoint: 'https://some-cache-endpoint',
-        },
-        tokenEndpoint: {
-          endpoint: 'http://some-token-endpoint',
-        },
-        storageEndpoint: {
-          endpoint: 'http://some-storage-endpoint',
-        },
+        controlEndpoint: 'https://some-control-endpoint',
+        cacheEndpoint: 'https://some-cache-endpoint',
+        tokenEndpoint: 'http://some-token-endpoint',
+        storageEndpoint: 'http://some-storage-endpoint',
       },
     });
     const webControlEndpoint = getWebControlEndpoint(credProvider);
@@ -109,18 +93,10 @@ describe('getWeb*Endpoint', () => {
       const credProvider = CredentialProvider.fromString({
         authToken: base64EncodedFakeV1AuthToken,
         endpointOverrides: {
-          controlEndpoint: {
-            endpoint: 'some-control-endpoint:9001',
-          },
-          cacheEndpoint: {
-            endpoint: 'some-cache-endpoint:9001',
-          },
-          tokenEndpoint: {
-            endpoint: 'some-token-endpoint:9001',
-          },
-          storageEndpoint: {
-            endpoint: 'some-storage-endpoint:9001',
-          },
+          controlEndpoint: 'some-control-endpoint:9001',
+          cacheEndpoint: 'some-cache-endpoint:9001',
+          tokenEndpoint: 'some-token-endpoint:9001',
+          storageEndpoint: 'some-storage-endpoint:9001',
         },
       });
       const webControlEndpoint = getWebControlEndpoint(credProvider);
@@ -136,18 +112,10 @@ describe('getWeb*Endpoint', () => {
       const credProvider = CredentialProvider.fromString({
         authToken: base64EncodedFakeV1AuthToken,
         endpointOverrides: {
-          controlEndpoint: {
-            endpoint: 'https://some-control-endpoint:9001',
-          },
-          cacheEndpoint: {
-            endpoint: 'https://some-cache-endpoint:9001',
-          },
-          tokenEndpoint: {
-            endpoint: 'http://some-token-endpoint:9001',
-          },
-          storageEndpoint: {
-            endpoint: 'http://some-storage-endpoint:9001',
-          },
+          controlEndpoint: 'https://some-control-endpoint:9001',
+          cacheEndpoint: 'https://some-cache-endpoint:9001',
+          tokenEndpoint: 'http://some-token-endpoint:9001',
+          storageEndpoint: 'http://some-storage-endpoint:9001',
         },
       });
       const webControlEndpoint = getWebControlEndpoint(credProvider);
