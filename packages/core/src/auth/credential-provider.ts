@@ -55,9 +55,19 @@ export abstract class CredentialProvider {
   abstract getControlEndpoint(): string;
 
   /**
+   * @deprecated use isEndpointSecure() instead
+   */
+  abstract isControlEndpointSecure(): boolean;
+
+  /**
    * @returns {string} The host which the Momento client will connect to for Momento data plane operations
    */
   abstract getCacheEndpoint(): string;
+
+  /**
+   * @deprecated use isEndpointSecure() instead
+   */
+  abstract isCacheEndpointSecure(): boolean;
 
   /**
    * @returns {string} The host which the Momento client will connect to for Momento storage operations
@@ -65,9 +75,19 @@ export abstract class CredentialProvider {
   abstract getStorageEndpoint(): string;
 
   /**
+   * @deprecated use isEndpointSecure() instead
+   */
+  abstract isStorageEndpointSecure(): boolean;
+
+  /**
    * @returns {string} The host which the Momento client will connect to for Momento token operations
    */
   abstract getTokenEndpoint(): string;
+
+  /**
+   * @deprecated use isEndpointSecure() instead
+   */
+  abstract isTokenEndpointSecure(): boolean;
 
   /**
    * @deprecated - use the static method forMomentoLocal instead
@@ -120,11 +140,19 @@ abstract class CredentialProviderBase implements CredentialProvider {
 
   abstract getCacheEndpoint(): string;
 
+  abstract isCacheEndpointSecure(): boolean;
+
   abstract getControlEndpoint(): string;
+
+  abstract isControlEndpointSecure(): boolean;
 
   abstract getStorageEndpoint(): string;
 
+  abstract isStorageEndpointSecure(): boolean;
+
   abstract getTokenEndpoint(): string;
+
+  abstract isTokenEndpointSecure(): boolean;
 
   abstract areEndpointsOverridden(): boolean;
 
@@ -239,17 +267,32 @@ export class StringMomentoTokenProvider extends CredentialProviderBase {
   getCacheEndpoint(): string {
     return this.allEndpoints.cacheEndpoint;
   }
+  isCacheEndpointSecure(): boolean {
+    return this.isEndpointSecure();
+  }
 
   getControlEndpoint(): string {
     return this.allEndpoints.controlEndpoint;
+  }
+
+  isControlEndpointSecure(): boolean {
+    return this.isEndpointSecure();
   }
 
   getTokenEndpoint(): string {
     return this.allEndpoints.tokenEndpoint;
   }
 
+  isTokenEndpointSecure(): boolean {
+    return this.isEndpointSecure();
+  }
+
   getStorageEndpoint(): string {
     return this.allEndpoints.storageEndpoint;
+  }
+
+  isStorageEndpointSecure(): boolean {
+    return this.isEndpointSecure();
   }
 
   areEndpointsOverridden(): boolean {
@@ -361,17 +404,33 @@ export class MomentoLocalProvider implements CredentialProvider {
   getCacheEndpoint(): string {
     return this.allEndpoints.cacheEndpoint;
   }
+  
+  isCacheEndpointSecure(): boolean {
+    return this.isEndpointSecure();
+  }
 
   getControlEndpoint(): string {
     return this.allEndpoints.controlEndpoint;
+  }
+
+  isControlEndpointSecure(): boolean {
+    return this.isEndpointSecure();
   }
 
   getTokenEndpoint(): string {
     return this.allEndpoints.tokenEndpoint;
   }
 
+  isTokenEndpointSecure(): boolean {
+    return this.isEndpointSecure();
+  }
+
   getStorageEndpoint(): string {
     return this.allEndpoints.storageEndpoint;
+  }
+
+  isStorageEndpointSecure(): boolean {
+    return this.isEndpointSecure();
   }
 
   areEndpointsOverridden(): boolean {
