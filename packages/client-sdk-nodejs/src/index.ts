@@ -1,10 +1,8 @@
 import {CacheClient, SimpleCacheClient} from './cache-client';
 import {TopicClient} from './topic-client';
-import {PreviewStorageClient} from './preview-storage-client';
 import * as Configurations from './config/configurations';
 import * as AuthClientConfigurations from './config/auth-client-configurations';
 import * as TopicConfigurations from './config/topic-configurations';
-import * as StorageConfigurations from './config/storage-configurations';
 import * as LeaderboardConfigurations from './config/leaderboard-configurations';
 import * as BatchUtils from './batchutils/batch-functions';
 
@@ -81,17 +79,6 @@ import {TopicItem} from '@gomomento/sdk-core/dist/src/messages/responses/topic-i
 import {TopicDiscontinuity} from '@gomomento/sdk-core/dist/src/messages/responses/topic-discontinuity';
 import {TopicHeartbeat} from '@gomomento/sdk-core/dist/src/messages/responses/topic-heartbeat';
 
-// Storage Response Types
-import {
-  StorageDelete,
-  StoragePut,
-  StorageGet,
-  CreateStore,
-  DeleteStore,
-  ListStores,
-} from '@gomomento/sdk-core/dist/src/messages/responses/storage';
-import {StoreInfo} from '@gomomento/sdk-core/dist/src/messages/store-info';
-
 // AuthClient Response Types
 import {AuthClient} from './auth-client';
 import * as GenerateApiKey from '@gomomento/sdk-core/dist/src/messages/responses/generate-api-key';
@@ -126,7 +113,6 @@ import {
   MomentoErrorCode,
   SdkError,
   CacheAlreadyExistsError,
-  StoreAlreadyExistsError,
   AuthenticationError,
   CancelledError,
   FailedPreconditionError,
@@ -139,8 +125,6 @@ import {
   BadRequestError,
   PermissionError,
   CacheNotFoundError,
-  StoreNotFoundError,
-  StoreItemNotFoundError,
   UnknownError,
   MomentoLogger,
   MomentoLoggerFactory,
@@ -183,7 +167,6 @@ import {
   WebhookDestinationType,
   ReadConcern,
   CompressionLevel,
-  IStorageClient,
 } from '@gomomento/sdk-core';
 
 import {Configuration, CacheConfiguration} from './config/configuration';
@@ -200,10 +183,6 @@ import {
   LeaderboardClientConfiguration,
 } from './config/leaderboard-configuration';
 import {PreviewLeaderboardClient} from './preview-leaderboard-client';
-import {
-  StorageConfiguration,
-  StorageClientConfiguration,
-} from './config/storage-configuration';
 
 export {
   DefaultMomentoLoggerFactory,
@@ -261,18 +240,6 @@ export {
   TopicGrpcConfiguration,
   TopicGrpcConfigurationProps,
 } from './config/transport/topics/grpc-configuration';
-
-export {
-  StaticStorageGrpcConfiguration,
-  StaticStorageTransportStrategy,
-  StorageTransportStrategy,
-  StorageTransportStrategyProps,
-} from './config/transport/storage/transport-strategy';
-
-export {
-  StorageGrpcConfiguration,
-  StorageGrpcConfigurationProps,
-} from './config/transport/storage/grpc-configuration';
 
 export {
   Middleware,
@@ -416,19 +383,6 @@ export {
   TopicPublish,
   TopicSubscribe,
   SubscribeCallOptions,
-  // Storage
-  StorageConfigurations,
-  StorageConfiguration,
-  StorageClientConfiguration,
-  StoragePut,
-  StorageGet,
-  StorageDelete,
-  CreateStore,
-  DeleteStore,
-  ListStores,
-  StoreInfo,
-  PreviewStorageClient,
-  IStorageClient,
   // Webhooks
   PostUrlWebhookDestination,
   Webhook,
@@ -469,7 +423,6 @@ export {
   MomentoErrorCode,
   SdkError,
   CacheAlreadyExistsError,
-  StoreAlreadyExistsError,
   AuthenticationError,
   CancelledError,
   FailedPreconditionError,
@@ -482,8 +435,6 @@ export {
   BadRequestError,
   PermissionError,
   CacheNotFoundError,
-  StoreNotFoundError,
-  StoreItemNotFoundError,
   UnknownError,
   // Logging
   MomentoLogger,

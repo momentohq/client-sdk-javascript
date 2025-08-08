@@ -31,7 +31,6 @@ interface TokenAndEndpoints {
   controlEndpoint: string | undefined;
   cacheEndpoint: string | undefined;
   tokenEndpoint: string | undefined;
-  storageEndpoint: string | undefined;
   authToken: string;
 }
 
@@ -39,7 +38,6 @@ export interface AllEndpoints {
   controlEndpoint: string;
   cacheEndpoint: string;
   tokenEndpoint: string;
-  storageEndpoint: string;
   secureConnection?: boolean;
 }
 
@@ -54,7 +52,6 @@ export function populateAllEndpointsFromBaseEndpoint(
     controlEndpoint: `${prefix}control.${endpointOverride.baseEndpoint}`,
     cacheEndpoint: `${prefix}cache.${endpointOverride.baseEndpoint}`,
     tokenEndpoint: `${prefix}token.${endpointOverride.baseEndpoint}`,
-    storageEndpoint: `${prefix}storage.${endpointOverride.baseEndpoint}`,
     secureConnection: endpointOverride.secureConnection,
   };
 }
@@ -88,7 +85,6 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
         controlEndpoint: endpoints.controlEndpoint,
         cacheEndpoint: endpoints.cacheEndpoint,
         tokenEndpoint: endpoints.tokenEndpoint,
-        storageEndpoint: endpoints.storageEndpoint,
         authToken: base64DecodedToken.api_key,
       };
     } else {
@@ -100,7 +96,6 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
         controlEndpoint: decodedLegacyToken.cp,
         cacheEndpoint: decodedLegacyToken.c,
         tokenEndpoint: decodedLegacyToken.c,
-        storageEndpoint: decodedLegacyToken.c,
         authToken: token,
       };
     }
