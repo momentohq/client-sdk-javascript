@@ -157,7 +157,6 @@ function mgaAccountSessionTokenCredsProvider(): CredentialProvider {
           cacheEndpoint: credsProvider().getCacheEndpoint(),
           controlEndpoint: credsProvider().getControlEndpoint(),
           tokenEndpoint: credsProvider().getTokenEndpoint(),
-          storageEndpoint: credsProvider().getStorageEndpoint(),
           secureConnection: credsProvider().isEndpointSecure(),
         },
       });

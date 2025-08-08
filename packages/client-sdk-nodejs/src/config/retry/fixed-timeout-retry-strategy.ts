@@ -3,8 +3,11 @@ import {
   RetryStrategy,
 } from './retry-strategy';
 import {EligibilityStrategy} from './eligibility-strategy';
-import {MomentoLoggerFactory, MomentoLogger} from '../..';
-import {DefaultStorageEligibilityStrategy} from './storage-default-eligibility-strategy';
+import {
+  MomentoLoggerFactory,
+  MomentoLogger,
+  DefaultEligibilityStrategy,
+} from '../..';
 import {Status} from '@grpc/grpc-js/build/src/constants';
 import {hasExceededDeadlineRelativeToNow} from '../../internal/utils';
 
@@ -29,7 +32,7 @@ export class FixedTimeoutRetryStrategy implements RetryStrategy {
     this.logger = props.loggerFactory.getLogger(this);
     this.eligibilityStrategy =
       props.eligibilityStrategy ??
-      new DefaultStorageEligibilityStrategy(props.loggerFactory);
+      new DefaultEligibilityStrategy(props.loggerFactory);
     this.retryDelayIntervalMillis = props.retryDelayIntervalMillis ?? 100;
     this.responseDataReceivedTimeoutMillis =
       props.responseDataReceivedTimeoutMillis ?? 1000;
