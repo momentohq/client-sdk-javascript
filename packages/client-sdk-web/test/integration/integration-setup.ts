@@ -3,16 +3,12 @@ import {
   testCacheName,
   isLocalhostDevelopmentMode,
   createCacheIfNotExists,
-  testStoreName,
-  deleteStoreIfExists,
-  createStoreIfNotExists,
 } from '@gomomento/common-integration-tests';
 import {
   CreateCache,
   DeleteCache,
   CredentialProvider,
   ReadConcern,
-  IStorageClient,
 } from '@gomomento/sdk-core';
 import {
   CacheClient,
@@ -22,8 +18,6 @@ import {
   TopicConfigurations,
   PreviewLeaderboardClient,
   LeaderboardConfigurations,
-  StorageConfigurations,
-  PreviewStorageClient,
 } from '../../src';
 import {ITopicClient} from '@gomomento/sdk-core/dist/src/clients/ITopicClient';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
@@ -39,18 +33,9 @@ export function credsProvider(): CredentialProvider {
       _credsProvider = CredentialProvider.fromEnvironmentVariable({
         environmentVariableName: 'MOMENTO_API_KEY',
         endpointOverrides: {
-          controlEndpoint: {
-            endpoint: 'https://no-controlplane-requests-allowed:9001',
-          },
-          cacheEndpoint: {
-            endpoint: 'https://localhost:9001',
-          },
-          tokenEndpoint: {
-            endpoint: 'https://localhost:9001',
-          },
-          storageEndpoint: {
-            endpoint: 'https://localhost:9001',
-          },
+          controlEndpoint: 'https://no-controlplane-requests-allowed:9001',
+          cacheEndpoint: 'https://localhost:9001',
+          tokenEndpoint: 'https://localhost:9001',
         },
       });
     } else {
@@ -69,22 +54,10 @@ function mgaAccountSessionTokenCredsProvider(): CredentialProvider {
         // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
         // steal them from the auth-token-based creds provider.
         endpointOverrides: {
-          cacheEndpoint: {
-            endpoint: credsProvider().getCacheEndpoint(),
-            secureConnection: credsProvider().isCacheEndpointSecure(),
-          },
-          controlEndpoint: {
-            endpoint: credsProvider().getControlEndpoint(),
-            secureConnection: credsProvider().isControlEndpointSecure(),
-          },
-          tokenEndpoint: {
-            endpoint: credsProvider().getTokenEndpoint(),
-            secureConnection: credsProvider().isTokenEndpointSecure(),
-          },
-          storageEndpoint: {
-            endpoint: credsProvider().getStorageEndpoint(),
-            secureConnection: credsProvider().isStorageEndpointSecure(),
-          },
+          cacheEndpoint: credsProvider().getCacheEndpoint(),
+          controlEndpoint: credsProvider().getControlEndpoint(),
+          tokenEndpoint: credsProvider().getTokenEndpoint(),
+          secureConnection: credsProvider().isEndpointSecure(),
         },
       });
   }
@@ -131,13 +104,6 @@ function momentoCacheClientForTestingWithMgaAccountSessionToken(): CacheClient {
 function momentoTopicClientForTesting(): TopicClient {
   return new TopicClient({
     configuration: TopicConfigurations.Default.latest(),
-    credentialProvider: credsProvider(),
-  });
-}
-
-function momentoStorageClientForTesting(): PreviewStorageClient {
-  return new PreviewStorageClient({
-    configuration: StorageConfigurations.Default.latest(),
     credentialProvider: credsProvider(),
   });
 }
@@ -244,27 +210,6 @@ export function SetupTopicIntegrationTest(): {
     topicClientWithThrowOnErrors,
     cacheClient: cacheClient,
     integrationTestCacheName: integrationTestCacheName,
-  };
-}
-
-export function SetupStorageIntegrationTest(): {
-  storageClient: IStorageClient;
-  integrationTestStoreName: string;
-} {
-  const integrationTestStoreName = testStoreName();
-  const storageClient = momentoStorageClientForTesting();
-
-  beforeAll(async () => {
-    await createStoreIfNotExists(storageClient, integrationTestStoreName);
-  });
-
-  afterAll(async () => {
-    await deleteStoreIfExists(storageClient, integrationTestStoreName);
-  });
-
-  return {
-    storageClient,
-    integrationTestStoreName,
   };
 }
 

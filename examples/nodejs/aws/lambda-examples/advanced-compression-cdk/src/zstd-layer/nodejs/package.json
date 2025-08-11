@@ -1,0 +1,17 @@
+{
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm install --platform=linux --arch=x64 && cd .. && zip -r zstd_x64_layer.zip nodejs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@gomomento/sdk": "^1.111.0",
+    "@gomomento/sdk-nodejs-compression-zstd": "^0.111.0",
+    "@mongodb-js/zstd": "^2.0.0"
+  }
+}

@@ -291,15 +291,6 @@ jobs:
           template_file: ./examples/nodejs/load-gen/README.template.md
           output_file: ./examples/nodejs/load-gen/README.md
 
-      - name: Verify README generation for examples/nodejs/storage-load-gen
-        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
-        with:
-          project_status: official
-          project_stability: stable
-          project_type: other
-          template_file: ./examples/nodejs/storage-load-gen/README.template.md
-          output_file: ./examples/nodejs/storage-load-gen/README.md
-
       - name: Verify README generation for examples/fastly-compute
         uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
         with:
@@ -443,16 +434,6 @@ jobs:
             npm run build
             npm run validate-examples
           popd
-          pushd examples/nodejs/webhooks
-            npm ci
-            npm run build
-            npm run validate-examples
-          popd
-          pushd examples/nodejs/storage
-            npm ci
-            npm run build
-            npm run validate-examples
-          popd
           pushd examples/nodejs/compression
             npm ci
             npm run build
@@ -472,19 +453,11 @@ jobs:
             npm ci
             npm run build
           popd
-          pushd examples/nodejs/storage-load-gen
-            npm ci
-            npm run build
-          popd
           pushd examples/nodejs/aws/lambda-examples/simple-get/infrastructure
             npm ci
             npm run build
           popd
           pushd examples/nodejs/aws/lambda-examples/cloudwatch-metrics/infrastructure
-            npm ci
-            npm run build
-          popd
-          pushd examples/nodejs/aws/lambda-examples/webhooks/infrastructure
             npm ci
             npm run build
           popd

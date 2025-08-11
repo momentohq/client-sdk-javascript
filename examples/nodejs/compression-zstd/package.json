@@ -27,8 +27,8 @@
     "typescript": "4.9.5"
   },
   "dependencies": {
-    "@gomomento/sdk": "^1.110.3",
-    "@gomomento/sdk-nodejs-compression-zstd": "^0.110.3"
+    "@gomomento/sdk": "^1.111.0",
+    "@gomomento/sdk-nodejs-compression-zstd": "^0.111.0"
   },
   "engines": {
     "node": ">=10.4.0"

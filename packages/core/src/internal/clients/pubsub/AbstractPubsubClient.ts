@@ -4,7 +4,6 @@ import {
   validateCacheName,
   validateTopicName,
 } from '../../utils';
-import {MomentoErrorCode} from '../../../errors';
 import {
   TopicPublish,
   TopicItem,
@@ -14,6 +13,7 @@ import {
   MomentoLoggerFactory,
   TopicDiscontinuity,
   TopicHeartbeat,
+  SubscriptionRetryStrategy,
 } from '../../../index';
 import {SubscriptionState} from '../../subscription-state';
 import {IPubsubClient} from './IPubsubClient';
@@ -33,6 +33,7 @@ export interface SendSubscribeOptions {
   onDiscontinuity: (discontinuity: TopicDiscontinuity) => void;
   onHeartbeat: (heartbeat: TopicHeartbeat) => void;
   onConnectionLost: () => void;
+  onSubscriptionEnd: () => void;
   subscriptionState: SubscriptionState;
   subscription: TopicSubscribe.Subscription;
 
@@ -65,15 +66,22 @@ export abstract class AbstractPubsubClient<TGrpcError>
   private readonly loggerFactory: MomentoLoggerFactory;
   private readonly logger: MomentoLogger;
   private readonly cacheServiceErrorMapper: ICacheServiceErrorMapper<TGrpcError>;
+  protected readonly retryStrategy?: SubscriptionRetryStrategy;
 
   protected constructor(
     loggerFactory: MomentoLoggerFactory,
     logger: MomentoLogger,
-    cacheServiceErrorMapper: ICacheServiceErrorMapper<TGrpcError>
+    cacheServiceErrorMapper: ICacheServiceErrorMapper<TGrpcError>,
+    retryStrategy?: SubscriptionRetryStrategy
   ) {
     this.loggerFactory = loggerFactory;
     this.logger = logger;
     this.cacheServiceErrorMapper = cacheServiceErrorMapper;
+    this.retryStrategy = retryStrategy;
+  }
+
+  protected getRetryStrategy(): SubscriptionRetryStrategy | undefined {
+    return this.retryStrategy;
   }
 
   protected getLogger(): MomentoLogger {
@@ -158,6 +166,11 @@ export abstract class AbstractPubsubClient<TGrpcError>
       (() => {
         return;
       });
+    const onSubscriptionEnd =
+      options.onSubscriptionEnd ??
+      (() => {
+        return;
+      });
 
     const subscriptionState = new SubscriptionState();
     const subscription = new TopicSubscribe.Subscription(
@@ -172,6 +185,7 @@ export abstract class AbstractPubsubClient<TGrpcError>
       onDiscontinuity: onDiscontinuity,
       onHeartbeat: onHeartbeat,
       onConnectionLost: onConnectionLost,
+      onSubscriptionEnd: onSubscriptionEnd,
       subscriptionState: subscriptionState,
       subscription: subscription,
       restartedDueToError: false,
@@ -199,12 +213,14 @@ export abstract class AbstractPubsubClient<TGrpcError>
           options.topicName
         );
         options.restartedDueToError = false;
+        options.onSubscriptionEnd?.();
         return;
       } else if (!options.subscriptionState.isSubscribed) {
         this.logger.trace(
           'Stream ended after unsubscribe on topic: %s',
           options.topicName
         );
+        options.onSubscriptionEnd?.();
         return;
       }
 
@@ -228,7 +244,7 @@ export abstract class AbstractPubsubClient<TGrpcError>
   protected handleSubscribeError(
     options: PrepareSubscribeCallbackOptions,
     momentoError: TopicSubscribe.Error,
-    shouldReconnectSubscription: boolean
+    retryDelayMillis: number | null
   ): void {
     this.logger.trace('Handling subscribe error');
     // When the first message is an error, an irrecoverable error has happened,
@@ -245,23 +261,9 @@ export abstract class AbstractPubsubClient<TGrpcError>
       options.subscription.unsubscribe();
       return;
     }
-
     this.logger.trace(
       'Subscribe error was not the first message on the stream.'
     );
-
-    // Another special case is when the cache is not found.
-    // This happens here if the user deletes the cache in the middle of
-    // a subscription.
-    if (momentoError.errorCode() === MomentoErrorCode.CACHE_NOT_FOUND_ERROR) {
-      this.logger.trace(
-        'Stream ended due to cache not found error on topic: %s',
-        options.topicName
-      );
-      options.subscription.unsubscribe();
-      options.onError(momentoError, options.subscription);
-      return;
-    }
 
     this.logger.trace(
       'Checking to see if we should attempt to reconnect subscription.'
@@ -269,14 +271,20 @@ export abstract class AbstractPubsubClient<TGrpcError>
 
     // For several types of errors having to with network interruptions, we wish to
     // transparently restart the stream instead of propagating an error.
-    if (shouldReconnectSubscription) {
+    if (retryDelayMillis === null) {
+      this.logger.trace(
+        'Error occurred on subscription, not attempting to reconnect: %s',
+        momentoError.toString()
+      );
+      options.subscription.unsubscribe();
+      options.onError(momentoError, options.subscription);
+    } else {
       options.restartedDueToError = true;
-      const reconnectDelayMillis = 500;
       this.logger.trace(
         'Error occurred on subscription, possibly a network interruption. Will attempt to restart stream in %s ms.',
-        reconnectDelayMillis
+        retryDelayMillis
       );
-      sleep(reconnectDelayMillis)
+      sleep(retryDelayMillis)
         .then(() => {
           if (!options.subscriptionState.isSubscribed) {
             this.logger.trace(
@@ -307,14 +315,6 @@ export abstract class AbstractPubsubClient<TGrpcError>
           );
           return;
         });
-      return;
     }
-
-    this.logger.trace('Subscribe error was not a re-connectable error.');
-
-    this.logger.trace(
-      'Subscribe error was not one of the known error types; calling error handler.'
-    );
-    options.onError(momentoError, options.subscription);
   }
 }

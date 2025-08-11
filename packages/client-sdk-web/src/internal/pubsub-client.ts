@@ -6,6 +6,7 @@ import {
   TopicHeartbeat,
   TopicItem,
   UnknownError,
+  DEFAULT_SUBSCRIPTION_RETRY_DELAY_MILLIS,
 } from '@gomomento/sdk-core';
 import {Request, RpcError, StatusCode, UnaryResponse} from 'grpc-web';
 import {truncateString} from '@gomomento/sdk-core/dist/src/internal/utils';
@@ -275,14 +276,13 @@ export class PubsubClient<
         serviceError.message === PubsubClient.RST_STREAM_NO_ERROR_MESSAGE;
       const shouldReconnectSubscription =
         isBrowserDisconnect || isRstStreamNoError;
+      const retryDelayMillis = shouldReconnectSubscription
+        ? DEFAULT_SUBSCRIPTION_RETRY_DELAY_MILLIS
+        : null;
       const momentoError = new TopicSubscribe.Error(
         this.getCacheServiceErrorMapper().convertError(serviceError)
       );
-      this.handleSubscribeError(
-        options,
-        momentoError,
-        shouldReconnectSubscription
-      );
+      this.handleSubscribeError(options, momentoError, retryDelayMillis);
     };
   }
 }

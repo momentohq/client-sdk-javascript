@@ -9,7 +9,6 @@ import {
   convertToStringFromB64String,
   getWebCacheEndpoint,
   getWebControlEndpoint,
-  getWebStorageEndpoint,
   getWebTokenEndpoint,
 } from '../../../src/utils/web-client-utils';
 
@@ -54,18 +53,9 @@ describe('getWeb*Endpoint', () => {
     const credProvider = CredentialProvider.fromString({
       authToken: base64EncodedFakeV1AuthToken,
       endpointOverrides: {
-        controlEndpoint: {
-          endpoint: 'some-control-endpoint',
-        },
-        cacheEndpoint: {
-          endpoint: 'some-cache-endpoint',
-        },
-        tokenEndpoint: {
-          endpoint: 'some-token-endpoint',
-        },
-        storageEndpoint: {
-          endpoint: 'some-storage-endpoint',
-        },
+        controlEndpoint: 'some-control-endpoint',
+        cacheEndpoint: 'some-cache-endpoint',
+        tokenEndpoint: 'some-token-endpoint',
       },
     });
     const webControlEndpoint = getWebControlEndpoint(credProvider);
@@ -74,25 +64,14 @@ describe('getWeb*Endpoint', () => {
     expect(webCacheEndpoint).toEqual('https://some-cache-endpoint');
     const webTokenEndpoint = getWebTokenEndpoint(credProvider);
     expect(webTokenEndpoint).toEqual('https://some-token-endpoint');
-    const storageEndpoint = getWebStorageEndpoint(credProvider);
-    expect(storageEndpoint).toEqual('https://some-storage-endpoint');
   });
   it('works with overridden endpoints that already have the protocol', () => {
     const credProvider = CredentialProvider.fromString({
       authToken: base64EncodedFakeV1AuthToken,
       endpointOverrides: {
-        controlEndpoint: {
-          endpoint: 'https://some-control-endpoint',
-        },
-        cacheEndpoint: {
-          endpoint: 'https://some-cache-endpoint',
-        },
-        tokenEndpoint: {
-          endpoint: 'http://some-token-endpoint',
-        },
-        storageEndpoint: {
-          endpoint: 'http://some-storage-endpoint',
-        },
+        controlEndpoint: 'https://some-control-endpoint',
+        cacheEndpoint: 'https://some-cache-endpoint',
+        tokenEndpoint: 'http://some-token-endpoint',
       },
     });
     const webControlEndpoint = getWebControlEndpoint(credProvider);
@@ -101,26 +80,15 @@ describe('getWeb*Endpoint', () => {
     expect(webCacheEndpoint).toEqual('https://some-cache-endpoint');
     const webTokenEndpoint = getWebTokenEndpoint(credProvider);
     expect(webTokenEndpoint).toEqual('http://some-token-endpoint');
-    const storageEndpoint = getWebStorageEndpoint(credProvider);
-    expect(storageEndpoint).toEqual('http://some-storage-endpoint');
   });
   describe('leaves port intact for overridden endpoints', () => {
     it("with overrides that don't contain protocol", () => {
       const credProvider = CredentialProvider.fromString({
         authToken: base64EncodedFakeV1AuthToken,
         endpointOverrides: {
-          controlEndpoint: {
-            endpoint: 'some-control-endpoint:9001',
-          },
-          cacheEndpoint: {
-            endpoint: 'some-cache-endpoint:9001',
-          },
-          tokenEndpoint: {
-            endpoint: 'some-token-endpoint:9001',
-          },
-          storageEndpoint: {
-            endpoint: 'some-storage-endpoint:9001',
-          },
+          controlEndpoint: 'some-control-endpoint:9001',
+          cacheEndpoint: 'some-cache-endpoint:9001',
+          tokenEndpoint: 'some-token-endpoint:9001',
         },
       });
       const webControlEndpoint = getWebControlEndpoint(credProvider);
@@ -129,25 +97,14 @@ describe('getWeb*Endpoint', () => {
       expect(webCacheEndpoint).toEqual('https://some-cache-endpoint:9001');
       const webTokenEndpoint = getWebTokenEndpoint(credProvider);
       expect(webTokenEndpoint).toEqual('https://some-token-endpoint:9001');
-      const storageEndpoint = getWebStorageEndpoint(credProvider);
-      expect(storageEndpoint).toEqual('https://some-storage-endpoint:9001');
     });
     it('with overrides that do contain protocol', () => {
       const credProvider = CredentialProvider.fromString({
         authToken: base64EncodedFakeV1AuthToken,
         endpointOverrides: {
-          controlEndpoint: {
-            endpoint: 'https://some-control-endpoint:9001',
-          },
-          cacheEndpoint: {
-            endpoint: 'https://some-cache-endpoint:9001',
-          },
-          tokenEndpoint: {
-            endpoint: 'http://some-token-endpoint:9001',
-          },
-          storageEndpoint: {
-            endpoint: 'http://some-storage-endpoint:9001',
-          },
+          controlEndpoint: 'https://some-control-endpoint:9001',
+          cacheEndpoint: 'https://some-cache-endpoint:9001',
+          tokenEndpoint: 'http://some-token-endpoint:9001',
         },
       });
       const webControlEndpoint = getWebControlEndpoint(credProvider);
@@ -156,8 +113,6 @@ describe('getWeb*Endpoint', () => {
       expect(webCacheEndpoint).toEqual('https://some-cache-endpoint:9001');
       const webTokenEndpoint = getWebTokenEndpoint(credProvider);
       expect(webTokenEndpoint).toEqual('http://some-token-endpoint:9001');
-      const storageEndpoint = getWebStorageEndpoint(credProvider);
-      expect(storageEndpoint).toEqual('http://some-storage-endpoint:9001');
     });
   });
 

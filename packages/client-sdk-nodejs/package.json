@@ -20,9 +20,7 @@
     "integration-test-cache": "jest cache/ --maxWorkers 1 -- useConsistentReads",
     "integration-test-control-cache-topics": "npm run integration-test-cache && npm run integration-test-topics",
     "integration-test-leaderboard": "jest leaderboard/ --maxWorkers 1 -- useConsistentReads",
-    "integration-test-storage": "jest storage/ --maxWorkers 1 -- useConsistentReads",
-    "integration-test-store": "npm run integration-test-storage",
-    "integration-test-topics": "jest topics/ webhooks/ --maxWorkers 1 -- useConsistentReads",
+    "integration-test-topics": "jest topics/ --maxWorkers 1 -- useConsistentReads",
     "integration-test-retry": "jest retry/ --maxWorkers 1 -- useConsistentReads",
     "integration-test-consistent-reads": "jest integration --testPathIgnorePatterns=\"retry/\" --maxWorkers 1 -- useConsistentReads",
     "integration-test": "jest integration --maxWorkers 1",
@@ -60,7 +58,7 @@
     "uuid": "8.3.2"
   },
   "dependencies": {
-    "@gomomento/generated-types": "0.124.4",
+    "@gomomento/generated-types": "0.126.0",
     "@gomomento/sdk-core": "file:../core",
     "@grpc/grpc-js": "1.13.1",
     "@types/google-protobuf": "3.15.10",

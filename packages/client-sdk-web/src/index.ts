@@ -2,11 +2,9 @@ import {CacheClient} from './cache-client';
 import {AuthClient} from './auth-client';
 import {TopicClient} from './topic-client';
 import {PreviewLeaderboardClient} from './preview-leaderboard-client';
-import {PreviewStorageClient} from './preview-storage-client';
 import * as Configurations from './config/configurations';
 import * as TopicConfigurations from './config/topic-configurations';
 import * as LeaderboardConfigurations from './config/leaderboard-configurations';
-import * as StorageConfigurations from './config/storage-configurations';
 
 // Cache Client Response Types
 import * as CacheGet from '@gomomento/sdk-core/dist/src/messages/responses/cache-get';
@@ -153,7 +151,6 @@ import {
   RotateWebhookSecret,
   WebhookDestinationType,
   ReadConcern,
-  StoreInfo,
 } from '@gomomento/sdk-core';
 
 import {Configuration} from './config/configuration';
@@ -167,8 +164,6 @@ import {
   LeaderboardClientConfiguration,
   LeaderboardConfiguration,
 } from './config/leaderboard-configuration';
-
-export * from '@gomomento/sdk-core/dist/src/messages/responses/storage';
 
 // Enums representing the different types available for each response
 export * from '@gomomento/sdk-core/dist/src/messages/responses/enums';
@@ -343,8 +338,4 @@ export {
   RotateWebhookSecret,
   WebhookDestinationType,
   ReadConcern,
-  // Storage
-  StoreInfo,
-  StorageConfigurations,
-  PreviewStorageClient,
 };

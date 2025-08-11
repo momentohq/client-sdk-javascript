@@ -6,6 +6,7 @@ export interface DeterminewhenToRetryRequestProps {
   grpcRequest: ClientMethodDefinition<unknown, unknown>;
   attemptNumber: number;
   requestMetadata: Metadata;
+  overallDeadline: Date;
 }
 
 export interface RetryStrategy {

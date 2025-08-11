@@ -1,9 +1,4 @@
-import {
-  createStoreIfNotExists,
-  deleteStoreIfExists,
-  testCacheName,
-  testStoreName,
-} from '@gomomento/common-integration-tests';
+import {testCacheName} from '@gomomento/common-integration-tests';
 import {
   AuthClient,
   CacheClient,
@@ -17,9 +12,7 @@ import {
   MomentoErrorCode,
   MomentoLocalProvider,
   PreviewLeaderboardClient,
-  PreviewStorageClient,
   ReadConcern,
-  StorageConfigurations,
   TopicClient,
   TopicConfiguration,
   TopicConfigurations,
@@ -161,22 +154,10 @@ function mgaAccountSessionTokenCredsProvider(): CredentialProvider {
         // session tokens don't include cache/control endpoints, so we must provide them.  In this case we just hackily
         // steal them from the auth-token-based creds provider.
         endpointOverrides: {
-          cacheEndpoint: {
-            endpoint: credsProvider().getCacheEndpoint(),
-            secureConnection: credsProvider().isCacheEndpointSecure(),
-          },
-          controlEndpoint: {
-            endpoint: credsProvider().getControlEndpoint(),
-            secureConnection: credsProvider().isControlEndpointSecure(),
-          },
-          tokenEndpoint: {
-            endpoint: credsProvider().getTokenEndpoint(),
-            secureConnection: credsProvider().isTokenEndpointSecure(),
-          },
-          storageEndpoint: {
-            endpoint: credsProvider().getStorageEndpoint(),
-            secureConnection: credsProvider().isStorageEndpointSecure(),
-          },
+          cacheEndpoint: credsProvider().getCacheEndpoint(),
+          controlEndpoint: credsProvider().getControlEndpoint(),
+          tokenEndpoint: credsProvider().getTokenEndpoint(),
+          secureConnection: credsProvider().isEndpointSecure(),
         },
       });
   }
@@ -262,13 +243,6 @@ function momentoTopicClientForTesting(): TopicClient {
   return new TopicClient({
     configuration: integrationTestTopicClientProps().configuration,
     credentialProvider: integrationTestTopicClientProps().credentialProvider,
-  });
-}
-
-function momentoStorageClientForTesting(): PreviewStorageClient {
-  return new PreviewStorageClient({
-    configuration: StorageConfigurations.Laptop.latest(),
-    credentialProvider: integrationTestCacheClientProps().credentialProvider,
   });
 }
 
@@ -362,27 +336,6 @@ export function SetupTopicIntegrationTest(): {
     topicClientWithThrowOnErrors,
     cacheClient: cacheClient,
     integrationTestCacheName: integrationTestCacheName,
-  };
-}
-
-export function SetupStorageIntegrationTest(): {
-  storageClient: PreviewStorageClient;
-  integrationTestStoreName: string;
-} {
-  const integrationTestStoreName = testStoreName();
-  const storageClient = momentoStorageClientForTesting();
-
-  beforeAll(async () => {
-    await createStoreIfNotExists(storageClient, integrationTestStoreName);
-  });
-
-  afterAll(async () => {
-    await deleteStoreIfExists(storageClient, integrationTestStoreName);
-  });
-
-  return {
-    storageClient,
-    integrationTestStoreName,
   };
 }
 
