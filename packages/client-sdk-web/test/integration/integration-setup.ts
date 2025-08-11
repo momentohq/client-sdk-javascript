@@ -36,7 +36,6 @@ export function credsProvider(): CredentialProvider {
           controlEndpoint: 'https://no-controlplane-requests-allowed:9001',
           cacheEndpoint: 'https://localhost:9001',
           tokenEndpoint: 'https://localhost:9001',
-          storageEndpoint: 'https://localhost:9001',
         },
       });
     } else {
@@ -58,7 +57,6 @@ function mgaAccountSessionTokenCredsProvider(): CredentialProvider {
           cacheEndpoint: credsProvider().getCacheEndpoint(),
           controlEndpoint: credsProvider().getControlEndpoint(),
           tokenEndpoint: credsProvider().getTokenEndpoint(),
-          storageEndpoint: credsProvider().getStorageEndpoint(),
           secureConnection: credsProvider().isEndpointSecure(),
         },
       });

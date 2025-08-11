@@ -91,13 +91,11 @@ describe('StringMomentoTokenProvider', () => {
         controlEndpoint: 'control.foo',
         cacheEndpoint: 'cache.foo',
         tokenEndpoint: 'token.foo',
-        storageEndpoint: 'storage.foo',
       },
     });
     expect(legacyAuthProvider.getControlEndpoint()).toEqual('control.foo');
     expect(legacyAuthProvider.getCacheEndpoint()).toEqual('cache.foo');
     expect(legacyAuthProvider.getTokenEndpoint()).toEqual('token.foo');
-    expect(legacyAuthProvider.getStorageEndpoint()).toEqual('storage.foo');
     expect(legacyAuthProvider.areEndpointsOverridden()).toEqual(true);
 
     const v1AuthProvider = CredentialProvider.fromString({
@@ -106,14 +104,12 @@ describe('StringMomentoTokenProvider', () => {
         controlEndpoint: 'control.foo',
         cacheEndpoint: 'cache.foo',
         tokenEndpoint: 'token.foo',
-        storageEndpoint: 'storage.foo',
       },
     });
     expect(v1AuthProvider.getAuthToken()).toEqual(fakeTestV1ApiKey);
     expect(v1AuthProvider.getControlEndpoint()).toEqual('control.foo');
     expect(v1AuthProvider.getCacheEndpoint()).toEqual('cache.foo');
     expect(v1AuthProvider.getTokenEndpoint()).toEqual('token.foo');
-    expect(v1AuthProvider.getStorageEndpoint()).toEqual('storage.foo');
     expect(v1AuthProvider.areEndpointsOverridden()).toEqual(true);
   });
 
@@ -124,14 +120,12 @@ describe('StringMomentoTokenProvider', () => {
         controlEndpoint: 'control.foo',
         cacheEndpoint: 'cache.foo',
         tokenEndpoint: 'token.foo',
-        storageEndpoint: 'storage.foo',
       },
     });
     expect(sessionTokenProvider.getAuthToken()).toEqual(fakeSessionToken);
     expect(sessionTokenProvider.getControlEndpoint()).toEqual('control.foo');
     expect(sessionTokenProvider.getCacheEndpoint()).toEqual('cache.foo');
     expect(sessionTokenProvider.getTokenEndpoint()).toEqual('token.foo');
-    expect(sessionTokenProvider.getStorageEndpoint()).toEqual('storage.foo');
     expect(sessionTokenProvider.areEndpointsOverridden()).toEqual(true);
   });
 
@@ -213,14 +207,12 @@ describe('EnvMomentoTokenProvider', () => {
         controlEndpoint: 'control.foo',
         cacheEndpoint: 'cache.foo',
         tokenEndpoint: 'token.foo',
-        storageEndpoint: 'storage.foo',
       },
     });
     expect(legacyAuthProvider.getAuthToken()).toEqual(fakeTestLegacyToken);
     expect(legacyAuthProvider.getControlEndpoint()).toEqual('control.foo');
     expect(legacyAuthProvider.getCacheEndpoint()).toEqual('cache.foo');
     expect(legacyAuthProvider.getTokenEndpoint()).toEqual('token.foo');
-    expect(legacyAuthProvider.getStorageEndpoint()).toEqual('storage.foo');
     expect(legacyAuthProvider.areEndpointsOverridden()).toEqual(true);
 
     process.env[testEnvVarName] = base64EncodedFakeV1AuthToken;
@@ -230,14 +222,12 @@ describe('EnvMomentoTokenProvider', () => {
         controlEndpoint: 'control.foo',
         cacheEndpoint: 'cache.foo',
         tokenEndpoint: 'token.foo',
-        storageEndpoint: 'storage.foo',
       },
     });
     expect(v1AuthProvider.getAuthToken()).toEqual(fakeTestV1ApiKey);
     expect(v1AuthProvider.getControlEndpoint()).toEqual('control.foo');
     expect(v1AuthProvider.getCacheEndpoint()).toEqual('cache.foo');
     expect(v1AuthProvider.getTokenEndpoint()).toEqual('token.foo');
-    expect(v1AuthProvider.getStorageEndpoint()).toEqual('storage.foo');
     expect(v1AuthProvider.areEndpointsOverridden()).toEqual(true);
   });
 
