@@ -1,5 +1,5 @@
 import {InvalidArgumentError} from '../../errors';
-import {ExpiresIn} from '../../utils';
+import {ExpiresIn, SortedSetAggregate, SortedSetSource} from '../../utils';
 import {decodeFromBase64, encodeToBase64} from './string';
 
 export function validateStoreName(name: string) {
@@ -237,5 +237,40 @@ export function validateMaxConcurrentRequests(limit: number) {
     throw new InvalidArgumentError(
       'concurrent requests limit must be strictly positive (> 0)'
     );
+  }
+}
+
+export function validateAggregate(aggregate?: SortedSetAggregate) {
+  if (aggregate === undefined) return;
+
+  const validValues = Object.values(SortedSetAggregate).filter(
+    v => typeof v === 'number'
+  );
+
+  if (!validValues.includes(aggregate)) {
+    throw new InvalidArgumentError(
+      `Invalid aggregate value: ${aggregate}. Valid values are ${validValues.join(
+        ', '
+      )}`
+    );
+  }
+}
+
+export function validateSortedSetSources(sources: SortedSetSource[]) {
+  if (!sources) {
+    throw new InvalidArgumentError('source is required');
+  }
+  for (const source of sources) {
+    const {sortedSetName, weight} = source;
+
+    if (typeof sortedSetName !== 'string' || sortedSetName.length === 0) {
+      throw new InvalidArgumentError(
+        'sortedSetName must be a non-empty string'
+      );
+    }
+
+    if (!Number.isFinite(weight)) {
+      throw new InvalidArgumentError('weight must be a finite number');
+    }
   }
 }

@@ -110,6 +110,7 @@ import {
   _SortedSetRemoveRequest,
   _SortedSetLengthRequest,
   _SortedSetLengthByScoreRequest,
+  _SortedSetUnionStoreRequest,
   _KeysExistRequest,
   ECacheResult,
   _UpdateTtlRequest,
@@ -137,6 +138,8 @@ import {
   validateValidForSeconds,
   validateSetSampleLimit,
   validateSetPopCount,
+  validateAggregate,
+  validateSortedSetSources,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
   convertToB64String,
@@ -161,8 +164,15 @@ import {
   SetBatchItem,
   SetCallOptions,
   SetIfAbsentCallOptions,
+  SortedSetAggregate,
+  SortedSetSource,
+  SortedSetUnionStoreCallOptions,
 } from '@gomomento/sdk-core/dist/src/utils';
-import {CacheSetLength, CacheSetPop} from '@gomomento/sdk-core';
+import {
+  CacheSetLength,
+  CacheSetPop,
+  CacheSortedSetUnionStore,
+} from '@gomomento/sdk-core';
 import {CacheClientAllProps} from './cache-client-all-props';
 
 export class CacheDataClient<
@@ -4115,6 +4125,121 @@ export class CacheDataClient<
     });
   }
 
+  // public async sortedSetUnionStore(
+  //   cacheName: string,
+  //   sortedSetName: string,
+  //   sources: SortedSetSource[],
+  //   options?: SortedSetUnionStoreCallOptions | undefined
+  // ): Promise<CacheSortedSetUnionStore.Response> {
+
+  // }
+  public async sortedSetUnionStore(
+    cacheName: string,
+    sortedSetName: string,
+    sources: SortedSetSource[],
+    options?: SortedSetUnionStoreCallOptions
+  ): Promise<CacheSortedSetUnionStore.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+      validateSortedSetSources(sources);
+      validateAggregate(options?.aggregate);
+      if (options?.ttl !== undefined) {
+        validateTtlSeconds(options.ttl);
+      }
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetUnionStore.Error(err)
+      );
+    }
+
+    this.logger.trace(
+      "Issuing 'sortedSetUnionStore' request; sources: %s, aggregate: %s:, ttl: %s",
+      sources.toString(),
+      options?.aggregate?.toString() ?? 'null',
+      options?.ttl?.toString() ?? 'null'
+    );
+    const result = await this.sendSortedSetUnionStore(
+      cacheName,
+      this.convertToUint8Array(sortedSetName),
+      sources,
+      options
+    );
+    this.logger.trace(
+      `'sortedSetUnionStore' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendSortedSetUnionStore(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    sources: SortedSetSource[],
+    options?: SortedSetUnionStoreCallOptions
+  ): Promise<CacheSortedSetUnionStore.Response> {
+    let aggregate: _SortedSetUnionStoreRequest.AggregateFunction;
+    if (options?.aggregate === undefined) {
+      aggregate = _SortedSetUnionStoreRequest.AggregateFunction.SUM;
+    } else {
+      aggregate = this.convertAggregateResult(options.aggregate);
+    }
+    const sortedSources: _SortedSetUnionStoreRequest._Source[] = [];
+    for (const source of sources) {
+      sortedSources.push(this.convertSortedSetSource(source));
+    }
+    const request = new _SortedSetUnionStoreRequest();
+    request.setSetName(sortedSetName);
+    request.setSourcesList(sortedSources);
+    request.setAggregate(aggregate);
+    request.setTtlMilliseconds(this.ttlOrDefaultMilliseconds(options?.ttl));
+
+    // return await new Promise((resolve, reject) => {
+    //   this.clientWrapper.getClient().SortedSetUnionStore(
+    //     request,
+    //     metadata,
+    //     {
+    //       interceptors: this.interceptors,
+    //     },
+    //     (err, resp) => {
+    //       if (resp) {
+    //         resolve(new CacheSortedSetUnionStore.Success(resp.length));
+    //       } else {
+    //         this.cacheServiceErrorMapper.resolveOrRejectError({
+    //           err: err,
+    //           errorResponseFactoryFn: e =>
+    //             new CacheSortedSetUnionStore.Error(e),
+    //           resolveFn: resolve,
+    //           rejectFn: reject,
+    //         });
+    //       }
+    //     }
+    //   );
+    // });
+
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.sortedSetUnionStore(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheSortedSetUnionStore.Success(resp.getLength()));
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSet.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
   public async itemGetType(
     cacheName: string,
     key: string | Uint8Array
@@ -4653,5 +4778,30 @@ export class CacheDataClient<
       case _ItemGetTypeResponse.ItemType.SORTED_SET:
         return ItemType.SORTED_SET;
     }
+  }
+
+  private convertAggregateResult(
+    result: SortedSetAggregate
+  ): _SortedSetUnionStoreRequest.AggregateFunction {
+    switch (result) {
+      case SortedSetAggregate.MAX:
+        return _SortedSetUnionStoreRequest.AggregateFunction.MAX;
+      case SortedSetAggregate.MIN:
+        return _SortedSetUnionStoreRequest.AggregateFunction.MIN;
+      case SortedSetAggregate.SUM:
+        return _SortedSetUnionStoreRequest.AggregateFunction.SUM;
+      default:
+        // fallback (SUM is default per proto)
+        return _SortedSetUnionStoreRequest.AggregateFunction.SUM;
+    }
+  }
+
+  private convertSortedSetSource(
+    result: SortedSetSource
+  ): _SortedSetUnionStoreRequest._Source {
+    const source = new _SortedSetUnionStoreRequest._Source();
+    source.setSetName(new TextEncoder().encode(result.sortedSetName));
+    source.setWeight(result.weight);
+    return source;
   }
 }

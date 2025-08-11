@@ -59,6 +59,7 @@ import {
   CacheSortedSetRemoveElements,
   CacheSetPop,
   CacheSetLength,
+  CacheSortedSetUnionStore,
 } from '../index';
 import {
   ScalarCallOptions,
@@ -75,6 +76,8 @@ import {
   GetCallOptions,
   SetIfAbsentCallOptions,
   SetBatchItem,
+  SortedSetSource,
+  SortedSetUnionStoreCallOptions,
 } from '../utils';
 import {IControlClient, IPingClient} from '../internal/clients';
 import {IMomentoCache} from './IMomentoCache';
@@ -108,6 +111,7 @@ export type SortedSetFetchByScoreOptions = SortedSetFetchByScoreCallOptions;
 export type SortedSetGetRankOptions = SortedSetGetRankCallOptions;
 export type SortedSetIncrementOptions = CollectionCallOptions;
 export type SortedSetLengthByScoreOptions = SortedSetLengthByScoreCallOptions;
+export type SortedSetUnionStoreOptions = SortedSetUnionStoreCallOptions;
 
 export interface ICacheClient extends IControlClient, IPingClient {
   cache(cacheName: string): IMomentoCache;
@@ -411,6 +415,12 @@ export interface ICacheClient extends IControlClient, IPingClient {
     sortedSetName: string,
     options?: SortedSetLengthByScoreOptions
   ): Promise<CacheSortedSetLengthByScore.Response>;
+  sortedSetUnionStore(
+    cacheName: string,
+    sortedSetName: string,
+    sources: SortedSetSource[],
+    options?: SortedSetUnionStoreOptions
+  ): Promise<CacheSortedSetUnionStore.Response>;
   itemGetType(
     cacheName: string,
     key: string | Uint8Array

@@ -54,6 +54,7 @@ import * as CacheSortedSetRemoveElement from './messages/responses/cache-sorted-
 import * as CacheSortedSetRemoveElements from './messages/responses/cache-sorted-set-remove-elements';
 import * as CacheSortedSetLength from './messages/responses/cache-sorted-set-length';
 import * as CacheSortedSetLengthByScore from './messages/responses/cache-sorted-set-length-by-score';
+import * as CacheSortedSetUnionStore from './messages/responses/cache-sorted-set-union-store';
 import * as CacheItemGetType from './messages/responses/cache-item-get-type';
 import * as CacheItemGetTtl from './messages/responses/cache-item-get-ttl';
 import * as CacheKeyExists from './messages/responses/cache-key-exists';
@@ -292,6 +293,7 @@ export {
   CacheSortedSetRemoveElements,
   CacheSortedSetLength,
   CacheSortedSetLengthByScore,
+  CacheSortedSetUnionStore,
   CacheItemGetType,
   CacheItemGetTtl,
   CacheKeyExists,

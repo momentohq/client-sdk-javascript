@@ -53,6 +53,7 @@ import {
   CacheSortedSetRemoveElements,
   CacheSortedSetLength,
   CacheSortedSetLengthByScore,
+  CacheSortedSetUnionStore,
   SortedSetOrder,
   CacheItemGetTtl,
   CacheItemGetType,
@@ -78,6 +79,7 @@ import {
   ListFetchCallOptions,
   ListRetainCallOptions,
   SetBatchItem,
+  SortedSetSource,
 } from '../../../utils';
 import {
   ICacheClient,
@@ -98,6 +100,7 @@ import {
   SortedSetGetRankOptions,
   SortedSetIncrementOptions,
   SortedSetLengthByScoreOptions,
+  SortedSetUnionStoreOptions,
   SetBatchOptions,
   GetOptions,
   GetBatchOptions,
@@ -1596,7 +1599,33 @@ export abstract class AbstractCacheClient implements ICacheClient {
       options?.maxScore
     );
   }
-
+  /**
+   * Computes the union of all source sets and stores the result in itself. Returns the number of elements in the set after
+   * sotring the result of the union
+   * @param {string} cacheName - The cache containing the sorted set.
+   * @param {string} sortedSetName - The sorted set name.
+   * @param {sources} SortedSetSource[] -
+   * @param {number} [options.minScore] - The lower bound on the score range to search in.
+   * @param {number} [options.maxScore] - The upper bound on the score range to search in.
+   * @returns {Promise<CacheSortedSetLengthByScore.Response>}
+   * {@link CacheSortedSetLengthByScore.Hit} containing the length if the sorted set exists.
+   * {@link CacheSortedSetLengthByScore.Miss} if the sorted set does not exist.
+   * {@link CacheSortedSetLengthByScore.Error} on failure.
+   */
+  public async sortedSetUnionStore(
+    cacheName: string,
+    sortedSetName: string,
+    sources: SortedSetSource[],
+    options?: SortedSetUnionStoreOptions
+  ): Promise<CacheSortedSetUnionStore.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetUnionStore(
+      cacheName,
+      sortedSetName,
+      sources,
+      options
+    );
+  }
   /**
    * Return the type of the key in the cache
    * @param {string} cacheName - The cache containing the key.

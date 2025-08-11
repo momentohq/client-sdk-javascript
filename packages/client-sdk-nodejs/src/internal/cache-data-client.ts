@@ -67,6 +67,7 @@ import {
   CacheSortedSetPutElements,
   CacheSortedSetRemoveElement,
   CacheSortedSetRemoveElements,
+  CacheSortedSetUnionStore,
   CacheUpdateTtl,
   CollectionTtl,
   CompressionLevel,
@@ -106,6 +107,8 @@ import {
   validateSortedSetScores,
   validateTtlSeconds,
   validateValidForSeconds,
+  validateSortedSetSources,
+  validateAggregate,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
   _DictionaryGetResponsePart,
@@ -126,6 +129,9 @@ import {
   SetBatchItem,
   SetCallOptions,
   SetIfAbsentCallOptions,
+  SortedSetUnionStoreCallOptions,
+  SortedSetSource,
+  SortedSetAggregate,
 } from '@gomomento/sdk-core/dist/src/utils';
 import {CompressionError} from '../errors/compression-error';
 import {CacheSetLength, CacheSetPop} from '@gomomento/sdk-core';
@@ -405,6 +411,31 @@ export class CacheDataClient implements IDataClient {
       case _ItemGetTypeResponse.ItemType.SORTED_SET:
         return ItemType.SORTED_SET;
     }
+  }
+
+  private convertAggregateResult(
+    result: SortedSetAggregate
+  ): grpcCache._SortedSetUnionStoreRequest.AggregateFunction {
+    switch (result) {
+      case SortedSetAggregate.MAX:
+        return grpcCache._SortedSetUnionStoreRequest.AggregateFunction.MAX;
+      case SortedSetAggregate.MIN:
+        return grpcCache._SortedSetUnionStoreRequest.AggregateFunction.MIN;
+      case SortedSetAggregate.SUM:
+        return grpcCache._SortedSetUnionStoreRequest.AggregateFunction.SUM;
+      default:
+        // fallback (SUM is default per proto)
+        return grpcCache._SortedSetUnionStoreRequest.AggregateFunction.SUM;
+    }
+  }
+
+  private convertSortedSetSource(
+    result: SortedSetSource
+  ): grpcCache._SortedSetUnionStoreRequest._Source {
+    return new grpcCache._SortedSetUnionStoreRequest._Source({
+      set_name: new TextEncoder().encode(result.sortedSetName),
+      weight: result.weight,
+    });
   }
 
   // If maxConcurrentRequests is set, use the semaphore to limit the number of concurrent requests.
@@ -4129,6 +4160,85 @@ export class CacheDataClient implements IDataClient {
               err: err,
               errorResponseFactoryFn: e =>
                 new CacheSortedSetLengthByScore.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
+  public async sortedSetUnionStore(
+    cacheName: string,
+    sortedSetName: string,
+    sources: SortedSetSource[],
+    options?: SortedSetUnionStoreCallOptions
+  ): Promise<CacheSortedSetUnionStore.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+      validateSortedSetSources(sources);
+      validateAggregate(options?.aggregate);
+      if (options?.ttl !== undefined) {
+        validateTtlSeconds(options.ttl);
+      }
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetUnionStore.Error(err)
+      );
+    }
+
+    return await this.rateLimited(async () => {
+      return await this.sendSortedSetUnionStore(
+        cacheName,
+        this.convert(sortedSetName),
+        sources,
+        options
+      );
+    });
+  }
+
+  private async sendSortedSetUnionStore(
+    cacheName: string,
+    sortedSetName: Uint8Array,
+    sources: SortedSetSource[],
+    options?: SortedSetUnionStoreCallOptions
+  ): Promise<CacheSortedSetUnionStore.Response> {
+    let aggregate: grpcCache._SortedSetUnionStoreRequest.AggregateFunction;
+    if (options?.aggregate === undefined) {
+      aggregate = grpcCache._SortedSetUnionStoreRequest.AggregateFunction.SUM;
+    } else {
+      aggregate = this.convertAggregateResult(options.aggregate);
+    }
+    const sortedSources: grpcCache._SortedSetUnionStoreRequest._Source[] = [];
+    for (const source of sources) {
+      sortedSources.push(this.convertSortedSetSource(source));
+    }
+    const request = new grpcCache._SortedSetUnionStoreRequest({
+      set_name: sortedSetName,
+      sources: sortedSources,
+      aggregate: aggregate,
+      ttl_milliseconds: this.ttlOrDefaultMilliseconds(options?.ttl),
+    });
+
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.getClient().SortedSetUnionStore(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheSortedSetUnionStore.Success(resp.length));
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSortedSetUnionStore.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
