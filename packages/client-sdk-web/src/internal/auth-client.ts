@@ -43,10 +43,16 @@ import {
 } from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {
+  AllFunctions,
   asCachePermission,
+  asFunctionPermission,
   asPermissionsObject,
   asTopicPermission,
+  FunctionPermission,
+  FunctionRole,
   isCachePermission,
+  isFunctionNamePrefix,
+  isFunctionPermission,
   isPermissionsObject,
   isTopicPermission,
   PredefinedScope,
@@ -68,6 +74,7 @@ import {
   SuperUserPermissions,
   TopicRole as TokenTopicRole,
   CacheRole as TokenCacheRole,
+  FunctionRole as TokenFunctionRole,
 } from '@gomomento/generated-types-webtext/dist/permissionmessages_pb';
 import {AuthClientAllProps} from './auth-client-all-props';
 
@@ -342,6 +349,10 @@ function tokenPermissionToGrpcPermission(
       cachePermissionToGrpcPermission(asCachePermission(permission))
     );
     return result;
+  } else if (isFunctionPermission(permission)) {
+    result.setFunctionPermissions(
+      functionPermissionToGrpcPermission(asFunctionPermission(permission))
+    );
   }
   throw new Error(
     `Unrecognized token permission: ${JSON.stringify(permission)}`
@@ -408,6 +419,73 @@ function topicPermissionToGrpcPermission(
   }
 
   return grpcPermission;
+}
+
+function assignFunctionRole(
+  permission: FunctionPermission,
+  grpcPermission: PermissionsType.FunctionPermissions
+): PermissionsType.FunctionPermissions {
+  switch (permission.role) {
+    case FunctionRole.FunctionPermitNone: {
+      grpcPermission.setRole(TokenFunctionRole.FUNCTIONPERMITNONE);
+      break;
+    }
+    case FunctionRole.FunctionInvoke: {
+      grpcPermission.setRole(TokenFunctionRole.FUNCTIONINVOKE);
+      break;
+    }
+    default: {
+      throw new Error(
+        `Unrecognized function role: ${JSON.stringify(permission)}`
+      );
+    }
+  }
+  return grpcPermission;
+}
+
+function assignFunctionCacheSelector(
+  permission: FunctionPermission,
+  grpcPermission: PermissionsType.FunctionPermissions
+): PermissionsType.FunctionPermissions {
+  const cacheSelector = new PermissionsType.CacheSelector();
+
+  if (permission.cache === AllCaches) {
+    grpcPermission.setAllCaches(new PermissionsType.All());
+  } else if (typeof permission.cache === 'string') {
+    cacheSelector.setCacheName(permission.cache);
+    grpcPermission.setCacheSelector(cacheSelector);
+  } else if (isCacheName(permission.cache)) {
+    cacheSelector.setCacheName(permission.cache.name);
+    grpcPermission.setCacheSelector(cacheSelector);
+  } else {
+    throw new Error(
+      `Unrecognized cache specification in function permission: ${JSON.stringify(
+        permission
+      )}`
+    );
+  }
+  return grpcPermission;
+}
+
+function assignFunctionSelector(
+  permission: FunctionPermission,
+  grpcPermissions: PermissionsType.FunctionPermissions
+): PermissionsType.FunctionPermissions {
+  const functionSelector = new PermissionsType.FunctionSelector();
+  if (permission.func === AllFunctions) {
+    grpcPermissions.setAllFunctions(new PermissionsType.All());
+  } else if (typeof permission.func === 'string') {
+    functionSelector.setFunctionName(permission.func);
+  } else if (isFunctionNamePrefix(permission.func)) {
+    functionSelector.setFunctionNamePrefix(permission.func.namePrefix);
+  } else {
+    throw new Error(
+      `Unrecognized function specification in function permission: ${JSON.stringify(
+        permission
+      )}`
+    );
+  }
+  return grpcPermissions;
 }
 
 function assignCacheRole(
@@ -493,6 +571,16 @@ function cachePermissionToGrpcPermission(
   let grpcPermission = new PermissionsType.CachePermissions();
   grpcPermission = assignCacheRole(permission, grpcPermission);
   grpcPermission = assignCacheSelector(permission, grpcPermission);
+  return grpcPermission;
+}
+
+function functionPermissionToGrpcPermission(
+  permission: FunctionPermission
+): PermissionsType.FunctionPermissions {
+  let grpcPermission = new PermissionsType.FunctionPermissions();
+  grpcPermission = assignFunctionRole(permission, grpcPermission);
+  grpcPermission = assignFunctionCacheSelector(permission, grpcPermission);
+  grpcPermission = assignFunctionSelector(permission, grpcPermission);
   return grpcPermission;
 }
 
