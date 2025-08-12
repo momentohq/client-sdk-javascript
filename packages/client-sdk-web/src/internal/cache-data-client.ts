@@ -138,7 +138,6 @@ import {
   validateValidForSeconds,
   validateSetSampleLimit,
   validateSetPopCount,
-  validateAggregate,
   validateSortedSetSources,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
@@ -166,7 +165,6 @@ import {
   SetIfAbsentCallOptions,
   SortedSetAggregate,
   SortedSetSource,
-  SortedSetUnionStoreCallOptions,
 } from '@gomomento/sdk-core/dist/src/utils';
 import {
   CacheSetLength,
@@ -4125,28 +4123,17 @@ export class CacheDataClient<
     });
   }
 
-  // public async sortedSetUnionStore(
-  //   cacheName: string,
-  //   sortedSetName: string,
-  //   sources: SortedSetSource[],
-  //   options?: SortedSetUnionStoreCallOptions | undefined
-  // ): Promise<CacheSortedSetUnionStore.Response> {
-
-  // }
   public async sortedSetUnionStore(
     cacheName: string,
     sortedSetName: string,
     sources: SortedSetSource[],
-    options?: SortedSetUnionStoreCallOptions
+    aggregate?: SortedSetAggregate,
+    ttl?: CollectionTtl
   ): Promise<CacheSortedSetUnionStore.Response> {
     try {
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
       validateSortedSetSources(sources);
-      validateAggregate(options?.aggregate);
-      if (options?.ttl !== undefined) {
-        validateTtlSeconds(options.ttl);
-      }
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
@@ -4157,14 +4144,15 @@ export class CacheDataClient<
     this.logger.trace(
       "Issuing 'sortedSetUnionStore' request; sources: %s, aggregate: %s:, ttl: %s",
       sources.toString(),
-      options?.aggregate?.toString() ?? 'null',
-      options?.ttl?.toString() ?? 'null'
+      aggregate?.toString() ?? 'null',
+      ttl?.toString() ?? 'null'
     );
     const result = await this.sendSortedSetUnionStore(
       cacheName,
-      this.convertToUint8Array(sortedSetName),
+      convertToB64String(sortedSetName),
       sources,
-      options
+      aggregate,
+      ttl
     );
     this.logger.trace(
       `'sortedSetUnionStore' request result: ${result.toString()}`
@@ -4174,48 +4162,24 @@ export class CacheDataClient<
 
   private async sendSortedSetUnionStore(
     cacheName: string,
-    sortedSetName: Uint8Array,
+    sortedSetName: string,
     sources: SortedSetSource[],
-    options?: SortedSetUnionStoreCallOptions
+    aggregate?: SortedSetAggregate,
+    ttl?: CollectionTtl
   ): Promise<CacheSortedSetUnionStore.Response> {
-    let aggregate: _SortedSetUnionStoreRequest.AggregateFunction;
-    if (options?.aggregate === undefined) {
-      aggregate = _SortedSetUnionStoreRequest.AggregateFunction.SUM;
-    } else {
-      aggregate = this.convertAggregateResult(options.aggregate);
-    }
+    const agg = this.convertAggregateResult(aggregate);
     const sortedSources: _SortedSetUnionStoreRequest._Source[] = [];
     for (const source of sources) {
       sortedSources.push(this.convertSortedSetSource(source));
     }
+    if (ttl === undefined) {
+      ttl = new CollectionTtl();
+    }
     const request = new _SortedSetUnionStoreRequest();
     request.setSetName(sortedSetName);
     request.setSourcesList(sortedSources);
-    request.setAggregate(aggregate);
-    request.setTtlMilliseconds(this.ttlOrDefaultMilliseconds(options?.ttl));
-
-    // return await new Promise((resolve, reject) => {
-    //   this.clientWrapper.getClient().SortedSetUnionStore(
-    //     request,
-    //     metadata,
-    //     {
-    //       interceptors: this.interceptors,
-    //     },
-    //     (err, resp) => {
-    //       if (resp) {
-    //         resolve(new CacheSortedSetUnionStore.Success(resp.length));
-    //       } else {
-    //         this.cacheServiceErrorMapper.resolveOrRejectError({
-    //           err: err,
-    //           errorResponseFactoryFn: e =>
-    //             new CacheSortedSetUnionStore.Error(e),
-    //           resolveFn: resolve,
-    //           rejectFn: reject,
-    //         });
-    //       }
-    //     }
-    //   );
-    // });
+    request.setAggregate(agg);
+    request.setTtlMilliseconds(this.collectionTtlOrDefaultMilliseconds(ttl));
 
     return await new Promise((resolve, reject) => {
       this.clientWrapper.sortedSetUnionStore(
@@ -4230,7 +4194,8 @@ export class CacheDataClient<
           } else {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
-              errorResponseFactoryFn: e => new CacheSet.Error(e),
+              errorResponseFactoryFn: e =>
+                new CacheSortedSetUnionStore.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
@@ -4781,7 +4746,7 @@ export class CacheDataClient<
   }
 
   private convertAggregateResult(
-    result: SortedSetAggregate
+    result?: SortedSetAggregate
   ): _SortedSetUnionStoreRequest.AggregateFunction {
     switch (result) {
       case SortedSetAggregate.MAX:

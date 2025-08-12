@@ -99,6 +99,8 @@ import {
   PostUrlWebhookDestination,
   WebhookDestinationType,
   SetBatchItem,
+  SortedSetAggregate,
+  SortedSetSource,
 } from './utils';
 
 export * as utils from './utils';
@@ -161,6 +163,7 @@ export {
   SetIfAbsentOrEqualOptions,
   SortedSetPutElementsOptions,
   IncrementOptions,
+  SortedSetUnionStoreOptions,
 } from './clients/ICacheClient';
 
 export {IMomentoCache} from './clients/IMomentoCache';
@@ -236,6 +239,8 @@ export {
   MomentoLocalProvider,
   getDefaultCredentialProvider,
   SetBatchItem,
+  SortedSetAggregate,
+  SortedSetSource,
 
   // CacheClient Response Types
   CacheGet,

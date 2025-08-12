@@ -168,6 +168,8 @@ import {
   WebhookDestinationType,
   ReadConcern,
   CompressionLevel,
+  SortedSetAggregate,
+  SortedSetSource,
 } from '@gomomento/sdk-core';
 
 import {Configuration, CacheConfiguration} from './config/configuration';
@@ -309,6 +311,8 @@ export {
   TopicSelector,
   AllCaches,
   AllTopics,
+  SortedSetAggregate,
+  SortedSetSource,
   // CacheClient response types
   CacheGet,
   CacheListConcatenateBack,

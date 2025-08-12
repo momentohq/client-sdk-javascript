@@ -151,6 +151,8 @@ import {
   RotateWebhookSecret,
   WebhookDestinationType,
   ReadConcern,
+  SortedSetAggregate,
+  SortedSetSource,
 } from '@gomomento/sdk-core';
 
 import {Configuration} from './config/configuration';
@@ -211,6 +213,8 @@ export {
   TopicName,
   CacheSelector,
   TopicSelector,
+  SortedSetAggregate,
+  SortedSetSource,
   AllCaches,
   AllTopics,
   CacheGet,

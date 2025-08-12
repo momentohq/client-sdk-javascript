@@ -157,7 +157,7 @@ export interface SortedSetUnionStoreCallOptions {
   /**
    * The time to live in seconds of the object being modified.
    */
-  ttl?: number;
+  ttl?: CollectionTtl;
 }
 
 export interface ListRetainCallOptions extends CollectionCallOptions {

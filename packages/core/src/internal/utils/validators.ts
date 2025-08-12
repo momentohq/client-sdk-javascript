@@ -1,5 +1,5 @@
 import {InvalidArgumentError} from '../../errors';
-import {ExpiresIn, SortedSetAggregate, SortedSetSource} from '../../utils';
+import {ExpiresIn, SortedSetSource} from '../../utils';
 import {decodeFromBase64, encodeToBase64} from './string';
 
 export function validateStoreName(name: string) {
@@ -240,25 +240,9 @@ export function validateMaxConcurrentRequests(limit: number) {
   }
 }
 
-export function validateAggregate(aggregate?: SortedSetAggregate) {
-  if (aggregate === undefined) return;
-
-  const validValues = Object.values(SortedSetAggregate).filter(
-    v => typeof v === 'number'
-  );
-
-  if (!validValues.includes(aggregate)) {
-    throw new InvalidArgumentError(
-      `Invalid aggregate value: ${aggregate}. Valid values are ${validValues.join(
-        ', '
-      )}`
-    );
-  }
-}
-
 export function validateSortedSetSources(sources: SortedSetSource[]) {
   if (!sources) {
-    throw new InvalidArgumentError('source is required');
+    throw new InvalidArgumentError('At least one sources is required');
   }
   for (const source of sources) {
     const {sortedSetName, weight} = source;

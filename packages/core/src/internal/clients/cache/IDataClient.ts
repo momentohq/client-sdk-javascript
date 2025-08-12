@@ -68,8 +68,8 @@ import {
   SetBatchItem,
   SetCallOptions,
   SetIfAbsentCallOptions,
+  SortedSetAggregate,
   SortedSetSource,
-  SortedSetUnionStoreCallOptions,
 } from '../../../utils';
 
 export interface IDataClient {
@@ -377,7 +377,8 @@ export interface IDataClient {
     cacheName: string,
     sortedSetName: string,
     sources: SortedSetSource[],
-    options?: SortedSetUnionStoreCallOptions
+    aggregate?: SortedSetAggregate,
+    ttl?: CollectionTtl
   ): Promise<CacheSortedSetUnionStore.Response>;
   itemGetType(
     cacheName: string,

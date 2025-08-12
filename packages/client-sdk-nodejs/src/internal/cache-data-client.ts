@@ -108,7 +108,6 @@ import {
   validateTtlSeconds,
   validateValidForSeconds,
   validateSortedSetSources,
-  validateAggregate,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
   _DictionaryGetResponsePart,
@@ -129,7 +128,6 @@ import {
   SetBatchItem,
   SetCallOptions,
   SetIfAbsentCallOptions,
-  SortedSetUnionStoreCallOptions,
   SortedSetSource,
   SortedSetAggregate,
 } from '@gomomento/sdk-core/dist/src/utils';
@@ -414,7 +412,7 @@ export class CacheDataClient implements IDataClient {
   }
 
   private convertAggregateResult(
-    result: SortedSetAggregate
+    result?: SortedSetAggregate
   ): grpcCache._SortedSetUnionStoreRequest.AggregateFunction {
     switch (result) {
       case SortedSetAggregate.MAX:
@@ -4173,16 +4171,13 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     sortedSetName: string,
     sources: SortedSetSource[],
-    options?: SortedSetUnionStoreCallOptions
+    aggregate?: SortedSetAggregate,
+    ttl?: CollectionTtl
   ): Promise<CacheSortedSetUnionStore.Response> {
     try {
       validateCacheName(cacheName);
       validateSortedSetName(sortedSetName);
       validateSortedSetSources(sources);
-      validateAggregate(options?.aggregate);
-      if (options?.ttl !== undefined) {
-        validateTtlSeconds(options.ttl);
-      }
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
@@ -4195,7 +4190,8 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(sortedSetName),
         sources,
-        options
+        aggregate,
+        ttl
       );
     });
   }
@@ -4204,23 +4200,22 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     sortedSetName: Uint8Array,
     sources: SortedSetSource[],
-    options?: SortedSetUnionStoreCallOptions
+    aggregate?: SortedSetAggregate,
+    ttl?: CollectionTtl
   ): Promise<CacheSortedSetUnionStore.Response> {
-    let aggregate: grpcCache._SortedSetUnionStoreRequest.AggregateFunction;
-    if (options?.aggregate === undefined) {
-      aggregate = grpcCache._SortedSetUnionStoreRequest.AggregateFunction.SUM;
-    } else {
-      aggregate = this.convertAggregateResult(options.aggregate);
-    }
+    const agg = this.convertAggregateResult(aggregate);
     const sortedSources: grpcCache._SortedSetUnionStoreRequest._Source[] = [];
     for (const source of sources) {
       sortedSources.push(this.convertSortedSetSource(source));
     }
+    if (ttl === undefined) {
+      ttl = new CollectionTtl();
+    }
     const request = new grpcCache._SortedSetUnionStoreRequest({
       set_name: sortedSetName,
       sources: sortedSources,
-      aggregate: aggregate,
-      ttl_milliseconds: this.ttlOrDefaultMilliseconds(options?.ttl),
+      aggregate: agg,
+      ttl_milliseconds: this.collectionTtlOrDefaultMilliseconds(ttl),
     });
 
     const metadata = this.createMetadata(cacheName);
