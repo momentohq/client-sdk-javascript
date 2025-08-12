@@ -17,7 +17,7 @@ import {
   Permissions,
   TopicRole,
 } from '@gomomento/sdk-core';
-import {DisposableTokenCachePermissions} from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
+import {DisposableTokenPermissions} from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
 import {convertToB64String} from '../../../src/utils/web-client-utils';
 import {
   AllFunctions,
@@ -119,7 +119,11 @@ describe('internal auth client', () => {
 
       const functionPermissions: Permissions = {
         permissions: [
-          {role: FunctionRole.FunctionInvoke, cache: 'foo', func: 'foo'},
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: {name: 'foo'},
+            func: {name: 'foo'},
+          },
         ],
       };
 
@@ -166,7 +170,7 @@ describe('internal auth client', () => {
       functionInvoke.setCacheSelector(cacheSelector);
 
       const functionSelector = new PermissionsType.FunctionSelector();
-      functionSelector.setFunctionNamePrefix('fooo');
+      functionSelector.setFunctionNamePrefix('foo');
       functionInvoke.setFunctionSelector(functionSelector);
 
       const functionPermissionsType = new PermissionsType();
@@ -182,7 +186,7 @@ describe('internal auth client', () => {
         permissions: [
           {
             role: FunctionRole.FunctionInvoke,
-            cache: 'foo',
+            cache: {name: 'foo'},
             func: {namePrefix: 'foo'},
           },
         ],
@@ -425,7 +429,7 @@ describe('internal auth client', () => {
       const grpcPermissions = new GrpcPermissions();
       grpcPermissions.setExplicit(explicitPermissions);
 
-      const cacheAndItemPermissions: DisposableTokenCachePermissions = {
+      const cacheAndItemPermissions: DisposableTokenPermissions = {
         permissions: [
           {
             role: CacheRole.WriteOnly,
@@ -477,7 +481,7 @@ describe('internal auth client', () => {
       const grpcPermissions = new GrpcPermissions();
       grpcPermissions.setExplicit(explicitPermissions);
 
-      const cacheAndItemPermissions: DisposableTokenCachePermissions = {
+      const cacheAndItemPermissions: DisposableTokenPermissions = {
         permissions: [
           {
             role: CacheRole.ReadOnly,
@@ -528,7 +532,7 @@ describe('internal auth client', () => {
       const grpcPermissions = new GrpcPermissions();
       grpcPermissions.setExplicit(explicitPermissions);
 
-      const cacheAndItemPermissions: DisposableTokenCachePermissions = {
+      const cacheAndItemPermissions: DisposableTokenPermissions = {
         permissions: [
           {
             role: CacheRole.ReadWrite,

@@ -1,6 +1,8 @@
 import {
   AllCacheItems,
   CachePermission,
+  FunctionPermission,
+  isFunctionPermission,
   Permission,
   Permissions,
   PredefinedScope,
@@ -74,21 +76,22 @@ export function asDisposableTokenCachePermission(
   return p as DisposableTokenCachePermission;
 }
 
-export interface DisposableTokenCachePermissions {
-  permissions: Array<DisposableTokenCachePermission>;
+export interface DisposableTokenPermissions {
+  permissions: Array<DisposableTokenCachePermission | FunctionPermission>;
 }
 
 export type DisposableTokenScope =
   | Permissions
   | PredefinedScope
-  | DisposableTokenCachePermissions;
+  | DisposableTokenPermissions;
 
 export interface DisposableTokenProps {
   tokenId?: string;
 }
 
 function isDisposableTokenPermissionObject(p: Permission): boolean {
-  return isDisposableTokenCachePermission(p);
+  // Function permissions are same regardless if the token is disposable
+  return isDisposableTokenCachePermission(p) || isFunctionPermission(p);
 }
 
 export function isDisposableTokenPermissionsObject(
@@ -103,7 +106,7 @@ export function isDisposableTokenPermissionsObject(
 
 export function asDisposableTokenPermissionsObject(
   scope: DisposableTokenScope
-): DisposableTokenCachePermissions {
+): DisposableTokenPermissions {
   if (!isDisposableTokenPermissionsObject(scope)) {
     throw new Error(
       `Token scope is not a DisposableToken permissions object: ${JSON.stringify(
@@ -111,5 +114,5 @@ export function asDisposableTokenPermissionsObject(
       )}`
     );
   }
-  return scope as DisposableTokenCachePermissions;
+  return scope as DisposableTokenPermissions;
 }

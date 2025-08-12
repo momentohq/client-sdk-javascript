@@ -12,7 +12,7 @@ import {
   permissionsFromDisposableTokenScope,
 } from '../../src/internal/internal-auth-client';
 import {permission_messages} from '@gomomento/generated-types/dist/permissionmessages';
-import {DisposableTokenCachePermissions} from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
+import {DisposableTokenPermissions} from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
 import {convert} from '../../src/internal/utils';
 import {
   AllFunctions,
@@ -469,7 +469,7 @@ describe('internal auth client', () => {
       const grpcPermissions = new permission_messages.Permissions();
       grpcPermissions.explicit = explicitPermissions;
 
-      const cacheAndItemPermissions: DisposableTokenCachePermissions = {
+      const cacheAndItemPermissions: DisposableTokenPermissions = {
         permissions: [
           {
             role: CacheRole.WriteOnly,
@@ -531,7 +531,7 @@ describe('internal auth client', () => {
       const grpcPermissions = new permission_messages.Permissions();
       grpcPermissions.explicit = explicitPermissions;
 
-      const cacheAndItemPermissions: DisposableTokenCachePermissions = {
+      const cacheAndItemPermissions: DisposableTokenPermissions = {
         permissions: [
           {
             role: CacheRole.ReadOnly,
@@ -592,7 +592,7 @@ describe('internal auth client', () => {
       const grpcPermissions = new permission_messages.Permissions();
       grpcPermissions.explicit = explicitPermissions;
 
-      const cacheAndItemPermissions: DisposableTokenCachePermissions = {
+      const cacheAndItemPermissions: DisposableTokenPermissions = {
         permissions: [
           {
             role: CacheRole.ReadWrite,

@@ -133,11 +133,14 @@ export interface FunctionPermission {
    * Scope the token permissions to select caches
    */
   cache: CacheSelector;
+  /**
+   * Scope the token permissions to select functions
+   */
   func: FunctionSelector;
 }
 
 export function isFunctionPermission(p: Permission): boolean {
-  return 'role' in p && 'cache' in p && 'func' in p;
+  return 'role' in p && 'cache' in p && 'func' in p && !('topic' in p);
 }
 
 export function asFunctionPermission(p: Permission): FunctionPermission {
