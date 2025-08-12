@@ -4765,7 +4765,8 @@ export class CacheDataClient<
     result: SortedSetSource
   ): _SortedSetUnionStoreRequest._Source {
     const source = new _SortedSetUnionStoreRequest._Source();
-    source.setSetName(new TextEncoder().encode(result.sortedSetName));
+
+    source.setSetName(convertToB64String(result.sortedSetName));
     source.setWeight(result.weight);
     return source;
   }
