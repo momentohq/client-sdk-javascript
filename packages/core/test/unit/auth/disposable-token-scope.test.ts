@@ -9,6 +9,10 @@ import {
   PermissionScopes,
   TopicRole,
 } from '../../../src';
+import {
+  AllFunctions,
+  FunctionRole,
+} from '../../../src/auth/tokens/permission-scope';
 
 describe('DisposableTokenScope', () => {
   it('should support assignment from AllDataReadWrite constant', () => {
@@ -17,11 +21,96 @@ describe('DisposableTokenScope', () => {
       permissions: [
         {role: CacheRole.ReadWrite, cache: AllCaches},
         {role: TopicRole.PublishSubscribe, cache: AllCaches, topic: AllTopics},
+        {
+          role: FunctionRole.FunctionInvoke,
+          cache: AllCaches,
+          func: AllFunctions,
+        },
       ],
     });
   });
 
   describe('should support assignment from Permissions literal', () => {
+    it('using string for cache in and string for function name', () => {
+      const scope: DisposableTokenScope = {
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: 'my-cache',
+            func: 'my-func',
+          },
+        ],
+      };
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: 'my-cache',
+            func: 'my-func',
+          },
+        ],
+      });
+    });
+    it('using selector for cache name and string for function name', () => {
+      const scope: DisposableTokenScope = {
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: {name: 'my-cache'},
+            func: 'my-function',
+          },
+        ],
+      };
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: {name: 'my-cache'},
+            func: 'my-function',
+          },
+        ],
+      });
+    });
+    it('using string for cache name and selector for function name', () => {
+      const scope: DisposableTokenScope = {
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: 'my-cache',
+            func: {name: 'my-function'},
+          },
+        ],
+      };
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: 'my-cache',
+            func: {name: 'my-function'},
+          },
+        ],
+      });
+    });
+    it('using selector for cache name and selector for function name', () => {
+      const scope: DisposableTokenScope = {
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: {name: 'my-cache'},
+            func: {name: 'my-function'},
+          },
+        ],
+      };
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: {name: 'my-cache'},
+            func: {name: 'my-function'},
+          },
+        ],
+      });
+    });
     it('using string for cache name in a CachePermission', () => {
       const scope: DisposableTokenScope = {
         permissions: [{role: CacheRole.ReadWrite, cache: 'my-cache'}],
@@ -394,6 +483,106 @@ describe('DisposableTokenScope', () => {
   });
 
   describe('should support assignment from DisposableTokenScope factory functions', () => {
+    it('functionInvoke', () => {
+      let scope: DisposableTokenScope = DisposableTokenScopes.functionInvoke(
+        'mycache',
+        'myfunction'
+      );
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: 'mycache',
+            func: 'myfunction',
+          },
+        ],
+      });
+      scope = DisposableTokenScopes.functionInvoke(AllCaches, AllFunctions);
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: AllCaches,
+            func: AllFunctions,
+          },
+        ],
+      });
+      scope = DisposableTokenScopes.functionInvoke(
+        {name: 'mycache'},
+        {name: 'myfunction'}
+      );
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: {name: 'mycache'},
+            func: {name: 'myfunction'},
+          },
+        ],
+      });
+      scope = DisposableTokenScopes.functionInvoke(
+        {name: 'mycache'},
+        {namePrefix: 'myfunction'}
+      );
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: {name: 'mycache'},
+            func: {namePrefix: 'myfunction'},
+          },
+        ],
+      });
+    });
+    it('functionPermitNone', () => {
+      let scope: DisposableTokenScope =
+        DisposableTokenScopes.functionPermitNone('mycache', 'myfunction');
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionPermitNone,
+            cache: 'mycache',
+            func: 'myfunction',
+          },
+        ],
+      });
+      scope = DisposableTokenScopes.functionPermitNone(AllCaches, AllFunctions);
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionPermitNone,
+            cache: AllCaches,
+            func: AllFunctions,
+          },
+        ],
+      });
+      scope = DisposableTokenScopes.functionPermitNone(
+        {name: 'mycache'},
+        {name: 'myfunction'}
+      );
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionPermitNone,
+            cache: {name: 'mycache'},
+            func: {name: 'myfunction'},
+          },
+        ],
+      });
+      scope = DisposableTokenScopes.functionPermitNone(
+        {name: 'mycache'},
+        {namePrefix: 'myfunction'}
+      );
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionPermitNone,
+            cache: {name: 'mycache'},
+            func: {namePrefix: 'myfunction'},
+          },
+        ],
+      });
+    });
     it('cacheReadWrite', () => {
       let scope: DisposableTokenScope =
         DisposableTokenScopes.cacheReadWrite('mycache');

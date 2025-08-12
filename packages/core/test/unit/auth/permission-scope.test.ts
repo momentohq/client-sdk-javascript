@@ -7,6 +7,10 @@ import {
   PermissionScopes,
   TopicRole,
 } from '../../../src';
+import {
+  AllFunctions,
+  FunctionRole,
+} from '../../../src/auth/tokens/permission-scope';
 import {InternalSuperUserPermissions} from '../../../src/internal/utils';
 
 describe('PermissionScope', () => {
@@ -16,6 +20,11 @@ describe('PermissionScope', () => {
       permissions: [
         {role: CacheRole.ReadWrite, cache: AllCaches},
         {role: TopicRole.PublishSubscribe, cache: AllCaches, topic: AllTopics},
+        {
+          role: FunctionRole.FunctionInvoke,
+          cache: AllCaches,
+          func: AllFunctions,
+        },
       ],
     });
   });
@@ -26,6 +35,86 @@ describe('PermissionScope', () => {
   });
 
   describe('should support assignment from Permissions literal', () => {
+    it('using string for cache name and string for function name', () => {
+      const scope: PermissionScope = {
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: 'my-cache',
+            func: 'my-function',
+          },
+        ],
+      };
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: 'my-cache',
+            func: 'my-function',
+          },
+        ],
+      });
+    });
+    it('using selector for cache name and string for function name', () => {
+      const scope: PermissionScope = {
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: {name: 'my-cache'},
+            func: 'my-function',
+          },
+        ],
+      };
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: {name: 'my-cache'},
+            func: 'my-function',
+          },
+        ],
+      });
+    });
+    it('using string for cache name and selector for function name', () => {
+      const scope: PermissionScope = {
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: 'my-cache',
+            func: {name: 'my-function'},
+          },
+        ],
+      };
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: 'my-cache',
+            func: {name: 'my-function'},
+          },
+        ],
+      });
+    });
+    it('using selector for cache name and selector for function name', () => {
+      const scope: PermissionScope = {
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: {name: 'my-cache'},
+            func: {name: 'my-function'},
+          },
+        ],
+      };
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: {name: 'my-cache'},
+            func: {name: 'my-function'},
+          },
+        ],
+      });
+    });
     it('using string for cache name in a CachePermission', () => {
       const scope: PermissionScope = {
         permissions: [{role: CacheRole.ReadWrite, cache: 'my-cache'}],
@@ -187,6 +276,56 @@ describe('PermissionScope', () => {
   });
 
   describe('should support assignment from PermissionScope factory functions', () => {
+    it('functionInvoke', () => {
+      let scope: PermissionScope = PermissionScopes.functionInvoke(
+        'mycache',
+        'myfunction'
+      );
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: 'mycache',
+            func: 'myfunction',
+          },
+        ],
+      });
+      scope = PermissionScopes.functionInvoke(AllCaches, AllFunctions);
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: AllCaches,
+            func: AllFunctions,
+          },
+        ],
+      });
+    });
+    it('functionPermitNone', () => {
+      let scope: PermissionScope = PermissionScopes.functionPermitNone(
+        'mycache',
+        'myfunction'
+      );
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionPermitNone,
+            cache: 'mycache',
+            func: 'myfunction',
+          },
+        ],
+      });
+      scope = PermissionScopes.functionPermitNone(AllCaches, AllFunctions);
+      expect(scope).toEqual({
+        permissions: [
+          {
+            role: FunctionRole.FunctionPermitNone,
+            cache: AllCaches,
+            func: AllFunctions,
+          },
+        ],
+      });
+    });
     it('cacheReadWrite', () => {
       let scope: PermissionScope = PermissionScopes.cacheReadWrite('mycache');
       expect(scope).toEqual({

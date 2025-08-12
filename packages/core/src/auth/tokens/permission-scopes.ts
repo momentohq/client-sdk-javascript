@@ -1,10 +1,42 @@
 import {
   CacheRole,
   CacheSelector,
+  FunctionRole,
+  FunctionSelector,
   PermissionScope,
   TopicRole,
   TopicSelector,
 } from './permission-scope';
+
+export function functionInvoke(
+  cacheSelector: CacheSelector,
+  functionSelector: FunctionSelector
+): PermissionScope {
+  return {
+    permissions: [
+      {
+        role: FunctionRole.FunctionInvoke,
+        cache: cacheSelector,
+        func: functionSelector,
+      },
+    ],
+  };
+}
+
+export function functionPermitNone(
+  cacheSelector: CacheSelector,
+  functionSelector: FunctionSelector
+): PermissionScope {
+  return {
+    permissions: [
+      {
+        role: FunctionRole.FunctionPermitNone,
+        cache: cacheSelector,
+        func: functionSelector,
+      },
+    ],
+  };
+}
 
 export function cacheReadWrite(cacheSelector: CacheSelector): PermissionScope {
   return {

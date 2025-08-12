@@ -41,10 +41,17 @@ import {
   asCachePermission,
   asPermissionsObject,
   asTopicPermission,
+  asFunctionPermission,
   isCachePermission,
+  isFunctionPermission,
   isPermissionsObject,
   isTopicPermission,
   PredefinedScope,
+  FunctionPermission,
+  AllFunctions,
+  isFunctionNamePrefix,
+  isFunction,
+  FunctionRole,
 } from '@gomomento/sdk-core/dist/src/auth/tokens/permission-scope';
 import {permission_messages} from '@gomomento/generated-types/dist/permissionmessages';
 import {convert} from './utils';
@@ -356,6 +363,11 @@ function tokenPermissionToGrpcPermission(
       asCachePermission(permission)
     );
     return result;
+  } else if (isFunctionPermission(permission)) {
+    result.function_permissions = functionPermissionToGrpcPermission(
+      asFunctionPermission(permission)
+    );
+    return result;
   }
   throw new Error(
     `Unrecognized token permission: ${JSON.stringify(permission)}`
@@ -477,6 +489,80 @@ function assignCacheSelector(
   return grpcPermission;
 }
 
+function assignFunctionRole(
+  permission: FunctionPermission,
+  grpcPermission: permission_messages.PermissionsType.FunctionPermissions
+): permission_messages.PermissionsType.FunctionPermissions {
+  switch (permission.role) {
+    case FunctionRole.FunctionInvoke: {
+      grpcPermission.role = permission_messages.FunctionRole.FunctionInvoke;
+      break;
+    }
+    case FunctionRole.FunctionPermitNone: {
+      grpcPermission.role = permission_messages.FunctionRole.FunctionPermitNone;
+      break;
+    }
+    default: {
+      throw new Error(
+        `Unrecognized function role: ${JSON.stringify(permission)}`
+      );
+    }
+  }
+  return grpcPermission;
+}
+
+function assignFunctionSelector(
+  permission: FunctionPermission,
+  grpcPermission: permission_messages.PermissionsType.FunctionPermissions
+): permission_messages.PermissionsType.FunctionPermissions {
+  if (permission.cache === AllCaches) {
+    grpcPermission.all_caches = new permission_messages.PermissionsType.All();
+  } else if (typeof permission.cache === 'string') {
+    grpcPermission.cache_selector =
+      new permission_messages.PermissionsType.CacheSelector({
+        cache_name: permission.cache,
+      });
+  } else if (isCacheName(permission.cache)) {
+    grpcPermission.cache_selector =
+      new permission_messages.PermissionsType.CacheSelector({
+        cache_name: permission.cache.name,
+      });
+  } else {
+    throw new Error(
+      `Unrecognized cache specification in function permission: ${JSON.stringify(
+        permission
+      )}`
+    );
+  }
+
+  if (permission.func === AllFunctions) {
+    grpcPermission.all_functions =
+      new permission_messages.PermissionsType.All();
+  } else if (isFunctionNamePrefix(permission.func)) {
+    grpcPermission.function_selector =
+      new permission_messages.PermissionsType.FunctionSelector({
+        function_name_prefix: permission.func.namePrefix,
+      });
+  } else if (typeof permission.func === 'string') {
+    grpcPermission.function_selector =
+      new permission_messages.PermissionsType.FunctionSelector({
+        function_name: permission.func,
+      });
+  } else if (isFunction(permission.func)) {
+    grpcPermission.function_selector =
+      new permission_messages.PermissionsType.FunctionSelector({
+        function_name: permission.func.name,
+      });
+  } else {
+    throw new Error(
+      `Unrecognized function specification in function permission: ${JSON.stringify(
+        permission
+      )}`
+    );
+  }
+  return grpcPermission;
+}
+
 function assignCacheItemSelector(
   permission: DisposableTokenCachePermission,
   grpcPermission: permission_messages.PermissionsType.CachePermissions
@@ -520,13 +606,28 @@ function cachePermissionToGrpcPermission(
   return grpcPermission;
 }
 
+function functionPermissionToGrpcPermission(
+  permission: FunctionPermission
+): permission_messages.PermissionsType.FunctionPermissions {
+  let grpcPermission =
+    new permission_messages.PermissionsType.FunctionPermissions();
+  grpcPermission = assignFunctionRole(permission, grpcPermission);
+  grpcPermission = assignFunctionSelector(permission, grpcPermission);
+  return grpcPermission;
+}
+
 function disposableTokenPermissionToGrpcPermission(
-  permission: DisposableTokenCachePermission
+  permission: DisposableTokenCachePermission | FunctionPermission
 ): permission_messages.PermissionsType {
   const result = new permission_messages.PermissionsType();
   if (isDisposableTokenCachePermission(permission)) {
     result.cache_permissions = disposableCachePermissionToGrpcPermission(
       asDisposableTokenCachePermission(permission)
+    );
+    return result;
+  } else if (isFunctionPermission(permission)) {
+    result.function_permissions = functionPermissionToGrpcPermission(
+      asFunctionPermission(permission)
     );
     return result;
   }

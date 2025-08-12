@@ -52,7 +52,13 @@ export interface DisposableTokenCachePermission extends CachePermission {
 }
 
 export function isDisposableTokenCachePermission(p: Permission): boolean {
-  return 'role' in p && 'cache' in p && 'item' in p && !('topic' in p);
+  return (
+    'role' in p &&
+    'cache' in p &&
+    'item' in p &&
+    !('topic' in p) &&
+    !('func' in p)
+  );
 }
 
 export function asDisposableTokenCachePermission(
@@ -100,7 +106,7 @@ export function asDisposableTokenPermissionsObject(
 ): DisposableTokenCachePermissions {
   if (!isDisposableTokenPermissionsObject(scope)) {
     throw new Error(
-      `Token scope is not a DisposableTokenCachePermissions object: ${JSON.stringify(
+      `Token scope is not a DisposableToken permissions object: ${JSON.stringify(
         scope
       )}`
     );
