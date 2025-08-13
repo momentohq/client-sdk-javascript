@@ -1158,27 +1158,11 @@ async function example_API_SortedSetUnionStore(cacheClient: CacheClient, cacheNa
     {sortedSetName: 'test-sorted-set', weight: 1},
     {sortedSetName: 'test-sorted-set-2', weight: -1},
   ];
-  await cacheClient.sortedSetPutElements(
-    cacheName,
-    sources[0].sortedSetName,
-    new Map<string, number>([
-      ['key1', 10],
-      ['key2', 20],
-    ])
-  );
-  await cacheClient.sortedSetPutElements(
-    cacheName,
-    sources[1].sortedSetName,
-    new Map<string, number>([
-      ['key1', 30],
-      ['key3', 40],
-    ])
-  );
   const result = await cacheClient.sortedSetUnionStore(cacheName, 'dest-sorted-set', sources);
   switch (result.type) {
     case CacheSortedSetUnionStoreResponse.Success:
       console.log(
-        "Elements from sets 'test-sorted-set' and 'test-sorted-set-2' unioned and stored in 'dest-sorted-set' successfully"
+        `Elements from sets 'test-sorted-set' and 'test-sorted-set-2' unioned and stored in 'dest-sorted-set' successfully with length ${result.length()}`
       );
       break;
     case CacheSortedSetUnionStoreResponse.Error:
@@ -1877,6 +1861,7 @@ async function main() {
     await example_API_SortedSetIncrementScore(cacheClient, cacheName);
     await example_API_SortedSetRemoveElement(cacheClient, cacheName);
     await example_API_SortedSetRemoveElements(cacheClient, cacheName);
+    await example_API_SortedSetUnionStore(cacheClient, cacheName);
 
     await example_API_KeyExists(cacheClient, cacheName);
     await example_API_KeysExist(cacheClient, cacheName);
