@@ -4151,8 +4151,8 @@ export class CacheDataClient<
       cacheName,
       convertToB64String(sortedSetName),
       sources,
-      aggregate,
-      ttl
+      ttl,
+      aggregate
     );
     this.logger.trace(
       `'sortedSetUnionStore' request result: ${result.toString()}`
@@ -4164,8 +4164,8 @@ export class CacheDataClient<
     cacheName: string,
     sortedSetName: string,
     sources: SortedSetSource[],
-    aggregate?: SortedSetAggregate,
-    ttl?: CollectionTtl
+    ttl: CollectionTtl,
+    aggregate?: SortedSetAggregate
   ): Promise<CacheSortedSetUnionStore.Response> {
     const agg = this.convertAggregateResult(aggregate);
     const sortedSources: _SortedSetUnionStoreRequest._Source[] = [];

@@ -4190,8 +4190,8 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(sortedSetName),
         sources,
-        aggregate,
-        ttl
+        ttl,
+        aggregate
       );
     });
   }
@@ -4200,8 +4200,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     sortedSetName: Uint8Array,
     sources: SortedSetSource[],
-    aggregate?: SortedSetAggregate,
-    ttl?: CollectionTtl
+    ttl: CollectionTtl,
+    aggregate?: SortedSetAggregate
   ): Promise<CacheSortedSetUnionStore.Response> {
     const agg = this.convertAggregateResult(aggregate);
     const sortedSources: grpcCache._SortedSetUnionStoreRequest._Source[] = [];
