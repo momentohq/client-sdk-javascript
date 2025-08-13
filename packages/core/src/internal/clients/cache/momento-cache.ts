@@ -60,6 +60,7 @@ import {
   CacheSetSample,
   CacheSetPop,
   CacheSetLength,
+  CacheSortedSetUnionStore,
 } from '../../../index';
 import {
   ScalarCallOptions,
@@ -72,6 +73,8 @@ import {
   SortedSetFetchByScoreCallOptions,
   SortedSetLengthByScoreCallOptions,
   SetBatchItem,
+  SortedSetSource,
+  SortedSetUnionStoreCallOptions,
 } from '../../../utils';
 import {IMomentoCache} from '../../../clients/IMomentoCache';
 
@@ -101,6 +104,7 @@ export type SortedSetFetchByRankOptions = SortedSetFetchByRankCallOptions;
 export type SortedSetFetchByScoreOptions = SortedSetFetchByScoreCallOptions;
 export type SortedSetIncrementOptions = CollectionCallOptions;
 export type SortedSetLengthByScoreOptions = SortedSetLengthByScoreCallOptions;
+export type SortedSetUnionStoreOptions = SortedSetUnionStoreCallOptions;
 
 export class MomentoCache implements IMomentoCache {
   private readonly cacheClient: ICacheClient;
@@ -582,6 +586,18 @@ export class MomentoCache implements IMomentoCache {
     return this.cacheClient.sortedSetLengthByScore(
       this.cacheName,
       sortedSetName,
+      options
+    );
+  }
+  sortedSetUnionStore(
+    sortedSetName: string,
+    sources: SortedSetSource[],
+    options?: SortedSetUnionStoreOptions
+  ): Promise<CacheSortedSetUnionStore.Response> {
+    return this.cacheClient.sortedSetUnionStore(
+      this.cacheName,
+      sortedSetName,
+      sources,
       options
     );
   }
