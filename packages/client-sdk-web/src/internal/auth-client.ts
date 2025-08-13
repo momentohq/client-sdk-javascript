@@ -43,10 +43,17 @@ import {
 } from '../utils/web-client-utils';
 import {ClientMetadataProvider} from './client-metadata-provider';
 import {
+  AllFunctions,
   asCachePermission,
+  asFunctionPermission,
   asPermissionsObject,
   asTopicPermission,
+  FunctionPermission,
+  FunctionRole,
   isCachePermission,
+  isFunction,
+  isFunctionNamePrefix,
+  isFunctionPermission,
   isPermissionsObject,
   isTopicPermission,
   PredefinedScope,
@@ -68,6 +75,7 @@ import {
   SuperUserPermissions,
   TopicRole as TokenTopicRole,
   CacheRole as TokenCacheRole,
+  FunctionRole as TokenFunctionRole,
 } from '@gomomento/generated-types-webtext/dist/permissionmessages_pb';
 import {AuthClientAllProps} from './auth-client-all-props';
 
@@ -302,7 +310,6 @@ export function permissionsFromScope(
   const result = new Permissions();
   if (scope instanceof InternalSuperUserPermissions) {
     result.setSuperUser(SuperUserPermissions.SUPERUSER);
-    return result;
   } else if (
     !(scope instanceof PredefinedScope) &&
     isDisposableTokenPermissionsObject(scope)
@@ -315,7 +322,6 @@ export function permissionsFromScope(
       )
     );
     result.setExplicit(explicitPermissions);
-    return result;
   } else if (isPermissionsObject(scope)) {
     const scopePermissions = asPermissionsObject(scope);
     const explicitPermissions = new ExplicitPermissions();
@@ -323,9 +329,10 @@ export function permissionsFromScope(
       scopePermissions.permissions.map(p => tokenPermissionToGrpcPermission(p))
     );
     result.setExplicit(explicitPermissions);
-    return result;
+  } else {
+    throw new Error(`Unrecognized token scope: ${JSON.stringify(scope)}`);
   }
-  throw new Error(`Unrecognized token scope: ${JSON.stringify(scope)}`);
+  return result;
 }
 
 function tokenPermissionToGrpcPermission(
@@ -340,6 +347,11 @@ function tokenPermissionToGrpcPermission(
   } else if (isCachePermission(permission)) {
     result.setCachePermissions(
       cachePermissionToGrpcPermission(asCachePermission(permission))
+    );
+    return result;
+  } else if (isFunctionPermission(permission)) {
+    result.setFunctionPermissions(
+      functionPermissionToGrpcPermission(asFunctionPermission(permission))
     );
     return result;
   }
@@ -408,6 +420,78 @@ function topicPermissionToGrpcPermission(
   }
 
   return grpcPermission;
+}
+
+function assignFunctionRole(
+  permission: FunctionPermission,
+  grpcPermission: PermissionsType.FunctionPermissions
+): PermissionsType.FunctionPermissions {
+  switch (permission.role) {
+    case FunctionRole.FunctionPermitNone: {
+      grpcPermission.setRole(TokenFunctionRole.FUNCTIONPERMITNONE);
+      break;
+    }
+    case FunctionRole.FunctionInvoke: {
+      grpcPermission.setRole(TokenFunctionRole.FUNCTIONINVOKE);
+      break;
+    }
+    default: {
+      throw new Error(
+        `Unrecognized function role: ${JSON.stringify(permission)}`
+      );
+    }
+  }
+  return grpcPermission;
+}
+
+function assignFunctionCacheSelector(
+  permission: FunctionPermission,
+  grpcPermission: PermissionsType.FunctionPermissions
+): PermissionsType.FunctionPermissions {
+  const cacheSelector = new PermissionsType.CacheSelector();
+
+  if (permission.cache === AllCaches) {
+    grpcPermission.setAllCaches(new PermissionsType.All());
+  } else if (typeof permission.cache === 'string') {
+    cacheSelector.setCacheName(permission.cache);
+    grpcPermission.setCacheSelector(cacheSelector);
+  } else if (isCacheName(permission.cache)) {
+    cacheSelector.setCacheName(permission.cache.name);
+    grpcPermission.setCacheSelector(cacheSelector);
+  } else {
+    throw new Error(
+      `Unrecognized cache specification in function permission: ${JSON.stringify(
+        permission
+      )}`
+    );
+  }
+  return grpcPermission;
+}
+
+function assignFunctionSelector(
+  permission: FunctionPermission,
+  grpcPermissions: PermissionsType.FunctionPermissions
+): PermissionsType.FunctionPermissions {
+  const functionSelector = new PermissionsType.FunctionSelector();
+  if (permission.func === AllFunctions) {
+    grpcPermissions.setAllFunctions(new PermissionsType.All());
+  } else if (isFunctionNamePrefix(permission.func)) {
+    functionSelector.setFunctionNamePrefix(permission.func.namePrefix);
+    grpcPermissions.setFunctionSelector(functionSelector);
+  } else if (typeof permission.func === 'string') {
+    functionSelector.setFunctionName(permission.func);
+    grpcPermissions.setFunctionSelector(functionSelector);
+  } else if (isFunction(permission.func)) {
+    functionSelector.setFunctionName(permission.func.name);
+    grpcPermissions.setFunctionSelector(functionSelector);
+  } else {
+    throw new Error(
+      `Unrecognized function specification in function permission: ${JSON.stringify(
+        permission
+      )}`
+    );
+  }
+  return grpcPermissions;
 }
 
 function assignCacheRole(
@@ -496,8 +580,18 @@ function cachePermissionToGrpcPermission(
   return grpcPermission;
 }
 
+function functionPermissionToGrpcPermission(
+  permission: FunctionPermission
+): PermissionsType.FunctionPermissions {
+  let grpcPermission = new PermissionsType.FunctionPermissions();
+  grpcPermission = assignFunctionRole(permission, grpcPermission);
+  grpcPermission = assignFunctionCacheSelector(permission, grpcPermission);
+  grpcPermission = assignFunctionSelector(permission, grpcPermission);
+  return grpcPermission;
+}
+
 function disposableTokenPermissionToGrpcPermission(
-  permission: DisposableTokenCachePermission
+  permission: DisposableTokenCachePermission | FunctionPermission
 ): PermissionsType {
   const result = new PermissionsType();
   if (isDisposableTokenCachePermission(permission)) {
@@ -506,11 +600,16 @@ function disposableTokenPermissionToGrpcPermission(
         asDisposableTokenCachePermission(permission)
       )
     );
-    return result;
+  } else if (isFunctionPermission(permission)) {
+    result.setFunctionPermissions(
+      functionPermissionToGrpcPermission(asFunctionPermission(permission))
+    );
+  } else {
+    throw new Error(
+      `Unrecognized token permission: ${JSON.stringify(permission)}`
+    );
   }
-  throw new Error(
-    `Unrecognized token permission: ${JSON.stringify(permission)}`
-  );
+  return result;
 }
 
 function disposableCachePermissionToGrpcPermission(

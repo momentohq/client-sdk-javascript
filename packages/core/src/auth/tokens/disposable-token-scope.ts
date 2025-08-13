@@ -1,6 +1,8 @@
 import {
   AllCacheItems,
   CachePermission,
+  FunctionPermission,
+  isFunctionPermission,
   Permission,
   Permissions,
   PredefinedScope,
@@ -52,7 +54,13 @@ export interface DisposableTokenCachePermission extends CachePermission {
 }
 
 export function isDisposableTokenCachePermission(p: Permission): boolean {
-  return 'role' in p && 'cache' in p && 'item' in p && !('topic' in p);
+  return (
+    'role' in p &&
+    'cache' in p &&
+    'item' in p &&
+    !('topic' in p) &&
+    !('func' in p)
+  );
 }
 
 export function asDisposableTokenCachePermission(
@@ -68,21 +76,22 @@ export function asDisposableTokenCachePermission(
   return p as DisposableTokenCachePermission;
 }
 
-export interface DisposableTokenCachePermissions {
-  permissions: Array<DisposableTokenCachePermission>;
+export interface DisposableTokenPermissions {
+  permissions: Array<DisposableTokenCachePermission | FunctionPermission>;
 }
 
 export type DisposableTokenScope =
   | Permissions
   | PredefinedScope
-  | DisposableTokenCachePermissions;
+  | DisposableTokenPermissions;
 
 export interface DisposableTokenProps {
   tokenId?: string;
 }
 
 function isDisposableTokenPermissionObject(p: Permission): boolean {
-  return isDisposableTokenCachePermission(p);
+  // Function permissions are same regardless if the token is disposable
+  return isDisposableTokenCachePermission(p) || isFunctionPermission(p);
 }
 
 export function isDisposableTokenPermissionsObject(
@@ -97,13 +106,13 @@ export function isDisposableTokenPermissionsObject(
 
 export function asDisposableTokenPermissionsObject(
   scope: DisposableTokenScope
-): DisposableTokenCachePermissions {
+): DisposableTokenPermissions {
   if (!isDisposableTokenPermissionsObject(scope)) {
     throw new Error(
-      `Token scope is not a DisposableTokenCachePermissions object: ${JSON.stringify(
+      `Token scope is not a DisposableToken permissions object: ${JSON.stringify(
         scope
       )}`
     );
   }
-  return scope as DisposableTokenCachePermissions;
+  return scope as DisposableTokenPermissions;
 }
