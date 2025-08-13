@@ -45,6 +45,7 @@ import {
   CacheSortedSetRemoveElement,
   CacheSortedSetLength,
   CacheSortedSetLengthByScore,
+  CacheSortedSetUnionStore,
   CacheItemGetType,
   CacheItemGetTtl,
   CacheKeyExists,
@@ -71,6 +72,8 @@ import {
   SortedSetFetchByScoreCallOptions,
   SortedSetLengthByScoreCallOptions,
   SetBatchItem,
+  SortedSetUnionStoreCallOptions,
+  SortedSetSource,
 } from '../utils';
 
 // Type aliases to differentiate the different methods' optional arguments.
@@ -99,6 +102,7 @@ export type SortedSetFetchByRankOptions = SortedSetFetchByRankCallOptions;
 export type SortedSetFetchByScoreOptions = SortedSetFetchByScoreCallOptions;
 export type SortedSetIncrementOptions = CollectionCallOptions;
 export type SortedSetLengthByScoreOptions = SortedSetLengthByScoreCallOptions;
+export type SortedSetUnionStoreOptions = SortedSetUnionStoreCallOptions;
 
 export interface IMomentoCache {
   get(key: string | Uint8Array): Promise<CacheGet.Response>;
@@ -318,6 +322,11 @@ export interface IMomentoCache {
     sortedSetName: string,
     options?: SortedSetLengthByScoreOptions
   ): Promise<CacheSortedSetLengthByScore.Response>;
+  sortedSetUnionStore(
+    sortedSetName: string,
+    sources: SortedSetSource[],
+    options?: SortedSetUnionStoreOptions
+  ): Promise<CacheSortedSetUnionStore.Response>;
   itemGetType(key: string | Uint8Array): Promise<CacheItemGetType.Response>;
   itemGetTtl(key: string | Uint8Array): Promise<CacheItemGetTtl.Response>;
   keyExists(key: string | Uint8Array): Promise<CacheKeyExists.Response>;

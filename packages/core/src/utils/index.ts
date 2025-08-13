@@ -6,3 +6,4 @@ export * from './itemType';
 export * from './webhook-destination';
 export * from './set-batch-item';
 export * from './time';
+export * from './sorted-set-source';

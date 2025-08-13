@@ -53,6 +53,7 @@ import {
   CacheSortedSetRemoveElements,
   CacheSortedSetLength,
   CacheSortedSetLengthByScore,
+  CacheSortedSetUnionStore,
   SortedSetOrder,
   CacheItemGetTtl,
   CacheItemGetType,
@@ -78,6 +79,7 @@ import {
   ListFetchCallOptions,
   ListRetainCallOptions,
   SetBatchItem,
+  SortedSetSource,
 } from '../../../utils';
 import {
   ICacheClient,
@@ -98,6 +100,7 @@ import {
   SortedSetGetRankOptions,
   SortedSetIncrementOptions,
   SortedSetLengthByScoreOptions,
+  SortedSetUnionStoreOptions,
   SetBatchOptions,
   GetOptions,
   GetBatchOptions,
@@ -1596,7 +1599,34 @@ export abstract class AbstractCacheClient implements ICacheClient {
       options?.maxScore
     );
   }
-
+  /**
+   * Computes the union of all source sets and stores the result in itself. Returns the number of elements in the set after
+   * sotring the result of the union
+   * @param {string} cacheName - The cache containing the sorted set.
+   * @param {string} sortedSetName - The sorted set name.
+   * @param {SortedSetSource[]} sources - The array of source sets that will be unioned
+   * @param {SortedSetAggregate} [options.aggregate] - The aggregate function to use to combine shared elements
+   * @param {CollectionTtl} [options.ttl] - If the set does not exist, it is created with the given `ttl`.
+   *                                 If it exists, it is overwritten with the result and its ttl is set to the given `ttl`
+   * @returns {Promise<CacheSortedSetUnionStore.Response>}
+   * {@link CacheSortedSetUnionStore.Success} containing the length of the set which contains the result of the union.
+   * {@link CacheSortedSetUnionStore.Error} on failure.
+   */
+  public async sortedSetUnionStore(
+    cacheName: string,
+    sortedSetName: string,
+    sources: SortedSetSource[],
+    options?: SortedSetUnionStoreOptions
+  ): Promise<CacheSortedSetUnionStore.Response> {
+    const client = this.getNextDataClient();
+    return await client.sortedSetUnionStore(
+      cacheName,
+      sortedSetName,
+      sources,
+      options?.aggregate,
+      options?.ttl
+    );
+  }
   /**
    * Return the type of the key in the cache
    * @param {string} cacheName - The cache containing the key.

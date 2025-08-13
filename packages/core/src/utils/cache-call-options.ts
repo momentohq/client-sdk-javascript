@@ -1,5 +1,4 @@
 import {CollectionTtl} from './collection-ttl';
-
 export interface ScalarCallOptions {
   /**
    * The time to live in seconds of the object being modified.
@@ -142,6 +141,23 @@ export interface SortedSetLengthByScoreCallOptions {
    * If the maximum score is not specified, the range extends to the highest score.
    */
   maxScore?: number;
+}
+export enum SortedSetAggregate {
+  SUM = 0,
+  MIN = 1,
+  MAX = 2,
+}
+
+export interface SortedSetUnionStoreCallOptions {
+  /**
+   * A function to determine the final score for an element that exists in multiple source sets.
+   * If the function is not specified, the aggregate function defaults to SUM.
+   */
+  aggregate?: SortedSetAggregate;
+  /**
+   * The time to live in seconds of the object being modified.
+   */
+  ttl?: CollectionTtl;
 }
 
 export interface ListRetainCallOptions extends CollectionCallOptions {
