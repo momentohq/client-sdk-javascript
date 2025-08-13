@@ -59,6 +59,7 @@ import {
   CacheSortedSetRemoveElements,
   CacheSetPop,
   CacheSetLength,
+  CacheSortedSetUnionStore,
 } from '../../../index';
 import {
   GetBatchCallOptions,
@@ -67,6 +68,8 @@ import {
   SetBatchItem,
   SetCallOptions,
   SetIfAbsentCallOptions,
+  SortedSetAggregate,
+  SortedSetSource,
 } from '../../../utils';
 
 export interface IDataClient {
@@ -370,6 +373,13 @@ export interface IDataClient {
     minScore?: number,
     maxScore?: number
   ): Promise<CacheSortedSetLengthByScore.Response>;
+  sortedSetUnionStore(
+    cacheName: string,
+    sortedSetName: string,
+    sources: SortedSetSource[],
+    aggregate?: SortedSetAggregate,
+    ttl?: CollectionTtl
+  ): Promise<CacheSortedSetUnionStore.Response>;
   itemGetType(
     cacheName: string,
     key: string | Uint8Array

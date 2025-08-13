@@ -58,3 +58,8 @@ export enum CacheSortedSetRemoveElementsResponse {
   Success = 'Success',
   Error = 'Error',
 }
+
+export enum CacheSortedSetUnionStoreResponse {
+  Success = 'Success',
+  Error = 'Error',
+}

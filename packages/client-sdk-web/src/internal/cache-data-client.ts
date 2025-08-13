@@ -110,6 +110,7 @@ import {
   _SortedSetRemoveRequest,
   _SortedSetLengthRequest,
   _SortedSetLengthByScoreRequest,
+  _SortedSetUnionStoreRequest,
   _KeysExistRequest,
   ECacheResult,
   _UpdateTtlRequest,
@@ -137,6 +138,7 @@ import {
   validateValidForSeconds,
   validateSetSampleLimit,
   validateSetPopCount,
+  validateSortedSetSources,
 } from '@gomomento/sdk-core/dist/src/internal/utils';
 import {
   convertToB64String,
@@ -161,8 +163,14 @@ import {
   SetBatchItem,
   SetCallOptions,
   SetIfAbsentCallOptions,
+  SortedSetAggregate,
+  SortedSetSource,
 } from '@gomomento/sdk-core/dist/src/utils';
-import {CacheSetLength, CacheSetPop} from '@gomomento/sdk-core';
+import {
+  CacheSetLength,
+  CacheSetPop,
+  CacheSortedSetUnionStore,
+} from '@gomomento/sdk-core';
 import {CacheClientAllProps} from './cache-client-all-props';
 
 export class CacheDataClient<
@@ -4115,6 +4123,88 @@ export class CacheDataClient<
     });
   }
 
+  public async sortedSetUnionStore(
+    cacheName: string,
+    sortedSetName: string,
+    sources: SortedSetSource[],
+    aggregate?: SortedSetAggregate,
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+  ): Promise<CacheSortedSetUnionStore.Response> {
+    try {
+      validateCacheName(cacheName);
+      validateSortedSetName(sortedSetName);
+      validateSortedSetSources(sources);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSortedSetUnionStore.Error(err)
+      );
+    }
+
+    this.logger.trace(
+      "Issuing 'sortedSetUnionStore' request; sources: %s, aggregate: %s:, ttl: %s",
+      sources.toString(),
+      aggregate?.toString() ?? 'null',
+      ttl?.toString() ?? 'null'
+    );
+    const result = await this.sendSortedSetUnionStore(
+      cacheName,
+      convertToB64String(sortedSetName),
+      sources,
+      ttl,
+      aggregate
+    );
+    this.logger.trace(
+      `'sortedSetUnionStore' request result: ${result.toString()}`
+    );
+    return result;
+  }
+
+  private async sendSortedSetUnionStore(
+    cacheName: string,
+    sortedSetName: string,
+    sources: SortedSetSource[],
+    ttl: CollectionTtl,
+    aggregate?: SortedSetAggregate
+  ): Promise<CacheSortedSetUnionStore.Response> {
+    const agg = this.convertAggregateResult(aggregate);
+    const sortedSources: _SortedSetUnionStoreRequest._Source[] = [];
+    for (const source of sources) {
+      sortedSources.push(this.convertSortedSetSource(source));
+    }
+    if (ttl === undefined) {
+      ttl = new CollectionTtl();
+    }
+    const request = new _SortedSetUnionStoreRequest();
+    request.setSetName(sortedSetName);
+    request.setSourcesList(sortedSources);
+    request.setAggregate(agg);
+    request.setTtlMilliseconds(this.collectionTtlOrDefaultMilliseconds(ttl));
+
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.sortedSetUnionStore(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            resolve(new CacheSortedSetUnionStore.Success(resp.getLength()));
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSortedSetUnionStore.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
   public async itemGetType(
     cacheName: string,
     key: string | Uint8Array
@@ -4653,5 +4743,31 @@ export class CacheDataClient<
       case _ItemGetTypeResponse.ItemType.SORTED_SET:
         return ItemType.SORTED_SET;
     }
+  }
+
+  private convertAggregateResult(
+    result?: SortedSetAggregate
+  ): _SortedSetUnionStoreRequest.AggregateFunction {
+    switch (result) {
+      case SortedSetAggregate.MAX:
+        return _SortedSetUnionStoreRequest.AggregateFunction.MAX;
+      case SortedSetAggregate.MIN:
+        return _SortedSetUnionStoreRequest.AggregateFunction.MIN;
+      case SortedSetAggregate.SUM:
+        return _SortedSetUnionStoreRequest.AggregateFunction.SUM;
+      default:
+        // fallback (SUM is default per proto)
+        return _SortedSetUnionStoreRequest.AggregateFunction.SUM;
+    }
+  }
+
+  private convertSortedSetSource(
+    result: SortedSetSource
+  ): _SortedSetUnionStoreRequest._Source {
+    const source = new _SortedSetUnionStoreRequest._Source();
+
+    source.setSetName(convertToB64String(result.sortedSetName));
+    source.setWeight(result.weight);
+    return source;
   }
 }
