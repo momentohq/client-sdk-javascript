@@ -5,6 +5,7 @@ import * as AuthClientConfigurations from './config/auth-client-configurations';
 import * as TopicConfigurations from './config/topic-configurations';
 import * as LeaderboardConfigurations from './config/leaderboard-configurations';
 import * as BatchUtils from './batchutils/batch-functions';
+import {LambdaRequestCleanup} from './internal/lambda-request-cleanup';
 
 import {TopicClientProps} from './topic-client-props';
 
@@ -444,4 +445,6 @@ export {
   BatchUtils,
   ReadConcern,
   CompressionLevel,
+  // Lambda utilities
+  LambdaRequestCleanup,
 };

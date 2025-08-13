@@ -6,6 +6,7 @@ import {RetryInterceptor} from './grpc/retry-interceptor';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
   ChannelCredentials,
+  ClientUnaryCall,
   Interceptor,
   Metadata,
   ServiceError,
@@ -83,6 +84,7 @@ import {
 import {version} from '../../package.json';
 import {IdleGrpcClientWrapper} from './grpc/idle-grpc-client-wrapper';
 import {GrpcClientWrapper} from './grpc/grpc-client-wrapper';
+import {LambdaRequestCleanup} from './lambda-request-cleanup';
 import {
   Middleware,
   MiddlewareRequestHandlerContext,
@@ -498,27 +500,20 @@ export class CacheDataClient implements IDataClient {
       ttl_milliseconds: secondsToMilliseconds(ttl),
     });
     const metadata = this.createMetadata(cacheName);
-    return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().Set(
+
+    try {
+      await this.makeGrpcCall(
+        this.clientWrapper.getClient().Set,
         request,
-        metadata,
-        {
-          interceptors: this.interceptors,
-        },
-        (err, resp) => {
-          if (resp) {
-            resolve(new CacheSet.Success());
-          } else {
-            this.cacheServiceErrorMapper.resolveOrRejectError({
-              err: err,
-              errorResponseFactoryFn: e => new CacheSet.Error(e),
-              resolveFn: resolve,
-              rejectFn: reject,
-            });
-          }
-        }
+        metadata
       );
-    });
+      return new CacheSet.Success();
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSet.Error(err)
+      );
+    }
   }
 
   public async setFetch(
@@ -4667,6 +4662,43 @@ export class CacheDataClient implements IDataClient {
     const metadata = new Metadata();
     metadata.set('cache', cacheName);
     return metadata;
+  }
+
+  /**
+   * Helper method to wrap gRPC calls with Lambda request tracking
+   */
+  private async makeGrpcCall<TRequest, TResponse>(
+    method: (
+      req: TRequest,
+      metadata: Metadata,
+      options: {interceptors: Interceptor[]},
+      callback: (err: ServiceError | null, resp?: TResponse) => void
+    ) => ClientUnaryCall,
+    request: TRequest,
+    metadata: Metadata
+  ): Promise<TResponse> {
+    return await new Promise((resolve, reject) => {
+      const call = method.call(
+        this.clientWrapper.getClient(),
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err: ServiceError | null, resp?: TResponse) => {
+          if (resp) {
+            resolve(resp);
+          } else {
+            reject(err);
+          }
+        }
+      );
+
+      // Register call for Lambda cleanup
+      if (process.env.AWS_LAMBDA_FUNCTION_NAME) {
+        LambdaRequestCleanup.registerCall(call);
+      }
+    });
   }
 
   private toSingletonFieldValuePair(
