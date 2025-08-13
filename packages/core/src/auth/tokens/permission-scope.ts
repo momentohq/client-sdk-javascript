@@ -7,6 +7,7 @@ export enum CacheRole {
 export const AllCaches = Symbol();
 export const AllTopics = Symbol();
 export const AllCacheItems = Symbol();
+export const AllFunctions = Symbol();
 
 export interface CacheName {
   name: string;
@@ -30,7 +31,7 @@ export interface CachePermission {
 }
 
 export function isCachePermission(p: Permission): boolean {
-  return 'role' in p && 'cache' in p && !('topic' in p);
+  return 'role' in p && 'cache' in p && !('topic' in p) && !('func' in p);
 }
 
 export function asCachePermission(p: Permission): CachePermission {
@@ -74,7 +75,7 @@ export interface TopicPermission {
 }
 
 export function isTopicPermission(p: Permission): boolean {
-  return 'role' in p && 'cache' in p && 'topic' in p;
+  return 'role' in p && 'cache' in p && 'topic' in p && !('func' in p);
 }
 
 export function asTopicPermission(p: Permission): TopicPermission {
@@ -86,7 +87,72 @@ export function asTopicPermission(p: Permission): TopicPermission {
   return p as TopicPermission;
 }
 
-export type Permission = CachePermission | TopicPermission;
+export enum FunctionRole {
+  FunctionPermitNone = 'functionpermitnone',
+  FunctionInvoke = 'functioninvoke',
+}
+
+export interface FunctionName {
+  name: string;
+}
+
+export function isFunction(
+  func: FunctionName | typeof AllFunctions
+): func is FunctionName {
+  if (func === AllFunctions) {
+    return false;
+  }
+  return 'name' in func;
+}
+
+export interface FunctionNamePrefix {
+  namePrefix: string;
+}
+
+export function isFunctionNamePrefix(
+  functionNamePrefix: FunctionSelector
+): functionNamePrefix is FunctionNamePrefix {
+  if (functionNamePrefix === AllFunctions) {
+    return false;
+  }
+  if (typeof functionNamePrefix === 'string') {
+    return false;
+  }
+  return 'namePrefix' in functionNamePrefix;
+}
+
+export type FunctionSelector =
+  | typeof AllFunctions
+  | FunctionName
+  | FunctionNamePrefix
+  | string;
+
+export interface FunctionPermission {
+  role: FunctionRole;
+  /**
+   * Scope the token permissions to select caches
+   */
+  cache: CacheSelector;
+  /**
+   * Scope the token permissions to select functions
+   */
+  func: FunctionSelector;
+}
+
+export function isFunctionPermission(p: Permission): boolean {
+  return 'role' in p && 'cache' in p && 'func' in p && !('topic' in p);
+}
+
+export function asFunctionPermission(p: Permission): FunctionPermission {
+  if (!isFunctionPermission(p)) {
+    throw new Error(
+      `permission is not a FunctionPermission object: ${JSON.stringify(p)}`
+    );
+  }
+  return p as FunctionPermission;
+}
+
+export type Permission = CachePermission | TopicPermission | FunctionPermission;
 
 export interface Permissions {
   permissions: Array<Permission>;
@@ -96,11 +162,14 @@ export const AllDataReadWrite: Permissions = {
   permissions: [
     {role: CacheRole.ReadWrite, cache: AllCaches},
     {role: TopicRole.PublishSubscribe, cache: AllCaches, topic: AllTopics},
+    {role: FunctionRole.FunctionInvoke, cache: AllCaches, func: AllFunctions},
   ],
 };
 
 function isPermissionObject(p: Permission): boolean {
-  return isCachePermission(p) || isTopicPermission(p);
+  return (
+    isCachePermission(p) || isTopicPermission(p) || isFunctionPermission(p)
+  );
 }
 
 export function isPermissionsObject(scope: PermissionScope): boolean {

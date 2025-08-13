@@ -7,6 +7,7 @@ import {
   SuperUserPermissions,
   TopicRole as GrpcTopicRole,
   CacheRole as GrpcCacheRole,
+  FunctionRole as GrpcFunctionRole,
 } from '@gomomento/generated-types-webtext/dist/permissionmessages_pb';
 import {
   AllCaches,
@@ -16,8 +17,12 @@ import {
   Permissions,
   TopicRole,
 } from '@gomomento/sdk-core';
-import {DisposableTokenCachePermissions} from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
+import {DisposableTokenPermissions} from '@gomomento/sdk-core/dist/src/auth/tokens/disposable-token-scope';
 import {convertToB64String} from '../../../src/utils/web-client-utils';
+import {
+  AllFunctions,
+  FunctionRole,
+} from '@gomomento/sdk-core/dist/src/auth/tokens/permission-scope';
 
 describe('internal auth client', () => {
   describe('permissionsFromScope', () => {
@@ -43,15 +48,153 @@ describe('internal auth client', () => {
       const cachePermissionType = new PermissionsType();
       cachePermissionType.setCachePermissions(cachePermissions);
 
+      const functionPermissions = new PermissionsType.FunctionPermissions();
+      functionPermissions.setRole(GrpcFunctionRole.FUNCTIONINVOKE);
+      functionPermissions.setAllCaches(new PermissionsType.All());
+      functionPermissions.setAllFunctions(new PermissionsType.All());
+      const functionPermissionsType = new PermissionsType();
+      functionPermissionsType.setFunctionPermissions(functionPermissions);
+
       const explicitPermissions = new ExplicitPermissions();
       explicitPermissions.setPermissionsList([
         cachePermissionType,
         topicPermissionType,
+        functionPermissionsType,
       ]);
 
       const grpcPermissions = new GrpcPermissions();
       grpcPermissions.setExplicit(explicitPermissions);
       expect(permissionsFromScope(AllDataReadWrite)).toEqual(grpcPermissions);
+    });
+
+    it('creates expected grpc permissions for function invoke on all caches and all functions', () => {
+      const functionInvoke = new PermissionsType.FunctionPermissions();
+      functionInvoke.setRole(GrpcFunctionRole.FUNCTIONINVOKE);
+      functionInvoke.setAllCaches(new PermissionsType.All());
+      functionInvoke.setAllFunctions(new PermissionsType.All());
+
+      const functionPermissionsType = new PermissionsType();
+      functionPermissionsType.setFunctionPermissions(functionInvoke);
+
+      const explicitPermissions = new ExplicitPermissions();
+      explicitPermissions.setPermissionsList([functionPermissionsType]);
+
+      const grpcPermissions = new GrpcPermissions();
+      grpcPermissions.setExplicit(explicitPermissions);
+
+      const functionPermissions: Permissions = {
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: AllCaches,
+            func: AllFunctions,
+          },
+        ],
+      };
+
+      expect(permissionsFromScope(functionPermissions)).toEqual(
+        grpcPermissions
+      );
+    });
+
+    it('creates expected grpc permissions for function invoke on specific cache and function', () => {
+      const functionInvoke = new PermissionsType.FunctionPermissions();
+      functionInvoke.setRole(GrpcFunctionRole.FUNCTIONINVOKE);
+      const cacheSelector = new PermissionsType.CacheSelector();
+      cacheSelector.setCacheName('foo');
+      functionInvoke.setCacheSelector(cacheSelector);
+
+      const functionSelector = new PermissionsType.FunctionSelector();
+      functionSelector.setFunctionName('foo');
+      functionInvoke.setFunctionSelector(functionSelector);
+
+      const functionPermissionsType = new PermissionsType();
+      functionPermissionsType.setFunctionPermissions(functionInvoke);
+
+      const explicitPermissions = new ExplicitPermissions();
+      explicitPermissions.setPermissionsList([functionPermissionsType]);
+
+      const grpcPermissions = new GrpcPermissions();
+      grpcPermissions.setExplicit(explicitPermissions);
+
+      const functionPermissions: Permissions = {
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: {name: 'foo'},
+            func: {name: 'foo'},
+          },
+        ],
+      };
+
+      expect(permissionsFromScope(functionPermissions)).toEqual(
+        grpcPermissions
+      );
+    });
+
+    it('creates expected grpc permissions for function permit none on all caches and all functions', () => {
+      const functionPermitNone = new PermissionsType.FunctionPermissions();
+      functionPermitNone.setRole(GrpcFunctionRole.FUNCTIONPERMITNONE);
+      functionPermitNone.setAllCaches(new PermissionsType.All());
+      functionPermitNone.setAllFunctions(new PermissionsType.All());
+
+      const functionPermissionsType = new PermissionsType();
+      functionPermissionsType.setFunctionPermissions(functionPermitNone);
+
+      const explicitPermissions = new ExplicitPermissions();
+      explicitPermissions.setPermissionsList([functionPermissionsType]);
+
+      const grpcPermissions = new GrpcPermissions();
+      grpcPermissions.setExplicit(explicitPermissions);
+
+      const functionPermissions: Permissions = {
+        permissions: [
+          {
+            role: FunctionRole.FunctionPermitNone,
+            cache: AllCaches,
+            func: AllFunctions,
+          },
+        ],
+      };
+
+      expect(permissionsFromScope(functionPermissions)).toEqual(
+        grpcPermissions
+      );
+    });
+
+    it('creates expected grpc permissions for function invoke with function name prefix', () => {
+      const functionInvoke = new PermissionsType.FunctionPermissions();
+      functionInvoke.setRole(GrpcFunctionRole.FUNCTIONINVOKE);
+      const cacheSelector = new PermissionsType.CacheSelector();
+      cacheSelector.setCacheName('foo');
+      functionInvoke.setCacheSelector(cacheSelector);
+
+      const functionSelector = new PermissionsType.FunctionSelector();
+      functionSelector.setFunctionNamePrefix('foo');
+      functionInvoke.setFunctionSelector(functionSelector);
+
+      const functionPermissionsType = new PermissionsType();
+      functionPermissionsType.setFunctionPermissions(functionInvoke);
+
+      const explicitPermissions = new ExplicitPermissions();
+      explicitPermissions.setPermissionsList([functionPermissionsType]);
+
+      const grpcPermissions = new GrpcPermissions();
+      grpcPermissions.setExplicit(explicitPermissions);
+
+      const functionPermissions: Permissions = {
+        permissions: [
+          {
+            role: FunctionRole.FunctionInvoke,
+            cache: {name: 'foo'},
+            func: {namePrefix: 'foo'},
+          },
+        ],
+      };
+
+      expect(permissionsFromScope(functionPermissions)).toEqual(
+        grpcPermissions
+      );
     });
 
     it('creates expected grpc permissions for cache and topic specific permissions', () => {
@@ -286,7 +429,7 @@ describe('internal auth client', () => {
       const grpcPermissions = new GrpcPermissions();
       grpcPermissions.setExplicit(explicitPermissions);
 
-      const cacheAndItemPermissions: DisposableTokenCachePermissions = {
+      const cacheAndItemPermissions: DisposableTokenPermissions = {
         permissions: [
           {
             role: CacheRole.WriteOnly,
@@ -338,7 +481,7 @@ describe('internal auth client', () => {
       const grpcPermissions = new GrpcPermissions();
       grpcPermissions.setExplicit(explicitPermissions);
 
-      const cacheAndItemPermissions: DisposableTokenCachePermissions = {
+      const cacheAndItemPermissions: DisposableTokenPermissions = {
         permissions: [
           {
             role: CacheRole.ReadOnly,
@@ -389,7 +532,7 @@ describe('internal auth client', () => {
       const grpcPermissions = new GrpcPermissions();
       grpcPermissions.setExplicit(explicitPermissions);
 
-      const cacheAndItemPermissions: DisposableTokenCachePermissions = {
+      const cacheAndItemPermissions: DisposableTokenPermissions = {
         permissions: [
           {
             role: CacheRole.ReadWrite,
