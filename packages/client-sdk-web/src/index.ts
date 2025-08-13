@@ -60,6 +60,7 @@ import * as CacheSortedSetRemoveElement from '@gomomento/sdk-core/dist/src/messa
 import * as CacheSortedSetRemoveElements from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-remove-elements';
 import * as CacheSortedSetLength from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-length';
 import * as CacheSortedSetLengthByScore from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-length-by-score';
+import * as CacheSortedSetUnionStore from '@gomomento/sdk-core/dist/src/messages/responses/cache-sorted-set-union-store';
 import * as CacheItemGetType from '@gomomento/sdk-core/dist/src/messages/responses/cache-item-get-type';
 import * as CacheItemGetTtl from '@gomomento/sdk-core/dist/src/messages/responses/cache-item-get-ttl';
 import * as CacheKeyExists from '@gomomento/sdk-core/dist/src/messages/responses/cache-key-exists';
@@ -272,6 +273,7 @@ export {
   CacheSortedSetRemoveElements,
   CacheSortedSetLength,
   CacheSortedSetLengthByScore,
+  CacheSortedSetUnionStore,
   CacheItemGetType,
   CacheItemGetTtl,
   CacheKeyExists,

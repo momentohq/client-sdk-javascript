@@ -2883,49 +2883,75 @@ export function runSortedSetTests(
     });
 
     describe('#sortedSetUnionStore', () => {
-      const sources: SortedSetSource[] = [
+      const sourceSets: SortedSetSource[] = [
         {sortedSetName: 'set1', weight: 1.0},
         {sortedSetName: 'set2', weight: 2.5},
       ];
+      const sourceSetsTwo: SortedSetSource[] = [
+        {sortedSetName: 'set3', weight: 1.0},
+        {sortedSetName: 'set4', weight: 2.5},
+      ];
+
+      const field1 = 'foo';
+      const field2 = 'bar';
+      const field3 = 'abc';
+      const field4 = 'def';
+
+      beforeAll(done => {
+        const promises = [
+          cacheClient.sortedSetPutElements(
+            integrationTestCacheName,
+            sourceSets[0].sortedSetName,
+            new Map([
+              [field1, 1],
+              [field2, 2],
+            ])
+          ),
+          cacheClient.sortedSetPutElements(
+            integrationTestCacheName,
+            sourceSets[1].sortedSetName,
+            new Map([
+              [field3, 3],
+              [field4, 4],
+            ])
+          ),
+          cacheClient.sortedSetPutElements(
+            integrationTestCacheName,
+            sourceSetsTwo[0].sortedSetName,
+            new Map([
+              [field1, 1],
+              [field2, 3],
+            ])
+          ),
+          cacheClient.sortedSetPutElements(
+            integrationTestCacheName,
+            sourceSetsTwo[1].sortedSetName,
+            new Map([
+              [field3, 2],
+              [field2, 2],
+            ])
+          ),
+        ];
+        Promise.all(promises)
+          .then(() => {
+            done();
+          })
+          .catch(e => {
+            throw e;
+          });
+      });
+
       const responder = (props: ValidateSortedSetProps) => {
         return cacheClient.sortedSetUnionStore(
           props.cacheName,
           props.sortedSetName,
-          sources
+          sourceSets
         );
       };
       itBehavesLikeItValidates(responder);
 
       it('should store all distinct elements from the source sets', async () => {
         const destSetName = v4();
-        const sourceSets: SortedSetSource[] = [
-          {sortedSetName: 'set1', weight: 1.0},
-          {sortedSetName: 'set2', weight: 2.5},
-        ];
-        const field1 = 'foo';
-        const score1 = 1;
-        const field2 = 'bar';
-        const score2 = 2;
-        const field3 = 'abc';
-        const score3 = 3;
-        const field4 = 'def';
-        const score4 = 4;
-        await cacheClient.sortedSetPutElements(
-          integrationTestCacheName,
-          sourceSets[0].sortedSetName,
-          new Map([
-            [field1, score1],
-            [field2, score2],
-          ])
-        );
-        await cacheClient.sortedSetPutElements(
-          integrationTestCacheName,
-          sourceSets[1].sortedSetName,
-          new Map([
-            [field3, score3],
-            [field4, score4],
-          ])
-        );
         const response = await cacheClient.sortedSetUnionStore(
           integrationTestCacheName,
           destSetName,
@@ -2951,41 +2977,12 @@ export function runSortedSetTests(
 
       it('uses specified aggregate function to combine weighted scores for elements existing in multiple source sets', async () => {
         const destSetName = v4();
-        const sourceSets: SortedSetSource[] = [
-          {sortedSetName: 'set3', weight: 1.0},
-          {sortedSetName: 'set4', weight: 2.5},
-        ];
-        const field1 = 'foo';
-        const score1 = 1;
-        const field2 = 'bar';
-        const score2 = 3;
-        const field3 = 'abc';
-        const score3 = 2;
-        const field4 = 'bar';
-        const score4 = 2;
-
-        await cacheClient.sortedSetPutElements(
-          integrationTestCacheName,
-          sourceSets[0].sortedSetName,
-          new Map([
-            [field1, score1],
-            [field2, score2],
-          ])
-        );
-        await cacheClient.sortedSetPutElements(
-          integrationTestCacheName,
-          sourceSets[1].sortedSetName,
-          new Map([
-            [field3, score3],
-            [field4, score4],
-          ])
-        );
 
         //SUM
         let response = await cacheClient.sortedSetUnionStore(
           integrationTestCacheName,
           destSetName,
-          sourceSets,
+          sourceSetsTwo,
           {aggregate: SortedSetAggregate.SUM, ttl: undefined}
         );
         expectWithMessage(() => {
@@ -3009,7 +3006,7 @@ export function runSortedSetTests(
         response = await cacheClient.sortedSetUnionStore(
           integrationTestCacheName,
           destSetName,
-          sourceSets,
+          sourceSetsTwo,
           {aggregate: SortedSetAggregate.MIN, ttl: undefined}
         );
         expectWithMessage(() => {
@@ -3033,7 +3030,7 @@ export function runSortedSetTests(
         response = await cacheClient.sortedSetUnionStore(
           integrationTestCacheName,
           destSetName,
-          sourceSets,
+          sourceSetsTwo,
           {aggregate: SortedSetAggregate.MAX, ttl: undefined}
         );
         expectWithMessage(() => {
@@ -3056,18 +3053,11 @@ export function runSortedSetTests(
 
       it('uses SUM function as default to combine weighted scores for elements existing in multiple source sets', async () => {
         const destSetName = v4();
-        const sourceSets: SortedSetSource[] = [
-          {sortedSetName: 'set3', weight: 1.0},
-          {sortedSetName: 'set4', weight: 2.5},
-        ];
-        const field1 = 'foo';
-        const field2 = 'bar';
-        const field3 = 'abc';
-        const field4 = 'bar';
+
         const response = await cacheClient.sortedSetUnionStore(
           integrationTestCacheName,
           destSetName,
-          sourceSets
+          sourceSetsTwo
         );
         expectWithMessage(() => {
           expect(response).toBeInstanceOf(CacheSortedSetUnionStore.Success);
@@ -3093,10 +3083,6 @@ export function runSortedSetTests(
           {sortedSetName: 'set1', weight: 0},
           {sortedSetName: 'set2', weight: 0},
         ];
-        const field1 = 'foo';
-        const field2 = 'bar';
-        const field3 = 'abc';
-        const field4 = 'def';
 
         const response = await cacheClient.sortedSetUnionStore(
           integrationTestCacheName,
@@ -3127,10 +3113,6 @@ export function runSortedSetTests(
           {sortedSetName: 'set3', weight: 0},
           {sortedSetName: 'set4', weight: 0},
         ];
-        const field1 = 'foo';
-        const field2 = 'bar';
-        const field3 = 'abc';
-        const field4 = 'bar';
 
         const response = await cacheClient.sortedSetUnionStore(
           integrationTestCacheName,
@@ -3161,10 +3143,6 @@ export function runSortedSetTests(
           {sortedSetName: 'set1', weight: 1},
           {sortedSetName: 'set2', weight: -1},
         ];
-        const field1 = 'foo';
-        const field2 = 'bar';
-        const field3 = 'abc';
-        const field4 = 'def';
 
         const response = await cacheClient.sortedSetUnionStore(
           integrationTestCacheName,
@@ -3195,10 +3173,6 @@ export function runSortedSetTests(
           {sortedSetName: 'set3', weight: 1},
           {sortedSetName: 'set4', weight: -1},
         ];
-        const field1 = 'foo';
-        const field2 = 'bar';
-        const field3 = 'abc';
-        const field4 = 'bar';
 
         const response = await cacheClient.sortedSetUnionStore(
           integrationTestCacheName,
@@ -3263,7 +3237,7 @@ export function runSortedSetTests(
           MomentoErrorCode.INVALID_ARGUMENT_ERROR
         );
       });
-      it('errors when one source is provided', async () => {
+      it('passes when one source is provided', async () => {
         const destSetName = v4();
         const sourceSets: SortedSetSource[] = [
           {sortedSetName: 'set1', weight: 1},

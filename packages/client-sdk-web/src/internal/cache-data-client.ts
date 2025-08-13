@@ -4128,7 +4128,7 @@ export class CacheDataClient<
     sortedSetName: string,
     sources: SortedSetSource[],
     aggregate?: SortedSetAggregate,
-    ttl?: CollectionTtl
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
   ): Promise<CacheSortedSetUnionStore.Response> {
     try {
       validateCacheName(cacheName);
