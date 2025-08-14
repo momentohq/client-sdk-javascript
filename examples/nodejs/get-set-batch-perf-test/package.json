@@ -26,7 +26,7 @@
     "typescript": "5.4.5"
   },
   "dependencies": {
-    "@gomomento/sdk": "^1.111.0",
+    "@gomomento/sdk": "^1.113.0",
     "hdr-histogram-js": "3.0.0"
   },
   "engines": {
