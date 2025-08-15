@@ -1931,9 +1931,7 @@ export class CacheDataClient implements IDataClient {
                   .catch(e =>
                     resolve(
                       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                      new CacheGetWithHash.Error(
-                        new InvalidArgumentError(`${e}`)
-                      )
+                      new CacheGetWithHash.Error(new UnknownError(`${e}`))
                     )
                   );
               }
