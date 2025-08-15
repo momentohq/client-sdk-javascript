@@ -1,5 +1,6 @@
 // Cache Client Response Types
 import * as CacheGet from './messages/responses/cache-get';
+import * as CacheGetWithHash from './messages/responses/cache-get-with-hash';
 import * as CacheListConcatenateBack from './messages/responses/cache-list-concatenate-back';
 import * as CacheListConcatenateFront from './messages/responses/cache-list-concatenate-front';
 import * as CacheListFetch from './messages/responses/cache-list-fetch';
@@ -64,6 +65,7 @@ import * as CacheIncreaseTtl from './messages/responses/cache-ttl-increase';
 import * as CacheDecreaseTtl from './messages/responses/cache-ttl-decrease';
 import * as CacheSetBatch from './messages/responses/cache-batch-set';
 import * as CacheGetBatch from './messages/responses/cache-batch-get';
+import * as CacheSetWithHash from './messages/responses/cache-set-with-hash';
 
 // TopicClient Response Types
 import * as TopicPublish from './messages/responses/topic-publish';
@@ -154,6 +156,7 @@ export {
   DictionarySetFieldOptions,
   DictionarySetFieldsOptions,
   SetOptions,
+  SetWithHashOptions,
   SetIfNotExistsOptions,
   SetIfAbsentOptions,
   SetIfPresentOptions,
@@ -164,6 +167,8 @@ export {
   SortedSetPutElementsOptions,
   IncrementOptions,
   SortedSetUnionStoreOptions,
+  GetWithHashOptions,
+  GetOptions,
 } from './clients/ICacheClient';
 
 export {IMomentoCache} from './clients/IMomentoCache';
@@ -252,6 +257,7 @@ export {
 
   // CacheClient Response Types
   CacheGet,
+  CacheGetWithHash,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
   CacheListFetch,
@@ -317,6 +323,7 @@ export {
   CacheInfo,
   CacheSetBatch,
   CacheGetBatch,
+  CacheSetWithHash,
   // TopicClient Response Types
   TopicPublish,
   TopicSubscribe,

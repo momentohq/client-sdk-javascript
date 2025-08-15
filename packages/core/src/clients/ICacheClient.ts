@@ -1,6 +1,7 @@
 import {
   CacheDelete,
   CacheGet,
+  CacheGetWithHash,
   CacheIncrement,
   CacheSet,
   CacheSetIfNotExists,
@@ -60,6 +61,7 @@ import {
   CacheSetPop,
   CacheSetLength,
   CacheSortedSetUnionStore,
+  CacheSetWithHash,
 } from '../index';
 import {
   ScalarCallOptions,
@@ -78,6 +80,8 @@ import {
   SetBatchItem,
   SortedSetSource,
   SortedSetUnionStoreCallOptions,
+  GetWithHashCallOptions,
+  SetWithHashCallOptions,
 } from '../utils';
 import {IControlClient, IPingClient} from '../internal/clients';
 import {IMomentoCache} from './IMomentoCache';
@@ -112,6 +116,8 @@ export type SortedSetGetRankOptions = SortedSetGetRankCallOptions;
 export type SortedSetIncrementOptions = CollectionCallOptions;
 export type SortedSetLengthByScoreOptions = SortedSetLengthByScoreCallOptions;
 export type SortedSetUnionStoreOptions = SortedSetUnionStoreCallOptions;
+export type GetWithHashOptions = GetWithHashCallOptions;
+export type SetWithHashOptions = SetWithHashCallOptions;
 
 export interface ICacheClient extends IControlClient, IPingClient {
   cache(cacheName: string): IMomentoCache;
@@ -198,6 +204,17 @@ export interface ICacheClient extends IControlClient, IPingClient {
       | Array<SetBatchItem>,
     options?: SetBatchOptions
   ): Promise<CacheSetBatch.Response>;
+  getWithHash(
+    cacheName: string,
+    key: string | Uint8Array,
+    options?: GetWithHashOptions
+  ): Promise<CacheGetWithHash.Response>;
+  setWithHash(
+    cacheName: string,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    options?: SetWithHashOptions
+  ): Promise<CacheSetWithHash.Response>;
   setFetch(cacheName: string, setName: string): Promise<CacheSetFetch.Response>;
   setAddElement(
     cacheName: string,

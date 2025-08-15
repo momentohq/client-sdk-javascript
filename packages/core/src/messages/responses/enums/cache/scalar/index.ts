@@ -115,3 +115,15 @@ export enum CacheDecreaseTtlResponse {
   Miss = 'Miss',
   Error = 'Error',
 }
+
+export enum CacheGetWithHashResponse {
+  Hit = 'Hit',
+  Miss = 'Miss',
+  Error = 'Error',
+}
+
+export enum CacheSetWithHashResponse {
+  Stored = 'Stored',
+  NotStored = 'NotStored',
+  Error = 'Error',
+}

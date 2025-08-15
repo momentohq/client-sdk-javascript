@@ -60,6 +60,8 @@ import {
   CacheSetPop,
   CacheSetLength,
   CacheSortedSetUnionStore,
+  CacheGetWithHash,
+  CacheSetWithHash,
 } from '../../../index';
 import {
   GetBatchCallOptions,
@@ -78,12 +80,23 @@ export interface IDataClient {
     key: string | Uint8Array,
     options?: GetCallOptions
   ): Promise<CacheGet.Response>;
+  getWithHash(
+    cacheName: string,
+    key: string | Uint8Array,
+    options?: GetCallOptions
+  ): Promise<CacheGetWithHash.Response>;
   set(
     cacheName: string,
     key: string | Uint8Array,
     value: string | Uint8Array,
     options?: SetCallOptions
   ): Promise<CacheSet.Response>;
+  setWithHash(
+    cacheName: string,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    options?: SetCallOptions
+  ): Promise<CacheSetWithHash.Response>;
   delete(
     cacheName: string,
     key: string | Uint8Array

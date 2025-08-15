@@ -2,6 +2,7 @@ import {v4} from 'uuid';
 import {
   CacheDelete,
   CacheGet,
+  CacheGetWithHash,
   CacheIncrement,
   CacheItemGetTtl,
   CacheSet,
@@ -14,6 +15,7 @@ import {
   CacheSetIfAbsentOrEqual,
   MomentoErrorCode,
   FailedPreconditionError,
+  CacheSetWithHash,
 } from '@gomomento/sdk-core';
 import {TextEncoder} from 'util';
 import {
@@ -41,6 +43,9 @@ export function runGetSetDeleteTests(
     ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
       return cacheClient.delete(props.cacheName, v4());
     });
+    ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+      return cacheClient.getWithHash(props.cacheName, v4());
+    });
 
     it('should set and get string from cache', async () => {
       const cacheKey = v4();
@@ -63,6 +68,34 @@ export function runGetSetDeleteTests(
       }, `expected HIT but got ${getResponse.toString()}`);
       if (getResponse instanceof CacheGet.Hit) {
         expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should set and get string hash and value from cache', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setResponse instanceof CacheSetWithHash.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(setResponse.hashString());
       }
     });
 
@@ -90,6 +123,34 @@ export function runGetSetDeleteTests(
       }
     });
 
+    it('should setWithHash and getWithHash string with special characters from cache', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4() + 'héllö wörld';
+
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setResponse instanceof CacheSetWithHash.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(setResponse.hashString());
+      }
+    });
+
     it('should set and get bytes from cache', async () => {
       const cacheKey = new TextEncoder().encode(v4());
       const cacheValue = new TextEncoder().encode(v4());
@@ -110,6 +171,34 @@ export function runGetSetDeleteTests(
       }, `expected HIT but got ${getResponse.toString()}`);
     });
 
+    it('should setWithHash and getWithHash bytes from cache', async () => {
+      const cacheKey = new TextEncoder().encode(v4());
+      const cacheValue = v4();
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        new TextEncoder().encode(cacheValue)
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setResponse instanceof CacheSetWithHash.Stored
+      ) {
+        expect(getResponse.valueString()).toBe(cacheValue);
+        expect(getResponse.hashString()).toEqual(setResponse.hashString());
+      }
+    });
+
     it('should set and get bytes with special characters from cache', async () => {
       const cacheKey = new TextEncoder().encode(v4());
       const cacheValue = new TextEncoder().encode(v4() + 'héllö wörld');
@@ -128,6 +217,34 @@ export function runGetSetDeleteTests(
       expectWithMessage(() => {
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
+    });
+
+    it('should setWithHash and getWithHash bytes with special characters from cache', async () => {
+      const cacheKey = new TextEncoder().encode(v4());
+      const cacheValue = v4() + 'héllö wörld';
+
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        new TextEncoder().encode(cacheValue)
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setResponse instanceof CacheSetWithHash.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(setResponse.hashString());
+      }
     });
 
     it('should set string key with bytes value', async () => {
@@ -154,6 +271,35 @@ export function runGetSetDeleteTests(
       }
     });
 
+    it('should setWithHash string key with bytes value', async () => {
+      const cacheKey = v4();
+      const cacheValue = new TextEncoder().encode(v4());
+      const decodedValue = new TextDecoder().decode(cacheValue);
+
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setResponse instanceof CacheSetWithHash.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(decodedValue);
+        expect(getResponse.hashString()).toEqual(setResponse.hashString());
+      }
+    });
+
     it('should set byte key with string value', async () => {
       const cacheValue = v4();
       const cacheKey = new TextEncoder().encode(v4());
@@ -174,6 +320,34 @@ export function runGetSetDeleteTests(
       }, `expected HIT but got ${getResponse.toString()}`);
       if (getResponse instanceof CacheGet.Hit) {
         expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should setWithHash byte key with string value', async () => {
+      const cacheValue = v4();
+      const cacheKey = new TextEncoder().encode(v4());
+
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setResponse instanceof CacheSetWithHash.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(setResponse.hashString());
       }
     });
 
@@ -226,6 +400,36 @@ export function runGetSetDeleteTests(
       expect(getMiss).toBeInstanceOf(CacheGet.Miss);
     });
 
+    it('should setWithHash and then delete a value in cache', async () => {
+      const cacheKey = v4();
+      const cacheValue = new TextEncoder().encode(v4());
+      await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue
+      );
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+
+      const deleteResponse = await cacheClient.delete(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
+      }, `expected SUCCESS but got ${deleteResponse.toString()}`);
+      const getMiss = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expect(getMiss).toBeInstanceOf(CacheGetWithHash.Miss);
+    });
+
     it('should return INVALID_ARGUMENT_ERROR for negative ttl when set with string key/value', async () => {
       const setResponse = await cacheClient.set(
         integrationTestCacheName,
@@ -241,6 +445,21 @@ export function runGetSetDeleteTests(
       }
     });
 
+    it('should return INVALID_ARGUMENT_ERROR for negative ttl when setWithHash with string key/value', async () => {
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        v4(),
+        v4(),
+        {ttl: -1}
+      );
+      expect(setResponse).toBeInstanceOf(CacheSetWithHash.Error);
+      if (setResponse instanceof CacheSetWithHash.Error) {
+        expect(setResponse.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }
+    });
+
     it('should return INVALID_ARGUMENT_ERROR for float ttl when set with string key/value', async () => {
       const setResponse = await cacheClient.set(
         integrationTestCacheName,
@@ -250,6 +469,21 @@ export function runGetSetDeleteTests(
       );
       expect(setResponse).toBeInstanceOf(CacheSet.Error);
       if (setResponse instanceof CacheSet.Error) {
+        expect(setResponse.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }
+    });
+
+    it('should return INVALID_ARGUMENT_ERROR for float ttl when setWithHash with string key/value', async () => {
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        v4(),
+        v4(),
+        {ttl: 1.5}
+      );
+      expect(setResponse).toBeInstanceOf(CacheSetWithHash.Error);
+      if (setResponse instanceof CacheSetWithHash.Error) {
         expect(setResponse.errorCode()).toEqual(
           MomentoErrorCode.INVALID_ARGUMENT_ERROR
         );
@@ -278,6 +512,32 @@ export function runGetSetDeleteTests(
       }
     });
 
+    it('should setWithHash string key/value with valid ttl and getWithHash successfully', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        cacheValue,
+        {ttl: 15}
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setResponse instanceof CacheSetWithHash.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(setResponse.hashString());
+      }
+    });
+
     it('should set with valid ttl and should return miss when ttl is expired', async () => {
       const cacheKey = v4();
       const setResponse = await cacheClient.set(
@@ -300,6 +560,28 @@ export function runGetSetDeleteTests(
       }, `expected MISS but got ${getResponse.toString()}`);
     });
 
+    it('should setWithHash with valid ttl and should return miss when ttl is expired', async () => {
+      const cacheKey = v4();
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4(),
+        {ttl: 1}
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      await sleep(3000);
+
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Miss);
+      }, `expected MISS but got ${getResponse.toString()}`);
+    });
+
     it('should support happy path for get, set, and delete via curried cache via ICache interface', async () => {
       const cacheKey = v4();
       const cacheValue = v4();
@@ -314,6 +596,31 @@ export function runGetSetDeleteTests(
         expect(getResponse).toBeInstanceOf(CacheGet.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
       if (getResponse instanceof CacheGet.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+
+      const deleteResponse = await cache.delete(cacheKey);
+      expectWithMessage(() => {
+        expect(deleteResponse).toBeInstanceOf(CacheDelete.Success);
+      }, `expected SUCCESS but got ${deleteResponse.toString()}`);
+      const getMiss = await cacheClient.get(integrationTestCacheName, cacheKey);
+      expect(getMiss).toBeInstanceOf(CacheGet.Miss);
+    });
+
+    it('should support happy path for getWithHash, setWithHash, and delete via curried cache via ICache interface', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+
+      const cache = cacheClient.cache(integrationTestCacheName);
+      const setResponse = await cache.setWithHash(cacheKey, cacheValue);
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const getResponse = await cache.getWithHash(cacheKey);
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGetWithHash.Hit) {
         expect(getResponse.valueString()).toEqual(cacheValue);
       }
 
