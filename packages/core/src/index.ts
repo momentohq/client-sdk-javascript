@@ -167,6 +167,7 @@ export {
   SortedSetPutElementsOptions,
   IncrementOptions,
   SortedSetUnionStoreOptions,
+  GetWithHashOptions,
 } from './clients/ICacheClient';
 
 export {IMomentoCache} from './clients/IMomentoCache';

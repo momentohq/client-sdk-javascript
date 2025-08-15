@@ -133,6 +133,7 @@ import {
   SortedSetSource,
   SortedSetAggregate,
   GetWithHashCallOptions,
+  SetWithHashCallOptions,
 } from '@gomomento/sdk-core/dist/src/utils';
 import {CompressionError} from '../errors/compression-error';
 import {CacheSetLength, CacheSetPop} from '@gomomento/sdk-core';
@@ -557,7 +558,7 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     key: string | Uint8Array,
     value: string | Uint8Array,
-    options?: SetCallOptions
+    options?: SetWithHashCallOptions
   ): Promise<CacheSetWithHash.Response> {
     try {
       validateCacheName(cacheName);
@@ -1922,26 +1923,17 @@ export class CacheDataClient implements IDataClient {
                   )
                 );
               } else {
-                Promise.all([
-                  this.compressionDetails.valueCompressor.decompressIfCompressed(
-                    resp.found.value
-                  ),
-                  this.compressionDetails.valueCompressor.decompressIfCompressed(
-                    resp.found.hash
-                  ),
-                ])
-                  .then(([decompressedValue, decompressedHash]) => {
-                    resolve(
-                      new CacheGetWithHash.Hit(
-                        decompressedValue,
-                        decompressedHash
-                      )
-                    );
-                  })
+                this.compressionDetails.valueCompressor
+                  .decompressIfCompressed(resp.found.value)
+                  .then(v =>
+                    resolve(new CacheGetWithHash.Hit(v, resp.found.hash))
+                  )
                   .catch(e =>
                     resolve(
                       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                      new CacheGetWithHash.Error(new UnknownError(`${e}`))
+                      new CacheGetWithHash.Error(
+                        new InvalidArgumentError(`${e}`)
+                      )
                     )
                   );
               }

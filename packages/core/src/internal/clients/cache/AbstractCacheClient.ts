@@ -107,6 +107,7 @@ import {
   GetOptions,
   GetBatchOptions,
   GetWithHashOptions,
+  SetWithHashOptions,
 } from '../../../clients/ICacheClient';
 import {IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
@@ -278,7 +279,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
     cacheName: string,
     key: string | Uint8Array,
     value: string | Uint8Array,
-    options?: SetOptions
+    options?: SetWithHashOptions
   ): Promise<CacheSetWithHash.Response> {
     const client = this.getNextDataClient();
     return await client.setWithHash(cacheName, key, value, options);
