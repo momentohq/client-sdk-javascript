@@ -61,6 +61,8 @@ import {
   CacheSetPop,
   CacheSetLength,
   CacheSortedSetUnionStore,
+  CacheGetWithHash,
+  CacheSetWithHash,
 } from '../../../index';
 import {
   ScalarCallOptions,
@@ -80,6 +82,7 @@ import {IMomentoCache} from '../../../clients/IMomentoCache';
 
 // Type aliases to differentiate the different methods' optional arguments.
 export type SetOptions = ScalarCallOptions;
+export type SetWithHashOptions = ScalarCallOptions;
 export type SetIfNotExistsOptions = ScalarCallOptions;
 export type SetIfAbsentOptions = ScalarCallOptions;
 export type SetIfPresentOptions = ScalarCallOptions;
@@ -117,12 +120,22 @@ export class MomentoCache implements IMomentoCache {
   get(key: string | Uint8Array): Promise<CacheGet.Response> {
     return this.cacheClient.get(this.cacheName, key);
   }
+  getWithHash(key: string | Uint8Array): Promise<CacheGetWithHash.Response> {
+    return this.cacheClient.getWithHash(this.cacheName, key);
+  }
   set(
     key: string | Uint8Array,
     value: string | Uint8Array,
     options?: SetOptions
   ): Promise<CacheSet.Response> {
     return this.cacheClient.set(this.cacheName, key, value, options);
+  }
+  setWithHash(
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    options?: SetWithHashOptions
+  ): Promise<CacheSetWithHash.Response> {
+    return this.cacheClient.setWithHash(this.cacheName, key, value, options);
   }
   delete(key: string | Uint8Array): Promise<CacheDelete.Response> {
     return this.cacheClient.delete(this.cacheName, key);

@@ -72,7 +72,8 @@ import * as CacheIncreaseTtl from '@gomomento/sdk-core/dist/src/messages/respons
 import * as CacheDecreaseTtl from '@gomomento/sdk-core/dist/src/messages/responses/cache-ttl-decrease';
 import * as CacheGetBatch from '@gomomento/sdk-core/dist/src/messages/responses/cache-batch-get';
 import * as CacheSetBatch from '@gomomento/sdk-core/dist/src/messages/responses/cache-batch-set';
-
+import * as CacheGetWithHash from '@gomomento/sdk-core/dist/src/messages/responses/cache-get-with-hash';
+import * as CacheSetWithHash from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-with-hash';
 // TopicClient Response Types
 import * as TopicPublish from '@gomomento/sdk-core/dist/src/messages/responses/topic-publish';
 import * as TopicSubscribe from '@gomomento/sdk-core/dist/src/messages/responses/topic-subscribe';
@@ -327,6 +328,7 @@ export {
   AllFunctions,
   // CacheClient response types
   CacheGet,
+  CacheGetWithHash,
   CacheListConcatenateBack,
   CacheListConcatenateFront,
   CacheListFetch,
@@ -338,6 +340,7 @@ export {
   CacheListRemoveValue,
   CacheListRetain,
   CacheSet,
+  CacheSetWithHash,
   CacheSetIfNotExists,
   CacheSetIfAbsent,
   CacheSetIfPresent,

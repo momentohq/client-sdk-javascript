@@ -120,6 +120,9 @@ import {
   _SetSampleRequest,
   _SetPopRequest,
   _SetLengthRequest,
+  _GetWithHashRequest,
+  _SetIfHashRequest,
+  _SetIfHashResponse,
 } from '@gomomento/generated-types-webtext/dist/cacheclient_pb';
 import {IDataClient} from '@gomomento/sdk-core/dist/src/internal/clients';
 import {
@@ -156,6 +159,7 @@ import {
   PresentAndNotEqual,
   Equal,
   NotEqual,
+  Unconditional,
 } from '@gomomento/generated-types-webtext/dist/common_pb';
 import {
   secondsToMilliseconds,
@@ -167,8 +171,10 @@ import {
   SortedSetSource,
 } from '@gomomento/sdk-core/dist/src/utils';
 import {
+  CacheGetWithHash,
   CacheSetLength,
   CacheSetPop,
+  CacheSetWithHash,
   CacheSortedSetUnionStore,
 } from '@gomomento/sdk-core';
 import {CacheClientAllProps} from './cache-client-all-props';
@@ -328,6 +334,68 @@ export class CacheDataClient<
     });
   }
 
+  public async getWithHash(
+    cacheName: string,
+    key: string | Uint8Array
+  ): Promise<CacheGetWithHash.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheGetWithHash.Error(err)
+      );
+    }
+    this.logger.trace(`Issuing 'getWithHash' request; key: ${key.toString()}`);
+    const result = await this.sendGetWithHash(
+      cacheName,
+      convertToB64String(key)
+    );
+    this.logger.trace(`'getWithHash' request result: ${result.toString()}`);
+    return result;
+  }
+
+  public async sendGetWithHash(
+    cacheName: string,
+    key: string
+  ): Promise<CacheGetWithHash.Response> {
+    const request = new _GetWithHashRequest();
+    request.setCacheKey(key);
+
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.getWithHash(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp?.getMissing()) {
+            resolve(new CacheGetWithHash.Miss());
+          }
+          const body = resp?.getFound();
+          if (body && body.getValue() && body.getHash()) {
+            const value = body.getValue();
+            const hash = body.getHash();
+            resolve(
+              new CacheGetWithHash.Hit(
+                this.convertToUint8Array(value),
+                this.convertToUint8Array(hash)
+              )
+            );
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheItemGetTtl.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
   public async set(
     cacheName: string,
     key: string | Uint8Array,
@@ -394,6 +462,92 @@ export class CacheDataClient<
     });
   }
 
+  public async setWithHash(
+    cacheName: string,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    options?: SetCallOptions
+  ): Promise<CacheSetWithHash.Response> {
+    try {
+      validateCacheName(cacheName);
+      if (options?.ttl !== undefined) {
+        validateTtlSeconds(options?.ttl);
+      }
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetWithHash.Error(err)
+      );
+    }
+    const ttlToUse = options?.ttl || this.defaultTtlSeconds;
+    this.logger.trace(
+      `Issuing 'setWithHash' request; key: ${key.toString()}, value length: ${
+        value.length
+      }, ttl: ${ttlToUse.toString()}`
+    );
+
+    return await this.sendSetWithHash(
+      cacheName,
+      convertToB64String(key),
+      convertToB64String(value),
+      ttlToUse
+    );
+  }
+  public async sendSetWithHash(
+    cacheName: string,
+    key: string,
+    value: string,
+    ttlSeconds: number
+  ): Promise<CacheSetWithHash.Response> {
+    const request = new _SetIfHashRequest();
+    request.setCacheKey(key);
+    request.setCacheBody(value);
+    request.setTtlMilliseconds(secondsToMilliseconds(ttlSeconds));
+    request.setUnconditional(new Unconditional());
+
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.setIfHash(
+        request,
+        {
+          ...this.clientMetadataProvider.createClientMetadata(),
+          ...createCallMetadata(cacheName, this.deadlineMillis),
+        },
+        (err, resp) => {
+          if (resp) {
+            switch (resp.getResultCase()) {
+              case _SetIfHashResponse.ResultCase.STORED: {
+                const stored = resp.getStored();
+                if (stored) {
+                  const new_hash = stored.getNewHash_asU8();
+                  resolve(new CacheSetWithHash.Stored(new_hash));
+                }
+                break;
+              }
+              case _SetIfHashResponse.ResultCase.NOT_STORED:
+                resolve(new CacheSetWithHash.NotStored());
+                break;
+              default:
+                resolve(
+                  new CacheSetWithHash.Error(
+                    new UnknownError(
+                      'SetWithHash responded with an unknown result'
+                    )
+                  )
+                );
+                break;
+            }
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetWithHash.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
   // setIfNotExists is deprecated on the service. Here we call the new `SetIf` method with the absent field set
   // and return `CacheSetIfNotExists` responses.
   public async setIfNotExists(

@@ -60,6 +60,8 @@ import {
   CacheSortedSetRemoveElements,
   CacheSetPop,
   CacheSetLength,
+  CacheGetWithHash,
+  CacheSetWithHash,
 } from '../index';
 import {
   ScalarCallOptions,
@@ -78,6 +80,7 @@ import {
 
 // Type aliases to differentiate the different methods' optional arguments.
 export type SetOptions = ScalarCallOptions;
+export type SetWithHashOptions = ScalarCallOptions;
 export type SetIfNotExistsOptions = ScalarCallOptions;
 export type SetIfAbsentOptions = ScalarCallOptions;
 export type SetIfPresentOptions = ScalarCallOptions;
@@ -106,11 +109,17 @@ export type SortedSetUnionStoreOptions = SortedSetUnionStoreCallOptions;
 
 export interface IMomentoCache {
   get(key: string | Uint8Array): Promise<CacheGet.Response>;
+  getWithHash(key: string | Uint8Array): Promise<CacheGetWithHash.Response>;
   set(
     key: string | Uint8Array,
     value: string | Uint8Array,
     options?: SetOptions
   ): Promise<CacheSet.Response>;
+  setWithHash(
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    options?: SetWithHashOptions
+  ): Promise<CacheSetWithHash.Response>;
   delete(key: string | Uint8Array): Promise<CacheDelete.Response>;
   increment(
     field: string | Uint8Array,
