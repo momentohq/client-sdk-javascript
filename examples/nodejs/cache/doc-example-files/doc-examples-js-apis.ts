@@ -66,6 +66,7 @@ import {
   CacheSortedSetPutElementsResponse,
   CacheSortedSetRemoveElementResponse,
   CacheSortedSetRemoveElementsResponse,
+  CacheSortedSetUnionStoreResponse,
   Configurations,
   CreateCacheResponse,
   CredentialProvider,
@@ -89,6 +90,7 @@ import {
   PreviewLeaderboardClient,
   ReadConcern,
   RefreshApiKeyResponse,
+  SortedSetSource,
   TokenScopes,
   TopicClient,
   TopicConfigurations,
@@ -1151,6 +1153,25 @@ async function example_API_SortedSetRemoveElements(cacheClient: CacheClient, cac
   }
 }
 
+async function example_API_SortedSetUnionStore(cacheClient: CacheClient, cacheName: string) {
+  const sources: SortedSetSource[] = [
+    {sortedSetName: 'test-sorted-set', weight: 1},
+    {sortedSetName: 'test-sorted-set-2', weight: -1},
+  ];
+  const result = await cacheClient.sortedSetUnionStore(cacheName, 'dest-sorted-set', sources);
+  switch (result.type) {
+    case CacheSortedSetUnionStoreResponse.Success:
+      console.log(
+        `Elements from sets 'test-sorted-set' and 'test-sorted-set-2' unioned and stored in 'dest-sorted-set' successfully with length ${result.length()}`
+      );
+      break;
+    case CacheSortedSetUnionStoreResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to call CacheSortedSetUnionStore on sorted sets 'test-sorted-set' and 'test-sorted-set-2' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+      );
+  }
+}
+
 async function example_API_KeyExists(cacheClient: CacheClient, cacheName: string) {
   const result = await cacheClient.keyExists(cacheName, 'test-key');
   switch (result.type) {
@@ -1840,6 +1861,7 @@ async function main() {
     await example_API_SortedSetIncrementScore(cacheClient, cacheName);
     await example_API_SortedSetRemoveElement(cacheClient, cacheName);
     await example_API_SortedSetRemoveElements(cacheClient, cacheName);
+    await example_API_SortedSetUnionStore(cacheClient, cacheName);
 
     await example_API_KeyExists(cacheClient, cacheName);
     await example_API_KeysExist(cacheClient, cacheName);

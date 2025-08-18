@@ -25,6 +25,7 @@ import {
   CacheDictionarySetFields,
   CacheGet,
   CacheGetBatch,
+  CacheGetWithHash,
   CacheIncreaseTtl,
   CacheIncrement,
   CacheItemGetTtl,
@@ -42,6 +43,7 @@ import {
   CacheListRemoveValue,
   CacheListRetain,
   CacheSet,
+  CacheSetWithHash,
   CacheSetAddElements,
   CacheSetBatch,
   CacheSetContainsElement,
@@ -130,6 +132,8 @@ import {
   SetIfAbsentCallOptions,
   SortedSetSource,
   SortedSetAggregate,
+  GetWithHashCallOptions,
+  SetWithHashCallOptions,
 } from '@gomomento/sdk-core/dist/src/utils';
 import {CompressionError} from '../errors/compression-error';
 import {CacheSetLength, CacheSetPop} from '@gomomento/sdk-core';
@@ -541,6 +545,94 @@ export class CacheDataClient implements IDataClient {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheSet.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
+  public async setWithHash(
+    cacheName: string,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    options?: SetWithHashCallOptions
+  ): Promise<CacheSetWithHash.Response> {
+    try {
+      validateCacheName(cacheName);
+      if (options?.ttl !== undefined) {
+        validateTtlSeconds(options.ttl);
+      }
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheSetWithHash.Error(err)
+      );
+    }
+
+    return await this.rateLimited(async () => {
+      const ttlToUse = options?.ttl || this.defaultTtlSeconds;
+      const encodedKey = this.convert(key);
+      let encodedValue = this.convert(value);
+      if (options?.compress) {
+        this.logger.trace(
+          'CacheClient.setWithHash; compression enabled, calling value compressor'
+        );
+        if (this.compressionDetails === undefined) {
+          return this.cacheServiceErrorMapper.returnOrThrowError(
+            new CompressionError('CacheClient.setWithHash', 'compress'),
+            err => new CacheSetWithHash.Error(err)
+          );
+        } else {
+          encodedValue = await this.compressionDetails.valueCompressor.compress(
+            this.compressionDetails.compressionLevel,
+            encodedValue
+          );
+        }
+      }
+      return await this.sendSetWithHash(
+        cacheName,
+        encodedKey,
+        encodedValue,
+        ttlToUse
+      );
+    });
+  }
+
+  private async sendSetWithHash(
+    cacheName: string,
+    key: Uint8Array,
+    value: Uint8Array,
+    ttl: number
+  ): Promise<CacheSetWithHash.Response> {
+    const request = new grpcCache._SetIfHashRequest({
+      cache_key: key,
+      cache_body: value,
+      ttl_milliseconds: secondsToMilliseconds(ttl),
+      unconditional: new common.Unconditional(),
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.getClient().SetIfHash(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp) {
+            if (resp.not_stored) {
+              resolve(new CacheSetWithHash.NotStored());
+            } else if (resp.stored) {
+              const hash = resp.stored.new_hash;
+              resolve(new CacheSetWithHash.Stored(hash));
+            }
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSetWithHash.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });
@@ -1765,6 +1857,89 @@ export class CacheDataClient implements IDataClient {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
               errorResponseFactoryFn: e => new CacheGet.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          }
+        }
+      );
+    });
+  }
+
+  public async getWithHash(
+    cacheName: string,
+    key: string | Uint8Array,
+    options?: GetWithHashCallOptions
+  ): Promise<CacheGetWithHash.Response> {
+    try {
+      validateCacheName(cacheName);
+    } catch (err) {
+      return this.cacheServiceErrorMapper.returnOrThrowError(
+        err as Error,
+        err => new CacheGetWithHash.Error(err)
+      );
+    }
+
+    return await this.rateLimited(async () => {
+      return await this.sendGetWithHash(cacheName, this.convert(key), options);
+    });
+  }
+
+  private async sendGetWithHash(
+    cacheName: string,
+    key: Uint8Array,
+    options?: GetWithHashCallOptions
+  ): Promise<CacheGetWithHash.Response> {
+    const request = new grpcCache._GetWithHashRequest({
+      cache_key: key,
+    });
+    const metadata = this.createMetadata(cacheName);
+    return await new Promise((resolve, reject) => {
+      this.clientWrapper.getClient().GetWithHash(
+        request,
+        metadata,
+        {
+          interceptors: this.interceptors,
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheGetWithHash.Miss());
+          } else if (resp?.found) {
+            const shouldDecompress =
+              options?.decompress ??
+              this.compressionDetails?.autoDecompressEnabled === true;
+            if (!shouldDecompress) {
+              resolve(
+                new CacheGetWithHash.Hit(resp.found.value, resp.found.hash)
+              );
+            } else {
+              if (this.compressionDetails === undefined) {
+                resolve(
+                  new CacheGetWithHash.Error(
+                    new CompressionError(
+                      'CacheClient.GetWithHash',
+                      'decompress'
+                    )
+                  )
+                );
+              } else {
+                this.compressionDetails.valueCompressor
+                  .decompressIfCompressed(resp.found.value)
+                  .then(v =>
+                    resolve(new CacheGetWithHash.Hit(v, resp.found.hash))
+                  )
+                  .catch(e =>
+                    resolve(
+                      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                      new CacheGetWithHash.Error(new UnknownError(`${e}`))
+                    )
+                  );
+              }
+            }
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheGetWithHash.Error(e),
               resolveFn: resolve,
               rejectFn: reject,
             });

@@ -74,6 +74,8 @@ import {
   CacheSetSample,
   CacheSetPop,
   CacheSetLength,
+  CacheGetWithHash,
+  CacheSetWithHash,
 } from '../../../index';
 import {
   ListFetchCallOptions,
@@ -104,6 +106,8 @@ import {
   SetBatchOptions,
   GetOptions,
   GetBatchOptions,
+  GetWithHashOptions,
+  SetWithHashOptions,
 } from '../../../clients/ICacheClient';
 import {IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
@@ -204,6 +208,27 @@ export abstract class AbstractCacheClient implements ICacheClient {
   }
 
   /**
+   * Gets the value stored for the given key and its hash.
+   *
+   * @param {string} cacheName - The cache to perform the lookup in.
+   * @param {string | Uint8Array} key - The key to look up.
+   * @param {GetOptions} [options]
+   * @param {decompress} [options.decompress=false] - Whether to decompress the value. Overrides the client-wide
+   * automatic decompression setting.
+   * @returns {Promise<CacheGet.Response>} -
+   * {@link CacheGetWithHash.Hit} containing the value and hash if one is found.
+   * {@link CacheGetWithHash.Miss} if the key does not exist.
+   * {@link CacheGetWithHash.Error} on failure.
+   */
+  public async getWithHash(
+    cacheName: string,
+    key: string | Uint8Array,
+    options?: GetWithHashOptions
+  ): Promise<CacheGetWithHash.Response> {
+    return await this.getNextDataClient().getWithHash(cacheName, key, options);
+  }
+
+  /**
    * Associates the given key with the given value. If a value for the key is
    * already present it is replaced with the new value.
    *
@@ -232,6 +257,32 @@ export abstract class AbstractCacheClient implements ICacheClient {
     }
     const client = this.getNextDataClient();
     return await client.set(cacheName, key, value, options);
+  }
+
+  /**
+   * Associates the given key with the given value. If a value for the key is
+   * already present it is replaced with the new value. Returns the hash of the value.
+   *
+   * @param {string} cacheName - The cache to store the value in.
+   * @param {string | Uint8Array} key - The key to set.
+   * @param {string | Uint8Array} value - The value to be stored.
+   * @param {SetOptions} [options]
+   * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * Uses the client's default TTL if this is not supplied.
+   * @param {boolean} [options.compress=false] - Whether to compress the value. Defaults to false.
+   * @returns {Promise<CacheSet.Response>} -
+   * {@link CacheSetWithHash.Stored} on success containing the hash of the value stored.
+   * {@link CacheSetWithHash.NotStored} on not storing the new value.
+   * {@link CacheSetWithHash.Error} on failure.
+   */
+  public async setWithHash(
+    cacheName: string,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    options?: SetWithHashOptions
+  ): Promise<CacheSetWithHash.Response> {
+    const client = this.getNextDataClient();
+    return await client.setWithHash(cacheName, key, value, options);
   }
 
   /**
