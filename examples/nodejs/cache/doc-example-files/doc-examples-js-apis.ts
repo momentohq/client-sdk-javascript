@@ -67,6 +67,8 @@ import {
   CacheSortedSetRemoveElementResponse,
   CacheSortedSetRemoveElementsResponse,
   CacheSortedSetUnionStoreResponse,
+  CacheSetWithHashResponse,
+  CacheGetWithHashResponse,
   Configurations,
   CreateCacheResponse,
   CredentialProvider,
@@ -253,6 +255,22 @@ async function example_API_Set(cacheClient: CacheClient, cacheName: string) {
   }
 }
 
+async function example_API_SetWithHash(cacheClient: CacheClient, cacheName: string) {
+  const result = await cacheClient.setWithHash(cacheName, 'test-key', 'test-value');
+  switch (result.type) {
+    case CacheSetWithHashResponse.Stored:
+      console.log(`Successfully set Key 'test-key' in cache, item has new hash '${result.hashString()}`);
+      break;
+    case CacheSetWithHashResponse.Stored:
+      console.log("Unable to set Key 'test-key' ");
+      break;
+    case CacheSetWithHashResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to store key 'test-key' in cache '${cacheName}': ${result.errorCode()}: ${result.toString()}`
+      );
+  }
+}
+
 async function example_API_Get(cacheClient: CacheClient, cacheName: string) {
   const getResponse = await cacheClient.get(cacheName, 'test-key');
   // simplified style; assume the value was found
@@ -267,6 +285,28 @@ async function example_API_Get(cacheClient: CacheClient, cacheName: string) {
       console.log(`Key 'test-key' was not found in cache '${cacheName}'`);
       break;
     case CacheGetResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to get key 'test-key' from cache '${cacheName}': ${getResponse.errorCode()}: ${getResponse.toString()}`
+      );
+  }
+}
+
+async function example_API_GetWithHash(cacheClient: CacheClient, cacheName: string) {
+  const getResponse = await cacheClient.getWithHash(cacheName, 'test-key');
+  // simplified style; assume the value was found
+  console.log(`cache hit: value: ${getResponse.value()!}, hash: ${getResponse.hash()!}`);
+
+  // pattern-matching style; safer for production code
+  switch (getResponse.type) {
+    case CacheGetWithHashResponse.Hit:
+      console.log(
+        `Retrieved value for key 'test-key': ${getResponse.valueString()} with hash: ${getResponse.hashString()}`
+      );
+      break;
+    case CacheGetWithHashResponse.Miss:
+      console.log(`Key 'test-key' was not found in cache '${cacheName}'`);
+      break;
+    case CacheGetWithHashResponse.Error:
       throw new Error(
         `An error occurred while attempting to get key 'test-key' from cache '${cacheName}': ${getResponse.errorCode()}: ${getResponse.toString()}`
       );
@@ -1823,6 +1863,8 @@ async function main() {
     await example_API_SetIfAbsentOrEqual(cacheClient, cacheName);
     await example_API_SetBatch(cacheClient, cacheName);
     await example_API_GetBatch(cacheClient, cacheName);
+    await example_API_SetWithHash(cacheClient, cacheName);
+    await example_API_GetWithHash(cacheClient, cacheName);
 
     await example_API_ListFetch(cacheClient, cacheName);
     await example_API_ListConcatenateBack(cacheClient, cacheName);
