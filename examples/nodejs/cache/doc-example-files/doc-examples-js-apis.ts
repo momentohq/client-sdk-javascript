@@ -261,7 +261,7 @@ async function example_API_SetWithHash(cacheClient: CacheClient, cacheName: stri
     case CacheSetWithHashResponse.Stored:
       console.log(`Successfully set Key 'test-key' in cache, item has new hash '${result.hashString()}`);
       break;
-    case CacheSetWithHashResponse.Stored:
+    case CacheSetWithHashResponse.NotStored:
       console.log("Unable to set Key 'test-key' ");
       break;
     case CacheSetWithHashResponse.Error:
