@@ -48,7 +48,7 @@ export class NotStored extends ResponseBase implements IResponse {
 }
 
 /**
- * Indicates that an error occurred during the CacheSetIfAbsentOrHashEqual request.
+ * Indicates that an error occurred during the CacheSetIfAbsentOrHashNotEqual request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:

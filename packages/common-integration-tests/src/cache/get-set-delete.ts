@@ -3142,14 +3142,14 @@ export function runGetSetDeleteTests(
         randResponse instanceof CacheSetWithHash.Stored
           ? randResponse.hashUint8Array()
           : new TextEncoder().encode(v4());
-      const setResponse = await cacheClient.set(
+      const setResponse = await cacheClient.setWithHash(
         integrationTestCacheName,
         cacheKey,
         initialCacheValue
       );
       expectWithMessage(() => {
-        expect(setResponse).toBeInstanceOf(CacheSet.Success);
-      }, `expected SUCCESS but got ${setResponse.toString()}`);
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
       const setIfPresentAndHashEqualResponse =
         await cacheClient.setIfPresentAndHashEqual(
           integrationTestCacheName,
@@ -3162,14 +3162,14 @@ export function runGetSetDeleteTests(
           CacheSetIfPresentAndHashEqual.NotStored
         );
       }, `expected NOTSTORED but got ${setIfPresentAndHashEqualResponse.toString()}`);
-      const getResponse = await cacheClient.get(
+      const getResponse = await cacheClient.getWithHash(
         integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
-        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
-      if (getResponse instanceof CacheGet.Hit) {
+      if (getResponse instanceof CacheGetWithHash.Hit) {
         expect(getResponse.valueString()).toEqual(initialCacheValue);
       }
     });
@@ -3237,12 +3237,12 @@ export function runGetSetDeleteTests(
           CacheSetIfPresentAndHashEqual.NotStored
         );
       }, `expected NOTSTORED but got ${setIfPresentAndHashEqualResponse.toString()}`);
-      const getResponse = await cacheClient.get(
+      const getResponse = await cacheClient.getWithHash(
         integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
-        expect(getResponse).toBeInstanceOf(CacheGet.Miss);
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Miss);
       }, `expected MISS but got ${getResponse.toString()}`);
     });
 
@@ -3288,14 +3288,14 @@ export function runGetSetDeleteTests(
         // will be greater than 950 seconds at least
         expect(getTTLResponse.remainingTtlMillis()).toBeGreaterThan(950 * 1000);
       }
-      const getResponse = await cacheClient.get(
+      const getResponse = await cacheClient.getWithHash(
         integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
-        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
-      if (getResponse instanceof CacheGet.Hit) {
+      if (getResponse instanceof CacheGetWithHash.Hit) {
         expect(getResponse.valueString()).toEqual(cacheValue);
       }
     });
@@ -3612,14 +3612,14 @@ export function runGetSetDeleteTests(
         randResponse instanceof CacheSetWithHash.Stored
           ? randResponse.hashUint8Array()
           : new TextEncoder().encode(v4());
-      const setResponse = await cacheClient.set(
+      const setResponse = await cacheClient.setWithHash(
         integrationTestCacheName,
         cacheKey,
         initialCacheValue
       );
       expectWithMessage(() => {
-        expect(setResponse).toBeInstanceOf(CacheSet.Success);
-      }, `expected SUCCESS but got ${setResponse.toString()}`);
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
       const setIfPresentAndHashNotEqualResponse =
         await cacheClient.setIfPresentAndHashNotEqual(
           integrationTestCacheName,
@@ -3707,12 +3707,12 @@ export function runGetSetDeleteTests(
           CacheSetIfPresentAndHashNotEqual.NotStored
         );
       }, `expected NOTSTORED but got ${setIfPresentAndHashNotEqualResponse.toString()}`);
-      const getResponse = await cacheClient.get(
+      const getResponse = await cacheClient.getWithHash(
         integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
-        expect(getResponse).toBeInstanceOf(CacheGet.Miss);
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Miss);
       }, `expected MISS but got ${getResponse.toString()}`);
     });
 
@@ -3733,7 +3733,7 @@ export function runGetSetDeleteTests(
         randResponse instanceof CacheSetWithHash.Stored
           ? randResponse.hashUint8Array()
           : new TextEncoder().encode(v4());
-      await cacheClient.set(
+      await cacheClient.setWithHash(
         integrationTestCacheName,
         cacheKey,
         initialCacheValue
@@ -3763,14 +3763,14 @@ export function runGetSetDeleteTests(
         // will be greater than 950 seconds at least
         expect(getTTLResponse.remainingTtlMillis()).toBeGreaterThan(950 * 1000);
       }
-      const getResponse = await cacheClient.get(
+      const getResponse = await cacheClient.getWithHash(
         integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
-        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
-      if (getResponse instanceof CacheGet.Hit) {
+      if (getResponse instanceof CacheGetWithHash.Hit) {
         expect(getResponse.valueString()).toEqual(cacheValue);
       }
     });
@@ -3791,7 +3791,7 @@ export function runGetSetDeleteTests(
         setResponse instanceof CacheSetWithHash.Stored
           ? setResponse.hashUint8Array()
           : new TextEncoder().encode(v4());
-      await cacheClient.set(
+      await cacheClient.setWithHash(
         integrationTestCacheName,
         cacheKey,
         initialCacheValue
@@ -3851,7 +3851,7 @@ export function runGetSetDeleteTests(
         setResponse instanceof CacheSetWithHash.Stored
           ? setResponse.hashUint8Array()
           : new TextEncoder().encode(v4());
-      await cacheClient.set(
+      await cacheClient.setWithHash(
         integrationTestCacheName,
         cacheKey,
         initialCacheValue
@@ -3903,7 +3903,7 @@ export function runGetSetDeleteTests(
         setResponse instanceof CacheSetWithHash.Stored
           ? setResponse.hashUint8Array()
           : new TextEncoder().encode(v4());
-      await cacheClient.set(
+      await cacheClient.setWithHash(
         integrationTestCacheName,
         cacheKey,
         initialCacheValue
@@ -3974,7 +3974,7 @@ export function runGetSetDeleteTests(
           ? setResponse.hashUint8Array()
           : new TextEncoder().encode(v4());
 
-      await cacheClient.set(
+      await cacheClient.setWithHash(
         integrationTestCacheName,
         cacheKey,
         initialCacheValue
@@ -4121,14 +4121,14 @@ export function runGetSetDeleteTests(
         randResponse instanceof CacheSetWithHash.Stored
           ? randResponse.hashUint8Array()
           : new TextEncoder().encode(v4());
-      const setResponse = await cacheClient.set(
+      const setResponse = await cacheClient.setWithHash(
         integrationTestCacheName,
         cacheKey,
         initialCacheValue
       );
       expectWithMessage(() => {
-        expect(setResponse).toBeInstanceOf(CacheSet.Success);
-      }, `expected SUCCESS but got ${setResponse.toString()}`);
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
       const setIfAbsentOrHashEqualResponse =
         await cacheClient.setIfAbsentOrHashEqual(
           integrationTestCacheName,
@@ -4141,14 +4141,14 @@ export function runGetSetDeleteTests(
           CacheSetIfAbsentOrHashEqual.NotStored
         );
       }, `expected NOTSTORED but got ${setIfAbsentOrHashEqualResponse.toString()}`);
-      const getResponse = await cacheClient.get(
+      const getResponse = await cacheClient.getWithHash(
         integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
-        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
-      if (getResponse instanceof CacheGet.Hit) {
+      if (getResponse instanceof CacheGetWithHash.Hit) {
         expect(getResponse.valueString()).toEqual(initialCacheValue);
       }
     });
@@ -4286,14 +4286,14 @@ export function runGetSetDeleteTests(
         // will be greater than 950 seconds at least
         expect(getTTLResponse.remainingTtlMillis()).toBeGreaterThan(950 * 1000);
       }
-      const getResponse = await cacheClient.get(
+      const getResponse = await cacheClient.getWithHash(
         integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
-        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
-      if (getResponse instanceof CacheGet.Hit) {
+      if (getResponse instanceof CacheGetWithHash.Hit) {
         expect(getResponse.valueString()).toEqual(cacheValue);
       }
     });
@@ -4622,14 +4622,14 @@ export function runGetSetDeleteTests(
         randResponse instanceof CacheSetWithHash.Stored
           ? randResponse.hashUint8Array()
           : new TextEncoder().encode(v4());
-      const setResponse = await cacheClient.set(
+      const setResponse = await cacheClient.setWithHash(
         integrationTestCacheName,
         cacheKey,
         initialCacheValue
       );
       expectWithMessage(() => {
-        expect(setResponse).toBeInstanceOf(CacheSet.Success);
-      }, `expected SUCCESS but got ${setResponse.toString()}`);
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
       const setIfAbsentOrHashNotEqualResponse =
         await cacheClient.setIfAbsentOrHashNotEqual(
           integrationTestCacheName,
@@ -4717,14 +4717,14 @@ export function runGetSetDeleteTests(
           CacheSetIfAbsentOrHashNotEqual.Stored
         );
       }, `expected NOTSTORED but got ${setIfAbsentOrHashNotEqualResponse.toString()}`);
-      const getResponse = await cacheClient.get(
+      const getResponse = await cacheClient.getWithHash(
         integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
-        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
-      if (getResponse instanceof CacheGet.Hit) {
+      if (getResponse instanceof CacheGetWithHash.Hit) {
         expect(getResponse.valueString()).toEqual(cacheValue);
       }
     });
@@ -4746,7 +4746,7 @@ export function runGetSetDeleteTests(
         randResponse instanceof CacheSetWithHash.Stored
           ? randResponse.hashUint8Array()
           : new TextEncoder().encode(v4());
-      await cacheClient.set(
+      await cacheClient.setWithHash(
         integrationTestCacheName,
         cacheKey,
         initialCacheValue
@@ -4776,14 +4776,14 @@ export function runGetSetDeleteTests(
         // will be greater than 950 seconds at least
         expect(getTTLResponse.remainingTtlMillis()).toBeGreaterThan(950 * 1000);
       }
-      const getResponse = await cacheClient.get(
+      const getResponse = await cacheClient.getWithHash(
         integrationTestCacheName,
         cacheKey
       );
       expectWithMessage(() => {
-        expect(getResponse).toBeInstanceOf(CacheGet.Hit);
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
       }, `expected HIT but got ${getResponse.toString()}`);
-      if (getResponse instanceof CacheGet.Hit) {
+      if (getResponse instanceof CacheGetWithHash.Hit) {
         expect(getResponse.valueString()).toEqual(cacheValue);
       }
     });
@@ -4804,7 +4804,7 @@ export function runGetSetDeleteTests(
         setResponse instanceof CacheSetWithHash.Stored
           ? setResponse.hashUint8Array()
           : new TextEncoder().encode(v4());
-      await cacheClient.set(
+      await cacheClient.setWithHash(
         integrationTestCacheName,
         cacheKey,
         initialCacheValue
@@ -4864,7 +4864,7 @@ export function runGetSetDeleteTests(
         setResponse instanceof CacheSetWithHash.Stored
           ? setResponse.hashUint8Array()
           : new TextEncoder().encode(v4());
-      await cacheClient.set(
+      await cacheClient.setWithHash(
         integrationTestCacheName,
         cacheKey,
         initialCacheValue
@@ -4916,7 +4916,7 @@ export function runGetSetDeleteTests(
         setResponse instanceof CacheSetWithHash.Stored
           ? setResponse.hashUint8Array()
           : new TextEncoder().encode(v4());
-      await cacheClient.set(
+      await cacheClient.setWithHash(
         integrationTestCacheName,
         cacheKey,
         initialCacheValue
@@ -4985,7 +4985,7 @@ export function runGetSetDeleteTests(
           ? setResponse.hashUint8Array()
           : new TextEncoder().encode(v4());
 
-      await cacheClient.set(
+      await cacheClient.setWithHash(
         integrationTestCacheName,
         cacheKey,
         initialCacheValue
