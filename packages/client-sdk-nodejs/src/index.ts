@@ -74,6 +74,10 @@ import * as CacheGetBatch from '@gomomento/sdk-core/dist/src/messages/responses/
 import * as CacheSetBatch from '@gomomento/sdk-core/dist/src/messages/responses/cache-batch-set';
 import * as CacheGetWithHash from '@gomomento/sdk-core/dist/src/messages/responses/cache-get-with-hash';
 import * as CacheSetWithHash from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-with-hash';
+import * as CacheSetIfPresentAndHashEqual from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-present-and-hash-equal';
+import * as CacheSetIfPresentAndHashNotEqual from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-present-and-hash-not-equal';
+import * as CacheSetIfAbsentOrHashEqual from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-absent-or-hash-equal';
+import * as CacheSetIfAbsentOrHashNotEqual from '@gomomento/sdk-core/dist/src/messages/responses/cache-set-if-absent-or-hash-not-equal';
 // TopicClient Response Types
 import * as TopicPublish from '@gomomento/sdk-core/dist/src/messages/responses/topic-publish';
 import * as TopicSubscribe from '@gomomento/sdk-core/dist/src/messages/responses/topic-subscribe';
@@ -107,6 +111,10 @@ import {
   GetOptions,
   SetWithHashOptions,
   GetWithHashOptions,
+  SetIfPresentAndHashEqualOptions,
+  SetIfPresentAndHashNotEqualOptions,
+  SetIfAbsentOrHashEqualOptions,
+  SetIfAbsentOrHashNotEqualOptions,
   CacheInfo,
   CollectionTtl,
   ItemType,
@@ -287,6 +295,10 @@ export {
   GetOptions,
   SetWithHashOptions,
   GetWithHashOptions,
+  SetIfPresentAndHashEqualOptions,
+  SetIfPresentAndHashNotEqualOptions,
+  SetIfAbsentOrHashEqualOptions,
+  SetIfAbsentOrHashNotEqualOptions,
   SortedSetOrder,
   Configurations,
   Configuration,
@@ -354,6 +366,10 @@ export {
   CacheSetIfNotEqual,
   CacheSetIfAbsentOrEqual,
   CacheSetIfPresentAndNotEqual,
+  CacheSetIfPresentAndHashEqual,
+  CacheSetIfPresentAndHashNotEqual,
+  CacheSetIfAbsentOrHashEqual,
+  CacheSetIfAbsentOrHashNotEqual,
   CacheDelete,
   CacheFlush,
   CreateCache,

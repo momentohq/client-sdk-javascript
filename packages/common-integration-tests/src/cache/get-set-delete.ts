@@ -16,6 +16,10 @@ import {
   MomentoErrorCode,
   FailedPreconditionError,
   CacheSetWithHash,
+  CacheSetIfPresentAndHashEqual,
+  CacheSetIfPresentAndHashNotEqual,
+  CacheSetIfAbsentOrHashEqual,
+  CacheSetIfAbsentOrHashNotEqual,
 } from '@gomomento/sdk-core';
 import {TextEncoder} from 'util';
 import {
@@ -3111,6 +3115,1992 @@ export function runGetSetDeleteTests(
       }, `expected HIT but got ${getResponse.toString()}`);
       if (getResponse instanceof CacheGet.Hit) {
         expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+  });
+
+  describe('#setIfPresentAndHashEqual', () => {
+    ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+      return cacheClient.setIfPresentAndHashEqual(
+        props.cacheName,
+        v4(),
+        v4(),
+        new TextEncoder().encode(v4())
+      );
+    });
+
+    it('should not set cache key if key is present and hash of value to check is not equal', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const randResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      const hash_value =
+        randResponse instanceof CacheSetWithHash.Stored
+          ? randResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const setIfPresentAndHashEqualResponse =
+        await cacheClient.setIfPresentAndHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashEqual.NotStored
+        );
+      }, `expected NOTSTORED but got ${setIfPresentAndHashEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGetWithHash.Hit) {
+        expect(getResponse.valueString()).toEqual(initialCacheValue);
+      }
+    });
+
+    it('should set cache key if key is present and value to check is equal', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfPresentAndHashEqualResponse =
+        await cacheClient.setIfPresentAndHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfPresentAndHashEqualResponse instanceof
+          CacheSetIfPresentAndHashEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfPresentAndHashEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should not set cache key if key is not present', async () => {
+      const cacheKey = v4();
+
+      const setIfPresentAndHashEqualResponse =
+        await cacheClient.setIfPresentAndHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          v4(),
+          new TextEncoder().encode(v4())
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashEqual.NotStored
+        );
+      }, `expected NOTSTORED but got ${setIfPresentAndHashEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Miss);
+      }, `expected MISS but got ${getResponse.toString()}`);
+    });
+
+    it('should get remaining ttl from cache greater than expected', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfPresentAndHashEqualResponse =
+        await cacheClient.setIfPresentAndHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value,
+          {ttl: 1000}
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashEqualResponse.toString()}`);
+      const getTTLResponse = await cacheClient.itemGetTtl(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getTTLResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+      }, `expected HIT but got ${getTTLResponse.toString()}`);
+      if (getTTLResponse instanceof CacheItemGetTtl.Hit) {
+        // we sent the ttl as 1000 seconds, so it's reasonable to expect the remaining TTL
+        // will be greater than 950 seconds at least
+        expect(getTTLResponse.remainingTtlMillis()).toBeGreaterThan(950 * 1000);
+      }
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGetWithHash.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should set and get bytes', async () => {
+      const cacheKey = new TextEncoder().encode(v4());
+      const cacheValue = new TextEncoder().encode(v4());
+      const initialCacheValue = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfPresentAndHashEqualResponse =
+        await cacheClient.setIfPresentAndHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      expectWithMessage(() => {
+        expect(new TextEncoder().encode(getResponse.value())).toEqual(
+          cacheValue
+        );
+      }, `expected ${cacheValue.toString()} but got ${getResponse.value() || 'undefined'}`);
+      if (
+        setIfPresentAndHashEqualResponse instanceof
+        CacheSetIfPresentAndHashEqual.Stored
+      ) {
+        expectWithMessage(() => {
+          expect(new TextEncoder().encode(getResponse.hash())).toEqual(
+            new TextEncoder().encode(
+              setIfPresentAndHashEqualResponse.hashString()
+            )
+          );
+        }, `expected ${setIfPresentAndHashEqualResponse.hashString()} but got ${getResponse.hash() || 'undefined'}`);
+      }
+    });
+
+    it('should set string key with bytes value', async () => {
+      const cacheKey = v4();
+      const cacheValue = new TextEncoder().encode(v4());
+      const decodedValue = new TextDecoder().decode(cacheValue);
+      const initialCacheValue = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfPresentAndHashEqualResponse =
+        await cacheClient.setIfPresentAndHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfPresentAndHashEqualResponse instanceof
+          CacheSetIfPresentAndHashEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(decodedValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfPresentAndHashEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should set byte key with string value', async () => {
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const cacheKey = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfPresentAndHashEqualResponse =
+        await cacheClient.setIfPresentAndHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfPresentAndHashEqualResponse instanceof
+          CacheSetIfPresentAndHashEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfPresentAndHashEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should return INVALID_ARGUMENT_ERROR for invalid ttl when set with string key/value', async () => {
+      const setResponse = await cacheClient.setIfPresentAndHashEqual(
+        integrationTestCacheName,
+        v4(),
+        v4(),
+        new TextEncoder().encode(v4()),
+        {ttl: -1}
+      );
+      expect(setResponse).toBeInstanceOf(CacheSetIfPresentAndHashEqual.Error);
+      if (setResponse instanceof CacheSetIfPresentAndHashEqual.Error) {
+        expect(setResponse.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }
+    });
+
+    it('should set string key/value with valid ttl and get successfully', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfPresentAndHashEqualResponse =
+        await cacheClient.setIfPresentAndHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value,
+          {ttl: 15}
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfPresentAndHashEqualResponse instanceof
+          CacheSetIfPresentAndHashEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfPresentAndHashEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should set with valid ttl and should return miss when ttl is expired', async () => {
+      const cacheKey = v4();
+      const initalCacheValue = v4();
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initalCacheValue,
+        {ttl: 100}
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfPresentAndHashEqualResponse =
+        await cacheClient.setIfPresentAndHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          v4(),
+          hash_value,
+          {ttl: 1}
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashEqualResponse.toString()}`);
+      await sleep(1500);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Miss);
+      }, `expected MISS but got ${getResponse.toString()}`);
+    });
+
+    it('should support happy path for setIfPresentAndHashEqual via curried cache via ICache interface', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const cache = cacheClient.cache(integrationTestCacheName);
+      const setResponse = await cache.setWithHash(cacheKey, initialCacheValue);
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfPresentAndHashEqualResponse =
+        await cache.setIfPresentAndHashEqual(cacheKey, cacheValue, hash_value);
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashEqualResponse.toString()}`);
+      const getResponse = await cache.getWithHash(cacheKey);
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfPresentAndHashEqualResponse instanceof
+          CacheSetIfPresentAndHashEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfPresentAndHashEqualResponse.hashString()
+        );
+      }
+    });
+  });
+
+  describe('#setIfPresentAndHashNotEqual', () => {
+    ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+      return cacheClient.setIfPresentAndHashNotEqual(
+        props.cacheName,
+        v4(),
+        v4(),
+        new TextEncoder().encode(v4())
+      );
+    });
+
+    it('should set cache key if key is present and hash of value to check is not equal', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const randResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      const hash_value =
+        randResponse instanceof CacheSetWithHash.Stored
+          ? randResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const setIfPresentAndHashNotEqualResponse =
+        await cacheClient.setIfPresentAndHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfPresentAndHashNotEqualResponse instanceof
+          CacheSetIfPresentAndHashNotEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfPresentAndHashNotEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should not set cache key if key is present and value to check is equal', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfPresentAndHashNotEqualResponse =
+        await cacheClient.setIfPresentAndHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashNotEqual.NotStored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGetWithHash.Hit) {
+        expect(getResponse.valueString()).toEqual(initialCacheValue);
+      }
+    });
+
+    it('should not set cache key if key is not present', async () => {
+      const cacheKey = v4();
+
+      const setIfPresentAndHashNotEqualResponse =
+        await cacheClient.setIfPresentAndHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          v4(),
+          new TextEncoder().encode(v4())
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashNotEqual.NotStored
+        );
+      }, `expected NOTSTORED but got ${setIfPresentAndHashNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Miss);
+      }, `expected MISS but got ${getResponse.toString()}`);
+    });
+
+    it('should get remaining ttl from cache greater than expected', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const randResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(randResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${randResponse.toString()}`);
+      const hash_value =
+        randResponse instanceof CacheSetWithHash.Stored
+          ? randResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      const setIfPresentAndHashNotEqualResponse =
+        await cacheClient.setIfPresentAndHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value,
+          {ttl: 1000}
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashNotEqualResponse.toString()}`);
+      const getTTLResponse = await cacheClient.itemGetTtl(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getTTLResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+      }, `expected HIT but got ${getTTLResponse.toString()}`);
+      if (getTTLResponse instanceof CacheItemGetTtl.Hit) {
+        // we sent the ttl as 1000 seconds, so it's reasonable to expect the remaining TTL
+        // will be greater than 950 seconds at least
+        expect(getTTLResponse.remainingTtlMillis()).toBeGreaterThan(950 * 1000);
+      }
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGetWithHash.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should set and get bytes', async () => {
+      const cacheKey = new TextEncoder().encode(v4());
+      const cacheValue = new TextEncoder().encode(v4());
+      const initialCacheValue = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      const setIfPresentAndHashNotEqualResponse =
+        await cacheClient.setIfPresentAndHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      expectWithMessage(() => {
+        expect(new TextEncoder().encode(getResponse.value())).toEqual(
+          cacheValue
+        );
+      }, `expected ${cacheValue.toString()} but got ${getResponse.value() || 'undefined'}`);
+      if (
+        setIfPresentAndHashNotEqualResponse instanceof
+        CacheSetIfPresentAndHashNotEqual.Stored
+      ) {
+        expectWithMessage(() => {
+          expect(new TextEncoder().encode(getResponse.hash())).toEqual(
+            new TextEncoder().encode(
+              setIfPresentAndHashNotEqualResponse.hashString()
+            )
+          );
+        }, `expected ${setIfPresentAndHashNotEqualResponse.hashString()} but got ${getResponse.hash() || 'undefined'}`);
+      }
+    });
+
+    it('should set string key with bytes value', async () => {
+      const cacheKey = v4();
+      const cacheValue = new TextEncoder().encode(v4());
+      const decodedValue = new TextDecoder().decode(cacheValue);
+      const initialCacheValue = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      const setIfPresentAndHashNotEqualResponse =
+        await cacheClient.setIfPresentAndHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfPresentAndHashNotEqualResponse instanceof
+          CacheSetIfPresentAndHashNotEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(decodedValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfPresentAndHashNotEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should set byte key with string value', async () => {
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const cacheKey = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      const setIfPresentAndHashNotEqualResponse =
+        await cacheClient.setIfPresentAndHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfPresentAndHashNotEqualResponse instanceof
+          CacheSetIfPresentAndHashNotEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfPresentAndHashNotEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should return INVALID_ARGUMENT_ERROR for invalid ttl when set with string key/value', async () => {
+      const setResponse = await cacheClient.setIfPresentAndHashNotEqual(
+        integrationTestCacheName,
+        v4(),
+        v4(),
+        new TextEncoder().encode(v4()),
+        {ttl: -1}
+      );
+      expect(setResponse).toBeInstanceOf(
+        CacheSetIfPresentAndHashNotEqual.Error
+      );
+      if (setResponse instanceof CacheSetIfPresentAndHashNotEqual.Error) {
+        expect(setResponse.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }
+    });
+
+    it('should set string key/value with valid ttl and get successfully', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+
+      await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      const setIfPresentAndHashNotEqualResponse =
+        await cacheClient.setIfPresentAndHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value,
+          {ttl: 15}
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfPresentAndHashNotEqualResponse instanceof
+          CacheSetIfPresentAndHashNotEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfPresentAndHashNotEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should set with valid ttl and should return miss when ttl is expired', async () => {
+      const cacheKey = v4();
+      const initalCacheValue = v4();
+      const randResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      const hash_value =
+        randResponse instanceof CacheSetWithHash.Stored
+          ? randResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initalCacheValue,
+        {ttl: 100}
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const setIfPresentAndHashNotEqualResponse =
+        await cacheClient.setIfPresentAndHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          v4(),
+          hash_value,
+          {ttl: 1}
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashNotEqualResponse.toString()}`);
+      await sleep(1500);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Miss);
+      }, `expected MISS but got ${getResponse.toString()}`);
+    });
+
+    it('should support happy path for setIfPresentAndHashNotEqual via curried cache via ICache interface', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const cache = cacheClient.cache(integrationTestCacheName);
+      const randResponse = await cache.setWithHash(cacheKey, v4());
+      const hash_value =
+        randResponse instanceof CacheSetWithHash.Stored
+          ? randResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setResponse = await cache.setWithHash(cacheKey, initialCacheValue);
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const setIfPresentAndHashNotEqualResponse =
+        await cache.setIfPresentAndHashNotEqual(
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfPresentAndHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfPresentAndHashNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfPresentAndHashNotEqualResponse.toString()}`);
+      const getResponse = await cache.getWithHash(cacheKey);
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfPresentAndHashNotEqualResponse instanceof
+          CacheSetIfPresentAndHashNotEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfPresentAndHashNotEqualResponse.hashString()
+        );
+      }
+    });
+  });
+
+  describe('#setIfAbsentOrHashEqual', () => {
+    ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+      return cacheClient.setIfAbsentOrHashEqual(
+        props.cacheName,
+        v4(),
+        v4(),
+        new TextEncoder().encode(v4())
+      );
+    });
+
+    it('should not set cache key if key is present and hash of value to check is not equal', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const randResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      const hash_value =
+        randResponse instanceof CacheSetWithHash.Stored
+          ? randResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const setIfAbsentOrHashEqualResponse =
+        await cacheClient.setIfAbsentOrHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashEqual.NotStored
+        );
+      }, `expected NOTSTORED but got ${setIfAbsentOrHashEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGetWithHash.Hit) {
+        expect(getResponse.valueString()).toEqual(initialCacheValue);
+      }
+    });
+
+    it('should set cache key if key is present and value to check is equal', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfAbsentOrHashEqualResponse =
+        await cacheClient.setIfAbsentOrHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfAbsentOrHashEqualResponse instanceof
+          CacheSetIfAbsentOrHashEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfAbsentOrHashEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should set cache key if key is not present', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        v4(),
+        v4()
+      );
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfAbsentOrHashEqualResponse =
+        await cacheClient.setIfAbsentOrHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfAbsentOrHashEqualResponse instanceof
+          CacheSetIfAbsentOrHashEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfAbsentOrHashEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should get remaining ttl from cache greater than expected', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfAbsentOrHashEqualResponse =
+        await cacheClient.setIfAbsentOrHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value,
+          {ttl: 1000}
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashEqualResponse.toString()}`);
+      const getTTLResponse = await cacheClient.itemGetTtl(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getTTLResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+      }, `expected HIT but got ${getTTLResponse.toString()}`);
+      if (getTTLResponse instanceof CacheItemGetTtl.Hit) {
+        // we sent the ttl as 1000 seconds, so it's reasonable to expect the remaining TTL
+        // will be greater than 950 seconds at least
+        expect(getTTLResponse.remainingTtlMillis()).toBeGreaterThan(950 * 1000);
+      }
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGetWithHash.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should set and get bytes', async () => {
+      const cacheKey = new TextEncoder().encode(v4());
+      const cacheValue = new TextEncoder().encode(v4());
+      const initialCacheValue = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfAbsentOrHashEqualResponse =
+        await cacheClient.setIfAbsentOrHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      expectWithMessage(() => {
+        expect(new TextEncoder().encode(getResponse.value())).toEqual(
+          cacheValue
+        );
+      }, `expected ${cacheValue.toString()} but got ${getResponse.value() || 'undefined'}`);
+      if (
+        setIfAbsentOrHashEqualResponse instanceof
+        CacheSetIfAbsentOrHashEqual.Stored
+      ) {
+        expectWithMessage(() => {
+          expect(new TextEncoder().encode(getResponse.hash())).toEqual(
+            new TextEncoder().encode(
+              setIfAbsentOrHashEqualResponse.hashString()
+            )
+          );
+        }, `expected ${setIfAbsentOrHashEqualResponse.hashString()} but got ${getResponse.hash() || 'undefined'}`);
+      }
+    });
+
+    it('should set string key with bytes value', async () => {
+      const cacheKey = v4();
+      const cacheValue = new TextEncoder().encode(v4());
+      const decodedValue = new TextDecoder().decode(cacheValue);
+      const initialCacheValue = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfAbsentOrHashEqualResponse =
+        await cacheClient.setIfAbsentOrHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfAbsentOrHashEqualResponse instanceof
+          CacheSetIfAbsentOrHashEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(decodedValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfAbsentOrHashEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should set byte key with string value', async () => {
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const cacheKey = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfAbsentOrHashEqualResponse =
+        await cacheClient.setIfAbsentOrHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfAbsentOrHashEqualResponse instanceof
+          CacheSetIfAbsentOrHashEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfAbsentOrHashEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should return INVALID_ARGUMENT_ERROR for invalid ttl when set with string key/value', async () => {
+      const randResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        v4(),
+        v4()
+      );
+      const hash_value =
+        randResponse instanceof CacheSetWithHash.Stored
+          ? randResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setIfAbsentOrHashEqual(
+        integrationTestCacheName,
+        v4(),
+        v4(),
+        hash_value,
+        {ttl: -1}
+      );
+      expect(setResponse).toBeInstanceOf(CacheSetIfAbsentOrHashEqual.Error);
+      if (setResponse instanceof CacheSetIfAbsentOrHashEqual.Error) {
+        expect(setResponse.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }
+    });
+
+    it('should set string key/value with valid ttl and get successfully', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfAbsentOrHashEqualResponse =
+        await cacheClient.setIfAbsentOrHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value,
+          {ttl: 15}
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfAbsentOrHashEqualResponse instanceof
+          CacheSetIfAbsentOrHashEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfAbsentOrHashEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should set with valid ttl and should return miss when ttl is expired', async () => {
+      const cacheKey = v4();
+      const initalCacheValue = v4();
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initalCacheValue,
+        {ttl: 100}
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfAbsentOrHashEqualResponse =
+        await cacheClient.setIfAbsentOrHashEqual(
+          integrationTestCacheName,
+          cacheKey,
+          v4(),
+          hash_value,
+          {ttl: 1}
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashEqualResponse.toString()}`);
+      await sleep(1500);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Miss);
+      }, `expected MISS but got ${getResponse.toString()}`);
+    });
+
+    it('should support happy path for setIfPresentAndHashEqual via curried cache via ICache interface', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const cache = cacheClient.cache(integrationTestCacheName);
+      const setResponse = await cache.setWithHash(cacheKey, initialCacheValue);
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfAbsentOrHashEqualResponse = await cache.setIfAbsentOrHashEqual(
+        cacheKey,
+        cacheValue,
+        hash_value
+      );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashEqualResponse.toString()}`);
+      const getResponse = await cache.getWithHash(cacheKey);
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfAbsentOrHashEqualResponse instanceof
+          CacheSetIfAbsentOrHashEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfAbsentOrHashEqualResponse.hashString()
+        );
+      }
+    });
+  });
+
+  describe('#setIfAbsentOrHashNotEqual', () => {
+    ItBehavesLikeItValidatesCacheName((props: ValidateCacheProps) => {
+      return cacheClient.setIfAbsentOrHashNotEqual(
+        props.cacheName,
+        v4(),
+        v4(),
+        new TextEncoder().encode(v4())
+      );
+    });
+
+    it('should set cache key if key is present and hash of value to check is not equal', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const randResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      const hash_value =
+        randResponse instanceof CacheSetWithHash.Stored
+          ? randResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const setIfAbsentOrHashNotEqualResponse =
+        await cacheClient.setIfAbsentOrHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfAbsentOrHashNotEqualResponse instanceof
+          CacheSetIfAbsentOrHashNotEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfAbsentOrHashNotEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should not set cache key if key is present and value to check is equal', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setIfAbsentOrHashNotEqualResponse =
+        await cacheClient.setIfAbsentOrHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashNotEqual.NotStored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGetWithHash.Hit) {
+        expect(getResponse.valueString()).toEqual(initialCacheValue);
+      }
+    });
+
+    it('should set cache key if key is not present', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const setIfAbsentOrHashNotEqualResponse =
+        await cacheClient.setIfAbsentOrHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          new TextEncoder().encode(v4())
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashNotEqual.Stored
+        );
+      }, `expected NOTSTORED but got ${setIfAbsentOrHashNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGetWithHash.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should get remaining ttl from cache greater than expected', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+
+      const randResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(randResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${randResponse.toString()}`);
+      const hash_value =
+        randResponse instanceof CacheSetWithHash.Stored
+          ? randResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      const setIfAbsentOrHashNotEqualResponse =
+        await cacheClient.setIfAbsentOrHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value,
+          {ttl: 1000}
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashNotEqualResponse.toString()}`);
+      const getTTLResponse = await cacheClient.itemGetTtl(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getTTLResponse).toBeInstanceOf(CacheItemGetTtl.Hit);
+      }, `expected HIT but got ${getTTLResponse.toString()}`);
+      if (getTTLResponse instanceof CacheItemGetTtl.Hit) {
+        // we sent the ttl as 1000 seconds, so it's reasonable to expect the remaining TTL
+        // will be greater than 950 seconds at least
+        expect(getTTLResponse.remainingTtlMillis()).toBeGreaterThan(950 * 1000);
+      }
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (getResponse instanceof CacheGetWithHash.Hit) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+      }
+    });
+
+    it('should set and get bytes', async () => {
+      const cacheKey = new TextEncoder().encode(v4());
+      const cacheValue = new TextEncoder().encode(v4());
+      const initialCacheValue = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      const setIfAbsentOrHashNotEqualResponse =
+        await cacheClient.setIfAbsentOrHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      expectWithMessage(() => {
+        expect(new TextEncoder().encode(getResponse.value())).toEqual(
+          cacheValue
+        );
+      }, `expected ${cacheValue.toString()} but got ${getResponse.value() || 'undefined'}`);
+      if (
+        setIfAbsentOrHashNotEqualResponse instanceof
+        CacheSetIfAbsentOrHashNotEqual.Stored
+      ) {
+        expectWithMessage(() => {
+          expect(new TextEncoder().encode(getResponse.hash())).toEqual(
+            new TextEncoder().encode(
+              setIfAbsentOrHashNotEqualResponse.hashString()
+            )
+          );
+        }, `expected ${setIfAbsentOrHashNotEqualResponse.hashString()} but got ${getResponse.hash() || 'undefined'}`);
+      }
+    });
+
+    it('should set string key with bytes value', async () => {
+      const cacheKey = v4();
+      const cacheValue = new TextEncoder().encode(v4());
+      const decodedValue = new TextDecoder().decode(cacheValue);
+      const initialCacheValue = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      const setIfAbsentOrHashNotEqualResponse =
+        await cacheClient.setIfAbsentOrHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfAbsentOrHashNotEqualResponse instanceof
+          CacheSetIfAbsentOrHashNotEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(decodedValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfAbsentOrHashNotEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should set byte key with string value', async () => {
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const cacheKey = new TextEncoder().encode(v4());
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      const setIfAbsentOrHashNotEqualResponse =
+        await cacheClient.setIfAbsentOrHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfAbsentOrHashNotEqualResponse instanceof
+          CacheSetIfAbsentOrHashNotEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfAbsentOrHashNotEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should return INVALID_ARGUMENT_ERROR for invalid ttl when set with string key/value', async () => {
+      const setResponse = await cacheClient.setIfAbsentOrHashNotEqual(
+        integrationTestCacheName,
+        v4(),
+        v4(),
+        new TextEncoder().encode(v4()),
+        {ttl: -1}
+      );
+      expect(setResponse).toBeInstanceOf(CacheSetIfAbsentOrHashNotEqual.Error);
+      if (setResponse instanceof CacheSetIfAbsentOrHashNotEqual.Error) {
+        expect(setResponse.errorCode()).toEqual(
+          MomentoErrorCode.INVALID_ARGUMENT_ERROR
+        );
+      }
+    });
+
+    it('should set string key/value with valid ttl and get successfully', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const hash_value =
+        setResponse instanceof CacheSetWithHash.Stored
+          ? setResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+
+      await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initialCacheValue
+      );
+      const setIfAbsentOrHashNotEqualResponse =
+        await cacheClient.setIfAbsentOrHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          cacheValue,
+          hash_value,
+          {ttl: 15}
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashNotEqualResponse.toString()}`);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfAbsentOrHashNotEqualResponse instanceof
+          CacheSetIfAbsentOrHashNotEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfAbsentOrHashNotEqualResponse.hashString()
+        );
+      }
+    });
+
+    it('should set with valid ttl and should return miss when ttl is expired', async () => {
+      const cacheKey = v4();
+      const initalCacheValue = v4();
+      const randResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        v4()
+      );
+      const hash_value =
+        randResponse instanceof CacheSetWithHash.Stored
+          ? randResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+
+      const setResponse = await cacheClient.setWithHash(
+        integrationTestCacheName,
+        cacheKey,
+        initalCacheValue,
+        {ttl: 100}
+      );
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const setIfAbsentOrHashNotEqualResponse =
+        await cacheClient.setIfAbsentOrHashNotEqual(
+          integrationTestCacheName,
+          cacheKey,
+          v4(),
+          hash_value,
+          {ttl: 1}
+        );
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashNotEqualResponse.toString()}`);
+      await sleep(1500);
+      const getResponse = await cacheClient.getWithHash(
+        integrationTestCacheName,
+        cacheKey
+      );
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Miss);
+      }, `expected MISS but got ${getResponse.toString()}`);
+    });
+
+    it('should support happy path for setIfAbsentOrHashNotEqual via curried cache via ICache interface', async () => {
+      const cacheKey = v4();
+      const cacheValue = v4();
+      const initialCacheValue = v4();
+      const cache = cacheClient.cache(integrationTestCacheName);
+      const randResponse = await cache.setWithHash(cacheKey, v4());
+      const hash_value =
+        randResponse instanceof CacheSetWithHash.Stored
+          ? randResponse.hashUint8Array()
+          : new TextEncoder().encode(v4());
+      const setResponse = await cache.setWithHash(cacheKey, initialCacheValue);
+      expectWithMessage(() => {
+        expect(setResponse).toBeInstanceOf(CacheSetWithHash.Stored);
+      }, `expected STORED but got ${setResponse.toString()}`);
+      const setIfAbsentOrHashNotEqualResponse =
+        await cache.setIfAbsentOrHashNotEqual(cacheKey, cacheValue, hash_value);
+      expectWithMessage(() => {
+        expect(setIfAbsentOrHashNotEqualResponse).toBeInstanceOf(
+          CacheSetIfAbsentOrHashNotEqual.Stored
+        );
+      }, `expected STORED but got ${setIfAbsentOrHashNotEqualResponse.toString()}`);
+      const getResponse = await cache.getWithHash(cacheKey);
+      expectWithMessage(() => {
+        expect(getResponse).toBeInstanceOf(CacheGetWithHash.Hit);
+      }, `expected HIT but got ${getResponse.toString()}`);
+      if (
+        getResponse instanceof CacheGetWithHash.Hit &&
+        setIfAbsentOrHashNotEqualResponse instanceof
+          CacheSetIfAbsentOrHashNotEqual.Stored
+      ) {
+        expect(getResponse.valueString()).toEqual(cacheValue);
+        expect(getResponse.hashString()).toEqual(
+          setIfAbsentOrHashNotEqualResponse.hashString()
+        );
       }
     });
   });

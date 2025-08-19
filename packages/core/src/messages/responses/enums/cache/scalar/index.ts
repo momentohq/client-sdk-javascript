@@ -127,3 +127,27 @@ export enum CacheSetWithHashResponse {
   NotStored = 'NotStored',
   Error = 'Error',
 }
+
+export enum CacheSetIfPresentAndHashEqualResponse {
+  Stored = 'Stored',
+  NotStored = 'NotStored',
+  Error = 'Error',
+}
+
+export enum CacheSetIfPresentAndHashNotEqualResponse {
+  Stored = 'Stored',
+  NotStored = 'NotStored',
+  Error = 'Error',
+}
+
+export enum CacheSetIfAbsentOrHashEqualResponse {
+  Stored = 'Stored',
+  NotStored = 'NotStored',
+  Error = 'Error',
+}
+
+export enum CacheSetIfAbsentOrHashNotEqualResponse {
+  Stored = 'Stored',
+  NotStored = 'NotStored',
+  Error = 'Error',
+}
