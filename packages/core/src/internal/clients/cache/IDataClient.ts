@@ -62,6 +62,10 @@ import {
   CacheSortedSetUnionStore,
   CacheGetWithHash,
   CacheSetWithHash,
+  CacheSetIfPresentAndHashEqual,
+  CacheSetIfPresentAndHashNotEqual,
+  CacheSetIfAbsentOrHashEqual,
+  CacheSetIfAbsentOrHashNotEqual,
 } from '../../../index';
 import {
   GetBatchCallOptions,
@@ -153,6 +157,34 @@ export interface IDataClient {
     equal: string | Uint8Array,
     ttl?: number
   ): Promise<CacheSetIfAbsentOrEqual.Response>;
+  setIfPresentAndHashEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    hashEqual: Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfPresentAndHashEqual.Response>;
+  setIfPresentAndHashNotEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    hashNotEqual: Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfPresentAndHashNotEqual.Response>;
+  setIfAbsentOrHashEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    hashEqual: Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfAbsentOrHashEqual.Response>;
+  setIfAbsentOrHashNotEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    hashNotEqual: Uint8Array,
+    ttl?: number
+  ): Promise<CacheSetIfAbsentOrHashNotEqual.Response>;
   getBatch(
     cacheName: string,
     keys: Array<string | Uint8Array>,

@@ -62,6 +62,10 @@ import {
   CacheSetLength,
   CacheSortedSetUnionStore,
   CacheSetWithHash,
+  CacheSetIfPresentAndHashEqual,
+  CacheSetIfPresentAndHashNotEqual,
+  CacheSetIfAbsentOrHashEqual,
+  CacheSetIfAbsentOrHashNotEqual,
 } from '../index';
 import {
   ScalarCallOptions,
@@ -118,6 +122,10 @@ export type SortedSetLengthByScoreOptions = SortedSetLengthByScoreCallOptions;
 export type SortedSetUnionStoreOptions = SortedSetUnionStoreCallOptions;
 export type GetWithHashOptions = GetWithHashCallOptions;
 export type SetWithHashOptions = SetWithHashCallOptions;
+export type SetIfPresentAndHashEqualOptions = ScalarCallOptions;
+export type SetIfPresentAndHashNotEqualOptions = ScalarCallOptions;
+export type SetIfAbsentOrHashEqualOptions = ScalarCallOptions;
+export type SetIfAbsentOrHashNotEqualOptions = ScalarCallOptions;
 
 export interface ICacheClient extends IControlClient, IPingClient {
   cache(cacheName: string): IMomentoCache;
@@ -192,6 +200,34 @@ export interface ICacheClient extends IControlClient, IPingClient {
     equal: string | Uint8Array,
     options?: SetIfAbsentOrEqualOptions
   ): Promise<CacheSetIfAbsentOrEqual.Response>;
+  setIfPresentAndHashEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    hashEqual: Uint8Array,
+    options?: SetIfPresentAndHashEqualOptions
+  ): Promise<CacheSetIfPresentAndHashEqual.Response>;
+  setIfPresentAndHashNotEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    hashNotEqual: Uint8Array,
+    options?: SetIfPresentAndHashNotEqualOptions
+  ): Promise<CacheSetIfPresentAndHashNotEqual.Response>;
+  setIfAbsentOrHashEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    hashEqual: Uint8Array,
+    options?: SetIfAbsentOrHashEqualOptions
+  ): Promise<CacheSetIfAbsentOrHashEqual.Response>;
+  setIfAbsentOrHashNotEqual(
+    cacheName: string,
+    key: string | Uint8Array,
+    value: string | Uint8Array,
+    hashNotEqual: Uint8Array,
+    options?: SetIfAbsentOrHashNotEqualOptions
+  ): Promise<CacheSetIfAbsentOrHashNotEqual.Response>;
   getBatch(
     cacheName: string,
     keys: Array<string | Uint8Array>
