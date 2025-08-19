@@ -66,6 +66,10 @@ import * as CacheDecreaseTtl from './messages/responses/cache-ttl-decrease';
 import * as CacheSetBatch from './messages/responses/cache-batch-set';
 import * as CacheGetBatch from './messages/responses/cache-batch-get';
 import * as CacheSetWithHash from './messages/responses/cache-set-with-hash';
+import * as CacheSetIfPresentAndHashEqual from './messages/responses/cache-set-if-present-and-hash-equal';
+import * as CacheSetIfPresentAndHashNotEqual from './messages/responses/cache-set-if-present-and-hash-not-equal';
+import * as CacheSetIfAbsentOrHashEqual from './messages/responses/cache-set-if-absent-or-hash-equal';
+import * as CacheSetIfAbsentOrHashNotEqual from './messages/responses/cache-set-if-absent-or-hash-not-equal';
 
 // TopicClient Response Types
 import * as TopicPublish from './messages/responses/topic-publish';
@@ -165,6 +169,10 @@ export {
   SetIfPresentAndNotEqualOptions,
   SetIfAbsentOrEqualOptions,
   SortedSetPutElementsOptions,
+  SetIfPresentAndHashEqualOptions,
+  SetIfPresentAndHashNotEqualOptions,
+  SetIfAbsentOrHashEqualOptions,
+  SetIfAbsentOrHashNotEqualOptions,
   IncrementOptions,
   SortedSetUnionStoreOptions,
   GetWithHashOptions,
@@ -324,6 +332,10 @@ export {
   CacheSetBatch,
   CacheGetBatch,
   CacheSetWithHash,
+  CacheSetIfPresentAndHashEqual,
+  CacheSetIfPresentAndHashNotEqual,
+  CacheSetIfAbsentOrHashEqual,
+  CacheSetIfAbsentOrHashNotEqual,
   // TopicClient Response Types
   TopicPublish,
   TopicSubscribe,
