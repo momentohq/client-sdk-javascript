@@ -155,6 +155,7 @@ import PresentAndHashEqual = common.PresentAndHashEqual;
 import PresentAndHashNotEqual = common.PresentAndNotHashEqual;
 import AbsentOrHashEqual = common.AbsentOrHashEqual;
 import AbsentOrHashNotEqual = common.AbsentOrNotHashEqual;
+import {CancellationInterceptor} from './grpc/cancellation-interceptor';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
@@ -523,7 +524,13 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      return await this.sendSet(cacheName, encodedKey, encodedValue, ttlToUse);
+      return await this.sendSet(
+        cacheName,
+        encodedKey,
+        encodedValue,
+        ttlToUse,
+        options?.signal
+      );
     });
   }
 
@@ -531,7 +538,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     key: Uint8Array,
     value: Uint8Array,
-    ttl: number
+    ttl: number,
+    signal?: AbortSignal
   ): Promise<CacheSet.Response> {
     const request = new grpcCache._SetRequest({
       cache_body: value,
@@ -540,11 +548,14 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().Set(
+      const setGrpcCall = this.clientWrapper.getClient().Set(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: [
+            ...this.interceptors,
+            CancellationInterceptor.createCancellationInterceptor(signal),
+          ],
         },
         (err, resp) => {
           if (resp) {
@@ -559,6 +570,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(signal, setGrpcCall, 'set');
     });
   }
 
@@ -2162,11 +2174,13 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().Get(
+      const getGrpcCall = this.clientWrapper.getClient().Get(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(
+            options?.signal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -2225,6 +2239,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(options?.signal, getGrpcCall, 'get');
     });
   }
 
@@ -5320,6 +5335,46 @@ export class CacheDataClient implements IDataClient {
         field: field,
         value: value,
       }),
+    ];
+  }
+
+  /**
+   * Helper method to handle AbortSignal cancellation for gRPC calls.
+   * This centralizes the cancellation logic and ensures consistent behavior.
+   * @param signal - The AbortSignal to monitor
+   * @param grpcCall - The gRPC call to cancel
+   * @param operationName - Name of the operation for logging
+   */
+  private setupAbortSignalHandler(
+    signal: AbortSignal | undefined,
+    grpcCall: {cancel: () => void},
+    operationName: string
+  ): void {
+    if (signal !== undefined) {
+      if (signal.aborted) {
+        grpcCall.cancel();
+      } else {
+        signal.addEventListener('abort', () => {
+          this.logger.debug(
+            `Abort signal received, cancelling ${operationName} call`
+          );
+          grpcCall.cancel();
+        });
+      }
+    }
+  }
+
+  /**
+   * Helper method to create interceptors with AbortSignal cancellation support.
+   * @param signal - The AbortSignal to monitor
+   * @returns Array of interceptors including cancellation if signal is provided
+   */
+  private createInterceptorsWithCancellation(
+    signal?: AbortSignal
+  ): Interceptor[] {
+    return [
+      ...this.interceptors,
+      CancellationInterceptor.createCancellationInterceptor(signal),
     ];
   }
 }

@@ -20,13 +20,23 @@ export interface DecompressableCallOptions {
   decompress?: boolean;
 }
 
+export interface CancellationCallOptions {
+  /**
+   * The signal to cancel the operation.
+   */
+  signal?: AbortSignal;
+}
+
 export interface SetCallOptions
   extends ScalarCallOptions,
-    CompressableCallOptions {}
+    CompressableCallOptions,
+    CancellationCallOptions {}
 export type SetBatchCallOptions = SetCallOptions;
 export type SetWithHashCallOptions = SetCallOptions;
 
-export type GetCallOptions = DecompressableCallOptions;
+export interface GetCallOptions
+  extends DecompressableCallOptions,
+    CancellationCallOptions {}
 export type GetWithHashCallOptions = DecompressableCallOptions;
 export type GetBatchCallOptions = GetCallOptions;
 
