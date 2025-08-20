@@ -1,6 +1,6 @@
 import {SdkError} from '../../errors';
 import {BaseResponseError, ResponseBase} from './response-base';
-import {CacheSetIfAbsentOrHashEqualResponse as CacheSetIfAbsentOrHashNotEqualResponse} from './enums';
+import {CacheSetIfAbsentOrHashNotEqualResponse} from './enums';
 
 const TEXT_DECODER = new TextDecoder();
 
