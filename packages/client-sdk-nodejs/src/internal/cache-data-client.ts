@@ -552,10 +552,7 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: [
-            ...this.interceptors,
-            CancellationInterceptor.createCancellationInterceptor(signal),
-          ],
+          interceptors: this.createInterceptorsWithCancellation(signal),
         },
         (err, resp) => {
           if (resp) {
