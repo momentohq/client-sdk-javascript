@@ -81,7 +81,9 @@ export class CacheServiceErrorMapper
         // Use message to determine if cancellation occurred due to to an AbortSignal on the client
         // (ABORTED status sent by CancellationInterceptor to short-circuit retry strategies)
         if (err.message.includes('AbortSignal')) {
-          return new CancelledError('Request cancelled by an AbortSignal');
+          return new CancelledError(
+            'Request cancelled by a user-provided AbortSignal'
+          );
         }
         return new InternalServerError(...errParams);
       case Status.UNKNOWN:
@@ -122,7 +124,9 @@ export class CacheServiceErrorMapper
           err.message.includes('AbortSignal') ||
           err.message.includes('Cancelled on client')
         ) {
-          return new CancelledError('Request cancelled by an AbortSignal');
+          return new CancelledError(
+            'Request cancelled by a user-provided AbortSignal'
+          );
         }
         return new CancelledError(...errParams);
       case Status.DEADLINE_EXCEEDED:
