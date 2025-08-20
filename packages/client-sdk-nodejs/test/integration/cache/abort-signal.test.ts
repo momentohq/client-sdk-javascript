@@ -26,7 +26,7 @@ describe('AbortSignal', () => {
       if (setResponse.type === CacheSetResponse.Error) {
         expect(setResponse.errorCode()).toEqual('CANCELLED_ERROR');
         expect(setResponse.message()).toContain(
-          'Request cancelled by an AbortSignal'
+          'Request cancelled by a user-provided AbortSignal'
         );
       }
     });
@@ -44,7 +44,7 @@ describe('AbortSignal', () => {
       if (getResponse.type === CacheGetResponse.Error) {
         expect(getResponse.errorCode()).toEqual('CANCELLED_ERROR');
         expect(getResponse.message()).toContain(
-          'Request cancelled by an AbortSignal'
+          'Request cancelled by a user-provided AbortSignal'
         );
       }
     });
@@ -65,7 +65,7 @@ describe('AbortSignal', () => {
       if (setResponse.type === CacheSetResponse.Error) {
         expect(setResponse.errorCode()).toEqual('CANCELLED_ERROR');
         expect(setResponse.message()).toContain(
-          'Request cancelled by an AbortSignal'
+          'Request cancelled by a user-provided AbortSignal'
         );
       }
     });
@@ -83,7 +83,7 @@ describe('AbortSignal', () => {
       if (getResponse.type === CacheGetResponse.Error) {
         expect(getResponse.errorCode()).toEqual('CANCELLED_ERROR');
         expect(getResponse.message()).toContain(
-          'Request cancelled by an AbortSignal'
+          'Request cancelled by a user-provided AbortSignal'
         );
       }
     });
