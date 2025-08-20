@@ -1928,12 +1928,12 @@ async function main() {
 
   await example_API_CreateCache(cacheClient, cacheName);
 
-  const setWithHashResponse = cacheClient.setWithHash(cacheName, 'test-key', 'test-value');
+  const setWithHashResponse = await cacheClient.setWithHash(cacheName, 'test-key', 'test-value');
   const hashValue =
     setWithHashResponse instanceof CacheSetWithHash.Stored
       ? setWithHashResponse.hashUint8Array()
       : new TextEncoder().encode('hello-world');
-  const setWithHashResponse2 = cacheClient.setWithHash(cacheName, 'example-key', 'example-value');
+  const setWithHashResponse2 = await cacheClient.setWithHash(cacheName, 'example-key', 'example-value');
   const hashValueNotEqual =
     setWithHashResponse2 instanceof CacheSetWithHash.Stored
       ? setWithHashResponse2.hashUint8Array()
