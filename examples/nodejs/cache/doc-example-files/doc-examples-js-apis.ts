@@ -486,7 +486,7 @@ async function example_API_SetIfPresentAndHashEqual(
   const result = await cacheClient.setIfPresentAndHashEqual(cacheName, 'test-key', 'test-value', hashValue);
   switch (result.type) {
     case CacheSetIfPresentAndHashEqualResponse.Stored:
-      console.log(`Value 'test-value' set in key 'test-key' with hash: ${result.hashString}`);
+      console.log(`Value 'test-value' set in key 'test-key' with hash: ${result.hashString()}`);
       break;
     case CacheSetIfPresentAndHashEqualResponse.NotStored:
       console.log(
@@ -508,7 +508,7 @@ async function example_API_SetIfPresentAndHasNotEqual(
   const result = await cacheClient.setIfPresentAndHashNotEqual(cacheName, 'test-key', 'test-value', hashValue);
   switch (result.type) {
     case CacheSetIfPresentAndHashNotEqualResponse.Stored:
-      console.log(`Value 'test-value' set in key 'test-key' with hash: ${result.hashString}`);
+      console.log(`Value 'test-value' set in key 'test-key' with hash: ${result.hashString()}`);
       break;
     case CacheSetIfPresentAndHashNotEqualResponse.NotStored:
       console.log(`Key 'test-key' exists in cache ${cacheName} or is equal to hashValue, so we did not set the field`);
@@ -524,7 +524,7 @@ async function example_API_SetIfAbsentOrHashEqual(cacheClient: CacheClient, cach
   const result = await cacheClient.setIfAbsentOrHashEqual(cacheName, 'test-key', 'test-value', hashValue);
   switch (result.type) {
     case CacheSetIfAbsentOrHashEqualResponse.Stored:
-      console.log(`Value 'test-value' set in key 'test-key' with hash: ${result.hashString}`);
+      console.log(`Value 'test-value' set in key 'test-key' with hash: ${result.hashString()}`);
       break;
     case CacheSetIfAbsentOrHashEqualResponse.NotStored:
       console.log(
@@ -546,7 +546,7 @@ async function example_API_SetIfAbsentOrHashNotEqual(
   const result = await cacheClient.setIfAbsentOrHashNotEqual(cacheName, 'test-key', 'test-value', hashValue);
   switch (result.type) {
     case CacheSetIfAbsentOrHashNotEqualResponse.Stored:
-      console.log(`Value 'test-value' set in key 'test-key' with hash: ${result.hashString}`);
+      console.log(`Value 'test-value' set in key 'test-key' with hash: ${result.hashString()}`);
       break;
     case CacheSetIfAbsentOrHashNotEqualResponse.NotStored:
       console.log(`Key 'test-key' exists in cache ${cacheName} and is equal to hashValue, so we did not set the field`);
