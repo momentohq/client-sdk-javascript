@@ -78,6 +78,13 @@ export class CacheServiceErrorMapper
       case Status.DATA_LOSS:
       case Status.INTERNAL:
       case Status.ABORTED:
+        // Use message to determine if cancellation occurred due to to an AbortSignal on the client
+        // (ABORTED status sent by CancellationInterceptor to short-circuit retry strategies)
+        if (err.message.includes('AbortSignal')) {
+          return new CancelledError(
+            'Request cancelled by a user-provided AbortSignal'
+          );
+        }
         return new InternalServerError(...errParams);
       case Status.UNKNOWN:
         return new UnknownServiceError(...errParams);
@@ -111,6 +118,16 @@ export class CacheServiceErrorMapper
       case Status.INVALID_ARGUMENT:
         return new InvalidArgumentError(...errParams);
       case Status.CANCELLED:
+        // Use message to determine if cancellation occurred due to to an AbortSignal
+        // on the client or due to something server-side
+        if (
+          err.message.includes('AbortSignal') ||
+          err.message.includes('Cancelled on client')
+        ) {
+          return new CancelledError(
+            'Request cancelled by a user-provided AbortSignal'
+          );
+        }
         return new CancelledError(...errParams);
       case Status.DEADLINE_EXCEEDED:
         return new TimeoutError(...errParams);
