@@ -1,6 +1,6 @@
 import {SetupIntegrationTest} from '../integration-setup';
 import {v4} from 'uuid';
-import {CacheSetResponse} from '@gomomento/sdk-core';
+import {CacheGetResponse, CacheSetResponse} from '@gomomento/sdk-core';
 
 const {cacheClient, cacheClientWithoutRetryStrategy, integrationTestCacheName} =
   SetupIntegrationTest();
@@ -44,29 +44,29 @@ describe('AbortSignal', () => {
       await testTrials(testSet());
     });
 
-    // it('should cancel a get call', async () => {
-    //   const testGet = async () => {
-    //     const abortSignal = AbortSignal.timeout(1);
-    //     const getResponse = await cacheClientWithoutRetryStrategy.get(
-    //       integrationTestCacheName,
-    //       v4(),
-    //       {
-    //         abortSignal,
-    //       }
-    //     );
-    //     if (
-    //       getResponse.type === CacheGetResponse.Error &&
-    //       getResponse.errorCode() === 'CANCELLED_ERROR' &&
-    //       getResponse
-    //         .message()
-    //         .includes('Request cancelled by a user-provided AbortSignal')
-    //     ) {
-    //       return true;
-    //     }
-    //     return false;
-    //   };
-    //   await testTrials(testGet());
-    // });
+    it('should cancel a get call', async () => {
+      const testGet = async () => {
+        const abortSignal = AbortSignal.timeout(1);
+        const getResponse = await cacheClientWithoutRetryStrategy.get(
+          integrationTestCacheName,
+          v4(),
+          {
+            abortSignal,
+          }
+        );
+        if (
+          getResponse.type === CacheGetResponse.Error &&
+          getResponse.errorCode() === 'CANCELLED_ERROR' &&
+          getResponse
+            .message()
+            .includes('Request cancelled by a user-provided AbortSignal')
+        ) {
+          return true;
+        }
+        return false;
+      };
+      await testTrials(testGet());
+    });
   });
 
   describe('cache client WITH default retry strategy', () => {
@@ -95,28 +95,28 @@ describe('AbortSignal', () => {
       await testTrials(testSet());
     });
 
-    // it('should cancel a get call', async () => {
-    //   const testGet = async () => {
-    //     const abortSignal = AbortSignal.timeout(1);
-    //     const getResponse = await cacheClient.get(
-    //       integrationTestCacheName,
-    //       v4(),
-    //       {
-    //         abortSignal,
-    //       }
-    //     );
-    //     if (
-    //       getResponse.type === CacheGetResponse.Error &&
-    //       getResponse.errorCode() === 'CANCELLED_ERROR' &&
-    //       getResponse
-    //         .message()
-    //         .includes('Request cancelled by a user-provided AbortSignal')
-    //     ) {
-    //       return true;
-    //     }
-    //     return false;
-    //   };
-    //   await testTrials(testGet());
-    // });
+    it('should cancel a get call', async () => {
+      const testGet = async () => {
+        const abortSignal = AbortSignal.timeout(1);
+        const getResponse = await cacheClient.get(
+          integrationTestCacheName,
+          v4(),
+          {
+            abortSignal,
+          }
+        );
+        if (
+          getResponse.type === CacheGetResponse.Error &&
+          getResponse.errorCode() === 'CANCELLED_ERROR' &&
+          getResponse
+            .message()
+            .includes('Request cancelled by a user-provided AbortSignal')
+        ) {
+          return true;
+        }
+        return false;
+      };
+      await testTrials(testGet());
+    });
   });
 });
