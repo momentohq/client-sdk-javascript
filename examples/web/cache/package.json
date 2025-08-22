@@ -30,7 +30,7 @@
     "typescript": "4.9.5"
   },
   "dependencies": {
-    "@gomomento/sdk-web": "^1.113.0",
+    "@gomomento/sdk-web": "^1.115.1",
     "jsdom": "22.1.0"
   }
 }
