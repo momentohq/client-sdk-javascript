@@ -116,8 +116,32 @@ import {
   GetBatchOptions,
   GetWithHashOptions,
   SetWithHashOptions,
+  SetFetchOptions,
+  DeleteOptions,
+  ListLengthOptions,
+  ListPopBackOptions,
+  ListPopFrontOptions,
+  ListRemoveValueOptions,
+  SetContainsElementsOptions,
+  SetRemoveElementsOptions,
+  SetSampleOptions,
+  SetPopOptions,
+  SetLengthOptions,
+  DictionaryFetchOptions,
+  DictionaryGetFieldOptions,
+  DictionaryRemoveFieldOptions,
+  DictionaryLengthOptions,
+  SortedSetGetScoreOptions,
+  SortedSetRemoveElementOptions,
+  SortedSetLengthOptions,
+  ItemGetTypeOptions,
+  ItemGetTtlOptions,
+  KeyExistsOptions,
+  UpdateTtlOptions,
+  IncreaseTtlOptions,
+  DecreaseTtlOptions,
 } from '../../../clients/ICacheClient';
-import {IControlClient} from './IControlClient';
+import {CacheOptions, IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
 import {IPingClient} from './IPingClient';
 import {IMomentoCache} from '../../../clients/IMomentoCache';
@@ -167,8 +191,11 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CreateCache.AlreadyExists} if the cache already exists.
    * {@link CreateCache.Error} on failure.
    */
-  public async createCache(cacheName: string): Promise<CreateCache.Response> {
-    return await this.controlClient.createCache(cacheName);
+  public async createCache(
+    cacheName: string,
+    options?: CacheOptions
+  ): Promise<CreateCache.Response> {
+    return await this.controlClient.createCache(cacheName, options);
   }
 
   /**
@@ -179,8 +206,11 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link DeleteCache.Success} on success.
    * {@link DeleteCache.Error} on failure.
    */
-  public async deleteCache(cacheName: string): Promise<DeleteCache.Response> {
-    return await this.controlClient.deleteCache(cacheName);
+  public async deleteCache(
+    cacheName: string,
+    options?: CacheOptions
+  ): Promise<DeleteCache.Response> {
+    return await this.controlClient.deleteCache(cacheName, options);
   }
 
   /**
@@ -190,8 +220,10 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link ListCaches.Success} containing the list on success.
    * {@link ListCaches.Error} on failure.
    */
-  public async listCaches(): Promise<ListCaches.Response> {
-    return await this.controlClient.listCaches();
+  public async listCaches(
+    options?: CacheOptions
+  ): Promise<ListCaches.Response> {
+    return await this.controlClient.listCaches(options);
   }
 
   /**
@@ -202,6 +234,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {GetOptions} [options]
    * @param {decompress} [options.decompress=false] - Whether to decompress the value. Overrides the client-wide
    * automatic decompression setting.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheGet.Response>} -
    * {@link CacheGet.Hit} containing the value if one is found.
    * {@link CacheGet.Miss} if the key does not exist.
@@ -223,6 +256,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {GetOptions} [options]
    * @param {decompress} [options.decompress=false] - Whether to decompress the value. Overrides the client-wide
    * automatic decompression setting.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheGet.Response>} -
    * {@link CacheGetWithHash.Hit} containing the value and hash if one is found.
    * {@link CacheGetWithHash.Miss} if the key does not exist.
@@ -245,6 +279,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string | Uint8Array} value - The value to be stored.
    * @param {SetOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * Uses the client's default TTL if this is not supplied.
    * @param {boolean} [options.compress=false] - Whether to compress the value. Defaults to false.
    * @returns {Promise<CacheSet.Response>} -
@@ -274,10 +309,11 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache to store the value in.
    * @param {string | Uint8Array} key - The key to set.
    * @param {string | Uint8Array} value - The value to be stored.
-   * @param {SetOptions} [options]
+   * @param {SetWithHashOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
    * Uses the client's default TTL if this is not supplied.
    * @param {boolean} [options.compress=false] - Whether to compress the value. Defaults to false.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSet.Response>} -
    * {@link CacheSetWithHash.Stored} on success containing the hash of the value stored.
    * {@link CacheSetWithHash.NotStored} on not storing the new value.
@@ -299,16 +335,19 @@ export abstract class AbstractCacheClient implements ICacheClient {
    *
    * @param {string} cacheName - The cache to delete from.
    * @param {string | Uint8Array} key - The key to delete.
+   * @param {DeleteOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheDelete.Response>} -
    * {@link CacheDelete.Success} on success.
    * {@link CacheDelete.Error} on failure.
    */
   public async delete(
     cacheName: string,
-    key: string | Uint8Array
+    key: string | Uint8Array,
+    options?: DeleteOptions
   ): Promise<CacheDelete.Response> {
     const client = this.getNextDataClient();
-    return await client.delete(cacheName, key);
+    return await client.delete(cacheName, key, options?.signal);
   }
 
   /**
@@ -319,6 +358,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {GetBatchOptions} [options]
    * @param {decompress} [options.decompress=false] - Whether to decompress the value. Overrides the client-wide
    * automatic decompression setting.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheGetBatch.Response>} -
    * {@link CacheGetBatch.Success} containing the values if they were found.
    * {@link CacheGetBatch.Error} on failure.
@@ -341,6 +381,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {number} [options.ttl] - The time to live for the items in the cache.
    * Uses the client's default TTL if this is not supplied.
    * @param {boolean} [options.compress=false] - Whether to compress the value. Defaults to false.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSetBatch.Response>} -
    * {@link CacheSetBatch.Success} on success.
    * {@link CacheSetBatch.Error} on failure.
@@ -370,6 +411,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the list's TTL using the client's default if this is not
    * supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheListConcatenateBack.Response>} -
    * {@link CacheListConcatenateBack.Success} on success.
    * {@link CacheListConcatenateBack.Error} on failure.
@@ -386,7 +428,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       listName,
       values,
       options?.truncateFrontToSize,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -403,6 +446,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the list's TTL using the client's default if this is not
    * supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheListConcatenateFront.Response>} -
    * {@link CacheListConcatenateFront.Success} on success.
    * {@link CacheListConcatenateFront.Error} on failure.
@@ -419,7 +463,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       listName,
       values,
       options?.truncateBackToSize,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -431,6 +476,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {ListFetchCallOptions} [options]
    * @param {number} [options.startIndex] - Start inclusive index for fetch operation.
    * @param {number} [options.endIndex] - End exclusive index for fetch operation.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheListFetch.Response>} -
    * {@link CacheListFetch.Hit} containing the list elements if the list exists.
    * {@link CacheListFetch.Miss} if the list does not exist.
@@ -446,7 +492,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       cacheName,
       listName,
       options?.startIndex,
-      options?.endIndex
+      options?.endIndex,
+      options?.signal
     );
   }
 
@@ -455,6 +502,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    *
    * @param {string} cacheName - The cache containing the list.
    * @param {string} listName - The list to get the length of.
+   * @param {ListLengthOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheListLength.Response>} -
    * {@link CacheListLength.Hit} containing the length if the list exists.
    * {@link CacheListLength.Miss} if the list does not exist.
@@ -462,10 +511,11 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async listLength(
     cacheName: string,
-    listName: string
+    listName: string,
+    options?: ListLengthOptions
   ): Promise<CacheListLength.Response> {
     const client = this.getNextDataClient();
-    return await client.listLength(cacheName, listName);
+    return await client.listLength(cacheName, listName, options?.signal);
   }
 
   /**
@@ -473,6 +523,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    *
    * @param {string} cacheName - The cache containing the list.
    * @param {string} listName - The list to pop.
+   * @param {ListPopBackOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheListPopBack.Response>} -
    * {@link CacheListPopBack.Hit} containing the element if the list exists.
    * {@link CacheListPopBack.Miss} if the list does not exist.
@@ -480,10 +532,11 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async listPopBack(
     cacheName: string,
-    listName: string
+    listName: string,
+    options?: ListPopBackOptions
   ): Promise<CacheListPopBack.Response> {
     const client = this.getNextDataClient();
-    return await client.listPopBack(cacheName, listName);
+    return await client.listPopBack(cacheName, listName, options?.signal);
   }
 
   /**
@@ -491,6 +544,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    *
    * @param {string} cacheName - The cache containing the list.
    * @param {string} listName - The list to pop.
+   * @param {ListPopFrontOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheListPopFront.Response>} -
    * {@link CacheListPopFront.Hit} containing the element if the list exists.
    * {@link CacheListPopFront.Miss} if the list does not exist.
@@ -498,10 +553,11 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async listPopFront(
     cacheName: string,
-    listName: string
+    listName: string,
+    options?: ListPopFrontOptions
   ): Promise<CacheListPopFront.Response> {
     const client = this.getNextDataClient();
-    return await client.listPopFront(cacheName, listName);
+    return await client.listPopFront(cacheName, listName, options?.signal);
   }
 
   /**
@@ -517,6 +573,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the list's TTL using the client's default if this is not
    * supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheListPushBack.Response>} -
    * {@link CacheListPushBack.Success} containing the list's new length on
    * success.
@@ -534,7 +591,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       listName,
       value,
       options?.truncateFrontToSize,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -551,6 +609,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the list's TTL using the client's default if this is not
    * supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheListPushFront.Response>} -
    * {@link CacheListPushFront.Success} containing the list's new length on
    * success.
@@ -568,7 +627,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       listName,
       value,
       options?.truncateBackToSize,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -578,6 +638,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the list.
    * @param {string} listName - The list to remove from.
    * @param {string | Uint8Array} value - The value to remove.
+   * @param {ListRemoveValueOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheListRemoveValue.Response>} -
    * {@link CacheListRemoveValue.Success} on success. Removing an element that
    * does not occur in the list or removing from a non-existent list counts as a
@@ -587,10 +649,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async listRemoveValue(
     cacheName: string,
     listName: string,
-    value: string | Uint8Array
+    value: string | Uint8Array,
+    options?: ListRemoveValueOptions
   ): Promise<CacheListRemoveValue.Response> {
     const client = this.getNextDataClient();
-    return await client.listRemoveValue(cacheName, listName, value);
+    return await client.listRemoveValue(
+      cacheName,
+      listName,
+      value,
+      options?.signal
+    );
   }
 
   /**
@@ -607,6 +675,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the list's TTL using the client's default if this is not
    * supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheListRetain.Response>} -
    * {@link CacheListRetain.Success} on success.
    * {@link CacheListRetain.Error} on failure.
@@ -622,7 +691,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       listName,
       options?.startIndex,
       options?.endIndex,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -631,6 +701,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    *
    * @param {string} cacheName - The cache containing the set.
    * @param {string} setName - The set to fetch.
+   * @param {SetFetchOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSetFetch.Response>} -
    * {@link CacheSetFetch.Hit} containing the set elements if the set exists.
    * {@link CacheSetFetch.Miss} if the set does not exist.
@@ -638,10 +710,11 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async setFetch(
     cacheName: string,
-    setName: string
+    setName: string,
+    options?: SetFetchOptions
   ): Promise<CacheSetFetch.Response> {
     const client = this.getNextDataClient();
-    return await client.setFetch(cacheName, setName);
+    return await client.setFetch(cacheName, setName, options?.signal);
   }
 
   /**
@@ -658,6 +731,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {SetAddElementOptions} options
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the set's TTL using the client's default if this is not supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSetAddElement.Response>} -
    * {@link CacheSetAddElement.Success} on success.
    * {@link CacheSetAddElement.Error} on failure.
@@ -692,6 +766,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {SetAddElementsOptions} options
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the set's TTL using the client's default if this is not supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSetAddElements.Response>} -
    * {@link CacheSetAddElements.Success} on success.
    * {@link CacheSetAddElements.Error} on failure.
@@ -707,7 +782,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       cacheName,
       setName,
       elements,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -716,6 +792,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param cacheName - The cache containing the set.
    * @param setName - The set to check.
    * @param element - The element to check for.
+   * @param {SetContainsElementsOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSetContainsElement.Response>} -
    * {@link CacheSetContainsElement.Hit} if the set exists and contains the element.
    * {@link CacheSetContainsElement.Miss} if the set does not contain the element.
@@ -724,10 +802,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async setContainsElement(
     cacheName: string,
     setName: string,
-    element: string | Uint8Array
+    element: string | Uint8Array,
+    options?: SetContainsElementsOptions
   ): Promise<CacheSetContainsElement.Response> {
     const client = this.getNextDataClient();
-    return await client.setContainsElement(cacheName, setName, element);
+    return await client.setContainsElement(
+      cacheName,
+      setName,
+      element,
+      options?.signal
+    );
   }
 
   /**
@@ -735,6 +819,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param cacheName - The cache containing the set.
    * @param setName - The set to check.
    * @param elements - The elements to check for.
+   * @param {SetContainsElementsOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSetContainsElements.Response>} -
    * {@link CacheSetContainsElements.Hit} containing the elements to their presence in the cache.
    * {@link CacheSetContainsElements.Miss} if the set does not contain the elements.
@@ -743,10 +829,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async setContainsElements(
     cacheName: string,
     setName: string,
-    elements: string[] | Uint8Array[]
+    elements: string[] | Uint8Array[],
+    options?: SetContainsElementsOptions
   ): Promise<CacheSetContainsElements.Response> {
     const client = this.getNextDataClient();
-    return await client.setContainsElements(cacheName, setName, elements);
+    return await client.setContainsElements(
+      cacheName,
+      setName,
+      elements,
+      options?.signal
+    );
   }
 
   /**
@@ -755,6 +847,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the set.
    * @param {string} setName - The set to remove from.
    * @param {string | Uint8Array} element - The element to remove.
+   * @param {SetRemoveElementsOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSetRemoveElement.Response>} -
    * {@link CacheSetRemoveElement.Success} on success. Removing an element that
    * does not occur in the set or removing from a non-existent set counts as a
@@ -764,12 +858,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async setRemoveElement(
     cacheName: string,
     setName: string,
-    element: string | Uint8Array
+    element: string | Uint8Array,
+    options?: SetRemoveElementsOptions
   ): Promise<CacheSetRemoveElement.Response> {
     return (
-      await this.setRemoveElements(cacheName, setName, [element] as
-        | string[]
-        | Uint8Array[])
+      await this.setRemoveElements(
+        cacheName,
+        setName,
+        [element] as string[] | Uint8Array[],
+        options
+      )
     ).toSingularResponse();
   }
 
@@ -779,6 +877,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the set.
    * @param {string} setName - The set to remove from.
    * @param {string[] | Uint8Array[]} elements - The elements to remove.
+   * @param {SetRemoveElementsOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSetRemoveElements.Response>} -
    * {@link CacheSetRemoveElements.Success} on success. Removing elements that
    * do not occur in the set or removing from a non-existent set counts as a
@@ -788,10 +888,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async setRemoveElements(
     cacheName: string,
     setName: string,
-    elements: string[] | Uint8Array[]
+    elements: string[] | Uint8Array[],
+    options?: SetRemoveElementsOptions
   ): Promise<CacheSetRemoveElements.Response> {
     const client = this.getNextDataClient();
-    return await client.setRemoveElements(cacheName, setName, elements);
+    return await client.setRemoveElements(
+      cacheName,
+      setName,
+      elements,
+      options?.signal
+    );
   }
 
   /**
@@ -802,6 +908,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} setName - The set to remove from.
    * @param {number} limit - The maximum number of elements to return.
    * If the set contains fewer than 'limit' elements, the entire set will be returned.
+   * @param {SetSampleOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSetSample.Response>} -
    * {@link CacheSetSample.Hit} containing the set elements if the set exists.
    * {@link CacheSetSample.Miss} if the set does not exist.
@@ -810,10 +918,11 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async setSample(
     cacheName: string,
     setName: string,
-    limit: number
+    limit: number,
+    options?: SetSampleOptions
   ): Promise<CacheSetSample.Response> {
     const client = this.getNextDataClient();
-    return await client.setSample(cacheName, setName, limit);
+    return await client.setSample(cacheName, setName, limit, options?.signal);
   }
 
   /**
@@ -822,6 +931,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the set.
    * @param {string} setName - The set to remove from.
    * @param {number} count - The maximum number of elements to return.
+   * @param {SetPopOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * If the set contains fewer than 'limit' elements, the entire set will be returned.
    * @returns {Promise<CacheSetPop.Response>} -
    * {@link CacheSetPop.Hit} containing the set elements if the set exists.
@@ -831,10 +942,11 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async setPop(
     cacheName: string,
     setName: string,
-    count: number
+    count: number,
+    options?: SetPopOptions
   ): Promise<CacheSetPop.Response> {
     const client = this.getNextDataClient();
-    return await client.setPop(cacheName, setName, count);
+    return await client.setPop(cacheName, setName, count, options?.signal);
   }
 
   /**
@@ -842,6 +954,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    *
    * @param {string} cacheName - The cache containing the set.
    * @param {string} setName - The set to remove from.
+   * @param {SetLengthOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSetLength.Response>} -
    * {@link CacheSetLength.Hit} containing the set elements if the set exists.
    * {@link CacheSetLength.Miss} if the set does not exist.
@@ -849,10 +963,11 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async setLength(
     cacheName: string,
-    setName: string
+    setName: string,
+    options?: SetLengthOptions
   ): Promise<CacheSetLength.Response> {
     const client = this.getNextDataClient();
-    return await client.setLength(cacheName, setName);
+    return await client.setLength(cacheName, setName, options?.signal);
   }
 
   /**
@@ -864,6 +979,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string | Uint8Array} field - The value to be stored.
    * @param {SetIfNotExistsOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * Uses the client's default TTL if this is not supplied.
    * @returns {Promise<CacheSetIfNotExists.Response>} -
    * {@link CacheSetIfNotExists.Stored} on storing the new value.
@@ -877,7 +993,13 @@ export abstract class AbstractCacheClient implements ICacheClient {
     options?: SetIfNotExistsOptions
   ): Promise<CacheSetIfNotExists.Response> {
     const client = this.getNextDataClient();
-    return await client.setIfNotExists(cacheName, key, field, options?.ttl);
+    return await client.setIfNotExists(
+      cacheName,
+      key,
+      field,
+      options?.ttl,
+      options?.signal
+    );
   }
 
   /**
@@ -888,6 +1010,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string | Uint8Array} field - The value to be stored.
    * @param {SetIfAbsentOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * Uses the client's default TTL if this is not supplied.
    * @param {boolean} [options.compress=false] - Whether to compress the value. Defaults to false.
    * @returns {Promise<CacheSetIfAbsent.Response>} -
@@ -913,6 +1036,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string | Uint8Array} field - The value to be stored.
    * @param {SetIfPresentOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * Uses the client's default TTL if this is not supplied.
    * @returns {Promise<CacheSetIfPresent.Response>} -
    * {@link CacheSetIfPresent.Stored} on storing the new value.
@@ -926,7 +1050,13 @@ export abstract class AbstractCacheClient implements ICacheClient {
     options?: SetIfPresentOptions
   ): Promise<CacheSetIfPresent.Response> {
     const client = this.getNextDataClient();
-    return await client.setIfPresent(cacheName, key, field, options?.ttl);
+    return await client.setIfPresent(
+      cacheName,
+      key,
+      field,
+      options?.ttl,
+      options?.signal
+    );
   }
 
   /**
@@ -939,6 +1069,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string | Uint8Array} equal - The value to compare to the cached value.
    * @param {SetIfEqualOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * Uses the client's default TTL if this is not supplied.
    * @returns {Promise<CacheSetIfEqual.Response>} -
    * {@link CacheSetIfEqual.Stored} on storing the new value.
@@ -953,7 +1084,14 @@ export abstract class AbstractCacheClient implements ICacheClient {
     options?: SetIfEqualOptions
   ): Promise<CacheSetIfEqual.Response> {
     const client = this.getNextDataClient();
-    return await client.setIfEqual(cacheName, key, field, equal, options?.ttl);
+    return await client.setIfEqual(
+      cacheName,
+      key,
+      field,
+      equal,
+      options?.ttl,
+      options?.signal
+    );
   }
 
   /**
@@ -967,6 +1105,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {SetIfNotEqualOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
    * Uses the client's default TTL if this is not supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSetIfNotEqual.Response>} -
    * {@link CacheSetIfNotEqual.Stored} on storing the new value.
    * {@link CacheSetIfNotEqual.NotStored} on not storing the new value.
@@ -985,7 +1124,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       key,
       field,
       notEqual,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -1000,6 +1140,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {SetIfAbsentOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
    * Uses the client's default TTL if this is not supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSetIfPresentAndNotEqual.Response>} -
    * {@link CacheSetIfPresentAndNotEqual.Stored} on storing the new value.
    * {@link CacheSetIfPresentAndNotEqual.NotStored} on not storing the new value.
@@ -1018,7 +1159,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       key,
       field,
       notEqual,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -1033,6 +1175,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {SetIfAbsentOrEqualOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
    * Uses the client's default TTL if this is not supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSetIfAbsentOrEqual.Response>} -
    * {@link CacheSetIfAbsentOrEqual.Stored} on storing the new value.
    * {@link CacheSetIfAbsentOrEqual.NotStored} on not storing the new value.
@@ -1051,7 +1194,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       key,
       field,
       equal,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -1065,6 +1209,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {Uint8Array} hashEqual - The hash to compare to the cached hash.
    * @param {SetIfPresentAndHashEqualOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * Uses the client's default TTL if this is not supplied.
    * @returns {Promise<CacheSetIfPresentAndHashEqual.Response>} -
    * {@link CacheSetIfPresentAndHashEqual.Stored} on storing the new value.
@@ -1084,7 +1229,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       key,
       value,
       hashEqual,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -1099,6 +1245,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {SetIfPresentAndHashNotEqualOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
    * Uses the client's default TTL if this is not supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSetIfPresentAndHashNotEqual.Response>} -
    * {@link CacheSetIfPresentAndHashNotEqual.Stored} on storing the new value.
    * {@link CacheSetIfPresentAndHashNotEqual.NotStored} on not storing the new value.
@@ -1117,7 +1264,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       key,
       value,
       hashNotEqual,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -1132,6 +1280,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {setIfAbsentOrHashEqualOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
    * Uses the client's default TTL if this is not supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSetIfAbsentOrHashEqual.Response>} -
    * {@link CacheSetIfAbsentOrHashEqual.Stored} on storing the new value.
    * {@link CacheSetIfAbsentOrHashEqual.NotStored} on not storing the new value.
@@ -1150,7 +1299,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       key,
       value,
       hashEqual,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -1164,6 +1314,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string | Uint8Array} hashNotEqual - The value to compare to the cached value.
    * @param {SetIfAbsentOrHashNotEqualOptions} [options]
    * @param {number} [options.ttl] - The time to live for the item in the cache.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * Uses the client's default TTL if this is not supplied.
    * @returns {Promise<CacheSetIfAbsentOrHashNotEqual.Response>} -
    * {@link CacheSetIfAbsentOrHashNotEqual.Stored} on storing the new value.
@@ -1183,7 +1334,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       key,
       value,
       hashNotEqual,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -1195,8 +1347,11 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link CacheFlush.Success} on success.
    * {@link CacheFlush.Error} on failure.
    */
-  public async flushCache(cacheName: string): Promise<CacheFlush.Response> {
-    return await this.controlClient.flushCache(cacheName);
+  public async flushCache(
+    cacheName: string,
+    options?: CacheOptions
+  ): Promise<CacheFlush.Response> {
+    return await this.controlClient.flushCache(cacheName, options);
   }
 
   /**
@@ -1204,6 +1359,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    *
    * @param {string} cacheName - The cache to perform the lookup in.
    * @param {string} dictionaryName - The dictionary to fetch.
+   * @param {DictionaryFetchOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheDictionaryFetch.Response>} -
    * {@link CacheDictionaryFetch.Hit} containing the dictionary elements if the
    * dictionary exists.
@@ -1212,10 +1369,15 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async dictionaryFetch(
     cacheName: string,
-    dictionaryName: string
+    dictionaryName: string,
+    options?: DictionaryFetchOptions
   ): Promise<CacheDictionaryFetch.Response> {
     const client = this.getNextDataClient();
-    return await client.dictionaryFetch(cacheName, dictionaryName);
+    return await client.dictionaryFetch(
+      cacheName,
+      dictionaryName,
+      options?.signal
+    );
   }
 
   /**
@@ -1230,6 +1392,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * negative, or zero. Defaults to 1.
    * @param {IncrementOptions} options
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheIncrement>} -
    * {@link CacheIncrement.Success} containing the incremented value
    * on success.
@@ -1244,7 +1407,13 @@ export abstract class AbstractCacheClient implements ICacheClient {
     options?: IncrementOptions
   ): Promise<CacheIncrement.Response> {
     const client = this.getNextDataClient();
-    return await client.increment(cacheName, field, amount, options?.ttl);
+    return await client.increment(
+      cacheName,
+      field,
+      amount,
+      options?.ttl,
+      options?.signal
+    );
   }
 
   /**
@@ -1259,6 +1428,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the dictionary's TTL using the client's default if this is not
    * supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheDictionarySetField.Response>} -
    * {@link CacheDictionarySetField.Success} on success.
    * {@link CacheDictionarySetField.Error} on failure.
@@ -1276,7 +1446,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       dictionaryName,
       field,
       value,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -1292,6 +1463,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the dictionary's TTL using the client's default if this is not
    * supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheDictionarySetFields.Response>} -
    * {@link CacheDictionarySetFields.Success} on success.
    * {@link CacheDictionarySetFields.Error} on failure.
@@ -1310,7 +1482,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       cacheName,
       dictionaryName,
       elements,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -1320,6 +1493,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the dictionary.
    * @param {string} dictionaryName - The dictionary to look up.
    * @param {string | Uint8Array} field - The field to look up.
+   * @param {DictionaryGetFieldOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheDictionaryGetField.Response>} -
    * {@link CacheDictionaryGetField.Hit} containing the dictionary element if
    * one is found.
@@ -1329,10 +1504,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async dictionaryGetField(
     cacheName: string,
     dictionaryName: string,
-    field: string | Uint8Array
+    field: string | Uint8Array,
+    options?: DictionaryGetFieldOptions
   ): Promise<CacheDictionaryGetField.Response> {
     const client = this.getNextDataClient();
-    return await client.dictionaryGetField(cacheName, dictionaryName, field);
+    return await client.dictionaryGetField(
+      cacheName,
+      dictionaryName,
+      field,
+      options?.signal
+    );
   }
 
   /**
@@ -1341,6 +1522,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the dictionary.
    * @param {string} dictionaryName - The dictionary to look up.
    * @param {string[] | Uint8Array[]} fields - The fields to look up.
+   * @param {DictionaryGetFieldOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheDictionaryGetFields.Response>} -
    * {@link CacheDictionaryGetFields.Hit} containing the dictionary elements if
    * the dictionary exists.
@@ -1350,10 +1533,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async dictionaryGetFields(
     cacheName: string,
     dictionaryName: string,
-    fields: string[] | Uint8Array[]
+    fields: string[] | Uint8Array[],
+    options?: DictionaryGetFieldOptions
   ): Promise<CacheDictionaryGetFields.Response> {
     const client = this.getNextDataClient();
-    return await client.dictionaryGetFields(cacheName, dictionaryName, fields);
+    return await client.dictionaryGetFields(
+      cacheName,
+      dictionaryName,
+      fields,
+      options?.signal
+    );
   }
 
   /**
@@ -1365,6 +1554,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the dictionary.
    * @param {string} dictionaryName - The dictionary to remove from.
    * @param {string | Uint8Array} field - The field to remove.
+   * @param {DictionaryRemoveFieldOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheDictionaryRemoveField.Response>} -
    * {@link CacheDictionaryRemoveField.Success} on success.
    * {@link CacheDictionaryRemoveField.Error} on failure.
@@ -1372,10 +1563,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async dictionaryRemoveField(
     cacheName: string,
     dictionaryName: string,
-    field: string | Uint8Array
+    field: string | Uint8Array,
+    options?: DictionaryRemoveFieldOptions
   ): Promise<CacheDictionaryRemoveField.Response> {
     const client = this.getNextDataClient();
-    return await client.dictionaryRemoveField(cacheName, dictionaryName, field);
+    return await client.dictionaryRemoveField(
+      cacheName,
+      dictionaryName,
+      field,
+      options?.signal
+    );
   }
 
   /**
@@ -1387,6 +1584,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the dictionary.
    * @param {string} dictionaryName - The dictionary to remove from.
    * @param {string[] | Uint8Array[]} fields - The fields to remove.
+   * @param {DictionaryRemoveFieldOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheDictionaryRemoveFields.Response>} -
    * {@link CacheDictionaryRemoveFields.Success} on success.
    * {@link CacheDictionaryRemoveFields.Error} on failure.
@@ -1394,13 +1593,15 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async dictionaryRemoveFields(
     cacheName: string,
     dictionaryName: string,
-    fields: string[] | Uint8Array[]
+    fields: string[] | Uint8Array[],
+    options?: DictionaryRemoveFieldOptions
   ): Promise<CacheDictionaryRemoveFields.Response> {
     const client = this.getNextDataClient();
     return await client.dictionaryRemoveFields(
       cacheName,
       dictionaryName,
-      fields
+      fields,
+      options?.signal
     );
   }
 
@@ -1419,6 +1620,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the dictionary's TTL using the client's default if this is not
    * supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheDictionaryIncrement.Response>} -
    * {@link CacheDictionaryIncrement.Success} containing the incremented value
    * on success.
@@ -1439,7 +1641,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       dictionaryName,
       field,
       amount,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -1448,6 +1651,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    *
    * @param {string} cacheName - The cache containing the dictionary.
    * @param {string} dictionaryName - The dictionary to get the length of.
+   * @param {DictionaryLengthOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheDictionaryLength.Response>} -
    * {@link CacheDictionaryLength.Hit} containing the length if the dictionary exists.
    * {@link CacheDictionaryLength.Miss} if the dictionary does not exist.
@@ -1455,10 +1660,15 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async dictionaryLength(
     cacheName: string,
-    dictionaryName: string
+    dictionaryName: string,
+    options?: DictionaryLengthOptions
   ): Promise<CacheDictionaryLength.Response> {
     const client = this.getNextDataClient();
-    return await client.dictionaryLength(cacheName, dictionaryName);
+    return await client.dictionaryLength(
+      cacheName,
+      dictionaryName,
+      options?.signal
+    );
   }
 
   /**
@@ -1473,6 +1683,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the sorted set's TTL using the client's default if this is not
    * supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSortedSetPutElement.Response>} -
    * {@link CacheSortedSetPutElement.Success} on success.
    * {@link CacheSortedSetPutElement.Error} on failure.
@@ -1491,7 +1702,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       sortedSetName,
       value,
       score,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -1506,6 +1718,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the sorted set's TTL using the client's default if this is not
    * supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSortedSetPutElements.Response>} -
    * {@link CacheSortedSetPutElements.Success} on success.
    * {@link CacheSortedSetPutElements.Error} on failure.
@@ -1525,7 +1738,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       cacheName,
       sortedSetName,
       elements,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -1543,6 +1757,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * Defaults to null, which fetches up until and including the last element.
    * @param {SortedSetOrder} [options.order] - The order to fetch the elements in.
    * Defaults to ascending.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSortedSetFetch.Response>}
    * {@link CacheSortedSetFetch.Hit} containing the requested elements when found.
    * {@link CacheSortedSetFetch.Miss} when the sorted set does not exist.
@@ -1559,7 +1774,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       sortedSetName,
       options?.order ?? SortedSetOrder.Ascending,
       options?.startRank ?? 0,
-      options?.endRank
+      options?.endRank,
+      options?.signal
     );
   }
 
@@ -1581,6 +1797,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * to skip before returning the first element.
    * @param {number} [options.count] - The maximum number of elements to return.
    * Defaults to undefined, which returns all elements.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSortedSetFetch.Response>} -
    * {@link CacheSortedSetFetch.Hit} containing the requested elements when found.
    * {@link CacheSortedSetFetch.Miss} when the sorted set does not exist.
@@ -1599,7 +1816,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       options?.minScore,
       options?.maxScore,
       options?.offset,
-      options?.count
+      options?.count,
+      options?.signal
     );
   }
 
@@ -1612,6 +1830,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {SortedSetGetRankOptions} options
    * @param {SortedSetOrder} [options.order] - The order in which sorted set will be sorted to determine the rank.
    * Defaults to ascending.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSortedSetGetRank.Response>}
    * {@link CacheSortedSetGetRank.Hit} containing the rank of the requested elements when found.
    * {@link CacheSortedSetGetRank.Miss} when the element does not exist.
@@ -1628,7 +1847,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       cacheName,
       sortedSetName,
       value,
-      options?.order
+      options?.order,
+      options?.signal
     );
   }
 
@@ -1638,6 +1858,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the sorted set.
    * @param {string} sortedSetName - The sorted set to fetch from.
    * @param {string | Uint8Array} value - The value of the element whose score we are retrieving.
+   * @param {SortedSetGetScoreOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSortedSetGetScore.Response>}
    * {@link CacheSortedSetGetScore.Hit} containing the score of the requested element when found.
    * {@link CacheSortedSetGetScore.Miss} when the element or collection does not exist.
@@ -1646,10 +1868,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async sortedSetGetScore(
     cacheName: string,
     sortedSetName: string,
-    value: string | Uint8Array
+    value: string | Uint8Array,
+    options?: SortedSetGetScoreOptions
   ): Promise<CacheSortedSetGetScore.Response> {
     const client = this.getNextDataClient();
-    return await client.sortedSetGetScore(cacheName, sortedSetName, value);
+    return await client.sortedSetGetScore(
+      cacheName,
+      sortedSetName,
+      value,
+      options?.signal
+    );
   }
 
   /**
@@ -1658,6 +1886,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the sorted set.
    * @param {string} sortedSetName - The sorted set to fetch from.
    * @param {string[] | Uint8Array[]} values - The values of the elements whose scores we are retrieving.
+   * @param {SortedSetGetScoreOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSortedSetGetScores.Response>}
    * {@link CacheSortedSetGetScores.Hit} containing the scores of the requested elements when found.
    * {@link CacheSortedSetGetScores.Miss} when the element or collection does not exist.
@@ -1666,10 +1896,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async sortedSetGetScores(
     cacheName: string,
     sortedSetName: string,
-    values: string[] | Uint8Array[]
+    values: string[] | Uint8Array[],
+    options?: SortedSetGetScoreOptions
   ): Promise<CacheSortedSetGetScores.Response> {
     const client = this.getNextDataClient();
-    return await client.sortedSetGetScores(cacheName, sortedSetName, values);
+    return await client.sortedSetGetScores(
+      cacheName,
+      sortedSetName,
+      values,
+      options?.signal
+    );
   }
 
   /**
@@ -1684,6 +1920,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
    * Refreshes the sorted set's TTL using the client's default if this is not
    * supplied.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSortedSetIncrementScore.Response>} -
    * {@link CacheSortedSetIncrementScore.Success} containing the incremented score
    * on success.
@@ -1704,7 +1941,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       sortedSetName,
       value,
       amount || 1,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
 
@@ -1713,6 +1951,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the sorted set.
    * @param {string} sortedSetName - The sorted set to remove from.
    * @param {string | Uint8Array} value - The value of the element to remove from the set.
+   * @param {SortedSetRemoveElementOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSortedSetRemoveElement.Response>}
    * {@link CacheSortedSetRemoveElement.Success} if the element was successfully removed
    * {@link CacheSortedSetIncrementScore.Error} on failure
@@ -1720,10 +1960,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async sortedSetRemoveElement(
     cacheName: string,
     sortedSetName: string,
-    value: string | Uint8Array
+    value: string | Uint8Array,
+    options?: SortedSetRemoveElementOptions
   ): Promise<CacheSortedSetRemoveElement.Response> {
     const client = this.getNextDataClient();
-    return await client.sortedSetRemoveElement(cacheName, sortedSetName, value);
+    return await client.sortedSetRemoveElement(
+      cacheName,
+      sortedSetName,
+      value,
+      options?.signal
+    );
   }
 
   /**
@@ -1731,6 +1977,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the sorted set.
    * @param {string} sortedSetName - The sorted set to remove from.
    * @param {string | Uint8Array} values - The values of the elements to remove from the set.
+   * @param {SortedSetRemoveElementOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSortedSetRemoveElement.Response>}
    * {@link CacheSortedSetRemoveElement.Success} if the elements were successfully removed
    * {@link CacheSortedSetIncrementScore.Error} on failure
@@ -1738,13 +1986,15 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async sortedSetRemoveElements(
     cacheName: string,
     sortedSetName: string,
-    values: string[] | Uint8Array[]
+    values: string[] | Uint8Array[],
+    options?: SortedSetRemoveElementOptions
   ): Promise<CacheSortedSetRemoveElements.Response> {
     const client = this.getNextDataClient();
     return await client.sortedSetRemoveElements(
       cacheName,
       sortedSetName,
-      values
+      values,
+      options?.signal
     );
   }
 
@@ -1752,6 +2002,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * Fetch length (number of items) of sorted set
    * @param {string} cacheName - The cache containing the sorted set.
    * @param {string} sortedSetName - The sorted set name.
+   * @param {SortedSetLengthOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSortedSetLength.Response>}
    * {@link CacheSortedSetLength.Hit} containing the length if the sorted set exists.
    * {@link CacheSortedSetLength.Miss} if the sorted set does not exist.
@@ -1759,10 +2011,15 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async sortedSetLength(
     cacheName: string,
-    sortedSetName: string
+    sortedSetName: string,
+    options?: SortedSetLengthOptions
   ): Promise<CacheSortedSetLength.Response> {
     const client = this.getNextDataClient();
-    return await client.sortedSetLength(cacheName, sortedSetName);
+    return await client.sortedSetLength(
+      cacheName,
+      sortedSetName,
+      options?.signal
+    );
   }
 
   /**
@@ -1772,6 +2029,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {SortedSetLengthByScoreOptions} options - Optional parameter for specifying the score range to search in.
    * @param {number} [options.minScore] - The lower bound on the score range to search in.
    * @param {number} [options.maxScore] - The upper bound on the score range to search in.
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSortedSetLengthByScore.Response>}
    * {@link CacheSortedSetLengthByScore.Hit} containing the length if the sorted set exists.
    * {@link CacheSortedSetLengthByScore.Miss} if the sorted set does not exist.
@@ -1787,7 +2045,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
       cacheName,
       sortedSetName,
       options?.minScore,
-      options?.maxScore
+      options?.maxScore,
+      options?.signal
     );
   }
   /**
@@ -1799,6 +2058,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {SortedSetAggregate} [options.aggregate] - The aggregate function to use to combine shared elements
    * @param {CollectionTtl} [options.ttl] - If the set does not exist, it is created with the given `ttl`.
    *                                 If it exists, it is overwritten with the result and its ttl is set to the given `ttl`
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheSortedSetUnionStore.Response>}
    * {@link CacheSortedSetUnionStore.Success} containing the length of the set which contains the result of the union.
    * {@link CacheSortedSetUnionStore.Error} on failure.
@@ -1815,13 +2075,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
       sortedSetName,
       sources,
       options?.aggregate,
-      options?.ttl
+      options?.ttl,
+      options?.signal
     );
   }
   /**
    * Return the type of the key in the cache
    * @param {string} cacheName - The cache containing the key.
    * @param {string} key - The key for which type is requested.
+   * @param {ItemGetTypeOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheItemGetType.Response>}
    * {@link CacheItemGetType.Hit} containing type of key when found.
    * {@link CacheItemGetType.Miss} when the key does not exist.
@@ -1829,16 +2092,19 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async itemGetType(
     cacheName: string,
-    key: string | Uint8Array
+    key: string | Uint8Array,
+    options?: ItemGetTypeOptions
   ): Promise<CacheItemGetType.Response> {
     const client = this.getNextDataClient();
-    return await client.itemGetType(cacheName, key);
+    return await client.itemGetType(cacheName, key, options?.signal);
   }
 
   /**
    * Return the remaining ttl of the key in the cache in milliseconds.
    * @param {string} cacheName - The cache containing the key.
    * @param {string} key - The key for which the ttl remaining is requested.
+   * @param {ItemGetTtlOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheItemGetTtl.Response>}
    * {@link CacheItemGetTtl.Hit} containing ttl remaining of key when found.
    * {@link CacheItemGetTtl.Miss} when the key does not exist.
@@ -1846,42 +2112,49 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async itemGetTtl(
     cacheName: string,
-    key: string | Uint8Array
+    key: string | Uint8Array,
+    options?: ItemGetTtlOptions
   ): Promise<CacheItemGetTtl.Response> {
     const client = this.getNextDataClient();
-    return await client.itemGetTtl(cacheName, key);
+    return await client.itemGetTtl(cacheName, key, options?.signal);
   }
 
   /**
    * Check if the provided key exists in the cache
    * @param {string} cacheName - The cache to look in.
    * @param {string | Uint8Array} key - The key to look up.
+   * @param {KeyExistsOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheKeyExists.Response>}
    * {@link CacheKeyExists.Success} returns boolean indicating whether the key was found.
    * {@link CacheKeyExists.Error} on failure.
    */
   public async keyExists(
     cacheName: string,
-    key: string | Uint8Array
+    key: string | Uint8Array,
+    options?: KeyExistsOptions
   ): Promise<CacheKeyExists.Response> {
     const client = this.getNextDataClient();
-    return await client.keyExists(cacheName, key);
+    return await client.keyExists(cacheName, key, options?.signal);
   }
 
   /**
    * Check if the provided keys exist in the cache
    * @param {string} cacheName - The cache to look in.
    * @param {string[] | Uint8Array[]} keys - The keys to look up.
+   * @param {KeyExistsOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheKeysExist.Response>}
    * {@link CacheKeysExist.Success} returns list of booleans indicating whether each key was found.
    * {@link CacheKeysExist.Error} on failure.
    */
   public async keysExist(
     cacheName: string,
-    keys: string[] | Uint8Array[]
+    keys: string[] | Uint8Array[],
+    options?: KeyExistsOptions
   ): Promise<CacheKeysExist.Response> {
     const client = this.getNextDataClient();
-    return await client.keysExist(cacheName, keys);
+    return await client.keysExist(cacheName, keys, options?.signal);
   }
 
   /**
@@ -1889,6 +2162,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} cacheName - The cache containing the key.
    * @param {string} key - The key for which the ttl remaining is requested.
    * @param {number} ttlMilliseconds - The ttl in milliseconds that should overwrite the current ttl.
+   * @param {UpdateTtlOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheUpdateTtl.Response>}
    * {@link CacheUpdateTtl.Set} when the ttl was successfully overwritten.
    * {@link CacheUpdateTtl.Miss} when the key does not exist.
@@ -1897,10 +2172,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async updateTtl(
     cacheName: string,
     key: string | Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    options?: UpdateTtlOptions
   ): Promise<CacheUpdateTtl.Response> {
     const client = this.getNextDataClient();
-    return await client.updateTtl(cacheName, key, ttlMilliseconds);
+    return await client.updateTtl(
+      cacheName,
+      key,
+      ttlMilliseconds,
+      options?.signal
+    );
   }
 
   /**
@@ -1909,6 +2190,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} key - The key for which the ttl remaining is requested.
    * @param {number} ttlMilliseconds - The ttl in milliseconds that should
    * overwrite the current ttl. Should be greater than the current ttl.
+   * @param {IncreaseTtlOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheIncreaseTtl.Response>}
    * {@link CacheIncreaseTtl.Set} when the ttl was successfully increased.
    * {@link CacheIncreaseTtl.Miss} when the key does not exist.
@@ -1917,10 +2200,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async increaseTtl(
     cacheName: string,
     key: string | Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    options?: IncreaseTtlOptions
   ): Promise<CacheIncreaseTtl.Response> {
     const client = this.getNextDataClient();
-    return await client.increaseTtl(cacheName, key, ttlMilliseconds);
+    return await client.increaseTtl(
+      cacheName,
+      key,
+      ttlMilliseconds,
+      options?.signal
+    );
   }
 
   /**
@@ -1929,6 +2218,8 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * @param {string} key - The key for which the ttl remaining is requested.
    * @param {number} ttlMilliseconds - The ttl in milliseconds that should
    * overwrite the current ttl. Should be less than the current ttl.
+   * @param {DecreaseTtlOptions} options
+   * @param {AbortSignal} options.signal - The signal to cancel the operation
    * @returns {Promise<CacheDecreaseTtl.Response>}
    * {@link CacheDecreaseTtl.Set} when the ttl was successfully decreased.
    * {@link CacheDecreaseTtl.Miss} when the key does not exist.
@@ -1937,10 +2228,16 @@ export abstract class AbstractCacheClient implements ICacheClient {
   public async decreaseTtl(
     cacheName: string,
     key: string | Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    options?: DecreaseTtlOptions
   ): Promise<CacheDecreaseTtl.Response> {
     const client = this.getNextDataClient();
-    return await client.decreaseTtl(cacheName, key, ttlMilliseconds);
+    return await client.decreaseTtl(
+      cacheName,
+      key,
+      ttlMilliseconds,
+      options?.signal
+    );
   }
 
   private getNextDataClient(): IDataClient {
