@@ -1,6 +1,7 @@
 import {SetupIntegrationTest} from '../integration-setup';
 import {v4} from 'uuid';
 import {CacheGetResponse, CacheSetResponse} from '@gomomento/sdk-core';
+import {describeOnlyInCi} from '@gomomento/common-integration-tests';
 
 const {cacheClient, cacheClientWithoutRetryStrategy, integrationTestCacheName} =
   SetupIntegrationTest();
@@ -17,7 +18,7 @@ async function testTrials(trial: Promise<boolean>) {
   expect(results.some(result => result)).toBe(true);
 }
 
-describe('AbortSignal', () => {
+describeOnlyInCi('ci only - AbortSignal', () => {
   describe('cache client WITHOUT retry strategy', () => {
     it('should cancel a set call', async () => {
       const testSet = async () => {
