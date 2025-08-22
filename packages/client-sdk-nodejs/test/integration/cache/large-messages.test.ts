@@ -1,4 +1,7 @@
-import {expectWithMessage} from '@gomomento/common-integration-tests';
+import {
+  expectWithMessage,
+  itOnlyInCi,
+} from '@gomomento/common-integration-tests';
 import {SetupIntegrationTest} from '../integration-setup';
 import {CacheGet, CacheItemGetTtl, CacheSet} from '@gomomento/sdk-core';
 import {v4} from 'uuid';
@@ -7,7 +10,7 @@ import {log} from 'console';
 const {cacheClient, integrationTestCacheName} = SetupIntegrationTest();
 
 describe('CacheClient', () => {
-  it('should send and receive 5mb messages', async () => {
+  itOnlyInCi('should send and receive 5mb messages', async () => {
     const value = 'a'.repeat(5_000_000);
     const key = `js-5mb-key-${v4()}`;
     const ttlSeconds = 2000; // 2000 seconds == 30 minutes
