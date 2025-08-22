@@ -24,7 +24,7 @@ export interface CancellationCallOptions {
   /**
    * The signal to cancel the operation.
    */
-  signal?: AbortSignal;
+  abortSignal?: AbortSignal;
 }
 
 export interface SetCallOptions
