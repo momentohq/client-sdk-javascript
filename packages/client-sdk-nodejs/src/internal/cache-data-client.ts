@@ -529,7 +529,7 @@ export class CacheDataClient implements IDataClient {
         encodedKey,
         encodedValue,
         ttlToUse,
-        options?.signal
+        options?.abortSignal
       );
     });
   }
@@ -2176,7 +2176,7 @@ export class CacheDataClient implements IDataClient {
         metadata,
         {
           interceptors: this.createInterceptorsWithCancellation(
-            options?.signal
+            options?.abortSignal
           ),
         },
         (err, resp) => {
@@ -2236,7 +2236,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(options?.signal, getGrpcCall, 'get');
+      this.setupAbortSignalHandler(options?.abortSignal, getGrpcCall, 'get');
     });
   }
 

@@ -21,13 +21,13 @@ describe('AbortSignal', () => {
   describe('cache client WITHOUT retry strategy', () => {
     it('should cancel a set call', async () => {
       const testSet = async () => {
-        const signal = AbortSignal.timeout(1);
+        const abortSignal = AbortSignal.timeout(1);
         const setResponse = await cacheClientWithoutRetryStrategy.set(
           integrationTestCacheName,
           v4(),
           'value',
           {
-            signal,
+            abortSignal,
           }
         );
         if (
@@ -46,12 +46,12 @@ describe('AbortSignal', () => {
 
     it('should cancel a get call', async () => {
       const testGet = async () => {
-        const signal = AbortSignal.timeout(1);
+        const abortSignal = AbortSignal.timeout(1);
         const getResponse = await cacheClientWithoutRetryStrategy.get(
           integrationTestCacheName,
           v4(),
           {
-            signal,
+            abortSignal,
           }
         );
         if (
@@ -72,13 +72,13 @@ describe('AbortSignal', () => {
   describe('cache client WITH default retry strategy', () => {
     it('should cancel a set call', async () => {
       const testSet = async () => {
-        const signal = AbortSignal.timeout(1);
+        const abortSignal = AbortSignal.timeout(1);
         const setResponse = await cacheClient.set(
           integrationTestCacheName,
           v4(),
           'value',
           {
-            signal,
+            abortSignal,
           }
         );
         if (
@@ -97,12 +97,12 @@ describe('AbortSignal', () => {
 
     it('should cancel a get call', async () => {
       const testGet = async () => {
-        const signal = AbortSignal.timeout(1);
+        const abortSignal = AbortSignal.timeout(1);
         const getResponse = await cacheClient.get(
           integrationTestCacheName,
           v4(),
           {
-            signal,
+            abortSignal,
           }
         );
         if (
