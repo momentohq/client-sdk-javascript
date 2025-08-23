@@ -104,21 +104,21 @@ export interface IDataClient {
   delete(
     cacheName: string,
     key: string | Uint8Array,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheDelete.Response>;
   increment(
     cacheName: string,
     field: string | Uint8Array,
     amount: number,
     ttl?: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheIncrement.Response>;
   setIfNotExists(
     cacheName: string,
     key: string | Uint8Array,
     field: string | Uint8Array,
     ttl?: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfNotExists.Response>;
   setIfAbsent(
     cacheName: string,
@@ -131,7 +131,7 @@ export interface IDataClient {
     key: string | Uint8Array,
     field: string | Uint8Array,
     ttl?: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfPresent.Response>;
   setIfEqual(
     cacheName: string,
@@ -139,7 +139,7 @@ export interface IDataClient {
     field: string | Uint8Array,
     equal: string | Uint8Array,
     ttl?: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfEqual.Response>;
   setIfNotEqual(
     cacheName: string,
@@ -147,7 +147,7 @@ export interface IDataClient {
     field: string | Uint8Array,
     notEqual: string | Uint8Array,
     ttl?: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfNotEqual.Response>;
   setIfPresentAndNotEqual(
     cacheName: string,
@@ -155,7 +155,7 @@ export interface IDataClient {
     field: string | Uint8Array,
     notEqual: string | Uint8Array,
     ttl?: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfPresentAndNotEqual.Response>;
   setIfAbsentOrEqual(
     cacheName: string,
@@ -163,7 +163,7 @@ export interface IDataClient {
     field: string | Uint8Array,
     equal: string | Uint8Array,
     ttl?: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfAbsentOrEqual.Response>;
   setIfPresentAndHashEqual(
     cacheName: string,
@@ -171,7 +171,7 @@ export interface IDataClient {
     value: string | Uint8Array,
     hashEqual: Uint8Array,
     ttl?: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfPresentAndHashEqual.Response>;
   setIfPresentAndHashNotEqual(
     cacheName: string,
@@ -179,7 +179,7 @@ export interface IDataClient {
     value: string | Uint8Array,
     hashNotEqual: Uint8Array,
     ttl?: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfPresentAndHashNotEqual.Response>;
   setIfAbsentOrHashEqual(
     cacheName: string,
@@ -187,7 +187,7 @@ export interface IDataClient {
     value: string | Uint8Array,
     hashEqual: Uint8Array,
     ttl?: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfAbsentOrHashEqual.Response>;
   setIfAbsentOrHashNotEqual(
     cacheName: string,
@@ -195,7 +195,7 @@ export interface IDataClient {
     value: string | Uint8Array,
     hashNotEqual: Uint8Array,
     ttl?: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfAbsentOrHashNotEqual.Response>;
   getBatch(
     cacheName: string,
@@ -213,61 +213,61 @@ export interface IDataClient {
   setFetch(
     cacheName: string,
     setName: string,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetFetch.Response>;
   setAddElements(
     cacheName: string,
     setName: string,
     elements: string[] | Uint8Array[],
     ttl?: CollectionTtl,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetAddElements.Response>;
   setContainsElement(
     cacheName: string,
     setName: string,
     element: string | Uint8Array,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetContainsElement.Response>;
   setContainsElements(
     cacheName: string,
     setName: string,
     elements: string[] | Uint8Array[],
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetContainsElements.Response>;
   setRemoveElements(
     cacheName: string,
     setName: string,
     elements: string[] | Uint8Array[],
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetRemoveElements.Response>;
   setSample(
     cacheName: string,
     setName: string,
     limit: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetSample.Response>;
   setPop(
     cacheName: string,
     setName: string,
     count: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetPop.Response>;
   setLength(
     cacheName: string,
     setName: string,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSetLength.Response>;
   listFetch(
     cacheName: string,
     listName: string,
     startIndex?: number,
     endIndex?: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheListFetch.Response>;
   listLength(
     cacheName: string,
     listName: string,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheListLength.Response>;
   listPushFront(
     cacheName: string,
@@ -275,7 +275,7 @@ export interface IDataClient {
     value: string | Uint8Array,
     truncateBackToSize?: number,
     ttl?: CollectionTtl,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheListPushFront.Response>;
   listPushBack(
     cacheName: string,
@@ -283,7 +283,7 @@ export interface IDataClient {
     value: string | Uint8Array,
     truncateFrontToSize?: number,
     ttl?: CollectionTtl,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheListPushBack.Response>;
   listConcatenateBack(
     cacheName: string,
@@ -291,7 +291,7 @@ export interface IDataClient {
     values: string[] | Uint8Array[],
     truncateFrontToSize?: number,
     ttl?: CollectionTtl,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheListConcatenateBack.Response>;
   listConcatenateFront(
     cacheName: string,
@@ -299,23 +299,23 @@ export interface IDataClient {
     values: string[] | Uint8Array[],
     truncateBackToSize?: number,
     ttl?: CollectionTtl,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheListConcatenateFront.Response>;
   listPopBack(
     cacheName: string,
     listName: string,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheListPopBack.Response>;
   listPopFront(
     cacheName: string,
     listName: string,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheListPopFront.Response>;
   listRemoveValue(
     cacheName: string,
     listName: string,
     value: string | Uint8Array,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheListRemoveValue.Response>;
   listRetain(
     cacheName: string,
@@ -323,7 +323,7 @@ export interface IDataClient {
     startIndex?: number,
     endIndex?: number,
     ttl?: CollectionTtl,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheListRetain.Response>;
   dictionarySetField(
     cacheName: string,
@@ -331,7 +331,7 @@ export interface IDataClient {
     field: string | Uint8Array,
     value: string | Uint8Array,
     ttl?: CollectionTtl,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionarySetField.Response>;
   dictionarySetFields(
     cacheName: string,
@@ -341,24 +341,24 @@ export interface IDataClient {
       | Record<string, string | Uint8Array>
       | Array<[string, string | Uint8Array]>,
     ttl?: CollectionTtl,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionarySetFields.Response>;
   dictionaryGetField(
     cacheName: string,
     dictionaryName: string,
     field: string | Uint8Array,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryGetField.Response>;
   dictionaryGetFields(
     cacheName: string,
     dictionaryName: string,
     fields: string[] | Uint8Array[],
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryGetFields.Response>;
   dictionaryFetch(
     cacheName: string,
     dictionaryName: string,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryFetch.Response>;
   dictionaryIncrement(
     cacheName: string,
@@ -366,24 +366,24 @@ export interface IDataClient {
     field: string | Uint8Array,
     amount?: number,
     ttl?: CollectionTtl,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryIncrement.Response>;
   dictionaryRemoveField(
     cacheName: string,
     dictionaryName: string,
     field: string | Uint8Array,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryRemoveField.Response>;
   dictionaryRemoveFields(
     cacheName: string,
     dictionaryName: string,
     fields: string[] | Uint8Array[],
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryRemoveFields.Response>;
   dictionaryLength(
     cacheName: string,
     dictionaryName: string,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryLength.Response>;
   sortedSetFetchByRank(
     cacheName: string,
@@ -391,7 +391,7 @@ export interface IDataClient {
     order?: SortedSetOrder,
     startRank?: number,
     endRank?: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetFetch.Response>;
   sortedSetFetchByScore(
     cacheName: string,
@@ -401,7 +401,7 @@ export interface IDataClient {
     maxScore?: number,
     offset?: number,
     count?: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetFetch.Response>;
   sortedSetPutElement(
     cacheName: string,
@@ -409,7 +409,7 @@ export interface IDataClient {
     value: string | Uint8Array,
     score: number,
     ttl?: CollectionTtl,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetPutElement.Response>;
   sortedSetPutElements(
     cacheName: string,
@@ -419,26 +419,26 @@ export interface IDataClient {
       | Record<string, number>
       | Array<[string, number]>,
     ttl?: CollectionTtl,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetPutElements.Response>;
   sortedSetGetRank(
     cacheName: string,
     sortedSetName: string,
     value: string | Uint8Array,
     order?: SortedSetOrder,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetGetRank.Response>;
   sortedSetGetScore(
     cacheName: string,
     sortedSetName: string,
     value: string | Uint8Array,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetGetScore.Response>;
   sortedSetGetScores(
     cacheName: string,
     sortedSetName: string,
     values: string[] | Uint8Array[],
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetGetScores.Response>;
   sortedSetIncrementScore(
     cacheName: string,
@@ -446,31 +446,31 @@ export interface IDataClient {
     value: string | Uint8Array,
     amount?: number,
     ttl?: CollectionTtl,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetIncrementScore.Response>;
   sortedSetRemoveElement(
     cacheName: string,
     sortedSetName: string,
     value: string | Uint8Array,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetRemoveElement.Response>;
   sortedSetRemoveElements(
     cacheName: string,
     sortedSetName: string,
     values: string[] | Uint8Array[],
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetRemoveElements.Response>;
   sortedSetLength(
     cacheName: string,
     sortedSetName: string,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetLength.Response>;
   sortedSetLengthByScore(
     cacheName: string,
     sortedSetName: string,
     minScore?: number,
     maxScore?: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetLengthByScore.Response>;
   sortedSetUnionStore(
     cacheName: string,
@@ -478,45 +478,45 @@ export interface IDataClient {
     sources: SortedSetSource[],
     aggregate?: SortedSetAggregate,
     ttl?: CollectionTtl,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetUnionStore.Response>;
   itemGetType(
     cacheName: string,
     key: string | Uint8Array,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheItemGetType.Response>;
   itemGetTtl(
     cacheName: string,
     key: string | Uint8Array,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheItemGetTtl.Response>;
   keyExists(
     cacheName: string,
     key: string | Uint8Array,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheKeyExists.Response>;
   keysExist(
     cacheName: string,
     keys: string[] | Uint8Array[],
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheKeysExist.Response>;
   updateTtl(
     cacheName: string,
     key: string | Uint8Array,
     ttlMilliseconds: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheUpdateTtl.Response>;
   increaseTtl(
     cacheName: string,
     key: string | Uint8Array,
     ttlMilliseconds: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheIncreaseTtl.Response>;
   decreaseTtl(
     cacheName: string,
     key: string | Uint8Array,
     ttlMilliseconds: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheDecreaseTtl.Response>;
   close(): void;
 }
