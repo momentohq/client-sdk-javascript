@@ -539,7 +539,7 @@ export class CacheDataClient implements IDataClient {
     key: Uint8Array,
     value: Uint8Array,
     ttl: number,
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Promise<CacheSet.Response> {
     const request = new grpcCache._SetRequest({
       cache_body: value,
@@ -552,7 +552,7 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(signal),
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -567,7 +567,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(signal, setGrpcCall, 'set');
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'set');
     });
   }
 
@@ -613,7 +613,8 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         encodedKey,
         encodedValue,
-        ttlToUse
+        ttlToUse,
+        options?.abortSignal
       );
     });
   }
@@ -622,7 +623,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     key: Uint8Array,
     value: Uint8Array,
-    ttl: number
+    ttl: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetWithHash.Response> {
     const request = new grpcCache._SetIfHashRequest({
       cache_key: key,
@@ -632,11 +634,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetIfHash(
+      const setGrpcCall = this.clientWrapper.getClient().SetIfHash(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -656,12 +658,14 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setWithHash');
     });
   }
 
   public async setFetch(
     cacheName: string,
-    setName: string
+    setName: string,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetFetch.Response> {
     try {
       validateCacheName(cacheName);
@@ -674,24 +678,29 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      return await this.sendSetFetch(cacheName, this.convert(setName));
+      return await this.sendSetFetch(
+        cacheName,
+        this.convert(setName),
+        abortSignal
+      );
     });
   }
 
   private async sendSetFetch(
     cacheName: string,
-    setName: Uint8Array
+    setName: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetFetch.Response> {
     const request = new grpcCache._SetFetchRequest({
       set_name: setName,
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetFetch(
+      const setGrpcCall = this.clientWrapper.getClient().SetFetch(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -708,6 +717,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setFetch');
     });
   }
 
@@ -715,7 +725,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     setName: string,
     elements: string[] | Uint8Array[],
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    abortSignal?: AbortSignal
   ): Promise<CacheSetAddElements.Response> {
     try {
       validateCacheName(cacheName);
@@ -733,7 +744,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(setName),
         this.convertArray(elements),
         this.collectionTtlOrDefaultMilliseconds(ttl),
-        ttl.refreshTtl()
+        ttl.refreshTtl(),
+        abortSignal
       );
     });
   }
@@ -743,7 +755,8 @@ export class CacheDataClient implements IDataClient {
     setName: Uint8Array,
     elements: Uint8Array[],
     ttlMilliseconds: number,
-    refreshTtl: boolean
+    refreshTtl: boolean,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetAddElements.Response> {
     const request = new grpcCache._SetUnionRequest({
       set_name: setName,
@@ -753,11 +766,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetUnion(
+      const setGrpcCall = this.clientWrapper.getClient().SetUnion(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         err => {
           if (err) {
@@ -772,13 +785,15 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setAddElements');
     });
   }
 
   public async setContainsElement(
     cacheName: string,
     setName: string,
-    element: string | Uint8Array
+    element: string | Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetContainsElement.Response> {
     try {
       validateCacheName(cacheName);
@@ -794,7 +809,8 @@ export class CacheDataClient implements IDataClient {
       return await this.sendSetContainsElement(
         cacheName,
         this.convert(setName),
-        this.convert(element)
+        this.convert(element),
+        abortSignal
       );
     });
   }
@@ -802,7 +818,8 @@ export class CacheDataClient implements IDataClient {
   private async sendSetContainsElement(
     cacheName: string,
     setName: Uint8Array,
-    element: Uint8Array
+    element: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetContainsElement.Response> {
     const request = new grpcCache._SetContainsRequest({
       set_name: setName,
@@ -810,11 +827,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetContains(
+      const setGrpcCall = this.clientWrapper.getClient().SetContains(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.found) {
@@ -839,13 +856,19 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'setContainsElements'
+      );
     });
   }
 
   public async setContainsElements(
     cacheName: string,
     setName: string,
-    elements: string[] | Uint8Array[]
+    elements: string[] | Uint8Array[],
+    abortSignal?: AbortSignal
   ): Promise<CacheSetContainsElements.Response> {
     try {
       validateCacheName(cacheName);
@@ -861,7 +884,8 @@ export class CacheDataClient implements IDataClient {
       return await this.sendSetContainsElements(
         cacheName,
         this.convert(setName),
-        this.convertArray(elements)
+        this.convertArray(elements),
+        abortSignal
       );
     });
   }
@@ -869,7 +893,8 @@ export class CacheDataClient implements IDataClient {
   private async sendSetContainsElements(
     cacheName: string,
     setName: Uint8Array,
-    elements: Uint8Array[]
+    elements: Uint8Array[],
+    abortSignal?: AbortSignal
   ): Promise<CacheSetContainsElements.Response> {
     const request = new grpcCache._SetContainsRequest({
       set_name: setName,
@@ -877,11 +902,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetContains(
+      const setGrpcCall = this.clientWrapper.getClient().SetContains(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.found) {
@@ -901,13 +926,19 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'setContainsElements'
+      );
     });
   }
 
   public async setRemoveElements(
     cacheName: string,
     setName: string,
-    elements: string[] | Uint8Array[]
+    elements: string[] | Uint8Array[],
+    abortSignal?: AbortSignal
   ): Promise<CacheSetRemoveElements.Response> {
     try {
       validateCacheName(cacheName);
@@ -923,7 +954,8 @@ export class CacheDataClient implements IDataClient {
       return await this.sendSetRemoveElements(
         cacheName,
         this.convert(setName),
-        this.convertArray(elements)
+        this.convertArray(elements),
+        abortSignal
       );
     });
   }
@@ -931,7 +963,8 @@ export class CacheDataClient implements IDataClient {
   private async sendSetRemoveElements(
     cacheName: string,
     setName: Uint8Array,
-    elements: Uint8Array[]
+    elements: Uint8Array[],
+    abortSignal?: AbortSignal
   ): Promise<CacheSetRemoveElements.Response> {
     const subtrahend = new grpcCache._SetDifferenceRequest._Subtrahend({
       set: new grpcCache._SetDifferenceRequest._Subtrahend._Set({
@@ -945,11 +978,11 @@ export class CacheDataClient implements IDataClient {
 
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetDifference(
+      const setGrpcCall = this.clientWrapper.getClient().SetDifference(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         err => {
           if (err) {
@@ -964,13 +997,19 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'setRemoveElements'
+      );
     });
   }
 
   public async setSample(
     cacheName: string,
     setName: string,
-    limit: number
+    limit: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetSample.Response> {
     try {
       validateCacheName(cacheName);
@@ -984,14 +1023,20 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      return await this.sendSetSample(cacheName, this.convert(setName), limit);
+      return await this.sendSetSample(
+        cacheName,
+        this.convert(setName),
+        limit,
+        abortSignal
+      );
     });
   }
 
   private async sendSetSample(
     cacheName: string,
     setName: Uint8Array,
-    limit: number
+    limit: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetSample.Response> {
     const request = new grpcCache._SetSampleRequest({
       set_name: setName,
@@ -999,11 +1044,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetSample(
+      const setGrpcCall = this.clientWrapper.getClient().SetSample(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -1020,13 +1065,15 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setSample');
     });
   }
 
   public async setPop(
     cacheName: string,
     setName: string,
-    count: number
+    count: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetPop.Response> {
     try {
       validateCacheName(cacheName);
@@ -1040,14 +1087,20 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      return await this.sendSetPop(cacheName, this.convert(setName), count);
+      return await this.sendSetPop(
+        cacheName,
+        this.convert(setName),
+        count,
+        abortSignal
+      );
     });
   }
 
   private async sendSetPop(
     cacheName: string,
     setName: Uint8Array,
-    count: number
+    count: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetPop.Response> {
     const request = new grpcCache._SetPopRequest({
       set_name: setName,
@@ -1055,11 +1108,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetPop(
+      const setGrpcCall = this.clientWrapper.getClient().SetPop(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -1076,12 +1129,14 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setPop');
     });
   }
 
   public async setLength(
     cacheName: string,
-    setName: string
+    setName: string,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetLength.Response> {
     try {
       validateCacheName(cacheName);
@@ -1094,13 +1149,18 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      return await this.sendSetLength(cacheName, this.convert(setName));
+      return await this.sendSetLength(
+        cacheName,
+        this.convert(setName),
+        abortSignal
+      );
     });
   }
 
   private async sendSetLength(
     cacheName: string,
-    setName: Uint8Array
+    setName: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetLength.Response> {
     const request = new grpcCache._SetLengthRequest({
       set_name: setName,
@@ -1108,11 +1168,11 @@ export class CacheDataClient implements IDataClient {
 
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetLength(
+      const setGrpcCall = this.clientWrapper.getClient().SetLength(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -1133,6 +1193,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setLength');
     });
   }
 
@@ -1142,7 +1203,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     key: string | Uint8Array,
     value: string | Uint8Array,
-    ttl?: number
+    ttl?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfNotExists.Response> {
     try {
       validateCacheName(cacheName);
@@ -1161,7 +1223,8 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(key),
         this.convert(value),
-        this.ttlOrDefaultMilliseconds(ttl)
+        this.ttlOrDefaultMilliseconds(ttl),
+        abortSignal
       );
     });
   }
@@ -1170,7 +1233,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     key: Uint8Array,
     value: Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfNotExists.Response> {
     const request = new grpcCache._SetIfRequest({
       cache_key: key,
@@ -1181,11 +1245,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetIf(
+      const setGrpcCall = this.clientWrapper.getClient().SetIf(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -1216,6 +1280,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setIfNotExists');
     });
   }
 
@@ -1262,7 +1327,8 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(key),
         encodedValue,
-        this.ttlOrDefaultMilliseconds(ttl)
+        this.ttlOrDefaultMilliseconds(ttl),
+        options?.abortSignal
       );
     });
   }
@@ -1271,7 +1337,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     key: Uint8Array,
     value: Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfAbsent.Response> {
     const request = new grpcCache._SetIfRequest({
       cache_key: key,
@@ -1282,11 +1349,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetIf(
+      const setGrpcCall = this.clientWrapper.getClient().SetIf(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -1317,6 +1384,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setIfAbsent');
     });
   }
 
@@ -1324,7 +1392,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     key: string | Uint8Array,
     value: string | Uint8Array,
-    ttl?: number
+    ttl?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfPresent.Response> {
     try {
       validateCacheName(cacheName);
@@ -1343,7 +1412,8 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(key),
         this.convert(value),
-        this.ttlOrDefaultMilliseconds(ttl)
+        this.ttlOrDefaultMilliseconds(ttl),
+        abortSignal
       );
     });
   }
@@ -1352,7 +1422,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     key: Uint8Array,
     value: Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfPresent.Response> {
     const request = new grpcCache._SetIfRequest({
       cache_key: key,
@@ -1363,11 +1434,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetIf(
+      const setGrpcCall = this.clientWrapper.getClient().SetIf(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -1398,6 +1469,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setIfPresent');
     });
   }
 
@@ -1406,7 +1478,8 @@ export class CacheDataClient implements IDataClient {
     key: string | Uint8Array,
     value: string | Uint8Array,
     equal: string | Uint8Array,
-    ttl?: number
+    ttl?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfEqual.Response> {
     try {
       validateCacheName(cacheName);
@@ -1426,7 +1499,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(key),
         this.convert(value),
         this.convert(equal),
-        this.ttlOrDefaultMilliseconds(ttl)
+        this.ttlOrDefaultMilliseconds(ttl),
+        abortSignal
       );
     });
   }
@@ -1436,7 +1510,8 @@ export class CacheDataClient implements IDataClient {
     key: Uint8Array,
     value: Uint8Array,
     equal: Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfEqual.Response> {
     const request = new grpcCache._SetIfRequest({
       cache_key: key,
@@ -1447,11 +1522,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetIf(
+      const setGrpcCall = this.clientWrapper.getClient().SetIf(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -1482,6 +1557,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setIfEqual');
     });
   }
 
@@ -1490,7 +1566,8 @@ export class CacheDataClient implements IDataClient {
     key: string | Uint8Array,
     value: string | Uint8Array,
     notEqual: string | Uint8Array,
-    ttl?: number
+    ttl?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfNotEqual.Response> {
     try {
       validateCacheName(cacheName);
@@ -1510,7 +1587,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(key),
         this.convert(value),
         this.convert(notEqual),
-        this.ttlOrDefaultMilliseconds(ttl)
+        this.ttlOrDefaultMilliseconds(ttl),
+        abortSignal
       );
     });
   }
@@ -1520,7 +1598,8 @@ export class CacheDataClient implements IDataClient {
     key: Uint8Array,
     value: Uint8Array,
     notEqual: Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfNotEqual.Response> {
     const request = new grpcCache._SetIfRequest({
       cache_key: key,
@@ -1531,11 +1610,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetIf(
+      const setGrpcCall = this.clientWrapper.getClient().SetIf(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -1566,6 +1645,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setIfNotEqual');
     });
   }
 
@@ -1574,7 +1654,8 @@ export class CacheDataClient implements IDataClient {
     key: string | Uint8Array,
     value: string | Uint8Array,
     notEqual: string | Uint8Array,
-    ttl?: number
+    ttl?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfPresentAndNotEqual.Response> {
     try {
       validateCacheName(cacheName);
@@ -1594,7 +1675,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(key),
         this.convert(value),
         this.convert(notEqual),
-        this.ttlOrDefaultMilliseconds(ttl)
+        this.ttlOrDefaultMilliseconds(ttl),
+        abortSignal
       );
     });
   }
@@ -1604,7 +1686,8 @@ export class CacheDataClient implements IDataClient {
     key: Uint8Array,
     value: Uint8Array,
     notEqual: Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfPresentAndNotEqual.Response> {
     const request = new grpcCache._SetIfRequest({
       cache_key: key,
@@ -1615,11 +1698,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetIf(
+      const setGrpcCall = this.clientWrapper.getClient().SetIf(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -1651,6 +1734,11 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'setIfPresentAndNotEqual'
+      );
     });
   }
 
@@ -1659,7 +1747,8 @@ export class CacheDataClient implements IDataClient {
     key: string | Uint8Array,
     value: string | Uint8Array,
     equal: string | Uint8Array,
-    ttl?: number
+    ttl?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfAbsentOrEqual.Response> {
     try {
       validateCacheName(cacheName);
@@ -1679,7 +1768,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(key),
         this.convert(value),
         this.convert(equal),
-        this.ttlOrDefaultMilliseconds(ttl)
+        this.ttlOrDefaultMilliseconds(ttl),
+        abortSignal
       );
     });
   }
@@ -1689,7 +1779,8 @@ export class CacheDataClient implements IDataClient {
     key: Uint8Array,
     value: Uint8Array,
     equal: Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfAbsentOrEqual.Response> {
     const request = new grpcCache._SetIfRequest({
       cache_key: key,
@@ -1700,11 +1791,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetIf(
+      const setGrpcCall = this.clientWrapper.getClient().SetIf(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -1735,6 +1826,11 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'setIfAbsentOrEqual'
+      );
     });
   }
 
@@ -1743,7 +1839,8 @@ export class CacheDataClient implements IDataClient {
     key: string | Uint8Array,
     value: string | Uint8Array,
     hashEqual: Uint8Array,
-    ttl?: number
+    ttl?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfPresentAndHashEqual.Response> {
     try {
       validateCacheName(cacheName);
@@ -1763,7 +1860,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(key),
         this.convert(value),
         this.convert(hashEqual),
-        this.ttlOrDefaultMilliseconds(ttl)
+        this.ttlOrDefaultMilliseconds(ttl),
+        abortSignal
       );
     });
   }
@@ -1773,7 +1871,8 @@ export class CacheDataClient implements IDataClient {
     key: Uint8Array,
     value: Uint8Array,
     hashEqual: Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfPresentAndHashEqual.Response> {
     const request = new grpcCache._SetIfHashRequest({
       cache_key: key,
@@ -1785,11 +1884,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetIfHash(
+      const setGrpcCall = this.clientWrapper.getClient().SetIfHash(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -1823,6 +1922,11 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'setIfPresentAndHashEqual'
+      );
     });
   }
 
@@ -1831,7 +1935,8 @@ export class CacheDataClient implements IDataClient {
     key: string | Uint8Array,
     value: string | Uint8Array,
     hashNotEqual: Uint8Array,
-    ttl?: number
+    ttl?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfPresentAndHashNotEqual.Response> {
     try {
       validateCacheName(cacheName);
@@ -1851,7 +1956,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(key),
         this.convert(value),
         this.convert(hashNotEqual),
-        this.ttlOrDefaultMilliseconds(ttl)
+        this.ttlOrDefaultMilliseconds(ttl),
+        abortSignal
       );
     });
   }
@@ -1861,7 +1967,8 @@ export class CacheDataClient implements IDataClient {
     key: Uint8Array,
     value: Uint8Array,
     hashNotEqual: Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfPresentAndHashNotEqual.Response> {
     const request = new grpcCache._SetIfHashRequest({
       cache_key: key,
@@ -1873,11 +1980,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetIfHash(
+      const setGrpcCall = this.clientWrapper.getClient().SetIfHash(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -1913,6 +2020,11 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'setIfPresentAndHashNotEqual'
+      );
     });
   }
 
@@ -1921,7 +2033,8 @@ export class CacheDataClient implements IDataClient {
     key: string | Uint8Array,
     value: string | Uint8Array,
     hashEqual: Uint8Array,
-    ttl?: number
+    ttl?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfAbsentOrHashEqual.Response> {
     try {
       validateCacheName(cacheName);
@@ -1941,7 +2054,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(key),
         this.convert(value),
         this.convert(hashEqual),
-        this.ttlOrDefaultMilliseconds(ttl)
+        this.ttlOrDefaultMilliseconds(ttl),
+        abortSignal
       );
     });
   }
@@ -1951,7 +2065,8 @@ export class CacheDataClient implements IDataClient {
     key: Uint8Array,
     value: Uint8Array,
     hashEqual: Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfAbsentOrHashEqual.Response> {
     const request = new grpcCache._SetIfHashRequest({
       cache_key: key,
@@ -1961,11 +2076,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetIfHash(
+      const setGrpcCall = this.clientWrapper.getClient().SetIfHash(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -1999,6 +2114,11 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'setIfAbsentOrHashEqual'
+      );
     });
   }
 
@@ -2007,7 +2127,8 @@ export class CacheDataClient implements IDataClient {
     key: string | Uint8Array,
     value: string | Uint8Array,
     hashNotEqual: Uint8Array,
-    ttl?: number
+    ttl?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfAbsentOrHashNotEqual.Response> {
     try {
       validateCacheName(cacheName);
@@ -2027,7 +2148,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(key),
         this.convert(value),
         this.convert(hashNotEqual),
-        this.ttlOrDefaultMilliseconds(ttl)
+        this.ttlOrDefaultMilliseconds(ttl),
+        abortSignal
       );
     });
   }
@@ -2037,7 +2159,8 @@ export class CacheDataClient implements IDataClient {
     key: Uint8Array,
     value: Uint8Array,
     hashNotEqual: Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSetIfAbsentOrHashNotEqual.Response> {
     const request = new grpcCache._SetIfHashRequest({
       cache_key: key,
@@ -2049,11 +2172,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SetIfHash(
+      const setGrpcCall = this.clientWrapper.getClient().SetIfHash(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -2089,12 +2212,18 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'setIfAbsentOrHashNotEqual'
+      );
     });
   }
 
   public async delete(
     cacheName: string,
-    key: string | Uint8Array
+    key: string | Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheDelete.Response> {
     try {
       validateCacheName(cacheName);
@@ -2106,24 +2235,25 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      return await this.sendDelete(cacheName, this.convert(key));
+      return await this.sendDelete(cacheName, this.convert(key), abortSignal);
     });
   }
 
   private async sendDelete(
     cacheName: string,
-    key: Uint8Array
+    key: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheDelete.Response> {
     const request = new grpcCache._DeleteRequest({
       cache_key: key,
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().Delete(
+      const setGrpcCall = this.clientWrapper.getClient().Delete(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -2138,6 +2268,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'delete');
     });
   }
 
@@ -2269,11 +2400,13 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().GetWithHash(
+      const setGrpcCall = this.clientWrapper.getClient().GetWithHash(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(
+            options?.abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -2320,6 +2453,11 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        options?.abortSignal,
+        setGrpcCall,
+        'getWithHash'
+      );
     });
   }
 
@@ -2341,7 +2479,8 @@ export class CacheDataClient implements IDataClient {
       return await this.sendGetBatch(
         cacheName,
         keys.map(key => this.convert(key)),
-        options?.decompress
+        options?.decompress,
+        options?.abortSignal
       );
     });
   }
@@ -2349,7 +2488,8 @@ export class CacheDataClient implements IDataClient {
   private async sendGetBatch(
     cacheName: string,
     keys: Uint8Array[],
-    decompress?: boolean
+    decompress?: boolean,
+    abortSignal?: AbortSignal
   ): Promise<CacheGetBatch.Response> {
     const getRequests = [];
     for (const k of keys) {
@@ -2364,7 +2504,8 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     const call = this.clientWrapper.getClient().GetBatch(request, metadata, {
-      interceptors: this.streamingInterceptors,
+      interceptors:
+        this.createStreamingInterceptionsWithCancellation(abortSignal),
     });
 
     return await new Promise((resolve, reject) => {
@@ -2429,6 +2570,7 @@ export class CacheDataClient implements IDataClient {
           rejectFn: reject,
         });
       });
+      this.setupAbortSignalHandler(abortSignal, call, 'getBatch');
     });
   }
 
@@ -2483,13 +2625,18 @@ export class CacheDataClient implements IDataClient {
         }
       }
 
-      return await this.sendSetBatch(cacheName, itemsToUse);
+      return await this.sendSetBatch(
+        cacheName,
+        itemsToUse,
+        options?.abortSignal
+      );
     });
   }
 
   private async sendSetBatch(
     cacheName: string,
-    items: [Uint8Array, Uint8Array, number][]
+    items: [Uint8Array, Uint8Array, number][],
+    abortSignal?: AbortSignal
   ): Promise<CacheSetBatch.Response> {
     const setRequests = [];
     for (const item of items) {
@@ -2507,7 +2654,8 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     const call = this.clientWrapper.getClient().SetBatch(request, metadata, {
-      interceptors: this.streamingInterceptors,
+      interceptors:
+        this.createStreamingInterceptionsWithCancellation(abortSignal),
     });
 
     return await new Promise((resolve, reject) => {
@@ -2537,6 +2685,7 @@ export class CacheDataClient implements IDataClient {
           rejectFn: reject,
         });
       });
+      this.setupAbortSignalHandler(abortSignal, call, 'setBatch');
     });
   }
 
@@ -2545,7 +2694,8 @@ export class CacheDataClient implements IDataClient {
     listName: string,
     values: string[] | Uint8Array[],
     truncateFrontToSize?: number,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    abortSignal?: AbortSignal
   ): Promise<CacheListConcatenateBack.Response> {
     try {
       validateCacheName(cacheName);
@@ -2564,7 +2714,8 @@ export class CacheDataClient implements IDataClient {
         this.convertArray(values),
         this.collectionTtlOrDefaultMilliseconds(ttl),
         ttl.refreshTtl(),
-        truncateFrontToSize
+        truncateFrontToSize,
+        abortSignal
       );
     });
   }
@@ -2575,7 +2726,8 @@ export class CacheDataClient implements IDataClient {
     values: Uint8Array[],
     ttlMilliseconds: number,
     refreshTtl: boolean,
-    truncateFrontToSize?: number
+    truncateFrontToSize?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheListConcatenateBack.Response> {
     const request = new grpcCache._ListConcatenateBackRequest({
       list_name: listName,
@@ -2586,11 +2738,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().ListConcatenateBack(
+      const setGrpcCall = this.clientWrapper.getClient().ListConcatenateBack(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -2606,6 +2758,11 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'listConcatenateBack'
+      );
     });
   }
 
@@ -2614,7 +2771,8 @@ export class CacheDataClient implements IDataClient {
     listName: string,
     values: string[] | Uint8Array[],
     truncateBackToSize?: number,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    abortSignal?: AbortSignal
   ): Promise<CacheListConcatenateFront.Response> {
     try {
       validateCacheName(cacheName);
@@ -2633,7 +2791,8 @@ export class CacheDataClient implements IDataClient {
         this.convertArray(values),
         this.collectionTtlOrDefaultMilliseconds(ttl),
         ttl.refreshTtl(),
-        truncateBackToSize
+        truncateBackToSize,
+        abortSignal
       );
     });
   }
@@ -2644,7 +2803,8 @@ export class CacheDataClient implements IDataClient {
     values: Uint8Array[],
     ttlMilliseconds: number,
     refreshTtl: boolean,
-    truncateBackToSize?: number
+    truncateBackToSize?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheListConcatenateFront.Response> {
     const request = new grpcCache._ListConcatenateFrontRequest({
       list_name: listName,
@@ -2655,11 +2815,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().ListConcatenateFront(
+      const setGrpcCall = this.clientWrapper.getClient().ListConcatenateFront(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -2675,6 +2835,11 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'listConcatenateFront'
+      );
     });
   }
 
@@ -2682,7 +2847,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     listName: string,
     startIndex?: number,
-    endIndex?: number
+    endIndex?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheListFetch.Response> {
     try {
       validateCacheName(cacheName);
@@ -2700,7 +2866,8 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(listName),
         startIndex,
-        endIndex
+        endIndex,
+        abortSignal
       );
     });
   }
@@ -2709,7 +2876,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     listName: Uint8Array,
     start?: number,
-    end?: number
+    end?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheListFetch.Response> {
     const request = new grpcCache._ListFetchRequest({
       list_name: listName,
@@ -2727,11 +2895,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().ListFetch(
+      const setGrpcCall = this.clientWrapper.getClient().ListFetch(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -2748,6 +2916,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'ListFetch');
     });
   }
 
@@ -2756,7 +2925,8 @@ export class CacheDataClient implements IDataClient {
     listName: string,
     startIndex?: number,
     endIndex?: number,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    abortSignal?: AbortSignal
   ): Promise<CacheListRetain.Response> {
     try {
       validateCacheName(cacheName);
@@ -2776,7 +2946,8 @@ export class CacheDataClient implements IDataClient {
         startIndex,
         endIndex,
         this.collectionTtlOrDefaultMilliseconds(ttl),
-        ttl.refreshTtl()
+        ttl.refreshTtl(),
+        abortSignal
       );
     });
   }
@@ -2787,7 +2958,8 @@ export class CacheDataClient implements IDataClient {
     start?: number,
     end?: number,
     ttlMilliseconds?: number,
-    refreshTtl?: boolean
+    refreshTtl?: boolean,
+    abortSignal?: AbortSignal
   ): Promise<CacheListRetain.Response> {
     const request = new grpcCache._ListRetainRequest({
       list_name: listName,
@@ -2807,11 +2979,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().ListRetain(
+      const setGrpcCall = this.clientWrapper.getClient().ListRetain(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -2826,12 +2998,14 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'listRetain');
     });
   }
 
   public async listLength(
     cacheName: string,
-    listName: string
+    listName: string,
+    abortSignal?: AbortSignal
   ): Promise<CacheListLength.Response> {
     try {
       validateCacheName(cacheName);
@@ -2844,13 +3018,18 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      return await this.sendListLength(cacheName, this.convert(listName));
+      return await this.sendListLength(
+        cacheName,
+        this.convert(listName),
+        abortSignal
+      );
     });
   }
 
   private async sendListLength(
     cacheName: string,
-    listName: Uint8Array
+    listName: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheListLength.Response> {
     const request = new grpcCache._ListLengthRequest({
       list_name: listName,
@@ -2858,11 +3037,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().ListLength(
+      const setGrpcCall = this.clientWrapper.getClient().ListLength(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -2879,12 +3058,14 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'listLength');
     });
   }
 
   public async listPopBack(
     cacheName: string,
-    listName: string
+    listName: string,
+    abortSignal?: AbortSignal
   ): Promise<CacheListPopBack.Response> {
     try {
       validateCacheName(cacheName);
@@ -2897,13 +3078,18 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      return await this.sendListPopBack(cacheName, this.convert(listName));
+      return await this.sendListPopBack(
+        cacheName,
+        this.convert(listName),
+        abortSignal
+      );
     });
   }
 
   private async sendListPopBack(
     cacheName: string,
-    listName: Uint8Array
+    listName: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheListPopBack.Response> {
     const request = new grpcCache._ListPopBackRequest({
       list_name: listName,
@@ -2911,11 +3097,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().ListPopBack(
+      const setGrpcCall = this.clientWrapper.getClient().ListPopBack(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -2932,12 +3118,14 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'ListPopBack');
     });
   }
 
   public async listPopFront(
     cacheName: string,
-    listName: string
+    listName: string,
+    abortSignal?: AbortSignal
   ): Promise<CacheListPopFront.Response> {
     try {
       validateCacheName(cacheName);
@@ -2950,13 +3138,18 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      return await this.sendListPopFront(cacheName, this.convert(listName));
+      return await this.sendListPopFront(
+        cacheName,
+        this.convert(listName),
+        abortSignal
+      );
     });
   }
 
   private async sendListPopFront(
     cacheName: string,
-    listName: Uint8Array
+    listName: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheListPopFront.Response> {
     const request = new grpcCache._ListPopFrontRequest({
       list_name: listName,
@@ -2964,11 +3157,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().ListPopFront(
+      const setGrpcCall = this.clientWrapper.getClient().ListPopFront(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -2985,6 +3178,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'ListPopFront');
     });
   }
 
@@ -2993,7 +3187,8 @@ export class CacheDataClient implements IDataClient {
     listName: string,
     value: string | Uint8Array,
     truncateFrontToSize?: number,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    abortSignal?: AbortSignal
   ): Promise<CacheListPushBack.Response> {
     try {
       validateCacheName(cacheName);
@@ -3012,7 +3207,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(value),
         this.collectionTtlOrDefaultMilliseconds(ttl),
         ttl.refreshTtl(),
-        truncateFrontToSize
+        truncateFrontToSize,
+        abortSignal
       );
     });
   }
@@ -3023,7 +3219,8 @@ export class CacheDataClient implements IDataClient {
     value: Uint8Array,
     ttlMilliseconds: number,
     refreshTtl: boolean,
-    truncateFrontToSize?: number
+    truncateFrontToSize?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheListPushBack.Response> {
     const request = new grpcCache._ListPushBackRequest({
       list_name: listName,
@@ -3034,11 +3231,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().ListPushBack(
+      const setGrpcCall = this.clientWrapper.getClient().ListPushBack(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -3053,6 +3250,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'listPushBack');
     });
   }
 
@@ -3061,7 +3259,8 @@ export class CacheDataClient implements IDataClient {
     listName: string,
     value: string | Uint8Array,
     truncateBackToSize?: number,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    abortSignal?: AbortSignal
   ): Promise<CacheListPushFront.Response> {
     try {
       validateCacheName(cacheName);
@@ -3080,7 +3279,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(value),
         this.collectionTtlOrDefaultMilliseconds(ttl),
         ttl.refreshTtl(),
-        truncateBackToSize
+        truncateBackToSize,
+        abortSignal
       );
     });
   }
@@ -3091,7 +3291,8 @@ export class CacheDataClient implements IDataClient {
     value: Uint8Array,
     ttlMilliseconds: number,
     refreshTtl: boolean,
-    truncateBackToSize?: number
+    truncateBackToSize?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheListPushFront.Response> {
     const request = new grpcCache._ListPushFrontRequest({
       list_name: listName,
@@ -3102,11 +3303,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().ListPushFront(
+      const setGrpcCall = this.clientWrapper.getClient().ListPushFront(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -3121,13 +3322,15 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'listPushFront');
     });
   }
 
   public async listRemoveValue(
     cacheName: string,
     listName: string,
-    value: string | Uint8Array
+    value: string | Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheListRemoveValue.Response> {
     try {
       validateCacheName(cacheName);
@@ -3143,7 +3346,8 @@ export class CacheDataClient implements IDataClient {
       return await this.sendListRemoveValue(
         cacheName,
         this.convert(listName),
-        this.convert(value)
+        this.convert(value),
+        abortSignal
       );
     });
   }
@@ -3151,7 +3355,8 @@ export class CacheDataClient implements IDataClient {
   private async sendListRemoveValue(
     cacheName: string,
     listName: Uint8Array,
-    value: Uint8Array
+    value: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheListRemoveValue.Response> {
     const request = new grpcCache._ListRemoveRequest({
       list_name: listName,
@@ -3159,11 +3364,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().ListRemove(
+      const setGrpcCall = this.clientWrapper.getClient().ListRemove(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -3178,12 +3383,14 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'listRemoveValue');
     });
   }
 
   public async dictionaryFetch(
     cacheName: string,
-    dictionaryName: string
+    dictionaryName: string,
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryFetch.Response> {
     try {
       validateCacheName(cacheName);
@@ -3198,25 +3405,27 @@ export class CacheDataClient implements IDataClient {
     return await this.rateLimited(async () => {
       return await this.sendDictionaryFetch(
         cacheName,
-        this.convert(dictionaryName)
+        this.convert(dictionaryName),
+        abortSignal
       );
     });
   }
 
   private async sendDictionaryFetch(
     cacheName: string,
-    dictionaryName: Uint8Array
+    dictionaryName: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryFetch.Response> {
     const request = new grpcCache._DictionaryFetchRequest({
       dictionary_name: dictionaryName,
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().DictionaryFetch(
+      const setGrpcCall = this.clientWrapper.getClient().DictionaryFetch(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.found) {
@@ -3233,6 +3442,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'dictionaryFetch');
     });
   }
 
@@ -3241,7 +3451,8 @@ export class CacheDataClient implements IDataClient {
     dictionaryName: string,
     field: string | Uint8Array,
     value: string | Uint8Array,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionarySetField.Response> {
     try {
       validateCacheName(cacheName);
@@ -3260,7 +3471,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(field),
         this.convert(value),
         this.collectionTtlOrDefaultMilliseconds(ttl),
-        ttl.refreshTtl()
+        ttl.refreshTtl(),
+        abortSignal
       );
     });
   }
@@ -3271,7 +3483,8 @@ export class CacheDataClient implements IDataClient {
     field: Uint8Array,
     value: Uint8Array,
     ttlMilliseconds: number,
-    refreshTtl: boolean
+    refreshTtl: boolean,
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionarySetField.Response> {
     const request = new grpcCache._DictionarySetRequest({
       dictionary_name: dictionaryName,
@@ -3281,11 +3494,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().DictionarySet(
+      const setGrpcCall = this.clientWrapper.getClient().DictionarySet(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -3300,6 +3513,11 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'dictionarySetField'
+      );
     });
   }
 
@@ -3310,7 +3528,8 @@ export class CacheDataClient implements IDataClient {
       | Map<string | Uint8Array, string | Uint8Array>
       | Record<string, string | Uint8Array>
       | Array<[string, string | Uint8Array]>,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionarySetFields.Response> {
     try {
       validateCacheName(cacheName);
@@ -3330,7 +3549,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(dictionaryName),
         dictionaryFieldValuePairs,
         this.collectionTtlOrDefaultMilliseconds(ttl),
-        ttl.refreshTtl()
+        ttl.refreshTtl(),
+        abortSignal
       );
     });
   }
@@ -3340,7 +3560,8 @@ export class CacheDataClient implements IDataClient {
     dictionaryName: Uint8Array,
     elements: grpcCache._DictionaryFieldValuePair[],
     ttlMilliseconds: number,
-    refreshTtl: boolean
+    refreshTtl: boolean,
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionarySetFields.Response> {
     const request = new grpcCache._DictionarySetRequest({
       dictionary_name: dictionaryName,
@@ -3350,11 +3571,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().DictionarySet(
+      const setGrpcCall = this.clientWrapper.getClient().DictionarySet(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -3370,13 +3591,19 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'dictionarySetFields'
+      );
     });
   }
 
   public async dictionaryGetField(
     cacheName: string,
     dictionaryName: string,
-    field: string | Uint8Array
+    field: string | Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryGetField.Response> {
     try {
       validateCacheName(cacheName);
@@ -3392,7 +3619,8 @@ export class CacheDataClient implements IDataClient {
       return await this.sendDictionaryGetField(
         cacheName,
         this.convert(dictionaryName),
-        this.convert(field)
+        this.convert(field),
+        abortSignal
       );
     });
   }
@@ -3400,7 +3628,8 @@ export class CacheDataClient implements IDataClient {
   private async sendDictionaryGetField(
     cacheName: string,
     dictionaryName: Uint8Array,
-    field: Uint8Array
+    field: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryGetField.Response> {
     const request = new grpcCache._DictionaryGetRequest({
       dictionary_name: dictionaryName,
@@ -3409,11 +3638,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().DictionaryGet(
+      const setGrpcCall = this.clientWrapper.getClient().DictionaryGet(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.dictionary === 'missing') {
@@ -3451,13 +3680,19 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'dictionaryGetField'
+      );
     });
   }
 
   public async dictionaryGetFields(
     cacheName: string,
     dictionaryName: string,
-    fields: string[] | Uint8Array[]
+    fields: string[] | Uint8Array[],
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryGetFields.Response> {
     try {
       validateCacheName(cacheName);
@@ -3473,7 +3708,8 @@ export class CacheDataClient implements IDataClient {
       return await this.sendDictionaryGetFields(
         cacheName,
         this.convert(dictionaryName),
-        this.convertArray(fields)
+        this.convertArray(fields),
+        abortSignal
       );
     });
   }
@@ -3481,7 +3717,8 @@ export class CacheDataClient implements IDataClient {
   private async sendDictionaryGetFields(
     cacheName: string,
     dictionaryName: Uint8Array,
-    fields: Uint8Array[]
+    fields: Uint8Array[],
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryGetFields.Response> {
     const request = new grpcCache._DictionaryGetRequest({
       dictionary_name: dictionaryName,
@@ -3490,11 +3727,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().DictionaryGet(
+      const setGrpcCall = this.clientWrapper.getClient().DictionaryGet(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.dictionary === 'found') {
@@ -3516,13 +3753,19 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'dictionaryGetFields'
+      );
     });
   }
 
   public async dictionaryRemoveField(
     cacheName: string,
     dictionaryName: string,
-    field: string | Uint8Array
+    field: string | Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryRemoveField.Response> {
     try {
       validateCacheName(cacheName);
@@ -3538,7 +3781,8 @@ export class CacheDataClient implements IDataClient {
       return await this.sendDictionaryRemoveField(
         cacheName,
         this.convert(dictionaryName),
-        this.convert(field)
+        this.convert(field),
+        abortSignal
       );
     });
   }
@@ -3546,7 +3790,8 @@ export class CacheDataClient implements IDataClient {
   private async sendDictionaryRemoveField(
     cacheName: string,
     dictionaryName: Uint8Array,
-    field: Uint8Array
+    field: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryRemoveField.Response> {
     const request = new grpcCache._DictionaryDeleteRequest({
       dictionary_name: dictionaryName,
@@ -3556,11 +3801,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().DictionaryDelete(
+      const setGrpcCall = this.clientWrapper.getClient().DictionaryDelete(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -3576,13 +3821,19 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'dictionaryRemoveField'
+      );
     });
   }
 
   public async dictionaryRemoveFields(
     cacheName: string,
     dictionaryName: string,
-    fields: string[] | Uint8Array[]
+    fields: string[] | Uint8Array[],
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryRemoveFields.Response> {
     try {
       validateCacheName(cacheName);
@@ -3598,7 +3849,8 @@ export class CacheDataClient implements IDataClient {
       return await this.sendDictionaryRemoveFields(
         cacheName,
         this.convert(dictionaryName),
-        this.convertArray(fields)
+        this.convertArray(fields),
+        abortSignal
       );
     });
   }
@@ -3606,7 +3858,8 @@ export class CacheDataClient implements IDataClient {
   private async sendDictionaryRemoveFields(
     cacheName: string,
     dictionaryName: Uint8Array,
-    fields: Uint8Array[]
+    fields: Uint8Array[],
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryRemoveFields.Response> {
     const request = new grpcCache._DictionaryDeleteRequest({
       dictionary_name: dictionaryName,
@@ -3616,11 +3869,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().DictionaryDelete(
+      const setGrpcCall = this.clientWrapper.getClient().DictionaryDelete(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -3636,12 +3889,18 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'dictionaryRemoveFields'
+      );
     });
   }
 
   public async dictionaryLength(
     cacheName: string,
-    dictionaryName: string
+    dictionaryName: string,
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryLength.Response> {
     try {
       validateCacheName(cacheName);
@@ -3656,14 +3915,16 @@ export class CacheDataClient implements IDataClient {
     return await this.rateLimited(async () => {
       return await this.sendDictionaryLength(
         cacheName,
-        this.convert(dictionaryName)
+        this.convert(dictionaryName),
+        abortSignal
       );
     });
   }
 
   private async sendDictionaryLength(
     cacheName: string,
-    dictionaryName: Uint8Array
+    dictionaryName: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryLength.Response> {
     const request = new grpcCache._DictionaryLengthRequest({
       dictionary_name: dictionaryName,
@@ -3671,11 +3932,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().DictionaryLength(
+      const setGrpcCall = this.clientWrapper.getClient().DictionaryLength(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -3692,6 +3953,11 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'dictionaryLength'
+      );
     });
   }
 
@@ -3699,7 +3965,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     field: string | Uint8Array,
     amount = 1,
-    ttl?: number
+    ttl?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheIncrement.Response> {
     try {
       validateCacheName(cacheName);
@@ -3718,7 +3985,8 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(field),
         amount,
-        this.ttlOrDefaultMilliseconds(ttl)
+        this.ttlOrDefaultMilliseconds(ttl),
+        abortSignal
       );
     });
   }
@@ -3727,7 +3995,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     field: Uint8Array,
     amount = 1,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheIncrement.Response> {
     const request = new grpcCache._IncrementRequest({
       cache_key: field,
@@ -3737,11 +4006,11 @@ export class CacheDataClient implements IDataClient {
     const metadata = this.createMetadata(cacheName);
 
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().Increment(
+      const setGrpcCall = this.clientWrapper.getClient().Increment(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -3760,6 +4029,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'increment');
     });
   }
 
@@ -3768,7 +4038,8 @@ export class CacheDataClient implements IDataClient {
     dictionaryName: string,
     field: string | Uint8Array,
     amount = 1,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryIncrement.Response> {
     try {
       validateCacheName(cacheName);
@@ -3787,7 +4058,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(field),
         amount,
         this.collectionTtlOrDefaultMilliseconds(ttl),
-        ttl.refreshTtl()
+        ttl.refreshTtl(),
+        abortSignal
       );
     });
   }
@@ -3798,7 +4070,8 @@ export class CacheDataClient implements IDataClient {
     field: Uint8Array,
     amount: number,
     ttlMilliseconds: number,
-    refreshTtl: boolean
+    refreshTtl: boolean,
+    abortSignal?: AbortSignal
   ): Promise<CacheDictionaryIncrement.Response> {
     const request = new grpcCache._DictionaryIncrementRequest({
       dictionary_name: dictionaryName,
@@ -3809,11 +4082,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().DictionaryIncrement(
+      const setGrpcCall = this.clientWrapper.getClient().DictionaryIncrement(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -3833,6 +4106,11 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'dictionaryIncrement'
+      );
     });
   }
 
@@ -3841,7 +4119,8 @@ export class CacheDataClient implements IDataClient {
     sortedSetName: string,
     value: string | Uint8Array,
     score: number,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetPutElement.Response> {
     try {
       validateCacheName(cacheName);
@@ -3860,7 +4139,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(value),
         score,
         this.collectionTtlOrDefaultMilliseconds(ttl),
-        ttl.refreshTtl()
+        ttl.refreshTtl(),
+        abortSignal
       );
     });
   }
@@ -3871,7 +4151,8 @@ export class CacheDataClient implements IDataClient {
     value: Uint8Array,
     score: number,
     ttlMilliseconds: number,
-    refreshTtl: boolean
+    refreshTtl: boolean,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetPutElement.Response> {
     const request = new grpcCache._SortedSetPutRequest({
       set_name: sortedSetName,
@@ -3881,11 +4162,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SortedSetPut(
+      const setGrpcCall = this.clientWrapper.getClient().SortedSetPut(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -3901,6 +4182,11 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'sortedSetPutElement'
+      );
     });
   }
 
@@ -3911,7 +4197,8 @@ export class CacheDataClient implements IDataClient {
       | Map<string | Uint8Array, number>
       | Record<string, number>
       | Array<[string, number]>,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetPutElements.Response> {
     try {
       validateCacheName(cacheName);
@@ -3932,7 +4219,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(sortedSetName),
         sortedSetValueScorePairs,
         this.collectionTtlOrDefaultMilliseconds(ttl),
-        ttl.refreshTtl()
+        ttl.refreshTtl(),
+        abortSignal
       );
     });
   }
@@ -3942,7 +4230,8 @@ export class CacheDataClient implements IDataClient {
     sortedSetName: Uint8Array,
     elements: grpcCache._SortedSetElement[],
     ttlMilliseconds: number,
-    refreshTtl: boolean
+    refreshTtl: boolean,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetPutElements.Response> {
     const request = new grpcCache._SortedSetPutRequest({
       set_name: sortedSetName,
@@ -3952,11 +4241,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SortedSetPut(
+      const setGrpcCall = this.clientWrapper.getClient().SortedSetPut(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -3972,6 +4261,11 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'sortedSetPutElements'
+      );
     });
   }
 
@@ -3980,7 +4274,8 @@ export class CacheDataClient implements IDataClient {
     sortedSetName: string,
     order: SortedSetOrder,
     startRank: number,
-    endRank?: number
+    endRank?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetFetch.Response> {
     try {
       validateCacheName(cacheName);
@@ -3999,7 +4294,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(sortedSetName),
         order,
         startRank,
-        endRank
+        endRank,
+        abortSignal
       );
     });
   }
@@ -4009,7 +4305,8 @@ export class CacheDataClient implements IDataClient {
     sortedSetName: Uint8Array,
     order: SortedSetOrder,
     startRank: number,
-    endRank?: number
+    endRank?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetFetch.Response> {
     const by_index = new grpcCache._SortedSetFetchRequest._ByIndex();
     if (startRank) {
@@ -4037,11 +4334,11 @@ export class CacheDataClient implements IDataClient {
 
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SortedSetFetch(
+      const setGrpcCall = this.clientWrapper.getClient().SortedSetFetch(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -4080,6 +4377,11 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'sortedSetFetchByRank'
+      );
     });
   }
 
@@ -4090,7 +4392,8 @@ export class CacheDataClient implements IDataClient {
     minScore?: number,
     maxScore?: number,
     offset?: number,
-    count?: number
+    count?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetFetch.Response> {
     try {
       validateCacheName(cacheName);
@@ -4117,7 +4420,8 @@ export class CacheDataClient implements IDataClient {
         minScore,
         maxScore,
         offset,
-        count
+        count,
+        abortSignal
       );
     });
   }
@@ -4129,7 +4433,8 @@ export class CacheDataClient implements IDataClient {
     minScore?: number,
     maxScore?: number,
     offset?: number,
-    count?: number
+    count?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetFetch.Response> {
     const by_score = new grpcCache._SortedSetFetchRequest._ByScore();
     if (minScore !== undefined) {
@@ -4171,11 +4476,11 @@ export class CacheDataClient implements IDataClient {
 
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SortedSetFetch(
+      const setGrpcCall = this.clientWrapper.getClient().SortedSetFetch(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -4214,6 +4519,11 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'sortedSetFetchByScore'
+      );
     });
   }
 
@@ -4221,7 +4531,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     sortedSetName: string,
     value: string | Uint8Array,
-    order?: SortedSetOrder
+    order?: SortedSetOrder,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetGetRank.Response> {
     try {
       validateCacheName(cacheName);
@@ -4238,7 +4549,8 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(sortedSetName),
         this.convert(value),
-        order
+        order,
+        abortSignal
       );
     });
   }
@@ -4247,7 +4559,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     sortedSetName: Uint8Array,
     value: Uint8Array,
-    order?: SortedSetOrder
+    order?: SortedSetOrder,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetGetRank.Response> {
     const protoBufOrder =
       order === SortedSetOrder.Descending
@@ -4261,12 +4574,12 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper
+      const setGrpcCall = this.clientWrapper
         .getClient()
         .SortedSetGetRank(
           request,
           metadata,
-          {interceptors: this.interceptors},
+          {interceptors: this.createInterceptorsWithCancellation(abortSignal)},
           (err, resp) => {
             if (
               resp?.missing ||
@@ -4289,17 +4602,26 @@ export class CacheDataClient implements IDataClient {
             }
           }
         );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'sortedSetGetRank'
+      );
     });
   }
 
   public async sortedSetGetScore(
     cacheName: string,
     sortedSetName: string,
-    value: string | Uint8Array
+    value: string | Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetGetScore.Response> {
-    const responses = await this.sortedSetGetScores(cacheName, sortedSetName, [
-      value,
-    ] as string[] | Uint8Array[]);
+    const responses = await this.sortedSetGetScores(
+      cacheName,
+      sortedSetName,
+      [value] as string[] | Uint8Array[],
+      abortSignal
+    );
     if (responses instanceof CacheSortedSetGetScores.Hit) {
       return responses.responses()[0];
     } else if (responses instanceof CacheSortedSetGetScores.Miss) {
@@ -4320,7 +4642,8 @@ export class CacheDataClient implements IDataClient {
   public async sortedSetGetScores(
     cacheName: string,
     sortedSetName: string,
-    values: string[] | Uint8Array[]
+    values: string[] | Uint8Array[],
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetGetScores.Response> {
     try {
       validateCacheName(cacheName);
@@ -4336,7 +4659,8 @@ export class CacheDataClient implements IDataClient {
       return await this.sendSortedSetGetScores(
         cacheName,
         this.convert(sortedSetName),
-        values.map(value => this.convert(value))
+        values.map(value => this.convert(value)),
+        abortSignal
       );
     });
   }
@@ -4344,7 +4668,8 @@ export class CacheDataClient implements IDataClient {
   private async sendSortedSetGetScores(
     cacheName: string,
     sortedSetName: Uint8Array,
-    values: Uint8Array[]
+    values: Uint8Array[],
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetGetScores.Response> {
     const request = new grpcCache._SortedSetGetScoreRequest({
       set_name: sortedSetName,
@@ -4352,12 +4677,12 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper
+      const setGrpcCall = this.clientWrapper
         .getClient()
         .SortedSetGetScore(
           request,
           metadata,
-          {interceptors: this.interceptors},
+          {interceptors: this.createInterceptorsWithCancellation(abortSignal)},
           (err, resp) => {
             if (resp?.missing) {
               resolve(new CacheSortedSetGetScores.Miss());
@@ -4378,6 +4703,11 @@ export class CacheDataClient implements IDataClient {
             }
           }
         );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'sortedSetGetScores'
+      );
     });
   }
 
@@ -4386,7 +4716,8 @@ export class CacheDataClient implements IDataClient {
     sortedSetName: string,
     value: string | Uint8Array,
     amount = 1,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetIncrementScore.Response> {
     try {
       validateCacheName(cacheName);
@@ -4405,7 +4736,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(value),
         amount,
         this.collectionTtlOrDefaultMilliseconds(ttl),
-        ttl.refreshTtl()
+        ttl.refreshTtl(),
+        abortSignal
       );
     });
   }
@@ -4416,7 +4748,8 @@ export class CacheDataClient implements IDataClient {
     value: Uint8Array,
     amount: number,
     ttlMilliseconds: number,
-    refreshTtl: boolean
+    refreshTtl: boolean,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetIncrementScore.Response> {
     const request = new grpcCache._SortedSetIncrementRequest({
       set_name: sortedSetName,
@@ -4427,12 +4760,12 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper
+      const setGrpcCall = this.clientWrapper
         .getClient()
         .SortedSetIncrement(
           request,
           metadata,
-          {interceptors: this.interceptors},
+          {interceptors: this.createInterceptorsWithCancellation(abortSignal)},
           (err, resp) => {
             if (resp) {
               if (resp.score) {
@@ -4451,13 +4784,19 @@ export class CacheDataClient implements IDataClient {
             }
           }
         );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'sortedSetIncrementScore'
+      );
     });
   }
 
   public async sortedSetRemoveElement(
     cacheName: string,
     sortedSetName: string,
-    value: string | Uint8Array
+    value: string | Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetRemoveElement.Response> {
     try {
       validateCacheName(cacheName);
@@ -4473,7 +4812,8 @@ export class CacheDataClient implements IDataClient {
       return await this.sendSortedSetRemoveElement(
         cacheName,
         this.convert(sortedSetName),
-        this.convert(value)
+        this.convert(value),
+        abortSignal
       );
     });
   }
@@ -4481,7 +4821,8 @@ export class CacheDataClient implements IDataClient {
   private async sendSortedSetRemoveElement(
     cacheName: string,
     sortedSetName: Uint8Array,
-    value: Uint8Array
+    value: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetRemoveElement.Response> {
     const request = new grpcCache._SortedSetRemoveRequest({
       set_name: sortedSetName,
@@ -4492,11 +4833,11 @@ export class CacheDataClient implements IDataClient {
 
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SortedSetRemove(
+      const setGrpcCall = this.clientWrapper.getClient().SortedSetRemove(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         err => {
           if (err) {
@@ -4512,13 +4853,19 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'sortedSetRemoveElement'
+      );
     });
   }
 
   public async sortedSetRemoveElements(
     cacheName: string,
     sortedSetName: string,
-    values: string[] | Uint8Array[]
+    values: string[] | Uint8Array[],
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetRemoveElements.Response> {
     try {
       validateCacheName(cacheName);
@@ -4534,7 +4881,8 @@ export class CacheDataClient implements IDataClient {
       return await this.sendSortedSetRemoveElements(
         cacheName,
         this.convert(sortedSetName),
-        this.convertArray(values)
+        this.convertArray(values),
+        abortSignal
       );
     });
   }
@@ -4542,7 +4890,8 @@ export class CacheDataClient implements IDataClient {
   private async sendSortedSetRemoveElements(
     cacheName: string,
     sortedSetName: Uint8Array,
-    values: Uint8Array[]
+    values: Uint8Array[],
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetRemoveElements.Response> {
     const request = new grpcCache._SortedSetRemoveRequest({
       set_name: sortedSetName,
@@ -4553,11 +4902,11 @@ export class CacheDataClient implements IDataClient {
 
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SortedSetRemove(
+      const setGrpcCall = this.clientWrapper.getClient().SortedSetRemove(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         err => {
           if (err) {
@@ -4573,12 +4922,18 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'sortedSetRemoveElements'
+      );
     });
   }
 
   public async sortedSetLength(
     cacheName: string,
-    sortedSetName: string
+    sortedSetName: string,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetLength.Response> {
     try {
       validateCacheName(cacheName);
@@ -4593,14 +4948,16 @@ export class CacheDataClient implements IDataClient {
     return await this.rateLimited(async () => {
       return await this.sendSortedSetLength(
         cacheName,
-        this.convert(sortedSetName)
+        this.convert(sortedSetName),
+        abortSignal
       );
     });
   }
 
   private async sendSortedSetLength(
     cacheName: string,
-    sortedSetName: Uint8Array
+    sortedSetName: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetLength.Response> {
     const request = new grpcCache._SortedSetLengthRequest({
       set_name: sortedSetName,
@@ -4608,11 +4965,11 @@ export class CacheDataClient implements IDataClient {
 
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SortedSetLength(
+      const setGrpcCall = this.clientWrapper.getClient().SortedSetLength(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -4633,6 +4990,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'sortedSetLength');
     });
   }
 
@@ -4640,7 +4998,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     sortedSetName: string,
     minScore?: number,
-    maxScore?: number
+    maxScore?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetLengthByScore.Response> {
     try {
       validateCacheName(cacheName);
@@ -4658,7 +5017,8 @@ export class CacheDataClient implements IDataClient {
         cacheName,
         this.convert(sortedSetName),
         minScore,
-        maxScore
+        maxScore,
+        abortSignal
       );
     });
   }
@@ -4667,7 +5027,8 @@ export class CacheDataClient implements IDataClient {
     cacheName: string,
     sortedSetName: Uint8Array,
     minScore?: number,
-    maxScore?: number
+    maxScore?: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetLengthByScore.Response> {
     const request = new grpcCache._SortedSetLengthByScoreRequest({
       set_name: sortedSetName,
@@ -4687,11 +5048,11 @@ export class CacheDataClient implements IDataClient {
 
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SortedSetLengthByScore(
+      const setGrpcCall = this.clientWrapper.getClient().SortedSetLengthByScore(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -4713,6 +5074,11 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'sortedSetLengthByScore'
+      );
     });
   }
 
@@ -4721,7 +5087,8 @@ export class CacheDataClient implements IDataClient {
     sortedSetName: string,
     sources: SortedSetSource[],
     aggregate?: SortedSetAggregate,
-    ttl: CollectionTtl = CollectionTtl.fromCacheTtl()
+    ttl: CollectionTtl = CollectionTtl.fromCacheTtl(),
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetUnionStore.Response> {
     try {
       validateCacheName(cacheName);
@@ -4740,7 +5107,8 @@ export class CacheDataClient implements IDataClient {
         this.convert(sortedSetName),
         sources,
         ttl,
-        aggregate
+        aggregate,
+        abortSignal
       );
     });
   }
@@ -4750,7 +5118,8 @@ export class CacheDataClient implements IDataClient {
     sortedSetName: Uint8Array,
     sources: SortedSetSource[],
     ttl: CollectionTtl,
-    aggregate?: SortedSetAggregate
+    aggregate?: SortedSetAggregate,
+    abortSignal?: AbortSignal
   ): Promise<CacheSortedSetUnionStore.Response> {
     const agg = this.convertAggregateResult(aggregate);
     const sortedSources: grpcCache._SortedSetUnionStoreRequest._Source[] = [];
@@ -4769,11 +5138,11 @@ export class CacheDataClient implements IDataClient {
 
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().SortedSetUnionStore(
+      const setGrpcCall = this.clientWrapper.getClient().SortedSetUnionStore(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -4788,6 +5157,11 @@ export class CacheDataClient implements IDataClient {
             });
           }
         }
+      );
+      this.setupAbortSignalHandler(
+        abortSignal,
+        setGrpcCall,
+        'sortedSetUnionStore'
       );
     });
   }
@@ -4934,7 +5308,8 @@ export class CacheDataClient implements IDataClient {
 
   public async itemGetType(
     cacheName: string,
-    key: string | Uint8Array
+    key: string | Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheItemGetType.Response> {
     try {
       validateCacheName(cacheName);
@@ -4946,24 +5321,29 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      return await this.sendItemGetType(cacheName, this.convert(key));
+      return await this.sendItemGetType(
+        cacheName,
+        this.convert(key),
+        abortSignal
+      );
     });
   }
 
   private async sendItemGetType(
     cacheName: string,
-    key: Uint8Array
+    key: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheItemGetType.Response> {
     const request = new grpcCache._ItemGetTypeRequest({
       cache_key: key,
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().ItemGetType(
+      const setGrpcCall = this.clientWrapper.getClient().ItemGetType(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -4984,12 +5364,14 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'itemGetType');
     });
   }
 
   public async itemGetTtl(
     cacheName: string,
-    key: string | Uint8Array
+    key: string | Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheItemGetTtl.Response> {
     try {
       validateCacheName(cacheName);
@@ -5001,24 +5383,29 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      return await this.sendItemGetTtl(cacheName, this.convert(key));
+      return await this.sendItemGetTtl(
+        cacheName,
+        this.convert(key),
+        abortSignal
+      );
     });
   }
 
   private async sendItemGetTtl(
     cacheName: string,
-    key: Uint8Array
+    key: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheItemGetTtl.Response> {
     const request = new grpcCache._ItemGetTtlRequest({
       cache_key: key,
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().ItemGetTtl(
+      const setGrpcCall = this.clientWrapper.getClient().ItemGetTtl(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -5035,12 +5422,14 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'itemGetTtl');
     });
   }
 
   public async keyExists(
     cacheName: string,
-    key: string | Uint8Array
+    key: string | Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheKeyExists.Response> {
     try {
       validateCacheName(cacheName);
@@ -5052,24 +5441,29 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      return await this.sendKeyExists(cacheName, this.convert(key));
+      return await this.sendKeyExists(
+        cacheName,
+        this.convert(key),
+        abortSignal
+      );
     });
   }
 
   private async sendKeyExists(
     cacheName: string,
-    key: Uint8Array
+    key: Uint8Array,
+    abortSignal?: AbortSignal
   ): Promise<CacheKeyExists.Response> {
     const request = new grpcCache._KeysExistRequest({
       cache_keys: [key],
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().KeysExist(
+      const setGrpcCall = this.clientWrapper.getClient().KeysExist(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -5084,13 +5478,15 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'keyExists');
     });
   }
 
   public async updateTtl(
     cacheName: string,
     key: string | Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheUpdateTtl.Response> {
     try {
       validateCacheName(cacheName);
@@ -5106,7 +5502,8 @@ export class CacheDataClient implements IDataClient {
       return await this.sendUpdateTtl(
         cacheName,
         this.convert(key),
-        ttlMilliseconds
+        ttlMilliseconds,
+        abortSignal
       );
     });
   }
@@ -5114,7 +5511,8 @@ export class CacheDataClient implements IDataClient {
   private async sendUpdateTtl(
     cacheName: string,
     key: Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheUpdateTtl.Response> {
     const request = new grpcCache._UpdateTtlRequest({
       cache_key: key,
@@ -5122,11 +5520,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().UpdateTtl(
+      const setGrpcCall = this.clientWrapper.getClient().UpdateTtl(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -5143,12 +5541,14 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'updateTtl');
     });
   }
 
   public async keysExist(
     cacheName: string,
-    keys: string[] | Uint8Array[]
+    keys: string[] | Uint8Array[],
+    abortSignal?: AbortSignal
   ): Promise<CacheKeysExist.Response> {
     try {
       validateCacheName(cacheName);
@@ -5160,24 +5560,29 @@ export class CacheDataClient implements IDataClient {
     }
 
     return await this.rateLimited(async () => {
-      return await this.sendKeysExist(cacheName, this.convertArray(keys));
+      return await this.sendKeysExist(
+        cacheName,
+        this.convertArray(keys),
+        abortSignal
+      );
     });
   }
 
   private async sendKeysExist(
     cacheName: string,
-    keys: Uint8Array[]
+    keys: Uint8Array[],
+    abortSignal?: AbortSignal
   ): Promise<CacheKeysExist.Response> {
     const request = new grpcCache._KeysExistRequest({
       cache_keys: keys,
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().KeysExist(
+      const setGrpcCall = this.clientWrapper.getClient().KeysExist(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -5192,13 +5597,15 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'keysExist');
     });
   }
 
   public async increaseTtl(
     cacheName: string,
     key: string | Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheIncreaseTtl.Response> {
     try {
       validateCacheName(cacheName);
@@ -5214,7 +5621,8 @@ export class CacheDataClient implements IDataClient {
       return await this.sendIncreaseTtl(
         cacheName,
         this.convert(key),
-        ttlMilliseconds
+        ttlMilliseconds,
+        abortSignal
       );
     });
   }
@@ -5222,7 +5630,8 @@ export class CacheDataClient implements IDataClient {
   private async sendIncreaseTtl(
     cacheName: string,
     key: Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheIncreaseTtl.Response> {
     const request = new grpcCache._UpdateTtlRequest({
       cache_key: key,
@@ -5230,11 +5639,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().UpdateTtl(
+      const setGrpcCall = this.clientWrapper.getClient().UpdateTtl(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -5253,13 +5662,15 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'increaseTtl');
     });
   }
 
   public async decreaseTtl(
     cacheName: string,
     key: string | Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheDecreaseTtl.Response> {
     try {
       validateCacheName(cacheName);
@@ -5275,7 +5686,8 @@ export class CacheDataClient implements IDataClient {
       return await this.sendDecreaseTtl(
         cacheName,
         this.convert(key),
-        ttlMilliseconds
+        ttlMilliseconds,
+        abortSignal
       );
     });
   }
@@ -5283,7 +5695,8 @@ export class CacheDataClient implements IDataClient {
   private async sendDecreaseTtl(
     cacheName: string,
     key: Uint8Array,
-    ttlMilliseconds: number
+    ttlMilliseconds: number,
+    abortSignal?: AbortSignal
   ): Promise<CacheDecreaseTtl.Response> {
     const request = new grpcCache._UpdateTtlRequest({
       cache_key: key,
@@ -5291,11 +5704,11 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().UpdateTtl(
+      const setGrpcCall = this.clientWrapper.getClient().UpdateTtl(
         request,
         metadata,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -5314,6 +5727,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'decreaseTtl');
     });
   }
 
@@ -5338,20 +5752,20 @@ export class CacheDataClient implements IDataClient {
   /**
    * Helper method to handle AbortSignal cancellation for gRPC calls.
    * This centralizes the cancellation logic and ensures consistent behavior.
-   * @param signal - The AbortSignal to monitor
+   * @param abortSignal - The AbortSignal to monitor
    * @param grpcCall - The gRPC call to cancel
    * @param operationName - Name of the operation for logging
    */
   private setupAbortSignalHandler(
-    signal: AbortSignal | undefined,
+    abortSignal: AbortSignal | undefined,
     grpcCall: {cancel: () => void},
     operationName: string
   ): void {
-    if (signal !== undefined) {
-      if (signal.aborted) {
+    if (abortSignal !== undefined) {
+      if (abortSignal.aborted) {
         grpcCall.cancel();
       } else {
-        signal.addEventListener('abort', () => {
+        abortSignal.addEventListener('abort', () => {
           this.logger.debug(
             `Abort signal received, cancelling ${operationName} call`
           );
@@ -5363,15 +5777,24 @@ export class CacheDataClient implements IDataClient {
 
   /**
    * Helper method to create interceptors with AbortSignal cancellation support.
-   * @param signal - The AbortSignal to monitor
-   * @returns Array of interceptors including cancellation if signal is provided
+   * @param abortSignal - The AbortSignal to monitor
+   * @returns Array of interceptors including cancellation if abortSignal is provided
    */
   private createInterceptorsWithCancellation(
-    signal?: AbortSignal
+    abortSignal?: AbortSignal
   ): Interceptor[] {
     return [
       ...this.interceptors,
-      CancellationInterceptor.createCancellationInterceptor(signal),
+      CancellationInterceptor.createCancellationInterceptor(abortSignal),
+    ];
+  }
+
+  private createStreamingInterceptionsWithCancellation(
+    abortSignal?: AbortSignal
+  ): Interceptor[] {
+    return [
+      ...this.streamingInterceptors,
+      CancellationInterceptor.createCancellationInterceptor(abortSignal),
     ];
   }
 }

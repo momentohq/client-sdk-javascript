@@ -1,5 +1,5 @@
 import {CollectionTtl} from './collection-ttl';
-export interface ScalarCallOptions {
+export interface ScalarCallOptions extends CancellationCallOptions {
   /**
    * The time to live in seconds of the object being modified.
    */
@@ -33,18 +33,18 @@ export interface SetCallOptions
     CancellationCallOptions {}
 export type SetBatchCallOptions = SetCallOptions;
 export type SetWithHashCallOptions = SetCallOptions;
-
 export interface GetCallOptions
   extends DecompressableCallOptions,
     CancellationCallOptions {}
-export type GetWithHashCallOptions = DecompressableCallOptions;
+export type GetWithHashCallOptions = GetCallOptions;
 export type GetBatchCallOptions = GetCallOptions;
 
 export interface SetIfAbsentCallOptions
   extends ScalarCallOptions,
-    CompressableCallOptions {}
+    CompressableCallOptions,
+    CancellationCallOptions {}
 
-export interface CollectionCallOptions {
+export interface CollectionCallOptions extends CancellationCallOptions {
   /**
    * The length of the TTL and whether it should be refreshed when the collection is modified.
    */
@@ -82,7 +82,8 @@ export enum SortedSetOrder {
   Descending = 'DESC',
 }
 
-export interface SortedSetFetchByRankCallOptions {
+export interface SortedSetFetchByRankCallOptions
+  extends CancellationCallOptions {
   /**
    * The rank of the first element to return, inclusive.
    * If negative, the rank is relative to the end of the list.
@@ -104,7 +105,8 @@ export interface SortedSetFetchByRankCallOptions {
   order?: SortedSetOrder;
 }
 
-export interface SortedSetFetchByScoreCallOptions {
+export interface SortedSetFetchByScoreCallOptions
+  extends CancellationCallOptions {
   /**
    * The minimum score of the elements to return, inclusive.
    * If the minimum score is not specified, the range extends to the lowest score.
@@ -134,7 +136,7 @@ export interface SortedSetFetchByScoreCallOptions {
   count?: number;
 }
 
-export interface SortedSetGetRankCallOptions {
+export interface SortedSetGetRankCallOptions extends CancellationCallOptions {
   /**
    * The order in which sorted set will be sorted to determine the rank.
    * If the order is not specified, then ascending order is used.
@@ -142,7 +144,8 @@ export interface SortedSetGetRankCallOptions {
   order?: SortedSetOrder;
 }
 
-export interface SortedSetLengthByScoreCallOptions {
+export interface SortedSetLengthByScoreCallOptions
+  extends CancellationCallOptions {
   /**
    * The minimum score of the elements to include when counting number of items in the set, inclusive.
    * If the minimum score is not specified, the range extends to the lowest score.
@@ -160,7 +163,7 @@ export enum SortedSetAggregate {
   MAX = 2,
 }
 
-export interface SortedSetUnionStoreCallOptions {
+export interface SortedSetUnionStoreCallOptions extends CollectionCallOptions {
   /**
    * A function to determine the final score for an element that exists in multiple source sets.
    * If the function is not specified, the aggregate function defaults to SUM.
@@ -183,7 +186,7 @@ export interface ListRetainCallOptions extends CollectionCallOptions {
    */
   endIndex?: number;
 }
-export interface ListFetchCallOptions {
+export interface ListFetchCallOptions extends CancellationCallOptions {
   /**
    * Starting inclusive index of operation.
    */
