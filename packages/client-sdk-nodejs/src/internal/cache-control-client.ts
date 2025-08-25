@@ -25,6 +25,8 @@ import {
 import {RetryInterceptor} from './grpc/retry-interceptor';
 import {secondsToMilliseconds} from '@gomomento/sdk-core/dist/src/utils';
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
+import {CacheOptions} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {CancellationInterceptor} from './grpc/cancellation-interceptor';
 
 export interface ControlClientProps {
   configuration: Configuration;
@@ -90,7 +92,10 @@ export class CacheControlClient {
     this.clientWrapper.getClient().close();
   }
 
-  public async createCache(name: string): Promise<CreateCache.Response> {
+  public async createCache(
+    name: string,
+    options?: CacheOptions
+  ): Promise<CreateCache.Response> {
     try {
       validateCacheName(name);
     } catch (err) {
@@ -104,36 +109,42 @@ export class CacheControlClient {
       cache_name: name,
     });
     return await new Promise<CreateCache.Response>((resolve, reject) => {
-      this.clientWrapper
-        .getClient()
-        .CreateCache(
-          request,
-          {interceptors: this.interceptors},
-          (err, _resp) => {
-            if (err) {
-              const sdkError = this.cacheServiceErrorMapper.convertError(err);
-              if (
-                sdkError.errorCode() ===
-                MomentoErrorCode.CACHE_ALREADY_EXISTS_ERROR
-              ) {
-                resolve(new CreateCache.AlreadyExists());
-              } else {
-                this.cacheServiceErrorMapper.resolveOrRejectError({
-                  err: err,
-                  errorResponseFactoryFn: e => new CreateCache.Error(e),
-                  resolveFn: resolve,
-                  rejectFn: reject,
-                });
-              }
+      const grpcCall = this.clientWrapper.getClient().CreateCache(
+        request,
+        {
+          interceptors: this.createInterceptorsWithCancellation(
+            options?.abortSignal
+          ),
+        },
+        (err, _resp) => {
+          if (err) {
+            const sdkError = this.cacheServiceErrorMapper.convertError(err);
+            if (
+              sdkError.errorCode() ===
+              MomentoErrorCode.CACHE_ALREADY_EXISTS_ERROR
+            ) {
+              resolve(new CreateCache.AlreadyExists());
             } else {
-              resolve(new CreateCache.Success());
+              this.cacheServiceErrorMapper.resolveOrRejectError({
+                err: err,
+                errorResponseFactoryFn: e => new CreateCache.Error(e),
+                resolveFn: resolve,
+                rejectFn: reject,
+              });
             }
+          } else {
+            resolve(new CreateCache.Success());
           }
-        );
+        }
+      );
+      this.setupAbortSignalHandler(options?.abortSignal, grpcCall, 'keysExist');
     });
   }
 
-  public async deleteCache(name: string): Promise<DeleteCache.Response> {
+  public async deleteCache(
+    name: string,
+    options?: CacheOptions
+  ): Promise<DeleteCache.Response> {
     try {
       validateCacheName(name);
     } catch (err) {
@@ -147,28 +158,34 @@ export class CacheControlClient {
     });
     this.logger.debug(`Deleting cache: ${name}`);
     return await new Promise<DeleteCache.Response>((resolve, reject) => {
-      this.clientWrapper
-        .getClient()
-        .DeleteCache(
-          request,
-          {interceptors: this.interceptors},
-          (err, _resp) => {
-            if (err) {
-              this.cacheServiceErrorMapper.resolveOrRejectError({
-                err: err,
-                errorResponseFactoryFn: e => new DeleteCache.Error(e),
-                resolveFn: resolve,
-                rejectFn: reject,
-              });
-            } else {
-              resolve(new DeleteCache.Success());
-            }
+      const grpcCall = this.clientWrapper.getClient().DeleteCache(
+        request,
+        {
+          interceptors: this.createInterceptorsWithCancellation(
+            options?.abortSignal
+          ),
+        },
+        (err, _resp) => {
+          if (err) {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new DeleteCache.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
+          } else {
+            resolve(new DeleteCache.Success());
           }
-        );
+        }
+      );
+      this.setupAbortSignalHandler(options?.abortSignal, grpcCall, 'keysExist');
     });
   }
 
-  public async flushCache(cacheName: string): Promise<CacheFlush.Response> {
+  public async flushCache(
+    cacheName: string,
+    options?: CacheOptions
+  ): Promise<CacheFlush.Response> {
     try {
       validateCacheName(cacheName);
     } catch (err) {
@@ -178,20 +195,21 @@ export class CacheControlClient {
       );
     }
     this.logger.debug(`Flushing cache: ${cacheName}`);
-    return await this.sendFlushCache(cacheName);
+    return await this.sendFlushCache(cacheName, options?.abortSignal);
   }
 
   private async sendFlushCache(
-    cacheName: string
+    cacheName: string,
+    abortSignal?: AbortSignal
   ): Promise<CacheFlush.Response> {
     const request = new grpcControl._FlushCacheRequest({
       cache_name: cacheName,
     });
     return await new Promise((resolve, reject) => {
-      this.clientWrapper.getClient().FlushCache(
+      const grpcCall = this.clientWrapper.getClient().FlushCache(
         request,
         {
-          interceptors: this.interceptors,
+          interceptors: this.createInterceptorsWithCancellation(abortSignal),
         },
         (err, resp) => {
           if (resp) {
@@ -206,17 +224,25 @@ export class CacheControlClient {
           }
         }
       );
+      this.setupAbortSignalHandler(abortSignal, grpcCall, 'keysExist');
     });
   }
 
-  public async listCaches(): Promise<ListCaches.Response> {
+  public async listCaches(
+    options?: CacheOptions
+  ): Promise<ListCaches.Response> {
     const request = new grpcControl._ListCachesRequest();
     request.next_token = '';
     this.logger.debug("Issuing 'listCaches' request");
     return await new Promise<ListCaches.Response>((resolve, reject) => {
-      this.clientWrapper
-        .getClient()
-        .ListCaches(request, {interceptors: this.interceptors}, (err, resp) => {
+      const grpcCall = this.clientWrapper.getClient().ListCaches(
+        request,
+        {
+          interceptors: this.createInterceptorsWithCancellation(
+            options?.abortSignal
+          ),
+        },
+        (err, resp) => {
           if (err || !resp) {
             this.cacheServiceErrorMapper.resolveOrRejectError({
               err: err,
@@ -244,7 +270,48 @@ export class CacheControlClient {
             });
             resolve(new ListCaches.Success(caches));
           }
-        });
+        }
+      );
+      this.setupAbortSignalHandler(options?.abortSignal, grpcCall, 'keysExist');
     });
+  }
+  /**
+   * Helper method to handle AbortSignal cancellation for gRPC calls.
+   * This centralizes the cancellation logic and ensures consistent behavior.
+   * @param abortSignal - The AbortSignal to monitor
+   * @param grpcCall - The gRPC call to cancel
+   * @param operationName - Name of the operation for logging
+   */
+  private setupAbortSignalHandler(
+    abortSignal: AbortSignal | undefined,
+    grpcCall: {cancel: () => void},
+    operationName: string
+  ): void {
+    if (abortSignal !== undefined) {
+      if (abortSignal.aborted) {
+        grpcCall.cancel();
+      } else {
+        abortSignal.addEventListener('abort', () => {
+          this.logger.debug(
+            `Abort signal received, cancelling ${operationName} call`
+          );
+          grpcCall.cancel();
+        });
+      }
+    }
+  }
+
+  /**
+   * Helper method to create interceptors with AbortSignal cancellation support.
+   * @param abortSignal - The AbortSignal to monitor
+   * @returns Array of interceptors including cancellation if abortSignal is provided
+   */
+  private createInterceptorsWithCancellation(
+    abortSignal?: AbortSignal
+  ): Interceptor[] {
+    return [
+      ...this.interceptors,
+      CancellationInterceptor.createCancellationInterceptor(abortSignal),
+    ];
   }
 }
