@@ -86,7 +86,7 @@ import {
   GetWithHashCallOptions,
   SetWithHashCallOptions,
   CancellationCallOptions,
-  CancellationScalarCallOptions,
+  ScalarCallOptions,
 } from '../utils';
 import {IControlClient, IPingClient} from '../internal/clients';
 import {IMomentoCache} from './IMomentoCache';
@@ -95,13 +95,13 @@ import {_SortedSetGetScoreResponsePart} from '../messages/responses/grpc-respons
 // Type aliases to differentiate the different methods' optional arguments.
 export type SetOptions = SetCallOptions;
 export type GetOptions = GetCallOptions;
-export type SetIfNotExistsOptions = CancellationScalarCallOptions;
+export type SetIfNotExistsOptions = ScalarCallOptions;
 export type SetIfAbsentOptions = SetIfAbsentCallOptions;
-export type SetIfPresentOptions = CancellationScalarCallOptions;
-export type SetIfEqualOptions = CancellationScalarCallOptions;
-export type SetIfNotEqualOptions = CancellationScalarCallOptions;
-export type SetIfPresentAndNotEqualOptions = CancellationScalarCallOptions;
-export type SetIfAbsentOrEqualOptions = CancellationScalarCallOptions;
+export type SetIfPresentOptions = ScalarCallOptions;
+export type SetIfEqualOptions = ScalarCallOptions;
+export type SetIfNotEqualOptions = ScalarCallOptions;
+export type SetIfPresentAndNotEqualOptions = ScalarCallOptions;
+export type SetIfAbsentOrEqualOptions = ScalarCallOptions;
 export type SetBatchOptions = SetCallOptions;
 export type GetBatchOptions = GetCallOptions;
 export type ListConcatenateBackOptions = FrontTruncatableCallOptions;
@@ -113,7 +113,7 @@ export type SetAddElementsOptions = CollectionCallOptions;
 export type DictionarySetFieldOptions = CollectionCallOptions;
 export type DictionarySetFieldsOptions = CollectionCallOptions;
 export type DictionaryIncrementOptions = CollectionCallOptions;
-export type IncrementOptions = CancellationScalarCallOptions;
+export type IncrementOptions = ScalarCallOptions;
 export type SortedSetPutElementOptions = CollectionCallOptions;
 export type SortedSetPutElementsOptions = CollectionCallOptions;
 export type SortedSetFetchByRankOptions = SortedSetFetchByRankCallOptions;
@@ -124,10 +124,10 @@ export type SortedSetLengthByScoreOptions = SortedSetLengthByScoreCallOptions;
 export type SortedSetUnionStoreOptions = SortedSetUnionStoreCallOptions;
 export type GetWithHashOptions = GetWithHashCallOptions;
 export type SetWithHashOptions = SetWithHashCallOptions;
-export type SetIfPresentAndHashEqualOptions = CancellationScalarCallOptions;
-export type SetIfPresentAndHashNotEqualOptions = CancellationScalarCallOptions;
-export type SetIfAbsentOrHashEqualOptions = CancellationScalarCallOptions;
-export type SetIfAbsentOrHashNotEqualOptions = CancellationScalarCallOptions;
+export type SetIfPresentAndHashEqualOptions = ScalarCallOptions;
+export type SetIfPresentAndHashNotEqualOptions = ScalarCallOptions;
+export type SetIfAbsentOrHashEqualOptions = ScalarCallOptions;
+export type SetIfAbsentOrHashNotEqualOptions = ScalarCallOptions;
 export type SetFetchOptions = CancellationCallOptions;
 export type DeleteOptions = CancellationCallOptions;
 export type SetContainsElementsOptions = CancellationCallOptions;

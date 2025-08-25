@@ -1,5 +1,5 @@
 import {CollectionTtl} from './collection-ttl';
-export interface ScalarCallOptions {
+export interface ScalarCallOptions extends CancellationCallOptions {
   /**
    * The time to live in seconds of the object being modified.
    */
@@ -33,9 +33,6 @@ export interface SetCallOptions
     CancellationCallOptions {}
 export type SetBatchCallOptions = SetCallOptions;
 export type SetWithHashCallOptions = SetCallOptions;
-export interface CancellationScalarCallOptions
-  extends ScalarCallOptions,
-    CancellationCallOptions {}
 export interface GetCallOptions
   extends DecompressableCallOptions,
     CancellationCallOptions {}
