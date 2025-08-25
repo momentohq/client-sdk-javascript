@@ -4,6 +4,10 @@ import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {ChannelCredentials, Interceptor} from '@grpc/grpc-js';
 import {
+  setupAbortSignalHandler,
+  createInterceptorsWithCancellation,
+} from './utils';
+import {
   CreateCache,
   DeleteCache,
   ListCaches,
@@ -26,7 +30,6 @@ import {RetryInterceptor} from './grpc/retry-interceptor';
 import {secondsToMilliseconds} from '@gomomento/sdk-core/dist/src/utils';
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
 import {CacheOptions} from '@gomomento/sdk-core/dist/src/internal/clients';
-import {CancellationInterceptor} from './grpc/cancellation-interceptor';
 
 export interface ControlClientProps {
   configuration: Configuration;
@@ -112,7 +115,8 @@ export class CacheControlClient {
       const grpcCall = this.clientWrapper.getClient().CreateCache(
         request,
         {
-          interceptors: this.createInterceptorsWithCancellation(
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
             options?.abortSignal
           ),
         },
@@ -137,7 +141,12 @@ export class CacheControlClient {
           }
         }
       );
-      this.setupAbortSignalHandler(options?.abortSignal, grpcCall, 'keysExist');
+      setupAbortSignalHandler(
+        this.logger,
+        options?.abortSignal,
+        grpcCall,
+        'createCache'
+      );
     });
   }
 
@@ -161,7 +170,8 @@ export class CacheControlClient {
       const grpcCall = this.clientWrapper.getClient().DeleteCache(
         request,
         {
-          interceptors: this.createInterceptorsWithCancellation(
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
             options?.abortSignal
           ),
         },
@@ -178,7 +188,12 @@ export class CacheControlClient {
           }
         }
       );
-      this.setupAbortSignalHandler(options?.abortSignal, grpcCall, 'keysExist');
+      setupAbortSignalHandler(
+        this.logger,
+        options?.abortSignal,
+        grpcCall,
+        'deleteCache'
+      );
     });
   }
 
@@ -209,7 +224,10 @@ export class CacheControlClient {
       const grpcCall = this.clientWrapper.getClient().FlushCache(
         request,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -224,7 +242,7 @@ export class CacheControlClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, grpcCall, 'keysExist');
+      setupAbortSignalHandler(this.logger, abortSignal, grpcCall, 'flushCache');
     });
   }
 
@@ -238,7 +256,8 @@ export class CacheControlClient {
       const grpcCall = this.clientWrapper.getClient().ListCaches(
         request,
         {
-          interceptors: this.createInterceptorsWithCancellation(
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
             options?.abortSignal
           ),
         },
@@ -272,46 +291,12 @@ export class CacheControlClient {
           }
         }
       );
-      this.setupAbortSignalHandler(options?.abortSignal, grpcCall, 'keysExist');
+      setupAbortSignalHandler(
+        this.logger,
+        options?.abortSignal,
+        grpcCall,
+        'listCaches'
+      );
     });
-  }
-  /**
-   * Helper method to handle AbortSignal cancellation for gRPC calls.
-   * This centralizes the cancellation logic and ensures consistent behavior.
-   * @param abortSignal - The AbortSignal to monitor
-   * @param grpcCall - The gRPC call to cancel
-   * @param operationName - Name of the operation for logging
-   */
-  private setupAbortSignalHandler(
-    abortSignal: AbortSignal | undefined,
-    grpcCall: {cancel: () => void},
-    operationName: string
-  ): void {
-    if (abortSignal !== undefined) {
-      if (abortSignal.aborted) {
-        grpcCall.cancel();
-      } else {
-        abortSignal.addEventListener('abort', () => {
-          this.logger.debug(
-            `Abort signal received, cancelling ${operationName} call`
-          );
-          grpcCall.cancel();
-        });
-      }
-    }
-  }
-
-  /**
-   * Helper method to create interceptors with AbortSignal cancellation support.
-   * @param abortSignal - The AbortSignal to monitor
-   * @returns Array of interceptors including cancellation if abortSignal is provided
-   */
-  private createInterceptorsWithCancellation(
-    abortSignal?: AbortSignal
-  ): Interceptor[] {
-    return [
-      ...this.interceptors,
-      CancellationInterceptor.createCancellationInterceptor(abortSignal),
-    ];
   }
 }

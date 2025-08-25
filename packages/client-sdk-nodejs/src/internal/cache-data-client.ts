@@ -5,6 +5,10 @@ import {Header, HeaderInterceptor} from './grpc/headers-interceptor';
 import {RetryInterceptor} from './grpc/retry-interceptor';
 import {CacheServiceErrorMapper} from '../errors/cache-service-error-mapper';
 import {
+  setupAbortSignalHandler,
+  createInterceptorsWithCancellation,
+} from './utils';
+import {
   ChannelCredentials,
   Interceptor,
   Metadata,
@@ -552,7 +556,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -567,7 +574,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'set');
+      setupAbortSignalHandler(this.logger, abortSignal, setGrpcCall, 'set');
     });
   }
 
@@ -638,7 +645,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -658,7 +668,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setWithHash');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'setWithHash'
+      );
     });
   }
 
@@ -700,7 +715,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -717,7 +735,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setFetch');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'setFetch'
+      );
     });
   }
 
@@ -770,7 +793,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         err => {
           if (err) {
@@ -785,7 +811,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setAddElements');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'setAddElements'
+      );
     });
   }
 
@@ -831,7 +862,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.found) {
@@ -856,7 +890,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'setContainsElements'
@@ -906,7 +941,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.found) {
@@ -926,7 +964,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'setContainsElements'
@@ -982,7 +1021,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         err => {
           if (err) {
@@ -997,7 +1039,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'setRemoveElements'
@@ -1048,7 +1091,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -1065,7 +1111,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setSample');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'setSample'
+      );
     });
   }
 
@@ -1112,7 +1163,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -1129,7 +1183,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setPop');
+      setupAbortSignalHandler(this.logger, abortSignal, setGrpcCall, 'setPop');
     });
   }
 
@@ -1172,7 +1226,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -1193,7 +1250,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setLength');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'setLength'
+      );
     });
   }
 
@@ -1249,7 +1311,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -1280,7 +1345,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setIfNotExists');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'setIfNotExists'
+      );
     });
   }
 
@@ -1353,7 +1423,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -1384,7 +1457,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setIfAbsent');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'setIfAbsent'
+      );
     });
   }
 
@@ -1438,7 +1516,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -1469,7 +1550,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setIfPresent');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'setIfPresent'
+      );
     });
   }
 
@@ -1526,7 +1612,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -1557,7 +1646,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setIfEqual');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'setIfEqual'
+      );
     });
   }
 
@@ -1614,7 +1708,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -1645,7 +1742,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'setIfNotEqual');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'setIfNotEqual'
+      );
     });
   }
 
@@ -1702,7 +1804,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -1734,7 +1839,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'setIfPresentAndNotEqual'
@@ -1795,7 +1901,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -1826,7 +1935,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'setIfAbsentOrEqual'
@@ -1888,7 +1998,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -1922,7 +2035,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'setIfPresentAndHashEqual'
@@ -1984,7 +2098,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -2020,7 +2137,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'setIfPresentAndHashNotEqual'
@@ -2080,7 +2198,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -2114,7 +2235,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'setIfAbsentOrHashEqual'
@@ -2176,7 +2298,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -2212,7 +2337,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'setIfAbsentOrHashNotEqual'
@@ -2253,7 +2379,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -2268,7 +2397,7 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'delete');
+      setupAbortSignalHandler(this.logger, abortSignal, setGrpcCall, 'delete');
     });
   }
 
@@ -2306,7 +2435,8 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
             options?.abortSignal
           ),
         },
@@ -2367,7 +2497,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(options?.abortSignal, getGrpcCall, 'get');
+      setupAbortSignalHandler(
+        this.logger,
+        options?.abortSignal,
+        getGrpcCall,
+        'get'
+      );
     });
   }
 
@@ -2404,7 +2539,8 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
             options?.abortSignal
           ),
         },
@@ -2453,7 +2589,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         options?.abortSignal,
         setGrpcCall,
         'getWithHash'
@@ -2570,7 +2707,7 @@ export class CacheDataClient implements IDataClient {
           rejectFn: reject,
         });
       });
-      this.setupAbortSignalHandler(abortSignal, call, 'getBatch');
+      setupAbortSignalHandler(this.logger, abortSignal, call, 'getBatch');
     });
   }
 
@@ -2685,7 +2822,7 @@ export class CacheDataClient implements IDataClient {
           rejectFn: reject,
         });
       });
-      this.setupAbortSignalHandler(abortSignal, call, 'setBatch');
+      setupAbortSignalHandler(this.logger, abortSignal, call, 'setBatch');
     });
   }
 
@@ -2742,7 +2879,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -2758,7 +2898,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'listConcatenateBack'
@@ -2819,7 +2960,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -2835,7 +2979,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'listConcatenateFront'
@@ -2899,7 +3044,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -2916,7 +3064,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'ListFetch');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'ListFetch'
+      );
     });
   }
 
@@ -2983,7 +3136,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -2998,7 +3154,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'listRetain');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'listRetain'
+      );
     });
   }
 
@@ -3041,7 +3202,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -3058,7 +3222,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'listLength');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'listLength'
+      );
     });
   }
 
@@ -3101,7 +3270,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -3118,7 +3290,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'ListPopBack');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'ListPopBack'
+      );
     });
   }
 
@@ -3161,7 +3338,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -3178,7 +3358,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'ListPopFront');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'ListPopFront'
+      );
     });
   }
 
@@ -3235,7 +3420,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -3250,7 +3438,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'listPushBack');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'listPushBack'
+      );
     });
   }
 
@@ -3307,7 +3500,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -3322,7 +3518,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'listPushFront');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'listPushFront'
+      );
     });
   }
 
@@ -3368,7 +3569,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -3383,7 +3587,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'listRemoveValue');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'listRemoveValue'
+      );
     });
   }
 
@@ -3425,7 +3634,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.found) {
@@ -3442,7 +3654,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'dictionaryFetch');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'dictionaryFetch'
+      );
     });
   }
 
@@ -3498,7 +3715,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -3513,7 +3733,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'dictionarySetField'
@@ -3575,7 +3796,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -3591,7 +3815,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'dictionarySetFields'
@@ -3642,7 +3867,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.dictionary === 'missing') {
@@ -3680,7 +3908,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'dictionaryGetField'
@@ -3731,7 +3960,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.dictionary === 'found') {
@@ -3753,7 +3985,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'dictionaryGetFields'
@@ -3805,7 +4038,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -3821,7 +4057,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'dictionaryRemoveField'
@@ -3873,7 +4110,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -3889,7 +4129,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'dictionaryRemoveFields'
@@ -3936,7 +4177,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -3953,7 +4197,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'dictionaryLength'
@@ -4010,7 +4255,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -4029,7 +4277,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'increment');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'increment'
+      );
     });
   }
 
@@ -4086,7 +4339,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -4106,7 +4362,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'dictionaryIncrement'
@@ -4166,7 +4423,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -4182,7 +4442,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'sortedSetPutElement'
@@ -4245,7 +4506,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -4261,7 +4525,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'sortedSetPutElements'
@@ -4338,7 +4603,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -4377,7 +4645,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'sortedSetFetchByRank'
@@ -4480,7 +4749,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -4519,7 +4791,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'sortedSetFetchByScore'
@@ -4574,35 +4847,39 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      const setGrpcCall = this.clientWrapper
-        .getClient()
-        .SortedSetGetRank(
-          request,
-          metadata,
-          {interceptors: this.createInterceptorsWithCancellation(abortSignal)},
-          (err, resp) => {
-            if (
-              resp?.missing ||
-              resp?.element_rank?.result === ECacheResult.Miss
-            ) {
+      const setGrpcCall = this.clientWrapper.getClient().SortedSetGetRank(
+        request,
+        metadata,
+        {
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
+        },
+        (err, resp) => {
+          if (
+            resp?.missing ||
+            resp?.element_rank?.result === ECacheResult.Miss
+          ) {
+            resolve(new CacheSortedSetGetRank.Miss());
+          } else if (resp?.element_rank?.result === ECacheResult.Hit) {
+            if (resp?.element_rank.rank === undefined) {
               resolve(new CacheSortedSetGetRank.Miss());
-            } else if (resp?.element_rank?.result === ECacheResult.Hit) {
-              if (resp?.element_rank.rank === undefined) {
-                resolve(new CacheSortedSetGetRank.Miss());
-              } else {
-                resolve(new CacheSortedSetGetRank.Hit(resp.element_rank.rank));
-              }
             } else {
-              this.cacheServiceErrorMapper.resolveOrRejectError({
-                err: err,
-                errorResponseFactoryFn: e => new CacheSortedSetGetRank.Error(e),
-                resolveFn: resolve,
-                rejectFn: reject,
-              });
+              resolve(new CacheSortedSetGetRank.Hit(resp.element_rank.rank));
             }
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSortedSetGetRank.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
-        );
-      this.setupAbortSignalHandler(
+        }
+      );
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'sortedSetGetRank'
@@ -4677,33 +4954,36 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      const setGrpcCall = this.clientWrapper
-        .getClient()
-        .SortedSetGetScore(
-          request,
-          metadata,
-          {interceptors: this.createInterceptorsWithCancellation(abortSignal)},
-          (err, resp) => {
-            if (resp?.missing) {
-              resolve(new CacheSortedSetGetScores.Miss());
-            } else if (resp?.found) {
-              const elements = resp.found.elements.map(ele => {
-                const result = this.convertECacheResult(ele.result);
-                return new _SortedSetGetScoreResponsePart(result, ele.score);
-              });
-              resolve(new CacheSortedSetGetScores.Hit(elements, values));
-            } else {
-              this.cacheServiceErrorMapper.resolveOrRejectError({
-                err: err,
-                errorResponseFactoryFn: e =>
-                  new CacheSortedSetGetScores.Error(e),
-                resolveFn: resolve,
-                rejectFn: reject,
-              });
-            }
+      const setGrpcCall = this.clientWrapper.getClient().SortedSetGetScore(
+        request,
+        metadata,
+        {
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
+        },
+        (err, resp) => {
+          if (resp?.missing) {
+            resolve(new CacheSortedSetGetScores.Miss());
+          } else if (resp?.found) {
+            const elements = resp.found.elements.map(ele => {
+              const result = this.convertECacheResult(ele.result);
+              return new _SortedSetGetScoreResponsePart(result, ele.score);
+            });
+            resolve(new CacheSortedSetGetScores.Hit(elements, values));
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e => new CacheSortedSetGetScores.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
-        );
-      this.setupAbortSignalHandler(
+        }
+      );
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'sortedSetGetScores'
@@ -4760,31 +5040,35 @@ export class CacheDataClient implements IDataClient {
     });
     const metadata = this.createMetadata(cacheName);
     return await new Promise((resolve, reject) => {
-      const setGrpcCall = this.clientWrapper
-        .getClient()
-        .SortedSetIncrement(
-          request,
-          metadata,
-          {interceptors: this.createInterceptorsWithCancellation(abortSignal)},
-          (err, resp) => {
-            if (resp) {
-              if (resp.score) {
-                resolve(new CacheSortedSetIncrementScore.Success(resp.score));
-              } else {
-                resolve(new CacheSortedSetIncrementScore.Success(0));
-              }
+      const setGrpcCall = this.clientWrapper.getClient().SortedSetIncrement(
+        request,
+        metadata,
+        {
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
+        },
+        (err, resp) => {
+          if (resp) {
+            if (resp.score) {
+              resolve(new CacheSortedSetIncrementScore.Success(resp.score));
             } else {
-              this.cacheServiceErrorMapper.resolveOrRejectError({
-                err: err,
-                errorResponseFactoryFn: e =>
-                  new CacheSortedSetIncrementScore.Error(e),
-                resolveFn: resolve,
-                rejectFn: reject,
-              });
+              resolve(new CacheSortedSetIncrementScore.Success(0));
             }
+          } else {
+            this.cacheServiceErrorMapper.resolveOrRejectError({
+              err: err,
+              errorResponseFactoryFn: e =>
+                new CacheSortedSetIncrementScore.Error(e),
+              resolveFn: resolve,
+              rejectFn: reject,
+            });
           }
-        );
-      this.setupAbortSignalHandler(
+        }
+      );
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'sortedSetIncrementScore'
@@ -4837,7 +5121,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         err => {
           if (err) {
@@ -4853,7 +5140,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'sortedSetRemoveElement'
@@ -4906,7 +5194,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         err => {
           if (err) {
@@ -4922,7 +5213,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'sortedSetRemoveElements'
@@ -4969,7 +5261,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -4990,7 +5285,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'sortedSetLength');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'sortedSetLength'
+      );
     });
   }
 
@@ -5052,7 +5352,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -5074,7 +5377,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'sortedSetLengthByScore'
@@ -5142,7 +5446,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -5158,7 +5465,8 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(
+      setupAbortSignalHandler(
+        this.logger,
         abortSignal,
         setGrpcCall,
         'sortedSetUnionStore'
@@ -5343,7 +5651,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -5364,7 +5675,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'itemGetType');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'itemGetType'
+      );
     });
   }
 
@@ -5405,7 +5721,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -5422,7 +5741,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'itemGetTtl');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'itemGetTtl'
+      );
     });
   }
 
@@ -5463,7 +5787,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -5478,7 +5805,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'keyExists');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'keyExists'
+      );
     });
   }
 
@@ -5524,7 +5856,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -5541,7 +5876,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'updateTtl');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'updateTtl'
+      );
     });
   }
 
@@ -5582,7 +5922,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp) {
@@ -5597,7 +5940,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'keysExist');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'keysExist'
+      );
     });
   }
 
@@ -5643,7 +5991,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -5662,7 +6013,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'increaseTtl');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'increaseTtl'
+      );
     });
   }
 
@@ -5708,7 +6064,10 @@ export class CacheDataClient implements IDataClient {
         request,
         metadata,
         {
-          interceptors: this.createInterceptorsWithCancellation(abortSignal),
+          interceptors: createInterceptorsWithCancellation(
+            this.interceptors,
+            abortSignal
+          ),
         },
         (err, resp) => {
           if (resp?.missing) {
@@ -5727,7 +6086,12 @@ export class CacheDataClient implements IDataClient {
           }
         }
       );
-      this.setupAbortSignalHandler(abortSignal, setGrpcCall, 'decreaseTtl');
+      setupAbortSignalHandler(
+        this.logger,
+        abortSignal,
+        setGrpcCall,
+        'decreaseTtl'
+      );
     });
   }
 
@@ -5746,46 +6110,6 @@ export class CacheDataClient implements IDataClient {
         field: field,
         value: value,
       }),
-    ];
-  }
-
-  /**
-   * Helper method to handle AbortSignal cancellation for gRPC calls.
-   * This centralizes the cancellation logic and ensures consistent behavior.
-   * @param abortSignal - The AbortSignal to monitor
-   * @param grpcCall - The gRPC call to cancel
-   * @param operationName - Name of the operation for logging
-   */
-  private setupAbortSignalHandler(
-    abortSignal: AbortSignal | undefined,
-    grpcCall: {cancel: () => void},
-    operationName: string
-  ): void {
-    if (abortSignal !== undefined) {
-      if (abortSignal.aborted) {
-        grpcCall.cancel();
-      } else {
-        abortSignal.addEventListener('abort', () => {
-          this.logger.debug(
-            `Abort signal received, cancelling ${operationName} call`
-          );
-          grpcCall.cancel();
-        });
-      }
-    }
-  }
-
-  /**
-   * Helper method to create interceptors with AbortSignal cancellation support.
-   * @param abortSignal - The AbortSignal to monitor
-   * @returns Array of interceptors including cancellation if abortSignal is provided
-   */
-  private createInterceptorsWithCancellation(
-    abortSignal?: AbortSignal
-  ): Interceptor[] {
-    return [
-      ...this.interceptors,
-      CancellationInterceptor.createCancellationInterceptor(abortSignal),
     ];
   }
 
