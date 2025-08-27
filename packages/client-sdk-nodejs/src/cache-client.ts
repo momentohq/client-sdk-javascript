@@ -13,6 +13,7 @@ import {ICacheClient} from '@gomomento/sdk-core/dist/src/clients/ICacheClient';
 import {AbstractCacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache/AbstractCacheClient';
 import {CacheClientAllProps} from './internal/cache-client-all-props';
 import {getDefaultCredentialProvider} from '@gomomento/sdk-core';
+import {ControlCallOptions} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 const EAGER_CONNECTION_DEFAULT_TIMEOUT_SECONDS = 30;
 
@@ -151,9 +152,13 @@ export class CacheClient extends AbstractCacheClient implements ICacheClient {
    * {@link CacheFlush.Error} on failure.
    */
   public override async flushCache(
-    cacheName: string
+    cacheName: string,
+    options?: ControlCallOptions
   ): Promise<CacheFlush.Response> {
-    return await this.notYetAbstractedControlClient.flushCache(cacheName);
+    return await this.notYetAbstractedControlClient.flushCache(
+      cacheName,
+      options
+    );
   }
 }
 

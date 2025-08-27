@@ -7,6 +7,7 @@ import {
   Configurations,
   CreateCache,
   CredentialProvider,
+  DefaultMomentoLoggerFactory,
   DeleteCache,
   LeaderboardConfigurations,
   MomentoErrorCode,
@@ -26,6 +27,7 @@ import {
 } from '../momento-local-middleware';
 import {MomentoLocalProviderProps} from '@gomomento/sdk-core/dist/src/auth';
 import {TopicClientAllProps} from '../../src/internal/topic-client-all-props';
+import {NoRetryStrategy} from '../../src/config/retry/no-retry-strategy';
 
 export const deleteCacheIfExists = async (
   momento: CacheClient,
@@ -239,6 +241,14 @@ function momentoCacheClientForTestingWithMgaAccountSessionToken(): CacheClient {
   });
 }
 
+function momentoClientForTestingWithoutRetryStrategy(): CacheClient {
+  const props = integrationTestCacheClientProps();
+  props.configuration = props.configuration.withRetryStrategy(
+    new NoRetryStrategy({loggerFactory: new DefaultMomentoLoggerFactory()})
+  );
+  return new CacheClient(props);
+}
+
 function momentoTopicClientForTesting(): TopicClient {
   return new TopicClient({
     configuration: integrationTestTopicClientProps().configuration,
@@ -281,6 +291,7 @@ export function SetupIntegrationTest(): {
   cacheClientWithThrowOnErrors: CacheClient;
   cacheClientWithBalancedReadConcern: CacheClient;
   cacheClientWithConsistentReadConcern: CacheClient;
+  cacheClientWithoutRetryStrategy: CacheClient;
   integrationTestCacheName: string;
   credentialProvider: CredentialProvider;
 } {
@@ -311,11 +322,14 @@ export function SetupIntegrationTest(): {
     momentoClientForTestingBalancedReadConcern();
   const clientWithConsistentReadConcern =
     momentoClientForTestingConsistentReadConcern();
+  const clientWithoutRetryStrategy =
+    momentoClientForTestingWithoutRetryStrategy();
   return {
     cacheClient: client,
     cacheClientWithThrowOnErrors: clientWithThrowOnErrors,
     cacheClientWithBalancedReadConcern: clientWithBalancedReadConcern,
     cacheClientWithConsistentReadConcern: clientWithConsistentReadConcern,
+    cacheClientWithoutRetryStrategy: clientWithoutRetryStrategy,
     integrationTestCacheName: cacheName,
     credentialProvider: credsProvider(),
   };

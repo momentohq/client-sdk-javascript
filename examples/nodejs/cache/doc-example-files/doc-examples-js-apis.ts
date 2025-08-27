@@ -47,12 +47,15 @@ import {
   CacheSetBatchResponse,
   CacheSetFetchResponse,
   CacheSetIfAbsentOrEqualResponse,
+  CacheSetIfAbsentOrHashEqualResponse,
+  CacheSetIfAbsentOrHashNotEqualResponse,
   CacheSetIfAbsentResponse,
   CacheSetIfEqualResponse,
   CacheSetIfNotEqualResponse,
   CacheSetIfNotExistsResponse,
   CacheSetIfPresentAndNotEqualResponse,
   CacheSetIfPresentResponse,
+  CacheSetIfPresentAndHashNotEqualResponse,
   CacheSetRemoveElementResponse,
   CacheSetRemoveElementsResponse,
   CacheSetResponse,
@@ -100,8 +103,11 @@ import {
   TopicPublishResponse,
   TopicRole,
   TopicSubscribeResponse,
+  CacheSetWithHash,
+  CacheSetIfPresentAndHashEqualResponse,
 } from '@gomomento/sdk';
 import * as crypto from 'crypto';
+import {TextEncoder} from 'util';
 
 function retrieveApiKeyFromYourSecretsManager(): string {
   // this is not a valid API key but conforms to the syntax requirements.
@@ -468,6 +474,86 @@ async function example_API_SetIfAbsentOrEqual(cacheClient: CacheClient, cacheNam
     case CacheSetIfAbsentOrEqualResponse.Error:
       throw new Error(
         `An error occurred while attempting to call setIfAbsentOrEqual for the key 'test-key' in cache cacheName: ${result.errorCode()}: ${result.toString()}`
+      );
+  }
+}
+
+async function example_API_SetIfPresentAndHashEqual(
+  cacheClient: CacheClient,
+  cacheName: string,
+  hashValue: Uint8Array
+) {
+  const result = await cacheClient.setIfPresentAndHashEqual(cacheName, 'test-key', 'test-value', hashValue);
+  switch (result.type) {
+    case CacheSetIfPresentAndHashEqualResponse.Stored:
+      console.log(`Value 'test-value' set in key 'test-key' with hash: ${result.hashString()}`);
+      break;
+    case CacheSetIfPresentAndHashEqualResponse.NotStored:
+      console.log(
+        `Key 'test-key' exists in cache ${cacheName} or is not equal to hashValue, so we did not set the field`
+      );
+      break;
+    case CacheSetIfPresentAndHashEqualResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to call setIfPresentAndHashEqual for the key 'test-key' in cache cacheName: ${result.errorCode()}: ${result.toString()}`
+      );
+  }
+}
+
+async function example_API_SetIfPresentAndHasNotEqual(
+  cacheClient: CacheClient,
+  cacheName: string,
+  hashValue: Uint8Array
+) {
+  const result = await cacheClient.setIfPresentAndHashNotEqual(cacheName, 'test-key', 'test-value', hashValue);
+  switch (result.type) {
+    case CacheSetIfPresentAndHashNotEqualResponse.Stored:
+      console.log(`Value 'test-value' set in key 'test-key' with hash: ${result.hashString()}`);
+      break;
+    case CacheSetIfPresentAndHashNotEqualResponse.NotStored:
+      console.log(`Key 'test-key' exists in cache ${cacheName} or is equal to hashValue, so we did not set the field`);
+      break;
+    case CacheSetIfPresentAndHashNotEqualResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to call setIfPresentAndHashNotEqual for the key 'test-key' in cache cacheName: ${result.errorCode()}: ${result.toString()}`
+      );
+  }
+}
+
+async function example_API_SetIfAbsentOrHashEqual(cacheClient: CacheClient, cacheName: string, hashValue: Uint8Array) {
+  const result = await cacheClient.setIfAbsentOrHashEqual(cacheName, 'test-key', 'test-value', hashValue);
+  switch (result.type) {
+    case CacheSetIfAbsentOrHashEqualResponse.Stored:
+      console.log(`Value 'test-value' set in key 'test-key' with hash: ${result.hashString()}`);
+      break;
+    case CacheSetIfAbsentOrHashEqualResponse.NotStored:
+      console.log(
+        `Key 'test-key' exists in cache ${cacheName} and is not equal to hashValue, so we did not set the field`
+      );
+      break;
+    case CacheSetIfAbsentOrHashEqualResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to call setIfAbsentOrHashEqual for the key 'test-key' in cache cacheName: ${result.errorCode()}: ${result.toString()}`
+      );
+  }
+}
+
+async function example_API_SetIfAbsentOrHashNotEqual(
+  cacheClient: CacheClient,
+  cacheName: string,
+  hashValue: Uint8Array
+) {
+  const result = await cacheClient.setIfAbsentOrHashNotEqual(cacheName, 'test-key', 'test-value', hashValue);
+  switch (result.type) {
+    case CacheSetIfAbsentOrHashNotEqualResponse.Stored:
+      console.log(`Value 'test-value' set in key 'test-key' with hash: ${result.hashString()}`);
+      break;
+    case CacheSetIfAbsentOrHashNotEqualResponse.NotStored:
+      console.log(`Key 'test-key' exists in cache ${cacheName} and is equal to hashValue, so we did not set the field`);
+      break;
+    case CacheSetIfAbsentOrHashNotEqualResponse.Error:
+      throw new Error(
+        `An error occurred while attempting to call setIfAbsentOrHashEqual for the key 'test-key' in cache cacheName: ${result.errorCode()}: ${result.toString()}`
       );
   }
 }
@@ -1842,6 +1928,17 @@ async function main() {
 
   await example_API_CreateCache(cacheClient, cacheName);
 
+  const setWithHashResponse = await cacheClient.setWithHash(cacheName, 'test-key', 'test-value');
+  const hashValue =
+    setWithHashResponse instanceof CacheSetWithHash.Stored
+      ? setWithHashResponse.hashUint8Array()
+      : new TextEncoder().encode('hello-world');
+  const setWithHashResponse2 = await cacheClient.setWithHash(cacheName, 'example-key', 'example-value');
+  const hashValueNotEqual =
+    setWithHashResponse2 instanceof CacheSetWithHash.Stored
+      ? setWithHashResponse2.hashUint8Array()
+      : new TextEncoder().encode('hello-world');
+
   try {
     await example_API_ErrorHandlingHitMiss(cacheClient, cacheName);
     await example_API_ErrorHandlingSuccess(cacheClient, cacheName);
@@ -1865,6 +1962,10 @@ async function main() {
     await example_API_GetBatch(cacheClient, cacheName);
     await example_API_SetWithHash(cacheClient, cacheName);
     await example_API_GetWithHash(cacheClient, cacheName);
+    await example_API_SetIfPresentAndHashEqual(cacheClient, cacheName, hashValue);
+    await example_API_SetIfPresentAndHasNotEqual(cacheClient, cacheName, hashValueNotEqual);
+    await example_API_SetIfAbsentOrHashEqual(cacheClient, cacheName, hashValue);
+    await example_API_SetIfAbsentOrHashNotEqual(cacheClient, cacheName, hashValueNotEqual);
 
     await example_API_ListFetch(cacheClient, cacheName);
     await example_API_ListConcatenateBack(cacheClient, cacheName);
