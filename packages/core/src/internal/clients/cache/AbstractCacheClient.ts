@@ -141,7 +141,7 @@ import {
   IncreaseTtlOptions,
   DecreaseTtlOptions,
 } from '../../../clients/ICacheClient';
-import {CacheOptions, IControlClient} from './IControlClient';
+import {ControlCallOptions, IControlClient} from './IControlClient';
 import {IDataClient} from './IDataClient';
 import {IPingClient} from './IPingClient';
 import {IMomentoCache} from '../../../clients/IMomentoCache';
@@ -193,7 +193,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async createCache(
     cacheName: string,
-    options?: CacheOptions
+    options?: ControlCallOptions
   ): Promise<CreateCache.Response> {
     return await this.controlClient.createCache(cacheName, options);
   }
@@ -208,7 +208,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async deleteCache(
     cacheName: string,
-    options?: CacheOptions
+    options?: ControlCallOptions
   ): Promise<DeleteCache.Response> {
     return await this.controlClient.deleteCache(cacheName, options);
   }
@@ -221,7 +221,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    * {@link ListCaches.Error} on failure.
    */
   public async listCaches(
-    options?: CacheOptions
+    options?: ControlCallOptions
   ): Promise<ListCaches.Response> {
     return await this.controlClient.listCaches(options);
   }
@@ -1354,7 +1354,7 @@ export abstract class AbstractCacheClient implements ICacheClient {
    */
   public async flushCache(
     cacheName: string,
-    options?: CacheOptions
+    options?: ControlCallOptions
   ): Promise<CacheFlush.Response> {
     return await this.controlClient.flushCache(cacheName, options);
   }

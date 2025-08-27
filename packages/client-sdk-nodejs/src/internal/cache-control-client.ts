@@ -29,7 +29,7 @@ import {
 import {RetryInterceptor} from './grpc/retry-interceptor';
 import {secondsToMilliseconds} from '@gomomento/sdk-core/dist/src/utils';
 import {grpcChannelOptionsFromGrpcConfig} from './grpc/grpc-channel-options';
-import {CacheOptions} from '@gomomento/sdk-core/dist/src/internal/clients';
+import {ControlCallOptions} from '@gomomento/sdk-core/dist/src/internal/clients';
 
 export interface ControlClientProps {
   configuration: Configuration;
@@ -97,7 +97,7 @@ export class CacheControlClient {
 
   public async createCache(
     name: string,
-    options?: CacheOptions
+    options?: ControlCallOptions
   ): Promise<CreateCache.Response> {
     try {
       validateCacheName(name);
@@ -152,7 +152,7 @@ export class CacheControlClient {
 
   public async deleteCache(
     name: string,
-    options?: CacheOptions
+    options?: ControlCallOptions
   ): Promise<DeleteCache.Response> {
     try {
       validateCacheName(name);
@@ -199,7 +199,7 @@ export class CacheControlClient {
 
   public async flushCache(
     cacheName: string,
-    options?: CacheOptions
+    options?: ControlCallOptions
   ): Promise<CacheFlush.Response> {
     try {
       validateCacheName(cacheName);
@@ -247,7 +247,7 @@ export class CacheControlClient {
   }
 
   public async listCaches(
-    options?: CacheOptions
+    options?: ControlCallOptions
   ): Promise<ListCaches.Response> {
     const request = new grpcControl._ListCachesRequest();
     request.next_token = '';

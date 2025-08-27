@@ -1,19 +1,19 @@
 import {CacheFlush, CreateCache, DeleteCache, ListCaches} from '../../../index';
 import {CancellationCallOptions} from '../../../utils';
-export type CacheOptions = CancellationCallOptions;
+export type ControlCallOptions = CancellationCallOptions;
 export interface IControlClient {
   createCache(
     cacheName: string,
-    options?: CacheOptions
+    options?: ControlCallOptions
   ): Promise<CreateCache.Response>;
   deleteCache(
     cacheName: string,
-    options?: CacheOptions
+    options?: ControlCallOptions
   ): Promise<DeleteCache.Response>;
-  listCaches(options?: CacheOptions): Promise<ListCaches.Response>;
+  listCaches(options?: ControlCallOptions): Promise<ListCaches.Response>;
   flushCache(
     cacheName: string,
-    options?: CacheOptions
+    options?: ControlCallOptions
   ): Promise<CacheFlush.Response>;
   close(): void;
 }
