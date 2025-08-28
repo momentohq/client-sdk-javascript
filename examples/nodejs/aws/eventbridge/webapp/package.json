@@ -10,7 +10,7 @@
     "deploy": "npm install && cd - && cdk deploy"
   },
   "dependencies": {
-    "@gomomento/sdk-web": "^1.115.1",
+    "@gomomento/sdk-web": "^1.116.0",
     "aws-sdk": "^2.1628.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
