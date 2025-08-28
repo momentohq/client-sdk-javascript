@@ -13,8 +13,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@gomomento/sdk": "^1.115.1",
-    "@gomomento/sdk-nodejs-compression-zstd": "^0.115.1",
+    "@gomomento/sdk": "^1.116.0",
+    "@gomomento/sdk-nodejs-compression-zstd": "^0.116.0",
     "@typescript-eslint/eslint-plugin": "5.30.5",
     "@typescript-eslint/parser": "^5.0.0",
     "aws-lambda": "^1.0.7",
