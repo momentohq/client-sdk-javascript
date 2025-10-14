@@ -37,7 +37,7 @@ describe('client timeout tests', () => {
     await WithCache(defaultTimeoutClient, cacheName, async () => {
       const cacheKey = v4();
       // Create a 1mb cache value that should take longer than 1ms to send
-      const cacheValue = new TextEncoder().encode(v4().repeat(1000000));
+      const cacheValue = new TextEncoder().encode('x'.repeat(1_000_000));
       const setResponse = await shortTimeoutClient.set(
         cacheName,
         cacheKey,
@@ -68,7 +68,7 @@ describe('client timeout tests', () => {
     await WithCache(defaultTimeoutClient, cacheName, async () => {
       const cacheKey = v4();
       // Create a 1mb cache value that should take longer than 1ms to send
-      const cacheValue = new TextEncoder().encode(v4().repeat(1000000));
+      const cacheValue = new TextEncoder().encode('x'.repeat(1_000_000));
       const setResponse = await shortTimeoutClient.setIfNotExists(
         cacheName,
         cacheKey,
