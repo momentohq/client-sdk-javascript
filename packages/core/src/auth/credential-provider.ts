@@ -114,6 +114,18 @@ export abstract class CredentialProvider {
     return new StringMomentoTokenProvider(props);
   }
 
+  static globalKeyFromEnvVar(
+    props: GlobalKeyEnvMomentoTokenProviderProps
+  ): CredentialProvider {
+    return new GlobalKeyEnvMomentoTokenProvider(props);
+  }
+
+  static globalKeyFromString(
+    props: GlobalKeyStringMomentoTokenProviderProps
+  ): CredentialProvider {
+    return new GlobalKeyStringMomentoTokenProvider(props);
+  }
+
   /**
    * Allow insecure connections to momento-local service for testing purposes.
    * Does not require a Momento API key.
@@ -173,6 +185,16 @@ export interface StringMomentoAuthTokenProviderProps
 export type StringMomentoTokenProviderProps =
   | StringMomentoApiKeyProviderProps
   | StringMomentoAuthTokenProviderProps;
+
+export type GlobalKeyStringMomentoTokenProviderProps =
+  StringMomentoTokenProviderProps & {
+    endpoint: string;
+  };
+
+export interface GlobalKeyEnvMomentoTokenProviderProps
+  extends EnvMomentoTokenProviderProps {
+  endpoint: string;
+}
 
 /**
  * Reads and parses a momento auth token stored in a String
@@ -415,5 +437,124 @@ export class MomentoLocalProvider implements CredentialProvider {
 
   withMomentoLocal(): CredentialProvider {
     return new MomentoLocalProvider();
+  }
+}
+
+export class GlobalKeyStringMomentoTokenProvider extends CredentialProviderBase {
+  private readonly apiKey: string;
+  private readonly allEndpoints: AllEndpoints;
+
+  /**
+   * @param {GlobalKeyStringMomentoTokenProviderProps} props configuration options for the token provider
+   */
+  constructor(props: GlobalKeyStringMomentoTokenProviderProps) {
+    super();
+    let key: string;
+    if ('authToken' in props) {
+      key = props.authToken;
+    } else if ('apiKey' in props) {
+      key = props.apiKey;
+    } else {
+      throw new Error('Missing required property: authToken or apiKey');
+    }
+    if (!key.length) {
+      throw new Error('API key cannot be an empty string');
+    }
+
+    let endpoint: string;
+    if ('endpoint' in props) {
+      endpoint = props.endpoint;
+    } else {
+      throw new Error('Missing required property: endpoint');
+    }
+    if (!endpoint.length) {
+      throw new Error('Endpoint cannot be an empty string');
+    }
+
+    this.apiKey = key;
+    this.allEndpoints = {
+      controlEndpoint: 'control.' + endpoint,
+      cacheEndpoint: 'cache.' + endpoint,
+      tokenEndpoint: 'token.' + endpoint,
+    };
+  }
+
+  getAuthToken(): string {
+    return this.apiKey;
+  }
+
+  getCacheEndpoint(): string {
+    return this.allEndpoints.cacheEndpoint;
+  }
+  isCacheEndpointSecure(): boolean {
+    return this.isEndpointSecure();
+  }
+
+  getControlEndpoint(): string {
+    return this.allEndpoints.controlEndpoint;
+  }
+
+  isControlEndpointSecure(): boolean {
+    return this.isEndpointSecure();
+  }
+
+  getTokenEndpoint(): string {
+    return this.allEndpoints.tokenEndpoint;
+  }
+
+  isTokenEndpointSecure(): boolean {
+    return this.isEndpointSecure();
+  }
+
+  isStorageEndpointSecure(): boolean {
+    return this.isEndpointSecure();
+  }
+
+  areEndpointsOverridden(): boolean {
+    return false;
+  }
+
+  isEndpointSecure(): boolean {
+    if (this.allEndpoints.secureConnection === undefined) {
+      return true;
+    }
+    return this.allEndpoints.secureConnection;
+  }
+
+  withMomentoLocal(): CredentialProvider {
+    return new MomentoLocalProvider();
+  }
+}
+
+export class GlobalKeyEnvMomentoTokenProvider extends GlobalKeyStringMomentoTokenProvider {
+  environmentVariableName: string;
+
+  /**
+   * @param {GlobalKeyEnvMomentoTokenProviderProps} props configuration options for the token provider
+   */
+  constructor(props: GlobalKeyEnvMomentoTokenProviderProps) {
+    if (!props.environmentVariableName) {
+      throw new Error('Missing required property: environmentVariableName');
+    }
+    if (!props.environmentVariableName.length) {
+      throw new Error('Environment variable name cannot be an empty string');
+    }
+    const authToken = process.env[props.environmentVariableName];
+    if (!authToken) {
+      throw new Error(
+        `Empty value for environment variable ${props.environmentVariableName}`
+      );
+    }
+    if (!props.endpoint) {
+      throw new Error('Missing required property: endpoint');
+    }
+    if (!props.endpoint.length) {
+      throw new Error('Endpoint cannot be an empty string');
+    }
+    super({
+      authToken: authToken,
+      endpoint: props.endpoint,
+    });
+    this.environmentVariableName = props.environmentVariableName;
   }
 }

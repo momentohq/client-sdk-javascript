@@ -22,6 +22,10 @@ const fakeSessionToken =
 const testControlEndpoint = 'control-plane-endpoint.not.a.domain';
 const testCacheEndpoint = 'cache-endpoint.not.a.domain';
 
+const testGlobalApiKeyEnvVar = 'MOMENTO_TEST_GLOBAL_API_KEY';
+const testGlobalApiKey = 'testToken';
+const testEndpoint = 'testEndpoint';
+
 describe('StringMomentoTokenProvider', () => {
   it('parses a valid legacy token', () => {
     const authProvider = CredentialProvider.fromString({
@@ -262,5 +266,118 @@ describe('EnvMomentoTokenProvider', () => {
     expect(v1AuthProvider.getCacheEndpoint()).toEqual('prefix.cache.foo');
     expect(v1AuthProvider.getTokenEndpoint()).toEqual('prefix.token.foo');
     expect(v1AuthProvider.areEndpointsOverridden()).toEqual(true);
+  });
+});
+
+describe('GlobalKeyStringMomentoTokenProvider', () => {
+  it('parses an apiKey with endpoint and constructs proper endpoints', () => {
+    const authProvider = CredentialProvider.globalKeyFromString({
+      apiKey: testGlobalApiKey,
+      endpoint: testEndpoint,
+    });
+    expect(authProvider.getAuthToken()).toEqual(testGlobalApiKey);
+    expect(authProvider.getControlEndpoint()).toEqual(
+      `control.${testEndpoint}`
+    );
+    expect(authProvider.getCacheEndpoint()).toEqual(`cache.${testEndpoint}`);
+    expect(authProvider.getTokenEndpoint()).toEqual(`token.${testEndpoint}`);
+    expect(authProvider.areEndpointsOverridden()).toEqual(false);
+    expect(authProvider.isEndpointSecure()).toEqual(true);
+  });
+
+  it('supports the authToken option', () => {
+    const authProvider = CredentialProvider.globalKeyFromString({
+      authToken: testGlobalApiKey,
+      endpoint: testEndpoint,
+    });
+    expect(authProvider.getAuthToken()).toEqual(testGlobalApiKey);
+    expect(authProvider.getControlEndpoint()).toEqual(
+      `control.${testEndpoint}`
+    );
+    expect(authProvider.getCacheEndpoint()).toEqual(`cache.${testEndpoint}`);
+    expect(authProvider.getTokenEndpoint()).toEqual(`token.${testEndpoint}`);
+  });
+
+  it('throws an error when apiKey/authToken is missing', () => {
+    expect(() =>
+      CredentialProvider.globalKeyFromString({
+        endpoint: testEndpoint,
+        apiKey: '',
+      })
+    ).toThrowError('API key cannot be an empty string');
+  });
+
+  it('throws an error when endpoint is missing', () => {
+    expect(() =>
+      CredentialProvider.globalKeyFromString({
+        apiKey: testGlobalApiKey,
+        endpoint: '',
+      })
+    ).toThrowError('Endpoint cannot be an empty string');
+  });
+});
+
+describe('GlobalKeyEnvMomentoTokenProvider', () => {
+  afterEach(() => {
+    delete process.env[testGlobalApiKeyEnvVar];
+    jest.resetModules();
+  });
+
+  it('parses an apiKey from environment variable with endpoint', () => {
+    process.env[testGlobalApiKeyEnvVar] = testGlobalApiKey;
+    const authProvider = CredentialProvider.globalKeyFromEnvVar({
+      environmentVariableName: testGlobalApiKeyEnvVar,
+      endpoint: testEndpoint,
+    });
+    expect(authProvider.getAuthToken()).toEqual(testGlobalApiKey);
+    expect(authProvider.getControlEndpoint()).toEqual(
+      `control.${testEndpoint}`
+    );
+    expect(authProvider.getCacheEndpoint()).toEqual(`cache.${testEndpoint}`);
+    expect(authProvider.getTokenEndpoint()).toEqual(`token.${testEndpoint}`);
+    expect(authProvider.areEndpointsOverridden()).toEqual(false);
+    expect(authProvider.isEndpointSecure()).toEqual(true);
+  });
+
+  it('throws an error when environment variable is not set', () => {
+    expect(() =>
+      CredentialProvider.globalKeyFromEnvVar({
+        environmentVariableName: testGlobalApiKeyEnvVar,
+        endpoint: testEndpoint,
+      })
+    ).toThrowError(
+      `Empty value for environment variable ${testGlobalApiKeyEnvVar}`
+    );
+  });
+
+  it('throws an error when environment variable is empty', () => {
+    process.env[testGlobalApiKeyEnvVar] = '';
+    expect(() =>
+      CredentialProvider.globalKeyFromEnvVar({
+        environmentVariableName: testGlobalApiKeyEnvVar,
+        endpoint: testEndpoint,
+      })
+    ).toThrowError(
+      `Empty value for environment variable ${testGlobalApiKeyEnvVar}`
+    );
+  });
+
+  it('throws an error when endpoint is missing', () => {
+    process.env[testGlobalApiKeyEnvVar] = testGlobalApiKey;
+    expect(() =>
+      CredentialProvider.globalKeyFromEnvVar({
+        environmentVariableName: testGlobalApiKeyEnvVar,
+        endpoint: '',
+      })
+    ).toThrowError('Missing required property: endpoint');
+  });
+
+  it('throws an error when environmentVariableName is missing', () => {
+    expect(() =>
+      CredentialProvider.globalKeyFromEnvVar({
+        environmentVariableName: '',
+        endpoint: testEndpoint,
+      })
+    ).toThrowError();
   });
 });
